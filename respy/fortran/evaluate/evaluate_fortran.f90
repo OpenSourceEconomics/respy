@@ -21,7 +21,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, optim_paras, data_evaluate, periods_draws_prob, delta, tau, edu_start, edu_max, num_periods, num_draws_prob)
+SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, optim_paras, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob)
 
     !   DEVELOPMENT NOTES
     !
@@ -41,7 +41,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: tau
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
@@ -189,7 +188,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 CALL clip_value(draws(2), EXP(draws(2)), zero_dble, HUGE_FLOAT, info)
 
                 ! Calculate total values.
-                CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+                CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)
 
                 ! Record optimal choices
                 counts(MAXLOC(total_values)) = counts(MAXLOC(total_values)) + 1

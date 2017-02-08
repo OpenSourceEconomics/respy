@@ -156,11 +156,13 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, optim_paras, num_dra
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, delta, edu_start, edu_max)
+SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: total_values(4)
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -173,7 +175,6 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: draws(4)
-    REAL(our_dble), INTENT(IN)      :: delta
 
     !/* internal objects        */
 
@@ -204,7 +205,7 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
     END IF
 
     ! Calculate total utilities
-    total_values = rewards_ex_post + delta * emaxs
+    total_values = rewards_ex_post + optim_paras%delta * emaxs
 
     ! This is required to ensure that the agent does not choose any
     ! inadmissible states. If the state is inadmissible emaxs takes
@@ -653,7 +654,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, delta, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
+SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -665,7 +666,6 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, delta, tau, seed_
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(OUT)   :: optim_paras
 
-    REAL(our_dble), INTENT(OUT)     :: delta
     REAL(our_dble), INTENT(OUT)     :: tau
 
     INTEGER(our_int), INTENT(OUT)   :: num_points_interp
@@ -722,7 +722,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, delta, tau, seed_
 
         ! BASICS
         READ(99, 1505) num_periods
-        READ(99, 1500) delta
+        READ(99, 1500) optim_paras%delta
 
         ! WORK
         READ(99, 1500) optim_paras%coeffs_a

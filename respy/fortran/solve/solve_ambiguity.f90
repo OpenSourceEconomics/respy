@@ -23,7 +23,7 @@ MODULE solve_ambiguity
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, optim_paras, optimizer_options)
+SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
     !/* external objects        */
 
@@ -39,7 +39,6 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
-    REAL(our_dble), INTENT(IN)      :: delta
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -103,9 +102,9 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
     is_finished = .False.
 
     ! Initialize criterion function at starting values
-    F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+    F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
-    G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, eps_der_approx)
+    G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, eps_der_approx)
 
     ! Initialize constraint at starting values
     C = constraint_ambiguity(x, shocks_cov, optim_paras)
@@ -118,12 +117,12 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
         ! Evaluate criterion function and constraints
         IF (MODE == one_int) THEN
 
-            F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+            F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
             C = constraint_ambiguity(x, shocks_cov, optim_paras)
 
         ! Evaluate gradient of criterion function and constraints.
         ELSEIF (MODE == - one_int) THEN
-            G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, eps_der_approx)
+            G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, eps_der_approx)
             A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, optim_paras, eps_der_approx)
 
         END IF
@@ -153,7 +152,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, optim_paras, optimizer_options, file_sim, is_write)
+SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, measure, optim_paras, optimizer_options, file_sim, is_write)
 
     !/* external objects    */
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
@@ -172,7 +171,6 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
     REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
-    REAL(our_dble), INTENT(IN)      :: delta
 
     CHARACTER(225), INTENT(IN)      :: file_sim
     CHARACTER(10), INTENT(IN)       :: measure
@@ -210,7 +208,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
         message = 'Optimization terminated successfully.'
 
     ELSE
-        CALL get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, optim_paras, optimizer_options)
+        CALL get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
         div = -(constraint_ambiguity(x_shift, shocks_cov, optim_paras) - optim_paras%level)
 
@@ -218,7 +216,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
 
-    emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+    emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
     ! Record information during estimation.
     opt_ambi_info(1) = opt_ambi_info(1) + one_int
@@ -270,11 +268,13 @@ FUNCTION get_message(mode)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, eps_der_approx)
+FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, eps_der_approx)
 
     !/* external objects        */
 
     REAL(our_dble)                  :: criterion_ambiguity_derivative(2)
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -289,7 +289,6 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
     REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: eps_der_approx
-    REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: x(2)
 
     !/* internals objects       */
@@ -309,7 +308,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
     ei = zero_dble
 
     ! Evaluate baseline
-    f0 = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+    f0 = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
     DO j = 1, 2
 
@@ -317,7 +316,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
 
         d = eps_der_approx * ei
 
-        f1 = criterion_ambiguity(x + d, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+        f1 = criterion_ambiguity(x + d, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
         criterion_ambiguity_derivative(j) = (f1 - f0) / d(j)
 
@@ -376,11 +375,13 @@ FUNCTION constraint_ambiguity_derivative(x, shocks_cov, optim_paras, eps_der_app
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
     !/* external objects    */
 
     REAL(our_dble)                  :: criterion_ambiguity
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -394,7 +395,6 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
-    REAL(our_dble), INTENT(IN)      :: delta
     REAL(our_dble), INTENT(IN)      :: x(2)
 
     !/* internals objects    */
@@ -409,7 +409,7 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
     draws_relevant(:, 1) = draws_relevant(:, 1) + x(1)
     draws_relevant(:, 2) = draws_relevant(:, 2) + x(2)
 
-    CALL construct_emax_risk(criterion_ambiguity, period, k, draws_relevant, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
+    CALL construct_emax_risk(criterion_ambiguity, period, k, draws_relevant, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
 END FUNCTION
 !******************************************************************************
