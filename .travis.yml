@@ -15,6 +15,7 @@ addons:
       - mpich2
       - mpich2-doc
       - python-numpy
+      - python3-numpy
 
 bundler_args: --retry 3
 
@@ -22,6 +23,7 @@ install:
   - travis_retry travis_wait pip install -r requirements.txt
   - pip install codecov
   - pip install tox
+  - pip install --ugprade pip
 
 script:
   - python setup.py develop
