@@ -56,7 +56,7 @@ PROGRAM resfort_scalar
 
         CALL read_dataset(data_est, num_obs)
 
-         CALL fort_estimate(crit_val, success, message, optim_paras, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+        CALL fort_estimate(crit_val, success, message, optim_paras, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
     ELSE IF (request == 'simulate') THEN
 
