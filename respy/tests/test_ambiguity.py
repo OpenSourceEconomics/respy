@@ -163,7 +163,7 @@ class TestClass(object):
         py, _, _ = get_worst_case(*args + (optimizer_options, ))
         f90, _, _ = fort_debug.wrapper_get_worst_case(*args + (
             fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
-        np.testing.assert_allclose(py, f90)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_3(self):
