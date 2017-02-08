@@ -195,9 +195,11 @@ SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+SUBROUTINE fort_estimate_parallel(crit_val, success, message, optim_paras, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
     !/* external objects    */
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(OUT)     :: crit_val
 
@@ -205,13 +207,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 
     LOGICAL, INTENT(OUT)            :: success
 
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
     REAL(our_dble), INTENT(IN)      :: precond_minimum
-    REAL(our_dble), INTENT(IN)      :: coeffs_home(1)
-    REAL(our_dble), INTENT(IN)      :: coeffs_edu(3)
-    REAL(our_dble), INTENT(IN)      :: coeffs_a(6)
-    REAL(our_dble), INTENT(IN)      :: coeffs_b(6)
-    REAL(our_dble), INTENT(IN)      :: level(1)
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
     CHARACTER(50), INTENT(OUT)      :: precond_type
@@ -234,11 +230,11 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
 !------------------------------------------------------------------------------
 
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
-    CALL get_free_optim_paras(x_all_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+    CALL get_free_optim_paras(x_all_start, optim_paras, all_free)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-    CALL get_free_optim_paras(x_free_start, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, paras_fixed)
+    CALL get_free_optim_paras(x_free_start, optim_paras, paras_fixed)
 
 
     CALL get_precondition_matrix_parallel(precond_type, precond_minimum, maxfun, x_free_start)
@@ -282,7 +278,6 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, level, coeffs_a, c
         CALL dfpmin(fort_criterion_parallel, fort_dcriterion_parallel, x_free_start, optimizer_options%bfgs%gtol, optimizer_options%bfgs%maxiter, optimizer_options%bfgs%stpmx, maxfun, success, message, iter)
         dfunc_eps = -HUGE_FLOAT
 
-
     END IF
 
     crit_estimation = .False.
@@ -303,15 +298,9 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: x_all_current(27)
     REAL(our_dble)                  :: x_input(num_free)
     REAL(our_dble)                  :: contribs(num_obs)
-    REAL(our_dble)                  :: coeffs_home(1)
-    REAL(our_dble)                  :: coeffs_edu(3)
-    REAL(our_dble)                  :: coeffs_a(6)
-    REAL(our_dble)                  :: coeffs_b(6)
-    REAL(our_dble)                  :: level(1)
     REAL(our_dble)                  :: start
 
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
@@ -344,7 +333,7 @@ FUNCTION fort_criterion_parallel(x)
     CALL MPI_Bcast(x_all_current, 27, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
-    CALL dist_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, x_all_current, dist_optim_paras_info)
+    CALL dist_optim_paras(optim_paras, x_all_current, dist_optim_paras_info)
 
     ! We need to know how the workload is distributed across the slaves.
     IF (.NOT. ALLOCATED(num_states_slaves)) THEN
@@ -423,9 +412,11 @@ FUNCTION fort_dcriterion_parallel(x)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, edu_start, edu_max)
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, optim_paras, edu_start, edu_max)
 
     !/* external objects        */
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
 
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
@@ -433,13 +424,6 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
-
-    REAL(our_dble), INTENT(IN)                      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_home(1)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_edu(3)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_a(6)
-    REAL(our_dble), INTENT(IN)                      :: coeffs_b(6)
-    REAL(our_dble), INTENT(IN)                      :: level(1)
 
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
@@ -460,14 +444,14 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
 
-    CALL get_free_optim_paras(x_all_current, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, all_free)
+    CALL get_free_optim_paras(x_all_current, optim_paras, all_free)
 
     CALL MPI_Bcast(x_all_current, 27, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, optim_paras, max_states_period)
 
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
@@ -485,16 +469,16 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, shocks_cholesky, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, level, optimizer_options, file_sim, num_states_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, delta, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, optim_paras, optimizer_options, file_sim, num_states_slaves, update_master)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_emax(:, :)
 
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
+
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
-    REAL(our_dble), INTENT(IN)          :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)          :: level(1)
     REAL(our_dble), INTENT(IN)          :: delta
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
@@ -582,7 +566,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     CALL RANDOM_SEED(put=seed_inflated)
 
     ! Construct auxiliary objects
-    shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
+    shocks_cov = MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(optim_paras%shocks_cholesky))
 
     ! Shifts
     shifts = zero_dble
@@ -597,7 +581,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
         num_states = states_number_period(period + 1)
 
         ! Transform disturbances
-        CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_cholesky, num_draws_emax)
+        CALL transform_disturbances(draws_emax_transformed, draws_emax, optim_paras, num_draws_emax)
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
@@ -638,8 +622,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
                 ! Extract rewards
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                IF (level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, optimizer_options, file_sim, is_write)
+                IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
+                    CALL construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, optim_paras, optimizer_options, file_sim, is_write)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF
@@ -673,8 +657,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
                 ! Extract rewards
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                IF (level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, level, optimizer_options, file_sim, is_write)
+                IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
+                    CALL construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta, shocks_cov, measure, optim_paras, optimizer_options, file_sim, is_write)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, delta)
                 END IF
