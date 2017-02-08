@@ -10,7 +10,11 @@ MODULE parallelism_auxiliary
 
     USE resfort_library
 
+#if MPI_AVAILABLE
+
     USE mpi
+
+#endif
 
     !/* setup                   */
 
@@ -19,6 +23,8 @@ MODULE parallelism_auxiliary
     PUBLIC
 
 CONTAINS
+#if MPI_AVAILABLE
+
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE get_precondition_matrix_parallel(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
@@ -681,6 +687,9 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     END DO
 
 END SUBROUTINE
+
+#endif
+
 !******************************************************************************
 !******************************************************************************
 END MODULE

@@ -17,35 +17,31 @@ def build(ctx):
         'simulate/simulate_fortran.f90', 'optimizers/slsqp.f', 'optimizers/bobyqa.f90',
         'optimizers/newuoa.f90', 'optimizers/dfpmin.f90',
            'optimizers/optimizers_interfaces.f90',
+           'parallelism/parallelism_constants.F90',
+           'parallelism/parallelism_auxiliary.F90',
            'resfort_library.f90']
 
     # TODO: When revising the build process, it want to explore ways to
     # impose the check for ZeroDivision Errors in all modules besides the SLSQP.
-    flags = ctx.env.FCFLAGS + ['-fPIC']
+    flags = ctx.env.FCFLAGS + [' -fPIC']
     ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)
 
     ctx.add_group()
 
-    # Compile scalar RESFORT executable.
-    ctx(features=['fc', 'fcprogram'], source='resfort_scalar.f90',
-        target='resfort_scalar')
-
-    # Compile the parallel RESFORT executables. We follow the master/slave
-    # design pattern.
+    # Compile the required executables.
+    flags = ctx.env.FCFLAGS + ['-cpp']
     if ctx.env['PARALLELISM']:
+        flags += ['-DMPI_AVAILABLE']
 
-        master = ['parallelism/parallelism_constants.f90',
-            'parallelism/parallelism_auxiliary.f90',
-            'resfort_parallel.f90']
+    ctx(features=['fc', 'fcprogram'], source='resfort.f90',
+        target='resfort', fcflags=flags)
 
-        ctx(features=['fc', 'fcprogram'], source=master,
-            target='resfort_parallel_master')
-
-        ctx.add_group()
-
-        slave = ['parallelism/parallelism_constants.f90',
-            'parallelism/parallelism_auxiliary.f90',
-            'parallelism/parallelism_slave.f90']
-
-        ctx(features=['fc', 'fcprogram'], source=slave,
-             target='resfort_parallel_slave')
+    # # If parallel computing is available, we also create the executable for
+    # # the slave processes.
+    # if ctx.env['PARALLELISM']:
+    #     slave = ['parallelism/parallelism_constants.F90',
+    #         'parallelism/parallelism_auxiliary.F90',
+    #         'parallelism/parallelism_slave.f90']
+    #
+    #     ctx(features=['fc', 'fcprogram'], source=slave,
+    #          target='resfort_slave', fcflags=flags)

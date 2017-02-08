@@ -6,6 +6,7 @@ from subprocess import PIPE
 import numpy as np
 import shutil
 import shlex
+import json
 import os
 
 top = '.'
@@ -118,6 +119,14 @@ def configure(ctx):
             ctx.env['FC'] = 'mpif90'
             ctx.env['COMPILER_FORTRAN'] = 'mpif90'
 
+    # We need a small configuration file, that allow to easily access what
+    # the exact version of the excutable is.
+    config_dict = dict()
+    config_dict['PARALLELISM'] = ctx.env['PARALLELISM']
+    config_dict['FORTRAN'] = ctx.env['FORTRAN']
+    with open('.config', 'w') as outfile:
+        json.dump(config_dict, outfile)
+
     if not ctx.env['FORTRAN']:
         return
 
@@ -136,7 +145,6 @@ def configure(ctx):
 
     # Enable shared libraries
     ctx.env.append_unique('LIB', ['lapack'])
-
 
 def build(ctx):
 
@@ -161,11 +169,10 @@ def post(ctx):
 
     # Copy the RESFORT executable back to package directory
     os.mkdir(subdir)
-    shutil.copy('.bld/fortran/resfort_scalar', subdir)
+    shutil.copy('.bld/fortran/resfort', subdir)
 
     if ctx.env['PARALLELISM']:
-        shutil.copy('.bld/fortran/resfort_parallel_master', subdir)
-        shutil.copy('.bld/fortran/resfort_parallel_slave', subdir)
+        shutil.copy('.bld/fortran/resfort_slave', subdir)
 
     # Copy the KW executable.
     src = '.bld/tests/resources/kw_dp3asim'

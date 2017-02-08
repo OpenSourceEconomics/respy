@@ -5,6 +5,7 @@
 import pickle as pkl
 import pandas as pd
 import numpy as np
+import json
 import copy
 import os
 
@@ -17,6 +18,7 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
+from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.shared.shared_constants import EXEC_DIR
 from respy.python.read.read_python import read
 
@@ -612,13 +614,21 @@ class RespyCls(object):
 
         tau = self.attr['tau']
 
+        # We also load the full configuration.
+        with open(ROOT_DIR + '/.config', 'r') as infile:
+            config_dict = json.load(infile)
+
         # Parallelism
         assert isinstance(num_procs, int)
         assert (num_procs > 0)
         if num_procs > 1:
             assert (version == 'FORTRAN')
-            fname = EXEC_DIR + '/resfort_parallel_master'
-            assert os.path.exists(fname)
+            assert config_dict['PARALLELISM']
+
+        # Version version of package
+        assert (version in ['FORTRAN', 'PYTHON'])
+        if version == 'FORTRAN':
+            assert config_dict['FORTRAN']
 
         # Status of optimization parameters
         for var in [paras_fixed, paras_bounds]:
@@ -677,12 +687,6 @@ class RespyCls(object):
         assert (np.isfinite(delta))
         assert (isinstance(delta, float))
         assert (delta >= 0.00)
-
-        # Version version of package
-        assert (version in ['FORTRAN', 'PYTHON'])
-        if version == 'FORTRAN':
-            fname = EXEC_DIR + '/resfort_scalar'
-            assert os.path.exists(fname)
 
         # Interpolation
         assert (is_interpolated in [True, False])

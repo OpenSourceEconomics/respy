@@ -2,6 +2,7 @@
 aligned with the constants from the FORTRAN implementation.
 """
 import numpy as np
+import json
 import os
 
 # Obtain the root directory of the package
@@ -33,11 +34,11 @@ INADMISSIBILITY_PENALTY = -40000.00
 MISSING_INT = -99
 MISSING_FLOAT = -99.00
 
-# Flag that indicate whether the FORTRAN executables are available.
-IS_PARALLEL = os.path.exists(EXEC_DIR + '/resfort_parallel_master')
-IS_FORTRAN = os.path.exists(EXEC_DIR + '/resfort_scalar')
-if not IS_FORTRAN:
-    assert (not IS_PARALLEL)
+# Flags that provide additional information about the exact configuration
+with open(ROOT_DIR + '/.config', 'r') as infile:
+    config_dict = json.load(infile)
+IS_PARALLEL = config_dict['PARALLELISM']
+IS_FORTRAN = config_dict['FORTRAN']
 
 # Each implementation has its own set of optimizers available.
 OPT_EST_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL', 'SCIPY-LBFGSB']
