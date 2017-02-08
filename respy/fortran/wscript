@@ -4,21 +4,29 @@ def build(ctx):
     # Create the RESFORT library. This is build in addition to the RESFORT
     # executable to allow for the use of an F2PY interface to the core
     # functions as well.
-    src = ['shared/shared_constants.f90', 'shared/shared_containers.f90',
-        'shared/shared_interfaces.f90', 'record/record_warning.f90',
-        'shared/shared_auxiliary.f90',
-        'shared/shared_utilities.f90', 'solve/solve_risk.f90',
-        'solve/solve_auxiliary.f90', 'solve/solve_ambiguity.f90',
-        'solve/solve_fortran.f90',
-        'evaluate/evaluate_auxiliary.f90', 'evaluate/evaluate_fortran.f90',
-        'estimate/estimate_fortran.f90',
-        'record/record_estimation.f90', 'record/record_solution.f90', 'record/record_simulation.f90',
-        'record/record_ambiguity.f90',
-        'simulate/simulate_fortran.f90', 'optimizers/slsqp.f', 'optimizers/bobyqa.f90',
-        'optimizers/newuoa.f90', 'optimizers/dfpmin.f90',
+    src = ['shared/shared_constants.f90',
+           'shared/shared_containers.f90',
+           'shared/shared_interfaces.f90',
+           'record/record_warning.f90',
+           'shared/shared_auxiliary.f90',
+           'shared/shared_utilities.f90',
+           'solve/solve_risk.f90',
+           'solve/solve_auxiliary.f90',
+           'solve/solve_ambiguity.f90',
+           'solve/solve_fortran.f90',
+           'evaluate/evaluate_auxiliary.f90',
+           'evaluate/evaluate_fortran.f90',
+           'estimate/estimate_fortran.f90',
+           'record/record_estimation.f90',
+           'record/record_solution.f90',
+           'record/record_simulation.f90',
+           'record/record_ambiguity.f90',
+           'simulate/simulate_fortran.f90',
+           'optimizers/slsqp.f',
+           'optimizers/bobyqa.f90',
+           'optimizers/newuoa.f90',
+           'optimizers/dfpmin.f90',
            'optimizers/optimizers_interfaces.f90',
-           'parallelism/parallelism_constants.F90',
-           'parallelism/parallelism_auxiliary.F90',
            'resfort_library.f90']
 
     # TODO: When revising the build process, it want to explore ways to
@@ -33,15 +41,22 @@ def build(ctx):
     if ctx.env['PARALLELISM']:
         flags += ['-DMPI_AVAILABLE']
 
-    ctx(features=['fc', 'fcprogram'], source='resfort.f90',
-        target='resfort', fcflags=flags)
+    src = ['parallelism/parallelism_constants.F90',
+           'parallelism/parallelism_auxiliary.F90',
+           'resfort.f90']
 
-    # # If parallel computing is available, we also create the executable for
-    # # the slave processes.
-    # if ctx.env['PARALLELISM']:
-    #     slave = ['parallelism/parallelism_constants.F90',
-    #         'parallelism/parallelism_auxiliary.F90',
-    #         'parallelism/parallelism_slave.f90']
-    #
-    #     ctx(features=['fc', 'fcprogram'], source=slave,
-    #          target='resfort_slave', fcflags=flags)
+    ctx(features=['fc', 'fcprogram'], source=src, target='resfort',
+        fcflags=flags)
+
+    # If parallel computing is available, we also create the executable for
+    # the slave processes.
+    if ctx.env['PARALLELISM']:
+
+        ctx.add_group()
+
+        slave = ['parallelism/parallelism_constants.F90',
+            'parallelism/parallelism_auxiliary.F90',
+            'parallelism/parallelism_slave.f90']
+
+        ctx(features=['fc', 'fcprogram'], source=slave,
+             target='resfort_slave', fcflags=flags)

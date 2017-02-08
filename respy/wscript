@@ -146,6 +146,7 @@ def configure(ctx):
     # Enable shared libraries
     ctx.env.append_unique('LIB', ['lapack'])
 
+
 def build(ctx):
 
     ctx.add_pre_fun(pre)

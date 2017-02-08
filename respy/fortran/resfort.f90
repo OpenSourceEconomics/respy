@@ -88,7 +88,7 @@ PROGRAM resfort_scalar
 
         CALL MPI_INIT(ierr)
 
-        CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_parallel_slave', MPI_ARGV_NULL, num_slaves, MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
+        CALL MPI_COMM_SPAWN(TRIM(exec_dir) // '/resfort_slave', MPI_ARGV_NULL, num_slaves, MPI_INFO_NULL, 0, MPI_COMM_WORLD, SLAVECOMM, MPI_ERRCODES_IGNORE, ierr)
 
         IF (request == 'estimate') THEN
 
