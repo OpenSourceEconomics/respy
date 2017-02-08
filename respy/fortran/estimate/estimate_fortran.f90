@@ -134,6 +134,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
     REAL(our_dble)                  :: x_optim_all_unscaled(27)
     REAL(our_dble)                  :: contribs(num_obs)
     REAL(our_dble)                  :: start
+
     INTEGER(our_int)                :: dist_optim_paras_info
 
     ! This mock object is required as we cannot simply pass in '' as it turns out.

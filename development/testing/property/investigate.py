@@ -34,7 +34,7 @@ else:
 #MODULE test_parallelism METHOD test_1 SEED: 24029
 ''' Error Reproduction'''
 cleanup_testing_infrastructure(True)
-seed =1223
+seed =14402
 #39083
 #693
 #13681
@@ -45,10 +45,10 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_versions', 'test_1'
+module, method = 'test_versions', 'test_3'
 count = 0
 #os.system('git clean -d -f')
-for i in range(1):
+for i in range(10):
 
 #    seed = 47092
     #seed = i + 109874564
@@ -56,8 +56,8 @@ for i in range(1):
     np.random.seed(seed)
     print("seed ", seed)
 
-    #module, method = get_random_request(test_dict)
-    #method = 'test_' + str(np.random.choice(range(1, 11)))
+#    module, method = get_random_request(test_dict)
+#    method = 'test_' + str(np.random.choice(range(1, 11)))
 
     mod = importlib.import_module(module)
     test = getattr(mod.TestClass(), method)
@@ -66,4 +66,4 @@ for i in range(1):
     #count = count +1
     #print('completed ', count)
 
-#    os.system('git clean -d -f')
+    os.system('git clean -d -f')
