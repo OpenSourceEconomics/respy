@@ -52,11 +52,12 @@ PROGRAM resfort_scalar
 
     CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
-    ! This is a temporary fix that aligns the numerical results between the parallel and scalar implementations of the model. Otherwise small numerical differences may arise (if ambiguity is present) as LOG and EXP operations are done in the parallel implementation before any solution or estimation efforts. Due to the two lines below, this is also the case in the scalar impelementation now.
-    CALL get_free_optim_paras(x_tmp, optim_paras, all_free)
-    CALL dist_optim_paras(optim_paras, x_tmp)
-
+    ! We now distinguish between the scalar and parallel execution.
     IF (num_procs == 1) THEN
+
+        ! This is a temporary fix that aligns the numerical results between the parallel and scalar implementations of the model. Otherwise small numerical differences may arise (if ambiguity is present) as LOG and EXP operations are done in the parallel implementation before any solution or estimation efforts. Due to the two lines below, this is also the case in the scalar impelementation now.
+        CALL get_free_optim_paras(x_tmp, optim_paras, all_free)
+        CALL dist_optim_paras(optim_paras, x_tmp)
 
         CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
