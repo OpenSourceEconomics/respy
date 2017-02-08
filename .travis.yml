@@ -11,9 +11,7 @@ addons:
       - gfortran
       - libatlas-dev
       - libatlas-base-dev
-      - libcr-dev
-      - mpich2
-      - mpich2-doc
+      - mpich3
 
 bundler_args: --retry 3
 
@@ -21,7 +19,9 @@ install:
   - travis_retry travis_wait pip install -r requirements.txt
   - pip install codecov
   - pip install tox
+
 script:
+  - python setup.py develop
   - travis_wait tox -e py27 -v
   - travis_wait tox -e py34 -v
   - travis_wait tox -e py35 -v
