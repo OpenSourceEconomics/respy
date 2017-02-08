@@ -11,7 +11,7 @@ addons:
       - gfortran
       - libatlas-dev
       - libatlas-base-dev
-      - mpich3
+      - mpich2
 
 bundler_args: --retry 3
 
