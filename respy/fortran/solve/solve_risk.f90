@@ -25,7 +25,7 @@ SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: emax
+    REAL(our_dble), INTENT(OUT)     		:: emax
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 

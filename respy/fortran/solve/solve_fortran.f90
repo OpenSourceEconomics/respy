@@ -23,11 +23,11 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
-
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
 
     INTEGER(our_int), INTENT(IN)                    :: num_points_interp
     INTEGER(our_int), INTENT(IN)                    :: num_draws_emax

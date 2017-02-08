@@ -155,9 +155,9 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_rewards_systematic(: ,:, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(: ,:, :)
 
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
 
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
@@ -238,8 +238,10 @@ END SUBROUTINE
 SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim, is_write)
 
     !/* external objects        */
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)        :: optim_paras
+
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_emax(:, :)
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)        :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
@@ -519,8 +521,9 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
 
     !/* external objects        */
 
+    REAL(our_dble), INTENT(OUT)         	:: endogenous(num_states)
+
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
-    REAL(our_dble), INTENT(OUT)         :: endogenous(num_states)
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)

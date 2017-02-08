@@ -199,13 +199,13 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, optim_paras, paras
 
     !/* external objects    */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
-
     REAL(our_dble), INTENT(OUT)     :: crit_val
 
     CHARACTER(150), INTENT(OUT)     :: message
 
     LOGICAL, INTENT(OUT)            :: success
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: precond_minimum
 
@@ -416,14 +416,14 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
-
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
 
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
@@ -473,7 +473,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
 
     !/* external objects        */
 
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)       :: periods_emax(:, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
 

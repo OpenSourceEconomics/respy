@@ -33,9 +33,9 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, paras_fixed, o
 
     !/* external objects    */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN) :: optim_paras
-
     REAL(our_dble), INTENT(OUT)     :: crit_val
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN) :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: precond_minimum
 
@@ -130,7 +130,6 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     !/* internal objects    */
 
-    TYPE(OPTIMIZATION_PARAMETERS)   :: optim_paras
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
     REAL(our_dble)                  :: x_optim_all_unscaled(27)
     REAL(our_dble)                  :: contribs(num_obs)

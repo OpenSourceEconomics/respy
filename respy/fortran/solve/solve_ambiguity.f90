@@ -27,13 +27,13 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
 
     !/* external objects        */
 
+    REAL(our_dble), INTENT(OUT)     		:: x_shift(2)
+
+    CHARACTER(100), INTENT(OUT)     		:: message
+
+    LOGICAL, INTENT(OUT)            		:: is_success
+
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
-
-    REAL(our_dble), INTENT(OUT)     :: x_shift(2)
-
-    CHARACTER(100), INTENT(OUT)     :: message
-
-    LOGICAL, INTENT(OUT)            :: is_success
 
     REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
@@ -155,8 +155,10 @@ END SUBROUTINE
 SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, measure, optim_paras, optimizer_options, file_sim, is_write)
 
     !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)     		:: emax
+
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
-    REAL(our_dble), INTENT(OUT)     :: emax
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -272,7 +274,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
 
     !/* external objects        */
 
-    REAL(our_dble)                  :: criterion_ambiguity_derivative(2)
+    REAL(our_dble)                  		:: criterion_ambiguity_derivative(2)
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
@@ -331,9 +333,9 @@ FUNCTION constraint_ambiguity_derivative(x, shocks_cov, optim_paras, eps_der_app
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
-
     REAL(our_dble)                      :: constraint_ambiguity_derivative(2)
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)          :: eps_der_approx
@@ -460,9 +462,10 @@ END FUNCTION
 FUNCTION constraint_ambiguity(x, shocks_cov, optim_paras)
 
     !/* external objects        */
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
 
-    REAL(our_dble)                      :: constraint_ambiguity
+    REAL(our_dble)                      		:: constraint_ambiguity
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       	:: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)          :: x(2)

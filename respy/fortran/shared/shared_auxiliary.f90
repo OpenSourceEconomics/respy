@@ -127,9 +127,10 @@ END SUBROUTINE
 SUBROUTINE transform_disturbances(draws_transformed, draws, optim_paras, num_draws)
 
     !/* external objects        */
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
-    REAL(our_dble), INTENT(OUT)     :: draws_transformed(num_draws, 4)
+    REAL(our_dble), INTENT(OUT)     		:: draws_transformed(num_draws, 4)
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: draws(num_draws, 4)
 
@@ -160,7 +161,7 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: total_values(4)
+    REAL(our_dble), INTENT(OUT)     		:: total_values(4)
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
