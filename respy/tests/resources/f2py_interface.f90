@@ -367,6 +367,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
+    optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%level = level
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
