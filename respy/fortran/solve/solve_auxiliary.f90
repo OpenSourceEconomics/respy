@@ -521,7 +521,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)         	:: endogenous(num_states)
+    REAL(our_dble), INTENT(OUT)                 :: endogenous(num_states)
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 

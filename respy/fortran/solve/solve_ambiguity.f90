@@ -27,11 +27,11 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     		:: x_shift(2)
+    REAL(our_dble), INTENT(OUT)                 :: x_shift(2)
 
-    CHARACTER(100), INTENT(OUT)     		:: message
+    CHARACTER(100), INTENT(OUT)                 :: message
 
-    LOGICAL, INTENT(OUT)            		:: is_success
+    LOGICAL, INTENT(OUT)                        :: is_success
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
@@ -156,7 +156,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     		:: emax
+    REAL(our_dble), INTENT(OUT)                 :: emax
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
@@ -274,7 +274,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
 
     !/* external objects        */
 
-    REAL(our_dble)                  		:: criterion_ambiguity_derivative(2)
+    REAL(our_dble)                              :: criterion_ambiguity_derivative(2)
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
@@ -463,9 +463,9 @@ FUNCTION constraint_ambiguity(x, shocks_cov, optim_paras)
 
     !/* external objects        */
 
-    REAL(our_dble)                      		:: constraint_ambiguity
+    REAL(our_dble)                              :: constraint_ambiguity
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       	:: optim_paras
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)          :: x(2)
