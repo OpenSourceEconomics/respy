@@ -23,7 +23,7 @@ def build(ctx):
 
     # TODO: When revising the build process, it want to explore ways to
     # impose the check for ZeroDivision Errors in all modules besides the SLSQP.
-    flags = ctx.env.FCFLAGS + [' -fPIC']
+    flags = ctx.env.FCFLAGS + ['-fPIC']
     ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)
 
     ctx.add_group()
@@ -36,12 +36,12 @@ def build(ctx):
     ctx(features=['fc', 'fcprogram'], source='resfort.f90',
         target='resfort', fcflags=flags)
 
-    # If parallel computing is available, we also create the executable for
-    # the slave processes.
-    if ctx.env['PARALLELISM']:
-        slave = ['parallelism/parallelism_constants.F90',
-            'parallelism/parallelism_auxiliary.F90',
-            'parallelism/parallelism_slave.f90']
-
-        ctx(features=['fc', 'fcprogram'], source=slave,
-             target='resfort_slave', fcflags=flags)
+    # # If parallel computing is available, we also create the executable for
+    # # the slave processes.
+    # if ctx.env['PARALLELISM']:
+    #     slave = ['parallelism/parallelism_constants.F90',
+    #         'parallelism/parallelism_auxiliary.F90',
+    #         'parallelism/parallelism_slave.f90']
+    #
+    #     ctx(features=['fc', 'fcprogram'], source=slave,
+    #          target='resfort_slave', fcflags=flags)
