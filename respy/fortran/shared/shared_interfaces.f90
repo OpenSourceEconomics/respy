@@ -12,7 +12,7 @@ MODULE shared_interfaces
 
             USE shared_constants
 
-            !/* dummy arguments     *
+            !/* dummy arguments     */
 
             REAL(our_dble), INTENT(IN)      :: x(:)
             REAL(our_dble)                  :: interface_func
@@ -25,7 +25,7 @@ MODULE shared_interfaces
 
             USE shared_constants
 
-            !/* dummy arguments     *
+            !/* dummy arguments     */
 
             REAL(our_dble), INTENT(IN)      :: x(:)
             REAL(our_dble)                  :: interface_dfunc(SIZE(x))
@@ -178,7 +178,6 @@ MODULE shared_interfaces
           END FUNCTION
 
     END INTERFACE
-
 !******************************************************************************
 !******************************************************************************
 END MODULE

@@ -38,7 +38,7 @@ def build(ctx):
 
     # Compile the required executables.
     src = ['resfort.f90']
-    flags = ctx.env.FCFLAGS + ['-cpp']
+    flags = ctx.env.FCFLAGS 
     if ctx.env['PARALLELISM']:
         flags += ['-DMPI_AVAILABLE']
 
