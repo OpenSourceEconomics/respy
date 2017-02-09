@@ -23,7 +23,7 @@ install:
   - travis_retry travis_wait pip install -r requirements.txt
   - pip install codecov
   - pip install tox
-  - pip install --ugprade pip
+  - pip install --upgrade pip
 
 script:
   - python setup.py develop
