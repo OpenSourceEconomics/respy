@@ -17,8 +17,8 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
 
     # Calculate all systematic rewards
     periods_rewards_systematic = pyth_calculate_rewards_systematic(num_periods,
-        states_number_period, states_all, edu_start, model_paras,
-        max_states_period)
+        states_number_period, states_all, edu_start, max_states_period,
+        model_paras)
 
     periods_emax = pyth_backward_induction(num_periods, is_myopic,
         max_states_period, periods_draws_emax, num_draws_emax,
@@ -27,9 +27,8 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
         num_points_interp, measure, model_paras, optimizer_options, '', False)
 
     contribs = pyth_contributions(periods_rewards_systematic, mapping_state_idx,
-        periods_emax, states_all, model_paras, data_array,
-        periods_draws_prob, delta, tau, edu_start, edu_max, num_periods,
-        num_draws_prob)
+        periods_emax, states_all, data_array, periods_draws_prob, delta, tau,
+        edu_start, edu_max, num_periods, num_draws_prob, model_paras)
 
     crit_val = get_log_likl(contribs)
 

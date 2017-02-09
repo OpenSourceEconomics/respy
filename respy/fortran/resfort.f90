@@ -75,7 +75,7 @@ PROGRAM resfort_scalar
 
             CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-            CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, optim_paras, edu_start, edu_max, seed_sim, file_sim)
+            CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_start, edu_max, seed_sim, file_sim, optim_paras)
 
         END IF
 
@@ -97,7 +97,7 @@ PROGRAM resfort_scalar
 
             CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-            CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, optim_paras, edu_start, edu_max, seed_sim, file_sim)
+            CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_start, edu_max, seed_sim, file_sim, optim_paras)
 
         END IF
 

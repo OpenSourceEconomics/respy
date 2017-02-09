@@ -4,10 +4,9 @@ from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.record.record_solution import record_solution_progress
 
 
-def pyth_solve(model_paras, is_interpolated, num_points_interp,
-        num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max,
-        min_idx, delta, periods_draws_emax, measure, file_sim,
-        optimizer_options):
+def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
+        is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
+        periods_draws_emax, measure, model_paras, file_sim, optimizer_options):
     """ Solving the model using pure PYTHON code.
     """
     # Creating the state space of the model and collect the results in the
@@ -30,8 +29,8 @@ def pyth_solve(model_paras, is_interpolated, num_points_interp,
 
     # Calculate all systematic rewards
     periods_rewards_systematic = pyth_calculate_rewards_systematic(num_periods,
-        states_number_period, states_all, edu_start, model_paras,
-        max_states_period)
+        states_number_period, states_all, edu_start, max_states_period,
+        model_paras)
 
     record_solution_progress(-1, file_sim)
 

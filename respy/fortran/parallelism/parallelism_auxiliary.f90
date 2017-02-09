@@ -451,7 +451,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, optim_paras, max_states_period)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
 
     ALLOCATE(periods_emax(num_periods, max_states_period))

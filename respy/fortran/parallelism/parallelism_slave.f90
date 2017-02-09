@@ -100,7 +100,7 @@ PROGRAM resfort_parallel_slave
 
             IF (rank == zero_int) CALL record_solution(2, file_sim)
 
-            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, optim_paras, max_states_period)
+            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
             IF (rank == zero_int) CALL record_solution(-1, file_sim)
 
@@ -139,13 +139,13 @@ PROGRAM resfort_parallel_slave
 
             END IF
 
-            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, optim_paras, max_states_period)
+            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
             opt_ambi_info = zero_int
             CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, optim_paras, optimizer_options, file_sim, num_states_slaves, .False.)
             opt_ambi_info_slaves(:, rank + 1) = opt_ambi_info
 
-            CALL fort_contributions(contribs(lower_bound:upper_bound), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, optim_paras, data_slave, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob)
+            CALL fort_contributions(contribs(lower_bound:upper_bound), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
 
             CALL MPI_GATHERV(contribs(lower_bound:upper_bound), num_obs_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 

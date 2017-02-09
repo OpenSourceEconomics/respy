@@ -282,13 +282,13 @@ class TestClass(object):
         states_all = states_all[:, :max(states_number_period), :]
 
         # Check calculation of systematic components of rewards.
-        args = (num_periods, states_number_period, states_all, edu_start,
-            model_paras, max_states_period)
-        pyth = pyth_calculate_rewards_systematic(*args)
+        args = ()
+        args += (num_periods, states_number_period, states_all, edu_start)
+        args += (max_states_period, )
 
-        args = (num_periods, states_number_period, states_all, edu_start,
-            coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period)
+        pyth = pyth_calculate_rewards_systematic(*args + (model_paras, ))
 
+        args = args + (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         f2py = fort_debug.f2py_calculate_rewards_systematic(*args)
         np.testing.assert_allclose(pyth, f2py)
 
@@ -300,17 +300,19 @@ class TestClass(object):
         periods_rewards_systematic = pyth
 
         # Check backward induction procedure.
-        args = (num_periods, False, max_states_period, periods_draws_emax,
+        base_args = (num_periods, False, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_rewards_systematic,
             edu_max, edu_start, mapping_state_idx, states_all, delta,
-            is_debug, is_interpolated, num_points_interp, )
+            is_debug, is_interpolated, num_points_interp, measure)
 
-        pyth = pyth_backward_induction(*args + (measure, model_paras,
-            optimizer_options, file_sim, False))
-        f2py = fort_debug.f2py_backward_induction(*args + (
-            shocks_cholesky, measure, level,
-            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim,
-            False))
+        args = ()
+        args += base_args + (model_paras, optimizer_options, file_sim, False)
+        pyth = pyth_backward_induction(*args)
+
+        args = ()
+        args += base_args + (shocks_cholesky, level, fort_slsqp_maxiter)
+        args += (fort_slsqp_ftol, fort_slsqp_eps, file_sim, False)
+        f2py = fort_debug.f2py_backward_induction(*args)
         np.testing.assert_allclose(pyth, f2py)
 
     def test_5(self, flag_ambiguity=False):
@@ -334,9 +336,8 @@ class TestClass(object):
         num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
             is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
             num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
-            measure, num_agents_est, states_number_period, \
-            optimizer_options, file_sim = dist_class_attributes(
-            respy_obj,
+            measure, num_agents_est, states_number_period, optimizer_options, \
+            file_sim = dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start',
                 'edu_max', 'min_idx', 'model_paras', 'num_draws_emax',
                 'is_debug', 'delta', 'is_interpolated', 'num_points_interp',
@@ -366,20 +367,21 @@ class TestClass(object):
         periods_draws_sims = read_draws(num_periods, num_agents_sim)
 
         # Check the full solution procedure
-        base_args = (model_paras, is_interpolated, num_points_interp,
-            num_draws_emax, num_periods, is_myopic, edu_start, is_debug,
-            edu_max, min_idx, delta, periods_draws_emax, measure)
+        base_args = (is_interpolated, num_points_interp, num_draws_emax,
+            num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx,
+            delta, periods_draws_emax, measure)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
-        py = pyth_solve(*base_args + (file_sim, optimizer_options, ))
 
-        args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_points_interp, num_draws_emax,
-        num_periods, is_myopic, edu_start, is_debug,
-        edu_max, min_idx, delta, periods_draws_emax,
-        measure, level, max_states_period,
-        file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+        args = ()
+        args += base_args + (model_paras, file_sim, optimizer_options)
+        py = pyth_solve(*args)
 
+        args = ()
+        args += base_args + (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+        args += (shocks_cholesky, level, file_sim)
+        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+        args += (max_states_period, )
         f2py = fort_debug.f2py_solve(*args)
 
         for alt in [f2py, fort]:
@@ -390,15 +392,16 @@ class TestClass(object):
         periods_rewards_systematic, _, mapping_state_idx, periods_emax, \
             states_all = py
 
-        args = (periods_rewards_systematic, mapping_state_idx, periods_emax,
-            states_all, model_paras, num_periods, edu_start, edu_max,
-            delta, num_agents_sim, periods_draws_sims, seed_sim, file_sim)
+        base_args = (periods_rewards_systematic, mapping_state_idx,
+            periods_emax, states_all, num_periods, edu_start, edu_max, delta,
+            num_agents_sim, periods_draws_sims, seed_sim, file_sim)
+
+        args = ()
+        args += base_args + (model_paras, )
         py = pyth_simulate(*args)
 
-        args = (periods_rewards_systematic, mapping_state_idx, periods_emax,
-            states_all, shocks_cholesky, num_periods,
-                edu_start, edu_max,
-            delta, num_agents_sim, periods_draws_sims, seed_sim, file_sim)
+        args = ()
+        args += base_args + (shocks_cholesky, )
         f2py = fort_debug.f2py_simulate(*args)
         np.testing.assert_allclose(py, f2py)
 
@@ -406,33 +409,40 @@ class TestClass(object):
         # estimation sample.
         data_array = py[:num_agents_est * num_periods, :]
 
-        args = (periods_rewards_systematic, mapping_state_idx,
-            periods_emax, states_all, model_paras, data_array,
+        base_args = (periods_rewards_systematic, mapping_state_idx,
+            periods_emax, states_all, data_array,
             periods_draws_prob, delta, tau, edu_start, edu_max,
             num_periods, num_draws_prob)
 
+        args = ()
+        args += base_args + (model_paras, )
         py = pyth_contributions(*args)
 
-        args = (periods_rewards_systematic, mapping_state_idx,
-            periods_emax, states_all, shocks_cholesky,
-            data_array, periods_draws_prob, delta, tau, edu_start, edu_max,
-            num_periods, num_draws_prob)
-        f2py = fort_debug.f2py_contributions(*args + (num_agents_est, ))
+        args = ()
+        args += base_args + (shocks_cholesky, num_agents_est)
+        f2py = fort_debug.f2py_contributions(*args)
+
         np.testing.assert_allclose(py, f2py)
 
         # Evaluation of criterion function
         x0 = get_optim_paras(model_paras, 'all', paras_fixed, is_debug)
 
-        args = (is_interpolated, num_draws_emax, num_periods,
+        base_args = (is_interpolated, num_draws_emax, num_periods,
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
             delta, data_array, num_draws_prob, tau,
             periods_draws_emax, periods_draws_prob, states_all,
             states_number_period, mapping_state_idx, max_states_period,
             measure)
 
-        py = pyth_criterion(x0, *args + (optimizer_options,))
-        f2py = fort_debug.f2py_criterion(x0, *args + (
-            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
+        args = ()
+        args += base_args + (optimizer_options, )
+        py = pyth_criterion(x0, *args)
+
+        args = ()
+        args += base_args + (fort_slsqp_maxiter, fort_slsqp_ftol)
+        args += (fort_slsqp_eps, )
+        f2py = fort_debug.f2py_criterion(x0, *args)
+
         np.testing.assert_allclose(py, f2py)
 
     def test_6(self, flag_ambiguity=False):
@@ -507,34 +517,33 @@ class TestClass(object):
 
         # Construct endogenous variable so that the prediction model can be
         # fitted.
-        args = (period, num_periods, num_states, delta,
+        base_args = (period, num_periods, num_states, delta,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
             num_draws_emax, maxe, draws_emax, shocks_cov,
-                measure, model_paras)
+                measure)
 
-        py = get_endogenous_variable(*args + (optimizer_options, file_sim,
-                                              False))
+        args = ()
+        args += base_args + (model_paras, optimizer_options, file_sim, False)
+        py = get_endogenous_variable(*args)
 
-        args = (period, num_periods, num_states, delta,
-            periods_rewards_systematic, edu_max, edu_start,
-            mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax, shocks_cov,
-                measure, level)
-
-        f90 = fort_debug.wrapper_get_endogenous_variable(*args +
-                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps,
-                 file_sim, False))
+        args = ()
+        args += base_args + (level, fort_slsqp_maxiter, fort_slsqp_ftol)
+        args += (fort_slsqp_eps, file_sim, False)
+        f90 = fort_debug.wrapper_get_endogenous_variable(*args)
 
         np.testing.assert_equal(py, replace_missing_values(f90))
 
         # Distribute validated results for further functions.
+        base_args = (py, exogenous, maxe, is_simulated)
 
-        args = (py, exogenous, maxe, is_simulated)
+        args = ()
+        args += base_args + (file_sim, False)
+        py = get_predictions(*args)
 
-        py = get_predictions(*args + (file_sim, False,))
-        f90 = fort_debug.wrapper_get_predictions(*args + (num_points_interp,
-            num_states, file_sim, False))
+        args = ()
+        args += base_args + (num_points_interp, num_states, file_sim, False)
+        f90 = fort_debug.wrapper_get_predictions(*args)
 
         np.testing.assert_array_almost_equal(py, f90)
 

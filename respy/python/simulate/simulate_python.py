@@ -9,8 +9,8 @@ from respy.python.shared.shared_auxiliary import get_total_values
 
 
 def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
-        states_all, model_paras, num_periods, edu_start, edu_max, delta,
-        num_agents_sim, periods_draws_sims, seed_sim, file_sim):
+        states_all, num_periods, edu_start, edu_max, delta, num_agents_sim,
+        periods_draws_sims, seed_sim, file_sim, model_paras):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
 

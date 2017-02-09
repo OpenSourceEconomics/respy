@@ -107,7 +107,7 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
 
 
 def pyth_calculate_rewards_systematic(num_periods, states_number_period,
-        states_all, edu_start, model_paras, max_states_period):
+        states_all, edu_start, max_states_period, model_paras):
     """ Calculate ex systematic rewards.
     """
 

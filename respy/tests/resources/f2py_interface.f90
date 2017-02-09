@@ -39,8 +39,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
-    DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
+    DOUBLE PRECISION, INTENT(IN)    :: delta
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic_int
@@ -51,12 +51,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     !/* internal objects            */
 
     DOUBLE PRECISION                :: contribs(SIZE(data_est_int, 1))
-    DOUBLE PRECISION                :: shocks_cholesky(4, 4)
-    DOUBLE PRECISION                :: coeffs_home(1)
-    DOUBLE PRECISION                :: coeffs_edu(3)
-    DOUBLE PRECISION                :: coeffs_a(6)
-    DOUBLE PRECISION                :: coeffs_b(6)
-    DOUBLE PRECISION                :: level(1)
 
     INTEGER                         :: dist_optim_paras_info
 
@@ -83,29 +77,21 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
-    optim_paras%shocks_cholesky = shocks_cholesky
-    optim_paras%coeffs_home = coeffs_home
-    optim_paras%coeffs_edu = coeffs_edu
-    optim_paras%coeffs_a = coeffs_a
-    optim_paras%coeffs_b = coeffs_b
-    optim_paras%level = level
-    optim_paras%delta = delta
-
     !# Distribute model parameters
     CALL dist_optim_paras(optim_paras, x, dist_optim_paras_info)
 
-     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, optim_paras, max_states_period_int)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, optim_paras)
 
     CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, measure_int, optim_paras, optimizer_options, file_sim_mock, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, optim_paras, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, optim_paras)
 
     crit_val = get_log_likl(contribs)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, data_est_int, periods_draws_prob_int, delta, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, num_agents_est_int)
+SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, delta, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, shocks_cholesky, num_agents_est_int)
 
     !/* external libraries      */
 
@@ -146,7 +132,6 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
 
     ! Transfer global RESFORT variables
     periods_rewards_systematic = periods_rewards_systematic_int
-
     num_agents_est = num_agents_est_int
     num_draws_prob = num_draws_prob_int
     num_periods = num_periods_int
@@ -156,12 +141,12 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
     optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%delta = delta
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax_int, states_all_int, optim_paras, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, optim_paras)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta, periods_draws_emax_int, measure_int, level, max_states_period_int, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta, periods_draws_emax_int, measure_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int)
 
     ! The presence of max_states_period breaks the quality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -254,7 +239,7 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, shocks_cholesky, num_periods_int, edu_start_int, edu_max_int, delta, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim)
+SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_periods_int, edu_start_int, edu_max_int, delta, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim, shocks_cholesky)
 
     !/* external libraries      */
 
@@ -306,7 +291,7 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
     optim_paras%delta = delta
 
     ! Call function of interest
-    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, optim_paras, edu_start_int, edu_max_int, seed_sim, file_sim)
+    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, edu_start_int, edu_max_int, seed_sim, file_sim, optim_paras)
 
     ! Assign to initial objects for return to PYTHON
     data_sim_int = data_sim
@@ -314,7 +299,7 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta, is_debug_int, is_interpolated_int, num_points_interp_int, shocks_cholesky, measure_int, level, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
+SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, delta, is_debug_int, is_interpolated_int, num_points_interp_int, measure_int, shocks_cholesky, level, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
 
     !/* external libraries      */
 
@@ -438,7 +423,7 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num_periods_int, states_number_period_int, states_all_int, edu_start_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, max_states_period_int)
+SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num_periods_int, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
 
     !/* external libraries      */
 
@@ -481,7 +466,7 @@ SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num
     IF(ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
 
     ! Call function of interest
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, optim_paras, max_states_period_int)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, optim_paras)
 
     periods_rewards_systematic_int = periods_rewards_systematic
 

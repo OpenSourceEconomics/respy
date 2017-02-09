@@ -211,18 +211,18 @@ def respy_interface(respy_obj, request, data_array=None):
         # Collect arguments to pass in different implementations of the
         # simulation.
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
-            periods_emax, states_all = pyth_solve(model_paras, is_interpolated,
+            periods_emax, states_all = pyth_solve(is_interpolated,
             num_points_interp, num_draws_emax, num_periods, is_myopic,
             edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax,
-            measure, file_sim, optimizer_options)
+            measure, model_paras, file_sim, optimizer_options)
 
         solution = (periods_rewards_systematic, states_number_period,
             mapping_state_idx, periods_emax, states_all)
 
         data_array = pyth_simulate(periods_rewards_systematic,
-            mapping_state_idx, periods_emax, states_all, model_paras,
-            num_periods, edu_start, edu_max, delta, num_agents_sim,
-            periods_draws_sims, seed_sim, file_sim)
+            mapping_state_idx, periods_emax, states_all, num_periods, edu_start,
+            edu_max, delta, num_agents_sim, periods_draws_sims, seed_sim,
+            file_sim, model_paras)
 
         args = (solution, data_array)
 
