@@ -3,6 +3,7 @@
 #   1) For some reason tox fails for py34. We should revisit this each time we work on upgrades to this script.
 #
 
+dist: trusty
 language: python
 python:
   - 2.7
@@ -16,9 +17,7 @@ addons:
       - gfortran
       - libatlas-dev
       - libatlas-base-dev
-      - libcr-dev
-      - mpich2
-      - mpich2-doc
+      - mpich
 
 bundler_args: --retry 3
 
@@ -30,6 +29,7 @@ install:
 script:
   - python setup.py develop
   - travis_wait tox -e py27 -v
+  - travis_wait tox -e py34 -v
   - travis_wait tox -e py35 -v
   - travis_wait tox -e py36 -v
   - python tools/travis/run.py
