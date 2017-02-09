@@ -27,4 +27,4 @@ after_success:
 
 notifications:
   slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
-  email: true
+  email: false
