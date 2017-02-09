@@ -215,7 +215,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        level = respy_obj.get_attr('model_paras')['level']
+        level = respy_obj.get_attr('optim_paras')['level']
         file_sim = respy_obj.get_attr('file_sim')
         is_ambiguity = (level > MIN_AMBIGUITY)
 

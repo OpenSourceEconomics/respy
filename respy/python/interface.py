@@ -25,12 +25,12 @@ def respy_interface(respy_obj, request, data_array=None):
     """ This function provides the interface to the PYTHOn functionality.
     """
     # Distribute class attributes
-    model_paras, num_periods, edu_start, is_debug, edu_max, \
+    optim_paras, num_periods, edu_start, is_debug, edu_max, \
         delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, paras_fixed, optimizer_options, seed_sim, \
         num_agents_sim, measure, file_sim, paras_bounds, preconditioning = \
-            dist_class_attributes(respy_obj, 'model_paras', 'num_periods',
+            dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max', 'delta', 'num_draws_prob',
                 'seed_prob', 'num_draws_emax', 'seed_emax', 'min_idx',
                 'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
@@ -48,10 +48,10 @@ def respy_interface(respy_obj, request, data_array=None):
             seed_emax, is_debug)
 
         # Construct starting values
-        x_optim_free_unscaled_start = get_optim_paras(model_paras, 'free',
+        x_optim_free_unscaled_start = get_optim_paras(optim_paras, 'free',
             paras_fixed, is_debug)
 
-        x_optim_all_unscaled_start = get_optim_paras(model_paras, 'all',
+        x_optim_all_unscaled_start = get_optim_paras(optim_paras, 'all',
             paras_fixed, is_debug)
 
         # Construct the state space
@@ -214,7 +214,7 @@ def respy_interface(respy_obj, request, data_array=None):
             periods_emax, states_all = pyth_solve(is_interpolated,
             num_points_interp, num_draws_emax, num_periods, is_myopic,
             edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax,
-            measure, model_paras, file_sim, optimizer_options)
+            measure, optim_paras, file_sim, optimizer_options)
 
         solution = (periods_rewards_systematic, states_number_period,
             mapping_state_idx, periods_emax, states_all)
@@ -222,7 +222,7 @@ def respy_interface(respy_obj, request, data_array=None):
         data_array = pyth_simulate(periods_rewards_systematic,
             mapping_state_idx, periods_emax, states_all, num_periods, edu_start,
             edu_max, delta, num_agents_sim, periods_draws_sims, seed_sim,
-            file_sim, model_paras)
+            file_sim, optim_paras)
 
         args = (solution, data_array)
 

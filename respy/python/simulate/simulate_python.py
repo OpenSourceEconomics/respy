@@ -10,7 +10,7 @@ from respy.python.shared.shared_auxiliary import get_total_values
 
 def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
         states_all, num_periods, edu_start, edu_max, delta, num_agents_sim,
-        periods_draws_sims, seed_sim, file_sim, model_paras):
+        periods_draws_sims, seed_sim, file_sim, optim_paras):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
 
@@ -23,7 +23,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
 
     for period in range(num_periods):
         periods_draws_sims_transformed[period, :, :] = transform_disturbances(
-            periods_draws_sims[period, :, :], model_paras['shocks_cholesky'])
+            periods_draws_sims[period, :, :], optim_paras['shocks_cholesky'])
 
     # Simulate agent experiences
     count = 0

@@ -8,7 +8,7 @@ def write_info(respy_obj, data_frame):
     """ Write information about the simulated economy.
     """
     # Distribute class attributes
-    model_paras = respy_obj.get_attr('model_paras')
+    optim_paras = respy_obj.get_attr('optim_paras')
     file_sim = respy_obj.get_attr('file_sim')
     seed_sim = respy_obj.get_attr('seed_sim')
 
@@ -97,7 +97,7 @@ def write_info(respy_obj, data_frame):
         file_.write('\n\n   Economic Parameters\n\n')
         fmt_ = '\n   {0:>10}' + '    {1:>25}\n\n'
         file_.write(fmt_.format(*['Identifier', 'Value']))
-        vector = get_estimation_vector(model_paras, True)
+        vector = get_estimation_vector(optim_paras, True)
         fmt_ = '   {:>10}' + '    {:25.5f}\n'
         for i, stat in enumerate(vector):
             file_.write(fmt_.format(*[i, stat]))
@@ -137,20 +137,20 @@ def format_integer(x):
         return '{0:<5}'.format(int(x))
 
 
-def get_estimation_vector(model_paras, is_debug):
+def get_estimation_vector(optim_paras, is_debug):
     """ Construct the vector estimation arguments.
     """
     # Collect parameters
     vector = list()
-    vector += model_paras['level'].tolist()
-    vector += model_paras['coeffs_a'].tolist()
-    vector += model_paras['coeffs_b'].tolist()
-    vector += model_paras['coeffs_edu'].tolist()
-    vector += model_paras['coeffs_home'].tolist()
-    vector += model_paras['shocks_cholesky'][0, :1].tolist()
-    vector += model_paras['shocks_cholesky'][1, :2].tolist()
-    vector += model_paras['shocks_cholesky'][2, :3].tolist()
-    vector += model_paras['shocks_cholesky'][3, :4].tolist()
+    vector += optim_paras['level'].tolist()
+    vector += optim_paras['coeffs_a'].tolist()
+    vector += optim_paras['coeffs_b'].tolist()
+    vector += optim_paras['coeffs_edu'].tolist()
+    vector += optim_paras['coeffs_home'].tolist()
+    vector += optim_paras['shocks_cholesky'][0, :1].tolist()
+    vector += optim_paras['shocks_cholesky'][1, :2].tolist()
+    vector += optim_paras['shocks_cholesky'][2, :3].tolist()
+    vector += optim_paras['shocks_cholesky'][3, :4].tolist()
 
     # Type conversion
     vector = np.array(vector)

@@ -13,7 +13,7 @@ from codes.auxiliary import simulate_observed
 from respy import RespyCls
 
 
-def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
+def transform_respy_to_restud(optim_paras, edu_start, edu_max, num_agents_sim,
         num_periods, num_draws_emax, delta):
     """ Transform a RESPY initialization file to a RESTUD file.
     """
@@ -30,7 +30,7 @@ def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
             -99.0, 500.0))
 
         # Write out coefficients for the two occupations.
-        coeffs_a, coeffs_b = model_paras['coeffs_a'], model_paras['coeffs_b']
+        coeffs_a, coeffs_b = optim_paras['coeffs_a'], optim_paras['coeffs_b']
         for coeffs in [coeffs_a, coeffs_b]:
             line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}  {4:10.6f}' \
                     ' {5:10.6f}\n'.format(*coeffs)
@@ -39,8 +39,8 @@ def transform_respy_to_restud(model_paras, edu_start, edu_max, num_agents_sim,
         # Write out coefficients for education and home rewards as well as
         # the discount factor. The intercept is scaled. This is later undone
         # again in the original FORTRAN code.
-        coeffs_edu = model_paras['coeffs_edu']
-        coeffs_home = model_paras['coeffs_home']
+        coeffs_edu = optim_paras['coeffs_edu']
+        coeffs_home = optim_paras['coeffs_home']
 
         edu_int = coeffs_edu[0] / 1000
         edu_coeffs = [edu_int]
@@ -102,12 +102,12 @@ class TestClass(object):
         # This flag aligns the random components between the RESTUD program and
         # RESPY package. The existence of the file leads to the RESTUD program
         # to write out the random components.
-        model_paras, edu_start, edu_max, num_agents_sim, num_periods, \
+        optim_paras, edu_start, edu_max, num_agents_sim, num_periods, \
             num_draws_emax, delta = dist_class_attributes(respy_obj,
-                'model_paras', 'edu_start', 'edu_max', 'num_agents_sim',
+                'optim_paras', 'edu_start', 'edu_max', 'num_agents_sim',
                 'num_periods', 'num_draws_emax', 'delta')
 
-        transform_respy_to_restud(model_paras, edu_start, edu_max,
+        transform_respy_to_restud(optim_paras, edu_start, edu_max,
             num_agents_sim, num_periods, num_draws_emax, delta)
 
         # Solve model using RESTUD code.

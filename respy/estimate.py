@@ -58,13 +58,13 @@ def check_estimation(respy_obj):
     # Distribute class attributes
     optimizer_options = respy_obj.get_attr('optimizer_options')
     optimizer_used = respy_obj.get_attr('optimizer_used')
-    model_paras = respy_obj.get_attr('model_paras')
+    optim_paras = respy_obj.get_attr('optim_paras')
     paras_fixed = respy_obj.get_attr('paras_fixed')
     version = respy_obj.get_attr('version')
     maxfun = respy_obj.get_attr('maxfun')
 
     # Get auxiliary objects
-    level = model_paras['level'][0]
+    level = optim_paras['level'][0]
 
     # Ensure that at least one free parameter.
     assert sum(paras_fixed) != 27

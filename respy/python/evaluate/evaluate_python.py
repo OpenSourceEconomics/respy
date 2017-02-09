@@ -9,16 +9,16 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
         periods_emax, states_all, data_array, periods_draws_prob, delta, tau,
-        edu_start, edu_max, num_periods, num_draws_prob, model_paras):
+        edu_start, edu_max, num_periods, num_draws_prob, optim_paras):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.
     If a single agent violates the implications, then the zero is returned.
     """
     # Construct auxiliary object
-    shocks_cov = np.matmul(model_paras['shocks_cholesky'],
-        model_paras['shocks_cholesky'].T)
-    is_deterministic = (np.count_nonzero(model_paras['shocks_cholesky']) == 0)
+    shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
+        optim_paras['shocks_cholesky'].T)
+    is_deterministic = (np.count_nonzero(optim_paras['shocks_cholesky']) == 0)
     num_obs = data_array.shape[0]
 
     # Initialize auxiliary objects
@@ -91,11 +91,11 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
                     prob_wage = HUGE_FLOAT
                 else:
                     if choice == 1:
-                        draws_stan[0] = dist / model_paras['shocks_cholesky'][
+                        draws_stan[0] = dist / optim_paras['shocks_cholesky'][
                             idx, idx]
                     else:
-                        draws_stan[1] = (dist - model_paras['shocks_cholesky'][idx, 0] *
-                                         draws_stan[0]) / model_paras['shocks_cholesky'][idx, idx]
+                        draws_stan[1] = (dist - optim_paras['shocks_cholesky'][idx, 0] *
+                                         draws_stan[0]) / optim_paras['shocks_cholesky'][idx, idx]
 
                     prob_wage = norm.pdf(draws_stan[idx], 0.0, 1.0) / \
                                 np.sqrt(shocks_cov[idx, idx])
@@ -107,7 +107,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
             # the conditional draws. Note, that the realization of the
             # random component of wages align withe their observed
             # counterpart in the data.
-            draws_cond = np.dot(model_paras['shocks_cholesky'], draws_stan.T).T
+            draws_cond = np.dot(optim_paras['shocks_cholesky'], draws_stan.T).T
 
             # Extract deviates from (un-)conditional normal distributions
             # and transform labor market shocks.

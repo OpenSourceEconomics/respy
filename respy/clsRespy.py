@@ -79,7 +79,7 @@ class RespyCls(object):
 
         self.attr['num_periods'] = None
 
-        self.attr['model_paras'] = None
+        self.attr['optim_paras'] = None
 
         self.attr['derivatives'] = None
 
@@ -145,7 +145,7 @@ class RespyCls(object):
 
         self.lock()
 
-    def update_model_paras(self, x_econ):
+    def update_optim_paras(self, x_econ):
         """ Update model parameters.
         """
         x_econ = copy.deepcopy(x_econ)
@@ -159,26 +159,26 @@ class RespyCls(object):
         shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
         # Distribute class attributes
-        model_paras = self.attr['model_paras']
+        optim_paras = self.attr['optim_paras']
 
         # Update model parametrization
-        model_paras['shocks_cholesky'] = shocks_cholesky
+        optim_paras['shocks_cholesky'] = shocks_cholesky
 
-        model_paras['coeffs_home'] = coeffs_home
+        optim_paras['coeffs_home'] = coeffs_home
 
-        model_paras['coeffs_edu'] = coeffs_edu
+        optim_paras['coeffs_edu'] = coeffs_edu
 
-        model_paras['coeffs_a'] = coeffs_a
+        optim_paras['coeffs_a'] = coeffs_a
 
-        model_paras['coeffs_b'] = coeffs_b
+        optim_paras['coeffs_b'] = coeffs_b
 
-        model_paras['level'] = level
+        optim_paras['level'] = level
 
         # Check integrity
-        check_model_parameters(model_paras)
+        check_model_parameters(optim_paras)
 
         # Update class attributes
-        self.attr['model_paras'] = model_paras
+        self.attr['optim_paras'] = optim_paras
 
     def lock(self):
         """ Lock class instance.
@@ -233,7 +233,7 @@ class RespyCls(object):
         # are checked after each modification. Also, the model
         # parametrization can only be changed by a special function. The
         # initialization dictionary can only be set initially.
-        invalid_attr = DERIVED_ATTR + ['model_paras', 'init_dict']
+        invalid_attr = DERIVED_ATTR + ['optim_paras', 'init_dict']
         if key in invalid_attr:
             raise AssertionError('invalid request')
 
@@ -273,7 +273,7 @@ class RespyCls(object):
         # Occupation A
         init_dict['OCCUPATION A'] = dict()
         init_dict['OCCUPATION A']['coeffs'] = \
-            self.attr['model_paras']['coeffs_a']
+            self.attr['optim_paras']['coeffs_a']
 
         init_dict['OCCUPATION A']['bounds'] = self.attr['paras_bounds'][1:7]
         init_dict['OCCUPATION A']['fixed'] = self.attr['paras_fixed'][1:7]
@@ -281,7 +281,7 @@ class RespyCls(object):
         # Occupation A
         init_dict['OCCUPATION B'] = dict()
         init_dict['OCCUPATION B']['coeffs'] = \
-            self.attr['model_paras']['coeffs_b']
+            self.attr['optim_paras']['coeffs_b']
 
         init_dict['OCCUPATION B']['bounds'] = self.attr['paras_bounds'][7:13]
         init_dict['OCCUPATION B']['fixed'] = self.attr['paras_fixed'][7:13]
@@ -289,7 +289,7 @@ class RespyCls(object):
         # Education
         init_dict['EDUCATION'] = dict()
         init_dict['EDUCATION']['coeffs'] = \
-            self.attr['model_paras']['coeffs_edu']
+            self.attr['optim_paras']['coeffs_edu']
 
         init_dict['EDUCATION']['bounds'] = self.attr['paras_bounds'][13:16]
         init_dict['EDUCATION']['fixed'] = self.attr['paras_fixed'][13:16]
@@ -300,14 +300,14 @@ class RespyCls(object):
         # Home
         init_dict['HOME'] = dict()
         init_dict['HOME']['coeffs'] = \
-            self.attr['model_paras']['coeffs_home']
+            self.attr['optim_paras']['coeffs_home']
 
         init_dict['HOME']['bounds'] = self.attr['paras_bounds'][16:17]
         init_dict['HOME']['fixed'] = self.attr['paras_fixed'][16:17]
 
         # Shocks
         init_dict['SHOCKS'] = dict()
-        shocks_cholesky = self.attr['model_paras']['shocks_cholesky']
+        shocks_cholesky = self.attr['optim_paras']['shocks_cholesky']
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
         init_dict['SHOCKS']['coeffs'] = shocks_coeffs
 
@@ -331,7 +331,7 @@ class RespyCls(object):
         # Ambiguity
         init_dict['AMBIGUITY'] = dict()
         init_dict['AMBIGUITY']['measure'] = self.attr['measure']
-        init_dict['AMBIGUITY']['coeffs'] = self.attr['model_paras']['level']
+        init_dict['AMBIGUITY']['coeffs'] = self.attr['optim_paras']['level']
         init_dict['AMBIGUITY']['bounds'] = self.attr['paras_bounds'][0:1]
         init_dict['AMBIGUITY']['fixed'] = self.attr['paras_fixed'][0:1]
 
@@ -463,7 +463,7 @@ class RespyCls(object):
         self.attr['preconditioning'][2] = init_dict['PRECONDITIONING']['eps']
 
         # Initialize model parameters
-        self.attr['model_paras'] = dict()
+        self.attr['optim_paras'] = dict()
 
         # Constructing the covariance matrix of the shocks
         shocks_coeffs = init_dict['SHOCKS']['coeffs']
@@ -481,20 +481,20 @@ class RespyCls(object):
         # As we call the Cholesky decomposition, we need to handle the
         # special case of a deterministic model.
         if np.count_nonzero(shocks_cov) == 0:
-            self.attr['model_paras']['shocks_cholesky'] = np.zeros((4, 4))
+            self.attr['optim_paras']['shocks_cholesky'] = np.zeros((4, 4))
         else:
             shocks_cholesky = np.linalg.cholesky(shocks_cov)
-            self.attr['model_paras']['shocks_cholesky'] = shocks_cholesky
+            self.attr['optim_paras']['shocks_cholesky'] = shocks_cholesky
 
-        self.attr['model_paras']['coeffs_a'] = \
+        self.attr['optim_paras']['coeffs_a'] = \
             init_dict['OCCUPATION A']['coeffs']
-        self.attr['model_paras']['coeffs_b'] = \
+        self.attr['optim_paras']['coeffs_b'] = \
             init_dict['OCCUPATION B']['coeffs']
-        self.attr['model_paras']['coeffs_edu'] = \
+        self.attr['optim_paras']['coeffs_edu'] = \
             init_dict['EDUCATION']['coeffs']
-        self.attr['model_paras']['coeffs_home'] = \
+        self.attr['optim_paras']['coeffs_home'] = \
             init_dict['HOME']['coeffs']
-        self.attr['model_paras']['level'] = \
+        self.attr['optim_paras']['level'] = \
             init_dict['AMBIGUITY']['coeffs']
 
         # Initialize information about optimization parameters
@@ -511,8 +511,8 @@ class RespyCls(object):
         keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
         keys += ['shocks_cholesky', 'level']
         for key_ in keys:
-            self.attr['model_paras'][key_] = \
-                np.array(self.attr['model_paras'][key_])
+            self.attr['optim_paras'][key_] = \
+                np.array(self.attr['optim_paras'][key_])
 
         # Aggregate all the information provided about optimizer options in
         # one class attribute for easier access later.
@@ -585,7 +585,7 @@ class RespyCls(object):
 
         num_periods = self.attr['num_periods']
 
-        model_paras = self.attr['model_paras']
+        optim_paras = self.attr['optim_paras']
 
         edu_start = self.attr['edu_start']
 
@@ -717,16 +717,16 @@ class RespyCls(object):
         assert (measure in ['abs', 'kl'])
 
         # Check model parameters
-        check_model_parameters(model_paras)
+        check_model_parameters(optim_paras)
 
         # Check that all parameter values are within the bounds.
-        x = get_optim_paras(model_paras, 'all', None, True)
+        x = get_optim_paras(optim_paras, 'all', None, True)
 
         # It is not clear at this point how to impose parameter constraints
         # on the covariance matrix in a flexible manner. So, either all fixed
         # or none. As a special case, we also allow for all off-diagonal
         # elements to be fixed to zero.
-        shocks_coeffs = model_paras['shocks_cholesky'][np.tril_indices(4)]
+        shocks_coeffs = optim_paras['shocks_cholesky'][np.tril_indices(4)]
         shocks_fixed = paras_fixed[17:]
 
         all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)

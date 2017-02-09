@@ -223,7 +223,7 @@ class TestClass(object):
 
         # We also check whether updating the class instance and a single
         # evaluation of the criterion function give the same result.
-        respy_obj.update_model_paras(base_x)
+        respy_obj.update_optim_paras(base_x)
         respy_obj.attr['maxfun'] = 0
 
         alt_x, alt_val = estimate(respy_obj)

@@ -84,14 +84,14 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
     init_dict = read(init_file)
     respy_obj = RespyCls(init_file)
 
-    model_paras = respy_obj.get_attr('model_paras')
+    optim_paras = respy_obj.get_attr('optim_paras')
 
-    x = get_optim_paras(model_paras, 'all', None, True)
+    x = get_optim_paras(optim_paras, 'all', None, True)
 
     # This transformation is necessary as internally the Cholesky
     # decomposition is used but here we operate from the perspective of the
     # initialization file, where the flattened covariance matrix is specified.
-    shocks_coeffs = cholesky_to_coeffs(model_paras['shocks_cholesky'])
+    shocks_coeffs = cholesky_to_coeffs(optim_paras['shocks_cholesky'])
 
     if action == 'value':
         for i, j in enumerate(identifiers):

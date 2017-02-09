@@ -88,32 +88,32 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     if is_debug:
         check_optimization_parameters(x_all_curre)
 
-    model_paras = dict()
+    optim_paras = dict()
 
     # Level of Ambiguity
-    model_paras['level'] = max(x_all_curre[0:1], 0.00)
+    optim_paras['level'] = max(x_all_curre[0:1], 0.00)
 
     # Occupation A
-    model_paras['coeffs_a'] = x_all_curre[1:7]
+    optim_paras['coeffs_a'] = x_all_curre[1:7]
 
     # Occupation B
-    model_paras['coeffs_b'] = x_all_curre[7:13]
+    optim_paras['coeffs_b'] = x_all_curre[7:13]
 
     # Education
-    model_paras['coeffs_edu'] = x_all_curre[13:16]
+    optim_paras['coeffs_edu'] = x_all_curre[13:16]
 
     # Home
-    model_paras['coeffs_home'] = x_all_curre[16:17]
+    optim_paras['coeffs_home'] = x_all_curre[16:17]
 
     # Cholesky
-    model_paras['shocks_cholesky'], info = get_cholesky(x_all_curre, info)
+    optim_paras['shocks_cholesky'], info = get_cholesky(x_all_curre, info)
 
     # Checks
     if is_debug:
-        assert check_model_parameters(model_paras)
+        assert check_model_parameters(optim_paras)
 
     # Finishing
-    return model_paras
+    return optim_paras
 
 
 def get_cholesky(x, info=None):
@@ -309,7 +309,7 @@ def replace_missing_values(arguments):
     return rslt
 
 
-def check_model_parameters(model_paras):
+def check_model_parameters(optim_paras):
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
@@ -318,24 +318,24 @@ def check_model_parameters(model_paras):
     keys += ['level', 'shocks_cholesky']
 
     for key in keys:
-        assert (isinstance(model_paras[key], np.ndarray))
-        assert (np.all(np.isfinite(model_paras[key])))
-        assert (model_paras[key].dtype == 'float')
-        assert (np.all(abs(model_paras[key]) < PRINT_FLOAT))
+        assert (isinstance(optim_paras[key], np.ndarray))
+        assert (np.all(np.isfinite(optim_paras[key])))
+        assert (optim_paras[key].dtype == 'float')
+        assert (np.all(abs(optim_paras[key]) < PRINT_FLOAT))
 
     # Check for level of ambiguity
-    assert (model_paras['level'] >= 0)
+    assert (optim_paras['level'] >= 0)
 
     # Checks for occupations
-    assert (model_paras['coeffs_a'].size == 6)
-    assert (model_paras['coeffs_b'].size == 6)
-    assert (model_paras['coeffs_edu'].size == 3)
-    assert (model_paras['coeffs_home'].size == 1)
+    assert (optim_paras['coeffs_a'].size == 6)
+    assert (optim_paras['coeffs_b'].size == 6)
+    assert (optim_paras['coeffs_edu'].size == 3)
+    assert (optim_paras['coeffs_home'].size == 1)
 
     # Checks shock matrix
-    assert (model_paras['shocks_cholesky'].shape == (4, 4))
-    np.allclose(model_paras['shocks_cholesky'],
-        np.tril(model_paras['shocks_cholesky']))
+    assert (optim_paras['shocks_cholesky'].shape == (4, 4))
+    np.allclose(optim_paras['shocks_cholesky'],
+        np.tril(optim_paras['shocks_cholesky']))
 
     # Finishing
     return True
@@ -678,33 +678,33 @@ def get_est_info():
     return rslt
 
 
-def get_optim_paras(model_paras, which, paras_fixed, is_debug):
+def get_optim_paras(optim_paras, which, paras_fixed, is_debug):
     """ Get optimization parameters.
     """
     # Checks
     if is_debug:
-        assert check_model_parameters(model_paras)
+        assert check_model_parameters(optim_paras)
 
     # Initialize container
     x = np.tile(np.nan, 27)
 
     # Level of Ambiguity
-    x[0:1] = model_paras['level']
+    x[0:1] = optim_paras['level']
 
     # Occupation A
-    x[1:7] = model_paras['coeffs_a']
+    x[1:7] = optim_paras['coeffs_a']
 
     # Occupation B
-    x[7:13] = model_paras['coeffs_b']
+    x[7:13] = optim_paras['coeffs_b']
 
     # Education
-    x[13:16] = model_paras['coeffs_edu']
+    x[13:16] = optim_paras['coeffs_edu']
 
     # Home
-    x[16:17] = model_paras['coeffs_home']
+    x[16:17] = optim_paras['coeffs_home']
 
     # Shocks
-    x[17:27] = model_paras['shocks_cholesky'][np.tril_indices(4)]
+    x[17:27] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Checks
     if is_debug:

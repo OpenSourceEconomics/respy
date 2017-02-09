@@ -59,24 +59,24 @@ def run_single(spec_dict, fname):
             # There is no update required, we start with the true parameters
             # from the dynamic ambiguity model.
             respy_obj.set_attr('delta', 0.00)
-            respy_obj.attr['model_paras']['level'] = np.array([0.00])
+            respy_obj.attr['optim_paras']['level'] = np.array([0.00])
             respy_obj.attr['paras_fixed'][0] = True
 
         elif request == 'Risk':
             # This is an update with the results from the static estimation.
-            respy_obj.update_model_paras(x)
+            respy_obj.update_optim_paras(x)
 
             respy_obj.set_attr('delta', 0.95)
-            respy_obj.attr['model_paras']['level'] = np.array([0.00])
+            respy_obj.attr['optim_paras']['level'] = np.array([0.00])
             respy_obj.attr['paras_fixed'][0] = True
 
         elif request == 'Ambiguity':
             # This is an update with the results from the dynamic risk
             # estimation.
-            respy_obj.update_model_paras(x)
+            respy_obj.update_optim_paras(x)
 
             respy_obj.set_attr('delta', 0.95)
-            respy_obj.attr['model_paras']['level'] = np.array([0.00])
+            respy_obj.attr['optim_paras']['level'] = np.array([0.00])
             respy_obj.attr['paras_fixed'][0] = False
 
         else:
@@ -215,7 +215,7 @@ def simulate_specification(respy_obj, subdir, update, paras=None):
     respy_copy = deepcopy(respy_obj)
     if update:
         assert (paras is not None)
-        respy_copy.update_model_paras(paras)
+        respy_copy.update_optim_paras(paras)
 
     respy_copy.write_out()
     respy.simulate(respy_copy)

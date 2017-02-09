@@ -6,7 +6,7 @@ from respy.python.record.record_solution import record_solution_progress
 
 def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
         is_myopic, edu_start, is_debug, edu_max, min_idx, delta,
-        periods_draws_emax, measure, model_paras, file_sim, optimizer_options):
+        periods_draws_emax, measure, optim_paras, file_sim, optimizer_options):
     """ Solving the model using pure PYTHON code.
     """
     # Creating the state space of the model and collect the results in the
@@ -30,7 +30,7 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
     # Calculate all systematic rewards
     periods_rewards_systematic = pyth_calculate_rewards_systematic(num_periods,
         states_number_period, states_all, edu_start, max_states_period,
-        model_paras)
+        optim_paras)
 
     record_solution_progress(-1, file_sim)
 
@@ -43,7 +43,7 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
         max_states_period, periods_draws_emax, num_draws_emax,
         states_number_period, periods_rewards_systematic, edu_max, edu_start,
         mapping_state_idx, states_all, delta, is_debug, is_interpolated,
-        num_points_interp, measure, model_paras,  optimizer_options,
+        num_points_interp, measure, optim_paras,  optimizer_options,
         file_sim, True)
 
     record_solution_progress(-1, file_sim)

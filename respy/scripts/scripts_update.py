@@ -37,15 +37,15 @@ def scripts_update(init_file):
     paras_steps = get_est_info()['paras_step']
 
     # Get and construct ingredients
-    model_paras = dist_optim_paras(paras_steps, True)
+    optim_paras = dist_optim_paras(paras_steps, True)
     shocks_coeffs = paras_steps[17:]
 
     # Update initialization dictionary
-    init_dict['OCCUPATION A']['coeffs'] = model_paras['coeffs_a']
-    init_dict['OCCUPATION B']['coeffs'] = model_paras['coeffs_b']
-    init_dict['EDUCATION']['coeffs'] = model_paras['coeffs_edu']
-    init_dict['HOME']['coeffs'] = model_paras['coeffs_home']
-    init_dict['AMBIGUITY']['coeffs'] = model_paras['level']
+    init_dict['OCCUPATION A']['coeffs'] = optim_paras['coeffs_a']
+    init_dict['OCCUPATION B']['coeffs'] = optim_paras['coeffs_b']
+    init_dict['EDUCATION']['coeffs'] = optim_paras['coeffs_edu']
+    init_dict['HOME']['coeffs'] = optim_paras['coeffs_home']
+    init_dict['AMBIGUITY']['coeffs'] = optim_paras['level']
     init_dict['SHOCKS']['coeffs'] = shocks_coeffs
 
     print_init_dict(init_dict, init_file)

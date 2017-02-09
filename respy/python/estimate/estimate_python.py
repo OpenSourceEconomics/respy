@@ -13,22 +13,22 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
     """ This function provides the wrapper for optimization routines.
     """
 
-    model_paras = dist_optim_paras(x, is_debug)
+    optim_paras = dist_optim_paras(x, is_debug)
 
     # Calculate all systematic rewards
     periods_rewards_systematic = pyth_calculate_rewards_systematic(num_periods,
         states_number_period, states_all, edu_start, max_states_period,
-        model_paras)
+        optim_paras)
 
     periods_emax = pyth_backward_induction(num_periods, is_myopic,
         max_states_period, periods_draws_emax, num_draws_emax,
         states_number_period, periods_rewards_systematic, edu_max, edu_start,
         mapping_state_idx, states_all, delta, is_debug, is_interpolated,
-        num_points_interp, measure, model_paras, optimizer_options, '', False)
+        num_points_interp, measure, optim_paras, optimizer_options, '', False)
 
     contribs = pyth_contributions(periods_rewards_systematic, mapping_state_idx,
         periods_emax, states_all, data_array, periods_draws_prob, delta, tau,
-        edu_start, edu_max, num_periods, num_draws_prob, model_paras)
+        edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
 
     crit_val = get_log_likl(contribs)
 

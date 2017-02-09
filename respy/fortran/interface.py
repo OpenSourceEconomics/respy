@@ -17,13 +17,13 @@ def resfort_interface(respy_obj, request, data_array=None):
     """ This function provides the interface to the FORTRAN functionality.
     """
     # Distribute class attributes
-    model_paras, num_periods, edu_start, is_debug, edu_max, delta, \
+    optim_paras, num_periods, edu_start, is_debug, edu_max, delta, \
         num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
         is_myopic, min_idx, tau, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, paras_fixed, \
         optimizer_options, optimizer_used, maxfun, paras_fixed, \
         preconditioning, measure, file_sim, paras_bounds = \
-            dist_class_attributes(respy_obj, 'model_paras', 'num_periods',
+            dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max',
                 'delta', 'num_draws_emax', 'seed_emax', 'is_interpolated',
                 'num_points_interp', 'is_myopic', 'min_idx', 'tau',
@@ -46,7 +46,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         # FORTRAN.
         write_dataset(data_array)
 
-    args = (model_paras, is_interpolated, num_draws_emax, num_periods,
+    args = (optim_paras, is_interpolated, num_draws_emax, num_periods,
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
             min_idx, delta)
 
@@ -142,7 +142,7 @@ def read_data(label, shape):
     return data
 
 
-def write_resfort_initialization(model_paras, is_interpolated, num_draws_emax,
+def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
         min_idx, delta, num_draws_prob, num_agents_est, num_agents_sim,
         seed_prob, seed_emax, tau, num_procs, request, seed_sim,
@@ -169,12 +169,12 @@ def write_resfort_initialization(model_paras, is_interpolated, num_draws_emax,
         file_.write(line)
 
         # WORK
-        for num in [model_paras['coeffs_a'], model_paras['coeffs_b']]:
+        for num in [optim_paras['coeffs_a'], optim_paras['coeffs_b']]:
             fmt_ = ' {:25.15f}' * 6 + '\n'
             file_.write(fmt_.format(*num))
 
         # EDUCATION
-        num = model_paras['coeffs_edu']
+        num = optim_paras['coeffs_edu']
         line = ' {:25.15f} {:25.15f} {:25.15f}\n'.format(*num)
         file_.write(line)
 
@@ -185,13 +185,13 @@ def write_resfort_initialization(model_paras, is_interpolated, num_draws_emax,
         file_.write(line)
 
         # HOME
-        line = ' {0:25.15f}\n'.format(model_paras['coeffs_home'][0])
+        line = ' {0:25.15f}\n'.format(optim_paras['coeffs_home'][0])
         file_.write(line)
 
         # SHOCKS
         for j in range(4):
             fmt_ = ' {:25.15f}' * 4 + '\n'
-            file_.write(fmt_.format(*model_paras['shocks_cholesky'][j, :]))
+            file_.write(fmt_.format(*optim_paras['shocks_cholesky'][j, :]))
 
         # SOLUTION
         line = '{0:10d}\n'.format(num_draws_emax)
@@ -204,7 +204,7 @@ def write_resfort_initialization(model_paras, is_interpolated, num_draws_emax,
         line = '"{0}"'.format(measure)
         file_.write(line + '\n')
 
-        line = '{0:25.15f}\n'.format(model_paras['level'][0])
+        line = '{0:25.15f}\n'.format(optim_paras['level'][0])
         file_.write(line)
 
         # PROGRAM

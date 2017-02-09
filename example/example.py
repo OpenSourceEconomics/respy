@@ -21,7 +21,7 @@ respy.simulate(respy_obj)
 x, crit_val = respy.estimate(respy_obj)
 
 # Update the respy class instance, with the new parameters.
-respy_obj.update_model_paras(x)
+respy_obj.update_optim_paras(x)
 respy.simulate(respy_obj)
 
 # Store results in directory for later inspection.

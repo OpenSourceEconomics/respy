@@ -246,12 +246,12 @@ class TestClass(object):
         write_interpolation_grid('test.respy.ini')
 
         # Extract class attributes
-        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
+        num_periods, edu_start, edu_max, min_idx, optim_paras, num_draws_emax, \
             seed_emax, is_debug, delta, is_interpolated, num_points_interp, \
             measure, optimizer_options, file_sim = \
             dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start', 'edu_max', 'min_idx',
-                'model_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
+                'optim_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                 'delta', 'is_interpolated', 'num_points_interp',
                 'measure',  'optimizer_options', 'file_sim')
 
@@ -260,12 +260,12 @@ class TestClass(object):
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
-        shocks_cholesky = model_paras['shocks_cholesky']
-        coeffs_home = model_paras['coeffs_home']
-        coeffs_edu = model_paras['coeffs_edu']
-        coeffs_a = model_paras['coeffs_a']
-        coeffs_b = model_paras['coeffs_b']
-        level = model_paras['level']
+        shocks_cholesky = optim_paras['shocks_cholesky']
+        coeffs_home = optim_paras['coeffs_home']
+        coeffs_edu = optim_paras['coeffs_edu']
+        coeffs_a = optim_paras['coeffs_a']
+        coeffs_b = optim_paras['coeffs_b']
+        level = optim_paras['level']
 
         # Check the state space creation.
         args = (num_periods, edu_start, edu_max, min_idx)
@@ -286,7 +286,7 @@ class TestClass(object):
         args += (num_periods, states_number_period, states_all, edu_start)
         args += (max_states_period, )
 
-        pyth = pyth_calculate_rewards_systematic(*args + (model_paras, ))
+        pyth = pyth_calculate_rewards_systematic(*args + (optim_paras, ))
 
         args = args + (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         f2py = fort_debug.f2py_calculate_rewards_systematic(*args)
@@ -306,7 +306,7 @@ class TestClass(object):
             is_debug, is_interpolated, num_points_interp, measure)
 
         args = ()
-        args += base_args + (model_paras, optimizer_options, file_sim, False)
+        args += base_args + (optim_paras, optimizer_options, file_sim, False)
         pyth = pyth_backward_induction(*args)
 
         args = ()
@@ -333,13 +333,13 @@ class TestClass(object):
         max_states_period = write_interpolation_grid('test.respy.ini')
 
         # Extract class attributes
-        num_periods, edu_start, edu_max, min_idx, model_paras, num_draws_emax, \
+        num_periods, edu_start, edu_max, min_idx, optim_paras, num_draws_emax, \
             is_debug, delta, is_interpolated, num_points_interp, is_myopic, \
             num_agents_sim, num_draws_prob, tau, paras_fixed, seed_sim, \
             measure, num_agents_est, states_number_period, optimizer_options, \
             file_sim = dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start',
-                'edu_max', 'min_idx', 'model_paras', 'num_draws_emax',
+                'edu_max', 'min_idx', 'optim_paras', 'num_draws_emax',
                 'is_debug', 'delta', 'is_interpolated', 'num_points_interp',
                 'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
                 'paras_fixed', 'seed_sim', 'measure',
@@ -351,12 +351,12 @@ class TestClass(object):
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
-        shocks_cholesky = model_paras['shocks_cholesky']
-        coeffs_home = model_paras['coeffs_home']
-        coeffs_edu = model_paras['coeffs_edu']
-        coeffs_a = model_paras['coeffs_a']
-        coeffs_b = model_paras['coeffs_b']
-        level = model_paras['level']
+        shocks_cholesky = optim_paras['shocks_cholesky']
+        coeffs_home = optim_paras['coeffs_home']
+        coeffs_edu = optim_paras['coeffs_edu']
+        coeffs_a = optim_paras['coeffs_a']
+        coeffs_b = optim_paras['coeffs_b']
+        level = optim_paras['level']
 
         # Write out random components and interpolation grid to align the
         # three implementations.
@@ -374,7 +374,7 @@ class TestClass(object):
         fort, _ = resfort_interface(respy_obj, 'simulate')
 
         args = ()
-        args += base_args + (model_paras, file_sim, optimizer_options)
+        args += base_args + (optim_paras, file_sim, optimizer_options)
         py = pyth_solve(*args)
 
         args = ()
@@ -397,7 +397,7 @@ class TestClass(object):
             num_agents_sim, periods_draws_sims, seed_sim, file_sim)
 
         args = ()
-        args += base_args + (model_paras, )
+        args += base_args + (optim_paras, )
         py = pyth_simulate(*args)
 
         args = ()
@@ -415,7 +415,7 @@ class TestClass(object):
             num_periods, num_draws_prob)
 
         args = ()
-        args += base_args + (model_paras, )
+        args += base_args + (optim_paras, )
         py = pyth_contributions(*args)
 
         args = ()
@@ -425,7 +425,7 @@ class TestClass(object):
         np.testing.assert_allclose(py, f2py)
 
         # Evaluation of criterion function
-        x0 = get_optim_paras(model_paras, 'all', paras_fixed, is_debug)
+        x0 = get_optim_paras(optim_paras, 'all', paras_fixed, is_debug)
 
         base_args = (is_interpolated, num_draws_emax, num_periods,
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
@@ -461,23 +461,23 @@ class TestClass(object):
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             seed_prob, periods_emax, num_periods, states_all, \
             num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
-            delta, measure, model_paras, \
+            delta, measure, optim_paras, \
             optimizer_options, file_sim = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'seed_prob', 'periods_emax',
                 'num_periods', 'states_all', 'num_points_interp', 'edu_start',
                 'num_draws_emax', 'is_debug', 'edu_max', 'delta',
-                'measure', 'model_paras',
+                'measure', 'optim_paras',
                 'optimizer_options', 'file_sim')
 
-        shocks_cov = np.matmul(model_paras['shocks_cholesky'], model_paras['shocks_cholesky'].T)
+        shocks_cov = np.matmul(optim_paras['shocks_cholesky'], optim_paras['shocks_cholesky'].T)
 
         # Distribute variables for FORTRAN interface
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
-        level = model_paras['level']
+        level = optim_paras['level']
 
         # Add some additional objects required for the interfaces to the
         # functions.
@@ -524,7 +524,7 @@ class TestClass(object):
                 measure)
 
         args = ()
-        args += base_args + (model_paras, optimizer_options, file_sim, False)
+        args += base_args + (optim_paras, optimizer_options, file_sim, False)
         py = get_endogenous_variable(*args)
 
         args = ()
