@@ -7,7 +7,6 @@ import subprocess
 import os
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
@@ -47,18 +46,14 @@ def resfort_interface(respy_obj, request, data_array=None):
         # FORTRAN.
         write_dataset(data_array)
 
-    # Distribute model parameters
-    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
-        dist_model_paras(model_paras, is_debug)
-
-    args = (coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
-        is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-        edu_start, is_debug, edu_max, min_idx, delta)
+    args = (model_paras, is_interpolated, num_draws_emax, num_periods,
+            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
+            min_idx, delta)
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, paras_fixed, precond_eps, precond_type,
-        precond_minimum, measure, level, file_sim, paras_bounds, data_array)
+        precond_minimum, measure, file_sim, paras_bounds, data_array)
 
     write_resfort_initialization(*args)
 
@@ -147,13 +142,13 @@ def read_data(label, shape):
     return data
 
 
-def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cholesky, is_interpolated, num_draws_emax, num_periods,
-        num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx,
-        delta, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
-        seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, paras_fixed, precond_eps, precond_type,
-        precond_minimum, measure, level, file_sim, paras_bounds, data_array):
+def write_resfort_initialization(model_paras, is_interpolated, num_draws_emax,
+        num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
+        min_idx, delta, num_draws_prob, num_agents_est, num_agents_sim,
+        seed_prob, seed_emax, tau, num_procs, request, seed_sim,
+        optimizer_options, optimizer_used, maxfun, paras_fixed, precond_eps,
+        precond_type, precond_minimum, measure, file_sim, paras_bounds,
+        data_array):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -174,12 +169,12 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         # WORK
-        for num in [coeffs_a, coeffs_b]:
+        for num in [model_paras['coeffs_a'], model_paras['coeffs_b']]:
             fmt_ = ' {:25.15f}' * 6 + '\n'
             file_.write(fmt_.format(*num))
 
         # EDUCATION
-        num = coeffs_edu
+        num = model_paras['coeffs_edu']
         line = ' {:25.15f} {:25.15f} {:25.15f}\n'.format(*num)
         file_.write(line)
 
@@ -190,13 +185,13 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         file_.write(line)
 
         # HOME
-        line = ' {0:25.15f}\n'.format(coeffs_home[0])
+        line = ' {0:25.15f}\n'.format(model_paras['coeffs_home'][0])
         file_.write(line)
 
         # SHOCKS
         for j in range(4):
             fmt_ = ' {:25.15f}' * 4 + '\n'
-            file_.write(fmt_.format(*shocks_cholesky[j, :]))
+            file_.write(fmt_.format(*model_paras['shocks_cholesky'][j, :]))
 
         # SOLUTION
         line = '{0:10d}\n'.format(num_draws_emax)
@@ -209,7 +204,7 @@ def write_resfort_initialization(coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
         line = '"{0}"'.format(measure)
         file_.write(line + '\n')
 
-        line = '{0:25.15f}\n'.format(level[0])
+        line = '{0:25.15f}\n'.format(model_paras['level'][0])
         file_.write(line)
 
         # PROGRAM

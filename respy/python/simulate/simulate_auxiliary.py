@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 
 from respy.python.process.process_auxiliary import check_dataset_est
-from respy.python.shared.shared_auxiliary import dist_model_paras
 
 
 def write_info(respy_obj, data_frame):
@@ -141,10 +140,6 @@ def format_integer(x):
 def get_estimation_vector(model_paras, is_debug):
     """ Construct the vector estimation arguments.
     """
-
-    # Auxiliary objects
-    shocks_cholesky = dist_model_paras(model_paras, is_debug)[-1]
-
     # Collect parameters
     vector = list()
     vector += model_paras['level'].tolist()
@@ -152,10 +147,10 @@ def get_estimation_vector(model_paras, is_debug):
     vector += model_paras['coeffs_b'].tolist()
     vector += model_paras['coeffs_edu'].tolist()
     vector += model_paras['coeffs_home'].tolist()
-    vector += shocks_cholesky[0, :1].tolist()
-    vector += shocks_cholesky[1, :2].tolist()
-    vector += shocks_cholesky[2, :3].tolist()
-    vector += shocks_cholesky[3, :4].tolist()
+    vector += model_paras['shocks_cholesky'][0, :1].tolist()
+    vector += model_paras['shocks_cholesky'][1, :2].tolist()
+    vector += model_paras['shocks_cholesky'][2, :3].tolist()
+    vector += model_paras['shocks_cholesky'][3, :4].tolist()
 
     # Type conversion
     vector = np.array(vector)

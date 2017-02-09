@@ -9,10 +9,9 @@ from respy.python.solve.solve_risk import construct_emax_risk
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-        measure, level, optimizer_options, file_sim, is_write):
+        measure, model_paras, optimizer_options, file_sim, is_write):
     """ Construct EMAX accounting for a worst case evaluation.
     """
-
     is_deterministic = (np.count_nonzero(shocks_cov) == 0)
 
     args = (num_periods, num_draws_emax, period, k, draws_emax_transformed,
@@ -24,16 +23,19 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         is_success, message = True, 'No random variation in shocks.'
 
     elif measure == 'abs':
-        x_shift, div = [-float(level), -float(level)], float(level)
+        x_shift, div = [-float(model_paras['level']), -float(model_paras['level'])], \
+                       float(model_paras['level'])
         is_success, message = True, 'Optimization terminated successfully.'
 
     elif measure == 'kl':
         x_shift, is_success, message = get_worst_case(num_periods,
             num_draws_emax, period, k, draws_emax_transformed,
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta, shocks_cov, level, optimizer_options)
+            mapping_state_idx, delta, shocks_cov, model_paras,
+            optimizer_options)
 
-        div = float(-(constraint_ambiguity(x_shift, shocks_cov, level) - level))
+        div = float(-(constraint_ambiguity(x_shift, shocks_cov, model_paras) -
+                      model_paras['level']))
 
     else:
         raise NotImplementedError
@@ -49,7 +51,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
 def get_worst_case(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-        level, optimizer_options):
+        model_paras, optimizer_options):
     """ Run the optimization.
     """
     # Initialize options.
@@ -64,7 +66,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     constraint_divergence = dict()
     constraint_divergence['type'] = 'eq'
     constraint_divergence['fun'] = constraint_ambiguity
-    constraint_divergence['args'] = (shocks_cov, level)
+    constraint_divergence['args'] = (shocks_cov, model_paras)
 
     # Collection.
     constraints = [constraint_divergence, ]
@@ -110,7 +112,7 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
     return emax
 
 
-def constraint_ambiguity(x, shocks_cov, level):
+def constraint_ambiguity(x, shocks_cov, model_paras):
     """ This function provides the constraints for the SLSQP optimization.
     """
 
@@ -122,7 +124,8 @@ def constraint_ambiguity(x, shocks_cov, level):
     cov_old = shocks_cov
     cov_new = cov_old
 
-    rslt = level - kl_divergence(mean_old, cov_old, mean_new, cov_new)
+    rslt = model_paras['level'] - kl_divergence(mean_old, cov_old, mean_new,
+        cov_new)
 
     return rslt
 

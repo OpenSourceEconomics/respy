@@ -158,10 +158,6 @@ class RespyCls(object):
 
         shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
-        # Check integrity
-        check_model_parameters(level, coeffs_a, coeffs_b, coeffs_edu,
-            coeffs_home, shocks_cholesky)
-
         # Distribute class attributes
         model_paras = self.attr['model_paras']
 
@@ -177,6 +173,9 @@ class RespyCls(object):
         model_paras['coeffs_b'] = coeffs_b
 
         model_paras['level'] = level
+
+        # Check integrity
+        check_model_parameters(model_paras)
 
         # Update class attributes
         self.attr['model_paras'] = model_paras
@@ -718,25 +717,16 @@ class RespyCls(object):
         assert (measure in ['abs', 'kl'])
 
         # Check model parameters
-        shocks_cholesky = model_paras['shocks_cholesky']
-        coeffs_home = model_paras['coeffs_home']
-        coeffs_edu = model_paras['coeffs_edu']
-        coeffs_a = model_paras['coeffs_a']
-        coeffs_b = model_paras['coeffs_b']
-        level = model_paras['level']
-
-        check_model_parameters(level, coeffs_a, coeffs_b, coeffs_edu,
-            coeffs_home, shocks_cholesky)
+        check_model_parameters(model_paras)
 
         # Check that all parameter values are within the bounds.
-        x = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cholesky, 'all', None, True)
+        x = get_optim_paras(model_paras, 'all', None, True)
 
         # It is not clear at this point how to impose parameter constraints
         # on the covariance matrix in a flexible manner. So, either all fixed
         # or none. As a special case, we also allow for all off-diagonal
         # elements to be fixed to zero.
-        shocks_coeffs = shocks_cholesky[np.tril_indices(4)]
+        shocks_coeffs = model_paras['shocks_cholesky'][np.tril_indices(4)]
         shocks_fixed = paras_fixed[17:]
 
         all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)

@@ -107,8 +107,7 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
 
 
 def pyth_calculate_rewards_systematic(num_periods, states_number_period,
-        states_all, edu_start, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        max_states_period):
+        states_all, edu_start, model_paras, max_states_period):
     """ Calculate ex systematic rewards.
     """
 
@@ -131,28 +130,31 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
 
             # Calculate systematic part of wages in occupation A
             periods_rewards_systematic[period, k, 0] = \
-                np.clip(np.exp(np.dot(coeffs_a, covars)), 0.0, HUGE_FLOAT)
+                np.clip(np.exp(np.dot(model_paras['coeffs_a'], covars)), 0.0,
+                    HUGE_FLOAT)
 
             # Calculate systematic part pf wages in occupation B
             periods_rewards_systematic[period, k, 1] = \
-                np.clip(np.exp(np.dot(coeffs_b, covars)), 0.0, HUGE_FLOAT)
+                np.clip(np.exp(np.dot(model_paras['coeffs_b'], covars)), 0.0,
+                    HUGE_FLOAT)
 
             # Calculate systematic part of schooling utility
-            reward = coeffs_edu[0]
+            reward = model_paras['coeffs_edu'][0]
 
             # Tuition cost for higher education if agents move
             # beyond high school.
             if edu + edu_start >= 12:
-                reward += coeffs_edu[1]
+                reward += model_paras['coeffs_edu'][1]
 
             # Psychic cost of going back to school
             if edu_lagged == 0:
-                reward += coeffs_edu[2]
+                reward += model_paras['coeffs_edu'][2]
 
             periods_rewards_systematic[period, k, 2] = reward
 
             # Calculate systematic part of HOME
-            periods_rewards_systematic[period, k, 3] = coeffs_home[0]
+            periods_rewards_systematic[period, k, 3] = model_paras[
+                'coeffs_home'][0]
 
     # Finishing
     return periods_rewards_systematic
@@ -162,8 +164,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         periods_draws_emax, num_draws_emax, states_number_period,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         states_all, delta, is_debug, is_interpolated, num_points_interp,
-        shocks_cholesky, measure, level, optimizer_options, file_sim,
-        is_write):
+        measure, model_paras, optimizer_options, file_sim, is_write):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -186,7 +187,8 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
             periods_emax[period, :num_states] = 0.0
 
     # Construct auxiliary objects
-    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+    shocks_cov = np.matmul(model_paras['shocks_cholesky'],
+        model_paras['shocks_cholesky'].T)
 
     # Auxiliary objects. These shifts are used to determine the expected
     # values of the two labor market alternatives. These ar log normal
@@ -206,7 +208,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         num_states = states_number_period[period]
 
         draws_emax_transformed = transform_disturbances(draws_emax,
-                                    shocks_cholesky)
+            model_paras['shocks_cholesky'])
 
         if is_write:
             record_solution_progress(4, file_sim, period, num_states)
@@ -219,7 +221,6 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
 
         # Case distinction
         if any_interpolated:
-
             # Get indicator for interpolation and simulation of states
             is_simulated = get_simulated_indicator(num_points_interp, num_states,
                 period, is_debug)
@@ -238,7 +239,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 num_states, delta, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, maxe, draws_emax_transformed,
-                shocks_cov, measure, level, optimizer_options, file_sim,
+                shocks_cov, measure, model_paras, optimizer_options, file_sim,
                 is_write)
 
             # Create prediction model based on the random subset of points where
@@ -260,12 +261,12 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # Simulate the expected future value.
-                if level > MIN_AMBIGUITY:
+                if model_paras['level'] > MIN_AMBIGUITY:
                     emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
-                        mapping_state_idx, delta, shocks_cov, measure, level,
-                        optimizer_options, file_sim, is_write)
+                        mapping_state_idx, delta, shocks_cov, measure,
+                        model_paras, optimizer_options, file_sim, is_write)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
@@ -346,7 +347,7 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
 def get_endogenous_variable(period, num_periods, num_states, delta,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_transformed, shocks_cov, measure, level,
+        draws_emax_transformed, shocks_cov, measure, model_paras,
         optimizer_options, file_sim, is_write):
     """ Construct endogenous variable for the subset of interpolation points.
     """
@@ -363,11 +364,11 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Simulate the expected future value.
-        if level > MIN_AMBIGUITY:
+        if model_paras['level'] > MIN_AMBIGUITY:
             emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
                 edu_max, edu_start, periods_emax, states_all,
-                mapping_state_idx, delta, shocks_cov, measure, level,
+                mapping_state_idx, delta, shocks_cov, measure, model_paras,
                 optimizer_options, file_sim, is_write)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,

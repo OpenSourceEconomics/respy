@@ -11,7 +11,6 @@ import shutil
 import os
 
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
-from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.read.read_python import read
@@ -86,16 +85,13 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
     respy_obj = RespyCls(init_file)
 
     model_paras = respy_obj.get_attr('model_paras')
-    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
-            dist_model_paras(model_paras, True)
 
-    x = get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                    shocks_cholesky, 'all', None, True)
+    x = get_optim_paras(model_paras, 'all', None, True)
 
     # This transformation is necessary as internally the Cholesky
     # decomposition is used but here we operate from the perspective of the
     # initialization file, where the flattened covariance matrix is specified.
-    shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
+    shocks_coeffs = cholesky_to_coeffs(model_paras['shocks_cholesky'])
 
     if action == 'value':
         for i, j in enumerate(identifiers):

@@ -100,9 +100,8 @@ class TestClass(object):
                 'delta', 'measure', 'model_paras', 'optimizer_options',
                 'file_sim')
 
-        level = model_paras['level']
-        shocks_cholesky = model_paras['shocks_cholesky']
-        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+        shocks_cov = np.matmul(model_paras['shocks_cholesky'],
+            model_paras['shocks_cholesky'].T)
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
@@ -121,13 +120,13 @@ class TestClass(object):
 
         args = (num_periods, num_draws_emax, period, k, draws_standard,
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta, shocks_cov, measure, level)
+            mapping_state_idx, delta, shocks_cov, measure)
 
-        py = construct_emax_ambiguity(*args + (optimizer_options,
-                                               file_sim, False))
+        py = construct_emax_ambiguity(*args + (model_paras, optimizer_options,
+                file_sim, False))
         f90 = fort_debug.wrapper_construct_emax_ambiguity(*args +
-                (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps,
-                 file_sim, False))
+                (model_paras['level'], fort_slsqp_maxiter, fort_slsqp_ftol,
+                fort_slsqp_eps, file_sim, False))
         np.testing.assert_allclose(py, f90)
 
         x = np.random.uniform(-1, 1, size=2)
@@ -145,24 +144,26 @@ class TestClass(object):
             fort_slsqp_eps, ))
         np.testing.assert_allclose(py, f90)
 
-        args = (shocks_cov, level)
-        py = constraint_ambiguity(x, *args)
-        f90 = fort_debug.wrapper_constraint_ambiguity(x, *args)
+        py = constraint_ambiguity(x, shocks_cov, model_paras)
+        f90 = fort_debug.wrapper_constraint_ambiguity(x, shocks_cov,
+            model_paras['level'])
         np.testing.assert_allclose(py, f90)
 
+        args = (shocks_cov, model_paras)
         py = approx_fprime(x, constraint_ambiguity, fort_slsqp_eps, *args)
-        f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args +
-                (fort_slsqp_eps, ))
+
+        args = (shocks_cov, model_paras['level'], fort_slsqp_eps)
+        f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args)
         np.testing.assert_allclose(py, f90)
 
         args = (num_periods, num_draws_emax, period, k,
             draws_standard, rewards_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-            level)
+            periods_emax, states_all, mapping_state_idx, delta, shocks_cov)
 
-        py, _, _ = get_worst_case(*args + (optimizer_options, ))
-        f90, _, _ = fort_debug.wrapper_get_worst_case(*args + (
-            fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps))
+        py, _, _ = get_worst_case(*args + (model_paras, optimizer_options, ))
+        f90, _, _ = fort_debug.wrapper_get_worst_case(*args +
+            (model_paras['level'], fort_slsqp_maxiter, fort_slsqp_ftol,
+             fort_slsqp_eps))
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')

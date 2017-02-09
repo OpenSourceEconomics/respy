@@ -13,7 +13,6 @@ from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.shared.shared_auxiliary import dist_model_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.estimate.estimate_wrapper import MaxfunError
 from respy.python.shared.shared_auxiliary import apply_scaling
@@ -39,9 +38,6 @@ def respy_interface(respy_obj, request, data_array=None):
                 'seed_sim', 'num_agents_sim', 'measure', 'file_sim',
                 'paras_bounds', 'preconditioning')
 
-    level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky = \
-        dist_model_paras(model_paras, is_debug)
-
     if request == 'estimate':
 
         periods_draws_prob = create_draws(num_periods, num_draws_prob,
@@ -52,13 +48,11 @@ def respy_interface(respy_obj, request, data_array=None):
             seed_emax, is_debug)
 
         # Construct starting values
-        x_optim_free_unscaled_start = get_optim_paras(level, coeffs_a,
-            coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, 'free',
+        x_optim_free_unscaled_start = get_optim_paras(model_paras, 'free',
             paras_fixed, is_debug)
 
-        x_optim_all_unscaled_start = get_optim_paras(level, coeffs_a, coeffs_b,
-            coeffs_edu, coeffs_home, shocks_cholesky, 'all', paras_fixed,
-            is_debug)
+        x_optim_all_unscaled_start = get_optim_paras(model_paras, 'all',
+            paras_fixed, is_debug)
 
         # Construct the state space
         states_all, states_number_period, mapping_state_idx, \
@@ -217,17 +211,16 @@ def respy_interface(respy_obj, request, data_array=None):
         # Collect arguments to pass in different implementations of the
         # simulation.
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
-            periods_emax, states_all = pyth_solve(coeffs_a, coeffs_b,
-            coeffs_edu, coeffs_home, shocks_cholesky, is_interpolated,
+            periods_emax, states_all = pyth_solve(model_paras, is_interpolated,
             num_points_interp, num_draws_emax, num_periods, is_myopic,
             edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax,
-            measure, level, file_sim, optimizer_options)
+            measure, file_sim, optimizer_options)
 
         solution = (periods_rewards_systematic, states_number_period,
             mapping_state_idx, periods_emax, states_all)
 
         data_array = pyth_simulate(periods_rewards_systematic,
-            mapping_state_idx, periods_emax, states_all, shocks_cholesky,
+            mapping_state_idx, periods_emax, states_all, model_paras,
             num_periods, edu_start, edu_max, delta, num_agents_sim,
             periods_draws_sims, seed_sim, file_sim)
 

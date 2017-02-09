@@ -88,35 +88,32 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     if is_debug:
         check_optimization_parameters(x_all_curre)
 
+    model_paras = dict()
+
     # Level of Ambiguity
-    level = max(x_all_curre[0:1], 0.00)
+    model_paras['level'] = max(x_all_curre[0:1], 0.00)
 
     # Occupation A
-    coeffs_a = x_all_curre[1:7]
+    model_paras['coeffs_a'] = x_all_curre[1:7]
 
     # Occupation B
-    coeffs_b = x_all_curre[7:13]
+    model_paras['coeffs_b'] = x_all_curre[7:13]
 
     # Education
-    coeffs_edu = x_all_curre[13:16]
+    model_paras['coeffs_edu'] = x_all_curre[13:16]
 
     # Home
-    coeffs_home = x_all_curre[16:17]
+    model_paras['coeffs_home'] = x_all_curre[16:17]
 
     # Cholesky
-    shocks_cholesky, info = get_cholesky(x_all_curre, info)
+    model_paras['shocks_cholesky'], info = get_cholesky(x_all_curre, info)
 
     # Checks
     if is_debug:
-        args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                shocks_cholesky)
-        assert check_model_parameters(*args)
-
-    # Collect arguments
-    args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
+        assert check_model_parameters(model_paras)
 
     # Finishing
-    return args
+    return model_paras
 
 
 def get_cholesky(x, info=None):
@@ -279,27 +276,6 @@ def add_solution(respy_obj, periods_rewards_systematic,
     # Finishing
     return respy_obj
 
-
-def dist_model_paras(model_paras, is_debug):
-    """ Distribute model parameters.
-    """
-    level = model_paras['level']
-    coeffs_a = model_paras['coeffs_a']
-    coeffs_b = model_paras['coeffs_b']
-
-    coeffs_edu = model_paras['coeffs_edu']
-    coeffs_home = model_paras['coeffs_home']
-    shocks_cholesky = model_paras['shocks_cholesky']
-
-    if is_debug:
-        args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                shocks_cholesky)
-        assert (check_model_parameters(*args))
-
-    # Finishing
-    return level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky
-
-
 def replace_missing_values(arguments):
     """ Replace missing value MISSING_FLOAT with NAN. Note that the output
     argument is of type float in the case missing values are found.
@@ -333,30 +309,33 @@ def replace_missing_values(arguments):
     return rslt
 
 
-def check_model_parameters(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cholesky):
+def check_model_parameters(model_paras):
     """ Check the integrity of all model parameters.
     """
     # Checks for all arguments
-    args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky)
-    for coeffs in args:
-        assert (isinstance(coeffs, np.ndarray))
-        assert (np.all(np.isfinite(coeffs)))
-        assert (coeffs.dtype == 'float')
-        assert (np.all(abs(coeffs) < PRINT_FLOAT))
+    keys = []
+    keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
+    keys += ['level', 'shocks_cholesky']
+
+    for key in keys:
+        assert (isinstance(model_paras[key], np.ndarray))
+        assert (np.all(np.isfinite(model_paras[key])))
+        assert (model_paras[key].dtype == 'float')
+        assert (np.all(abs(model_paras[key]) < PRINT_FLOAT))
 
     # Check for level of ambiguity
-    assert (level >= 0)
+    assert (model_paras['level'] >= 0)
 
     # Checks for occupations
-    assert (coeffs_a.size == 6)
-    assert (coeffs_b.size == 6)
-    assert (coeffs_edu.size == 3)
-    assert (coeffs_home.size == 1)
+    assert (model_paras['coeffs_a'].size == 6)
+    assert (model_paras['coeffs_b'].size == 6)
+    assert (model_paras['coeffs_edu'].size == 3)
+    assert (model_paras['coeffs_home'].size == 1)
 
     # Checks shock matrix
-    assert (shocks_cholesky.shape == (4, 4))
-    np.allclose(shocks_cholesky, np.tril(shocks_cholesky))
+    assert (model_paras['shocks_cholesky'].shape == (4, 4))
+    np.allclose(model_paras['shocks_cholesky'],
+        np.tril(model_paras['shocks_cholesky']))
 
     # Finishing
     return True
@@ -699,36 +678,33 @@ def get_est_info():
     return rslt
 
 
-def get_optim_paras(level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-        shocks_cholesky, which, paras_fixed, is_debug):
+def get_optim_paras(model_paras, which, paras_fixed, is_debug):
     """ Get optimization parameters.
     """
     # Checks
     if is_debug:
-        args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-                shocks_cholesky)
-        assert check_model_parameters(*args)
+        assert check_model_parameters(model_paras)
 
     # Initialize container
     x = np.tile(np.nan, 27)
 
     # Level of Ambiguity
-    x[0:1] = level
+    x[0:1] = model_paras['level']
 
     # Occupation A
-    x[1:7] = coeffs_a
+    x[1:7] = model_paras['coeffs_a']
 
     # Occupation B
-    x[7:13] = coeffs_b
+    x[7:13] = model_paras['coeffs_b']
 
     # Education
-    x[13:16] = coeffs_edu
+    x[13:16] = model_paras['coeffs_edu']
 
     # Home
-    x[16:17] = coeffs_home
+    x[16:17] = model_paras['coeffs_home']
 
     # Shocks
-    x[17:27] = shocks_cholesky[np.tril_indices(4)]
+    x[17:27] = model_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Checks
     if is_debug:
