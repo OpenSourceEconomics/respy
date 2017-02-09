@@ -412,7 +412,7 @@ FUNCTION fort_dcriterion_parallel(x)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, optim_paras, edu_start, edu_max)
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras)
 
     !/* external objects        */
 
