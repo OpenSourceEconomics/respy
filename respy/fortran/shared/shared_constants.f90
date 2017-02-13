@@ -112,7 +112,7 @@ MODULE shared_constants
         REAL(our_dble)          :: coeffs_a(6)
         REAL(our_dble)          :: coeffs_b(6)
         REAL(our_dble)          :: level(1)
-        REAL(our_dble)          :: delta
+        REAL(our_dble)          :: delta(1)
     END TYPE
 
 !******************************************************************************

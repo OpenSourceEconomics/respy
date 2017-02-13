@@ -14,7 +14,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     """
     is_deterministic = (np.count_nonzero(shocks_cov) == 0)
 
-    args = (num_periods, num_draws_emax, period, k, draws_emax_transformed,
+    base_args = (num_periods, num_draws_emax, period, k, draws_emax_transformed,
         rewards_systematic, edu_max, edu_start, periods_emax, states_all,
         mapping_state_idx, delta)
 
@@ -28,11 +28,10 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         is_success, message = True, 'Optimization terminated successfully.'
 
     elif measure == 'kl':
-        x_shift, is_success, message = get_worst_case(num_periods,
-            num_draws_emax, period, k, draws_emax_transformed,
-            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta, shocks_cov, optim_paras,
-            optimizer_options)
+
+        args = ()
+        args += base_args + (shocks_cov, optim_paras, optimizer_options)
+        x_shift, is_success, message = get_worst_case(*args)
 
         div = float(-(constraint_ambiguity(x_shift, shocks_cov, optim_paras) -
                       optim_paras['level']))
@@ -43,7 +42,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     if is_write:
         record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
 
-    emax = criterion_ambiguity(x_shift, *args)
+    emax = criterion_ambiguity(x_shift, *base_args)
 
     return emax
 

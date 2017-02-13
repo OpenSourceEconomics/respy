@@ -206,7 +206,7 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
     END IF
 
     ! Calculate total utilities
-    total_values = rewards_ex_post + optim_paras%delta * emaxs
+    total_values = rewards_ex_post + optim_paras%delta(1) * emaxs
 
     ! This is required to ensure that the agent does not choose any
     ! inadmissible states. If the state is inadmissible emaxs takes
