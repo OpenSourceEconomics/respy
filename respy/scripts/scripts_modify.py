@@ -86,7 +86,7 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
 
     optim_paras = respy_obj.get_attr('optim_paras')
 
-    x = get_optim_paras(optim_paras, 'all', None, True)
+    x = get_optim_paras(optim_paras, 'all', True)
 
     # This transformation is necessary as internally the Cholesky
     # decomposition is used but here we operate from the perspective of the

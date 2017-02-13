@@ -425,7 +425,7 @@ class TestClass(object):
         np.testing.assert_allclose(py, f2py)
 
         # Evaluation of criterion function
-        x0 = get_optim_paras(optim_paras, 'all', paras_fixed, is_debug)
+        x0 = get_optim_paras(optim_paras, 'all', is_debug)
 
         base_args = (is_interpolated, num_draws_emax, num_periods,
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,

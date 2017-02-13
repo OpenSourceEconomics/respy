@@ -80,7 +80,7 @@ class TestClass(object):
             # Apply numerous transformations
             for j in range(10):
                 optim_paras = dist_optim_paras(x, is_debug=True)
-                args = (optim_paras, 'all', paras_fixed)
+                args = (optim_paras, 'all')
                 x = get_optim_paras(*args, is_debug=True)
 
             # Checks

@@ -205,8 +205,10 @@ def generate_random_dict(constraints=None):
     dict_['INTERPOLATION']['flag'] = np.random.choice(['True', 'False'])
     dict_['INTERPOLATION']['points'] = np.random.randint(10, 100)
 
+    mock = dict()
+    mock['paras_fixed'] = paras_fixed
     for optimizer in OPTIMIZERS_EST + OPTIMIZERS_AMB:
-        dict_[optimizer] = generate_optimizer_options(optimizer, paras_fixed)
+        dict_[optimizer] = generate_optimizer_options(optimizer, mock)
 
     # The options for the optimizers across the program versions are
     # identical. Otherwise it is not possible to simply run the solution of a

@@ -28,18 +28,15 @@ def respy_interface(respy_obj, request, data_array=None):
     optim_paras, num_periods, edu_start, is_debug, edu_max, \
         num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
-        optimizer_used, tau, paras_fixed, optimizer_options, seed_sim, \
-        num_agents_sim, measure, file_sim, paras_bounds, preconditioning = \
+        optimizer_used, tau, optimizer_options, seed_sim, \
+        num_agents_sim, measure, file_sim, preconditioning = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max', 'num_draws_prob',
                 'seed_prob', 'num_draws_emax', 'seed_emax', 'min_idx',
                 'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
-                'optimizer_used', 'tau', 'paras_fixed', 'optimizer_options',
+                'optimizer_used', 'tau', 'optimizer_options',
                 'seed_sim', 'num_agents_sim', 'measure', 'file_sim',
-                'paras_bounds', 'preconditioning')
-
-    # Distribute optimization parameters.
-    delta = optim_paras['delta']
+                'preconditioning')
 
     if request == 'estimate':
 
@@ -52,10 +49,10 @@ def respy_interface(respy_obj, request, data_array=None):
 
         # Construct starting values
         x_optim_free_unscaled_start = get_optim_paras(optim_paras, 'free',
-            paras_fixed, is_debug)
+            is_debug)
 
         x_optim_all_unscaled_start = get_optim_paras(optim_paras, 'all',
-            paras_fixed, is_debug)
+            is_debug)
 
         # Construct the state space
         states_all, states_number_period, mapping_state_idx, \
@@ -77,12 +74,12 @@ def respy_interface(respy_obj, request, data_array=None):
         # requested is accounted for. Note, that the relevant value of the
         # criterion function is always the one indicated by the class
         # attribute and not the value returned by the optimization algorithm.
-        num_free = paras_fixed.count(False)
+        num_free = optim_paras['paras_fixed'].count(False)
 
         paras_bounds_free_unscaled = []
         for i in range(28):
-            if not paras_fixed[i]:
-                lower, upper = paras_bounds[i][:]
+            if not optim_paras['paras_fixed'][i]:
+                lower, upper = optim_paras['paras_bounds'][i][:]
                 if lower is None:
                     lower = -HUGE_FLOAT
                 else:
@@ -97,8 +94,8 @@ def respy_interface(respy_obj, request, data_array=None):
 
         paras_bounds_free_unscaled = np.array(paras_bounds_free_unscaled)
 
-        precond_matrix = get_precondition_matrix(preconditioning, paras_fixed,
-            x_optim_all_unscaled_start, args, maxfun)
+        precond_matrix = get_precondition_matrix(preconditioning,
+            optim_paras, x_optim_all_unscaled_start, args, maxfun)
 
         x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start,
             precond_matrix, 'do')
@@ -110,11 +107,11 @@ def respy_interface(respy_obj, request, data_array=None):
 
         record_estimation_scaling(x_optim_free_unscaled_start,
             x_optim_free_scaled_start, paras_bounds_free_scaled,
-            precond_matrix, paras_fixed)
+            precond_matrix, optim_paras['paras_fixed'])
 
         opt_obj = OptimizationClass()
         opt_obj.maxfun = maxfun
-        opt_obj.paras_fixed = paras_fixed
+        opt_obj.paras_fixed = optim_paras['paras_fixed']
         opt_obj.x_optim_all_unscaled_start = x_optim_all_unscaled_start
         opt_obj.precond_matrix = precond_matrix
 
@@ -234,19 +231,19 @@ def respy_interface(respy_obj, request, data_array=None):
     return args
 
 
-def get_precondition_matrix(preconditioning, paras_fixed,
+def get_precondition_matrix(preconditioning, optim_paras,
         x_optim_all_unscaled_start, args, maxfun):
     """ Get the preconditioning matrix for the optimization.
     """
     # Auxiliary objects
-    num_free = paras_fixed.count(False)
+    num_free = optim_paras['paras_fixed'].count(False)
 
     # Set up a special instance of the optimization class.
     opt_obj = OptimizationClass()
 
     opt_obj.x_optim_all_unscaled_start = x_optim_all_unscaled_start
     opt_obj.precond_matrix = np.identity(num_free)
-    opt_obj.paras_fixed = paras_fixed
+    opt_obj.paras_fixed = optim_paras['paras_fixed']
     opt_obj.is_scaling = False
 
     # Distribute information about user request.
@@ -256,7 +253,7 @@ def get_precondition_matrix(preconditioning, paras_fixed,
     # approximation of the gradient.
     x_optim_free_unscaled_start = []
     for i in range(28):
-        if not paras_fixed[i]:
+        if not optim_paras['paras_fixed'][i]:
             x_optim_free_unscaled_start += [x_optim_all_unscaled_start[i]]
 
     precond_matrix = np.zeros((num_free, num_free))

@@ -395,7 +395,7 @@ def transform_disturbances(draws, shocks_cholesky):
     return draws_transformed
 
 
-def generate_optimizer_options(which, paras_fixed):
+def generate_optimizer_options(which, optim_paras):
 
     dict_ = dict()
 
@@ -427,9 +427,9 @@ def generate_optimizer_options(which, paras_fixed):
         # It is not recommended that N is larger than upper as the code might
         # break down due to a segmentation fault. See the source files for the
         # absolute upper bounds.
-        assert sum(paras_fixed) != 28
-        lower = (28 - sum(paras_fixed)) + 2
-        upper = (2 * (28 - sum(paras_fixed)) + 1)
+        assert sum(optim_paras['paras_fixed']) != 28
+        lower = (28 - sum(optim_paras['paras_fixed'])) + 2
+        upper = (2 * (28 - sum(optim_paras['paras_fixed'])) + 1)
         dict_['npt'] = np.random.randint(lower, upper + 1)
 
     elif which == 'FORT-BFGS':
@@ -689,7 +689,7 @@ def get_est_info():
     return rslt
 
 
-def get_optim_paras(optim_paras, which, paras_fixed, is_debug):
+def get_optim_paras(optim_paras, which, is_debug):
     """ Get optimization parameters.
     """
     # Checks
@@ -728,7 +728,7 @@ def get_optim_paras(optim_paras, which, paras_fixed, is_debug):
     if which == 'free':
         x_free_curre = []
         for i in range(28):
-            if not paras_fixed[i]:
+            if not optim_paras['paras_fixed'][i]:
                 x_free_curre += [x[i]]
 
         x = np.array(x_free_curre)

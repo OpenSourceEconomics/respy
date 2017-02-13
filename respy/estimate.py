@@ -59,18 +59,14 @@ def check_estimation(respy_obj):
     optimizer_options = respy_obj.get_attr('optimizer_options')
     optimizer_used = respy_obj.get_attr('optimizer_used')
     optim_paras = respy_obj.get_attr('optim_paras')
-    paras_fixed = respy_obj.get_attr('paras_fixed')
     version = respy_obj.get_attr('version')
     maxfun = respy_obj.get_attr('maxfun')
 
-    # Get auxiliary objects
-    level = optim_paras['level'][0]
-
     # Ensure that at least one free parameter.
-    assert sum(paras_fixed) != 28
+    assert sum(optim_paras['paras_fixed']) != 28
 
     # Check that the used optimizers were defined by the user.
-    if level > 0:
+    if optim_paras['level'][0] > 0:
         if version == 'FORTRAN':
             assert 'FORT-SLSQP' in optimizer_options.keys()
         if version == 'PYTHON':
@@ -90,7 +86,7 @@ def check_estimation(respy_obj):
 
         # When the level of ambiguity is a free parameter, then we can only
         # allow for the constraint optimizers in the estimation.
-        if not paras_fixed[0]:
+        if not optim_paras['paras_fixed'][0]:
             if version == 'PYTHON':
                 assert optimizer_used in ['SCIPY-LBFGSB']
                 assert 'SCIPY-SLSQP' in optimizer_options.keys()
@@ -105,7 +101,7 @@ def check_estimation(respy_obj):
     full_options = dict()
     for optimizer in OPTIMIZERS:
         full_options[optimizer] = \
-            generate_optimizer_options(optimizer, paras_fixed)
+            generate_optimizer_options(optimizer, optim_paras)
 
     for optimizer in optimizer_options.keys():
         full_options[optimizer] = optimizer_options[optimizer]
