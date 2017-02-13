@@ -46,23 +46,25 @@ def check_optimization_parameters(x):
 def dist_econ_paras(x_all_curre):
     """ Update parameter values. The np.array type is maintained.
     """
+    # Discount rates
+    delta = x_all_curre[0:1]
 
     # Level of Ambiguity
-    level = x_all_curre[0:1]
+    level = x_all_curre[1:2]
 
     # Occupation A
-    coeffs_a = x_all_curre[1:7]
+    coeffs_a = x_all_curre[2:8]
 
     # Occupation B
-    coeffs_b = x_all_curre[7:13]
+    coeffs_b = x_all_curre[8:14]
 
     # Education
-    coeffs_edu = x_all_curre[13:16]
+    coeffs_edu = x_all_curre[14:17]
 
     # Home
-    coeffs_home = x_all_curre[16:17]
+    coeffs_home = x_all_curre[17:18]
 
-    shocks_coeffs = x_all_curre[17:]
+    shocks_coeffs = x_all_curre[18:]
     for i in [0, 4, 7, 9]:
         shocks_coeffs[i] **= 2
 
@@ -75,7 +77,8 @@ def dist_econ_paras(x_all_curre):
     shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
 
     # Collect arguments
-    args = (level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov)
+    args = (delta, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
+            shocks_cov)
 
     # Finishing
     return args
@@ -90,20 +93,23 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
 
     optim_paras = dict()
 
+    # Discount rate
+    optim_paras['delta'] = max(x_all_curre[0:1], 0.00)
+
     # Level of Ambiguity
-    optim_paras['level'] = max(x_all_curre[0:1], 0.00)
+    optim_paras['level'] = max(x_all_curre[1:2], 0.00)
 
     # Occupation A
-    optim_paras['coeffs_a'] = x_all_curre[1:7]
+    optim_paras['coeffs_a'] = x_all_curre[2:8]
 
     # Occupation B
-    optim_paras['coeffs_b'] = x_all_curre[7:13]
+    optim_paras['coeffs_b'] = x_all_curre[8:14]
 
     # Education
-    optim_paras['coeffs_edu'] = x_all_curre[13:16]
+    optim_paras['coeffs_edu'] = x_all_curre[14:17]
 
     # Home
-    optim_paras['coeffs_home'] = x_all_curre[16:17]
+    optim_paras['coeffs_home'] = x_all_curre[17:18]
 
     # Cholesky
     optim_paras['shocks_cholesky'], info = get_cholesky(x_all_curre, info)
@@ -120,10 +126,10 @@ def get_cholesky(x, info=None):
     """ Construct the Cholesky matrix.
     """
     shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x[17:18]
-    shocks_cholesky[1, :2] = x[18:20]
-    shocks_cholesky[2, :3] = x[20:23]
-    shocks_cholesky[3, :4] = x[23:27]
+    shocks_cholesky[0, :1] = x[18:19]
+    shocks_cholesky[1, :2] = x[19:21]
+    shocks_cholesky[2, :3] = x[21:24]
+    shocks_cholesky[3, :4] = x[24:28]
 
     # Stabilization
     if info is not None:
@@ -146,8 +152,9 @@ def get_cholesky(x, info=None):
         return shocks_cholesky, None
 
 
-def get_total_values(period, num_periods, delta, rewards_systematic, draws,
-        edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all):
+def get_total_values(period, num_periods, optim_paras, rewards_systematic,
+        draws, edu_max, edu_start, mapping_state_idx, periods_emax, k,
+        states_all):
     """ Get total value of all possible states.
     """
     # Initialize containers
@@ -169,7 +176,7 @@ def get_total_values(period, num_periods, delta, rewards_systematic, draws,
         emaxs = np.tile(0.0, 4)
 
     # Calculate total utilities
-    total_values = rewards_ex_post + delta * emaxs
+    total_values = rewards_ex_post + optim_paras['delta'] * emaxs
 
     # This is required to ensure that the agent does not choose any
     # inadmissible states. If the state is inadmissible emaxs takes
@@ -420,9 +427,9 @@ def generate_optimizer_options(which, paras_fixed):
         # It is not recommended that N is larger than upper as the code might
         # break down due to a segmentation fault. See the source files for the
         # absolute upper bounds.
-        assert sum(paras_fixed) != 27
-        lower = (27 - sum(paras_fixed)) + 2
-        upper = (2 * (27 - sum(paras_fixed)) + 1)
+        assert sum(paras_fixed) != 28
+        lower = (28 - sum(paras_fixed)) + 2
+        upper = (2 * (28 - sum(paras_fixed)) + 1)
         dict_['npt'] = np.random.randint(lower, upper + 1)
 
     elif which == 'FORT-BFGS':
@@ -448,14 +455,16 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     # Antibugging.
     assert (isinstance(dict_, dict))
 
-    paras_fixed = dict_['AMBIGUITY']['fixed'][:]
+    paras_fixed = dict_['BASICS']['fixed'][:]
+    paras_fixed += dict_['AMBIGUITY']['fixed'][:]
     paras_fixed += dict_['OCCUPATION A']['fixed'][:]
     paras_fixed += dict_['OCCUPATION B']['fixed'][:]
     paras_fixed += dict_['EDUCATION']['fixed'][:]
     paras_fixed += dict_['HOME']['fixed'][:]
     paras_fixed += dict_['SHOCKS']['fixed'][:]
 
-    paras_bounds = dict_['AMBIGUITY']['bounds'][:]
+    paras_bounds = dict_['BASICS']['bounds'][:]
+    paras_bounds += dict_['AMBIGUITY']['bounds'][:]
     paras_bounds += dict_['OCCUPATION A']['bounds'][:]
     paras_bounds += dict_['OCCUPATION B']['bounds'][:]
     paras_bounds += dict_['EDUCATION']['bounds'][:]
@@ -483,8 +492,9 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 str_ = '{0:<10} {1:>20}\n'
                 file_.write(str_.format('periods', dict_[flag]['periods']))
 
-                str_ = '{0:<10} {1:20.4f}\n'
-                file_.write(str_.format('delta', dict_[flag]['delta']))
+                val = dict_['BASICS']['coeffs'][0]
+                line = format_opt_parameters(val, 0, paras_fixed, paras_bounds)
+                file_.write(str_optim.format(*line))
 
                 file_.write('\n')
 
@@ -493,7 +503,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['HOME']['coeffs'][0]
-                line = format_opt_parameters(val, 16, paras_fixed, paras_bounds)
+                line = format_opt_parameters(val, 17, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -522,7 +532,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
-                    line = format_opt_parameters(val, 17 + i, paras_fixed, paras_bounds)
+                    line = format_opt_parameters(val, 18 + i, paras_fixed,
+                        paras_bounds)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
 
@@ -531,15 +542,15 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['EDUCATION']['coeffs'][0]
-                line = format_opt_parameters(val, 13, paras_fixed, paras_bounds)
-                file_.write(str_optim.format(*line))
-
-                val = dict_['EDUCATION']['coeffs'][1]
                 line = format_opt_parameters(val, 14, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
-                val = dict_['EDUCATION']['coeffs'][2]
+                val = dict_['EDUCATION']['coeffs'][1]
                 line = format_opt_parameters(val, 15, paras_fixed, paras_bounds)
+                file_.write(str_optim.format(*line))
+
+                val = dict_['EDUCATION']['coeffs'][2]
+                line = format_opt_parameters(val, 16, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -553,7 +564,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['AMBIGUITY']['coeffs'][0]
-                line = format_opt_parameters(val, 0, paras_fixed, paras_bounds)
+                line = format_opt_parameters(val, 1, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 str_ = '{0:<10} {1:>20}\n'
@@ -564,9 +575,9 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
             if flag in ['OCCUPATION A', 'OCCUPATION B']:
                 identifier = None
                 if flag == 'OCCUPATION A':
-                    identifier = 1
+                    identifier = 2
                 if flag == 'OCCUPATION B':
-                    identifier = 7
+                    identifier = 8
 
                 file_.write(flag + '\n\n')
 
@@ -660,16 +671,16 @@ def get_est_info():
         rslt['value_' + key_] = _process_value(line.pop(0), 'float')
 
     # Total number of evaluations and steps
-    line = shlex.split(linecache.getline('est.respy.info', 41))
+    line = shlex.split(linecache.getline('est.respy.info', 42))
     rslt['num_step'] = _process_value(line[3], 'int')
 
-    line = shlex.split(linecache.getline('est.respy.info', 43))
+    line = shlex.split(linecache.getline('est.respy.info', 44))
     rslt['num_eval'] = _process_value(line[3], 'int')
 
     # Parameter values
     for i, key_ in enumerate(['start', 'step', 'current']):
         rslt['paras_' + key_] = []
-        for j in range(13, 40):
+        for j in range(13, 41):
             line = shlex.split(linecache.getline('est.respy.info', j))
             rslt['paras_' + key_] += [_process_value(line[i + 1], 'float')]
         rslt['paras_' + key_] = np.array(rslt['paras_' + key_])
@@ -686,25 +697,28 @@ def get_optim_paras(optim_paras, which, paras_fixed, is_debug):
         assert check_model_parameters(optim_paras)
 
     # Initialize container
-    x = np.tile(np.nan, 27)
+    x = np.tile(np.nan, 28)
+
+    # Discount rate
+    x[0:1] = optim_paras['delta']
 
     # Level of Ambiguity
-    x[0:1] = optim_paras['level']
+    x[1:2] = optim_paras['level']
 
     # Occupation A
-    x[1:7] = optim_paras['coeffs_a']
+    x[2:8] = optim_paras['coeffs_a']
 
     # Occupation B
-    x[7:13] = optim_paras['coeffs_b']
+    x[8:14] = optim_paras['coeffs_b']
 
     # Education
-    x[13:16] = optim_paras['coeffs_edu']
+    x[14:17] = optim_paras['coeffs_edu']
 
     # Home
-    x[16:17] = optim_paras['coeffs_home']
+    x[17:18] = optim_paras['coeffs_home']
 
     # Shocks
-    x[17:27] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+    x[18:28] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Checks
     if is_debug:
@@ -713,7 +727,7 @@ def get_optim_paras(optim_paras, which, paras_fixed, is_debug):
     # Select subset
     if which == 'free':
         x_free_curre = []
-        for i in range(27):
+        for i in range(28):
             if not paras_fixed[i]:
                 x_free_curre += [x[i]]
 

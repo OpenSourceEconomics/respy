@@ -503,7 +503,7 @@ class TestClass(object):
 
         # Construct the exogenous variables for all points of the state
         # space.
-        args = (period, num_periods, num_states, delta,
+        args = (period, num_periods, num_states, optim_paras,
             periods_rewards_systematic, shifts, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all)
 
@@ -611,7 +611,7 @@ class TestClass(object):
         each other.
         """
         # Draw a random vector of parameters
-        x = np.random.uniform(size=27)
+        x = np.random.uniform(size=28)
 
         # Construct the Cholesky decompositions
         py = get_cholesky(x, info=0)

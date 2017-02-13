@@ -26,8 +26,8 @@ class OptimizationClass(object):
         # Updated attributes
         # TODO: The setup of the optim container is different thanin FORT.
         # Here all parametes are included, in FORT only free.
-        self.x_optim_container = np.tile(np.nan, (27, 3))
-        self.x_econ_container = np.tile(np.nan, (27, 3))
+        self.x_optim_container = np.tile(np.nan, (28, 3))
+        self.x_econ_container = np.tile(np.nan, (28, 3))
         self.crit_vals = np.tile(np.inf, 3)
         self.num_step = -1
         self.num_eval = 0
@@ -77,9 +77,9 @@ class OptimizationClass(object):
         paras_fixed = self.paras_fixed
 
         # Construct the complete list of optimization parameters.
-        x_optim_all_unscaled = np.tile(np.nan, 27)
+        x_optim_all_unscaled = np.tile(np.nan, 28)
         j = 0
-        for i in range(27):
+        for i in range(28):
             if paras_fixed[i]:
                 x_optim_all_unscaled[i] = x_optim_all_unscaled_start[i].copy()
             else:

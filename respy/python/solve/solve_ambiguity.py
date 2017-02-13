@@ -8,7 +8,7 @@ from respy.python.solve.solve_risk import construct_emax_risk
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
+        periods_emax, states_all, mapping_state_idx, shocks_cov,
         measure, optim_paras, optimizer_options, file_sim, is_write):
     """ Construct EMAX accounting for a worst case evaluation.
     """
@@ -16,7 +16,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
 
     base_args = (num_periods, num_draws_emax, period, k, draws_emax_transformed,
         rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, delta)
+        mapping_state_idx, optim_paras)
 
     if is_deterministic:
         x_shift, div = [0.0, 0.0], 0.0
@@ -30,7 +30,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     elif measure == 'kl':
 
         args = ()
-        args += base_args + (shocks_cov, optim_paras, optimizer_options)
+        args += base_args + (shocks_cov, optimizer_options)
         x_shift, is_success, message = get_worst_case(*args)
 
         div = float(-(constraint_ambiguity(x_shift, shocks_cov, optim_paras) -
@@ -49,8 +49,8 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
 
 def get_worst_case(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta, shocks_cov,
-        optim_paras, optimizer_options):
+        periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov,
+        optimizer_options):
     """ Run the optimization.
     """
     # Initialize options.
@@ -72,7 +72,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
 
     args = (num_periods, num_draws_emax, period, k, draws_emax_transformed,
         rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, delta)
+        mapping_state_idx, optim_paras)
 
     # Run optimization
     opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
@@ -97,7 +97,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
 
 def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, delta):
+        periods_emax, states_all, mapping_state_idx, optim_paras):
     """ Evaluating the constructed EMAX with the admissible distribution.
     """
     draws_relevant = draws_emax_transformed.copy()
@@ -106,7 +106,7 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
 
     emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
         draws_relevant, rewards_systematic, edu_max, edu_start, periods_emax,
-        states_all, mapping_state_idx, delta)
+        states_all, mapping_state_idx, optim_paras)
 
     return emax
 

@@ -3,7 +3,6 @@ import shlex
 import os
 
 
-
 def read(fname):
     """ Read and process a RESPY initialization file.
     """

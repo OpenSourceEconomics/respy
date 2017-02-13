@@ -321,15 +321,15 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         # Transform bounds
         bounds_lower = []
         bounds_upper = []
-        for i in range(27):
+        for i in range(28):
             bounds_lower += [paras_bounds[i][0]]
             bounds_upper += [paras_bounds[i][1]]
 
-        for i in range(27):
+        for i in range(28):
             if bounds_lower[i] is None:
                 bounds_lower[i] = -MISSING_FLOAT
 
-        for i in range(27):
+        for i in range(28):
             if bounds_upper[i] is None:
                 bounds_upper[i] = MISSING_FLOAT
 

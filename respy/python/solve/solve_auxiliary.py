@@ -11,7 +11,6 @@ from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import MISSING_FLOAT
-from respy.python.shared.shared_constants import opt_ambi_info
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
@@ -163,8 +162,8 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         periods_draws_emax, num_draws_emax, states_number_period,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
-        states_all, delta, is_debug, is_interpolated, num_points_interp,
-        measure, optim_paras, optimizer_options, file_sim, is_write):
+        states_all, is_debug, is_interpolated, num_points_interp, measure,
+        optim_paras, optimizer_options, file_sim, is_write):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
@@ -230,16 +229,16 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
             # used in either the construction of the prediction model or the
             # prediction step.
             exogenous, maxe = get_exogenous_variables(period, num_periods,
-                num_states, delta, periods_rewards_systematic, shifts,
+                num_states, optim_paras, periods_rewards_systematic, shifts,
                 edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
 
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
             endogenous = get_endogenous_variable(period, num_periods,
-                num_states, delta, periods_rewards_systematic, edu_max,
-                edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws_emax, maxe, draws_emax_transformed,
-                shocks_cov, measure, optim_paras, optimizer_options, file_sim,
+                num_states, periods_rewards_systematic, edu_max, edu_start,
+                mapping_state_idx, periods_emax, states_all, is_simulated,
+                num_draws_emax, maxe, draws_emax_transformed, shocks_cov,
+                measure, optim_paras, optimizer_options, file_sim,
                 is_write)
 
             # Create prediction model based on the random subset of points where
@@ -265,13 +264,13 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                     emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
-                        mapping_state_idx, delta, shocks_cov, measure,
-                        optim_paras, optimizer_options, file_sim, is_write)
+                        mapping_state_idx, shocks_cov, measure, optim_paras,
+                        optimizer_options, file_sim, is_write)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
-                        mapping_state_idx, delta)
+                        mapping_state_idx, optim_paras)
 
                 # Store results
                 periods_emax[period, k] = emax
@@ -307,7 +306,7 @@ def get_simulated_indicator(num_points_interp, num_candidates, period, is_debug)
     return is_simulated
 
 
-def get_exogenous_variables(period, num_periods, num_states, delta,
+def get_exogenous_variables(period, num_periods, num_states, optim_paras,
         periods_rewards_systematic, shifts, edu_max, edu_start,
         mapping_state_idx, periods_emax, states_all):
     """ Get exogenous variables for interpolation scheme. The unused argument
@@ -325,9 +324,9 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Get total value
-        total_values = get_total_values(period, num_periods, delta,
-            rewards_systematic, shifts, edu_max, edu_start,
-            mapping_state_idx, periods_emax, k, states_all)
+        total_values = get_total_values(period, num_periods, optim_paras,
+            rewards_systematic, shifts, edu_max, edu_start, mapping_state_idx,
+            periods_emax, k, states_all)
 
         # Implement level shifts
         maxe[k] = max(total_values)
@@ -344,7 +343,7 @@ def get_exogenous_variables(period, num_periods, num_states, delta,
     return exogenous, maxe
 
 
-def get_endogenous_variable(period, num_periods, num_states, delta,
+def get_endogenous_variable(period, num_periods, num_states,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
         draws_emax_transformed, shocks_cov, measure, optim_paras,
@@ -368,13 +367,13 @@ def get_endogenous_variable(period, num_periods, num_states, delta,
             emax = construct_emax_ambiguity(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
                 edu_max, edu_start, periods_emax, states_all,
-                mapping_state_idx, delta, shocks_cov, measure, optim_paras,
+                mapping_state_idx, shocks_cov, measure, optim_paras,
                 optimizer_options, file_sim, is_write)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
                 edu_max, edu_start, periods_emax, states_all,
-                mapping_state_idx, delta)
+                mapping_state_idx, optim_paras)
 
         # Construct dependent variable
         endogenous_variable[k] = emax - maxe[k]
@@ -423,30 +422,6 @@ def check_prediction_model(predictions_diff, model):
     assert (np.all(predictions_diff >= 0.00))
     assert (results.params.shape == (9,))
     assert (np.all(np.isfinite(results.params)))
-
-
-def checks(str_, *args):
-    """ Some guards to the interfaces.
-    """
-    if str_ == '_backward_induction_procedure':
-
-        # Distribute input parameters
-        delta, = args
-
-        # The backward induction procedure does not work properly for the
-        # myopic case anymore. This is necessary as in the special
-        # case where delta is equal to zero, (-np.inf * 0.00) evaluates to
-        # NAN. This is returned as the maximum value when calling np.argmax.
-        # This was preciously handled by an auxiliary function
-        # "_stabilize_myopic" inside "get_total_values".
-        assert (delta > 0)
-
-    else:
-
-        raise AssertionError
-
-    # Finishing
-    return True
 
 
 def check_input(respy_obj):

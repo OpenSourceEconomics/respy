@@ -67,7 +67,7 @@ def check_estimation(respy_obj):
     level = optim_paras['level'][0]
 
     # Ensure that at least one free parameter.
-    assert sum(paras_fixed) != 27
+    assert sum(paras_fixed) != 28
 
     # Check that the used optimizers were defined by the user.
     if level > 0:

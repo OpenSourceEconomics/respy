@@ -9,7 +9,7 @@ from respy.python.shared.shared_auxiliary import get_total_values
 
 
 def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
-        states_all, num_periods, edu_start, edu_max, delta, num_agents_sim,
+        states_all, num_periods, edu_start, edu_max, num_agents_sim,
         periods_draws_sims, seed_sim, file_sim, optim_paras):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
@@ -55,9 +55,9 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
-            total_values = get_total_values(period,
-                num_periods, delta, rewards_systematic, draws, edu_max,
-                edu_start, mapping_state_idx, periods_emax, k, states_all)
+            total_values = get_total_values(period, num_periods, optim_paras,
+                rewards_systematic, draws, edu_max, edu_start,
+                mapping_state_idx, periods_emax, k, states_all)
 
             # Determine optimal choice
             max_idx = np.argmax(total_values)

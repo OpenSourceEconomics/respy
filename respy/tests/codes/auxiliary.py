@@ -194,9 +194,9 @@ def write_draws(num_periods, max_draws):
 def get_valid_values(which):
     """ Simply get a valid value.
     """
-    assert which in ['amb', 'cov', 'coeff']
+    assert which in ['amb', 'cov', 'coeff', 'delta']
 
-    if which in ['amb']:
+    if which in ['amb', 'delta']:
         value = np.random.choice([0.0, np.random.uniform()])
     elif which in ['coeff']:
         value = np.random.uniform(-0.05, 0.05)
@@ -209,11 +209,11 @@ def get_valid_values(which):
 def get_valid_bounds(which, value):
     """ Simply get a valid set of bounds.
     """
-    assert which in ['amb', 'cov', 'coeff']
+    assert which in ['amb', 'cov', 'coeff', 'delta']
 
     # The bounds cannot be too tight as otherwise the BOBYQA might not start
     # properly.
-    if which in ['amb']:
+    if which in ['delta', 'amb']:
         upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
         bounds = [max(0.0, value - np.random.uniform(low=0.1)), upper]
     elif which in ['coeff']:

@@ -249,7 +249,7 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
 
             # Ensure that a valid estimator is selected in the case that a
             # free parameter has bounds.
-            for i in range(27):
+            for i in range(28):
                 if paras_fixed[i]:
                     continue
                 if any(item is not None for item in paras_bounds[i]):

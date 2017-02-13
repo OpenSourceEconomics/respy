@@ -97,7 +97,7 @@ class TestClass(object):
 
             respy_obj.unlock()
 
-            respy_obj.set_attr('delta', delta)
+            respy_obj.attr['optim_paras']['delta'] = delta
 
             respy_obj.lock()
 
@@ -253,8 +253,8 @@ class TestClass(object):
         respy_obj.lock()
 
         action = np.random.choice(['fix', 'free'])
-        num_draws = np.random.randint(1, 17)
-        identifiers = np.random.choice(range(17), num_draws, replace=False)
+        num_draws = np.random.randint(1, 18)
+        identifiers = np.random.choice(range(18), num_draws, replace=False)
         scripts_modify(identifiers, action, 'test.respy.ini')
 
         _, update_val = estimate(respy_obj)

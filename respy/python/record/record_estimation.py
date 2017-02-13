@@ -24,7 +24,7 @@ def record_estimation_scaling(x_optim_free_unscaled_start,
         out_file.write(fmt_.format(*labels))
 
         j = 0
-        for i in range(27):
+        for i in range(28):
             if paras_fixed[i]:
                 continue
 
@@ -91,22 +91,22 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
     if is_start:
         opt_obj.crit_vals[0] = fval
         opt_obj.x_optim_container[:, 0] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:17, 0] = x_optim_all_unscaled[:17]
-        opt_obj.x_econ_container[17:, 0] = shocks_coeffs
+        opt_obj.x_econ_container[:18, 0] = x_optim_all_unscaled[:18]
+        opt_obj.x_econ_container[18:, 0] = shocks_coeffs
 
     if is_step:
         opt_obj.num_step += 1
         opt_obj.crit_vals[1] = fval
         opt_obj.x_optim_container[:, 1] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:17, 1] = x_optim_all_unscaled[:17]
-        opt_obj.x_econ_container[17:, 1] = shocks_coeffs
+        opt_obj.x_econ_container[:18, 1] = x_optim_all_unscaled[:18]
+        opt_obj.x_econ_container[18:, 1] = shocks_coeffs
 
     if True:
         opt_obj.num_eval += 1
         opt_obj.crit_vals[2] = fval
         opt_obj.x_optim_container[:, 2] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:17, 2] = x_optim_all_unscaled[:17]
-        opt_obj.x_econ_container[17:, 2] = shocks_coeffs
+        opt_obj.x_econ_container[:18, 2] = x_optim_all_unscaled[:18]
+        opt_obj.x_econ_container[18:, 2] = shocks_coeffs
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container
@@ -143,7 +143,7 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
 
         # Formatting for the file
         fmt_ = '   {:>10}' + '    {:>25}' * 3
-        for i in range(27):
+        for i in range(28):
             if paras_fixed[i]:
                 continue
             line = [i] + char_floats(x_optim_container[i, :])
@@ -197,7 +197,7 @@ def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
         out_file.write('\n{:>25}\n\n'.format('Economic Parameters'))
         line = ['Identifier', 'Start', 'Step', 'Current']
         out_file.write(fmt_.format(*line) + '\n\n')
-        for i, _ in enumerate(range(27)):
+        for i, _ in enumerate(range(28)):
             line = [i]
             line += char_floats([paras_start[i], paras_step[i]])
             line += char_floats(paras_current[i])

@@ -70,11 +70,11 @@ class TestClass(object):
         """ Testing whether back-and-forth transformation have no effect.
         """
         # Generate random request
-        paras_fixed = np.random.choice([True, False], 27)
+        paras_fixed = np.random.choice([True, False], 28)
 
         for i in range(10):
             # Create random parameter vector
-            base = np.random.uniform(size=27)
+            base = np.random.uniform(size=28)
             x = base.copy()
 
             # Apply numerous transformations

@@ -19,7 +19,6 @@ from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import ROOT_DIR
-from respy.python.shared.shared_constants import EXEC_DIR
 from respy.python.read.read_python import read
 
 # Special care with derived attributes is required to maintain integrity of
@@ -113,8 +112,6 @@ class RespyCls(object):
 
         self.attr['maxfun'] = None
 
-        self.attr['delta'] = None
-
         self.attr['tau'] = None
 
         # Derived attributes
@@ -153,8 +150,8 @@ class RespyCls(object):
         self.reset()
 
         # Determine use of interface
-        level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov = \
-            dist_econ_paras(x_econ)
+        delta, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov \
+            = dist_econ_paras(x_econ)
 
         shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
@@ -268,31 +265,33 @@ class RespyCls(object):
         # Basics
         init_dict['BASICS'] = dict()
         init_dict['BASICS']['periods'] = self.attr['num_periods']
-        init_dict['BASICS']['delta'] = self.attr['delta']
+        init_dict['BASICS']['coeffs'] = self.attr['optim_paras']['delta']
+        init_dict['BASICS']['bounds'] = self.attr['paras_bounds'][0:1]
+        init_dict['BASICS']['fixed'] = self.attr['paras_fixed'][0:1]
 
         # Occupation A
         init_dict['OCCUPATION A'] = dict()
         init_dict['OCCUPATION A']['coeffs'] = \
             self.attr['optim_paras']['coeffs_a']
 
-        init_dict['OCCUPATION A']['bounds'] = self.attr['paras_bounds'][1:7]
-        init_dict['OCCUPATION A']['fixed'] = self.attr['paras_fixed'][1:7]
+        init_dict['OCCUPATION A']['bounds'] = self.attr['paras_bounds'][2:8]
+        init_dict['OCCUPATION A']['fixed'] = self.attr['paras_fixed'][2:8]
 
         # Occupation A
         init_dict['OCCUPATION B'] = dict()
         init_dict['OCCUPATION B']['coeffs'] = \
             self.attr['optim_paras']['coeffs_b']
 
-        init_dict['OCCUPATION B']['bounds'] = self.attr['paras_bounds'][7:13]
-        init_dict['OCCUPATION B']['fixed'] = self.attr['paras_fixed'][7:13]
+        init_dict['OCCUPATION B']['bounds'] = self.attr['paras_bounds'][8:14]
+        init_dict['OCCUPATION B']['fixed'] = self.attr['paras_fixed'][8:14]
 
         # Education
         init_dict['EDUCATION'] = dict()
         init_dict['EDUCATION']['coeffs'] = \
             self.attr['optim_paras']['coeffs_edu']
 
-        init_dict['EDUCATION']['bounds'] = self.attr['paras_bounds'][13:16]
-        init_dict['EDUCATION']['fixed'] = self.attr['paras_fixed'][13:16]
+        init_dict['EDUCATION']['bounds'] = self.attr['paras_bounds'][14:17]
+        init_dict['EDUCATION']['fixed'] = self.attr['paras_fixed'][14:17]
 
         init_dict['EDUCATION']['start'] = self.attr['edu_start']
         init_dict['EDUCATION']['max'] = self.attr['edu_max']
@@ -302,8 +301,8 @@ class RespyCls(object):
         init_dict['HOME']['coeffs'] = \
             self.attr['optim_paras']['coeffs_home']
 
-        init_dict['HOME']['bounds'] = self.attr['paras_bounds'][16:17]
-        init_dict['HOME']['fixed'] = self.attr['paras_fixed'][16:17]
+        init_dict['HOME']['bounds'] = self.attr['paras_bounds'][17:18]
+        init_dict['HOME']['fixed'] = self.attr['paras_fixed'][17:18]
 
         # Shocks
         init_dict['SHOCKS'] = dict()
@@ -311,7 +310,7 @@ class RespyCls(object):
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
         init_dict['SHOCKS']['coeffs'] = shocks_coeffs
 
-        init_dict['SHOCKS']['bounds'] = self.attr['paras_bounds'][17:27]
+        init_dict['SHOCKS']['bounds'] = self.attr['paras_bounds'][18:28]
 
         # Again we need to reorganize the order of the coefficients
         paras_fixed_reordered = self.attr['paras_fixed'][:]
@@ -320,7 +319,7 @@ class RespyCls(object):
         for old, new in PARAS_MAPPING:
             paras_fixed[old] = paras_fixed_reordered[new]
 
-        init_dict['SHOCKS']['fixed'] = paras_fixed[17:27]
+        init_dict['SHOCKS']['fixed'] = paras_fixed[18:28]
 
         # Solution
         init_dict['SOLUTION'] = dict()
@@ -332,8 +331,8 @@ class RespyCls(object):
         init_dict['AMBIGUITY'] = dict()
         init_dict['AMBIGUITY']['measure'] = self.attr['measure']
         init_dict['AMBIGUITY']['coeffs'] = self.attr['optim_paras']['level']
-        init_dict['AMBIGUITY']['bounds'] = self.attr['paras_bounds'][0:1]
-        init_dict['AMBIGUITY']['fixed'] = self.attr['paras_fixed'][0:1]
+        init_dict['AMBIGUITY']['bounds'] = self.attr['paras_bounds'][1:2]
+        init_dict['AMBIGUITY']['fixed'] = self.attr['paras_fixed'][1:2]
 
         # Simulation
         init_dict['SIMULATION'] = dict()
@@ -451,8 +450,6 @@ class RespyCls(object):
 
         self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-        self.attr['delta'] = init_dict['BASICS']['delta']
-
         self.attr['tau'] = init_dict['ESTIMATION']['tau']
 
         self.attr['derivatives'] = init_dict['DERIVATIVES']['version']
@@ -496,10 +493,13 @@ class RespyCls(object):
             init_dict['HOME']['coeffs']
         self.attr['optim_paras']['level'] = \
             init_dict['AMBIGUITY']['coeffs']
+        self.attr['optim_paras']['delta'] = \
+            init_dict['BASICS']['coeffs']
 
         # Initialize information about optimization parameters
         for which in ['fixed', 'bounds']:
-            self.attr['paras_' + which] = init_dict['AMBIGUITY'][which][:]
+            self.attr['paras_' + which] = init_dict['BASICS'][which][:]
+            self.attr['paras_' + which] += init_dict['AMBIGUITY'][which][:]
             self.attr['paras_' + which] += init_dict['OCCUPATION A'][which][:]
             self.attr['paras_' + which] += init_dict['OCCUPATION B'][which][:]
             self.attr['paras_' + which] += init_dict['EDUCATION'][which][:]
@@ -509,7 +509,7 @@ class RespyCls(object):
         # Ensure that all elements in the dictionary are of the same
         # type.
         keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-        keys += ['shocks_cholesky', 'level']
+        keys += ['shocks_cholesky', 'level', 'delta']
         for key_ in keys:
             self.attr['optim_paras'][key_] = \
                 np.array(self.attr['optim_paras'][key_])
@@ -554,7 +554,7 @@ class RespyCls(object):
         # Update derived attributes
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
-        self.attr['is_myopic'] = (self.attr['delta'] == 0.00)
+        self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)
 
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
@@ -609,8 +609,6 @@ class RespyCls(object):
 
         maxfun = self.attr['maxfun']
 
-        delta = self.attr['delta']
-
         tau = self.attr['tau']
 
         # We also load the full configuration.
@@ -632,7 +630,7 @@ class RespyCls(object):
         # Status of optimization parameters
         for var in [paras_fixed, paras_bounds]:
             assert isinstance(var, list)
-            assert (len(var) == 27)
+            assert (len(var) == 28)
 
         assert (np.all(paras_fixed) in [True, False])
 
@@ -682,11 +680,6 @@ class RespyCls(object):
         assert (isinstance(tau, float))
         assert (tau > 0)
 
-        # Discount factor
-        assert (np.isfinite(delta))
-        assert (isinstance(delta, float))
-        assert (delta >= 0.00)
-
         # Interpolation
         assert (is_interpolated in [True, False])
         assert (isinstance(num_points_interp, int))
@@ -727,7 +720,7 @@ class RespyCls(object):
         # or none. As a special case, we also allow for all off-diagonal
         # elements to be fixed to zero.
         shocks_coeffs = optim_paras['shocks_cholesky'][np.tril_indices(4)]
-        shocks_fixed = paras_fixed[17:]
+        shocks_fixed = paras_fixed[18:]
 
         all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
         all_free = all(is_free is True for is_free in shocks_fixed)
@@ -741,9 +734,12 @@ class RespyCls(object):
 
         assert all_free or all_fixed or off_diagonal
 
-        # Ambiguity needs to be larger than one ...
-        assert paras_bounds[0][0] >= 0.00
-        for i in range(27):
+        # Discount rate and ambiguity needs to be larger than on zero. The
+        # constraint needs to be present all the time.
+        for i in range(2):
+            assert paras_bounds[i][0] >= 0.00
+
+        for i in range(28):
             lower, upper = paras_bounds[i]
             if lower is not None:
                 assert isinstance(lower, float)
@@ -757,7 +753,7 @@ class RespyCls(object):
                 assert upper >= lower
             # At this point no bounds for the elements of the covariance
             # matrix are allowed.
-            if i in range(17, 27):
+            if i in range(18, 28):
                 assert paras_bounds[i] == [None, None]
 
     def _check_integrity_results(self):

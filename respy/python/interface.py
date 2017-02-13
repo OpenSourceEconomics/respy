@@ -26,17 +26,20 @@ def respy_interface(respy_obj, request, data_array=None):
     """
     # Distribute class attributes
     optim_paras, num_periods, edu_start, is_debug, edu_max, \
-        delta, num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
+        num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, paras_fixed, optimizer_options, seed_sim, \
         num_agents_sim, measure, file_sim, paras_bounds, preconditioning = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
-                'edu_start', 'is_debug', 'edu_max', 'delta', 'num_draws_prob',
+                'edu_start', 'is_debug', 'edu_max', 'num_draws_prob',
                 'seed_prob', 'num_draws_emax', 'seed_emax', 'min_idx',
                 'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
                 'optimizer_used', 'tau', 'paras_fixed', 'optimizer_options',
                 'seed_sim', 'num_agents_sim', 'measure', 'file_sim',
                 'paras_bounds', 'preconditioning')
+
+    # Distribute optimization parameters.
+    delta = optim_paras['delta']
 
     if request == 'estimate':
 
@@ -65,7 +68,7 @@ def respy_interface(respy_obj, request, data_array=None):
         # Collect arguments that are required for the criterion function. These
         # must be in the correct order already.
         args = (is_interpolated, num_draws_emax, num_periods,
-            num_points_interp, is_myopic, edu_start, is_debug, edu_max, delta,
+            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
             data_array, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
             mapping_state_idx, max_states_period, measure, optimizer_options)
@@ -74,11 +77,10 @@ def respy_interface(respy_obj, request, data_array=None):
         # requested is accounted for. Note, that the relevant value of the
         # criterion function is always the one indicated by the class
         # attribute and not the value returned by the optimization algorithm.
-
         num_free = paras_fixed.count(False)
 
         paras_bounds_free_unscaled = []
-        for i in range(27):
+        for i in range(28):
             if not paras_fixed[i]:
                 lower, upper = paras_bounds[i][:]
                 if lower is None:
@@ -213,7 +215,7 @@ def respy_interface(respy_obj, request, data_array=None):
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, states_all = pyth_solve(is_interpolated,
             num_points_interp, num_draws_emax, num_periods, is_myopic,
-            edu_start, is_debug, edu_max, min_idx, delta, periods_draws_emax,
+            edu_start, is_debug, edu_max, min_idx, periods_draws_emax,
             measure, optim_paras, file_sim, optimizer_options)
 
         solution = (periods_rewards_systematic, states_number_period,
@@ -221,8 +223,8 @@ def respy_interface(respy_obj, request, data_array=None):
 
         data_array = pyth_simulate(periods_rewards_systematic,
             mapping_state_idx, periods_emax, states_all, num_periods, edu_start,
-            edu_max, delta, num_agents_sim, periods_draws_sims, seed_sim,
-            file_sim, optim_paras)
+            edu_max, num_agents_sim, periods_draws_sims, seed_sim, file_sim,
+            optim_paras)
 
         args = (solution, data_array)
 
@@ -253,7 +255,7 @@ def get_precondition_matrix(preconditioning, paras_fixed,
     # Get the subset of free parameters for subsequent numerical
     # approximation of the gradient.
     x_optim_free_unscaled_start = []
-    for i in range(27):
+    for i in range(28):
         if not paras_fixed[i]:
             x_optim_free_unscaled_start += [x_optim_all_unscaled_start[i]]
 
