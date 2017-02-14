@@ -193,9 +193,12 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         assert (constraints['is_myopic'] in [True, False])
         # Replace in initialization files
         if constraints['is_myopic']:
-            dict_['BASICS']['delta'] = 0.0
+            dict_['BASICS']['coeffs'] = [0.0]
+            dict_['BASICS']['bounds'] = [get_valid_bounds('delta', 0.00)]
         else:
-            dict_['BASICS']['delta'] = np.random.uniform(0.1, 1.0)
+            value = np.random.uniform(0.01, 1.0)
+            dict_['BASICS']['coeffs'] = [value]
+            dict_['BASICS']['bounds'] = [get_valid_bounds('amb', value)]
 
     # Replace discount factor. This is option is needed in addition to
     # is_myopic the code is run for very small levels of delta and compared
@@ -209,7 +212,7 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         assert (delta >= 0.0)
         assert (isinstance(delta, float))
         # Replace in initialization file
-        dict_['BASICS']['delta'] = delta
+        dict_['BASICS']['coeffs'] = delta
 
     # No random component to rewards
     if 'flag_deterministic' in constraints.keys():
