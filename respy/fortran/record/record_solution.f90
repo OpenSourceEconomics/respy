@@ -81,7 +81,6 @@ SUBROUTINE record_solution_progress(indicator, file_sim, period, num_states)
 
         WRITE(99, *) ' ... not required due to myopic agents'
         WRITE(99, *)
-        WRITE(99, *)
 
     END IF
 

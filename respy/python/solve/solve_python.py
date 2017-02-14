@@ -46,7 +46,8 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
         num_points_interp, measure, optim_paras, optimizer_options,
         file_sim, True)
 
-    record_solution_progress(-1, file_sim)
+    if not is_myopic:
+        record_solution_progress(-1, file_sim)
 
     # Collect return arguments in tuple
     args = (periods_rewards_systematic, states_number_period,

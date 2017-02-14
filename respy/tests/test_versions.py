@@ -216,6 +216,7 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
         level = respy_obj.get_attr('optim_paras')['level']
+        delta = respy_obj.get_attr('optim_paras')['delta']
         file_sim = respy_obj.get_attr('file_sim')
         is_ambiguity = (level > MIN_AMBIGUITY)
 
@@ -249,8 +250,8 @@ class TestClass(object):
             assert open(fname, 'r').read() == base_sim_log
 
             # Check for identical logging
-            fname = file_sim + '.respy.amb'
-            if is_ambiguity:
+            if delta > 0.00 and is_ambiguity:
+                fname = file_sim + '.respy.amb'
                 if base_amb_log is None:
                     base_amb_log = open(fname, 'r').read()
                 assert open(fname, 'r').read() == base_amb_log

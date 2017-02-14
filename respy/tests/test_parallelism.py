@@ -27,11 +27,14 @@ class TestClass(object):
         constr['maxfun'] = np.random.randint(0, 50)
         init_dict = generate_random_dict(constr)
 
-        # If ambiguity is a not fixed, we need to ensure a bound-constraint
-        # optimizer. However, this is not the standard flag_estimation as
-        # the number of function evaluation is possibly much larger to detect
-        # and differences in the updates of the optimizer steps depending on
-        # the implementation.
+        # If ambiguity or delta is a not fixed, we need to ensure a
+        # bound-constraint optimizer. However, this is not the standard
+        # flag_estimation as the number of function evaluation is possibly
+        # much larger to detect and differences in the updates of the optimizer
+        # steps depending on the implementation.
+        if not init_dict['BASICS']['fixed'][0]:
+            init_dict['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
+
         if not init_dict['AMBIGUITY']['fixed'][0]:
             init_dict['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
 
