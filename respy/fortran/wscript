@@ -8,40 +8,31 @@ def build(ctx):
            'shared/shared_containers.f90',
            'shared/shared_interfaces.f90',
            'record/record_warning.f90',
-           'shared/shared_utilities.f90',
            'shared/shared_auxiliary.f90',
+           'shared/shared_utilities.f90',
+           'solve/solve_risk.f90',
+           'solve/solve_auxiliary.f90',
+           'solve/solve_ambiguity.f90',
+           'solve/solve_fortran.f90',
+           'evaluate/evaluate_auxiliary.f90',
+           'evaluate/evaluate_fortran.f90',
+           'estimate/estimate_fortran.f90',
            'record/record_estimation.f90',
            'record/record_solution.f90',
            'record/record_simulation.f90',
            'record/record_ambiguity.f90',
-           'solve/solve_risk.f90',
-           'solve/solve_ambiguity.f90',
-           'solve/solve_auxiliary.f90',
-           'solve/solve_fortran.f90',
-           'evaluate/evaluate_auxiliary.f90',
-           'evaluate/evaluate_fortran.f90',
+           'simulate/simulate_fortran.f90',
            'optimizers/slsqp.f',
            'optimizers/bobyqa.f90',
            'optimizers/newuoa.f90',
            'optimizers/dfpmin.f90',
            'optimizers/optimizers_interfaces.f90',
-           'estimate/estimate_fortran.f90',
-           'simulate/simulate_fortran.f90',
            'resfort_library.f90']
 
     # TODO: When revising the build process, it want to explore ways to
     # impose the check for ZeroDivision Errors in all modules besides the SLSQP.
     flags = ctx.env.FCFLAGS + ['-fPIC']
-    #ctx(features=['fc', 'fcstlib'], source=src, target='resfort',
-    # fcflags=flags)
-    ctx.add_group()
-    for source in src:
-        ctx(features=['fc'], source=source, target='resfort',
-            fcflags=flags)
-
-        ctx.add_group()
-
-    ctx.stlib(source=src, target='resfort', fcflags=flags)
+    ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)
 
     ctx.add_group()
 
