@@ -16,7 +16,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
 
     base_args = (num_periods, num_draws_emax, period, k, draws_emax_transformed,
         rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, optim_paras)
+        mapping_state_idx)
 
     if is_deterministic:
         x_shift, div = [0.0, 0.0], 0.0
@@ -30,7 +30,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     elif measure == 'kl':
 
         args = ()
-        args += base_args + (shocks_cov, optimizer_options)
+        args += base_args + (shocks_cov, optim_paras, optimizer_options)
         x_shift, is_success, message = get_worst_case(*args)
 
         div = float(-(constraint_ambiguity(x_shift, shocks_cov, optim_paras) -
@@ -42,14 +42,16 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     if is_write:
         record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
 
-    emax = criterion_ambiguity(x_shift, *base_args)
+    args = ()
+    args += base_args + (optim_paras,)
+    emax = criterion_ambiguity(x_shift, *args)
 
     return emax
 
 
 def get_worst_case(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov,
+        periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras,
         optimizer_options):
     """ Run the optimization.
     """

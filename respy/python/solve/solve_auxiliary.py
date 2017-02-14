@@ -228,8 +228,9 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
             # used in either the construction of the prediction model or the
             # prediction step.
             exogenous, maxe = get_exogenous_variables(period, num_periods,
-                num_states, optim_paras, periods_rewards_systematic, shifts,
-                edu_max, edu_start, mapping_state_idx, periods_emax, states_all)
+                num_states, periods_rewards_systematic, shifts, edu_max,
+                edu_start, mapping_state_idx, periods_emax, states_all,
+                optim_paras)
 
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
@@ -305,9 +306,9 @@ def get_simulated_indicator(num_points_interp, num_candidates, period, is_debug)
     return is_simulated
 
 
-def get_exogenous_variables(period, num_periods, num_states, optim_paras,
+def get_exogenous_variables(period, num_periods, num_states,
         periods_rewards_systematic, shifts, edu_max, edu_start,
-        mapping_state_idx, periods_emax, states_all):
+        mapping_state_idx, periods_emax, states_all, optim_paras):
     """ Get exogenous variables for interpolation scheme. The unused argument
     is present to align the interface between the PYTHON and FORTRAN
     implementations.
