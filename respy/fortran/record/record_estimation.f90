@@ -140,20 +140,20 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     !/* external objects        */
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled(num_free)
-    REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(27)
+    REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(28)
     REAL(our_dble), INTENT(IN)      :: val_current
     REAL(our_dble), INTENT(IN)      :: start
 
     INTEGER(our_int), INTENT(IN)    :: num_eval
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(27)
+    LOGICAL, INTENT(IN)             :: paras_fixed(28)
 
     !/* internal objects        */
 
     INTEGER(our_int), SAVE          :: num_step = - one_int
 
-    REAL(our_dble), SAVE            :: x_optim_container(27, 3) = -HUGE_FLOAT
-    REAL(our_dble), SAVE            :: x_econ_container(27, 3) = -HUGE_FLOAT
+    REAL(our_dble), SAVE            :: x_optim_container(28, 3) = -HUGE_FLOAT
+    REAL(our_dble), SAVE            :: x_econ_container(28, 3) = -HUGE_FLOAT
 
     REAL(our_dble), SAVE            :: crit_vals(3)
 
@@ -233,17 +233,17 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     END DO
 
     IF (is_start) THEN
-        x_econ_container(:17, 1) = x_optim_all_unscaled(:17)
-        x_econ_container(18:, 1) = flattened_cov(1, :)
+        x_econ_container(:18, 1) = x_optim_all_unscaled(:18)
+        x_econ_container(19:, 1) = flattened_cov(1, :)
     END IF
 
     IF (is_step) THEN
-        x_econ_container(:17, 2) = x_optim_all_unscaled(:17)
-        x_econ_container(18:, 2) = flattened_cov(2, :)
+        x_econ_container(:18, 2) = x_optim_all_unscaled(:18)
+        x_econ_container(19:, 2) = flattened_cov(2, :)
     END IF
 
-    x_econ_container(:17, 3) = x_optim_all_unscaled(:17)
-    x_econ_container(18:, 3) = flattened_cov(3, :)
+    x_econ_container(:18, 3) = x_optim_all_unscaled(:18)
+    x_econ_container(19:, 3) = flattened_cov(3, :)
 
 
     CALL get_time(today_char, now_char)
@@ -283,7 +283,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, *)
 
         j = 1
-        DO i = 1, 27
+        DO i = 1, 28
             IF(paras_fixed(i)) CYCLE
             WRITE(99, 150) i - 1, char_floats(x_optim_container(j, :))
             j = j + 1
@@ -333,7 +333,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, 220) 'Identifier', 'Start', 'Step', 'Current'
         WRITE(99, *)
 
-        DO i = 1, 27
+        DO i = 1, 28
             WRITE(99, 230) (i - 1), char_floats(x_econ_container(i, :))
         END DO
 
@@ -389,7 +389,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
     REAL(our_dble), INTENT(IN)      :: x_free_start(num_free)
 
     LOGICAL, INTENT(IN)             :: is_setup
-    LOGICAL, INTENT(IN)             :: paras_fixed(27)
+    LOGICAL, INTENT(IN)             :: paras_fixed(28)
 
     !/* internal objects    */
 
@@ -430,7 +430,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
 
             ! Sometimes on the bounds are just too large for pretty printing
             j = 1
-            DO i = 1, 27
+            DO i = 1, 28
                 IF(paras_fixed(i)) CYCLE
 
                 ! We need to do some pre-processing for the transformed bounds.

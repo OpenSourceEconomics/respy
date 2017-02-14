@@ -24,7 +24,7 @@ MODULE shared_containers
 
     REAL(our_dble), ALLOCATABLE     :: precond_matrix(:, :)
 
-    REAL(our_dble)                  :: x_all_start(27)
+    REAL(our_dble)                  :: x_all_start(28)
 
     REAL(our_dble)                  :: dfunc_eps
     REAL(our_dble)                  :: tau
@@ -33,7 +33,7 @@ MODULE shared_containers
     INTEGER(our_int)                :: edu_max
 
     LOGICAL                         :: is_interpolated
-    LOGICAL                         :: paras_fixed(27)
+    LOGICAL                         :: paras_fixed(28)
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 

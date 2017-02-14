@@ -92,12 +92,12 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, delta, measure, optim_paras, optimizer_options, \
+            edu_max, measure, optim_paras, optimizer_options, \
             file_sim = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
                 'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'delta', 'measure', 'optim_paras', 'optimizer_options',
+                'measure', 'optim_paras', 'optimizer_options',
                 'file_sim')
 
         shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
@@ -120,10 +120,15 @@ class TestClass(object):
 
         args = (num_periods, num_draws_emax, period, k, draws_standard,
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta, shocks_cov, measure)
+            mapping_state_idx, shocks_cov, measure)
 
         py = construct_emax_ambiguity(*args + (optim_paras, optimizer_options,
                 file_sim, False))
+
+        args = (num_periods, num_draws_emax, period, k, draws_standard,
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, optim_paras['delta'], shocks_cov, measure)
+
         f90 = fort_debug.wrapper_construct_emax_ambiguity(*args +
                 (optim_paras['level'], fort_slsqp_maxiter, fort_slsqp_ftol,
                 fort_slsqp_eps, file_sim, False))
@@ -133,13 +138,27 @@ class TestClass(object):
 
         args = (num_periods, num_draws_emax, period, k, draws_standard,
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, delta)
+            mapping_state_idx, optim_paras)
 
         py = criterion_ambiguity(x, *args)
+
+        args = (num_periods, num_draws_emax, period, k, draws_standard,
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, optim_paras['delta'])
+
         f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
         np.testing.assert_allclose(py, f90)
 
+        args = (num_periods, num_draws_emax, period, k, draws_standard,
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx, optim_paras)
+
         py = approx_fprime(x, criterion_ambiguity, fort_slsqp_eps, *args)
+
+        args = (num_periods, num_draws_emax, period, k, draws_standard,
+                rewards_systematic, edu_max, edu_start, periods_emax,
+                states_all, mapping_state_idx, optim_paras['delta'])
+
         f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args + (
             fort_slsqp_eps, ))
         np.testing.assert_allclose(py, f90)
@@ -156,11 +175,18 @@ class TestClass(object):
         f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args)
         np.testing.assert_allclose(py, f90)
 
+
         args = (num_periods, num_draws_emax, period, k,
             draws_standard, rewards_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, delta, shocks_cov)
+            periods_emax, states_all, mapping_state_idx)
+        py, _, _ = get_worst_case(*args + (optim_paras,
+                                           shocks_cov, optimizer_options, ))
 
-        py, _, _ = get_worst_case(*args + (optim_paras, optimizer_options, ))
+
+        args = (num_periods, num_draws_emax, period, k,
+            draws_standard, rewards_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, optim_paras['delta'],
+                shocks_cov)
         f90, _, _ = fort_debug.wrapper_get_worst_case(*args +
             (optim_paras['level'], fort_slsqp_maxiter, fort_slsqp_ftol,
              fort_slsqp_eps))

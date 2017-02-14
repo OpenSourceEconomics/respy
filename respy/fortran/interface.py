@@ -17,21 +17,20 @@ def resfort_interface(respy_obj, request, data_array=None):
     """ This function provides the interface to the FORTRAN functionality.
     """
     # Distribute class attributes
-    optim_paras, num_periods, edu_start, is_debug, edu_max, delta, \
+    optim_paras, num_periods, edu_start, is_debug, edu_max, \
         num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
         is_myopic, min_idx, tau, num_procs, num_agents_sim, \
-        num_draws_prob, num_agents_est, seed_prob, seed_sim, paras_fixed, \
-        optimizer_options, optimizer_used, maxfun, paras_fixed, \
-        preconditioning, measure, file_sim, paras_bounds = \
+        num_draws_prob, num_agents_est, seed_prob, seed_sim, \
+        optimizer_options, optimizer_used, maxfun, \
+        preconditioning, measure, file_sim = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max',
-                'delta', 'num_draws_emax', 'seed_emax', 'is_interpolated',
+                'num_draws_emax', 'seed_emax', 'is_interpolated',
                 'num_points_interp', 'is_myopic', 'min_idx', 'tau',
                 'num_procs', 'num_agents_sim', 'num_draws_prob',
-                'num_agents_est', 'seed_prob', 'seed_sim', 'paras_fixed',
-                'optimizer_options', 'optimizer_used', 'maxfun', 'paras_fixed',
-                'preconditioning', 'measure', 'file_sim',
-                'paras_bounds')
+                'num_agents_est', 'seed_prob', 'seed_sim',
+                'optimizer_options', 'optimizer_used', 'maxfun',
+                'preconditioning', 'measure', 'file_sim')
 
     precond_type, precond_minimum, precond_eps = preconditioning
 
@@ -48,12 +47,12 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     args = (optim_paras, is_interpolated, num_draws_emax, num_periods,
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-            min_idx, delta)
+            min_idx)
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, paras_fixed, precond_eps, precond_type,
-        precond_minimum, measure, file_sim, paras_bounds, data_array)
+        optimizer_used, maxfun, precond_eps, precond_type,
+        precond_minimum, measure, file_sim, data_array)
 
     write_resfort_initialization(*args)
 
@@ -144,11 +143,10 @@ def read_data(label, shape):
 
 def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-        min_idx, delta, num_draws_prob, num_agents_est, num_agents_sim,
-        seed_prob, seed_emax, tau, num_procs, request, seed_sim,
-        optimizer_options, optimizer_used, maxfun, paras_fixed, precond_eps,
-        precond_type, precond_minimum, measure, file_sim, paras_bounds,
-        data_array):
+        min_idx, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
+        seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
+        optimizer_used, maxfun, precond_eps, precond_type, precond_minimum,
+        measure, file_sim, data_array):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -165,7 +163,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         line = '{0:10d}\n'.format(num_periods)
         file_.write(line)
 
-        line = '{0:25.15f}\n'.format(delta)
+        line = '{0:25.15f}\n'.format(optim_paras['delta'][0])
         file_.write(line)
 
         # WORK
@@ -266,8 +264,8 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         line = '{0}'.format(is_myopic)
         file_.write(line + '\n')
 
-        fmt = '{:} ' * 27
-        line = fmt.format(*paras_fixed)
+        fmt = '{:} ' * 28
+        line = fmt.format(*optim_paras['paras_fixed'])
         file_.write(line + '\n')
 
         # Request
@@ -322,8 +320,8 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         bounds_lower = []
         bounds_upper = []
         for i in range(28):
-            bounds_lower += [paras_bounds[i][0]]
-            bounds_upper += [paras_bounds[i][1]]
+            bounds_lower += [optim_paras['paras_bounds'][i][0]]
+            bounds_upper += [optim_paras['paras_bounds'][i][1]]
 
         for i in range(28):
             if bounds_lower[i] is None:
@@ -333,7 +331,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
             if bounds_upper[i] is None:
                 bounds_upper[i] = MISSING_FLOAT
 
-        fmt_ = ' {:25.15f}' * 27
+        fmt_ = ' {:25.15f}' * 28
         line = fmt_.format(*bounds_lower)
         file_.write(line + '\n')
 

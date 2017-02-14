@@ -32,7 +32,7 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
     REAL(our_dble), ALLOCATABLE     :: contribs(:)
 
-    REAL(our_dble)                  :: x_optim_all_unscaled(27)
+    REAL(our_dble)                  :: x_optim_all_unscaled(28)
     REAL(our_dble)                  :: precond_minimum
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
@@ -83,7 +83,7 @@ PROGRAM resfort_parallel_slave
         END IF
 
 
-        CALL MPI_Bcast(x_optim_all_unscaled, 27, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+        CALL MPI_Bcast(x_optim_all_unscaled, 28, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
         CALL dist_optim_paras(optim_paras, x_optim_all_unscaled)
 

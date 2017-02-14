@@ -6,7 +6,7 @@
 !
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, delta, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, measure_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, measure_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -20,7 +20,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, INTENT(OUT)   :: crit_val
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(27)
+    DOUBLE PRECISION, INTENT(IN)    :: x(28)
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
@@ -40,7 +40,6 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
-    DOUBLE PRECISION, INTENT(IN)    :: delta
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic_int
@@ -146,7 +145,7 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, delta, periods_draws_emax_int, measure_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int)
+SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, periods_draws_emax_int, measure_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int)
 
     ! The presence of max_states_period breaks the quality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -185,7 +184,7 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(:)
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
-    DOUBLE PRECISION, INTENT(IN)    :: delta
+    DOUBLE PRECISION, INTENT(IN)    :: delta(1)
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic_int
@@ -1230,7 +1229,7 @@ SUBROUTINE wrapper_get_cholesky(shocks_cholesky, info, x)
 
     DOUBLE PRECISION, INTENT(OUT)   :: shocks_cholesky(4, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(27)
+    DOUBLE PRECISION, INTENT(IN)    :: x(28)
 
     INTEGER, INTENT(OUT)            :: info
 

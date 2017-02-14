@@ -43,8 +43,8 @@ PROGRAM resfort_scalar
     CHARACTER(50)                   :: precond_type
 
     ! Temporary fix
-    REAL(our_dble)                  :: x_tmp(27)
-    LOGICAL, PARAMETER              :: all_free(27) = .False.
+    REAL(our_dble)                  :: x_tmp(28)
+    LOGICAL, PARAMETER              :: all_free(28) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm

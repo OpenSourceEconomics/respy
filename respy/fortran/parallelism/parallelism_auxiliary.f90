@@ -212,7 +212,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, optim_paras, paras
     CHARACTER(225), INTENT(IN)      :: optimizer_used
     CHARACTER(50), INTENT(OUT)      :: precond_type
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(27)
+    LOGICAL, INTENT(IN)             :: paras_fixed(28)
     INTEGER(our_int), INTENT(IN)    :: maxfun
 
     TYPE(OPTIMIZER_COLLECTION), INTENT(INOUT) :: optimizer_options
@@ -223,7 +223,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, optim_paras, paras
 
     INTEGER(our_int)                :: iter
 
-    LOGICAL, PARAMETER              :: all_free(27) = .False.
+    LOGICAL, PARAMETER              :: all_free(28) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -298,7 +298,7 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_all_current(27)
+    REAL(our_dble)                  :: x_all_current(28)
     REAL(our_dble)                  :: x_input(num_free)
     REAL(our_dble)                  :: contribs(num_obs)
     REAL(our_dble)                  :: start
@@ -330,7 +330,7 @@ FUNCTION fort_criterion_parallel(x)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
-    CALL MPI_Bcast(x_all_current, 27, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_Bcast(x_all_current, 28, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
     CALL dist_optim_paras(optim_paras, x_all_current, dist_optim_paras_info)
@@ -430,12 +430,12 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     !/* internal objects        */
 
-    REAL(our_dble)                                  :: x_all_current(27)
+    REAL(our_dble)                                  :: x_all_current(28)
 
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
 
-    LOGICAL, PARAMETER                              :: all_free(27) = .False.
+    LOGICAL, PARAMETER                              :: all_free(28) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -446,7 +446,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     CALL get_free_optim_paras(x_all_current, optim_paras, all_free)
 
-    CALL MPI_Bcast(x_all_current, 27, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_Bcast(x_all_current, 28, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)

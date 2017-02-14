@@ -97,7 +97,7 @@ class TestClass(object):
 
             respy_obj.unlock()
 
-            respy_obj.attr['optim_paras']['delta'] = delta
+            respy_obj.attr['optim_paras']['delta'] = np.array([delta])
 
             respy_obj.lock()
 

@@ -85,7 +85,7 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
 
-    REAL(our_dble), INTENT(IN)      :: x(27)
+    REAL(our_dble), INTENT(IN)      :: x(28)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)    :: info
 
@@ -101,13 +101,13 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky = zero_dble
 
-    shocks_cholesky(1, :1) = x(18:18)
+    shocks_cholesky(1, :1) = x(19:19)
 
-    shocks_cholesky(2, :2) = x(19:20)
+    shocks_cholesky(2, :2) = x(20:21)
 
-    shocks_cholesky(3, :3) = x(21:23)
+    shocks_cholesky(3, :3) = x(22:24)
 
-    shocks_cholesky(4, :4) = x(24:27)
+    shocks_cholesky(4, :4) = x(25:28)
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -693,7 +693,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     CHARACTER(10), INTENT(OUT)      :: measure
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
-    LOGICAL, INTENT(OUT)            :: paras_fixed(27)
+    LOGICAL, INTENT(OUT)            :: paras_fixed(28)
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
@@ -716,7 +716,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     1505 FORMAT(i10)
     1515 FORMAT(i10,1x,i10)
 
-    1525 FORMAT(27(1x,f25.15))
+    1525 FORMAT(28(1x,f25.15))
 
     ! Read model specification
     OPEN(UNIT=99, FILE='.model.resfort.ini', ACTION='READ')
@@ -814,7 +814,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
     CLOSE(99)
 
-    DO i = 1, 27
+    DO i = 1, 28
 
         IF(x_econ_bounds_all_unscaled(1, i) == -MISSING_FLOAT) x_econ_bounds_all_unscaled(1, i) = - HUGE_FLOAT
         IF(x_econ_bounds_all_unscaled(2, i) == MISSING_FLOAT) x_econ_bounds_all_unscaled(2, i) =  HUGE_FLOAT
@@ -825,7 +825,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     ALLOCATE(x_optim_bounds_free_unscaled(2, COUNT(.NOT. paras_fixed)))
 
     j = 1
-    DO i = 1, 27
+    DO i = 1, 28
         IF (.NOT. paras_fixed(i)) THEN
             x_optim_bounds_free_unscaled(1, j) = x_econ_bounds_all_unscaled(1, i)
             x_optim_bounds_free_unscaled(2, j) = x_econ_bounds_all_unscaled(2, i)
@@ -973,7 +973,7 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(OUT)  :: optim_paras
 
-    REAL(our_dble), INTENT(IN)      :: x(27)
+    REAL(our_dble), INTENT(IN)      :: x(28)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)   :: info
 
@@ -982,15 +982,17 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 !------------------------------------------------------------------------------
 
     ! Extract model ingredients
-    optim_paras%level = MAX(x(1:1), zero_dble)
+    optim_paras%delta = MAX(x(1:1), zero_dble)
 
-    optim_paras%coeffs_a = x(2:7)
+    optim_paras%level = MAX(x(2:2), zero_dble)
 
-    optim_paras%coeffs_b = x(8:13)
+    optim_paras%coeffs_a = x(3:8)
 
-    optim_paras%coeffs_edu = x(14:16)
+    optim_paras%coeffs_b = x(9:14)
 
-    optim_paras%coeffs_home = x(17:17)
+    optim_paras%coeffs_edu = x(15:17)
+
+    optim_paras%coeffs_home = x(18:18)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
@@ -1008,13 +1010,13 @@ SUBROUTINE get_free_optim_paras(x, optim_paras, paras_fixed)
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(27)
+    LOGICAL, INTENT(IN)             :: paras_fixed(28)
 
     REAL(our_dble), INTENT(OUT)     :: x(COUNT(.not. paras_fixed))
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: x_internal(27)
+    REAL(our_dble)                  :: x_internal(28)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -1023,28 +1025,30 @@ SUBROUTINE get_free_optim_paras(x, optim_paras, paras_fixed)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    x_internal(1:1) = optim_paras%level
+    x_internal(1:1) = optim_paras%delta
 
-    x_internal(2:7) = optim_paras%coeffs_a(:)
+    x_internal(2:2) = optim_paras%level
 
-    x_internal(8:13) = optim_paras%coeffs_b(:)
+    x_internal(3:8) = optim_paras%coeffs_a(:)
 
-    x_internal(14:16) = optim_paras%coeffs_edu(:)
+    x_internal(9:14) = optim_paras%coeffs_b(:)
 
-    x_internal(17:17) = optim_paras%coeffs_home(:)
+    x_internal(15:17) = optim_paras%coeffs_edu(:)
 
-    x_internal(18:18) = optim_paras%shocks_cholesky(1, :1)
+    x_internal(18:18) = optim_paras%coeffs_home(:)
 
-    x_internal(19:20) = optim_paras%shocks_cholesky(2, :2)
+    x_internal(19:19) = optim_paras%shocks_cholesky(1, :1)
 
-    x_internal(21:23) = optim_paras%shocks_cholesky(3, :3)
+    x_internal(20:21) = optim_paras%shocks_cholesky(2, :2)
 
-    x_internal(24:27) = optim_paras%shocks_cholesky(4, :4)
+    x_internal(22:24) = optim_paras%shocks_cholesky(3, :3)
+
+    x_internal(25:28) = optim_paras%shocks_cholesky(4, :4)
 
 
     j = 1
 
-    DO i = 1, 27
+    DO i = 1, 28
 
         IF(paras_fixed(i)) CYCLE
 

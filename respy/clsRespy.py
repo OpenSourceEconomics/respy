@@ -552,7 +552,7 @@ class RespyCls(object):
         # Update derived attributes
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
-        self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)
+        self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)[0]
 
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first

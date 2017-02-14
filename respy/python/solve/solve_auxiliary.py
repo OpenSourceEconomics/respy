@@ -179,11 +179,10 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
     if is_myopic:
         record_solution_progress(-2, file_sim)
 
-        # All other objects remain set to MISSING_FLOAT. This align the
-        # treatment for the two special cases: (1) is_myopic and (2)
-        # is_interpolated.
         for period, num_states in enumerate(states_number_period):
             periods_emax[period, :num_states] = 0.0
+
+        return periods_emax
 
     # Construct auxiliary objects
     shocks_cov = np.matmul(optim_paras['shocks_cholesky'],

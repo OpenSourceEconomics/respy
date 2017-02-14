@@ -14,7 +14,7 @@ from respy import RespyCls
 
 
 def transform_respy_to_restud(optim_paras, edu_start, edu_max, num_agents_sim,
-        num_periods, num_draws_emax, delta):
+        num_periods, num_draws_emax):
     """ Transform a RESPY initialization file to a RESTUD file.
     """
     # Ensure restrictions
@@ -47,7 +47,7 @@ def transform_respy_to_restud(optim_paras, edu_start, edu_max, num_agents_sim,
         home = coeffs_home[0] / 1000
         for j in range(2):
             edu_coeffs += [-coeffs_edu[j + 1] / 1000]
-        coeffs = edu_coeffs + [home, delta]
+        coeffs = edu_coeffs + [home, optim_paras['delta'][0]]
         fmt = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f} {4:10.6f}\n'
         line = fmt.format(*coeffs)
         file_.write(line)
@@ -103,12 +103,12 @@ class TestClass(object):
         # RESPY package. The existence of the file leads to the RESTUD program
         # to write out the random components.
         optim_paras, edu_start, edu_max, num_agents_sim, num_periods, \
-            num_draws_emax, delta = dist_class_attributes(respy_obj,
+            num_draws_emax = dist_class_attributes(respy_obj,
                 'optim_paras', 'edu_start', 'edu_max', 'num_agents_sim',
-                'num_periods', 'num_draws_emax', 'delta')
+                'num_periods', 'num_draws_emax')
 
         transform_respy_to_restud(optim_paras, edu_start, edu_max,
-            num_agents_sim, num_periods, num_draws_emax, delta)
+            num_agents_sim, num_periods, num_draws_emax)
 
         # Solve model using RESTUD code.
         cmd = TEST_RESOURCES_DIR + '/kw_dp3asim'

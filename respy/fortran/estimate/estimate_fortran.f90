@@ -45,7 +45,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, paras_fixed, o
     CHARACTER(150), INTENT(OUT)     :: message
     CHARACTER(50), INTENT(OUT)      :: precond_type
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(27)
+    LOGICAL, INTENT(IN)             :: paras_fixed(28)
     LOGICAL, INTENT(OUT)            :: success
 
     TYPE(OPTIMIZER_COLLECTION), INTENT(INOUT) :: optimizer_options
@@ -58,7 +58,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, paras_fixed, o
 
     INTEGER(our_int)                :: iter
 
-    LOGICAL, PARAMETER              :: all_free(27) = .False.
+    LOGICAL, PARAMETER              :: all_free(28) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -131,7 +131,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
     !/* internal objects    */
 
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
-    REAL(our_dble)                  :: x_optim_all_unscaled(27)
+    REAL(our_dble)                  :: x_optim_all_unscaled(28)
     REAL(our_dble)                  :: contribs(num_obs)
     REAL(our_dble)                  :: start
 
@@ -228,9 +228,9 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(27)
+    REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(28)
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(27)
+    LOGICAL, INTENT(IN)             :: paras_fixed(28)
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_unscaled(COUNT(.not. paras_fixed))
 
@@ -246,7 +246,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     j = 1
 
-    DO i = 1, 27
+    DO i = 1, 28
 
         IF(paras_fixed(i)) THEN
             x_optim_all_unscaled(i) = x_all_start(i)
