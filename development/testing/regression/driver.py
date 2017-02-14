@@ -113,9 +113,6 @@ def run(args):
             init_dict['BASICS']['coeffs'] = [init_dict['BASICS']['delta']]
             init_dict['BASICS']['bounds'] = [[0.00, None]]
             init_dict['BASICS']['fixed'] = [True]
-            if init_dict['PROGRAM']['version'] == 'FORTRAN':
-                print('... skipping for now \n')
-                continue
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')

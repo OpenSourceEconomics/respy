@@ -113,6 +113,8 @@ MODULE shared_constants
         REAL(our_dble)          :: coeffs_b(6)
         REAL(our_dble)          :: level(1)
         REAL(our_dble)          :: delta(1)
+        LOGICAL                 :: paras_fixed(28)
+
     END TYPE
 
 !******************************************************************************

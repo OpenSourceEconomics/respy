@@ -44,19 +44,18 @@ PROGRAM resfort_scalar
 
     ! Temporary fix
     REAL(our_dble)                  :: x_tmp(28)
-    LOGICAL, PARAMETER              :: all_free(28) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
+    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
     ! We now distinguish between the scalar and parallel execution.
     IF (num_procs == 1) THEN
 
         ! This is a temporary fix that aligns the numerical results between the parallel and scalar implementations of the model. Otherwise small numerical differences may arise (if ambiguity is present) as LOG and EXP operations are done in the parallel implementation before any solution or estimation efforts. Due to the two lines below, this is also the case in the scalar impelementation now.
-        CALL get_free_optim_paras(x_tmp, optim_paras, all_free)
+        CALL get_optim_paras(x_tmp, optim_paras, .True.)
         CALL dist_optim_paras(optim_paras, x_tmp)
 
         CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
@@ -67,7 +66,7 @@ PROGRAM resfort_scalar
 
             CALL read_dataset(data_est, num_obs)
 
-            CALL fort_estimate(crit_val, success, message, optim_paras, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+            CALL fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
         ELSE IF (request == 'simulate') THEN
 
@@ -89,7 +88,7 @@ PROGRAM resfort_scalar
 
         IF (request == 'estimate') THEN
 
-            CALL fort_estimate_parallel(crit_val, success, message, optim_paras, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+            CALL fort_estimate_parallel(crit_val, success, message, optim_paras, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
         ELSE IF (request == 'simulate') THEN
 

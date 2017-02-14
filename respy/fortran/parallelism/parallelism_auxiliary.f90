@@ -42,7 +42,7 @@ SUBROUTINE get_precondition_matrix_parallel(precond_type, precond_minimum, maxfu
 
     precond_matrix = create_identity(num_free)
 
-    CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, paras_fixed, .True.)
+    CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .True.)
 
     IF ((precond_type == 'identity') .OR. (maxfun == zero_int)) THEN
         precond_matrix = create_identity(num_free)
@@ -195,7 +195,7 @@ SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate_parallel(crit_val, success, message, optim_paras, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+SUBROUTINE fort_estimate_parallel(crit_val, success, message, optim_paras, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
     !/* external objects    */
 
@@ -212,29 +212,26 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, optim_paras, paras
     CHARACTER(225), INTENT(IN)      :: optimizer_used
     CHARACTER(50), INTENT(OUT)      :: precond_type
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(28)
     INTEGER(our_int), INTENT(IN)    :: maxfun
 
     TYPE(OPTIMIZER_COLLECTION), INTENT(INOUT) :: optimizer_options
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_free_start(COUNT(.not. paras_fixed))
+    REAL(our_dble)                  :: x_free_start(COUNT(.not. optim_paras%paras_fixed))
 
     INTEGER(our_int)                :: iter
-
-    LOGICAL, PARAMETER              :: all_free(28) = .False.
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
-    CALL get_free_optim_paras(x_all_start, optim_paras, all_free)
+    CALL get_optim_paras(x_all_start, optim_paras, .True.)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-    CALL get_free_optim_paras(x_free_start, optim_paras, paras_fixed)
+    CALL get_optim_paras(x_free_start, optim_paras, .False.)
 
 
     CALL get_precondition_matrix_parallel(precond_type, precond_minimum, maxfun, x_free_start)
@@ -244,7 +241,7 @@ SUBROUTINE fort_estimate_parallel(crit_val, success, message, optim_paras, paras
     x_optim_bounds_free_scaled(1, :) = apply_scaling(x_optim_bounds_free_unscaled(1, :), precond_matrix, 'do')
     x_optim_bounds_free_scaled(2, :) = apply_scaling(x_optim_bounds_free_unscaled(2, :), precond_matrix, 'do')
 
-    CALL record_estimation(precond_matrix, x_free_start, paras_fixed, .False.)
+    CALL record_estimation(precond_matrix, x_free_start, optim_paras, .False.)
 
 
     CALL auto_adjustment_optimizers(optimizer_options, optimizer_used)
@@ -326,7 +323,7 @@ FUNCTION fort_criterion_parallel(x)
 
     x_input = apply_scaling(x, precond_matrix, 'undo')
 
-    CALL construct_all_current_values(x_all_current, x_input, paras_fixed)
+    CALL construct_all_current_values(x_all_current, x_input, optim_paras)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
@@ -360,7 +357,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, paras_fixed, start)
+        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, optim_paras, start)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -378,8 +375,8 @@ FUNCTION fort_dcriterion_parallel(x)
 
     !/* internals objects       */
 
-    REAL(our_dble)                  :: ei(COUNT(.NOT. paras_fixed))
-    REAL(our_dble)                  :: d(COUNT(.NOT. paras_fixed))
+    REAL(our_dble)                  :: ei(COUNT(.NOT. optim_paras%paras_fixed))
+    REAL(our_dble)                  :: d(COUNT(.NOT. optim_paras%paras_fixed))
     REAL(our_dble)                  :: f0
     REAL(our_dble)                  :: f1
 
@@ -395,7 +392,7 @@ FUNCTION fort_dcriterion_parallel(x)
     ! Evaluate baseline
     f0 = fort_criterion_parallel(x)
 
-    DO j = 1, COUNT(.NOT. paras_fixed)
+    DO j = 1, COUNT(.NOT. optim_paras%paras_fixed)
 
         ei(j) = one_dble
 
@@ -435,8 +432,6 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
 
-    LOGICAL, PARAMETER                              :: all_free(28) = .False.
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -444,7 +439,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
 
-    CALL get_free_optim_paras(x_all_current, optim_paras, all_free)
+    CALL get_optim_paras(x_all_current, optim_paras, .True.)
 
     CALL MPI_Bcast(x_all_current, 28, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 

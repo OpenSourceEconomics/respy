@@ -29,7 +29,7 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, paras_fixed, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
 
     !/* external objects    */
 
@@ -45,7 +45,6 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, paras_fixed, o
     CHARACTER(150), INTENT(OUT)     :: message
     CHARACTER(50), INTENT(OUT)      :: precond_type
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(28)
     LOGICAL, INTENT(OUT)            :: success
 
     TYPE(OPTIMIZER_COLLECTION), INTENT(INOUT) :: optimizer_options
@@ -58,19 +57,16 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, paras_fixed, o
 
     INTEGER(our_int)                :: iter
 
-    LOGICAL, PARAMETER              :: all_free(28) = .False.
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
-    CALL get_free_optim_paras(x_all_start, optim_paras, all_free)
+    CALL get_optim_paras(x_all_start, optim_paras, .True.)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-    CALL get_free_optim_paras(x_optim_free_unscaled_start, optim_paras, paras_fixed)
-
+    CALL get_optim_paras(x_optim_free_unscaled_start, optim_paras, .False.)
 
     CALL get_precondition_matrix_scalar(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
 
@@ -79,10 +75,11 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, paras_fixed, o
     x_optim_bounds_free_scaled(1, :) = apply_scaling(x_optim_bounds_free_unscaled(1, :), precond_matrix, 'do')
     x_optim_bounds_free_scaled(2, :) = apply_scaling(x_optim_bounds_free_unscaled(2, :), precond_matrix, 'do')
 
-    CALL record_estimation(precond_matrix, x_optim_free_scaled_start, paras_fixed, .False.)
+    CALL record_estimation(precond_matrix, x_optim_free_scaled_start, optim_paras, .False.)
 
 
     CALL auto_adjustment_optimizers(optimizer_options, optimizer_used)
+
 
 
     crit_estimation = .True.
@@ -155,7 +152,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     x_optim_free_unscaled = apply_scaling(x_optim_free_scaled, precond_matrix, 'undo')
 
-    CALL construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, paras_fixed)
+    CALL construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras)
 
     CALL dist_optim_paras(optim_paras, x_optim_all_unscaled, dist_optim_paras_info)
 
@@ -172,7 +169,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval, paras_fixed, start)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval, optim_paras, start)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -224,15 +221,14 @@ FUNCTION fort_dcriterion(x_optim_free_scaled)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, paras_fixed)
+SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(28)
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(28)
-
-    REAL(our_dble), INTENT(IN)      :: x_optim_free_unscaled(COUNT(.not. paras_fixed))
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    REAL(our_dble), INTENT(IN)                  :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
 
 
     !/* internal objects        */
@@ -248,7 +244,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     DO i = 1, 28
 
-        IF(paras_fixed(i)) THEN
+        IF(optim_paras%paras_fixed(i)) THEN
             x_optim_all_unscaled(i) = x_all_start(i)
         ELSE
             x_optim_all_unscaled(i) = x_optim_free_unscaled(j)
@@ -322,7 +318,7 @@ SUBROUTINE get_precondition_matrix_scalar(precond_type, precond_minimum, maxfun,
 
     precond_matrix = create_identity(num_free)
 
-    CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, paras_fixed, .True.)
+    CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .True.)
 
     IF ((precond_type == 'identity') .OR. (maxfun == zero_int)) THEN
         precond_matrix = create_identity(num_free)

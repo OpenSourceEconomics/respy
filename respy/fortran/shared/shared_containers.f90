@@ -33,7 +33,6 @@ MODULE shared_containers
     INTEGER(our_int)                :: edu_max
 
     LOGICAL                         :: is_interpolated
-    LOGICAL                         :: paras_fixed(28)
     LOGICAL                         :: is_myopic
     LOGICAL                         :: is_debug
 

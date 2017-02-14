@@ -655,7 +655,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, paras_fixed, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
+SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -693,7 +693,6 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     CHARACTER(10), INTENT(OUT)      :: measure
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
-    LOGICAL, INTENT(OUT)            :: paras_fixed(28)
     LOGICAL, INTENT(OUT)            :: is_myopic
     LOGICAL, INTENT(OUT)            :: is_debug
 
@@ -778,7 +777,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         ! AUXILIARY
         READ(99, 1505) min_idx
         READ(99, *) is_myopic
-        READ(99, *) paras_fixed
+        READ(99, *) optim_paras%paras_fixed
 
         ! REQUUEST
         READ(99, *) request
@@ -814,6 +813,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
     CLOSE(99)
 
+    ! TODO: This setup should be revisited and cleaned up later.
     DO i = 1, 28
 
         IF(x_econ_bounds_all_unscaled(1, i) == -MISSING_FLOAT) x_econ_bounds_all_unscaled(1, i) = - HUGE_FLOAT
@@ -821,12 +821,12 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
     END DO
 
-    ALLOCATE(x_optim_bounds_free_scaled(2, COUNT(.NOT. paras_fixed)))
-    ALLOCATE(x_optim_bounds_free_unscaled(2, COUNT(.NOT. paras_fixed)))
+    ALLOCATE(x_optim_bounds_free_scaled(2, COUNT(.NOT. optim_paras%paras_fixed)))
+    ALLOCATE(x_optim_bounds_free_unscaled(2, COUNT(.NOT. optim_paras%paras_fixed)))
 
     j = 1
     DO i = 1, 28
-        IF (.NOT. paras_fixed(i)) THEN
+        IF (.NOT. optim_paras%paras_fixed(i)) THEN
             x_optim_bounds_free_unscaled(1, j) = x_econ_bounds_all_unscaled(1, i)
             x_optim_bounds_free_unscaled(2, j) = x_econ_bounds_all_unscaled(2, i)
 
@@ -837,7 +837,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     END DO
 
     ! Constructed attributes
-    num_free =  COUNT(.NOT. paras_fixed)
+    num_free =  COUNT(.NOT. optim_paras%paras_fixed)
     num_slaves = num_procs - 1
 
 END SUBROUTINE
@@ -1004,15 +1004,15 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_free_optim_paras(x, optim_paras, paras_fixed)
+SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     !/* external objects        */
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
-    LOGICAL, INTENT(IN)             :: paras_fixed(28)
+    REAL(our_dble), INTENT(OUT)     :: x(:)
 
-    REAL(our_dble), INTENT(OUT)     :: x(COUNT(.not. paras_fixed))
+    LOGICAL, INTENT(IN)             :: is_all
 
     !/* internal objects        */
 
@@ -1045,18 +1045,26 @@ SUBROUTINE get_free_optim_paras(x, optim_paras, paras_fixed)
 
     x_internal(25:28) = optim_paras%shocks_cholesky(4, :4)
 
+    ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
+    IF(is_all) THEN
 
-    j = 1
+        x = x_internal
 
-    DO i = 1, 28
+    ELSE
 
-        IF(paras_fixed(i)) CYCLE
+        j = 1
 
-        x(j) = x_internal(i)
+        DO i = 1, 28
 
-        j = j + 1
+            IF(optim_paras%paras_fixed(i)) CYCLE
 
-    END DO
+            x(j) = x_internal(i)
+
+            j = j + 1
+
+        END DO
+
+    END IF
 
 END SUBROUTINE
 !******************************************************************************

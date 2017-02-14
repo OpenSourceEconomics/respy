@@ -133,11 +133,13 @@ SUBROUTINE record_estimation_stop()
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val_current, num_eval, paras_fixed, start)
+SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val_current, num_eval, optim_paras, start)
 
     ! We record all things related to the optimization in est.respy.log. That is why we print the values actually relevant for the optimization, i.e. free and scaled. In est.respy.info we switch to the users perspective, all parameter are printed with their economic interpreation intact.
 
     !/* external objects        */
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled(num_free)
     REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(28)
@@ -145,8 +147,6 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     REAL(our_dble), INTENT(IN)      :: start
 
     INTEGER(our_int), INTENT(IN)    :: num_eval
-
-    LOGICAL, INTENT(IN)             :: paras_fixed(28)
 
     !/* internal objects        */
 
@@ -284,7 +284,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
         j = 1
         DO i = 1, 28
-            IF(paras_fixed(i)) CYCLE
+            IF(optim_paras%paras_fixed(i)) CYCLE
             WRITE(99, 150) i - 1, char_floats(x_optim_container(j, :))
             j = j + 1
         END DO
@@ -381,15 +381,16 @@ SUBROUTINE record_estimation_final(success, message)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
+SUBROUTINE record_scaling(precond_matrix, x_free_start, optim_paras, is_setup)
 
     !/* external objects    */
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: precond_matrix(num_free, num_free)
     REAL(our_dble), INTENT(IN)      :: x_free_start(num_free)
 
     LOGICAL, INTENT(IN)             :: is_setup
-    LOGICAL, INTENT(IN)             :: paras_fixed(28)
 
     !/* internal objects    */
 
@@ -431,7 +432,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, paras_fixed, is_setup)
             ! Sometimes on the bounds are just too large for pretty printing
             j = 1
             DO i = 1, 28
-                IF(paras_fixed(i)) CYCLE
+                IF(optim_paras%paras_fixed(i)) CYCLE
 
                 ! We need to do some pre-processing for the transformed bounds.
                 val_char = ''
