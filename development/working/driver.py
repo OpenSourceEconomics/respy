@@ -8,8 +8,8 @@ import sys
 if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('git clean -d -f; ./waf configure build --debug '
-                     '--without_mpi') == 0
+    assert os.system('git clean -d -f; ./waf configure build --debug') \
+           == 0
     os.chdir(cwd)
 
 
@@ -33,15 +33,15 @@ from codes.random_init import generate_init
 
 respy_obj = RespyCls('model.respy.ini')
 
-for num_procs in [1]:
-    #respy_obj.reset()
-    #print('going in with ', num_procs)
-    #respy_obj.unlock()
-    #respy_obj.attr['num_procs'] = num_procs
-    #respy_obj.lock()
+for num_procs in [1, 2]:
+    respy_obj.reset()
+    print('going in with ', num_procs)
+    respy_obj.unlock()
+    respy_obj.attr['num_procs'] = num_procs
+    respy_obj.lock()
     simulate(respy_obj)
-    #estimate(respy_obj)
-
+    estimate(respy_obj)
+    print('... done')
 #print('going in')
 #x, base =
 #print(base)

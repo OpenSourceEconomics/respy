@@ -28,9 +28,9 @@ PROGRAM resfort_scalar
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_sim(:, :)
 
-    INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
+    INTEGER(our_int)                :: num_procs
     INTEGER(our_int)                :: seed_sim
 
     LOGICAL                         :: success
@@ -66,7 +66,7 @@ PROGRAM resfort_scalar
 
             CALL read_dataset(data_est, num_obs)
 
-            CALL fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+            CALL fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_type, precond_minimum, optimizer_options)
 
         ELSE IF (request == 'simulate') THEN
 
@@ -88,7 +88,7 @@ PROGRAM resfort_scalar
 
         IF (request == 'estimate') THEN
 
-            CALL fort_estimate_parallel(crit_val, success, message, optim_paras, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+            CALL fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_type, precond_minimum, optimizer_options)
 
         ELSE IF (request == 'simulate') THEN
 

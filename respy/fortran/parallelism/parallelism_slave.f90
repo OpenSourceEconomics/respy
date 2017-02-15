@@ -27,7 +27,12 @@ PROGRAM resfort_parallel_slave
 
     INTEGER(our_int)                :: lower_bound
     INTEGER(our_int)                :: upper_bound
+    INTEGER(our_int)                :: num_procs
+    INTEGER(our_int)                :: seed_prob
+    INTEGER(our_int)                :: seed_emax
+    INTEGER(our_int)                :: seed_sim
     INTEGER(our_int)                :: task
+    INTEGER(our_int)                :: i
 
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
     REAL(our_dble), ALLOCATABLE     :: contribs(:)
@@ -37,16 +42,10 @@ PROGRAM resfort_parallel_slave
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
 
-    INTEGER(our_int)                :: num_procs
-    INTEGER(our_int)                :: seed_prob
-    INTEGER(our_int)                :: seed_emax
-    INTEGER(our_int)                :: seed_sim
-    INTEGER(our_int)                :: i
-
     CHARACTER(225)                  :: optimizer_used
+    CHARACTER(50)                   :: precond_type
     CHARACTER(225)                  :: file_sim
     CHARACTER(225)                  :: exec_dir
-    CHARACTER(50)                   :: precond_type
     CHARACTER(10)                   :: request
 
 !------------------------------------------------------------------------------

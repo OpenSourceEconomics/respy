@@ -704,7 +704,6 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: i
 
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -737,7 +736,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
         ! SHOCKS
         DO j = 1, 4
-            READ(99, 1500) (optim_paras%shocks_cholesky(j, k), k=1, 4)
+            READ(99, 1500) (optim_paras%shocks_cholesky(j, k), k = 1, 4)
         END DO
 
         ! SOLUTION
@@ -807,33 +806,29 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         READ(99, 1505) optimizer_options%slsqp%maxiter
         READ(99, 1500) optimizer_options%slsqp%eps
 
-        ! TODO: Better positioning
-        READ(99, 1525) x_econ_bounds_all_unscaled(1, :)
-        READ(99, 1525) x_econ_bounds_all_unscaled(2, :)
+        READ(99, 1525) optim_paras%paras_bounds(1, :)
+        READ(99, 1525) optim_paras%paras_bounds(2, :)
 
     CLOSE(99)
 
     ! TODO: This setup should be revisited and cleaned up later.
     DO i = 1, 28
-
-        IF(x_econ_bounds_all_unscaled(1, i) == -MISSING_FLOAT) x_econ_bounds_all_unscaled(1, i) = - HUGE_FLOAT
-        IF(x_econ_bounds_all_unscaled(2, i) == MISSING_FLOAT) x_econ_bounds_all_unscaled(2, i) =  HUGE_FLOAT
+        IF(optim_paras%paras_bounds(1, i) == -MISSING_FLOAT) optim_paras%paras_bounds(1, i) = - HUGE_FLOAT
+        IF(optim_paras%paras_bounds(2, i) == MISSING_FLOAT) optim_paras%paras_bounds(2, i) = HUGE_FLOAT
 
     END DO
 
     ALLOCATE(x_optim_bounds_free_scaled(2, COUNT(.NOT. optim_paras%paras_fixed)))
     ALLOCATE(x_optim_bounds_free_unscaled(2, COUNT(.NOT. optim_paras%paras_fixed)))
 
-    j = 1
+    k = 1
     DO i = 1, 28
         IF (.NOT. optim_paras%paras_fixed(i)) THEN
-            x_optim_bounds_free_unscaled(1, j) = x_econ_bounds_all_unscaled(1, i)
-            x_optim_bounds_free_unscaled(2, j) = x_econ_bounds_all_unscaled(2, i)
-
-            j = j + 1
-
+            DO j = 1, 2
+                x_optim_bounds_free_unscaled(j, k) = optim_paras%paras_bounds(j, i)
+            END DO
+            k = k + 1
         END IF
-
     END DO
 
     ! Constructed attributes

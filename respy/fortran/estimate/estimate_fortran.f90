@@ -4,9 +4,15 @@ MODULE estimate_fortran
 
     !/* external modules    */
 
+    USE parallelism_auxiliary
+
     USE optimizers_interfaces
 
+    USE parallelism_constants
+
     USE recording_estimation
+
+    USE recording_warning
 
     USE shared_containers
 
@@ -20,6 +26,14 @@ MODULE estimate_fortran
 
     USE solve_fortran
 
+    USE solve_ambiguity
+
+#if MPI_AVAILABLE
+
+    USE mpi
+
+#endif
+
     !/* setup   */
 
     IMPLICIT NONE
@@ -29,7 +43,7 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, precond_type, precond_minimum, optimizer_options)
+SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_type, precond_minimum, optimizer_options)
 
     !/* external objects    */
 
@@ -39,6 +53,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 
     REAL(our_dble), INTENT(IN)      :: precond_minimum
 
+    INTEGER(our_int), INTENT(IN)    :: num_procs
     INTEGER(our_int), INTENT(IN)    :: maxfun
 
     CHARACTER(225), INTENT(IN)      :: optimizer_used
@@ -61,6 +76,13 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    IF (num_procs == 1) THEN
+        criterion_function => fort_criterion
+    ELSE
+        criterion_function => fort_criterion_parallel
+    END IF
+
+
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
     CALL get_optim_paras(x_all_start, optim_paras, .True.)
 
@@ -68,8 +90,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 
     CALL get_optim_paras(x_optim_free_unscaled_start, optim_paras, .False.)
 
-    CALL get_precondition_matrix_scalar(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
-
+    CALL get_precondition_matrix(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
 
     x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start, precond_matrix, 'do')
     x_optim_bounds_free_scaled(1, :) = apply_scaling(x_optim_bounds_free_unscaled(1, :), precond_matrix, 'do')
@@ -77,9 +98,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 
     CALL record_estimation(precond_matrix, x_optim_free_scaled_start, optim_paras, .False.)
 
-
     CALL auto_adjustment_optimizers(optimizer_options, optimizer_used)
-
 
 
     crit_estimation = .True.
@@ -90,22 +109,22 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
         message = 'Single evaluation of criterion function at starting values.'
 
         CALL record_estimation('Start')
-        crit_val = fort_criterion(x_optim_free_scaled_start)
+        crit_val = criterion_function(x_optim_free_scaled_start)
         CALL record_estimation('Finish')
 
     ELSEIF (optimizer_used == 'FORT-NEWUOA') THEN
 
-        CALL newuoa(fort_criterion, x_optim_free_scaled_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun), success, message)
+        CALL newuoa(criterion_function, x_optim_free_scaled_start, optimizer_options%newuoa%npt, optimizer_options%newuoa%rhobeg, optimizer_options%newuoa%rhoend, zero_int, MIN(maxfun, optimizer_options%newuoa%maxfun), success, message)
 
     ELSEIF (optimizer_used == 'FORT-BOBYQA') THEN
 
         ! The BOBYQA algorithm might adjust the starting values. So we simply make sure that the very first evaluation of the criterion function is at the actual starting values.
-        crit_val = fort_criterion(x_optim_free_scaled_start)
-        CALL bobyqa(fort_criterion, x_optim_free_scaled_start, optimizer_options%bobyqa%npt, optimizer_options%bobyqa%rhobeg, optimizer_options%bobyqa%rhoend, zero_int, MIN(maxfun, optimizer_options%bobyqa%maxfun), success, message)
+        crit_val = criterion_function(x_optim_free_scaled_start)
+        CALL bobyqa(criterion_function, x_optim_free_scaled_start, optimizer_options%bobyqa%npt, optimizer_options%bobyqa%rhobeg, optimizer_options%bobyqa%rhoend, zero_int, MIN(maxfun, optimizer_options%bobyqa%maxfun), success, message)
 
     ELSEIF (optimizer_used == 'FORT-BFGS') THEN
         dfunc_eps = optimizer_options%bfgs%eps
-        CALL dfpmin(fort_criterion, fort_dcriterion, x_optim_free_scaled_start, optimizer_options%bfgs%gtol, optimizer_options%bfgs%maxiter, optimizer_options%bfgs%stpmx, maxfun, success, message, iter)
+        CALL dfpmin(criterion_function, fort_dcriterion, x_optim_free_scaled_start, optimizer_options%bfgs%gtol, optimizer_options%bfgs%maxiter, optimizer_options%bfgs%stpmx, maxfun, success, message, iter)
         dfunc_eps = -HUGE_FLOAT
     END IF
 
@@ -178,6 +197,148 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
+FUNCTION fort_criterion_parallel(x)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)      :: x(:)
+    REAL(our_dble)                  :: fort_criterion_parallel
+
+    !/* internal objects    */
+
+    REAL(our_dble)                  :: x_all_current(28)
+    REAL(our_dble)                  :: x_input(num_free)
+    REAL(our_dble)                  :: contribs(num_obs)
+    REAL(our_dble)                  :: start
+
+    INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
+
+    INTEGER(our_int)                :: opt_ambi_info_slaves(2, num_slaves)
+    INTEGER(our_int)                :: dist_optim_paras_info
+    INTEGER(our_int)                :: displs(num_slaves)
+    INTEGER(our_int)                :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+#if MPI_AVAILABLE
+
+    ! We intent to monitor the execution time of every evaluation of the criterion function.
+    CALL CPU_TIME(start)
+
+    ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
+    IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
+        fort_criterion_parallel = HUGE_FLOAT
+        RETURN
+    END IF
+
+    x_input = apply_scaling(x, precond_matrix, 'undo')
+
+    CALL construct_all_current_values(x_all_current, x_input, optim_paras)
+
+    CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+
+    CALL MPI_Bcast(x_all_current, 28, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+
+    ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
+    CALL dist_optim_paras(optim_paras, x_all_current, dist_optim_paras_info)
+
+    ! We need to know how the workload is distributed across the slaves.
+    IF (.NOT. ALLOCATED(num_states_slaves)) THEN
+        CALL distribute_workload(num_states_slaves, num_obs_slaves)
+
+        DO i = 1, num_slaves
+            displs(i) = SUM(num_obs_slaves(:i - 1))
+        END DO
+
+    END IF
+
+    contribs = -HUGE_FLOAT
+
+    CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_obs_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+
+    fort_criterion_parallel = get_log_likl(contribs)
+
+    ! We also need to aggregate the information about the worst-case determination.
+    opt_ambi_info = MISSING_INT
+    CALL MPI_GATHER(opt_ambi_info_slaves, 0, MPI_INT, opt_ambi_info_slaves, 2, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+    opt_ambi_info = SUM(opt_ambi_info_slaves, 2)
+
+    IF (crit_estimation .OR. (maxfun == zero_int)) THEN
+
+        num_eval = num_eval + 1
+
+        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, optim_paras, start)
+
+        IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
+
+    END IF
+
+#endif
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras)
+
+    !/* external objects        */
+
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
+
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
+
+    INTEGER(our_int), INTENT(IN)                    :: edu_start
+    INTEGER(our_int), INTENT(IN)                    :: edu_max
+
+    !/* internal objects        */
+
+    REAL(our_dble)                                  :: x_all_current(28)
+
+    INTEGER(our_int)                                :: num_states
+    INTEGER(our_int)                                :: period
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+#if MPI_AVAILABLE
+
+    CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+
+
+    CALL get_optim_paras(x_all_current, optim_paras, .True.)
+
+    CALL MPI_Bcast(x_all_current, 28, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+
+
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
+
+
+    ALLOCATE(periods_emax(num_periods, max_states_period))
+    periods_emax = MISSING_FLOAT
+
+    DO period = (num_periods - 1), 0, -1
+
+        num_states = states_number_period(period + 1)
+
+        CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
+
+    END DO
+
+#endif
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 FUNCTION fort_dcriterion(x_optim_free_scaled)
 
     !/* external objects        */
@@ -202,7 +363,7 @@ FUNCTION fort_dcriterion(x_optim_free_scaled)
     ei = zero_dble
 
     ! Evaluate baseline
-    f0 = fort_criterion(x_optim_free_scaled)
+    f0 = criterion_function(x_optim_free_scaled)
 
     DO j = 1, num_free
 
@@ -210,7 +371,7 @@ FUNCTION fort_dcriterion(x_optim_free_scaled)
 
         d = dfunc_eps * ei
 
-        f1 = fort_criterion(x_optim_free_scaled + d)
+        f1 = criterion_function(x_optim_free_scaled + d)
 
         fort_dcriterion(j) = (f1 - f0) / d(j)
 
@@ -256,7 +417,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_scales_scalar(precond_matrix, x_optim_free_start, precond_minimum)
+SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_minimum)
 
     !/* external objects    */
 
@@ -297,7 +458,7 @@ SUBROUTINE get_scales_scalar(precond_matrix, x_optim_free_start, precond_minimum
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_precondition_matrix_scalar(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
+SUBROUTINE get_precondition_matrix(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
 
     !/* external objects    */
 
@@ -323,7 +484,7 @@ SUBROUTINE get_precondition_matrix_scalar(precond_type, precond_minimum, maxfun,
     IF ((precond_type == 'identity') .OR. (maxfun == zero_int)) THEN
         precond_matrix = create_identity(num_free)
     ELSE
-        CALL get_scales_scalar(precond_matrix, x_optim_free_unscaled_start, precond_minimum)
+        CALL get_scales(precond_matrix, x_optim_free_unscaled_start, precond_minimum)
     END IF
 
     crit_estimation = .False.

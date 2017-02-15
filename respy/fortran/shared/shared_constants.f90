@@ -54,7 +54,6 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER   :: LARGE_FLOAT                  = 1.0e8_our_dble
 
     ! TODO: Move around
-    REAL(our_dble)  :: x_econ_bounds_all_unscaled(2, 28)
     REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_unscaled(:, :)
     REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_scaled(:, :)
 
@@ -105,12 +104,14 @@ MODULE shared_constants
     ! This container holds all the parameters that are potentially updated during the estimation step.
     TYPE OPTIMIZATION_PARAMETERS
         REAL(our_dble)          :: shocks_cholesky(4, 4)
+        REAL(our_dble)          :: paras_bounds(2, 28)
         REAL(our_dble)          :: coeffs_edu(3)
         REAL(our_dble)          :: coeffs_home(1)
         REAL(our_dble)          :: coeffs_a(6)
         REAL(our_dble)          :: coeffs_b(6)
         REAL(our_dble)          :: level(1)
         REAL(our_dble)          :: delta(1)
+
         LOGICAL                 :: paras_fixed(28)
 
     END TYPE

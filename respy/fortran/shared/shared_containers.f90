@@ -4,6 +4,8 @@ MODULE shared_containers
 
     USE shared_constants
 
+    USE shared_interfaces
+
     !/* setup                   */
 
     IMPLICIT NONE
@@ -45,6 +47,8 @@ MODULE shared_containers
     TYPE(OPTIMIZATION_PARAMETERS)   :: optim_paras
 
     INTEGER(our_int)                :: maxfun
+
+    PROCEDURE(interface_func), POINTER  :: criterion_function => null ()
 
 !******************************************************************************
 !******************************************************************************

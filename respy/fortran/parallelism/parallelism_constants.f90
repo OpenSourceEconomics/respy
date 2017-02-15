@@ -1,8 +1,10 @@
 MODULE parallelism_constants
 
+#if MPI_AVAILABLE
+
     !/* external modules    */
 
-    USE resfort_library
+    USE shared_constants
 
     USE mpi
 
@@ -13,7 +15,7 @@ MODULE parallelism_constants
 !------------------------------------------------------------------------------
 !   Parallel Inputs
 !------------------------------------------------------------------------------
-    
+
     INTEGER(our_int)            :: status(MPI_STATUS_SIZE)
     INTEGER(our_int)            :: PARENTCOMM
     INTEGER(our_int)            :: SLAVECOMM
@@ -22,4 +24,6 @@ MODULE parallelism_constants
 
 !******************************************************************************
 !******************************************************************************
+#endif
+
 END MODULE
