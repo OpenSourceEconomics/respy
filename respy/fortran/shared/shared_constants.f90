@@ -58,8 +58,6 @@ MODULE shared_constants
     REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_unscaled(:, :)
     REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_scaled(:, :)
 
-    REAL(our_dble)  :: x_optim_bounds_all_unscaled(2, 28)
-
     REAL(our_dble)  :: precond_eps
 
     ! TODO: Better integration. This container provides some information about the success of the worst-case determination. It's printed to the *.log file.

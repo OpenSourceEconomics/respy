@@ -30,7 +30,7 @@ class TestClass(object):
         # Run evaluation for multiple random requests.
         flag_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
         is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])
-        is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
+        flag_myopic = np.random.choice([True, False], p=[0.10, 0.9])
         max_draws = np.random.randint(10, 100)
 
         # Generate random initialization file
@@ -38,7 +38,7 @@ class TestClass(object):
         constr['flag_deterministic'] = flag_deterministic
         constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_parallelism'] = False
-        constr['is_myopic'] = is_myopic
+        constr['flag_myopic'] = flag_myopic
         constr['max_draws'] = max_draws
         constr['maxfun'] = 0
 

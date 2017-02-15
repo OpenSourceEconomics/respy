@@ -85,7 +85,7 @@ class TestClass(object):
         constr = dict()
         constr['maxfun'] = 0
         constr['flag_ambiguity'] = flag_ambiguity
-        constr['is_myopic'] = True
+        constr['flag_myopic'] = True
 
         generate_init(constr)
 

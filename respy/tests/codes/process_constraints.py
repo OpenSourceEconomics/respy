@@ -13,7 +13,7 @@ VALID_KEYS += ['flag_parallelism', 'version', 'file_est', 'flag_interpolation']
 VALID_KEYS += ['points', 'maxfun', 'flag_deterministic', 'delta']
 VALID_KEYS += ['edu', 'measure', 'level', 'fixed_ambiguity', 'flag_ambiguity']
 VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
-VALID_KEYS += ['is_store', 'is_myopic']
+VALID_KEYS += ['flag_store', 'flag_myopic']
 
 
 def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
@@ -168,13 +168,13 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
             dict_['PRECONDITIONING']['type'] = 'identity'
 
     # Replace store attribute
-    if 'is_store' in constraints.keys():
+    if 'flag_store' in constraints.keys():
         # Extract objects
-        is_store = constraints['is_store']
+        flag_store = constraints['flag_store']
         # Checks
-        assert (is_store in [True, False])
+        assert (flag_store in [True, False])
         # Replace in initialization file
-        dict_['SOLUTION']['store'] = str(is_store)
+        dict_['SOLUTION']['store'] = str(flag_store)
 
     # Replace number of periods
     if 'periods' in constraints.keys():
@@ -187,12 +187,12 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         dict_['BASICS']['periods'] = periods
 
     # Replace discount factor
-    if 'is_myopic' in constraints.keys():
+    if 'flag_myopic' in constraints.keys():
         # Extract object
         assert ('delta' not in constraints.keys())
-        assert (constraints['is_myopic'] in [True, False])
+        assert (constraints['flag_myopic'] in [True, False])
         # Replace in initialization files
-        if constraints['is_myopic']:
+        if constraints['flag_myopic']:
             dict_['BASICS']['coeffs'] = [0.0]
             dict_['BASICS']['bounds'] = [get_valid_bounds('delta', 0.00)]
         else:
@@ -201,13 +201,13 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
             dict_['BASICS']['bounds'] = [get_valid_bounds('amb', value)]
 
     # Replace discount factor. This is option is needed in addition to
-    # is_myopic the code is run for very small levels of delta and compared
+    # flag_myopic the code is run for very small levels of delta and compared
     # against the myopic version.
     if 'delta' in constraints.keys():
         # Extract objects
         delta = constraints['delta']
         # Checks
-        assert ('is_myopic' not in constraints.keys())
+        assert ('flag_myopic' not in constraints.keys())
         assert (np.isfinite(delta))
         assert (delta >= 0.0)
         assert (isinstance(delta, float))
@@ -244,7 +244,7 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         assert (constraints['flag_estimation'] in [True, False])
         # Replace in initialization files
         if constraints['flag_estimation']:
-            dict_['is_store'] = False
+            dict_['flag_store'] = False
             dict_['ESTIMATION']['maxfun'] = int(np.random.choice(range(6),
                 p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
             dict_['PRECONDITIONING']['type'] = \
@@ -275,7 +275,7 @@ def _check_constraints(constraints):
     # Address incompatibility issues
     keys = constraints.keys()
 
-    if 'is_myopic' in keys:
+    if 'flag_myopic' in keys:
         assert 'delta' not in keys
 
     if 'flag_estimation' in keys:
