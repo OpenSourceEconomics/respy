@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
-    OLD_RELEASE, NEW_RELEASE = '1.0.00', '2.0.01'
+    OLD_RELEASE, NEW_RELEASE = '1.0.00', '2.0.2'
 
     parser = argparse.ArgumentParser(description='Run release testing.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)

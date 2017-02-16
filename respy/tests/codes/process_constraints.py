@@ -13,7 +13,7 @@ VALID_KEYS += ['flag_parallelism', 'version', 'file_est', 'flag_interpolation']
 VALID_KEYS += ['points', 'maxfun', 'flag_deterministic', 'delta']
 VALID_KEYS += ['edu', 'measure', 'level', 'fixed_ambiguity', 'flag_ambiguity']
 VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
-VALID_KEYS += ['flag_store', 'flag_myopic']
+VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta']
 
 
 def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
@@ -109,6 +109,13 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         assert (constraints['fixed_ambiguity'] in [True, False])
         # Replace in initialization files
         dict_['AMBIGUITY']['fixed'] = [constraints['fixed_ambiguity']]
+
+    # Treat the discount rate as fixed in an estimation.
+    if 'fixed_delta' in constraints.keys():
+        # Checks
+        assert (constraints['fixed_delta'] in [True, False])
+        # Replace in initialization files
+        dict_['BASICS']['fixed'] = [constraints['fixed_delta']]
 
     # Replace version
     if 'version' in constraints.keys():

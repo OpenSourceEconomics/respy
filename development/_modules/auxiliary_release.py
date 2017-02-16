@@ -41,6 +41,7 @@ def prepare_release_tests(constr):
 
     constr['level'] = 0.00
     constr['fixed_ambiguity'] = True
+    constr['fixed_delta'] = True
     constr['file_est'] = '../data.respy.dat'
 
     init_dict = generate_init(constr)
@@ -50,6 +51,10 @@ def prepare_release_tests(constr):
     eps = np.round(init_dict['SCIPY-BFGS']['eps'], decimals=15)
     init_dict['PRECONDITIONING']['eps'] = eps
     init_dict['FORT-BFGS']['eps'] = eps
+
+    # We also endogenized the discount rate, so we need to restrict the
+    # analysis to estimations where the discount rate is fixed.
+    init_dict['BASICS']['delta'] = init_dict['BASICS']['coeffs'][0]
 
     # We did not have any preconditioning implemented in the PYTHON version
     # initially. We had to switch the preconditioning scheme in the new
