@@ -46,6 +46,7 @@ def scripts_update(init_file):
     init_dict['EDUCATION']['coeffs'] = optim_paras['coeffs_edu']
     init_dict['HOME']['coeffs'] = optim_paras['coeffs_home']
     init_dict['AMBIGUITY']['coeffs'] = optim_paras['level']
+    init_dict['BASICS']['coeffs'] = optim_paras['delta']
     init_dict['SHOCKS']['coeffs'] = shocks_coeffs
 
     print_init_dict(init_dict, init_file)
