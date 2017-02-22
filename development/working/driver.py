@@ -33,13 +33,13 @@ from codes.random_init import generate_init
 
 respy_obj = RespyCls('model.respy.ini')
 
-for num_procs in [1, 2]:
+for num_procs in [1]:
     respy_obj.reset()
     print('going in with ', num_procs)
     respy_obj.unlock()
-    respy_obj.attr['num_procs'] = num_procs
+    #respy_obj.attr['num_procs'] = num_procs
     respy_obj.lock()
-    simulate(respy_obj)
+    #simulate(respy_obj)
     estimate(respy_obj)
     print('... done')
 #print('going in')

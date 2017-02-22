@@ -20,8 +20,8 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
         states_number_period, states_all, edu_start, max_states_period,
         optim_paras)
 
-    periods_emax = pyth_backward_induction(num_periods, is_myopic,
-        max_states_period, periods_draws_emax, num_draws_emax,
+    periods_emax, opt_ambi_details = pyth_backward_induction(num_periods,
+        is_myopic, max_states_period, periods_draws_emax, num_draws_emax,
         states_number_period, periods_rewards_systematic, edu_max, edu_start,
         mapping_state_idx, states_all, is_debug, is_interpolated,
         num_points_interp, measure, optim_paras, optimizer_options, '', False)
@@ -32,4 +32,4 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
 
     crit_val = get_log_likl(contribs)
 
-    return crit_val
+    return crit_val, opt_ambi_details

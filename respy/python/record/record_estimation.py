@@ -5,7 +5,7 @@ import time
 from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_econ_paras
-from respy.python.shared.shared_constants import opt_ambi_info
+from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_constants import LARGE_FLOAT
@@ -72,7 +72,8 @@ def record_estimation_stop():
         out_file.write('\n TERMINATED\n')
 
 
-def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
+def record_estimation_eval(opt_obj, fval, opt_ambi_details,
+        x_optim_all_unscaled, start):
     """ Logging the progress of an estimation. This function contains two
     parts as two files provide information about the progress.
     """
@@ -130,13 +131,19 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
 
         # Record some information about the success rate of the nested
         # optimization to determine the worst case outcomes.
-        if opt_ambi_info[0] != 0:
-            fmt_ = '   {:<9} ' + '    {:24.2f}%\n'
-            share = (opt_ambi_info[1] / float(opt_ambi_info[0])) * 100
-            out_file.write(fmt_.format(*['Ambiguity', share]))
-        else:
+        if np.all(opt_ambi_details == MISSING_FLOAT):
             fmt_ = '   {:<9} ' + '    {:>25}\n'
             out_file.write(fmt_.format(*['Ambiguity', '---']))
+        else:
+            num_periods, max_states_periods = opt_ambi_details.shape[:2]
+            fmt_ = '   {:<9} ' + '    {:24.2f}%\n'
+            total, success = 0, 0
+            for period in range(num_periods):
+                subset = opt_ambi_details[period, :max_states_periods, 3]
+                total += np.sum(subset >= 0)
+                success += np.sum(subset == 1)
+            share = (success / float(total)) * 100
+            out_file.write(fmt_.format(*['Ambiguity', share]))
 
         fmt_ = '\n   {:>10}' + '    {:>25}' * 3 + '\n\n'
         out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))

@@ -135,7 +135,7 @@ SUBROUTINE record_ambiguity_summary(file_sim)
         WRITE(99, *) '   Period      Total    Success    Failure'
         WRITE(99, *)
 
-        DO i = 1, SIZE(success_count, 2)
+        DO i = SIZE(success_count, 2), 1, -1
             total_count = SUM(success_count(:, i))
             share_success = success_count(1, i) / DBLE(total_count)
             share_failure = one_dble - share_success

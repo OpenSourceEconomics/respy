@@ -1,102 +1,43 @@
+import numpy as np
 import shlex
 
 
-def record_ambiguity(period, k, x_shift, div, success, message, file_sim):
+def record_ambiguity(opt_ambi_details, states_number_period, num_periods, file_sim):
     """ Write result of optimization problem to log file.
     """
 
     with open(file_sim + '.respy.amb', 'a') as file_:
+        for period in range(num_periods - 1, -1, -1):
 
-        string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
-        file_.write(string.format([period, k]))
+            for k in range(states_number_period[period]):
 
-        string = '   {:<12}{:10.5f}\n'
-        args = ['Occupation A'] + [x_shift[0]]
-        file_.write(string.format(*args))
+                x_shift = opt_ambi_details[period, k, :2]
+                div, success, mode = opt_ambi_details[period, k, 2:]
 
-        string = '   {:<12}{:10.5f}\n\n'
-        args = ['Occupation B'] + [x_shift[1]]
-        file_.write(string.format(*args))
+                message = get_message(mode)
 
-        string = '   {:<12}{:>10.5f}\n\n'
-        file_.write(string.format(*['Divergence', div]))
+                string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
+                file_.write(string.format([period, k]))
 
-        string = '   {:<15}{:<5}\n'
-        file_.write(string.format(*['Success', str(success)]))
+                string = '   {:<12}{:10.5f}\n'
+                args = ['Occupation A'] + [x_shift[0]]
+                file_.write(string.format(*args))
 
-        string = '   {:<15}{:<100}\n\n\n'
-        file_.write(string.format(*['Message', message]))
+                string = '   {:<12}{:10.5f}\n\n'
+                args = ['Occupation B'] + [x_shift[1]]
+                file_.write(string.format(*args))
 
-    # Summarize the overall performance.
-    if period == 0:
-        record_ambiguity_summary(file_sim)
+                string = '   {:<12}{:>10.5f}\n\n'
+                file_.write(string.format(*['Divergence', div]))
 
+                string = '   {:<15}{:<5}\n'
+                file_.write(string.format(*['Success', str(success == 1)]))
 
-def record_ambiguity_summary(file_sim):
-    """ Summarize optimizations in case of ambiguity.
-    """
+                string = '   {:<15}{:<100}\n\n\n'
+                file_.write(string.format(*['Message', message]))
 
-    def _process_cases(list_internal):
-        """ Process cases and determine whether keyword or empty line.
-        """
-        # Antibugging
-        assert (isinstance(list_internal, list))
-
-        # Get information
-        is_empty_internal = (len(list_internal) == 0)
-
-        if not is_empty_internal:
-            is_block_internal = list_internal[0] == 'PERIOD'
-        else:
-            is_block_internal = False
-
-        # Antibugging
-        assert (is_block_internal in [True, False])
-        assert (is_empty_internal in [True, False])
-
-        # Finishing
-        return is_empty_internal, is_block_internal
-
-    # Distribute class attributes
-    dict_ = dict()
-
-    for line in open(file_sim + '.respy.amb').readlines():
-
-        # Split line
-        list_ = shlex.split(line)
-
-        # Determine special cases
-        is_empty, is_block = _process_cases(list_)
-
-        # Applicability
-        if is_empty:
-            continue
-
-        # Prepare dictionary
-        if is_block:
-
-            period = int(list_[1])
-
-            if period in dict_.keys():
-                continue
-
-            dict_[period] = {}
-            dict_[period]['success'] = 0
-            dict_[period]['failure'] = 0
-            dict_[period]['total'] = 0
-
-        # Collect success indicator
-        if list_[0] == 'Success':
-            dict_[period]['total'] += 1
-
-            is_success = (list_[1] == 'True')
-            if is_success:
-                dict_[period]['success'] += 1
-            else:
-                dict_[period]['failure'] += 1
-
-    with open(file_sim + '.respy.amb', 'a') as file_:
-
+        # Write out summary information in the end to get an overall sense of
+        # the performance.
         file_.write(' SUMMARY\n\n')
 
         string = '''{0[0]:>10} {0[1]:>10} {0[2]:>10} {0[3]:>10}\n'''
@@ -105,14 +46,53 @@ def record_ambiguity_summary(file_sim):
 
         file_.write('\n')
 
-        for period in range(max(dict_.keys()) + 1):
-            total = dict_[period]['total']
+        for period in range(num_periods - 1, -1, -1):
+            total = states_number_period[period]
+            success = np.sum(opt_ambi_details[period, :total, 3] == 1)
+            failure = np.sum(opt_ambi_details[period, :total, 3] == 0)
+            success /= float(total)
+            failure /= float(total)
 
-            success = dict_[period]['success'] / float(total)
-            failure = dict_[period]['failure'] / float(total)
             string = '''{0[0]:>10} {0[1]:>10} {0[2]:10.2f} {0[3]:10.2f}\n'''
             file_.write(string.format([period, total, success, failure]))
 
         file_.write('\n')
 
 
+def get_message(mode):
+    """ This function transfers the mode returned from the solver into the
+    corresponding message.
+    """
+
+    if mode == -1:
+        message = 'Gradient evaluation required (g & a)'
+    elif mode == 0:
+        message = 'Optimization terminated successfully'
+    elif mode == 1:
+        message = 'Function evaluation required (f & c)'
+    elif mode == 2:
+        message = 'More equality constraints than independent variables'
+    elif mode == 3:
+        message = 'More than 3*n iterations in LSQ subproblem'
+    elif mode == 4:
+        message = 'Inequality constraints incompatible'
+    elif mode == 5:
+        message = 'Singular matrix E in LSQ subproblem'
+    elif mode == 6:
+        message = 'Singular matrix C in LSQ subproblem'
+    elif mode == 7:
+        message = 'Rank-deficient equality constraint subproblem HFTI'
+    elif mode == 8:
+        message = 'Positive directional derivative for linesearch'
+    elif mode == 9:
+        message = 'Iteration limit exceeded'
+
+    # The following are project-specific return codes.
+    elif mode == 15:
+        message = 'No random variation in shocks'
+    elif mode == 16:
+        message = 'Optimization terminated successfully'
+    else:
+        raise AssertionError
+
+    return message

@@ -167,13 +167,10 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
     """
-    # Provides summary information about the success of the worst-case
-    # determination.
-    opt_ambi_info = [0, 0]
-
     # Initialize containers, which contain a lot of missing values as we
     # capture the tree structure in arrays of fixed dimension.
     i, j = num_periods, max_states_period
+    opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 5))
     periods_emax = np.tile(MISSING_FLOAT, (i, j))
 
     if is_myopic:
@@ -182,7 +179,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         for period, num_states in enumerate(states_number_period):
             periods_emax[period, :num_states] = 0.0
 
-        return periods_emax
+        return periods_emax, opt_ambi_details
 
     # Construct auxiliary objects
     shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
@@ -234,12 +231,12 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
 
             # Constructing the dependent variables for at the random subset of
             # points where the EMAX is actually calculated.
-            endogenous = get_endogenous_variable(period, num_periods,
-                num_states, periods_rewards_systematic, edu_max, edu_start,
-                mapping_state_idx, periods_emax, states_all, is_simulated,
-                num_draws_emax, maxe, draws_emax_transformed, shocks_cov,
-                measure, optim_paras, optimizer_options, file_sim,
-                is_write)
+            endogenous, opt_ambi_details = get_endogenous_variable(period,
+                num_periods, num_states, periods_rewards_systematic, edu_max,
+                edu_start, mapping_state_idx, periods_emax, states_all,
+                is_simulated, num_draws_emax, maxe, draws_emax_transformed,
+                shocks_cov, measure, optim_paras, optimizer_options,
+                opt_ambi_details)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -261,11 +258,12 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
 
                 # Simulate the expected future value.
                 if optim_paras['level'] > MIN_AMBIGUITY:
-                    emax = construct_emax_ambiguity(num_periods, num_draws_emax,
-                        period, k, draws_emax_transformed, rewards_systematic,
+                    emax, optim_ambi_details = construct_emax_ambiguity(
+                        num_periods, num_draws_emax, period, k,
+                        draws_emax_transformed, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, shocks_cov, measure, optim_paras,
-                        optimizer_options, file_sim, is_write)
+                        optimizer_options, opt_ambi_details)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
                         period, k, draws_emax_transformed, rewards_systematic,
@@ -275,7 +273,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 # Store results
                 periods_emax[period, k] = emax
 
-    return periods_emax
+    return periods_emax, opt_ambi_details
 
 
 def get_simulated_indicator(num_points_interp, num_candidates, period, is_debug):
@@ -347,7 +345,7 @@ def get_endogenous_variable(period, num_periods, num_states,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
         draws_emax_transformed, shocks_cov, measure, optim_paras,
-        optimizer_options, file_sim, is_write):
+        optimizer_options, opt_ambi_details):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -364,11 +362,11 @@ def get_endogenous_variable(period, num_periods, num_states,
 
         # Simulate the expected future value.
         if optim_paras['level'] > MIN_AMBIGUITY:
-            emax = construct_emax_ambiguity(num_periods, num_draws_emax,
-                period, k, draws_emax_transformed, rewards_systematic,
-                edu_max, edu_start, periods_emax, states_all,
-                mapping_state_idx, shocks_cov, measure, optim_paras,
-                optimizer_options, file_sim, is_write)
+            emax, optim_ambi_details = construct_emax_ambiguity(num_periods,
+                num_draws_emax, period, k, draws_emax_transformed,
+                rewards_systematic, edu_max, edu_start, periods_emax,
+                states_all, mapping_state_idx, shocks_cov, measure,
+                optim_paras, optimizer_options, opt_ambi_details)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,
                 period, k, draws_emax_transformed, rewards_systematic,
@@ -379,7 +377,7 @@ def get_endogenous_variable(period, num_periods, num_states,
         endogenous_variable[k] = emax - maxe[k]
 
     # Finishing
-    return endogenous_variable
+    return endogenous_variable, opt_ambi_details
 
 
 def get_predictions(endogenous, exogenous, maxe, is_simulated, file_sim,

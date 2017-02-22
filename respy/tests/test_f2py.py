@@ -22,6 +22,7 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import get_predictions
+from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_auxiliary import create_draws
@@ -314,7 +315,7 @@ class TestClass(object):
 
         args = ()
         args += base_args + (optim_paras, optimizer_options, file_sim, False)
-        pyth = pyth_backward_induction(*args)
+        pyth, _ = pyth_backward_induction(*args)
 
         args = ()
         args += base_args + (shocks_cholesky, level, delta)
@@ -444,7 +445,7 @@ class TestClass(object):
 
         args = ()
         args += base_args + (optimizer_options, )
-        py = pyth_criterion(x0, *args)
+        py, _ = pyth_criterion(x0, *args)
 
         args = ()
         args += base_args + (fort_slsqp_maxiter, fort_slsqp_ftol)
@@ -476,6 +477,10 @@ class TestClass(object):
                 'num_periods', 'states_all', 'num_points_interp', 'edu_start',
                 'num_draws_emax', 'is_debug', 'edu_max', 'measure',
                 'optim_paras', 'optimizer_options', 'file_sim')
+
+        # Initialize containers
+        i, j = num_periods, max(states_number_period)
+        opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 5))
 
         shocks_cov = np.matmul(optim_paras['shocks_cholesky'], optim_paras['shocks_cholesky'].T)
 
@@ -535,8 +540,8 @@ class TestClass(object):
                 measure)
 
         args = ()
-        args += base_args + (optim_paras, optimizer_options, file_sim, False)
-        py = get_endogenous_variable(*args)
+        args += base_args + (optim_paras, optimizer_options, opt_ambi_details)
+        py, _ = get_endogenous_variable(*args)
 
         args = ()
         args += base_args + (level, optim_paras['delta'])

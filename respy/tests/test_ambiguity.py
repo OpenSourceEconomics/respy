@@ -13,6 +13,7 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.solve.solve_ambiguity import constraint_ambiguity
 from respy.python.solve.solve_ambiguity import criterion_ambiguity
 from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_ambiguity import get_worst_case
 from respy.python.solve.solve_ambiguity import kl_divergence
 from respy.python.shared.shared_constants import IS_FORTRAN
@@ -107,6 +108,10 @@ class TestClass(object):
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
+        # Initialize containers
+        i, j = num_periods, max(states_number_period)
+        opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 5))
+
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
@@ -123,8 +128,8 @@ class TestClass(object):
             mapping_state_idx, shocks_cov, measure)
 
         args = ()
-        args += base_args + (optim_paras, optimizer_options, file_sim, False)
-        py = construct_emax_ambiguity(*args)
+        args += base_args + (optim_paras, optimizer_options, opt_ambi_details)
+        py, _ = construct_emax_ambiguity(*args)
 
         args = ()
         args += base_args + (optim_paras['level'], optim_paras['delta'])

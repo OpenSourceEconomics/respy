@@ -1,15 +1,13 @@
 from scipy.optimize import minimize
 import numpy as np
 
-from respy.python.record.record_ambiguity import record_ambiguity
-from respy.python.shared.shared_constants import opt_ambi_info
 from respy.python.solve.solve_risk import construct_emax_risk
 
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_transformed, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, shocks_cov,
-        measure, optim_paras, optimizer_options, file_sim, is_write):
+        periods_emax, states_all, mapping_state_idx, shocks_cov, measure,
+        optim_paras, optimizer_options, opt_ambi_details):
     """ Construct EMAX accounting for a worst case evaluation.
     """
     is_deterministic = (np.count_nonzero(shocks_cov) == 0)
@@ -20,18 +18,18 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
 
     if is_deterministic:
         x_shift, div = [0.0, 0.0], 0.0
-        is_success, message = True, 'No random variation in shocks.'
+        is_success, mode = True, 15
 
     elif measure == 'abs':
         x_shift, div = [-float(optim_paras['level']), -float(optim_paras['level'])], \
                        float(optim_paras['level'])
-        is_success, message = True, 'Optimization terminated successfully.'
+        is_success, mode = True, 16
 
     elif measure == 'kl':
 
         args = ()
         args += base_args + (shocks_cov, optim_paras, optimizer_options)
-        x_shift, is_success, message = get_worst_case(*args)
+        x_shift, is_success, mode = get_worst_case(*args)
 
         div = float(-(constraint_ambiguity(x_shift, shocks_cov, optim_paras) -
                       optim_paras['level']))
@@ -39,14 +37,17 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     else:
         raise NotImplementedError
 
-    if is_write:
-        record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
+    # We collect the information from the optimization step for future
+    # recording.
+    args = ()
+    args += (x_shift[0], x_shift[1], div, float(is_success), mode)
+    opt_ambi_details[period, k, :] = args
 
     args = ()
     args += base_args + (optim_paras,)
     emax = criterion_ambiguity(x_shift, *args)
 
-    return emax
+    return emax, opt_ambi_details
 
 
 def get_worst_case(num_periods, num_draws_emax, period, k,
@@ -86,15 +87,10 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     if not opt['success']:
         opt['x'] = x0
 
-    is_success, message = opt['success'], opt['message']
+    is_success, mode = opt['success'], opt['status']
     x_shift = opt['x'].tolist()
 
-    # Record some information about all worst-case determinations.
-    opt_ambi_info[0] += 1
-    if is_success:
-        opt_ambi_info[1] += 1
-
-    return x_shift, is_success, message
+    return x_shift, is_success, mode
 
 
 def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,

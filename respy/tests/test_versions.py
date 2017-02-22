@@ -205,6 +205,7 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['flag_ambiguity'] = flag_ambiguity
+        # TODO: I am working on fixing this.
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
         constr['flag_interpolation'] = False
@@ -254,6 +255,8 @@ class TestClass(object):
                 fname = file_sim + '.respy.amb'
                 if base_amb_log is None:
                     base_amb_log = open(fname, 'r').read()
+                    import shutil
+                    shutil.copy(fname, 'fort.respy.amb')
                 assert open(fname, 'r').read() == base_amb_log
 
             estimate(respy_obj)

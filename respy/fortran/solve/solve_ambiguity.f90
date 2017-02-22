@@ -207,7 +207,7 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
         x_shift = (/-optim_paras%level, -optim_paras%level/)
         div = optim_paras%level
         is_success = .True.
-        message = 'Optimization terminated successfully.'
+        message = 'Optimization terminated successfully'
 
     ELSE
         CALL get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
@@ -246,7 +246,7 @@ FUNCTION get_message(mode)
     IF (mode == -1) THEN
         get_message = 'Gradient evaluation required (g & a)'
     ELSEIF (mode == 0) THEN
-        get_message = 'Optimization terminated successfully.'
+        get_message = 'Optimization terminated successfully'
     ELSEIF (mode == 1) THEN
         get_message = 'Function evaluation required (f & c)'
     ELSEIF (mode == 2) THEN

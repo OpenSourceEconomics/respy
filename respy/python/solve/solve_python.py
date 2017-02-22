@@ -1,7 +1,11 @@
+import numpy as np
+
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
+from respy.python.record.record_solution import record_solution_progress
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
-from respy.python.record.record_solution import record_solution_progress
+from respy.python.record.record_ambiguity import record_ambiguity
+from respy.python.shared.shared_constants import MISSING_FLOAT
 
 
 def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
@@ -39,12 +43,16 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
     # procedure is not called upon.
     record_solution_progress(3, file_sim)
 
-    periods_emax = pyth_backward_induction(num_periods, is_myopic,
-        max_states_period, periods_draws_emax, num_draws_emax,
+    periods_emax, opt_ambi_details = pyth_backward_induction(num_periods,
+        is_myopic, max_states_period, periods_draws_emax, num_draws_emax,
         states_number_period, periods_rewards_systematic, edu_max, edu_start,
         mapping_state_idx, states_all, is_debug, is_interpolated,
         num_points_interp, measure, optim_paras, optimizer_options,
         file_sim, True)
+
+    if not np.all(opt_ambi_details == MISSING_FLOAT):
+        record_ambiguity(opt_ambi_details, states_number_period, num_periods,
+            file_sim)
 
     if not is_myopic:
         record_solution_progress(-1, file_sim)
