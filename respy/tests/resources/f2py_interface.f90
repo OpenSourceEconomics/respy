@@ -49,6 +49,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     !/* internal objects            */
 
+    DOUBLE PRECISION, ALLOCATABLE   :: opt_ambi_details(:, :, :)
+
     DOUBLE PRECISION                :: contribs(SIZE(data_est_int, 1))
 
     INTEGER                         :: dist_optim_paras_info
@@ -81,7 +83,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, optim_paras)
 
-    CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, measure_int, optim_paras, optimizer_options, file_sim_mock, .False.)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, measure_int, optim_paras, optimizer_options, file_sim_mock, .False.)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, optim_paras)
 
@@ -339,6 +341,9 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     CHARACTER(225), INTENT(IN)      :: file_sim
     CHARACTER(10), INTENT(IN)       :: measure_int
 
+    !/* internal objects*/
+
+    DOUBLE PRECISION, ALLOCATABLE   :: opt_ambi_details(:, :, :)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -363,7 +368,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, measure_int, optim_paras, optimizer_options, file_sim, is_write)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, measure_int, optim_paras, optimizer_options, file_sim, is_write)
 
     ! Allocate to intermidiaries
     periods_emax_int = periods_emax
@@ -744,6 +749,10 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
 
     LOGICAL, INTENT(IN)             :: is_write
 
+    !/* internal */
+
+    DOUBLE PRECISION, ALLOCATABLE   :: opt_ambi_details(:, :, :)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -751,6 +760,9 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     ! Assign global RESFORT variables
     max_states_period = SIZE(states_all_int, 2)
     min_idx = SIZE(mapping_state_idx_int, 4)
+
+    ! Allocate containers
+    ALLOCATE(opt_ambi_details(num_periods_int, max_states_period, 5))
 
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
@@ -765,7 +777,7 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     num_periods = num_periods_int
 
     ! Call function of interest
-    CALL construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, measure_int, optim_paras, optimizer_options, file_sim, is_write)
+    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, measure_int, optim_paras, optimizer_options, file_sim, is_write)
 
 END SUBROUTINE
 !******************************************************************************
@@ -1110,9 +1122,20 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     CHARACTER(10), INTENT(IN)           :: measure_int
     CHARACTER(225), INTENT(IN)          :: file_sim
 
+    !/* internal arguments*/
+
+    DOUBLE PRECISION, ALLOCATABLE       :: opt_ambi_details(:, :, :)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    ! Construct auxiliary objects
+    max_states_period = SIZE(states_all_int, 2)
+    num_periods = SIZE(states_all_int, 1)
+
+    ! Allocate containers
+    ALLOCATE(opt_ambi_details(num_periods, max_states_period, 5))
 
     ! Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
@@ -1127,7 +1150,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     optim_paras%delta = delta
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, edu_start_int, edu_max_int, shocks_cov, measure_int, optim_paras, optimizer_options, file_sim, is_write)
+    CALL get_endogenous_variable(exogenous_variable, opt_ambi_details, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_transformed, edu_start_int, edu_max_int, shocks_cov, measure_int, optim_paras, optimizer_options, file_sim, is_write)
 
 END SUBROUTINE
 !******************************************************************************

@@ -50,9 +50,15 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     TYPE(optimizer_collection), INTENT(IN)          :: optimizer_options
 
+    !/* internal objects    */
+
+    REAL(our_dble), ALLOCATABLE                     :: opt_ambi_details(:, :, :)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    PRINT *, 'I am here'
 
     CALL record_solution(1, file_sim)
 
@@ -70,7 +76,9 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(3, file_sim)
 
-    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim, .True.)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim, .True.)
+
+    PRINT *, opt_ambi_details(1, 1, :)
 
     IF (.NOT. is_myopic) THEN
         CALL record_solution(-1, file_sim)

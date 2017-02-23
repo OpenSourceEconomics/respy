@@ -152,10 +152,11 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, measure, optim_paras, optimizer_options, file_sim, is_write)
+SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, measure, optim_paras, optimizer_options, file_sim, is_write)
 
     !/* external objects    */
 
+    REAL(our_dble), INTENT(OUT)                 :: opt_ambi_details(num_periods, max_states_period, 5)
     REAL(our_dble), INTENT(OUT)                 :: emax
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
@@ -191,6 +192,10 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_success
 
+    ! TODO: This will be cleaned up.
+    REAL(our_dble)                  :: is_success_dble
+    REAL(our_dble)                  :: mode
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -215,6 +220,12 @@ SUBROUTINE construct_emax_ambiguity(emax, num_periods, num_draws_emax, period, k
         div = -(constraint_ambiguity(x_shift, shocks_cov, optim_paras) - optim_paras%level)
 
     END IF
+
+    ! We collect the information from the optimization step for future recording.
+    mode = 0.0
+    is_success_dble = 1.0
+    opt_ambi_details(period + 1, k + 1, :) = (/x_shift, div, is_success_dble, mode/)
+
 
     IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
 

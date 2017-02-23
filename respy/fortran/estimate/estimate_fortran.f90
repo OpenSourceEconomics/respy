@@ -146,6 +146,8 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     !/* internal objects    */
 
+    REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
+
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
     REAL(our_dble)                  :: x_optim_all_unscaled(28)
     REAL(our_dble)                  :: contribs(num_obs)
@@ -177,7 +179,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
-    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim_mock, .False.)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim_mock, .False.)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
 
@@ -299,15 +301,21 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     !/* internal objects        */
 
+    INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
+
     REAL(our_dble)                                  :: x_all_current(28)
 
     INTEGER(our_int)                                :: num_states
-    INTEGER(our_int)                                :: period
+    INTEGER(our_int)                                :: period, displs(num_slaves), i, k
 
+    REAL(our_dble), ALLOCATABLE              :: opt_ambi_details(:, :, :)
+
+    REAL(our_dble)              :: test_obj(4)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
+PRINT *, 'HELLO'
 #if MPI_AVAILABLE
 
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
@@ -334,6 +342,24 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     END DO
 
+    ! I also need the information about the performance of the worst-case optimization.
+    IF (.NOT. ALLOCATED(num_states_slaves)) THEN
+        CALL distribute_workload(num_states_slaves, num_obs_slaves)
+    END IF
+
+    ALLOCATE(opt_ambi_details(num_periods, max_states_period, 5))
+    opt_ambi_details = MISSING_FLOAT
+    DO period = 1, num_periods
+        PRINT *, 'ITERATING', num_states_slaves
+        DO i = 1, num_slaves
+            displs(i) = SUM(num_states_slaves(period, :i - 1))
+        END DO
+        DO k = 1, 5
+            CALL MPI_GATHERV(opt_ambi_details(period, :, k), 0, MPI_DOUBLE, opt_ambi_details(period, :, k), num_states_slaves(period, :), displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+        END DO
+        PRINT *,  opt_ambi_details(1, 1, :)
+
+    END DO
 #endif
 
 END SUBROUTINE
