@@ -115,6 +115,7 @@ class TestClass(object):
 
             # This part checks the equality of an evaluation of the
             # criterion function.
+            print('checking estimate')
             _, crit_val = estimate(respy_obj)
 
             if base_val is None:

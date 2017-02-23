@@ -154,6 +154,8 @@ REAL(our_dble)                  :: tests_obj(4) = MISSING_FLOAT
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
+                ALLOCATE(displs(num_slaves))
+
                 ALLOCATE(contribs(num_obs))
 
                 ALLOCATE(data_slave(num_obs_slaves(rank + 1), 8))
