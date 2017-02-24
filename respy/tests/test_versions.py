@@ -262,7 +262,7 @@ class TestClass(object):
 
         # This does fail for no good reason on the TRAVIS server due to the
         # sensitivity of the worst-case determination.
-        if os.environ.get('TRAVIS'):
+        if os.environ.get('TRAVIS') is None:
             if delta > 0.00 and is_ambiguity:
                 fname = file_sim + '.respy.amb'
                 if base_amb_log is None:
