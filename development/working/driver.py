@@ -40,7 +40,7 @@ for num_procs in [1]:
     #respy_obj.attr['num_procs'] = num_procs
     respy_obj.lock()
     simulate(respy_obj)
-    #estimate(respy_obj)
+    estimate(respy_obj)
     print('... done')
 #print('going in')
 #x, base =

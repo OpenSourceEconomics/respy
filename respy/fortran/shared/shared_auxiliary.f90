@@ -79,6 +79,31 @@ FUNCTION apply_scaling(x_in, precond_matrix, request)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
+
+    !/* external objects        */
+
+    INTEGER(our_int), INTENT(OUT)   :: opt_ambi_summary(2)
+
+    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 5)
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: period
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    opt_ambi_summary = zero_int
+    DO period = 1, num_periods
+        opt_ambi_summary(1) = opt_ambi_summary(1) + COUNT(opt_ambi_details(period, : , 4) .GE. zero_int)
+        opt_ambi_summary(2) = opt_ambi_summary(2) + COUNT(opt_ambi_details(period, : , 4) .EQ. one_int)
+    END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 
     !/* external objects        */

@@ -154,6 +154,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
     REAL(our_dble)                  :: start
 
     INTEGER(our_int)                :: dist_optim_paras_info
+    INTEGER(our_int)                :: opt_ambi_summary(2)
 
     ! This mock object is required as we cannot simply pass in '' as it turns out.
     CHARACTER(225)                  :: file_sim_mock
@@ -190,7 +191,9 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval, optim_paras, start)
+        CALL summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
+
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -218,6 +221,7 @@ FUNCTION fort_criterion_parallel(x)
 
     INTEGER(our_int)                :: opt_ambi_summary_slaves(2, num_slaves)
     INTEGER(our_int)                :: dist_optim_paras_info
+    INTEGER(our_int)                :: opt_ambi_summary(2)
     INTEGER(our_int)                :: displs(num_slaves)
     INTEGER(our_int)                :: i
 
@@ -272,7 +276,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, optim_paras, start)
+        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 

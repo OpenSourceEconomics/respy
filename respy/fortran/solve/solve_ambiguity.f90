@@ -219,11 +219,6 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
 
     emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
-    ! Record information during estimation.
-    opt_ambi_summary(1) = opt_ambi_summary(1) + one_int
-
-    IF (is_success) opt_ambi_summary(2) = opt_ambi_summary(2) + one_int
-
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

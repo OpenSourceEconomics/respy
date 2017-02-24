@@ -296,9 +296,6 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! Provides summary information about the success of the worst-case determination.
-    opt_ambi_summary = zero_int
-
     ! ALlocate container (if required) and initialize missing values.
     IF (.NOT. ALLOCATED(opt_ambi_details)) ALLOCATE(opt_ambi_details(num_periods, max_states_period, 5))
     IF (.NOT. ALLOCATED(periods_emax)) ALLOCATE(periods_emax(num_periods, max_states_period))
