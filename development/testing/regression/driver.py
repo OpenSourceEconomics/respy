@@ -59,12 +59,6 @@ def run(args):
 
         init_dict, crit_val = tests[idx]
 
-        # TODO: This is a temporary fix.
-        init_dict['BASICS']['delta'] = np.round(np.array(init_dict['BASICS']['delta']), 4)
-        init_dict['BASICS']['coeffs'] = [init_dict['BASICS']['delta']]
-        init_dict['BASICS']['bounds'] = [[0.00, None]]
-        init_dict['BASICS']['fixed'] = [True]
-
         print_init_dict(init_dict)
         respy_obj = RespyCls('test.respy.ini')
 
@@ -121,12 +115,6 @@ def run(args):
             print('\n Checking Test ', idx, '\n')
 
             init_dict, crit_val = tests[idx]
-
-            # TODO: This is a temporary fix.
-            init_dict['BASICS']['delta'] = np.round(np.array(init_dict['BASICS']['delta']), 4)
-            init_dict['BASICS']['coeffs'] = [init_dict['BASICS']['delta']]
-            init_dict['BASICS']['bounds'] = [[0.00, None]]
-            init_dict['BASICS']['fixed'] = [True]
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
