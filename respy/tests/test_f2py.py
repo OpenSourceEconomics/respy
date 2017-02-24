@@ -322,11 +322,7 @@ class TestClass(object):
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (file_sim, False)
         f2py = fort_debug.f2py_backward_induction(*args)
-
-        # This does fail for no good reason on the TRAVIS server due to the
-        # sensitivity of the worst-case determination.
-        if os.environ.get('TRAVIS') in [None, False]:
-            np.testing.assert_allclose(pyth, f2py)
+        np.testing.assert_allclose(pyth, f2py)
 
     def test_5(self, flag_ambiguity=False):
         """ This methods ensures that the core functions yield the same
@@ -551,7 +547,6 @@ class TestClass(object):
         args += base_args + (level, optim_paras['delta'])
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
-
         np.testing.assert_equal(py, replace_missing_values(f90))
 
         # Distribute validated results for further functions.

@@ -2,7 +2,6 @@ from pandas.util.testing import assert_frame_equal
 import pandas as pd
 import numpy as np
 import pytest
-import os
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
@@ -264,7 +263,4 @@ class TestClass(object):
                 fname = file_sim + '.respy.amb'
                 if base_amb_log is None:
                     base_amb_log = open(fname, 'r').read()
-                # This does fail for no good reason on the TRAVIS server due to
-                # the sensitivity of the worst-case determination.
-                if os.environ.get('TRAVIS') in [None, False]:
-                    assert open(fname, 'r').read() == base_amb_log
+                assert open(fname, 'r').read() == base_amb_log
