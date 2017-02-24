@@ -26,10 +26,10 @@ from auxiliary_property import initialize_record_canvas
 from auxiliary_property import finalize_testing_record
 from auxiliary_property import update_testing_record
 from auxiliary_property import get_random_request
-from auxiliary_property import get_test_dict
-from auxiliary_property import get_testdir
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
+from auxiliary_property import get_test_dict
+from auxiliary_property import get_testdir
 from auxiliary_shared import cleanup
 
 
@@ -96,14 +96,11 @@ def run(args):
         if seed_investigation:
             print('... running ', module, method)
 
-        # TODO: Remove later ...
-        print(seed, module, method)
         # Run random test
         is_success, msg = None, None
 
         # Create a fresh test directory.
         tmp_dir = get_testdir(5)
-
 
         if not is_investigation:
             os.mkdir(tmp_dir)

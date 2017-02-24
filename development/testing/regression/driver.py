@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+""" This script checks the regression tests vault for any unintended changes
+during further development and refactoring efforts.
+"""
 from __future__ import print_function
 
 import numpy as np
@@ -110,7 +113,11 @@ def run(args):
         fname = TEST_RESOURCES_DIR + '/regression_vault.respy.json'
         tests = json.load(open(fname, 'r'))
 
-        for idx in range(num_tests):
+        # We shuffle the order of the tests so checking subset is insightful.
+        indices = range(num_tests)
+        np.random.shuffle(indices)
+
+        for idx in indices:
             print('\n Checking Test ', idx, '\n')
 
             init_dict, crit_val = tests[idx]
