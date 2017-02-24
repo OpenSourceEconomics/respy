@@ -16,31 +16,31 @@ VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
 VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta']
 
 
-def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
+def process_constraints(dict_, constr, paras_fixed, paras_bounds):
     """ Check and process constraints.
     """
 
     # Check request
-    _check_constraints(constraints)
+    _check_constraints(constr)
 
     # Replace path to dataset used for estimation
-    if 'file_est' in constraints.keys():
+    if 'file_est' in constr.keys():
         # Checks
-        assert isinstance(constraints['file_est'], str)
+        assert isinstance(constr['file_est'], str)
         # Replace in initialization files
-        dict_['ESTIMATION']['file'] = constraints['file_est']
+        dict_['ESTIMATION']['file'] = constr['file_est']
 
     # Replace interpolation
-    if 'flag_interpolation' in constraints.keys():
+    if 'flag_interpolation' in constr.keys():
         # Checks
-        assert (constraints['flag_interpolation'] in [True, False])
+        assert (constr['flag_interpolation'] in [True, False])
         # Replace in initialization files
-        dict_['INTERPOLATION']['flag'] = constraints['flag_interpolation']
+        dict_['INTERPOLATION']['flag'] = constr['flag_interpolation']
 
     # Replace number of periods
-    if 'points' in constraints.keys():
+    if 'points' in constr.keys():
         # Extract objects
-        points = constraints['points']
+        points = constr['points']
         # Checks
         assert (isinstance(points, int))
         assert (points > 0)
@@ -48,9 +48,9 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         dict_['INTERPOLATION']['points'] = points
 
     # Replace number of iterations
-    if 'maxfun' in constraints.keys():
+    if 'maxfun' in constr.keys():
         # Extract objects
-        maxfun = constraints['maxfun']
+        maxfun = constr['maxfun']
         # Checks
         assert (isinstance(maxfun, int))
         assert (maxfun >= 0)
@@ -58,9 +58,9 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         dict_['ESTIMATION']['maxfun'] = maxfun
 
     # Replace education
-    if 'edu' in constraints.keys():
+    if 'edu' in constr.keys():
         # Extract objects
-        start, max_ = constraints['edu']
+        start, max_ = constr['edu']
         # Checks
         assert (isinstance(start, int))
         assert (start > 0)
@@ -71,18 +71,18 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         dict_['EDUCATION']['max'] = max_
 
     # Replace measure of ambiguity
-    if 'measure' in constraints.keys():
+    if 'measure' in constr.keys():
         # Extract object
-        measure = constraints['measure']
+        measure = constr['measure']
         # Checks
         assert measure in ['kl', 'abs']
         # Replace in initialization file
         dict_['AMBIGUITY']['measure'] = measure
 
     # Replace level of ambiguity
-    if 'level' in constraints.keys():
+    if 'level' in constr.keys():
         # Extract object
-        level = constraints['level']
+        level = constr['level']
         # Checks
         assert isinstance(level, float)
         assert level >= 0.0
@@ -91,11 +91,11 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         dict_['AMBIGUITY']['bounds'] = [get_valid_bounds('amb', level)]
 
     # Treat level of ambiguity as fixed in an estimation
-    if 'flag_ambiguity' in constraints.keys():
+    if 'flag_ambiguity' in constr.keys():
         # Checks
-        assert (constraints['flag_ambiguity'] in [True, False])
+        assert (constr['flag_ambiguity'] in [True, False])
         # Replace in initialization files
-        if constraints['flag_ambiguity']:
+        if constr['flag_ambiguity']:
             value = np.random.uniform(0.01, 1.0)
             dict_['AMBIGUITY']['coeffs'] = [value]
             dict_['AMBIGUITY']['bounds'] = [get_valid_bounds('amb', value)]
@@ -104,23 +104,23 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
             dict_['AMBIGUITY']['bounds'] = [get_valid_bounds('amb', 0.00)]
 
     # Treat level of ambiguity as fixed in an estimation
-    if 'fixed_ambiguity' in constraints.keys():
+    if 'fixed_ambiguity' in constr.keys():
         # Checks
-        assert (constraints['fixed_ambiguity'] in [True, False])
+        assert (constr['fixed_ambiguity'] in [True, False])
         # Replace in initialization files
-        dict_['AMBIGUITY']['fixed'] = [constraints['fixed_ambiguity']]
+        dict_['AMBIGUITY']['fixed'] = [constr['fixed_ambiguity']]
 
     # Treat the discount rate as fixed in an estimation.
-    if 'fixed_delta' in constraints.keys():
+    if 'fixed_delta' in constr.keys():
         # Checks
-        assert (constraints['fixed_delta'] in [True, False])
+        assert (constr['fixed_delta'] in [True, False])
         # Replace in initialization files
-        dict_['BASICS']['fixed'] = [constraints['fixed_delta']]
+        dict_['BASICS']['fixed'] = [constr['fixed_delta']]
 
     # Replace version
-    if 'version' in constraints.keys():
+    if 'version' in constr.keys():
         # Extract objects
-        version = constraints['version']
+        version = constr['version']
         # Checks
         assert (version in ['PYTHON', 'FORTRAN'])
         # Replace in initialization file
@@ -135,9 +135,9 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
 
     # Ensure that random deviates do not exceed a certain number. This is
     # useful when aligning the randomness across implementations.
-    if 'max_draws' in constraints.keys():
+    if 'max_draws' in constr.keys():
         # Extract objects
-        max_draws = constraints['max_draws']
+        max_draws = constr['max_draws']
         # Checks
         assert (isinstance(max_draws, int))
         assert (max_draws > 2)
@@ -149,9 +149,9 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
 
     # Replace parallelism ...
-    if 'flag_parallelism' in constraints.keys():
+    if 'flag_parallelism' in constr.keys():
         # Extract objects
-        flag_parallelism = constraints['flag_parallelism']
+        flag_parallelism = constr['flag_parallelism']
         # Checks
         assert (flag_parallelism in [True, False])
         # Replace in initialization file
@@ -163,9 +163,9 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         if dict_['PROGRAM']['procs'] > 1:
             dict_['PROGRAM']['version'] = 'FORTRAN'
 
-    if 'flag_precond' in constraints.keys():
+    if 'flag_precond' in constr.keys():
         # Extract objects
-        flag_precond = constraints['flag_precond']
+        flag_precond = constr['flag_precond']
         # Checks
         assert (flag_precond in [True, False])
         # Replace in initialization file
@@ -175,18 +175,18 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
             dict_['PRECONDITIONING']['type'] = 'identity'
 
     # Replace store attribute
-    if 'flag_store' in constraints.keys():
+    if 'flag_store' in constr.keys():
         # Extract objects
-        flag_store = constraints['flag_store']
+        flag_store = constr['flag_store']
         # Checks
         assert (flag_store in [True, False])
         # Replace in initialization file
         dict_['SOLUTION']['store'] = str(flag_store)
 
     # Replace number of periods
-    if 'periods' in constraints.keys():
+    if 'periods' in constr.keys():
         # Extract objects
-        periods = constraints['periods']
+        periods = constr['periods']
         # Checks
         assert (isinstance(periods, int))
         assert (periods > 0)
@@ -194,12 +194,12 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         dict_['BASICS']['periods'] = periods
 
     # Replace discount factor
-    if 'flag_myopic' in constraints.keys():
+    if 'flag_myopic' in constr.keys():
         # Extract object
-        assert ('delta' not in constraints.keys())
-        assert (constraints['flag_myopic'] in [True, False])
+        assert ('delta' not in constr.keys())
+        assert (constr['flag_myopic'] in [True, False])
         # Replace in initialization files
-        if constraints['flag_myopic']:
+        if constr['flag_myopic']:
             dict_['BASICS']['coeffs'] = [0.0]
             dict_['BASICS']['bounds'] = [get_valid_bounds('delta', 0.00)]
         else:
@@ -207,32 +207,18 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
             dict_['BASICS']['coeffs'] = [value]
             dict_['BASICS']['bounds'] = [get_valid_bounds('amb', value)]
 
-    # Replace discount factor. This is option is needed in addition to
-    # flag_myopic the code is run for very small levels of delta and compared
-    # against the myopic version.
-    if 'delta' in constraints.keys():
-        # Extract objects
-        delta = constraints['delta']
-        # Checks
-        assert ('flag_myopic' not in constraints.keys())
-        assert (np.isfinite(delta))
-        assert (delta >= 0.0)
-        assert (isinstance(delta, float))
-        # Replace in initialization file
-        dict_['BASICS']['coeffs'] = [delta]
-
     # No random component to rewards
-    if 'flag_deterministic' in constraints.keys():
+    if 'flag_deterministic' in constr.keys():
         # Checks
-        assert (constraints['flag_deterministic'] in [True, False])
+        assert (constr['flag_deterministic'] in [True, False])
         # Replace in initialization files
-        if constraints['flag_deterministic']:
+        if constr['flag_deterministic']:
             dict_['SHOCKS']['coeffs'] = [0.0] * 10
 
     # Number of agents
-    if 'agents' in constraints.keys():
+    if 'agents' in constr.keys():
         # Extract object
-        num_agents = constraints['agents']
+        num_agents = constr['agents']
         # Checks
         assert (num_agents > 0)
         assert (isinstance(num_agents, int))
@@ -246,11 +232,11 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
 
     # Estimation task, but very small. A host of other constraints need to be
     # honored as well.
-    if 'flag_estimation' in constraints.keys():
+    if 'flag_estimation' in constr.keys():
         # Checks
-        assert (constraints['flag_estimation'] in [True, False])
+        assert (constr['flag_estimation'] in [True, False])
         # Replace in initialization files
-        if constraints['flag_estimation']:
+        if constr['flag_estimation']:
             dict_['flag_store'] = False
             dict_['ESTIMATION']['maxfun'] = int(np.random.choice(range(6),
                 p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
@@ -272,15 +258,15 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
     return dict_
 
 
-def _check_constraints(constraints):
+def _check_constraints(constr):
     """ Check that there are no conflicting constraints imposed.
     """
     # Check all specifie dconstraints
-    for key_ in constraints.keys():
+    for key_ in constr.keys():
         assert key_ in VALID_KEYS
 
     # Address incompatibility issues
-    keys = constraints.keys()
+    keys = constr.keys()
 
     if 'flag_myopic' in keys:
         assert 'delta' not in keys
@@ -296,6 +282,6 @@ def _check_constraints(constraints):
         assert 'max_draws' not in keys
 
     cond = ('flag_parallelism' in keys) and ('version' in keys)
-    cond = cond and constraints['flag_parallelism']
+    cond = cond and constr['flag_parallelism']
     if cond:
-        assert constraints['version'] == 'FORTRAN'
+        assert constr['version'] == 'FORTRAN'

@@ -78,12 +78,12 @@ class TestClass(object):
         """ Testing the F2PY implementations of the ambiguity-related functions.
         """
         # Generate constraint periods
-        constraints = dict()
-        constraints['version'] = 'PYTHON'
-        constraints['flag_ambiguity'] = True
+        constr = dict()
+        constr['version'] = 'PYTHON'
+        constr['flag_ambiguity'] = True
 
         # Generate random initialization file
-        generate_init(constraints)
+        generate_init(constr)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')

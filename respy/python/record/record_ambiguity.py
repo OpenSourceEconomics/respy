@@ -1,8 +1,10 @@
 import numpy as np
-import shlex
+
+from respy.python.shared.shared_constants import MISSING_FLOAT
 
 
-def record_ambiguity(opt_ambi_details, states_number_period, num_periods, file_sim):
+def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
+        file_sim):
     """ Write result of optimization problem to log file.
     """
 
@@ -13,6 +15,11 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods, file_s
 
                 x_shift = opt_ambi_details[period, k, :2]
                 div, success, mode = opt_ambi_details[period, k, 2:]
+
+                # We need to skip states that were not analyzed during the
+                # interpolation routine.
+                if mode == MISSING_FLOAT:
+                    continue
 
                 message = get_message(mode)
 

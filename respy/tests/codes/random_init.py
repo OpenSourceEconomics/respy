@@ -20,14 +20,14 @@ MAX_DRAWS = 100
 MAX_PERIODS = 5
 
 
-def generate_init(constraints=None):
+def generate_init(constr=None):
     """ Get a random initialization file.
     """
     # Antibugging. This interface is using a sentinel value.
-    if constraints is not None:
-        assert (isinstance(constraints, dict))
+    if constr is not None:
+        assert (isinstance(constr, dict))
 
-    dict_ = generate_random_dict(constraints)
+    dict_ = generate_random_dict(constr)
 
     print_init_dict(dict_)
 
@@ -35,15 +35,15 @@ def generate_init(constraints=None):
     return dict_
 
 
-def generate_random_dict(constraints=None):
+def generate_random_dict(constr=None):
     """ Draw random dictionary instance that can be processed into an
         initialization file.
     """
     # Antibugging. This interface is using a sentinal value.
-    if constraints is not None:
-        assert (isinstance(constraints, dict))
+    if constr is not None:
+        assert (isinstance(constr, dict))
     else:
-        constraints = dict()
+        constr = dict()
 
     # Initialize container
     dict_ = dict()
@@ -217,7 +217,7 @@ def generate_random_dict(constraints=None):
 
     # We now impose selected constraints on the final model specification.
     # These constraints can be very useful in the generation of test cases.
-    dict_ = process_constraints(dict_, constraints, paras_fixed, paras_bounds)
+    dict_ = process_constraints(dict_, constr, paras_fixed, paras_bounds)
 
     # Finishing
     return dict_

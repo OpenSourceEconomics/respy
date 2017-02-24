@@ -303,17 +303,18 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     !/* internal objects        */
 
-    INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
-    INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
-
+    REAL(our_dble), ALLOCATABLE                     :: opt_ambi_details(:, :, :)
     REAL(our_dble)                                  :: x_all_current(28)
 
+    INTEGER(our_int), ALLOCATABLE                   :: num_states_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE                   :: num_obs_slaves(:)
+
+    INTEGER(our_int)                                :: displs(num_slaves)
     INTEGER(our_int)                                :: num_states
-    INTEGER(our_int)                                :: period, displs(num_slaves), i, k
+    INTEGER(our_int)                                :: period
+    INTEGER(our_int)                                :: i
+    INTEGER(our_int)                                :: k
 
-    REAL(our_dble), ALLOCATABLE              :: opt_ambi_details(:, :, :)
-
-    REAL(our_dble)              :: test_obj(4)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -358,11 +359,9 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
         DO k = 1, 5
             CALL MPI_GATHERV(opt_ambi_details(period, :, k), 0, MPI_DOUBLE, opt_ambi_details(period, :, k), num_states_slaves(period, :), displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
         END DO
-
     END DO
 
-
-    CALL record_ambiguity_revised(opt_ambi_details, states_number_period, file_sim)
+    CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim)
 
 #endif
 

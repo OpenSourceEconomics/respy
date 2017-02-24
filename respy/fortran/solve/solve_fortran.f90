@@ -58,8 +58,6 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    PRINT *, 'I am here'
-
     CALL record_solution(1, file_sim)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
@@ -78,7 +76,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim, .True.)
 
-    CALL record_ambiguity_revised(opt_ambi_details, states_number_period, file_sim)
+    IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim)
 
     IF (.NOT. is_myopic) THEN
         CALL record_solution(-1, file_sim)

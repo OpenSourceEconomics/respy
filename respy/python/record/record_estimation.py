@@ -223,13 +223,6 @@ def char_floats(floats):
     if isinstance(floats, float):
         floats = [floats]
 
-    #is_large = []
-    #for value in floats:
-    #    try:
-    #        is_large += [abs(value) > LARGE_FLOAT]
-    #    except TypeError:
-    #        is_large += [True]
-
     line = []
     for i, value in enumerate(floats):
         if abs(value) > LARGE_FLOAT:

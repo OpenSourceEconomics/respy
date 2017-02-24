@@ -6,10 +6,6 @@ MODULE recording_ambiguity
 
     USE shared_constants
 
-    USE shared_auxiliary
-
-    USE shared_utilities
-
     !/*	setup	*/
 
     IMPLICIT NONE
@@ -17,110 +13,103 @@ MODULE recording_ambiguity
     PUBLIC
 
 CONTAINS
-    !******************************************************************************
-    !******************************************************************************
-    SUBROUTINE record_ambiguity_revised(opt_ambi_details, states_number_period, file_sim)
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim)
 
-        !/* external objects    */
+    !/* external objects    */
 
-        REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 5)
-        CHARACTER(225), INTENT(IN)      :: file_sim
-        INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
+    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 5)
 
-        INTEGER(our_int)                :: period
-        INTEGER(our_int)                :: k, i, mode
+    INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
 
+    CHARACTER(225), INTENT(IN)      :: file_sim
 
-        REAL(our_dble)                  :: div(1), x_shift(2), success_dble
+    !/* internal objects    */
 
-        CHARACTER(100)                  :: message
+    INTEGER(our_int)                :: period
+    INTEGER(our_int)                :: mode
+    INTEGER(our_int)                :: k
 
-        LOGICAL                         :: is_success
+    REAL(our_dble)                  :: x_shift(2)
+    REAL(our_dble)                  :: div(1)
 
-    !------------------------------------------------------------------------------
-    ! Algorithm
-    !------------------------------------------------------------------------------
+    LOGICAL                         :: is_success
 
-        100 FORMAT(1x,A6,i7,2x,A5,i7)
-        110 FORMAT(3x,A12,f10.5)
-        120 FORMAT(3x,A12,f10.5)
-        130 FORMAT(3x,A7,8x,A5,20x)
-        140 FORMAT(3x,A7,8x,A100)
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
 
-        OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACCESS='APPEND', ACTION='WRITE')
+    100 FORMAT(1x,A6,i7,2x,A5,i7)
+    110 FORMAT(3x,A12,f10.5)
+    120 FORMAT(3x,A12,f10.5)
+    130 FORMAT(3x,A7,8x,A5,20x)
+    140 FORMAT(3x,A7,8x,A100)
 
-            ! TODO: Or count to zero?
-            DO period = num_periods - 1, 0, -1
+    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACCESS='APPEND', ACTION='WRITE')
 
-                DO k = 0, (states_number_period(period + 1) - 1)
+    DO period = num_periods - 1, 0, -1
 
-                    WRITE(99, 100) 'PERIOD', period, 'STATE', k
+        DO k = 0, (states_number_period(period + 1) - 1)
 
-                    x_shift(1) = opt_ambi_details(period + 1, k + 1, 1)
-                    x_shift(2) = opt_ambi_details(period + 1, k + 1, 2)
-                    div(1) = opt_ambi_details(period + 1, k + 1, 3)
-                    success_dble = opt_ambi_details(period + 1, k + 1 , 4)
-                    is_success = success_dble == one_int
-                    mode = DINT(opt_ambi_details(period + 1, k + 1, 5))
+            WRITE(99, 100) 'PERIOD', period, 'STATE', k
 
+            x_shift = opt_ambi_details(period + 1, k + 1, :2)
+            div = opt_ambi_details(period + 1, k + 1, 3)
+            is_success = (opt_ambi_details(period + 1, k + 1 , 4) == one_int)
+            mode = DINT(opt_ambi_details(period + 1, k + 1, 5))
 
+            ! We need to skip states that where not analyzed during an interpolation.
+            IF (mode == MISSING_FLOAT) CYCLE
 
-                    ! We need to skip states that where not analyzed during an interpolation.
-                    IF (mode == MISSING_FLOAT) CYCLE
+            WRITE(99, *)
+            WRITE(99, 110) 'Occupation A', x_shift(1)
+            WRITE(99, 110) 'Occupation B', x_shift(2)
 
+            WRITE(99, *)
+            WRITE(99, 120) 'Divergence  ', div(1)
 
-                    message = get_message(mode)
+            WRITE(99, *)
 
+            IF(is_success) THEN
+                WRITE(99, 130) 'Success', 'True '
+            ELSE
+                WRITE(99, 130) 'Success', 'False'
+            END IF
 
-                    WRITE(99, *)
-                    WRITE(99, 110) 'Occupation A', x_shift(1)
-                    WRITE(99, 110) 'Occupation B', x_shift(2)
+                WRITE(99, 140) 'Message', ADJUSTL(get_message(mode))
+                WRITE(99, *)
+                WRITE(99, *)
 
-                    WRITE(99, *)
-                    WRITE(99, 120) 'Divergence  ', div(1)
+        END DO
 
-                    WRITE(99, *)
+    END DO
 
-                    IF(is_success) THEN
-                        WRITE(99, 130) 'Success', 'True '
-                    ELSE
-                        WRITE(99, 130) 'Success', 'False'
-                    END IF
+    CLOSE(99)
 
-                    WRITE(99, 140) 'Message', ADJUSTL(message)
-                    WRITE(99, *)
-                    WRITE(99, *)
-                END DO
-            END DO
-
-        CLOSE(99)
-
-        CALL record_ambiguity_summary_revised(opt_ambi_details, states_number_period, file_sim)
+    CALL record_ambiguity_summary(opt_ambi_details, states_number_period, file_sim)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_ambiguity_summary_revised(opt_ambi_details, states_number_period, file_sim)
+SUBROUTINE record_ambiguity_summary(opt_ambi_details, states_number_period, file_sim)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(IN)          :: opt_ambi_details(num_periods, max_states_period, 5)
-    CHARACTER(225), INTENT(IN)          :: file_sim
 
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
 
+    CHARACTER(225), INTENT(IN)          :: file_sim
+
     !/* internal objects    */
 
+    INTEGER(our_int)                    :: total
+    INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: i
 
-    INTEGER(our_int)            :: total
-    INTEGER(our_int)            :: iostat
-    INTEGER(our_int)            :: period
-    INTEGER(our_int)            :: i
-
-    CHARACTER(200)              :: line
-
-    REAL(our_dble)               :: success
-    REAL(our_dble)               :: failure
+    REAL(our_dble)                      :: success
+    REAL(our_dble)                      :: failure
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -137,12 +126,8 @@ SUBROUTINE record_ambiguity_summary_revised(opt_ambi_details, states_number_peri
 
         DO period = num_periods - 1, 0, -1
             total = states_number_period(period + 1)
-            success = COUNT(opt_ambi_details(period + 1,:total, 4) == one_int)
-            failure = COUNT(opt_ambi_details(period + 1,:total, 4) == zero_int)
-
-            success = success / DBLE(total)
-            failure = failure / DBLE(total)
-
+            success = COUNT(opt_ambi_details(period + 1,:total, 4) == one_int) / DBLE(total)
+            failure = COUNT(opt_ambi_details(period + 1,:total, 4) == zero_int) / DBLE(total)
             WRITE(99, 100) period, total, success, failure
         END DO
 
@@ -160,8 +145,6 @@ FUNCTION get_message(mode)
     CHARACTER(100)                   :: get_message
 
     INTEGER(our_int), INTENT(IN)    :: mode
-
-    !/* internal objects        */
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -201,136 +184,6 @@ FUNCTION get_message(mode)
     END IF
 
 END FUNCTION
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
-
-    !/* external objects    */
-
-    INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: k
-
-    REAL(our_dble)                  :: x_shift(2)
-    REAL(our_dble)                  :: div(1)
-
-    CHARACTER(225)                  :: file_sim
-    CHARACTER(100)                  :: message
-
-    LOGICAL                         :: is_success
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    100 FORMAT(1x,A6,i7,2x,A5,i7)
-    110 FORMAT(3x,A12,f10.5)
-    120 FORMAT(3x,A12,f10.5)
-    130 FORMAT(3x,A7,8x,A5,20x)
-    140 FORMAT(3x,A7,8x,A100)
-
-    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACCESS='APPEND', ACTION='WRITE')
-
-        WRITE(99, 100) 'PERIOD', period, 'STATE', k
-
-        WRITE(99, *)
-        WRITE(99, 110) 'Occupation A', x_shift(1)
-        WRITE(99, 110) 'Occupation B', x_shift(2)
-
-        WRITE(99, *)
-        WRITE(99, 120) 'Divergence  ', div(1)
-
-        WRITE(99, *)
-
-        IF(is_success) THEN
-            WRITE(99, 130) 'Success', 'True '
-        ELSE
-            WRITE(99, 130) 'Success', 'False'
-        END IF
-
-        WRITE(99, 140) 'Message', ADJUSTL(message)
-        WRITE(99, *)
-        WRITE(99, *)
-
-    CLOSE(99)
-
-!    IF(period == zero_int) CALL record_ambiguity_summary(file_sim)
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE record_ambiguity_summary(file_sim)
-
-    !/* external objects    */
-
-    CHARACTER(225)                  :: file_sim
-
-    !/* internal objects    */
-
-    INTEGER(our_int), ALLOCATABLE   :: success_count(:, :)
-
-    INTEGER(our_int)            :: total_count
-    INTEGER(our_int)            :: iostat
-    INTEGER(our_int)            :: period
-    INTEGER(our_int)            :: i
-
-    CHARACTER(200)              :: line
-
-    LOGICAL                     :: success_info
-
-    REAL(our_dble)               :: share_success
-    REAL(our_dble)               :: share_failure
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACTION='READ', STATUS='OLD', ACCESS='sequential')
-
-        DO
-
-            READ(99, '(A)', IOSTAT=iostat, ADVANCE='NO')  line
-            IF(iostat > 0) EXIT
-
-            IF((line(:7) == ' PERIOD')) READ(line(13:15),*) period
-
-            IF(.NOT. ALLOCATED(success_count)) THEN
-                ALLOCATE(success_count(2, period + 1))
-                success_count = zero_int
-            END IF
-
-            success_info = (line(4:11) == 'Success')
-            IF(success_info .AND. (line(19:23) == 'True')) THEN
-                success_count(1, period + 1) = success_count(1, period + 1) + 1
-            ELSE IF(success_info) THEN
-                success_count(2, period + 1) = success_count(2, period + 1) + 1
-            END IF
-
-        END DO
-
-    CLOSE(99)
-
-
-    100 FORMAT(i10,1x,i10,1x,f10.2,1x,f10.2)
-
-    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACTION='WRITE', STATUS='OLD', ACCESS='APPEND')
-
-        WRITE(99, *) 'SUMMARY'
-        WRITE(99, *)
-        WRITE(99, *) '   Period      Total    Success    Failure'
-        WRITE(99, *)
-
-        DO i = SIZE(success_count, 2), 1, -1
-            total_count = SUM(success_count(:, i))
-            share_success = success_count(1, i) / DBLE(total_count)
-            share_failure = one_dble - share_success
-            WRITE(99, 100) i - 1, total_count, share_success, share_failure
-        END DO
-
-        WRITE(99, *)
-
-    CLOSE(99)
-
-END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 END MODULE

@@ -18,11 +18,11 @@ class TestClass(object):
         three periods.
         """
         # Generate constraint periods
-        constraints = dict()
-        constraints['periods'] = np.random.randint(3, 5)
+        constr = dict()
+        constr['periods'] = np.random.randint(3, 5)
 
         # Generate random initialization file
-        generate_init(constraints)
+        generate_init(constr)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')

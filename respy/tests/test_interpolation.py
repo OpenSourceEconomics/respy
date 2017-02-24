@@ -16,14 +16,14 @@ class TestClass(object):
         """ This is the special case where the EMAX better be equal to the MAXE.
         """
         # Set initial constraints
-        constraints = dict()
-        constraints['flag_interpolation'] = False
-        constraints['periods'] = np.random.randint(3, 6)
-        constraints['flag_deterministic'] = True
-        constraints['level'] = 0.00
+        constr = dict()
+        constr['flag_interpolation'] = False
+        constr['periods'] = np.random.randint(3, 6)
+        constr['flag_deterministic'] = True
+        constr['level'] = 0.00
 
         # Initialize request
-        init_dict = generate_random_dict(constraints)
+        init_dict = generate_random_dict(constr)
         baseline = None
 
         # Solve with and without interpolation code
@@ -60,12 +60,12 @@ class TestClass(object):
         with their actual values.
         """
         # Set initial constraints
-        constraints = dict()
-        constraints['flag_interpolation'] = False
-        constraints['periods'] = np.random.randint(3, 6)
+        constr = dict()
+        constr['flag_interpolation'] = False
+        constr['periods'] = np.random.randint(3, 6)
 
         # Initialize request
-        init_dict = generate_random_dict(constraints)
+        init_dict = generate_random_dict(constr)
         baseline = None
 
         # Solve with and without interpolation code

@@ -31,8 +31,10 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int)                :: seed_prob
     INTEGER(our_int)                :: seed_emax
     INTEGER(our_int)                :: seed_sim
+    INTEGER(our_int)                :: period
     INTEGER(our_int)                :: task
     INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: k
 
     REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
@@ -49,9 +51,6 @@ PROGRAM resfort_parallel_slave
     CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
 
-    ! TODO: Cleanup
-    INTEGER(our_int)                 :: period, k,recvcounts(2)
-REAL(our_dble)                  :: tests_obj(4) = MISSING_FLOAT
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -67,15 +66,16 @@ REAL(our_dble)                  :: tests_obj(4) = MISSING_FLOAT
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
-
     CALL distribute_workload(num_states_slaves, num_obs_slaves)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
     ALLOCATE(opt_ambi_info_slaves(2, num_slaves))
 
-    DO WHILE (STAY_AVAILABLE)
+    ALLOCATE(displs(num_slaves)); displs = MISSING_INT
 
+
+    DO WHILE (STAY_AVAILABLE)
 
         CALL MPI_Bcast(task, 1, MPI_INT, 0, PARENTCOMM, ierr)
 
@@ -90,15 +90,11 @@ REAL(our_dble)                  :: tests_obj(4) = MISSING_FLOAT
 
         CALL dist_optim_paras(optim_paras, x_optim_all_unscaled)
 
-
-
         IF(task == 2) THEN
-
 
             ! This is required to keep the logging aligned between the scalar and the parallel implementations. We cannot have the master write the log for the state space creation as this interferes with other write requests for the slaves leading to an unreadable file.
             IF (rank == zero_int) THEN
-                CALL record_solution(1, file_sim)
-                CALL record_solution(-1, file_sim)
+                CALL record_solution(1, file_sim); CALL record_solution(-1, file_sim)
             END IF
 
             IF (rank == zero_int) CALL record_solution(2, file_sim)
@@ -111,34 +107,16 @@ REAL(our_dble)                  :: tests_obj(4) = MISSING_FLOAT
 
             CALL fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, optim_paras, optimizer_options, file_sim, num_states_slaves, .True.)
 
-            ! We now need to gather the information regarding the worst-case determination.
-            ALLOCATE(displs(num_slaves))
-
-
-            ! TODO: How to deal with period + 1 everywhere else?
             DO period = 1, num_periods
-
-                displs = zero_int
 
                 lower_bound = SUM(num_states_slaves(period, :rank)) + 1
                 upper_bound = SUM(num_states_slaves(period, :rank + 1))
 
-                !IF(rank == zero_int) THEN
-                !    lower_bound = 1
-                !    upper_bound = 2
-                !ELSE
-                !    lower_bound = 3
-                !    upper_bound = 4
-                !END IF
-                PRINT *, 'GOING IN', opt_ambi_details(period, :, 1)
                 DO k = 1, 5
                     CALL MPI_GATHERV(opt_ambi_details(period, lower_bound:upper_bound, k), num_states_slaves(period, rank + 1), MPI_DOUBLE, opt_ambi_details, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
                 END DO
 
             END DO
-
-
-
 
             IF (rank == zero_int .AND. .NOT. is_myopic) THEN
                 CALL record_solution(-1, file_sim)
@@ -154,8 +132,6 @@ REAL(our_dble)                  :: tests_obj(4) = MISSING_FLOAT
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
-                ALLOCATE(displs(num_slaves))
-
                 ALLOCATE(contribs(num_obs))
 
                 ALLOCATE(data_slave(num_obs_slaves(rank + 1), 8))
@@ -164,11 +140,6 @@ REAL(our_dble)                  :: tests_obj(4) = MISSING_FLOAT
                 upper_bound = SUM(num_obs_slaves(:rank + 1))
 
                 data_slave = data_est(lower_bound:upper_bound, :)
-
-                ! TODO: This can probably be removed, only relevant in ROOT.
-                DO i = 1, num_slaves
-                    displs(i) = SUM(num_obs_slaves(:i - 1))
-                END DO
 
             END IF
 

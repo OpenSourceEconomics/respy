@@ -1,11 +1,9 @@
-import numpy as np
-
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.record.record_ambiguity import record_ambiguity
-from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import MIN_AMBIGUITY
 
 
 def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
@@ -50,7 +48,7 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
         num_points_interp, measure, optim_paras, optimizer_options,
         file_sim, True)
 
-    if not np.all(opt_ambi_details == MISSING_FLOAT):
+    if optim_paras['level'] > MIN_AMBIGUITY:
         record_ambiguity(opt_ambi_details, states_number_period, num_periods,
             file_sim)
 

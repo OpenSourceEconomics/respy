@@ -57,12 +57,12 @@ class TestClass(object):
         due to the large setup cost to construct the ingredients for the interface.
         """
         # Generate constraint periods
-        constraints = dict()
-        constraints['version'] = 'PYTHON'
-        constraints['flag_ambiguity'] = flag_ambiguity
+        constr = dict()
+        constr['version'] = 'PYTHON'
+        constr['flag_ambiguity'] = flag_ambiguity
 
         # Generate random initialization file
-        generate_init(constraints)
+        generate_init(constr)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')

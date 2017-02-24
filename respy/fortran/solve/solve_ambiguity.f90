@@ -221,9 +221,6 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     IF (is_success) is_success_dble = one_dble
     opt_ambi_details(period + 1, k + 1, :) = (/x_shift, div, is_success_dble, DBLE(mode)/)
 
-
-    !IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
-
     emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
     ! Record information during estimation.
