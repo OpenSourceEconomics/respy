@@ -1589,7 +1589,7 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -1603,7 +1603,7 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
 
     DOUBLE PRECISION, INTENT(OUT)       :: x_shift(2)
 
-    CHARACTER(100), INTENT(OUT)         :: message
+    INTEGER, INTENT(OUT)                :: mode
 
     LOGICAL, INTENT(OUT)                :: is_success
 
@@ -1638,7 +1638,7 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, message, num_periods_int,
     optim_paras%level = level
     optim_paras%delta = delta
 
-    CALL get_worst_case(x_shift, is_success, message, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, optim_paras, optimizer_options)
+    CALL get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, optim_paras, optimizer_options)
 
 END SUBROUTINE
 !******************************************************************************

@@ -23,13 +23,13 @@ MODULE solve_ambiguity
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
+SUBROUTINE get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)                 :: x_shift(2)
 
-    CHARACTER(100), INTENT(OUT)                 :: message
+    INTEGER(our_int), INTENT(OUT)                 :: mode
 
     LOGICAL, INTENT(OUT)                        :: is_success
 
@@ -60,7 +60,6 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
     !/* SLSQP interface          */
 
     INTEGER(our_int)                :: ITER     ! Maximum number of iterations
-    INTEGER(our_int)                :: MODE     ! Control for communication
     INTEGER(our_int)                :: MEQ      ! Total number of equality constraints
     INTEGER(our_int)                :: LA       ! MAX(M, 1)
     INTEGER(our_int)                :: M        ! Total number of constraints
@@ -91,7 +90,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
     ! Preparing SLSQP interface
     ITER = optimizer_options%slsqp%maxiter
     ACC = optimizer_options%slsqp%ftol
-    MODE = zero_int
+    mode = zero_int
     X = zero_dble
 
     ! These settings are deduced from the documentation at the beginning of the source file slsq.f and hard-coded for the application at hand to save some cluttering code.
@@ -115,23 +114,23 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
     DO WHILE (.NOT. is_finished)
 
         ! Evaluate criterion function and constraints
-        IF (MODE == one_int) THEN
+        IF (mode == one_int) THEN
 
             F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
             C = constraint_ambiguity(x, shocks_cov, optim_paras)
 
         ! Evaluate gradient of criterion function and constraints.
-        ELSEIF (MODE == - one_int) THEN
+        ELSEIF (mode == - one_int) THEN
             G(:2) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, eps_der_approx)
             A(1,:2) = constraint_ambiguity_derivative(x, shocks_cov, optim_paras, eps_der_approx)
 
         END IF
 
         !Call to SLSQP code
-        CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, MODE, W, LEN_W, JW, LEN_JW)
+        CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, mode, W, LEN_W, JW, LEN_JW)
 
         ! Check if SLSQP has completed
-        IF (.NOT. ABS(MODE) == one_int) THEN
+        IF (.NOT. ABS(mode) == one_int) THEN
             is_finished = .True.
         END IF
 
@@ -141,13 +140,11 @@ SUBROUTINE get_worst_case(x_shift, is_success, message, num_periods, num_draws_e
 
     ! Stabilization. If the optimization fails the starting values are
     ! used otherwise it happens that the constraint is not satisfied by far.
-    is_success = (MODE == zero_int)
+    is_success = (mode == zero_int)
 
     IF(.NOT. is_success) THEN
         x_shift = zero_dble
     END IF
-
-    message =  get_message(mode)
 
 END SUBROUTINE
 !******************************************************************************
@@ -187,14 +184,12 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     REAL(our_dble)                  :: x_shift(2)
     REAL(our_dble)                  :: div(1)
 
-    CHARACTER(100)                  :: message
-
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_success
 
     ! TODO: This will be cleaned up.
     REAL(our_dble)                  :: is_success_dble
-    REAL(our_dble)                  :: mode
+    INTEGER(our_int)                  :: mode
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -206,28 +201,28 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
         x_shift = (/zero_dble, zero_dble/)
         div = zero_dble
         is_success = .True.
-        message = 'No random variation in shocks.'
+        mode = 15
 
     ELSE IF(TRIM(measure) == 'abs') THEN
         x_shift = (/-optim_paras%level, -optim_paras%level/)
         div = optim_paras%level
         is_success = .True.
-        message = 'Optimization terminated successfully'
+        mode = 16
 
     ELSE
-        CALL get_worst_case(x_shift, is_success, message, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
+        CALL get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
         div = -(constraint_ambiguity(x_shift, shocks_cov, optim_paras) - optim_paras%level)
 
     END IF
 
     ! We collect the information from the optimization step for future recording.
-    mode = 0.0
-    is_success_dble = 1.0
-    opt_ambi_details(period + 1, k + 1, :) = (/x_shift, div, is_success_dble, mode/)
+    is_success_dble = zero_dble
+    IF (is_success) is_success_dble = one_dble
+    opt_ambi_details(period + 1, k + 1, :) = (/x_shift, div, is_success_dble, DBLE(mode)/)
 
 
-    IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
+    !IF(is_write) CALL record_ambiguity(period, k, x_shift, div, is_success, message, file_sim)
 
     emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
@@ -237,48 +232,6 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     IF (is_success) opt_ambi_info(2) = opt_ambi_info(2) + one_int
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-FUNCTION get_message(mode)
-
-    !/* external objects        */
-
-    CHARACTER(100)                   :: get_message
-
-    INTEGER(our_int), INTENT(IN)    :: mode
-
-    !/* internal objects        */
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    ! Optimizer get_message
-    IF (mode == -1) THEN
-        get_message = 'Gradient evaluation required (g & a)'
-    ELSEIF (mode == 0) THEN
-        get_message = 'Optimization terminated successfully'
-    ELSEIF (mode == 1) THEN
-        get_message = 'Function evaluation required (f & c)'
-    ELSEIF (mode == 2) THEN
-        get_message = 'More equality constraints than independent variables'
-    ELSEIF (mode == 3) THEN
-        get_message = 'More than 3*n iterations in LSQ subproblem'
-    ELSEIF (mode == 4) THEN
-        get_message = 'Inequality constraints incompatible'
-    ELSEIF (mode == 5) THEN
-        get_message = 'Singular matrix E in LSQ subproblem'
-    ELSEIF (mode == 6) THEN
-        get_message = 'Singular matrix C in LSQ subproblem'
-    ELSEIF (mode == 7) THEN
-        get_message = 'Rank-deficient equality constraint subproblem HFTI'
-    ELSEIF (mode == 8) THEN
-        get_message = 'Positive directional derivative for linesearch'
-    ELSEIF (mode == 9) THEN
-        get_message = 'Iteration limit exceeded'
-    END IF
-
-END FUNCTION
 !******************************************************************************
 !******************************************************************************
 FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, eps_der_approx)

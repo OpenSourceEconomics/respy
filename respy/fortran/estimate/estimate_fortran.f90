@@ -283,7 +283,7 @@ FUNCTION fort_criterion_parallel(x)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras)
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, file_sim)
 
     !/* external objects        */
 
@@ -298,6 +298,8 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
+
+    CHARACTER(225), INTENT(IN)                      :: file_sim
 
     !/* internal objects        */
 
@@ -315,7 +317,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-PRINT *, 'HELLO'
+
 #if MPI_AVAILABLE
 
     CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
@@ -350,16 +352,18 @@ PRINT *, 'HELLO'
     ALLOCATE(opt_ambi_details(num_periods, max_states_period, 5))
     opt_ambi_details = MISSING_FLOAT
     DO period = 1, num_periods
-        PRINT *, 'ITERATING', num_states_slaves
         DO i = 1, num_slaves
             displs(i) = SUM(num_states_slaves(period, :i - 1))
         END DO
         DO k = 1, 5
             CALL MPI_GATHERV(opt_ambi_details(period, :, k), 0, MPI_DOUBLE, opt_ambi_details(period, :, k), num_states_slaves(period, :), displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
         END DO
-        PRINT *,  opt_ambi_details(1, 1, :)
 
     END DO
+
+
+    CALL record_ambiguity_revised(opt_ambi_details, states_number_period, file_sim)
+
 #endif
 
 END SUBROUTINE

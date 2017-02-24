@@ -219,7 +219,7 @@ def process_constraints(dict_, constraints, paras_fixed, paras_bounds):
         assert (delta >= 0.0)
         assert (isinstance(delta, float))
         # Replace in initialization file
-        dict_['BASICS']['coeffs'] = delta
+        dict_['BASICS']['coeffs'] = [delta]
 
     # No random component to rewards
     if 'flag_deterministic' in constraints.keys():
