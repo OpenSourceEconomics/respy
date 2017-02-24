@@ -60,7 +60,7 @@ MODULE shared_constants
     REAL(our_dble)  :: precond_eps
 
     ! TODO: Better integration. This container provides some information about the success of the worst-case determination. It's printed to the *.log file.
-    INTEGER(our_int)            :: opt_ambi_info(2) = MISSING_INT
+    INTEGER(our_int)            :: opt_ambi_summary(2) = MISSING_INT
 
     ! We create a type that resembles the dictionary with the optimizer options in PYTHON.
     TYPE OPTIMIZER_BFGS

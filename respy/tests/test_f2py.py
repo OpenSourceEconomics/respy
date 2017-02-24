@@ -545,8 +545,7 @@ class TestClass(object):
 
         args = ()
         args += base_args + (level, optim_paras['delta'])
-        args += (fort_slsqp_maxiter, fort_slsqp_ftol)
-        args += (fort_slsqp_eps, file_sim, False)
+        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
 
         np.testing.assert_equal(py, replace_missing_values(f90))

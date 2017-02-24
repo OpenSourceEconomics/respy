@@ -106,7 +106,6 @@ SUBROUTINE record_ambiguity_summary(opt_ambi_details, states_number_period, file
 
     INTEGER(our_int)                    :: total
     INTEGER(our_int)                    :: period
-    INTEGER(our_int)                    :: i
 
     REAL(our_dble)                      :: success
     REAL(our_dble)                      :: failure
@@ -142,7 +141,7 @@ FUNCTION get_message(mode)
 
     !/* external objects        */
 
-    CHARACTER(100)                   :: get_message
+    CHARACTER(100)                  :: get_message
 
     INTEGER(our_int), INTENT(IN)    :: mode
 

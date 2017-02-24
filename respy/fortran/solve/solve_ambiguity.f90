@@ -29,7 +29,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax
 
     REAL(our_dble), INTENT(OUT)                 :: x_shift(2)
 
-    INTEGER(our_int), INTENT(OUT)                 :: mode
+    INTEGER(our_int), INTENT(OUT)               :: mode
 
     LOGICAL, INTENT(OUT)                        :: is_success
 
@@ -49,7 +49,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    TYPE(optimizer_collection), INTENT(IN) :: optimizer_options
+    TYPE(OPTIMIZER_COLLECTION), INTENT(IN) :: optimizer_options
 
     !/* internal objects        */
 
@@ -149,7 +149,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, measure, optim_paras, optimizer_options, file_sim, is_write)
+SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, measure, optim_paras, optimizer_options)
 
     !/* external objects    */
 
@@ -172,24 +172,20 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
 
-    CHARACTER(225), INTENT(IN)      :: file_sim
     CHARACTER(10), INTENT(IN)       :: measure
 
-    LOGICAL, INTENT(IN)             :: is_write
-
-    TYPE(optimizer_collection), INTENT(IN) :: optimizer_options
+    TYPE(OPTIMIZER_COLLECTION), INTENT(IN) :: optimizer_options
 
     !/* internals objects    */
 
+    INTEGER(our_int)                :: mode
+
+    REAL(our_dble)                  :: is_success_dble
     REAL(our_dble)                  :: x_shift(2)
     REAL(our_dble)                  :: div(1)
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_success
-
-    ! TODO: This will be cleaned up.
-    REAL(our_dble)                  :: is_success_dble
-    INTEGER(our_int)                  :: mode
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -224,9 +220,9 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
     ! Record information during estimation.
-    opt_ambi_info(1) = opt_ambi_info(1) + one_int
+    opt_ambi_summary(1) = opt_ambi_summary(1) + one_int
 
-    IF (is_success) opt_ambi_info(2) = opt_ambi_info(2) + one_int
+    IF (is_success) opt_ambi_summary(2) = opt_ambi_summary(2) + one_int
 
 END SUBROUTINE
 !******************************************************************************

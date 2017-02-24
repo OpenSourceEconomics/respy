@@ -20,7 +20,7 @@ PROGRAM resfort_parallel_slave
 
     !/* objects                 */
 
-    INTEGER(our_int), ALLOCATABLE   :: opt_ambi_info_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE   :: opt_ambi_summary_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
     INTEGER(our_int), ALLOCATABLE   :: displs(:)
@@ -33,7 +33,6 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int)                :: seed_sim
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: task
-    INTEGER(our_int)                :: i
     INTEGER(our_int)                :: k
 
     REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
@@ -70,7 +69,7 @@ PROGRAM resfort_parallel_slave
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
-    ALLOCATE(opt_ambi_info_slaves(2, num_slaves))
+    ALLOCATE(opt_ambi_summary_slaves(2, num_slaves))
 
     ALLOCATE(displs(num_slaves)); displs = MISSING_INT
 
@@ -145,16 +144,16 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
-            opt_ambi_info = zero_int
+            opt_ambi_summary = zero_int
             CALL fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, measure, optim_paras, optimizer_options, file_sim, num_states_slaves, .False.)
-            opt_ambi_info_slaves(:, rank + 1) = opt_ambi_info
+            opt_ambi_summary_slaves(:, rank + 1) = opt_ambi_summary
 
             CALL fort_contributions(contribs(lower_bound:upper_bound), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
 
             CALL MPI_GATHERV(contribs(lower_bound:upper_bound), num_obs_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
             ! We also need to monitor the quality of the worst-case determination. We do not send around detailed information to save on communication time. The details are provided for simulations only.
-            CALL MPI_GATHER(opt_ambi_info_slaves(:, rank + 1), 2, MPI_INT, opt_ambi_info_slaves, 0, MPI_INT, 0, PARENTCOMM, ierr)
+            CALL MPI_GATHER(opt_ambi_summary_slaves(:, rank + 1), 2, MPI_INT, opt_ambi_summary_slaves, 0, MPI_INT, 0, PARENTCOMM, ierr)
 
         END IF
 

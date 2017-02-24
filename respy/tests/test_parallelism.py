@@ -67,14 +67,12 @@ class TestClass(object):
         constr['version'] = 'FORTRAN'
         constr['periods'] = np.random.randint(3, 10)
         constr['maxfun'] = 0
-        constr['flag_ambiguity'] = True
-        constr['delta'] = 0.88
 
         init_dict = generate_random_dict(constr)
 
-        base_sol_log, base_est_info_log, base_est_log, base_amb_log = None, \
-                                                                      None, \
-                                                                      None, None
+        base_sol_log, base_est_info_log = None, None
+        base_est_log, base_amb_log = None, None
+
         for is_parallel in [False, True]:
 
             init_dict['PROGRAM']['procs'] = 1
@@ -89,7 +87,6 @@ class TestClass(object):
             delta = respy_obj.get_attr('optim_paras')['delta']
             file_sim = respy_obj.get_attr('file_sim')
             is_ambiguity = (level > MIN_AMBIGUITY)
-
 
             simulate_observed(respy_obj)
 
@@ -109,14 +106,9 @@ class TestClass(object):
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)
 
-
             # Check for identical logging
             if delta > 0.00 and is_ambiguity:
                 fname = file_sim + '.respy.amb'
                 if base_amb_log is None:
                     base_amb_log = open(fname, 'r').read()
-                    # TODO: Remove
-                    import shutil
-
-                    shutil.copy(fname, 'fort.respy.amb')
                 assert open(fname, 'r').read() == base_amb_log

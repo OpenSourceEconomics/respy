@@ -271,8 +271,8 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
         WRITE(99, 130) 'Criterion', char_floats(crit_vals(3:3))
 
-        IF (.NOT. opt_ambi_info(1) == zero_int) THEN
-            WRITE(99, 157) 'Ambiguity', (DBLE(opt_ambi_info(2)) / DBLE(opt_ambi_info(1)) * 100), '%'
+        IF (.NOT. opt_ambi_summary(1) == zero_int) THEN
+            WRITE(99, 157) 'Ambiguity', (DBLE(opt_ambi_summary(2)) / DBLE(opt_ambi_summary(1)) * 100), '%'
         ELSE
             WRITE(99, 135) 'Ambiguity', '---'
         END IF

@@ -48,7 +48,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     CHARACTER(225), INTENT(IN)                      :: file_sim
     CHARACTER(10), INTENT(IN)                       :: measure
 
-    TYPE(optimizer_collection), INTENT(IN)          :: optimizer_options
+    TYPE(OPTIMIZER_COLLECTION), INTENT(IN)          :: optimizer_options
 
     !/* internal objects    */
 

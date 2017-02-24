@@ -216,7 +216,7 @@ FUNCTION fort_criterion_parallel(x)
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
 
-    INTEGER(our_int)                :: opt_ambi_info_slaves(2, num_slaves)
+    INTEGER(our_int)                :: opt_ambi_summary_slaves(2, num_slaves)
     INTEGER(our_int)                :: dist_optim_paras_info
     INTEGER(our_int)                :: displs(num_slaves)
     INTEGER(our_int)                :: i
@@ -264,9 +264,9 @@ FUNCTION fort_criterion_parallel(x)
     fort_criterion_parallel = get_log_likl(contribs)
 
     ! We also need to aggregate the information about the worst-case determination.
-    opt_ambi_info = MISSING_INT
-    CALL MPI_GATHER(opt_ambi_info_slaves, 0, MPI_INT, opt_ambi_info_slaves, 2, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-    opt_ambi_info = SUM(opt_ambi_info_slaves, 2)
+    opt_ambi_summary = MISSING_INT
+    CALL MPI_GATHER(opt_ambi_summary_slaves, 0, MPI_INT, opt_ambi_summary_slaves, 2, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+    opt_ambi_summary = SUM(opt_ambi_summary_slaves, 2)
 
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
