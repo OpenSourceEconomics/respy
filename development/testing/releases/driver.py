@@ -11,13 +11,7 @@ import numpy as np
 import subprocess
 import argparse
 import random
-import sys
 import os
-
-# We are using features for the automatic creation of the virtual environment
-# which are only available in Python 3.
-if int(sys.version[0]) < 3:
-    raise AssertionError('Please use Python 3')
 
 from respy import RespyCls
 from respy import simulate
@@ -60,7 +54,7 @@ def run(args):
     # Create fresh virtual environments if requested.
     if is_create:
         for release in [OLD_RELEASE, NEW_RELEASE]:
-            cmd = ['pyvenv', env_dir + '/' + release, '--clear']
+            cmd = ['virtualenv', env_dir + '/' + release, '--clear']
             subprocess.check_call(cmd)
 
         # Set up the virtual environments with the two releases under

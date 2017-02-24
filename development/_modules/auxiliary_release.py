@@ -2,6 +2,7 @@ import pickle as pkl
 
 import shutil
 import shlex
+import json
 import sys
 import pip
 import os
@@ -79,18 +80,14 @@ def prepare_release_tests(constr):
     # four digits.
     for label in ['HOME', 'OCCUPATION A', 'OCCUPATION B', 'EDUCATION', 'SHOCKS']:
         num = len(init_dict[label]['fixed'])
-        coeffs = np.round(init_dict[label]['coeffs'], decimals=4)
+        coeffs = np.round(init_dict[label]['coeffs'], decimals=4).tolist()
         init_dict[label]['bounds'] = [(None, None)] * num
         init_dict[label]['coeffs'] = coeffs
 
     # In the original release we treated TAU as an integer when printing to
     # file by accident.
     init_dict['ESTIMATION']['tau'] = int(init_dict['ESTIMATION']['tau'])
-    pkl.dump(init_dict, open('new/init_dict.respy.pkl', 'wb'))
-
-    # Now we just turn to to restructuring the old initialization dictionary
-    # so it can be properly processed.
-    init_dict['SHOCKS']['fixed'] = np.array(init_dict['SHOCKS']['fixed'])
+    json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
 
     # Added more fine grained scaling. Needs to be aligned across old/new
     # with identity or flag False first and then we want to allow for more
@@ -119,7 +116,8 @@ def prepare_release_tests(constr):
 
     # Ambiguity was not yet available
     del init_dict['AMBIGUITY']
-    pkl.dump(init_dict, open('old/init_dict.respy.pkl', 'wb'))
+
+    json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
 
 
 def run_estimation(which):
@@ -127,11 +125,21 @@ def run_estimation(which):
     """
     os.chdir(which)
 
+    import numpy as np
+
     from respy import estimate
     from respy import RespyCls
 
     from respy.python.shared.shared_auxiliary import print_init_dict
-    init_dict = pkl.load(open('init_dict.respy.pkl', 'rb'))
+
+    init_dict = json.load(open('init_dict.respy.json', 'r'))
+
+    # TODO: This is probably not required when comparing future releases.
+    # There was a change in the setup for releases after 1.00.
+    if which == 'old':
+        init_dict['SHOCKS']['fixed'] = np.array(init_dict['SHOCKS']['fixed'])
+    else:
+        init_dict['SHOCKS']['fixed'] = init_dict['SHOCKS']['fixed']
 
     print_init_dict(init_dict)
 
