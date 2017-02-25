@@ -29,14 +29,14 @@ def respy_interface(respy_obj, request, data_array=None):
         num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, optimizer_options, seed_sim, \
-        num_agents_sim, measure, file_sim, preconditioning = \
+        num_agents_sim, measure, file_sim, preconditioning, mean = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max', 'num_draws_prob',
                 'seed_prob', 'num_draws_emax', 'seed_emax', 'min_idx',
                 'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
                 'optimizer_used', 'tau', 'optimizer_options',
                 'seed_sim', 'num_agents_sim', 'measure', 'file_sim',
-                'preconditioning')
+                'preconditioning', 'mean')
 
     if request == 'estimate':
 
@@ -68,7 +68,8 @@ def respy_interface(respy_obj, request, data_array=None):
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
             data_array, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
-            mapping_state_idx, max_states_period, measure, optimizer_options)
+            mapping_state_idx, max_states_period, measure,
+                mean, optimizer_options)
 
         # Special case where just an evaluation at the starting values is
         # requested is accounted for. Note, that the relevant value of the
@@ -213,7 +214,7 @@ def respy_interface(respy_obj, request, data_array=None):
             periods_emax, states_all = pyth_solve(is_interpolated,
             num_points_interp, num_draws_emax, num_periods, is_myopic,
             edu_start, is_debug, edu_max, min_idx, periods_draws_emax,
-            measure, optim_paras, file_sim, optimizer_options)
+            measure, mean, optim_paras, file_sim, optimizer_options)
 
         solution = (periods_rewards_systematic, states_number_period,
             mapping_state_idx, periods_emax, states_all)

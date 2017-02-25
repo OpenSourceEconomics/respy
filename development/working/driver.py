@@ -40,8 +40,9 @@ for num_procs in [1]:
     #respy_obj.attr['num_procs'] = num_procs
     respy_obj.lock()
     simulate(respy_obj)
-    estimate(respy_obj)
-    print('... done')
+    _, crit = estimate(respy_obj)
+    print(crit)
+    assert crit == 0.25443574243874
 
 
 #print('going in')

@@ -110,6 +110,8 @@ class RespyCls(object):
 
         self.attr['maxfun'] = None
 
+        self.attr['mean'] = None
+
         self.attr['tau'] = None
 
         # Derived attributes
@@ -327,10 +329,11 @@ class RespyCls(object):
 
         # Ambiguity
         init_dict['AMBIGUITY'] = dict()
-        init_dict['AMBIGUITY']['measure'] = self.attr['measure']
         init_dict['AMBIGUITY']['coeffs'] = self.attr['optim_paras']['level']
         init_dict['AMBIGUITY']['bounds'] = self.attr['optim_paras']['paras_bounds'][1:2]
         init_dict['AMBIGUITY']['fixed'] = self.attr['optim_paras']['paras_fixed'][1:2]
+        init_dict['AMBIGUITY']['measure'] = self.attr['measure']
+        init_dict['AMBIGUITY']['mean'] = self.attr['mean']
 
         # Simulation
         init_dict['SIMULATION'] = dict()
@@ -447,6 +450,8 @@ class RespyCls(object):
         self.attr['is_debug'] = init_dict['PROGRAM']['debug']
 
         self.attr['edu_max'] = init_dict['EDUCATION']['max']
+
+        self.attr['mean'] = init_dict['AMBIGUITY']['mean']
 
         self.attr['tau'] = init_dict['ESTIMATION']['tau']
 

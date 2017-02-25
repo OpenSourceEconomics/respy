@@ -380,9 +380,15 @@ def read_draws(num_periods, num_draws):
     return periods_draws
 
 
-def transform_disturbances(draws, shocks_cholesky):
+def transform_disturbances(draws, mean, shocks_cholesky):
     """ Transform the standard normal deviates to the relevant distribution.
+
     """
+
+    assert isinstance(mean, np.ndarray)
+    assert isinstance(shocks_cholesky, np.ndarray)
+
+    assert len(mean) == draws.shape[1]
     # Transfer draws to relevant distribution
     draws_transformed = draws.copy()
     draws_transformed = np.dot(shocks_cholesky, draws_transformed.T).T
@@ -390,6 +396,10 @@ def transform_disturbances(draws, shocks_cholesky):
     for j in [0, 1]:
         draws_transformed[:, j] = \
             np.clip(np.exp(draws_transformed[:, j]), 0.0, HUGE_FLOAT)
+
+    # TODO: Is this correct? Do I not need to do this before the exponential?
+    for j in [0, 1, 2, 3]:
+        draws_transformed[:, j] = draws_transformed[:, j] + mean[j]
 
     # Finishing
     return draws_transformed
@@ -569,6 +579,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 str_ = '{0:<10} {1:>20}\n'
                 file_.write(str_.format('measure', dict_[flag]['measure']))
+                file_.write(str_.format('mean', str(dict_[flag]['mean'])))
 
                 file_.write('\n')
 

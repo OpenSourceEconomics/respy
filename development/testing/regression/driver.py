@@ -108,13 +108,22 @@ def run(args):
         tests = json.load(open(fname, 'r'))
 
         # We shuffle the order of the tests so checking subset is insightful.
-        indices = range(num_tests)
+        indices = list(range(num_tests))
         np.random.shuffle(indices)
 
-        for idx in indices:
-            print('\n Checking Test ', idx, '\n')
+        for i, idx in enumerate(indices):
+            print('\n Checking Test ', idx, ' at iteration ',  i, '\n')
 
             init_dict, crit_val = tests[idx]
+
+            # TODO: Temporary fixes
+            init_dict['AMBIGUITY']['mean'] = True
+
+            if init_dict['PROGRAM']['version'] == 'FORTRAN':
+                print(' ... skipping')
+                continue
+
+            print(' ... checking')
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
