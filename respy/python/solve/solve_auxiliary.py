@@ -367,7 +367,8 @@ def get_endogenous_variable(period, num_periods, num_states,
             emax, optim_ambi_details = construct_emax_ambiguity(num_periods,
                 num_draws_emax, period, k, draws_emax_standard,
                 rewards_systematic, edu_max, edu_start, periods_emax,
-                states_all, mapping_state_idx, shocks_cov, measure, optim_paras,
+                states_all, mapping_state_idx, shocks_cov, measure,
+                mean,   optim_paras,
                 optimizer_options, opt_ambi_details)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,

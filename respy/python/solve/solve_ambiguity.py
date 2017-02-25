@@ -18,6 +18,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         rewards_systematic, edu_max, edu_start, periods_emax, states_all,
         mapping_state_idx)
 
+    # TODO: This is passed in directly.
     shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
         optim_paras['shocks_cholesky'].T)
 
@@ -51,7 +52,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     opt_ambi_details[period, k, :] = args
 
     args = ()
-    args += base_args + (optim_paras,)
+    args += base_args + (optim_paras, shocks_cov)
     emax = criterion_ambiguity(x_shift, *args)
 
     return emax, opt_ambi_details
@@ -68,10 +69,12 @@ def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_standard,
     options['ftol'] = optimizer_options['SCIPY-SLSQP']['ftol']
     options['eps'] = optimizer_options['SCIPY-SLSQP']['eps']
 
+    x_chol = optim_paras['shocks_cholesky'][:2, :2][np.tril_indices(2)].copy()
+
     if mean:
         x0 = np.tile(0.0, 2)
     else:
-        x0 = np.tile(0.0, 5)
+        x0 = np.append(np.tile(0.0, 2), x_chol)
 
     # Construct constraint
     constraint_divergence = dict()
@@ -84,7 +87,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_standard,
 
     args = (num_periods, num_draws_emax, period, k, draws_emax_standard,
         rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, optim_paras)
+        mapping_state_idx, optim_paras, shocks_cov)
 
     # Run optimization
     opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
@@ -104,14 +107,42 @@ def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_standard,
 
 def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
         draws_emax_standard, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, optim_paras):
+        periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov):
     """ Evaluating the constructed EMAX with the admissible distribution.
     """
+    # First we construct the relevant mean.
+    x_subset_mean = x[:2]
+    mean_relevant = np.append(x_subset_mean, [0.0, 0.0])
 
-    mean = np.append(x[:2], [0.0, 0.0])
+    # Now we turn to the more complex construction of the relevant Cholesky
+    # decomposition.
+    if len(x) == 2:
+        # This is the case where there is only ambiguity about the average
+        # values.
+        cholesky_relevant = optim_paras['shocks_cholesky'].copy()
+    elif len(x) == 5:
 
+        x_subset_cholesky = x[2:]
+
+        cov_subset_cholesky = np.zeros((2, 2))
+        cov_subset_cholesky[np.triu_indices(2)] = x_subset_cholesky
+
+        cov_subset = np.matmul(cov_subset_cholesky, cov_subset_cholesky.T)
+
+        shocks_cov_relevant = shocks_cov.copy()
+        shocks_cov_relevant[:2, :2] = cov_subset
+
+        cholesky_relevant = np.linalg.cholesky(shocks_cov_relevant)
+
+        print(shocks_cov)
+        print(np.matmul(cholesky_relevant, cholesky_relevant.T))
+        print('\n\n')
+    else:
+        raise AssertionError
+
+    # Now we can construct the relevant random draws from the standard deviates.
     draws_emax_relevant = transform_disturbances(draws_emax_standard,
-        mean, optim_paras['shocks_cholesky'])
+        mean_relevant, cholesky_relevant)
 
     emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
         draws_emax_relevant, rewards_systematic, edu_max, edu_start, periods_emax,
@@ -127,10 +158,23 @@ def constraint_ambiguity(x, shocks_cov, optim_paras):
     mean_old = np.zeros(4)
 
     mean_new = np.zeros(4)
-    mean_new[:2] = x
+    mean_new[:2] = x[:2]
 
+    # TODO: This needs adjustment.
     cov_old = shocks_cov
-    cov_new = cov_old
+
+    if len(x) == 5:
+        cov_subst_cholesky_flat = x[2:]
+
+        cov_subset_cholesky = np.zeros((2, 2))
+        cov_subset_cholesky[np.triu_indices(2)] = cov_subst_cholesky_flat
+        cov_subset = np.matmul(cov_subset_cholesky, cov_subset_cholesky.T)
+
+        cov_new = shocks_cov.copy()
+        cov_new[:2, :2] = cov_subset
+    else:
+        cov_new = cov_old
+
 
     rslt = optim_paras['level'] - kl_divergence(mean_old, cov_old, mean_new,
         cov_new)

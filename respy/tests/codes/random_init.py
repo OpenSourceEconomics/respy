@@ -140,8 +140,7 @@ def generate_random_dict(constr=None):
     # AMBIGUITY
     dict_['AMBIGUITY'] = dict()
     dict_['AMBIGUITY']['measure'] = np.random.choice(['abs', 'kl'])
-    dict_['AMBIGUITY']['mean'] = True
-
+    dict_['AMBIGUITY']['mean'] = np.random.choice(['True', 'False'])
     dict_['AMBIGUITY']['coeffs'] = paras_values[1:2]
     dict_['AMBIGUITY']['bounds'] = paras_bounds[1:2]
     dict_['AMBIGUITY']['fixed'] = paras_fixed[1:2]
