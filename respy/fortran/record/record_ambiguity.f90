@@ -50,12 +50,10 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
 
     100 FORMAT(1x,A6,i7,2x,A5,i7)
     110 FORMAT(3x,A12,f10.5)
-    120 FORMAT(3x,A12,f10.5)
-    130 FORMAT(3x,A7,8x,A5,20x)
-    140 FORMAT(3x,A7,8x,A100)
-
-    180 FORMAT(3x,A4,11x,A10)
-    200 FORMAT(3x,f10.5,2x,f10.5,f10.5)
+    120 FORMAT(3x,A7,8x,A5,20x)
+    130 FORMAT(3x,A7,8x,A100)
+    140 FORMAT(3x,A4,11x,A10)
+    150 FORMAT(3x,f10.5,2x,f10.5,f10.5)
 
     OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACCESS='APPEND', ACTION='WRITE')
 
@@ -76,43 +74,36 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
             ELSE
                 ambi_rslt_cov = zero_dble
             END IF
-            PRINT *, ambi_rslt_cov(1,:)
-            PRINT *, ambi_rslt_cov(2,:)
-            PRINT *, ambi_rslt_cov(3,:)
-            PRINT *, ambi_rslt_cov(4,:)
-
-
 
             ! We need to skip states that where not analyzed during an interpolation.
             IF (mode == MISSING_FLOAT) CYCLE
 
             WRITE(99, *)
-            WRITE(99, 120) 'Divergence  ', div(1)
+            WRITE(99, 110) 'Divergence  ', div(1)
 
             WRITE(99, *)
 
             IF(is_success) THEN
-                WRITE(99, 130) 'Success', 'True '
+                WRITE(99, 120) 'Success', 'True '
             ELSE
-                WRITE(99, 130) 'Success', 'False'
+                WRITE(99, 120) 'Success', 'False'
             END IF
 
-            WRITE(99, 140) 'Message', ADJUSTL(get_message(mode))
+            WRITE(99, 130) 'Message', ADJUSTL(get_message(mode))
             WRITE(99, *)
-            ! TODO: Cleanup formattting identfiers
-            WRITE(99, 180) 'Mean', 'Covariance'
+            WRITE(99, 140) 'Mean', 'Covariance'
             WRITE(99, *)
-
             DO i = 1, 2
-                WRITE(99, 200) ambi_rslt_mean_subset(i), ambi_rslt_cov(i, :2)
+                WRITE(99, 150) ambi_rslt_mean_subset(i), ambi_rslt_cov(i, :2)
             END DO
+
+            WRITE(99, *)
+            WRITE(99, *)
 
         END DO
 
     END DO
 
-    WRITE(99, *)
-    WRITE(99, *)
     CLOSE(99)
 
     CALL record_ambiguity_summary(opt_ambi_details, states_number_period, file_sim)

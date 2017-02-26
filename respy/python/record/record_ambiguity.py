@@ -50,7 +50,7 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
                 string = '   {:<15}{:<100}\n\n'
                 file_.write(string.format(*['Message', message]))
 
-                string = '   {:<12}   {:<12}\n\n'
+                string = '   {:<12}   {:<10}\n\n'
                 args = ['Mean', 'Covariance']
                 file_.write(string.format(*args))
 

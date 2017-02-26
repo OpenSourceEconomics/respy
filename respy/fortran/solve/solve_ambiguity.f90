@@ -84,7 +84,6 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     ELSE
         CALL get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
-        PRINT *, 'x_shift coming out', x_shift, is_success, mode
         ! TODO: This will be endogenized later when MEAN = FALSE is allowed.
         ambi_rslt_mean_subset = x_shift
         ambi_rslt_chol_subset = get_upper_cholesky(optim_paras)
@@ -257,8 +256,6 @@ SUBROUTINE get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax
     END DO
 
     x_shift = X
-
-    PRINT *, 'inside', X, ITER, mode
 
     ! Stabilization. If the optimization fails the starting values are
     ! used otherwise it happens that the constraint is not satisfied by far.
