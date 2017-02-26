@@ -31,7 +31,7 @@ def options(ctx):
     ctx.add_option('--debug', action='store_true', dest='is_debug',
                    default=False, help='use debug compiler options')
 
-    ctx.add_option('--without_mpi', action='store_true',
+    ctx.add_option('--without_parallelism', action='store_true',
         dest='without_parallelism', default=False, help='without PARALLELISM')
 
     ctx.add_option('--without_fortran', action='store_true',
