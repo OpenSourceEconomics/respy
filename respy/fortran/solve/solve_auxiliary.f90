@@ -276,7 +276,6 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 
     REAL(our_dble)                      :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax_standard(num_draws_emax, 4)
-    REAL(our_dble)                      :: draws_emax(num_draws_emax, 4)
     REAL(our_dble)                      :: shocks_mean(4) = zero_dble
     REAL(our_dble)                      :: rewards_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
@@ -374,7 +373,6 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 
     END DO
 
-    PRINT *, periods_emax(1, 1), periods_rewards_systematic(1, 1, :)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

@@ -96,21 +96,29 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     ambi_rslt_all(:2) = ambi_rslt_mean_subset
     ambi_rslt_all(3:) = ambi_rslt_chol_subset
 
-
     opt_ambi_details(period + 1, k + 1, :) = (/ambi_rslt_all, div, is_success, DBLE(mode)/)
 
     ! TODO: This x_shift input needs to be replaced later.
-    emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+    emax = criterion_ambiguity(ambi_rslt_all(:2), num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 PURE FUNCTION get_upper_cholesky(optim_paras)
 
-    REAL(our_dble)  :: get_upper_cholesky(3)
+    !/* external objects    */
+
+    REAL(our_dble)                              :: get_upper_cholesky(3)
+
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
-    REAL(our_dble)  :: shocks_cholesky(4, 4)
+    !/* internal objects    */
 
+    REAL(our_dble)                              :: shocks_cholesky(4, 4)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
 
     shocks_cholesky = optim_paras%shocks_cholesky
 
@@ -118,39 +126,17 @@ PURE FUNCTION get_upper_cholesky(optim_paras)
     get_upper_cholesky(2) = shocks_cholesky(2, 1)
     get_upper_cholesky(3) = shocks_cholesky(2, 2)
 
-
 END FUNCTION
-!
-! def construct_full_covariances(ambi_cand_chol_flat, shocks_cov):
-!     """ We determine the worst-case Cholesky factors so we need to construct
-!     the full set of factors.
-!     """
-!     ambi_cand_chol_subset = np.zeros((2, 2))
-!     ambi_cand_chol_subset[np.triu_indices(2)] = ambi_cand_chol_flat
-!
-!     args = (ambi_cand_chol_subset, ambi_cand_chol_subset.T)
-!     ambi_cand_cov_subset = np.matmul(*args)
-!
-!     ambi_cand_cov = shocks_cov.copy()
-!     ambi_cand_cov[:2, :2] = ambi_cand_cov_subset
-!
-!     ambi_cand_cho = np.linalg.cholesky(ambi_cand_cov)
-!
-!     return ambi_cand_cov, ambi_cand_cho
-
-
-
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
     !/* external objects        */
 
+    REAL(our_dble), INTENT(OUT)                 :: is_success
     REAL(our_dble), INTENT(OUT)                 :: x_shift(2)
-    REAL(our_dble), INTENT(OUT)                :: is_success
 
     INTEGER(our_int), INTENT(OUT)               :: mode
-
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
@@ -401,7 +387,6 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
     !/* internals objects    */
 
     REAL(our_dble)                  :: draws_relevant(num_draws_emax, 4)
-    REAL(our_dble)                  :: ambi_cand_mean_subset(2)
     REAL(our_dble)                  :: ambi_cand_mean_full(4)
 
 !------------------------------------------------------------------------------

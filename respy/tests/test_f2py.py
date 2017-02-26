@@ -24,7 +24,7 @@ from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import get_predictions
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
-from respy.python.shared.shared_auxiliary import get_cholesky
+from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.shared.shared_constants import IS_F2PY
@@ -625,8 +625,8 @@ class TestClass(object):
         x = np.random.uniform(size=28)
 
         # Construct the Cholesky decompositions
-        py = get_cholesky(x, info=0)
-        fort = fort_debug.wrapper_get_cholesky(x)
+        py = extract_cholesky(x, info=0)
+        fort = fort_debug.wrapper_extract_cholesky(x)
 
         # Compare the results based on the two methods
         np.testing.assert_equal(fort, py)

@@ -3,7 +3,7 @@ import numpy as np
 
 from respy.python.record.record_estimation import record_estimation_eval
 from respy.python.estimate.estimate_python import pyth_criterion
-from respy.python.shared.shared_auxiliary import get_cholesky
+from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.record.record_warning import record_warning
 
@@ -59,7 +59,7 @@ class OptimizationClass(object):
 
             # This is only used to determine whether a stabilization of the
             # Cholesky matrix is required.
-            _, info = get_cholesky(x_optim_all_unscaled, 0)
+            _, info = extract_cholesky(x_optim_all_unscaled, 0)
             if info != 0:
                 record_warning(4)
 

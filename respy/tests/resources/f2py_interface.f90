@@ -1236,7 +1236,7 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_cholesky(shocks_cholesky, info, x)
+SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 
     !/* external libraries      */
 
@@ -1258,7 +1258,7 @@ SUBROUTINE wrapper_get_cholesky(shocks_cholesky, info, x)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL get_cholesky(shocks_cholesky, x, info)
+    CALL extract_cholesky(shocks_cholesky, x, info)
 
 END SUBROUTINE
 !******************************************************************************

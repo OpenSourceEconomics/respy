@@ -218,7 +218,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
     ! Create the container for the *.info file.
     DO i = 1, 3
-        CALL get_cholesky(shocks_cholesky, x_optim_all_unscaled)
+        CALL extract_cholesky(shocks_cholesky, x_optim_all_unscaled)
         shocks_cov(i, :, :) = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
         CALL spectral_condition_number(cond(i), shocks_cov(i, :, :))
 

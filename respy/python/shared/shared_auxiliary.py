@@ -19,6 +19,25 @@ from respy.python.record.record_warning import record_warning
 OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + OPT_AMB_FORT + OPT_AMB_PYTH
 
 
+def construct_full_covariances(ambi_cand_chol_flat, shocks_cov):
+    """ We determine the worst-case Cholesky factors so we need to construct
+    the full set of factors.
+    """
+    ambi_cand_chol_subset = np.zeros((2, 2))
+    ambi_cand_chol_subset[np.triu_indices(2)] = ambi_cand_chol_flat
+
+    args = (ambi_cand_chol_subset, ambi_cand_chol_subset.T)
+    ambi_cand_cov_subset = np.matmul(*args)
+
+    ambi_cand_cov = shocks_cov.copy()
+    ambi_cand_cov[:2, :2] = ambi_cand_cov_subset
+
+    # TODO: Call this _full or leave as is?
+    ambi_cand_chol = np.linalg.cholesky(ambi_cand_cov)
+
+    return ambi_cand_cov, ambi_cand_chol
+
+
 def get_log_likl(contribs):
     """ Aggregate contributions to the likelihood value.
     """
@@ -112,7 +131,7 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     optim_paras['coeffs_home'] = x_all_curre[17:18]
 
     # Cholesky
-    optim_paras['shocks_cholesky'], info = get_cholesky(x_all_curre, info)
+    optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
 
     # Checks
     if is_debug:
@@ -122,7 +141,7 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     return optim_paras
 
 
-def get_cholesky(x, info=None):
+def extract_cholesky(x, info=None):
     """ Construct the Cholesky matrix.
     """
     shocks_cholesky = np.tile(0.0, (4, 4))
@@ -282,6 +301,7 @@ def add_solution(respy_obj, periods_rewards_systematic,
 
     # Finishing
     return respy_obj
+
 
 def replace_missing_values(arguments):
     """ Replace missing value MISSING_FLOAT with NAN. Note that the output

@@ -116,14 +116,9 @@ def run(args):
 
             init_dict, crit_val = tests[idx]
 
-            # TODO: Temporary fixes
+            # TODO: Temporary fixes ...
             init_dict['AMBIGUITY']['mean'] = True
-
-            if init_dict['PROGRAM']['version'] == 'FORTRAN':
-                print(' ... skipping')
-                continue
-
-            print(' ... checking')
+            init_dict['PROGRAM']['procs'] = 1
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')

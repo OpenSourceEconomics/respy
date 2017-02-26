@@ -273,7 +273,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
 
                 # Store results
                 periods_emax[period, k] = emax
-    print(periods_emax[0, 0], periods_rewards_systematic[0, 0,:])
+
     return periods_emax, opt_ambi_details
 
 

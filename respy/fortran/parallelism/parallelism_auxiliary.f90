@@ -181,9 +181,9 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
 
-    REAL(our_dble)                      :: shocks_mean(4) = zero_dble
     REAL(our_dble)                      :: rewards_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
+    REAL(our_dble)                      :: shocks_mean(4)
     REAL(our_dble)                      :: shifts(4)
     REAL(our_dble)                      :: emax
 
@@ -244,7 +244,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     CALL clip_value(shifts(1), EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT, info)
     CALL clip_value(shifts(2), EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT, info)
 
-
+    shocks_mean = zero_int
+    
     DO period = (num_periods - 1), 0, -1
 
         ! Extract draws and construct auxiliary objects

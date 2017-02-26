@@ -21,7 +21,7 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
 
     !/* external objects    */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN) :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 8)
 
@@ -33,12 +33,19 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
 
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: mode
-    INTEGER(our_int)                :: k, i
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: i
 
-    REAL(our_dble)                  :: x_shift(2), ambi_rslt_mean_subset(2), ambi_rslt_chol_subset(3)
-    REAL(our_dble)                  :: div(1), shocks_cholesky(4, 4), shocks_cov(4, 4), ambi_rslt_cov(4, 4), ambi_rslt_chol(4, 4), ambi_rslt_chol_flat(3)
+    REAL(our_dble)                  :: ambi_rslt_mean_subset(2)
+    REAL(our_dble)                  :: ambi_rslt_chol_flat(3)
+    REAL(our_dble)                  :: shocks_cholesky(4, 4)
+    REAL(our_dble)                  :: ambi_rslt_chol(4, 4)
+    REAL(our_dble)                  :: ambi_rslt_cov(4, 4)
+    REAL(our_dble)                  :: shocks_cov(4, 4)
+    REAL(our_dble)                  :: div(1)
 
-    LOGICAL                         :: is_success, is_deterministic
+    LOGICAL                         :: is_deterministic
+    LOGICAL                         :: is_success
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -67,7 +74,7 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
             ambi_rslt_chol_flat = opt_ambi_details(period + 1, k + 1, 3:5)
             div = opt_ambi_details(period + 1, k + 1, 6)
             is_success = (opt_ambi_details(period + 1, k + 1 , 7) == one_dble)
-            mode = DINT(opt_ambi_details(period + 1, k + 1, 8))
+            mode = opt_ambi_details(period + 1, k + 1, 8)
 
             IF (.NOT. is_deterministic) THEN
                 CALL construct_full_covariances(ambi_rslt_cov, ambi_rslt_chol, ambi_rslt_chol_flat, shocks_cov)

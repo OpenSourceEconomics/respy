@@ -27,43 +27,52 @@ MODULE shared_auxiliary
     END INTERFACE
 
 CONTAINS
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE construct_full_covariances(ambi_cand_cov, ambi_cand_chol, ambi_cand_chol_flat, shocks_cov)
 
-    SUBROUTINE construct_full_covariances(ambi_cand_cov, ambi_cand_chol, ambi_cand_chol_flat, shocks_cov)
+    !/* external objects        */
 
-        !/* external objects        */
+    REAL(our_dble), INTENT(OUT)     :: ambi_cand_chol(4, 4)
+    REAL(our_dble), INTENT(OUT)     :: ambi_cand_cov(4, 4)
 
-        REAL(our_dble), INTENT(OUT)             :: ambi_cand_cov(4, 4)
-        REAL(our_dble), INTENT(OUT)             :: ambi_cand_chol(4, 4)
+    REAL(our_dble), INTENT(OUT)     :: ambi_cand_chol_flat(3)
+    REAL(our_dble), INTENT(OUT)     :: shocks_cov(4, 4)
 
-        REAL(our_dble), INTENT(OUT)             :: ambi_cand_chol_flat(3)
-        REAL(our_dble), INTENT(OUT)             :: shocks_cov(4, 4)
+    !/* internal objects        */
+
+    REAL(our_dble)                  :: ambi_cand_chol_subset(2, 2)
+    REAL(our_dble)                  :: ambi_cand_cov_subset(2, 2)
+    REAL(our_dble)                  :: mock_obj(4, 4)
+
+    INTEGER(our_int)                :: info
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ambi_cand_chol_subset = zero_dble
+    ambi_cand_chol_subset(1, 1) = ambi_cand_chol_flat(1)
+    ambi_cand_chol_subset(2, 1) = ambi_cand_chol_flat(2)
+    ambi_cand_chol_subset(2, 2) = ambi_cand_chol_flat(3)
+
+    ambi_cand_cov_subset = MATMUL(ambi_cand_chol_subset, TRANSPOSE(ambi_cand_chol_subset))
+
+    ambi_cand_cov = shocks_cov
+    ambi_cand_cov(:2, :2) = ambi_cand_cov_subset
+
+    ! Construct Cholesky decomposition
+    mock_obj = ambi_cand_cov
+    CALL DPOTRF('L', 4, mock_obj, 4, info)
+    ambi_cand_chol = mock_obj
+
+    IF (info .NE. zero_dble) THEN
+        ! TODO: Once this is removed, we can move this to a pure procedure.
+        STOP 'Problem in the Cholesky decomposition'
+    END IF
 
 
-        !/* external objects        */
-
-        REAL(our_dble)         :: ambi_cand_chol_subset(2, 2)
-        REAL(our_dble)         :: ambi_cand_cov_subset(2, 2), A(4, 4)
-
-        INTEGER(our_int)        :: info
-
-        ambi_cand_chol_subset = zero_dble
-        ambi_cand_chol_subset(1, 1) = ambi_cand_chol_flat(1)
-        ambi_cand_chol_subset(2, 1) = ambi_cand_chol_flat(2)
-        ambi_cand_chol_subset(2, 2) = ambi_cand_chol_flat(3)
-
-        ambi_cand_cov_subset = MATMUL(ambi_cand_chol_subset, TRANSPOSE(ambi_cand_chol_subset))
-
-        ambi_cand_cov = shocks_cov
-        ambi_cand_cov(:2, :2) = ambi_cand_cov_subset
-
-        A = ambi_cand_cov
-        CALL DPOTRF('L', 4, A, 4, info)
-
-        PRINT *, 'info', info
-        ambi_cand_chol = A
-
-
-    END SUBROUTINE
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 FUNCTION get_log_likl(contribs)
@@ -141,7 +150,7 @@ SUBROUTINE summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_cholesky(shocks_cholesky, x, info)
+SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     !/* external objects        */
 
@@ -225,7 +234,6 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
     DO i = 1, 4
         draws_transformed(:, i) = draws_transformed(:, i) + shocks_mean(i)
     END DO
-
 
 END SUBROUTINE
 !******************************************************************************
@@ -1064,9 +1072,9 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
-        CALL get_cholesky(optim_paras%shocks_cholesky, x, info)
+        CALL extract_cholesky(optim_paras%shocks_cholesky, x, info)
     ELSE
-        CALL get_cholesky(optim_paras%shocks_cholesky, x)
+        CALL extract_cholesky(optim_paras%shocks_cholesky, x)
     END IF
 
 END SUBROUTINE

@@ -7,7 +7,7 @@ from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
-from respy.python.shared.shared_auxiliary import get_cholesky
+from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 
@@ -81,7 +81,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
     # Distribute class attributes
     paras_fixed = opt_obj.paras_fixed
 
-    shocks_cholesky, _ = get_cholesky(x_optim_all_unscaled, 0)
+    shocks_cholesky, _ = extract_cholesky(x_optim_all_unscaled, 0)
     shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
 
     # Identify events

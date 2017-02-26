@@ -257,15 +257,10 @@ class TestClass(object):
 
             if base_est_log is None:
                 base_est_log = open('est.respy.log', 'r').readlines()
-                import shutil
-                shutil.copy('est.respy.log', 'est.respy.fort')
-
             compare_est_log(base_est_log)
 
             if delta > 0.00 and is_ambiguity:
                 fname = file_sim + '.respy.amb'
                 if base_amb_log is None:
-                    import shutil
-                    shutil.copy('data.respy.amb', 'data.respy.fort')
                     base_amb_log = open(fname, 'r').read()
                 assert open(fname, 'r').read() == base_amb_log

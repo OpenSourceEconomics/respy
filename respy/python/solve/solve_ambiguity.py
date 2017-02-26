@@ -1,6 +1,7 @@
 from scipy.optimize import minimize
 import numpy as np
 
+from respy.python.shared.shared_auxiliary import construct_full_covariances
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_risk import construct_emax_risk
 
@@ -156,25 +157,6 @@ def get_upper_cholesky(optim_paras):
     """ Extract the upper 2 x 2 block of the Cholesky decomposition.
     """
     return optim_paras['shocks_cholesky'][:2, :2][np.tril_indices(2)].copy()
-
-
-def construct_full_covariances(ambi_cand_chol_flat, shocks_cov):
-    """ We determine the worst-case Cholesky factors so we need to construct
-    the full set of factors.
-    """
-    ambi_cand_chol_subset = np.zeros((2, 2))
-    ambi_cand_chol_subset[np.triu_indices(2)] = ambi_cand_chol_flat
-
-    args = (ambi_cand_chol_subset, ambi_cand_chol_subset.T)
-    ambi_cand_cov_subset = np.matmul(*args)
-
-    ambi_cand_cov = shocks_cov.copy()
-    ambi_cand_cov[:2, :2] = ambi_cand_cov_subset
-
-    # TODO: Call this _full or leave as is?
-    ambi_cand_chol = np.linalg.cholesky(ambi_cand_cov)
-
-    return ambi_cand_cov, ambi_cand_chol
 
 
 def constraint_ambiguity(x, shocks_cov, optim_paras):
