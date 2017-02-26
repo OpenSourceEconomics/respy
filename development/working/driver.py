@@ -8,7 +8,7 @@ import sys
 if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('git clean -d -f; ./waf configure build --debug') \
+    assert os.system('git clean -d -f; ./waf configure build --debug --without_f2py') \
            == 0
     os.chdir(cwd)
 
@@ -40,9 +40,9 @@ for num_procs in [1]:
     #respy_obj.attr['num_procs'] = num_procs
     respy_obj.lock()
     simulate(respy_obj)
-    _, crit = estimate(respy_obj)
-    print(crit)
-    assert crit == 0.25443574243874
+    #_, crit = estimate(respy_obj)
+    #print(crit)
+    #assert crit == 0.25443574243874
 
 
 #print('going in')

@@ -299,7 +299,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 !------------------------------------------------------------------------------
 
     ! ALlocate container (if required) and initialize missing values.
-    IF (.NOT. ALLOCATED(opt_ambi_details)) ALLOCATE(opt_ambi_details(num_periods, max_states_period, 5))
+    IF (.NOT. ALLOCATED(opt_ambi_details)) ALLOCATE(opt_ambi_details(num_periods, max_states_period, 8))
     IF (.NOT. ALLOCATED(periods_emax)) ALLOCATE(periods_emax(num_periods, max_states_period))
 
     opt_ambi_details = MISSING_FLOAT
@@ -523,7 +523,7 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)                 :: opt_ambi_details(num_periods, max_states_period, 5)
+    REAL(our_dble), INTENT(OUT)                 :: opt_ambi_details(num_periods, max_states_period, 8)
     REAL(our_dble), INTENT(OUT)                 :: endogenous(num_states)
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras

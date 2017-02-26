@@ -4,6 +4,8 @@ MODULE recording_ambiguity
 
     !/*	external modules	*/
 
+    USE shared_auxiliary
+
     USE shared_constants
 
     !/*	setup	*/
@@ -15,11 +17,13 @@ MODULE recording_ambiguity
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim)
+SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, optim_paras)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 5)
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
+
+    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 8)
 
     INTEGER(our_int), INTENT(IN)    :: states_number_period(:)
 
@@ -29,22 +33,29 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim)
 
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: mode
-    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: k, i
 
-    REAL(our_dble)                  :: x_shift(2)
-    REAL(our_dble)                  :: div(1)
+    REAL(our_dble)                  :: x_shift(2), ambi_rslt_mean_subset(2), ambi_rslt_chol_subset(3)
+    REAL(our_dble)                  :: div(1), shocks_cholesky(4, 4), shocks_cov(4, 4), ambi_rslt_cov(4, 4), ambi_rslt_chol(4, 4), ambi_rslt_chol_flat(3)
 
-    LOGICAL                         :: is_success
+    LOGICAL                         :: is_success, is_deterministic
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    shocks_cholesky = optim_paras%shocks_cholesky
+    shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
+    is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
     100 FORMAT(1x,A6,i7,2x,A5,i7)
     110 FORMAT(3x,A12,f10.5)
     120 FORMAT(3x,A12,f10.5)
     130 FORMAT(3x,A7,8x,A5,20x)
     140 FORMAT(3x,A7,8x,A100)
+
+    180 FORMAT(3x,A4,11x,A10)
+    200 FORMAT(3x,f10.5,2x,f10.5,f10.5)
 
     OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACCESS='APPEND', ACTION='WRITE')
 
@@ -54,17 +65,26 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim)
 
             WRITE(99, 100) 'PERIOD', period, 'STATE', k
 
-            x_shift = opt_ambi_details(period + 1, k + 1, :2)
-            div = opt_ambi_details(period + 1, k + 1, 3)
-            is_success = (opt_ambi_details(period + 1, k + 1 , 4) == one_int)
-            mode = DINT(opt_ambi_details(period + 1, k + 1, 5))
+            ambi_rslt_mean_subset = opt_ambi_details(period + 1, k + 1, 1:2)
+            ambi_rslt_chol_flat = opt_ambi_details(period + 1, k + 1, 3:5)
+            div = opt_ambi_details(period + 1, k + 1, 6)
+            is_success = (opt_ambi_details(period + 1, k + 1 , 7) == one_dble)
+            mode = DINT(opt_ambi_details(period + 1, k + 1, 8))
+
+            IF (.NOT. is_deterministic) THEN
+                CALL construct_full_covariances(ambi_rslt_cov, ambi_rslt_chol, ambi_rslt_chol_flat, shocks_cov)
+            ELSE
+                ambi_rslt_cov = zero_dble
+            END IF
+            PRINT *, ambi_rslt_cov(1,:)
+            PRINT *, ambi_rslt_cov(2,:)
+            PRINT *, ambi_rslt_cov(3,:)
+            PRINT *, ambi_rslt_cov(4,:)
+
+
 
             ! We need to skip states that where not analyzed during an interpolation.
             IF (mode == MISSING_FLOAT) CYCLE
-
-            WRITE(99, *)
-            WRITE(99, 110) 'Occupation A', x_shift(1)
-            WRITE(99, 110) 'Occupation B', x_shift(2)
 
             WRITE(99, *)
             WRITE(99, 120) 'Divergence  ', div(1)
@@ -77,14 +97,22 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim)
                 WRITE(99, 130) 'Success', 'False'
             END IF
 
-                WRITE(99, 140) 'Message', ADJUSTL(get_message(mode))
-                WRITE(99, *)
-                WRITE(99, *)
+            WRITE(99, 140) 'Message', ADJUSTL(get_message(mode))
+            WRITE(99, *)
+            ! TODO: Cleanup formattting identfiers
+            WRITE(99, 180) 'Mean', 'Covariance'
+            WRITE(99, *)
+
+            DO i = 1, 2
+                WRITE(99, 200) ambi_rslt_mean_subset(i), ambi_rslt_cov(i, :2)
+            END DO
 
         END DO
 
     END DO
 
+    WRITE(99, *)
+    WRITE(99, *)
     CLOSE(99)
 
     CALL record_ambiguity_summary(opt_ambi_details, states_number_period, file_sim)
@@ -96,7 +124,7 @@ SUBROUTINE record_ambiguity_summary(opt_ambi_details, states_number_period, file
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(IN)          :: opt_ambi_details(num_periods, max_states_period, 5)
+    REAL(our_dble), INTENT(IN)          :: opt_ambi_details(num_periods, max_states_period, 8)
 
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
 
@@ -125,8 +153,8 @@ SUBROUTINE record_ambiguity_summary(opt_ambi_details, states_number_period, file
 
         DO period = num_periods - 1, 0, -1
             total = states_number_period(period + 1)
-            success = COUNT(opt_ambi_details(period + 1,:total, 4) == one_int) / DBLE(total)
-            failure = COUNT(opt_ambi_details(period + 1,:total, 4) == zero_int) / DBLE(total)
+            success = COUNT(opt_ambi_details(period + 1,:total, 7) == one_int) / DBLE(total)
+            failure = COUNT(opt_ambi_details(period + 1,:total, 7) == zero_int) / DBLE(total)
             WRITE(99, 100) period, total, success, failure
         END DO
 

@@ -8,10 +8,11 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
         file_sim, optim_paras):
     """ Write result of optimization problem to log file.
     """
-
     # We print the actual covariance matrix for better interpretability.
     shocks_cholesky = optim_paras['shocks_cholesky']
     shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+
+    is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
 
     with open(file_sim + '.respy.amb', 'a') as file_:
         for period in range(num_periods - 1, -1, -1):
@@ -23,7 +24,6 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
                 ambi_rslt_mean_subset = opt_ambi_details[period, k, :2]
                 ambi_rslt_chol_subset = opt_ambi_details[period, k, 2:5]
 
-                is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
                 if not is_deterministic:
                     ambi_rslt_cov, _ = construct_full_covariances(
                         ambi_rslt_chol_subset, shocks_cov)
@@ -41,7 +41,7 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
                 string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
                 file_.write(string.format([period, k]))
 
-                string = '\n   {:<12}{:>10.5f}\n\n'
+                string = '   {:<12}{:>10.5f}\n\n'
                 file_.write(string.format(*['Divergence', div]))
 
                 string = '   {:<15}{:<5}\n'
@@ -56,7 +56,7 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
 
                 string = '   {:>10.5f}  {:>10.5f}{:>10.5f}\n'
                 for i in range(2):
-                    line = (ambi_rslt_mean_subset[i], ambi_rslt_cov[i, :])
+                    line = (ambi_rslt_mean_subset[i], ambi_rslt_cov[i, :2])
                     line = np.append(*line)
                     file_.write(string.format(*line))
                 file_.write('\n\n')

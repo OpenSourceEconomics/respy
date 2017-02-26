@@ -69,9 +69,6 @@ class TestClass(object):
     def test_2(self):
         """ Testing whether back-and-forth transformation have no effect.
         """
-        # Generate random request
-        paras_fixed = np.random.choice([True, False], 28)
-
         for i in range(10):
             # Create random parameter vector
             base = np.random.uniform(size=28)

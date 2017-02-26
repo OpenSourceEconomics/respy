@@ -27,6 +27,43 @@ MODULE shared_auxiliary
     END INTERFACE
 
 CONTAINS
+
+    SUBROUTINE construct_full_covariances(ambi_cand_cov, ambi_cand_chol, ambi_cand_chol_flat, shocks_cov)
+
+        !/* external objects        */
+
+        REAL(our_dble), INTENT(OUT)             :: ambi_cand_cov(4, 4)
+        REAL(our_dble), INTENT(OUT)             :: ambi_cand_chol(4, 4)
+
+        REAL(our_dble), INTENT(OUT)             :: ambi_cand_chol_flat(3)
+        REAL(our_dble), INTENT(OUT)             :: shocks_cov(4, 4)
+
+
+        !/* external objects        */
+
+        REAL(our_dble)         :: ambi_cand_chol_subset(2, 2)
+        REAL(our_dble)         :: ambi_cand_cov_subset(2, 2), A(4, 4)
+
+        INTEGER(our_int)        :: info
+
+        ambi_cand_chol_subset = zero_dble
+        ambi_cand_chol_subset(1, 1) = ambi_cand_chol_flat(1)
+        ambi_cand_chol_subset(2, 1) = ambi_cand_chol_flat(2)
+        ambi_cand_chol_subset(2, 2) = ambi_cand_chol_flat(3)
+
+        ambi_cand_cov_subset = MATMUL(ambi_cand_chol_subset, TRANSPOSE(ambi_cand_chol_subset))
+
+        ambi_cand_cov = shocks_cov
+        ambi_cand_cov(:2, :2) = ambi_cand_cov_subset
+
+        A = ambi_cand_cov
+        CALL DPOTRF('L', 4, A, 4, info)
+
+        PRINT *, 'info', info
+        ambi_cand_chol = A
+
+
+    END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 FUNCTION get_log_likl(contribs)
@@ -85,7 +122,7 @@ SUBROUTINE summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 
     INTEGER(our_int), INTENT(OUT)   :: opt_ambi_summary(2)
 
-    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 5)
+    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 8)
 
     !/* internal objects        */
 

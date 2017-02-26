@@ -23,15 +23,135 @@ MODULE solve_ambiguity
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, measure, optim_paras, optimizer_options)
+
+    ! TODO: Why do I pass in shocks cov and optim%shocks_cholesky ...
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)                 :: opt_ambi_details(num_periods, max_states_period, 8)
+    REAL(our_dble), INTENT(OUT)                 :: emax
+
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)    :: num_periods
+    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: period
+    INTEGER(our_int), INTENT(IN)    :: k
+
+    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), INTENT(IN)      :: draws_emax_standard(num_draws_emax, 4)
+    REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
+    REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
+
+    CHARACTER(10), INTENT(IN)       :: measure
+
+    TYPE(OPTIMIZER_COLLECTION), INTENT(IN) :: optimizer_options
+
+    !/* internals objects    */
+
+    INTEGER(our_int)                :: mode
+
+    REAL(our_dble)                  :: x_shift(2)
+    REAL(our_dble)                  :: div(1)
+
+    REAL(our_dble)                  :: ambi_rslt_mean_subset(2)
+    REAL(our_dble)                  :: ambi_rslt_chol_subset(3)
+    REAL(our_dble)                  :: ambi_rslt_all(5)
+    LOGICAL                         :: is_deterministic
+    REAL(our_dble)                  :: is_success
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    is_deterministic = ALL(shocks_cov .EQ. zero_dble)
+
+    IF(is_deterministic) THEN
+        ambi_rslt_mean_subset = zero_dble
+        ambi_rslt_chol_subset = zero_dble
+        div = zero_dble; is_success = one_dble; mode = 15
+
+    ELSE IF(TRIM(measure) == 'abs') THEN
+        ambi_rslt_mean_subset = (/-optim_paras%level, -optim_paras%level/)
+        ambi_rslt_chol_subset = get_upper_cholesky(optim_paras)
+        div = optim_paras%level; is_success = one_dble; mode = 16
+
+    ELSE
+        CALL get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
+
+        PRINT *, 'x_shift coming out', x_shift, is_success, mode
+        ! TODO: This will be endogenized later when MEAN = FALSE is allowed.
+        ambi_rslt_mean_subset = x_shift
+        ambi_rslt_chol_subset = get_upper_cholesky(optim_paras)
+
+        div = -(constraint_ambiguity(x_shift, shocks_cov, optim_paras) - optim_paras%level)
+
+    END IF
+
+    ! We collect the information from the optimization step for future recording.
+    ambi_rslt_all(:2) = ambi_rslt_mean_subset
+    ambi_rslt_all(3:) = ambi_rslt_chol_subset
+
+
+    opt_ambi_details(period + 1, k + 1, :) = (/ambi_rslt_all, div, is_success, DBLE(mode)/)
+
+    ! TODO: This x_shift input needs to be replaced later.
+    emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+PURE FUNCTION get_upper_cholesky(optim_paras)
+
+    REAL(our_dble)  :: get_upper_cholesky(3)
+    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+
+    REAL(our_dble)  :: shocks_cholesky(4, 4)
+
+
+    shocks_cholesky = optim_paras%shocks_cholesky
+
+    get_upper_cholesky(1) = shocks_cholesky(1, 1)
+    get_upper_cholesky(2) = shocks_cholesky(2, 1)
+    get_upper_cholesky(3) = shocks_cholesky(2, 2)
+
+
+END FUNCTION
+!
+! def construct_full_covariances(ambi_cand_chol_flat, shocks_cov):
+!     """ We determine the worst-case Cholesky factors so we need to construct
+!     the full set of factors.
+!     """
+!     ambi_cand_chol_subset = np.zeros((2, 2))
+!     ambi_cand_chol_subset[np.triu_indices(2)] = ambi_cand_chol_flat
+!
+!     args = (ambi_cand_chol_subset, ambi_cand_chol_subset.T)
+!     ambi_cand_cov_subset = np.matmul(*args)
+!
+!     ambi_cand_cov = shocks_cov.copy()
+!     ambi_cand_cov[:2, :2] = ambi_cand_cov_subset
+!
+!     ambi_cand_cho = np.linalg.cholesky(ambi_cand_cov)
+!
+!     return ambi_cand_cov, ambi_cand_cho
+
+
+
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
     !/* external objects        */
 
     REAL(our_dble), INTENT(OUT)                 :: x_shift(2)
+    REAL(our_dble), INTENT(OUT)                :: is_success
 
     INTEGER(our_int), INTENT(OUT)               :: mode
 
-    LOGICAL, INTENT(OUT)                        :: is_success
 
     TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
 
@@ -138,88 +258,16 @@ SUBROUTINE get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax
 
     x_shift = X
 
+    PRINT *, 'inside', X, ITER, mode
+
     ! Stabilization. If the optimization fails the starting values are
     ! used otherwise it happens that the constraint is not satisfied by far.
-    is_success = (mode == zero_int)
+    is_success = zero_dble
+    IF (mode == zero_int) is_success = one_dble
 
-    IF(.NOT. is_success) THEN
+    IF(is_success .EQ. zero_dble) THEN
         x_shift = zero_dble
     END IF
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, measure, optim_paras, optimizer_options)
-
-    ! TODO: Why do I pass in shocks cov and optim%shocks_cholesky ...
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)                 :: opt_ambi_details(num_periods, max_states_period, 5)
-    REAL(our_dble), INTENT(OUT)                 :: emax
-
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
-
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
-    INTEGER(our_int), INTENT(IN)    :: num_draws_emax
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
-    INTEGER(our_int), INTENT(IN)    :: period
-    INTEGER(our_int), INTENT(IN)    :: k
-
-    REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)      :: draws_emax_standard(num_draws_emax, 4)
-    REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
-    REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
-
-    CHARACTER(10), INTENT(IN)       :: measure
-
-    TYPE(OPTIMIZER_COLLECTION), INTENT(IN) :: optimizer_options
-
-    !/* internals objects    */
-
-    INTEGER(our_int)                :: mode
-
-    REAL(our_dble)                  :: is_success_dble
-    REAL(our_dble)                  :: x_shift(2)
-    REAL(our_dble)                  :: div(1)
-
-    LOGICAL                         :: is_deterministic
-    LOGICAL                         :: is_success
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    is_deterministic = ALL(shocks_cov .EQ. zero_dble)
-
-    IF(is_deterministic) THEN
-        x_shift = (/zero_dble, zero_dble/)
-        div = zero_dble
-        is_success = .True.
-        mode = 15
-
-    ELSE IF(TRIM(measure) == 'abs') THEN
-        x_shift = (/-optim_paras%level, -optim_paras%level/)
-        div = optim_paras%level
-        is_success = .True.
-        mode = 16
-
-    ELSE
-        CALL get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
-
-        div = -(constraint_ambiguity(x_shift, shocks_cov, optim_paras) - optim_paras%level)
-
-    END IF
-
-    ! We collect the information from the optimization step for future recording.
-    is_success_dble = zero_dble
-    IF (is_success) is_success_dble = one_dble
-    opt_ambi_details(period + 1, k + 1, :) = (/x_shift, div, is_success_dble, DBLE(mode)/)
-
-    emax = criterion_ambiguity(x_shift, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
 END SUBROUTINE
 !******************************************************************************

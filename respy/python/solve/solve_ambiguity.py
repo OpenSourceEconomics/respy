@@ -22,12 +22,12 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     if is_deterministic:
         ambi_rslt_mean_subset = [0.0, 0.0]
         ambi_rslt_chol_subset = [0.0, 0.0, 0.0]
-        div, is_success, mode = 0.0, True, 15
+        div, is_success, mode = 0.0, 1.0, 15
 
     elif ambi_spec['measure'] == 'abs':
         ambi_rslt_mean_subset = [-optim_paras['level'], -optim_paras['level']]
         ambi_rslt_chol_subset = get_upper_cholesky(optim_paras)
-        div, is_success, mode = optim_paras['level'], True, 16
+        div, is_success, mode = optim_paras['level'], 1.0, 16
 
     elif ambi_spec['measure'] == 'kl':
 
@@ -50,6 +50,11 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     else:
         raise NotImplementedError
 
+    if ambi_spec['mean']:
+        ambi_rslt_return = ambi_rslt_mean_subset
+    else:
+        ambi_rslt_return = np.append(ambi_rslt_mean_subset, ambi_rslt_chol_subset)
+
     # Now we recombine the results from the optimization for easier access.
     ambi_rslt_all = np.append(ambi_rslt_mean_subset, ambi_rslt_chol_subset)
 
@@ -62,7 +67,9 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     # function at the optimium.
     args = ()
     args += base_args + (optim_paras, shocks_cov)
-    emax = criterion_ambiguity(ambi_rslt_all, *args)
+    emax = criterion_ambiguity(ambi_rslt_return, *args)
+
+    print('emax rslt', emax)
 
     return emax, opt_ambi_details
 
@@ -144,7 +151,6 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
     emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
         draws_emax_relevant, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, optim_paras)
-
     return emax
 
 
@@ -167,9 +173,10 @@ def construct_full_covariances(ambi_cand_chol_flat, shocks_cov):
     ambi_cand_cov = shocks_cov.copy()
     ambi_cand_cov[:2, :2] = ambi_cand_cov_subset
 
-    ambi_cand_cho = np.linalg.cholesky(ambi_cand_cov)
+    # TODO: Call this _full or leave as is?
+    ambi_cand_chol = np.linalg.cholesky(ambi_cand_cov)
 
-    return ambi_cand_cov, ambi_cand_cho
+    return ambi_cand_cov, ambi_cand_chol
 
 
 def constraint_ambiguity(x, shocks_cov, optim_paras):
