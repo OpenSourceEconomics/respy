@@ -181,6 +181,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
 
+    REAL(our_dble)                      :: shocks_mean(4) = zero_dble
     REAL(our_dble)                      :: rewards_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
     REAL(our_dble)                      :: shifts(4)
@@ -251,7 +252,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
         num_states = states_number_period(period + 1)
 
         ! Transform disturbances
-        CALL transform_disturbances(draws_emax_transformed, draws_emax, optim_paras, num_draws_emax)
+        CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_mean, optim_paras%shocks_cholesky)
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 

@@ -276,6 +276,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 
     REAL(our_dble)                      :: draws_emax_transformed(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax(num_draws_emax, 4)
+    REAL(our_dble)                      :: shocks_mean(4) = zero_dble
     REAL(our_dble)                      :: rewards_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
     REAL(our_dble)                      :: shifts(4)
@@ -329,7 +330,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
         num_states = states_number_period(period + 1)
 
         ! Transform disturbances
-        CALL transform_disturbances(draws_emax_transformed, draws_emax, optim_paras, num_draws_emax)
+        CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_mean, optim_paras%shocks_cholesky)
 
 
         IF (is_write) CALL record_solution(4, file_sim, period, num_states)

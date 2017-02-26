@@ -149,33 +149,44 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE transform_disturbances(draws_transformed, draws, optim_paras, num_draws)
+SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_cholesky)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)                 :: draws_transformed(num_draws, 4)
+    REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
-
-    REAL(our_dble), INTENT(IN)      :: draws(num_draws, 4)
-
-    INTEGER, INTENT(IN)             :: num_draws
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(4)
+    REAL(our_dble), INTENT(IN)      :: draws(:, :)
 
     !/* internal objects        */
 
     INTEGER(our_int), ALLOCATABLE   :: infos(:)
+
+    INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Auxiliary objects
+    num_draws = SIZE(draws, 1)
+
+
     DO i = 1, num_draws
-        draws_transformed(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws(i:i, :))))
+        draws_transformed(i:i, :) = TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
     END DO
 
+
+
+    ! TODO: THis needs to be done later. This is a BUG.
     DO i = 1, 2
         CALL clip_value_2(draws_transformed(:, i), EXP(draws_transformed(:, i)), zero_dble, HUGE_FLOAT, infos)
+    END DO
+
+    DO i = 1, 4
+        draws_transformed(:, i) = draws_transformed(:, i) + shocks_mean(i)
     END DO
 
 
