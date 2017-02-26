@@ -44,7 +44,7 @@ MODULE shared_containers
 
     ! Parameters for the optimization
     TYPE(OPTIMIZER_COLLECTION)      :: optimizer_options
-    TYPE(OPTIMIZATION_PARAMETERS)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT)           :: optim_paras
 
     INTEGER(our_int)                :: maxfun
 

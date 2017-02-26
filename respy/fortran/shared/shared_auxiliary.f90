@@ -244,7 +244,7 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 
     REAL(our_dble), INTENT(OUT)                 :: total_values(4)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -736,7 +736,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
+SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -746,7 +746,8 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(OUT)   :: optim_paras
+    TYPE(PRECOND_DICT), INTENT(OUT)         :: precond_spec
+    TYPE(OPTIMPARAS_DICT), INTENT(OUT)      :: optim_paras
 
     REAL(our_dble), INTENT(OUT)     :: tau
 
@@ -762,14 +763,9 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     INTEGER(our_int), INTENT(OUT)   :: num_obs
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
-    REAL(our_dble), INTENT(OUT)     :: precond_minimum
-
-
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
     CHARACTER(225), INTENT(OUT)     :: file_sim
     CHARACTER(225), INTENT(OUT)     :: exec_dir
-
-    CHARACTER(50), INTENT(OUT)      :: precond_type
     CHARACTER(10), INTENT(OUT)      :: request
     CHARACTER(10), INTENT(OUT)      :: measure
 
@@ -845,9 +841,9 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         READ(99, 1505) num_obs
 
         ! SCALING
-        READ(99, *) precond_type
-        READ(99, *) precond_minimum
-        READ(99, 1500) precond_eps
+        READ(99, *) precond_spec%type
+        READ(99, *) precond_spec%minimum
+        READ(99, 1500) precond_spec%eps
 
         ! SIMULATION
         READ(99, 1505) num_agents_sim
@@ -1047,7 +1043,7 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(OUT)  :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(OUT)  :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: x(28)
 
@@ -1084,7 +1080,7 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(OUT)     :: x(:)
 

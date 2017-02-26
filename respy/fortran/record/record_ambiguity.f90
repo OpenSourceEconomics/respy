@@ -21,7 +21,7 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
 
     !/* external objects    */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN) :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN) :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 8)
 

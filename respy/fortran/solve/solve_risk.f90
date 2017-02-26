@@ -27,7 +27,7 @@ SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_
 
     REAL(our_dble), INTENT(OUT)                 :: emax
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)

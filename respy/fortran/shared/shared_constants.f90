@@ -57,8 +57,6 @@ MODULE shared_constants
     REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_unscaled(:, :)
     REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_scaled(:, :)
 
-    REAL(our_dble)  :: precond_eps
-
     ! We create a type that resembles the dictionary with the optimizer options in PYTHON.
     TYPE OPTIMIZER_BFGS
         INTEGER(our_int)        :: maxiter
@@ -98,8 +96,16 @@ MODULE shared_constants
         TYPE(OPTIMIZER_SLSQP)   :: slsqp
     END TYPE
 
+    ! This container holds the specification for the preconditioning step.
+    TYPE PRECOND_DICT
+        REAL(our_dble)          :: minimum
+        REAL(our_dble)          :: eps
+
+        CHARACTER(8)            :: type
+    END TYPE
+
     ! This container holds all the parameters that are potentially updated during the estimation step.
-    TYPE OPTIMIZATION_PARAMETERS
+    TYPE OPTIMPARAS_DICT
         REAL(our_dble)          :: shocks_cholesky(4, 4)
         REAL(our_dble)          :: paras_bounds(2, 28)
         REAL(our_dble)          :: coeffs_edu(3)
@@ -110,7 +116,6 @@ MODULE shared_constants
         REAL(our_dble)          :: delta(1)
 
         LOGICAL                 :: paras_fixed(28)
-
     END TYPE
 
 !******************************************************************************

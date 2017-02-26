@@ -145,7 +145,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: opt_ambi_details(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)

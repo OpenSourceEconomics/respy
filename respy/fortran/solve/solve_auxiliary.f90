@@ -157,7 +157,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(: ,:, :)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
 
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
@@ -242,7 +242,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)          :: opt_ambi_details(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)          :: periods_emax(:, :)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)           :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)           :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
@@ -469,7 +469,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     REAL(our_dble), INTENT(OUT)         :: independent_variables(num_states, 9)
     REAL(our_dble), INTENT(OUT)         :: maxe(num_states)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
@@ -525,7 +525,7 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
     REAL(our_dble), INTENT(OUT)                 :: opt_ambi_details(num_periods, max_states_period, 8)
     REAL(our_dble), INTENT(OUT)                 :: endogenous(num_states)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: draws_emax_transformed(num_periods, max_states_period)

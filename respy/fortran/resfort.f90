@@ -22,7 +22,8 @@ PROGRAM resfort_scalar
 
     !/* objects                 */
 
-    REAL(our_dble)                  :: precond_minimum
+    TYPE(PRECOND_DICT)              :: precond_spec
+
     REAL(our_dble)                  :: crit_val
 
     REAL(our_dble), ALLOCATABLE     :: periods_draws_sims(:, :, :)
@@ -40,7 +41,6 @@ PROGRAM resfort_scalar
     CHARACTER(225)                  :: exec_dir
     CHARACTER(150)                  :: message
     CHARACTER(10)                   :: request
-    CHARACTER(50)                   :: precond_type
 
     ! Temporary fix
     REAL(our_dble)                  :: x_tmp(28)
@@ -49,7 +49,7 @@ PROGRAM resfort_scalar
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
+    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
     ! We now distinguish between the scalar and parallel execution.
     IF (num_procs == 1) THEN
@@ -66,7 +66,7 @@ PROGRAM resfort_scalar
 
             CALL read_dataset(data_est, num_obs)
 
-            CALL fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_type, precond_minimum, optimizer_options)
+            CALL fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_spec, optimizer_options)
 
         ELSE IF (request == 'simulate') THEN
 
@@ -88,7 +88,7 @@ PROGRAM resfort_scalar
 
         IF (request == 'estimate') THEN
 
-            CALL fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_type, precond_minimum, optimizer_options)
+            CALL fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_spec, optimizer_options)
 
         ELSE IF (request == 'simulate') THEN
 

@@ -22,7 +22,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, \
         optimizer_options, optimizer_used, maxfun, \
-        preconditioning, ambi_spec, file_sim = \
+        precond_spec, ambi_spec, file_sim = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
@@ -30,9 +30,12 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'num_procs', 'num_agents_sim', 'num_draws_prob',
                 'num_agents_est', 'seed_prob', 'seed_sim',
                 'optimizer_options', 'optimizer_used', 'maxfun',
-                'preconditioning', 'ambi_spec', 'file_sim')
+                'precond_spec', 'ambi_spec', 'file_sim')
 
-    precond_type, precond_minimum, precond_eps = preconditioning
+    # Disaggregate attributes
+    precond_minimum = precond_spec['minimum']
+    precond_type = precond_spec['type']
+    precond_eps = precond_spec['eps']
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.

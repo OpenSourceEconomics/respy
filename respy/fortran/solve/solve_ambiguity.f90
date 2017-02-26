@@ -32,7 +32,7 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     REAL(our_dble), INTENT(OUT)                 :: opt_ambi_details(num_periods, max_states_period, 8)
     REAL(our_dble), INTENT(OUT)                 :: emax
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -110,7 +110,7 @@ PURE FUNCTION get_upper_cholesky(optim_paras)
 
     REAL(our_dble)                              :: get_upper_cholesky(3)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     !/* internal objects    */
 
@@ -138,7 +138,7 @@ SUBROUTINE get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax
 
     INTEGER(our_int), INTENT(OUT)               :: mode
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: draws_emax_standard(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
@@ -261,7 +261,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
 
     REAL(our_dble)                              :: criterion_ambiguity_derivative(2)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -320,7 +320,7 @@ FUNCTION constraint_ambiguity_derivative(x, shocks_cov, optim_paras, eps_der_app
 
     REAL(our_dble)                      :: constraint_ambiguity_derivative(2)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)          :: eps_der_approx
@@ -368,7 +368,7 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
 
     REAL(our_dble)                  :: criterion_ambiguity
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -452,7 +452,7 @@ FUNCTION constraint_ambiguity(x, shocks_cov, optim_paras)
 
     REAL(our_dble)                              :: constraint_ambiguity
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
     REAL(our_dble), INTENT(IN)          :: x(2)

@@ -60,8 +60,6 @@ class RespyCls(object):
 
         self.attr['optimizer_options'] = None
 
-        self.attr['preconditioning'] = None
-
         self.attr['is_interpolated'] = None
 
         self.attr['num_draws_emax'] = None
@@ -95,6 +93,11 @@ class RespyCls(object):
         self.attr['ambi_spec'] = dict()
         self.attr['ambi_spec']['measure'] = None
         self.attr['ambi_spec']['mean'] = None
+
+        self.attr['precond_spec'] = dict()
+        self.attr['precond_spec']['minimum'] = None
+        self.attr['precond_spec']['type'] = None
+        self.attr['precond_spec']['eps'] = None
 
         self.attr['seed_sim'] = None
 
@@ -357,15 +360,15 @@ class RespyCls(object):
 
         # Scaling
         init_dict['PRECONDITIONING'] = dict()
-        init_dict['PRECONDITIONING']['type'] = self.attr['preconditioning'][0]
-        init_dict['PRECONDITIONING']['minimum'] = self.attr['preconditioning'][1]
-        init_dict['PRECONDITIONING']['eps'] = self.attr['preconditioning'][2]
+        init_dict['PRECONDITIONING']['minimum'] = self.attr['precond_spec']['minimum']
+        init_dict['PRECONDITIONING']['type'] = self.attr['precond_spec']['type']
+        init_dict['PRECONDITIONING']['eps'] = self.attr['precond_spec']['eps']
 
         # Program
         init_dict['PROGRAM'] = dict()
         init_dict['PROGRAM']['version'] = self.attr['version']
-        init_dict['PROGRAM']['debug'] = self.attr['is_debug']
         init_dict['PROGRAM']['procs'] = self.attr['num_procs']
+        init_dict['PROGRAM']['debug'] = self.attr['is_debug']
 
         # Interpolation
         init_dict['INTERPOLATION'] = dict()
@@ -411,19 +414,23 @@ class RespyCls(object):
         # auxiliary objects.
         self.attr['num_points_interp'] = init_dict['INTERPOLATION']['points']
 
+        self.attr['ambi_spec']['measure'] = init_dict['AMBIGUITY']['measure']
+
         self.attr['optimizer_used'] = init_dict['ESTIMATION']['optimizer']
 
         self.attr['is_interpolated'] = init_dict['INTERPOLATION']['flag']
+
+        self.attr['ambi_spec']['mean'] = init_dict['AMBIGUITY']['mean']
 
         self.attr['num_agents_sim'] = init_dict['SIMULATION']['agents']
 
         self.attr['num_agents_est'] = init_dict['ESTIMATION']['agents']
 
+        self.attr['derivatives'] = init_dict['DERIVATIVES']['version']
+
         self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
-
-        self.attr['num_procs'] = init_dict['PROGRAM']['procs']
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 
@@ -445,22 +452,18 @@ class RespyCls(object):
 
         self.attr['version'] = init_dict['PROGRAM']['version']
 
+        self.attr['num_procs'] = init_dict['PROGRAM']['procs']
+
         self.attr['is_debug'] = init_dict['PROGRAM']['debug']
 
         self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-        self.attr['ambi_spec']['mean'] = init_dict['AMBIGUITY']['mean']
-
-        self.attr['ambi_spec']['measure'] = init_dict['AMBIGUITY']['measure']
-
         self.attr['tau'] = init_dict['ESTIMATION']['tau']
 
-        self.attr['derivatives'] = init_dict['DERIVATIVES']['version']
-
-        self.attr['preconditioning'] = [None, None, None]
-        self.attr['preconditioning'][0] = init_dict['PRECONDITIONING']['type']
-        self.attr['preconditioning'][1] = init_dict['PRECONDITIONING']['minimum']
-        self.attr['preconditioning'][2] = init_dict['PRECONDITIONING']['eps']
+        self.attr['precond_spec'] = dict()
+        self.attr['precond_spec']['minimum'] = init_dict['PRECONDITIONING']['minimum']
+        self.attr['precond_spec']['type'] = init_dict['PRECONDITIONING']['type']
+        self.attr['precond_spec']['eps'] = init_dict['PRECONDITIONING']['eps']
 
         # Initialize model parameters
         self.attr['optim_paras'] = dict()
@@ -568,8 +571,6 @@ class RespyCls(object):
 
         is_interpolated = self.attr['is_interpolated']
 
-        preconditioning = self.attr['preconditioning']
-
         optimizer_used = self.attr['optimizer_used']
 
         num_draws_emax = self.attr['num_draws_emax']
@@ -579,6 +580,8 @@ class RespyCls(object):
         num_agents_sim = self.attr['num_agents_sim']
 
         num_agents_est = self.attr['num_agents_est']
+
+        precond_spec = self.attr['precond_spec']
 
         derivatives = self.attr['derivatives']
 
@@ -689,11 +692,10 @@ class RespyCls(object):
         assert (optimizer_used in OPT_EST_FORT + OPT_EST_PYTH)
 
         # Scaling
-        assert (preconditioning[0] in ['identity', 'gradient'])
-        assert (isinstance(preconditioning[1], float))
-        assert (preconditioning[1] > 0.0)
-        assert (isinstance(preconditioning[2], float))
-        assert (preconditioning[2] > 0.0)
+        assert (precond_spec['type'] in ['identity', 'gradient'])
+        for key_ in ['minimum', 'eps']:
+            assert (isinstance(precond_spec[key_], float))
+            assert (precond_spec[key_] > 0.0)
 
         # Derivatives
         assert (derivatives in ['FORWARD-DIFFERENCES'])

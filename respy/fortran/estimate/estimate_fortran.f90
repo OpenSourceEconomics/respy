@@ -43,26 +43,25 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_type, precond_minimum, optimizer_options)
+SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_spec, optimizer_options)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: crit_val
-
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN) :: optim_paras
-
-    REAL(our_dble), INTENT(IN)      :: precond_minimum
-
-    INTEGER(our_int), INTENT(IN)    :: num_procs
-    INTEGER(our_int), INTENT(IN)    :: maxfun
-
-    CHARACTER(225), INTENT(IN)      :: optimizer_used
-    CHARACTER(150), INTENT(OUT)     :: message
-    CHARACTER(50), INTENT(OUT)      :: precond_type
-
-    LOGICAL, INTENT(OUT)            :: success
-
     TYPE(OPTIMIZER_COLLECTION), INTENT(INOUT) :: optimizer_options
+
+    REAL(our_dble), INTENT(OUT)         :: crit_val
+
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+
+    TYPE(PRECOND_DICT), INTENT(IN)      :: precond_spec
+
+    INTEGER(our_int), INTENT(IN)        :: num_procs
+    INTEGER(our_int), INTENT(IN)        :: maxfun
+
+    CHARACTER(225), INTENT(IN)          :: optimizer_used
+    CHARACTER(150), INTENT(OUT)         :: message
+
+    LOGICAL, INTENT(OUT)                :: success
 
     !/* internal objects    */
 
@@ -90,7 +89,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 
     CALL get_optim_paras(x_optim_free_unscaled_start, optim_paras, .False.)
 
-    CALL get_precondition_matrix(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
+    CALL get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim_free_unscaled_start)
 
     x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start, precond_matrix, 'do')
     x_optim_bounds_free_scaled(1, :) = apply_scaling(x_optim_bounds_free_unscaled(1, :), precond_matrix, 'do')
@@ -298,7 +297,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
 
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
@@ -421,7 +420,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(28)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
     REAL(our_dble), INTENT(IN)                  :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
 
 
@@ -450,14 +449,15 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_minimum)
+SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_spec)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)                  :: precond_matrix(:, :)
+    REAL(our_dble), INTENT(OUT)                 :: precond_matrix(:, :)
 
-    REAL(our_dble), INTENT(IN)                   :: x_optim_free_start(num_free)
-    REAL(our_dble), INTENT(IN)                   :: precond_minimum
+    REAL(our_dble), INTENT(IN)                  :: x_optim_free_start(num_free)
+
+    TYPE(PRECOND_DICT), INTENT(IN)              :: precond_spec
 
     !/* internal objects    */
 
@@ -472,7 +472,7 @@ SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_minimum)
 
     crit_estimation = .False.
 
-    dfunc_eps = precond_eps
+    dfunc_eps = precond_spec%eps
     grad = fort_dcriterion(x_optim_free_start)
     dfunc_eps = -HUGE_FLOAT
 
@@ -482,7 +482,7 @@ SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_minimum)
 
         val = ABS(grad(i))
 
-        IF (val .LT. precond_minimum) val = precond_minimum
+        IF (val .LT. precond_spec%minimum) val = precond_spec%minimum
 
         precond_matrix(i, i) = val
 
@@ -491,16 +491,17 @@ SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_minimum)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_precondition_matrix(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
+SUBROUTINE get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim_free_unscaled_start)
 
     !/* external objects    */
 
-    CHARACTER(50), INTENT(IN)      :: precond_type
+    REAL(our_dble), ALLOCATABLE, INTENT(OUT)    :: precond_matrix(:, :)
+
+    TYPE(PRECOND_DICT), INTENT(IN)  :: precond_spec
 
     INTEGER(our_int), INTENT(IN)    :: maxfun
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_unscaled_start(num_free)
-    REAL(our_dble), INTENT(IN)      :: precond_minimum
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -514,10 +515,10 @@ SUBROUTINE get_precondition_matrix(precond_type, precond_minimum, maxfun, x_opti
 
     CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .True.)
 
-    IF ((precond_type == 'identity') .OR. (maxfun == zero_int)) THEN
+    IF ((precond_spec%type == 'identity') .OR. (maxfun == zero_int)) THEN
         precond_matrix = create_identity(num_free)
     ELSE
-        CALL get_scales(precond_matrix, x_optim_free_unscaled_start, precond_minimum)
+        CALL get_scales(precond_matrix, x_optim_free_unscaled_start, precond_spec)
     END IF
 
     crit_estimation = .False.

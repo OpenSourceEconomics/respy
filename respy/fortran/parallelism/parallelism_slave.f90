@@ -19,6 +19,7 @@ PROGRAM resfort_parallel_slave
     IMPLICIT NONE
 
     !/* objects                 */
+    TYPE(PRECOND_DICT)              :: precond_spec
 
     INTEGER(our_int), ALLOCATABLE   :: opt_ambi_summary_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
@@ -47,7 +48,6 @@ PROGRAM resfort_parallel_slave
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
 
     CHARACTER(225)                  :: optimizer_used
-    CHARACTER(50)                   :: precond_type
     CHARACTER(225)                  :: file_sim
     CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
@@ -63,7 +63,7 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
 
-    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
+    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, measure, optimizer_used, optimizer_options, file_sim, num_obs)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
 
