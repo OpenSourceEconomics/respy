@@ -24,8 +24,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
     for period in range(num_periods):
         periods_draws_sims_transformed[period, :, :] = transform_disturbances(
             periods_draws_sims[period, :, :], np.array([0.0, 0.0, 0.0, 0.0]),
-            optim_paras[
-            'shocks_cholesky'])
+            optim_paras['shocks_cholesky'])
 
     # Simulate agent experiences
     count = 0

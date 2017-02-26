@@ -1,20 +1,35 @@
 import numpy as np
 
+from respy.python.solve.solve_ambiguity import construct_full_covariances
 from respy.python.shared.shared_constants import MISSING_FLOAT
 
 
 def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
-        file_sim):
+        file_sim, optim_paras):
     """ Write result of optimization problem to log file.
     """
+
+    # We print the actual covariance matrix for better interpretability.
+    shocks_cholesky = optim_paras['shocks_cholesky']
+    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
     with open(file_sim + '.respy.amb', 'a') as file_:
         for period in range(num_periods - 1, -1, -1):
 
             for k in range(states_number_period[period]):
 
-                x_shift = opt_ambi_details[period, k, :2]
-                div, success, mode = opt_ambi_details[period, k, 2:]
+                div, success, mode = opt_ambi_details[period, k, 5:]
+
+                ambi_rslt_mean_subset = opt_ambi_details[period, k, :2]
+                ambi_rslt_chol_subset = opt_ambi_details[period, k, 2:5]
+
+                is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
+                if not is_deterministic:
+                    ambi_rslt_cov, _ = construct_full_covariances(
+                        ambi_rslt_chol_subset, shocks_cov)
+
+                else:
+                    ambi_rslt_cov = np.zeros((4, 4))
 
                 # We need to skip states that were not analyzed during the
                 # interpolation routine.
@@ -26,22 +41,25 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
                 string = ' PERIOD{0[0]:>7}  STATE{0[1]:>7}\n\n'
                 file_.write(string.format([period, k]))
 
-                string = '   {:<12}{:10.5f}\n'
-                args = ['Occupation A'] + [x_shift[0]]
-                file_.write(string.format(*args))
-
-                string = '   {:<12}{:10.5f}\n\n'
-                args = ['Occupation B'] + [x_shift[1]]
-                file_.write(string.format(*args))
-
-                string = '   {:<12}{:>10.5f}\n\n'
+                string = '\n   {:<12}{:>10.5f}\n\n'
                 file_.write(string.format(*['Divergence', div]))
 
                 string = '   {:<15}{:<5}\n'
                 file_.write(string.format(*['Success', str(success == 1)]))
 
-                string = '   {:<15}{:<100}\n\n\n'
+                string = '   {:<15}{:<100}\n\n'
                 file_.write(string.format(*['Message', message]))
+
+                string = '   {:<12}   {:<12}\n\n'
+                args = ['Mean', 'Covariance']
+                file_.write(string.format(*args))
+
+                string = '   {:>10.5f}  {:>10.5f}{:>10.5f}\n'
+                for i in range(2):
+                    line = (ambi_rslt_mean_subset[i], ambi_rslt_cov[i, :])
+                    line = np.append(*line)
+                    file_.write(string.format(*line))
+                file_.write('\n\n')
 
         # Write out summary information in the end to get an overall sense of
         # the performance.
@@ -55,8 +73,8 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
 
         for period in range(num_periods - 1, -1, -1):
             total = states_number_period[period]
-            success = np.sum(opt_ambi_details[period, :total, 3] == 1)
-            failure = np.sum(opt_ambi_details[period, :total, 3] == 0)
+            success = np.sum(opt_ambi_details[period, :total, 6] == 1)
+            failure = np.sum(opt_ambi_details[period, :total, 6] == 0)
             success /= float(total)
             failure /= float(total)
 

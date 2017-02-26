@@ -162,8 +162,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         periods_draws_emax, num_draws_emax, states_number_period,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
-        states_all, is_debug, is_interpolated, num_points_interp, measure,
-        mean,
+        states_all, is_debug, is_interpolated, num_points_interp, ambi_spec,
         optim_paras, optimizer_options, file_sim, is_write):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
@@ -171,7 +170,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
     # Initialize containers, which contain a lot of missing values as we
     # capture the tree structure in arrays of fixed dimension.
     i, j = num_periods, max_states_period
-    opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 5))
+    opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 8))
     periods_emax = np.tile(MISSING_FLOAT, (i, j))
 
     if is_myopic:
@@ -236,7 +235,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 num_periods, num_states, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, maxe, draws_emax_standard,
-                draws_emax_transformed, shocks_cov, measure, mean, optim_paras,
+                draws_emax_transformed, shocks_cov, ambi_spec, optim_paras,
                 optimizer_options, opt_ambi_details)
 
             # Create prediction model based on the random subset of points where
@@ -263,7 +262,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                         num_periods, num_draws_emax, period, k,
                         draws_emax_standard, rewards_systematic, edu_max,
                         edu_start, periods_emax, states_all, mapping_state_idx,
-                        shocks_cov, measure, mean, optim_paras,
+                        shocks_cov, ambi_spec, optim_paras,
                         optimizer_options,
                         opt_ambi_details)
                 else:
@@ -346,7 +345,7 @@ def get_exogenous_variables(period, num_periods, num_states,
 def get_endogenous_variable(period, num_periods, num_states,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_standard, draws_emax_transformed, shocks_cov, measure, mean,
+        draws_emax_standard, draws_emax_transformed, shocks_cov, ambi_spec,
         optim_paras, optimizer_options, opt_ambi_details):
     """ Construct endogenous variable for the subset of interpolation points.
     """
@@ -367,8 +366,8 @@ def get_endogenous_variable(period, num_periods, num_states,
             emax, optim_ambi_details = construct_emax_ambiguity(num_periods,
                 num_draws_emax, period, k, draws_emax_standard,
                 rewards_systematic, edu_max, edu_start, periods_emax,
-                states_all, mapping_state_idx, shocks_cov, measure,
-                mean,   optim_paras,
+                states_all, mapping_state_idx, shocks_cov, ambi_spec,
+                optim_paras,
                 optimizer_options, opt_ambi_details)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,

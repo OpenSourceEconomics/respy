@@ -26,8 +26,8 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import get_cholesky
 from respy.python.shared.shared_auxiliary import create_draws
-from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_auxiliary import read_draws
+from respy.python.shared.shared_constants import IS_F2PY
 from respy.python.solve.solve_python import pyth_solve
 from respy.fortran.interface import resfort_interface
 from codes.auxiliary import write_interpolation_grid
@@ -40,12 +40,12 @@ from respy import RespyCls
 # Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
 # subdirectory. If __init__.py is added, the path resolution for PYTEST
 # breaks down.
-if IS_FORTRAN:
+if IS_F2PY:
     sys.path.insert(0, TEST_RESOURCES_DIR)
     import f2py_interface as fort_debug
 
 
-@pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+@pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')
 @pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
@@ -254,13 +254,12 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, optim_paras, num_draws_emax, \
-            seed_emax, is_debug, is_interpolated, num_points_interp, \
-            measure, optimizer_options, file_sim = \
+            seed_emax, is_debug, is_interpolated, num_points_interp, ambi_spec, optimizer_options, file_sim = \
             dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start', 'edu_max', 'min_idx',
                 'optim_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
                 'is_interpolated', 'num_points_interp',
-                'measure',  'optimizer_options', 'file_sim')
+                'ambi_spec',  'optimizer_options', 'file_sim')
 
         # Distribute variables for FORTRAN interface
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
@@ -311,7 +310,7 @@ class TestClass(object):
         base_args = (num_periods, False, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_rewards_systematic,
             edu_max, edu_start, mapping_state_idx, states_all,
-            is_debug, is_interpolated, num_points_interp, measure)
+            is_debug, is_interpolated, num_points_interp, ambi_spec)
 
         args = ()
         args += base_args + (optim_paras, optimizer_options, file_sim, False)
@@ -344,14 +343,13 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, optim_paras, num_draws_emax, \
             is_debug, is_interpolated, num_points_interp, is_myopic, \
-            num_agents_sim, num_draws_prob, tau, seed_sim, \
-            measure, num_agents_est, states_number_period, optimizer_options, \
+            num_agents_sim, num_draws_prob, tau, seed_sim, ambi_spec, num_agents_est, states_number_period, optimizer_options, \
             file_sim = dist_class_attributes(respy_obj,
                 'num_periods', 'edu_start',
                 'edu_max', 'min_idx', 'optim_paras', 'num_draws_emax',
                 'is_debug', 'is_interpolated', 'num_points_interp',
                 'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
-                'seed_sim', 'measure',
+                'seed_sim', 'ambi_spec',
                 'num_agents_est', 'states_number_period',
                 'optimizer_options', 'file_sim')
 
@@ -379,7 +377,7 @@ class TestClass(object):
         # Check the full solution procedure
         base_args = (is_interpolated, num_points_interp, num_draws_emax,
             num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx,
-            periods_draws_emax, measure)
+            periods_draws_emax, ambi_spec)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
 
@@ -441,7 +439,7 @@ class TestClass(object):
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
             data_array, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
-            mapping_state_idx, max_states_period, measure)
+            mapping_state_idx, max_states_period, ambi_spec)
 
         args = ()
         args += base_args + (optimizer_options, )
@@ -469,13 +467,12 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             seed_prob, periods_emax, num_periods, states_all, \
-            num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
-            measure, optim_paras, \
+            num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, ambi_spec, optim_paras, \
             optimizer_options, file_sim = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'seed_prob', 'periods_emax',
                 'num_periods', 'states_all', 'num_points_interp', 'edu_start',
-                'num_draws_emax', 'is_debug', 'edu_max', 'measure',
+                'num_draws_emax', 'is_debug', 'edu_max', 'ambi_spec',
                 'optim_paras', 'optimizer_options', 'file_sim')
 
         # Initialize containers
@@ -536,8 +533,7 @@ class TestClass(object):
         base_args = (period, num_periods, num_states,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax, shocks_cov,
-                measure)
+            num_draws_emax, maxe, draws_emax, shocks_cov, ambi_spec)
 
         args = ()
         args += base_args + (optim_paras, optimizer_options, opt_ambi_details)

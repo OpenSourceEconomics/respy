@@ -92,6 +92,10 @@ class RespyCls(object):
 
         self.attr['edu_start'] = None
 
+        self.attr['ambi_spec'] = dict()
+        self.attr['ambi_spec']['measure'] = None
+        self.attr['ambi_spec']['mean'] = None
+
         self.attr['seed_sim'] = None
 
         self.attr['is_debug'] = None
@@ -102,15 +106,11 @@ class RespyCls(object):
 
         self.attr['is_store'] = None
 
-        self.attr['measure'] = None
-
         self.attr['edu_max'] = None
 
         self.attr['version'] = None
 
         self.attr['maxfun'] = None
-
-        self.attr['mean'] = None
 
         self.attr['tau'] = None
 
@@ -332,8 +332,8 @@ class RespyCls(object):
         init_dict['AMBIGUITY']['coeffs'] = self.attr['optim_paras']['level']
         init_dict['AMBIGUITY']['bounds'] = self.attr['optim_paras']['paras_bounds'][1:2]
         init_dict['AMBIGUITY']['fixed'] = self.attr['optim_paras']['paras_fixed'][1:2]
-        init_dict['AMBIGUITY']['measure'] = self.attr['measure']
-        init_dict['AMBIGUITY']['mean'] = self.attr['mean']
+        init_dict['AMBIGUITY']['measure'] = self.attr['ambi_spec']['measure']
+        init_dict['AMBIGUITY']['mean'] = self.attr['ambi_spec']['mean']
 
         # Simulation
         init_dict['SIMULATION'] = dict()
@@ -431,8 +431,6 @@ class RespyCls(object):
 
         self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
 
-        self.attr['measure'] = init_dict['AMBIGUITY']['measure']
-
         self.attr['maxfun'] = init_dict['ESTIMATION']['maxfun']
 
         self.attr['seed_sim'] = init_dict['SIMULATION']['seed']
@@ -451,7 +449,9 @@ class RespyCls(object):
 
         self.attr['edu_max'] = init_dict['EDUCATION']['max']
 
-        self.attr['mean'] = init_dict['AMBIGUITY']['mean']
+        self.attr['ambi_spec']['mean'] = init_dict['AMBIGUITY']['mean']
+
+        self.attr['ambi_spec']['measure'] = init_dict['AMBIGUITY']['measure']
 
         self.attr['tau'] = init_dict['ESTIMATION']['tau']
 
@@ -604,7 +604,7 @@ class RespyCls(object):
 
         version = self.attr['version']
 
-        measure = self.attr['measure']
+        measure = self.attr['ambi_spec']['measure']
 
         maxfun = self.attr['maxfun']
 

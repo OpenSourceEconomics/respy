@@ -57,5 +57,5 @@ def build(ctx):
 
         slave = ['parallelism/parallelism_slave.f90']
 
-        ctx(features=['fc', 'fcprogram'], source=slave,
-             target='resfort_slave', fcflags=flags)
+        ctx(features=['fc', 'fcprogram'], source=slave, target='resfort_slave',
+            fcflags=flags)

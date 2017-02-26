@@ -35,7 +35,6 @@ def simulate_observed(respy_obj, is_missings=True):
         group.drop(indices, inplace=True)
         return group
 
-    num_agents_est = respy_obj.get_attr('num_agents_est')
     num_periods = respy_obj.get_attr('num_periods')
     seed_sim = respy_obj.get_attr('seed_sim')
 

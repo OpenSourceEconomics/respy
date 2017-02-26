@@ -22,7 +22,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, \
         optimizer_options, optimizer_used, maxfun, \
-        preconditioning, measure, file_sim = \
+        preconditioning, ambi_spec, file_sim = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
@@ -30,7 +30,7 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'num_procs', 'num_agents_sim', 'num_draws_prob',
                 'num_agents_est', 'seed_prob', 'seed_sim',
                 'optimizer_options', 'optimizer_used', 'maxfun',
-                'preconditioning', 'measure', 'file_sim')
+                'preconditioning', 'ambi_spec', 'file_sim')
 
     precond_type, precond_minimum, precond_eps = preconditioning
 
@@ -52,7 +52,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, precond_eps, precond_type,
-        precond_minimum, measure, file_sim, data_array)
+        precond_minimum, ambi_spec, file_sim, data_array)
 
     write_resfort_initialization(*args)
 
@@ -146,7 +146,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         min_idx, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, precond_eps, precond_type, precond_minimum,
-        measure, file_sim, data_array):
+        ambi_spec, file_sim, data_array):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -199,7 +199,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         file_.write(line)
 
         # AMBIGUITY
-        line = '"{0}"'.format(measure)
+        line = '"{0}"'.format(ambi_spec['measure'])
         file_.write(line + '\n')
 
         line = '{0:25.15f}\n'.format(optim_paras['level'][0])

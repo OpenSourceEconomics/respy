@@ -18,6 +18,7 @@ from respy.python.solve.solve_ambiguity import get_worst_case
 from respy.python.solve.solve_ambiguity import kl_divergence
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TEST_DIR
+from respy.python.shared.shared_constants import IS_F2PY
 
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
@@ -29,7 +30,7 @@ from respy import estimate
 # Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
 # subdirectory. If __init__.py is added, the path resolution for PYTEST
 # breaks down.
-if IS_FORTRAN:
+if IS_F2PY:
     sys.path.insert(0, TEST_RESOURCES_DIR)
     import f2py_interface as fort_debug
 
@@ -73,7 +74,7 @@ class TestClass(object):
 
             np.testing.assert_allclose(base_val, crit_val)
 
-    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    @pytest.mark.skipif(not IS_F2PY, reason='No FORTRAN available')
     def test_2(self):
         """ Testing the F2PY implementations of the ambiguity-related functions.
         """
@@ -93,12 +94,12 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, measure, optim_paras, optimizer_options, \
+            edu_max, ambi_spec, optim_paras, optimizer_options, \
             file_sim = dist_class_attributes(respy_obj,
                 'periods_rewards_systematic', 'states_number_period',
                 'mapping_state_idx', 'periods_emax', 'num_periods',
                 'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'measure', 'optim_paras', 'optimizer_options',
+                'ambi_spec', 'optim_paras', 'optimizer_options',
                 'file_sim')
 
         shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
@@ -125,7 +126,7 @@ class TestClass(object):
 
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, shocks_cov, measure)
+            mapping_state_idx, shocks_cov, ambi_spec)
 
         args = ()
         args += base_args + (optim_paras, optimizer_options, opt_ambi_details)
@@ -200,7 +201,7 @@ class TestClass(object):
         f90, _, _ = fort_debug.wrapper_get_worst_case(*args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    @pytest.mark.skipif(not IS_F2PY, reason='No FORTRAN available')
     def test_3(self):
         """ Check the calculation of the KL divergence across implementations.
         """
@@ -226,7 +227,7 @@ class TestClass(object):
 
             np.testing.assert_almost_equal(fort, py)
 
-    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    @pytest.mark.skipif(not IS_F2PY, reason='No FORTRAN available')
     def test_4(self):
         """ Check the SLSQP implementations.
         """
@@ -289,15 +290,15 @@ class TestClass(object):
 
     # This section reproduces the tests from test_f2py but runs them with
     # ambiguity.
-    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    @pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')
     def test_f2py_4(self, flag_ambiguity=True):
         link_f2py().test_4(flag_ambiguity)
 
-    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    @pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')
     def test_f2py_5(self, flag_ambiguity=True):
         link_f2py().test_5(flag_ambiguity)
 
-    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    @pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')
     def test_f2py_6(self, flag_ambiguity=True):
         link_f2py().test_6(flag_ambiguity)
 

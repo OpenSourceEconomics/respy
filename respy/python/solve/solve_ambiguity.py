@@ -7,60 +7,70 @@ from respy.python.solve.solve_risk import construct_emax_risk
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_standard, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, shocks_cov, measure, mean,
+        periods_emax, states_all, mapping_state_idx, shocks_cov, ambi_spec,
         optim_paras, optimizer_options, opt_ambi_details):
     """ Construct EMAX accounting for a worst case evaluation.
     """
     is_deterministic = (np.count_nonzero(shocks_cov) == 0)
 
     base_args = (num_periods, num_draws_emax, period, k,
-                 draws_emax_standard,
-        rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx)
+        draws_emax_standard, rewards_systematic, edu_max, edu_start,
+        periods_emax, states_all, mapping_state_idx)
 
-    # TODO: This is passed in directly.
-    shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
-        optim_paras['shocks_cholesky'].T)
-
-
+    # The following two senarios are only maintained for testing and
+    # debugging purposes.
     if is_deterministic:
-        x_shift, div = [0.0, 0.0, 0.0, 0.0, 0.0], 0.0
-        is_success, mode = True, 15
+        ambi_rslt_mean_subset = [0.0, 0.0]
+        ambi_rslt_chol_subset = [0.0, 0.0, 0.0]
+        div, is_success, mode = 0.0, True, 15
 
-    elif measure == 'abs':
-        #TODO: REvisit later.
-        x_shift, div = [-float(optim_paras['level']), -float(optim_paras['level'])], \
-                       float(optim_paras['level'])
-        is_success, mode = True, 16
+    elif ambi_spec['measure'] == 'abs':
+        ambi_rslt_mean_subset = [-optim_paras['level'], -optim_paras['level']]
+        ambi_rslt_chol_subset = get_upper_cholesky(optim_paras)
+        div, is_success, mode = optim_paras['level'], True, 16
 
-    elif measure == 'kl':
+    elif ambi_spec['measure'] == 'kl':
 
         args = ()
-        args += base_args + (shocks_cov, optim_paras, optimizer_options, mean)
-        x_shift, is_success, mode = get_worst_case(*args)
+        args += base_args + (shocks_cov, optim_paras, optimizer_options)
+        args += (ambi_spec, )
+        ambi_rslt_return, is_success, mode = get_worst_case(*args)
 
-        div = float(-(constraint_ambiguity(x_shift, shocks_cov, optim_paras) -
-                      optim_paras['level']))
+        # We construct the complete results depending on the actual request.
+        ambi_rslt_mean_subset = ambi_rslt_return[:2]
+        if ambi_spec['mean']:
+            ambi_rslt_chol_subset = get_upper_cholesky(optim_paras)
+        else:
+            ambi_rslt_chol_subset = ambi_rslt_return[2:]
+
+        args = ()
+        args += (ambi_rslt_return, shocks_cov, optim_paras)
+        div = -(constraint_ambiguity(*args) - optim_paras['level'])
 
     else:
         raise NotImplementedError
 
+    # Now we recombine the results from the optimization for easier access.
+    ambi_rslt_all = np.append(ambi_rslt_mean_subset, ambi_rslt_chol_subset)
+
     # We collect the information from the optimization step for future
     # recording.
-    args = ()
-    args += (x_shift[0], x_shift[1], div, float(is_success), mode)
-    opt_ambi_details[period, k, :] = args
+    opt_ambi_details[period, k, :5] = ambi_rslt_all
+    opt_ambi_details[period, k, 5:] = (div, is_success, mode)
 
+    # The optimizer sdoes not always return the actual value of the criterion
+    # function at the optimium.
     args = ()
     args += base_args + (optim_paras, shocks_cov)
-    emax = criterion_ambiguity(x_shift, *args)
+    emax = criterion_ambiguity(ambi_rslt_all, *args)
 
     return emax, opt_ambi_details
 
 
 def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_standard,
         rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, shocks_cov, optim_paras, optimizer_options, mean):
+        mapping_state_idx, shocks_cov, optim_paras, optimizer_options,
+        ambi_spec):
     """ Run the optimization.
     """
     # Initialize options.
@@ -69,12 +79,12 @@ def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_standard,
     options['ftol'] = optimizer_options['SCIPY-SLSQP']['ftol']
     options['eps'] = optimizer_options['SCIPY-SLSQP']['eps']
 
-    x_chol = optim_paras['shocks_cholesky'][:2, :2][np.tril_indices(2)].copy()
-
-    if mean:
-        x0 = np.tile(0.0, 2)
-    else:
-        x0 = np.append(np.tile(0.0, 2), x_chol)
+    # The construction of starting value is straightforward. It is simply the
+    # benchmark model.
+    x0 = np.tile(0.0, 2)
+    if not ambi_spec['mean']:
+        x_chol = get_upper_cholesky(optim_paras)
+        x0 = np.append(x0, x_chol)
 
     # Construct constraint
     constraint_divergence = dict()
@@ -99,10 +109,10 @@ def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_standard,
     if not opt['success']:
         opt['x'] = x0
 
-    is_success, mode = opt['success'], opt['status']
-    x_shift = opt['x'].tolist()
+    is_success, mode = float(opt['success']), opt['status']
+    ambi_rslt_return = opt['x'].tolist()
 
-    return x_shift, is_success, mode
+    return ambi_rslt_return, is_success, mode
 
 
 def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
@@ -111,73 +121,76 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
     """ Evaluating the constructed EMAX with the admissible distribution.
     """
     # First we construct the relevant mean.
-    x_subset_mean = x[:2]
-    mean_relevant = np.append(x_subset_mean, [0.0, 0.0])
+    ambi_cand_mean_subset = x[:2]
+    ambi_cand_mean_full = np.append(ambi_cand_mean_subset, [0.0, 0.0])
 
     # Now we turn to the more complex construction of the relevant Cholesky
     # decomposition.
     if len(x) == 2:
-        # This is the case where there is only ambiguity about the average
+        # This is the case where there is only ambiguity about the mean
         # values.
-        cholesky_relevant = optim_paras['shocks_cholesky'].copy()
+        ambi_cand_cholesky = optim_paras['shocks_cholesky'].copy()
     elif len(x) == 5:
-
-        x_subset_cholesky = x[2:]
-
-        cov_subset_cholesky = np.zeros((2, 2))
-        cov_subset_cholesky[np.triu_indices(2)] = x_subset_cholesky
-
-        cov_subset = np.matmul(cov_subset_cholesky, cov_subset_cholesky.T)
-
-        shocks_cov_relevant = shocks_cov.copy()
-        shocks_cov_relevant[:2, :2] = cov_subset
-
-        cholesky_relevant = np.linalg.cholesky(shocks_cov_relevant)
-
-        print(shocks_cov)
-        print(np.matmul(cholesky_relevant, cholesky_relevant.T))
-        print('\n\n')
+        ambi_cand_chol_subset = x[2:]
+        _, ambi_cand_cholesky = construct_full_covariances(ambi_cand_chol_subset,
+            shocks_cov)
     else:
         raise AssertionError
 
     # Now we can construct the relevant random draws from the standard deviates.
     draws_emax_relevant = transform_disturbances(draws_emax_standard,
-        mean_relevant, cholesky_relevant)
+        ambi_cand_mean_full, ambi_cand_cholesky)
 
     emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
-        draws_emax_relevant, rewards_systematic, edu_max, edu_start, periods_emax,
-        states_all, mapping_state_idx, optim_paras)
+        draws_emax_relevant, rewards_systematic, edu_max, edu_start,
+        periods_emax, states_all, mapping_state_idx, optim_paras)
 
     return emax
+
+
+def get_upper_cholesky(optim_paras):
+    """ Extract the upper 2 x 2 block of the Cholesky decomposition.
+    """
+    return optim_paras['shocks_cholesky'][:2, :2][np.tril_indices(2)].copy()
+
+
+def construct_full_covariances(ambi_cand_chol_flat, shocks_cov):
+    """ We determine the worst-case Cholesky factors so we need to construct
+    the full set of factors.
+    """
+    ambi_cand_chol_subset = np.zeros((2, 2))
+    ambi_cand_chol_subset[np.triu_indices(2)] = ambi_cand_chol_flat
+
+    args = (ambi_cand_chol_subset, ambi_cand_chol_subset.T)
+    ambi_cand_cov_subset = np.matmul(*args)
+
+    ambi_cand_cov = shocks_cov.copy()
+    ambi_cand_cov[:2, :2] = ambi_cand_cov_subset
+
+    ambi_cand_cho = np.linalg.cholesky(ambi_cand_cov)
+
+    return ambi_cand_cov, ambi_cand_cho
 
 
 def constraint_ambiguity(x, shocks_cov, optim_paras):
     """ This function provides the constraints for the SLSQP optimization.
     """
 
+    # Construct the means of the two candidate distributions.
+    mean_new = np.array(np.append(x[:2], np.zeros(2)))
     mean_old = np.zeros(4)
 
-    mean_new = np.zeros(4)
-    mean_new[:2] = x[:2]
-
-    # TODO: This needs adjustment.
+    # Construct the two covariances of the two candidate distributions.
     cov_old = shocks_cov
-
     if len(x) == 5:
-        cov_subst_cholesky_flat = x[2:]
-
-        cov_subset_cholesky = np.zeros((2, 2))
-        cov_subset_cholesky[np.triu_indices(2)] = cov_subst_cholesky_flat
-        cov_subset = np.matmul(cov_subset_cholesky, cov_subset_cholesky.T)
-
-        cov_new = shocks_cov.copy()
-        cov_new[:2, :2] = cov_subset
+        cov_new, _ = construct_full_covariances(x[2:], shocks_cov)
     else:
         cov_new = cov_old
 
-
-    rslt = optim_paras['level'] - kl_divergence(mean_old, cov_old, mean_new,
-        cov_new)
+    # Evaluate the constraint for the SLSQP algorithm.
+    args = ()
+    args += (mean_old, cov_old, mean_new, cov_new)
+    rslt = optim_paras['level'] - kl_divergence(*args)
 
     return rslt
 
