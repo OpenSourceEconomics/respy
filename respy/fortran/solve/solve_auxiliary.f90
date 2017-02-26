@@ -374,6 +374,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 
     END DO
 
+    PRINT *, periods_emax(1, 1), periods_rewards_systematic(1, 1, :)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************

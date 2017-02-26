@@ -69,8 +69,6 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     args += base_args + (optim_paras, shocks_cov)
     emax = criterion_ambiguity(ambi_rslt_return, *args)
 
-    print('emax rslt', emax)
-
     return emax, opt_ambi_details
 
 
