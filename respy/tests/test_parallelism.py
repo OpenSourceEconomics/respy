@@ -38,9 +38,18 @@ class TestClass(object):
 
         if not init_dict['AMBIGUITY']['fixed'][0]:
             init_dict['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
-
+        import os
+        os.system('git clean -d -f')
         base = None
-        for is_parallel in [True, False]:
+        for is_parallel in [False, True]:
+
+            if is_parallel:
+                dirname = 'parallel_true'
+            else:
+                dirname = 'parallel_false'
+
+            os.mkdir(dirname)
+            os.chdir(dirname)
 
             init_dict['PROGRAM']['procs'] = 1
             if is_parallel:
@@ -51,6 +60,8 @@ class TestClass(object):
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate_observed(respy_obj)
             _, crit_val = estimate(respy_obj)
+
+            os.chdir('../')
 
             if base is None:
                 base = crit_val

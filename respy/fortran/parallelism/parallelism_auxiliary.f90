@@ -184,7 +184,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     REAL(our_dble)                      :: emax
 
     REAL(our_dble)                      :: draws_emax_transformed(num_draws_emax, 4)
-    REAL(our_dble)                      :: draws_emax(num_draws_emax, 4)
+    REAL(our_dble)                      :: draws_emax_standard(num_draws_emax, 4)
 
     LOGICAL, ALLOCATABLE                :: is_simulated(:)
 
@@ -245,11 +245,11 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     DO period = (num_periods - 1), 0, -1
 
         ! Extract draws and construct auxiliary objects
-        draws_emax = periods_draws_emax(period + 1, :, :)
+        draws_emax_standard = periods_draws_emax(period + 1, :, :)
         num_states = states_number_period(period + 1)
 
         ! Transform disturbances
-        CALL transform_disturbances(draws_emax_transformed, draws_emax, shocks_mean, optim_paras%shocks_cholesky)
+        CALL transform_disturbances(draws_emax_transformed, draws_emax_standard, shocks_mean, optim_paras%shocks_cholesky)
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
@@ -291,7 +291,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, ambi_spec, optim_paras, optimizer_options)
+                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, ambi_spec, optim_paras, optimizer_options)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
                 END IF
@@ -326,7 +326,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, ambi_spec, optim_paras, optimizer_options)
+                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, ambi_spec, optim_paras, optimizer_options)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
                 END IF

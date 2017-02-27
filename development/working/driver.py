@@ -27,6 +27,7 @@ import numpy as np
 from respy import RespyCls
 from respy import simulate
 from respy import estimate
+from codes.auxiliary import simulate_observed
 
 from codes.random_init import generate_init
 
@@ -39,26 +40,26 @@ num_periods = respy_obj.get_attr('num_periods')
 max_draws = 354
 write_draws(num_periods, max_draws)
 base_crit = None
-for version in ['FORTRAN']:
+for num_procs in [1, 3]:
+    version = 'procs' + str(num_procs)
     if os.path.exists(version):
         shutil.rmtree(version)
 
-
     os.mkdir(version)
     os.chdir(version)
-    shutil.copy('../draws.txt', 'draws.txt')
+    #shutil.copy('../draws.txt', 'draws.txt')
     respy_obj.reset()
     respy_obj.unlock()
-    respy_obj.attr['version'] = version
+    respy_obj.attr['num_procs'] = num_procs
     respy_obj.lock()
-    simulate(respy_obj)
+    respy_obj = simulate_observed(respy_obj)
     _, crit = estimate(respy_obj)
     if base_crit is None:
         base_crit = crit
-    np.testing.assert_almost_equal(crit, 1.875750704837271)
+    np.testing.assert_almost_equal(crit, base_crit)
 
     os.chdir('../')
-    #print(crit)
+    print(crit)
 
 
 #print('going in')
