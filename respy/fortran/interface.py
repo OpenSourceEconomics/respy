@@ -32,11 +32,6 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'optimizer_options', 'optimizer_used', 'maxfun',
                 'precond_spec', 'ambi_spec', 'file_sim')
 
-    # Disaggregate attributes
-    precond_minimum = precond_spec['minimum']
-    precond_type = precond_spec['type']
-    precond_eps = precond_spec['eps']
-
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
         if maxfun > 0:
@@ -54,8 +49,7 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, precond_eps, precond_type,
-        precond_minimum, ambi_spec, file_sim, data_array)
+        optimizer_used, maxfun, precond_spec, ambi_spec, file_sim, data_array)
 
     write_resfort_initialization(*args)
 
@@ -148,8 +142,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
         min_idx, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, precond_eps, precond_type, precond_minimum,
-        ambi_spec, file_sim, data_array):
+        optimizer_used, maxfun, precond_spec, ambi_spec, file_sim, data_array):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -205,6 +198,9 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         line = '"{0}"'.format(ambi_spec['measure'])
         file_.write(line + '\n')
 
+        line = '{0}'.format(ambi_spec['mean'])
+        file_.write(line + '\n')
+
         line = '{0:25.15f}\n'.format(optim_paras['level'][0])
         file_.write(line)
 
@@ -241,13 +237,13 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         file_.write(line)
 
         # PRECONDITIONING
-        line = '{0}\n'.format(precond_type)
+        line = '{0}\n'.format(precond_spec['type'])
         file_.write(line)
 
-        line = '{0:25.15f}\n'.format(precond_minimum)
+        line = '{0:25.15f}\n'.format(precond_spec['minimum'])
         file_.write(line)
 
-        line = '{0:25.15f}\n'.format(precond_eps)
+        line = '{0:25.15f}\n'.format(precond_spec['eps'])
         file_.write(line)
 
         # SIMULATION

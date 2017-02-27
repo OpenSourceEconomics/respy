@@ -14,15 +14,9 @@ MODULE estimate_fortran
 
     USE recording_warning
 
-    USE shared_containers
-
-    USE shared_utilities
-
-    USE shared_auxiliary
+    USE shared_interface
 
     USE evaluate_fortran
-
-    USE shared_constants
 
     USE solve_fortran
 
@@ -76,7 +70,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 !------------------------------------------------------------------------------
 
     IF (num_procs == 1) THEN
-        criterion_function => fort_criterion
+        criterion_function => fort_criterion_scalar
     ELSE
         criterion_function => fort_criterion_parallel
     END IF
@@ -136,12 +130,12 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION fort_criterion(x_optim_free_scaled)
+FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled(:)
-    REAL(our_dble)                  :: fort_criterion
+    REAL(our_dble)                  :: fort_criterion_scalar
 
     !/* internal objects    */
 
@@ -167,7 +161,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
-        fort_criterion = HUGE_FLOAT
+        fort_criterion_scalar = HUGE_FLOAT
         RETURN
     END IF
 
@@ -179,12 +173,12 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
-    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim_mock, .False.)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
 
 
-    fort_criterion = get_log_likl(contribs)
+    fort_criterion_scalar = get_log_likl(contribs)
 
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
@@ -192,7 +186,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
         CALL summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -359,7 +353,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
         DO i = 1, num_slaves
             displs(i) = SUM(num_states_slaves(period, :i - 1))
         END DO
-        DO k = 1, 5
+        DO k = 1, 8
             CALL MPI_GATHERV(opt_ambi_details(period, :, k), 0, MPI_DOUBLE, opt_ambi_details(period, :, k), num_states_slaves(period, :), displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
         END DO
     END DO

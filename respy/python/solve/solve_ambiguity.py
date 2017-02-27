@@ -126,6 +126,7 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
         periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov):
     """ Evaluating the constructed EMAX with the admissible distribution.
     """
+    # TODO: Why do I pass in both, Cholesky and COV?
     # First we construct the relevant mean.
     ambi_cand_mean_subset = x[:2]
     ambi_cand_mean_full = np.append(ambi_cand_mean_subset, [0.0, 0.0])

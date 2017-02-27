@@ -8,9 +8,7 @@ MODULE evaluate_fortran
 
     USE recording_warning
 
-    USE shared_auxiliary
-
-    USE shared_constants
+    USE shared_interface
 
     !/*	setup	*/
 

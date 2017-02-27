@@ -12,6 +12,8 @@ MODULE shared_auxiliary
 
     USE shared_utilities
 
+    USE shared_types
+
     !/* setup   */
 
     IMPLICIT NONE
@@ -36,8 +38,8 @@ SUBROUTINE construct_full_covariances(ambi_cand_cov, ambi_cand_chol, ambi_cand_c
     REAL(our_dble), INTENT(OUT)     :: ambi_cand_chol(4, 4)
     REAL(our_dble), INTENT(OUT)     :: ambi_cand_cov(4, 4)
 
-    REAL(our_dble), INTENT(OUT)     :: ambi_cand_chol_flat(3)
-    REAL(our_dble), INTENT(OUT)     :: shocks_cov(4, 4)
+    REAL(our_dble), INTENT(IN)     :: ambi_cand_chol_flat(3)
+    REAL(our_dble), INTENT(IN)     :: shocks_cov(4, 4)
 
     !/* internal objects        */
 
@@ -736,7 +738,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, measure, optimizer_used, optimizer_options, file_sim, num_obs)
+SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -748,6 +750,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
     TYPE(PRECOND_DICT), INTENT(OUT)         :: precond_spec
     TYPE(OPTIMPARAS_DICT), INTENT(OUT)      :: optim_paras
+    TYPE(AMBI_DICT), INTENT(OUT)            :: ambi_spec
 
     REAL(our_dble), INTENT(OUT)     :: tau
 
@@ -767,7 +770,6 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     CHARACTER(225), INTENT(OUT)     :: file_sim
     CHARACTER(225), INTENT(OUT)     :: exec_dir
     CHARACTER(10), INTENT(OUT)      :: request
-    CHARACTER(10), INTENT(OUT)      :: measure
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: is_myopic
@@ -821,7 +823,8 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         READ(99, 1505) seed_emax
 
         ! AMBIGUITY
-        READ(99, *) measure
+        READ(99, *) ambi_spec%measure
+        READ(99, *) ambi_spec%mean
         READ(99, 1500) optim_paras%level
 
         ! PROGRAM
@@ -909,6 +912,12 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     END DO
 
     ! Constructed attributes
+    IF (ambi_spec%mean) THEN
+        num_free_ambi = 2
+    ELSE
+        num_free_ambi = 5
+    END IF
+
     num_free =  COUNT(.NOT. optim_paras%paras_fixed)
     num_slaves = num_procs - 1
 

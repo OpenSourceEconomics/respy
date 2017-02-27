@@ -6,7 +6,7 @@ MODULE solve_fortran
 
     USE recording_solution
 
-    USE shared_constants
+    USE shared_interface
 
     USE solve_auxiliary
 
@@ -19,7 +19,7 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, periods_draws_emax, measure, optim_paras, optimizer_options, file_sim)
+SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, periods_draws_emax, ambi_spec, optim_paras, optimizer_options, file_sim)
 
     !/* external objects        */
 
@@ -27,7 +27,8 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
 
-    TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
+    TYPE(AMBI_DICT), INTENT(IN)                     :: ambi_spec
 
     INTEGER(our_int), INTENT(IN)                    :: num_points_interp
     INTEGER(our_int), INTENT(IN)                    :: num_draws_emax
@@ -46,7 +47,6 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     LOGICAL, INTENT(IN)                             :: is_debug
 
     CHARACTER(225), INTENT(IN)                      :: file_sim
-    CHARACTER(10), INTENT(IN)                       :: measure
 
     TYPE(OPTIMIZER_COLLECTION), INTENT(IN)          :: optimizer_options
 
@@ -74,7 +74,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(3, file_sim)
 
-    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim, .True.)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim, .True.)
 
     IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim, optim_paras)
 

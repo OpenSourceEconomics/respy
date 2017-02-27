@@ -6,11 +6,7 @@ MODULE solve_risk
 
     USE recording_solution
 
-    USE shared_auxiliary
-
-    USE shared_constants
-
-    USE shared_utilities
+    USE shared_interface
 
     !/*	setup	*/
 

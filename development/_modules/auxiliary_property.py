@@ -21,6 +21,7 @@ PYTHON_EXEC = sys.executable
 
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
+from respy.python.shared.shared_constants import IS_F2PY
 
 
 def get_testdir(length):
@@ -176,6 +177,8 @@ def get_test_dict(test_dir):
     if not IS_FORTRAN:
         del test_dict['test_versions']
         del test_dict['test_restud']
+
+    if not IS_F2PY:
         del test_dict['test_f2py']
 
     # Finishing

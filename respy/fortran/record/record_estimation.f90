@@ -6,11 +6,7 @@ MODULE recording_estimation
 
     USE recording_warning
 
-    USE shared_constants
-
-    USE shared_auxiliary
-
-    USE shared_utilities
+    USE shared_interface
 
   !/*	setup	*/
 

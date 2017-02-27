@@ -6,9 +6,7 @@ MODULE simulate_fortran
 
     USE recording_simulation
 
-    USE shared_constants
-
-    USE shared_auxiliary
+    USE shared_interface
 
     !/*	setup	*/
 

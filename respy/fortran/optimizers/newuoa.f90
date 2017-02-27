@@ -9,9 +9,7 @@ MODULE newuoa_module
 
     !/* external modules  */
 
-    USE shared_interfaces
-
-    USE shared_constants
+    USE shared_interface
 
     !/* setup */
 
