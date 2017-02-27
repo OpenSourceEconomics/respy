@@ -45,7 +45,6 @@ SUBROUTINE construct_full_covariances(ambi_cand_cov, ambi_cand_chol, ambi_cand_c
 
     REAL(our_dble)                  :: ambi_cand_chol_subset(2, 2)
     REAL(our_dble)                  :: ambi_cand_cov_subset(2, 2)
-    REAL(our_dble)                  :: mock_obj(4, 4)
 
     INTEGER(our_int)                :: info
 
@@ -64,15 +63,43 @@ SUBROUTINE construct_full_covariances(ambi_cand_cov, ambi_cand_chol, ambi_cand_c
     ambi_cand_cov(:2, :2) = ambi_cand_cov_subset
 
     ! Construct Cholesky decomposition
-    mock_obj = ambi_cand_cov
-    CALL DPOTRF('L', 4, mock_obj, 4, info)
-    ambi_cand_chol = mock_obj
+    CALL get_cholesky_decomposition(ambi_cand_chol, info, ambi_cand_cov)
 
     IF (info .NE. zero_dble) THEN
         ! TODO: Once this is removed, we can move this to a pure procedure.
         STOP 'Problem in the Cholesky decomposition'
     END IF
 
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_cholesky_decomposition(C, info, A)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)         :: C(:, :)
+
+    INTEGER(our_int), INTENT(OUT)       :: info
+
+    REAL(our_dble), INTENT(IN)          :: A(:, :)
+
+    !/* internal objects        */
+
+    REAL(our_dble)                      :: mock_obj(SIZE(A,1), SIZE(A,1))
+
+    INTEGER(our_int)                    :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    mock_obj = A
+    CALL DPOTRF('L', SIZE(A,1), mock_obj, SIZE(A,1), info)
+    C = mock_obj
+
+    DO i = 1, SIZE(A,1)
+        C(i, (i + 1):) = zero_dble
+    END DO
 
 END SUBROUTINE
 !******************************************************************************

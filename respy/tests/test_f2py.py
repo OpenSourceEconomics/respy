@@ -8,8 +8,10 @@ import pytest
 import scipy
 
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
+from respy.python.shared.shared_auxiliary import construct_full_covariances
 from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
@@ -310,14 +312,16 @@ class TestClass(object):
         base_args = (num_periods, False, max_states_period, periods_draws_emax,
             num_draws_emax, states_number_period, periods_rewards_systematic,
             edu_max, edu_start, mapping_state_idx, states_all,
-            is_debug, is_interpolated, num_points_interp, ambi_spec)
+            is_debug, is_interpolated, num_points_interp)
 
         args = ()
-        args += base_args + (optim_paras, optimizer_options, file_sim, False)
+        args += base_args + (ambi_spec, optim_paras, optimizer_options,
+                             file_sim, False)
         pyth, _ = pyth_backward_induction(*args)
 
         args = ()
-        args += base_args + (shocks_cholesky, level, delta)
+        args += base_args + (ambi_spec['measure'], ambi_spec['mean'],
+            shocks_cholesky, level, delta)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (file_sim, False)
         f2py = fort_debug.f2py_backward_induction(*args)
@@ -377,16 +381,21 @@ class TestClass(object):
         # Check the full solution procedure
         base_args = (is_interpolated, num_points_interp, num_draws_emax,
             num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx,
-            periods_draws_emax, ambi_spec)
+            periods_draws_emax)
 
         fort, _ = resfort_interface(respy_obj, 'simulate')
 
         args = ()
-        args += base_args + (optim_paras, file_sim, optimizer_options)
+        args += base_args + (ambi_spec, optim_paras, file_sim,
+                             optimizer_options)
         py = pyth_solve(*args)
 
         args = ()
-        args += base_args + (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+        args += base_args + (ambi_spec['measure'], ambi_spec['mean'],
+                             coeffs_a, \
+                                                               coeffs_b,
+                             coeffs_edu,
+                                       coeffs_home)
         args += (shocks_cholesky, level, delta, file_sim)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (max_states_period, )
@@ -439,14 +448,16 @@ class TestClass(object):
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
             data_array, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
-            mapping_state_idx, max_states_period, ambi_spec)
+            mapping_state_idx, max_states_period)
 
         args = ()
-        args += base_args + (optimizer_options, )
+        args += base_args + (ambi_spec, optimizer_options, )
         py, _ = pyth_criterion(x0, *args)
 
         args = ()
-        args += base_args + (fort_slsqp_maxiter, fort_slsqp_ftol)
+        args += base_args + (ambi_spec['measure'], ambi_spec['mean'],
+            fort_slsqp_maxiter, \
+                                             fort_slsqp_ftol)
         args += (fort_slsqp_eps, )
         f2py = fort_debug.f2py_criterion(x0, *args)
 
@@ -494,7 +505,10 @@ class TestClass(object):
         periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_prob,
             is_debug)
 
-        draws_emax = periods_draws_emax[period, :, :]
+        draws_emax_standard = periods_draws_emax[period, :, :]
+        draws_emax_transformed = transform_disturbances(draws_emax_standard,
+            np.tile(0, 4), optim_paras['shocks_cholesky'])
+
 
         num_states = states_number_period[period]
 
@@ -533,14 +547,18 @@ class TestClass(object):
         base_args = (period, num_periods, num_states,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax, shocks_cov, ambi_spec)
+            num_draws_emax, maxe, draws_emax_standard,
+                     draws_emax_transformed, shocks_cov)
 
         args = ()
-        args += base_args + (optim_paras, optimizer_options, opt_ambi_details)
+        args += base_args + (ambi_spec, optim_paras, optimizer_options,
+                             opt_ambi_details)
         py, _ = get_endogenous_variable(*args)
 
         args = ()
-        args += base_args + (level, optim_paras['delta'])
+        args += base_args + (ambi_spec['measure'], ambi_spec['mean'], level, \
+                                                              optim_paras[
+            'delta'])
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
         np.testing.assert_equal(py, replace_missing_values(f90))
@@ -631,3 +649,48 @@ class TestClass(object):
         # Compare the results based on the two methods
         np.testing.assert_equal(fort, py)
 
+    def test_9(self):
+        """ We test the some of the functions that were added when improving
+        the ambiguity set.
+        """
+        def covariance_to_correlation(cov):
+            """ This function constructs the correlation matrix from the
+            information on the covariance information.
+            """
+            nrows = cov.shape[0]
+            corr = np.tile(np.nan, cov.shape)
+            for i in range(nrows):
+                for j in range(nrows):
+                    corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
+            return corr
+
+        def correlation_to_covariance(corr, sd):
+            """ This function constructs the covariance matrix from the
+            correlation matrix.
+            """
+
+            nrows = corr.shape[0]
+            cov = np.tile(np.nan, corr.shape)
+
+            for i in range(nrows):
+                for j in range(nrows):
+                    cov[i, j] = corr[i, j] * sd[j] * sd[i]
+            return cov
+
+        for i in range(100):
+            dim = np.random.randint(1, 6)
+            matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
+            cov = np.dot(matrix, matrix.T)
+
+            py = np.linalg.cholesky(cov)
+            f90 = fort_debug.wrapper_get_cholesky_decomposition(cov, dim)
+            np.testing.assert_almost_equal(py, f90)
+
+            cov_copy = cov.copy()
+
+            corr = covariance_to_correlation(cov_copy)
+
+            sd = np.sqrt(np.diag(cov_copy))
+            cov_copy = correlation_to_covariance(corr, sd)
+
+            np.testing.assert_almost_equal(cov, cov_copy)

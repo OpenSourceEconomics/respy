@@ -77,7 +77,6 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
         div = optim_paras%level; is_success = one_dble; mode = 16
 
     ELSE
-
         CALL get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
         ambi_rslt_mean_subset = x_shift(:2)

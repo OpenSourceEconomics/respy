@@ -24,7 +24,7 @@ def construct_full_covariances(ambi_cand_chol_flat, shocks_cov):
     the full set of factors.
     """
     ambi_cand_chol_subset = np.zeros((2, 2))
-    ambi_cand_chol_subset[np.triu_indices(2)] = ambi_cand_chol_flat
+    ambi_cand_chol_subset[np.tril_indices(2)] = ambi_cand_chol_flat
 
     args = (ambi_cand_chol_subset, ambi_cand_chol_subset.T)
     ambi_cand_cov_subset = np.matmul(*args)
