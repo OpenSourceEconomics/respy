@@ -1,6 +1,7 @@
 import numpy as np
 
-from respy.python.solve.solve_ambiguity import construct_full_covariances
+from respy.python.shared.shared_auxiliary import covariance_to_correlation
+from respy.python.shared.shared_auxiliary import correlation_to_covariance
 from respy.python.shared.shared_constants import MISSING_FLOAT
 
 
@@ -14,22 +15,29 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
 
     is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
 
+    if is_deterministic:
+        shocks_corr_base = None
+    else:
+        shocks_corr_base = covariance_to_correlation(shocks_cov)
+
     with open(file_sim + '.respy.amb', 'a') as file_:
         for period in range(num_periods - 1, -1, -1):
 
             for k in range(states_number_period[period]):
 
-                div, success, mode = opt_ambi_details[period, k, 5:]
+                div, success, mode = opt_ambi_details[period, k, 4:]
 
-                ambi_rslt_mean_subset = opt_ambi_details[period, k, :2]
-                ambi_rslt_chol_subset = opt_ambi_details[period, k, 2:5]
+                rslt_mean = opt_ambi_details[period, k, :2]
+                rslt_mean = np.append(rslt_mean, [0.0, 0.0])
+                rslt_sds = opt_ambi_details[period, k, 2:4]
+                rslt_sds = np.append(rslt_sds, np.sqrt(shocks_cov[(2, 3), (2, 3)]))
 
-                if not is_deterministic:
-                    ambi_rslt_cov, _ = construct_full_covariances(
-                        ambi_rslt_chol_subset, shocks_cov)
-
+                if is_deterministic:
+                    rslt_cov = np.zeros((4, 4))
                 else:
-                    ambi_rslt_cov = np.zeros((4, 4))
+                    args = ()
+                    args += (shocks_corr_base, rslt_sds)
+                    rslt_cov = correlation_to_covariance(*args)
 
                 # We need to skip states that were not analyzed during the
                 # interpolation routine.
@@ -54,9 +62,9 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
                 args = ['Mean', 'Covariance']
                 file_.write(string.format(*args))
 
-                string = '   {:>10.5f}  {:>10.5f}{:>10.5f}\n'
-                for i in range(2):
-                    line = (ambi_rslt_mean_subset[i], ambi_rslt_cov[i, :2])
+                string = '   {:>10.5f}  {:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}\n'
+                for i in range(4):
+                    line = (rslt_mean[i], rslt_cov[i, :])
                     line = np.append(*line)
                     file_.write(string.format(*line))
                 file_.write('\n\n')
@@ -73,8 +81,8 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
 
         for period in range(num_periods - 1, -1, -1):
             total = states_number_period[period]
-            success = np.sum(opt_ambi_details[period, :total, 6] == 1)
-            failure = np.sum(opt_ambi_details[period, :total, 6] == 0)
+            success = np.sum(opt_ambi_details[period, :total, 5] == 1)
+            failure = np.sum(opt_ambi_details[period, :total, 5] == 0)
             success /= float(total)
             failure /= float(total)
 

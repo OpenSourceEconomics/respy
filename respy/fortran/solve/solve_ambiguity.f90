@@ -371,7 +371,7 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
         ambi_cand_chol = optim_paras%shocks_cholesky
     ELSE
         ambi_cand_chol_flat = x(3:)
-        CALL construct_full_covariances(ambi_cand_cov, ambi_cand_chol, ambi_cand_chol_flat, shocks_cov)
+        !CALL construct_full_covariances(ambi_cand_cov, ambi_cand_chol, ambi_cand_chol_flat, shocks_cov)
     END IF
 
 
@@ -481,7 +481,7 @@ FUNCTION constraint_ambiguity(x, shocks_cov, optim_paras)
     IF (num_free_ambi .EQ. 2) THEN
         cov_new = shocks_cov
     ELSE
-        CALL construct_full_covariances(cov_new, mock_obj, x(3:), shocks_cov)
+        !CALL construct_full_covariances(cov_new, mock_obj, x(3:), shocks_cov)
     END IF
 
 

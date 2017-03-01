@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 import sys
 
-from respy.python.shared.shared_auxiliary import construct_full_covariances
 from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
@@ -125,15 +124,6 @@ class TestClass(object):
         # Select systematic rewards
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
-        ambi_cand_chol_flat = np.random.uniform(size=3)
-        args = ()
-        args += (ambi_cand_chol_flat, shocks_cov)
-        py = construct_full_covariances(*args)
-        f90 = fort_debug.wrapper_construct_full_covariances(*args)
-
-        for i in range(2):
-            np.testing.assert_almost_equal(py[i], f90[i])
-        #
         # base_args = (num_periods, num_draws_emax, period, k, draws_standard,
         #     rewards_systematic, edu_max, edu_start, periods_emax, states_all,
         #     mapping_state_idx, shocks_cov)

@@ -49,10 +49,10 @@ module, method = get_random_request(test_dict)
 module, method = 'test_f2py', 'test_9'
 count = 0
 #os.system('git clean -d -f')
-for i in range(1):
+for i in range(10):
 
 #    seed = 47092
-    seed = i + 35458695
+    seed = i + 3545869
 
     np.random.seed(seed)
     print("seed ", seed)

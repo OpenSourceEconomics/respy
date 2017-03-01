@@ -75,7 +75,7 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
             mode = opt_ambi_details(period + 1, k + 1, 8)
 
             IF (.NOT. is_deterministic) THEN
-                CALL construct_full_covariances(ambi_rslt_cov, ambi_rslt_chol, ambi_rslt_chol_flat, shocks_cov)
+                !CALL construct_full_covariances(ambi_rslt_cov, ambi_rslt_chol, ambi_rslt_chol_flat, shocks_cov)
             ELSE
                 ambi_rslt_cov = zero_dble
             END IF

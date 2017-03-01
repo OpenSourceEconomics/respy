@@ -4,10 +4,10 @@ import time
 
 from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
-from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 

@@ -31,44 +31,63 @@ MODULE shared_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_full_covariances(ambi_cand_cov, ambi_cand_chol, ambi_cand_chol_flat, shocks_cov)
+SUBROUTINE correlation_to_covariance(cov, corr, sd)
 
-    !/* external objects        */
+    !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: ambi_cand_chol(4, 4)
-    REAL(our_dble), INTENT(OUT)     :: ambi_cand_cov(4, 4)
+    REAL(our_dble), INTENT(OUT)         :: cov(:, :)
 
-    REAL(our_dble), INTENT(IN)     :: ambi_cand_chol_flat(3)
-    REAL(our_dble), INTENT(IN)     :: shocks_cov(4, 4)
+    REAL(our_dble), INTENT(IN)          :: corr(:, :)
+    REAL(our_dble), INTENT(IN)          :: sd(:)
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: ambi_cand_chol_subset(2, 2)
-    REAL(our_dble)                  :: ambi_cand_cov_subset(2, 2)
-
-    INTEGER(our_int)                :: info
+    INTEGER(our_int)                    :: nrows
+    INTEGER(our_int)                    :: i
+    INTEGER(our_int)                    :: j
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ambi_cand_chol_subset = zero_dble
-    ambi_cand_chol_subset(1, 1) = ambi_cand_chol_flat(1)
-    ambi_cand_chol_subset(2, 1) = ambi_cand_chol_flat(2)
-    ambi_cand_chol_subset(2, 2) = ambi_cand_chol_flat(3)
+    ! Auxiliary objects
+    nrows = SIZE(corr, 1)
 
-    ambi_cand_cov_subset = MATMUL(ambi_cand_chol_subset, TRANSPOSE(ambi_cand_chol_subset))
+    DO i = 1, nrows
+        DO j  = 1, nrows
+            cov(i, j) = corr(i, j) * sd(i) * sd(j)
+        END DO
+    END DO
 
-    ambi_cand_cov = shocks_cov
-    ambi_cand_cov(:2, :2) = ambi_cand_cov_subset
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE covariance_to_correlation(corr, cov)
 
-    ! Construct Cholesky decomposition
-    CALL get_cholesky_decomposition(ambi_cand_chol, info, ambi_cand_cov)
+    !/* external objects    */
 
-    IF (info .NE. zero_dble) THEN
-        ! TODO: Once this is removed, we can move this to a pure procedure.
-        STOP 'Problem in the Cholesky decomposition'
-    END IF
+    REAL(our_dble), INTENT(OUT)         :: corr(:, :)
+
+    REAL(our_dble), INTENT(IN)          :: cov(:, :)
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                    :: nrows
+    INTEGER(our_int)                    :: i
+    INTEGER(our_int)                    :: j
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Auxiliary objects
+    nrows = SIZE(corr, 1)
+
+    DO i = 1, nrows
+        DO j = 1, nrows
+            corr(i, j) = cov(i, j) / (DSQRT(cov(i, i)) * DSQRT(cov(j, j)))
+        END DO
+    END DO
 
 END SUBROUTINE
 !******************************************************************************

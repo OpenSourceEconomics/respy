@@ -8,7 +8,8 @@ import pytest
 import scipy
 
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
-from respy.python.shared.shared_auxiliary import construct_full_covariances
+from respy.python.shared.shared_auxiliary import correlation_to_covariance
+from respy.python.shared.shared_auxiliary import covariance_to_correlation
 from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
@@ -20,13 +21,13 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import get_predictions
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
-from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.shared.shared_constants import IS_F2PY
@@ -653,29 +654,6 @@ class TestClass(object):
         """ We test the some of the functions that were added when improving
         the ambiguity set.
         """
-        def covariance_to_correlation(cov):
-            """ This function constructs the correlation matrix from the
-            information on the covariance information.
-            """
-            nrows = cov.shape[0]
-            corr = np.tile(np.nan, cov.shape)
-            for i in range(nrows):
-                for j in range(nrows):
-                    corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
-            return corr
-
-        def correlation_to_covariance(corr, sd):
-            """ This function constructs the covariance matrix from the
-            correlation matrix.
-            """
-
-            nrows = corr.shape[0]
-            cov = np.tile(np.nan, corr.shape)
-
-            for i in range(nrows):
-                for j in range(nrows):
-                    cov[i, j] = corr[i, j] * sd[j] * sd[i]
-            return cov
 
         for i in range(100):
             dim = np.random.randint(1, 6)
@@ -686,11 +664,20 @@ class TestClass(object):
             f90 = fort_debug.wrapper_get_cholesky_decomposition(cov, dim)
             np.testing.assert_almost_equal(py, f90)
 
-            cov_copy = cov.copy()
+            py = covariance_to_correlation(cov)
+            f90 = fort_debug.wrapper_covariance_to_correlation(cov, dim)
+            np.testing.assert_almost_equal(py, f90)
 
-            corr = covariance_to_correlation(cov_copy)
+            corr, sd = covariance_to_correlation(cov), np.sqrt(np.diag(cov))
+            py = correlation_to_covariance(corr, sd)
+            f90 = fort_debug.wrapper_correlation_to_covariance(corr, sd)
+            np.testing.assert_almost_equal(py, f90)
 
-            sd = np.sqrt(np.diag(cov_copy))
-            cov_copy = correlation_to_covariance(corr, sd)
+            # Now we also check that the back-and-forth transformations work.
+            corr = fort_debug.wrapper_covariance_to_correlation(cov, dim)
+            cov_cand = fort_debug.wrapper_correlation_to_covariance(corr, sd, dim)
+            np.testing.assert_almost_equal(cov, cov_cand)
 
-            np.testing.assert_almost_equal(cov, cov_copy)
+            corr = covariance_to_correlation(cov)
+            cov_cand = correlation_to_covariance(corr, sd)
+            np.testing.assert_almost_equal(cov, cov_cand)

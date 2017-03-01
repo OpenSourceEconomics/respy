@@ -19,25 +19,6 @@ from respy.python.record.record_warning import record_warning
 OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + OPT_AMB_FORT + OPT_AMB_PYTH
 
 
-def construct_full_covariances(ambi_cand_chol_flat, shocks_cov):
-    """ We determine the worst-case Cholesky factors so we need to construct
-    the full set of factors.
-    """
-    ambi_cand_chol_subset = np.zeros((2, 2))
-    ambi_cand_chol_subset[np.tril_indices(2)] = ambi_cand_chol_flat
-
-    args = (ambi_cand_chol_subset, ambi_cand_chol_subset.T)
-    ambi_cand_cov_subset = np.matmul(*args)
-
-    ambi_cand_cov = shocks_cov.copy()
-    ambi_cand_cov[:2, :2] = ambi_cand_cov_subset
-
-    # TODO: Call this _full or leave as is?
-    ambi_cand_chol = np.linalg.cholesky(ambi_cand_cov)
-
-    return ambi_cand_cov, ambi_cand_chol
-
-
 def get_log_likl(contribs):
     """ Aggregate contributions to the likelihood value.
     """
@@ -404,11 +385,6 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     """ Transform the standard normal deviates to the relevant distribution.
 
     """
-
-    assert isinstance(shocks_mean, np.ndarray)
-    assert isinstance(shocks_cholesky, np.ndarray)
-
-    assert len(shocks_mean) == draws.shape[1]
     # Transfer draws to relevant distribution
     draws_transformed = draws.copy()
     draws_transformed = np.dot(shocks_cholesky, draws_transformed.T).T
@@ -766,3 +742,31 @@ def get_optim_paras(optim_paras, which, is_debug):
 
     # Finishing
     return x
+
+
+def covariance_to_correlation(cov):
+    """ This function constructs the correlation matrix from the information on
+    the covariances.
+    """
+    corr = np.tile(np.nan, cov.shape)
+    nrows = cov.shape[0]
+
+    for i in range(nrows):
+        for j in range(nrows):
+            corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
+
+    return corr
+
+
+def correlation_to_covariance(corr, sd):
+    """ This function constructs the covariance matrix from the information on
+    the correlations.
+    """
+    cov = np.tile(np.nan, corr.shape)
+    nrows = corr.shape[0]
+
+    for i in range(nrows):
+        for j in range(nrows):
+            cov[i, j] = corr[i, j] * sd[j] * sd[i]
+
+    return cov

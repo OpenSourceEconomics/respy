@@ -170,7 +170,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
     # Initialize containers, which contain a lot of missing values as we
     # capture the tree structure in arrays of fixed dimension.
     i, j = num_periods, max_states_period
-    opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 8))
+    opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 7))
     periods_emax = np.tile(MISSING_FLOAT, (i, j))
 
     if is_myopic:
@@ -186,7 +186,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         optim_paras['shocks_cholesky'].T)
 
     # Auxiliary objects. These shifts are used to determine the expected
-    # values of the two labor market alternatives. These ar log normal
+    # values of the two labor market alternatives. These are log normal
     # distributed and thus the draws cannot simply set to zero.
     shifts = [0.00, 0.00, 0.00, 0.00]
     shifts[0] = np.clip(np.exp(shocks_cov[0, 0] / 2.0), 0.0, HUGE_FLOAT)
@@ -262,8 +262,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                         num_periods, num_draws_emax, period, k,
                         draws_emax_standard, rewards_systematic, edu_max,
                         edu_start, periods_emax, states_all, mapping_state_idx,
-                        shocks_cov, ambi_spec, optim_paras,
-                        optimizer_options,
+                        shocks_cov, ambi_spec, optim_paras, optimizer_options,
                         opt_ambi_details)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
