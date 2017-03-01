@@ -29,14 +29,14 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
 
                 rslt_mean = opt_ambi_details[period, k, :2]
                 rslt_mean = np.append(rslt_mean, [0.0, 0.0])
-                rslt_sds = opt_ambi_details[period, k, 2:4]
-                rslt_sds = np.append(rslt_sds, np.sqrt(shocks_cov[(2, 3), (2, 3)]))
+                rslt_sd = opt_ambi_details[period, k, 2:4]
+                rslt_sd = np.append(rslt_sd, np.sqrt(shocks_cov[(2, 3), (2, 3)]))
 
                 if is_deterministic:
                     rslt_cov = np.zeros((4, 4))
                 else:
                     args = ()
-                    args += (shocks_corr_base, rslt_sds)
+                    args += (shocks_corr_base, rslt_sd)
                     rslt_cov = correlation_to_covariance(*args)
 
                 # We need to skip states that were not analyzed during the

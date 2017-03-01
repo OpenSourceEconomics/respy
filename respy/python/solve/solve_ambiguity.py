@@ -23,12 +23,12 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     # The following two senarios are only maintained for testing and
     # debugging purposes.
     if is_deterministic:
-        rslt_mean, rslt_sds = [0.0, 0.0], [0.0, 0.0]
+        rslt_mean, rslt_sd = [0.0, 0.0], [0.0, 0.0]
         div, is_success, mode = 0.0, 1.0, 15
 
     elif ambi_spec['measure'] == 'abs':
         rslt_mean = [-optim_paras['level'], -optim_paras['level']]
-        rslt_sds = np.sqrt(shocks_cov[[(0, 1), (0, 1)]])
+        rslt_sd = np.sqrt(shocks_cov[[(0, 1), (0, 1)]])
         div, is_success, mode = optim_paras['level'], 1.0, 16
 
     elif ambi_spec['measure'] == 'kl':
@@ -41,9 +41,9 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         # We construct the complete results depending on the actual request.
         rslt_mean = rslt[:2]
         if ambi_spec['mean']:
-            rslt_sds = np.sqrt(shocks_cov[[(0, 1), (0, 1)]])
+            rslt_sd = np.sqrt(shocks_cov[[(0, 1), (0, 1)]])
         else:
-            rslt_sds = rslt[2:]
+            rslt_sd = rslt[2:]
 
         args = ()
         args += (rslt, shocks_cov, optim_paras)
@@ -53,7 +53,7 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         raise NotImplementedError
 
     # Now we recombine the results from the optimization for easier access.
-    rslt_all = np.append(rslt_mean, rslt_sds)
+    rslt_all = np.append(rslt_mean, rslt_sd)
 
     # We collect the information from the optimization step for future
     # recording.

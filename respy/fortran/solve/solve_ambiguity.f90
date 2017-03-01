@@ -25,7 +25,7 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)             :: opt_ambi_details(num_periods, max_states_period, 8)
+    REAL(our_dble), INTENT(OUT)             :: opt_ambi_details(num_periods, max_states_period, 7)
     REAL(our_dble), INTENT(OUT)             :: emax
 
     TYPE(OPTIMIZER_COLLECTION), INTENT(IN)  :: optimizer_options
@@ -59,40 +59,46 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     REAL(our_dble)                  :: is_success
 
     LOGICAL                         :: is_deterministic
+    REAL(our_dble)                  :: rslt_mean(2), rslt_sd(2), rslt_all(4)
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
+
+
+
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
     IF(is_deterministic) THEN
-        ambi_rslt_mean_subset = zero_dble
-        ambi_rslt_chol_subset = zero_dble
+        rslt_mean = zero_dble; rslt_sd = zero_dble
         div = zero_dble; is_success = one_dble; mode = 15
 
     ELSE IF(TRIM(ambi_spec%measure) .EQ. 'abs') THEN
-        ambi_rslt_mean_subset = (/-optim_paras%level, -optim_paras%level/)
-        ambi_rslt_chol_subset = get_upper_cholesky(optim_paras)
+        rslt_mean = (/-optim_paras%level, -optim_paras%level/)
+        rslt_sd = (/DSQRT(shocks_cov(1, 1)), DSQRT(shocks_cov(2, 2))/)
         div = optim_paras%level; is_success = one_dble; mode = 16
 
     ELSE
-        CALL get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
-        ambi_rslt_mean_subset = x_shift(:2)
-        ambi_rslt_chol_subset = get_upper_cholesky(optim_paras)
-        IF (.NOT. ambi_spec%mean) ambi_rslt_chol_subset = x_shift(3:)
+        rslt_mean = -MISSING_FLOAT
+        rslt_sd = -MISSING_FLOAT
+        !CALL get_worst_case(x_shift, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
-        div = -(constraint_ambiguity(x_shift, shocks_cov, optim_paras) - optim_paras%level)
+        !ambi_rslt_mean_subset = x_shift(:2)
+        !ambi_rslt_chol_subset = get_upper_cholesky(optim_paras)
+        !IF (.NOT. ambi_spec%mean) ambi_rslt_chol_subset = x_shift(3:)
+
+        !div = -(constraint_ambiguity(x_shift, shocks_cov, optim_paras) - optim_paras%level)
     END IF
 
     ! We collect the information from the optimization step for future recording.
-    ambi_rslt_all(:2) = ambi_rslt_mean_subset
-    ambi_rslt_all(3:) = ambi_rslt_chol_subset
+    rslt_all = (/rslt_mean, rslt_sd/)
 
-    opt_ambi_details(period + 1, k + 1, :) = (/ambi_rslt_all, div, is_success, DBLE(mode)/)
+    opt_ambi_details(period + 1, k + 1, :) = (/rslt_all, div, is_success, DBLE(mode)/)
 
-    emax = criterion_ambiguity(ambi_rslt_all, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+!    emax = criterion_ambiguity(ambi_rslt_all, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+    emax = zero_dble
 
 END SUBROUTINE
 !******************************************************************************

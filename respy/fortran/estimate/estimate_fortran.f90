@@ -347,7 +347,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
         CALL distribute_workload(num_states_slaves, num_obs_slaves)
     END IF
 
-    ALLOCATE(opt_ambi_details(num_periods, max_states_period, 8))
+    ALLOCATE(opt_ambi_details(num_periods, max_states_period, 7))
     opt_ambi_details = MISSING_FLOAT
     DO period = 1, num_periods
         DO i = 1, num_slaves

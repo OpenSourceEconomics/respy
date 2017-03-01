@@ -179,7 +179,7 @@ SUBROUTINE summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 
     INTEGER(our_int), INTENT(OUT)   :: opt_ambi_summary(2)
 
-    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 8)
+    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 7)
 
     !/* internal objects        */
 
