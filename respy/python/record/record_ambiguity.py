@@ -9,16 +9,13 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
         file_sim, optim_paras):
     """ Write result of optimization problem to log file.
     """
+
+
     # We print the actual covariance matrix for better interpretability.
     shocks_cholesky = optim_paras['shocks_cholesky']
     shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
 
-    is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
-
-    if is_deterministic:
-        shocks_corr_base = None
-    else:
-        shocks_corr_base = covariance_to_correlation(shocks_cov)
+    shocks_corr_base = covariance_to_correlation(shocks_cov)
 
     with open(file_sim + '.respy.amb', 'a') as file_:
         for period in range(num_periods - 1, -1, -1):
@@ -32,12 +29,7 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
                 rslt_sd = opt_ambi_details[period, k, 2:4]
                 rslt_sd = np.append(rslt_sd, np.sqrt(shocks_cov[(2, 3), (2, 3)]))
 
-                if is_deterministic:
-                    rslt_cov = np.zeros((4, 4))
-                else:
-                    args = ()
-                    args += (shocks_corr_base, rslt_sd)
-                    rslt_cov = correlation_to_covariance(*args)
+                rslt_cov = correlation_to_covariance(shocks_corr_base, rslt_sd)
 
                 # We need to skip states that were not analyzed during the
                 # interpolation routine.

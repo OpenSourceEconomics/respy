@@ -46,9 +46,18 @@ SUBROUTINE correlation_to_covariance(cov, corr, sd)
     INTEGER(our_int)                    :: i
     INTEGER(our_int)                    :: j
 
+    LOGICAL                             :: is_deterministic
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    ! This special case is maintained for testing purposes.
+    is_deterministic = ALL(corr .EQ. zero_dble)
+    IF (is_deterministic) THEN
+        cov = zero_dble
+        RETURN
+    END IF
 
     ! Auxiliary objects
     nrows = SIZE(corr, 1)
@@ -76,9 +85,18 @@ SUBROUTINE covariance_to_correlation(corr, cov)
     INTEGER(our_int)                    :: i
     INTEGER(our_int)                    :: j
 
+    LOGICAL                             :: is_deterministic
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    ! This special case is maintained for testing purposes.
+    is_deterministic = ALL(cov .EQ. zero_dble)
+    IF (is_deterministic) THEN
+        corr = zero_dble
+        RETURN
+    END IF
 
     ! Auxiliary objects
     nrows = SIZE(corr, 1)
@@ -961,7 +979,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     IF (ambi_spec%mean) THEN
         num_free_ambi = 2
     ELSE
-        num_free_ambi = 5
+        num_free_ambi = 4
     END IF
 
     num_free =  COUNT(.NOT. optim_paras%paras_fixed)

@@ -74,27 +74,14 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
             rslt_mean(:2) = opt_ambi_details(period + 1, k + 1, 1:2)
 
             rslt_sd(:2) = opt_ambi_details(period + 1, k + 1, 3:4)
-            rslt_sd(3:) = (/DSQRT(shocks_cov(3, 3)), DSQRT(shocks_cov(3, 3))/)
+            rslt_sd(3:) = (/DSQRT(shocks_cov(3, 3)), DSQRT(shocks_cov(4, 4))/)
 
-            !ambi_rslt_chol_flat = opt_ambi_details(period + 1, k + 1, 3:5)
+            CALL correlation_to_covariance(rslt_cov, shocks_corr_base, rslt_sd)
+
             div = opt_ambi_details(period + 1, k + 1, 5)
             is_success = (opt_ambi_details(period + 1, k + 1 , 6) == one_dble)
             mode = opt_ambi_details(period + 1, k + 1, 7)
 
-
-            IF (is_deterministic) THEN
-                rslt_cov = zero_dble
-            ELSE
-                CALL correlation_to_covariance(rslt_cov, shocks_corr_base, rslt_sd)
-            END IF
-
-
-
-            !IF (.NOT. is_deterministic) THEN
-        !        !CALL construct_full_covariances(ambi_rslt_cov, ambi_rslt_chol, ambi_rslt_chol_flat, shocks_cov)
-        !    ELSE
-        !        ambi_rslt_cov = zero_dble
-        !    END IF
             ! We need to skip states that where not analyzed during an interpolation.
             IF (mode == MISSING_FLOAT) CYCLE
 
@@ -164,8 +151,8 @@ SUBROUTINE record_ambiguity_summary(opt_ambi_details, states_number_period, file
 
         DO period = num_periods - 1, 0, -1
             total = states_number_period(period + 1)
-            success = COUNT(opt_ambi_details(period + 1,:total, 7) == one_int) / DBLE(total)
-            failure = COUNT(opt_ambi_details(period + 1,:total, 7) == zero_int) / DBLE(total)
+            success = COUNT(opt_ambi_details(period + 1,:total, 6) == one_int) / DBLE(total)
+            failure = COUNT(opt_ambi_details(period + 1,:total, 6) == zero_int) / DBLE(total)
             WRITE(99, 100) period, total, success, failure
         END DO
 

@@ -77,8 +77,7 @@ class TestClass(object):
     @pytest.mark.skipif(not IS_F2PY, reason='No FORTRAN available')
     def test_2(self):
         """ Testing the F2PY implementations of the ambiguity-related functions.
-        """
-        # Generate constraint periods
+        """  # Generate constraint periods
         constr = dict()
         constr['version'] = 'PYTHON'
         constr['flag_ambiguity'] = True
@@ -93,13 +92,12 @@ class TestClass(object):
 
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
-            periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, ambi_spec, optim_paras, optimizer_options, \
-            file_sim = dist_class_attributes(respy_obj,
-                'periods_rewards_systematic', 'states_number_period',
-                'mapping_state_idx', 'periods_emax', 'num_periods',
-                'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'ambi_spec', 'optim_paras', 'optimizer_options',
+        periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
+        edu_max, ambi_spec, optim_paras, optimizer_options, file_sim = \
+            dist_class_attributes(respy_obj, 'periods_rewards_systematic',
+                'states_number_period', 'mapping_state_idx', 'periods_emax',
+                'num_periods', 'states_all', 'num_draws_emax', 'edu_start',
+                'edu_max', 'ambi_spec', 'optim_paras', 'optimizer_options',
                 'file_sim')
 
         shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
@@ -111,11 +109,11 @@ class TestClass(object):
 
         # Initialize containers
         i, j = num_periods, max(states_number_period)
-        opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 8))
+        opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 7))
 
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
-                            np.identity(4), (num_draws_emax,))
+            np.identity(4), (num_draws_emax,))
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -124,85 +122,93 @@ class TestClass(object):
         # Select systematic rewards
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
-        # base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-        #     rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        #     mapping_state_idx, shocks_cov)
-        #
-        # args = ()
-        # args += base_args + (ambi_spec, optim_paras, optimizer_options,
-        #                      opt_ambi_details)
-        # py, _ = construct_emax_ambiguity(*args)
-        #
-        # args = ()
-        # args += base_args + (ambi_spec['measure'], ambi_spec['mean'],
-        #                      optim_paras['level'], optim_paras['delta'])
-        # args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
-        # args += (file_sim, False)
-        #
-        # f90 = fort_debug.wrapper_construct_emax_ambiguity(*args)
-        # np.testing.assert_allclose(py, f90)
-        #
-        # x = np.random.uniform(-1, 1, size=2)
-        #
-        # base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-        #     rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        #     mapping_state_idx)
-        #
-        # args = ()
-        # args += base_args + (optim_paras, shocks_cov)
-        # py = criterion_ambiguity(x, *args)
-        #
-        # args = ()
-        # args += base_args + (optim_paras['delta'], shocks_cov)
-        # f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
-        # np.testing.assert_allclose(py, f90)
-        #
-        # # Let us check the calculation of the derivatives for the criterion
-        # # function of the ambiguity optimization.
-        # base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-        #     rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        #     mapping_state_idx)
-        #
-        # args = ()
-        # args += base_args + (optim_paras, )
-        # py = approx_fprime(x, criterion_ambiguity, fort_slsqp_eps, *args)
-        #
-        # args = ()
-        # args += base_args + (optim_paras['delta'], fort_slsqp_eps)
-        # f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args)
-        # np.testing.assert_allclose(py, f90)
-        #
-        # args = ()
-        # args += (x, shocks_cov, optim_paras)
-        # py = constraint_ambiguity(*args)
-        #
-        # args = ()
-        # args += (x, shocks_cov, optim_paras['level'])
-        # f90 = fort_debug.wrapper_constraint_ambiguity(*args)
-        # np.testing.assert_allclose(py, f90)
-        #
-        # args = ()
-        # args += (shocks_cov, optim_paras)
-        # py = approx_fprime(x, constraint_ambiguity, fort_slsqp_eps, *args)
-        #
-        # args = ()
-        # args += (shocks_cov, optim_paras['level'], fort_slsqp_eps)
-        # f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args)
-        # np.testing.assert_allclose(py, f90)
-        #
-        # base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-        #     rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        #     mapping_state_idx, shocks_cov)
-        #
-        # args = ()
-        # args += base_args + (optim_paras, optimizer_options)
-        # py, _, _ = get_worst_case(*args)
-        #
-        # args = ()
-        # args += base_args + (optim_paras['level'], optim_paras['delta'])
-        # args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
-        # f90, _, _ = fort_debug.wrapper_get_worst_case(*args)
-        # np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+        base_args = (num_periods, num_draws_emax, period, k, draws_standard,
+                     rewards_systematic, edu_max, edu_start, periods_emax,
+                     states_all, mapping_state_idx, shocks_cov)
+
+        args = ()
+        args += base_args + (
+        ambi_spec, optim_paras, optimizer_options, opt_ambi_details)
+        py, _ = construct_emax_ambiguity(*args)
+
+        args = ()
+        args += base_args + (
+        ambi_spec['measure'], ambi_spec['mean'], optim_paras['level'],
+        optim_paras['delta'])
+        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+        args += (file_sim, False)
+
+        f90 = fort_debug.wrapper_construct_emax_ambiguity(*args)
+        np.testing.assert_allclose(py, f90)
+
+        x = np.random.uniform(-1, 1, size=2)
+        num_free_ambi = 2
+        if not ambi_spec['mean']:
+            x = np.append(x, np.random.uniform(low=0.01, size=2))
+            num_free_ambi = 4
+
+        base_args = (num_periods, num_draws_emax, period, k, draws_standard,
+                     rewards_systematic, edu_max, edu_start, periods_emax,
+                     states_all, mapping_state_idx)
+
+        args = ()
+        args += base_args + (optim_paras, shocks_cov)
+        py = criterion_ambiguity(x, *args)
+
+        args = ()
+        args += base_args + (optim_paras['delta'], shocks_cov)
+        f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
+        np.testing.assert_allclose(py, f90)
+
+        # Let us check the calculation of the derivatives for the criterion
+        # function of the ambiguity optimization.
+        base_args = (num_periods, num_draws_emax, period, k, draws_standard,
+                     rewards_systematic, edu_max, edu_start, periods_emax,
+                     states_all, mapping_state_idx)
+
+        args = ()
+        args += base_args + (optim_paras, shocks_cov)
+        py = approx_fprime(x, criterion_ambiguity, fort_slsqp_eps, *args)
+
+        args = ()
+        args += base_args + (
+        optim_paras['delta'], shocks_cov, fort_slsqp_eps, num_free_ambi)
+        f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args)
+        np.testing.assert_allclose(py, f90)
+
+        args = ()
+        args += (x, shocks_cov, optim_paras)
+        py = constraint_ambiguity(*args)
+
+        args = ()
+        args += (x, shocks_cov, optim_paras['level'], num_free_ambi)
+        f90 = fort_debug.wrapper_constraint_ambiguity(*args)
+        np.testing.assert_allclose(py, f90)
+
+        args = ()
+        args += (shocks_cov, optim_paras)
+        py = approx_fprime(x, constraint_ambiguity, fort_slsqp_eps, *args)
+
+        args = ()
+        args += (
+        shocks_cov, optim_paras['level'], fort_slsqp_eps, num_free_ambi)
+        f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args)
+        np.testing.assert_allclose(py, f90)
+
+        base_args = (num_periods, num_draws_emax, period, k, draws_standard,
+                     rewards_systematic, edu_max, edu_start, periods_emax,
+                     states_all, mapping_state_idx, shocks_cov)
+
+        args = ()
+        args += base_args + (optim_paras, optimizer_options, ambi_spec)
+        py, _, _ = get_worst_case(*args)
+
+        args = ()
+        args += base_args + (optim_paras['level'], optim_paras['delta'])
+        args += (
+        fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, num_free_ambi)
+        f90, _, _ = fort_debug.wrapper_get_worst_case(*args)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     @pytest.mark.skipif(not IS_F2PY, reason='No FORTRAN available')
     def test_3(self):
@@ -230,7 +236,7 @@ class TestClass(object):
 
             np.testing.assert_almost_equal(fort, py)
 
-    @pytest.mark.skipif(not IS_F2PY, reason='No FORTRAN available')
+    @pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')
     def test_4(self):
         """ Check the SLSQP implementations.
         """

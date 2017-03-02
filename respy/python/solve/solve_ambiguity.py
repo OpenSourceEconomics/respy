@@ -32,21 +32,20 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         div, is_success, mode = optim_paras['level'], 1.0, 16
 
     elif ambi_spec['measure'] == 'kl':
-
         args = ()
         args += base_args + (shocks_cov, optim_paras, optimizer_options)
         args += (ambi_spec, )
-        rslt, is_success, mode = get_worst_case(*args)
+        opt_return, is_success, mode = get_worst_case(*args)
 
         # We construct the complete results depending on the actual request.
-        rslt_mean = rslt[:2]
+        rslt_mean = opt_return[:2]
         if ambi_spec['mean']:
             rslt_sd = np.sqrt(shocks_cov[[(0, 1), (0, 1)]])
         else:
-            rslt_sd = rslt[2:]
+            rslt_sd = opt_return[2:]
 
         args = ()
-        args += (rslt, shocks_cov, optim_paras)
+        args += (opt_return, shocks_cov, optim_paras)
         div = -(constraint_ambiguity(*args) - optim_paras['level'])
 
     else:
@@ -159,16 +158,15 @@ def get_relevant_dependence(shocks_cov, x):
     is_deterministic = (np.count_nonzero(shocks_cov) == 0)
     if is_deterministic:
         return np.zeros((4, 4)), np.zeros((4, 4))
-
+    # TODO: Align with FORTRAN seems nicer layout there ...
     if len(x) == 2:
         shocks_cholesky_cand = np.linalg.cholesky(shocks_cov)
         shocks_cov_cand = shocks_cov
     else:
         # Update the correlation matrix
         shocks_corr_base = covariance_to_correlation(shocks_cov)
-        sds = np.append(x[2:], np.sqrt(shocks_cov[(2, 3), (2, 3)]))
-
-        shocks_cov_cand = correlation_to_covariance(shocks_corr_base, sds)
+        sd = np.append(x[2:], np.sqrt(shocks_cov[(2, 3), (2, 3)]))
+        shocks_cov_cand = correlation_to_covariance(shocks_corr_base, sd)
         shocks_cholesky_cand = np.linalg.cholesky(shocks_cov_cand)
 
     return shocks_cov_cand, shocks_cholesky_cand

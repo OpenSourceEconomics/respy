@@ -14,6 +14,7 @@ from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_ambiguity import get_relevant_dependence
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
@@ -167,75 +168,72 @@ class TestClass(object):
 
     def test_3(self):
         """ Compare results between FORTRAN and PYTHON of selected functions.
-        """
-        for _ in range(10):
+        """  # Draw random requests for testing purposes.
+        num_draws_emax = np.random.randint(2, 1000)
+        dim = np.random.randint(1, 6)
 
-            # Draw random requests for testing purposes.
-            num_draws_emax = np.random.randint(2, 1000)
-            dim = np.random.randint(1, 6)
+        matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
+        cov = np.dot(matrix, matrix.T)
 
-            matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
-            cov = np.dot(matrix, matrix.T)
+        # PDF of normal distribution
+        args = np.random.normal(size=3)
+        args[-1] **= 2
 
-            # PDF of normal distribution
-            args = np.random.normal(size=3)
-            args[-1] **= 2
+        f90 = fort_debug.wrapper_normal_pdf(*args)
+        py = norm.pdf(*args)
 
-            f90 = fort_debug.wrapper_normal_pdf(*args)
-            py = norm.pdf(*args)
+        np.testing.assert_almost_equal(py, f90)
 
-            np.testing.assert_almost_equal(py, f90)
+        # Singular Value Decomposition
+        py = scipy.linalg.svd(matrix)
+        f90 = fort_debug.wrapper_svd(matrix, dim)
 
-            # Singular Value Decomposition
-            py = scipy.linalg.svd(matrix)
-            f90 = fort_debug.wrapper_svd(matrix, dim)
+        for i in range(3):
+            np.testing.assert_allclose(py[i], f90[i], rtol=1e-05, atol=1e-06)
 
-            for i in range(3):
-                np.testing.assert_allclose(py[i], f90[i], rtol=1e-05, atol=1e-06)
+        # Pseudo-Inverse
+        py = np.linalg.pinv(matrix)
+        f90 = fort_debug.wrapper_pinv(matrix, dim)
 
-            # Pseudo-Inverse
-            py = np.linalg.pinv(matrix)
-            f90 = fort_debug.wrapper_pinv(matrix, dim)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+        # Inverse
+        py = np.linalg.inv(cov)
+        f90 = fort_debug.wrapper_inverse(cov, dim)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-            # Inverse
-            py = np.linalg.inv(cov)
-            f90 = fort_debug.wrapper_inverse(cov, dim)
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+        # Determinant
+        py = np.linalg.det(cov)
+        f90 = fort_debug.wrapper_determinant(cov)
 
-            # Determinant
-            py = np.linalg.det(cov)
-            f90 = fort_debug.wrapper_determinant(cov)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+        # Trace
+        py = np.trace(cov)
+        f90 = fort_debug.wrapper_trace(cov)
 
-            # Trace
-            py = np.trace(cov)
-            f90 = fort_debug.wrapper_trace(cov)
+        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+        # Random normal deviates. This only tests the interface, requires
+        # visual inspection in IPYTHON notebook as well.
+        fort_debug.wrapper_standard_normal(num_draws_emax)
 
-            # Random normal deviates. This only tests the interface, requires
-            # visual inspection in IPYTHON notebook as well.
-            fort_debug.wrapper_standard_normal(num_draws_emax)
+        # Clipping values below and above bounds.
+        num_values = np.random.randint(1, 10000)
+        lower_bound = np.random.randn()
+        upper_bound = lower_bound + np.random.ranf()
+        values = np.random.normal(size=num_values)
 
-            # Clipping values below and above bounds.
-            num_values = np.random.randint(1, 10000)
-            lower_bound = np.random.randn()
-            upper_bound = lower_bound + np.random.ranf()
-            values = np.random.normal(size=num_values)
+        f90 = fort_debug.wrapper_clip_value(values, lower_bound, upper_bound,
+            num_values)
+        py = np.clip(values, lower_bound, upper_bound)
 
-            f90 = fort_debug.wrapper_clip_value(values, lower_bound,
-                upper_bound, num_values)
-            py = np.clip(values, lower_bound, upper_bound)
+        np.testing.assert_almost_equal(py, f90)
 
-            np.testing.assert_almost_equal(py, f90)
-
-            # Spectral condition number
-            py = spectral_condition_number(cov)
-            fort = fort_debug.wrapper_spectral_condition_number(cov)
-            np.testing.assert_almost_equal(py, fort)
+        # Spectral condition number
+        py = spectral_condition_number(cov)
+        fort = fort_debug.wrapper_spectral_condition_number(cov)
+        np.testing.assert_almost_equal(py, fort)
 
     def test_4(self, flag_ambiguity=False):
         """ Testing the core functions of the solution step for the equality
@@ -489,7 +487,7 @@ class TestClass(object):
 
         # Initialize containers
         i, j = num_periods, max(states_number_period)
-        opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 5))
+        opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 7))
 
         shocks_cov = np.matmul(optim_paras['shocks_cholesky'], optim_paras['shocks_cholesky'].T)
 
@@ -509,7 +507,6 @@ class TestClass(object):
         draws_emax_standard = periods_draws_emax[period, :, :]
         draws_emax_transformed = transform_disturbances(draws_emax_standard,
             np.tile(0, 4), optim_paras['shocks_cholesky'])
-
 
         num_states = states_number_period[period]
 
@@ -562,7 +559,7 @@ class TestClass(object):
             'delta'])
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
-        np.testing.assert_equal(py, replace_missing_values(f90))
+        np.testing.assert_almost_equal(py, replace_missing_values(f90))
 
         # Distribute validated results for further functions.
         base_args = (py, exogenous, maxe, is_simulated)
@@ -655,14 +652,21 @@ class TestClass(object):
         the ambiguity set.
         """
 
-        for i in range(100):
-            dim = np.random.randint(1, 6)
-            matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
-            cov = np.dot(matrix, matrix.T)
+        for _ in range(100):
 
-            py = np.linalg.cholesky(cov)
-            f90 = fort_debug.wrapper_get_cholesky_decomposition(cov, dim)
-            np.testing.assert_almost_equal(py, f90)
+            is_deterministic = np.random.choice([True, False], p=[0.1, 0.9])
+            dim = np.random.randint(1, 6)
+
+            if is_deterministic:
+                cov = np.zeros((dim, dim))
+            else:
+                matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
+                cov = np.dot(matrix, matrix.T)
+
+            if not is_deterministic:
+                py = np.linalg.cholesky(cov)
+                f90 = fort_debug.wrapper_get_cholesky_decomposition(cov, dim)
+                np.testing.assert_almost_equal(py, f90)
 
             py = covariance_to_correlation(cov)
             f90 = fort_debug.wrapper_covariance_to_correlation(cov, dim)
@@ -681,3 +685,26 @@ class TestClass(object):
             corr = covariance_to_correlation(cov)
             cov_cand = correlation_to_covariance(corr, sd)
             np.testing.assert_almost_equal(cov, cov_cand)
+
+        # We also check whether the construction of the candidate
+        # covariance matrix during the worst-case determintation works
+        # well. These functions only work for the 4x4 covariance matrix.
+        for _ in range(100):
+            is_deterministic = np.random.choice([True, False], p=[0.1, 0.9])
+            mean = np.random.choice([True, False])
+
+            if is_deterministic:
+                cov = np.zeros((4, 4))
+            else:
+                matrix = np.random.uniform(size=16).reshape(4, 4)
+                cov = np.dot(matrix, matrix.T)
+
+            x0 = np.random.uniform(low=-1.0, high=1.0, size=2)
+            if not mean:
+                x0 = np.append(x0, np.random.uniform(low=0.0, high=1.0, size=2))
+
+            py = get_relevant_dependence(cov, x0)
+            f90 = fort_debug.wrapper_get_relevant_dependence(cov, x0)
+
+            for i in range(2):
+                np.testing.assert_almost_equal(py[i], f90[i])

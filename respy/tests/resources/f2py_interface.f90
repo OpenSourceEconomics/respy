@@ -616,6 +616,7 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
     ! Assign global RESFORT variables
     max_states_period = SIZE(states_all_int, 2)
     min_idx = SIZE(mapping_state_idx_int, 4)
+    num_free_ambi = SIZE(x, 1)
 
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
@@ -623,61 +624,65 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
     ! Construct derived types
     optim_paras%delta = delta
 
-    emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras)
+    ! TODO: Why pass in shocks and optim_paras?
+
+    emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-! SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, fort_slsqp_eps)
-!
-!     !/* external libraries      */
-!
-!     USE resfort_library
-!
-!     !/* setup                   */
-!
-!     IMPLICIT NONE
-!
-!     !/* external objects        */
-!
-!     DOUBLE PRECISION, INTENT(OUT)   :: grad(2)
-!
-!     DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
-!     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
-!     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
-!     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
-!     DOUBLE PRECISION, INTENT(IN)    :: delta
-!     DOUBLE PRECISION, INTENT(IN)    :: x(:)
-!
-!     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
-!     INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
-!     INTEGER, INTENT(IN)             :: num_draws_emax_int
-!     INTEGER, INTENT(IN)             :: num_periods_int
-!     INTEGER, INTENT(IN)             :: edu_start_int
-!     INTEGER, INTENT(IN)             :: edu_max_int
-!
-!     INTEGER, INTENT(IN)             :: period
-!     INTEGER, INTENT(IN)             :: k
-!
-! !------------------------------------------------------------------------------
-! ! Algorithm
-! !------------------------------------------------------------------------------
-!
-!     ! Assign global RESFORT variables
-!     max_states_period = SIZE(states_all_int, 2)
-!     min_idx = SIZE(mapping_state_idx_int, 4)
-!
-!     num_draws_emax = num_draws_emax_int
-!     num_periods = num_periods_int
-!
-!     ! Construct derived types
-!     optim_paras%delta = delta
-!
-!     grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, fort_slsqp_eps)
-!
-! END SUBROUTINE
-! !******************************************************************************
-! !******************************************************************************
+SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov, fort_slsqp_eps, num_free_ambi_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: grad(num_free_ambi_int)
+
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
+    DOUBLE PRECISION, INTENT(IN)    :: x(num_free_ambi_int)
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
+    DOUBLE PRECISION, INTENT(IN)    :: delta
+
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
+    INTEGER, INTENT(IN)             :: num_draws_emax_int
+    INTEGER, INTENT(IN)             :: num_free_ambi_int
+    INTEGER, INTENT(IN)             :: num_periods_int
+    INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: edu_max_int
+
+    INTEGER, INTENT(IN)             :: period
+    INTEGER, INTENT(IN)             :: k
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Assign global RESFORT variables
+    max_states_period = SIZE(states_all_int, 2)
+    min_idx = SIZE(mapping_state_idx_int, 4)
+    num_draws_emax = num_draws_emax_int
+    num_free_ambi = num_free_ambi_int
+    num_periods = num_periods_int
+
+    ! Construct derived types
+    optim_paras%delta = delta
+
+    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov, fort_slsqp_eps)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta)
 
     !/* external libraries      */
@@ -785,14 +790,13 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     IF (mean) THEN
         num_free_ambi = 2
     ELSE
-        num_free_ambi = 5
+        num_free_ambi = 4
     END IF
 
     ! Allocate containers
-    ALLOCATE(opt_ambi_details(num_periods_int, max_states_period, 5))
+    ALLOCATE(opt_ambi_details(num_periods_int, max_states_period, 7))
 
     ! We need to determine the Cholesky decomposition
-
     CALL get_cholesky_decomposition(shocks_cholesky, info, shocks_cov)
     IF (info .NE. zero_dble) THEN
         ! TODO: Once this is removed, we can move this to a pure procedure.
@@ -1174,11 +1178,17 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     num_periods = SIZE(states_all_int, 1)
 
     ! Allocate containers
-    ALLOCATE(opt_ambi_details(num_periods, max_states_period, 5))
+    ALLOCATE(opt_ambi_details(num_periods, max_states_period, 7))
 
     ! Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
+
+    IF (mean) THEN
+        num_free_ambi = 2
+    ELSE
+        num_free_ambi = 4
+    END IF
 
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
@@ -1335,385 +1345,398 @@ SUBROUTINE wrapper_kl_divergence(rslt, mean_old, cov_old, mean_new, cov_new)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-! SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
-!
-!     !/* external libraries      */
-!
-!     USE resfort_library
-!
-!     !/* setup                   */
-!
-!     IMPLICIT NONE
-!
-!     !/* external objects        */
-!
-!     DOUBLE PRECISION, INTENT(OUT)       :: x_internal(num_dim)
-!     DOUBLE PRECISION, INTENT(IN)        :: x_start(num_dim)
-!     DOUBLE PRECISION, INTENT(IN)        :: ftol
-!
-!     INTEGER, INTENT(IN)                 :: num_dim
-!     INTEGER, INTENT(IN)                 :: maxiter
-!
-!     !/* internal objects        */
-!
-!     INTEGER                             :: m
-!     INTEGER                             :: meq
-!     INTEGER                             :: la
-!     INTEGER                             :: n
-!     INTEGER                             :: len_w
-!     INTEGER                             :: len_jw
-!     INTEGER                             :: mode
-!     INTEGER                             :: iter
-!     INTEGER                             :: n1
-!     INTEGER                             :: mieq
-!     INTEGER                             :: mineq
-!     INTEGER                             :: l_jw
-!     INTEGER                             :: l_w
-!
-!     INTEGER, ALLOCATABLE                :: jw(:)
-!
-!     DOUBLE PRECISION, ALLOCATABLE       :: a(:,:)
-!     DOUBLE PRECISION, ALLOCATABLE       :: xl(:)
-!     DOUBLE PRECISION, ALLOCATABLE       :: xu(:)
-!     DOUBLE PRECISION, ALLOCATABLE       :: c(:)
-!     DOUBLE PRECISION, ALLOCATABLE       :: g(:)
-!     DOUBLE PRECISION, ALLOCATABLE       :: w(:)
-!
-!     DOUBLE PRECISION                    :: acc
-!     DOUBLE PRECISION                    :: f
-!
-!     LOGICAL                             :: is_finished
-!
-! !------------------------------------------------------------------------------
-! ! Algorithm
-! !------------------------------------------------------------------------------
-!
-!     meq = 1         ! Number of equality constraints
-!     mieq = 0        ! Number of inequality constraints
-!
-!     ! Initialize starting values
-!     x_internal = x_start
-!
-!     ! Derived attributes
-!     m = meq + mieq
-!     la = MAX(1, m)
-!     n = SIZE(x_internal)
-!     n1 = n + 1
-!     mineq = m - meq + n1 + n1
-!
-!     len_w =  (3 * n1 + m) * (n1 + 1) + (n1 - meq + 1) * (mineq + 2) + 2 * mineq + (n1 + mineq) * (n1 - meq) + 2 * meq + n1 + ((n + 1) * n) / two_dble + 2 * m + 3 * n + 3 *  n1 + 1
-!
-!     len_jw = mineq
-!
-!     ! Allocate and initialize containers
-!     ALLOCATE(w(len_w)); w = zero_dble
-!     ALLOCATE(jw(len_jw)); jw = zero_int
-!     ALLOCATE(a(la, n + 1)); a = zero_dble
-!
-!     ALLOCATE(g(n + 1)); g = zero_dble
-!     ALLOCATE(c(la)); c = zero_dble
-!
-!     ! Decompose upper and lower bounds
-!     ALLOCATE(xl(n)); ALLOCATE(xu(n))
-!     xl = - HUGE_FLOAT; xu = HUGE_FLOAT
-!
-!     ! Initialize the iteration counter and mode value
-!     acc = ftol
-!     iter = maxiter
-!
-!     ! Transformations to match interface, deleted later
-!     l_jw = len_jw
-!     l_w = len_w
-!
-!     ! Initialization of SLSQP
-!     mode = zero_int
-!
-!     is_finished = .False.
-!
-!     CALL debug_criterion_function(f, x_internal, n)
-!     CALL debug_criterion_derivative(g, x_internal, n)
-!
-!     CALL debug_constraint_function(c, x_internal, n, la)
-!     CALL debug_constraint_derivative(a, x_internal, n, la)
-!
-!     ! Iterate until completion
-!     DO WHILE (.NOT. is_finished)
-!
-!         ! Evaluate criterion function and constraints
-!         IF (mode == one_int) THEN
-!             CALL debug_criterion_function(f, x_internal, n)
-!             CALL debug_constraint_function(c, x_internal, n, la)
-!         ! Evaluate gradient of criterion function and constraints
-!         ELSEIF (mode == - one_int) THEN
-!             CALL debug_criterion_derivative(g, x_internal, n)
-!             CALL debug_constraint_derivative(a, x_internal, n, la)
-!         END IF
-!
-!         !SLSQP Interface
-!         CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, iter, mode, w, l_w, jw, l_jw)
-!
-!         ! Check if SLSQP has completed
-!         IF (.NOT. ABS(mode) == one_int) THEN
-!             is_finished = .True.
-!         END IF
-!
-!     END DO
-!
-! END SUBROUTINE
-! !******************************************************************************
-! !******************************************************************************
-! SUBROUTINE debug_criterion_function  (rslt, x, n)
-!
-!     !/* external libraries      */
-!
-!     USE resfort_library
-!
-!     !/* setup                   */
-!
-!     IMPLICIT NONE
-!
-!
-!     !/* external objects        */
-!
-!     INTEGER, INTENT(IN)                 :: n
-!
-!     DOUBLE PRECISION, INTENT(OUT)       :: rslt
-!     DOUBLE PRECISION, INTENT(IN)        :: x(n)
-!
-!     !/* internal objects    */
-!
-!     INTEGER                             :: i
-!
-! !------------------------------------------------------------------------------
-! ! Algorithm
-! !------------------------------------------------------------------------------
-!
-!     ! Initialize containers
-!     rslt = zero_dble
-!
-!     DO i = 2, n
-!         rslt = rslt + 100_our_dble * (x(i) - x(i - 1) ** 2) ** 2
-!         rslt = rslt + (one_dble - x(i - 1)) ** 2
-!     END DO
-!
-! END SUBROUTINE
-! !******************************************************************************
-! !******************************************************************************
-! SUBROUTINE debug_criterion_derivative(rslt, x, n)
-!
-!     !/* external libraries      */
-!
-!     USE resfort_library
-!
-!     !/* setup                   */
-!
-!     IMPLICIT NONE
-!
-!     !/* external objects        */
-!
-!     INTEGER, INTENT(IN)                 :: n
-!
-!     DOUBLE PRECISION, INTENT(OUT)       :: rslt(n + 1)
-!     DOUBLE PRECISION, INTENT(IN)        :: x(n)
-!
-!     !/* internals objects       */
-!
-!     DOUBLE PRECISION                    :: xm_m1(n - 2)
-!     DOUBLE PRECISION                    :: xm_p1(n - 2)
-!     DOUBLE PRECISION                    :: xm(n - 2)
-!
-! !------------------------------------------------------------------------------
-! ! Algorithm
-! !------------------------------------------------------------------------------
-!
-!     ! Extract sets of evaluation points
-!     xm = x(2:(n - 1))
-!
-!     xm_m1 = x(:(n - 2))
-!
-!     xm_p1 = x(3:)
-!
-!     ! Construct derivative information
-!     rslt(1) = -400_our_dble * x(1) * (x(2) - x(1) ** 2) - 2 * (1 - x(1))
-!
-!     rslt(2:(n - 1)) = (200_our_dble * (xm - xm_m1 ** 2) - 400_our_dble * (xm_p1 - xm ** 2) * xm - 2 * (1 - xm))
-!
-!     rslt(n) = 200_our_dble * (x(n) - x(n - 1) ** 2)
-!
-! END SUBROUTINE
-! !******************************************************************************
-! !******************************************************************************
-! SUBROUTINE debug_constraint_function(rslt, x, n, la)
-!
-!     !/* external libraries      */
-!
-!     USE resfort_library
-!
-!     !/* setup                   */
-!
-!     IMPLICIT NONE
-!
-!     !/* external objects        */
-!
-!     DOUBLE PRECISION, INTENT(OUT)       :: rslt(la)
-!
-!     DOUBLE PRECISION, INTENT(IN)        :: x(n)
-!
-!     INTEGER, INTENT(IN)                 :: la
-!     INTEGER, INTENT(IN)                 :: n
-!
-! !------------------------------------------------------------------------------
-! ! Algorithm
-! !------------------------------------------------------------------------------
-!
-!     rslt(:) = SUM(x) - 10_our_dble
-!
-! END SUBROUTINE
-! !******************************************************************************
-! !******************************************************************************
-! SUBROUTINE debug_constraint_derivative(rslt, x, n, la)
-!
-!     !/* external libraries      */
-!
-!     USE resfort_library
-!
-!     !/* setup                   */
-!
-!     IMPLICIT NONE
-!
-!     !/* external objects        */
-!
-!     DOUBLE PRECISION, INTENT(OUT)       :: rslt(n + 1)
-!
-!     DOUBLE PRECISION, INTENT(IN)        :: x(n)
-!
-!     INTEGER, INTENT(IN)                 :: la
-!     INTEGER, INTENT(IN)                 :: n
-!
-! !------------------------------------------------------------------------------
-! ! Algorithm
-! !------------------------------------------------------------------------------
-!
-!     rslt = one_dble
-!
-!     rslt(n + 1) = zero_dble
-!
-! END SUBROUTINE
-! !******************************************************************************
-! !******************************************************************************
-! SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level)
-!
-!     !/* external libraries      */
-!
-!     USE resfort_library
-!
-!     !/* setup                   */
-!
-!     IMPLICIT NONE
-!
-!     !/* external objects        */
-!
-!     DOUBLE PRECISION, INTENT(OUT)       :: rslt
-!
-!     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
-!     DOUBLE PRECISION, INTENT(IN)        :: level(1)
-!     DOUBLE PRECISION, INTENT(IN)        :: x(2)
-!
-! !------------------------------------------------------------------------------
-! ! Algorithm
-! !------------------------------------------------------------------------------
-!
-!     ! Construct derived types
-!     optim_paras%level = level
-!
-!     rslt = constraint_ambiguity(x, shocks_cov, optim_paras)
-!
-! END SUBROUTINE
-! !******************************************************************************
-! !******************************************************************************
-! SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
-!
-!     !/* external libraries      */
-!
-!     USE resfort_library
-!
-!     !/* setup                   */
-!
-!     IMPLICIT NONE
-!
-!     !/* external objects        */
-!
-!     DOUBLE PRECISION, INTENT(OUT)       :: x_shift(2)
-!
-!     INTEGER, INTENT(OUT)                :: mode
-!
-!     LOGICAL, INTENT(OUT)                :: is_success
-!
-!     DOUBLE PRECISION, INTENT(IN)      :: rewards_systematic_int(:)
-!     DOUBLE PRECISION, INTENT(IN)      :: periods_emax_int(:,:)
-!     DOUBLE PRECISION, INTENT(IN)      :: draws_emax_transformed(:, :)
-!     DOUBLE PRECISION, INTENT(IN)      :: fort_slsqp_ftol
-!     DOUBLE PRECISION, INTENT(IN)      :: shocks_cov(4, 4)
-!     DOUBLE PRECISION, INTENT(IN)      :: fort_slsqp_eps
-!     DOUBLE PRECISION, INTENT(IN)      :: level(1)
-!     DOUBLE PRECISION, INTENT(IN)      :: delta
-!
-!     INTEGER, INTENT(IN)    :: mapping_state_idx_int(:, :, :, :, :)
-!     INTEGER, INTENT(IN)    :: states_all_int(:, :, :)
-!     INTEGER, INTENT(IN)    :: num_draws_emax_int
-!     INTEGER, INTENT(IN)    :: fort_slsqp_maxiter
-!     INTEGER, INTENT(IN)    :: num_periods_int
-!     INTEGER, INTENT(IN)    :: edu_start_int
-!     INTEGER, INTENT(IN)    :: edu_max_int
-!     INTEGER, INTENT(IN)    :: period
-!     INTEGER, INTENT(IN)    :: k
-!
-! !------------------------------------------------------------------------------
-! ! Algorithm
-! !------------------------------------------------------------------------------
-!
-!     ! Construct derived types
-!     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
-!     optimizer_options%slsqp%ftol = fort_slsqp_ftol
-!     optimizer_options%slsqp%eps = fort_slsqp_eps
-!
-!     optim_paras%level = level
-!     optim_paras%delta = delta
-!
-!     CALL get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, optim_paras, optimizer_options)
-!
-! END SUBROUTINE
-! !******************************************************************************
-! !******************************************************************************
-! SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level, eps_der_approx)
-!
-!     !/* external libraries      */
-!
-!     USE resfort_library
-!
-!     !/* setup                   */
-!
-!     IMPLICIT NONE
-!
-!     !/* external objects        */
-!
-!     DOUBLE PRECISION, INTENT(OUT)       :: rslt(2)
-!
-!     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
-!     DOUBLE PRECISION, INTENT(IN)        :: eps_der_approx
-!     DOUBLE PRECISION, INTENT(IN)        :: level(1)
-!     DOUBLE PRECISION, INTENT(IN)        :: x(2)
-!
-! !------------------------------------------------------------------------------
-! ! Algorithm
-! !------------------------------------------------------------------------------
-!
-!     ! Construct derived types
-!     optim_paras%level = level
-!
-!     rslt = constraint_ambiguity_derivative(x, shocks_cov, optim_paras, eps_der_approx)
-!
-! END SUBROUTINE
+SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: x_internal(num_dim)
+    DOUBLE PRECISION, INTENT(IN)        :: x_start(num_dim)
+    DOUBLE PRECISION, INTENT(IN)        :: ftol
+
+    INTEGER, INTENT(IN)                 :: num_dim
+    INTEGER, INTENT(IN)                 :: maxiter
+
+    !/* internal objects        */
+
+    INTEGER                             :: m
+    INTEGER                             :: meq
+    INTEGER                             :: la
+    INTEGER                             :: n
+    INTEGER                             :: len_w
+    INTEGER                             :: len_jw
+    INTEGER                             :: mode
+    INTEGER                             :: iter
+    INTEGER                             :: n1
+    INTEGER                             :: mieq
+    INTEGER                             :: mineq
+    INTEGER                             :: l_jw
+    INTEGER                             :: l_w
+
+    INTEGER, ALLOCATABLE                :: jw(:)
+
+    DOUBLE PRECISION, ALLOCATABLE       :: a(:,:)
+    DOUBLE PRECISION, ALLOCATABLE       :: xl(:)
+    DOUBLE PRECISION, ALLOCATABLE       :: xu(:)
+    DOUBLE PRECISION, ALLOCATABLE       :: c(:)
+    DOUBLE PRECISION, ALLOCATABLE       :: g(:)
+    DOUBLE PRECISION, ALLOCATABLE       :: w(:)
+
+    DOUBLE PRECISION                    :: acc
+    DOUBLE PRECISION                    :: f
+
+    LOGICAL                             :: is_finished
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    meq = 1         ! Number of equality constraints
+    mieq = 0        ! Number of inequality constraints
+
+    ! Initialize starting values
+    x_internal = x_start
+
+    ! Derived attributes
+    m = meq + mieq
+    la = MAX(1, m)
+    n = SIZE(x_internal)
+    n1 = n + 1
+    mineq = m - meq + n1 + n1
+
+    len_w =  (3 * n1 + m) * (n1 + 1) + (n1 - meq + 1) * (mineq + 2) + 2 * mineq + (n1 + mineq) * (n1 - meq) + 2 * meq + n1 + ((n + 1) * n) / two_dble + 2 * m + 3 * n + 3 *  n1 + 1
+
+    len_jw = mineq
+
+    ! Allocate and initialize containers
+    ALLOCATE(w(len_w)); w = zero_dble
+    ALLOCATE(jw(len_jw)); jw = zero_int
+    ALLOCATE(a(la, n + 1)); a = zero_dble
+
+    ALLOCATE(g(n + 1)); g = zero_dble
+    ALLOCATE(c(la)); c = zero_dble
+
+    ! Decompose upper and lower bounds
+    ALLOCATE(xl(n)); ALLOCATE(xu(n))
+    xl = - HUGE_FLOAT; xu = HUGE_FLOAT
+
+    ! Initialize the iteration counter and mode value
+    acc = ftol
+    iter = maxiter
+
+    ! Transformations to match interface, deleted later
+    l_jw = len_jw
+    l_w = len_w
+
+    ! Initialization of SLSQP
+    mode = zero_int
+
+    is_finished = .False.
+
+    CALL debug_criterion_function(f, x_internal, n)
+    CALL debug_criterion_derivative(g, x_internal, n)
+
+    CALL debug_constraint_function(c, x_internal, n, la)
+    CALL debug_constraint_derivative(a, x_internal, n, la)
+
+    ! Iterate until completion
+    DO WHILE (.NOT. is_finished)
+
+        ! Evaluate criterion function and constraints
+        IF (mode == one_int) THEN
+            CALL debug_criterion_function(f, x_internal, n)
+            CALL debug_constraint_function(c, x_internal, n, la)
+        ! Evaluate gradient of criterion function and constraints
+        ELSEIF (mode == - one_int) THEN
+            CALL debug_criterion_derivative(g, x_internal, n)
+            CALL debug_constraint_derivative(a, x_internal, n, la)
+        END IF
+
+        !SLSQP Interface
+        CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, iter, mode, w, l_w, jw, l_jw)
+
+        ! Check if SLSQP has completed
+        IF (.NOT. ABS(mode) == one_int) THEN
+            is_finished = .True.
+        END IF
+
+    END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE debug_criterion_function  (rslt, x, n)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+
+    !/* external objects        */
+
+    INTEGER, INTENT(IN)                 :: n
+
+    DOUBLE PRECISION, INTENT(OUT)       :: rslt
+    DOUBLE PRECISION, INTENT(IN)        :: x(n)
+
+    !/* internal objects    */
+
+    INTEGER                             :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Initialize containers
+    rslt = zero_dble
+
+    DO i = 2, n
+        rslt = rslt + 100_our_dble * (x(i) - x(i - 1) ** 2) ** 2
+        rslt = rslt + (one_dble - x(i - 1)) ** 2
+    END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE debug_criterion_derivative(rslt, x, n)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    INTEGER, INTENT(IN)                 :: n
+
+    DOUBLE PRECISION, INTENT(OUT)       :: rslt(n + 1)
+    DOUBLE PRECISION, INTENT(IN)        :: x(n)
+
+    !/* internals objects       */
+
+    DOUBLE PRECISION                    :: xm_m1(n - 2)
+    DOUBLE PRECISION                    :: xm_p1(n - 2)
+    DOUBLE PRECISION                    :: xm(n - 2)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Extract sets of evaluation points
+    xm = x(2:(n - 1))
+
+    xm_m1 = x(:(n - 2))
+
+    xm_p1 = x(3:)
+
+    ! Construct derivative information
+    rslt(1) = -400_our_dble * x(1) * (x(2) - x(1) ** 2) - 2 * (1 - x(1))
+
+    rslt(2:(n - 1)) = (200_our_dble * (xm - xm_m1 ** 2) - 400_our_dble * (xm_p1 - xm ** 2) * xm - 2 * (1 - xm))
+
+    rslt(n) = 200_our_dble * (x(n) - x(n - 1) ** 2)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE debug_constraint_function(rslt, x, n, la)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: rslt(la)
+
+    DOUBLE PRECISION, INTENT(IN)        :: x(n)
+
+    INTEGER, INTENT(IN)                 :: la
+    INTEGER, INTENT(IN)                 :: n
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    rslt(:) = SUM(x) - 10_our_dble
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE debug_constraint_derivative(rslt, x, n, la)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: rslt(n + 1)
+
+    DOUBLE PRECISION, INTENT(IN)        :: x(n)
+
+    INTEGER, INTENT(IN)                 :: la
+    INTEGER, INTENT(IN)                 :: n
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    rslt = one_dble
+
+    rslt(n + 1) = zero_dble
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level, num_free_ambi_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: rslt
+
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)        :: level(1)
+    DOUBLE PRECISION, INTENT(IN)        :: x(num_free_ambi_int)
+
+    INTEGER, INTENT(IN)                 :: num_free_ambi_int
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Assign global RESFORT variables
+    num_free_ambi = num_free_ambi_int
+
+    ! Construct derived types
+    optim_paras%level = level
+
+    rslt = constraint_ambiguity(x, shocks_cov, optim_paras)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, num_free_ambi_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)   :: x_shift(num_free_ambi_int)
+    DOUBLE PRECISION, INTENT(OUT)   :: is_success
+
+    INTEGER, INTENT(OUT)            :: mode
+
+    DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic_int(:)
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax_standard(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
+    DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
+    DOUBLE PRECISION, INTENT(IN)    :: level(1)
+    DOUBLE PRECISION, INTENT(IN)    :: delta
+
+    INTEGER, INTENT(IN)    :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)    :: states_all_int(:, :, :)
+    INTEGER, INTENT(IN)    :: num_draws_emax_int
+    INTEGER, INTENT(IN)    :: fort_slsqp_maxiter
+    INTEGER, INTENT(IN)    :: num_free_ambi_int
+    INTEGER, INTENT(IN)    :: num_periods_int
+    INTEGER, INTENT(IN)    :: edu_start_int
+    INTEGER, INTENT(IN)    :: edu_max_int
+    INTEGER, INTENT(IN)    :: period
+    INTEGER, INTENT(IN)    :: k
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Assign global RESFORT variables
+    num_free_ambi = num_free_ambi_int
+
+    ! Construct derived types
+    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
+    optimizer_options%slsqp%ftol = fort_slsqp_ftol
+    optimizer_options%slsqp%eps = fort_slsqp_eps
+
+    optim_paras%level = level
+    optim_paras%delta = delta
+
+    CALL get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, optim_paras, optimizer_options)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level, eps_der_approx, num_free_ambi_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: rslt(num_free_ambi_int)
+
+    DOUBLE PRECISION, INTENT(IN)        :: x(num_free_ambi_int)
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)        :: eps_der_approx
+    DOUBLE PRECISION, INTENT(IN)        :: level(1)
+
+    INTEGER, INTENT(IN)                 :: num_free_ambi_int
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Assign global RESFORT variables
+    num_free_ambi = num_free_ambi_int
+
+    ! Construct derived types
+    optim_paras%level = level
+
+    rslt = constraint_ambiguity_derivative(x, shocks_cov, optim_paras, eps_der_approx)
+
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE wrapper_spectral_condition_number(rslt, A)
@@ -1828,6 +1851,33 @@ SUBROUTINE wrapper_covariance_to_correlation(corr, cov, nrows)
 !------------------------------------------------------------------------------
 
     CALL covariance_to_correlation(corr, cov)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_relevant_dependence(shocks_cov_cand, shocks_cholesky_cand, shocks_cov, x)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: shocks_cov_cand(4, 4)
+    DOUBLE PRECISION, INTENT(OUT)       :: shocks_cholesky_cand(4, 4)
+
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)        :: x(:)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    CALL get_relevant_dependence(shocks_cov_cand, shocks_cholesky_cand, shocks_cov, x)
 
 END SUBROUTINE
 !******************************************************************************
