@@ -285,12 +285,9 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
     ! Auxiliary objects
     num_draws = SIZE(draws, 1)
 
-
     DO i = 1, num_draws
         draws_transformed(i:i, :) = TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
     END DO
-
-
 
     ! TODO: THis needs to be done later. This is a BUG.
     DO i = 1, 2
