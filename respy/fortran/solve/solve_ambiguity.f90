@@ -19,9 +19,7 @@ MODULE solve_ambiguity
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, ambi_spec, optim_paras, optimizer_options)
-
-    ! TODO: Why do I pass in shocks cov and optim%shocks_cholesky ...
+SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
 
     !/* external objects    */
 
@@ -44,17 +42,17 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: draws_emax_standard(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
-    REAL(our_dble), INTENT(IN)      :: shocks_cov(4, 4)
 
     !/* internals objects    */
 
     INTEGER(our_int)                :: mode
 
     REAL(our_dble)                  :: opt_return(num_free_ambi)
-    REAL(our_dble)                  :: is_success
+    REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: rslt_mean(2)
     REAL(our_dble)                  :: rslt_all(4)
     REAL(our_dble)                  :: rslt_sd(2)
+    REAL(our_dble)                  :: is_success
     REAL(our_dble)                  :: div(1)
 
     LOGICAL                         :: is_deterministic
@@ -63,6 +61,10 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Construct auxiliary objects
+    shocks_cov = MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(optim_paras%shocks_cholesky))
+
+    ! Determine special cases
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
     IF(is_deterministic) THEN
@@ -75,6 +77,7 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
         div = optim_paras%level; is_success = one_dble; mode = 16
 
     ELSE
+        ! In conflict with the usual design, we pass in shocks_cov directly. Otherwise it needs to be constructed over and over for each of the evaluations of the criterion functions.
         CALL get_worst_case(opt_return, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
         rslt_mean = opt_return(:2)

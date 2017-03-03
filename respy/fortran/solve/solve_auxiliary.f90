@@ -341,7 +341,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, optim_paras, edu_start, edu_max)
 
-            CALL get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_standard, draws_emax_transformed, edu_start, edu_max, shocks_cov, ambi_spec, optim_paras, optimizer_options)
+            CALL get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_standard, draws_emax_transformed, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options)
 
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, file_sim, is_write)
 
@@ -356,7 +356,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, ambi_spec, optim_paras, optimizer_options)
+                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
                 END IF
@@ -514,7 +514,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_standard, draws_emax_transformed, edu_start, edu_max, shocks_cov, ambi_spec, optim_paras, optimizer_options)
+SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_standard, draws_emax_transformed, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options)
 
     !/* external objects        */
 
@@ -529,7 +529,6 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
     REAL(our_dble), INTENT(IN)          :: draws_emax_standard(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: maxe(num_states)
-    REAL(our_dble), INTENT(IN)          :: shocks_cov(4, 4)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
@@ -568,7 +567,7 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
         IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-            CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, ambi_spec, optim_paras, optimizer_options)
+            CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
         ELSE
             CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
         END IF

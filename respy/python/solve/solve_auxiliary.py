@@ -235,7 +235,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 num_periods, num_states, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
                 is_simulated, num_draws_emax, maxe, draws_emax_standard,
-                draws_emax_transformed, shocks_cov, ambi_spec, optim_paras,
+                draws_emax_transformed, ambi_spec, optim_paras,
                 optimizer_options, opt_ambi_details)
 
             # Create prediction model based on the random subset of points where
@@ -262,7 +262,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                         num_periods, num_draws_emax, period, k,
                         draws_emax_standard, rewards_systematic, edu_max,
                         edu_start, periods_emax, states_all, mapping_state_idx,
-                        shocks_cov, ambi_spec, optim_paras, optimizer_options,
+                        ambi_spec, optim_paras, optimizer_options,
                         opt_ambi_details)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
@@ -344,8 +344,8 @@ def get_exogenous_variables(period, num_periods, num_states,
 def get_endogenous_variable(period, num_periods, num_states,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_standard, draws_emax_transformed, shocks_cov, ambi_spec,
-        optim_paras, optimizer_options, opt_ambi_details):
+        draws_emax_standard, draws_emax_transformed, ambi_spec, optim_paras,
+        optimizer_options, opt_ambi_details):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects
@@ -365,8 +365,7 @@ def get_endogenous_variable(period, num_periods, num_states,
             emax, optim_ambi_details = construct_emax_ambiguity(num_periods,
                 num_draws_emax, period, k, draws_emax_standard,
                 rewards_systematic, edu_max, edu_start, periods_emax,
-                states_all, mapping_state_idx, shocks_cov, ambi_spec,
-                optim_paras,
+                states_all, mapping_state_idx, ambi_spec, optim_paras,
                 optimizer_options, opt_ambi_details)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,

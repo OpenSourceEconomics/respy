@@ -10,15 +10,20 @@ from respy.python.shared.shared_constants import SMALL_FLOAT
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         draws_emax_standard, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, shocks_cov, ambi_spec,
-        optim_paras, optimizer_options, opt_ambi_details):
+        periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras,
+        optimizer_options, opt_ambi_details):
     """ Construct EMAX accounting for a worst case evaluation.
     """
+    # Construct auxiliary objects
+    shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
+        optim_paras['shocks_cholesky'].T)
+
+    # Determine special cases
     is_deterministic = (np.count_nonzero(shocks_cov) == 0)
 
-    base_args = (num_periods, num_draws_emax, period, k,
-        draws_emax_standard, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx)
+    base_args = (num_periods, num_draws_emax, period, k, draws_emax_standard,
+        rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+        mapping_state_idx)
 
     # The following two senarios are only maintained for testing and
     # debugging purposes.
@@ -32,6 +37,9 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         div, is_success, mode = optim_paras['level'], 1.0, 16
 
     elif ambi_spec['measure'] == 'kl':
+        # In conflict with the usual design, we pass in shocks_cov directly.
+        # Otherwise it needs to be constructed over and over for each of the
+        # evaluations of the criterion functions.
         args = ()
         args += base_args + (shocks_cov, optim_paras, optimizer_options)
         args += (ambi_spec, )

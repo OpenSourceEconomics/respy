@@ -1,8 +1,8 @@
 import sys
 import os
 
-from scipy.stats import norm
 import statsmodels.api as sm
+from scipy.stats import norm
 import numpy as np
 import pytest
 import scipy
@@ -129,7 +129,10 @@ class TestClass(object):
             py_a, py_b, py_c, py_d = pyth_create_state_space(*args)
 
             # Ensure equivalence
-            for obj in [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]:
+            rslts = []
+            rslts += [[fort_a, py_a], [fort_b, py_b]]
+            rslts += [[fort_c, py_c], [fort_d, py_d]]
+            for obj in rslts:
                 np.testing.assert_allclose(obj[0], obj[1])
 
         for _ in range(100):
@@ -255,12 +258,13 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, optim_paras, num_draws_emax, \
-            seed_emax, is_debug, is_interpolated, num_points_interp, ambi_spec, optimizer_options, file_sim = \
-            dist_class_attributes(respy_obj,
-                'num_periods', 'edu_start', 'edu_max', 'min_idx',
-                'optim_paras', 'num_draws_emax', 'seed_emax', 'is_debug',
-                'is_interpolated', 'num_points_interp',
-                'ambi_spec',  'optimizer_options', 'file_sim')
+            seed_emax, is_debug, is_interpolated, num_points_interp, \
+            ambi_spec, optimizer_options, file_sim = \
+                dist_class_attributes(respy_obj, 'num_periods', 'edu_start',
+                    'edu_max', 'min_idx', 'optim_paras', 'num_draws_emax',
+                    'seed_emax', 'is_debug', 'is_interpolated',
+                    'num_points_interp', 'ambi_spec', 'optimizer_options',
+                    'file_sim')
 
         # Distribute variables for FORTRAN interface
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
@@ -314,15 +318,14 @@ class TestClass(object):
             is_debug, is_interpolated, num_points_interp)
 
         args = ()
-        args += base_args + (ambi_spec, optim_paras, optimizer_options,
-                             file_sim, False)
+        args += base_args + (ambi_spec, optim_paras, optimizer_options)
+        args += (file_sim, False)
         pyth, _ = pyth_backward_induction(*args)
 
         args = ()
-        args += base_args + (ambi_spec['measure'], ambi_spec['mean'],
-            shocks_cholesky, level, delta)
-        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
-        args += (file_sim, False)
+        args += base_args + (ambi_spec['measure'], ambi_spec['mean'])
+        args += (shocks_cholesky, level, delta, fort_slsqp_maxiter)
+        args += (fort_slsqp_ftol, fort_slsqp_eps, file_sim, False)
         f2py = fort_debug.f2py_backward_induction(*args)
         np.testing.assert_allclose(pyth, f2py)
 
@@ -346,14 +349,14 @@ class TestClass(object):
         # Extract class attributes
         num_periods, edu_start, edu_max, min_idx, optim_paras, num_draws_emax, \
             is_debug, is_interpolated, num_points_interp, is_myopic, \
-            num_agents_sim, num_draws_prob, tau, seed_sim, ambi_spec, num_agents_est, states_number_period, optimizer_options, \
+            num_agents_sim, num_draws_prob, tau, seed_sim, ambi_spec, \
+            num_agents_est, states_number_period, optimizer_options, \
             file_sim = dist_class_attributes(respy_obj,
-                'num_periods', 'edu_start',
-                'edu_max', 'min_idx', 'optim_paras', 'num_draws_emax',
-                'is_debug', 'is_interpolated', 'num_points_interp',
-                'is_myopic', 'num_agents_sim', 'num_draws_prob', 'tau',
-                'seed_sim', 'ambi_spec',
-                'num_agents_est', 'states_number_period',
+                'num_periods', 'edu_start', 'edu_max', 'min_idx',
+                'optim_paras', 'num_draws_emax', 'is_debug',
+                'is_interpolated', 'num_points_interp', 'is_myopic',
+                'num_agents_sim', 'num_draws_prob', 'tau', 'seed_sim',
+                'ambi_spec', 'num_agents_est', 'states_number_period',
                 'optimizer_options', 'file_sim')
 
         # Distribute variables for FORTRAN interface
@@ -385,16 +388,13 @@ class TestClass(object):
         fort, _ = resfort_interface(respy_obj, 'simulate')
 
         args = ()
-        args += base_args + (ambi_spec, optim_paras, file_sim,
-                             optimizer_options)
+        args += base_args + (ambi_spec, optim_paras, file_sim)
+        args += (optimizer_options, )
         py = pyth_solve(*args)
 
         args = ()
-        args += base_args + (ambi_spec['measure'], ambi_spec['mean'],
-                             coeffs_a, \
-                                                               coeffs_b,
-                             coeffs_edu,
-                                       coeffs_home)
+        args += base_args + (ambi_spec['measure'], ambi_spec['mean'])
+        args += (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         args += (shocks_cholesky, level, delta, file_sim)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (max_states_period, )
@@ -454,10 +454,8 @@ class TestClass(object):
         py, _ = pyth_criterion(x0, *args)
 
         args = ()
-        args += base_args + (ambi_spec['measure'], ambi_spec['mean'],
-            fort_slsqp_maxiter, \
-                                             fort_slsqp_ftol)
-        args += (fort_slsqp_eps, )
+        args += base_args + (ambi_spec['measure'], ambi_spec['mean'])
+        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f2py = fort_debug.f2py_criterion(x0, *args)
 
         np.testing.assert_allclose(py, f2py)
@@ -477,13 +475,14 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
             seed_prob, periods_emax, num_periods, states_all, \
-            num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, ambi_spec, optim_paras, \
-            optimizer_options, file_sim = dist_class_attributes(respy_obj,
-                'periods_rewards_systematic', 'states_number_period',
-                'mapping_state_idx', 'seed_prob', 'periods_emax',
-                'num_periods', 'states_all', 'num_points_interp', 'edu_start',
-                'num_draws_emax', 'is_debug', 'edu_max', 'ambi_spec',
-                'optim_paras', 'optimizer_options', 'file_sim')
+            num_points_interp, edu_start, num_draws_emax, is_debug, edu_max, \
+            ambi_spec, optim_paras, optimizer_options, file_sim = \
+                dist_class_attributes(respy_obj, 'periods_rewards_systematic',
+                'states_number_period', 'mapping_state_idx', 'seed_prob',
+                'periods_emax', 'num_periods', 'states_all',
+                'num_points_interp', 'edu_start', 'num_draws_emax',
+                'is_debug', 'edu_max', 'ambi_spec', 'optim_paras',
+                'optimizer_options', 'file_sim')
 
         # Initialize containers
         i, j = num_periods, max(states_number_period)
@@ -545,18 +544,16 @@ class TestClass(object):
         base_args = (period, num_periods, num_states,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax_standard,
-                     draws_emax_transformed, shocks_cov)
+            num_draws_emax, maxe, draws_emax_standard, draws_emax_transformed)
 
         args = ()
-        args += base_args + (ambi_spec, optim_paras, optimizer_options,
-                             opt_ambi_details)
+        args += base_args + (ambi_spec, optim_paras, optimizer_options)
+        args += (opt_ambi_details, )
         py, _ = get_endogenous_variable(*args)
 
         args = ()
-        args += base_args + (ambi_spec['measure'], ambi_spec['mean'], level, \
-                                                              optim_paras[
-            'delta'])
+        args += base_args + (shocks_cov, ambi_spec['measure'])
+        args += (ambi_spec['mean'], level, optim_paras['delta'])
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
         np.testing.assert_almost_equal(py, replace_missing_values(f90))
@@ -604,7 +601,8 @@ class TestClass(object):
 
         # Check function for random choice and make sure that there are no
         # duplicates.
-        f90 = fort_debug.wrapper_random_choice(candidates, num_states, num_points_interp)
+        args = (candidates, num_states, num_points_interp)
+        f90 = fort_debug.wrapper_random_choice(*args)
         np.testing.assert_equal(len(set(f90)), len(f90))
         np.testing.assert_equal(len(f90), num_points_interp)
 

@@ -826,7 +826,7 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     num_periods = num_periods_int
 
     ! Call function of interest
-    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, ambi_spec, optim_paras, optimizer_options)
+    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, ambi_spec, optim_paras, optimizer_options)
 
 END SUBROUTINE
 !******************************************************************************
@@ -1208,7 +1208,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     ambi_spec%mean = mean
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, opt_ambi_details, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_standard, draws_emax_transformed, edu_start_int, edu_max_int, shocks_cov, ambi_spec, optim_paras, optimizer_options)
+    CALL get_endogenous_variable(exogenous_variable, opt_ambi_details, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_standard, draws_emax_transformed, edu_start_int, edu_max_int, ambi_spec, optim_paras, optimizer_options)
 
 END SUBROUTINE
 !******************************************************************************

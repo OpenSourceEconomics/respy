@@ -123,18 +123,17 @@ class TestClass(object):
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-                     rewards_systematic, edu_max, edu_start, periods_emax,
-                     states_all, mapping_state_idx, shocks_cov)
+            rewards_systematic, edu_max, edu_start, periods_emax,
+            states_all, mapping_state_idx)
 
         args = ()
-        args += base_args + (
-        ambi_spec, optim_paras, optimizer_options, opt_ambi_details)
+        args += base_args + (ambi_spec, optim_paras, optimizer_options)
+        args += (opt_ambi_details, )
         py, _ = construct_emax_ambiguity(*args)
 
         args = ()
-        args += base_args + (
-        ambi_spec['measure'], ambi_spec['mean'], optim_paras['level'],
-        optim_paras['delta'])
+        args += base_args + (shocks_cov, ambi_spec['measure'])
+        args += (ambi_spec['mean'], optim_paras['level'], optim_paras['delta'])
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (file_sim, False)
 
@@ -148,8 +147,8 @@ class TestClass(object):
             num_free_ambi = 4
 
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-                     rewards_systematic, edu_max, edu_start, periods_emax,
-                     states_all, mapping_state_idx)
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx)
 
         args = ()
         args += base_args + (optim_paras, shocks_cov)
@@ -163,16 +162,16 @@ class TestClass(object):
         # Let us check the calculation of the derivatives for the criterion
         # function of the ambiguity optimization.
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-                     rewards_systematic, edu_max, edu_start, periods_emax,
-                     states_all, mapping_state_idx)
+            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
+            mapping_state_idx)
 
         args = ()
         args += base_args + (optim_paras, shocks_cov)
         py = approx_fprime(x, criterion_ambiguity, fort_slsqp_eps, *args)
 
         args = ()
-        args += base_args + (
-        optim_paras['delta'], shocks_cov, fort_slsqp_eps, num_free_ambi)
+        args += base_args + (optim_paras['delta'], shocks_cov, fort_slsqp_eps)
+        args += (num_free_ambi, )
         f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args)
         np.testing.assert_allclose(py, f90)
 
@@ -190,14 +189,14 @@ class TestClass(object):
         py = approx_fprime(x, constraint_ambiguity, fort_slsqp_eps, *args)
 
         args = ()
-        args += (
-        shocks_cov, optim_paras['level'], fort_slsqp_eps, num_free_ambi)
+        args += (shocks_cov, optim_paras['level'], fort_slsqp_eps)
+        args += (num_free_ambi, )
         f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args)
         np.testing.assert_allclose(py, f90)
 
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-                     rewards_systematic, edu_max, edu_start, periods_emax,
-                     states_all, mapping_state_idx, shocks_cov)
+            rewards_systematic, edu_max, edu_start, periods_emax,
+            states_all, mapping_state_idx, shocks_cov)
 
         args = ()
         args += base_args + (optim_paras, optimizer_options, ambi_spec)
@@ -205,8 +204,8 @@ class TestClass(object):
 
         args = ()
         args += base_args + (optim_paras['level'], optim_paras['delta'])
-        args += (
-        fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, num_free_ambi)
+        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+        args += (num_free_ambi, )
         f90, _, _ = fort_debug.wrapper_get_worst_case(*args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
