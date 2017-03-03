@@ -375,6 +375,12 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     optim_paras%level = level
     optim_paras%delta = delta
 
+    IF (mean) THEN
+        num_free_ambi = 2
+    ELSE
+        num_free_ambi = 4
+    END IF
+    
     ! TODO: Remove _int
     ambi_spec%measure = measure_int
     ambi_spec%mean = mean
