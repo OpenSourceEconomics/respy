@@ -353,7 +353,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
         DO i = 1, num_slaves
             displs(i) = SUM(num_states_slaves(period, :i - 1))
         END DO
-        DO k = 1, 8
+        DO k = 1, 7
             CALL MPI_GATHERV(opt_ambi_details(period, :, k), 0, MPI_DOUBLE, opt_ambi_details(period, :, k), num_states_slaves(period, :), displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
         END DO
     END DO

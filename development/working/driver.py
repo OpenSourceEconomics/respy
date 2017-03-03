@@ -61,7 +61,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 #
 # #   os.chdir('../')
 #     print(crit)
-for _ in range(200):
+for _ in range(1):
     max_draws = np.random.randint(10, 100)
 
     # Generate random initialization file

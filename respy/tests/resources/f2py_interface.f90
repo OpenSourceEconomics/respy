@@ -6,7 +6,7 @@
 !
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, measure_int, mean_int, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, measure, mean, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -44,9 +44,9 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic_int
     LOGICAL, INTENT(IN)             :: is_debug_int
-    LOGICAL, INTENT(IN)             :: mean_int
+    LOGICAL, INTENT(IN)             :: mean
 
-    CHARACTER(10), INTENT(IN)       :: measure_int
+    CHARACTER(10), INTENT(IN)       :: measure
 
     !/* internal objects            */
 
@@ -79,10 +79,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
-    ! TODO: Why _int?
-    ambi_spec%measure = measure_int
-    ambi_spec%mean = mean_int
-
+    ambi_spec%measure = measure
+    ambi_spec%mean = mean
 
     !# Distribute model parameters
     CALL dist_optim_paras(optim_paras, x, dist_optim_paras_info)
@@ -153,7 +151,7 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, periods_draws_emax_int, measure_int, mean, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int)
+SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, periods_draws_emax_int, measure, mean, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int)
 
     ! The presence of max_states_period breaks the quality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -199,8 +197,8 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     LOGICAL, INTENT(IN)             :: is_debug_int
     LOGICAL, INTENT(IN)             :: mean
 
-    CHARACTER(10), INTENT(IN)       :: measure_int
     CHARACTER(225), INTENT(IN)      :: file_sim
+    CHARACTER(10), INTENT(IN)       :: measure
 
 !-----------------------------------------------------------------------------
 ! Algorithm
@@ -226,7 +224,7 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     optim_paras%level = level
     optim_paras%delta = delta
 
-    ambi_spec%measure = measure_int
+    ambi_spec%measure = measure
     ambi_spec%mean = mean
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
@@ -310,7 +308,7 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int,  is_debug_int, is_interpolated_int, num_points_interp_int, measure_int, mean, shocks_cholesky, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
+SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int,  is_debug_int, is_interpolated_int, num_points_interp_int, measure, mean, shocks_cholesky, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
 
     !/* external libraries      */
 
@@ -350,7 +348,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     LOGICAL, INTENT(IN)             :: mean
 
     CHARACTER(225), INTENT(IN)      :: file_sim
-    CHARACTER(10), INTENT(IN)       :: measure_int
+    CHARACTER(10), INTENT(IN)       :: measure
 
     !/* internal objects*/
 
@@ -366,6 +364,12 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
 
+    IF (mean) THEN
+        num_free_ambi = 2
+    ELSE
+        num_free_ambi = 4
+    END IF
+
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
@@ -375,14 +379,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     optim_paras%level = level
     optim_paras%delta = delta
 
-    IF (mean) THEN
-        num_free_ambi = 2
-    ELSE
-        num_free_ambi = 4
-    END IF
-    
-    ! TODO: Remove _int
-    ambi_spec%measure = measure_int
+    ambi_spec%measure = measure
     ambi_spec%mean = mean
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
@@ -630,8 +627,6 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
     ! Construct derived types
     optim_paras%delta = delta
 
-    ! TODO: Why pass in shocks and optim_paras?
-
     emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov)
 
 END SUBROUTINE
@@ -738,7 +733,7 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, measure_int, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
+SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, measure, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
 
     !/* external libraries      */
 
@@ -761,8 +756,8 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     DOUBLE PRECISION, INTENT(IN)    :: level
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
-    CHARACTER(10), INTENT(IN)       :: measure_int
     CHARACTER(225), INTENT(IN)      :: file_sim
+    CHARACTER(10), INTENT(IN)       :: measure
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
     INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
@@ -781,9 +776,9 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
 
     DOUBLE PRECISION, ALLOCATABLE   :: opt_ambi_details(:, :, :)
 
-    INTEGER :: info
+    INTEGER                         :: info
 
-    DOUBLE PRECISION :: shocks_cholesky(4, 4)
+    DOUBLE PRECISION                :: shocks_cholesky(4, 4)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -805,7 +800,6 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     ! We need to determine the Cholesky decomposition
     CALL get_cholesky_decomposition(shocks_cholesky, info, shocks_cov)
     IF (info .NE. zero_dble) THEN
-        ! TODO: Once this is removed, we can move this to a pure procedure.
         STOP 'Problem in the Cholesky decomposition'
     END IF
 
@@ -818,7 +812,7 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     optim_paras%level = level
     optim_paras%delta = delta
 
-    ambi_spec%measure = measure_int
+    ambi_spec%measure = measure
     ambi_spec%mean = mean
 
     !# Transfer global RESFORT variables
@@ -1131,7 +1125,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_standard, draws_emax_transformed, shocks_cov, measure_int, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_standard, draws_emax_transformed, shocks_cov, measure, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -1169,7 +1163,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
     LOGICAL, INTENT(IN)                 :: mean
 
-    CHARACTER(10), INTENT(IN)           :: measure_int
+    CHARACTER(10), INTENT(IN)           :: measure
 
     !/* internal arguments*/
 
@@ -1204,7 +1198,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     optim_paras%level = level
     optim_paras%delta = delta
 
-    ambi_spec%measure = measure_int
+    ambi_spec%measure = measure
     ambi_spec%mean = mean
 
     ! Call function of interest
@@ -1631,9 +1625,9 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level, num_free_amb
 
     DOUBLE PRECISION, INTENT(OUT)       :: rslt
 
+    DOUBLE PRECISION, INTENT(IN)        :: x(num_free_ambi_int)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: level(1)
-    DOUBLE PRECISION, INTENT(IN)        :: x(num_free_ambi_int)
 
     INTEGER, INTENT(IN)                 :: num_free_ambi_int
 

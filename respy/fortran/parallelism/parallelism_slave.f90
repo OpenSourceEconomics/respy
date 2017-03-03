@@ -112,7 +112,7 @@ PROGRAM resfort_parallel_slave
                 lower_bound_states = SUM(num_states_slaves(period, :rank)) + 1
                 upper_bound_states = SUM(num_states_slaves(period, :rank + 1))
 
-                DO k = 1, 8
+                DO k = 1, 7
                     CALL MPI_GATHERV(opt_ambi_details(period, lower_bound_states:upper_bound_states, k), num_states_slaves(period, rank + 1), MPI_DOUBLE, opt_ambi_details, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
                 END DO
 
