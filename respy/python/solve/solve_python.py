@@ -48,12 +48,13 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
         num_points_interp, ambi_spec, optim_paras, optimizer_options,
         file_sim, True)
 
-    if optim_paras['level'] > MIN_AMBIGUITY:
-        record_ambiguity(opt_ambi_details, states_number_period, num_periods,
-            file_sim, optim_paras)
-
     if not is_myopic:
         record_solution_progress(-1, file_sim)
+        # Only if individuals are not myopic is there a need to record the
+        # results from the worst-case determination.
+        if optim_paras['level'] > MIN_AMBIGUITY:
+            record_ambiguity(opt_ambi_details, states_number_period, num_periods,
+                file_sim, optim_paras)
 
     # Collect return arguments in tuple
     args = (periods_rewards_systematic, states_number_period,
