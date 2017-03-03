@@ -211,6 +211,12 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     num_periods = num_periods_int
     min_idx = min_idx_int
 
+    IF (mean) THEN
+        num_free_ambi = 2
+    ELSE
+        num_free_ambi = 4
+    END IF
+
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
