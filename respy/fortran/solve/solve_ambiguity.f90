@@ -80,6 +80,8 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
         ! In conflict with the usual design, we pass in shocks_cov directly. Otherwise it needs to be constructed over and over for each of the evaluations of the criterion functions.
         CALL get_worst_case(opt_return, is_success, mode, num_periods, num_draws_emax, period, k, draws_emax_standard, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras, optimizer_options)
 
+        div = -(constraint_ambiguity(opt_return, shocks_cov, optim_paras) - optim_paras%level)
+
         rslt_mean = opt_return(:2)
         IF(.NOT. ambi_spec%mean) THEN
             rslt_sd = opt_return(3:)
