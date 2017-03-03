@@ -19,6 +19,7 @@ PROGRAM resfort_parallel_slave
     IMPLICIT NONE
 
     !/* objects                 */
+
     TYPE(PRECOND_DICT)              :: precond_spec
 
     INTEGER(our_int), ALLOCATABLE   :: opt_ambi_summary_slaves(:, :)
@@ -43,7 +44,6 @@ PROGRAM resfort_parallel_slave
     REAL(our_dble), ALLOCATABLE     :: contribs(:)
 
     REAL(our_dble)                  :: x_optim_all_unscaled(28)
-    REAL(our_dble)                  :: precond_minimum
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
 

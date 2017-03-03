@@ -9,8 +9,6 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
         file_sim, optim_paras):
     """ Write result of optimization problem to log file.
     """
-
-
     # We print the actual covariance matrix for better interpretability.
     shocks_cholesky = optim_paras['shocks_cholesky']
     shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
@@ -50,11 +48,11 @@ def record_ambiguity(opt_ambi_details, states_number_period, num_periods,
                 string = '   {:<15}{:<100}\n\n'
                 file_.write(string.format(*['Message', message]))
 
-                string = '   {:<12}   {:<10}\n\n'
+                string = '   {:<23}{:<10}\n\n'
                 args = ['Mean', 'Covariance']
                 file_.write(string.format(*args))
 
-                string = '   {:>10.5f}  {:>10.5f}{:>10.5f}{:>10.5f}{:>10.5f}\n'
+                string = '   {:>15.5f}          {:>20.5f}{:>20.5f}{:>20.5f}{:>20.5f}\n'
                 for i in range(4):
                     line = (rslt_mean[i], rslt_cov[i, :])
                     line = np.append(*line)

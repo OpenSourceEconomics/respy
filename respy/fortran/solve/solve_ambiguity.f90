@@ -51,20 +51,17 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     INTEGER(our_int)                :: mode
 
     REAL(our_dble)                  :: opt_return(num_free_ambi)
+    REAL(our_dble)                  :: is_success
+    REAL(our_dble)                  :: rslt_mean(2)
+    REAL(our_dble)                  :: rslt_all(4)
+    REAL(our_dble)                  :: rslt_sd(2)
     REAL(our_dble)                  :: div(1)
 
-    REAL(our_dble)                  :: ambi_rslt_mean_subset(2)
-    REAL(our_dble)                  :: ambi_rslt_chol_subset(3)
-    REAL(our_dble)                  :: ambi_rslt_all(5)
-    REAL(our_dble)                  :: is_success
-
     LOGICAL                         :: is_deterministic
-    REAL(our_dble)                  :: rslt_mean(2), rslt_sd(2), rslt_all(4)
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
 
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
@@ -261,9 +258,10 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
     !/* internals objects    */
 
     REAL(our_dble)                  :: draws_relevant(num_draws_emax, 4)
-    REAL(our_dble)                  :: ambi_cand_mean_full(4)
-    REAL(our_dble)                  :: ambi_cand_chol(4, 4), ambi_cand_cov(4, 4), ambi_cand_chol_flat(3)
-REAL(our_dble)                  ::  shocks_mean_cand(4), shocks_cholesky_cand(4, 4), shocks_cov_cand(4, 4)
+    REAL(our_dble)                  :: shocks_cholesky_cand(4, 4)
+    REAL(our_dble)                  :: shocks_cov_cand(4, 4)
+    REAL(our_dble)                  :: shocks_mean_cand(4)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------

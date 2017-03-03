@@ -30,17 +30,17 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
     !/* internal objects    */
 
     INTEGER(our_int)                :: period
-    INTEGER(our_int)                :: mode
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: i
 
-    REAL(our_dble)                  :: ambi_rslt_mean_subset(2)
-    REAL(our_dble)                  :: ambi_rslt_chol_flat(3)
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
-    REAL(our_dble)                  :: ambi_rslt_chol(4, 4)
-    REAL(our_dble)                  :: ambi_rslt_cov(4, 4)
-    REAL(our_dble)                  :: shocks_cov(4, 4), shocks_corr_base(4, 4)
-    REAL(our_dble)                  :: div(1), rslt_mean(4),rslt_sd(4), rslt_cov(4, 4)
+    REAL(our_dble)                  :: shocks_corr_base(4, 4)
+    REAL(our_dble)                  :: shocks_cov(4, 4)
+    REAL(our_dble)                  :: rslt_cov(4, 4)
+    REAL(our_dble)                  :: rslt_mean(4)
+    REAL(our_dble)                  :: rslt_sd(4)
+    REAL(our_dble)                  :: div(1)
+    REAL(our_dble)                  :: mode
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_success
@@ -59,8 +59,8 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
     110 FORMAT(3x,A12,f10.5)
     120 FORMAT(3x,A7,8x,A5,20x)
     130 FORMAT(3x,A7,8x,A100)
-    140 FORMAT(3x,A4,11x,A10)
-    150 FORMAT(3x,f10.5,2x,f10.5,f10.5,f10.5,f10.5)
+    140 FORMAT(3x,A4,19x,A10)
+    150 FORMAT(3x,f15.5,10x,4(f20.5))
 
     OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.amb', ACCESS='APPEND', ACTION='WRITE')
 
@@ -169,40 +169,46 @@ FUNCTION get_message(mode)
 
     CHARACTER(100)                  :: get_message
 
-    INTEGER(our_int), INTENT(IN)    :: mode
+    REAL(our_dble), INTENT(IN)      :: mode
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: mode_int
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
+    mode_int = DINT(mode)
+
     ! Optimizer get_message
-    IF (mode == -1) THEN
+    IF (mode_int == -1) THEN
         get_message = 'Gradient evaluation required (g & a)'
-    ELSEIF (mode == 0) THEN
+    ELSEIF (mode_int == 0) THEN
         get_message = 'Optimization terminated successfully'
-    ELSEIF (mode == 1) THEN
+    ELSEIF (mode_int == 1) THEN
         get_message = 'Function evaluation required (f & c)'
-    ELSEIF (mode == 2) THEN
+    ELSEIF (mode_int == 2) THEN
         get_message = 'More equality constraints than independent variables'
-    ELSEIF (mode == 3) THEN
+    ELSEIF (mode_int == 3) THEN
         get_message = 'More than 3*n iterations in LSQ subproblem'
-    ELSEIF (mode == 4) THEN
+    ELSEIF (mode_int == 4) THEN
         get_message = 'Inequality constraints incompatible'
-    ELSEIF (mode == 5) THEN
+    ELSEIF (mode_int == 5) THEN
         get_message = 'Singular matrix E in LSQ subproblem'
-    ELSEIF (mode == 6) THEN
+    ELSEIF (mode_int == 6) THEN
         get_message = 'Singular matrix C in LSQ subproblem'
-    ELSEIF (mode == 7) THEN
+    ELSEIF (mode_int == 7) THEN
         get_message = 'Rank-deficient equality constraint subproblem HFTI'
-    ELSEIF (mode == 8) THEN
+    ELSEIF (mode_int == 8) THEN
         get_message = 'Positive directional derivative for linesearch'
-    ELSEIF (mode == 9) THEN
+    ELSEIF (mode_int == 9) THEN
         get_message = 'Iteration limit exceeded'
 
     ! The following are project-specific return codes.
-    ELSEIF (mode == 15) THEN
+    ELSEIF (mode_int == 15) THEN
         get_message = 'No random variation in shocks'
-    ELSEIF (mode == 16) THEN
+    ELSEIF (mode_int == 16) THEN
         get_message = 'Optimization terminated successfully'
     ELSE
         STOP 'Misspecified mode'

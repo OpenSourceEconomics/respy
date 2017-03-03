@@ -10,8 +10,6 @@ MODULE parallelism_auxiliary
 
     USE optimizers_interfaces
 
-    USE parallelism_constants
-
     USE shared_interface
 
     USE solve_ambiguity
@@ -19,6 +17,8 @@ MODULE parallelism_auxiliary
     USE solve_fortran
 
 #if MPI_AVAILABLE
+
+    USE parallelism_constants
 
     USE mpi
 
@@ -31,6 +31,91 @@ MODULE parallelism_auxiliary
     PUBLIC
 
 CONTAINS
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, file_sim)
+
+    !/* external objects        */
+
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
+
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
+
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
+
+    INTEGER(our_int), INTENT(IN)                    :: edu_start
+    INTEGER(our_int), INTENT(IN)                    :: edu_max
+
+    CHARACTER(225), INTENT(IN)                      :: file_sim
+
+    !/* internal objects        */
+
+    REAL(our_dble), ALLOCATABLE                     :: opt_ambi_details(:, :, :)
+    REAL(our_dble)                                  :: x_all_current(28)
+
+    INTEGER(our_int), ALLOCATABLE                   :: num_states_slaves(:, :)
+    INTEGER(our_int), ALLOCATABLE                   :: num_obs_slaves(:)
+
+    INTEGER(our_int)                                :: displs(num_slaves)
+    INTEGER(our_int)                                :: num_states
+    INTEGER(our_int)                                :: period
+    INTEGER(our_int)                                :: i
+    INTEGER(our_int)                                :: k
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+#if MPI_AVAILABLE
+
+    CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
+
+
+    CALL get_optim_paras(x_all_current, optim_paras, .True.)
+
+    CALL MPI_Bcast(x_all_current, 28, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+
+
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
+
+
+    ALLOCATE(periods_emax(num_periods, max_states_period))
+    periods_emax = MISSING_FLOAT
+
+    DO period = (num_periods - 1), 0, -1
+
+        num_states = states_number_period(period + 1)
+
+        CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
+
+    END DO
+
+    ! I also need the information about the performance of the worst-case optimization.
+    IF (.NOT. ALLOCATED(num_states_slaves)) THEN
+        CALL distribute_workload(num_states_slaves, num_obs_slaves)
+    END IF
+
+    ALLOCATE(opt_ambi_details(num_periods, max_states_period, 7))
+    opt_ambi_details = MISSING_FLOAT
+    DO period = 1, num_periods
+        DO i = 1, num_slaves
+            displs(i) = SUM(num_states_slaves(period, :i - 1))
+        END DO
+        DO k = 1, 7
+            CALL MPI_GATHERV(opt_ambi_details(period, :, k), 0, MPI_DOUBLE, opt_ambi_details(period, :, k), num_states_slaves(period, :), displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+        END DO
+    END DO
+
+    CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim, optim_paras)
+
+#endif
+
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE distribute_workload(num_states_slaves, num_obs_slaves)

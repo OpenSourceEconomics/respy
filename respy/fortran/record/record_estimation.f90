@@ -434,7 +434,6 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, optim_paras, is_setup)
                 ! We need to do some pre-processing for the transformed bounds.
                 val_char = ''
                 DO k = 1, 2
-                    ! TODO: THis is not a very reliable cirterion, I need to somehow be able to obtain that information even after the transforamtion.
                     no_bounds = (ABS(x_optim_bounds_free_scaled(k, j)) > Large_FLOAT)
 
                     IF(no_bounds) THEN

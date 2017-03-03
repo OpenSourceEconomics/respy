@@ -85,7 +85,7 @@ def run(args):
             seed = seed_investigation
         else:
             seed = random.randrange(1, 100000)
-
+        print('seed', seed)
         np.random.seed(seed)
 
         # Construct test case.
