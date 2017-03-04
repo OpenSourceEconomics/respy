@@ -37,7 +37,8 @@ from codes.auxiliary import write_draws
 from codes.random_init import generate_init
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 
+#write_draws(5, 5000)
 np.random.seed(123)
 respy_obj = RespyCls('model.respy.ini')
 respy_obj = simulate_observed(respy_obj)
-_, crit = estimate(respy_obj)
+#_, crit = estimate(respy_obj)
