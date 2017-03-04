@@ -1175,9 +1175,10 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     CHARACTER(10), INTENT(IN)           :: measure
 
     !/* internal arguments*/
+    INTEGER                             :: info
 
     DOUBLE PRECISION, ALLOCATABLE       :: opt_ambi_details(:, :, :)
-
+    DOUBLE PRECISION                    :: shocks_cholesky(4, 4)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -1199,11 +1200,17 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
         num_free_ambi = 4
     END IF
 
+    CALL get_cholesky_decomposition(shocks_cholesky, info, shocks_cov)
+    IF (info .NE. zero_dble) THEN
+        STOP 'Problem in the Cholesky decomposition'
+    END IF
+
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
+    optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%level = level
     optim_paras%delta = delta
 

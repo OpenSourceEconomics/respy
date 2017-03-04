@@ -87,7 +87,7 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
         IF(.NOT. ambi_spec%mean) THEN
             rslt_sd = opt_return(3:)
         ELSE
-            rslt_sd = (/DSQRT(shocks_cov(3, 3)), DSQRT(shocks_cov(4, 4))/)
+            rslt_sd = (/DSQRT(shocks_cov(1, 1)), DSQRT(shocks_cov(2, 2))/)
         END IF
 
     END IF
