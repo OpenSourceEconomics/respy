@@ -287,6 +287,7 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
 
     ! Create the relevant set of random shocks
     IF (is_mean) THEN
+        draws_emax_relevant = draws_emax_transformed
         DO i = 1, 2
             draws_emax_relevant(:, i) = draws_emax_transformed(:, i) + x(i)
         END DO

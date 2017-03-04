@@ -58,6 +58,7 @@ def run(args):
         tests = json.load(open(fname, 'r'))
 
         init_dict, crit_val = tests[idx]
+        init_dict['AMBIGUITY']['mean'] = True
 
         print_init_dict(init_dict)
         respy_obj = RespyCls('test.respy.ini')
@@ -118,7 +119,6 @@ def run(args):
 
             # TODO: Temporary fixes ...
             init_dict['AMBIGUITY']['mean'] = True
-            init_dict['PROGRAM']['procs'] = 1
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
