@@ -587,7 +587,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov)
+SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov)
 
     !/* external libraries      */
 
@@ -602,6 +602,7 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
     DOUBLE PRECISION, INTENT(OUT)   :: emax
 
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax_standard(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(4, 4)
@@ -633,12 +634,12 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
     ! Construct derived types
     optim_paras%delta = delta
 
-    emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov)
+    emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov, fort_slsqp_eps, num_free_ambi_int)
+SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov, fort_slsqp_eps, num_free_ambi_int)
 
     !/* external libraries      */
 
@@ -653,6 +654,7 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_
     DOUBLE PRECISION, INTENT(OUT)   :: grad(num_free_ambi_int)
 
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax_standard(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: x(num_free_ambi_int)
@@ -685,7 +687,7 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_
     ! Construct derived types
     optim_paras%delta = delta
 
-    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov, fort_slsqp_eps)
+    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov, fort_slsqp_eps)
 
 END SUBROUTINE
 !******************************************************************************
@@ -739,7 +741,7 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, measure, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
+SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, measure, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
 
     !/* external libraries      */
 
@@ -753,6 +755,7 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
 
     DOUBLE PRECISION, INTENT(OUT)   :: emax
 
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax_standard(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
@@ -826,7 +829,7 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     num_periods = num_periods_int
 
     ! Call function of interest
-    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, ambi_spec, optim_paras, optimizer_options)
+    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, ambi_spec, optim_paras, optimizer_options)
 
 END SUBROUTINE
 !******************************************************************************
@@ -1652,7 +1655,7 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level, num_free_amb
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, num_free_ambi_int)
+SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, num_free_ambi_int)
 
     !/* external libraries      */
 
@@ -1669,6 +1672,7 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, nu
 
     INTEGER, INTENT(OUT)            :: mode
 
+    DOUBLE PRECISION, INTENT(IN)    :: draws_emax_transformed(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic_int(:)
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax_standard(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
@@ -1704,7 +1708,7 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, nu
     optim_paras%level = level
     optim_paras%delta = delta
 
-    CALL get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, optim_paras, optimizer_options)
+    CALL get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, optim_paras, optimizer_options)
 
 END SUBROUTINE
 !******************************************************************************

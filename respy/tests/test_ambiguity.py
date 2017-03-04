@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 import sys
 
+from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
@@ -114,6 +115,8 @@ class TestClass(object):
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
             np.identity(4), (num_draws_emax,))
+        draws_transformed = transform_disturbances(draws_standard,
+            np.tile(0, 4), optim_paras['shocks_cholesky'])
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -123,8 +126,8 @@ class TestClass(object):
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-            rewards_systematic, edu_max, edu_start, periods_emax,
-            states_all, mapping_state_idx)
+            draws_transformed, rewards_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx)
 
         args = ()
         args += base_args + (ambi_spec, optim_paras, optimizer_options)
@@ -147,8 +150,8 @@ class TestClass(object):
             num_free_ambi = 4
 
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx)
+            draws_transformed, rewards_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx)
 
         args = ()
         args += base_args + (optim_paras, shocks_cov)
@@ -162,8 +165,8 @@ class TestClass(object):
         # Let us check the calculation of the derivatives for the criterion
         # function of the ambiguity optimization.
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx)
+            draws_transformed, rewards_systematic, edu_max,  edu_start,
+            periods_emax, states_all, mapping_state_idx)
 
         args = ()
         args += base_args + (optim_paras, shocks_cov)
@@ -195,8 +198,8 @@ class TestClass(object):
         np.testing.assert_allclose(py, f90)
 
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-            rewards_systematic, edu_max, edu_start, periods_emax,
-            states_all, mapping_state_idx, shocks_cov)
+            draws_transformed, rewards_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, shocks_cov)
 
         args = ()
         args += base_args + (optim_paras, optimizer_options, ambi_spec)
