@@ -210,6 +210,8 @@ FUNCTION get_message(mode)
         get_message = 'No random variation in shocks'
     ELSEIF (mode_int == 16) THEN
         get_message = 'Optimization terminated successfully'
+    ELSEIF (mode_int == 17) THEN
+        get_message = 'Optimization failed due to NAN'
     ELSE
         STOP 'Misspecified mode'
     END IF

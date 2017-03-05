@@ -215,6 +215,11 @@ SUBROUTINE get_worst_case(opt_return, is_success, mode, num_periods, num_draws_e
         !Call to SLSQP code
         CALL SLSQP(M, MEQ, LA, N, X, XL, XU, F, C, G, A, ACC, ITER, mode, W, LEN_W, JW, LEN_JW)
 
+        ! Stabilization as in a rare number of cases the SLSQP routine returns NAN. This is noted in the logging files.
+        IF (ANY(ISNAN(X))) THEN
+            mode = 17
+        END IF
+
         ! Check if SLSQP has completed
         IF (.NOT. ABS(mode) .EQ. one_int) THEN
             is_finished = .True.
