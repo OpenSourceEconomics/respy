@@ -12,15 +12,6 @@ import os
 top = '.'
 out = '.bld'
 
-# Set of compiler options.
-DEBUG_OPTIONS = ['-O', '-Wall', '-Wline-truncation', '-Wcharacter-truncation']
-DEBUG_OPTIONS += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
-DEBUG_OPTIONS += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
-DEBUG_OPTIONS += ['-fbacktrace', '-g', '-fmax-errors=1']
-DEBUG_OPTIONS += ['-ffree-line-length-0', '-cpp']
-
-PRODUCTION_OPTIONS = ['-O3', '-ffree-line-length-0', '-cpp']
-
 
 def options(ctx):
 
@@ -201,12 +192,6 @@ def configure(ctx):
     if not ctx.env['FORTRAN']:
         return
 
-    # The build is currently only tested for GFORTRAN.
-    if ctx.env['DEBUG']:
-        ctx.env.append_unique('FCFLAGS', DEBUG_OPTIONS)
-    else:
-        ctx.env.append_unique('FCFLAGS', PRODUCTION_OPTIONS)
-
     # Enable static libraries
     ctx.env.append_unique('STLIBPATH', ['../.bld/fortran'])
     ctx.env.append_unique('STLIB', ['resfort'])
@@ -225,6 +210,27 @@ def configure(ctx):
         shutil.copy(fname + '_scipy.f', fname + '.f')
     else:
         shutil.copy(fname + '_netlib.f', fname + '.f')
+
+    # Set of compiler options.
+    flags_production = ['-O3', '-ffree-line-length-0', '-cpp']
+
+    flags_debug = []
+    flags_debug += ['-O', '-Wall', '-Wline-truncation']
+    flags_debug += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
+    flags_debug += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
+    flags_debug += ['-fbacktrace', '-g', '-fmax-errors=1']
+    flags_debug += ['-ffree-line-length-0', '-cpp', '-Wcharacter-truncation']
+
+    # The following flags only work with the NETLIB version of the SLSQP
+    # algorithm.
+    if not ctx.env['TESTING']:
+        flags_debug += ['-ffpe-trap=invalid,zero']
+
+    # The build is currently only tested for GFORTRAN.
+    if ctx.env['DEBUG']:
+        ctx.env.append_unique('FCFLAGS', flags_debug)
+    else:
+        ctx.env.append_unique('FCFLAGS', flags_production)
 
 
 def build(ctx):

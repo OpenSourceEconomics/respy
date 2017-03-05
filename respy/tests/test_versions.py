@@ -256,17 +256,11 @@ class TestClass(object):
                 assert open('est.respy.info', 'r').read() == base_est_info
 
             if base_est_log is None:
-                # TODO: REmove
-                import shutil
-                shutil.copy('est.respy.log', 'est.respy.fort')
-
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)
 
             if delta > 0.00 and is_ambiguity:
                 fname = file_sim + '.respy.amb'
                 if base_amb_log is None:
-                    import shutil
-                    shutil.copy('data.respy.amb', 'data.respy.fort')
                     base_amb_log = open(fname, 'r').read()
                 assert open(fname, 'r').read() == base_amb_log

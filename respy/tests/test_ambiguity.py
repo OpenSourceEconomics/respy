@@ -198,8 +198,8 @@ class TestClass(object):
         np.testing.assert_allclose(py, f90)
 
         base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-            draws_transformed, rewards_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, shocks_cov)
+             draws_transformed, rewards_systematic, edu_max, edu_start,
+             periods_emax, states_all, mapping_state_idx, shocks_cov)
 
         args = ()
         args += base_args + (optim_paras, optimizer_options, ambi_spec)

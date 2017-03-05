@@ -171,72 +171,75 @@ class TestClass(object):
 
     def test_3(self):
         """ Compare results between FORTRAN and PYTHON of selected functions.
-        """  # Draw random requests for testing purposes.
-        num_draws_emax = np.random.randint(2, 1000)
-        dim = np.random.randint(1, 6)
+        """
+        for _ in range(10):
 
-        matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
-        cov = np.dot(matrix, matrix.T)
+            # Draw random requests for testing purposes.
+            num_draws_emax = np.random.randint(2, 1000)
+            dim = np.random.randint(1, 6)
 
-        # PDF of normal distribution
-        args = np.random.normal(size=3)
-        args[-1] **= 2
+            matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
+            cov = np.dot(matrix, matrix.T)
 
-        f90 = fort_debug.wrapper_normal_pdf(*args)
-        py = norm.pdf(*args)
+            # PDF of normal distribution
+            args = np.random.normal(size=3)
+            args[-1] **= 2
 
-        np.testing.assert_almost_equal(py, f90)
+            f90 = fort_debug.wrapper_normal_pdf(*args)
+            py = norm.pdf(*args)
 
-        # Singular Value Decomposition
-        py = scipy.linalg.svd(matrix)
-        f90 = fort_debug.wrapper_svd(matrix, dim)
+            np.testing.assert_almost_equal(py, f90)
 
-        for i in range(3):
-            np.testing.assert_allclose(py[i], f90[i], rtol=1e-05, atol=1e-06)
+            # Singular Value Decomposition
+            py = scipy.linalg.svd(matrix)
+            f90 = fort_debug.wrapper_svd(matrix, dim)
 
-        # Pseudo-Inverse
-        py = np.linalg.pinv(matrix)
-        f90 = fort_debug.wrapper_pinv(matrix, dim)
+            for i in range(3):
+                np.testing.assert_allclose(py[i], f90[i], rtol=1e-05, atol=1e-06)
 
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+            # Pseudo-Inverse
+            py = np.linalg.pinv(matrix)
+            f90 = fort_debug.wrapper_pinv(matrix, dim)
 
-        # Inverse
-        py = np.linalg.inv(cov)
-        f90 = fort_debug.wrapper_inverse(cov, dim)
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-        # Determinant
-        py = np.linalg.det(cov)
-        f90 = fort_debug.wrapper_determinant(cov)
+            # Inverse
+            py = np.linalg.inv(cov)
+            f90 = fort_debug.wrapper_inverse(cov, dim)
+            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+            # Determinant
+            py = np.linalg.det(cov)
+            f90 = fort_debug.wrapper_determinant(cov)
 
-        # Trace
-        py = np.trace(cov)
-        f90 = fort_debug.wrapper_trace(cov)
+            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+            # Trace
+            py = np.trace(cov)
+            f90 = fort_debug.wrapper_trace(cov)
 
-        # Random normal deviates. This only tests the interface, requires
-        # visual inspection in IPYTHON notebook as well.
-        fort_debug.wrapper_standard_normal(num_draws_emax)
+            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
-        # Clipping values below and above bounds.
-        num_values = np.random.randint(1, 10000)
-        lower_bound = np.random.randn()
-        upper_bound = lower_bound + np.random.ranf()
-        values = np.random.normal(size=num_values)
+            # Random normal deviates. This only tests the interface, requires
+            # visual inspection in IPYTHON notebook as well.
+            fort_debug.wrapper_standard_normal(num_draws_emax)
 
-        f90 = fort_debug.wrapper_clip_value(values, lower_bound, upper_bound,
-            num_values)
-        py = np.clip(values, lower_bound, upper_bound)
+            # Clipping values below and above bounds.
+            num_values = np.random.randint(1, 10000)
+            lower_bound = np.random.randn()
+            upper_bound = lower_bound + np.random.ranf()
+            values = np.random.normal(size=num_values)
 
-        np.testing.assert_almost_equal(py, f90)
+            f90 = fort_debug.wrapper_clip_value(values, lower_bound, upper_bound,
+                num_values)
+            py = np.clip(values, lower_bound, upper_bound)
 
-        # Spectral condition number
-        py = spectral_condition_number(cov)
-        fort = fort_debug.wrapper_spectral_condition_number(cov)
-        np.testing.assert_almost_equal(py, fort)
+            np.testing.assert_almost_equal(py, f90)
+
+            # Spectral condition number
+            py = spectral_condition_number(cov)
+            fort = fort_debug.wrapper_spectral_condition_number(cov)
+            np.testing.assert_almost_equal(py, fort)
 
     def test_4(self, flag_ambiguity=False):
         """ Testing the core functions of the solution step for the equality
