@@ -445,7 +445,7 @@ def generate_optimizer_options(which, optim_paras):
         dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
     elif which in ['FORT-SLSQP', 'SCIPY-SLSQP']:
-        dict_['maxiter'] = np.random.randint(1, 100)
+        dict_['maxiter'] = np.random.randint(50, 100)
         dict_['ftol'] = np.random.uniform(1e-9, 1e-6)
         dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
