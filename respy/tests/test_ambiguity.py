@@ -208,7 +208,7 @@ class TestClass(object):
         args = ()
         args += base_args + (optim_paras['level'], optim_paras['delta'])
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
-        args += (num_free_ambi, )
+        args += (ambi_spec['mean'], num_free_ambi)
         f90, _, _ = fort_debug.wrapper_get_worst_case(*args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 

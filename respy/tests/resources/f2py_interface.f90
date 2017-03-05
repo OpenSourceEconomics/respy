@@ -1662,7 +1662,7 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level, num_free_amb
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, num_free_ambi_int)
+SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, mean, num_free_ambi_int)
 
     !/* external libraries      */
 
@@ -1700,33 +1700,34 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, nu
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
-    !/* internal objects    */
+    LOGICAL, INTENT(IN)             :: mean
 
-    INTEGER                         :: info
-
-    DOUBLE PRECISION                :: shocks_cholesky(4, 4)
-    
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     ! Assign global RESFORT variables
-    num_free_ambi = num_free_ambi_int
-
-    ! We need to determine the Cholesky decomposition
-    CALL get_cholesky_decomposition(shocks_cholesky, info, shocks_cov)
-    IF (info .NE. zero_dble) THEN
-        STOP 'Problem in the Cholesky decomposition'
+    IF (mean) THEN
+        num_free_ambi = 2
+    ELSE
+        num_free_ambi = 4
     END IF
+
+    ! Assign global RESPFRT variables
+    max_states_period = SIZE(states_all_int, 2)
+    min_idx = SIZE(mapping_state_idx_int, 4)
+    num_draws_emax = num_draws_emax_int
+    num_periods = num_periods_int
 
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
-    optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%level = level
     optim_paras%delta = delta
+
+    ambi_spec%mean = mean
 
     CALL get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, optim_paras, optimizer_options)
 
