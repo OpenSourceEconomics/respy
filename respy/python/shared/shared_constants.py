@@ -38,7 +38,6 @@ MISSING_FLOAT = -99.00
 with open(ROOT_DIR + '/.config', 'r') as infile:
     config_dict = json.load(infile)
 
-IS_TESTING = config_dict['TESTING']
 IS_DEBUG = config_dict['DEBUG']
 
 IS_PARALLEL = config_dict['PARALLELISM']

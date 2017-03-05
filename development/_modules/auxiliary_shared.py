@@ -15,8 +15,6 @@ from clsMail import MailCls
 
 from config import SPECS
 
-from respy.python.shared.shared_constants import IS_TESTING
-
 
 def update_class_instance(respy_obj, spec_dict):
     """ Update model specification from the baseline initialization file.
@@ -69,14 +67,6 @@ def strfdelta(tdelta, fmt):
 
 def cleanup():
     os.system('git clean -d -f')
-
-
-def check_configuration():
-    """ This function ensures that the package was configured correctly for
-    testing purposes.
-    """
-    assert IS_TESTING
-
 
 def compile_package(is_debug=False):
     """ Compile the package for use.
