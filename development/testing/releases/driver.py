@@ -136,6 +136,9 @@ def run(args):
 
 if __name__ == '__main__':
 
+    # TODO: How to best ensure that the correct SLSQP implementation is
+    # actually used.
+
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
     OLD_RELEASE, NEW_RELEASE = '1.0.00', '2.0.4'

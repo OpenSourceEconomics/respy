@@ -1689,17 +1689,23 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, nu
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
-    INTEGER, INTENT(IN)    :: mapping_state_idx_int(:, :, :, :, :)
-    INTEGER, INTENT(IN)    :: states_all_int(:, :, :)
-    INTEGER, INTENT(IN)    :: num_draws_emax_int
-    INTEGER, INTENT(IN)    :: fort_slsqp_maxiter
-    INTEGER, INTENT(IN)    :: num_free_ambi_int
-    INTEGER, INTENT(IN)    :: num_periods_int
-    INTEGER, INTENT(IN)    :: edu_start_int
-    INTEGER, INTENT(IN)    :: edu_max_int
-    INTEGER, INTENT(IN)    :: period
-    INTEGER, INTENT(IN)    :: k
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
+    INTEGER, INTENT(IN)             :: num_draws_emax_int
+    INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
+    INTEGER, INTENT(IN)             :: num_free_ambi_int
+    INTEGER, INTENT(IN)             :: num_periods_int
+    INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: period
+    INTEGER, INTENT(IN)             :: k
 
+    !/* internal objects    */
+
+    INTEGER                         :: info
+
+    DOUBLE PRECISION                :: shocks_cholesky(4, 4)
+    
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -1707,11 +1713,18 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, nu
     ! Assign global RESFORT variables
     num_free_ambi = num_free_ambi_int
 
+    ! We need to determine the Cholesky decomposition
+    CALL get_cholesky_decomposition(shocks_cholesky, info, shocks_cov)
+    IF (info .NE. zero_dble) THEN
+        STOP 'Problem in the Cholesky decomposition'
+    END IF
+
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
+    optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%level = level
     optim_paras%delta = delta
 

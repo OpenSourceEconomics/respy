@@ -9,6 +9,7 @@ import argparse
 import socket
 import json
 
+from auxiliary_shared import check_configuration
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 
@@ -26,6 +27,9 @@ def run(args):
     """
     if args.is_compile:
         compile_package(True)
+
+    # We need to check that the TESTING version of the package is compiled.
+    check_configuration()
 
     # The late import is required so a potentially just compiled FORTRAN
     # implementation is recognized. This is important for the creation of the

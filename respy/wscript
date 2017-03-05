@@ -31,6 +31,9 @@ def options(ctx):
     ctx.add_option('--debug', action='store_true', dest='is_debug',
                    default=False, help='use debug compiler options')
 
+    ctx.add_option('--testing', action='store_true', dest='is_testing',
+                   default=False, help='use testing configuration')
+
     ctx.add_option('--without_parallelism', action='store_true',
         dest='without_parallelism', default=False, help='without PARALLELISM')
 
@@ -41,6 +44,42 @@ def options(ctx):
     # later analyze the F2PY testing battery.
     ctx.add_option('--without_f2py', action='store_true',
         dest='without_f2py', default=False, help='without F2PY')
+
+
+def configure_debug(ctx):
+    """ This function determines whether F2PY is supported or not.
+    """
+
+    ctx.start_msg('Configuration DEBUG')
+
+    if ctx.options.is_debug:
+        is_debug = True
+        message = 'True'
+    else:
+        is_debug = False
+        message = 'False'
+
+    ctx.end_msg(message)
+
+    return is_debug
+
+
+def configure_testing(ctx):
+    """ This function determines whether F2PY is supported or not.
+    """
+
+    ctx.start_msg('Configuration TESTING')
+
+    if ctx.options.is_testing:
+        is_testing = True
+        message = 'True'
+    else:
+        is_testing = False
+        message = 'False'
+
+    ctx.end_msg(message)
+
+    return is_testing
 
 
 def support_f2py(ctx):
@@ -134,10 +173,13 @@ def support_parallelism(ctx):
 
 def configure(ctx):
 
-    # Check for FORTRAN support
+    # Configuration
+    ctx.env['DEBUG'] = MethodType(configure_debug, ctx)()
+    ctx.env['TESTING'] = MethodType(configure_testing, ctx)()
+
+    ctx.env['PARALLELISM'] = MethodType(support_parallelism, ctx)()
     ctx.env['FORTRAN'] = MethodType(support_fortran, ctx)()
     ctx.env['F2PY'] = MethodType(support_f2py, ctx)()
-    ctx.env['PARALLELISM'] = MethodType(support_parallelism, ctx)()
 
     # We need more details for the case of parallelism.
     if ctx.env['PARALLELISM']:
@@ -145,8 +187,11 @@ def configure(ctx):
         ctx.env['COMPILER_FORTRAN'] = 'mpif90'
 
     # We need a small configuration file, that allow to easily access what
-    # the exact version of the excutable is.
+    # the exact version of the executable is.
     config_dict = dict()
+    config_dict['TESTING'] = ctx.env['TESTING']
+    config_dict['DEBUG'] = ctx.env['DEBUG']
+
     config_dict['PARALLELISM'] = ctx.env['PARALLELISM']
     config_dict['FORTRAN'] = ctx.env['FORTRAN']
     config_dict['F2PY'] = ctx.env['F2PY']
@@ -156,11 +201,8 @@ def configure(ctx):
     if not ctx.env['FORTRAN']:
         return
 
-    # Set up compilation (if required)
-    is_debug = ctx.options.is_debug
-
     # The build is currently only tested for GFORTRAN.
-    if is_debug:
+    if ctx.env['DEBUG']:
         ctx.env.append_unique('FCFLAGS', DEBUG_OPTIONS)
     else:
         ctx.env.append_unique('FCFLAGS', PRODUCTION_OPTIONS)
@@ -171,6 +213,18 @@ def configure(ctx):
 
     # Enable shared libraries
     ctx.env.append_unique('LIB', ['lapack'])
+
+    # The testing flag includes SCIPY's SLSQP version instead of the
+    # official NETLIB code. For ill-conditioned problems, there are slight
+    # differences in the results which lead to failing tests across the
+    # different implementation versions otherwise. The SCIPY version appears
+    # to be less robust in returns NAN in a tiny number of cases. This
+    # problem did not occur with the NETLIB version.
+    fname = 'fortran/optimizers/slsqp'
+    if ctx.env['TESTING']:
+        shutil.copy(fname + '_scipy.f', fname + '.f')
+    else:
+        shutil.copy(fname + '_netlib.f', fname + '.f')
 
 
 def build(ctx):
@@ -185,7 +239,7 @@ def build(ctx):
 
         ctx.add_post_fun(post)
 
-        # Even when the F2PY interface is not bulid, we still compile the
+        # Even when the F2PY interface is not build, we still compile the
         # DP3ASIM executable from the original paper.
         ctx.recurse('tests/resources')
 

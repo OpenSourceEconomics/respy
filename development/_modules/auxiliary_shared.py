@@ -15,6 +15,8 @@ from clsMail import MailCls
 
 from config import SPECS
 
+from respy.python.shared.shared_constants import IS_TESTING
+
 
 def update_class_instance(respy_obj, spec_dict):
     """ Update model specification from the baseline initialization file.
@@ -69,6 +71,13 @@ def cleanup():
     os.system('git clean -d -f')
 
 
+def check_configuration():
+    """ This function ensures that the package was configured correctly for
+    testing purposes.
+    """
+    assert IS_TESTING
+
+
 def compile_package(is_debug=False):
     """ Compile the package for use.
     """
@@ -77,9 +86,11 @@ def compile_package(is_debug=False):
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call(python_exec + ' waf distclean', shell=True)
     if not is_debug:
-        subprocess.check_call(python_exec + ' waf configure build', shell=True)
+        subprocess.check_call(python_exec + ' waf configure build --testing',
+            shell=True)
     else:
-        subprocess.check_call(python_exec + ' waf configure build --debug',
+        subprocess.check_call(python_exec + ' waf configure build --debug '
+                                            '--testing',
                               shell=True)
 
     os.chdir(cwd)

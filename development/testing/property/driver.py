@@ -26,6 +26,7 @@ from auxiliary_property import initialize_record_canvas
 from auxiliary_property import finalize_testing_record
 from auxiliary_property import update_testing_record
 from auxiliary_property import get_random_request
+from auxiliary_shared import check_configuration
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 from auxiliary_property import get_test_dict
@@ -58,6 +59,9 @@ def run(args):
 
     if args.is_compile:
         compile_package(True)
+
+    # We need to check that the TESTING version of the package is compiled.
+    check_configuration()
 
     # Get a dictionary with all candidate test cases.
     test_dict = get_test_dict(PACKAGE_DIR + 'respy/tests')
