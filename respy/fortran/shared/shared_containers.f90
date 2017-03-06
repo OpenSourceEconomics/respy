@@ -1,10 +1,11 @@
 MODULE shared_containers
 
     ! This module declares all those variables that are required as part of the evaluation of the criterion function.
+    USE shared_interfaces
 
     USE shared_constants
 
-    USE shared_interfaces
+    USE shared_types
 
     !/* setup                   */
 
@@ -40,11 +41,10 @@ MODULE shared_containers
 
     LOGICAL                         :: crit_estimation = .False.
 
-    CHARACTER(10)                   :: measure
-
     ! Parameters for the optimization
     TYPE(OPTIMIZER_COLLECTION)      :: optimizer_options
-    TYPE(OPTIMIZATION_PARAMETERS)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT)           :: optim_paras
+    TYPE(AMBI_DICT)                 :: ambi_spec
 
     INTEGER(our_int)                :: maxfun
 

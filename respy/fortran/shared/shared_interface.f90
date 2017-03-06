@@ -1,26 +1,18 @@
 !******************************************************************************
 !******************************************************************************
-MODULE resfort_library
+MODULE shared_interface
 
-    USE recording_estimation
+    USE shared_interfaces
 
-    USE recording_warning
+    USE shared_containers
 
-    USE shared_interface
+    USE shared_constants
 
-    USE simulate_fortran
+    USE shared_auxiliary
 
-    USE evaluate_fortran
+    USE shared_utilities
 
-    USE estimate_fortran
-
-    USE solve_fortran
-
-    USE solve_fortran
-
-    USE dfpmin_module
-
-    USE newuoa_module
+    USE shared_types
 
 !******************************************************************************
 !******************************************************************************

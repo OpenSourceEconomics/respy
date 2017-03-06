@@ -112,7 +112,7 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     optim_paras['coeffs_home'] = x_all_curre[17:18]
 
     # Cholesky
-    optim_paras['shocks_cholesky'], info = get_cholesky(x_all_curre, info)
+    optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
 
     # Checks
     if is_debug:
@@ -122,7 +122,7 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     return optim_paras
 
 
-def get_cholesky(x, info=None):
+def extract_cholesky(x, info=None):
     """ Construct the Cholesky matrix.
     """
     shocks_cholesky = np.tile(0.0, (4, 4))
@@ -283,6 +283,7 @@ def add_solution(respy_obj, periods_rewards_systematic,
     # Finishing
     return respy_obj
 
+
 def replace_missing_values(arguments):
     """ Replace missing value MISSING_FLOAT with NAN. Note that the output
     argument is of type float in the case missing values are found.
@@ -380,14 +381,18 @@ def read_draws(num_periods, num_draws):
     return periods_draws
 
 
-def transform_disturbances(draws, shocks_cholesky):
+def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     """ Transform the standard normal deviates to the relevant distribution.
+
     """
     # Transfer draws to relevant distribution
     draws_transformed = draws.copy()
     draws_transformed = np.dot(shocks_cholesky, draws_transformed.T).T
 
-    for j in [0, 1]:
+    for j in range(4):
+        draws_transformed[:, j] = draws_transformed[:, j] + shocks_mean[j]
+
+    for j in range(2):
         draws_transformed[:, j] = \
             np.clip(np.exp(draws_transformed[:, j]), 0.0, HUGE_FLOAT)
 
@@ -439,7 +444,7 @@ def generate_optimizer_options(which, optim_paras):
         dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
     elif which in ['FORT-SLSQP', 'SCIPY-SLSQP']:
-        dict_['maxiter'] = np.random.randint(1, 100)
+        dict_['maxiter'] = np.random.randint(50, 100)
         dict_['ftol'] = np.random.uniform(1e-9, 1e-6)
         dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
@@ -569,6 +574,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 str_ = '{0:<10} {1:>20}\n'
                 file_.write(str_.format('measure', dict_[flag]['measure']))
+                file_.write(str_.format('mean', str(dict_[flag]['mean'])))
 
                 file_.write('\n')
 
@@ -735,3 +741,43 @@ def get_optim_paras(optim_paras, which, is_debug):
 
     # Finishing
     return x
+
+
+def covariance_to_correlation(cov):
+    """ This function constructs the correlation matrix from the information on
+    the covariances.
+    """
+    # Auxiliary objects
+    corr = np.tile(np.nan, cov.shape)
+    nrows = cov.shape[0]
+
+    # This special case is maintained for testing purposes.
+    is_deterministic = (np.count_nonzero(cov) == 0)
+    if is_deterministic:
+        return np.zeros((nrows, nrows))
+
+    for i in range(nrows):
+        for j in range(nrows):
+            corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
+
+    return corr
+
+
+def correlation_to_covariance(corr, sd):
+    """ This function constructs the covariance matrix from the information on
+    the correlations.
+    """
+    # Auxiliary objects
+    cov = np.tile(np.nan, corr.shape)
+    nrows = corr.shape[0]
+
+    # This special case is maintained for testing purposes.
+    is_deterministic = (np.count_nonzero(sd) == 0)
+    if is_deterministic:
+        return np.zeros((nrows, nrows))
+
+    for i in range(nrows):
+        for j in range(nrows):
+            cov[i, j] = corr[i, j] * sd[j] * sd[i]
+
+    return cov

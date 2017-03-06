@@ -2,11 +2,11 @@
 !******************************************************************************
 MODULE recording_simulation
 
-  !/*	external modules	*/
+    !/*	external modules	   */
 
-    USE shared_constants
+    USE shared_interface
 
-  !/*	setup	*/
+    !/*	setup	              */
 
     IMPLICIT NONE
 

@@ -68,7 +68,6 @@ def strfdelta(tdelta, fmt):
 def cleanup():
     os.system('git clean -d -f')
 
-
 def compile_package(is_debug=False):
     """ Compile the package for use.
     """
@@ -77,10 +76,11 @@ def compile_package(is_debug=False):
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call(python_exec + ' waf distclean', shell=True)
     if not is_debug:
-        subprocess.check_call(python_exec + ' waf configure build', shell=True)
+        subprocess.check_call(python_exec + ' waf configure build',
+            shell=True)
     else:
-        subprocess.check_call(python_exec + ' waf configure build --debug',
-                              shell=True)
+        subprocess.check_call(python_exec + ' waf configure build --debug ',
+            shell=True)
 
     os.chdir(cwd)
 

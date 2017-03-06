@@ -37,8 +37,12 @@ MISSING_FLOAT = -99.00
 # Flags that provide additional information about the exact configuration
 with open(ROOT_DIR + '/.config', 'r') as infile:
     config_dict = json.load(infile)
+
+IS_DEBUG = config_dict['DEBUG']
+
 IS_PARALLEL = config_dict['PARALLELISM']
 IS_FORTRAN = config_dict['FORTRAN']
+IS_F2PY = config_dict['F2PY']
 
 # Each implementation has its own set of optimizers available.
 OPT_EST_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL', 'SCIPY-LBFGSB']

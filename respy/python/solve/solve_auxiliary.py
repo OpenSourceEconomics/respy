@@ -162,7 +162,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
 def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         periods_draws_emax, num_draws_emax, states_number_period,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
-        states_all, is_debug, is_interpolated, num_points_interp, measure,
+        states_all, is_debug, is_interpolated, num_points_interp, ambi_spec,
         optim_paras, optimizer_options, file_sim, is_write):
     """ Backward induction procedure. There are two main threads to this
     function depending on whether interpolation is requested or not.
@@ -170,7 +170,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
     # Initialize containers, which contain a lot of missing values as we
     # capture the tree structure in arrays of fixed dimension.
     i, j = num_periods, max_states_period
-    opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 5))
+    opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 7))
     periods_emax = np.tile(MISSING_FLOAT, (i, j))
 
     if is_myopic:
@@ -186,7 +186,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         optim_paras['shocks_cholesky'].T)
 
     # Auxiliary objects. These shifts are used to determine the expected
-    # values of the two labor market alternatives. These ar log normal
+    # values of the two labor market alternatives. These are log normal
     # distributed and thus the draws cannot simply set to zero.
     shifts = [0.00, 0.00, 0.00, 0.00]
     shifts[0] = np.clip(np.exp(shocks_cov[0, 0] / 2.0), 0.0, HUGE_FLOAT)
@@ -195,15 +195,30 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
     # Initialize containers with missing values
     periods_emax = np.tile(MISSING_FLOAT, (num_periods, max_states_period))
 
+    draws_emax_ambiguity_transformed = np.tile(MISSING_FLOAT, (num_draws_emax, 4))
+    draws_emax_ambiguity_standard = np.tile(MISSING_FLOAT, (num_draws_emax, 4))
+    draws_emax_risk = np.tile(MISSING_FLOAT, (num_draws_emax, 4))
+
     # Iterate backward through all periods
     for period in range(num_periods - 1, -1, -1):
 
         # Extract auxiliary objects
-        draws_emax = periods_draws_emax[period, :, :]
+        draws_emax_standard = periods_draws_emax[period, :, :]
         num_states = states_number_period[period]
 
-        draws_emax_transformed = transform_disturbances(draws_emax,
-            optim_paras['shocks_cholesky'])
+        # We prepare two sets of disturbances for the case of ambiguity or
+        # risk, depending on what the relevant request requires.
+        if optim_paras['level'] > MIN_AMBIGUITY:
+            if ambi_spec['mean']:
+                draws_emax_ambiguity_transformed = \
+                        np.dot(optim_paras['shocks_cholesky'], draws_emax_standard.T).T
+            else:
+                draws_emax_ambiguity_standard = draws_emax_standard.copy()
+        else:
+            # Treatment of the disturbances for the risk-only case is
+            # straightforward. Their distribution is fixed once and for all.
+            draws_emax_risk = transform_disturbances(draws_emax_standard,
+                np.array([0.0, 0.0, 0.0, 0.0]), optim_paras['shocks_cholesky'])
 
         if is_write:
             record_solution_progress(4, file_sim, period, num_states)
@@ -234,9 +249,9 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
             endogenous, opt_ambi_details = get_endogenous_variable(period,
                 num_periods, num_states, periods_rewards_systematic, edu_max,
                 edu_start, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws_emax, maxe, draws_emax_transformed,
-                shocks_cov, measure, optim_paras, optimizer_options,
-                opt_ambi_details)
+                is_simulated, num_draws_emax, maxe, draws_emax_risk,
+                draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, ambi_spec, optim_paras,
+                optimizer_options, opt_ambi_details)
 
             # Create prediction model based on the random subset of points where
             # the EMAX is actually simulated and thus dependent and
@@ -260,13 +275,13 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
                 if optim_paras['level'] > MIN_AMBIGUITY:
                     emax, optim_ambi_details = construct_emax_ambiguity(
                         num_periods, num_draws_emax, period, k,
-                        draws_emax_transformed, rewards_systematic,
-                        edu_max, edu_start, periods_emax, states_all,
-                        mapping_state_idx, shocks_cov, measure, optim_paras,
-                        optimizer_options, opt_ambi_details)
+                        draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
+                        rewards_systematic, edu_max, edu_start, periods_emax,
+                        states_all, mapping_state_idx, ambi_spec,
+                        optim_paras, optimizer_options, opt_ambi_details)
                 else:
                     emax = construct_emax_risk(num_periods, num_draws_emax,
-                        period, k, draws_emax_transformed, rewards_systematic,
+                        period, k, draws_emax_risk, rewards_systematic,
                         edu_max, edu_start, periods_emax, states_all,
                         mapping_state_idx, optim_paras)
 
@@ -344,7 +359,7 @@ def get_exogenous_variables(period, num_periods, num_states,
 def get_endogenous_variable(period, num_periods, num_states,
         periods_rewards_systematic, edu_max, edu_start, mapping_state_idx,
         periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_transformed, shocks_cov, measure, optim_paras,
+        draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, ambi_spec, optim_paras,
         optimizer_options, opt_ambi_details):
     """ Construct endogenous variable for the subset of interpolation points.
     """
@@ -363,13 +378,13 @@ def get_endogenous_variable(period, num_periods, num_states,
         # Simulate the expected future value.
         if optim_paras['level'] > MIN_AMBIGUITY:
             emax, optim_ambi_details = construct_emax_ambiguity(num_periods,
-                num_draws_emax, period, k, draws_emax_transformed,
-                rewards_systematic, edu_max, edu_start, periods_emax,
-                states_all, mapping_state_idx, shocks_cov, measure,
-                optim_paras, optimizer_options, opt_ambi_details)
+                num_draws_emax, period, k, draws_emax_ambiguity_standard,
+                draws_emax_ambiguity_transformed, rewards_systematic, edu_max,
+                edu_start, periods_emax, states_all, mapping_state_idx,
+                ambi_spec, optim_paras, optimizer_options, opt_ambi_details)
         else:
             emax = construct_emax_risk(num_periods, num_draws_emax,
-                period, k, draws_emax_transformed, rewards_systematic,
+                period, k, draws_emax_risk, rewards_systematic,
                 edu_max, edu_start, periods_emax, states_all,
                 mapping_state_idx, optim_paras)
 

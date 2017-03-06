@@ -101,7 +101,7 @@ def _type_conversions(flag, value):
         value = int(value)
     elif flag in ['file', 'options', 'measure', 'type']:
         value = str(value)
-    elif flag in ['debug', 'store', 'flag']:
+    elif flag in ['debug', 'store', 'flag', 'mean']:
         assert (value.upper() in ['TRUE', 'FALSE'])
         value = (value.upper() == 'TRUE')
     elif flag in ['version', 'optimizer']:

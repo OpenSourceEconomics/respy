@@ -11,7 +11,12 @@ if __name__ == '__main__':
     # baseline initialization file.
     spec_dict['update'] = dict()
     spec_dict['update']['file_est'] = '../data.respy.dat'
-    spec_dict['update']['preconditioning'] = ['identity', 0.00001, 0.0001]
+
+    spec_dict['precond_spec'] = dict()
+    spec_dict['precond_spec']['type'] = 'identity'
+    spec_dict['precond_spec']['minimum'] = 0.00001
+    spec_dict['precond_spec']['eps'] = 1e-6
+
     spec_dict['update']['is_debug'] = False
     spec_dict['update']['measure'] = 'kl'
     spec_dict['update']['level'] = 0.05

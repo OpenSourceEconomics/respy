@@ -8,9 +8,7 @@ MODULE evaluate_fortran
 
     USE recording_warning
 
-    USE shared_auxiliary
-
-    USE shared_constants
+    USE shared_interface
 
     !/*	setup	*/
 
@@ -36,7 +34,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     REAL(our_dble), INTENT(OUT)     :: contribs(SIZE(data_evaluate, 1))
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)

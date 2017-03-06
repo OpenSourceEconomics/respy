@@ -4,7 +4,7 @@ MODULE parallelism_constants
 
     !/* external modules    */
 
-    USE shared_constants
+    USE shared_interface
 
     USE mpi
 

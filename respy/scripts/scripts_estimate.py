@@ -35,7 +35,14 @@ def scripts_estimate(single, init_file):
     if single:
         respy_obj.unlock()
         respy_obj.set_attr('maxfun', 0)
-        respy_obj.set_attr('preconditioning', ['identity', 0.01, 0.01])
+
+        precond_spec = dict()
+        precond_spec['type'] = 'identity'
+        precond_spec['minimum'] = 0.01
+        precond_spec['eps'] = 0.01
+
+        respy_obj.set_attr('precond_spec', precond_spec)
+
         respy_obj.lock()
 
     # Optimize the criterion function.

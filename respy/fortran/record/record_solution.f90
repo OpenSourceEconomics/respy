@@ -4,11 +4,7 @@ MODULE recording_solution
 
     !/*	external modules	*/
 
-    USE shared_constants
-
-    USE shared_auxiliary
-
-    USE shared_utilities
+    USE shared_interface
 
   !/*	setup	*/
 

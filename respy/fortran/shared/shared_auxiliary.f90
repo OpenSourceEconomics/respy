@@ -12,6 +12,8 @@ MODULE shared_auxiliary
 
     USE shared_utilities
 
+    USE shared_types
+
     !/* setup   */
 
     IMPLICIT NONE
@@ -27,6 +29,116 @@ MODULE shared_auxiliary
     END INTERFACE
 
 CONTAINS
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE correlation_to_covariance(cov, corr, sd)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)         :: cov(:, :)
+
+    REAL(our_dble), INTENT(IN)          :: corr(:, :)
+    REAL(our_dble), INTENT(IN)          :: sd(:)
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                    :: nrows
+    INTEGER(our_int)                    :: i
+    INTEGER(our_int)                    :: j
+
+    LOGICAL                             :: is_deterministic
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! This special case is maintained for testing purposes.
+    is_deterministic = ALL(corr .EQ. zero_dble)
+    IF (is_deterministic) THEN
+        cov = zero_dble
+        RETURN
+    END IF
+
+    ! Auxiliary objects
+    nrows = SIZE(corr, 1)
+
+    DO i = 1, nrows
+        DO j  = 1, nrows
+            cov(i, j) = corr(i, j) * sd(i) * sd(j)
+        END DO
+    END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE covariance_to_correlation(corr, cov)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(OUT)         :: corr(:, :)
+
+    REAL(our_dble), INTENT(IN)          :: cov(:, :)
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                    :: nrows
+    INTEGER(our_int)                    :: i
+    INTEGER(our_int)                    :: j
+
+    LOGICAL                             :: is_deterministic
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! This special case is maintained for testing purposes.
+    is_deterministic = ALL(cov .EQ. zero_dble)
+    IF (is_deterministic) THEN
+        corr = zero_dble
+        RETURN
+    END IF
+
+    ! Auxiliary objects
+    nrows = SIZE(corr, 1)
+
+    DO i = 1, nrows
+        DO j = 1, nrows
+            corr(i, j) = cov(i, j) / (DSQRT(cov(i, i)) * DSQRT(cov(j, j)))
+        END DO
+    END DO
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_cholesky_decomposition(C, info, A)
+
+    !/* external objects        */
+
+    REAL(our_dble), INTENT(OUT)         :: C(:, :)
+
+    INTEGER(our_int), INTENT(OUT)       :: info
+
+    REAL(our_dble), INTENT(IN)          :: A(:, :)
+
+    !/* internal objects        */
+
+    REAL(our_dble)                      :: mock_obj(SIZE(A,1), SIZE(A,1))
+
+    INTEGER(our_int)                    :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    mock_obj = A
+    CALL DPOTRF('L', SIZE(A,1), mock_obj, SIZE(A,1), info)
+    C = mock_obj
+
+    DO i = 1, SIZE(A,1)
+        C(i, (i + 1):) = zero_dble
+    END DO
+
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 FUNCTION get_log_likl(contribs)
@@ -85,7 +197,7 @@ SUBROUTINE summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 
     INTEGER(our_int), INTENT(OUT)   :: opt_ambi_summary(2)
 
-    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 5)
+    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 7)
 
     !/* internal objects        */
 
@@ -104,7 +216,7 @@ SUBROUTINE summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_cholesky(shocks_cholesky, x, info)
+SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     !/* external objects        */
 
@@ -149,35 +261,41 @@ SUBROUTINE get_cholesky(shocks_cholesky, x, info)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE transform_disturbances(draws_transformed, draws, optim_paras, num_draws)
+SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_cholesky)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)                 :: draws_transformed(num_draws, 4)
+    REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
-
-    REAL(our_dble), INTENT(IN)      :: draws(num_draws, 4)
-
-    INTEGER, INTENT(IN)             :: num_draws
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(4)
+    REAL(our_dble), INTENT(IN)      :: draws(:, :)
 
     !/* internal objects        */
 
     INTEGER(our_int), ALLOCATABLE   :: infos(:)
+
+    INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Auxiliary objects
+    num_draws = SIZE(draws, 1)
+
     DO i = 1, num_draws
-        draws_transformed(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws(i:i, :))))
+        draws_transformed(i:i, :) = TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
     END DO
 
+    DO i = 1, 4
+        draws_transformed(:, i) = draws_transformed(:, i) + shocks_mean(i)
+    END DO
+    
     DO i = 1, 2
         CALL clip_value_2(draws_transformed(:, i), EXP(draws_transformed(:, i)), zero_dble, HUGE_FLOAT, infos)
     END DO
-
 
 END SUBROUTINE
 !******************************************************************************
@@ -188,7 +306,7 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 
     REAL(our_dble), INTENT(OUT)                 :: total_values(4)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -680,7 +798,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_type, precond_minimum, measure, optimizer_used, optimizer_options, file_sim, num_obs)
+SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -690,7 +808,9 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(OUT)   :: optim_paras
+    TYPE(PRECOND_DICT), INTENT(OUT)         :: precond_spec
+    TYPE(OPTIMPARAS_DICT), INTENT(OUT)      :: optim_paras
+    TYPE(AMBI_DICT), INTENT(OUT)            :: ambi_spec
 
     REAL(our_dble), INTENT(OUT)     :: tau
 
@@ -706,16 +826,10 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     INTEGER(our_int), INTENT(OUT)   :: num_obs
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
-    REAL(our_dble), INTENT(OUT)     :: precond_minimum
-
-
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
     CHARACTER(225), INTENT(OUT)     :: file_sim
     CHARACTER(225), INTENT(OUT)     :: exec_dir
-
-    CHARACTER(50), INTENT(OUT)      :: precond_type
     CHARACTER(10), INTENT(OUT)      :: request
-    CHARACTER(10), INTENT(OUT)      :: measure
 
     LOGICAL, INTENT(OUT)            :: is_interpolated
     LOGICAL, INTENT(OUT)            :: is_myopic
@@ -769,7 +883,8 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         READ(99, 1505) seed_emax
 
         ! AMBIGUITY
-        READ(99, *) measure
+        READ(99, *) ambi_spec%measure
+        READ(99, *) ambi_spec%mean
         READ(99, 1500) optim_paras%level
 
         ! PROGRAM
@@ -789,9 +904,9 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         READ(99, 1505) num_obs
 
         ! SCALING
-        READ(99, *) precond_type
-        READ(99, *) precond_minimum
-        READ(99, 1500) precond_eps
+        READ(99, *) precond_spec%type
+        READ(99, *) precond_spec%minimum
+        READ(99, 1500) precond_spec%eps
 
         ! SIMULATION
         READ(99, 1505) num_agents_sim
@@ -857,6 +972,12 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     END DO
 
     ! Constructed attributes
+    IF (ambi_spec%mean) THEN
+        num_free_ambi = 2
+    ELSE
+        num_free_ambi = 4
+    END IF
+
     num_free =  COUNT(.NOT. optim_paras%paras_fixed)
     num_slaves = num_procs - 1
 
@@ -991,7 +1112,7 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(OUT)  :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(OUT)  :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: x(28)
 
@@ -1016,9 +1137,9 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
-        CALL get_cholesky(optim_paras%shocks_cholesky, x, info)
+        CALL extract_cholesky(optim_paras%shocks_cholesky, x, info)
     ELSE
-        CALL get_cholesky(optim_paras%shocks_cholesky, x)
+        CALL extract_cholesky(optim_paras%shocks_cholesky, x)
     END IF
 
 END SUBROUTINE
@@ -1028,7 +1149,7 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(OUT)     :: x(:)
 

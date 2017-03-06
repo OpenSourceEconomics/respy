@@ -108,11 +108,11 @@ def run(args):
         tests = json.load(open(fname, 'r'))
 
         # We shuffle the order of the tests so checking subset is insightful.
-        indices = range(num_tests)
+        indices = list(range(num_tests))
         np.random.shuffle(indices)
 
-        for idx in indices:
-            print('\n Checking Test ', idx, '\n')
+        for i, idx in enumerate(indices):
+            print('\n Checking Test ', idx, ' at iteration ',  i, '\n')
 
             init_dict, crit_val = tests[idx]
 
@@ -121,17 +121,7 @@ def run(args):
             simulate_observed(respy_obj)
 
             est_val = estimate(respy_obj)[1]
-
-            # TODO: At this point we need to cut the comparison a little more
-            # slack as otherwise the tests fail on our compute servers. It
-            # is the worst-case determination which might have slightly
-            # different results. At this point it remains a mystery what is
-            # driving the discrepancy.
-            is_slack = (HOSTNAME != 'pontos') and (idx in [46])
-            if is_slack:
-                pass
-            else:
-                np.testing.assert_almost_equal(est_val, crit_val)
+            np.testing.assert_almost_equal(est_val, crit_val)
 
         # This allows to call this test from another script, that runs other
         # tests as well.

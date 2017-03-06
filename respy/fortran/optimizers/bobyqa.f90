@@ -1,16 +1,20 @@
 MODULE bobyqa_module
 
-    !
     !   M. J. D. Powell, "The BOBYQA algorithm for constrained optimization
     !   without derivatives", 2009, Department of Applied Mathematics and
     !   Theoretical Physics, Cambridge University.
-    !
+
+    ! NOTE: It is very important to not import shared_containers due to a
+    ! namespace conflict fot the variable TAU that is defined here. Thus
+    ! we cannot simpy use shared_interface as in all other modules.
 
     !/* external modules  */
 
     USE shared_interfaces
 
     USE shared_constants
+
+    USE shared_types
 
     !/* setup */
 

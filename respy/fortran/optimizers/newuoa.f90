@@ -7,6 +7,10 @@ MODULE newuoa_module
     !   Gianni; Roma, Massimo (Eds.) 2006, New York: Springer US.
     !
 
+    ! NOTE: It is very important to not import shared_containers due to a
+    ! namespace conflict fot the variable TAU that is defined here. Thus
+    ! we cannot simpy use shared_interface as in all other modules.
+
     !/* external modules  */
 
     USE shared_interfaces

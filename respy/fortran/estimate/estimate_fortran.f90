@@ -4,31 +4,25 @@ MODULE estimate_fortran
 
     !/* external modules    */
 
-    USE parallelism_auxiliary
-
     USE optimizers_interfaces
-
-    USE parallelism_constants
 
     USE recording_estimation
 
     USE recording_warning
 
-    USE shared_containers
-
-    USE shared_utilities
-
-    USE shared_auxiliary
+    USE shared_interface
 
     USE evaluate_fortran
-
-    USE shared_constants
 
     USE solve_fortran
 
     USE solve_ambiguity
 
 #if MPI_AVAILABLE
+
+    USE parallelism_constants
+
+    USE parallelism_auxiliary
 
     USE mpi
 
@@ -43,26 +37,25 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_type, precond_minimum, optimizer_options)
+SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_spec, optimizer_options)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)     :: crit_val
-
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN) :: optim_paras
-
-    REAL(our_dble), INTENT(IN)      :: precond_minimum
-
-    INTEGER(our_int), INTENT(IN)    :: num_procs
-    INTEGER(our_int), INTENT(IN)    :: maxfun
-
-    CHARACTER(225), INTENT(IN)      :: optimizer_used
-    CHARACTER(150), INTENT(OUT)     :: message
-    CHARACTER(50), INTENT(OUT)      :: precond_type
-
-    LOGICAL, INTENT(OUT)            :: success
-
     TYPE(OPTIMIZER_COLLECTION), INTENT(INOUT) :: optimizer_options
+
+    REAL(our_dble), INTENT(OUT)         :: crit_val
+
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+
+    TYPE(PRECOND_DICT), INTENT(IN)      :: precond_spec
+
+    INTEGER(our_int), INTENT(IN)        :: num_procs
+    INTEGER(our_int), INTENT(IN)        :: maxfun
+
+    CHARACTER(225), INTENT(IN)          :: optimizer_used
+    CHARACTER(150), INTENT(OUT)         :: message
+
+    LOGICAL, INTENT(OUT)                :: success
 
     !/* internal objects    */
 
@@ -77,7 +70,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 !------------------------------------------------------------------------------
 
     IF (num_procs == 1) THEN
-        criterion_function => fort_criterion
+        criterion_function => fort_criterion_scalar
     ELSE
         criterion_function => fort_criterion_parallel
     END IF
@@ -90,7 +83,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 
     CALL get_optim_paras(x_optim_free_unscaled_start, optim_paras, .False.)
 
-    CALL get_precondition_matrix(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
+    CALL get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim_free_unscaled_start)
 
     x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start, precond_matrix, 'do')
     x_optim_bounds_free_scaled(1, :) = apply_scaling(x_optim_bounds_free_unscaled(1, :), precond_matrix, 'do')
@@ -137,12 +130,12 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION fort_criterion(x_optim_free_scaled)
+FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled(:)
-    REAL(our_dble)                  :: fort_criterion
+    REAL(our_dble)                  :: fort_criterion_scalar
 
     !/* internal objects    */
 
@@ -168,7 +161,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
     IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
-        fort_criterion = HUGE_FLOAT
+        fort_criterion_scalar = HUGE_FLOAT
         RETURN
     END IF
 
@@ -180,12 +173,12 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
-    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, measure, optim_paras, optimizer_options, file_sim_mock, .False.)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
 
 
-    fort_criterion = get_log_likl(contribs)
+    fort_criterion_scalar = get_log_likl(contribs)
 
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
@@ -193,7 +186,7 @@ FUNCTION fort_criterion(x_optim_free_scaled)
 
         CALL summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion, num_eval, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -287,91 +280,6 @@ FUNCTION fort_criterion_parallel(x)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, file_sim)
-
-    !/* external objects        */
-
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
-
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
-
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)       :: optim_paras
-
-    INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: edu_max
-
-    CHARACTER(225), INTENT(IN)                      :: file_sim
-
-    !/* internal objects        */
-
-    REAL(our_dble), ALLOCATABLE                     :: opt_ambi_details(:, :, :)
-    REAL(our_dble)                                  :: x_all_current(28)
-
-    INTEGER(our_int), ALLOCATABLE                   :: num_states_slaves(:, :)
-    INTEGER(our_int), ALLOCATABLE                   :: num_obs_slaves(:)
-
-    INTEGER(our_int)                                :: displs(num_slaves)
-    INTEGER(our_int)                                :: num_states
-    INTEGER(our_int)                                :: period
-    INTEGER(our_int)                                :: i
-    INTEGER(our_int)                                :: k
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-#if MPI_AVAILABLE
-
-    CALL MPI_Bcast(2, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-
-
-    CALL get_optim_paras(x_all_current, optim_paras, .True.)
-
-    CALL MPI_Bcast(x_all_current, 28, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-
-
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
-
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
-
-
-    ALLOCATE(periods_emax(num_periods, max_states_period))
-    periods_emax = MISSING_FLOAT
-
-    DO period = (num_periods - 1), 0, -1
-
-        num_states = states_number_period(period + 1)
-
-        CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
-
-    END DO
-
-    ! I also need the information about the performance of the worst-case optimization.
-    IF (.NOT. ALLOCATED(num_states_slaves)) THEN
-        CALL distribute_workload(num_states_slaves, num_obs_slaves)
-    END IF
-
-    ALLOCATE(opt_ambi_details(num_periods, max_states_period, 5))
-    opt_ambi_details = MISSING_FLOAT
-    DO period = 1, num_periods
-        DO i = 1, num_slaves
-            displs(i) = SUM(num_states_slaves(period, :i - 1))
-        END DO
-        DO k = 1, 5
-            CALL MPI_GATHERV(opt_ambi_details(period, :, k), 0, MPI_DOUBLE, opt_ambi_details(period, :, k), num_states_slaves(period, :), displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-        END DO
-    END DO
-
-    CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim)
-
-#endif
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
 FUNCTION fort_dcriterion(x_optim_free_scaled)
 
     !/* external objects        */
@@ -421,7 +329,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(28)
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
     REAL(our_dble), INTENT(IN)                  :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
 
 
@@ -450,14 +358,15 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_minimum)
+SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_spec)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)                  :: precond_matrix(:, :)
+    REAL(our_dble), INTENT(OUT)                 :: precond_matrix(:, :)
 
-    REAL(our_dble), INTENT(IN)                   :: x_optim_free_start(num_free)
-    REAL(our_dble), INTENT(IN)                   :: precond_minimum
+    REAL(our_dble), INTENT(IN)                  :: x_optim_free_start(num_free)
+
+    TYPE(PRECOND_DICT), INTENT(IN)              :: precond_spec
 
     !/* internal objects    */
 
@@ -472,7 +381,7 @@ SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_minimum)
 
     crit_estimation = .False.
 
-    dfunc_eps = precond_eps
+    dfunc_eps = precond_spec%eps
     grad = fort_dcriterion(x_optim_free_start)
     dfunc_eps = -HUGE_FLOAT
 
@@ -482,7 +391,7 @@ SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_minimum)
 
         val = ABS(grad(i))
 
-        IF (val .LT. precond_minimum) val = precond_minimum
+        IF (val .LT. precond_spec%minimum) val = precond_spec%minimum
 
         precond_matrix(i, i) = val
 
@@ -491,16 +400,17 @@ SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_minimum)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_precondition_matrix(precond_type, precond_minimum, maxfun, x_optim_free_unscaled_start)
+SUBROUTINE get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim_free_unscaled_start)
 
     !/* external objects    */
 
-    CHARACTER(50), INTENT(IN)      :: precond_type
+    REAL(our_dble), ALLOCATABLE, INTENT(OUT)    :: precond_matrix(:, :)
+
+    TYPE(PRECOND_DICT), INTENT(IN)  :: precond_spec
 
     INTEGER(our_int), INTENT(IN)    :: maxfun
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_unscaled_start(num_free)
-    REAL(our_dble), INTENT(IN)      :: precond_minimum
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -514,10 +424,10 @@ SUBROUTINE get_precondition_matrix(precond_type, precond_minimum, maxfun, x_opti
 
     CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .True.)
 
-    IF ((precond_type == 'identity') .OR. (maxfun == zero_int)) THEN
+    IF ((precond_spec%type == 'identity') .OR. (maxfun == zero_int)) THEN
         precond_matrix = create_identity(num_free)
     ELSE
-        CALL get_scales(precond_matrix, x_optim_free_unscaled_start, precond_minimum)
+        CALL get_scales(precond_matrix, x_optim_free_unscaled_start, precond_spec)
     END IF
 
     crit_estimation = .False.

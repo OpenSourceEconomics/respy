@@ -6,11 +6,7 @@ MODULE solve_risk
 
     USE recording_solution
 
-    USE shared_auxiliary
-
-    USE shared_constants
-
-    USE shared_utilities
+    USE shared_interface
 
     !/*	setup	*/
 
@@ -21,13 +17,13 @@ MODULE solve_risk
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
     !/* external objects    */
 
     REAL(our_dble), INTENT(OUT)                 :: emax
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -37,7 +33,7 @@ SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_
     INTEGER(our_int), INTENT(IN)    :: k
 
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)      :: draws_emax_transformed(num_draws_emax, 4)
+    REAL(our_dble), INTENT(IN)      :: draws_emax_risk(num_draws_emax, 4)
     REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
 
     !/* internals objects    */
@@ -57,7 +53,7 @@ SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_
     DO i = 1, num_draws_emax
 
         ! Select draws for this draw
-        draws = draws_emax_transformed(i, :)
+        draws = draws_emax_risk(i, :)
 
         ! Calculate total value
         CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)

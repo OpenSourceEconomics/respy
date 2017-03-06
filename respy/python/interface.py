@@ -29,14 +29,14 @@ def respy_interface(respy_obj, request, data_array=None):
         num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, optimizer_options, seed_sim, \
-        num_agents_sim, measure, file_sim, preconditioning = \
+        num_agents_sim, ambi_spec, file_sim, precond_spec = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max', 'num_draws_prob',
                 'seed_prob', 'num_draws_emax', 'seed_emax', 'min_idx',
                 'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
                 'optimizer_used', 'tau', 'optimizer_options',
-                'seed_sim', 'num_agents_sim', 'measure', 'file_sim',
-                'preconditioning')
+                'seed_sim', 'num_agents_sim', 'ambi_spec', 'file_sim',
+                'precond_spec')
 
     if request == 'estimate':
 
@@ -68,7 +68,8 @@ def respy_interface(respy_obj, request, data_array=None):
             num_points_interp, is_myopic, edu_start, is_debug, edu_max,
             data_array, num_draws_prob, tau, periods_draws_emax,
             periods_draws_prob, states_all, states_number_period,
-            mapping_state_idx, max_states_period, measure, optimizer_options)
+            mapping_state_idx, max_states_period, ambi_spec,
+                optimizer_options)
 
         # Special case where just an evaluation at the starting values is
         # requested is accounted for. Note, that the relevant value of the
@@ -94,7 +95,7 @@ def respy_interface(respy_obj, request, data_array=None):
 
         paras_bounds_free_unscaled = np.array(paras_bounds_free_unscaled)
 
-        precond_matrix = get_precondition_matrix(preconditioning,
+        precond_matrix = get_precondition_matrix(precond_spec,
             optim_paras, x_optim_all_unscaled_start, args, maxfun)
 
         x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start,
@@ -213,7 +214,7 @@ def respy_interface(respy_obj, request, data_array=None):
             periods_emax, states_all = pyth_solve(is_interpolated,
             num_points_interp, num_draws_emax, num_periods, is_myopic,
             edu_start, is_debug, edu_max, min_idx, periods_draws_emax,
-            measure, optim_paras, file_sim, optimizer_options)
+            ambi_spec, optim_paras, file_sim, optimizer_options)
 
         solution = (periods_rewards_systematic, states_number_period,
             mapping_state_idx, periods_emax, states_all)
@@ -231,7 +232,7 @@ def respy_interface(respy_obj, request, data_array=None):
     return args
 
 
-def get_precondition_matrix(preconditioning, optim_paras,
+def get_precondition_matrix(precond_spec, optim_paras,
         x_optim_all_unscaled_start, args, maxfun):
     """ Get the preconditioning matrix for the optimization.
     """
@@ -247,7 +248,9 @@ def get_precondition_matrix(preconditioning, optim_paras,
     opt_obj.is_scaling = False
 
     # Distribute information about user request.
-    precond_type, precond_minimum, precond_eps = preconditioning
+    precond_minimum = precond_spec['minimum']
+    precond_type = precond_spec['type']
+    precond_eps = precond_spec['eps']
 
     # Get the subset of free parameters for subsequent numerical
     # approximation of the gradient.

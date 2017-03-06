@@ -7,13 +7,11 @@ MODULE dfpmin_module
 
     !/* external modules    */
 
-    USE shared_interfaces
-
-    USE shared_constants
-
-    IMPLICIT NONE
+    USE shared_interface
 
     !/* setup   */
+
+    IMPLICIT NONE
 
     PRIVATE
 
@@ -164,7 +162,7 @@ SUBROUTINE lnsrch(xold, fold, g, p, x, f, stpmax, check, func, maxfun)
 
         FUNCTION func(x)
 
-        USE shared_constants
+        USE shared_interface
 
         IMPLICIT NONE
 

@@ -6,11 +6,7 @@ MODULE recording_estimation
 
     USE recording_warning
 
-    USE shared_constants
-
-    USE shared_auxiliary
-
-    USE shared_utilities
+    USE shared_interface
 
   !/*	setup	*/
 
@@ -139,7 +135,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
     !/* external objects        */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled(num_free)
     REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(28)
@@ -218,7 +214,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
     ! Create the container for the *.info file.
     DO i = 1, 3
-        CALL get_cholesky(shocks_cholesky, x_optim_all_unscaled)
+        CALL extract_cholesky(shocks_cholesky, x_optim_all_unscaled)
         shocks_cov(i, :, :) = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
         CALL spectral_condition_number(cond(i), shocks_cov(i, :, :))
 
@@ -386,7 +382,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, optim_paras, is_setup)
 
     !/* external objects    */
 
-    TYPE(OPTIMIZATION_PARAMETERS), INTENT(IN)   :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: precond_matrix(num_free, num_free)
     REAL(our_dble), INTENT(IN)      :: x_free_start(num_free)
@@ -438,7 +434,6 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, optim_paras, is_setup)
                 ! We need to do some pre-processing for the transformed bounds.
                 val_char = ''
                 DO k = 1, 2
-                    ! TODO: THis is not a very reliable cirterion, I need to somehow be able to obtain that information even after the transforamtion.
                     no_bounds = (ABS(x_optim_bounds_free_scaled(k, j)) > Large_FLOAT)
 
                     IF(no_bounds) THEN

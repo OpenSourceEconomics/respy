@@ -4,9 +4,7 @@ MODULE evaluate_auxiliary
 
 	!/*	external modules	  */
 
-    USE shared_constants
-
-    USE shared_auxiliary
+    USE shared_interface
 
 	!/*	setup	*/
 
@@ -29,7 +27,7 @@ FUNCTION get_smoothed_probability(total_values, idx, tau)
     !/*  internal objects       */
 
     INTEGER(our_int), ALLOCATABLE   :: infos(:)
-    
+
     REAL(our_dble)                  :: get_smoothed_probability
     REAL(our_dble)                  :: smoot_values(4)
     REAL(our_dble)                  :: maxim_values(4)

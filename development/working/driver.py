@@ -20,31 +20,25 @@ import shutil
 import time
 
 
+from respy.python.shared.shared_auxiliary import print_init_dict
 
 import numpy as np
+from respy.python.solve.solve_ambiguity import criterion_ambiguity, \
+    get_worst_case, construct_emax_ambiguity
 
 
 from respy import RespyCls
 from respy import simulate
 from respy import estimate
 
+from codes.auxiliary import simulate_observed
+from codes.auxiliary import write_draws
+
 from codes.random_init import generate_init
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 
-
+#write_draws(5, 5000)
+np.random.seed(123)
 respy_obj = RespyCls('model.respy.ini')
-
-for num_procs in [1]:
-    respy_obj.reset()
-    print('going in with ', num_procs)
-    respy_obj.unlock()
-    #respy_obj.attr['num_procs'] = num_procs
-    respy_obj.lock()
-    simulate(respy_obj)
-    estimate(respy_obj)
-    print('... done')
-
-
-#print('going in')
-#x, base =
-#print(base)
-#np.testing.assert_almost_equal(0.350116964137, base)
+respy_obj = simulate_observed(respy_obj)
+#_, crit = estimate(respy_obj)
