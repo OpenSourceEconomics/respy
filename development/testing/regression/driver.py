@@ -120,6 +120,11 @@ def run(args):
             # TODO: Temporary fixes ...
             init_dict['AMBIGUITY']['mean'] = True
 
+            if init_dict['AMBIGUITY']['coeffs'][0] > 0:
+                print('.. skipping')
+                continue
+
+
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)

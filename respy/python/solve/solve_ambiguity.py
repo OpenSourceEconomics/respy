@@ -152,29 +152,18 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
     from respy.python.shared.shared_constants import HUGE_FLOAT
 
     if is_mean:
-
         draws_emax_relevant = draws_emax_ambiguity_transformed.copy()
-
-        # TODO: This is the bug!!!!!
-        for i in [0, 1]:
-            draws_emax_relevant[:, i] = np.clip(np.exp(draws_emax_relevant[:,i]), 0.0, HUGE_FLOAT)
-
-        for i in range(2):
-            draws_emax_relevant[:, i] = draws_emax_relevant[:, i] + x[i]
     else:
 
-        # TODO: AT unit test later that all are larger than zero for wages.
         draws_emax_relevant = np.dot(optim_paras['shocks_cholesky'],
             draws_emax_ambiguity_standard.T).T
 
-        for i in [0, 1]:
-            draws_emax_relevant[:, i] = np.clip(np.exp(draws_emax_relevant[:,
-                                                       i]), 0.0,
-                HUGE_FLOAT)
+    for i in range(2):
+        draws_emax_relevant[:, i] = draws_emax_relevant[:, i] + x[i]
 
-        # TODO: Is this correct? Do I not need to do this before the exponential?
-        for i in [0, 1]:
-            draws_emax_relevant[:, i] = draws_emax_relevant[:, i] + x[i]
+    for i in [0, 1]:
+        draws_emax_relevant[:, i] = np.clip(np.exp(draws_emax_relevant[:, i]),
+            0.0, HUGE_FLOAT)
 
     emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
             draws_emax_relevant, rewards_systematic, edu_max, edu_start,

@@ -83,8 +83,10 @@ class TestClass(object):
                 'optim_paras')
 
         # Sample draws
-        draws_standard = np.random.multivariate_normal(np.zeros(4),
+        draws_emax_standard = np.random.multivariate_normal(np.zeros(4),
                             np.identity(4), (num_draws_emax,))
+        draws_emax_risk = transform_disturbances(draws_emax_standard,
+            np.array([0.0, 0.0, 0.0, 0.0]), optim_paras['shocks_cholesky'])
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -94,7 +96,7 @@ class TestClass(object):
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Evaluation of simulated expected future values
-        base_args = (num_periods, num_draws_emax, period, k, draws_standard,
+        base_args = (num_periods, num_draws_emax, period, k, draws_emax_risk,
             rewards_systematic, edu_max, edu_start, periods_emax, states_all,
             mapping_state_idx)
 
@@ -507,7 +509,8 @@ class TestClass(object):
             is_debug)
 
         draws_emax_standard = periods_draws_emax[period, :, :]
-        draws_emax_transformed = transform_disturbances(draws_emax_standard,
+
+        draws_emax_risk = transform_disturbances(draws_emax_standard,
             np.tile(0, 4), optim_paras['shocks_cholesky'])
 
         num_states = states_number_period[period]
@@ -548,8 +551,8 @@ class TestClass(object):
         base_args = (period, num_periods, num_states,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax_standard, draws_emax_standard,
-                     draws_emax_transformed)
+            num_draws_emax, maxe, draws_emax_risk, draws_emax_standard,
+                     draws_emax_standard)
 
         args = ()
         args += base_args + (ambi_spec, optim_paras, optimizer_options)
