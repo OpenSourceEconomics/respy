@@ -211,10 +211,6 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period,
         draws_emax_ambiguity_transformed = np.dot(optim_paras[
             'shocks_cholesky'], draws_emax_standard.T).T
 
-        for j in [0, 1]:
-            draws_emax_ambiguity_transformed[:, j] = np.clip(np.exp(draws_emax_ambiguity_transformed[:, j]),
-                0.0, HUGE_FLOAT)
-
         # Treatment of the disturbances for the risk-only case is
         # straightforward. Their distribution is fixed once and for all.
         draws_emax_risk = transform_disturbances(draws_emax_standard,

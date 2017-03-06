@@ -336,12 +336,6 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
             draws_emax_ambiguity_transformed(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws_emax_standard(i:i, :))))
         END DO
 
-        ! TODO: THis needs to be done later. This is a BUG.
-        DO i = 1, 2
-            CALL clip_value_2(draws_emax_ambiguity_transformed(:, i), EXP(draws_emax_ambiguity_transformed(:, i)), zero_dble, HUGE_FLOAT, infos)
-        END DO
-
-
         ! TODO: Some remarks about the difficult treatment of the disturbances
         CALL transform_disturbances(draws_emax_risk, draws_emax_standard, shocks_mean, optim_paras%shocks_cholesky)
 

@@ -339,20 +339,15 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
         num_states = states_number_period(period + 1)
 
         ! Transform disturbances
+        draws_emax_ambiguity_standard = draws_emax_standard
+
 
                 DO i = 1, num_draws_emax
                     draws_emax_ambiguity_transformed(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws_emax_standard(i:i, :))))
                 END DO
 
-                ! TODO: THis needs to be done later. This is a BUG.
-                DO i = 1, 2
-                    CALL clip_value_2(draws_emax_ambiguity_transformed(:, i), EXP(draws_emax_ambiguity_transformed(:, i)), zero_dble, HUGE_FLOAT, infos)
-                END DO
-
 
         ! TODO: Splitting up treatment by case
-        draws_emax_ambiguity_standard = draws_emax_standard
-
         CALL transform_disturbances(draws_emax_risk, draws_emax_standard, shocks_mean, optim_paras%shocks_cholesky)
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))

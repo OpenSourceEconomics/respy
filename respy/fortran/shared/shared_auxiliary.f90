@@ -289,13 +289,12 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
         draws_transformed(i:i, :) = TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
     END DO
 
-    ! TODO: THis needs to be done later. This is a BUG.
-    DO i = 1, 2
-        CALL clip_value_2(draws_transformed(:, i), EXP(draws_transformed(:, i)), zero_dble, HUGE_FLOAT, infos)
-    END DO
-
     DO i = 1, 4
         draws_transformed(:, i) = draws_transformed(:, i) + shocks_mean(i)
+    END DO
+    
+    DO i = 1, 2
+        CALL clip_value_2(draws_transformed(:, i), EXP(draws_transformed(:, i)), zero_dble, HUGE_FLOAT, infos)
     END DO
 
 END SUBROUTINE

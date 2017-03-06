@@ -277,6 +277,7 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
     REAL(our_dble)                  :: shocks_mean_cand(4)
 
     INTEGER(our_int)                :: i
+    INTEGER(our_int), ALLOCATABLE   :: infos(:)
 
     LOGICAL                         :: is_mean
 
@@ -294,11 +295,32 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
     ! Create the relevant set of random shocks
     IF (is_mean) THEN
         draws_emax_relevant = draws_emax_ambiguity_transformed
+
+
+        ! TODO: THis needs to be done later. This is a BUG.
+        DO i = 1, 2
+            CALL clip_value_2(draws_emax_relevant(:, i), EXP(draws_emax_relevant(:, i)), zero_dble, HUGE_FLOAT, infos)
+        END DO
+
         DO i = 1, 2
             draws_emax_relevant(:, i) = draws_emax_relevant(:, i) + x(i)
         END DO
     ELSE
-        CALL transform_disturbances(draws_emax_relevant, draws_emax_ambiguity_standard, shocks_mean_cand, shocks_cholesky_cand)
+        ! Auxiliary objects
+        DO i = 1, num_draws_emax
+            draws_emax_relevant(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws_emax_ambiguity_standard(i:i, :))))
+        END DO
+
+        ! TODO: THis needs to be done later. This is a BUG.
+        DO i = 1, 2
+            CALL clip_value_2(draws_emax_relevant(:, i), EXP(draws_emax_relevant(:, i)), zero_dble, HUGE_FLOAT, infos)
+        END DO
+
+        DO i = 1, 2
+            draws_emax_relevant(:, i) = draws_emax_relevant(:, i) + x(i)
+        END DO
+
+
     END IF
 
     CALL construct_emax_risk(criterion_ambiguity, period, k, draws_emax_relevant, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)

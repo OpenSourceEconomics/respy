@@ -3,9 +3,9 @@ import numpy as np
 
 from respy.python.shared.shared_auxiliary import covariance_to_correlation
 from respy.python.shared.shared_auxiliary import correlation_to_covariance
-from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import SMALL_FLOAT
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
@@ -149,20 +149,36 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
     shocks_cholesky_cand = get_relevant_dependence(shocks_cov, x)[1]
     shocks_mean_cand = np.append(x[:2], [0.0, 0.0])
 
+    from respy.python.shared.shared_constants import HUGE_FLOAT
+
     if is_mean:
+
         draws_emax_relevant = draws_emax_ambiguity_transformed.copy()
+
+        # TODO: This is the bug!!!!!
+        for i in [0, 1]:
+            draws_emax_relevant[:, i] = np.clip(np.exp(draws_emax_relevant[:,i]), 0.0, HUGE_FLOAT)
+
         for i in range(2):
             draws_emax_relevant[:, i] = draws_emax_relevant[:, i] + x[i]
     else:
-        # Now we can construct the relevant random draws from the standard deviates.
-        draws_emax_relevant = transform_disturbances(draws_emax_ambiguity_standard,
-            shocks_mean_cand, shocks_cholesky_cand)
 
-    # TODO: AT unit test later that all are larger than zero for wages.
+        # TODO: AT unit test later that all are larger than zero for wages.
+        draws_emax_relevant = np.dot(optim_paras['shocks_cholesky'],
+            draws_emax_ambiguity_standard.T).T
+
+        for i in [0, 1]:
+            draws_emax_relevant[:, i] = np.clip(np.exp(draws_emax_relevant[:,
+                                                       i]), 0.0,
+                HUGE_FLOAT)
+
+        # TODO: Is this correct? Do I not need to do this before the exponential?
+        for i in [0, 1]:
+            draws_emax_relevant[:, i] = draws_emax_relevant[:, i] + x[i]
 
     emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
-        draws_emax_relevant, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx, optim_paras)
+            draws_emax_relevant, rewards_systematic, edu_max, edu_start,
+            periods_emax, states_all, mapping_state_idx, optim_paras)
 
     return emax
 

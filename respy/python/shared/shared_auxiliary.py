@@ -389,13 +389,12 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     draws_transformed = draws.copy()
     draws_transformed = np.dot(shocks_cholesky, draws_transformed.T).T
 
-    for j in [0, 1]:
+    for j in range(4):
+        draws_transformed[:, j] = draws_transformed[:, j] + shocks_mean[j]
+
+    for j in range(2):
         draws_transformed[:, j] = \
             np.clip(np.exp(draws_transformed[:, j]), 0.0, HUGE_FLOAT)
-
-    # TODO: Is this correct? Do I not need to do this before the exponential?
-    for j in [0, 1, 2, 3]:
-        draws_transformed[:, j] = draws_transformed[:, j] + shocks_mean[j]
 
     # Finishing
     return draws_transformed
