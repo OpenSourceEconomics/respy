@@ -155,11 +155,11 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
         draws_emax_relevant = draws_emax_ambiguity_transformed.copy()
     else:
 
-        draws_emax_relevant = np.dot(optim_paras['shocks_cholesky'],
+        draws_emax_relevant = np.dot(shocks_cholesky_cand,
             draws_emax_ambiguity_standard.T).T
 
     for i in range(2):
-        draws_emax_relevant[:, i] = draws_emax_relevant[:, i] + x[i]
+        draws_emax_relevant[:, i] = draws_emax_relevant[:, i] + shocks_mean_cand[i]
 
     for i in [0, 1]:
         draws_emax_relevant[:, i] = np.clip(np.exp(draws_emax_relevant[:, i]),

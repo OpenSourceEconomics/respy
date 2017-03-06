@@ -297,18 +297,17 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
         draws_emax_relevant = draws_emax_ambiguity_transformed
     ELSE
         DO i = 1, num_draws_emax
-            draws_emax_relevant(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws_emax_ambiguity_standard(i:i, :))))
+            draws_emax_relevant(i:i, :) = TRANSPOSE(MATMUL(shocks_cholesky_cand, TRANSPOSE(draws_emax_ambiguity_standard(i:i, :))))
         END DO
     END IF
 
     DO i = 1, 2
-        draws_emax_relevant(:, i) = draws_emax_relevant(:, i) + x(i)
+        draws_emax_relevant(:, i) = draws_emax_relevant(:, i) + shocks_mean_cand(i)
     END DO
 
-!    DO i = 1, 2
-!        CALL clip_value(draws_emax_relevant(:, i), EXP(draws_emax_relevant(:, i)), zero_dble, HUGE_FLOAT, infos)
-!        draws_emax_relevant(:, i) = EXP(draws_emax_relevant(:, i))
-!    END DO
+    DO i = 1, 2
+        CALL clip_value(draws_emax_relevant(:, i), EXP(draws_emax_relevant(:, i)), zero_dble, HUGE_FLOAT, infos)
+    END DO
 
     CALL construct_emax_risk(criterion_ambiguity, period, k, draws_emax_relevant, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
 
