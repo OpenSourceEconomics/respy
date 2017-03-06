@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 import sys
 
-from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
@@ -156,11 +155,12 @@ class TestClass(object):
             periods_emax, states_all, mapping_state_idx)
 
         args = ()
-        args += base_args + (optim_paras, shocks_cov)
+        args += base_args + (optim_paras, shocks_cov, ambi_spec)
         py = criterion_ambiguity(x, *args)
 
         args = ()
         args += base_args + (optim_paras['delta'], shocks_cov)
+        args += (ambi_spec['mean'],)
         f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
         np.testing.assert_allclose(py, f90)
 
@@ -171,11 +171,12 @@ class TestClass(object):
             periods_emax, states_all, mapping_state_idx)
 
         args = ()
-        args += base_args + (optim_paras, shocks_cov)
+        args += base_args + (optim_paras, shocks_cov, ambi_spec)
         py = approx_fprime(x, criterion_ambiguity, fort_slsqp_eps, *args)
 
         args = ()
-        args += base_args + (optim_paras['delta'], shocks_cov, fort_slsqp_eps)
+        args += base_args + (optim_paras['delta'], shocks_cov)
+        args += (ambi_spec['mean'], fort_slsqp_eps)
         args += (num_free_ambi, )
         f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args)
         np.testing.assert_allclose(py, f90)

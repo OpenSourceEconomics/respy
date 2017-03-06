@@ -587,7 +587,7 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov)
+SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov, mean)
 
     !/* external libraries      */
 
@@ -615,9 +615,10 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
     INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: edu_max_int
-
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
+
+    LOGICAL, INTENT(IN)             :: mean
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -634,12 +635,14 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
     ! Construct derived types
     optim_paras%delta = delta
 
-    emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov)
+    ambi_spec%mean = mean
+
+    emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov, ambi_spec)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov, fort_slsqp_eps, num_free_ambi_int)
+SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov, mean, fort_slsqp_eps, num_free_ambi_int)
 
     !/* external libraries      */
 
@@ -673,6 +676,8 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
+    LOGICAL, INTENT(IN)             :: mean
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -687,7 +692,9 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_
     ! Construct derived types
     optim_paras%delta = delta
 
-    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov, fort_slsqp_eps)
+    ambi_spec%mean = mean
+
+    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov, ambi_spec, fort_slsqp_eps)
 
 END SUBROUTINE
 !******************************************************************************

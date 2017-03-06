@@ -97,7 +97,7 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
 
     opt_ambi_details(period + 1, k + 1, :) = (/rslt_all, div, is_success, DBLE(mode)/)
 
-    emax = criterion_ambiguity(rslt_all, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov)
+    emax = criterion_ambiguity(rslt_all, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, ambi_spec)
 
 END SUBROUTINE
 !******************************************************************************
@@ -188,9 +188,9 @@ SUBROUTINE get_worst_case(opt_return, is_success, mode, num_periods, num_draws_e
     is_finished = .False.
 
     ! Initialize criterion function at starting values
-    F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov)
+    F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, ambi_spec)
 
-    G(:num_free_ambi) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, eps_der_approx)
+    G(:num_free_ambi) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, ambi_spec, eps_der_approx)
 
     ! Initialize constraint at starting values
     C = constraint_ambiguity(x, shocks_cov, optim_paras)
@@ -203,12 +203,12 @@ SUBROUTINE get_worst_case(opt_return, is_success, mode, num_periods, num_draws_e
         ! Evaluate criterion function and constraints
         IF (mode .EQ. one_int) THEN
 
-            F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov)
+            F = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, ambi_spec)
             C = constraint_ambiguity(x, shocks_cov, optim_paras)
 
         ! Evaluate gradient of criterion function and constraints.
     ELSEIF (mode .EQ. - one_int) THEN
-            G(:num_free_ambi) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, eps_der_approx)
+            G(:num_free_ambi) = criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, ambi_spec, eps_der_approx)
             A(1,:num_free_ambi) = constraint_ambiguity_derivative(x, shocks_cov, optim_paras, eps_der_approx)
 
         END IF
@@ -230,8 +230,7 @@ SUBROUTINE get_worst_case(opt_return, is_success, mode, num_periods, num_draws_e
 
     opt_return = x
 
-    ! Stabilization. If the optimization fails the starting values are
-    ! used otherwise it happens that the constraint is not satisfied by far.
+    ! Stabilization. If the optimization fails the starting values are used otherwise it happens that the constraint is not satisfied by far.
     is_success = zero_dble
     IF (mode .EQ. zero_int) is_success = one_dble
 
@@ -245,13 +244,14 @@ SUBROUTINE get_worst_case(opt_return, is_success, mode, num_periods, num_draws_e
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov)
+FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, ambi_spec)
 
     !/* external objects    */
 
     REAL(our_dble)                      :: criterion_ambiguity
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(AMBI_DICT), INTENT(IN)         :: ambi_spec
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -279,21 +279,16 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
     INTEGER(our_int)                :: i
     INTEGER(our_int), ALLOCATABLE   :: infos(:)
 
-    LOGICAL                         :: is_mean
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    ! Construct auxiliary objects
-    is_mean = (SIZE(x, 1) .EQ. 2)
 
     ! Construct evaluation points
     shocks_mean_cand = (/x(:2), zero_dble, zero_dble/)
     CALL get_relevant_dependence(shocks_cov_cand, shocks_cholesky_cand, shocks_cov, x)
 
     ! Create the relevant set of random shocks
-    IF (is_mean) THEN
+    IF (ambi_spec%mean) THEN
         draws_emax_relevant = draws_emax_ambiguity_transformed
     ELSE
         DO i = 1, num_draws_emax
@@ -314,7 +309,7 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, eps_der_approx)
+FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, ambi_spec, eps_der_approx)
 
     !/* external objects        */
     REAL(our_dble), INTENT(IN)      :: x(num_free_ambi)
@@ -322,6 +317,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
     REAL(our_dble)                              :: criterion_ambiguity_derivative(num_free_ambi)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(AMBI_DICT), INTENT(IN)         :: ambi_spec
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
@@ -356,7 +352,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
     ei = zero_dble
 
     ! Evaluate baseline
-    f0 = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov)
+    f0 = criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, ambi_spec)
 
     DO j = 1, num_free_ambi
 
@@ -364,7 +360,7 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
 
         d = eps_der_approx * ei
 
-        f1 = criterion_ambiguity(x + d, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov)
+        f1 = criterion_ambiguity(x + d, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov, ambi_spec)
 
         criterion_ambiguity_derivative(j) = (f1 - f0) / d(j)
 
@@ -451,19 +447,16 @@ SUBROUTINE get_relevant_dependence(shocks_cov_cand, shocks_cholesky_cand, shocks
 
     IF (SIZE(x) == two_int) THEN
         shocks_cov_cand = shocks_cov
-
     ELSE
         CALL covariance_to_correlation(shocks_corr_base, shocks_cov)
         sd = (/x(3:), DSQRT(shocks_cov(3, 3)), DSQRT(shocks_cov(4, 4))/)
         CALL correlation_to_covariance(shocks_cov_cand, shocks_corr_base, sd)
     END IF
 
-
     CALL get_cholesky_decomposition(shocks_cholesky_cand, info, shocks_cov_cand)
     IF (info .NE. zero_dble) THEN
         STOP 'Problem in the Cholesky decomposition'
     END IF
-
 
 END SUBROUTINE
 !******************************************************************************

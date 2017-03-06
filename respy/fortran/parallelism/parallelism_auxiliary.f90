@@ -261,6 +261,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     INTEGER(our_int)                    :: count
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
+    INTEGER(our_int)                    :: i
 
     REAL(our_dble)                      :: rewards_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
@@ -269,7 +270,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     REAL(our_dble)                      :: emax
 
     REAL(our_dble)                      :: draws_emax_ambiguity_standard(num_draws_emax, 4)
-
     REAL(our_dble)                      :: draws_emax_ambiguity_transformed(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax_standard(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax_risk(num_draws_emax, 4)
@@ -287,8 +287,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     REAL(our_dble), ALLOCATABLE         :: endogenous(:)
     REAL(our_dble), ALLOCATABLE         :: maxe(:)
 
-    INTEGER(our_int):: i
-    INTEGER(our_int), ALLOCATABLE   :: infos(:)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -330,6 +328,11 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     CALL clip_value(shifts(1), EXP(shocks_cov(1, 1)/two_dble), zero_dble, HUGE_FLOAT, info)
     CALL clip_value(shifts(2), EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT, info)
 
+    ! Initialize containers for disturbances with empty values.
+    draws_emax_ambiguity_transformed = MISSING_FLOAT
+    draws_emax_ambiguity_standard = MISSING_FLOAT
+    draws_emax_risk = MISSING_FLOAT
+
     shocks_mean = zero_int
 
     DO period = (num_periods - 1), 0, -1
@@ -339,16 +342,17 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
         num_states = states_number_period(period + 1)
 
         ! Transform disturbances
-        draws_emax_ambiguity_standard = draws_emax_standard
-
-
+        IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
+            IF (ambi_spec%mean) THEN
                 DO i = 1, num_draws_emax
                     draws_emax_ambiguity_transformed(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws_emax_standard(i:i, :))))
                 END DO
-
-
-        ! TODO: Splitting up treatment by case
-        CALL transform_disturbances(draws_emax_risk, draws_emax_standard, shocks_mean, optim_paras%shocks_cholesky)
+            ELSE
+                draws_emax_ambiguity_standard = draws_emax_standard
+            END IF
+        ELSE
+            CALL transform_disturbances(draws_emax_risk, draws_emax_standard, shocks_mean, optim_paras%shocks_cholesky)
+        END IF
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
