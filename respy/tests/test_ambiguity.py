@@ -115,8 +115,10 @@ class TestClass(object):
         # Sample draws
         draws_standard = np.random.multivariate_normal(np.zeros(4),
             np.identity(4), (num_draws_emax,))
-        draws_transformed = transform_disturbances(draws_standard,
-            np.tile(0, 4), optim_paras['shocks_cholesky'])
+
+        draws_emax_ambiguity_standard = draws_standard
+        draws_emax_ambiguity_transformed = np.dot(optim_paras[
+            'shocks_cholesky'], draws_standard.T).T
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -125,8 +127,8 @@ class TestClass(object):
         # Select systematic rewards
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
-        base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-            draws_transformed, rewards_systematic, edu_max, edu_start,
+        base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+            draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx)
 
         args = ()
@@ -149,8 +151,8 @@ class TestClass(object):
             x = np.append(x, np.random.uniform(low=0.01, size=2))
             num_free_ambi = 4
 
-        base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-            draws_transformed, rewards_systematic, edu_max, edu_start,
+        base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+                     draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start,
             periods_emax, states_all, mapping_state_idx)
 
         args = ()
@@ -164,8 +166,8 @@ class TestClass(object):
 
         # Let us check the calculation of the derivatives for the criterion
         # function of the ambiguity optimization.
-        base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-            draws_transformed, rewards_systematic, edu_max,  edu_start,
+        base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+            draws_emax_ambiguity_transformed, rewards_systematic, edu_max,  edu_start,
             periods_emax, states_all, mapping_state_idx)
 
         args = ()
@@ -197,8 +199,8 @@ class TestClass(object):
         f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args)
         np.testing.assert_allclose(py, f90)
 
-        base_args = (num_periods, num_draws_emax, period, k, draws_standard,
-             draws_transformed, rewards_systematic, edu_max, edu_start,
+        base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+                     draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start,
              periods_emax, states_all, mapping_state_idx, shocks_cov)
 
         args = ()

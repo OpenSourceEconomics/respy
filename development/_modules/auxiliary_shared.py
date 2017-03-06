@@ -76,12 +76,11 @@ def compile_package(is_debug=False):
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call(python_exec + ' waf distclean', shell=True)
     if not is_debug:
-        subprocess.check_call(python_exec + ' waf configure build --testing',
+        subprocess.check_call(python_exec + ' waf configure build',
             shell=True)
     else:
-        subprocess.check_call(python_exec + ' waf configure build --debug '
-                                            '--testing',
-                              shell=True)
+        subprocess.check_call(python_exec + ' waf configure build --debug ',
+            shell=True)
 
     os.chdir(cwd)
 

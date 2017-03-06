@@ -58,8 +58,6 @@ def run(args):
         tests = json.load(open(fname, 'r'))
 
         init_dict, crit_val = tests[idx]
-        init_dict['AMBIGUITY']['mean'] = True
-
         print_init_dict(init_dict)
         respy_obj = RespyCls('test.respy.ini')
 
@@ -95,8 +93,11 @@ def run(args):
 
             init_dict = generate_init(constr)
             respy_obj = RespyCls('test.respy.ini')
+
             simulate_observed(respy_obj)
+
             crit_val = estimate(respy_obj)[1]
+
             test = (init_dict, crit_val)
             tests += [test]
             print_init_dict(init_dict)
@@ -117,30 +118,12 @@ def run(args):
 
             init_dict, crit_val = tests[idx]
 
-            # TODO: Temporary fixes ...
-            init_dict['AMBIGUITY']['mean'] = True
-
-            if init_dict['AMBIGUITY']['coeffs'][0] > 0:
-                print('.. skipping')
-                continue
-
-
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
 
             est_val = estimate(respy_obj)[1]
-
-            # TODO: At this point we need to cut the comparison a little more
-            # slack as otherwise the tests fail on our compute servers. It
-            # is the worst-case determination which might have slightly
-            # different results. At this point it remains a mystery what is
-            # driving the discrepancy.
-            is_slack = (HOSTNAME != 'pontos') and (idx in [46])
-            if is_slack:
-                pass
-            else:
-                np.testing.assert_almost_equal(est_val, crit_val)
+            np.testing.assert_almost_equal(est_val, crit_val)
 
         # This allows to call this test from another script, that runs other
         # tests as well.

@@ -513,6 +513,10 @@ class TestClass(object):
         draws_emax_risk = transform_disturbances(draws_emax_standard,
             np.tile(0, 4), optim_paras['shocks_cholesky'])
 
+        draws_emax_ambiguity_standard = draws_emax_standard
+        draws_emax_ambiguity_transformed = np.dot(optim_paras[
+            'shocks_cholesky'], draws_emax_standard.T).T
+
         num_states = states_number_period[period]
 
         shifts = np.random.randn(4)
@@ -547,12 +551,11 @@ class TestClass(object):
 
         # Construct endogenous variable so that the prediction model can be
         # fitted.
-        # TODO: REvisit naming convention ...
         base_args = (period, num_periods, num_states,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax_risk, draws_emax_standard,
-                     draws_emax_standard)
+            num_draws_emax, maxe, draws_emax_risk, draws_emax_ambiguity_standard,
+                     draws_emax_ambiguity_transformed)
 
         args = ()
         args += base_args + (ambi_spec, optim_paras, optimizer_options)
