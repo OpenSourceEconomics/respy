@@ -58,6 +58,7 @@ def run(args):
         tests = json.load(open(fname, 'r'))
 
         init_dict, crit_val = tests[idx]
+
         print_init_dict(init_dict)
         respy_obj = RespyCls('test.respy.ini')
 
@@ -93,11 +94,8 @@ def run(args):
 
             init_dict = generate_init(constr)
             respy_obj = RespyCls('test.respy.ini')
-
             simulate_observed(respy_obj)
-
             crit_val = estimate(respy_obj)[1]
-
             test = (init_dict, crit_val)
             tests += [test]
             print_init_dict(init_dict)
