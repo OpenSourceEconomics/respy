@@ -169,12 +169,12 @@ def run_estimation(which):
 
     init_dict = json.load(open('init_dict.respy.json', 'r'))
 
-    # TODO: This is probably not required when comparing future releases.
-    # There was a change in the setup for releases after 1.00.
-    if which == 'old':
-        init_dict['SHOCKS']['fixed'] = np.array(init_dict['SHOCKS']['fixed'])
-    else:
-        init_dict['SHOCKS']['fixed'] = init_dict['SHOCKS']['fixed']
+    # There was a change in the setup for releases after 1.00. This is only
+    # required when comparing to v1.0.0.
+    #  if which == 'old':
+    #     init_dict['SHOCKS']['fixed'] = np.array(init_dict['SHOCKS']['fixed'])
+    # else:
+    #     init_dict['SHOCKS']['fixed'] = init_dict['SHOCKS']['fixed']
 
     print_init_dict(init_dict)
 
