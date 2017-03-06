@@ -270,8 +270,11 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
 
-    REAL(our_dble)                      :: draws_emax_transformed(num_draws_emax, 4)
+    REAL(our_dble)                      :: draws_emax_ambiguity_transformed(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax_standard(num_draws_emax, 4)
+
+    REAL(our_dble)                      :: draws_emax_ambiguity_standard(num_draws_emax, 4)
+    REAL(our_dble)                      :: draws_emax_risk(num_draws_emax, 4)
     REAL(our_dble)                      :: shocks_mean(4) = zero_dble
     REAL(our_dble)                      :: rewards_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
@@ -287,7 +290,8 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 
     LOGICAL, ALLOCATABLE                :: is_simulated(:)
     INTEGER(our_int)                    :: seed_inflated(15)
-    INTEGER(our_int)                    :: seed_size
+    INTEGER(our_int)                    :: seed_size, i
+    INTEGER(our_int), ALLOCATABLE   :: infos(:)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -326,8 +330,20 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
         num_states = states_number_period(period + 1)
 
         ! Transform disturbances
-        CALL transform_disturbances(draws_emax_transformed, draws_emax_standard, shocks_mean, optim_paras%shocks_cholesky)
+        draws_emax_ambiguity_standard = draws_emax_standard
 
+        DO i = 1, num_draws_emax
+            draws_emax_ambiguity_transformed(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws_emax_standard(i:i, :))))
+        END DO
+
+        ! TODO: THis needs to be done later. This is a BUG.
+        DO i = 1, 2
+            CALL clip_value_2(draws_emax_ambiguity_transformed(:, i), EXP(draws_emax_ambiguity_transformed(:, i)), zero_dble, HUGE_FLOAT, infos)
+        END DO
+
+
+        ! TODO: Some remarks about the difficult treatment of the disturbances
+        CALL transform_disturbances(draws_emax_risk, draws_emax_standard, shocks_mean, optim_paras%shocks_cholesky)
 
         IF (is_write) CALL record_solution(4, file_sim, period, num_states)
 
@@ -341,7 +357,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, optim_paras, edu_start, edu_max)
 
-            CALL get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_standard, draws_emax_transformed, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options)
+            CALL get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options)
 
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, file_sim, is_write)
 
@@ -356,9 +372,9 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
+                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
                 ELSE
-                    CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
                 END IF
 
                 periods_emax(period + 1, k + 1) = emax
@@ -514,7 +530,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_standard, draws_emax_transformed, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options)
+SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options)
 
     !/* external objects        */
 
@@ -525,8 +541,9 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
     TYPE(AMBI_DICT), INTENT(IN)         :: ambi_spec
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
-    REAL(our_dble), INTENT(IN)          :: draws_emax_transformed(num_periods, max_states_period)
-    REAL(our_dble), INTENT(IN)          :: draws_emax_standard(num_periods, max_states_period)
+    REAL(our_dble), INTENT(IN)          :: draws_emax_ambiguity_transformed(num_periods, max_states_period)
+    REAL(our_dble), INTENT(IN)          :: draws_emax_ambiguity_standard(num_periods, max_states_period)
+    REAL(our_dble), INTENT(IN)          :: draws_emax_risk(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: maxe(num_states)
 
@@ -567,9 +584,9 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
         IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-            CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_standard, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
+            CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
         ELSE
-            CALL construct_emax_risk(emax, period, k, draws_emax_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+            CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
         END IF
 
         ! Construct dependent variable

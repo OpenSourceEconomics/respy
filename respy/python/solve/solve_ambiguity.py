@@ -9,7 +9,7 @@ from respy.python.shared.shared_constants import SMALL_FLOAT
 
 
 def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
-        draws_emax_standard, draws_emax_relevant, rewards_systematic, edu_max,
+        draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max,
         edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec,
         optim_paras, optimizer_options, opt_ambi_details):
     """ Construct EMAX accounting for a worst case evaluation.
@@ -21,9 +21,9 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     # Determine special cases
     is_deterministic = (np.count_nonzero(shocks_cov) == 0)
 
-    base_args = (num_periods, num_draws_emax, period, k, draws_emax_standard,
-        draws_emax_relevant, rewards_systematic, edu_max, edu_start,
-        periods_emax, states_all, mapping_state_idx)
+    base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+                 draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start,
+                 periods_emax, states_all, mapping_state_idx)
 
     # The following two scenarios are only maintained for testing and
     # debugging purposes.
@@ -76,8 +76,8 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     return emax, opt_ambi_details
 
 
-def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_standard,
-        draws_emax_transformed, rewards_systematic, edu_max, edu_start,
+def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+        draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, shocks_cov, optim_paras,
         optimizer_options, ambi_spec):
     """ Run the optimization.
@@ -115,8 +115,8 @@ def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_standard,
     # Collection.
     constraints = [constraint_divergence, ]
 
-    args = (num_periods, num_draws_emax, period, k, draws_emax_standard,
-        draws_emax_transformed, rewards_systematic, edu_max, edu_start,
+    args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+            draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start,
         periods_emax, states_all, mapping_state_idx, optim_paras, shocks_cov)
 
     # Run optimization
@@ -136,7 +136,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_standard,
 
 
 def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
-        draws_emax_standard, draws_emax_transformed, rewards_systematic,
+        draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic,
         edu_max, edu_start, periods_emax, states_all, mapping_state_idx,
         optim_paras, shocks_cov):
     """ Evaluating the constructed EMAX with the admissible distribution.
@@ -150,13 +150,15 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
     shocks_mean_cand = np.append(x[:2], [0.0, 0.0])
 
     if is_mean:
-        draws_emax_relevant = draws_emax_transformed.copy()
+        draws_emax_relevant = draws_emax_ambiguity_transformed.copy()
         for i in range(2):
             draws_emax_relevant[:, i] = draws_emax_relevant[:, i] + x[i]
     else:
         # Now we can construct the relevant random draws from the standard deviates.
-        draws_emax_relevant = transform_disturbances(draws_emax_standard,
+        draws_emax_relevant = transform_disturbances(draws_emax_ambiguity_standard,
             shocks_mean_cand, shocks_cholesky_cand)
+
+    # TODO: AT unit test later that all are larger than zero for wages.
 
     emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
         draws_emax_relevant, rewards_systematic, edu_max, edu_start,

@@ -544,10 +544,12 @@ class TestClass(object):
 
         # Construct endogenous variable so that the prediction model can be
         # fitted.
+        # TODO: REvisit naming convention ...
         base_args = (period, num_periods, num_states,
             periods_rewards_systematic, edu_max, edu_start,
             mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax_standard, draws_emax_transformed)
+            num_draws_emax, maxe, draws_emax_standard, draws_emax_standard,
+                     draws_emax_transformed)
 
         args = ()
         args += base_args + (ambi_spec, optim_paras, optimizer_options)
