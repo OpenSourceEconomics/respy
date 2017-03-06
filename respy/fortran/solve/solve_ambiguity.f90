@@ -306,7 +306,8 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
     END DO
 
     DO i = 1, 2
-        CALL clip_value_2(draws_emax_relevant(:, i), EXP(draws_emax_relevant(:, i)), zero_dble, HUGE_FLOAT, infos)
+!        CALL clip_value(draws_emax_relevant(:, i), EXP(draws_emax_relevant(:, i)), zero_dble, HUGE_FLOAT, infos)
+        draws_emax_relevant(:, i) = EXP(draws_emax_relevant(:, i))
     END DO
 
     CALL construct_emax_risk(criterion_ambiguity, period, k, draws_emax_relevant, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
