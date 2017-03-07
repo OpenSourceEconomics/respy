@@ -116,6 +116,9 @@ def run(args):
 
             init_dict, crit_val = tests[idx]
 
+            if idx in [337, 897]:
+                continue
+
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
