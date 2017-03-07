@@ -116,8 +116,10 @@ def run(args):
 
             init_dict, crit_val = tests[idx]
 
-            if idx in [337, 897]:
-                continue
+            # TODO: For some reason some of the tests fail on @zeus.
+            if socket.gethostbyname() == 'zeus':
+                if idx in [337, 897]:
+                    continue
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
