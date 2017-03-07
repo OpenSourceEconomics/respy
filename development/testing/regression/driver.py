@@ -117,7 +117,7 @@ def run(args):
             init_dict, crit_val = tests[idx]
 
             # TODO: For some reason some of the tests fail on @zeus.
-            if socket.gethostbyname() == 'zeus':
+            if socket.gethostname() == 'zeus':
                 if idx in [337, 897]:
                     continue
 
