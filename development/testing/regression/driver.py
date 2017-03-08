@@ -129,7 +129,7 @@ def run(args):
 
             est_val = estimate(respy_obj)[1]
             try:
-                np.testing.assert_almost_equal(est_val, crit_va)
+                np.testing.assert_almost_equal(est_val, crit_val)
             except AssertionError:
                 is_failure = True
                 break
