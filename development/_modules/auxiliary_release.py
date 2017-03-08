@@ -11,8 +11,7 @@ import os
 def install(version):
     """ Prepare the
     """
-    cmd = ['install', '-vvv', '--no-binary', 'respy', '--extra-index-url']
-    cmd += ['https://testpypi.python.org/pypi', 'respy==' + version]
+    cmd = ['install', '-vvv', '--no-binary', 'respy', 'respy==' + version]
     pip.main(cmd)
 
     # TODO: PYTEST is part of the package requirements in the newer releases.
@@ -20,7 +19,7 @@ def install(version):
     cmd = ['install', 'pytest']
     pip.main(cmd)
 
-# TODO: This is working well for a comparison between v2.0.5 and v2.0.6
+# TODO: This is working well for a comparison between v2.0.0.dev7 and v2.0.0dev8
 def prepare_release_tests(constr):
     """ This function prepares the initialization files so that they can be
     processed by both releases under investigation. The idea is to have all
@@ -55,7 +54,7 @@ def prepare_release_tests(constr):
     json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
 
 
-# TODO: This was working well for a comparison between v1.0.0 and v2.0.4
+# TODO: This was working well for a comparison between v1.0.0 and v2.0.0.dev7
 # def prepare_release_tests(constr):
 #     """ This function prepares the initialization files so that they can be
 #     processed by both releases under investigation. The idea is to have all

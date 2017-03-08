@@ -108,14 +108,14 @@ def send_notification(which, **kwargs):
     if 'seed' in kwargs.keys():
         seed = kwargs['seed']
 
+    if 'test_idx' in kwargs.keys():
+        test_idx = kwargs['test_idx']
+
     hostname = socket.gethostname()
 
     if which == 'scalability':
         subject = ' RESPY: Scalability Testing'
         message = ' Scalability testing is completed on @' + hostname + '.'
-    elif which == 'regression':
-        subject = ' RESPY: Regression Testing'
-        message = ' Regression testing is completed on @' + hostname + '.'
     elif which == 'reliability':
         subject = ' RESPY: Reliability Testing'
         message = ' Reliability testing is completed on @' + hostname + '.'
@@ -123,6 +123,14 @@ def send_notification(which, **kwargs):
         subject = ' RESPY: Property Testing'
         message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
                   hostname + ' is completed.'
+
+    elif which == 'regression':
+        subject = ' RESPY: Regression Testing'
+        if is_failed:
+            message = 'Failure during regression testing for test ' + str(
+                test_idx) + '.'
+        else:
+            message = ' Regression testing is completed on @' + hostname + '.'
 
     elif which == 'release':
         subject = ' RESPY: Release Testing'

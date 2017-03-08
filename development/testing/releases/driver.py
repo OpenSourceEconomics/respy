@@ -138,17 +138,21 @@ if __name__ == '__main__':
 
     # NOTES:
     #
+    #   All the versions are available on PYPI. Those marked as development
+    #   versions are not downloaded by an unsuspecting user. Instead, they
+    #   need to be explicitly requested. Please also make sure these versions
+    #   are tagged in GIT.
+    #
     #   Version    Description
     #
-    #   2.0.4      Ambiguity, just added endogenous delta ...
-    #   2.0.5b     Ambiguity, probably same as v2.0.4
-    #   2.0.6      Ambiguity, now with free variances in worst-case
-    #              determination
-    #
+    #   1.0.0       Release for risk-only model
+    #   2.0.0.dev7  Ambiguity, probably same as v2.0.4
+    #   2.0.0.dev8  Ambiguity, now with free variances in worst-case
+    #               determination
 
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
-    OLD_RELEASE, NEW_RELEASE = '2.0.5b', '2.0.6'
+    OLD_RELEASE, NEW_RELEASE = '2.0.0.dev7', '2.0.0.dev8'
 
     parser = argparse.ArgumentParser(description='Run release testing.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)

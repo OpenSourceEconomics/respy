@@ -111,6 +111,8 @@ def run(args):
         indices = list(range(num_tests))
         np.random.shuffle(indices)
 
+        is_failure = False
+
         for i, idx in enumerate(indices):
             print('\n Checking Test ', idx, ' at iteration ',  i, '\n')
 
@@ -126,12 +128,17 @@ def run(args):
             simulate_observed(respy_obj)
 
             est_val = estimate(respy_obj)[1]
-            np.testing.assert_almost_equal(est_val, crit_val)
+            try:
+                np.testing.assert_almost_equal(est_val, crit_val + 0.1)
+            except AssertionError:
+                is_failure = True
+                break
 
         # This allows to call this test from another script, that runs other
         # tests as well.
         if not args.is_background:
-            send_notification('regression')
+            send_notification('regression', is_failed=is_failure,
+                test_idx=idx)
 
 if __name__ == '__main__':
 
