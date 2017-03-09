@@ -145,6 +145,9 @@ if __name__ == '__main__':
     #   2.0.0.dev7  Ambiguity, probably same as v2.0.4
     #   2.0.0.dev8  Ambiguity, now with free variances in worst-case
     #               determination
+    #
+    #   TODO:       The notification needs to include information on the exact
+    #               release that were compared
 
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
