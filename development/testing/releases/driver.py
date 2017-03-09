@@ -67,10 +67,6 @@ def run(args):
             else:
                 raise AssertionError
 
-            # TODO: This is a temporary bug fix. The problem seems to be the
-            # slightly outdated pip. It needs to be 8.1.2 instead of the
-            # 8.1.1, which is the current default when invoking pyvenv. This
-            # should simply solve itself over time.
             cmd = [python_exec, SCRIPT_FNAME, 'upgrade']
             subprocess.check_call(cmd)
 
@@ -97,7 +93,7 @@ def run(args):
         constr = dict()
         constr['flag_estimation'] = True
 
-        prepare_release_tests(constr)
+        prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE)
 
         # We use the current release for the simulation of the underlying
         # dataset.
@@ -152,7 +148,7 @@ if __name__ == '__main__':
 
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
-    OLD_RELEASE, NEW_RELEASE = '2.0.0.dev7', '2.0.0.dev8'
+    OLD_RELEASE, NEW_RELEASE = '1.0.0', '2.0.0.dev8'
 
     parser = argparse.ArgumentParser(description='Run release testing.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
