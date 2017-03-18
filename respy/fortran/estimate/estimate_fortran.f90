@@ -159,8 +159,8 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
     ! We intent to monitor the execution time of every evaluation of the criterion function.
     CALL CPU_TIME(start)
 
-    ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
-    IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
+    ! We allow for early termination due to maximum number of iterations or user request.
+    IF (check_early_termination(maxfun, num_eval, crit_estimation)) THEN
         fort_criterion_scalar = HUGE_FLOAT
         RETURN
     END IF
@@ -227,8 +227,8 @@ FUNCTION fort_criterion_parallel(x)
     ! We intent to monitor the execution time of every evaluation of the criterion function.
     CALL CPU_TIME(start)
 
-    ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
-    IF ((num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)) THEN
+    ! We allow for early termination due to maximum number of iterations or user request.
+    IF (check_early_termination(maxfun, num_eval, crit_estimation)) THEN
         fort_criterion_parallel = HUGE_FLOAT
         RETURN
     END IF

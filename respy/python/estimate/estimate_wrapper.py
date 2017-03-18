@@ -2,6 +2,7 @@ from datetime import datetime
 import numpy as np
 
 from respy.python.record.record_estimation import record_estimation_eval
+from respy.python.shared.shared_auxiliary import check_early_termination
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.shared.shared_auxiliary import apply_scaling
@@ -63,9 +64,10 @@ class OptimizationClass(object):
             if info != 0:
                 record_warning(4)
 
-            # Enforce a maximum number of function evaluations
-            if self.maxfun == self.num_eval:
-                raise MaxfunError
+            # Enforce a maximum number of function evaluations. If
+            # appropriate, the function throws a MaxfunError which is
+            # properly handled in the top estimation module.
+            check_early_termination(self.maxfun, self.num_eval)
 
         # Finishing
         return fval
@@ -89,9 +91,3 @@ class OptimizationClass(object):
 
         return x_optim_all_unscaled
 
-
-class MaxfunError(Exception):
-    """ This custom-error class allows to enforce the MAXFUN restriction
-    independent of the optimizer used.
-    """
-    pass
