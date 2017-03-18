@@ -109,8 +109,13 @@ def write_out(respy_obj, data_frame):
     # Distribute class attributes
     file_sim = respy_obj.get_attr('file_sim')
 
+    # The wage variable is formatted for two digits precision only.
+    formatter = dict()
+    formatter['Wage'] = format_float
+
     with open(file_sim + '.respy.dat', 'w') as file_:
-        data_frame.to_string(file_, index=False, header=True, na_rep='.')
+        data_frame.to_string(file_, index=False, header=True, na_rep='.',
+            formatters=formatter)
 
 
 def format_float(x):
