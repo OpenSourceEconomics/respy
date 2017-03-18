@@ -52,11 +52,30 @@ OPT_AMB_PYTH = ['SCIPY-SLSQP']
 OPT_AMB_FORT = ['FORT-SLSQP']
 
 # Labels for columns in a dataset as well as the formatters.
-LABELS = []
-LABELS += ['Identifier', 'Period', 'Choice', 'Wage']
-LABELS += ['Experience A', 'Experience B', 'Years Schooling']
-LABELS += ['Lagged Schooling']
+DATA_LABELS_EST = []
+DATA_LABELS_EST += ['Identifier', 'Period', 'Choice', 'Wage']
+DATA_LABELS_EST += ['Experience_A', 'Experience_B', 'Years_Schooling']
+DATA_LABELS_EST += ['Lagged_Schooling']
 
-FORMATS_DICT = dict()
-FORMATS_DICT.update({0: np.int, 1: np.int, 2: np.int, 3: np.float})
-FORMATS_DICT.update({4: np.int, 5: np.int, 6: np.int, 7: np.int})
+# There is additional information available in a simulated dataset.
+DATA_LABELS_SIM = DATA_LABELS_EST[:]
+DATA_LABELS_SIM += ['Systematic_Reward_1', 'Systematic_Reward_2']
+DATA_LABELS_SIM += ['Systematic_Reward_3', 'Systematic_Reward_4']
+DATA_LABELS_SIM += ['Shock_Reward_1', 'Shock_Reward_2']
+DATA_LABELS_SIM += ['Shock_Reward_3', 'Shock_Reward_4']
+
+DATA_LABELS_SIM += ['Total_Reward_1', 'Total_Reward_2']
+DATA_LABELS_SIM += ['Total_Reward_3', 'Total_Reward_4']
+
+DATA_FORMATS_EST = dict()
+for key_ in DATA_LABELS_EST:
+    DATA_FORMATS_EST[key_] = np.int
+    if key_ in ['Wage']:
+        DATA_FORMATS_EST[key_] = np.float
+
+DATA_FORMATS_SIM = dict(DATA_FORMATS_EST)
+for key_ in DATA_LABELS_SIM:
+    if key_ in DATA_FORMATS_SIM.keys():
+        continue
+    else:
+        DATA_FORMATS_SIM[key_] = np.float

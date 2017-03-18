@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 
 from respy.python.process.process_auxiliary import check_dataset_est
-from respy.python.shared.shared_constants import FORMATS_DICT
-from respy.python.shared.shared_constants import LABELS
+from respy.python.shared.shared_constants import DATA_FORMATS_EST
+from respy.python.shared.shared_constants import DATA_LABELS_EST
 
 
 def process(respy_obj):
@@ -14,8 +14,13 @@ def process(respy_obj):
     file_est = respy_obj.get_attr('file_est')
 
     # Process dataset from files.
-    data_frame = pd.read_csv(file_est, delim_whitespace=True, header=-1,
-        na_values='.', dtype=FORMATS_DICT, names=LABELS)
+    data_frame = pd.read_csv(file_est, delim_whitespace=True, header=0,
+        na_values='.')
+
+    # We only keep the information that is relevant for the estimation. Once
+    # that is done, we can also impose some type restrictions.
+    data_frame = data_frame[DATA_LABELS_EST]
+    data_frame = data_frame.astype(DATA_FORMATS_EST)
 
     # We now subset the dataframe to include only the number of agents that
     # are requested for the estimation.

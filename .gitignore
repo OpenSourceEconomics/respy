@@ -1,1 +1,4 @@
-
+*.pyc
+.cache
+.bld
+respy/.waf-*
