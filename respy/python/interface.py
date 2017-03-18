@@ -14,9 +14,9 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
-from respy.python.estimate.estimate_wrapper import MaxfunError
 from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import MaxfunError
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 

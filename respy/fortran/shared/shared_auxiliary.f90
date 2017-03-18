@@ -31,6 +31,30 @@ MODULE shared_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+FUNCTION check_early_termination(maxfun, num_eval, crit_estimation) RESULT(is_termination)
+
+    !/* external objects    */
+
+    LOGICAL                         :: is_termination
+
+    INTEGER, INTENT(IN)             :: num_eval
+    INTEGER, INTENT(IN)             :: maxfun
+
+    LOGICAL, INTENT(IN)             :: crit_estimation
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Ensuring that the criterion function is not evaluated more than specified. However, there is the special request of MAXFUN equal to zero which needs to be allowed.
+    is_termination = (num_eval == maxfun) .AND. crit_estimation .AND. (.NOT. maxfun == zero_int)
+
+    ! We also want to allow for a gentle termination by the user.
+    IF (.NOT. is_termination) INQUIRE(FILE='.stop.respy.scratch', EXIST=is_termination)
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE correlation_to_covariance(cov, corr, sd)
 
     !/* external objects    */

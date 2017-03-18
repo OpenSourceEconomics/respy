@@ -1,7 +1,9 @@
 import numpy as np
 
 import linecache
+import atexit
 import shlex
+import glob
 import os
 
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
@@ -695,6 +697,14 @@ def get_est_info():
     return rslt
 
 
+@atexit.register
+def remove_scratch_files():
+    """ This function removes all scratch files.
+    """
+    for fname in glob.glob('.*.respy.scratch'):
+        os.unlink(fname)
+
+
 def get_optim_paras(optim_paras, which, is_debug):
     """ Get optimization parameters.
     """
@@ -781,3 +791,26 @@ def correlation_to_covariance(corr, sd):
             cov[i, j] = corr[i, j] * sd[j] * sd[i]
 
     return cov
+
+
+def check_early_termination(maxfun, num_eval):
+    """ This function checks for reasons that require an early termination of
+    the optimization procedure.
+    """
+    # We want an early termination if the number of function evaluations is
+    # already at the maximum number requested. This is not strictly enforced
+    # in some of the SCIPY algorithms.
+    if maxfun == num_eval:
+        raise MaxfunError
+
+    # We also want the opportunity for an immediate, but gentle termination from
+    # the user.
+    if os.path.exists('.stop.respy.scratch'):
+        raise MaxfunError
+
+
+class MaxfunError(Exception):
+    """ This custom-error class allows to enforce the MAXFUN restriction
+    independent of the optimizer used.
+    """
+    pass
