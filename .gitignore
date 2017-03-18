@@ -2,3 +2,10 @@
 .cache
 .bld
 respy/.waf-*
+respy/.config
+respy/.lock-*
+development/working
+development/testing
+respy/fortran/bin
+respy/tests/resources/*.so
+respy/tests/resources/kw_*

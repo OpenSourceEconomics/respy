@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 
 from respy.python.process.process_auxiliary import check_dataset_est
-from respy.python.shared.shared_constants import DATA_FORMATS_SIM
-from respy.python.shared.shared_constants import DATA_LABELS_SIM
 
 
 def write_info(respy_obj, data_frame):
