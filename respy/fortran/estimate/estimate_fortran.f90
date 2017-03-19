@@ -427,8 +427,6 @@ SUBROUTINE get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim
     IF ((precond_spec%type == 'identity') .OR. (maxfun == zero_int)) THEN
         precond_matrix = create_identity(num_free)
     ELSE
-        PRINT *, 'going in ', x_optim_free_unscaled_start
-
         CALL get_scales(precond_matrix, x_optim_free_unscaled_start, precond_spec)
     END IF
 
