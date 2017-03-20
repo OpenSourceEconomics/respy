@@ -24,5 +24,4 @@ after_success:
 
 notifications:
   slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
-    on_failure: always
   email: false
