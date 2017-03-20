@@ -28,6 +28,8 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_1(constr)
     elif OLD_RELEASE == '2.0.0.dev7' and NEW_RELEASE == '2.0.0.dev8':
         prepare_release_tests_2(constr)
+    elif OLD_RELEASE == '2.0.0.dev8' and NEW_RELEASE == '2.0.0.dev9':
+        no_preparations_required(constr)
     else:
         raise AssertionError('Misspecified request ...')
 
@@ -130,16 +132,12 @@ def prepare_release_tests_1(constr):
 
     json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
 
+
 def prepare_release_tests_2(constr):
     """ This function prepares the initialization files so that they can be
     processed by both releases under investigation. The idea is to have all
     hand-crafted modifications grouped in this function only.
     """
-    # This script is also imported (but not used) for the creation of the
-    # virtual environments. Thus, the imports might not be valid when
-    # starting with a clean slate.
-    import numpy as np
-
     sys.path.insert(0, '../../../respy/tests')
     from codes.random_init import generate_init
 
@@ -164,6 +162,26 @@ def prepare_release_tests_2(constr):
     json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
 
 
+def no_preparations_required(constr):
+    """ This function prepares the initialization files so that they can be
+    processed by both releases under investigation. The idea is to have all
+    hand-crafted modifications grouped in this function only.
+    """
+    sys.path.insert(0, '../../../respy/tests')
+    from codes.random_init import generate_init
+
+    # Prepare fresh subdirectories
+    for which in ['old', 'new']:
+        if os.path.exists(which):
+            shutil.rmtree(which)
+        os.mkdir(which)
+
+    init_dict = generate_init(constr)
+
+    json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
+    json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
+
+
 def run_estimation(which):
     """ Run an estimation with the respective release.
     """
@@ -176,6 +194,12 @@ def run_estimation(which):
 
     from respy.python.shared.shared_auxiliary import print_init_dict
 
+    # We need to make sure that the function simulate_observed() is imported
+    # from the original package. Otherwise dependencies might not work properly.
+    import respy
+    sys.path.insert(0, os.path.dirname(respy.__file__) + '/tests')
+    from codes.auxiliary import simulate_observed
+
     init_dict = json.load(open('init_dict.respy.json', 'r'))
 
     # There was a change in the setup for releases after 1.00. This is only
@@ -187,6 +211,7 @@ def run_estimation(which):
 
     respy_obj = RespyCls('test.respy.ini')
 
+    simulate_observed(respy_obj)
     _, crit_val = estimate(respy_obj)
 
     # There was a bug in version 1.0 which might lead to crit_val not to

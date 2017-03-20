@@ -145,13 +145,15 @@ if __name__ == '__main__':
     #   2.0.0.dev7  Ambiguity, probably same as v2.0.4
     #   2.0.0.dev8  Ambiguity, now with free variances in worst-case
     #               determination
+    #   2.0.0.dev9  We added additional output for simulated datasets and
+    #               included a script to gently terminate an estimation.
     #
     #   TODO:       The notification needs to include information on the exact
     #               release that were compared
 
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
-    OLD_RELEASE, NEW_RELEASE = '1.0.0', '2.0.0.dev8'
+    OLD_RELEASE, NEW_RELEASE = '2.0.0.dev8', '2.0.0.dev9'
 
     parser = argparse.ArgumentParser(description='Run release testing.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
