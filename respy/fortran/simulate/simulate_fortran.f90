@@ -67,7 +67,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     CALL record_simulation(num_agents_sim, seed_sim, file_sim)
 
 
-    ALLOCATE(data_sim(num_periods * num_agents_sim, 8))
+    ALLOCATE(data_sim(num_periods * num_agents_sim, 21))
 
     !Standard deviates transformed to the distributions relevant for the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
@@ -116,6 +116,12 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
 
             ! Special treatment for education
             data_sim(count + 1, 7) = data_sim(count + 1, 7) + edu_start
+
+            ! As we are working with a simulated dataset, we can also output additional information that is not available in an observed dataset. The discount rate is included as this allows to construct the EMAX with the information provided in the simulation output.
+            data_sim(count + 1,  9:12) = total_values
+            data_sim(count + 1, 13:16) = rewards_systematic
+            data_sim(count + 1, 17:20) = draws
+            data_sim(count + 1, 21:21) = optim_paras%delta
 
             ! Determine and record optimal choice
             choice = MAXLOC(total_values)

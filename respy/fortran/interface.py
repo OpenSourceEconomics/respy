@@ -103,7 +103,7 @@ def get_results(num_periods, min_idx, num_agents_sim, which):
 
     # In case of  a simulation, we can also process the simulated dataset.
     if which == 'simulate':
-        shape = (num_periods * num_agents_sim, 8)
+        shape = (num_periods * num_agents_sim, 21)
         data_array = read_data('simulated', shape)
     else:
         raise AssertionError

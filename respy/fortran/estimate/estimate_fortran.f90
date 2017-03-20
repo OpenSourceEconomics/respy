@@ -89,7 +89,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
     x_optim_bounds_free_scaled(1, :) = apply_scaling(x_optim_bounds_free_unscaled(1, :), precond_matrix, 'do')
     x_optim_bounds_free_scaled(2, :) = apply_scaling(x_optim_bounds_free_unscaled(2, :), precond_matrix, 'do')
 
-    CALL record_estimation(precond_matrix, x_optim_free_scaled_start, optim_paras, .False.)
+    CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .False.)
 
     CALL auto_adjustment_optimizers(optimizer_options, optimizer_used)
 

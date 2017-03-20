@@ -1,6 +1,6 @@
 import numpy as np
 
-from respy.python.shared.shared_constants import LABELS
+from respy.python.shared.shared_constants import DATA_LABELS_EST
 
 
 def check_dataset_est(data_frame, respy_obj):
@@ -11,7 +11,7 @@ def check_dataset_est(data_frame, respy_obj):
 
     # Check that there are not missing values in any of the columns but for
     # the wages information.
-    for label in LABELS:
+    for label in DATA_LABELS_EST:
         if label == 'Wage':
             continue
         assert ~ data_frame[label].isnull().any()
@@ -31,16 +31,16 @@ def check_dataset_est(data_frame, respy_obj):
     np.testing.assert_equal(dat.all(), True)
 
     # Checks for EXPERIENCE
-    for label in ['Experience A', 'Experience B']:
+    for label in ['Experience_A', 'Experience_B']:
         dat = data_frame[label] >= 0.00
         np.testing.assert_equal(dat.all(), True)
 
     # Checks for LAGGED SCHOOLING
-    dat = data_frame['Lagged Schooling'].isin([0, 1])
+    dat = data_frame['Lagged_Schooling'].isin([0, 1])
     np.testing.assert_equal(dat.all(), True)
 
     # Checks for YEARS SCHOOLING
-    dat = data_frame['Years Schooling'] >= 0.00
+    dat = data_frame['Years_Schooling'] >= 0.00
     np.testing.assert_equal(dat.all(), True)
 
     # Check that there are no duplicated observations for any period by agent.

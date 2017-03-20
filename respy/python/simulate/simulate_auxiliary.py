@@ -84,20 +84,20 @@ def write_info(respy_obj, data_frame):
 
         file_.write('   Additional Information\n\n')
 
-        dat = data_frame['Years Schooling'].loc[slice(None), num_periods - 1]
+        dat = data_frame['Years_Schooling'].loc[slice(None), num_periods - 1]
         file_.write(string.format(['Average Education', dat.mean()]))
         file_.write('\n')
 
-        dat = data_frame['Experience A'].loc[slice(None), num_periods - 1]
+        dat = data_frame['Experience_A'].loc[slice(None), num_periods - 1]
         file_.write(string.format(['Average Experience A',  dat.mean()]))
 
-        dat = data_frame['Experience B'].loc[slice(None), num_periods - 1]
+        dat = data_frame['Experience_B'].loc[slice(None), num_periods - 1]
         file_.write(string.format(['Average Experience B', dat.mean()]))
 
         file_.write('\n\n   Economic Parameters\n\n')
         fmt_ = '\n   {0:>10}' + '    {1:>25}\n\n'
         file_.write(fmt_.format(*['Identifier', 'Value']))
-        vector = get_estimation_vector(optim_paras, True)
+        vector = get_estimation_vector(optim_paras)
         fmt_ = '   {:>10}' + '    {:25.5f}\n'
         for i, stat in enumerate(vector):
             file_.write(fmt_.format(*[i, stat]))
@@ -109,14 +109,13 @@ def write_out(respy_obj, data_frame):
     # Distribute class attributes
     file_sim = respy_obj.get_attr('file_sim')
 
-    formats = []
-    formats += [format_integer, format_integer, format_integer]
-    formats += [format_float, format_integer, format_integer]
-    formats += [format_integer, format_integer]
+    # The wage variable is formatted for two digits precision only.
+    formatter = dict()
+    formatter['Wage'] = format_float
 
     with open(file_sim + '.respy.dat', 'w') as file_:
-        data_frame.to_string(file_, index=False, header=None, na_rep='.',
-                            formatters=formats)
+        data_frame.to_string(file_, index=False, header=True, na_rep='.',
+            formatters=formatter)
 
 
 def format_float(x):
@@ -137,7 +136,7 @@ def format_integer(x):
         return '{0:<5}'.format(int(x))
 
 
-def get_estimation_vector(optim_paras, is_debug):
+def get_estimation_vector(optim_paras):
     """ Construct the vector estimation arguments.
     """
     # Collect parameters

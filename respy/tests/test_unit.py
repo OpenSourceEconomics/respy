@@ -5,6 +5,7 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
+from respy import simulate
 from respy import RespyCls
 
 
@@ -99,3 +100,65 @@ class TestClass(object):
             base_ini = open('test.respy.ini', 'r').read()
             alt_ini = open('alt.respy.ini', 'r').read()
             assert base_ini == alt_ini
+
+    def test_4(self):
+            """ Testing some of the relationships in the simulated dataset.
+            """
+            # Generate constraint periods
+            constr = dict()
+            constr['flag_deterministic'] = np.random.choice([True, False])
+            constr['flag_myopic'] = np.random.choice([True, False])
+
+            # Generate random initialization file
+            generate_init(constr)
+
+            # Perform toolbox actions
+            respy_obj = RespyCls('test.respy.ini')
+            _, df = simulate(respy_obj)
+
+            # Check special case
+            shocks_cholesky = respy_obj.get_attr('optim_paras')['shocks_cholesky']
+            is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
+
+            # The wage entries should correspond to the ex-post rewards
+            for choice in [1, 2]:
+                cond = (df['Choice'] == choice)
+                label_sys = 'Systematic_Reward_{}'.format(choice)
+                label_sho = 'Shock_Reward_{}'.format(choice)
+                df['Ex_Post_Reward'] = df[label_sys] * df[label_sho]
+
+                col_1 = df['Ex_Post_Reward'].loc[:, cond]
+                col_2 = df['Wage'].loc[:, cond]
+                np.testing.assert_array_almost_equal(col_1, col_2)
+
+            # The systematic component for the alternative to stay home
+            # should always be identical.
+            assert (df['Systematic_Reward_4'].nunique() == 1)
+
+            # In the myopic case, the total reward should the equal to the ex
+            # post rewards.
+            if respy_obj.get_attr('is_myopic'):
+                for i in range(1, 5):
+                    label = 'Ex_Post_Reward_{}'.format(i)
+                    label_sys = 'Systematic_Reward_{}'.format(i)
+                    label_sho = 'Shock_Reward_{}'.format(i)
+
+                    if i in [1, 2]:
+                        df[label] = df[label_sys] * df[label_sho]
+                    else:
+                        df[label] = df[label_sys] + df[label_sho]
+
+                    col_1 = df['Total_Reward_' + str(i)]
+                    col_2 = df[label]
+                    np.testing.assert_array_almost_equal(col_1, col_2)
+
+            # If the model is deterministic, all shocks should be equal to
+            # zero. Of course, one after exponentiation for wages.
+            if is_deterministic:
+                for i in range(1, 5):
+                    label = 'Shock_Reward_{}'.format(i)
+                    if i in [1, 2]:
+                        cond = (df[label] == 1)
+                    else:
+                        cond = (df[label] == 0)
+                    assert np.all(cond)

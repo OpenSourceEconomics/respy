@@ -7,13 +7,14 @@ import shlex
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_constants import DATA_FORMATS_SIM
+from respy.python.shared.shared_constants import DATA_LABELS_SIM
+from respy.python.shared.shared_constants import DATA_LABELS_EST
 from respy.python.simulate.simulate_auxiliary import write_out
-from respy.python.shared.shared_constants import FORMATS_DICT
 from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.shared.shared_constants import LABELS
 
 from respy import RespyCls
 from respy import simulate
@@ -57,8 +58,8 @@ def simulate_observed(respy_obj, is_missings=True):
 
     # We want to drop random observations by agents. This mimics the frequent
     # empirical fact that we loose track of agents (at least temporarily).
-    data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True, header=-1,
-        na_values='.', dtype=FORMATS_DICT, names=LABELS)
+    data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True, header=0,
+        na_values='.', dtype=DATA_FORMATS_SIM, names=DATA_LABELS_SIM)
 
     if share_missing_obs != 0:
         num_drop_obs = int(num_periods * share_missing_obs)
@@ -81,6 +82,8 @@ def simulate_observed(respy_obj, is_missings=True):
     else:
         pass
 
+    # We can restrict the information to observed entities only.
+    data_subset = data_subset[DATA_LABELS_EST]
     write_out(respy_obj, data_subset)
 
     return respy_obj

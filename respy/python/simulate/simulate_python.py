@@ -30,7 +30,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
     count = 0
 
     # Initialize data
-    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 8))
+    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 21))
 
     for i in range(num_agents_sim):
 
@@ -76,6 +76,16 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
 
             # Special treatment for education
             dataset[count, 6] += edu_start
+
+            # As we are working with a simulated dataset, we can also output
+            # additional information that is not available in an observed
+            # dataset. The discount rate is included as this allows to
+            # construct the EMAX with the information provided in the
+            # simulation output.
+            dataset[count,  8:12] = total_values
+            dataset[count, 12:16] = rewards_systematic
+            dataset[count, 16:20] = draws
+            dataset[count, 20:21] = optim_paras['delta']
 
             # Update work experiences and education
             if max_idx == 0:

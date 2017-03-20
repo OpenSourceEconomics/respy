@@ -29,7 +29,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
         period = int(data_array[j, 1])
         # Extract observable components of state space as well as agent
         # decision.
-        exp_a, exp_b, edu, edu_lagged = data_array[j, 4:].astype(int)
+        exp_a, exp_b, edu, edu_lagged = data_array[j, 4:8].astype(int)
         choice = data_array[j, 2].astype(int)
         wage = data_array[j, 3]
 
