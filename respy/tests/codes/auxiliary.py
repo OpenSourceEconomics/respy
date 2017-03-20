@@ -83,8 +83,7 @@ def simulate_observed(respy_obj, is_missings=True):
         pass
 
     # We can restrict the information to observed entities only.
-    data_frame = data_frame[DATA_LABELS_EST]
-
+    data_subset = data_subset[DATA_LABELS_EST]
     write_out(respy_obj, data_subset)
 
     return respy_obj

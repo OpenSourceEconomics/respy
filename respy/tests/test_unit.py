@@ -147,7 +147,10 @@ class TestClass(object):
                         df[label] = df[label_sys] * df[label_sho]
                     else:
                         df[label] = df[label_sys] + df[label_sho]
-                    assert df['Total_Reward_' + str(i)].equals(df[label])
+
+                    col_1 = df['Total_Reward_' + str(i)]
+                    col_2 = df[label]
+                    np.testing.assert_array_almost_equal(col_1, col_2)
 
             # If the model is deterministic, all shocks should be equal to
             # zero. Of course, one after exponentiation for wages.
