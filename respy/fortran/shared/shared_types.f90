@@ -54,8 +54,7 @@ MODULE shared_types
     TYPE PRECOND_DICT
         REAL(our_dble)          :: minimum
         REAL(our_dble)          :: eps
-
-        CHARACTER(8)            :: type
+        CHARACTER(10)           :: type
     END TYPE
 
     ! This container holds the specification for the ambiguity setup.

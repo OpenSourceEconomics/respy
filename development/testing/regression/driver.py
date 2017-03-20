@@ -14,7 +14,8 @@ from auxiliary_shared import compile_package
 
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
-
+from respy.python.shared.shared_constants import IS_PARALLEL
+from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 
@@ -114,7 +115,7 @@ def run(args):
         is_failure = False
 
         for i, idx in enumerate(indices):
-            print('\n Checking Test ', idx, ' at iteration ',  i, '\n')
+            print('\n\n Checking Test ', idx, ' at iteration ',  i, '\n')
 
             init_dict, crit_val = tests[idx]
 
@@ -123,6 +124,16 @@ def run(args):
                 if idx in [337, 897]:
                     continue
 
+            # During development it is useful that I can only run the PYTHON
+            # versions of the program.
+            msg = ' ... skipped as required version of package not available'
+            if init_dict['PROGRAM']['version'] == 'FORTRAN' and not IS_FORTRAN:
+                print(msg)
+                continue
+            if init_dict['PROGRAM']['procs'] > 1 and not IS_PARALLEL:
+                print(msg)
+                continue
+
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
@@ -130,7 +141,9 @@ def run(args):
             est_val = estimate(respy_obj)[1]
             try:
                 np.testing.assert_almost_equal(est_val, crit_val)
+                print(' ... success')
             except AssertionError:
+                print(' ..failure')
                 is_failure = True
                 break
 

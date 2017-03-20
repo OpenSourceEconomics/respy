@@ -25,8 +25,8 @@ class OptimizationClass(object):
         self.maxfun = np.inf
 
         # Updated attributes
-        # TODO: The setup of the optim container is different thanin FORT.
-        # Here all parametes are included, in FORT only free.
+        # TODO: The setup of the optim container is different than in FORT.
+        # Here all parameters are included, in FORT only free.
         self.x_optim_container = np.tile(np.nan, (28, 3))
         self.x_econ_container = np.tile(np.nan, (28, 3))
         self.crit_vals = np.tile(np.inf, 3)

@@ -692,7 +692,7 @@ class RespyCls(object):
         assert (optimizer_used in OPT_EST_FORT + OPT_EST_PYTH)
 
         # Scaling
-        assert (precond_spec['type'] in ['identity', 'gradient'])
+        assert (precond_spec['type'] in ['identity', 'gradient', 'magnitudes'])
         for key_ in ['minimum', 'eps']:
             assert (isinstance(precond_spec[key_], float))
             assert (precond_spec[key_] > 0.0)

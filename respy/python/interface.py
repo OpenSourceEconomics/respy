@@ -3,6 +3,8 @@ from scipy.optimize import approx_fprime
 from scipy.optimize import fmin_powell
 from scipy.optimize import fmin_bfgs
 
+from math import floor
+from math import log10
 import numpy as np
 
 from respy.python.record.record_estimation import record_estimation_scalability
@@ -259,18 +261,49 @@ def get_precondition_matrix(precond_spec, optim_paras,
         if not optim_paras['paras_fixed'][i]:
             x_optim_free_unscaled_start += [x_optim_all_unscaled_start[i]]
 
-    precond_matrix = np.zeros((num_free, num_free))
-
     if precond_type == 'identity' or maxfun == 0:
         precond_matrix = np.identity(num_free)
-    else:
+    elif precond_type == 'magnitudes':
+        precond_matrix = get_scales_magnitudes(x_optim_free_unscaled_start)
+    elif precond_type == 'gradient':
         opt_obj.is_scaling = None
         grad = approx_fprime(x_optim_free_unscaled_start, opt_obj.crit_func,
             precond_eps, *args)
 
+        precond_matrix = np.zeros((num_free, num_free))
         for i in range(num_free):
             grad[i] = max(np.abs(grad[i]), precond_minimum)
             precond_matrix[i, i] = grad[i]
+    else:
+        raise NotImplementedError
+
+    # Write out scaling matrix to allow for restart.
+    np.savetxt('scaling.respy.out', precond_matrix, fmt='%45.15f')
+
+    return precond_matrix
+
+
+def get_scales_magnitudes(x_optim_free_unscaled_start):
+    """ This function calculated the scaling factor based on the different
+    magnitudes of the variables.
+    """
+    # Auxiliary objects
+    num_free = len(x_optim_free_unscaled_start)
+
+    # Initialize container
+    precond_matrix = np.zeros((num_free, num_free))
+
+    for i, x in enumerate(x_optim_free_unscaled_start):
+        # Special case
+        if x == 0.0:
+            scale = 1
+        else:
+            magnitude = int(floor(log10(abs(x))))
+            if magnitude == 0:
+                scale = 1.0 / 10.0
+            else:
+                scale = (10 ** magnitude) ** (-1) / 10.0
+        precond_matrix[i, i] = scale
 
     return precond_matrix
 

@@ -20,6 +20,7 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER   :: one_dble     = 1.00_our_dble
     REAL(our_dble), PARAMETER   :: two_dble     = 2.00_our_dble
     REAL(our_dble), PARAMETER   :: three_dble   = 3.00_our_dble
+    REAL(our_dble), PARAMETER   :: ten_dble     = 10.00_our_dble
 
     REAL(our_dble), PARAMETER   :: pi           = 3.141592653589793238462643383279502884197_our_dble
     REAL(our_dble), PARAMETER   :: eps          = EPSILON(one_dble)
