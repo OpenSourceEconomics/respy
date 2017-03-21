@@ -1922,3 +1922,33 @@ SUBROUTINE wrapper_get_relevant_dependence(shocks_cov_cand, shocks_cholesky_cand
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE wrapper_get_scales_magnitude(precond_matrix_int, values, num_free_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: precond_matrix_int(num_free_int, num_free_int)
+
+    DOUBLE PRECISION, INTENT(IN)        :: values(num_free_int)
+
+    INTEGER, INTENT(IN)                 :: num_free_int
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Assign global RESFORT variables
+    num_free = num_free_int
+
+    precond_matrix_int = get_scales_magnitudes(values)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************

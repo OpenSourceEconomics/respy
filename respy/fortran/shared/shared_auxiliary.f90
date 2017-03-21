@@ -31,6 +31,49 @@ MODULE shared_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
+FUNCTION get_scales_magnitudes(x_optim_free_start) RESULT(precond_matrix)
+
+    !/* external objects    */
+
+    REAL(our_dble)                              :: precond_matrix(num_free, num_free)
+
+    REAL(our_dble), INTENT(IN)                  :: x_optim_free_start(num_free)
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                            :: magnitude
+    INTEGER(our_int)                            :: i
+
+    REAL(our_dble)                              :: scale
+    REAL(our_dble)                              :: val
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    precond_matrix = zero_dble
+
+    DO i = 1, num_free
+        val = x_optim_free_start(i)
+
+        IF (val .EQ. zero_dble) THEN
+            scale = one_dble
+        ELSE
+            magnitude = FLOOR(LOG10(ABS(val)))
+            IF (magnitude .EQ. zero_int) THEN
+                scale = one_dble / ten_dble
+            ELSE
+                scale = (ten_dble ** magnitude) ** (-one_dble) / ten_dble
+            END IF
+        END IF
+
+        precond_matrix(i, i) = scale
+
+    END DO
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
 FUNCTION check_early_termination(maxfun, num_eval, crit_estimation) RESULT(is_termination)
 
     !/* external objects    */
@@ -316,7 +359,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
     DO i = 1, 4
         draws_transformed(:, i) = draws_transformed(:, i) + shocks_mean(i)
     END DO
-    
+
     DO i = 1, 2
         CALL clip_value_2(draws_transformed(:, i), EXP(draws_transformed(:, i)), zero_dble, HUGE_FLOAT, infos)
     END DO

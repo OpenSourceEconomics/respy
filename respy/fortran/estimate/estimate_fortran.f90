@@ -358,20 +358,19 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_spec)
+SUBROUTINE get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim_free_unscaled_start)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)                 :: precond_matrix(:, :)
+    REAL(our_dble), ALLOCATABLE, INTENT(OUT)    :: precond_matrix(:, :)
 
-    REAL(our_dble), INTENT(IN)                  :: x_optim_free_start(num_free)
+    TYPE(PRECOND_DICT), INTENT(IN)  :: precond_spec
 
-    TYPE(PRECOND_DICT), INTENT(IN)              :: precond_spec
+    INTEGER(our_int), INTENT(IN)    :: maxfun
+
+    REAL(our_dble), INTENT(IN)      :: x_optim_free_unscaled_start(num_free)
 
     !/* internal objects    */
-
-    REAL(our_dble)                  :: grad(num_free)
-    REAL(our_dble)                  :: val
 
     INTEGER(our_int)                :: i
 
@@ -381,8 +380,63 @@ SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_spec)
 
     crit_estimation = .False.
 
+    ALLOCATE(precond_matrix(num_free, num_free))
+
+    CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .True.)
+
+    IF ((precond_spec%type == 'identity') .OR. (maxfun == zero_int)) THEN
+        precond_matrix = create_identity(num_free)
+    ELSEIF (precond_spec%type == 'magnitudes') THEN
+        precond_matrix = get_scales_magnitudes(x_optim_free_unscaled_start)
+    ELSEIF (precond_spec%type == 'gradient') THEN
+        precond_matrix = get_scales_gradient(x_optim_free_unscaled_start, precond_spec)
+    ELSE
+        STOP ' Not implemented ...'
+    END IF
+
+    ! Write out scaling matrix to allow for restart.
+    5000 FORMAT(100000(1x,f45.15))
+
+    OPEN(UNIT=99, FILE='scaling.respy.out', ACTION='WRITE')
+
+    DO i = 1, num_free
+        WRITE(99, 5000) precond_matrix(i, :)
+    END DO
+
+    CLOSE(99)
+
+    crit_estimation = .False.
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION get_scales_gradient(x_optim_free_start, precond_spec) RESULT(precond_matrix)
+
+    !/* external objects    */
+
+    REAL(our_dble)                              :: precond_matrix(num_free, num_free)
+
+    REAL(our_dble), INTENT(IN)                  :: x_optim_free_start(num_free)
+
+    TYPE(PRECOND_DICT), INTENT(IN)              :: precond_spec
+
+    !/* internal objects    */
+
+    REAL(our_dble)                              :: grad(num_free)
+    REAL(our_dble)                              :: val
+
+    INTEGER(our_int)                            :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
     dfunc_eps = precond_spec%eps
+
+    ! The precoditioning matrix needs to be initialized to approximate the gradient with a valid preconditioning matrix.
+    precond_matrix = create_identity(num_free)
     grad = fort_dcriterion(x_optim_free_start)
+
     dfunc_eps = -HUGE_FLOAT
 
     precond_matrix = zero_dble
@@ -397,42 +451,7 @@ SUBROUTINE get_scales(precond_matrix, x_optim_free_start, precond_spec)
 
     END DO
 
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim_free_unscaled_start)
-
-    !/* external objects    */
-
-    REAL(our_dble), ALLOCATABLE, INTENT(OUT)    :: precond_matrix(:, :)
-
-    TYPE(PRECOND_DICT), INTENT(IN)  :: precond_spec
-
-    INTEGER(our_int), INTENT(IN)    :: maxfun
-
-    REAL(our_dble), INTENT(IN)      :: x_optim_free_unscaled_start(num_free)
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    crit_estimation = .False.
-
-    ALLOCATE(precond_matrix(num_free, num_free))
-
-    precond_matrix = create_identity(num_free)
-
-    CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .True.)
-
-    IF ((precond_spec%type == 'identity') .OR. (maxfun == zero_int)) THEN
-        precond_matrix = create_identity(num_free)
-    ELSE
-        CALL get_scales(precond_matrix, x_optim_free_unscaled_start, precond_spec)
-    END IF
-
-    crit_estimation = .False.
-
-END SUBROUTINE
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE auto_adjustment_optimizers(optimizer_options, optimizer_used)

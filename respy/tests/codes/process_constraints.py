@@ -241,7 +241,8 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
             dict_['ESTIMATION']['maxfun'] = int(np.random.choice(range(6),
                 p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
             dict_['PRECONDITIONING']['type'] = \
-                np.random.choice(['gradient', 'identity'], p=[0.1, 0.9])
+                np.random.choice(['gradient', 'identity', 'magnitudes'],
+                    p=[0.1, 0.4, 0.5])
 
             # Ensure that a valid estimator is selected in the case that a
             # free parameter has bounds.

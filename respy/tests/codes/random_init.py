@@ -163,7 +163,7 @@ def generate_random_dict(constr=None):
     dict_['PRECONDITIONING'] = dict()
     dict_['PRECONDITIONING']['minimum'] = np.random.uniform(0.0000001, 0.1)
     dict_['PRECONDITIONING']['type'] = np.random.choice(['gradient',
-                                                         'identity'])
+                                                         'identity', 'magnitudes'])
     dict_['PRECONDITIONING']['eps'] = np.random.uniform(0.0000001, 0.1)
 
     # PROGRAM

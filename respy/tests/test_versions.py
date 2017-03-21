@@ -2,6 +2,7 @@ from pandas.util.testing import assert_frame_equal
 import pandas as pd
 import numpy as np
 import pytest
+import copy
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
@@ -264,3 +265,46 @@ class TestClass(object):
                 if base_amb_log is None:
                     base_amb_log = open(fname, 'r').read()
                 assert open(fname, 'r').read() == base_amb_log
+
+    def test_5(self):
+        """ This test ensures that the scaling matrix is identical between
+        the alternative versions.
+        """
+        constr = dict()
+        constr['flag_estimation'] = True
+
+        # Simulate a dataset
+        generate_init(constr)
+        respy_base = RespyCls('test.respy.ini')
+
+        simulate_observed(respy_base)
+
+        base_scaling_matrix = None
+        for version in ['FORTRAN', 'PYTHON']:
+            respy_obj = copy.deepcopy(respy_base)
+
+            # The actual optimizer does not matter for the scaling matrix. We
+            # also need to make sure that PYTHON is only called with a
+            # single processor.
+            if version in ['PYTHON']:
+                optimizer_used = 'SCIPY-LBFGSB'
+                num_procs = 1
+            else:
+                num_procs = respy_obj.get_attr('num_procs')
+                optimizer_used = 'FORT-BOBYQA'
+
+            # Create output to process a baseline.
+            respy_obj.unlock()
+            respy_obj.set_attr('optimizer_used', optimizer_used)
+            respy_obj.set_attr('num_procs', num_procs)
+            respy_obj.set_attr('version', version)
+            respy_obj.set_attr('maxfun', 1)
+            respy_obj.lock()
+
+            estimate(respy_obj)
+
+            if base_scaling_matrix is None:
+                base_scaling_matrix = np.genfromtxt('scaling.respy.out')
+
+            scaling_matrix = np.genfromtxt('scaling.respy.out')
+            np.testing.assert_almost_equal(base_scaling_matrix, scaling_matrix)

@@ -32,6 +32,7 @@ from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.shared.shared_constants import IS_F2PY
+from respy.python.interface import get_scales_magnitudes
 from respy.python.solve.solve_python import pyth_solve
 from respy.fortran.interface import resfort_interface
 from codes.auxiliary import write_interpolation_grid
@@ -717,3 +718,13 @@ class TestClass(object):
 
             for i in range(2):
                 np.testing.assert_almost_equal(py[i], f90[i])
+
+    def test_10(self):
+        """ Functions related to the scaling procedure.
+        """
+        for i in range(1000):
+            num_free = np.random.randint(1, 100)
+            values = np.random.uniform(-1000.0, 1000.0, size=num_free)
+            py = get_scales_magnitudes(values)
+            f90 = fort_debug.wrapper_get_scales_magnitude(values, num_free)
+            np.testing.assert_almost_equal(py, f90)
