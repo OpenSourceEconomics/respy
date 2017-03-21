@@ -45,7 +45,7 @@ def setup_package():
             'fortran/lib/*.*', 'fortran/include/*.*', 'tests/resources/*',
                                 '.config']},
 
-        version="2.0.0.dev8",
+        version="2.0.0.dev10",
         description='respy is a Python package for the simulation and estimation of a prototypical finite-horizon dynamic discrete choice model.',
         author='Philipp Eisenhauer',
         author_email='eisenhauer@policy-lab.org',
