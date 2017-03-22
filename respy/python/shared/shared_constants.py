@@ -27,7 +27,7 @@ PRINT_FLOAT = 1e10
 MIN_AMBIGUITY = 1e-20
 
 # Interpolation
-INADMISSIBILITY_PENALTY = -40000.00
+INADMISSIBILITY_PENALTY = -400000.00
 
 # Missing values. These allow to aline the treatment of missing values across
 # implementations. There is no NAN available in FORTRAN.
