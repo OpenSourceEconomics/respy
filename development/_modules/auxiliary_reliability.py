@@ -40,10 +40,6 @@ def run_single(spec_dict, fname):
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
     update_class_instance(respy_obj, spec_dict)
 
-    # TODO: For now we keep the coefficients of the covariance matrix fixed.
-    # The code base is currently extended to allow for better management.
-    respy_obj.attr['paras_fixed'][17:] = [True] * 10
-
     # Let us first simulate a baseline sample, store the results for future
     # reference, and start an estimation from the true values.
     x = None
@@ -58,26 +54,27 @@ def run_single(spec_dict, fname):
         elif request == 'Static':
             # There is no update required, we start with the true parameters
             # from the dynamic ambiguity model.
-            respy_obj.set_attr('delta', 0.00)
+            respy_obj.attr['optim_paras']['delta'] = np.array([0.00])
             respy_obj.attr['optim_paras']['level'] = np.array([0.00])
-            respy_obj.attr['paras_fixed'][0] = True
+            respy_obj.attr['optim_paras']['paras_fixed'][:2] = [True, True]
 
         elif request == 'Risk':
             # This is an update with the results from the static estimation.
             respy_obj.update_optim_paras(x)
 
-            respy_obj.set_attr('delta', 0.95)
+            respy_obj.attr['optim_paras']['delta'] = np.array([0.95])
             respy_obj.attr['optim_paras']['level'] = np.array([0.00])
-            respy_obj.attr['paras_fixed'][0] = True
+            respy_obj.attr['optim_paras']['paras_fixed'][:2] = [True, True]
 
         elif request == 'Ambiguity':
-            # This is an update with the results from the dynamic risk
-            # estimation.
-            respy_obj.update_optim_paras(x)
-
-            respy_obj.set_attr('delta', 0.95)
-            respy_obj.attr['optim_paras']['level'] = np.array([0.00])
-            respy_obj.attr['paras_fixed'][0] = False
+            print(' ... skipped for now ')
+            # # This is an update with the results from the dynamic risk
+            # # estimation.
+            # respy_obj.update_optim_paras(x)
+            #
+            # respy_obj.set_attr('delta', 0.95)
+            # respy_obj.attr['optim_paras']['level'] = np.array([0.00])
+            # respy_obj.attr['paras_fixed'][0] = False
 
         else:
             raise AssertionError

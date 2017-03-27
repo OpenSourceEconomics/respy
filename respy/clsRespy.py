@@ -174,6 +174,8 @@ class RespyCls(object):
 
         optim_paras['level'] = level
 
+        optim_paras['delta'] = delta
+
         # Check integrity
         check_model_parameters(optim_paras)
 

@@ -325,13 +325,16 @@ def check_model_parameters(optim_paras):
     # Checks for all arguments
     keys = []
     keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-    keys += ['level', 'shocks_cholesky']
+    keys += ['level', 'shocks_cholesky', 'delta']
 
     for key in keys:
         assert (isinstance(optim_paras[key], np.ndarray))
         assert (np.all(np.isfinite(optim_paras[key])))
         assert (optim_paras[key].dtype == 'float')
         assert (np.all(abs(optim_paras[key]) < PRINT_FLOAT))
+
+    # Check for discount rate
+    assert (optim_paras['delta'] >= 0)
 
     # Check for level of ambiguity
     assert (optim_paras['level'] >= 0)
