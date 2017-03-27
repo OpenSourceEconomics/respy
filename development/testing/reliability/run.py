@@ -11,10 +11,10 @@ if __name__ == '__main__':
     spec_dict['update']['is_store'] = True
     spec_dict['update']['file_est'] = '../truth/start/data.respy.dat'
     spec_dict['update']['num_procs'] = 50
-    spec_dict['update']['maxfun'] = 3000
+    spec_dict['update']['maxfun'] = 100
 
     # The following key value pair describes the debugging setup.
-    is_debug = True
+    is_debug = False
     if is_debug:
         spec_dict['update']['num_periods'] = 3
         spec_dict['update']['num_procs'] = 1
