@@ -56,8 +56,7 @@ def run_single(spec_dict, fname):
         respy_obj.unlock()
 
         if request == 'Truth':
-            respy_obj.attr['optim_paras']['paras_fixed'][1] = True
-
+            pass
         elif request == 'Static':
             # There is no update required, we start with the true parameters
             # from the dynamic ambiguity model.
