@@ -54,7 +54,9 @@ def run_single(spec_dict, fname):
         respy_obj.unlock()
 
         if request == 'Truth':
-            pass
+            # TODO: This will go later when a sample with ambiguity is used
+            # as the baseline.
+            respy_obj.attr['optim_paras']['paras_fixed'][:2] = [True, True]
 
         elif request == 'Static':
             # There is no update required, we start with the true parameters

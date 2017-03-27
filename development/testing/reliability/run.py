@@ -14,8 +14,9 @@ if __name__ == '__main__':
     spec_dict['update']['maxfun'] = 100
 
     # The following key value pair describes the debugging setup.
+    import socket
     is_debug = False
-    if is_debug:
+    if socket.gethostname() == 'pontos' or is_debug:
         spec_dict['update']['num_periods'] = 3
         spec_dict['update']['num_procs'] = 1
         spec_dict['update']['maxfun'] = 1
