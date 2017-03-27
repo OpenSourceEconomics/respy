@@ -67,6 +67,7 @@ def run_single(spec_dict, fname):
             respy_obj.attr['optim_paras']['delta'] = np.array([0.00])
             respy_obj.attr['optim_paras']['level'] = np.array([0.00])
             respy_obj.attr['optim_paras']['paras_fixed'][:2] = [True, True]
+            respy_obj.attr['optim_paras']['paras_bounds'][0] = [0.00, None]
 
         elif request == 'Risk':
             # This is an update with the results from the static estimation.
