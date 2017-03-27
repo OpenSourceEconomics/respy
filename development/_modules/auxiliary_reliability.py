@@ -45,6 +45,8 @@ def run_single(spec_dict, fname):
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
     update_class_instance(respy_obj, spec_dict)
 
+    respy_obj.write_out()
+
     # Let us first simulate a baseline sample, store the results for future
     # reference, and start an estimation from the true values.
     x = None
