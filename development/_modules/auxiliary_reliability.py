@@ -23,7 +23,7 @@ def run(spec_dict):
     cleanup()
 
     os.mkdir('rslt')
-    os.chdir('rslts')
+    os.chdir('rslt')
 
     run_single(spec_dict, 'kw_data_one.ini')
 
