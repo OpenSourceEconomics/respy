@@ -75,7 +75,8 @@ def run_single(spec_dict, fname):
 
             respy_obj.attr['optim_paras']['delta'] = np.array([0.95])
             respy_obj.attr['optim_paras']['level'] = np.array([0.00])
-            respy_obj.attr['optim_paras']['paras_fixed'][1] = True
+            respy_obj.attr['optim_paras']['paras_fixed'][:2] = [False, True]
+            respy_obj.attr['optim_paras']['paras_bounds'][0] = [0.75, 1.00]
 
         elif request == 'Ambiguity':
             print(' ... skipped for now ')
