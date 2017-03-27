@@ -58,14 +58,14 @@ def run_single(spec_dict, fname):
         if request == 'Truth':
             # TODO: This will go later when a sample with ambiguity is used
             # as the baseline.
-            respy_obj.attr['optim_paras']['paras_fixed'][:2] = [True, True]
+            respy_obj.attr['optim_paras']['paras_fixed'][1] = True
 
         elif request == 'Static':
             # There is no update required, we start with the true parameters
             # from the dynamic ambiguity model.
             respy_obj.attr['optim_paras']['delta'] = np.array([0.00])
             respy_obj.attr['optim_paras']['level'] = np.array([0.00])
-            respy_obj.attr['optim_paras']['paras_fixed'][:2] = [True, True]
+            respy_obj.attr['optim_paras']['paras_fixed'][1] = True
 
         elif request == 'Risk':
             # This is an update with the results from the static estimation.
@@ -73,7 +73,7 @@ def run_single(spec_dict, fname):
 
             respy_obj.attr['optim_paras']['delta'] = np.array([0.95])
             respy_obj.attr['optim_paras']['level'] = np.array([0.00])
-            respy_obj.attr['optim_paras']['paras_fixed'][:2] = [True, True]
+            respy_obj.attr['optim_paras']['paras_fixed'][1] = True
 
         elif request == 'Ambiguity':
             print(' ... skipped for now ')
