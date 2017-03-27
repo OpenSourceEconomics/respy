@@ -141,6 +141,7 @@ def get_estimation_vector(optim_paras):
     """
     # Collect parameters
     vector = list()
+    vector += optim_paras['delta'].tolist()
     vector += optim_paras['level'].tolist()
     vector += optim_paras['coeffs_a'].tolist()
     vector += optim_paras['coeffs_b'].tolist()
