@@ -111,8 +111,8 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
         END DO
     END DO
 
-    CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim, optim_paras)
-
+    IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim, optim_paras)
+    
 #endif
 
 END SUBROUTINE
