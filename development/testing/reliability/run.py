@@ -12,7 +12,7 @@ if __name__ == '__main__':
     spec_dict['update']['file_est'] = '../truth/start/data.respy.dat'
     spec_dict['update']['num_procs'] = 200
     spec_dict['update']['maxfun'] = 1
-    spec_dict['update']['level'] = 0.10
+    spec_dict['update']['level'] = 0.05
 
     # The following key value pair describes the debugging setup.
     import socket
