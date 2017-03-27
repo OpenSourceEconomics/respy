@@ -3,6 +3,7 @@
 values from the last step.
 """
 import argparse
+import shutil
 import os
 
 from respy.python.shared.shared_auxiliary import dist_optim_paras
@@ -49,7 +50,10 @@ def scripts_update(init_file):
     init_dict['BASICS']['coeffs'] = optim_paras['delta']
     init_dict['SHOCKS']['coeffs'] = shocks_coeffs
 
-    print_init_dict(init_dict, init_file)
+    # We first print to an intermediate file as otherwise the original file
+    # is lost in case a problem during printing occurs.
+    print_init_dict(init_dict, '.model.respy.ini')
+    shutil.move('.model.respy.ini', init_file)
 
 if __name__ == '__main__':
 

@@ -2,10 +2,12 @@
 from statsmodels.tools.eval_measures import rmse
 import numpy as np
 import argparse
+import shutil
 import os
 
 from respy.python.simulate.simulate_auxiliary import format_float
 from respy.python.process.process_python import process
+from respy.scripts.scripts_update import scripts_update
 from respy import RespyCls, simulate
 
 
@@ -17,12 +19,15 @@ def dist_input_arguments(parser):
 
     # Distribute arguments
     init_file = args.init_file
+    is_update = args.is_update
 
     # Check attributes
     assert (os.path.exists(init_file))
+    if is_update:
+        os.path.exists('est.respy.info')
 
     # Finishing
-    return init_file
+    return init_file, is_update
 
 
 def _prepare_wages(data_obs, data_sim, which):
@@ -80,11 +85,20 @@ def _prepare_choices(data_obs, data_sim):
     return rslt_full, rmse_choice
 
 
-def scripts_compare(init_file):
+def scripts_compare(base_init, is_update):
     """ Construct some model fit statistics by comparing the observed and
     simulated dataset.
     """
-    # Read in baseline model specification.
+    # In case of updating, we create a new initialization file that contains
+    # the updated parameter values.
+    if is_update:
+        init_file = 'compare.respy.ini'
+        shutil.copy(base_init, init_file)
+        scripts_update(init_file)
+    else:
+        init_file = base_init
+
+    # Read in relevant model specification.
     respy_obj = RespyCls(init_file)
 
     # First we need to read in the empirical data
@@ -147,6 +161,9 @@ if __name__ == '__main__':
     parser.add_argument('--init_file', action='store', dest='init_file',
         default='model.respy.ini', help='initialization file')
 
-    init_file = dist_input_arguments(parser)
+    parser.add_argument('--update', action='store_true', dest='is_update',
+        default=False, help='update parameterizations')
 
-    scripts_compare(init_file)
+    init_file, is_update = dist_input_arguments(parser)
+
+    scripts_compare(init_file, is_update)

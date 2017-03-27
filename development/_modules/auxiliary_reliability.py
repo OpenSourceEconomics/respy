@@ -51,7 +51,8 @@ def run_single(spec_dict, fname):
     # reference, and start an estimation from the true values.
     x = None
 
-    for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
+    # TODO: Add ambiguity again.
+    for request in ['Truth', 'Static', 'Risk']:
 
         respy_obj.unlock()
 
@@ -65,7 +66,7 @@ def run_single(spec_dict, fname):
             # from the dynamic ambiguity model.
             respy_obj.attr['optim_paras']['delta'] = np.array([0.00])
             respy_obj.attr['optim_paras']['level'] = np.array([0.00])
-            respy_obj.attr['optim_paras']['paras_fixed'][1] = True
+            respy_obj.attr['optim_paras']['paras_fixed'][:2] = [True, True]
 
         elif request == 'Risk':
             # This is an update with the results from the static estimation.
