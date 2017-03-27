@@ -24,7 +24,7 @@ def update_class_instance(respy_obj, spec_dict):
 
     # Varying the baseline level of ambiguity requires special case.
     if 'level' in spec_dict.keys():
-        respy_obj.attr['optim_paras']['level'] = np.array([spec_dict['level']])
+        respy_obj.attr['optim_paras']['level'] = np.array([spec_dict['update']['level']])
 
     for key_ in spec_dict['update'].keys():
         respy_obj.set_attr(key_, spec_dict['update'][key_])

@@ -51,14 +51,11 @@ def run_single(spec_dict, fname):
     # reference, and start an estimation from the true values.
     x = None
 
-    # TODO: Add ambiguity again.
-    for request in ['Truth', 'Static', 'Risk']:
+    for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
 
         respy_obj.unlock()
 
         if request == 'Truth':
-            # TODO: This will go later when a sample with ambiguity is used
-            # as the baseline.
             respy_obj.attr['optim_paras']['paras_fixed'][1] = True
 
         elif request == 'Static':
@@ -73,20 +70,24 @@ def run_single(spec_dict, fname):
             # This is an update with the results from the static estimation.
             respy_obj.update_optim_paras(x)
 
-            respy_obj.attr['optim_paras']['delta'] = np.array([0.95])
+            # Note that we now start with 0.85, which is in the middle of the
+            # parameter bounds. Manual testing showed that the program is
+            # reliable even if we start at 0.00. However, it does take much
+            # more function evaluations.
+            respy_obj.attr['optim_paras']['delta'] = np.array([0.85])
             respy_obj.attr['optim_paras']['level'] = np.array([0.00])
             respy_obj.attr['optim_paras']['paras_fixed'][:2] = [False, True]
-            respy_obj.attr['optim_paras']['paras_bounds'][0] = [0.75, 1.00]
+            respy_obj.attr['optim_paras']['paras_bounds'][0] = [0.70, 1.00]
 
         elif request == 'Ambiguity':
-            print(' ... skipped for now ')
-            # # This is an update with the results from the dynamic risk
-            # # estimation.
-            # respy_obj.update_optim_paras(x)
-            #
-            # respy_obj.set_attr('delta', 0.95)
-            # respy_obj.attr['optim_paras']['level'] = np.array([0.00])
-            # respy_obj.attr['paras_fixed'][0] = False
+            # This is an update with the results from the dynamic risk
+            # estimation.
+            respy_obj.update_optim_paras(x)
+
+            # Note that we start with the maximum level to perturb the system.
+            respy_obj.attr['optim_paras']['level'] = np.array([0.10])
+            respy_obj.attr['optim_paras']['paras_fixed'][:2] = [False, False]
+            respy_obj.attr['optim_paras']['paras_bounds'][0] = [0.70, 1.00]
 
         else:
             raise AssertionError
