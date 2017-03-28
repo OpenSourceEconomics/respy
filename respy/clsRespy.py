@@ -189,6 +189,8 @@ class RespyCls(object):
         assert (not self.attr['is_locked'])
 
         # Checks
+        self._update_derived_attributes()
+
         self._check_integrity_attributes()
 
         self._check_integrity_results()
@@ -564,6 +566,7 @@ class RespyCls(object):
 
         self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)[0]
 
+        print('Checking myopic', self.attr['is_myopic'])
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
         time the class is locked and if the package is running in debug mode.
