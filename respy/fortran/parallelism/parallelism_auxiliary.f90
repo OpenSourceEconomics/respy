@@ -54,7 +54,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     !/* internal objects        */
 
     REAL(our_dble), ALLOCATABLE                     :: opt_ambi_details(:, :, :)
-    REAL(our_dble)                                  :: x_all_current(28)
+    REAL(our_dble)                                  :: x_all_current(NUM_PARAS)
 
     INTEGER(our_int), ALLOCATABLE                   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE                   :: num_obs_slaves(:)
@@ -76,7 +76,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     CALL get_optim_paras(x_all_current, optim_paras, .True.)
 
-    CALL MPI_Bcast(x_all_current, 28, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_Bcast(x_all_current, NUM_PARAS, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
@@ -112,7 +112,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     END DO
 
     IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim, optim_paras)
-    
+
 #endif
 
 END SUBROUTINE

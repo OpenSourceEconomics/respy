@@ -43,7 +43,7 @@ PROGRAM resfort_scalar
     CHARACTER(10)                   :: request
 
     ! Temporary fix
-    REAL(our_dble)                  :: x_tmp(28)
+    REAL(our_dble)                  :: x_tmp(NUM_PARAS)
 
 !------------------------------------------------------------------------------
 ! Algorithm
