@@ -29,7 +29,9 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
     elif OLD_RELEASE == '2.0.0.dev7' and NEW_RELEASE == '2.0.0.dev8':
         prepare_release_tests_2(constr)
     elif OLD_RELEASE == '2.0.0.dev8' and NEW_RELEASE == '2.0.0.dev9':
-        no_preparations_required(constr)
+        prepare_release_tests_3(constr)
+    elif OLD_RELEASE == '2.0.0.dev9' and NEW_RELEASE == '2.0.0.dev10':
+        prepare_release_tests_3(constr)
     else:
         raise AssertionError('Misspecified request ...')
 
@@ -159,6 +161,29 @@ def prepare_release_tests_2(constr):
     # deviations.
     del init_dict['AMBIGUITY']['mean']
 
+    json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
+
+
+def prepare_release_tests_3(constr):
+    """ This function prepares the initialization files so that they can be
+    processed by both releases under investigation. The idea is to have all
+    hand-crafted modifications grouped in this function only.
+    """
+    import numpy as np
+
+    sys.path.insert(0, '../../../respy/tests')
+    from codes.random_init import generate_init
+
+    # Prepare fresh subdirectories
+    for which in ['old', 'new']:
+        if os.path.exists(which):
+            shutil.rmtree(which)
+        os.mkdir(which)
+
+    constr['precond_type'] = np.random.choice(['identity', 'gradient'])
+    init_dict = generate_init(constr)
+
+    json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
     json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
 
 

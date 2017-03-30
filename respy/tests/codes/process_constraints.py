@@ -13,7 +13,7 @@ VALID_KEYS += ['flag_parallelism', 'version', 'file_est', 'flag_interpolation']
 VALID_KEYS += ['points', 'maxfun', 'flag_deterministic']
 VALID_KEYS += ['edu', 'measure', 'level', 'fixed_ambiguity', 'flag_ambiguity']
 VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
-VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta']
+VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta', 'precond_type']
 
 
 def process_constraints(dict_, constr, paras_fixed, paras_bounds):
@@ -163,17 +163,6 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         if dict_['PROGRAM']['procs'] > 1:
             dict_['PROGRAM']['version'] = 'FORTRAN'
 
-    if 'flag_precond' in constr.keys():
-        # Extract objects
-        flag_precond = constr['flag_precond']
-        # Checks
-        assert (flag_precond in [True, False])
-        # Replace in initialization file
-        if flag_precond:
-            dict_['PRECONDITIONING']['type'] = 'gradient'
-        else:
-            dict_['PRECONDITIONING']['type'] = 'identity'
-
     # Replace store attribute
     if 'flag_store' in constr.keys():
         # Extract objects
@@ -256,6 +245,27 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
                         dict_['ESTIMATION']['optimizer'] = 'SCIPY-LBFGSB'
                     break
 
+    # It is important that these two constraints are imposed after
+    # flag_estimation. Otherwise, they might be overwritten.
+    if 'flag_precond' in constr.keys():
+        # Extract objects
+        flag_precond = constr['flag_precond']
+        # Checks
+        assert (flag_precond in [True, False])
+        # Replace in initialization file
+        if flag_precond:
+            dict_['PRECONDITIONING']['type'] = 'gradient'
+        else:
+            dict_['PRECONDITIONING']['type'] = 'identity'
+
+    if 'precond_type' in constr.keys():
+        # Extract objects
+        precond_type = constr['precond_type']
+        # Checks
+        assert (precond_type in ['identity', 'gradient', 'magnitudes'])
+        # Replace in initialization file
+        dict_['PRECONDITIONING']['type'] = precond_type
+
     return dict_
 
 
@@ -281,6 +291,9 @@ def _check_constraints(constr):
 
     if 'agents' in keys:
         assert 'max_draws' not in keys
+
+    if 'flag_precond' in keys:
+        assert 'precond_type' not in keys
 
     cond = ('flag_parallelism' in keys) and ('version' in keys)
     cond = cond and constr['flag_parallelism']

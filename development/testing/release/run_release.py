@@ -23,37 +23,35 @@ from auxiliary_shared import cleanup
 SCRIPT_FNAME = '../../_modules/auxiliary_release.py'
 
 
-def run(args):
+def run(request, is_create, is_background, old_release, new_release):
     """ Test the different releases against each other.
     """
     cleanup()
 
     # Processing of command line arguments.
-    if args.request[0] == 'investigate':
+    if request[0] == 'investigate':
         is_investigation, is_run = True, False
-    elif args.request[0] == 'run':
+    elif request[0] == 'run':
         is_investigation, is_run = False, True
     else:
         raise AssertionError('request in [run, investigate]')
 
     seed_investigation, hours = None, 0.0
     if is_investigation:
-        seed_investigation = int(args.request[1])
+        seed_investigation = int(request[1])
         assert isinstance(seed_investigation, int)
     elif is_run:
-        hours = float(args.request[1])
+        hours = float(request[1])
         assert (hours > 0.0)
-
-    is_create = args.is_create
 
     # Set up auxiliary information to construct commands.
     env_dir = os.environ['HOME'] + '/.envs'
-    old_exec = env_dir + '/' + OLD_RELEASE + '/bin/python'
-    new_exec = env_dir + '/' + NEW_RELEASE + '/bin/python'
+    old_exec = env_dir + '/' + old_release + '/bin/python'
+    new_exec = env_dir + '/' + old_release + '/bin/python'
 
     # Create fresh virtual environments if requested.
     if is_create:
-        for release in [OLD_RELEASE, NEW_RELEASE]:
+        for release in [old_release, old_release]:
             cmd = ['virtualenv', env_dir + '/' + release, '--clear']
             subprocess.check_call(cmd)
 
@@ -61,9 +59,9 @@ def run(args):
         # investigation.
         for which in ['old', 'new']:
             if which == 'old':
-                release, python_exec = OLD_RELEASE, old_exec
+                release, python_exec = old_release, old_exec
             elif which == 'new':
-                release, python_exec = NEW_RELEASE, new_exec
+                release, python_exec = new_release, new_exec
             else:
                 raise AssertionError
 
@@ -93,7 +91,7 @@ def run(args):
         constr = dict()
         constr['flag_estimation'] = True
 
-        prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE)
+        prepare_release_tests(constr, old_release, new_release)
 
         # We use the current release for the simulation of the underlying
         # dataset.
@@ -103,9 +101,9 @@ def run(args):
         for which in ['old', 'new']:
 
             if which == 'old':
-                release, python_exec = OLD_RELEASE, old_exec
+                release, python_exec = old_release, old_exec
             elif which == 'new':
-                release, python_exec = NEW_RELEASE, new_exec
+                release, python_exec = old_release, new_exec
             else:
                 raise AssertionError
 
@@ -126,9 +124,10 @@ def run(args):
         if is_investigation or is_failure or is_timeout:
             break
 
-    if not args.is_background and not is_investigation:
+    if not is_background and not is_investigation:
         send_notification('release', hours=hours, is_failed=is_failure,
-             seed=seed, num_tests=num_tests)
+            seed=seed, num_tests=num_tests, old_release=old_release,
+            new_release=old_release)
 
 if __name__ == '__main__':
 
@@ -139,23 +138,29 @@ if __name__ == '__main__':
     #   need to be explicitly requested. Please also make sure these versions
     #   are tagged in GIT.
     #
-    #   Version    Description
+    #   Version     Description
     #
     #   1.0.0       Release for risk-only model
+    #
     #   2.0.0.dev7  Ambiguity, probably same as v2.0.4
+    #
     #   2.0.0.dev8  Ambiguity, now with free variances in worst-case
     #               determination
+    #
     #   2.0.0.dev9  We added additional output for simulated datasets and
     #               included a script to gently terminate an estimation.
     #
-    #   TODO:       The notification needs to include information on the exact
-    #               release that were compared
-
-    # TODO: Add info on dev10
-
+    #   2.0.0.dev10 We added additional information to the simulated dataset
+    #               such as all simulated rewards available for the individual
+    #               each period. We also added the ability to scale each
+    #               coefficient simply by their magnitudes.
+    #
+    #   TODO:   Isn't it a better way to have the candidate branch not set up
+    #           as a release from PYPI as well?
+    #
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
-    OLD_RELEASE, NEW_RELEASE = '2.0.0.dev8', '2.0.0.dev9'
+    old_release, new_release = '2.0.0.dev9', '2.0.0.dev10'
 
     parser = argparse.ArgumentParser(description='Run release testing.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -169,4 +174,9 @@ if __name__ == '__main__':
     parser.add_argument('--background', action='store_true',
         dest='is_background', default=False, help='background process')
 
-    run(parser.parse_args())
+    # Distribute arguments
+    args = parser.parse_args()
+    request, is_create = args.request, args.is_create
+    is_background = args.is_background
+
+    run(request, is_create, is_background, old_release, new_release)

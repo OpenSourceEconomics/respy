@@ -68,8 +68,6 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
 
         DO k = 0, (states_number_period(period + 1) - 1)
 
-            WRITE(99, 100) 'PERIOD', period, 'STATE', k
-
             rslt_mean = zero_dble
             rslt_mean(:2) = opt_ambi_details(period + 1, k + 1, 1:2)
 
@@ -84,6 +82,8 @@ SUBROUTINE record_ambiguity(opt_ambi_details, states_number_period, file_sim, op
 
             ! We need to skip states that where not analyzed during an interpolation.
             IF (mode == MISSING_FLOAT) CYCLE
+
+            WRITE(99, 100) 'PERIOD', period, 'STATE', k
 
             WRITE(99, *)
             WRITE(99, 110) 'Divergence  ', div(1)

@@ -96,16 +96,22 @@ def send_notification(which, **kwargs):
         is_failed = kwargs['is_failed']
 
     if 'hours' in kwargs.keys():
-        hours = kwargs['hours']
+        hours = '{}'.format(kwargs['hours'])
 
     if 'num_tests' in kwargs.keys():
-        num_tests = kwargs['num_tests']
+        num_tests = '{}'.format(kwargs['num_tests'])
 
     if 'seed' in kwargs.keys():
-        seed = kwargs['seed']
+        seed = '{}'.format(kwargs['seed'])
 
     if 'test_idx' in kwargs.keys():
-        test_idx = kwargs['test_idx']
+        test_idx = '{}'.format(kwargs['test_idx'])
+
+    if 'old_release' in kwargs.keys():
+        old_release = kwargs['old_release']
+
+    if 'new_release' in kwargs.keys():
+        new_release = kwargs['new_release']
 
     hostname = socket.gethostname()
 
@@ -117,14 +123,14 @@ def send_notification(which, **kwargs):
         message = ' Reliability testing is completed on @' + hostname + '.'
     elif which == 'property':
         subject = ' RESPY: Property Testing'
-        message = ' A ' + str(hours) + ' hour run of the testing battery on @' + \
+        message = ' A ' + hours + ' hour run of the testing battery on @' + \
                   hostname + ' is completed.'
 
     elif which == 'regression':
         subject = ' RESPY: Regression Testing'
         if is_failed:
-            message = 'Failure during regression testing for test ' + str(
-                test_idx) + '.'
+            message = 'Failure during regression testing for test ' + \
+                      test_idx + '.'
         else:
             message = ' Regression testing is completed on @' + hostname + '.'
 
@@ -132,11 +138,12 @@ def send_notification(which, **kwargs):
         subject = ' RESPY: Release Testing'
         if is_failed:
             message = ' Failure during release testing with seed ' + \
-                str(seed) + ' on @' + hostname + '.'
+                seed + ' on @' + hostname + '.'
         else:
-            message = ' Release testing completed successfully after ' + str(
-                hours) + ' hours on @' + hostname + '. We compared release ' \
-                '2.11 against 2.12 for a total of ' + str(num_tests) + '.'
+            message = ' Release testing completed successfully after ' + \
+                hours + ' hours on @' + hostname + '. We compared release ' + \
+                old_release + ' against ' + new_release + ' for a total of ' + \
+                num_tests + ' tests.'
     else:
         raise AssertionError
 
