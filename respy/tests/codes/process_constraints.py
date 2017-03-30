@@ -2,6 +2,7 @@ import numpy as np
 
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import NUM_PARAS
 
 from codes.auxiliary import get_valid_bounds
 
@@ -235,7 +236,7 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
 
             # Ensure that a valid estimator is selected in the case that a
             # free parameter has bounds.
-            for i in range(28):
+            for i in range(NUM_PARAS):
                 if paras_fixed[i]:
                     continue
                 if any(item is not None for item in paras_bounds[i]):

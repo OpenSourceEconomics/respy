@@ -124,6 +124,16 @@ def run(request, is_compile, is_background):
                 if idx in [337, 897]:
                     continue
 
+            # At the moment we are adding sheepskin effects to the wage
+            # equations.
+            init_dict['OCCUPATION A']['coeffs'] += [0.0, 0.0]
+            init_dict['OCCUPATION A']['fixed'] += [True, True]
+            init_dict['OCCUPATION A']['bounds'] += [[None, None], [None, None]]
+
+            init_dict['OCCUPATION B']['coeffs'] += [0.0, 0.0]
+            init_dict['OCCUPATION B']['fixed'] += [True, True]
+            init_dict['OCCUPATION B']['bounds'] += [[None, None], [None, None]]
+
             # During development it is useful that I can only run the PYTHON
             # versions of the program.
             msg = ' ... skipped as required version of package not available'
@@ -175,4 +185,4 @@ if __name__ == '__main__':
     request, is_compile = args.request, args.is_compile,
     is_background = args.is_background
 
-    run()
+    run(request, is_compile, is_background)

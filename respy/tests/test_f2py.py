@@ -31,6 +31,7 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import read_draws
+from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.shared.shared_constants import IS_F2PY
 from respy.python.interface import get_scales_magnitudes
 from respy.python.solve.solve_python import pyth_solve
@@ -648,7 +649,7 @@ class TestClass(object):
         each other.
         """
         # Draw a random vector of parameters
-        x = np.random.uniform(size=28)
+        x = np.random.uniform(size=NUM_PARAS)
 
         # Construct the Cholesky decompositions
         py = extract_cholesky(x, info=0)

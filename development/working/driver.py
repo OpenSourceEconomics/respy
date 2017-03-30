@@ -8,7 +8,8 @@ import sys
 if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('git clean -d -f; ./waf configure build --debug') \
+    assert os.system('git clean -d -f; ./waf configure build '
+                     '--without_fortran --debug') \
            == 0
     os.chdir(cwd)
 
@@ -41,4 +42,4 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 np.random.seed(123)
 respy_obj = RespyCls('model.respy.ini')
 respy_obj = simulate_observed(respy_obj)
-#_, crit = estimate(respy_obj)
+_, crit = estimate(respy_obj)

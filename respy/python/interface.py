@@ -20,6 +20,7 @@ from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import MaxfunError
 from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.solve.solve_python import pyth_solve
 
 
@@ -80,7 +81,7 @@ def respy_interface(respy_obj, request, data_array=None):
         num_free = optim_paras['paras_fixed'].count(False)
 
         paras_bounds_free_unscaled = []
-        for i in range(28):
+        for i in range(NUM_PARAS):
             if not optim_paras['paras_fixed'][i]:
                 lower, upper = optim_paras['paras_bounds'][i][:]
                 if lower is None:
@@ -257,7 +258,7 @@ def get_precondition_matrix(precond_spec, optim_paras,
     # Get the subset of free parameters for subsequent numerical
     # approximation of the gradient.
     x_optim_free_unscaled_start = []
-    for i in range(28):
+    for i in range(NUM_PARAS):
         if not optim_paras['paras_fixed'][i]:
             x_optim_free_unscaled_start += [x_optim_all_unscaled_start[i]]
 

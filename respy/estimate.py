@@ -7,6 +7,7 @@ from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
+from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.process.process_python import process
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
@@ -72,7 +73,7 @@ def check_estimation(respy_obj):
     maxfun = respy_obj.get_attr('maxfun')
 
     # Ensure that at least one free parameter.
-    assert sum(optim_paras['paras_fixed']) != 28
+    assert sum(optim_paras['paras_fixed']) != NUM_PARAS
 
     # Check that the used optimizers were defined by the user.
     if optim_paras['level'][0] > 0:

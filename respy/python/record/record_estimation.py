@@ -9,6 +9,7 @@ from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
+from respy.python.shared.shared_constants import NUM_PARAS
 
 
 def record_estimation_scaling(x_optim_free_unscaled_start,
@@ -24,7 +25,7 @@ def record_estimation_scaling(x_optim_free_unscaled_start,
         out_file.write(fmt_.format(*labels))
 
         j = 0
-        for i in range(28):
+        for i in range(NUM_PARAS):
             if paras_fixed[i]:
                 continue
 
@@ -92,22 +93,22 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
     if is_start:
         opt_obj.crit_vals[0] = fval
         opt_obj.x_optim_container[:, 0] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:18, 0] = x_optim_all_unscaled[:18]
-        opt_obj.x_econ_container[18:, 0] = shocks_coeffs
+        opt_obj.x_econ_container[:22, 0] = x_optim_all_unscaled[:22]
+        opt_obj.x_econ_container[22:, 0] = shocks_coeffs
 
     if is_step:
         opt_obj.num_step += 1
         opt_obj.crit_vals[1] = fval
         opt_obj.x_optim_container[:, 1] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:18, 1] = x_optim_all_unscaled[:18]
-        opt_obj.x_econ_container[18:, 1] = shocks_coeffs
+        opt_obj.x_econ_container[:22, 1] = x_optim_all_unscaled[:22]
+        opt_obj.x_econ_container[22:, 1] = shocks_coeffs
 
     if True:
         opt_obj.num_eval += 1
         opt_obj.crit_vals[2] = fval
         opt_obj.x_optim_container[:, 2] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:18, 2] = x_optim_all_unscaled[:18]
-        opt_obj.x_econ_container[18:, 2] = shocks_coeffs
+        opt_obj.x_econ_container[:22, 2] = x_optim_all_unscaled[:22]
+        opt_obj.x_econ_container[22:, 2] = shocks_coeffs
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container
@@ -150,7 +151,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
 
         # Formatting for the file
         fmt_ = '   {:>10}' + '    {:>25}' * 3
-        for i in range(28):
+        for i in range(NUM_PARAS):
             if paras_fixed[i]:
                 continue
             line = [i] + char_floats(x_optim_container[i, :])
@@ -204,7 +205,7 @@ def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
         out_file.write('\n{:>25}\n\n'.format('Economic Parameters'))
         line = ['Identifier', 'Start', 'Step', 'Current']
         out_file.write(fmt_.format(*line) + '\n\n')
-        for i, _ in enumerate(range(28)):
+        for i, _ in enumerate(range(NUM_PARAS)):
             line = [i]
             line += char_floats([paras_start[i], paras_step[i]])
             line += char_floats(paras_current[i])
