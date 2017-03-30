@@ -197,8 +197,8 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             exp_b = states_all(period, k, 2)
             edu = states_all(period, k, 3)
             edu_lagged = states_all(period, k, 4)
-            hs_graduate = (edu + edu_start >= 12)
-            co_graduate = (edu + edu_start >= 16)
+            hs_graduate = TRANSFER(edu + edu_start >= 12, hs_graduate)
+            co_graduate = TRANSFER(edu + edu_start >= 16, co_graduate)
 
             ! Auxiliary objects
             covars_wages(1) = one_int
