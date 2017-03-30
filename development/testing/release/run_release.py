@@ -151,6 +151,8 @@ if __name__ == '__main__':
     #   TODO:       The notification needs to include information on the exact
     #               release that were compared
 
+    # TODO: Add info on dev10
+
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
     OLD_RELEASE, NEW_RELEASE = '2.0.0.dev8', '2.0.0.dev9'

@@ -135,8 +135,8 @@ def send_notification(which, **kwargs):
                 str(seed) + ' on @' + hostname + '.'
         else:
             message = ' Release testing completed successfully after ' + str(
-                hours) + ' hours on @' + hostname + '. We ran a total of ' + \
-                str(num_tests) + ' tests.'
+                hours) + ' hours on @' + hostname + '. We compared release ' \
+                '2.11 against 2.12 for a total of ' + str(num_tests) + '.'
     else:
         raise AssertionError
 

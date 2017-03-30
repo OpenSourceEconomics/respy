@@ -22,10 +22,10 @@ from codes.random_init import generate_init
 HOSTNAME = socket.gethostname()
 
 
-def run(args):
+def run(request, is_compile, is_background):
     """ Run the regression tests.
     """
-    if args.is_compile:
+    if is_compile:
         compile_package(True)
 
     # The late import is required so a potentially just compiled FORTRAN
@@ -39,14 +39,14 @@ def run(args):
     is_investigation, is_check = False, False
     num_tests, idx = None, None
 
-    if args.request[0] == 'create':
-        is_creation, num_tests = True, int(args.request[1])
-    elif args.request[0] == 'check':
-        is_check, num_tests = True, int(args.request[1])
-    elif args.request[0] == 'modify':
-        is_modification, num_tests = True, int(args.request[1])
-    elif args.request[0] == 'investigate':
-        is_investigation, idx = True, int(args.request[1])
+    if request[0] == 'create':
+        is_creation, num_tests = True, int(request[1])
+    elif request[0] == 'check':
+        is_check, num_tests = True, int(request[1])
+    elif request[0] == 'modify':
+        is_modification, num_tests = True, int(request[1])
+    elif request[0] == 'investigate':
+        is_investigation, idx = True, int(request[1])
     else:
         raise AssertionError('request in [create, check, modify. investigate]')
     if num_tests is not None:
@@ -149,9 +149,12 @@ def run(args):
 
         # This allows to call this test from another script, that runs other
         # tests as well.
-        if not args.is_background:
+        if not is_background:
             send_notification('regression', is_failed=is_failure,
                 test_idx=idx)
+
+        return not is_failure
+
 
 if __name__ == '__main__':
 
@@ -167,4 +170,9 @@ if __name__ == '__main__':
     parser.add_argument('--compile', action='store_true', dest='is_compile',
         default=False, help='compile RESPY package')
 
-    run(parser.parse_args())
+    # Disribute arguments
+    args = parser.parse_args()
+    request, is_compile = args.request, args.is_compile,
+    is_background = args.is_background
+
+    run()

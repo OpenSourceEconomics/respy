@@ -36,8 +36,6 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
 
         current_state = states_all[0, 0, :].copy()
 
-        dataset[count, 0] = i
-
         record_simulation_progress(i, file_sim)
 
         # Iterate over each period for the agent

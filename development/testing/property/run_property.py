@@ -33,30 +33,30 @@ from auxiliary_property import get_testdir
 from auxiliary_shared import cleanup
 
 
-def run(args):
+def run(request, is_compile, is_background):
     """ Run the property test battery.
     """
 
     # Processing of command line arguments.
-    if args.request[0] == 'investigate':
+    if request[0] == 'investigate':
         is_investigation, is_run = True, False
-    elif args.request[0] == 'run':
+    elif request[0] == 'run':
         is_investigation, is_run = False, True
     else:
         raise AssertionError('request in [run, investigate]')
 
     seed_investigation, hours = None, 0.0
     if is_investigation:
-        seed_investigation = int(args.request[1])
+        seed_investigation = int(request[1])
         assert isinstance(seed_investigation, int)
     elif is_run:
-        hours = float(args.request[1])
+        hours = float(request[1])
         assert (hours > 0.0)
 
     if not is_investigation:
         cleanup()
 
-    if args.is_compile:
+    if is_compile:
         compile_package(True)
 
     # Get a dictionary with all candidate test cases.
@@ -136,8 +136,9 @@ def run(args):
 
     # This allows to call this test from another script, that runs other
     # tests as well.
-    if not args.is_background and not is_investigation:
+    if not is_background and not is_investigation:
         send_notification('property', hours=hours)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run development test '
@@ -153,4 +154,10 @@ if __name__ == '__main__':
     parser.add_argument('--background', action='store_true',
         dest='is_background', default=False, help='background process')
 
-    run(parser.parse_args())
+    args = parser.parse_args()
+
+    request = args.request
+    is_compile = args.is_compile
+    is_background = args.is_background
+
+    run(request, is_compile, is_background)
