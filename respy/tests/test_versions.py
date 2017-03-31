@@ -263,8 +263,6 @@ class TestClass(object):
             if delta > 0.00 and is_ambiguity:
                 fname = file_sim + '.respy.amb'
                 if base_amb_log is None:
-                    import shutil
-                    shutil.copy('data.respy.amb', 'fort.respy.amb')
                     base_amb_log = open(fname, 'r').read()
                 assert open(fname, 'r').read() == base_amb_log
 

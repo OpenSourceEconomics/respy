@@ -150,8 +150,11 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
                 reward += optim_paras['coeffs_edu'][1]
 
             # Psychic cost of going back to school
-            if edu_lagged == 0:
+            if (not edu_lagged) and (not hs_graduate):
                 reward += optim_paras['coeffs_edu'][2]
+
+            if (not edu_lagged) and hs_graduate:
+                reward += optim_paras['coeffs_edu'][3]
 
             periods_rewards_systematic[period, k, 2] = reward
 

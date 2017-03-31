@@ -20,7 +20,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, INTENT(OUT)   :: crit_val
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(32)
+    DOUBLE PRECISION, INTENT(IN)    :: x(33)
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
@@ -466,7 +466,7 @@ SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num
     DOUBLE PRECISION, INTENT(OUT)   :: periods_rewards_systematic_int(num_periods_int, max_states_period_int, 4)
 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(1)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(3)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(4)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(8)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(8)
 
@@ -1329,7 +1329,7 @@ SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 
     DOUBLE PRECISION, INTENT(OUT)   :: shocks_cholesky(4, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(32)
+    DOUBLE PRECISION, INTENT(IN)    :: x(33)
 
     INTEGER, INTENT(OUT)            :: info
 

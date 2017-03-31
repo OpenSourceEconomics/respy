@@ -68,7 +68,7 @@ MODULE shared_types
     TYPE OPTIMPARAS_DICT
         REAL(our_dble)          :: shocks_cholesky(4, 4)
         REAL(our_dble)          :: paras_bounds(2, NUM_PARAS)
-        REAL(our_dble)          :: coeffs_edu(3)
+        REAL(our_dble)          :: coeffs_edu(4)
         REAL(our_dble)          :: coeffs_home(1)
         REAL(our_dble)          :: coeffs_a(8)
         REAL(our_dble)          :: coeffs_b(8)

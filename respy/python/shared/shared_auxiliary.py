@@ -62,12 +62,12 @@ def dist_econ_paras(x_all_curre):
     coeffs_b = x_all_curre[10:18]
 
     # Education
-    coeffs_edu = x_all_curre[18:21]
+    coeffs_edu = x_all_curre[18:22]
 
     # Home
-    coeffs_home = x_all_curre[21:22]
+    coeffs_home = x_all_curre[22:23]
 
-    shocks_coeffs = x_all_curre[22:NUM_PARAS]
+    shocks_coeffs = x_all_curre[23:NUM_PARAS]
     for i in [0, 4, 7, 9]:
         shocks_coeffs[i] **= 2
 
@@ -109,10 +109,10 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     optim_paras['coeffs_b'] = x_all_curre[10:18]
 
     # Education
-    optim_paras['coeffs_edu'] = x_all_curre[18:21]
+    optim_paras['coeffs_edu'] = x_all_curre[18:22]
 
     # Home
-    optim_paras['coeffs_home'] = x_all_curre[21:22]
+    optim_paras['coeffs_home'] = x_all_curre[22:23]
 
     # Cholesky
     optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
@@ -129,10 +129,10 @@ def extract_cholesky(x, info=None):
     """ Construct the Cholesky matrix.
     """
     shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x[22:23]
-    shocks_cholesky[1, :2] = x[23:25]
-    shocks_cholesky[2, :3] = x[25:28]
-    shocks_cholesky[3, :4] = x[28:NUM_PARAS]
+    shocks_cholesky[0, :1] = x[23:24]
+    shocks_cholesky[1, :2] = x[24:26]
+    shocks_cholesky[2, :3] = x[26:29]
+    shocks_cholesky[3, :4] = x[29:NUM_PARAS]
 
     # Stabilization
     if info is not None:
@@ -343,7 +343,7 @@ def check_model_parameters(optim_paras):
     # Checks for occupations
     assert (optim_paras['coeffs_a'].size == 8)
     assert (optim_paras['coeffs_b'].size == 8)
-    assert (optim_paras['coeffs_edu'].size == 3)
+    assert (optim_paras['coeffs_edu'].size == 4)
     assert (optim_paras['coeffs_home'].size == 1)
 
     # Checks shock matrix
@@ -514,7 +514,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['HOME']['coeffs'][0]
-                line = format_opt_parameters(val, 21, paras_fixed, paras_bounds)
+                line = format_opt_parameters(val, 22, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -543,7 +543,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
-                    line = format_opt_parameters(val, 22 + i, paras_fixed,
+                    line = format_opt_parameters(val, 23 + i, paras_fixed,
                         paras_bounds)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
@@ -552,17 +552,10 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write(flag.upper() + '\n\n')
 
-                val = dict_['EDUCATION']['coeffs'][0]
-                line = format_opt_parameters(val, 18, paras_fixed, paras_bounds)
-                file_.write(str_optim.format(*line))
-
-                val = dict_['EDUCATION']['coeffs'][1]
-                line = format_opt_parameters(val, 19, paras_fixed, paras_bounds)
-                file_.write(str_optim.format(*line))
-
-                val = dict_['EDUCATION']['coeffs'][2]
-                line = format_opt_parameters(val, 20, paras_fixed, paras_bounds)
-                file_.write(str_optim.format(*line))
+                for i in range(4):
+                    val = dict_['EDUCATION']['coeffs'][i]
+                    line = format_opt_parameters(val, i + 18, paras_fixed, paras_bounds)
+                    file_.write(str_optim.format(*line))
 
                 file_.write('\n')
                 str_ = '{0:<10} {1:>20}\n'
@@ -692,7 +685,7 @@ def get_est_info():
     # Parameter values
     for i, key_ in enumerate(['start', 'step', 'current']):
         rslt['paras_' + key_] = []
-        for j in range(13, 45):
+        for j in range(13, 46):
             line = shlex.split(linecache.getline('est.respy.info', j))
             rslt['paras_' + key_] += [_process_value(line[i + 1], 'float')]
         rslt['paras_' + key_] = np.array(rslt['paras_' + key_])
@@ -732,13 +725,13 @@ def get_optim_paras(optim_paras, which, is_debug):
     x[10:18] = optim_paras['coeffs_b']
 
     # Education
-    x[18:21] = optim_paras['coeffs_edu']
+    x[18:22] = optim_paras['coeffs_edu']
 
     # Home
-    x[21:22] = optim_paras['coeffs_home']
+    x[22:23] = optim_paras['coeffs_home']
 
     # Shocks
-    x[22:32] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+    x[23:NUM_PARAS] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Checks
     if is_debug:

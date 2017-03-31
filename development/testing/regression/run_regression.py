@@ -134,6 +134,12 @@ def run(request, is_compile, is_background):
             init_dict['OCCUPATION B']['fixed'] += [True, True]
             init_dict['OCCUPATION B']['bounds'] += [[None, None], [None, None]]
 
+            # We are also splitting up the re-entry costs between high school
+            # and college graduation
+            init_dict['EDUCATION']['coeffs'].append(init_dict['EDUCATION']['coeffs'][-1])
+            init_dict['EDUCATION']['fixed'].append(init_dict['EDUCATION']['fixed'][-1])
+            init_dict['EDUCATION']['bounds'].append(init_dict['EDUCATION']['bounds'][-1])
+
             # During development it is useful that I can only run the PYTHON
             # versions of the program.
             msg = ' ... skipped as required version of package not available'

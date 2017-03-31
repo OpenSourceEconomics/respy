@@ -184,7 +184,7 @@ class TestClass(object):
             # ensure that all are valid, i.e. that a random value is within
             # the bounds.
             action = np.random.choice(['fix', 'free'])
-            num_draws = np.random.randint(1, 21)
+            num_draws = np.random.randint(1, 22)
 
             # The set of identifiers is a little complicated as we only allow
             # sampling of the diagonal terms of the covariance matrix.

@@ -223,7 +223,13 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             IF(hs_graduate .EQ. one_int) reward = reward + optim_paras%coeffs_edu(2)
 
             ! Psychic cost of going back to school
-            IF(edu_lagged == 0) reward = reward + optim_paras%coeffs_edu(3)
+            IF((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate))) THEN
+                reward = reward + optim_paras%coeffs_edu(3)
+            END IF
+
+            IF((.NOT. to_boolean(edu_lagged)) .AND. to_boolean(hs_graduate)) THEN
+                reward = reward + optim_paras%coeffs_edu(4)
+            END IF
 
             periods_rewards_systematic(period, k, 3) = reward
 
