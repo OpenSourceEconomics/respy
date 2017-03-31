@@ -302,6 +302,10 @@ class TestClass(object):
     def test_versions_4(self, flag_ambiguity=True):
         link_versions().test_4(flag_ambiguity)
 
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
+    def test_versions_5(self, flag_ambiguity=True):
+        link_versions().test_5(flag_ambiguity)
+
     # This section reproduces the tests from test_f2py but runs them with
     # ambiguity.
     @pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')

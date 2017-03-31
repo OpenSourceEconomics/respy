@@ -266,15 +266,23 @@ class TestClass(object):
                     base_amb_log = open(fname, 'r').read()
                 assert open(fname, 'r').read() == base_amb_log
 
-    def test_5(self):
+    def test_5(self, flag_ambiguity=False):
         """ This test ensures that the scaling matrix is identical between
         the alternative versions.
         """
+        max_draws = np.random.randint(10, 300)
+
         constr = dict()
+        constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_estimation'] = True
+        constr['max_draws'] = max_draws
 
         # Simulate a dataset
-        generate_init(constr)
+        init_dict = generate_init(constr)
+
+        num_periods = init_dict['BASICS']['periods']
+        write_draws(num_periods, max_draws)
+
         respy_base = RespyCls('test.respy.ini')
 
         simulate_observed(respy_base)
