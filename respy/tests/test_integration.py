@@ -8,7 +8,7 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
-
+from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from respy import estimate
@@ -217,8 +217,6 @@ class TestClass(object):
 
         generate_init(constr)
 
-        # TODO: I am still surprised that this is needed now but not before?!
-        from codes.auxiliary import write_interpolation_grid
         write_interpolation_grid('test.respy.ini')
 
         # Run estimation task.

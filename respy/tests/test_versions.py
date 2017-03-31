@@ -282,6 +282,7 @@ class TestClass(object):
 
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
+        write_interpolation_grid('test.respy.ini')
 
         respy_base = RespyCls('test.respy.ini')
 

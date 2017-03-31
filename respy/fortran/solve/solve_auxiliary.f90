@@ -220,7 +220,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             reward = optim_paras%coeffs_edu(1)
 
             ! Tuition cost for higher education if agents move beyond high school.
-            IF(hs_graduate .EQ. one_int) reward = reward + optim_paras%coeffs_edu(2)
+            IF(to_boolean(hs_graduate)) reward = reward + optim_paras%coeffs_edu(2)
 
             ! Psychic cost of going back to school
             IF((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate))) THEN
