@@ -41,5 +41,6 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 np.random.seed(123)
 respy_obj = RespyCls('model.respy.ini')
 respy_obj = simulate_observed(respy_obj)
+respy_obj.write_out()
 _, crit = estimate(respy_obj)
 np.testing.assert_almost_equal(crit, 0.567747227311)
