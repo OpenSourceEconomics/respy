@@ -295,7 +295,7 @@ class RespyCls(object):
         init_dict['OCCUPATION B']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Education
-        lower, upper = 18, 21
+        lower, upper = 18, 22
         init_dict['EDUCATION'] = dict()
         init_dict['EDUCATION']['coeffs'] = \
             self.attr['optim_paras']['coeffs_edu']
@@ -307,7 +307,7 @@ class RespyCls(object):
         init_dict['EDUCATION']['max'] = self.attr['edu_max']
 
         # Home
-        lower, upper = 21, 23
+        lower, upper = 22, 23
         init_dict['HOME'] = dict()
         init_dict['HOME']['coeffs'] = \
             self.attr['optim_paras']['coeffs_home']
