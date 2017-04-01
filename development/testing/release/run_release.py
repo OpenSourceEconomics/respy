@@ -127,7 +127,7 @@ def run(request, is_create, is_background, old_release, new_release):
     if not is_background and not is_investigation:
         send_notification('release', hours=hours, is_failed=is_failure,
             seed=seed, num_tests=num_tests, old_release=old_release,
-            new_release=old_release)
+            new_release=new_release)
 
 if __name__ == '__main__':
 
