@@ -175,4 +175,4 @@ if __name__ == '__main__':
     request, is_compile = args.request, args.is_compile,
     is_background = args.is_background
 
-    run()
+    run(request, is_compile, is_background)

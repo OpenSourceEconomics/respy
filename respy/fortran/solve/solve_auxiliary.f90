@@ -163,8 +163,10 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     !/* internals objects       */
 
+    INTEGER(our_int)                    :: covars_wages(8)
+    INTEGER(our_int)                    :: hs_graduate
+    INTEGER(our_int)                    :: co_graduate
     INTEGER(our_int)                    :: edu_lagged
-    INTEGER(our_int)                    :: covars(6)
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
@@ -195,29 +197,39 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             exp_b = states_all(period, k, 2)
             edu = states_all(period, k, 3)
             edu_lagged = states_all(period, k, 4)
+            hs_graduate = TRANSFER(edu + edu_start >= 12, hs_graduate)
+            co_graduate = TRANSFER(edu + edu_start >= 16, co_graduate)
 
             ! Auxiliary objects
-            covars(1) = one_int
-            covars(2) = edu + edu_start
-            covars(3) = exp_a
-            covars(4) = exp_a ** 2
-            covars(5) = exp_b
-            covars(6) = exp_b ** 2
+            covars_wages(1) = one_int
+            covars_wages(2) = edu + edu_start
+            covars_wages(3) = exp_a
+            covars_wages(4) = exp_a ** 2
+            covars_wages(5) = exp_b
+            covars_wages(6) = exp_b ** 2
+            covars_wages(7) = hs_graduate
+            covars_wages(8) = co_graduate
 
             ! Calculate systematic part of reward in Occupation A
-            CALL clip_value(periods_rewards_systematic(period, k, 1), EXP(DOT_PRODUCT(covars, optim_paras%coeffs_a)), zero_dble, HUGE_FLOAT, info)
+            CALL clip_value(periods_rewards_systematic(period, k, 1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of reward in Occupation B
-            CALL clip_value(periods_rewards_systematic(period, k, 2), EXP(DOT_PRODUCT(covars, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
+            CALL clip_value(periods_rewards_systematic(period, k, 2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of schooling utility
             reward = optim_paras%coeffs_edu(1)
 
             ! Tuition cost for higher education if agents move beyond high school.
-            IF(edu + edu_start >= 12) reward = reward + optim_paras%coeffs_edu(2)
+            IF(to_boolean(hs_graduate)) reward = reward + optim_paras%coeffs_edu(2)
 
             ! Psychic cost of going back to school
-            IF(edu_lagged == 0) reward = reward + optim_paras%coeffs_edu(3)
+            IF((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate))) THEN
+                reward = reward + optim_paras%coeffs_edu(3)
+            END IF
+
+            IF((.NOT. to_boolean(edu_lagged)) .AND. to_boolean(hs_graduate)) THEN
+                reward = reward + optim_paras%coeffs_edu(4)
+            END IF
 
             periods_rewards_systematic(period, k, 3) = reward
 

@@ -3,6 +3,7 @@ import pytest
 
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_constants import NUM_PARAS
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from respy import simulate
@@ -72,7 +73,7 @@ class TestClass(object):
         """
         for i in range(10):
             # Create random parameter vector
-            base = np.random.uniform(size=28)
+            base = np.random.uniform(size=NUM_PARAS)
             x = base.copy()
 
             # Apply numerous transformations

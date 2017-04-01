@@ -26,7 +26,7 @@ if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call('rm -rf .bld', shell=True)
-    subprocess.check_call('./waf configure build ',
+    subprocess.check_call('./waf configure build',
         shell=True)
     os.chdir(cwd)
 else:
@@ -53,7 +53,7 @@ for i in range(1000):
 
 #    seed = 47092
     seed = i + 35715
-    #seed = 64599
+    #seed = 67846
     np.random.seed(seed)
     print("seed ", seed)
 

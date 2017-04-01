@@ -123,18 +123,22 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
             # Distribute state space
             exp_a, exp_b, edu, edu_lagged = states_all[period, k, :]
 
+            # Construct auxiliary information
+            hs_graduate = float((edu + edu_start >= 12))
+            co_graduate = float((edu + edu_start >= 16))
+
             # Auxiliary objects
-            covars = [1.0, edu + edu_start, exp_a, exp_a ** 2, exp_b,
-                      exp_b ** 2]
+            covars_wages = [1.0, edu + edu_start, exp_a, exp_a ** 2, exp_b,
+                exp_b ** 2, hs_graduate, co_graduate]
 
             # Calculate systematic part of wages in occupation A
             periods_rewards_systematic[period, k, 0] = \
-                np.clip(np.exp(np.dot(optim_paras['coeffs_a'], covars)), 0.0,
+                np.clip(np.exp(np.dot(optim_paras['coeffs_a'], covars_wages)), 0.0,
                     HUGE_FLOAT)
 
             # Calculate systematic part pf wages in occupation B
             periods_rewards_systematic[period, k, 1] = \
-                np.clip(np.exp(np.dot(optim_paras['coeffs_b'], covars)), 0.0,
+                np.clip(np.exp(np.dot(optim_paras['coeffs_b'], covars_wages)), 0.0,
                     HUGE_FLOAT)
 
             # Calculate systematic part of schooling utility
@@ -142,12 +146,15 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
 
             # Tuition cost for higher education if agents move
             # beyond high school.
-            if edu + edu_start >= 12:
+            if hs_graduate:
                 reward += optim_paras['coeffs_edu'][1]
 
             # Psychic cost of going back to school
-            if edu_lagged == 0:
+            if (not edu_lagged) and (not hs_graduate):
                 reward += optim_paras['coeffs_edu'][2]
+
+            if (not edu_lagged) and hs_graduate:
+                reward += optim_paras['coeffs_edu'][3]
 
             periods_rewards_systematic[period, k, 2] = reward
 

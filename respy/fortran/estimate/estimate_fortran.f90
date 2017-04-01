@@ -142,7 +142,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
     REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
 
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
-    REAL(our_dble)                  :: x_optim_all_unscaled(28)
+    REAL(our_dble)                  :: x_optim_all_unscaled(NUM_PARAS)
     REAL(our_dble)                  :: contribs(num_obs)
     REAL(our_dble)                  :: start
 
@@ -204,7 +204,7 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_all_current(28)
+    REAL(our_dble)                  :: x_all_current(NUM_PARAS)
     REAL(our_dble)                  :: x_input(num_free)
     REAL(our_dble)                  :: contribs(num_obs)
     REAL(our_dble)                  :: start
@@ -239,7 +239,7 @@ FUNCTION fort_criterion_parallel(x)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
-    CALL MPI_Bcast(x_all_current, 28, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_Bcast(x_all_current, NUM_PARAS, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
     CALL dist_optim_paras(optim_paras, x_all_current, dist_optim_paras_info)
@@ -327,7 +327,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(28)
+    REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(NUM_PARAS)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
     REAL(our_dble), INTENT(IN)                  :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
@@ -344,7 +344,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     j = 1
 
-    DO i = 1, 28
+    DO i = 1, NUM_PARAS
 
         IF(optim_paras%paras_fixed(i)) THEN
             x_optim_all_unscaled(i) = x_all_start(i)

@@ -8,7 +8,7 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
-
+from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from respy import estimate
@@ -184,13 +184,13 @@ class TestClass(object):
             # ensure that all are valid, i.e. that a random value is within
             # the bounds.
             action = np.random.choice(['fix', 'free'])
-            num_draws = np.random.randint(1, 17)
+            num_draws = np.random.randint(1, 22)
 
             # The set of identifiers is a little complicated as we only allow
             # sampling of the diagonal terms of the covariance matrix.
             # Otherwise, we sometimes run into the problem of very ill
             # conditioned matrices resulting in a failed Cholesky decomposition.
-            set_ = list(range(17))
+            set_ = list(range(22))
 
             identifiers = np.random.choice(set_, num_draws, replace=False)
             values = np.random.uniform(size=num_draws)
@@ -216,6 +216,8 @@ class TestClass(object):
         constr['flag_ambiguity'] = flag_ambiguity
 
         generate_init(constr)
+
+        write_interpolation_grid('test.respy.ini')
 
         # Run estimation task.
         respy_obj = RespyCls('test.respy.ini')

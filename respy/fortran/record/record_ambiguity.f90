@@ -179,7 +179,7 @@ FUNCTION get_message(mode)
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    mode_int = DINT(mode)
+    mode_int = TRANSFER(mode, mode_int)
 
     ! Optimizer get_message
     IF (mode_int == -1) THEN

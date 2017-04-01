@@ -4,10 +4,11 @@ import numpy as np
 
 from respy.python.shared.shared_auxiliary import generate_optimizer_options
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import IS_PARALLEL
+from respy.python.shared.shared_constants import IS_FORTRAN
+from respy.python.shared.shared_constants import NUM_PARAS
 
 from codes.process_constraints import process_constraints
 from codes.auxiliary import get_valid_values
@@ -51,14 +52,14 @@ def generate_random_dict(constr=None):
     # We now draw all parameter values. This is necessarily done here as we
     # subsequently determine a set of valid bounds.
     paras_values = []
-    for i in range(28):
+    for i in range(NUM_PARAS):
         if i in [0]:
             value = get_valid_values('delta')
         elif i in [1]:
             value = get_valid_values('amb')
-        elif i in range(2, 18):
+        elif i in range(2, 23):
             value = get_valid_values('coeff')
-        elif i in [18, 22, 25, 27]:
+        elif i in [23, 27, 30, 32]:
             value = get_valid_values('cov')
         else:
             value = 0.0
@@ -75,7 +76,7 @@ def generate_random_dict(constr=None):
             bounds = get_valid_bounds('delta', value)
         elif i in [1]:
             bounds = get_valid_bounds('amb', value)
-        elif i in range(18, 28):
+        elif i in range(23, NUM_PARAS):
             bounds = get_valid_bounds('cov', value)
         else:
             bounds = get_valid_bounds('coeff', value)
@@ -87,9 +88,9 @@ def generate_random_dict(constr=None):
     # parameter is always free. At this point we also want to ensure that
     # either all shock coefficients are fixed or none. It is not clear how to
     # ensure other constraints on the Cholesky factors.
-    paras_fixed = np.random.choice([True, False], 18).tolist()
-    if sum(paras_fixed) == 18:
-        paras_fixed[np.random.randint(0, 18)] = True
+    paras_fixed = np.random.choice([True, False], 23).tolist()
+    if sum(paras_fixed) == 23:
+        paras_fixed[np.random.randint(0, 23)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
 
     # Sampling number of agents for the simulation. This is then used as the
@@ -98,38 +99,43 @@ def generate_random_dict(constr=None):
 
     # Basics
     dict_['BASICS'] = dict()
+    lower, upper = 0, 1
     dict_['BASICS']['periods'] = np.random.randint(1, MAX_PERIODS)
-    dict_['BASICS']['coeffs'] = paras_values[0:1]
-    dict_['BASICS']['bounds'] = paras_bounds[0:1]
-    dict_['BASICS']['fixed'] = paras_fixed[0:1]
-
-    # Home
-    dict_['HOME'] = dict()
-    dict_['HOME']['coeffs'] = paras_values[17:18]
-    dict_['HOME']['bounds'] = paras_bounds[17:18]
-    dict_['HOME']['fixed'] = paras_fixed[17:18]
+    dict_['BASICS']['coeffs'] = paras_values[lower:upper]
+    dict_['BASICS']['bounds'] = paras_bounds[lower:upper]
+    dict_['BASICS']['fixed'] = paras_fixed[lower:upper]
 
     # Occupation A
+    lower, upper = 2, 10
     dict_['OCCUPATION A'] = dict()
-    dict_['OCCUPATION A']['coeffs'] = paras_values[2:8]
-    dict_['OCCUPATION A']['bounds'] = paras_bounds[2:8]
-    dict_['OCCUPATION A']['fixed'] = paras_fixed[2:8]
+    dict_['OCCUPATION A']['coeffs'] = paras_values[lower:upper]
+    dict_['OCCUPATION A']['bounds'] = paras_bounds[lower:upper]
+    dict_['OCCUPATION A']['fixed'] = paras_fixed[lower:upper]
 
     # Occupation B
+    lower, upper = 10, 18
     dict_['OCCUPATION B'] = dict()
-    dict_['OCCUPATION B']['coeffs'] = paras_values[8:14]
-    dict_['OCCUPATION B']['bounds'] = paras_bounds[8:14]
-    dict_['OCCUPATION B']['fixed'] = paras_fixed[8:14]
+    dict_['OCCUPATION B']['coeffs'] = paras_values[lower:upper]
+    dict_['OCCUPATION B']['bounds'] = paras_bounds[lower:upper]
+    dict_['OCCUPATION B']['fixed'] = paras_fixed[lower:upper]
 
     # Education
+    lower, upper = 18, 22
     dict_['EDUCATION'] = dict()
-    dict_['EDUCATION']['coeffs'] = paras_values[14:17]
-    dict_['EDUCATION']['bounds'] = paras_bounds[14:17]
-    dict_['EDUCATION']['fixed'] = paras_fixed[14:17]
+    dict_['EDUCATION']['coeffs'] = paras_values[lower:upper]
+    dict_['EDUCATION']['bounds'] = paras_bounds[lower:upper]
+    dict_['EDUCATION']['fixed'] = paras_fixed[lower:upper]
 
     dict_['EDUCATION']['start'] = np.random.randint(1, 10)
     dict_['EDUCATION']['max'] = np.random.randint(
         dict_['EDUCATION']['start'] + 1, 20)
+
+    # Home
+    lower, upper = 22, 23
+    dict_['HOME'] = dict()
+    dict_['HOME']['coeffs'] = paras_values[lower:upper]
+    dict_['HOME']['bounds'] = paras_bounds[lower:upper]
+    dict_['HOME']['fixed'] = paras_fixed[lower:upper]
 
     # SOLUTION
     dict_['SOLUTION'] = dict()
@@ -196,10 +202,11 @@ def generate_random_dict(constr=None):
     dict_['SIMULATION']['file'] = 'data'
 
     # SHOCKS
+    lower, upper = 23, NUM_PARAS
     dict_['SHOCKS'] = dict()
-    dict_['SHOCKS']['coeffs'] = paras_values[18:]
-    dict_['SHOCKS']['bounds'] = paras_bounds[18:]
-    dict_['SHOCKS']['fixed'] = paras_fixed[18:]
+    dict_['SHOCKS']['coeffs'] = paras_values[lower:upper]
+    dict_['SHOCKS']['bounds'] = paras_bounds[lower:upper]
+    dict_['SHOCKS']['fixed'] = paras_fixed[lower:upper]
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = dict()

@@ -27,7 +27,7 @@ MODULE shared_containers
 
     REAL(our_dble), ALLOCATABLE     :: precond_matrix(:, :)
 
-    REAL(our_dble)                  :: x_all_start(28)
+    REAL(our_dble)                  :: x_all_start(NUM_PARAS)
 
     REAL(our_dble)                  :: dfunc_eps
     REAL(our_dble)                  :: tau

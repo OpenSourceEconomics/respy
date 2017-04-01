@@ -7,6 +7,7 @@ from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.record.record_warning import record_warning
+from respy.python.shared.shared_constants import NUM_PARAS
 
 
 class OptimizationClass(object):
@@ -27,8 +28,8 @@ class OptimizationClass(object):
         # Updated attributes
         # TODO: The setup of the optim container is different than in FORT.
         # Here all parameters are included, in FORT only free.
-        self.x_optim_container = np.tile(np.nan, (28, 3))
-        self.x_econ_container = np.tile(np.nan, (28, 3))
+        self.x_optim_container = np.tile(np.nan, (NUM_PARAS, 3))
+        self.x_econ_container = np.tile(np.nan, (NUM_PARAS, 3))
         self.crit_vals = np.tile(np.inf, 3)
         self.num_step = -1
         self.num_eval = 0
@@ -80,9 +81,9 @@ class OptimizationClass(object):
         paras_fixed = self.paras_fixed
 
         # Construct the complete list of optimization parameters.
-        x_optim_all_unscaled = np.tile(np.nan, 28)
+        x_optim_all_unscaled = np.tile(np.nan, NUM_PARAS)
         j = 0
-        for i in range(28):
+        for i in range(NUM_PARAS):
             if paras_fixed[i]:
                 x_optim_all_unscaled[i] = x_optim_all_unscaled_start[i].copy()
             else:

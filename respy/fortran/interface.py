@@ -10,6 +10,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.shared.shared_constants import EXEC_DIR
 
 
@@ -164,13 +165,13 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
 
         # WORK
         for num in [optim_paras['coeffs_a'], optim_paras['coeffs_b']]:
-            fmt_ = ' {:25.15f}' * 6 + '\n'
+            fmt_ = ' {:25.15f}' * 8 + '\n'
             file_.write(fmt_.format(*num))
 
         # EDUCATION
         num = optim_paras['coeffs_edu']
-        line = ' {:25.15f} {:25.15f} {:25.15f}\n'.format(*num)
-        file_.write(line)
+        fmt_ = ' {:25.15f}' * 4 + '\n'
+        file_.write(fmt_.format(*num))
 
         line = '{0:10d} '.format(edu_start)
         file_.write(line)
@@ -263,7 +264,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         line = '{0}'.format(is_myopic)
         file_.write(line + '\n')
 
-        fmt = '{:} ' * 28
+        fmt = '{:} ' * NUM_PARAS
         line = fmt.format(*optim_paras['paras_fixed'])
         file_.write(line + '\n')
 
@@ -318,19 +319,19 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         # Transform bounds
         bounds_lower = []
         bounds_upper = []
-        for i in range(28):
+        for i in range(NUM_PARAS):
             bounds_lower += [optim_paras['paras_bounds'][i][0]]
             bounds_upper += [optim_paras['paras_bounds'][i][1]]
 
-        for i in range(28):
+        for i in range(NUM_PARAS):
             if bounds_lower[i] is None:
                 bounds_lower[i] = -MISSING_FLOAT
 
-        for i in range(28):
+        for i in range(NUM_PARAS):
             if bounds_upper[i] is None:
                 bounds_upper[i] = MISSING_FLOAT
 
-        fmt_ = ' {:25.15f}' * 28
+        fmt_ = ' {:25.15f}' * NUM_PARAS
         line = fmt_.format(*bounds_lower)
         file_.write(line + '\n')
 

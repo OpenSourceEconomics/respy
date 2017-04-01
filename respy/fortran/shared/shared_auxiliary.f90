@@ -28,6 +28,12 @@ MODULE shared_auxiliary
 
     END INTERFACE
 
+    INTERFACE to_boolean
+
+        MODULE PROCEDURE float_to_boolean, integer_to_boolean
+
+    END INTERFACE
+
 CONTAINS
 !******************************************************************************
 !******************************************************************************
@@ -289,7 +295,7 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
 
-    REAL(our_dble), INTENT(IN)      :: x(28)
+    REAL(our_dble), INTENT(IN)      :: x(NUM_PARAS)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)    :: info
 
@@ -305,13 +311,13 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky = zero_dble
 
-    shocks_cholesky(1, :1) = x(19:19)
+    shocks_cholesky(1, :1) = x(24:24)
 
-    shocks_cholesky(2, :2) = x(20:21)
+    shocks_cholesky(2, :2) = x(25:26)
 
-    shocks_cholesky(3, :3) = x(22:24)
+    shocks_cholesky(3, :3) = x(27:29)
 
-    shocks_cholesky(4, :4) = x(25:28)
+    shocks_cholesky(4, :4) = x(30:NUM_PARAS)
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -915,12 +921,12 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 !------------------------------------------------------------------------------
 
     ! Fix formatting
-    1500 FORMAT(6(1x,f25.15))
+    1500 FORMAT(8(1x,f25.15))
 
     1505 FORMAT(i10)
     1515 FORMAT(i10,1x,i10)
 
-    1525 FORMAT(28(1x,f25.15))
+    1525 FORMAT(33(1x,f25.15))
 
     ! Read model specification
     OPEN(UNIT=99, FILE='.model.resfort.ini', ACTION='READ')
@@ -1019,7 +1025,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     CLOSE(99)
 
     ! TODO: This setup should be revisited and cleaned up later.
-    DO i = 1, 28
+    DO i = 1, NUM_PARAS
         IF(optim_paras%paras_bounds(1, i) == -MISSING_FLOAT) optim_paras%paras_bounds(1, i) = - HUGE_FLOAT
         IF(optim_paras%paras_bounds(2, i) == MISSING_FLOAT) optim_paras%paras_bounds(2, i) = HUGE_FLOAT
 
@@ -1029,7 +1035,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     ALLOCATE(x_optim_bounds_free_unscaled(2, COUNT(.NOT. optim_paras%paras_fixed)))
 
     k = 1
-    DO i = 1, 28
+    DO i = 1, NUM_PARAS
         IF (.NOT. optim_paras%paras_fixed(i)) THEN
             DO j = 1, 2
                 x_optim_bounds_free_unscaled(j, k) = optim_paras%paras_bounds(j, i)
@@ -1181,7 +1187,7 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     TYPE(OPTIMPARAS_DICT), INTENT(OUT)  :: optim_paras
 
-    REAL(our_dble), INTENT(IN)      :: x(28)
+    REAL(our_dble), INTENT(IN)      :: x(NUM_PARAS)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)   :: info
 
@@ -1194,13 +1200,13 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     optim_paras%level = MAX(x(2:2), zero_dble)
 
-    optim_paras%coeffs_a = x(3:8)
+    optim_paras%coeffs_a = x(3:10)
 
-    optim_paras%coeffs_b = x(9:14)
+    optim_paras%coeffs_b = x(11:18)
 
-    optim_paras%coeffs_edu = x(15:17)
+    optim_paras%coeffs_edu = x(19:22)
 
-    optim_paras%coeffs_home = x(18:18)
+    optim_paras%coeffs_home = x(23:23)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
@@ -1224,7 +1230,7 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: x_internal(28)
+    REAL(our_dble)                  :: x_internal(NUM_PARAS)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -1237,21 +1243,21 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     x_internal(2:2) = optim_paras%level
 
-    x_internal(3:8) = optim_paras%coeffs_a(:)
+    x_internal(3:10) = optim_paras%coeffs_a(:)
 
-    x_internal(9:14) = optim_paras%coeffs_b(:)
+    x_internal(11:18) = optim_paras%coeffs_b(:)
 
-    x_internal(15:17) = optim_paras%coeffs_edu(:)
+    x_internal(19:22) = optim_paras%coeffs_edu(:)
 
-    x_internal(18:18) = optim_paras%coeffs_home(:)
+    x_internal(23:23) = optim_paras%coeffs_home(:)
 
-    x_internal(19:19) = optim_paras%shocks_cholesky(1, :1)
+    x_internal(24:24) = optim_paras%shocks_cholesky(1, :1)
 
-    x_internal(20:21) = optim_paras%shocks_cholesky(2, :2)
+    x_internal(25:26) = optim_paras%shocks_cholesky(2, :2)
 
-    x_internal(22:24) = optim_paras%shocks_cholesky(3, :3)
+    x_internal(27:29) = optim_paras%shocks_cholesky(3, :3)
 
-    x_internal(25:28) = optim_paras%shocks_cholesky(4, :4)
+    x_internal(30:33) = optim_paras%shocks_cholesky(4, :4)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN
@@ -1262,7 +1268,7 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
         j = 1
 
-        DO i = 1, 28
+        DO i = 1, NUM_PARAS
 
             IF(optim_paras%paras_fixed(i)) CYCLE
 
@@ -1275,6 +1281,52 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
     END IF
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION integer_to_boolean(input) RESULT(output)
+
+    !/* external objects    */
+
+    INTEGER(our_int), INTENT(IN)                :: input
+
+    LOGICAL(our_dble)                           :: output
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    IF (input .EQ. one_int) THEN
+        output = .TRUE.
+    ELSEIF (input .EQ. zero_int) THEN
+        output = .FALSE.
+    ELSE
+        STOP 'Misspecified request'
+    END IF
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION float_to_boolean(input) RESULT(output)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)                  :: input
+
+    LOGICAL(our_dble)                           :: output
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    IF (input .EQ. one_dble) THEN
+        output = .TRUE.
+    ELSEIF (input .EQ. zero_dble) THEN
+        output = .FALSE.
+    ELSE
+        STOP 'Misspecified request'
+    END IF
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 END MODULE
