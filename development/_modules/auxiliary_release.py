@@ -205,12 +205,28 @@ def prepare_release_tests_4(constr):
 
     init_dict = generate_init(constr)
 
-    json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
-
-    # We added sheepskin effects of education.
-    
-
+    # We need to make sure that there are no effects on the reentry costs,
+    # as there are separately estimation in the new release. They are fixed
+    # during an estimation there as well.
+    init_dict['EDUCATION']['fixed'][-1] = True
     json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
+
+    # We added sheepskin effects to the wage equations.
+    init_dict['OCCUPATION A']['coeffs'] += [0.0, 0.0]
+    init_dict['OCCUPATION A']['fixed'] += [True, True]
+    init_dict['OCCUPATION A']['bounds'] += [[None, None], [None, None]]
+
+    init_dict['OCCUPATION B']['coeffs'] += [0.0, 0.0]
+    init_dict['OCCUPATION B']['fixed'] += [True, True]
+    init_dict['OCCUPATION B']['bounds'] += [[None, None], [None, None]]
+
+    # We are also splitting up the re-entry costs between high school
+    # and college graduation
+    init_dict['EDUCATION']['coeffs'].append(init_dict['EDUCATION']['coeffs'][-1])
+    init_dict['EDUCATION']['fixed'].append(True)
+    init_dict['EDUCATION']['bounds'].append(init_dict['EDUCATION']['bounds'][-1])
+
+    json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
 
 
 def no_preparations_required(constr):

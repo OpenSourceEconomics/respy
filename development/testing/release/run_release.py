@@ -47,11 +47,11 @@ def run(request, is_create, is_background, old_release, new_release):
     # Set up auxiliary information to construct commands.
     env_dir = os.environ['HOME'] + '/.envs'
     old_exec = env_dir + '/' + old_release + '/bin/python'
-    new_exec = env_dir + '/' + old_release + '/bin/python'
+    new_exec = env_dir + '/' + new_release + '/bin/python'
 
     # Create fresh virtual environments if requested.
     if is_create:
-        for release in [old_release, old_release]:
+        for release in [old_release, new_release]:
             cmd = ['virtualenv', env_dir + '/' + release, '--clear']
             subprocess.check_call(cmd)
 
