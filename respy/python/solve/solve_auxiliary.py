@@ -129,18 +129,18 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
             any_exp_a = float(exp_a > 0)
             any_exp_b = float(exp_b > 0)
 
-            # Calculate systematic part of wages in occupation A
+            # Distribute state space
             covars_wages = [1.0, edu + edu_start, exp_a, exp_a ** 2, exp_b,
-                exp_b ** 2, hs_graduate, co_graduate, any_exp_a]
+                exp_b ** 2, hs_graduate, co_graduate, None]
 
+            # Calculate systematic part of wages in occupation A
+            covars_wages[-1] = any_exp_a
             periods_rewards_systematic[period, k, 0] = \
                 np.clip(np.exp(np.dot(optim_paras['coeffs_a'], covars_wages)), 0.0,
                     HUGE_FLOAT)
 
             # Calculate systematic part pf wages in occupation B
-            covars_wages = [1.0, edu + edu_start, exp_a, exp_a ** 2, exp_b,
-                exp_b ** 2, hs_graduate, co_graduate, any_exp_b]
-
+            covars_wages[-1] = any_exp_b
             periods_rewards_systematic[period, k, 1] = \
                 np.clip(np.exp(np.dot(optim_paras['coeffs_b'], covars_wages)), 0.0,
                     HUGE_FLOAT)

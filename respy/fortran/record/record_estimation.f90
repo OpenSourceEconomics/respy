@@ -236,11 +236,11 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
     IF (is_step) THEN
         x_econ_container(:25, 2) = x_optim_all_unscaled(:25)
-        x_econ_container(26:, 2) = flattened_cov(2, :)
+        x_econ_container(26:NUM_PARAS, 2) = flattened_cov(2, :)
     END IF
 
     x_econ_container(:25, 3) = x_optim_all_unscaled(:25)
-    x_econ_container(26:, 3) = flattened_cov(3, :)
+    x_econ_container(26:NUM_PARAS, 3) = flattened_cov(3, :)
 
 
     CALL get_time(today_char, now_char)

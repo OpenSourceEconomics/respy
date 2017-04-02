@@ -94,21 +94,21 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
         opt_obj.crit_vals[0] = fval
         opt_obj.x_optim_container[:, 0] = x_optim_all_unscaled
         opt_obj.x_econ_container[:25, 0] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:, 0] = shocks_coeffs
+        opt_obj.x_econ_container[25:NUM_PARAS, 0] = shocks_coeffs
 
     if is_step:
         opt_obj.num_step += 1
         opt_obj.crit_vals[1] = fval
         opt_obj.x_optim_container[:, 1] = x_optim_all_unscaled
         opt_obj.x_econ_container[:25, 1] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:, 1] = shocks_coeffs
+        opt_obj.x_econ_container[25:NUM_PARAS, 1] = shocks_coeffs
 
     if True:
         opt_obj.num_eval += 1
         opt_obj.crit_vals[2] = fval
         opt_obj.x_optim_container[:, 2] = x_optim_all_unscaled
         opt_obj.x_econ_container[:25, 2] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:, 2] = shocks_coeffs
+        opt_obj.x_econ_container[25:NUM_PARAS, 2] = shocks_coeffs
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container
