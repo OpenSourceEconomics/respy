@@ -163,7 +163,6 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     !/* internals objects       */
 
-    INTEGER(our_int)                    :: covars_wages(9)
     INTEGER(our_int)                    :: hs_graduate
     INTEGER(our_int)                    :: co_graduate
     INTEGER(our_int)                    :: any_exp_a
@@ -176,7 +175,10 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
 
+    REAL(our_dble)                      :: covars_wages(9)
     REAL(our_dble)                      :: reward
+
+    LOGICAL                             :: IS_RESTUD
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -199,20 +201,29 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             exp_b = states_all(period, k, 2)
             edu = states_all(period, k, 3)
             edu_lagged = states_all(period, k, 4)
+
+            ! Construct auxiliary information
             hs_graduate = TRANSFER(edu + edu_start >= 12, hs_graduate)
             co_graduate = TRANSFER(edu + edu_start >= 16, co_graduate)
             any_exp_a = TRANSFER(exp_a > 0, any_exp_a)
             any_exp_b = TRANSFER(exp_b > 0, any_exp_b)
 
             ! Auxiliary objects
-            covars_wages(1) = one_int
+            covars_wages(1) = one_dble
             covars_wages(2) = edu + edu_start
             covars_wages(3) = exp_a
-            covars_wages(4) = exp_a ** 2
+            covars_wages(4) = (exp_a ** 2) / one_hundred_dble
             covars_wages(5) = exp_b
-            covars_wages(6) = exp_b ** 2
+            covars_wages(6) = (exp_b ** 2) / one_hundred_dble
             covars_wages(7) = hs_graduate
             covars_wages(8) = co_graduate
+
+            ! This used for testing purposes, where we compare the results from the RESPY package to the original RESTUD program.
+            INQUIRE(FILE='.restud.respy.scratch', EXIST=IS_RESTUD)
+            IF (IS_RESTUD) THEN
+                covars_wages(4) = covars_wages(4) * one_hundred_dble
+                covars_wages(6) = covars_wages(6) * one_hundred_dble
+            END IF
 
             ! Calculate systematic part of reward in Occupation A
             covars_wages(9) = any_exp_a

@@ -185,6 +185,9 @@ class TestClass(object):
         elif 'three' in fname:
             rslt = 1.895699121131644
 
+        # This ensures that the experience effect is taken care of properly.
+        open('.restud.respy.scratch', 'w').close()
+
         # Evaluate criterion function at true values.
         respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)
 

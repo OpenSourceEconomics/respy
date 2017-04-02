@@ -129,9 +129,23 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
             any_exp_a = float(exp_a > 0)
             any_exp_b = float(exp_b > 0)
 
-            # Distribute state space
-            covars_wages = [1.0, edu + edu_start, exp_a, exp_a ** 2, exp_b,
-                exp_b ** 2, hs_graduate, co_graduate, None]
+            # Auxiliary objects
+            covars_wages = []
+            covars_wages += [1.0]
+            covars_wages += [edu + edu_start]
+            covars_wages += [exp_a]
+            covars_wages += [(exp_a ** 2) / 100.00]
+            covars_wages += [exp_b]
+            covars_wages += [(exp_b ** 2) / 100.00]
+            covars_wages += [hs_graduate]
+            covars_wages += [co_graduate]
+            covars_wages += [None]
+
+            # This used for testing purposes, where we compare the results
+            # from the RESPY package to the original RESTUD program.
+            if os.path.exists('.restud.respy.scratch'):
+                covars_wages[3] *= 100.00
+                covars_wages[5] *= 100.00
 
             # Calculate systematic part of wages in occupation A
             covars_wages[-1] = any_exp_a

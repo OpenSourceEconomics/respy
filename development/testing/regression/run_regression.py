@@ -134,6 +134,7 @@ def run(request, is_compile, is_background):
             init_dict['OCCUPATION B']['bounds'].append([None, None])
             init_dict['OCCUPATION B']['fixed'].append(True)
 
+            open('.restud.respy.scratch', 'w').close()
 
             # During development it is useful that I can only run the PYTHON
             # versions of the program.
