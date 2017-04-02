@@ -56,18 +56,18 @@ def dist_econ_paras(x_all_curre):
     level = x_all_curre[1:2]
 
     # Occupation A
-    coeffs_a = x_all_curre[2:10]
+    coeffs_a = x_all_curre[2:11]
 
     # Occupation B
-    coeffs_b = x_all_curre[10:18]
+    coeffs_b = x_all_curre[11:20]
 
     # Education
-    coeffs_edu = x_all_curre[18:22]
+    coeffs_edu = x_all_curre[20:24]
 
     # Home
-    coeffs_home = x_all_curre[22:23]
+    coeffs_home = x_all_curre[24:25]
 
-    shocks_coeffs = x_all_curre[23:NUM_PARAS]
+    shocks_coeffs = x_all_curre[25:NUM_PARAS]
     for i in [0, 4, 7, 9]:
         shocks_coeffs[i] **= 2
 
@@ -103,16 +103,16 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     optim_paras['level'] = max(x_all_curre[1:2], 0.00)
 
     # Occupation A
-    optim_paras['coeffs_a'] = x_all_curre[2:10]
+    optim_paras['coeffs_a'] = x_all_curre[2:11]
 
     # Occupation B
-    optim_paras['coeffs_b'] = x_all_curre[10:18]
+    optim_paras['coeffs_b'] = x_all_curre[11:20]
 
     # Education
-    optim_paras['coeffs_edu'] = x_all_curre[18:22]
+    optim_paras['coeffs_edu'] = x_all_curre[20:24]
 
     # Home
-    optim_paras['coeffs_home'] = x_all_curre[22:23]
+    optim_paras['coeffs_home'] = x_all_curre[24:25]
 
     # Cholesky
     optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
@@ -129,10 +129,10 @@ def extract_cholesky(x, info=None):
     """ Construct the Cholesky matrix.
     """
     shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x[23:24]
-    shocks_cholesky[1, :2] = x[24:26]
-    shocks_cholesky[2, :3] = x[26:29]
-    shocks_cholesky[3, :4] = x[29:NUM_PARAS]
+    shocks_cholesky[0, :1] = x[25:26]
+    shocks_cholesky[1, :2] = x[26:28]
+    shocks_cholesky[2, :3] = x[28:31]
+    shocks_cholesky[3, :4] = x[31:NUM_PARAS]
 
     # Stabilization
     if info is not None:
@@ -341,8 +341,8 @@ def check_model_parameters(optim_paras):
     assert (optim_paras['level'] >= 0)
 
     # Checks for occupations
-    assert (optim_paras['coeffs_a'].size == 8)
-    assert (optim_paras['coeffs_b'].size == 8)
+    assert (optim_paras['coeffs_a'].size == 9)
+    assert (optim_paras['coeffs_b'].size == 9)
     assert (optim_paras['coeffs_edu'].size == 4)
     assert (optim_paras['coeffs_home'].size == 1)
 
@@ -514,7 +514,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 val = dict_['HOME']['coeffs'][0]
-                line = format_opt_parameters(val, 22, paras_fixed, paras_bounds)
+                line = format_opt_parameters(val, 24, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -543,7 +543,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
-                    line = format_opt_parameters(val, 23 + i, paras_fixed,
+                    line = format_opt_parameters(val, 25 + i, paras_fixed,
                         paras_bounds)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
@@ -554,7 +554,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(4):
                     val = dict_['EDUCATION']['coeffs'][i]
-                    line = format_opt_parameters(val, i + 18, paras_fixed, paras_bounds)
+                    line = format_opt_parameters(val, i + 20, paras_fixed,
+                        paras_bounds)
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -582,12 +583,12 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 if flag == 'OCCUPATION A':
                     identifier = 2
                 if flag == 'OCCUPATION B':
-                    identifier = 10
+                    identifier = 11
 
                 file_.write(flag + '\n\n')
 
                 # Coefficient
-                for j in range(8):
+                for j in range(9):
                     val = dict_[flag]['coeffs'][j]
                     line = format_opt_parameters(val, identifier, paras_fixed,
                                                  paras_bounds)
@@ -719,19 +720,19 @@ def get_optim_paras(optim_paras, which, is_debug):
     x[1:2] = optim_paras['level']
 
     # Occupation A
-    x[2:10] = optim_paras['coeffs_a']
+    x[2:11] = optim_paras['coeffs_a']
 
     # Occupation B
-    x[10:18] = optim_paras['coeffs_b']
+    x[11:20] = optim_paras['coeffs_b']
 
     # Education
-    x[18:22] = optim_paras['coeffs_edu']
+    x[20:24] = optim_paras['coeffs_edu']
 
     # Home
-    x[22:23] = optim_paras['coeffs_home']
+    x[24:25] = optim_paras['coeffs_home']
 
     # Shocks
-    x[23:NUM_PARAS] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+    x[25:NUM_PARAS] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Checks
     if is_debug:

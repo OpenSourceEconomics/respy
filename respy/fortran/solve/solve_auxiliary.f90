@@ -163,9 +163,11 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     !/* internals objects       */
 
-    INTEGER(our_int)                    :: covars_wages(8)
+    INTEGER(our_int)                    :: covars_wages(9)
     INTEGER(our_int)                    :: hs_graduate
     INTEGER(our_int)                    :: co_graduate
+    INTEGER(our_int)                    :: any_exp_a
+    INTEGER(our_int)                    :: any_exp_b
     INTEGER(our_int)                    :: edu_lagged
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: exp_a
@@ -199,6 +201,8 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             edu_lagged = states_all(period, k, 4)
             hs_graduate = TRANSFER(edu + edu_start >= 12, hs_graduate)
             co_graduate = TRANSFER(edu + edu_start >= 16, co_graduate)
+            any_exp_a = TRANSFER(exp_a > 0, any_exp_a)
+            any_exp_b = TRANSFER(exp_b > 0, any_exp_b)
 
             ! Auxiliary objects
             covars_wages(1) = one_int
@@ -211,9 +215,11 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             covars_wages(8) = co_graduate
 
             ! Calculate systematic part of reward in Occupation A
+            covars_wages(9) = any_exp_a
             CALL clip_value(periods_rewards_systematic(period, k, 1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of reward in Occupation B
+            covars_wages(9) = any_exp_b
             CALL clip_value(periods_rewards_systematic(period, k, 2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of schooling utility

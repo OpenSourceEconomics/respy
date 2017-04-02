@@ -91,6 +91,14 @@ class TestClass(object):
         if num_draws_emax < num_agents_sim:
             init_dict['SOLUTION']['draws'] = num_agents_sim
 
+        # There are also some coefficients here that are not part of the
+        # original RESTUD program, such as (1) separate cost of re-entry into
+        # education, (2) sheepskin effects, and (3) bonus for any experience
+        # in occupation. 
+        init_dict['EDUCATION']['coeffs'][-1] = init_dict['EDUCATION']['coeffs'][-2]
+        init_dict['OCCUPATION A']['coeffs'][-3:] = [0.0, 0.0, 0.0]
+        init_dict['OCCUPATION B']['coeffs'][-3:] = [0.0, 0.0, 0.0]
+
         print_init_dict(init_dict)
 
         # Indicate RESTUD code the special case of zero disturbance.

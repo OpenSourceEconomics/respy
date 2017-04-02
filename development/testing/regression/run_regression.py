@@ -124,6 +124,17 @@ def run(request, is_compile, is_background):
                 if idx in [337, 897]:
                     continue
 
+            # We added an additional coefficient indicating whether there is any
+            # experience in a particular job.
+            init_dict['OCCUPATION A']['coeffs'].append(0.00)
+            init_dict['OCCUPATION A']['bounds'].append([None, None])
+            init_dict['OCCUPATION A']['fixed'].append(True)
+
+            init_dict['OCCUPATION B']['coeffs'].append(0.00)
+            init_dict['OCCUPATION B']['bounds'].append([None, None])
+            init_dict['OCCUPATION B']['fixed'].append(True)
+
+
             # During development it is useful that I can only run the PYTHON
             # versions of the program.
             msg = ' ... skipped as required version of package not available'

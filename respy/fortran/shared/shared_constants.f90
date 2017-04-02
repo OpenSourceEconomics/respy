@@ -43,7 +43,7 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_eval = zero_int
 
     ! Variables that need to be aligned across FORTRAN and PYTHON implementations.
-    INTEGER(our_int), PARAMETER :: NUM_PARAS                    = 33
+    INTEGER(our_int), PARAMETER :: NUM_PARAS                    = 35
 
     INTEGER(our_int), PARAMETER :: MISSING_INT                  = -99_our_int
 

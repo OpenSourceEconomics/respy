@@ -24,7 +24,7 @@ TINY_FLOAT = 1.0e-8
 PRINT_FLOAT = 1e10
 
 # Total number of parameters to can potentially be estimated.
-NUM_PARAS = 33
+NUM_PARAS = 35
 
 # Ambiguity
 MIN_AMBIGUITY = 1e-20

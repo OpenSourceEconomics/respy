@@ -34,12 +34,12 @@ SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
 OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
 
 # We need to do some reorganization as the parameters from the initialization
-# file describing the covarianc structure need to be mapped to the Cholesky
+# file describing the covariance structure need to be mapped to the Cholesky
 # factors that are the parameters the optimizer actually iterates on.
 PARAS_MAPPING = []
-PARAS_MAPPING += [(23, 23), (24, 24), (25, 26), (27, 29)]
-PARAS_MAPPING += [(27, 25), (28, 27), (29, 30), (30, 28)]
-PARAS_MAPPING += [(31, 31), (32, 32)]
+PARAS_MAPPING += [(25, 25), (26, 26), (27, 28), (29, 31)]
+PARAS_MAPPING += [(29, 27), (30, 29), (31, 32), (32, 30)]
+PARAS_MAPPING += [(33, 33), (34, 34)]
 
 
 class RespyCls(object):
@@ -277,7 +277,7 @@ class RespyCls(object):
         init_dict['BASICS']['fixed'] = self.attr['optim_paras']['paras_fixed'][0:1]
 
         # Occupation A
-        lower, upper = 2, 10
+        lower, upper = 2, 11
         init_dict['OCCUPATION A'] = dict()
         init_dict['OCCUPATION A']['coeffs'] = \
             self.attr['optim_paras']['coeffs_a']
@@ -286,7 +286,7 @@ class RespyCls(object):
         init_dict['OCCUPATION A']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Occupation B
-        lower, upper = 10, 18
+        lower, upper = 11, 20
         init_dict['OCCUPATION B'] = dict()
         init_dict['OCCUPATION B']['coeffs'] = \
             self.attr['optim_paras']['coeffs_b']
@@ -295,7 +295,7 @@ class RespyCls(object):
         init_dict['OCCUPATION B']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Education
-        lower, upper = 18, 22
+        lower, upper = 20, 24
         init_dict['EDUCATION'] = dict()
         init_dict['EDUCATION']['coeffs'] = \
             self.attr['optim_paras']['coeffs_edu']
@@ -307,7 +307,7 @@ class RespyCls(object):
         init_dict['EDUCATION']['max'] = self.attr['edu_max']
 
         # Home
-        lower, upper = 22, 23
+        lower, upper = 24, 25
         init_dict['HOME'] = dict()
         init_dict['HOME']['coeffs'] = \
             self.attr['optim_paras']['coeffs_home']
@@ -316,7 +316,7 @@ class RespyCls(object):
         init_dict['HOME']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Shocks
-        lower, upper = 23, 33
+        lower, upper = 25, NUM_PARAS
         init_dict['SHOCKS'] = dict()
         shocks_cholesky = self.attr['optim_paras']['shocks_cholesky']
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
@@ -331,7 +331,7 @@ class RespyCls(object):
         for old, new in PARAS_MAPPING:
             paras_fixed[old] = paras_fixed_reordered[new]
 
-        init_dict['SHOCKS']['fixed'] = paras_fixed[23:NUM_PARAS]
+        init_dict['SHOCKS']['fixed'] = paras_fixed[25:NUM_PARAS]
 
         # Solution
         init_dict['SOLUTION'] = dict()
@@ -723,7 +723,7 @@ class RespyCls(object):
         # or none. As a special case, we also allow for all off-diagonal
         # elements to be fixed to zero.
         shocks_coeffs = optim_paras['shocks_cholesky'][np.tril_indices(4)]
-        shocks_fixed = optim_paras['paras_fixed'][23:]
+        shocks_fixed = optim_paras['paras_fixed'][25:]
 
         all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
         all_free = all(is_free is True for is_free in shocks_fixed)
@@ -760,7 +760,7 @@ class RespyCls(object):
                 assert upper >= lower
             # At this point no bounds for the elements of the covariance
             # matrix are allowed.
-            if i in range(23, NUM_PARAS):
+            if i in range(25, NUM_PARAS):
                 assert optim_paras['paras_bounds'][i] == [None, None]
 
     def _check_integrity_results(self):

@@ -111,32 +111,32 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
             init_dict['AMBIGUITY']['fixed'][j] = is_fixed
             if is_bounds:
                 init_dict['AMBIGUITY']['bounds'][j] = bounds
-        elif identifier in list(range(2, 10)):
+        elif identifier in list(range(2, 11)):
             j = identifier - 2
             init_dict['OCCUPATION A']['coeffs'][j] = x[identifier]
             init_dict['OCCUPATION A']['fixed'][j] = is_fixed
             if is_bounds:
                 init_dict['OCCUPATION A']['bounds'][j] = bounds
-        elif identifier in list(range(10, 18)):
-            j = identifier - 10
+        elif identifier in list(range(11, 20)):
+            j = identifier - 11
             init_dict['OCCUPATION B']['coeffs'][j] = x[identifier]
             init_dict['OCCUPATION B']['fixed'][j] = is_fixed
             if is_bounds:
                 init_dict['OCCUPATION B']['bounds'][j] = bounds
-        elif identifier in list(range(18, 22)):
-            j = identifier - 18
+        elif identifier in list(range(20, 24)):
+            j = identifier - 20
             init_dict['EDUCATION']['coeffs'][j] = x[identifier]
             init_dict['EDUCATION']['fixed'][j] = is_fixed
             if is_bounds:
                 init_dict['EDUCATION']['bounds'][j] = bounds
-        elif identifier in list(range(22, 23)):
-            j = identifier - 22
+        elif identifier in list(range(24, 25)):
+            j = identifier - 24
             init_dict['HOME']['coeffs'][j] = x[identifier]
             init_dict['HOME']['fixed'][j] = is_fixed
             if is_bounds:
                 init_dict['HOME']['bounds'][j] = bounds
-        elif identifier in list(range(23, NUM_PARAS)):
-            j = identifier - 23
+        elif identifier in list(range(25, NUM_PARAS)):
+            j = identifier - 25
             init_dict['SHOCKS']['coeffs'][j] = shocks_coeffs[j]
             init_dict['SHOCKS']['fixed'][j] = is_fixed
             if is_bounds:

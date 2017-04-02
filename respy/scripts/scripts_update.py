@@ -9,6 +9,7 @@ import os
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import get_est_info
+from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.read.read_python import read
 
 
@@ -39,7 +40,7 @@ def scripts_update(init_file):
 
     # Get and construct ingredients
     optim_paras = dist_optim_paras(paras_steps, True)
-    shocks_coeffs = paras_steps[23:]
+    shocks_coeffs = paras_steps[25:NUM_PARAS]
 
     # Update initialization dictionary
     init_dict['OCCUPATION A']['coeffs'] = optim_paras['coeffs_a']
