@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """ This script runs a series of tests that are required before merging a
-candidate branch into master.
+candidate branch into a target branch.
 """
 
 from respy.python.shared.shared_constants import ROOT_DIR
