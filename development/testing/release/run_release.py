@@ -168,13 +168,16 @@ if __name__ == '__main__':
     #
     #   2.0.0.dev11 We added sheepskin effects and separate reentry cost by
     #               level of education.
+
+    #   2.0.0.dev12 We added a first-experience effect and scaled the squared
+    #               term for the experience variable by 100.
     #
     #   TODO:   Isn't it a better way to have the candidate branch not set up
     #           as a release from PYPI as well?
     #
     # The two releases that are tested against each other. These are
     # downloaded from PYPI in their own virtual environments.
-    old_release, new_release = '2.0.0.dev10', '2.0.0.dev11'
+    old_release, new_release = '2.0.0.dev11', '2.0.0.dev12'
 
     parser = argparse.ArgumentParser(description='Run release testing.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)

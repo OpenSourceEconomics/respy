@@ -34,6 +34,8 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_3(constr)
     elif OLD_RELEASE == '2.0.0.dev10' and NEW_RELEASE == '2.0.0.dev11':
         prepare_release_tests_4(constr)
+    elif OLD_RELEASE == '2.0.0.dev11' and NEW_RELEASE == '2.0.0.dev12':
+        prepare_release_tests_5(constr)
     else:
         raise AssertionError('Misspecified request ...')
 
@@ -225,6 +227,41 @@ def prepare_release_tests_4(constr):
     init_dict['EDUCATION']['coeffs'].append(init_dict['EDUCATION']['coeffs'][-1])
     init_dict['EDUCATION']['fixed'].append(True)
     init_dict['EDUCATION']['bounds'].append(init_dict['EDUCATION']['bounds'][-1])
+
+    json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
+
+
+def prepare_release_tests_5(constr):
+    """ This function prepares the initialization files so that they can be
+    processed by both releases under investigation. The idea is to have all
+    hand-crafted modifications grouped in this function only.
+    """
+    sys.path.insert(0, '../../../respy/tests')
+    from codes.random_init import generate_init
+
+    # Prepare fresh subdirectories
+    for which in ['old', 'new']:
+        if os.path.exists(which):
+            shutil.rmtree(which)
+        os.mkdir(which)
+
+    init_dict = generate_init(constr)
+
+    json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
+
+    # We added an additional coefficient indicating whether there is any
+    # experience in a particular job.
+    init_dict['OCCUPATION A']['coeffs'].append(0.00)
+    init_dict['OCCUPATION A']['bounds'].append([None, None])
+    init_dict['OCCUPATION A']['fixed'].append(True)
+
+    init_dict['OCCUPATION B']['coeffs'].append(0.00)
+    init_dict['OCCUPATION B']['bounds'].append([None, None])
+    init_dict['OCCUPATION B']['fixed'].append(True)
+
+    # This release rescaled the squared term in the experience variable by
+    # 100. The presence of the scratch file ensures that this is undone
+    open('new/.restud.respy.scratch', 'w').close()
 
     json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
 
