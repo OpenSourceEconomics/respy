@@ -27,7 +27,7 @@ def write_info(respy_obj, data_frame):
         file_.write('   Choices\n\n')
 
         fmt_ = '{:>10}' + '{:>14}' * 4 + '\n\n'
-        labels = ['Period', 'Work A', 'Work B', 'Schooling', 'Home']
+        labels = ['Period', 'Work A', 'Work B', 'School', 'Home']
         file_.write(fmt_.format(*labels))
 
         choices = data_frame['Choice']
@@ -40,7 +40,30 @@ def write_info(respy_obj, data_frame):
             fmt_ = '{:>10}' + '{:14.4f}' * 4 + '\n'
             file_.write(fmt_.format((t + 1), *args))
 
+        # We also print out the transition matrix as it provides some
+        # insights about the persistence of choices.
         file_.write('\n\n')
+        file_.write('    Transition Matrix\n\n')
+
+        data_frame['Choice_Next'] = data_frame.groupby(level='Identifier')['Choice'].shift(-1)
+
+        args = []
+        for label in ['Choice', 'Choice_Next']:
+            args += [pd.Categorical(data_frame[label], categories=range(1, 5))]
+        tb = pd.crosstab(*args, margins=True, normalize=True).as_matrix()
+        fmt_ = '{:>10}' + '{:>14}' * 4 + '\n\n'
+
+        labels = ['Work A', 'Work B', 'School', 'Home']
+        file_.write(fmt_.format(*[''] + labels))
+
+        for i in range(4):
+            fmt_ = '    {:6}' + '{:14.4f}' * 4 + '\n'
+            line = [labels[i]] + tb[i, :].tolist()
+            file_.write(fmt_.format(*line))
+
+        file_.write('\n\n')
+
+        # Now we can turn to the outcome information.
         file_.write('   Outcomes\n\n')
 
         for j, label in enumerate(['A', 'B']):
