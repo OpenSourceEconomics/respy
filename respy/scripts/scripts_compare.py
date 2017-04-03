@@ -5,6 +5,7 @@ import argparse
 import shutil
 import os
 
+from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
 from respy.python.simulate.simulate_auxiliary import format_float
 from respy.python.process.process_python import process
 from respy.scripts.scripts_update import scripts_update
@@ -101,12 +102,20 @@ def scripts_compare(base_init, is_update):
     # Read in relevant model specification.
     respy_obj = RespyCls(init_file)
 
+    # Auxiliary information
+    num_periods = respy_obj.get_attr('num_periods')
+
     # First we need to read in the empirical data
     data_sim = simulate(respy_obj)[1]
     data_obs = process(respy_obj)
 
+    if num_periods > 1:
+        tf = []
+        tf += [construct_transition_matrix(data_obs)]
+        tf += [construct_transition_matrix(data_sim)]
+
     # Distribute class attributes
-    max_obs = len(data_obs['Period'].unique())
+    max_periods = len(data_obs['Period'].unique())
 
     # Prepare results
     rslt_choice, rmse_choice = _prepare_choices(data_obs, data_sim)
@@ -117,19 +126,36 @@ def scripts_compare(base_init, is_update):
 
         file_.write('\n Comparing the Observed and Simulated Economy\n\n')
 
+        file_.write('   Number of Periods:      ' + str(max_periods) + '\n\n')
+
         # Comparing the choice distributions
         file_.write('\n   Choices \n\n')
         fmt_ = '{:>15}' * 7 + '\n'
         labels = ['Data', 'Period', 'Count', 'White', 'Blue', 'School', 'Home']
         file_.write(fmt_.format(*labels) + '\n')
-        for period in range(max_obs):
+        for period in range(max_periods):
             for name in ['Observed', 'Simulated']:
-                line = [name, period] + rslt_choice[name][period]
+                line = [name, period + 1] + rslt_choice[name][period]
                 fmt_ = '{:>15}' * 3 + '{:15.2f}' * 4 + '\n'
                 file_.write(fmt_.format(*line))
             file_.write('\n')
         line = '   Overall RMSE {:14.5f}\n'.format(rmse_choice)
         file_.write(line)
+
+        # Comparing the transition matrices
+        if num_periods > 1:
+            file_.write('\n\n   Transition Matrix \n\n')
+            fmt_ = '{:>15}' * 6 + '\n\n'
+            labels = ['Work A', 'Work B', 'School', 'Home']
+            file_.write(fmt_.format(*['', ''] + labels))
+            for i in range(4):
+                for j, source in enumerate(['Observed', 'Simulated']):
+                    fmt_ = '{:>15}{:>15}' + '{:15.4f}' * 4 + '\n'
+                    line = [source, labels[i]] + tf[j][i, :].tolist()
+                    file_.write(fmt_.format(*line))
+                file_.write('\n')
+
+            file_.write('\n\n')
 
         # Comparing the wages distributions
         file_.write('\n\n   Outcomes \n\n')
@@ -142,11 +168,11 @@ def scripts_compare(base_init, is_update):
         file_.write(fmt_.format(*labels) + '\n')
         for rslt, name in [(rslt_A, 'Occupation A'), (rslt_B, 'Occupation B')]:
             file_.write('\n    ' + name + ' \n\n')
-            for period in range(max_obs):
+            for period in range(max_periods):
                 for label in ['Observed', 'Simulated']:
                     counts = int(rslt[label][period][0])
-                    line = [label, period, counts]
-                    # The occurance of NAN requires special care.
+                    line = [label, period + 1, counts]
+                    # The occurrence of NAN requires special care.
                     stats = rslt[label][period][1:]
                     stats = [format_float(x) for x in stats]
                     file_.write(fmt_.format(*line + stats))
