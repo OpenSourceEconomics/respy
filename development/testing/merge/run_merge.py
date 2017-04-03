@@ -37,11 +37,11 @@ test_spec['PROPERTY']['is_compile'] = False
 # During release testing we compare the results from short estimation runs
 # from the candidate branch to the relevant master.
 test_spec['RELEASE'] = dict()
-test_spec['RELEASE']['new_release'] = '2.0.0.dev10'
-test_spec['RELEASE']['old_release'] = '2.0.0.dev9'
+test_spec['RELEASE']['new_release'] = '2.0.0.dev11'
+test_spec['RELEASE']['old_release'] = '2.0.0.dev12'
 test_spec['RELEASE']['request'] = ('run', 0.00001)
 test_spec['RELEASE']['is_background'] = False
-test_spec['RELEASE']['is_create'] = False
+test_spec['RELEASE']['is_create'] = True
 
 
 for dirname in ['regression', 'property', 'release']:
