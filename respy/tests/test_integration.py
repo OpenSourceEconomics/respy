@@ -3,14 +3,18 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
 from codes.auxiliary import write_interpolation_grid
+from codes.random_init import generate_random_dict
+from respy.custom_exceptions import UserError
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
+
 from respy import estimate
 from respy import RespyCls
 
@@ -263,3 +267,34 @@ class TestClass(object):
         _, update_val = estimate(respy_obj)
 
         np.testing.assert_almost_equal(update_val, base_val)
+
+    def test_8(self):
+        """ This test ensures that the constraints for the covariance matrix are properly handled.
+        """
+
+        init_dict = generate_random_dict()
+
+        # Manual specification of update patterns.
+        updates = dict()
+
+        updates['valid_1'] = [False, True, True, True, False, True, True, False, True, False]
+        updates['valid_2'] = [False] * 10
+        updates['valid_3'] = [True] * 10
+
+        updates['invalid_1'] = [False, False, True, True, False, True, True, False, True, False]
+        updates['invalid_2'] = [False, False, False, True, False, False, True, False, True, False]
+
+        # We draw a random update and print it out to the initialization file.
+        label = np.random.choice(updates.keys())
+        init_dict['SHOCKS']['fixed'] = updates[label]
+        print_init_dict(init_dict)
+
+        if 'invalid' in label:
+            # This exception block makes sure that the UserError is in fact raised.
+            try:
+                RespyCls('test.respy.ini')
+                raise AssertionError
+            except UserError:
+                pass
+        else:
+            RespyCls('test.respy.ini')

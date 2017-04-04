@@ -20,6 +20,7 @@ from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.read.read_python import read
+from respy.custom_exceptions import UserError
 
 # Special care with derived attributes is required to maintain integrity of
 # the class instance. These derived attributes cannot be changed directly.
@@ -735,7 +736,8 @@ class RespyCls(object):
         off_diagonal_value = all(value == 0.0 for value in subset_value)
         off_diagonal = off_diagonal_fixed and off_diagonal_value
 
-        assert all_free or all_fixed or off_diagonal
+        if not (all_free or all_fixed or off_diagonal):
+            raise UserError(' Misspecified constraints for covariance matrix')
 
         # Discount rate and ambiguity needs to be larger than on zero. The
         # constraint needs to be present all the time.
