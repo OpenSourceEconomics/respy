@@ -8,6 +8,7 @@ import os
 
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import OPT_EST_FORT
@@ -16,8 +17,7 @@ from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.python.shared.shared_constants import NUM_PARAS
-
-from respy.python.record.record_warning import record_warning
+from respy.custom_exceptions import MaxfunError
 
 OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + OPT_AMB_FORT + OPT_AMB_PYTH
 
@@ -807,8 +807,4 @@ def check_early_termination(maxfun, num_eval):
         raise MaxfunError
 
 
-class MaxfunError(Exception):
-    """ This custom-error class allows to enforce the MAXFUN restriction
-    independent of the optimizer used.
-    """
-    pass
+

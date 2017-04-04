@@ -2,6 +2,7 @@
 """ This script allows upgrades the initialization file with the parameter
 values from the last step.
 """
+import numpy as np
 import argparse
 import shutil
 import os
@@ -11,6 +12,7 @@ from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.read.read_python import read
+from respy.custom_exceptions import UserError
 
 
 def dist_input_arguments(parser):
@@ -37,6 +39,11 @@ def scripts_update(init_file):
     init_dict = read(init_file)
 
     paras_steps = get_est_info()['paras_step']
+
+    # While sometimes useful, we cannot use this script if there are missing values in the
+    # parameters due to too large values.
+    if np.any(paras_steps == '---'):
+        raise UserError('Missing values step parameters, see est.respy.info for details.')
 
     # Get and construct ingredients
     optim_paras = dist_optim_paras(paras_steps, True)

@@ -18,10 +18,10 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
-from respy.python.shared.shared_auxiliary import MaxfunError
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.solve.solve_python import pyth_solve
+from respy.custom_exceptions import MaxfunError
 
 
 def respy_interface(respy_obj, request, data_array=None):
