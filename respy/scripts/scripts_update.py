@@ -43,7 +43,7 @@ def scripts_update(init_file):
     # While sometimes useful, we cannot use this script if there are missing values in the
     # parameters due to too large values.
     if np.any(paras_steps == '---'):
-        raise UserError('Missing values step parameters, see est.respy.info for details.')
+        raise UserError('Missing values in est.respy.info')
 
     # Get and construct ingredients
     optim_paras = dist_optim_paras(paras_steps, True)
