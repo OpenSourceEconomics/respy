@@ -37,7 +37,7 @@ OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
 # file describing the covariance structure need to be mapped to the Cholesky
 # factors that are the parameters the optimizer actually iterates on.
 PARAS_MAPPING = []
-PARAS_MAPPING += [(25, 25), (26, 26), (27, 28), (29, 31)]
+PARAS_MAPPING += [(25, 25), (26, 26), (27, 28), (28, 31)]
 PARAS_MAPPING += [(29, 27), (30, 29), (31, 32), (32, 30)]
 PARAS_MAPPING += [(33, 33), (34, 34)]
 
