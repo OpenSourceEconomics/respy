@@ -18,6 +18,7 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.python.shared.shared_constants import NUM_PARAS
 from respy.custom_exceptions import MaxfunError
+from respy.custom_exceptions import UserError
 
 OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + OPT_AMB_FORT + OPT_AMB_PYTH
 
@@ -666,6 +667,12 @@ def get_est_info():
             value = '---'
 
         return value
+
+    # We need to make sure that the updating file actually exists.
+    if not os.path.exists("est.respy.info"):
+        msg = 'Parameter update impossible as '
+        msg += 'file est.respy.info does not exist'
+        raise UserError(msg)
 
     # Initialize container and ensure a fresh start processing the file
     linecache.clearcache()
