@@ -11,6 +11,8 @@ from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import NUM_PARAS
 
 from codes.process_constraints import process_constraints
+from codes.auxiliary import get_valid_shares_for_types
+from codes.auxiliary import get_valid_shifts_for_types
 from codes.auxiliary import get_valid_values
 from codes.auxiliary import get_valid_bounds
 from codes.auxiliary import OPTIMIZERS_EST
@@ -212,6 +214,12 @@ def generate_random_dict(constr=None):
     dict_['INTERPOLATION'] = dict()
     dict_['INTERPOLATION']['flag'] = np.random.choice(['True', 'False'])
     dict_['INTERPOLATION']['points'] = np.random.randint(10, 100)
+
+    # TYPES
+    num_types = np.random.choice(range(1, 3))
+    dict_['TYPES'] = dict()
+    dict_['TYPES']['shares'] = get_valid_shares_for_types(num_types)
+    dict_['TYPES']['shifts'] = get_valid_shifts_for_types(num_types)
 
     mock = dict()
     mock['paras_fixed'] = paras_fixed

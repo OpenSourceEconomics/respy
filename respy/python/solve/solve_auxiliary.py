@@ -16,16 +16,20 @@ from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
-def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
+def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx,
+        type_spec):
     """ Create grid for state space.
     """
+    # Distribute auxiliary information
+    num_types = len(type_spec['shares'])
+
     # Array for possible realization of state space by period
-    states_all = np.tile(MISSING_INT, (num_periods, 100000, 4))
+    states_all = np.tile(MISSING_INT, (num_periods, 100000, 5))
 
     # Array for the mapping of state space values to indices in variety
     # of matrices.
-    mapping_state_idx = np.tile(MISSING_INT, (num_periods, num_periods,
-        num_periods, min_idx, 2))
+    shape = (num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    mapping_state_idx = np.tile(MISSING_INT, shape)
 
     # Array for maximum number of realizations of state space by period
     states_number_period = np.tile(MISSING_INT, num_periods)
@@ -36,60 +40,62 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
         # Count admissible realizations of state space by period
         k = 0
 
-        # Loop over all admissible work experiences for Occupation A
-        for exp_a in range(num_periods + 1):
+        # Loop over all unobserved types
+        for type_ in range(num_types):
 
-            # Loop over all admissible work experience for Occupation B
-            for exp_b in range(num_periods + 1):
+            # Loop over all admissible work experiences for Occupation A
+            for exp_a in range(num_periods + 1):
 
-                # Loop over all admissible additional education levels
-                for edu in range(num_periods + 1):
+                # Loop over all admissible work experience for Occupation B
+                for exp_b in range(num_periods + 1):
 
-                    # Agent cannot attain more additional education
-                    # than (EDU_MAX - EDU_START).
-                    if edu > (edu_max - edu_start):
-                        continue
+                    # Loop over all admissible additional education levels
+                    for edu in range(num_periods + 1):
 
-                    # Loop over all admissible values for leisure. Note that
-                    # the leisure variable takes only zero/value. The time path
-                    # does not matter.
-                    for edu_lagged in [0, 1]:
-
-                        # Check if lagged education admissible. (1) In the
-                        # first period all agents have lagged schooling equal
-                        # to one.
-                        if (edu_lagged == 0) and (period == 0):
-                            continue
-                        # (2) Whenever an agent has not acquired any additional
-                        # education and we are not in the first period,
-                        # then this cannot be the case.
-                        if (edu_lagged == 1) and (edu == 0) and (period > 0):
-                            continue
-                        # (3) Whenever an agent has only acquired additional
-                        # education, then edu_lagged cannot be zero.
-                        if (edu_lagged == 0) and (edu == period):
+                        # Agent cannot attain more additional education
+                        # than (EDU_MAX - EDU_START).
+                        if edu > (edu_max - edu_start):
                             continue
 
-                        # Check if admissible for time constraints
-                        total = edu + exp_a + exp_b
+                        # Loop over all admissible values for leisure. Note that
+                        # the leisure variable takes only zero/value. The time path
+                        # does not matter.
+                        for edu_lagged in [0, 1]:
 
-                        # Note that the total number of activities does not
-                        # have is less or equal to the total possible number of
-                        # activities as the rest is implicitly filled with
-                        # leisure.
-                        if total > period:
-                            continue
+                            # Check if lagged education admissible. (1) In the
+                            # first period all agents have lagged schooling equal
+                            # to one.
+                            if (edu_lagged == 0) and (period == 0):
+                                continue
+                            # (2) Whenever an agent has not acquired any additional
+                            # education and we are not in the first period,
+                            # then this cannot be the case.
+                            if (edu_lagged == 1) and (edu == 0) and (period > 0):
+                                continue
+                            # (3) Whenever an agent has only acquired additional
+                            # education, then edu_lagged cannot be zero.
+                            if (edu_lagged == 0) and (edu == period):
+                                continue
 
-                        # Collect all possible realizations of state space
-                        states_all[period, k, :] = [exp_a, exp_b, edu,
-                                                    edu_lagged]
+                            # Check if admissible for time constraints
+                            total = edu + exp_a + exp_b
 
-                        # Collect mapping of state space to array index.
-                        mapping_state_idx[period, exp_a, exp_b, edu,
-                                          edu_lagged] = k
+                            # Note that the total number of activities does not
+                            # have is less or equal to the total possible number of
+                            # activities as the rest is implicitly filled with
+                            # leisure.
+                            if total > period:
+                                continue
 
-                        # Update count
-                        k += 1
+                            # Collect all possible realizations of state space
+                            states_all[period, k, :] = [exp_a, exp_b, edu, edu_lagged, type_]
+
+                            # Collect mapping of state space to array index.
+                            mapping_state_idx[period, exp_a, exp_b, edu,
+                                              edu_lagged, type_] = k
+
+                            # Update count
+                            k += 1
 
         # Record maximum number of state space realizations by time period
         states_number_period[period] = k
@@ -106,9 +112,11 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx):
 
 
 def pyth_calculate_rewards_systematic(num_periods, states_number_period,
-        states_all, edu_start, max_states_period, optim_paras):
+        states_all, edu_start, max_states_period, optim_paras, type_spec):
     """ Calculate ex systematic rewards.
     """
+
+    type_shifts = type_spec['shifts']
 
     # Initialize
     shape = (num_periods, max_states_period, 4)
@@ -121,7 +129,10 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
         for k in range(states_number_period[period]):
 
             # Distribute state space
-            exp_a, exp_b, edu, edu_lagged = states_all[period, k, :]
+            exp_a, exp_b, edu, edu_lagged, type_ = states_all[period, k, :]
+
+            # Initialize container
+            rewards = np.tile(np.nan, 4)
 
             # Construct auxiliary information
             hs_graduate = float((edu + edu_start >= 12))
@@ -149,15 +160,13 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
 
             # Calculate systematic part of wages in occupation A
             covars_wages[-1] = any_exp_a
-            periods_rewards_systematic[period, k, 0] = \
-                np.clip(np.exp(np.dot(optim_paras['coeffs_a'], covars_wages)), 0.0,
-                    HUGE_FLOAT)
+            rewards[0] = np.clip(np.exp(np.dot(optim_paras['coeffs_a'],
+                covars_wages)), 0.0, HUGE_FLOAT)
 
             # Calculate systematic part pf wages in occupation B
             covars_wages[-1] = any_exp_b
-            periods_rewards_systematic[period, k, 1] = \
-                np.clip(np.exp(np.dot(optim_paras['coeffs_b'], covars_wages)), 0.0,
-                    HUGE_FLOAT)
+            rewards[1] = np.clip(np.exp(np.dot(optim_paras['coeffs_b'],
+                covars_wages)), 0.0, HUGE_FLOAT)
 
             # Calculate systematic part of schooling utility
             reward = optim_paras['coeffs_edu'][0]
@@ -174,11 +183,19 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
             if (not edu_lagged) and hs_graduate:
                 reward += optim_paras['coeffs_edu'][3]
 
-            periods_rewards_systematic[period, k, 2] = reward
+            rewards[2] = reward
 
             # Calculate systematic part of HOME
-            periods_rewards_systematic[period, k, 3] = optim_paras[
-                'coeffs_home'][0]
+            rewards[3] = optim_paras['coeffs_home'][0]
+
+            # Now we add the type-specific deviation.
+            for j in [0, 1]:
+                rewards[j] = rewards[j] * np.exp(type_shifts[type_, j])
+
+            for j in [2, 3]:
+                rewards[j] = rewards[j] + type_shifts[type_, j]
+
+            periods_rewards_systematic[period, k, :] = rewards
 
     # Finishing
     return periods_rewards_systematic

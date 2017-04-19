@@ -226,3 +226,21 @@ def get_valid_bounds(which, value):
         bounds = [None, None]
 
     return bounds
+
+
+def get_valid_shares_for_types(num_types):
+    """ We simply need a valid request for the shares of types summing to one.
+    """
+    shares = np.random.uniform(size=num_types)
+    shares = shares / np.sum(shares)
+    return shares
+
+
+def get_valid_shifts_for_types(num_types):
+    """ We need valid shifts, that includes the zero shifts for the baseline
+    group.
+    """
+    shifts = np.random.uniform(-1.0, 1.0, size=num_types * 4)
+    shifts = shifts.reshape((num_types, 4))
+    shifts[0, :] = 0.0
+    return shifts

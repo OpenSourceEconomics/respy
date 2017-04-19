@@ -100,6 +100,10 @@ class RespyCls(object):
         self.attr['precond_spec']['type'] = None
         self.attr['precond_spec']['eps'] = None
 
+        self.attr['type_spec'] = dict()
+        self.attr['type_spec']['shares'] = None
+        self.attr['type_spec']['shifts'] = None
+
         self.attr['seed_sim'] = None
 
         self.attr['is_debug'] = None
@@ -348,6 +352,11 @@ class RespyCls(object):
         init_dict['AMBIGUITY']['measure'] = self.attr['ambi_spec']['measure']
         init_dict['AMBIGUITY']['mean'] = self.attr['ambi_spec']['mean']
 
+        # Types
+        init_dict['TYPES'] = dict()
+        init_dict['TYPES']['shares'] = self.attr['type_spec']['shares']
+        init_dict['TYPES']['shifts'] = self.attr['type_spec']['shifts']
+
         # Simulation
         init_dict['SIMULATION'] = dict()
         init_dict['SIMULATION']['agents'] = self.attr['num_agents_sim']
@@ -475,6 +484,10 @@ class RespyCls(object):
         self.attr['precond_spec']['type'] = init_dict['PRECONDITIONING']['type']
         self.attr['precond_spec']['eps'] = init_dict['PRECONDITIONING']['eps']
 
+        self.attr['type_spec'] = dict()
+        self.attr['type_spec']['shares'] = init_dict['TYPES']['shares']
+        self.attr['type_spec']['shifts'] = init_dict['TYPES']['shifts']
+
         # Initialize model parameters
         self.attr['optim_paras'] = dict()
 
@@ -591,6 +604,8 @@ class RespyCls(object):
 
         num_agents_est = self.attr['num_agents_est']
 
+        measure = self.attr['ambi_spec']['measure']
+
         precond_spec = self.attr['precond_spec']
 
         derivatives = self.attr['derivatives']
@@ -598,6 +613,8 @@ class RespyCls(object):
         num_periods = self.attr['num_periods']
 
         optim_paras = self.attr['optim_paras']
+
+        type_spec = self.attr['type_spec']
 
         edu_start = self.attr['edu_start']
 
@@ -616,8 +633,6 @@ class RespyCls(object):
         edu_max = self.attr['edu_max']
 
         version = self.attr['version']
-
-        measure = self.attr['ambi_spec']['measure']
 
         maxfun = self.attr['maxfun']
 
@@ -707,6 +722,17 @@ class RespyCls(object):
             assert (isinstance(precond_spec[key_], float))
             assert (precond_spec[key_] > 0.0)
 
+        # Type specification
+        num_types = len(type_spec['shares'])
+        for val in type_spec['shifts'].flatten().tolist() + type_spec['shares']:
+            assert isinstance(val, float)
+        for val in type_spec['shares']:
+            assert val >= 0.00
+
+        np.testing.assert_almost_equal(np.sum(type_spec['shares']), 1.0)
+        assert type_spec['shifts'].shape == (num_types, 4)
+        assert sum(type_spec['shifts'][0, :]) == 0.00
+
         # Derivatives
         assert (derivatives in ['FORWARD-DIFFERENCES'])
 
@@ -781,6 +807,8 @@ class RespyCls(object):
         edu_start = self.attr['edu_start']
 
         edu_max = self.attr['edu_max']
+
+        num_types = len(self.attr['type_spec']['shares'])
 
         # Distribute results
         periods_rewards_systematic = self.attr['periods_rewards_systematic']
@@ -859,13 +887,14 @@ class RespyCls(object):
             assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))
 
             # There are is only one finite realization in period one.
-            assert (np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == 1)
+            assert (np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == num_types)
 
             # If valid, the number of state space realizations in period two is
             # four.
             if num_periods > 1:
                 assert (
-                np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4)
+                np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4 *
+                num_types)
 
             # Check that mapping is defined for all possible realizations of the
             # state space by period. Check that mapping is not defined for all
@@ -878,10 +907,11 @@ class RespyCls(object):
                 for index in indices:
                     # Check for finite value at admissible state
                     assert (np.isfinite(mapping_state_idx[period, index[0],
-                        index[1], index[2], index[3]]))
+                        index[1], index[2], index[3], index[4]]))
                     # Record finite value
                     is_infinite[
-                        period, index[0], index[1], index[2], index[3]] = True
+                        period, index[0], index[1], index[2], index[3],
+                        index[4]] = True
             # Check that all admissible states are finite
             assert (np.all(np.isfinite(mapping_state_idx[is_infinite == True])))
 

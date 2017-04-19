@@ -198,17 +198,17 @@ def get_emaxs(edu_max, edu_start, mapping_state_idx, period,
     """ Get emaxs for additional choices.
     """
     # Distribute state space
-    exp_a, exp_b, edu, _ = states_all[period, k, :]
+    exp_a, exp_b, edu, _, type_ = states_all[period, k, :]
 
     # Future utilities
     emaxs = np.tile(np.nan, 4)
 
     # Working in Occupation A
-    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 0]
+    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 0, type_]
     emaxs[0] = periods_emax[period + 1, future_idx]
 
     # Working in Occupation B
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 0]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 0, type_]
     emaxs[1] = periods_emax[period + 1, future_idx]
 
     # Increasing schooling. Note that adding an additional year
@@ -218,11 +218,11 @@ def get_emaxs(edu_max, edu_start, mapping_state_idx, period,
     if is_inadmissible:
         emaxs[2] = 0.00
     else:
-        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 1]
+        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 1, type_]
         emaxs[2] = periods_emax[period + 1, future_idx]
 
     # Staying at home
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 0]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 0, type_]
     emaxs[3] = periods_emax[period + 1, future_idx]
 
     # Finishing
@@ -484,11 +484,12 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     paras_bounds += dict_['SHOCKS']['bounds'][:]
 
     str_optim = '{0:<10} {1:25.15f} {2:>5} {3:>15}\n'
+    str_types = '{0:<10} {1:25.15f}\n'
 
     # Construct labels. This ensures that the initialization files always look
     # identical.
     labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
-    labels += ['EDUCATION', 'HOME', 'SHOCKS', 'SOLUTION']
+    labels += ['EDUCATION', 'HOME', 'SHOCKS', 'TYPES', 'SOLUTION']
     labels += ['SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'PRECONDITIONING']
     labels += ['PROGRAM', 'INTERPOLATION']
     labels += OPT_EST_FORT + OPT_EST_PYTH + ['SCIPY-SLSQP', 'FORT-SLSQP']
@@ -509,6 +510,24 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
+
+            if flag in ['TYPES']:
+                num_types = len(dict_['TYPES']['shares'])
+                file_.write(flag.upper() + '\n\n')
+
+                for i in range(num_types):
+                    file_.write(str_types.format('share', dict_[flag]['shares'][i]))
+                    # The first group serves as the baseline and thus there
+                    # are no shifts printed to the file.
+                    if i == 0:
+                        pass
+                    else:
+                        for j in range(4):
+                            line = str_types.format('shift', dict_[flag][
+                                'shifts'][i, j])
+                            file_.write(line)
+
+                    file_.write('\n')
 
             if flag in ['HOME']:
 

@@ -52,6 +52,20 @@ def read(fname):
     # Type conversion for Shocks
     dict_['SHOCKS']['coeffs'] = np.array(dict_['SHOCKS']['coeffs'])
 
+    # TODO: Is this the right place to do it?
+    # Some special restructuring for the TYPE specification.
+    if 'TYPES' not in dict_.keys():
+        dict_['TYPES'] = dict()
+        dict_['TYPES']['shares'] = [1.0]
+
+    num_types = len(dict_['TYPES']['shares'])
+    if num_types == 1:
+        dict_['TYPES']['shifts'] = np.tile(0.0, (1, 4))
+    else:
+        dict_['TYPES']['shifts'] = np.reshape(dict_['TYPES']['shifts'], (num_types - 1, 4))
+        dict_['TYPES']['shifts'] = np.concatenate((np.tile(0.0, (1, 4)),
+                                                  dict_['TYPES']['shifts']), axis=0)
+
     # Finishing
     return dict_
 
@@ -132,8 +146,16 @@ def _process_line(group, flag, value, is_fixed, bounds, dict_):
         dict_[group]['coeffs'] += [value]
         dict_[group]['bounds'] += [bounds]
         dict_[group]['fixed'] += [is_fixed]
-    else:
+    elif flag not in ['share', 'shift']:
         dict_[group][flag] = value
+
+    # Prepare container for information about types.
+    if group == 'TYPES':
+        if flag in ['share', 'shift']:
+            flag += 's'
+        if flag not in dict_[group].keys():
+            dict_[group][flag] = []
+        dict_[group][flag] += [value]
 
     # Finishing.
     return dict_

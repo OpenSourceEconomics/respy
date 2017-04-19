@@ -129,6 +129,22 @@ def run(request, is_compile, is_background):
                 print(msg)
                 continue
 
+            # For now I also need to ensure that there is only one relevant
+            # type. The baseline type has a share of one and then all the
+            # shifts should not matter at all.
+            init_dict['TYPES'] = dict()
+
+            num_types = np.random.choice(range(1, 10))
+            shares = np.tile(0.0, num_types)
+            shares[0] = 1.0
+            init_dict['TYPES']['shares'] = shares
+
+            init_dict['TYPES']['shifts'] = np.random.uniform(-1.0, 1.0,
+                size=num_types*4).reshape((num_types, 4))
+
+            init_dict['TYPES']['shifts'][0, :] = 0.0
+
+            # This is the baseline code again.
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
