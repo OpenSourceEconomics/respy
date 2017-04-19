@@ -52,8 +52,8 @@ def read(fname):
     # Type conversion for Shocks
     dict_['SHOCKS']['coeffs'] = np.array(dict_['SHOCKS']['coeffs'])
 
-    # TODO: Is this the right place to do it?
-    # Some special restructuring for the TYPE specification.
+    # TODO: Is this the right place to do it? No, but I will wait with the
+    # refactoring until these are actual estimation parameters.
     if 'TYPES' not in dict_.keys():
         dict_['TYPES'] = dict()
         dict_['TYPES']['shares'] = [1.0]
