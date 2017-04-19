@@ -65,7 +65,7 @@ def run(request, is_compile, is_background):
         # shifts should not matter at all.
         init_dict['TYPES'] = dict()
 
-        num_types = 2#np.random.choice(range(1, 1))
+        num_types = 1#np.random.choice(range(1, 1))
         shares = np.tile(0.0, num_types)
         shares[0] = 1.0
         init_dict['TYPES']['shares'] = shares
@@ -151,7 +151,7 @@ def run(request, is_compile, is_background):
             # shifts should not matter at all.
             init_dict['TYPES'] = dict()
 
-            num_types = np.random.choice(range(1, 3))
+            num_types = 1#np.random.choice(range(1, 3))
             shares = np.tile(0.0, num_types)
             shares[0] = 1.0
             init_dict['TYPES']['shares'] = shares

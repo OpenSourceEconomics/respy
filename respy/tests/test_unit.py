@@ -20,8 +20,11 @@ class TestClass(object):
         three periods.
         """
         # Generate constraint periods
+        num_types = np.random.randint(3, 5)
+
         constr = dict()
         constr['periods'] = np.random.randint(3, 5)
+        constr['types'] = num_types
 
         # Generate random initialization file
         generate_init(constr)
@@ -46,17 +49,17 @@ class TestClass(object):
 
         # The number of admissible states in the first three periods
         for j, number_period in enumerate([1, 4, 13]):
-            assert (states_number_period[j] == number_period)
+            assert (states_number_period[j] == number_period * num_types)
 
         # The actual realizations of admissible states in period one
-        assert ((states_all[0, 0, :] == [0, 0, 0, 1]).all())
+        assert ((states_all[0, 0, :-1] == [0, 0, 0, 1]).all())
 
         # The actual realizations of admissible states in period two
         states = [[0, 0, 0, 0], [0, 0, 1, 1], [0, 1, 0, 0]]
         states += [[1, 0, 0, 0]]
 
         for j, state in enumerate(states):
-            assert ((states_all[1, j, :] == state).all())
+            assert ((states_all[1, j, :-1] == state).all())
 
         # The actual realizations of admissible states in period three
         states = [[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 1, 1]]
@@ -66,7 +69,7 @@ class TestClass(object):
         states += [[2, 0, 0, 0]]
 
         for j, state in enumerate(states):
-            assert ((states_all[2, j, :] == state).all())
+            assert ((states_all[2, j, :-1] == state).all())
 
     def test_2(self):
         """ Testing whether back-and-forth transformation have no effect.
