@@ -434,11 +434,12 @@ class TestClass(object):
             num_agents_sim, periods_draws_sims, seed_sim, file_sim)
 
         args = ()
-        args += base_args + (optim_paras, )
+        args += base_args + (optim_paras, num_types, type_spec)
         py = pyth_simulate(*args)
 
         args = ()
         args += base_args + (shocks_cholesky, delta)
+        args += (num_types, type_spec_shares, type_spec_shifts)
         f2py = fort_debug.f2py_simulate(*args)
         np.testing.assert_allclose(py, f2py)
 

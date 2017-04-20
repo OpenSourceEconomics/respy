@@ -1347,4 +1347,34 @@ FUNCTION float_to_boolean(input) RESULT(output)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
+FUNCTION get_random_type(type_spec) RESULT(type_)
+
+    !/* external objects    */
+
+    TYPE(TYPE_DICT)             :: type_spec
+    INTEGER(our_int)            :: type_
+
+    !/* internal objects    */
+
+    INTEGER(our_int)            :: candidates(num_types)
+    INTEGER(our_int)            :: i
+
+    REAL(our_dble)              :: u
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    candidates = (/ (i, i = 0, num_types - 1) /)
+
+    CALL RANDOM_NUMBER(u)
+
+    DO type_ = 0, num_types - 1
+        IF (u < type_spec%shares(type_ + 1)) EXIT
+        u = u - type_spec%shares(type_ + 1)
+    END DO
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
 END MODULE

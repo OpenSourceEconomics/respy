@@ -9,7 +9,7 @@ if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
     assert os.system('./waf distclean; ./waf configure build '
-                     '--debug --without_f2py --without_parallelism') == 0
+                     '--debug ') == 0
     os.chdir(cwd)
 
 
@@ -40,9 +40,9 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 #write_draws(5, 5000)
 np.random.seed(123)
 respy_obj = RespyCls('model.respy.ini')
-respy_obj = simulate_observed(respy_obj)
+respy_obj = simulate(respy_obj)
 #respy_obj.write_out('test.respy.ini')
 #respy_obj = RespyCls('test.respy.ini')
-_, crit = estimate(respy_obj)
-print crit
-np.testing.assert_almost_equal(crit, 0.665863818512904)
+#_, crit = estimate(respy_obj)
+#print crit
+#np.testing.assert_almost_equal(crit, 0.665863818512904)

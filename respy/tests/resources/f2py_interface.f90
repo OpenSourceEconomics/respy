@@ -274,7 +274,7 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_periods_int, edu_start_int, edu_max_int, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim, shocks_cholesky, delta)
+SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_periods_int, edu_start_int, edu_max_int, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim, shocks_cholesky, delta, num_types_int, type_spec_shares, type_spec_shifts)
 
     !/* external libraries      */
 
@@ -291,10 +291,13 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
+   DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
+   DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
     INTEGER, INTENT(IN)             :: num_periods_int
+    INTEGER, INTENT(IN)             :: num_types_int
     INTEGER, INTENT(IN)             :: edu_start_int
     INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: seed_sim
@@ -320,13 +323,17 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
     ! Transfer global RESFORT variables
     num_agents_sim = num_agents_sim_int
     num_periods = num_periods_int
+    num_types = num_types_int
 
     ! Construct derived types
     optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%delta = delta
 
+    type_spec%shares = type_spec_shares
+    type_spec%shifts = type_spec_shifts
+
     ! Call function of interest
-    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, edu_start_int, edu_max_int, seed_sim, file_sim, optim_paras)
+    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, edu_start_int, edu_max_int, seed_sim, file_sim, optim_paras, num_types, type_spec)
 
     ! Assign to initial objects for return to PYTHON
     data_sim_int = data_sim
@@ -834,7 +841,7 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     max_states_period = SIZE(states_all_int, 2)
     min_idx = SIZE(mapping_state_idx_int, 4)
     num_types = num_types_int
-    
+
     IF (mean) THEN
         num_free_ambi = 2
     ELSE

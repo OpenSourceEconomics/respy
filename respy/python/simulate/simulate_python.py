@@ -10,7 +10,8 @@ from respy.python.shared.shared_auxiliary import get_total_values
 
 def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
         states_all, num_periods, edu_start, edu_max, num_agents_sim,
-        periods_draws_sims, seed_sim, file_sim, optim_paras):
+        periods_draws_sims, seed_sim, file_sim, optim_paras,
+        num_types, type_spec):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
 
@@ -35,6 +36,9 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
     for i in range(num_agents_sim):
 
         current_state = states_all[0, 0, :].copy()
+
+        # We need to modify the initial conditions
+        current_state[-1] = np.random.choice(range(num_types), p=type_spec['shares'])
 
         record_simulation_progress(i, file_sim)
 

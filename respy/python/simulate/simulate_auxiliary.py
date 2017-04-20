@@ -22,12 +22,14 @@ def write_info(respy_obj, data_frame):
     """
     # Distribute class attributes
     optim_paras = respy_obj.get_attr('optim_paras')
+    num_types = respy_obj.get_attr('num_types')
     file_sim = respy_obj.get_attr('file_sim')
     seed_sim = respy_obj.get_attr('seed_sim')
 
     # Get basic information
     num_agents_sim = len(data_frame['Identifier'].unique())
     num_periods = len(data_frame['Period'].unique())
+    num_obs = num_agents_sim * num_periods
 
     # Write information to file
     with open(file_sim + '.respy.info', 'w') as file_:
@@ -126,6 +128,18 @@ def write_info(respy_obj, data_frame):
         dat = data_frame['Experience_B'].loc[slice(None), num_periods - 1]
         file_.write(string.format(['Average Experience B', dat.mean()]))
 
+        file_.write('\n\n  Simulated Type Probabilities\n\n')
+        dat = data_frame['Type'].value_counts().to_dict()
+        fmt_ = '   {:>10}' + '    {:25.5f}\n'
+        for type_ in range(num_types):
+            try:
+                share = dat[type_] / float(num_obs)
+                file_.write(fmt_.format(*[type_, share]))
+            # Some types might not occur in the simulated dataset. Then these
+            # are not part of the dictionary with the value counts.
+            except KeyError:
+                file_.write(fmt_.format(*[type_, 0.0]))
+
         file_.write('\n\n   Economic Parameters\n\n')
         fmt_ = '\n   {0:>10}' + '    {1:>25}\n\n'
         file_.write(fmt_.format(*['Identifier', 'Value']))
@@ -199,6 +213,14 @@ def check_dataset_sim(data_frame, respy_obj):
     # Distribute class attributes
     num_agents = respy_obj.get_attr('num_agents_sim')
     num_periods = respy_obj.get_attr('num_periods')
+    num_types = respy_obj.get_attr('num_types')
+
+    # Some auxiliary functions for later
+    def check_check_time_constant(group):
+        np.testing.assert_equal(group['Type'].nunique(), 1)
+
+    def check_number_periods(group):
+        np.testing.assert_equal(group['Period'].count(), num_periods)
 
     # So, we run all checks on the observed dataset.
     check_dataset_est(data_frame, respy_obj)
@@ -210,6 +232,12 @@ def check_dataset_sim(data_frame, respy_obj):
     # Checks for IDENTIFIER
     dat = data_frame['Identifier']
     np.testing.assert_equal(dat.max(), num_agents - 1)
+
+    # Checks for TYPES
+    dat = data_frame['Type']
+    np.testing.assert_equal(dat.max() <= num_types - 1, True)
+    np.testing.assert_equal(dat.isnull().any(), False)
+    data_frame.groupby('Identifier').apply(check_check_time_constant)
 
     # Check that there are not missing wage observations if an agent is
     # working. Also, we check that if an agent is not working, there also is
@@ -224,8 +252,5 @@ def check_dataset_sim(data_frame, respy_obj):
 
     # Check that there are no missing observations and we follow an agent
     # each period.
-    def check_number_periods(group):
-        np.testing.assert_equal(group['Period'].count(), num_periods)
-
     data_frame.groupby('Identifier').apply(check_number_periods)
 
