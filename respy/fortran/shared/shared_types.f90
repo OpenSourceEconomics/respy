@@ -66,8 +66,8 @@ MODULE shared_types
 
     ! This container holds the type specifications.
     TYPE TYPE_DICT
-        REAL(our_dble), ALLOCATABLE :: shares(:)
         REAL(our_dble), ALLOCATABLE :: shifts(:, :)
+        REAL(our_dble), ALLOCATABLE :: shares(:)
     END TYPE
 
     ! This container holds all the parameters that are potentially updated during the estimation step.

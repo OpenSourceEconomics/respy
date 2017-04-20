@@ -922,8 +922,6 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: i
 
-
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------

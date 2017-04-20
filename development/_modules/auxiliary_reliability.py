@@ -11,6 +11,7 @@ from auxiliary_shared import cleanup
 
 from config import SPEC_DIR
 
+from respy.scripts.scripts_compare import scripts_compare
 import respy
 
 
@@ -254,6 +255,11 @@ def simulate_specification(respy_obj, subdir, update, paras=None):
         assert (paras is not None)
         respy_copy.update_optim_paras(paras)
 
+    # The initialization file is specified to run the actual estimation in
+    # the directory above.
+    respy_copy.attr['file_est'] = '../' + respy_copy.attr['file_est']
     respy_copy.write_out()
-    respy.simulate(respy_copy)
+
+    scripts_compare('model.respy.ini', False)
+
     os.chdir('../')
