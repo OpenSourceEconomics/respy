@@ -30,8 +30,8 @@ SUBROUTINE construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_dra
     TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
     TYPE(AMBI_DICT), INTENT(IN)             :: ambi_spec
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
@@ -122,8 +122,8 @@ SUBROUTINE get_worst_case(opt_return, is_success, mode, num_periods, num_draws_e
     REAL(our_dble), INTENT(IN)              :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)              :: shocks_cov(4, 4)
 
-    INTEGER(our_int), INTENT(IN)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)            :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)            :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)            :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)            :: num_draws_emax
     INTEGER(our_int), INTENT(IN)            :: num_periods
     INTEGER(our_int), INTENT(IN)            :: edu_start
@@ -253,8 +253,8 @@ FUNCTION criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_em
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
     TYPE(AMBI_DICT), INTENT(IN)         :: ambi_spec
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
@@ -319,8 +319,8 @@ FUNCTION criterion_ambiguity_derivative(x, num_periods, num_draws_emax, period, 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
     TYPE(AMBI_DICT), INTENT(IN)         :: ambi_spec
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start

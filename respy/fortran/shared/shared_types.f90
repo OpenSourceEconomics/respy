@@ -64,6 +64,12 @@ MODULE shared_types
         CHARACTER(10)           :: measure
     END TYPE
 
+    ! This container holds the type specifications.
+    TYPE TYPE_DICT
+        REAL(our_dble), ALLOCATABLE :: shares(:)
+        REAL(our_dble), ALLOCATABLE :: shifts(:, :)
+    END TYPE
+
     ! This container holds all the parameters that are potentially updated during the estimation step.
     TYPE OPTIMPARAS_DICT
         REAL(our_dble)          :: shocks_cholesky(4, 4)

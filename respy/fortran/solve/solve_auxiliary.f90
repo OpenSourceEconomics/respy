@@ -21,25 +21,27 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx, num_types)
 
     !/* external objects        */
 
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_all(:, :, :)
 
     INTEGER(our_int), INTENT(IN)                    :: num_periods
+    INTEGER(our_int), INTENT(IN)                    :: num_types
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
     INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     !/* internals objects       */
 
-    INTEGER(our_int)                    :: states_all_tmp(num_periods, 100000, 4)
+    INTEGER(our_int)                    :: states_all_tmp(num_periods, 100000, 5)
     INTEGER(our_int)                    :: edu_lagged
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: total
+    INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
     INTEGER(our_int)                    :: edu
@@ -50,7 +52,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 !------------------------------------------------------------------------------
 
     ! Allocate containers that contain information about the model structure
-    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
+    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types))
     ALLOCATE(states_number_period(num_periods))
 
     ! Initialize output
@@ -64,65 +66,67 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
         ! Count admissible realizations of state space by period
         k = 0
 
-        ! Loop over all admissible work experiences for Occupation A
-        DO exp_a = 0, num_periods
+        ! Loop over all types.
+        DO type_ = 0, num_types - 1
 
-            ! Loop over all admissible work experience for Occupation B
-            DO exp_b = 0, num_periods
+            ! Loop over all admissible work experiences for Occupation A
+            DO exp_a = 0, num_periods
 
-                ! Loop over all admissible additional education levels
-                DO edu = 0, num_periods
+                ! Loop over all admissible work experience for Occupation B
+                DO exp_b = 0, num_periods
 
-                    ! Agent cannot attain more additional education than (EDU_MAX - EDU_START).
-                    IF (edu .GT. edu_max - edu_start) THEN
-                        CYCLE
-                    END IF
+                    ! Loop over all admissible additional education levels
+                    DO edu = 0, num_periods
 
-                    ! Loop over all admissible values for leisure. Note that the leisure variable takes only zero/value. The time path does not matter.
-                    DO edu_lagged = 0, 1
-
-                        ! Check if lagged education admissible. (1) In the first period all agents have lagged schooling equal to one.
-                        IF (edu_lagged .EQ. zero_int) THEN
-                            IF (period .EQ. zero_int) THEN
-                                CYCLE
-                            END IF
-                        END IF
-
-                        ! (2) Whenever an agent has not acquired any additional education and we are not in the first period, then this cannot be the case.
-                        IF (edu_lagged .EQ. one_int) THEN
-                            IF (edu .EQ. zero_int) THEN
-                                IF (period .GT. zero_int) THEN
-                                    CYCLE
-                                END IF
-                            END IF
-                        END IF
-
-                        ! (3) Whenever an agent has only acquired additional education, then edu_lagged cannot be zero.
-                        IF (edu_lagged .EQ. zero_int) THEN
-                            IF (edu .EQ. period) THEN
-                                CYCLE
-                            END IF
-                        END IF
-
-                        ! Check if admissible for time constraints
-                        total = edu + exp_a + exp_b
-
-                        ! Note that the total number of activities does not have is less or equal to the total possible number of activities as the rest is implicitly filled with leisure.
-                        IF (total .GT. period) THEN
+                        ! Agent cannot attain more additional education than (EDU_MAX - EDU_START).
+                        IF (edu .GT. edu_max - edu_start) THEN
                             CYCLE
                         END IF
 
-                        ! Collect all possible realizations of state space
-                        states_all_tmp(period + 1, k + 1, 1) = exp_a
-                        states_all_tmp(period + 1, k + 1, 2) = exp_b
-                        states_all_tmp(period + 1, k + 1, 3) = edu
-                        states_all_tmp(period + 1, k + 1, 4) = edu_lagged
+                        ! Loop over all admissible values for leisure. Note that the leisure variable takes only zero/value. The time path does not matter.
+                        DO edu_lagged = 0, 1
 
-                        ! Collect mapping of state space to array index.
-                        mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1 , edu_lagged + 1) = k
+                            ! Check if lagged education admissible. (1) In the first period all agents have lagged schooling equal to one.
+                            IF (edu_lagged .EQ. zero_int) THEN
+                                IF (period .EQ. zero_int) THEN
+                                    CYCLE
+                                END IF
+                            END IF
 
-                        ! Update count
-                        k = k + 1
+                            ! (2) Whenever an agent has not acquired any additional education and we are not in the first period, then this cannot be the case.
+                            IF (edu_lagged .EQ. one_int) THEN
+                                IF (edu .EQ. zero_int) THEN
+                                    IF (period .GT. zero_int) THEN
+                                        CYCLE
+                                    END IF
+                                END IF
+                            END IF
+
+                            ! (3) Whenever an agent has only acquired additional education, then edu_lagged cannot be zero.
+                            IF (edu_lagged .EQ. zero_int) THEN
+                                IF (edu .EQ. period) THEN
+                                    CYCLE
+                                END IF
+                            END IF
+
+                            ! Check if admissible for time constraints
+                            total = edu + exp_a + exp_b
+
+                            ! Note that the total number of activities does not have is less or equal to the total possible number of activities as the rest is implicitly filled with leisure.
+                            IF (total .GT. period) THEN
+                                CYCLE
+                            END IF
+
+                            ! Collect all possible realizations of state space
+                            states_all_tmp(period + 1, k + 1, :) = (/ exp_a, exp_b, edu, edu_lagged, type_ /)
+
+                            ! Collect mapping of state space to array index.
+                            mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1 , edu_lagged + 1, type_ + 1) = k
+
+                            ! Update count
+                            k = k + 1
+
+                         END DO
 
                      END DO
 
@@ -130,7 +134,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 
              END DO
 
-         END DO
+        END DO
 
         ! Record maximum number of state space realizations by time period
         states_number_period(period + 1) = k
@@ -147,15 +151,16 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
+SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras, type_spec)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(: ,:, :)
 
-    TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
+    TYPE(TYPE_DICT), INTENT(IN)                     :: type_spec
 
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: max_states_period
     INTEGER(our_int), INTENT(IN)        :: num_periods
@@ -169,6 +174,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: any_exp_b
     INTEGER(our_int)                    :: edu_lagged
     INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
     INTEGER(our_int)                    :: info
@@ -176,6 +182,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: k
 
     REAL(our_dble)                      :: covars_wages(9)
+    REAL(our_dble)                      :: rewards(4)
     REAL(our_dble)                      :: reward
 
     LOGICAL                             :: IS_RESTUD
@@ -201,6 +208,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             exp_b = states_all(period, k, 2)
             edu = states_all(period, k, 3)
             edu_lagged = states_all(period, k, 4)
+            type_ = states_all(period, k, 5)
 
             ! Construct auxiliary information
             hs_graduate = TRANSFER(edu + edu_start >= 12, hs_graduate)
@@ -227,11 +235,11 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
             ! Calculate systematic part of reward in Occupation A
             covars_wages(9) = any_exp_a
-            CALL clip_value(periods_rewards_systematic(period, k, 1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a)), zero_dble, HUGE_FLOAT, info)
+            CALL clip_value(rewards(1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of reward in Occupation B
             covars_wages(9) = any_exp_b
-            CALL clip_value(periods_rewards_systematic(period, k, 2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
+            CALL clip_value(rewards(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of schooling utility
             reward = optim_paras%coeffs_edu(1)
@@ -248,10 +256,18 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
                 reward = reward + optim_paras%coeffs_edu(4)
             END IF
 
-            periods_rewards_systematic(period, k, 3) = reward
+            rewards(3) = reward
 
             ! Calculate systematic part of reward in home production
-            periods_rewards_systematic(period, k, 4) = optim_paras%coeffs_home(1)
+            rewards(4) = optim_paras%coeffs_home(1)
+
+            ! Now we add the type-specific deviation.
+            rewards(1) = rewards(1) * EXP(type_spec%shifts(type_ + 1, 1))
+            rewards(2) = rewards(2) * EXP(type_spec%shifts(type_ + 1, 2))
+            rewards(3) = rewards(3) + type_spec%shifts(type_ + 1, 3)
+            rewards(4) = rewards(4) + type_spec%shifts(type_ + 1, 4)
+
+            periods_rewards_systematic(period, k, :) = rewards
 
         END DO
 
@@ -273,8 +289,8 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: max_states_period
     INTEGER(our_int), INTENT(IN)        :: num_points_interp
@@ -518,8 +534,8 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: shifts(4)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max
@@ -578,8 +594,8 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: maxe(num_states)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: edu_start
     INTEGER(our_int), INTENT(IN)        :: edu_max

@@ -60,9 +60,10 @@ class TestClass(object):
             edu_start = init_dict['EDUCATION']['start']
             edu_max = init_dict['EDUCATION']['max']
             min_idx = min(num_periods, (edu_max - edu_start + 1))
+            num_types = len(init_dict['TYPES']['shares'])
 
             max_states_period = pyth_create_state_space(num_periods, edu_start,
-                edu_max, min_idx)[3]
+                edu_max, min_idx, num_types)[3]
 
             # Updates to initialization dictionary that trigger a use of the
             # interpolation code.

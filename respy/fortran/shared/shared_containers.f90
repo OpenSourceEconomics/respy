@@ -15,7 +15,7 @@ MODULE shared_containers
 !******************************************************************************
 
     ! Containers required for the evaluation of the criterion function
-    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
@@ -45,6 +45,7 @@ MODULE shared_containers
     TYPE(OPTIMIZER_COLLECTION)      :: optimizer_options
     TYPE(OPTIMPARAS_DICT)           :: optim_paras
     TYPE(AMBI_DICT)                 :: ambi_spec
+    TYPE(TYPE_DICT)                 :: type_spec
 
     INTEGER(our_int)                :: maxfun
 

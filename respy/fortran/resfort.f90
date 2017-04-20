@@ -49,7 +49,7 @@ PROGRAM resfort_scalar
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs)
+    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, type_spec, optimizer_used, optimizer_options, file_sim, num_obs)
 
     ! We now distinguish between the scalar and parallel execution.
     IF (num_procs == 1) THEN
@@ -70,7 +70,7 @@ PROGRAM resfort_scalar
 
         ELSE IF (request == 'simulate') THEN
 
-            CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, periods_draws_emax, ambi_spec, optim_paras, optimizer_options, file_sim)
+            CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, periods_draws_emax, ambi_spec, type_spec, optim_paras, optimizer_options, file_sim)
 
             CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
@@ -92,7 +92,7 @@ PROGRAM resfort_scalar
 
         ELSE IF (request == 'simulate') THEN
 
-            CALL fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, file_sim)
+            CALL fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, type_spec, file_sim)
 
             CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 

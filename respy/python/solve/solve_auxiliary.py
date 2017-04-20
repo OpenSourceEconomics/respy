@@ -17,12 +17,9 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
 def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx,
-        type_spec):
+        num_types):
     """ Create grid for state space.
     """
-    # Distribute auxiliary information
-    num_types = len(type_spec['shares'])
-
     # Array for possible realization of state space by period
     states_all = np.tile(MISSING_INT, (num_periods, 100000, 5))
 

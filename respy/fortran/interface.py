@@ -23,7 +23,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, \
         optimizer_options, optimizer_used, maxfun, \
-        precond_spec, ambi_spec, file_sim = \
+        precond_spec, ambi_spec, file_sim, type_spec = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
@@ -31,7 +31,7 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'num_procs', 'num_agents_sim', 'num_draws_prob',
                 'num_agents_est', 'seed_prob', 'seed_sim',
                 'optimizer_options', 'optimizer_used', 'maxfun',
-                'precond_spec', 'ambi_spec', 'file_sim')
+                'precond_spec', 'ambi_spec', 'file_sim', 'type_spec')
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -50,7 +50,8 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, precond_spec, ambi_spec, file_sim, data_array)
+        optimizer_used, maxfun, precond_spec, ambi_spec, type_spec, file_sim,
+        data_array)
 
     write_resfort_initialization(*args)
 
@@ -66,7 +67,8 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     # Return arguments depends on the request.
     if request == 'simulate':
-        results = get_results(num_periods, min_idx, num_agents_sim, 'simulate')
+        results = get_results(num_periods, min_idx, num_agents_sim,
+            type_spec, 'simulate')
         args = (results[:-1], results[-1])
     elif request == 'estimate':
         args = None
@@ -76,9 +78,12 @@ def resfort_interface(respy_obj, request, data_array=None):
     return args
 
 
-def get_results(num_periods, min_idx, num_agents_sim, which):
+def get_results(num_periods, min_idx, num_agents_sim, type_spec, which):
     """ Add results to container.
     """
+
+    num_types = len(type_spec['shares'])
+
     # Get the maximum number of states. The special treatment is required as
     # it informs about the dimensions of some of the arrays that are
     # processed below.
@@ -86,14 +91,14 @@ def get_results(num_periods, min_idx, num_agents_sim, which):
 
     os.unlink('.max_states_period.resfort.dat')
 
-    shape = (num_periods, num_periods, num_periods, min_idx, 2)
+    shape = (num_periods, num_periods, num_periods, min_idx, 2, num_types)
     mapping_state_idx = read_data('mapping_state_idx', shape).astype('int')
 
     shape = (num_periods,)
     states_number_period = \
         read_data('states_number_period', shape).astype('int')
 
-    shape = (num_periods, max_states_period, 4)
+    shape = (num_periods, max_states_period, 5)
     states_all = read_data('states_all', shape).astype('int')
 
     shape = (num_periods, max_states_period, 4)
@@ -104,7 +109,7 @@ def get_results(num_periods, min_idx, num_agents_sim, which):
 
     # In case of  a simulation, we can also process the simulated dataset.
     if which == 'simulate':
-        shape = (num_periods * num_agents_sim, 21)
+        shape = (num_periods * num_agents_sim, 22)
         data_array = read_data('simulated', shape)
     else:
         raise AssertionError
@@ -143,7 +148,8 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
         min_idx, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, precond_spec, ambi_spec, file_sim, data_array):
+        optimizer_used, maxfun, precond_spec, ambi_spec, type_spec, file_sim,
+        data_array):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -204,6 +210,18 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
 
         line = '{0:25.15f}\n'.format(optim_paras['level'][0])
         file_.write(line)
+
+        # TYPES
+        num_types = len(type_spec['shares'])
+        line = '{0:10d}\n'.format(num_types)
+        file_.write(line)
+
+        num = type_spec['shares']
+        fmt_ = ' {:25.15f}' * num_types + '\n'
+        file_.write(fmt_.format(*num))
+        for j in range(num_types):
+            fmt_ = ' {:25.15f}' * 4 + '\n'
+            file_.write(fmt_.format(*type_spec['shifts'][j, :]))
 
         # PROGRAM
         line = '{0}'.format(is_debug)

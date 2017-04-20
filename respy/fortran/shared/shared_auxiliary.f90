@@ -381,8 +381,8 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
@@ -443,8 +443,8 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
 
     LOGICAL, INTENT(OUT)            :: is_inadmissible
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
@@ -458,6 +458,7 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
     INTEGER(our_int)                :: future_idx
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
+    INTEGER(our_int)                :: type_
     INTEGER(our_int)                :: edu
 
 !------------------------------------------------------------------------------
@@ -469,13 +470,14 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
     exp_b = states_all(period + 1, k + 1, 2)
     edu = states_all(period + 1, k + 1, 3)
     edu_lagged = states_all(period + 1, k + 1, 4)
+    type_ = states_all(period + 1, k + 1, 5)
 
     ! Working in Occupation A
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1, type_ + 1)
     emaxs(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
     !Working in Occupation B
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1, type_ + 1)
     emaxs(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
     ! Increasing schooling. Note that adding an additional year
@@ -485,12 +487,12 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
     IF(is_inadmissible) THEN
         emaxs(3) = zero_dble
     ELSE
-        future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 2)
+        future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 2, type_ + 1)
         emaxs(3) = periods_emax(period + 1 + 1, future_idx + 1)
     END IF
 
     ! Staying at home
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1, 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1, 1, type_ + 1)
     emaxs(4) = periods_emax(period + 1 + 1, future_idx + 1)
 
 END SUBROUTINE
@@ -754,8 +756,8 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
     !/* external objects        */
 
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
 
     REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: periods_rewards_systematic(: ,:, :)
@@ -770,6 +772,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: l
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -786,7 +789,9 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
             DO i = 1, num_periods
                 DO j = 1, num_periods
                     DO k = 1, min_idx
-                        WRITE(99, 1800) mapping_state_idx(period, i, j, k, :)
+                        DO l = 1, 2
+                            WRITE(99, 1800) mapping_state_idx(period, i, j, k, l, :)
+                        END DO
                     END DO
                 END DO
             END DO
@@ -795,7 +800,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
         CLOSE(99)
 
 
-        2000 FORMAT(4(1x,i5))
+        2000 FORMAT(5(1x,i5))
 
         OPEN(UNIT=99, FILE='.states_all.resfort.dat', ACTION='WRITE')
 
@@ -871,7 +876,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs)
+SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, type_spec, optimizer_used, optimizer_options, file_sim, num_obs)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in
@@ -884,6 +889,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     TYPE(PRECOND_DICT), INTENT(OUT)         :: precond_spec
     TYPE(OPTIMPARAS_DICT), INTENT(OUT)      :: optim_paras
     TYPE(AMBI_DICT), INTENT(OUT)            :: ambi_spec
+    TYPE(TYPE_DICT), INTENT(OUT)            :: type_spec
 
     REAL(our_dble), INTENT(OUT)     :: tau
 
@@ -915,6 +921,8 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
     INTEGER(our_int)                :: i
+
+
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -959,6 +967,16 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         READ(99, *) ambi_spec%measure
         READ(99, *) ambi_spec%mean
         READ(99, 1500) optim_paras%level
+
+        ! TYPES
+        READ(99, 1505) num_types
+        ALLOCATE(type_spec%shares(num_types))
+        ALLOCATE(type_spec%shifts(num_types, 4))
+
+        READ(99, 1500) type_spec%shares
+        DO j = 1, num_types
+            READ(99, 1500) (type_spec%shifts(j, k), k = 1, 4)
+        END DO
 
         ! PROGRAM
         READ(99, *) is_debug

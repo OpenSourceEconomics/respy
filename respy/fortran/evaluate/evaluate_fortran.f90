@@ -19,7 +19,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
+SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, type_spec)
 
     !   DEVELOPMENT NOTES
     !
@@ -35,14 +35,15 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble), INTENT(OUT)     :: contribs(SIZE(data_evaluate, 1))
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(TYPE_DICT), INTENT(IN)         :: type_spec
 
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: tau
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_draws_prob
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
@@ -52,13 +53,13 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
     REAL(our_dble)                  :: rewards_systematic(4)
+    REAL(our_dble)                  :: prob_type(num_types)
     REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws_cond(4)
     REAL(our_dble)                  :: draws_stan(4)
     REAL(our_dble)                  :: prob_choice
     REAL(our_dble)                  :: prob_wage
-    REAL(our_dble)                  :: prob_obs
     REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: dist_1
     REAL(our_dble)                  :: dist_2
@@ -72,6 +73,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
+    INTEGER(our_int)                :: type_
     INTEGER(our_int)                :: info
     INTEGER(our_int)                :: idx
     INTEGER(our_int)                :: edu
@@ -98,32 +100,36 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     DO j = 1, num_obs
 
-            period = INT(data_evaluate(j, 2))
+        period = INT(data_evaluate(j, 2))
 
-            ! Extract observable components of state space as well as agent decision.
-            exp_a = INT(data_evaluate(j, 5))
-            exp_b = INT(data_evaluate(j, 6))
-            edu = INT(data_evaluate(j, 7))
-            edu_lagged = INT(data_evaluate(j, 8))
-            choice = INT(data_evaluate(j, 3))
-            wage = data_evaluate(j, 4)
+        ! Extract observable components of state space as well as agent decision.
+        exp_a = INT(data_evaluate(j, 5))
+        exp_b = INT(data_evaluate(j, 6))
+        edu = INT(data_evaluate(j, 7))
+        edu_lagged = INT(data_evaluate(j, 8))
+        choice = INT(data_evaluate(j, 3))
+        wage = data_evaluate(j, 4)
 
-            ! We now determine whether we also have information about the agent's wage.
-            is_wage_missing = (wage == HUGE_FLOAT)
-            is_working = (choice == 1) .OR. (choice == 2)
+        ! We now determine whether we also have information about the agent's wage.
+        is_wage_missing = (wage == HUGE_FLOAT)
+        is_working = (choice == 1) .OR. (choice == 2)
 
-            ! Transform total years of education to additional years of education and create an index from the choice.
-            edu = edu - edu_start
+        ! Transform total years of education to additional years of education and create an index from the choice.
+        edu = edu - edu_start
 
-            ! This is only done for alignment
-            idx = choice
+        ! This is only done for alignment
+        idx = choice
+
+        ! Extract relevant deviates from standard normal distribution.
+        draws_prob_raw = periods_draws_prob(period + 1, :, :)
+
+        prob_type = zero_dble
+
+        DO type_ = 0, num_types - 1
 
             ! Get state indicator to obtain the systematic component of the agents rewards. These feed into the simulation of choice probabilities.
-            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1)
+            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1, type_ + 1)
             rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
-
-            ! Extract relevant deviates from standard normal distribution.
-            draws_prob_raw = periods_draws_prob(period + 1, :, :)
 
             ! If an agent is observed working, then the the labor market shocks are observed and the conditional distribution is used to determine the choice probabilities.
             dist = zero_dble
@@ -142,12 +148,10 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                     END IF
                 END IF
 
-
             END IF
 
             ! Simulate the conditional distribution of alternative-specific value functions and determine the choice probabilities.
             counts = zero_int
-            prob_obs = zero_dble
 
             DO s = 1, num_draws_prob
 
@@ -193,12 +197,12 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
                 ! Get the smoothed choice probability
                 prob_choice = get_smoothed_probability(total_values, idx, tau)
-                prob_obs = prob_obs + prob_choice * prob_wage
+                prob_type(type_ + 1) = prob_type(type_ + 1) + prob_choice * prob_wage
 
             END DO
 
             ! Determine relative shares
-            prob_obs = prob_obs / num_draws_prob
+            prob_type(type_ + 1) = prob_type(type_ + 1) / num_draws_prob
 
             ! If there is no random variation in rewards, then this implies a unique optimal choice.
             IF (is_deterministic) THEN
@@ -208,10 +212,12 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 END IF
             END IF
 
-            ! Adjust  and record likelihood contribution
-            contribs(j) = prob_obs
-
         END DO
+
+        ! Adjust  and record likelihood contribution
+        contribs(j) = SUM(type_spec%shares * prob_type)
+
+    END DO
 
     ! If there is no random variation in rewards and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
     IF (is_deterministic) THEN

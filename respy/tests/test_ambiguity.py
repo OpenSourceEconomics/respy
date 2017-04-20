@@ -93,12 +93,13 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, \
         periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, ambi_spec, optim_paras, optimizer_options, file_sim = \
+        edu_max, ambi_spec, optim_paras, optimizer_options, file_sim, \
+        num_types = \
             dist_class_attributes(respy_obj, 'periods_rewards_systematic',
                 'states_number_period', 'mapping_state_idx', 'periods_emax',
                 'num_periods', 'states_all', 'num_draws_emax', 'edu_start',
                 'edu_max', 'ambi_spec', 'optim_paras', 'optimizer_options',
-                'file_sim')
+                'file_sim', 'num_types')
 
         shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
             optim_paras['shocks_cholesky'].T)
@@ -139,7 +140,7 @@ class TestClass(object):
         args += base_args + (shocks_cov, ambi_spec['measure'])
         args += (ambi_spec['mean'], optim_paras['level'], optim_paras['delta'])
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
-        args += (file_sim, False)
+        args += (file_sim, False, num_types)
 
         f90 = fort_debug.wrapper_construct_emax_ambiguity(*args)
         np.testing.assert_allclose(py, f90)

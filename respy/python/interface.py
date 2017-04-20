@@ -32,14 +32,14 @@ def respy_interface(respy_obj, request, data_array=None):
         num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
         min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
         optimizer_used, tau, optimizer_options, seed_sim, \
-        num_agents_sim, ambi_spec, file_sim, precond_spec, type_spec = \
-            dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
-                'edu_start', 'is_debug', 'edu_max', 'num_draws_prob',
+        num_agents_sim, ambi_spec, file_sim, precond_spec, type_spec, \
+        num_types = dist_class_attributes(respy_obj, 'optim_paras',
+            'num_periods', 'edu_start', 'is_debug', 'edu_max', 'num_draws_prob',
                 'seed_prob', 'num_draws_emax', 'seed_emax', 'min_idx',
                 'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
                 'optimizer_used', 'tau', 'optimizer_options',
                 'seed_sim', 'num_agents_sim', 'ambi_spec', 'file_sim',
-                'precond_spec', 'type_spec')
+                'precond_spec', 'type_spec', 'num_types')
 
     if request == 'estimate':
 
@@ -60,7 +60,7 @@ def respy_interface(respy_obj, request, data_array=None):
         # Construct the state space
         states_all, states_number_period, mapping_state_idx, \
             max_states_period = pyth_create_state_space(num_periods,
-                edu_start, edu_max, min_idx, type_spec)
+                edu_start, edu_max, min_idx, num_types)
 
         # Cutting to size
         states_all = states_all[:, :max(states_number_period), :]
@@ -217,7 +217,8 @@ def respy_interface(respy_obj, request, data_array=None):
             periods_emax, states_all = pyth_solve(is_interpolated,
             num_points_interp, num_draws_emax, num_periods, is_myopic,
             edu_start, is_debug, edu_max, min_idx, periods_draws_emax,
-            ambi_spec, optim_paras, file_sim, optimizer_options, type_spec)
+            ambi_spec, optim_paras, file_sim, optimizer_options, type_spec,
+            num_types)
 
         solution = (periods_rewards_systematic, states_number_period,
             mapping_state_idx, periods_emax, states_all)

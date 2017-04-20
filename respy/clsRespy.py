@@ -83,6 +83,8 @@ class RespyCls(object):
 
         self.attr['seed_prob'] = None
 
+        self.attr['num_types'] = None
+
         self.attr['seed_emax'] = None
 
         self.attr['is_locked'] = None
@@ -488,6 +490,8 @@ class RespyCls(object):
         self.attr['type_spec']['shares'] = init_dict['TYPES']['shares']
         self.attr['type_spec']['shifts'] = init_dict['TYPES']['shifts']
 
+        self.attr['num_types'] = len(self.attr['type_spec']['shares'])
+
         # Initialize model parameters
         self.attr['optim_paras'] = dict()
 
@@ -723,7 +727,7 @@ class RespyCls(object):
             assert (precond_spec[key_] > 0.0)
 
         # Type specification
-        num_types = len(type_spec['shares'])
+        num_types = self.attr['num_types']
         for val in type_spec['shifts'].flatten().tolist() + type_spec['shares']:
             assert isinstance(val, float)
         for val in type_spec['shares']:
@@ -806,9 +810,9 @@ class RespyCls(object):
 
         edu_start = self.attr['edu_start']
 
-        edu_max = self.attr['edu_max']
+        num_types = self.attr['num_types']
 
-        num_types = len(self.attr['type_spec']['shares'])
+        edu_max = self.attr['edu_max']
 
         # Distribute results
         periods_rewards_systematic = self.attr['periods_rewards_systematic']
