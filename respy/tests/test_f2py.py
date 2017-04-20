@@ -40,6 +40,7 @@ from codes.auxiliary import write_interpolation_grid
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from codes.auxiliary import write_draws
+from codes.auxiliary import write_types
 
 from respy import RespyCls
 
@@ -396,6 +397,8 @@ class TestClass(object):
         # three implementations.
         max_draws = max(num_agents_sim, num_draws_emax, num_draws_prob)
         write_draws(num_periods, max_draws)
+        write_types(type_spec, num_agents_sim)
+
         periods_draws_emax = read_draws(num_periods, num_draws_emax)
         periods_draws_prob = read_draws(num_periods, num_draws_prob)
         periods_draws_sims = read_draws(num_periods, num_agents_sim)
@@ -434,12 +437,12 @@ class TestClass(object):
             num_agents_sim, periods_draws_sims, seed_sim, file_sim)
 
         args = ()
-        args += base_args + (optim_paras, num_types, type_spec)
+        args += base_args + (optim_paras, num_types, type_spec, is_debug)
         py = pyth_simulate(*args)
 
         args = ()
         args += base_args + (shocks_cholesky, delta)
-        args += (num_types, type_spec_shares, type_spec_shifts)
+        args += (num_types, type_spec_shares, type_spec_shifts, is_debug)
         f2py = fort_debug.f2py_simulate(*args)
         np.testing.assert_allclose(py, f2py)
 
@@ -656,7 +659,7 @@ class TestClass(object):
         args = base_args + (num_periods, )
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
         np.testing.assert_array_equal(f90, 1*py)
-        os.unlink('interpolation.txt')
+        os.unlink('.interpolation.respy.test')
 
         # Special case where number of interpolation points are same as the
         # number of candidates. In that case the returned indicator

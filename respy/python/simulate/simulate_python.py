@@ -4,14 +4,15 @@ from respy.python.record.record_simulation import record_simulation_progress
 from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.record.record_simulation import record_simulation_start
 from respy.python.shared.shared_auxiliary import transform_disturbances
-from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.simulate.simulate_auxiliary import get_random_types
 from respy.python.shared.shared_auxiliary import get_total_values
+from respy.python.shared.shared_constants import MISSING_FLOAT
 
 
 def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
         states_all, num_periods, edu_start, edu_max, num_agents_sim,
         periods_draws_sims, seed_sim, file_sim, optim_paras,
-        num_types, type_spec):
+        num_types, type_spec, is_debug):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
 
@@ -27,6 +28,9 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
             periods_draws_sims[period, :, :], np.array([0.0, 0.0, 0.0, 0.0]),
             optim_paras['shocks_cholesky'])
 
+    # We also need to sample the set of initial conditions.
+    types = get_random_types(num_types, type_spec, num_agents_sim, is_debug)
+
     # Simulate agent experiences
     count = 0
 
@@ -38,7 +42,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
         current_state = states_all[0, 0, :].copy()
 
         # We need to modify the initial conditions
-        current_state[-1] = np.random.choice(range(num_types), p=type_spec['shares'])
+        current_state[-1] = types[i]
 
         record_simulation_progress(i, file_sim)
 

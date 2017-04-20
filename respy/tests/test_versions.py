@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import copy
 
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
@@ -15,6 +16,7 @@ from codes.auxiliary import simulate_observed
 from codes.auxiliary import compare_est_log
 from codes.random_init import generate_init
 from codes.auxiliary import write_draws
+from codes.auxiliary import write_types
 from respy import estimate
 from respy import RespyCls
 
@@ -77,9 +79,12 @@ class TestClass(object):
 
         # Write out random components and interpolation grid to align the
         # three implementations.
+        num_agents_sim = init_dict['SIMULATION']['agents']
         num_periods = init_dict['BASICS']['periods']
+        type_spec = init_dict['TYPES']
         write_draws(num_periods, max_draws)
         write_interpolation_grid('test.respy.ini')
+        write_types(type_spec, num_agents_sim)
 
         # Clean evaluations based on interpolation grid,
         base_val, base_data = None, None
@@ -139,6 +144,9 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
+        num_agents_sim, type_spec = dist_class_attributes(respy_obj,
+            'num_agents_sim', 'type_spec')
+
         # Simulate a dataset
         simulate_observed(respy_obj)
 
@@ -147,6 +155,7 @@ class TestClass(object):
 
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
+        write_types(type_spec, num_agents_sim)
 
         for version in ['FORTRAN', 'PYTHON']:
 
@@ -224,9 +233,14 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        level = respy_obj.get_attr('optim_paras')['level']
-        delta = respy_obj.get_attr('optim_paras')['delta']
-        file_sim = respy_obj.get_attr('file_sim')
+
+        type_spec, num_agents_sim, optim_paras, file_sim = \
+            dist_class_attributes(respy_obj, 'type_spec', 'num_agents_sim',
+                'optim_paras', 'file_sim')
+
+        level = optim_paras['level']
+        delta = optim_paras['delta']
+
         is_ambiguity = (level > MIN_AMBIGUITY)
 
         # Iterate over alternative implementations
@@ -235,6 +249,7 @@ class TestClass(object):
 
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
+        write_types(type_spec, num_agents_sim)
 
         for version in ['FORTRAN', 'PYTHON']:
 
@@ -288,11 +303,15 @@ class TestClass(object):
         # Simulate a dataset
         init_dict = generate_init(constr)
 
+        respy_base = RespyCls('test.respy.ini')
+
+        num_agents_sim, type_spec = dist_class_attributes(respy_base,
+            'num_agents_sim', 'type_spec')
+
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
         write_interpolation_grid('test.respy.ini')
-
-        respy_base = RespyCls('test.respy.ini')
+        write_types(type_spec, num_agents_sim)
 
         simulate_observed(respy_base)
 

@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 
 from respy.python.process.process_auxiliary import check_dataset_est
 
@@ -254,3 +255,15 @@ def check_dataset_sim(data_frame, respy_obj):
     # each period.
     data_frame.groupby('Identifier').apply(check_number_periods)
 
+
+def get_random_types(num_types, type_spec, num_agents_sim, is_debug):
+    """ This function provides random draws for the types, or reads them
+    in from a file.
+    """
+    if is_debug and os.path.exists('.types.respy.test'):
+        types = np.genfromtxt('.types.respy.test')
+    else:
+        types = np.random.choice(range(num_types), p=type_spec['shares'],
+            size=num_agents_sim)
+
+    return types

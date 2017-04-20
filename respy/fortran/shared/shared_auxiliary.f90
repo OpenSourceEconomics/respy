@@ -538,11 +538,11 @@ SUBROUTINE create_draws(draws, num_draws, seed, is_debug)
     ! Draw random deviates from a standard normal distribution or read it in
     ! from disk. The latter is available to allow for testing across
     ! implementations.
-    INQUIRE(FILE='draws.txt', EXIST=READ_IN)
+    INQUIRE(FILE='.draws.respy.test', EXIST=READ_IN)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        OPEN(UNIT=99, FILE='draws.txt', ACTION='READ')
+        OPEN(UNIT=99, FILE='.draws.respy.test', ACTION='READ')
 
         DO period = 1, num_periods
 
@@ -1341,36 +1341,6 @@ FUNCTION float_to_boolean(input) RESULT(output)
     ELSE
         STOP 'Misspecified request'
     END IF
-
-END FUNCTION
-!******************************************************************************
-!******************************************************************************
-FUNCTION get_random_type(type_spec) RESULT(type_)
-
-    !/* external objects    */
-
-    TYPE(TYPE_DICT)             :: type_spec
-    INTEGER(our_int)            :: type_
-
-    !/* internal objects    */
-
-    INTEGER(our_int)            :: candidates(num_types)
-    INTEGER(our_int)            :: i
-
-    REAL(our_dble)              :: u
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    candidates = (/ (i, i = 0, num_types - 1) /)
-
-    CALL RANDOM_NUMBER(u)
-
-    DO type_ = 0, num_types - 1
-        IF (u < type_spec%shares(type_ + 1)) EXIT
-        u = u - type_spec%shares(type_ + 1)
-    END DO
 
 END FUNCTION
 !******************************************************************************

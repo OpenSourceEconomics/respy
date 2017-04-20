@@ -171,7 +171,7 @@ def write_interpolation_grid(file_name):
                 booleans[i, period] = False
 
     # Write out to file
-    np.savetxt('interpolation.txt', booleans, fmt='%s')
+    np.savetxt('.interpolation.respy.test', booleans, fmt='%s')
 
     # Some information that is useful elsewhere.
     return max_states_period
@@ -187,12 +187,22 @@ def write_draws(num_periods, max_draws):
         np.identity(4), (num_periods, max_draws))
 
     # Write to file to they can be read in by the different implementations.
-    with open('draws.txt', 'w') as file_:
+    with open('.draws.respy.test', 'w') as file_:
         for period in range(num_periods):
             for i in range(max_draws):
                 fmt = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'
                 line = fmt.format(*draws_standard[period, i, :])
                 file_.write(line)
+
+
+def write_types(type_spec, num_agents_sim):
+    """ We also need to fully control the random types to ensure the
+    comparability between PYTHON and FORTRAN simulations.
+    """
+    num_types = len(type_spec['shares'])
+    types = np.random.choice(range(num_types), p=type_spec['shares'],
+        size=num_agents_sim)
+    np.savetxt('.types.respy.test', types, fmt='%i')
 
 
 def get_valid_values(which):

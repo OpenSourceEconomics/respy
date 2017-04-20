@@ -26,7 +26,7 @@ def run(spec_dict):
     os.mkdir('rslt')
     os.chdir('rslt')
 
-    run_single(spec_dict, 'kw_data_one.ini')
+    run_single(spec_dict, 'kw_data_one_types.ini')
 
     aggregate_information('reliability')
 

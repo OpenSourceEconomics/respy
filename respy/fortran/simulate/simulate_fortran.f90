@@ -6,6 +6,8 @@ MODULE simulate_fortran
 
     USE recording_simulation
 
+    USE simulate_auxiliary
+
     USE shared_interface
 
     !/*	setup	*/
@@ -17,7 +19,7 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_start, edu_max, seed_sim, file_sim, optim_paras, num_types, type_spec)
+SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_start, edu_max, seed_sim, file_sim, optim_paras, num_types, type_spec, is_debug)
 
     !/* external objects        */
 
@@ -40,6 +42,8 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
 
     CHARACTER(225), INTENT(IN)      :: file_sim
 
+    LOGICAL, INTENT(IN)             :: is_debug
+
     !/* internal objects        */
 
     REAL(our_dble)                  :: periods_draws_sims_transformed(num_periods, num_agents_sim, 4)
@@ -58,6 +62,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: types(num_agents_sim)
 
     REAL(our_dble)                  :: rewards_systematic(4)
     REAL(our_dble)                  :: total_values(4)
@@ -82,6 +87,9 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     ! Initialize containers
     data_sim = MISSING_FLOAT
 
+    ! We also need to sample the set of initial conditions.
+    types = get_random_types(num_types, type_spec, num_agents_sim, is_debug)
+
     ! Iterate over agents and periods
     count = 0
 
@@ -91,7 +99,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
         current_state = states_all(1, 1, :)
 
         ! We need to modify the initial conditions.
-        current_state(5) = get_random_type(type_spec)
+        current_state(5) = types(i + 1)
 
         CALL record_simulation(i, file_sim)
 

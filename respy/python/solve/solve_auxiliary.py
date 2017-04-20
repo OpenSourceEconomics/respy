@@ -343,9 +343,9 @@ def get_simulated_indicator(num_points_interp, num_candidates, period, is_debug)
     is_simulated[interpolation_points] = True
 
     # Check for debugging cases.
-    is_standardized = is_debug and os.path.exists('interpolation.txt')
+    is_standardized = is_debug and os.path.exists('.interpolation.respy.test')
     if is_standardized:
-        with open('interpolation.txt', 'r') as file_:
+        with open('.interpolation.respy.test', 'r') as file_:
             indicators = []
             for line in file_:
                 indicators += [(shlex.split(line)[period] == 'True')]

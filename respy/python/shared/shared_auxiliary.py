@@ -241,7 +241,7 @@ def create_draws(num_periods, num_draws, seed, is_debug):
     # Draw random deviates from a standard normal distribution or read it in
     # from disk. The latter is available to allow for testing across
     # implementations.
-    if is_debug and os.path.exists('draws.txt'):
+    if is_debug and os.path.exists('.draws.respy.test'):
         draws = read_draws(num_periods, num_draws)
     else:
         draws = np.random.multivariate_normal(np.zeros(4),
@@ -378,7 +378,7 @@ def read_draws(num_periods, num_draws):
     periods_draws = np.tile(np.nan, (num_periods, num_draws, 4))
 
     # Read and distribute draws
-    draws = np.array(np.genfromtxt('draws.txt'), ndmin=2)
+    draws = np.array(np.genfromtxt('.draws.respy.test'), ndmin=2)
     for period in range(num_periods):
         lower = 0 + num_draws * period
         upper = lower + num_draws
@@ -831,6 +831,3 @@ def check_early_termination(maxfun, num_eval):
     # the user.
     if os.path.exists('.stop.respy.scratch'):
         raise MaxfunError
-
-
-

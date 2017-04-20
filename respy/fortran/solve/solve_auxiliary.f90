@@ -466,11 +466,11 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
     ! Check if standardization requested
     IF (is_debug) THEN
 
-        INQUIRE(FILE='interpolation.txt', EXIST=READ_IN)
+        INQUIRE(FILE='.interpolation.respy.test', EXIST=READ_IN)
 
         IF (READ_IN) THEN
 
-            OPEN(UNIT=99, FILE='interpolation.txt', ACTION='READ')
+            OPEN(UNIT=99, FILE='.interpolation.respy.test', ACTION='READ')
 
                DO i = 1, num_states
 
