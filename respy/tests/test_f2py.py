@@ -517,7 +517,12 @@ class TestClass(object):
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
+        shocks_cholesky = optim_paras['shocks_cholesky']
         level = optim_paras['level']
+        delta = optim_paras['delta']
+
+        ambi_spec_measure = ambi_spec['measure']
+        ambi_spec_mean = ambi_spec['mean']
 
         # Add some additional objects required for the interfaces to the
         # functions.
@@ -529,11 +534,10 @@ class TestClass(object):
         draws_emax_standard = periods_draws_emax[period, :, :]
 
         draws_emax_risk = transform_disturbances(draws_emax_standard,
-            np.tile(0, 4), optim_paras['shocks_cholesky'])
+            np.tile(0, 4), shocks_cholesky)
 
         draws_emax_ambiguity_standard = draws_emax_standard
-        draws_emax_ambiguity_transformed = np.dot(optim_paras[
-            'shocks_cholesky'], draws_emax_standard.T).T
+        draws_emax_ambiguity_transformed = np.dot(shocks_cholesky, draws_emax_standard.T).T
 
         num_states = states_number_period[period]
 
@@ -559,7 +563,7 @@ class TestClass(object):
         py = get_exogenous_variables(*args)
 
         args = ()
-        args += base_args + (optim_paras['delta'], num_types)
+        args += base_args + (delta, num_types)
         f90 = fort_debug.wrapper_get_exogenous_variables(*args)
 
         np.testing.assert_equal(py, f90)
@@ -581,8 +585,8 @@ class TestClass(object):
         py, _ = get_endogenous_variable(*args)
 
         args = ()
-        args += base_args + (shocks_cov, ambi_spec['measure'])
-        args += (ambi_spec['mean'], level, optim_paras['delta'])
+        args += base_args + (shocks_cov, ambi_spec_measure)
+        args += (ambi_spec_mean, level, delta)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
         np.testing.assert_almost_equal(py, replace_missing_values(f90))
@@ -714,7 +718,7 @@ class TestClass(object):
             np.testing.assert_almost_equal(cov, cov_cand)
 
         # We also check whether the construction of the candidate
-        # covariance matrix during the worst-case determintation works
+        # covariance matrix during the worst-case determination works
         # well. These functions only work for the 4x4 covariance matrix.
         for _ in range(100):
             is_deterministic = np.random.choice([True, False], p=[0.1, 0.9])
