@@ -9,6 +9,7 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
+from codes.auxiliary import get_valid_shifts_for_types
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
 from respy.custom_exceptions import UserError
@@ -305,4 +306,31 @@ class TestClass(object):
         first group.
         """
 
-        pass
+        constr = dict()
+        constr['flag_estimation'] = True
+
+        # The interpolation equation is affected by the number of types
+        # regardless of the weights.
+        constr['flag_interpolation'] = False
+
+        init_dict = generate_init(constr)
+
+        base_val = None
+
+        for num_types in [1, np.random.choice([2, 3, 4]).tolist()]:
+
+            # We always need to ensure that a weight of one is on the first
+            # type.
+            init_dict['TYPES']['shares'] = [1.0] + [0.0] * (num_types - 1)
+            init_dict['TYPES']['shifts'] = get_valid_shifts_for_types(num_types)
+
+            print_init_dict(init_dict)
+
+            respy_obj = RespyCls('test.respy.ini')
+            simulate_observed(respy_obj)
+            _, val = estimate(respy_obj)
+            if base_val is None:
+                base_val = val
+
+            np.testing.assert_almost_equal(base_val, val)
+
