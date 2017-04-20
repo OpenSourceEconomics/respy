@@ -174,17 +174,21 @@ class TestClass(object):
         for the original Keane & Wolpin data.
         """
         # Sample one task
-        resources = ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']
+        resources = []
+        resources += ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']
+        resources += ['kw_data_one_types.ini']
         fname = np.random.choice(resources)
 
         # Select expected result
         rslt = None
-        if 'one' in fname:
+        if 'one.ini' in fname:
             rslt = 0.261487735867433
-        elif 'two' in fname:
+        elif 'two.ini' in fname:
             rslt = 1.126138097174159
-        elif 'three' in fname:
+        elif 'three.ini' in fname:
             rslt = 1.895699121131644
+        elif 'one_types.ini' in fname:
+            rslt = 0.352057450315807
 
         # This ensures that the experience effect is taken care of properly.
         open('.restud.respy.scratch', 'w').close()
