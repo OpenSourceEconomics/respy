@@ -81,5 +81,7 @@ DATA_FORMATS_SIM = dict(DATA_FORMATS_EST)
 for key_ in DATA_LABELS_SIM:
     if key_ in DATA_FORMATS_SIM.keys():
         continue
+    elif key_ in ['Type']:
+        DATA_FORMATS_SIM[key_] = np.int
     else:
         DATA_FORMATS_SIM[key_] = np.float

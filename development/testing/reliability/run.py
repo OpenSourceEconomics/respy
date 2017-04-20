@@ -19,7 +19,7 @@ if __name__ == '__main__':
     is_debug = False
     if socket.gethostname() == 'pontos' or is_debug:
         spec_dict['update']['num_periods'] = 3
-        spec_dict['update']['num_procs'] = 1
+        spec_dict['update']['num_procs'] = 10
         spec_dict['update']['maxfun'] = 0
         spec_dict['update']['level'] = 0.00
 
