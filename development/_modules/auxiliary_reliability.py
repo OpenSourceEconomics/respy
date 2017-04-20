@@ -53,6 +53,11 @@ def run_single(spec_dict, fname):
 
     for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
 
+        # If there is no ambiguity in the dataset, then we can skip the
+        # AMBIGUITY estimation.
+        if spec_dict['update']['level'] == 0.00 and request == 'Ambiguity':
+            continue
+
         respy_obj.unlock()
 
         if request == 'Truth':
@@ -105,6 +110,9 @@ def run_single(spec_dict, fname):
 
         os.mkdir(request.lower())
         os.chdir(request.lower())
+
+        # This ensures that the experience effect is taken care of properly.
+        open('.restud.respy.scratch', 'w').close()
 
         respy_obj.write_out()
 
@@ -230,6 +238,9 @@ def simulate_specification(respy_obj, subdir, update, paras=None):
     """
     os.mkdir(subdir)
     os.chdir(subdir)
+
+    # This ensures that the experience effect is taken care of properly.
+    open('.restud.respy.scratch', 'w').close()
 
     respy_copy = deepcopy(respy_obj)
     if update:
