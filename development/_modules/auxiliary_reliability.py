@@ -51,17 +51,24 @@ def run_single(spec_dict, fname):
     # reference, and start an estimation from the true values.
     x = None
 
+    is_risk = spec_dict['update']['level'] == 0.00
+
     for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
 
         # If there is no ambiguity in the dataset, then we can skip the
         # AMBIGUITY estimation.
-        if spec_dict['update']['level'] == 0.00 and request == 'Ambiguity':
+        if is_risk and request == 'Ambiguity':
             continue
+
+        # If there is no ambiguity, we will just fit the ambiguity parameter
+        # to avoid the computational costs.
 
         respy_obj.unlock()
 
         if request == 'Truth':
-            pass
+            if is_risk:
+                respy_obj.attr['optim_paras']['paras_fixed'][1] = True
+
         elif request == 'Static':
             # We do only need a subset of the available processors
             respy_obj.attr['num_procs'] = 1
