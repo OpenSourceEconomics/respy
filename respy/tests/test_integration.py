@@ -286,7 +286,7 @@ class TestClass(object):
         updates['invalid_2'] = [False, False, False, True, False, False, True, False, True, False]
 
         # We draw a random update and print it out to the initialization file.
-        label = np.random.choice(updates.keys())
+        label = np.random.choice(list(updates.keys()))
         init_dict['SHOCKS']['fixed'] = updates[label]
         print_init_dict(init_dict)
 
