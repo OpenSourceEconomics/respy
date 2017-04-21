@@ -21,19 +21,22 @@ MODULE simulate_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-FUNCTION get_random_type(type_spec) RESULT(type_)
+FUNCTION get_random_type(num_types, type_spec) RESULT(type_)
 
     !/* external objects    */
 
-    TYPE(TYPE_DICT), INTENT(IN) :: type_spec
-    INTEGER(our_int)            :: type_
+    TYPE(TYPE_DICT), INTENT(IN)     :: type_spec
+
+    INTEGER(our_int), INTENT(IN)    :: num_types
+
+    INTEGER(our_int)                :: type_
 
     !/* internal objects    */
 
-    INTEGER(our_int)            :: candidates(num_types)
-    INTEGER(our_int)            :: i
+    INTEGER(our_int)                :: candidates(num_types)
+    INTEGER(our_int)                :: i
 
-    REAL(our_dble)              :: u
+    REAL(our_dble)                  :: u
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -55,19 +58,19 @@ FUNCTION get_random_types(num_types, type_spec, num_agents_sim, is_debug) RESULT
 
     !/* external objects    */
 
-    TYPE(TYPE_DICT)             :: type_spec
+    TYPE(TYPE_DICT)                 :: type_spec
 
-    INTEGER(our_int)            :: types(num_agents_sim)
-    INTEGER(our_int)            :: num_agents_sim
-    INTEGER(our_int)            :: num_types
+    INTEGER(our_int)                :: types(num_agents_sim)
+    INTEGER(our_int)                :: num_agents_sim
+    INTEGER(our_int)                :: num_types
 
-    LOGICAL, INTENT(IN)         :: is_debug
+    LOGICAL, INTENT(IN)             :: is_debug
 
     !/* internal objects    */
 
-    INTEGER                     :: i
+    INTEGER                         :: i
 
-    LOGICAL                     :: READ_IN
+    LOGICAL                         :: READ_IN
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -85,7 +88,7 @@ FUNCTION get_random_types(num_types, type_spec, num_agents_sim, is_debug) RESULT
         CLOSE(99)
     ELSE
         DO i = 1, num_agents_sim
-            types(i) = get_random_type(type_spec)
+            types(i) = get_random_type(num_types, type_spec)
         END DO
 
     END IF

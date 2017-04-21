@@ -9,7 +9,9 @@ from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
 from respy.python.simulate.simulate_auxiliary import format_float
 from respy.python.process.process_python import process
 from respy.scripts.scripts_update import scripts_update
-from respy import RespyCls, simulate
+from respy.custom_exceptions import UserError
+from respy import RespyCls
+from respy import simulate
 
 
 def dist_input_arguments(parser):
@@ -101,6 +103,12 @@ def scripts_compare(base_init, is_update):
 
     # Read in relevant model specification.
     respy_obj = RespyCls(init_file)
+
+    # The comparison does make sense when the file of the simulated dataset
+    # and estimation dataset are the same. Then the estimation dataset is
+    # overwritten by the simulated dataset. 
+    if respy_obj.attr['file_est'] == respy_obj.attr['file_sim']:
+        raise UserError(' Misspecified constraints for covariance matrix')
 
     # Auxiliary information
     num_periods = respy_obj.get_attr('num_periods')

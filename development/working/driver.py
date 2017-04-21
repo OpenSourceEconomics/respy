@@ -30,7 +30,7 @@ from respy.python.solve.solve_ambiguity import criterion_ambiguity, \
 from respy import RespyCls
 from respy import simulate
 from respy import estimate
-
+from respy.scripts.scripts_compare import scripts_compare
 from codes.auxiliary import simulate_observed
 from codes.auxiliary import write_draws
 
@@ -43,9 +43,8 @@ respy_obj = RespyCls('model.respy.ini')
 # This ensures that the experience effect is taken care of properly.
 open('.restud.respy.scratch', 'w').close()
 
-respy_obj = simulate(respy_obj)
+respy_obj, _ = simulate(respy_obj)
 #respy_obj.write_out('test.respy.ini')
 #respy_obj = RespyCls('test.respy.ini')
-#_, crit = estimate(respy_obj)
-#print crit
-#np.testing.assert_almost_equal(crit, 0.665863818512904)
+_, crit = estimate(respy_obj)
+scripts_compare('model.respy.ini', True)#np.testing.assert_almost_equal(crit, 0.665863818512904)
