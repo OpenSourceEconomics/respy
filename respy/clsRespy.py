@@ -102,10 +102,6 @@ class RespyCls(object):
         self.attr['precond_spec']['type'] = None
         self.attr['precond_spec']['eps'] = None
 
-        self.attr['type_spec'] = dict()
-        self.attr['type_spec']['shares'] = None
-        self.attr['type_spec']['shifts'] = None
-
         self.attr['seed_sim'] = None
 
         self.attr['is_debug'] = None
@@ -486,11 +482,7 @@ class RespyCls(object):
         self.attr['precond_spec']['type'] = init_dict['PRECONDITIONING']['type']
         self.attr['precond_spec']['eps'] = init_dict['PRECONDITIONING']['eps']
 
-        self.attr['type_spec'] = dict()
-        self.attr['type_spec']['shares'] = init_dict['TYPES']['shares']
-        self.attr['type_spec']['shifts'] = init_dict['TYPES']['shifts']
-
-        self.attr['num_types'] = len(self.attr['type_spec']['shares'])
+        self.attr['num_types'] = len(init_dict['TYPES_SHARES'])
 
         # Initialize model parameters
         self.attr['optim_paras'] = dict()
@@ -528,6 +520,10 @@ class RespyCls(object):
             init_dict['AMBIGUITY']['coeffs']
         self.attr['optim_paras']['delta'] = \
             init_dict['BASICS']['coeffs']
+        self.attr['optim_paras']['type_shares'] = \
+            init_dict['TYPES_SHARES']['coeffs']
+        self.attr['optim_paras']['type_shifts'] = \
+            init_dict['TYPES_SHIFTS']['coeffs']
 
         # Initialize information about optimization parameters
         for which in ['fixed', 'bounds']:
@@ -538,11 +534,15 @@ class RespyCls(object):
             self.attr['optim_paras']['paras_' + which] += init_dict['EDUCATION'][which][:]
             self.attr['optim_paras']['paras_' + which] += init_dict['HOME'][which][:]
             self.attr['optim_paras']['paras_' + which] += init_dict['SHOCKS'][which]
+            self.attr['optim_paras']['paras_' + which] += init_dict['TYPES_SHARES'][which][:]
+            self.attr['optim_paras']['paras_' + which] += init_dict['TYPES_SHIFTS'][which][:]
 
         # Ensure that all elements in the dictionary are of the same
         # type.
-        keys = ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-        keys += ['shocks_cholesky', 'level', 'delta']
+        keys = []
+        keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
+        keys += ['shocks_cholesky', 'level', 'delta', 'type_shares']
+        keys += ['type_shifts']
         for key_ in keys:
             self.attr['optim_paras'][key_] = \
                 np.array(self.attr['optim_paras'][key_])
@@ -582,12 +582,16 @@ class RespyCls(object):
 
         edu_start = self.attr['edu_start']
 
+        num_types = self.attr['num_types']
+
         edu_max = self.attr['edu_max']
 
         # Update derived attributes
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
 
         self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)[0]
+
+        self.attr['num_paras'] = 35 + num_types + (num_types - 1) * 4
 
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
@@ -618,8 +622,6 @@ class RespyCls(object):
 
         optim_paras = self.attr['optim_paras']
 
-        type_spec = self.attr['type_spec']
-
         edu_start = self.attr['edu_start']
 
         is_myopic = self.attr['is_myopic']
@@ -629,6 +631,8 @@ class RespyCls(object):
         seed_emax = self.attr['seed_emax']
 
         num_procs = self.attr['num_procs']
+
+        num_paras = self.attr['num_paras']
 
         is_debug = self.attr['is_debug']
 
@@ -645,6 +649,10 @@ class RespyCls(object):
         # We also load the full configuration.
         with open(ROOT_DIR + '/.config', 'r') as infile:
             config_dict = json.load(infile)
+
+        # Number of parameters
+        assert isinstance(num_paras, int)
+        assert int >= 37
 
         # Parallelism
         assert isinstance(num_procs, int)
@@ -726,17 +734,6 @@ class RespyCls(object):
             assert (isinstance(precond_spec[key_], float))
             assert (precond_spec[key_] > 0.0)
 
-        # Type specification
-        num_types = self.attr['num_types']
-        for val in type_spec['shifts'].flatten().tolist() + type_spec['shares']:
-            assert isinstance(val, float)
-        for val in type_spec['shares']:
-            assert val >= 0.00
-
-        np.testing.assert_almost_equal(np.sum(type_spec['shares']), 1.0)
-        assert type_spec['shifts'].shape == (num_types, 4)
-        assert sum(type_spec['shifts'][0, :]) == 0.00
-
         # Derivatives
         assert (derivatives in ['FORWARD-DIFFERENCES'])
 
@@ -754,7 +751,7 @@ class RespyCls(object):
         # or none. As a special case, we also allow for all off-diagonal
         # elements to be fixed to zero.
         shocks_coeffs = optim_paras['shocks_cholesky'][np.tril_indices(4)]
-        shocks_fixed = optim_paras['paras_fixed'][25:]
+        shocks_fixed = optim_paras['paras_fixed'][25:35]
 
         all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
         all_free = all(is_free is True for is_free in shocks_fixed)
@@ -773,12 +770,14 @@ class RespyCls(object):
         # constraint needs to be present all the time.
         for label in ['paras_fixed', 'paras_bounds']:
             assert isinstance(optim_paras[label], list)
-            assert (len(optim_paras[label]) == NUM_PARAS)
+            print len(optim_paras[label]), num_paras
+
+            assert (len(optim_paras[label]) == num_paras)
 
         for i in range(2):
             assert optim_paras['paras_bounds'][i][0] >= 0.00
 
-        for i in range(NUM_PARAS):
+        for i in range(35):
             lower, upper = optim_paras['paras_bounds'][i]
             if lower is not None:
                 assert isinstance(lower, float)
@@ -792,8 +791,12 @@ class RespyCls(object):
                 assert upper >= lower
             # At this point no bounds for the elements of the covariance
             # matrix are allowed.
-            if i in range(25, NUM_PARAS):
+            if i in range(25, 35):
                 assert optim_paras['paras_bounds'][i] == [None, None]
+
+        # TODO: The bounds of the parameters need to be checked.
+
+
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.

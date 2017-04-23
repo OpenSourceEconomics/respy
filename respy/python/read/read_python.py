@@ -40,7 +40,7 @@ def read(fname):
             flag, value = list_[:2]
             is_fixed, bounds = None, None
 
-            if flag in ['coeff']:
+            if flag in ['coeff', 'shift', 'share']:
                 is_fixed, bounds = process_coefficient_line(line)
 
             # Type conversions
@@ -51,20 +51,41 @@ def read(fname):
 
     # Type conversion for Shocks
     dict_['SHOCKS']['coeffs'] = np.array(dict_['SHOCKS']['coeffs'])
+    dict_['TYPES']['coeffs'] = np.array(dict_['TYPES']['coeffs'])
+
+    # We further process the TYPES for easier processing later.
+    num_types = (len(dict_['TYPES']['coeffs'][1:]) / 4) + 1
+
+    for label in ['SHARES', 'SHIFTS']:
+        dict_['TYPES_' + label] = dict()
+        dict_['TYPES_' + label]['coeffs'] = []
+        dict_['TYPES_' + label]['fixed'] = []
+        dict_['TYPES_' + label]['bounds'] = []
+
+    for idx in range((num_types - 1) * 5 + 1):
+        for label in ['coeffs', 'fixed', 'bounds']:
+            if idx in [0] + range(1, (num_types - 1) * 5, 5):
+                dict_['TYPES_SHARES'][label] += [dict_['TYPES'][label][idx]]
+            else:
+                dict_['TYPES_SHIFTS'][label] += [dict_['TYPES'][label][idx]]
+
+
+    del dict_['TYPES']
 
     # TODO: Is this the right place to do it? No, but I will wait with the
     # refactoring until these are actual estimation parameters.
-    if 'TYPES' not in dict_.keys():
-        dict_['TYPES'] = dict()
-        dict_['TYPES']['shares'] = [1.0]
+    # if 'TYPES' not in dict_.keys():
+    #     dict_['TYPES'] = dict()
+    #     dict_['TYPES']['shares'] = [1.0]
+    #
+    # num_types = len(dict_['TYPES']['shares'])
+    # if num_types == 1:
+    #     dict_['TYPES']['shifts'] = np.tile(0.0, (1, 4))
+    # else:
+    #     dict_['TYPES']['shifts'] = np.reshape(dict_['TYPES']['shifts'], (num_types - 1, 4))
+    #     dict_['TYPES']['shifts'] = np.concatenate((np.tile(0.0, (1, 4)),
+    #                                               dict_['TYPES']['shifts']), axis=0)
 
-    num_types = len(dict_['TYPES']['shares'])
-    if num_types == 1:
-        dict_['TYPES']['shifts'] = np.tile(0.0, (1, 4))
-    else:
-        dict_['TYPES']['shifts'] = np.reshape(dict_['TYPES']['shifts'], (num_types - 1, 4))
-        dict_['TYPES']['shifts'] = np.concatenate((np.tile(0.0, (1, 4)),
-                                                  dict_['TYPES']['shifts']), axis=0)
 
     # Finishing
     return dict_
@@ -132,7 +153,7 @@ def _process_line(group, flag, value, is_fixed, bounds, dict_):
     """
     # This aligns the label from the initialization file with the label
     # inside the RESPY logic.
-    if flag in ['coeff']:
+    if flag in ['coeff', 'share', 'shift']:
         flag = 'coeffs'
 
     # Prepare container for information about coefficients
@@ -148,14 +169,6 @@ def _process_line(group, flag, value, is_fixed, bounds, dict_):
         dict_[group]['fixed'] += [is_fixed]
     elif flag not in ['share', 'shift']:
         dict_[group][flag] = value
-
-    # Prepare container for information about types.
-    if group == 'TYPES':
-        if flag in ['share', 'shift']:
-            flag += 's'
-        if flag not in dict_[group].keys():
-            dict_[group][flag] = []
-        dict_[group][flag] += [value]
 
     # Finishing.
     return dict_
