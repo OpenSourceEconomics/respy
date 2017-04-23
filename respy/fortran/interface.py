@@ -10,7 +10,6 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.shared.shared_constants import EXEC_DIR
 
 
@@ -23,7 +22,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         is_myopic, min_idx, tau, num_procs, num_agents_sim, \
         num_draws_prob, num_agents_est, seed_prob, seed_sim, \
         optimizer_options, optimizer_used, maxfun, \
-        precond_spec, ambi_spec, file_sim, type_spec = \
+        precond_spec, ambi_spec, file_sim, type_spec, num_paras = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
                 'edu_start', 'is_debug', 'edu_max',
                 'num_draws_emax', 'seed_emax', 'is_interpolated',
@@ -31,7 +30,7 @@ def resfort_interface(respy_obj, request, data_array=None):
                 'num_procs', 'num_agents_sim', 'num_draws_prob',
                 'num_agents_est', 'seed_prob', 'seed_sim',
                 'optimizer_options', 'optimizer_used', 'maxfun',
-                'precond_spec', 'ambi_spec', 'file_sim', 'type_spec')
+                'precond_spec', 'ambi_spec', 'file_sim', 'type_spec', 'num_paras')
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -50,7 +49,7 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     args = args + (num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, precond_spec, ambi_spec, type_spec, file_sim,
+        optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, type_spec, file_sim,
         data_array)
 
     write_resfort_initialization(*args)
@@ -148,7 +147,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
         min_idx, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
         seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, precond_spec, ambi_spec, type_spec, file_sim,
+        optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, type_spec, file_sim,
         data_array):
     """ Write out model request to hidden file .model.resfort.ini.
     """

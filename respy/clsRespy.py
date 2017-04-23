@@ -18,7 +18,6 @@ from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import ROOT_DIR
-from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.read.read_python import read
 from respy.custom_exceptions import UserError
 
@@ -508,6 +507,17 @@ class RespyCls(object):
             shocks_cholesky = np.linalg.cholesky(shocks_cov)
             self.attr['optim_paras']['shocks_cholesky'] = shocks_cholesky
 
+        # Constructing the shifts for each type.
+        type_shifts = init_dict['TYPES_SHIFTS']['coeffs']
+
+        if self.attr['num_types'] == 1:
+            type_shifts = np.tile(0.0, (1, 4))
+        else:
+            type_shifts = np.reshape(type_shifts, (self.attr['num_types'] - 1, 4))
+            type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
+
+        self.attr['optim_paras']['type_shifts'] = type_shifts
+
         self.attr['optim_paras']['coeffs_a'] = \
             init_dict['OCCUPATION A']['coeffs']
         self.attr['optim_paras']['coeffs_b'] = \
@@ -522,8 +532,6 @@ class RespyCls(object):
             init_dict['BASICS']['coeffs']
         self.attr['optim_paras']['type_shares'] = \
             init_dict['TYPES_SHARES']['coeffs']
-        self.attr['optim_paras']['type_shifts'] = \
-            init_dict['TYPES_SHIFTS']['coeffs']
 
         # Initialize information about optimization parameters
         for which in ['fixed', 'bounds']:
@@ -744,7 +752,7 @@ class RespyCls(object):
         check_model_parameters(optim_paras)
 
         # Check that all parameter values are within the bounds.
-        x = get_optim_paras(optim_paras, 'all', True)
+        x = get_optim_paras(optim_paras, num_paras, 'all', True)
 
         # It is not clear at this point how to impose parameter constraints
         # on the covariance matrix in a flexible manner. So, either all fixed

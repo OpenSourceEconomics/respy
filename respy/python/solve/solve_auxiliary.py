@@ -109,12 +109,9 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx,
 
 
 def pyth_calculate_rewards_systematic(num_periods, states_number_period,
-        states_all, edu_start, max_states_period, optim_paras, type_spec):
+        states_all, edu_start, max_states_period, optim_paras):
     """ Calculate ex systematic rewards.
     """
-
-    type_shifts = type_spec['shifts']
-
     # Initialize
     shape = (num_periods, max_states_period, 4)
     periods_rewards_systematic = np.tile(MISSING_FLOAT, shape)
@@ -187,10 +184,10 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
 
             # Now we add the type-specific deviation.
             for j in [0, 1]:
-                rewards[j] = rewards[j] * np.exp(type_shifts[type_, j])
+                rewards[j] = rewards[j] * np.exp(optim_paras['type_shifts'][type_, j])
 
             for j in [2, 3]:
-                rewards[j] = rewards[j] + type_shifts[type_, j]
+                rewards[j] = rewards[j] + optim_paras['type_shifts'][type_, j]
 
             periods_rewards_systematic[period, k, :] = rewards
 

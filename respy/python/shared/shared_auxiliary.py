@@ -16,7 +16,6 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
-from respy.python.shared.shared_constants import NUM_PARAS
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
 
@@ -68,7 +67,7 @@ def dist_econ_paras(x_all_curre):
     # Home
     coeffs_home = x_all_curre[24:25]
 
-    shocks_coeffs = x_all_curre[25:NUM_PARAS]
+    shocks_coeffs = x_all_curre[25:35]
     for i in [0, 4, 7, 9]:
         shocks_coeffs[i] **= 2
 
@@ -118,12 +117,34 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     # Cholesky
     optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
 
+    type_shares, type_shifts = extract_type_information(x_all_curre)
+    optim_paras['type_shares'] = type_shares
+    optim_paras['type_shifts'] = type_shifts
+
     # Checks
     if is_debug:
         assert check_model_parameters(optim_paras)
 
     # Finishing
     return optim_paras
+
+
+def extract_type_information(x):
+    """ This function extracts the information about types from the estimation vector.
+    """
+
+    num_types = (len(x[35:]) - 1) / 5 + 1
+
+    # Type shares
+    type_shares = x[35:(35 + num_types)]
+
+    # Type shifts
+    type_shifts = x[(35 + num_types):]
+    type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
+    type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
+
+    return type_shares, type_shifts
+
 
 
 def extract_cholesky(x, info=None):
@@ -133,7 +154,7 @@ def extract_cholesky(x, info=None):
     shocks_cholesky[0, :1] = x[25:26]
     shocks_cholesky[1, :2] = x[26:28]
     shocks_cholesky[2, :3] = x[28:31]
-    shocks_cholesky[3, :4] = x[31:NUM_PARAS]
+    shocks_cholesky[3, :4] = x[31:35]
 
     # Stabilization
     if info is not None:
@@ -324,10 +345,13 @@ def replace_missing_values(arguments):
 def check_model_parameters(optim_paras):
     """ Check the integrity of all model parameters.
     """
+    # Auxiliary objects
+    num_types = len(optim_paras['type_shifts'])
+
     # Checks for all arguments
     keys = []
     keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-    keys += ['level', 'shocks_cholesky', 'delta']
+    keys += ['level', 'shocks_cholesky', 'delta', 'type_shares', 'type_shifts']
 
     for key in keys:
         assert (isinstance(optim_paras[key], np.ndarray))
@@ -351,6 +375,13 @@ def check_model_parameters(optim_paras):
     assert (optim_paras['shocks_cholesky'].shape == (4, 4))
     np.allclose(optim_paras['shocks_cholesky'],
         np.tril(optim_paras['shocks_cholesky']))
+
+    # Checks for type shares
+    assert np.all(optim_paras['type_shares'] <= 1.0)
+    assert np.all(optim_paras['type_shares'] >= 0.0)
+
+    # Checks for type shifts
+    assert optim_paras['type_shifts'].shape == (num_types, 4)
 
     # Finishing
     return True
@@ -407,7 +438,7 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     return draws_transformed
 
 
-def generate_optimizer_options(which, optim_paras):
+def generate_optimizer_options(which, optim_paras, num_paras):
 
     dict_ = dict()
 
@@ -439,9 +470,9 @@ def generate_optimizer_options(which, optim_paras):
         # It is not recommended that N is larger than upper as the code might
         # break down due to a segmentation fault. See the source files for the
         # absolute upper bounds.
-        assert sum(optim_paras['paras_fixed']) != NUM_PARAS
-        lower = (NUM_PARAS - sum(optim_paras['paras_fixed'])) + 2
-        upper = (2 * (NUM_PARAS - sum(optim_paras['paras_fixed'])) + 1)
+        assert sum(optim_paras['paras_fixed']) != num_paras
+        lower = (num_paras - sum(optim_paras['paras_fixed'])) + 2
+        upper = (2 * (num_paras - sum(optim_paras['paras_fixed'])) + 1)
         dict_['npt'] = np.random.randint(lower, upper + 1)
 
     elif which == 'FORT-BFGS':
@@ -672,7 +703,7 @@ def apply_scaling(x, precond_matrix, request):
     return out
 
 
-def get_est_info():
+def get_est_info(num_paras):
     """ This function reads in the parameters from the last step of a
     previous estimation run.
     """
@@ -712,7 +743,7 @@ def get_est_info():
     # Parameter values
     for i, key_ in enumerate(['start', 'step', 'current']):
         rslt['paras_' + key_] = []
-        for j in range(13, NUM_PARAS + 13):
+        for j in range(13, num_paras + 13):
             line = shlex.split(linecache.getline('est.respy.info', j))
             rslt['paras_' + key_] += [_process_value(line[i + 1], 'float')]
         rslt['paras_' + key_] = np.array(rslt['paras_' + key_])
@@ -729,15 +760,18 @@ def remove_scratch_files():
         os.unlink(fname)
 
 
-def get_optim_paras(optim_paras, which, is_debug):
+def get_optim_paras(optim_paras, num_paras, which, is_debug):
     """ Get optimization parameters.
     """
     # Checks
     if is_debug:
         assert check_model_parameters(optim_paras)
 
+    # Auxiliary objects
+    num_types = len(optim_paras['type_shifts'])
+
     # Initialize container
-    x = np.tile(np.nan, NUM_PARAS)
+    x = np.tile(np.nan, num_paras)
 
     # Discount rate
     x[0:1] = optim_paras['delta']
@@ -758,7 +792,12 @@ def get_optim_paras(optim_paras, which, is_debug):
     x[24:25] = optim_paras['coeffs_home']
 
     # Shocks
-    x[25:NUM_PARAS] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+    x[25:35] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+
+    # Shares
+    x[35:(35 + num_types)] = optim_paras['type_shares']
+
+    x[(35 + num_types):num_paras] = optim_paras['type_shifts'].flatten()[4:]
 
     # Checks
     if is_debug:
@@ -767,7 +806,7 @@ def get_optim_paras(optim_paras, which, is_debug):
     # Select subset
     if which == 'free':
         x_free_curre = []
-        for i in range(NUM_PARAS):
+        for i in range(num_paras):
             if not optim_paras['paras_fixed'][i]:
                 x_free_curre += [x[i]]
 

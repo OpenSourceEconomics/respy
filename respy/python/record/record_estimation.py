@@ -9,7 +9,6 @@ from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
-from respy.python.shared.shared_constants import NUM_PARAS
 
 
 def record_estimation_scaling(x_optim_free_unscaled_start,
@@ -25,7 +24,7 @@ def record_estimation_scaling(x_optim_free_unscaled_start,
         out_file.write(fmt_.format(*labels))
 
         j = 0
-        for i in range(NUM_PARAS):
+        for i in range(len(paras_fixed)):
             if paras_fixed[i]:
                 continue
 
@@ -81,6 +80,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
 
     # Distribute class attributes
     paras_fixed = opt_obj.paras_fixed
+    num_paras = opt_obj.num_paras
 
     shocks_cholesky, _ = extract_cholesky(x_optim_all_unscaled, 0)
     shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
@@ -94,21 +94,24 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
         opt_obj.crit_vals[0] = fval
         opt_obj.x_optim_container[:, 0] = x_optim_all_unscaled
         opt_obj.x_econ_container[:25, 0] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:NUM_PARAS, 0] = shocks_coeffs
+        opt_obj.x_econ_container[25:35, 0] = shocks_coeffs
+        opt_obj.x_econ_container[35:num_paras, 0] = x_optim_all_unscaled[35:]
 
     if is_step:
         opt_obj.num_step += 1
         opt_obj.crit_vals[1] = fval
         opt_obj.x_optim_container[:, 1] = x_optim_all_unscaled
         opt_obj.x_econ_container[:25, 1] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:NUM_PARAS, 1] = shocks_coeffs
+        opt_obj.x_econ_container[25:35, 1] = shocks_coeffs
+        opt_obj.x_econ_container[35:num_paras, 1] = x_optim_all_unscaled[35:]
 
     if True:
         opt_obj.num_eval += 1
         opt_obj.crit_vals[2] = fval
         opt_obj.x_optim_container[:, 2] = x_optim_all_unscaled
         opt_obj.x_econ_container[:25, 2] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:NUM_PARAS, 2] = shocks_coeffs
+        opt_obj.x_econ_container[25:35, 2] = shocks_coeffs
+        opt_obj.x_econ_container[35:num_paras, 2] = x_optim_all_unscaled[35:]
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container
@@ -151,7 +154,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
 
         # Formatting for the file
         fmt_ = '   {:>10}' + '    {:>25}' * 3
-        for i in range(NUM_PARAS):
+        for i in range(num_paras):
             if paras_fixed[i]:
                 continue
             line = [i] + char_floats(x_optim_container[i, :])
@@ -184,11 +187,11 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
 
     write_est_info(opt_obj.crit_vals[0], x_econ_container[:, 0],
         opt_obj.num_step, opt_obj.crit_vals[1], x_econ_container[:, 1],
-        opt_obj.num_eval, opt_obj.crit_vals[2], x_econ_container[:, 2])
+        opt_obj.num_eval, opt_obj.crit_vals[2], x_econ_container[:, 2], num_paras)
 
 
 def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
-        num_eval, value_current, paras_current):
+        num_eval, value_current, paras_current, num_paras):
 
     # Formatting for the file
     fmt_ = '{:>25}    ' * 4
@@ -205,7 +208,7 @@ def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
         out_file.write('\n{:>25}\n\n'.format('Economic Parameters'))
         line = ['Identifier', 'Start', 'Step', 'Current']
         out_file.write(fmt_.format(*line) + '\n\n')
-        for i, _ in enumerate(range(NUM_PARAS)):
+        for i, _ in enumerate(range(num_paras)):
             line = [i]
             line += char_floats([paras_start[i], paras_step[i]])
             line += char_floats(paras_current[i])

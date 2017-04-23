@@ -1,13 +1,13 @@
 import os
 
 from respy.python.shared.shared_auxiliary import generate_optimizer_options
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import remove_scratch_files
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
-from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.process.process_python import process
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
@@ -37,6 +37,7 @@ def estimate(respy_obj):
     data_array = data_frame.as_matrix()
 
     # Distribute class attributes
+    num_paras = respy_obj.get_attr('num_paras')
     version = respy_obj.get_attr('version')
 
     # Select appropriate interface
@@ -47,7 +48,7 @@ def estimate(respy_obj):
     else:
         raise NotImplementedError
 
-    rslt = get_est_info()
+    rslt = get_est_info(num_paras)
     x, val = rslt['paras_step'], rslt['value_step']
 
     remove_scratch_files()
@@ -66,14 +67,12 @@ def check_estimation(respy_obj):
     assert not os.path.exists('.estimation.respy.scratch')
 
     # Distribute class attributes
-    optimizer_options = respy_obj.get_attr('optimizer_options')
-    optimizer_used = respy_obj.get_attr('optimizer_used')
-    optim_paras = respy_obj.get_attr('optim_paras')
-    version = respy_obj.get_attr('version')
-    maxfun = respy_obj.get_attr('maxfun')
+    optimizer_options, optimizer_used, optim_paras, version, maxfun, num_paras = \
+        dist_class_attributes(respy_obj, 'optimizer_options', 'optimizer_used', 'optim_paras',
+                              'version', 'maxfun', 'num_paras')
 
     # Ensure that at least one free parameter.
-    assert sum(optim_paras['paras_fixed']) != NUM_PARAS
+    assert sum(optim_paras['paras_fixed']) != num_paras
 
     # Check that the used optimizers were defined by the user.
     if optim_paras['level'][0] > 0:
@@ -111,7 +110,7 @@ def check_estimation(respy_obj):
     full_options = dict()
     for optimizer in OPTIMIZERS:
         full_options[optimizer] = \
-            generate_optimizer_options(optimizer, optim_paras)
+            generate_optimizer_options(optimizer, optim_paras, num_paras)
 
     for optimizer in optimizer_options.keys():
         full_options[optimizer] = optimizer_options[optimizer]

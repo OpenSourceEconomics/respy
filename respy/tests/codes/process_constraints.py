@@ -2,7 +2,6 @@ import numpy as np
 
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.shared.shared_constants import NUM_PARAS
 
 from codes.auxiliary import get_valid_shares_for_types
 from codes.auxiliary import get_valid_shifts_for_types

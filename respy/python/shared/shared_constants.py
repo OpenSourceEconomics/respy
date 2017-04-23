@@ -23,9 +23,6 @@ SMALL_FLOAT = 1e-5
 TINY_FLOAT = 1.0e-8
 PRINT_FLOAT = 1e10
 
-# Total number of parameters to can potentially be estimated.
-NUM_PARAS = 35
-
 # Ambiguity
 MIN_AMBIGUITY = 1e-20
 
@@ -53,6 +50,9 @@ OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS', 'FORT-BOBYQA']
 
 OPT_AMB_PYTH = ['SCIPY-SLSQP']
 OPT_AMB_FORT = ['FORT-SLSQP']
+
+
+NUM_PARAS, NUM_TYPES = None, None
 
 # Labels for columns in a dataset as well as the formatters.
 DATA_LABELS_EST = []

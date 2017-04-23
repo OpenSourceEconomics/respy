@@ -9,8 +9,7 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
         periods_emax, states_all, data_array, periods_draws_prob, tau,
-        edu_start, edu_max, num_periods, num_draws_prob, optim_paras,
-        type_spec):
+        edu_start, edu_max, num_periods, num_draws_prob, optim_paras):
     """ Evaluate criterion function. This code allows for a deterministic
     model, where there is no random variation in the rewards. If that is the
     case and all agents have corresponding experiences, then one is returned.
@@ -25,8 +24,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, num_obs)
 
-    type_shares = type_spec['shares']
-    num_types = len(type_shares)
+    num_types = len(optim_paras['type_shares'])
 
     # Calculate the probability over agents and time.
     for j in range(num_obs):
@@ -143,7 +141,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
                 return contribs
 
         # Adjust  and record likelihood contribution
-        contribs[j] = np.sum(np.multiply(type_shares, prob_type))
+        contribs[j] = np.sum(np.multiply(optim_paras['type_shares'], prob_type))
 
         j += 1
 
