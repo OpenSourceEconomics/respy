@@ -15,6 +15,7 @@ from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
 from respy import RespyCls
 from respy import simulate
@@ -114,19 +115,46 @@ def compare_est_log(base_est_log):
                     base_val = float(shlex.split(base_line)[1])
                     np.testing.assert_almost_equal(alt_val, base_val)
                 elif list_[0] in ['Ambiguity']:
-                    # We know that the results from the worst-case
-                    # determination are very sensitive for ill-conditioned
-                    # problems and thus the performance varies across versions.
+                    # We know that the results from the worst-case determination are very
+                    # sensitive for ill-conditioned problems and thus the performance varies
+                    # across versions.
                     pass
                 elif list_[0] in ['Time', 'Duration']:
                     pass
                 else:
-                    assert alt_line == base_line
 
+                    is_floats = False
+                    try:
+                        int(shlex.split(alt_line)[0])
+                        is_floats = True
+                    except ValueError:
+                        pass
+                    # We need to cut the floats some slack. It might very well happen that in the
+                    # very last digits they are in fact different across the versions.
+                    if not is_floats:
+                        assert alt_line == base_line
+                    else:
+                        base_floats = get_floats(base_line)
+                        alt_floats = get_floats(alt_line)
+                        np.testing.assert_almost_equal(alt_floats, base_floats)
             return
 
         except IndexError:
             pass
+
+
+def get_floats(line):
+    """ This extracts the floats from the line
+    """
+    list_ = shlex.split(line)[1:]
+    rslt = []
+    for val in list_:
+        if val == '---':
+            val = HUGE_FLOAT
+        else:
+            val = float(val)
+        rslt += [val]
+    return rslt
 
 
 def write_interpolation_grid(file_name):
@@ -138,9 +166,8 @@ def write_interpolation_grid(file_name):
 
     # Distribute class attribute
     num_periods, num_points_interp, edu_start, edu_max, min_idx, num_types = \
-        dist_class_attributes(respy_obj,
-            'num_periods', 'num_points_interp', 'edu_start', 'edu_max',
-            'min_idx', 'num_types')
+        dist_class_attributes(respy_obj, 'num_periods', 'num_points_interp', 'edu_start',
+            'edu_max', 'min_idx', 'num_types')
 
     # Determine maximum number of states
     _, states_number_period, _, max_states_period = \
@@ -195,13 +222,12 @@ def write_draws(num_periods, max_draws):
                 file_.write(line)
 
 
-def write_types(type_spec, num_agents_sim):
+def write_types(type_shares, num_agents_sim):
     """ We also need to fully control the random types to ensure the
     comparability between PYTHON and FORTRAN simulations.
     """
-    num_types = len(type_spec['shares'])
-    types = np.random.choice(range(num_types), p=type_spec['shares'],
-        size=num_agents_sim)
+    num_types = len(type_shares)
+    types = np.random.choice(range(num_types), p=type_shares, size=num_agents_sim)
     np.savetxt('.types.respy.test', types, fmt='%i')
 
 

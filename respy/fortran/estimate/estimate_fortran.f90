@@ -142,7 +142,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
     REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
 
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
-    REAL(our_dble)                  :: x_optim_all_unscaled(NUM_PARAS)
+    REAL(our_dble)                  :: x_optim_all_unscaled(num_paras)
     REAL(our_dble)                  :: contribs(num_obs)
     REAL(our_dble)                  :: start
 
@@ -171,11 +171,11 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     CALL dist_optim_paras(optim_paras, x_optim_all_unscaled, dist_optim_paras_info)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras, type_spec)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
     CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, type_spec)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
 
 
     fort_criterion_scalar = get_log_likl(contribs)
@@ -204,7 +204,7 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_all_current(NUM_PARAS)
+    REAL(our_dble)                  :: x_all_current(num_paras)
     REAL(our_dble)                  :: x_input(num_free)
     REAL(our_dble)                  :: contribs(num_obs)
     REAL(our_dble)                  :: start
@@ -239,7 +239,7 @@ FUNCTION fort_criterion_parallel(x)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
-    CALL MPI_Bcast(x_all_current, NUM_PARAS, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_Bcast(x_all_current, num_paras, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
     CALL dist_optim_paras(optim_paras, x_all_current, dist_optim_paras_info)
@@ -327,7 +327,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(NUM_PARAS)
+    REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(num_paras)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
     REAL(our_dble), INTENT(IN)                  :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
@@ -344,7 +344,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     j = 1
 
-    DO i = 1, NUM_PARAS
+    DO i = 1, num_paras
 
         IF(optim_paras%paras_fixed(i)) THEN
             x_optim_all_unscaled(i) = x_all_start(i)

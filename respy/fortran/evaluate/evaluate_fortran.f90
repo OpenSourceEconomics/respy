@@ -19,7 +19,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, type_spec)
+SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
 
     !   DEVELOPMENT NOTES
     !
@@ -35,7 +35,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble), INTENT(OUT)     :: contribs(SIZE(data_evaluate, 1))
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
-    TYPE(TYPE_DICT), INTENT(IN)         :: type_spec
 
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
@@ -215,7 +214,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
         END DO
 
         ! Adjust  and record likelihood contribution
-        contribs(j) = SUM(type_spec%shares * prob_type)
+        contribs(j) = SUM(optim_paras%type_shares * prob_type)
 
     END DO
 

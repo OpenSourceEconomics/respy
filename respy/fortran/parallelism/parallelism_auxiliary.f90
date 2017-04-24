@@ -33,7 +33,7 @@ MODULE parallelism_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, type_spec, file_sim)
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, file_sim)
 
     !/* external objects        */
 
@@ -45,7 +45,6 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
-    TYPE(TYPE_DICT), INTENT(IN)                     :: type_spec
 
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
@@ -55,7 +54,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     !/* internal objects        */
 
     REAL(our_dble), ALLOCATABLE                     :: opt_ambi_details(:, :, :)
-    REAL(our_dble)                                  :: x_all_current(NUM_PARAS)
+    REAL(our_dble)                                  :: x_all_current(num_paras)
 
     INTEGER(our_int), ALLOCATABLE                   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE                   :: num_obs_slaves(:)
@@ -77,12 +76,12 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     CALL get_optim_paras(x_all_current, optim_paras, .True.)
 
-    CALL MPI_Bcast(x_all_current, NUM_PARAS, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_Bcast(x_all_current, num_paras, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx, num_types)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras, type_spec)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
 
     ALLOCATE(periods_emax(num_periods, max_states_period))

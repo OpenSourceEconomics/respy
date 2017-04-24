@@ -40,10 +40,9 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int)                :: k
 
     REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
+    REAL(our_dble), ALLOCATABLE     :: x_optim_all_unscaled(:)
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
     REAL(our_dble), ALLOCATABLE     :: contribs(:)
-
-    REAL(our_dble)                  :: x_optim_all_unscaled(NUM_PARAS)
 
     LOGICAL                         :: STAY_AVAILABLE = .TRUE.
 
@@ -63,7 +62,7 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
 
-    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, type_spec, optimizer_used, optimizer_options, file_sim, num_obs)
+    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs, num_paras)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx, num_types)
 
@@ -73,7 +72,7 @@ PROGRAM resfort_parallel_slave
 
     ALLOCATE(opt_ambi_summary_slaves(2, num_slaves)); opt_ambi_summary_slaves = MISSING_INT
     ALLOCATE(displs(num_slaves)); displs = MISSING_INT
-
+    ALLOCATE(x_optim_all_unscaled(num_paras))
 
     DO WHILE (STAY_AVAILABLE)
 
@@ -86,7 +85,7 @@ PROGRAM resfort_parallel_slave
         END IF
 
 
-        CALL MPI_Bcast(x_optim_all_unscaled, NUM_PARAS, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+        CALL MPI_Bcast(x_optim_all_unscaled, num_paras, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
         CALL dist_optim_paras(optim_paras, x_optim_all_unscaled)
 
@@ -99,7 +98,7 @@ PROGRAM resfort_parallel_slave
 
             IF (rank == zero_int) CALL record_solution(2, file_sim)
 
-            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras, type_spec)
+            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
             IF (rank == zero_int) CALL record_solution(-1, file_sim)
 
@@ -143,11 +142,11 @@ PROGRAM resfort_parallel_slave
 
             END IF
 
-            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras, type_spec)
+            CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
             CALL fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, .False.)
 
-            CALL fort_contributions(contribs(lower_bound_obs:upper_bound_obs), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, type_spec)
+            CALL fort_contributions(contribs(lower_bound_obs:upper_bound_obs), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
 
             CALL MPI_GATHERV(contribs(lower_bound_obs:upper_bound_obs), num_obs_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 

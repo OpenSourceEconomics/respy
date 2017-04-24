@@ -36,6 +36,7 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_free_ambi
     INTEGER(our_int)            :: num_periods
     INTEGER(our_int)            :: num_slaves
+    INTEGER(our_int)            :: num_paras
     INTEGER(our_int)            :: num_types
     INTEGER(our_int)            :: num_free
     INTEGER(our_int)            :: min_idx
@@ -45,8 +46,6 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_eval = zero_int
 
     ! Variables that need to be aligned across FORTRAN and PYTHON implementations.
-    INTEGER(our_int), PARAMETER :: NUM_PARAS                    = 35
-
     INTEGER(our_int), PARAMETER :: MISSING_INT                  = -99_our_int
 
     REAL(our_dble), PARAMETER   :: MIN_AMBIGUITY                = 1.0e-20_our_dble

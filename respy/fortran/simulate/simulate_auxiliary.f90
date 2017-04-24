@@ -21,15 +21,15 @@ MODULE simulate_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-FUNCTION get_random_type(num_types, type_spec) RESULT(type_)
+FUNCTION get_random_type(num_types, optim_paras) RESULT(type_)
 
     !/* external objects    */
 
-    TYPE(TYPE_DICT), INTENT(IN)     :: type_spec
+    TYPE(OPTIMPARAS_DICT), INTENT(IN) :: optim_paras
 
-    INTEGER(our_int), INTENT(IN)    :: num_types
+    INTEGER(our_int), INTENT(IN)      :: num_types
 
-    INTEGER(our_int)                :: type_
+    INTEGER(our_int)                  :: type_
 
     !/* internal objects    */
 
@@ -47,30 +47,30 @@ FUNCTION get_random_type(num_types, type_spec) RESULT(type_)
     CALL RANDOM_NUMBER(u)
 
     DO type_ = 0, num_types - 1
-        IF (u < type_spec%shares(type_ + 1)) EXIT
-        u = u - type_spec%shares(type_ + 1)
+        IF (u < optim_paras%type_shares(type_ + 1)) EXIT
+        u = u - optim_paras%type_shares(type_ + 1)
     END DO
 
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-FUNCTION get_random_types(num_types, type_spec, num_agents_sim, is_debug) RESULT(types)
+FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, is_debug) RESULT(types)
 
     !/* external objects    */
 
-    TYPE(TYPE_DICT)                 :: type_spec
+    TYPE(OPTIMPARAS_DICT), INTENT(IN) :: optim_paras
 
-    INTEGER(our_int)                :: types(num_agents_sim)
-    INTEGER(our_int)                :: num_agents_sim
-    INTEGER(our_int)                :: num_types
+    INTEGER(our_int)                  :: types(num_agents_sim)
+    INTEGER(our_int)                  :: num_agents_sim
+    INTEGER(our_int)                  :: num_types
 
-    LOGICAL, INTENT(IN)             :: is_debug
+    LOGICAL, INTENT(IN)               :: is_debug
 
     !/* internal objects    */
 
-    INTEGER                         :: i
+    INTEGER                           :: i
 
-    LOGICAL                         :: READ_IN
+    LOGICAL                           :: READ_IN
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -88,7 +88,7 @@ FUNCTION get_random_types(num_types, type_spec, num_agents_sim, is_debug) RESULT
         CLOSE(99)
     ELSE
         DO i = 1, num_agents_sim
-            types(i) = get_random_type(num_types, type_spec)
+            types(i) = get_random_type(num_types, optim_paras)
         END DO
 
     END IF

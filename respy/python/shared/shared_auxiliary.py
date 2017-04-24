@@ -523,8 +523,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
     # Construct labels. This ensures that the initialization files always look identical.
     labels = opt_labels[:-2]
-    labels += ['TYPES', 'SOLUTION']
-    labels += ['SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'PRECONDITIONING']
+    labels += ['TYPES', 'SOLUTION', 'SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'PRECONDITIONING']
     labels += ['PROGRAM', 'INTERPOLATION']
     labels += OPT_EST_FORT + OPT_EST_PYTH + ['SCIPY-SLSQP', 'FORT-SLSQP']
 

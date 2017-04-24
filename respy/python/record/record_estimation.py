@@ -28,8 +28,7 @@ def record_estimation_scaling(x_optim_free_unscaled_start,
             if paras_fixed[i]:
                 continue
 
-            paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j,
-                                                                       j]]
+            paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j, j]]
             paras += [x_optim_free_scaled_start[j]]
             paras += [paras_bounds_free_scaled[j, 0]]
             paras += [paras_bounds_free_scaled[j, 1]]
@@ -81,6 +80,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
     # Distribute class attributes
     paras_fixed = opt_obj.paras_fixed
     num_paras = opt_obj.num_paras
+    num_types = opt_obj.num_types
 
     shocks_cholesky, _ = extract_cholesky(x_optim_all_unscaled, 0)
     shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
@@ -88,30 +88,28 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
     # Identify events
     is_start = (opt_obj.num_eval == 0)
     is_step = (opt_obj.crit_vals[1] > fval)
+    x_optim_shares = x_optim_all_unscaled[35:35 + num_types]
+    x_optim_shares = x_optim_shares / np.sum(x_optim_shares)
 
-    # Update class attributes
-    if is_start:
-        opt_obj.crit_vals[0] = fval
-        opt_obj.x_optim_container[:, 0] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:25, 0] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:35, 0] = shocks_coeffs
-        opt_obj.x_econ_container[35:num_paras, 0] = x_optim_all_unscaled[35:]
+    for i in range(3):
+        if i == 0 and not is_start:
+            continue
 
-    if is_step:
-        opt_obj.num_step += 1
-        opt_obj.crit_vals[1] = fval
-        opt_obj.x_optim_container[:, 1] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:25, 1] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:35, 1] = shocks_coeffs
-        opt_obj.x_econ_container[35:num_paras, 1] = x_optim_all_unscaled[35:]
+        if i == 1:
+            if not is_step:
+                continue
+            else:
+                opt_obj.num_step += 1
 
-    if True:
-        opt_obj.num_eval += 1
-        opt_obj.crit_vals[2] = fval
-        opt_obj.x_optim_container[:, 2] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:25, 2] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:35, 2] = shocks_coeffs
-        opt_obj.x_econ_container[35:num_paras, 2] = x_optim_all_unscaled[35:]
+        if i == 2:
+            opt_obj.num_eval += 1
+
+        opt_obj.crit_vals[i] = fval
+        opt_obj.x_optim_container[:, i] = x_optim_all_unscaled
+        opt_obj.x_econ_container[:25, i] = x_optim_all_unscaled[:25]
+        opt_obj.x_econ_container[25:35, i] = shocks_coeffs
+        opt_obj.x_econ_container[35:35 + num_types, i] = x_optim_shares
+        opt_obj.x_econ_container[35 + num_types:num_paras, i] = x_optim_all_unscaled[35 + num_types:]
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container
@@ -161,11 +159,11 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
             out_file.write(fmt_.format(*line) + '\n')
         out_file.write('\n')
 
-        # Get information on the spectral condition number of the covariance
-        # matrix of the shock distribution.
+        # Get information on the spectral condition number of the covariance matrix of the shock
+        # distribution.
         cond = []
         for i, which in enumerate(['Start', 'Step', 'Current']):
-            shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-1]
+            shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-3]
             cond += [np.log(spectral_condition_number(shocks_cov))]
         fmt_ = '   {:>9} ' + '    {:25.15f}' * 3 + '\n'
         out_file.write(fmt_.format(*['Condition'] + cond))

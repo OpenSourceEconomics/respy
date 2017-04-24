@@ -295,7 +295,7 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
 
-    REAL(our_dble), INTENT(IN)      :: x(NUM_PARAS)
+    REAL(our_dble), INTENT(IN)      :: x(:)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)    :: info
 
@@ -317,7 +317,7 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky(3, :3) = x(29:31)
 
-    shocks_cholesky(4, :4) = x(32:NUM_PARAS)
+    shocks_cholesky(4, :4) = x(32:35)
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -876,12 +876,10 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, type_spec, optimizer_used, optimizer_options, file_sim, num_obs)
+SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs, num_paras)
 
     !
-    !   This function serves as the replacement for the RespyCls and reads in
-    !   all required information about the model parameterization. It just
-    !   reads in all required information.
+    !   This function serves as the replacement for the RespyCls and reads in all required information about the model parameterization. It just reads in all required information.
     !
 
     !/* external objects        */
@@ -889,7 +887,6 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     TYPE(PRECOND_DICT), INTENT(OUT)         :: precond_spec
     TYPE(OPTIMPARAS_DICT), INTENT(OUT)      :: optim_paras
     TYPE(AMBI_DICT), INTENT(OUT)            :: ambi_spec
-    TYPE(TYPE_DICT), INTENT(OUT)            :: type_spec
 
     REAL(our_dble), INTENT(OUT)     :: tau
 
@@ -899,6 +896,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax
     INTEGER(our_int), INTENT(OUT)   :: edu_start
+    INTEGER(our_int), INTENT(OUT)   :: num_paras
     INTEGER(our_int), INTENT(OUT)   :: seed_sim
     INTEGER(our_int), INTENT(OUT)   :: num_free
     INTEGER(our_int), INTENT(OUT)   :: edu_max
@@ -932,10 +930,19 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     1505 FORMAT(i10)
     1515 FORMAT(i10,1x,i10)
 
-    1525 FORMAT(35(1x,f25.15))
+    1525 FORMAT(100(1x,f25.15))
 
     ! Read model specification
     OPEN(UNIT=99, FILE='.model.resfort.ini', ACTION='READ')
+
+
+        READ(99, 1505) num_paras
+        READ(99, 1505) num_types
+
+        ALLOCATE(optim_paras%type_shifts(num_types, 4))
+        ALLOCATE(optim_paras%type_shares(num_types))
+        ALLOCATE(optim_paras%paras_bounds(2, num_paras))
+        ALLOCATE(optim_paras%paras_fixed(num_paras))
 
         ! BASICS
         READ(99, 1505) num_periods
@@ -967,13 +974,9 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         READ(99, 1500) optim_paras%level
 
         ! TYPES
-        READ(99, 1505) num_types
-        ALLOCATE(type_spec%shares(num_types))
-        ALLOCATE(type_spec%shifts(num_types, 4))
-
-        READ(99, 1500) type_spec%shares
+        READ(99, 1500) optim_paras%type_shares
         DO j = 1, num_types
-            READ(99, 1500) (type_spec%shifts(j, k), k = 1, 4)
+            READ(99, 1500) (optim_paras%type_shifts(j, k), k = 1, 4)
         END DO
 
         ! PROGRAM
@@ -1037,11 +1040,10 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
         READ(99, 1525) optim_paras%paras_bounds(1, :)
         READ(99, 1525) optim_paras%paras_bounds(2, :)
-
     CLOSE(99)
 
     ! TODO: This setup should be revisited and cleaned up later.
-    DO i = 1, NUM_PARAS
+    DO i = 1, num_paras
         IF(optim_paras%paras_bounds(1, i) == -MISSING_FLOAT) optim_paras%paras_bounds(1, i) = - HUGE_FLOAT
         IF(optim_paras%paras_bounds(2, i) == MISSING_FLOAT) optim_paras%paras_bounds(2, i) = HUGE_FLOAT
 
@@ -1051,7 +1053,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     ALLOCATE(x_optim_bounds_free_unscaled(2, COUNT(.NOT. optim_paras%paras_fixed)))
 
     k = 1
-    DO i = 1, NUM_PARAS
+    DO i = 1, num_paras
         IF (.NOT. optim_paras%paras_fixed(i)) THEN
             DO j = 1, 2
                 x_optim_bounds_free_unscaled(j, k) = optim_paras%paras_bounds(j, i)
@@ -1069,6 +1071,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
     num_free =  COUNT(.NOT. optim_paras%paras_fixed)
     num_slaves = num_procs - 1
+
 
 END SUBROUTINE
 !******************************************************************************
@@ -1201,9 +1204,9 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     !/* external objects        */
 
-    TYPE(OPTIMPARAS_DICT), INTENT(OUT)  :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(INOUT)  :: optim_paras
 
-    REAL(our_dble), INTENT(IN)      :: x(NUM_PARAS)
+    REAL(our_dble), INTENT(IN)      :: x(num_paras)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)   :: info
 
@@ -1231,6 +1234,12 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
         CALL extract_cholesky(optim_paras%shocks_cholesky, x)
     END IF
 
+    optim_paras%type_shares = x(36:(36 + num_types - 1))
+    optim_paras%type_shares = optim_paras%type_shares / SUM(optim_paras%type_shares)
+
+    optim_paras%type_shifts = zero_dble
+    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(36 + num_types:num_paras), (/4, num_types  - 1/)))
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
@@ -1246,7 +1255,8 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: x_internal(NUM_PARAS)
+    REAL(our_dble)                  :: x_internal(num_paras)
+    REAL(our_dble)                  :: shifts(num_types * 4)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -1273,7 +1283,12 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     x_internal(29:31) = optim_paras%shocks_cholesky(3, :3)
 
-    x_internal(32:NUM_PARAS) = optim_paras%shocks_cholesky(4, :4)
+    x_internal(32:35) = optim_paras%shocks_cholesky(4, :4)
+
+    x_internal(36:(36 + num_types - 1)) = optim_paras%type_shares(:)
+
+    shifts = PACK(TRANSPOSE(optim_paras%type_shifts), .TRUE.)
+    x_internal(36 + num_types:num_paras) = shifts(5:)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN
@@ -1284,7 +1299,7 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
         j = 1
 
-        DO i = 1, NUM_PARAS
+        DO i = 1, num_paras
 
             IF(optim_paras%paras_fixed(i)) CYCLE
 

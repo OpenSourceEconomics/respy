@@ -62,10 +62,10 @@ class TestClass(object):
             edu_start = init_dict['EDUCATION']['start']
             edu_max = init_dict['EDUCATION']['max']
             min_idx = min(num_periods, (edu_max - edu_start + 1))
-            num_types = len(init_dict['TYPES']['shares'])
+            num_types = len(init_dict['TYPE_SHARES']['coeffs'])
 
-            max_states_period = pyth_create_state_space(num_periods, edu_start,
-                edu_max, min_idx, num_types)[3]
+            max_states_period = pyth_create_state_space(num_periods, edu_start, edu_max, min_idx,
+                                                        num_types)[3]
 
             # Updates to initialization dictionary that trigger a use of the
             # interpolation code.
@@ -81,10 +81,10 @@ class TestClass(object):
         # three implementations.
         num_agents_sim = init_dict['SIMULATION']['agents']
         num_periods = init_dict['BASICS']['periods']
-        type_spec = init_dict['TYPES']
         write_draws(num_periods, max_draws)
         write_interpolation_grid('test.respy.ini')
-        write_types(type_spec, num_agents_sim)
+        type_shares = init_dict['TYPE_SHARES']['coeffs']
+        write_types(type_shares, num_agents_sim)
 
         # Clean evaluations based on interpolation grid,
         base_val, base_data = None, None
@@ -124,8 +124,8 @@ class TestClass(object):
                 assert (crit_val in [-1.0, 0.0])
 
     def test_2(self, flag_ambiguity=False):
-        """ This test ensures that the evaluation of the criterion function
-        at the starting value is identical between the different versions.
+        """ This test ensures that the evaluation of the criterion function at the starting value 
+        is identical between the different versions.
         """
 
         max_draws = np.random.randint(10, 100)
@@ -144,8 +144,7 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        num_agents_sim, type_spec = dist_class_attributes(respy_obj,
-            'num_agents_sim', 'type_spec')
+        num_agents_sim = dist_class_attributes(respy_obj, 'num_agents_sim')
 
         # Simulate a dataset
         simulate_observed(respy_obj)
@@ -154,8 +153,10 @@ class TestClass(object):
         base_x, base_val = None, None
 
         num_periods = init_dict['BASICS']['periods']
+        type_shares = init_dict['TYPE_SHARES']['coeffs']
+
         write_draws(num_periods, max_draws)
-        write_types(type_spec, num_agents_sim)
+        write_types(type_shares, num_agents_sim)
 
         for version in ['FORTRAN', 'PYTHON']:
 
@@ -234,12 +235,10 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        type_spec, num_agents_sim, optim_paras, file_sim = \
-            dist_class_attributes(respy_obj, 'type_spec', 'num_agents_sim',
-                'optim_paras', 'file_sim')
+        num_agents_sim, optim_paras, file_sim = dist_class_attributes(respy_obj, 'num_agents_sim',
+                                                    'optim_paras', 'file_sim')
 
-        level = optim_paras['level']
-        delta = optim_paras['delta']
+        level, delta = optim_paras['level'], optim_paras['delta']
 
         is_ambiguity = (level > MIN_AMBIGUITY)
 
@@ -247,9 +246,10 @@ class TestClass(object):
         base_sol_log, base_est_info, base_est_log = None, None, None
         base_sim_log, base_amb_log = None, None
 
+        type_shares = init_dict['TYPE_SHARES']['coeffs']
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
-        write_types(type_spec, num_agents_sim)
+        write_types(type_shares, num_agents_sim)
 
         for version in ['FORTRAN', 'PYTHON']:
 
@@ -305,13 +305,15 @@ class TestClass(object):
 
         respy_base = RespyCls('test.respy.ini')
 
-        num_agents_sim, type_spec = dist_class_attributes(respy_base,
-            'num_agents_sim', 'type_spec')
+        num_agents_sim, optim_paras = dist_class_attributes(respy_base, 'num_agents_sim',
+                                                            'optim_paras')
 
+        type_shares = init_dict['TYPE_SHARES']['coeffs']
         num_periods = init_dict['BASICS']['periods']
+
         write_draws(num_periods, max_draws)
         write_interpolation_grid('test.respy.ini')
-        write_types(type_spec, num_agents_sim)
+        write_types(type_shares, num_agents_sim)
 
         simulate_observed(respy_base)
 

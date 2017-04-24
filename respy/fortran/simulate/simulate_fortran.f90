@@ -19,14 +19,13 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_start, edu_max, seed_sim, file_sim, optim_paras, num_types, type_spec, is_debug)
+SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_start, edu_max, seed_sim, file_sim, optim_paras, num_types, is_debug)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(OUT)    :: data_sim(:, :)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
-    TYPE(TYPE_DICT), INTENT(IN)         :: type_spec
 
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(num_periods, num_agents_sim, 4)
@@ -88,7 +87,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     data_sim = MISSING_FLOAT
 
     ! We also need to sample the set of initial conditions.
-    types = get_random_types(num_types, type_spec, num_agents_sim, is_debug)
+    types = get_random_types(num_types, optim_paras, num_agents_sim, is_debug)
 
     ! Iterate over agents and periods
     count = 0

@@ -27,7 +27,7 @@ MODULE shared_containers
 
     REAL(our_dble), ALLOCATABLE     :: precond_matrix(:, :)
 
-    REAL(our_dble)                  :: x_all_start(NUM_PARAS)
+    REAL(our_dble), ALLOCATABLE     :: x_all_start(:)
 
     REAL(our_dble)                  :: dfunc_eps
     REAL(our_dble)                  :: tau
@@ -45,7 +45,6 @@ MODULE shared_containers
     TYPE(OPTIMIZER_COLLECTION)      :: optimizer_options
     TYPE(OPTIMPARAS_DICT)           :: optim_paras
     TYPE(AMBI_DICT)                 :: ambi_spec
-    TYPE(TYPE_DICT)                 :: type_spec
 
     INTEGER(our_int)                :: maxfun
 

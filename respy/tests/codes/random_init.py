@@ -113,13 +113,16 @@ def generate_random_dict(constr=None):
         paras_fixed[np.random.randint(0, 25)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
 
-    # TODO: For now the shares are fixed until I worked out how to impose the constraint during the
-    # estimation.
-    paras_fixed += [True] * num_types
+    # Either all shares are fixed or free. In case of just a single type, the share fixed.
+    if num_types == 1:
+        is_fixed = True
+    else:
+        is_fixed = np.random.choice([True, False])
+    paras_fixed += [is_fixed] * num_types
     paras_fixed += np.random.choice([True, False], num_types * 4).tolist()
 
-    # Sampling number of agents for the simulation. This is then used as the
-    # upper bound for the dataset used in the estimation.
+    # Sampling number of agents for the simulation. This is then used as the upper bound for the
+    # dataset used in the estimation.
     num_agents_sim = np.random.randint(3, MAX_AGENTS)
 
     # Basics

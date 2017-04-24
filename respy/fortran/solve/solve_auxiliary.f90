@@ -151,14 +151,13 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras, type_spec)
+SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(: ,:, :)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
-    TYPE(TYPE_DICT), INTENT(IN)                     :: type_spec
 
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
@@ -262,10 +261,10 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             rewards(4) = optim_paras%coeffs_home(1)
 
             ! Now we add the type-specific deviation.
-            rewards(1) = rewards(1) * EXP(type_spec%shifts(type_ + 1, 1))
-            rewards(2) = rewards(2) * EXP(type_spec%shifts(type_ + 1, 2))
-            rewards(3) = rewards(3) + type_spec%shifts(type_ + 1, 3)
-            rewards(4) = rewards(4) + type_spec%shifts(type_ + 1, 4)
+            rewards(1) = rewards(1) * EXP(optim_paras%type_shifts(type_ + 1, 1))
+            rewards(2) = rewards(2) * EXP(optim_paras%type_shifts(type_ + 1, 2))
+            rewards(3) = rewards(3) + optim_paras%type_shifts(type_ + 1, 3)
+            rewards(4) = rewards(4) + optim_paras%type_shifts(type_ + 1, 4)
 
             periods_rewards_systematic(period, k, :) = rewards
 

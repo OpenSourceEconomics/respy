@@ -136,11 +136,10 @@ def read_data(label, shape):
     return data
 
 
-def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
-        num_periods, num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-        min_idx, num_draws_prob, num_agents_est, num_agents_sim, seed_prob,
-        seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim,
+def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, num_periods,
+        num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, num_draws_prob,
+        num_agents_est, num_agents_sim, seed_prob, seed_emax, tau, num_procs, request, seed_sim,
+        optimizer_options, optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim,
         data_array, num_types):
     """ Write out model request to hidden file .model.resfort.ini.
     """
@@ -153,6 +152,11 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
 
     # Write out to link file
     with open('.model.resfort.ini', 'w') as file_:
+
+        line = '{0:10d}\n'.format(num_paras)
+        file_.write(line)
+        line = '{0:10d}\n'.format(num_types)
+        file_.write(line)
 
         # BASICS
         line = '{0:10d}\n'.format(num_periods)
@@ -204,9 +208,6 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax,
         file_.write(line)
 
         # TYPES
-        line = '{0:10d}\n'.format(num_types)
-        file_.write(line)
-
         num = optim_paras['type_shares']
         fmt_ = ' {:25.15f}' * num_types + '\n'
         file_.write(fmt_.format(*num))

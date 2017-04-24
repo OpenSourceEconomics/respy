@@ -97,8 +97,8 @@ def respy_interface(respy_obj, request, data_array=None):
 
         paras_bounds_free_unscaled = np.array(paras_bounds_free_unscaled)
 
-        precond_matrix = get_precondition_matrix(precond_spec,
-            optim_paras, x_optim_all_unscaled_start, args, maxfun, num_paras)
+        precond_matrix = get_precondition_matrix(precond_spec, optim_paras,
+            x_optim_all_unscaled_start, args, maxfun, num_paras, num_types)
 
         x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start,
             precond_matrix, 'do')
@@ -108,11 +108,10 @@ def respy_interface(respy_obj, request, data_array=None):
             paras_bounds_free_scaled[:, i] = apply_scaling(
                 paras_bounds_free_unscaled[:, i], precond_matrix, 'do')
 
-        record_estimation_scaling(x_optim_free_unscaled_start,
-            x_optim_free_scaled_start, paras_bounds_free_scaled,
-            precond_matrix, optim_paras['paras_fixed'])
+        record_estimation_scaling(x_optim_free_unscaled_start, x_optim_free_scaled_start,
+            paras_bounds_free_scaled, precond_matrix, optim_paras['paras_fixed'])
 
-        opt_obj = OptimizationClass(num_paras)
+        opt_obj = OptimizationClass(num_paras, num_types)
         opt_obj.maxfun = maxfun
         opt_obj.paras_fixed = optim_paras['paras_fixed']
         opt_obj.x_optim_all_unscaled_start = x_optim_all_unscaled_start
@@ -235,15 +234,15 @@ def respy_interface(respy_obj, request, data_array=None):
     return args
 
 
-def get_precondition_matrix(precond_spec, optim_paras,
-        x_optim_all_unscaled_start, args, maxfun, num_paras):
+def get_precondition_matrix(precond_spec, optim_paras, x_optim_all_unscaled_start, args, maxfun,
+                            num_paras, num_types):
     """ Get the preconditioning matrix for the optimization.
     """
     # Auxiliary objects
     num_free = optim_paras['paras_fixed'].count(False)
 
     # Set up a special instance of the optimization class.
-    opt_obj = OptimizationClass(num_paras)
+    opt_obj = OptimizationClass(num_paras, num_types)
 
     opt_obj.x_optim_all_unscaled_start = x_optim_all_unscaled_start
     opt_obj.precond_matrix = np.identity(num_free)

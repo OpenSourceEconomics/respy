@@ -15,15 +15,16 @@ class OptimizationClass(object):
     optimization algorithms.
     """
 
-    def __init__(self, num_paras):
+    def __init__(self, num_paras, num_types):
 
         self.attr = dict()
 
         # Constitutive attributes
         self.x_optim_all_unscaled = None
+        self.num_paras = num_paras
+        self.num_types = num_types
         self.paras_fixed = None
         self.maxfun = np.inf
-        self.num_paras = num_paras
 
         # Updated attributes
         # TODO: The setup of the optim container is different than in FORT.

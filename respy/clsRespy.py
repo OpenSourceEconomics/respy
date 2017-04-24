@@ -811,7 +811,12 @@ class RespyCls(object):
 
         # TODO: At this point we want the type shares to be fixed. Once there are free, we need to
         # ensure that the bounds are specified correctly when the shares are free.
-        assert np.all(optim_paras['paras_fixed'][35:35 + num_types]) == True
+        all_fixed = np.all(optim_paras['paras_fixed'][35:35 + num_types]) == True
+        all_free = np.all(optim_paras['paras_fixed'][35:35 + num_types]) == False
+        assert all_fixed or all_free
+
+        if num_types == 1:
+            assert all_fixed
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.

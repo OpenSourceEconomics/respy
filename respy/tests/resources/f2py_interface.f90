@@ -6,7 +6,7 @@
 !
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, measure, mean, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, type_shares_int, type_shifts_int)
+SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, measure, mean, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, type_spec_shares, type_spec_shifts, num_paras_int, num_types_int)
 
     !/* external libraries      */
 
@@ -20,7 +20,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, INTENT(OUT)   :: crit_val
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(35)
+    DOUBLE PRECISION, INTENT(IN)    :: x(:)
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
@@ -32,13 +32,15 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: num_paras_int
+    INTEGER, INTENT(IN)             :: num_types_int
     INTEGER, INTENT(IN)             :: edu_max_int
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :, :)
-    DOUBLE PRECISION, INTENT(IN)    :: type_shifts_int(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: type_shares_int(:)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
@@ -76,6 +78,8 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     num_draws_emax = num_draws_emax_int
     num_draws_prob = num_draws_prob_int
     num_periods = num_periods_int
+    num_types = num_types_int
+    num_paras = num_paras_int
 
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
@@ -85,24 +89,24 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     ambi_spec%measure = measure
     ambi_spec%mean = mean
 
-    type_spec%shares = type_shares_int
-    type_spec%shifts = type_shifts_int
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
 
     !# Distribute model parameters
     CALL dist_optim_paras(optim_paras, x, dist_optim_paras_info)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, optim_paras, type_spec)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, optim_paras)
 
     CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, optim_paras, type_spec)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, optim_paras)
 
     crit_val = get_log_likl(contribs)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, shocks_cholesky, delta, num_agents_est_int, num_types_int, type_shares_int, type_shifts_int)
+SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, shocks_cholesky, delta, num_agents_est_int, num_types_int, type_spec_shares, type_spec_shifts)
 
     !/* external libraries      */
 
@@ -119,8 +123,8 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: type_shifts_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: type_shares_int(:)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
     DOUBLE PRECISION, INTENT(IN)    :: delta
@@ -156,15 +160,15 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
     optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%delta = delta
 
-    type_spec%shares = type_shares_int
-    type_spec%shifts = type_shifts_int
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, optim_paras, type_spec)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, optim_paras)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, periods_draws_emax_int, measure, mean, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int, num_types_int, type_shares_int, type_shifts_int)
+SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, periods_draws_emax_int, measure, mean, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int, num_types_int, type_spec_shares, type_spec_shifts)
 
     ! The presence of max_states_period breaks the quality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -197,8 +201,8 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
-    DOUBLE PRECISION, INTENT(IN)    :: type_shifts_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: type_shares_int(:)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(1)
@@ -250,8 +254,8 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     ambi_spec%measure = measure
     ambi_spec%mean = mean
 
-    type_spec%shares = type_shares_int
-    type_spec%shifts = type_shifts_int
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
@@ -262,7 +266,7 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
     ! Call FORTRAN solution
-    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated_int, num_points_interp_int, num_draws_emax, num_periods, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx, periods_draws_emax_int, ambi_spec, type_spec, optim_paras, optimizer_options, file_sim)
+    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated_int, num_points_interp_int, num_draws_emax, num_periods, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx, periods_draws_emax_int, ambi_spec, optim_paras, optimizer_options, file_sim)
 
     ! Assign to initial objects for return to PYTHON
     periods_rewards_systematic_int = periods_rewards_systematic
@@ -332,11 +336,11 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
     optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%delta = delta
 
-    type_spec%shares = type_spec_shares
-    type_spec%shifts = type_spec_shifts
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
 
     ! Call function of interest
-    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, edu_start_int, edu_max_int, seed_sim, file_sim, optim_paras, num_types, type_spec, is_debug)
+    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, edu_start_int, edu_max_int, seed_sim, file_sim, optim_paras, num_types, is_debug)
 
     ! Assign to initial objects for return to PYTHON
     data_sim_int = data_sim
@@ -483,7 +487,7 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num_periods_int, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, type_shares_int, type_shifts_int)
+SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num_periods_int, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, type_spec_shares, type_spec_shifts)
 
     !/* external libraries      */
 
@@ -497,8 +501,8 @@ SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_rewards_systematic_int(num_periods_int, max_states_period_int, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: type_shifts_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)    :: type_shares_int(:)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(1)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(4)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(9)
@@ -524,14 +528,14 @@ SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num
     optim_paras%coeffs_a = coeffs_a
     optim_paras%coeffs_b = coeffs_b
 
-    type_spec%shares = type_shares_int
-    type_spec%shifts = type_shifts_int
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
 
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF(ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
 
     ! Call function of interest
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, optim_paras, type_spec)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, optim_paras)
 
     periods_rewards_systematic_int = periods_rewards_systematic
 

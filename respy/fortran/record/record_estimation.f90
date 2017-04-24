@@ -138,7 +138,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled(num_free)
-    REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(NUM_PARAS)
+    REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(num_paras)
     REAL(our_dble), INTENT(IN)      :: val_current
     REAL(our_dble), INTENT(IN)      :: start
 
@@ -149,11 +149,13 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
     INTEGER(our_int), SAVE          :: num_step = - one_int
 
-    REAL(our_dble), SAVE            :: x_optim_container(NUM_PARAS, 3) = -HUGE_FLOAT
-    REAL(our_dble), SAVE            :: x_econ_container(NUM_PARAS, 3) = -HUGE_FLOAT
+    ! Automatic objects cannot have the SAVE attribute
+    REAL(our_dble), SAVE            :: x_optim_container(100, 3) = -HUGE_FLOAT
+    REAL(our_dble), SAVE            :: x_econ_container(100, 3) = -HUGE_FLOAT
 
     REAL(our_dble), SAVE            :: crit_vals(3)
 
+    REAL(our_dble)                  :: x_optim_shares(num_types)
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: shocks_cov(3, 4, 4)
     REAL(our_dble)                  :: flattened_cov(3, 10)
@@ -229,19 +231,20 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         END DO
     END DO
 
-    IF (is_start) THEN
-        x_econ_container(:25, 1) = x_optim_all_unscaled(:25)
-        x_econ_container(26:NUM_PARAS, 1) = flattened_cov(1, :)
-    END IF
+    x_optim_shares = x_optim_all_unscaled(36:(36 + num_types - 1))
+    x_optim_shares = x_optim_shares / SUM(x_optim_shares)
 
-    IF (is_step) THEN
-        x_econ_container(:25, 2) = x_optim_all_unscaled(:25)
-        x_econ_container(26:NUM_PARAS, 2) = flattened_cov(2, :)
-    END IF
+    DO i = 1, 3
 
-    x_econ_container(:25, 3) = x_optim_all_unscaled(:25)
-    x_econ_container(26:NUM_PARAS, 3) = flattened_cov(3, :)
+        IF ((i == 1) .AND. (.NOT. is_start)) CYCLE
+        IF ((i == 2) .AND. (.NOT. is_step)) CYCLE
 
+        x_econ_container(:25, i) = x_optim_all_unscaled(:25)
+        x_econ_container(26:35, i) = flattened_cov(i, :)
+        x_econ_container(36:(36 + num_types - 1), i) = x_optim_shares
+        x_econ_container(36 + num_types:num_paras, i) = x_optim_all_unscaled(36 + num_types:num_paras)
+
+    END DO
 
     CALL get_time(today_char, now_char)
     CALL CPU_TIME(finish)
@@ -280,7 +283,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, *)
 
         j = 1
-        DO i = 1, NUM_PARAS
+        DO i = 1, num_paras
             IF(optim_paras%paras_fixed(i)) CYCLE
             WRITE(99, 150) i - 1, char_floats(x_optim_container(j, :))
             j = j + 1
@@ -330,7 +333,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, 220) 'Identifier', 'Start', 'Step', 'Current'
         WRITE(99, *)
 
-        DO i = 1, NUM_PARAS
+        DO i = 1, num_paras
             WRITE(99, 230) (i - 1), char_floats(x_econ_container(i, :))
         END DO
 
@@ -428,7 +431,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, optim_paras, is_setup)
 
             ! Sometimes on the bounds are just too large for pretty printing
             j = 1
-            DO i = 1, NUM_PARAS
+            DO i = 1, num_paras
                 IF(optim_paras%paras_fixed(i)) CYCLE
 
                 ! We need to do some pre-processing for the transformed bounds.

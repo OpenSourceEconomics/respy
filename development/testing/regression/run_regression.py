@@ -148,20 +148,19 @@ def run(request, is_compile, is_background):
                 print(msg)
                 continue
 
-            # For now I also need to ensure that there is only one relevant
-            # type. The baseline type has a share of one and then all the
-            # shifts should not matter at all.
+            # For now I also need to ensure that there is only one relevant type. The baseline
+            # type has a share of one and then all the shifts should not matter at all.
 
             # The specified number of types affects the interpolation equation regardless of the
             # weight.
             if init_dict['INTERPOLATION']['flag'] == 'True':
-                print(' .. skipped due to interpolation flag')
-                continue
+                num_types = 1
+            else:
+                num_types = np.random.choice(range(1, 3))
 
             init_dict['TYPE_SHIFTS'] = dict()
             init_dict['TYPE_SHARES'] = dict()
 
-            num_types = np.random.choice(range(1, 3))
             shifts = np.random.uniform(-0.05, 0.05, size=(num_types - 1) * 4)
             shares = [1.0] + [0.0] * (num_types - 1)
 
@@ -190,8 +189,7 @@ def run(request, is_compile, is_background):
         # This allows to call this test from another script, that runs other
         # tests as well.
         if not is_background:
-            send_notification('regression', is_failed=is_failure,
-                test_idx=idx)
+            send_notification('regression', is_failed=is_failure, test_idx=idx)
 
         return not is_failure
 
@@ -201,16 +199,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Create or check both vaults',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--request', action='store', dest='request',
-        help='task to perform', required=True, nargs=2)
+    parser.add_argument('--request', action='store', dest='request', help='task to perform',
+                        required=True, nargs=2)
 
-    parser.add_argument('--background', action='store_true',
-        dest='is_background', default=False, help='background process')
+    parser.add_argument('--background', action='store_true', dest='is_background', default=False,
+                        help='background process')
 
-    parser.add_argument('--compile', action='store_true', dest='is_compile',
-        default=False, help='compile RESPY package')
+    parser.add_argument('--compile', action='store_true', dest='is_compile', default=False,
+                        help='compile RESPY package')
 
-    # Disribute arguments
     args = parser.parse_args()
     request, is_compile = args.request, args.is_compile,
     is_background = args.is_background
