@@ -37,7 +37,7 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_spec, optimizer_options)
+SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_spec, optimizer_options, num_types)
 
     !/* external objects    */
 
@@ -50,6 +50,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
     TYPE(PRECOND_DICT), INTENT(IN)      :: precond_spec
 
     INTEGER(our_int), INTENT(IN)        :: num_procs
+    INTEGER(our_int), INTENT(IN)        :: num_types
     INTEGER(our_int), INTENT(IN)        :: maxfun
 
     CHARACTER(225), INTENT(IN)          :: optimizer_used
@@ -175,7 +176,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, num_types)
 
 
     fort_criterion_scalar = get_log_likl(contribs)
@@ -186,7 +187,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
         CALL summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, num_types, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -269,7 +270,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, num_types, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 

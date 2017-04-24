@@ -19,7 +19,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
+SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, num_types)
 
     !   DEVELOPMENT NOTES
     !
@@ -46,6 +46,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     INTEGER(our_int), INTENT(IN)    :: num_draws_prob
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: num_types
     INTEGER(our_int), INTENT(IN)    :: edu_max
 
     !/* internal objects        */

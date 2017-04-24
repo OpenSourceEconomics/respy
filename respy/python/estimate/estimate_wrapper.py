@@ -15,17 +15,19 @@ class OptimizationClass(object):
     optimization algorithms.
     """
 
-    def __init__(self, num_paras, num_types):
+    def __init__(self, x_optim_all_unscaled_start, paras_fixed, precond_matrix, num_types):
 
         self.attr = dict()
 
         # Constitutive attributes
-        self.x_optim_all_unscaled = None
-        self.num_paras = num_paras
+        self.x_optim_all_unscaled_start = x_optim_all_unscaled_start
+        self.num_paras = len(x_optim_all_unscaled_start)
+        self.precond_matrix = precond_matrix
+        self.paras_fixed = paras_fixed
         self.num_types = num_types
-        self.paras_fixed = None
         self.maxfun = np.inf
 
+        num_paras = len(x_optim_all_unscaled_start)
         # Updated attributes
         # TODO: The setup of the optim container is different than in FORT.
         # Here all parameters are included, in FORT only free.
@@ -39,36 +41,32 @@ class OptimizationClass(object):
         """ This method serves as a wrapper around the alternative
         implementations of the criterion function.
         """
-        # We intent to monitor the duration of each evaluation of the criterion
-        # function.
+        # We intent to monitor the duration of each evaluation of the criterion function.
         start = datetime.now()
 
         # Distribute class attributes
         precond_matrix = self.precond_matrix
 
-        # Construct full set of optimization parameters and evaluate
-        # criterion function.
+        # Construct full set of optimization parameters and evaluate criterion function.
         x_optim_all_unscaled = self._construct_all_current_values(
             apply_scaling(x_optim_free_scaled, precond_matrix, 'undo'))
         fval, opt_ambi_details = pyth_criterion(x_optim_all_unscaled, *args)
 
-        # We do not want to record anything if we are evaluating the
-        # criterion function simply to get the precondition matrix.
+        # We do not want to record anything if we are evaluating the criterion function simply to
+        #  get the precondition matrix.
         if not hasattr(self, 'is_scaling'):
 
             # Record the progress of the estimation.
-            record_estimation_eval(self, fval, opt_ambi_details,
-                x_optim_all_unscaled, start)
+            record_estimation_eval(self, fval, opt_ambi_details, x_optim_all_unscaled, start)
 
-            # This is only used to determine whether a stabilization of the
-            # Cholesky matrix is required.
+            # This is only used to determine whether a stabilization of the Cholesky matrix is
+            # required.
             _, info = extract_cholesky(x_optim_all_unscaled, 0)
             if info != 0:
                 record_warning(4)
 
-            # Enforce a maximum number of function evaluations. If
-            # appropriate, the function throws a MaxfunError which is
-            # properly handled in the top estimation module.
+            # Enforce a maximum number of function evaluations. If appropriate, the function throws
+            # a MaxfunError which is properly handled in the top estimation module.
             check_early_termination(self.maxfun, self.num_eval)
 
         # Finishing
