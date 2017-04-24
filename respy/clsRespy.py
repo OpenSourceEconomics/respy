@@ -155,8 +155,8 @@ class RespyCls(object):
         self.reset()
 
         # Determine use of interface
-        delta, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov \
-            = dist_econ_paras(x_econ)
+        delta, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, type_shares, \
+            type_shifts = dist_econ_paras(x_econ)
 
         shocks_cholesky = np.linalg.cholesky(shocks_cov)
 
@@ -267,6 +267,11 @@ class RespyCls(object):
         """ Write out the currently implied initialization file of the class
         instance.
         """
+        # Distribute class attributes
+        num_paras = self.attr['num_paras']
+
+        num_types = self.attr['num_types']
+
         # We reconstruct the initialization dictionary as otherwise we need
         # to constantly update the original one.
         init_dict = dict()
@@ -318,7 +323,7 @@ class RespyCls(object):
         init_dict['HOME']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Shocks
-        lower, upper = 25, NUM_PARAS
+        lower, upper = 25, 35
         init_dict['SHOCKS'] = dict()
         shocks_cholesky = self.attr['optim_paras']['shocks_cholesky']
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
@@ -333,7 +338,7 @@ class RespyCls(object):
         for old, new in PARAS_MAPPING:
             paras_fixed[old] = paras_fixed_reordered[new]
 
-        init_dict['SHOCKS']['fixed'] = paras_fixed[25:NUM_PARAS]
+        init_dict['SHOCKS']['fixed'] = paras_fixed[25:35]
 
         # Solution
         init_dict['SOLUTION'] = dict()
@@ -349,10 +354,19 @@ class RespyCls(object):
         init_dict['AMBIGUITY']['measure'] = self.attr['ambi_spec']['measure']
         init_dict['AMBIGUITY']['mean'] = self.attr['ambi_spec']['mean']
 
-        # Types
-        init_dict['TYPES'] = dict()
-        init_dict['TYPES']['shares'] = self.attr['type_spec']['shares']
-        init_dict['TYPES']['shifts'] = self.attr['type_spec']['shifts']
+        # Type Shares
+        lower, upper = 35, 35 + num_types
+        init_dict['TYPE_SHARES'] = dict()
+        init_dict['TYPE_SHARES']['coeffs'] = self.attr['optim_paras']['type_shares']
+        init_dict['TYPE_SHARES']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
+        init_dict['TYPE_SHARES']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
+
+        # Type Shifts
+        lower, upper = 35 + num_types, num_paras
+        init_dict['TYPE_SHIFTS'] = dict()
+        init_dict['TYPE_SHIFTS']['coeffs'] = self.attr['optim_paras']['type_shifts'].flatten()[4:]
+        init_dict['TYPE_SHIFTS']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
+        init_dict['TYPE_SHIFTS']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Simulation
         init_dict['SIMULATION'] = dict()
@@ -481,7 +495,7 @@ class RespyCls(object):
         self.attr['precond_spec']['type'] = init_dict['PRECONDITIONING']['type']
         self.attr['precond_spec']['eps'] = init_dict['PRECONDITIONING']['eps']
 
-        self.attr['num_types'] = len(init_dict['TYPES_SHARES'])
+        self.attr['num_types'] = len(init_dict['TYPE_SHARES']['coeffs'])
 
         # Initialize model parameters
         self.attr['optim_paras'] = dict()
@@ -508,8 +522,7 @@ class RespyCls(object):
             self.attr['optim_paras']['shocks_cholesky'] = shocks_cholesky
 
         # Constructing the shifts for each type.
-        type_shifts = init_dict['TYPES_SHIFTS']['coeffs']
-
+        type_shifts = init_dict['TYPE_SHIFTS']['coeffs']
         if self.attr['num_types'] == 1:
             type_shifts = np.tile(0.0, (1, 4))
         else:
@@ -518,35 +531,25 @@ class RespyCls(object):
 
         self.attr['optim_paras']['type_shifts'] = type_shifts
 
-        self.attr['optim_paras']['coeffs_a'] = \
-            init_dict['OCCUPATION A']['coeffs']
-        self.attr['optim_paras']['coeffs_b'] = \
-            init_dict['OCCUPATION B']['coeffs']
-        self.attr['optim_paras']['coeffs_edu'] = \
-            init_dict['EDUCATION']['coeffs']
-        self.attr['optim_paras']['coeffs_home'] = \
-            init_dict['HOME']['coeffs']
-        self.attr['optim_paras']['level'] = \
-            init_dict['AMBIGUITY']['coeffs']
-        self.attr['optim_paras']['delta'] = \
-            init_dict['BASICS']['coeffs']
-        self.attr['optim_paras']['type_shares'] = \
-            init_dict['TYPES_SHARES']['coeffs']
+        self.attr['optim_paras']['coeffs_a'] = init_dict['OCCUPATION A']['coeffs']
+        self.attr['optim_paras']['coeffs_b'] = init_dict['OCCUPATION B']['coeffs']
+        self.attr['optim_paras']['coeffs_edu'] = init_dict['EDUCATION']['coeffs']
+        self.attr['optim_paras']['coeffs_home'] = init_dict['HOME']['coeffs']
+        self.attr['optim_paras']['level'] = init_dict['AMBIGUITY']['coeffs']
+        self.attr['optim_paras']['delta'] = init_dict['BASICS']['coeffs']
+        self.attr['optim_paras']['type_shares'] = init_dict['TYPE_SHARES']['coeffs']
 
         # Initialize information about optimization parameters
-        for which in ['fixed', 'bounds']:
-            self.attr['optim_paras']['paras_' + which] = init_dict['BASICS'][which][:]
-            self.attr['optim_paras']['paras_' + which] += init_dict['AMBIGUITY'][which][:]
-            self.attr['optim_paras']['paras_' + which] += init_dict['OCCUPATION A'][which][:]
-            self.attr['optim_paras']['paras_' + which] += init_dict['OCCUPATION B'][which][:]
-            self.attr['optim_paras']['paras_' + which] += init_dict['EDUCATION'][which][:]
-            self.attr['optim_paras']['paras_' + which] += init_dict['HOME'][which][:]
-            self.attr['optim_paras']['paras_' + which] += init_dict['SHOCKS'][which]
-            self.attr['optim_paras']['paras_' + which] += init_dict['TYPES_SHARES'][which][:]
-            self.attr['optim_paras']['paras_' + which] += init_dict['TYPES_SHIFTS'][which][:]
+        keys = []
+        keys += ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B', 'EDUCATION']
+        keys += ['HOME', 'SHOCKS', 'TYPE_SHARES', 'TYPE_SHIFTS']
 
-        # Ensure that all elements in the dictionary are of the same
-        # type.
+        for which in ['fixed', 'bounds']:
+            self.attr['optim_paras']['paras_' + which] = []
+            for key_ in keys:
+                self.attr['optim_paras']['paras_' + which] += init_dict[key_][which][:]
+
+        # Ensure that all elements in the dictionary are of the same type.
         keys = []
         keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
         keys += ['shocks_cholesky', 'level', 'delta', 'type_shares']
@@ -641,6 +644,8 @@ class RespyCls(object):
         num_procs = self.attr['num_procs']
 
         num_paras = self.attr['num_paras']
+
+        num_types = self.attr['num_types']
 
         is_debug = self.attr['is_debug']
 
@@ -754,10 +759,9 @@ class RespyCls(object):
         # Check that all parameter values are within the bounds.
         x = get_optim_paras(optim_paras, num_paras, 'all', True)
 
-        # It is not clear at this point how to impose parameter constraints
-        # on the covariance matrix in a flexible manner. So, either all fixed
-        # or none. As a special case, we also allow for all off-diagonal
-        # elements to be fixed to zero.
+        # It is not clear at this point how to impose parameter constraints on the covariance
+        # matrix in a flexible manner. So, either all fixed or none. As a special case,
+        # we also allow for all off-diagonal elements to be fixed to zero.
         shocks_coeffs = optim_paras['shocks_cholesky'][np.tril_indices(4)]
         shocks_fixed = optim_paras['paras_fixed'][25:35]
 
@@ -774,18 +778,16 @@ class RespyCls(object):
         if not (all_free or all_fixed or off_diagonal):
             raise UserError(' Misspecified constraints for covariance matrix')
 
-        # Discount rate and ambiguity needs to be larger than on zero. The
-        # constraint needs to be present all the time.
+        # Discount rate and ambiguity needs to be larger than on zero. The constraint needs to be
+        #  present all the time.
         for label in ['paras_fixed', 'paras_bounds']:
             assert isinstance(optim_paras[label], list)
-            print len(optim_paras[label]), num_paras
-
             assert (len(optim_paras[label]) == num_paras)
 
         for i in range(2):
             assert optim_paras['paras_bounds'][i][0] >= 0.00
 
-        for i in range(35):
+        for i in range(num_paras):
             lower, upper = optim_paras['paras_bounds'][i]
             if lower is not None:
                 assert isinstance(lower, float)
@@ -797,14 +799,19 @@ class RespyCls(object):
                 assert abs(upper) < PRINT_FLOAT
             if (upper is not None) and (lower is not None):
                 assert upper >= lower
-            # At this point no bounds for the elements of the covariance
-            # matrix are allowed.
+            # At this point no bounds for the elements of the covariance matrix are allowed.
             if i in range(25, 35):
                 assert optim_paras['paras_bounds'][i] == [None, None]
+            # Now we check the type shares.
+            if i in range(35, 35 + num_types):
+                if lower is not None:
+                    assert lower >= 0.00
+                if upper is not None:
+                    assert upper <= 1.00
 
-        # TODO: The bounds of the parameters need to be checked.
-
-
+        # TODO: At this point we want the type shares to be fixed. Once there are free, we need to
+        # ensure that the bounds are specified correctly when the shares are free.
+        assert np.all(optim_paras['paras_fixed'][35:35 + num_types]) == True
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.
@@ -836,8 +843,8 @@ class RespyCls(object):
 
         states_all = self.attr['states_all']
 
-        # Replace missing value with NAN. This allows to easily select the
-        # valid subsets of the containers
+        # Replace missing value with NAN. This allows to easily select the valid subsets of the
+        # containers
         if mapping_state_idx is not None:
             mapping_state_idx = replace_missing_values(mapping_state_idx)
         if states_all is not None:
@@ -853,35 +860,33 @@ class RespyCls(object):
         is_applicable = is_applicable and (mapping_state_idx is not None)
 
         if is_applicable:
-            # If the agent never increased their level of education, the lagged
-            # education variable cannot take a value larger than zero.
+            # If the agent never increased their level of education, the lagged education
+            # variable cannot take a value larger than zero.
             for period in range(1, num_periods):
                 indices = (np.where(states_all[period, :, :][:, 2] == 0))
                 for index in indices:
                     assert (np.all(states_all[period, :, :][index, 3]) == 0)
 
-            # No values can be larger than constraint time. The exception in the
-            # lagged schooling variable in the first period, which takes value
-            # one but has index zero.
+            # No values can be larger than constraint time. The exception in the lagged
+            # schooling variable in the first period, which takes value one but has index zero.
             for period in range(num_periods):
                 assert (np.nanmax(states_all[period, :, :3]) <= period)
 
-            # Lagged schooling can only take value zero or one if finite.
-            # In fact, it can only take value one in the first period.
+            # Lagged schooling can only take value zero or one if finite. In fact, it can only
+            # take value one in the first period.
             for period in range(num_periods):
                 assert (np.all(states_all[0, :, 3]) == 1)
                 assert (np.nanmax(states_all[period, :, 3]) == 1)
                 assert (np.nanmin(states_all[period, :, :3]) == 0)
 
-            # All finite values have to be larger or equal to zero. The loop is
-            # required as np.all evaluates to FALSE for this condition
-            # (see NUMPY documentation).
+            # All finite values have to be larger or equal to zero. The loop is required as
+            # np.all evaluates to FALSE for this condition (see NUMPY documentation).
             for period in range(num_periods):
                 assert (np.all(
                     states_all[period, :states_number_period[period]] >= 0))
 
-            # The maximum number of additional education years is never larger
-            # than (EDU_MAX - EDU_START).
+            # The maximum number of additional education years is never larger than (EDU_MAX -
+            # EDU_START).
             for period in range(num_periods):
                 assert (np.nanmax(states_all[period, :, :][:, 2], axis=0) <= (
                     edu_max - edu_start))
@@ -892,8 +897,7 @@ class RespyCls(object):
                     states_all[period, :states_number_period[period],
                     :]).duplicated()) == 0)
 
-            # Checking validity of state space values. All valid
-            # values need to be finite.
+            # Checking validity of state space values. All valid values need to be finite.
             for period in range(num_periods):
                 assert (np.all(np.isfinite(
                     states_all[period, :states_number_period[period]])))
@@ -911,9 +915,8 @@ class RespyCls(object):
                 np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4 *
                 num_types)
 
-            # Check that mapping is defined for all possible realizations of the
-            # state space by period. Check that mapping is not defined for all
-            # inadmissible values.
+            # Check that mapping is defined for all possible realizations of the state space by
+            # period. Check that mapping is not defined for all inadmissible values.
             is_infinite = np.tile(False, reps=mapping_state_idx.shape)
             for period in range(num_periods):
                 # Subsetting valid indices
@@ -940,8 +943,8 @@ class RespyCls(object):
         is_applicable = is_applicable and (periods_rewards_systematic is not None)
 
         if is_applicable:
-            # Check that the rewards are finite for all admissible values and
-            # infinite for all others.
+            # Check that the rewards are finite for all admissible values and infinite for all
+            # others.
             is_infinite = np.tile(False, reps=periods_rewards_systematic.shape)
             for period in range(num_periods):
                 # Loop over all possible states
@@ -964,8 +967,7 @@ class RespyCls(object):
         is_applicable = (periods_emax is not None)
 
         if is_applicable:
-            # Check that the emaxs are finite for all admissible values and
-            # infinite for all others.
+            # Check that the emaxs are finite for all admissible values and infinite for all others.
             is_infinite = np.tile(False, reps=periods_emax.shape)
             for period in range(num_periods):
                 # Loop over all possible states

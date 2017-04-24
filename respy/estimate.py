@@ -48,7 +48,7 @@ def estimate(respy_obj):
     else:
         raise NotImplementedError
 
-    rslt = get_est_info(num_paras)
+    rslt = get_est_info()
     x, val = rslt['paras_step'], rslt['value_step']
 
     remove_scratch_files()

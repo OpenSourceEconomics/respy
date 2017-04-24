@@ -19,12 +19,11 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx,
     shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
         optim_paras['shocks_cholesky'].T)
     is_deterministic = (np.count_nonzero(optim_paras['shocks_cholesky']) == 0)
+    num_types = len(optim_paras['type_shares'])
     num_obs = data_array.shape[0]
 
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, num_obs)
-
-    num_types = len(optim_paras['type_shares'])
 
     # Calculate the probability over agents and time.
     for j in range(num_obs):

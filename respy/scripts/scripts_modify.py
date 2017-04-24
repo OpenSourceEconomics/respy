@@ -13,7 +13,6 @@ import os
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.read.read_python import read
 from respy import RespyCls
 
@@ -74,8 +73,7 @@ def dist_input_arguments(parser):
 
 
 def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
-    """ Modify optimization parameters by either changing their status or
-    values.
+    """ Modify optimization parameters by either changing their status or values.
     """
     # Select interface
     is_bounds = (action == 'bounds')
@@ -86,12 +84,14 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
     respy_obj = RespyCls(init_file)
 
     optim_paras = respy_obj.get_attr('optim_paras')
+    num_paras = respy_obj.get_attr('num_paras')
+    num_types = respy_obj.get_attr('num_types')
 
-    x = get_optim_paras(optim_paras, 'all', True)
+    x = get_optim_paras(optim_paras, num_paras, 'all', True)
 
-    # This transformation is necessary as internally the Cholesky
-    # decomposition is used but here we operate from the perspective of the
-    # initialization file, where the flattened covariance matrix is specified.
+    # This transformation is necessary as internally the Cholesky decomposition is used but here
+    # we operate from the perspective of the initialization file, where the flattened covariance
+    # matrix is specified.
     shocks_coeffs = cholesky_to_coeffs(optim_paras['shocks_cholesky'])
 
     if action == 'value':
@@ -135,17 +135,29 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
             init_dict['HOME']['fixed'][j] = is_fixed
             if is_bounds:
                 init_dict['HOME']['bounds'][j] = bounds
-        elif identifier in list(range(25, NUM_PARAS)):
+        elif identifier in list(range(25, 35)):
             j = identifier - 25
             init_dict['SHOCKS']['coeffs'][j] = shocks_coeffs[j]
             init_dict['SHOCKS']['fixed'][j] = is_fixed
             if is_bounds:
                 init_dict['SHOCKS']['bounds'][j] = bounds
+        elif identifier in list(range(35, 35 + num_types)):
+            j = identifier - 35
+            init_dict['TYPE_SHARES']['coeffs'][j] = x[identifier]
+            init_dict['TYPE_SHARES']['fixed'][j] = is_fixed
+            if is_bounds:
+                init_dict['TYPE_SHARES']['bounds'][j] = bounds
+        elif identifier in list(range(35 + num_types, num_paras)):
+            j = identifier - (35 + num_types)
+            init_dict['TYPE_SHIFTS']['coeffs'][j] = x[identifier]
+            init_dict['TYPE_SHIFTS']['fixed'][j] = is_fixed
+            if is_bounds:
+                init_dict['TYPE_SHIFTS']['bounds'][j] = bounds
         else:
             raise NotImplementedError
 
-    # Check that the new candidate initialization file is valid. If so,
-    # go ahead and replace the original file.
+    # Check that the new candidate initialization file is valid. If so, go ahead and replace the
+    # original file.
     print_init_dict(init_dict, '.tmp.respy.ini')
     RespyCls('.tmp.respy.ini')
     shutil.move('.tmp.respy.ini', init_file)
@@ -153,25 +165,24 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description=
-        'Modify parameter values for an estimation.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Modify parameter values for an estimation.',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--identifiers', action='store', dest='identifiers',
-        nargs='*', default=None, help='parameter identifiers', required=True)
+    parser.add_argument('--identifiers', action='store', dest='identifiers', nargs='*',
+                        default=None, help='parameter identifiers', required=True)
 
-    parser.add_argument('--values', action='store', dest='values',
-        nargs='*', default=None, help='updated parameter values', type=float)
+    parser.add_argument('--values', action='store', dest='values', nargs='*', default=None,
+                        help='updated parameter values', type=float)
 
-    parser.add_argument('--bounds', action='store', dest='bounds',
-        nargs=2, default=None, help='bounds for parameter value')
+    parser.add_argument('--bounds', action='store', dest='bounds', nargs=2, default=None,
+                        help='bounds for parameter value')
 
-    parser.add_argument('--action', action='store', dest='action',
-        default=None, help='requested action', type=str, required=True,
-        choices=['fix', 'free', 'value', 'bounds'])
+    parser.add_argument('--action', action='store', dest='action', default=None,
+                        help='requested action', type=str, required=True,
+                        choices=['fix', 'free', 'value', 'bounds'])
 
     parser.add_argument('--init_file', action='store', dest='init_file',
-        default='model.respy.ini', help='initialization file')
+                        default='model.respy.ini', help='initialization file')
 
     # Process command line arguments
     args = dist_input_arguments(parser)

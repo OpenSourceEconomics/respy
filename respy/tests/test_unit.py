@@ -3,7 +3,6 @@ import pytest
 
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import dist_optim_paras
-from respy.python.shared.shared_constants import NUM_PARAS
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from respy import simulate
@@ -75,15 +74,22 @@ class TestClass(object):
         """ Testing whether back-and-forth transformation have no effect.
         """
         for i in range(10):
+            num_types = np.random.randint(1, 5)
+            num_paras = 35 + 1 + (num_types - 1) * 5
+
             # Create random parameter vector
-            base = np.random.uniform(size=NUM_PARAS)
+            base = np.random.uniform(size=num_paras)
+
+            # We need to manually ensure that the sum of the shares is equal to one.
+            base[35:35 + num_types] /= np.sum(base[35:35 + num_types])
+
             x = base.copy()
 
             # Apply numerous transformations
             for j in range(10):
                 optim_paras = dist_optim_paras(x, is_debug=True)
-                args = (optim_paras, 'all')
-                x = get_optim_paras(*args, is_debug=True)
+                args = (optim_paras, num_paras, 'all', True)
+                x = get_optim_paras(*args)
 
             # Checks
             np.testing.assert_allclose(base, x)
@@ -122,6 +128,8 @@ class TestClass(object):
 
             # Check special case
             shocks_cholesky = respy_obj.get_attr('optim_paras')['shocks_cholesky']
+            num_types = respy_obj.get_attr('num_types')
+
             is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
 
             # The wage entries should correspond to the ex-post rewards
@@ -137,7 +145,7 @@ class TestClass(object):
 
             # The systematic component for the alternative to stay home
             # should always be identical.
-            assert (df['Systematic_Reward_4'].nunique() == 1)
+            assert (df['Systematic_Reward_4'].nunique() <= num_types)
 
             # In the myopic case, the total reward should the equal to the ex
             # post rewards.

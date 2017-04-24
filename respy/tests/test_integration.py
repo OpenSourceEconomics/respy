@@ -9,7 +9,6 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
-from codes.auxiliary import get_valid_shifts_for_types
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
 from respy.custom_exceptions import UserError
@@ -25,8 +24,7 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self):
-        """ Testing whether random model specifications can be simulated
-        and processed.
+        """ Testing whether random model specifications can be simulated and processed.
         """
         # Generate random initialization file
         generate_init()
@@ -38,8 +36,8 @@ class TestClass(object):
         process(respy_obj)
 
     def test_2(self):
-        """ If there is no random variation in rewards then the number of
-        draws to simulate the expected future value should have no effect.
+        """ If there is no random variation in rewards then the number of draws to simulate the 
+        expected future value should have no effect.
         """
         # Generate constraints
         constr = dict()
@@ -128,11 +126,11 @@ class TestClass(object):
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
     def test_4(self, flag_ambiguity=False):
-        """ Test the evaluation of the criterion function for random
-        requests, not just at the true values.
+        """ Test the evaluation of the criterion function for random requests, not just at the 
+        true values.
         """
-        # Constraints that ensure that two alternative initialization files
-        # can be used for the same simulated data.
+        # Constraints that ensure that two alternative initialization files can be used for the
+        # same simulated data.
         constr = dict()
         constr['agents'] = np.random.randint(1, 100)
         constr['periods'] = np.random.randint(1, 4)
@@ -155,8 +153,8 @@ class TestClass(object):
     def test_5(self):
         """ Test the scripts.
         """
-        # Constraints that ensure that two alternative initialization files
-        # can be used for the same simulated data.
+        # Constraints that ensure that two alternative initialization files can be used for the
+        # same simulated data.
         for _ in range(10):
             constr = dict()
             constr['periods'] = np.random.randint(1, 4)
@@ -184,17 +182,15 @@ class TestClass(object):
 
             single = np.random.choice([True, False])
 
-            # TODO: Extend set of admissible actions. If we want to include
-            # values and bounds then we need to put in some extra effort to
-            # ensure that all are valid, i.e. that a random value is within
-            # the bounds.
+            # TODO: Extend set of admissible actions. If we want to include values and bounds
+            # then we need to put in some extra effort to ensure that all are valid, i.e. that a
+            # random value is within the bounds.
             action = np.random.choice(['fix', 'free'])
             num_draws = np.random.randint(1, 22)
 
-            # The set of identifiers is a little complicated as we only allow
-            # sampling of the diagonal terms of the covariance matrix.
-            # Otherwise, we sometimes run into the problem of very ill
-            # conditioned matrices resulting in a failed Cholesky decomposition.
+            # The set of identifiers is a little complicated as we only allow sampling of the
+            # diagonal terms of the covariance matrix. Otherwise, we sometimes run into the
+            # problem of very ill conditioned matrices resulting in a failed Cholesky decomposition.
             set_ = list(range(22))
 
             identifiers = np.random.choice(set_, num_draws, replace=False)
@@ -203,9 +199,8 @@ class TestClass(object):
             scripts_estimate(single, init_file)
             scripts_update(init_file)
 
-            # The error can occur as the RESPY package is actually running an
-            # estimation step that can result in very ill-conditioned covariance
-            # matrices.
+            # The error can occur as the RESPY package is actually running an estimation step
+            # that can result in very ill-conditioned covariance matrices.
             try:
                 scripts_simulate(init_file, file_sim)
                 scripts_modify(identifiers, action, init_file, values)
@@ -319,11 +314,17 @@ class TestClass(object):
 
         for num_types in [1, np.random.choice([2, 3, 4]).tolist()]:
 
-            # We always need to ensure that a weight of one is on the first
-            # type.
-            init_dict['TYPES']['shares'] = [1.0] + [0.0] * (num_types - 1)
-            init_dict['TYPES']['shifts'] = get_valid_shifts_for_types(num_types)
+            # We always need to ensure that a weight of one is on the first type. We need to fix
+            # the weight in this case to not change during an estimation as well.
+            shifts = np.random.uniform(-0.05, 0.05, size=(num_types - 1) * 4)
+            shares = [1.0] + [0.0] * (num_types - 1)
+            init_dict['TYPE_SHIFTS']['coeffs'] = shifts
+            init_dict['TYPE_SHIFTS']['fixed'] = [False] * (num_types * 4)
+            init_dict['TYPE_SHIFTS']['bounds'] = [[None, None]] * (num_types * 4)
 
+            init_dict['TYPE_SHARES']['coeffs'] = shares
+            init_dict['TYPE_SHARES']['fixed'] = [True] * num_types
+            init_dict['TYPE_SHARES']['bounds'] = [[None, None]] * num_types
             print_init_dict(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')

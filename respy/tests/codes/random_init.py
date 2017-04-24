@@ -11,7 +11,6 @@ from respy.python.shared.shared_constants import IS_FORTRAN
 
 from codes.process_constraints import process_constraints
 from codes.auxiliary import get_valid_shares_for_types
-from codes.auxiliary import get_valid_shifts_for_types
 from codes.auxiliary import get_valid_values
 from codes.auxiliary import get_valid_bounds
 from codes.auxiliary import OPTIMIZERS_EST
@@ -50,10 +49,23 @@ def generate_random_dict(constr=None):
     # Initialize container
     dict_ = dict()
 
+    # We need to determine the final number of types right here, as it determines the number of
+    # parameters. This includes imposing constraints.
+    num_types = np.random.choice(range(1, 3))
+    if 'types' in constr.keys():
+        # Extract objects
+        num_types = constr['types']
+        # Checks
+        assert isinstance(num_types, int)
+        assert num_types > 0
+
+    type_shares = get_valid_shares_for_types(num_types)
+    num_paras = 35 + num_types + (num_types - 1) * 4
+
     # We now draw all parameter values. This is necessarily done here as we
     # subsequently determine a set of valid bounds.
     paras_values = []
-    for i in range(NUM_PARAS):
+    for i in range(num_paras):
         if i in [0]:
             value = get_valid_values('delta')
         elif i in [1]:
@@ -62,6 +74,10 @@ def generate_random_dict(constr=None):
             value = get_valid_values('coeff')
         elif i in [25, 29, 32, 34]:
             value = get_valid_values('cov')
+        elif i in range(35, 35 + num_types):
+            value = type_shares.pop()
+        elif i in range(35 + num_types, num_paras):
+            value = get_valid_values('coeff')
         else:
             value = 0.0
 
@@ -77,22 +93,30 @@ def generate_random_dict(constr=None):
             bounds = get_valid_bounds('delta', value)
         elif i in [1]:
             bounds = get_valid_bounds('amb', value)
-        elif i in range(25, NUM_PARAS):
+        elif i in range(25, 35):
             bounds = get_valid_bounds('cov', value)
+        elif i in range(35, 35 + num_types):
+            bounds = get_valid_bounds('share', value)
+        elif i in range(35 + num_types, num_paras):
+            bounds = get_valid_bounds('coeff', value)
         else:
             bounds = get_valid_bounds('coeff', value)
 
         paras_bounds += [bounds]
 
-    # The dictionary also contains the information whether parameters are
-    # fixed during an estimation. We need to ensure that at least one
-    # parameter is always free. At this point we also want to ensure that
-    # either all shock coefficients are fixed or none. It is not clear how to
-    # ensure other constraints on the Cholesky factors.
+    # The dictionary also contains the information whether parameters are fixed during an
+    # estimation. We need to ensure that at least one parameter is always free. At this point we
+    # also want to ensure that either all shock coefficients are fixed or none. It is not clear
+    # how to ensure other constraints on the Cholesky factors.
     paras_fixed = np.random.choice([True, False], 25).tolist()
     if sum(paras_fixed) == 25:
         paras_fixed[np.random.randint(0, 25)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
+
+    # TODO: For now the shares are fixed until I worked out how to impose the constraint during the
+    # estimation.
+    paras_fixed += [True] * num_types
+    paras_fixed += np.random.choice([True, False], num_types * 4).tolist()
 
     # Sampling number of agents for the simulation. This is then used as the
     # upper bound for the dataset used in the estimation.
@@ -203,27 +227,33 @@ def generate_random_dict(constr=None):
     dict_['SIMULATION']['file'] = 'data'
 
     # SHOCKS
-    lower, upper = 25, NUM_PARAS
+    lower, upper = 25, 35
     dict_['SHOCKS'] = dict()
     dict_['SHOCKS']['coeffs'] = paras_values[lower:upper]
     dict_['SHOCKS']['bounds'] = paras_bounds[lower:upper]
     dict_['SHOCKS']['fixed'] = paras_fixed[lower:upper]
+
+    lower, upper = 35, 35 + num_types
+    dict_['TYPE_SHARES'] = dict()
+    dict_['TYPE_SHARES']['coeffs'] = paras_values[lower:upper]
+    dict_['TYPE_SHARES']['bounds'] = paras_bounds[lower:upper]
+    dict_['TYPE_SHARES']['fixed'] = paras_fixed[lower:upper]
+
+    lower, upper = 35 + num_types, num_paras
+    dict_['TYPE_SHIFTS'] = dict()
+    dict_['TYPE_SHIFTS']['coeffs'] = paras_values[lower:upper]
+    dict_['TYPE_SHIFTS']['bounds'] = paras_bounds[lower:upper]
+    dict_['TYPE_SHIFTS']['fixed'] = paras_fixed[lower:upper]
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = dict()
     dict_['INTERPOLATION']['flag'] = np.random.choice(['True', 'False'])
     dict_['INTERPOLATION']['points'] = np.random.randint(10, 100)
 
-    # TYPES
-    num_types = np.random.choice(range(1, 3))
-    dict_['TYPES'] = dict()
-    dict_['TYPES']['shares'] = get_valid_shares_for_types(num_types)
-    dict_['TYPES']['shifts'] = get_valid_shifts_for_types(num_types)
-
     mock = dict()
     mock['paras_fixed'] = paras_fixed
     for optimizer in OPTIMIZERS_EST + OPTIMIZERS_AMB:
-        dict_[optimizer] = generate_optimizer_options(optimizer, mock)
+        dict_[optimizer] = generate_optimizer_options(optimizer, mock, num_paras)
 
     # The options for the optimizers across the program versions are
     # identical. Otherwise it is not possible to simply run the solution of a

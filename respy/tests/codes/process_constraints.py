@@ -3,8 +3,6 @@ import numpy as np
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 
-from codes.auxiliary import get_valid_shares_for_types
-from codes.auxiliary import get_valid_shifts_for_types
 from codes.auxiliary import get_valid_bounds
 
 # We maintain a list of all valid constraints and check all specified keys
@@ -237,8 +235,8 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
 
             # Ensure that a valid estimator is selected in the case that a
             # free parameter has bounds.
-            for i in range(NUM_PARAS):
-                if paras_fixed[i]:
+            for i, para_fixed in enumerate(paras_fixed):
+                if para_fixed:
                     continue
                 if any(item is not None for item in paras_bounds[i]):
                     if dict_['PROGRAM']['version'] == 'FORTRAN':
@@ -246,17 +244,6 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
                     else:
                         dict_['ESTIMATION']['optimizer'] = 'SCIPY-LBFGSB'
                     break
-
-    # Replace number of types
-    if 'types' in constr.keys():
-        # Extract objects
-        num_types = constr['types']
-        # Checks
-        assert isinstance(num_types, int)
-        assert num_types > 0
-        # Replace in initialization file
-        dict_['TYPES']['shares'] = get_valid_shares_for_types(num_types)
-        dict_['TYPES']['shifts'] = get_valid_shifts_for_types(num_types)
 
     # It is important that these two constraints are imposed after
     # flag_estimation. Otherwise, they might be overwritten.

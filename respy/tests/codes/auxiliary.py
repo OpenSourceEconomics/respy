@@ -223,7 +223,7 @@ def get_valid_values(which):
 def get_valid_bounds(which, value):
     """ Simply get a valid set of bounds.
     """
-    assert which in ['amb', 'cov', 'coeff', 'delta']
+    assert which in ['amb', 'cov', 'coeff', 'delta', 'share']
 
     # The bounds cannot be too tight as otherwise the BOBYQA might not start
     # properly.
@@ -236,7 +236,10 @@ def get_valid_bounds(which, value):
         bounds = [lower, upper]
     elif which in ['cov']:
         bounds = [None, None]
-
+    elif which in ['share']:
+        upper = min(1.0, np.random.choice([value + np.random.uniform(low=0.1)]))
+        lower = max(0.0, np.random.choice([value - np.random.uniform(low=0.1)]))
+        bounds = [lower, upper]
     return bounds
 
 
@@ -245,14 +248,5 @@ def get_valid_shares_for_types(num_types):
     """
     shares = np.random.uniform(size=num_types)
     shares = shares / np.sum(shares)
+    shares = shares.tolist()
     return shares
-
-
-def get_valid_shifts_for_types(num_types):
-    """ We need valid shifts, that includes the zero shifts for the baseline
-    group.
-    """
-    shifts = np.random.uniform(-1.0, 1.0, size=num_types * 4)
-    shifts = shifts.reshape((num_types, 4))
-    shifts[0, :] = 0.0
-    return shifts

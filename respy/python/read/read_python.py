@@ -57,30 +57,19 @@ def read(fname):
     num_types = (len(dict_['TYPES']['coeffs'][1:]) / 4) + 1
 
     for label in ['SHARES', 'SHIFTS']:
-        dict_['TYPES_' + label] = dict()
-        dict_['TYPES_' + label]['coeffs'] = []
-        dict_['TYPES_' + label]['fixed'] = []
-        dict_['TYPES_' + label]['bounds'] = []
+        dict_['TYPE_' + label] = dict()
+        dict_['TYPE_' + label]['coeffs'] = []
+        dict_['TYPE_' + label]['fixed'] = []
+        dict_['TYPE_' + label]['bounds'] = []
 
     for idx in range((num_types - 1) * 5 + 1):
         for label in ['coeffs', 'fixed', 'bounds']:
             if idx in [0] + range(1, (num_types - 1) * 5, 5):
-                dict_['TYPES_SHARES'][label] += [dict_['TYPES'][label][idx]]
+                dict_['TYPE_SHARES'][label] += [dict_['TYPES'][label][idx]]
             else:
-                dict_['TYPES_SHIFTS'][label] += [dict_['TYPES'][label][idx]]
-
+                dict_['TYPE_SHIFTS'][label] += [dict_['TYPES'][label][idx]]
 
     del dict_['TYPES']
-    num_types = len(dict_['TYPES_SHARES']['coeffs'])
-    import respy.python.shared.shared_constants
-    respy.python.shared.shared_constants.NUM_TYPES = num_types
-    respy.python.shared.shared_constants.NUM_PARAS = 35 + num_types + (num_types - 1) * 4
-    # TODO: Is this the right place to do it? No, but I will wait with the
-    # refactoring until these are actual estimation parameters.
-    # if 'TYPES' not in dict_.keys():
-    #     dict_['TYPES'] = dict()
-    #     dict_['TYPES']['shares'] = [1.0]
-
 
     # Finishing
     return dict_
