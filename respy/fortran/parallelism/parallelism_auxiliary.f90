@@ -33,7 +33,7 @@ MODULE parallelism_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, file_sim)
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, num_paras, file_sim)
 
     !/* external objects        */
 
@@ -46,6 +46,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
 
+    INTEGER(our_int), INTENT(IN)                    :: num_paras
     INTEGER(our_int), INTENT(IN)                    :: edu_start
     INTEGER(our_int), INTENT(IN)                    :: edu_max
 

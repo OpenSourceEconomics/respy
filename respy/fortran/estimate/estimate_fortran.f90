@@ -168,7 +168,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     x_optim_free_unscaled = apply_scaling(x_optim_free_scaled, precond_matrix, 'undo')
 
-    CALL construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras)
+    CALL construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras, num_paras)
 
     CALL dist_optim_paras(optim_paras, x_optim_all_unscaled, dist_optim_paras_info)
 
@@ -187,7 +187,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
         CALL summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, num_types, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, num_paras, num_types, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -236,7 +236,7 @@ FUNCTION fort_criterion_parallel(x)
 
     x_input = apply_scaling(x, precond_matrix, 'undo')
 
-    CALL construct_all_current_values(x_all_current, x_input, optim_paras)
+    CALL construct_all_current_values(x_all_current, x_input, optim_paras, num_paras)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
@@ -270,7 +270,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, num_types, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, num_paras, num_types, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -324,15 +324,17 @@ FUNCTION fort_dcriterion(x_optim_free_scaled)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras)
+SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras, num_paras)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(num_paras)
+    REAL(our_dble), INTENT(OUT)         :: x_optim_all_unscaled(num_paras)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
-    REAL(our_dble), INTENT(IN)                  :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
 
+    REAL(our_dble), INTENT(IN)          :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
+
+    INTEGER(our_int), INTENT(IN)        :: num_paras
 
     !/* internal objects        */
 
