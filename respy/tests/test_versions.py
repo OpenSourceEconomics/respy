@@ -180,8 +180,8 @@ class TestClass(object):
 
     @pytest.mark.slow
     def test_3(self):
-        """ This test just locks in the evaluation of the criterion function
-        for the original Keane & Wolpin data.
+        """ This test just locks in the evaluation of the criterion function for the original 
+        Keane & Wolpin data. We create an additional initialization file that includes the types.
         """
         # Sample one task
         resources = []

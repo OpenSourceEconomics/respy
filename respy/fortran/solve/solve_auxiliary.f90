@@ -145,7 +145,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     max_states_period = MAXVAL(states_number_period)
 
     ! Initialize a host of containers, whose dimensions are not clear.
-    ALLOCATE(states_all(num_periods, max_states_period, 4))
+    ALLOCATE(states_all(num_periods, max_states_period, 5))
     states_all = states_all_tmp(:, :max_states_period, :)
 
 END SUBROUTINE

@@ -57,8 +57,7 @@ def _prepare_wages(data_obs, data_sim, which):
 
 
 def _prepare_choices(data_obs, data_sim):
-    """ This function prepares the information about the choice probabilities
-    for easy printing.
+    """ This function prepares the information about the choice probabilities for easy printing.
     """
     rslt_full = dict()
     rslt_shares = dict()
@@ -89,11 +88,10 @@ def _prepare_choices(data_obs, data_sim):
 
 
 def scripts_compare(base_init, is_update):
-    """ Construct some model fit statistics by comparing the observed and
-    simulated dataset.
+    """ Construct some model fit statistics by comparing the observed and simulated dataset.
     """
-    # In case of updating, we create a new initialization file that contains
-    # the updated parameter values.
+    # In case of updating, we create a new initialization file that contains the updated
+    # parameter values.
     if is_update:
         init_file = 'compare.respy.ini'
         shutil.copy(base_init, init_file)
@@ -104,11 +102,12 @@ def scripts_compare(base_init, is_update):
     # Read in relevant model specification.
     respy_obj = RespyCls(init_file)
 
-    # The comparison does make sense when the file of the simulated dataset
-    # and estimation dataset are the same. Then the estimation dataset is
-    # overwritten by the simulated dataset. 
-    if respy_obj.attr['file_est'] == respy_obj.attr['file_sim']:
-        raise UserError(' Misspecified constraints for covariance matrix')
+    # The comparison does make sense when the file of the simulated dataset and estimation dataset
+    #  are the same. Then the estimation dataset is overwritten by the simulated dataset.
+    fname_est = respy_obj.attr['file_est'].split('.')[0]
+    fname_sim = respy_obj.attr['file_sim'].split('.')[0]
+    if fname_est == fname_sim:
+        raise UserError(' Simulation would overwrite estimation dataset')
 
     # Auxiliary information
     num_periods = respy_obj.get_attr('num_periods')
@@ -188,15 +187,14 @@ def scripts_compare(base_init, is_update):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description=
-        'Compare observed and simulated economy.',
+    parser = argparse.ArgumentParser(description='Compare observed and simulated economy.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('--init_file', action='store', dest='init_file',
-        default='model.respy.ini', help='initialization file')
+                        default='model.respy.ini', help='initialization file')
 
-    parser.add_argument('--update', action='store_true', dest='is_update',
-        default=False, help='update parameterizations')
+    parser.add_argument('--update', action='store_true', dest='is_update', default=False,
+                        help='update parameterizations')
 
     init_file, is_update = dist_input_arguments(parser)
 
