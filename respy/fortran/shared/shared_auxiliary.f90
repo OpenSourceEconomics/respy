@@ -1040,6 +1040,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
         READ(99, 1525) optim_paras%paras_bounds(1, :)
         READ(99, 1525) optim_paras%paras_bounds(2, :)
+
     CLOSE(99)
 
     ! TODO: This setup should be revisited and cleaned up later.
@@ -1071,7 +1072,6 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
     num_free =  COUNT(.NOT. optim_paras%paras_fixed)
     num_slaves = num_procs - 1
-
 
 END SUBROUTINE
 !******************************************************************************
