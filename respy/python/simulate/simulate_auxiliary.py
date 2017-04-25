@@ -186,6 +186,9 @@ def format_integer(x):
 def get_estimation_vector(optim_paras):
     """ Construct the vector estimation arguments.
     """
+    # Auxiliary objects
+    num_types = len(optim_paras['type_shares'])
+
     # Collect parameters
     vector = list()
     vector += optim_paras['delta'].tolist()
@@ -198,6 +201,10 @@ def get_estimation_vector(optim_paras):
     vector += optim_paras['shocks_cholesky'][1, :2].tolist()
     vector += optim_paras['shocks_cholesky'][2, :3].tolist()
     vector += optim_paras['shocks_cholesky'][3, :4].tolist()
+    vector += optim_paras['type_shares'].tolist()
+
+    for i in range(1, num_types):
+        vector += optim_paras['type_shifts'][i, :].tolist()
 
     # Type conversion
     vector = np.array(vector)
