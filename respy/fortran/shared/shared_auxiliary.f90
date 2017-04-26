@@ -220,13 +220,13 @@ FUNCTION get_log_likl(contribs)
 
       REAL(our_dble)                  :: get_log_likl
 
-      REAL(our_dble), INTENT(IN)      :: contribs(num_rows)
+      REAL(our_dble), INTENT(IN)      :: contribs(num_agents_est)
 
       !/* internal objects        */
 
       INTEGER(our_int), ALLOCATABLE   :: infos(:)
 
-      REAL(our_dble)                  :: contribs_clipped(num_rows)
+      REAL(our_dble)                  :: contribs_clipped(num_agents_est)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -1247,29 +1247,29 @@ FUNCTION get_num_obs_agent(data_array) RESULT(num_obs_agent)
 
     !/* external objects        */
 
-    DOUBLE PRECISION                    :: num_obs_agent(num_agents_est)
+    INTEGER(our_int)                    :: num_obs_agent(num_agents_est)
 
-    DOUBLE PRECISION, INTENT(IN)        :: data_array(:, :)
+    REAL(our_dble) , INTENT(IN)         :: data_array(:, :)
 
     !/* internal objects        */
 
-    INTEGER                             :: agent_number
-    INTEGER                             :: num_rows
-    INTEGER                             :: q
-    INTEGER                             :: i
+    INTEGER(our_int)                    :: num_rows
+    INTEGER(our_int)                    :: q
+    INTEGER(our_int)                    :: i
+
+    REAL(our_dble)                      :: agent_number
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
     num_rows = SIZE(data_array, 1)
-
+    num_obs_agent = zero_int
     q = 1
 
-    agent_number = TRANSFER(data_array(1, 1), agent_number)
+    agent_number = data_array(1, 1)
 
     DO i = 1, num_rows
-
         IF (data_array(i, 1) .NE. agent_number) THEN
             q = q + 1
             agent_number = data_array(i, 1)

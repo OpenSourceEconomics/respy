@@ -190,8 +190,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Compare observed and simulated economy.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--init_file', action='store', dest='init_file',
-                        default='model.respy.ini', help='initialization file')
+    parser.add_argument('--init_file', action='store', dest='init_file', default='model.respy.ini',
+                        help='initialization file')
 
     parser.add_argument('--update', action='store_true', dest='is_update', default=False,
                         help='update parameterizations')

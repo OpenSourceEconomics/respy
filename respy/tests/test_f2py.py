@@ -59,10 +59,10 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self, flag_ambiguity=False):
-        """ Compare the evaluation of the criterion function for the ambiguity
-        optimization and the simulated expected future value between the FORTRAN
-        and PYTHON implementations. These tests are set up a separate test case
-        due to the large setup cost to construct the ingredients for the interface.
+        """ Compare the evaluation of the criterion function for the ambiguity optimization and 
+        the simulated expected future value between the FORTRAN and PYTHON implementations. These 
+        tests are set up a separate test case due to the large setup cost to construct the 
+        ingredients for the interface.
         """
         # Generate constraint periods
         constr = dict()
@@ -78,17 +78,15 @@ class TestClass(object):
         respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
-        periods_rewards_systematic, states_number_period, mapping_state_idx, \
-            periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-            edu_max, optim_paras, num_types = dist_class_attributes(respy_obj,
-                'periods_rewards_systematic', 'states_number_period',
-                'mapping_state_idx', 'periods_emax', 'num_periods',
-                'states_all', 'num_draws_emax', 'edu_start', 'edu_max',
-                'optim_paras', 'num_types')
+        periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, \
+        num_periods, states_all, num_draws_emax, edu_start, edu_max, optim_paras, num_types = \
+            dist_class_attributes(respy_obj, 'periods_rewards_systematic', 'states_number_period',
+                'mapping_state_idx', 'periods_emax', 'num_periods', 'states_all', 'num_draws_emax',
+                'edu_start', 'edu_max', 'optim_paras', 'num_types')
 
         # Sample draws
-        draws_emax_standard = np.random.multivariate_normal(np.zeros(4),
-                            np.identity(4), (num_draws_emax,))
+        draws_emax_standard = np.random.multivariate_normal(np.zeros(4), np.identity(4),
+                                                            (num_draws_emax, ))
         draws_emax_risk = transform_disturbances(draws_emax_standard,
             np.array([0.0, 0.0, 0.0, 0.0]), optim_paras['shocks_cholesky'])
 
@@ -100,9 +98,8 @@ class TestClass(object):
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Evaluation of simulated expected future values
-        base_args = (num_periods, num_draws_emax, period, k, draws_emax_risk,
-            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx)
+        base_args = (num_periods, num_draws_emax, period, k, draws_emax_risk, rewards_systematic,
+            edu_max, edu_start, periods_emax, states_all, mapping_state_idx)
 
         args = ()
         args += base_args + (optim_paras,)
@@ -374,6 +371,9 @@ class TestClass(object):
                 'ambi_spec', 'num_agents_est', 'states_number_period',
                 'optimizer_options', 'file_sim', 'num_types', 'num_paras')
 
+        data_array = process(respy_obj).as_matrix()
+        num_obs_agent = get_num_obs_agent(data_array, num_agents_est)
+
         # Distribute variables for FORTRAN interface
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
@@ -448,16 +448,15 @@ class TestClass(object):
         # estimation sample.
         data_array = py[:num_agents_est * num_periods, :]
 
-        base_args = (periods_rewards_systematic, mapping_state_idx,
-            periods_emax, states_all, data_array, periods_draws_prob,
-            tau, edu_start, edu_max, num_periods, num_draws_prob)
+        base_args = (periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
+            data_array, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob)
 
         args = ()
-        args += base_args + (optim_paras, )
+        args += base_args + (optim_paras, num_agents_est, num_obs_agent, num_types)
         py = pyth_contributions(*args)
 
         args = ()
-        args += base_args + (shocks_cholesky, delta, num_agents_est, num_types)
+        args += base_args + (shocks_cholesky, delta, num_agents_est, num_obs_agent, num_types)
         args += (type_spec_shares, type_spec_shifts)
         f2py = fort_debug.f2py_contributions(*args)
 
@@ -473,13 +472,14 @@ class TestClass(object):
             mapping_state_idx, max_states_period)
 
         args = ()
-        args += base_args + (ambi_spec, optimizer_options, )
+        args += base_args + (ambi_spec, optimizer_options, num_agents_est, num_obs_agent, num_types)
         py, _ = pyth_criterion(x0, *args)
 
         args = ()
         args += base_args + (ambi_spec_measure, ambi_spec_mean)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
-        args += (type_spec_shares, type_spec_shifts, num_paras, num_types)
+        args += (type_spec_shares, type_spec_shifts, num_paras)
+        args += (num_agents_est, num_obs_agent, num_types)
         f2py = fort_debug.f2py_criterion(x0, *args)
 
         np.testing.assert_allclose(py, f2py)

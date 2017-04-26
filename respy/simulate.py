@@ -48,8 +48,7 @@ def simulate(respy_obj):
         respy_obj.store('solution.respy.pkl')
 
     # Create pandas data frame with missing values.
-    data_frame = pd.DataFrame(replace_missing_values(data_array),
-        columns=DATA_LABELS_SIM)
+    data_frame = pd.DataFrame(replace_missing_values(data_array), columns=DATA_LABELS_SIM)
     data_frame = data_frame.astype(DATA_FORMATS_SIM)
     data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
 

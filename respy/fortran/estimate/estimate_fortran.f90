@@ -93,7 +93,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
     CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .False.)
 
     CALL auto_adjustment_optimizers(optimizer_options, optimizer_used)
-
+    num_obs_agent = get_num_obs_agent(data_est)
 
     crit_estimation = .True.
 
@@ -144,7 +144,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
     REAL(our_dble)                  :: x_optim_all_unscaled(num_paras)
-    REAL(our_dble)                  :: contribs(num_rows)
+    REAL(our_dble)                  :: contribs(num_agents_est)
     REAL(our_dble)                  :: start
 
     INTEGER(our_int)                :: dist_optim_paras_info
@@ -153,6 +153,8 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
     ! This mock object is required as we cannot simply pass in '' as it turns out.
     CHARACTER(225)                  :: file_sim_mock
 
+
+    REAL(our_dble) :: contribs_tmp(num_rows, 1)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -176,8 +178,10 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, num_types)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, num_agents_est, num_obs_agent, num_types)
 
+    ! TODO: This can be removed later.
+    !CALL fort_contributions_old(contribs_tmp, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, num_types)
 
     fort_criterion_scalar = get_log_likl(contribs)
 
@@ -207,7 +211,7 @@ FUNCTION fort_criterion_parallel(x)
 
     REAL(our_dble)                  :: x_all_current(num_paras)
     REAL(our_dble)                  :: x_input(num_free)
-    REAL(our_dble)                  :: contribs(num_rows)
+    REAL(our_dble)                  :: contribs(num_agents_est)
     REAL(our_dble)                  :: start
 
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)

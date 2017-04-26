@@ -32,6 +32,7 @@ MODULE shared_containers
     REAL(our_dble)                  :: dfunc_eps
     REAL(our_dble)                  :: tau
 
+    INTEGER(our_int), ALLOCATABLE   :: num_obs_agent(:)
     INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: edu_max
 

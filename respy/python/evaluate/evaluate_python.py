@@ -9,7 +9,7 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
         data_array, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob,
-        optim_paras, num_agents_est, num_obs, num_types):
+        optim_paras, num_agents_est, num_obs_agent, num_types):
     """ Evaluate criterion function. This code allows for a deterministic model, where there is 
     no random variation in the rewards. If that is the case and all agents have corresponding 
     experiences, then one is returned. If a single agent violates the implications, then the zero 
@@ -21,14 +21,19 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, num_agents_est)
+    prob_obs = np.tile(-HUGE_FLOAT, num_periods)
 
     # Calculate the probability over agents and time.
     for j in range(num_agents_est):
+
         prob_type = np.tile(1.0, num_types)
         for type_ in range(num_types):
-            row_start = sum(num_obs[:j])
-            prob_obs = np.tile(0.0, num_obs[j])
-            for p in range(num_obs[j]):
+
+            row_start = sum(num_obs_agent[:j])
+            num_obs = num_obs_agent[j]
+
+            prob_obs[:] = 0.00
+            for p in range(num_obs):
 
                 period = int(data_array[row_start + p, 1])
                 # Extract observable components of state space as well as agent decision.
@@ -100,7 +105,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
                     # As deviates are aligned with the state experiences, create the conditional
                     # draws. Note, that the realization of the random component of wages align
-                    # withe their observed counterpart in the data.
+                    # with their observed counterpart in the data.
                     draws_cond = np.dot(optim_paras['shocks_cholesky'], draws_stan.T).T
 
                     # Extract deviates from (un-)conditional normal distributions and transform
@@ -130,7 +135,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                     contribs[:] = 1
                     return contribs
 
-            prob_type[type_] = np.prod(prob_obs)
+            prob_type[type_] = np.prod(prob_obs[:num_obs])
 
         # Adjust  and record likelihood contribution
         contribs[j] = np.sum(np.multiply(optim_paras['type_shares'], prob_type))

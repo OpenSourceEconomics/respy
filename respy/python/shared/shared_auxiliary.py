@@ -1,7 +1,6 @@
 import numpy as np
 
 import linecache
-import atexit
 import shlex
 import glob
 import os
@@ -757,11 +756,11 @@ def get_est_info():
     return rslt
 
 
-@atexit.register
-def remove_scratch_files():
+def remove_estimation_scratch():
     """ This function removes all scratch files.
     """
-    for fname in glob.glob('.*.respy.scratch'):
+    fname = '.estimation.respy.scratch'
+    if os.path.exists(fname):
         os.unlink(fname)
 
 
