@@ -22,11 +22,13 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import get_predictions
+from respy.python.process.process_python import process
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import create_draws
@@ -748,4 +750,24 @@ class TestClass(object):
             values = np.random.uniform(-1000.0, 1000.0, size=num_free)
             py = get_scales_magnitudes(values)
             f90 = fort_debug.wrapper_get_scales_magnitude(values, num_free)
+            np.testing.assert_almost_equal(py, f90)
+
+    def test_11(self):
+        """ Function that calculates the number of observations by individual.
+        """
+        for _ in range(10):
+
+            generate_init()
+
+            respy_obj = RespyCls('test.respy.ini')
+
+            simulate_observed(respy_obj)
+
+            num_agents_est = respy_obj.get_attr('num_agents_est')
+
+            data_array = process(respy_obj).as_matrix()
+
+            py = get_num_obs_agent(data_array, num_agents_est)
+            f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)
+
             np.testing.assert_almost_equal(py, f90)

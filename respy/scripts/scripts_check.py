@@ -51,9 +51,9 @@ def scripts_check(request, init_file):
 
         # We also check the structure of the dataset.
         data_array = process(respy_obj).as_matrix()
-        num_obs = data_array.shape[0]
+        num_rows = data_array.shape[0]
 
-        for j in range(num_obs):
+        for j in range(num_rows):
             period = int(data_array[j, 1])
             # Extract observable components of state space as well as agent
             # decision.

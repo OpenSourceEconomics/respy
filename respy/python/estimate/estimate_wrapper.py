@@ -29,8 +29,6 @@ class OptimizationClass(object):
 
         num_paras = len(x_optim_all_unscaled_start)
         # Updated attributes
-        # TODO: The setup of the optim container is different than in FORT.
-        # Here all parameters are included, in FORT only free.
         self.x_optim_container = np.tile(np.nan, (num_paras, 3))
         self.x_econ_container = np.tile(np.nan, (num_paras, 3))
         self.crit_vals = np.tile(np.inf, 3)

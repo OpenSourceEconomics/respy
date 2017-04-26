@@ -14,6 +14,7 @@ from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_wrapper import OptimizationClass
+from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
@@ -30,27 +31,23 @@ def respy_interface(respy_obj, request, data_array=None):
     optim_paras, num_periods, edu_start, is_debug, edu_max, num_draws_prob, seed_prob, \
         num_draws_emax, seed_emax, min_idx, is_myopic, is_interpolated, num_points_interp, \
         maxfun, optimizer_used, tau, optimizer_options, seed_sim, num_agents_sim, ambi_spec, \
-        file_sim, precond_spec, num_types, num_paras = dist_class_attributes(respy_obj,
-            'optim_paras', 'num_periods', 'edu_start', 'is_debug', 'edu_max', 'num_draws_prob',
-            'seed_prob', 'num_draws_emax', 'seed_emax', 'min_idx', 'is_myopic', 'is_interpolated',
-            'num_points_interp', 'maxfun', 'optimizer_used', 'tau', 'optimizer_options',
-            'seed_sim', 'num_agents_sim', 'ambi_spec', 'file_sim', 'precond_spec', 'num_types',
-            'num_paras')
+        file_sim, precond_spec, num_types, num_paras, num_agents_est = \
+            dist_class_attributes(respy_obj, 'optim_paras', 'num_periods', 'edu_start',
+            'is_debug', 'edu_max', 'num_draws_prob', 'seed_prob', 'num_draws_emax', 'seed_emax',
+            'min_idx', 'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
+            'optimizer_used', 'tau', 'optimizer_options', 'seed_sim', 'num_agents_sim',
+            'ambi_spec', 'file_sim', 'precond_spec', 'num_types', 'num_paras', 'num_agents_est')
 
     if request == 'estimate':
 
+        num_obs = get_num_obs_agent(data_array, num_agents_est)
         periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob, is_debug)
-
-        # Draw standard normal deviates for the solution and evaluation step.
-        periods_draws_emax = create_draws(num_periods, num_draws_emax,
-            seed_emax, is_debug)
+        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax, is_debug)
 
         # Construct starting values
-        x_optim_free_unscaled_start = get_optim_paras(optim_paras, num_paras, 'free',
-            is_debug)
+        x_optim_free_unscaled_start = get_optim_paras(optim_paras, num_paras, 'free', is_debug)
 
-        x_optim_all_unscaled_start = get_optim_paras(optim_paras, num_paras, 'all',
-            is_debug)
+        x_optim_all_unscaled_start = get_optim_paras(optim_paras, num_paras, 'all', is_debug)
 
         # Construct the state space
         states_all, states_number_period, mapping_state_idx, max_states_period = \
@@ -64,7 +61,7 @@ def respy_interface(respy_obj, request, data_array=None):
         args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
                 edu_start, is_debug, edu_max, data_array, num_draws_prob, tau, periods_draws_emax,
                 periods_draws_prob, states_all, states_number_period, mapping_state_idx,
-                max_states_period, ambi_spec, optimizer_options)
+                max_states_period, ambi_spec, optimizer_options, num_agents_est, num_obs, num_types)
 
         # Special case where just an evaluation at the starting values is requested is accounted
         # for. Note, that the relevant value of the criterion function is always the one

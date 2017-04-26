@@ -871,3 +871,22 @@ def check_early_termination(maxfun, num_eval):
     # We also want the opportunity for an immediate, but gentle termination from the user.
     if os.path.exists('.stop.respy.scratch'):
         raise MaxfunError
+
+
+def get_num_obs_agent(data_array, num_agents_est):
+    """ Get a list with the number of observations for each agent. 
+    """
+    num_obs_agent = np.tile(0, num_agents_est)
+    agent_number = data_array[0, 0]
+    num_rows = data_array.shape[0]
+
+    q = 0
+    for i in range(num_rows):
+        # We need to check whether we are faced with a new agent.
+        if data_array[i, 0] != agent_number:
+            q += 1
+            agent_number = data_array[i, 0]
+
+        num_obs_agent[q] += 1
+
+    return num_obs_agent

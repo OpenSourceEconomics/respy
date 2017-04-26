@@ -68,7 +68,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: counts(4)
-    INTEGER(our_int)                :: num_obs
+    INTEGER(our_int)                :: num_rows
     INTEGER(our_int)                :: choice
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: exp_a
@@ -90,7 +90,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 !------------------------------------------------------------------------------
 
     ! Construct auxiliary objects
-    num_obs = SIZE(data_evaluate, 1)
+    num_rows = SIZE(data_evaluate, 1)
 
     shocks_cov = MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(optim_paras%shocks_cholesky))
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
@@ -98,7 +98,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     ! Initialize container for likelihood contributions
     contribs = -HUGE_FLOAT
 
-    DO j = 1, num_obs
+    DO j = 1, num_rows
 
         period = INT(data_evaluate(j, 2))
 

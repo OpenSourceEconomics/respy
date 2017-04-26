@@ -31,13 +31,12 @@ def estimate(respy_obj):
     # This locks the estimation directory for additional estimation requests.
     open('.estimation.respy.scratch', 'w').close()
 
-    # Read in estimation dataset. It only reads in the number of agents
-    # requested for the estimation.
-    data_frame = process(respy_obj)
+    # Read in estimation dataset. It only reads in the number of agents requested for the
+    # estimation.
+    data_frame, = process(respy_obj)
     data_array = data_frame.as_matrix()
 
     # Distribute class attributes
-    num_paras = respy_obj.get_attr('num_paras')
     version = respy_obj.get_attr('version')
 
     # Select appropriate interface
@@ -84,8 +83,8 @@ def check_estimation(respy_obj):
     if maxfun > 0:
         assert optimizer_used in optimizer_options.keys()
 
-        # We need to make sure that an optimizer that aligns with the
-        # requested optimization is requested.
+        # We need to make sure that an optimizer that aligns with the requested optimization is
+        # requested.
         if version == 'PYTHON':
             assert optimizer_used in OPT_EST_PYTH
         elif version == 'FORTRAN':
@@ -93,8 +92,8 @@ def check_estimation(respy_obj):
         else:
             raise AssertionError
 
-        # When the level of ambiguity is a free parameter, then we can only
-        # allow for the constraint optimizers in the estimation.
+        # When the level of ambiguity is a free parameter, then we can only allow for the
+        # constraint optimizers in the estimation.
         if not optim_paras['paras_fixed'][0]:
             if version == 'PYTHON':
                 assert optimizer_used in ['SCIPY-LBFGSB']
@@ -103,10 +102,10 @@ def check_estimation(respy_obj):
                 assert optimizer_used in ['FORT-BOBYQA']
                 assert 'FORT-SLSQP' in optimizer_options.keys()
 
-    # We need to make sure that all optimizers are fully defined for the
-    # FORTRAN interface. At the same time, we do not want to require the user
-    # to specify only the optimizers that are used. So, we sample a full set
-    # and replace the optimizers that are used with the user specification.
+    # We need to make sure that all optimizers are fully defined for the FORTRAN interface. At
+    # the same time, we do not want to require the user to specify only the optimizers that are
+    # used. So, we sample a full set and replace the optimizers that are used with the user
+    # specification.
     full_options = dict()
     for optimizer in OPTIMIZERS:
         full_options[optimizer] = \

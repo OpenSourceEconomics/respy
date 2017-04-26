@@ -8,7 +8,7 @@ from respy.python.shared.shared_auxiliary import get_log_likl
 def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, data_array, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob, states_all, states_number_period, mapping_state_idx, max_states_period,
-        ambi_spec, optimizer_options):
+        ambi_spec, optimizer_options, num_agents_est, num_obs, num_types):
     """ This function provides the wrapper for optimization routines.
     """
 
@@ -25,7 +25,16 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods, num_points_i
 
     contribs = pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_emax,
         states_all, data_array, periods_draws_prob, tau, edu_start, edu_max, num_periods,
-        num_draws_prob, optim_paras)
+        num_draws_prob, optim_paras, num_agents_est, num_obs, num_types)
+
+    from respy.python.evaluate.evaluate_python import pyth_contributions_old
+    old_contribs = pyth_contributions_old(periods_rewards_systematic, mapping_state_idx,
+                           periods_emax, states_all, data_array, periods_draws_prob, tau,
+                           edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
+    import numpy as np
+
+    print 'I am testing'
+    np.testing.assert_almost_equal(np.prod(contribs), np.prod(old_contribs))
 
     crit_val = get_log_likl(contribs)
 

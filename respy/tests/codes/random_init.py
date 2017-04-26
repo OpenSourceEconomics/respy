@@ -155,8 +155,7 @@ def generate_random_dict(constr=None):
     dict_['EDUCATION']['fixed'] = paras_fixed[lower:upper]
 
     dict_['EDUCATION']['start'] = np.random.randint(1, 10)
-    dict_['EDUCATION']['max'] = np.random.randint(
-        dict_['EDUCATION']['start'] + 1, 20)
+    dict_['EDUCATION']['max'] = np.random.randint(dict_['EDUCATION']['start'] + 1, 20)
 
     # Home
     lower, upper = 24, 25

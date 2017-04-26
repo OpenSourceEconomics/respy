@@ -49,7 +49,7 @@ PROGRAM resfort_scalar
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs, num_paras)
+    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
     ALLOCATE(x_all_start(num_paras))
     ALLOCATE(x_tmp(num_paras))
 
@@ -67,7 +67,7 @@ PROGRAM resfort_scalar
 
             CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
-            CALL read_dataset(data_est, num_obs)
+            CALL read_dataset(data_est, num_rows)
 
             CALL fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_spec, optimizer_options, num_types)
 

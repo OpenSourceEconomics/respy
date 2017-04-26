@@ -144,7 +144,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
     REAL(our_dble)                  :: x_optim_all_unscaled(num_paras)
-    REAL(our_dble)                  :: contribs(num_obs)
+    REAL(our_dble)                  :: contribs(num_rows)
     REAL(our_dble)                  :: start
 
     INTEGER(our_int)                :: dist_optim_paras_info
@@ -207,11 +207,11 @@ FUNCTION fort_criterion_parallel(x)
 
     REAL(our_dble)                  :: x_all_current(num_paras)
     REAL(our_dble)                  :: x_input(num_free)
-    REAL(our_dble)                  :: contribs(num_obs)
+    REAL(our_dble)                  :: contribs(num_rows)
     REAL(our_dble)                  :: start
 
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
-    INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
+    INTEGER(our_int), ALLOCATABLE   :: num_rows_slaves(:)
 
     INTEGER(our_int)                :: opt_ambi_summary_slaves(2, num_slaves)
     INTEGER(our_int)                :: dist_optim_paras_info
@@ -247,17 +247,17 @@ FUNCTION fort_criterion_parallel(x)
 
     ! We need to know how the workload is distributed across the slaves.
     IF (.NOT. ALLOCATED(num_states_slaves)) THEN
-        CALL distribute_workload(num_states_slaves, num_obs_slaves)
+        CALL distribute_workload(num_states_slaves, num_rows_slaves)
 
         DO i = 1, num_slaves
-            displs(i) = SUM(num_obs_slaves(:i - 1))
+            displs(i) = SUM(num_rows_slaves(:i - 1))
         END DO
 
     END IF
 
     contribs = -HUGE_FLOAT
 
-    CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_obs_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_rows_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     fort_criterion_parallel = get_log_likl(contribs)
 

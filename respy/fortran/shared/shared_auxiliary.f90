@@ -220,13 +220,13 @@ FUNCTION get_log_likl(contribs)
 
       REAL(our_dble)                  :: get_log_likl
 
-      REAL(our_dble), INTENT(IN)      :: contribs(num_obs)
+      REAL(our_dble), INTENT(IN)      :: contribs(num_rows)
 
       !/* internal objects        */
 
       INTEGER(our_int), ALLOCATABLE   :: infos(:)
 
-      REAL(our_dble)                  :: contribs_clipped(num_obs)
+      REAL(our_dble)                  :: contribs_clipped(num_rows)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -876,7 +876,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs, num_paras)
+SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in all required information about the model parameterization. It just reads in all required information.
@@ -900,7 +900,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     INTEGER(our_int), INTENT(OUT)   :: seed_sim
     INTEGER(our_int), INTENT(OUT)   :: num_free
     INTEGER(our_int), INTENT(OUT)   :: edu_max
-    INTEGER(our_int), INTENT(OUT)   :: num_obs
+    INTEGER(our_int), INTENT(OUT)   :: num_rows
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
@@ -993,7 +993,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         READ(99, 1505) num_draws_prob
         READ(99, 1505) seed_prob
         READ(99, 1500) tau
-        READ(99, 1505) num_obs
+        READ(99, 1505) num_rows
 
         ! SCALING
         READ(99, *) precond_spec%type
@@ -1076,13 +1076,13 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_dataset(data_est, num_obs)
+SUBROUTINE read_dataset(data_est, num_rows)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: data_est(:, :)
 
-    INTEGER(our_int), INTENT(IN)                :: num_obs
+    INTEGER(our_int), INTENT(IN)                :: num_rows
 
     !/* internal objects        */
 
@@ -1094,12 +1094,12 @@ SUBROUTINE read_dataset(data_est, num_obs)
 !------------------------------------------------------------------------------
 
     ! Allocate data container
-    ALLOCATE(data_est(num_obs, 8))
+    ALLOCATE(data_est(num_rows, 8))
 
     ! Read observed data to double precision array
     OPEN(UNIT=99, FILE='.data.resfort.dat', ACTION='READ')
 
-        DO j = 1, num_obs
+        DO j = 1, num_rows
             READ(99, *) (data_est(j, k), k = 1, 8)
         END DO
 
@@ -1241,6 +1241,45 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
     optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(36 + num_types:num_paras), (/4, num_types  - 1/)))
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION get_num_obs_agent(data_array) RESULT(num_obs_agent)
+
+    !/* external objects        */
+
+    DOUBLE PRECISION                    :: num_obs_agent(num_agents_est)
+
+    DOUBLE PRECISION, INTENT(IN)        :: data_array(:, :)
+
+    !/* internal objects        */
+
+    INTEGER                             :: agent_number
+    INTEGER                             :: num_rows
+    INTEGER                             :: q
+    INTEGER                             :: i
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    num_rows = SIZE(data_array, 1)
+
+    q = 1
+
+    agent_number = TRANSFER(data_array(1, 1), agent_number)
+
+    DO i = 1, num_rows
+
+        IF (data_array(i, 1) .NE. agent_number) THEN
+            q = q + 1
+            agent_number = data_array(i, 1)
+        END IF
+
+        num_obs_agent(q) = num_obs_agent(q) + 1
+
+    END DO
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE get_optim_paras(x, optim_paras, is_all)

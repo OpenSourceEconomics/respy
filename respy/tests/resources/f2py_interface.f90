@@ -70,7 +70,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     ! Assign global RESPFRT variables
     max_states_period = max_states_period_int
     min_idx = SIZE(mapping_state_idx_int, 4)
-    num_obs = SIZE(data_est_int, 1)
+    num_rows = SIZE(data_est_int, 1)
 
     ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
@@ -1937,6 +1937,36 @@ SUBROUTINE wrapper_covariance_to_correlation(corr, cov, nrows)
 !------------------------------------------------------------------------------
 
     CALL covariance_to_correlation(corr, cov)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE wrapper_get_num_obs_agent(num_rows_agent, data_array, num_agents_est_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: num_rows_agent(num_agents_est_int)
+
+    DOUBLE PRECISION, INTENT(IN)        :: data_array(:, :)
+
+    INTEGER, INTENT(IN)                 :: num_agents_est_int
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Assign global RESFORT variables
+    num_agents_est = num_agents_est_int
+
+    num_rows_agent = get_num_obs_agent(data_array)
 
 END SUBROUTINE
 !******************************************************************************

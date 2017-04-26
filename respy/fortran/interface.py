@@ -146,9 +146,9 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
 
     # Auxiliary objects
     if data_array is not None:
-        num_obs = data_array.shape[0]
+        num_rows = data_array.shape[0]
     else:
-        num_obs = -1
+        num_rows = -1
 
     # Write out to link file
     with open('.model.resfort.ini', 'w') as file_:
@@ -244,7 +244,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         line = '{0:25.15f}\n'.format(tau)
         file_.write(line)
 
-        line = '{0:10d}\n'.format(num_obs)
+        line = '{0:10d}\n'.format(num_rows)
         file_.write(line)
 
         # PRECONDITIONING

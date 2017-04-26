@@ -24,7 +24,7 @@ PROGRAM resfort_parallel_slave
 
     INTEGER(our_int), ALLOCATABLE   :: opt_ambi_summary_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
-    INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
+    INTEGER(our_int), ALLOCATABLE   :: num_rows_slaves(:)
     INTEGER(our_int), ALLOCATABLE   :: displs(:)
 
     INTEGER(our_int)                :: lower_bound_states
@@ -62,11 +62,11 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
 
-    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs, num_paras)
+    CALL read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx, num_types)
 
-    CALL distribute_workload(num_states_slaves, num_obs_slaves)
+    CALL distribute_workload(num_states_slaves, num_rows_slaves)
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
@@ -127,16 +127,16 @@ PROGRAM resfort_parallel_slave
 
             IF (.NOT. ALLOCATED(data_est)) THEN
 
-                CALL read_dataset(data_est, num_obs)
+                CALL read_dataset(data_est, num_rows)
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
-                ALLOCATE(contribs(num_obs))
+                ALLOCATE(contribs(num_rows))
 
-                ALLOCATE(data_slave(num_obs_slaves(rank + 1), 8))
+                ALLOCATE(data_slave(num_rows_slaves(rank + 1), 8))
 
-                lower_bound_obs = SUM(num_obs_slaves(:rank)) + 1
-                upper_bound_obs = SUM(num_obs_slaves(:rank + 1))
+                lower_bound_obs = SUM(num_rows_slaves(:rank)) + 1
+                upper_bound_obs = SUM(num_rows_slaves(:rank + 1))
 
                 data_slave = data_est(lower_bound_obs:upper_bound_obs, :)
 
@@ -148,7 +148,7 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_contributions(contribs(lower_bound_obs:upper_bound_obs), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, num_types)
 
-            CALL MPI_GATHERV(contribs(lower_bound_obs:upper_bound_obs), num_obs_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+            CALL MPI_GATHERV(contribs(lower_bound_obs:upper_bound_obs), num_rows_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
             ! We also need to monitor the quality of the worst-case determination. We do not send around detailed information to save on communication time. The details are provided for simulations only.
             CALL summarize_worst_case_success(opt_ambi_summary_slaves(:, rank + 1), opt_ambi_details)
