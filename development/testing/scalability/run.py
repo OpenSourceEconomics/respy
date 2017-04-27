@@ -1,7 +1,17 @@
 #!/usr/bin/env python
+import argparse
+
 from auxiliary_scalability import run
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Run scalability exercise for the package')
+
+    parser.add_argument('--debug', action='store_true', dest='is_debug', default=False,
+                        help='use debugging specification')
+
+    args = parser.parse_args()
+    is_debug = args.is_debug
 
     # The following key value pairs describe the quantification exercise itself.
     spec_dict = dict()
@@ -17,12 +27,17 @@ if __name__ == '__main__':
     spec_dict['precond_spec']['minimum'] = 0.00001
     spec_dict['precond_spec']['eps'] = 1e-6
 
+    spec_dict['ambi_spec'] = dict()
+    spec_dict['ambi_spec']['measure'] = 'kl'
+    spec_dict['ambi_spec']['mean'] = True
+
+    spec_dict['update']['is_store'] = False
     spec_dict['update']['is_debug'] = False
-    spec_dict['update']['measure'] = 'kl'
-    spec_dict['update']['level'] = 0.05
+    spec_dict['update']['level'] = 0.00
     spec_dict['update']['maxfun'] = 0
 
     # The following key value pair describes the debugging setup.
-    spec_dict['update']['num_periods'] = 3
+    if is_debug:
+        spec_dict['update']['num_periods'] = 3
 
     run(spec_dict)

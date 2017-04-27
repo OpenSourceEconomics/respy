@@ -196,8 +196,7 @@ def run(request, is_compile, is_background):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Create or check both vaults',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Create or check both vaults')
 
     parser.add_argument('--request', action='store', dest='request', help='task to perform',
                         required=True, nargs=2)

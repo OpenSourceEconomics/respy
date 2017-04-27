@@ -27,17 +27,6 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods, num_points_i
         states_all, data_array, periods_draws_prob, tau, edu_start, edu_max, num_periods,
         num_draws_prob, num_agents_est, num_obs_agent, num_types, optim_paras)
 
-    import numpy as np
-    print np.sum(contribs)
-    #from respy.python.evaluate.evaluate_python import pyth_contributions_old
-    #old_contribs = pyth_contributions_old(periods_rewards_systematic, mapping_state_idx,
-    #                       periods_emax, states_all, data_array, periods_draws_prob, tau,
-    #                       edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
-    #import numpy as np
-
-    #print 'I am testing'
-    #np.testing.assert_almost_equal(np.prod(contribs), np.prod(old_contribs))
-
     crit_val = get_log_likl(contribs)
-    print(crit_val)
+
     return crit_val, opt_ambi_details
