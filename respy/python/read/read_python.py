@@ -54,7 +54,7 @@ def read(fname):
     dict_['TYPES']['coeffs'] = np.array(dict_['TYPES']['coeffs'])
 
     # We further process the TYPES for easier processing later.
-    num_types = (len(dict_['TYPES']['coeffs'][1:]) / 4) + 1
+    num_types = int((len(dict_['TYPES']['coeffs'][1:]) / 4) + 1)
 
     for label in ['SHARES', 'SHIFTS']:
         dict_['TYPE_' + label] = dict()
@@ -64,7 +64,7 @@ def read(fname):
 
     for idx in range((num_types - 1) * 5 + 1):
         for label in ['coeffs', 'fixed', 'bounds']:
-            if idx in [0] + range(1, (num_types - 1) * 5, 5):
+            if idx in [0] + list(range(1, (num_types - 1) * 5, 5)):
                 dict_['TYPE_SHARES'][label] += [dict_['TYPES'][label][idx]]
             else:
                 dict_['TYPE_SHIFTS'][label] += [dict_['TYPES'][label][idx]]

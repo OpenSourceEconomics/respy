@@ -665,7 +665,7 @@ class RespyCls(object):
 
         # Number of parameters
         assert isinstance(num_paras, int)
-        assert int >= 37
+        assert num_paras >= 36
 
         # Parallelism
         assert isinstance(num_procs, int)
