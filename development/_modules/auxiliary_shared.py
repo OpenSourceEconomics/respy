@@ -23,12 +23,15 @@ def update_class_instance(respy_obj, spec_dict):
 
     respy_obj.unlock()
 
-    # Varying the baseline level of ambiguity requires special case.
+    # Varying the baseline level of ambiguity requires special case. The same is true for the
+    # discount rate.
     if 'level' in spec_dict['update'].keys():
         respy_obj.attr['optim_paras']['level'] = np.array([spec_dict['update']['level']])
+    if 'delta' in spec_dict['update'].keys():
+        respy_obj.attr['optim_paras']['delta'] = np.array([spec_dict['update']['delta']])
 
     for key_ in spec_dict['update'].keys():
-        if key_ in ['level']:
+        if key_ in ['level', 'delta']:
             continue
         respy_obj.set_attr(key_, spec_dict['update'][key_])
 

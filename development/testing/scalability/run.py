@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     spec_dict['update']['is_store'] = False
     spec_dict['update']['is_debug'] = False
+    spec_dict['update']['delta'] = 0.95
     spec_dict['update']['level'] = 0.00
     spec_dict['update']['maxfun'] = 0
 
