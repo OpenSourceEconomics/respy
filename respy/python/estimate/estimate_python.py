@@ -8,7 +8,7 @@ from respy.python.shared.shared_auxiliary import get_log_likl
 def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
         edu_start, is_debug, edu_max, data_array, num_draws_prob, tau, periods_draws_emax,
         periods_draws_prob, states_all, states_number_period, mapping_state_idx, max_states_period,
-        ambi_spec, optimizer_options, num_agents_est, num_obs_agent, num_types):
+        num_agents_est, num_obs_agent, num_types, ambi_spec, optimizer_options):
     """ This function provides the wrapper for optimization routines.
     """
 
@@ -25,7 +25,7 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods, num_points_i
 
     contribs = pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_emax,
         states_all, data_array, periods_draws_prob, tau, edu_start, edu_max, num_periods,
-        num_draws_prob, optim_paras, num_agents_est, num_obs_agent, num_types)
+        num_draws_prob, num_agents_est, num_obs_agent, num_types, optim_paras)
 
     import numpy as np
     print np.sum(contribs)

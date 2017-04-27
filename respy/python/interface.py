@@ -61,7 +61,7 @@ def respy_interface(respy_obj, request, data_array=None):
         args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
                 edu_start, is_debug, edu_max, data_array, num_draws_prob, tau, periods_draws_emax,
                 periods_draws_prob, states_all, states_number_period, mapping_state_idx,
-                max_states_period, ambi_spec, optimizer_options, num_agents_est, num_obs, num_types)
+                max_states_period, num_agents_est, num_obs, num_types, ambi_spec, optimizer_options)
 
         # Special case where just an evaluation at the starting values is requested is accounted
         # for. Note, that the relevant value of the criterion function is always the one

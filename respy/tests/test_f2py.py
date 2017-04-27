@@ -449,14 +449,15 @@ class TestClass(object):
         data_array = py[:num_agents_est * num_periods, :]
 
         base_args = (periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
-            data_array, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob)
+            data_array, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob,
+            num_agents_est, num_obs_agent, num_types)
 
         args = ()
-        args += base_args + (optim_paras, num_agents_est, num_obs_agent, num_types)
+        args += base_args + (optim_paras, )
         py = pyth_contributions(*args)
 
         args = ()
-        args += base_args + (shocks_cholesky, delta, num_agents_est, num_obs_agent, num_types)
+        args += base_args + (shocks_cholesky, delta)
         args += (type_spec_shares, type_spec_shifts)
         f2py = fort_debug.f2py_contributions(*args)
 
@@ -465,21 +466,19 @@ class TestClass(object):
         # Evaluation of criterion function
         x0 = get_optim_paras(optim_paras, num_paras, 'all', is_debug)
 
-        base_args = (is_interpolated, num_draws_emax, num_periods,
-            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-            data_array, num_draws_prob, tau, periods_draws_emax,
-            periods_draws_prob, states_all, states_number_period,
-            mapping_state_idx, max_states_period)
+        base_args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
+            edu_start, is_debug, edu_max, data_array, num_draws_prob, tau, periods_draws_emax,
+            periods_draws_prob, states_all, states_number_period, mapping_state_idx,
+            max_states_period, num_agents_est, num_obs_agent, num_types)
 
         args = ()
-        args += base_args + (ambi_spec, optimizer_options, num_agents_est, num_obs_agent, num_types)
+        args += base_args + (ambi_spec, optimizer_options)
         py, _ = pyth_criterion(x0, *args)
 
         args = ()
         args += base_args + (ambi_spec_measure, ambi_spec_mean)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (type_spec_shares, type_spec_shifts, num_paras)
-        args += (num_agents_est, num_obs_agent, num_types)
         f2py = fort_debug.f2py_criterion(x0, *args)
 
         np.testing.assert_allclose(py, f2py)

@@ -27,9 +27,8 @@ from codes.random_init import generate_init
 from respy import RespyCls
 from respy import estimate
 
-# Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests
-# subdirectory. If __init__.py is added, the path resolution for PYTEST
-# breaks down.
+# Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests subdirectory. If
+# __init__.py is added, the path resolution for PYTEST breaks down.
 if IS_F2PY:
     sys.path.insert(0, TEST_RESOURCES_DIR)
     import f2py_interface as fort_debug
