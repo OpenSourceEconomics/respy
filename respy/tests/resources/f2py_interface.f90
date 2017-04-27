@@ -59,7 +59,7 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, ALLOCATABLE   :: opt_ambi_details(:, :, :)
 
-    DOUBLE PRECISION                :: contribs(SIZE(data_est_int, 1))
+    DOUBLE PRECISION                :: contribs(num_agents_est_int)
 
     INTEGER                         :: dist_optim_paras_info
 
@@ -123,7 +123,7 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: contribs(num_agents_est_int * num_periods_int)
+    DOUBLE PRECISION, INTENT(OUT)   :: contribs(num_agents_est_int)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :)

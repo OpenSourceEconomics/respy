@@ -52,7 +52,7 @@ PROGRAM resfort_parallel_slave
     CHARACTER(225)                  :: file_sim
     CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
-    
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -144,8 +144,6 @@ PROGRAM resfort_parallel_slave
                 upper_bound_obs = SUM(num_obs_agent(:stop_agent))
 
                 ALLOCATE(contribs(num_agents_est))
-
-
                 ALLOCATE(data_slave(upper_bound_obs - lower_bound_obs + 1, 8))
 
                 data_slave = data_est(lower_bound_obs:upper_bound_obs, :)
