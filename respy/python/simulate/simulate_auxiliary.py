@@ -247,9 +247,8 @@ def check_dataset_sim(data_frame, respy_obj):
     np.testing.assert_equal(dat.isnull().any(), False)
     data_frame.groupby('Identifier').apply(check_check_time_constant)
 
-    # Check that there are not missing wage observations if an agent is
-    # working. Also, we check that if an agent is not working, there also is
-    # no wage observation.
+    # Check that there are not missing wage observations if an agent is working. Also, we check
+    # that if an agent is not working, there also is no wage observation.
     is_working = data_frame['Choice'].isin([1, 2])
 
     dat = data_frame['Wage'][is_working]
@@ -258,8 +257,7 @@ def check_dataset_sim(data_frame, respy_obj):
     dat = data_frame['Wage'][~ is_working]
     np.testing.assert_equal(dat.isnull().all(), True)
 
-    # Check that there are no missing observations and we follow an agent
-    # each period.
+    # Check that there are no missing observations and we follow an agent each period.
     data_frame.groupby('Identifier').apply(check_number_periods)
 
 
@@ -272,5 +270,8 @@ def get_random_types(num_types, optim_paras, num_agents_sim, is_debug):
     else:
         types = np.random.choice(range(num_types), p=optim_paras['type_shares'],
                                  size=num_agents_sim)
+
+    # If we only have one individual, we need to ensure that types are a vector.
+    types = np.array(types, ndmin=1)
 
     return types

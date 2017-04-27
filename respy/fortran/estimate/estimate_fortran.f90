@@ -154,8 +154,6 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
     ! This mock object is required as we cannot simply pass in '' as it turns out.
     CHARACTER(225)                  :: file_sim_mock
 
-
-    REAL(our_dble) :: contribs_tmp(num_rows, 1)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -214,7 +212,6 @@ FUNCTION fort_criterion_parallel(x)
 
     INTEGER(our_int), SAVE, ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), SAVE, ALLOCATABLE   :: num_agents_slaves(:)
-    INTEGER(our_int), SAVE, ALLOCATABLE   :: num_rows_slaves(:)
     INTEGER(our_int), SAVE, ALLOCATABLE   :: displs(:)
 
     INTEGER(our_int)                :: opt_ambi_summary_slaves(2, num_slaves)

@@ -66,6 +66,9 @@ def run_single(spec_dict, fname):
         if request == 'Truth':
             if is_risk:
                 respy_obj.attr['optim_paras']['paras_fixed'][1] = True
+                # We do only need a subset of the available processors
+                num_procs = spec_dict['update']['num_procs']
+                respy_obj.attr['num_procs'] = min(num_procs, 4)
 
         elif request == 'Static':
             # We do only need a subset of the available processors

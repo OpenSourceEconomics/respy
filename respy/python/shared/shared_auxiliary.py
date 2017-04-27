@@ -142,13 +142,13 @@ def extract_type_information(x):
     """ This function extracts the information about types from the estimation vector.
     """
 
-    num_types = (len(x[35:]) - 1) / 5 + 1
+    num_types = int((len(x[35:]) - 1) / 5 + 1)
 
     # Type shares
-    type_shares = x[35:(35 + num_types)]
+    type_shares = x[35:35 + num_types]
 
     # Type shifts
-    type_shifts = x[(35 + num_types):]
+    type_shifts = x[35 + num_types:]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
