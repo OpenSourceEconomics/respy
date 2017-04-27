@@ -119,12 +119,12 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE distribute_workload(num_states_slaves, num_rows_slaves)
+SUBROUTINE distribute_workload(num_states_slaves, num_agents_slaves)
 
     !/* external objects        */
 
     INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_states_slaves(:, :)
-    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_rows_slaves(:)
+    INTEGER(our_int), ALLOCATABLE, INTENT(OUT)   :: num_agents_slaves(:)
 
     !/* internal objects        */
 
@@ -134,9 +134,9 @@ SUBROUTINE distribute_workload(num_states_slaves, num_rows_slaves)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ALLOCATE(num_states_slaves(num_periods, num_slaves), num_rows_slaves(num_slaves))
+    ALLOCATE(num_states_slaves(num_periods, num_slaves), num_agents_slaves(num_slaves))
 
-    CALL determine_workload(num_rows_slaves, num_rows)
+    CALL determine_workload(num_agents_slaves, num_agents_est)
 
     DO period = 1, num_periods
         CALL determine_workload(num_states_slaves(period, :), states_number_period(period))

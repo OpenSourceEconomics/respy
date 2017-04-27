@@ -24,8 +24,13 @@ PROGRAM resfort_parallel_slave
 
     INTEGER(our_int), ALLOCATABLE   :: opt_ambi_summary_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
-    INTEGER(our_int), ALLOCATABLE   :: num_rows_slaves(:)
+    INTEGER(our_int), ALLOCATABLE   :: num_agents_slaves(:)
+
     INTEGER(our_int), ALLOCATABLE   :: displs(:)
+
+    ! TODO: This can go later
+    INTEGER(our_int), ALLOCATABLE   :: num_rows_slaves(:)
+
 
     INTEGER(our_int)                :: lower_bound_states
     INTEGER(our_int)                :: upper_bound_states
@@ -51,6 +56,9 @@ PROGRAM resfort_parallel_slave
     CHARACTER(225)                  :: exec_dir
     CHARACTER(10)                   :: request
 
+
+    INTEGER(our_int)                :: start_agent, stop_agent
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -66,7 +74,8 @@ PROGRAM resfort_parallel_slave
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx, num_types)
 
-    CALL distribute_workload(num_states_slaves, num_rows_slaves)
+    CALL distribute_workload(num_states_slaves, num_agents_slaves)
+
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
@@ -127,16 +136,26 @@ PROGRAM resfort_parallel_slave
 
             IF (.NOT. ALLOCATED(data_est)) THEN
 
+
                 CALL read_dataset(data_est, num_rows)
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
 
-                ALLOCATE(contribs(num_rows))
+                ! Now we need to determine the number precise bounds for the dataset.
+                start_agent = SUM(num_agents_slaves(:rank)) + 1
+                stop_agent = SUM(num_agents_slaves(:rank + 1))
+                PRINT *, 'going in'
+                num_obs_agent = get_num_obs_agent(data_est)
+                PRINT *, start_agent, stop_agent
 
-                ALLOCATE(data_slave(num_rows_slaves(rank + 1), 8))
+                lower_bound_obs = SUM(num_obs_agent(:start_agent - 1)) + 1
+                upper_bound_obs = SUM(num_obs_agent(:stop_agent))
 
-                lower_bound_obs = SUM(num_rows_slaves(:rank)) + 1
-                upper_bound_obs = SUM(num_rows_slaves(:rank + 1))
+                ALLOCATE(contribs(num_agents_est))
+
+
+                ALLOCATE(data_slave(upper_bound_obs - lower_bound_obs + 1, 8))
+                PRINT *, upper_bound_obs - lower_bound_obs + 1
 
                 data_slave = data_est(lower_bound_obs:upper_bound_obs, :)
 
@@ -146,9 +165,11 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, .False.)
 
-            CALL fort_contributions(contribs(lower_bound_obs:upper_bound_obs), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, num_agents_est, num_types)
+            CALL fort_contributions(contribs(start_agent:stop_agent), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, num_agents_slaves(rank + 1), num_obs_agent(start_agent:stop_agent), num_types, optim_paras)
 
-            CALL MPI_GATHERV(contribs(lower_bound_obs:upper_bound_obs), num_rows_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
+            PRINT *, 'slave contribs', contribs(:)
+
+            CALL MPI_GATHERV(contribs(start_agent:stop_agent), num_agents_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
             ! We also need to monitor the quality of the worst-case determination. We do not send around detailed information to save on communication time. The details are provided for simulations only.
             CALL summarize_worst_case_success(opt_ambi_summary_slaves(:, rank + 1), opt_ambi_details)

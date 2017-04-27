@@ -76,6 +76,8 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
         criterion_function => fort_criterion_parallel
     END IF
 
+    ! We need to determine the number of observations we have for each individual before any evaluation of the criterion function can be conducted. However, we only need to do this here if we are not letting the slaves do all the work. In that case the dataset is not read on the head node.
+    IF (num_procs == 1) num_obs_agent = get_num_obs_agent(data_est)
 
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
     CALL get_optim_paras(x_all_start, optim_paras, .True.)
@@ -93,7 +95,6 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
     CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .False.)
 
     CALL auto_adjustment_optimizers(optimizer_options, optimizer_used)
-    num_obs_agent = get_num_obs_agent(data_est)
 
     crit_estimation = .True.
 
@@ -216,6 +217,7 @@ FUNCTION fort_criterion_parallel(x)
 
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_rows_slaves(:)
+    INTEGER(our_int), ALLOCATABLE   :: num_agents_slaves(:)
 
     INTEGER(our_int)                :: opt_ambi_summary_slaves(2, num_slaves)
     INTEGER(our_int)                :: dist_optim_paras_info
@@ -250,19 +252,21 @@ FUNCTION fort_criterion_parallel(x)
     CALL dist_optim_paras(optim_paras, x_all_current, dist_optim_paras_info)
 
     ! We need to know how the workload is distributed across the slaves.
+    ! TODO: Are we donig this each evaluation, is this realy neccessary?
     IF (.NOT. ALLOCATED(num_states_slaves)) THEN
-        CALL distribute_workload(num_states_slaves, num_rows_slaves)
+        CALL distribute_workload(num_states_slaves, num_agents_slaves)
 
         DO i = 1, num_slaves
-            displs(i) = SUM(num_rows_slaves(:i - 1))
+            displs(i) = SUM(num_agents_slaves(:i - 1))
         END DO
 
     END IF
 
     contribs = -HUGE_FLOAT
 
-    CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_rows_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-
+    PRINT *, ' Master gateherv', num_agents_slaves, displs
+    CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_agents_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    PRINT *, 'master_constribs', contribs
     fort_criterion_parallel = get_log_likl(contribs)
 
     ! We also need to aggregate the information about the worst-case determination.

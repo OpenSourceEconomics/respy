@@ -9,7 +9,7 @@ if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
     assert os.system('./waf distclean; ./waf configure build '
-                     '--debug --without_f2py --without_parallelism') == 0
+                     '--debug --without_f2py') == 0
     os.chdir(cwd)
 
 
@@ -40,7 +40,7 @@ from respy.python.process.process_python import process
 #write_draws(5, 5000)
 np.random.seed(123)
 #print 'running with types'
-respy_obj = RespyCls('kw_data_one.ini')
+respy_obj = RespyCls('model.respy.ini')
 # This ensures that the experience effect is taken care of properly.
 open('.restud.respy.scratch', 'w').close()
 

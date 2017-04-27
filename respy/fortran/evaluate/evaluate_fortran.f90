@@ -92,8 +92,12 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 ! Algorithm
 !------------------------------------------------------------------------------
 
+
     ! Construct auxiliary objects
     num_rows = SIZE(data_evaluate, 1)
+
+    PRINT *, 'taking stock'
+    PRINT *, num_rows, num_agents_est, SIZE(num_obs_agent)
 
     shocks_cov = MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(optim_paras%shocks_cholesky))
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
