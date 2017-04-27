@@ -181,9 +181,6 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, num_agents_est, num_obs_agent, num_types, optim_paras)
 
-    ! TODO: This can be removed later.
-    !CALL fort_contributions_old(contribs_tmp, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras, num_types)
-
     fort_criterion_scalar = get_log_likl(contribs)
 
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
@@ -215,14 +212,14 @@ FUNCTION fort_criterion_parallel(x)
     REAL(our_dble)                  :: contribs(num_agents_est)
     REAL(our_dble)                  :: start
 
-    INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
-    INTEGER(our_int), ALLOCATABLE   :: num_rows_slaves(:)
-    INTEGER(our_int), ALLOCATABLE   :: num_agents_slaves(:)
+    INTEGER(our_int), SAVE, ALLOCATABLE   :: num_states_slaves(:, :)
+    INTEGER(our_int), SAVE, ALLOCATABLE   :: num_agents_slaves(:)
+    INTEGER(our_int), SAVE, ALLOCATABLE   :: num_rows_slaves(:)
+    INTEGER(our_int), SAVE, ALLOCATABLE   :: displs(:)
 
     INTEGER(our_int)                :: opt_ambi_summary_slaves(2, num_slaves)
     INTEGER(our_int)                :: dist_optim_paras_info
     INTEGER(our_int)                :: opt_ambi_summary(2)
-    INTEGER(our_int)                :: displs(num_slaves)
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
@@ -252,10 +249,10 @@ FUNCTION fort_criterion_parallel(x)
     CALL dist_optim_paras(optim_paras, x_all_current, dist_optim_paras_info)
 
     ! We need to know how the workload is distributed across the slaves.
-    ! TODO: Are we donig this each evaluation, is this realy neccessary?
     IF (.NOT. ALLOCATED(num_states_slaves)) THEN
         CALL distribute_workload(num_states_slaves, num_agents_slaves)
 
+        ALLOCATE(displs(num_slaves))
         DO i = 1, num_slaves
             displs(i) = SUM(num_agents_slaves(:i - 1))
         END DO
@@ -264,9 +261,8 @@ FUNCTION fort_criterion_parallel(x)
 
     contribs = -HUGE_FLOAT
 
-    PRINT *, ' Master gateherv', num_agents_slaves, displs
     CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_agents_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-    PRINT *, 'master_constribs', contribs
+
     fort_criterion_parallel = get_log_likl(contribs)
 
     ! We also need to aggregate the information about the worst-case determination.
