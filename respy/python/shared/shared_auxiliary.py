@@ -50,7 +50,7 @@ def dist_econ_paras(x_all_curre):
     """
     # Auxiliary objects
     num_paras = len(x_all_curre)
-    num_types = (num_paras - 35 - 1) / 5 + 1
+    num_types = int((num_paras - 35 - 1) / 5 + 1)
 
     # Discount rates
     delta = x_all_curre[0:1]
@@ -83,9 +83,9 @@ def dist_econ_paras(x_all_curre):
     shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
 
     # Type Shares
-    type_shares = x_all_curre[35:(35 + num_types)]
+    type_shares = x_all_curre[35:35 + num_types]
 
-    type_shifts = np.reshape(x_all_curre[(35 + num_types):num_paras], (num_types - 1, 4))
+    type_shifts = np.reshape(x_all_curre[35 + num_types:num_paras], (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
     # Collect arguments
@@ -799,9 +799,9 @@ def get_optim_paras(optim_paras, num_paras, which, is_debug):
     x[25:35] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Shares
-    x[35:(35 + num_types)] = optim_paras['type_shares']
+    x[35:35 + num_types] = optim_paras['type_shares']
 
-    x[(35 + num_types):num_paras] = optim_paras['type_shifts'].flatten()[4:]
+    x[35 + num_types:num_paras] = optim_paras['type_shifts'].flatten()[4:]
 
     # Checks
     if is_debug:

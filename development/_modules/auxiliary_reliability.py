@@ -26,7 +26,7 @@ def run(spec_dict):
     os.mkdir('rslt')
     os.chdir('rslt')
 
-    run_single(spec_dict, 'kw_data_one_types.ini')
+    run_single(spec_dict, 'kw_data_one.ini')
 
     aggregate_information('reliability')
 
@@ -84,7 +84,7 @@ def run_single(spec_dict, fname):
         elif request == 'Risk':
             # We do only need a subset of the available processors
             num_procs = spec_dict['update']['num_procs']
-            respy_obj.attr['num_procs'] = min(num_procs, 5)
+            respy_obj.attr['num_procs'] = min(num_procs, 4)
 
             # This is an update with the results from the static estimation.
             respy_obj.update_optim_paras(x)
