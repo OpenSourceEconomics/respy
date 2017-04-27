@@ -49,7 +49,7 @@ module, method = get_random_request(test_dict)
 module, method = 'test_f2py', 'test_12'
 count = 0
 #os.system('git clean -d -f')
-for i in range(10):
+for i in range(1000):
 
 #    seed = 35716
     seed = i + 35715
