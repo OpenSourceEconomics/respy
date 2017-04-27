@@ -20,13 +20,17 @@ def run(spec_dict):
 
     cleanup()
 
+    os.mkdir('rslt')
+    os.chdir('rslt')
+
     grid_slaves = spec_dict['slaves']
 
-    run_single(spec_dict, 'kw_data_one.ini', grid_slaves)
+    run_single(spec_dict, spec_dict['fname'], grid_slaves)
 
     aggregate_information('scalability')
 
     send_notification('scalability')
+    os.chdir('../')
 
 
 def run_single(spec_dict, fname, grid_slaves):

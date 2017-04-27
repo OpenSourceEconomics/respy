@@ -1,21 +1,17 @@
 #!/usr/bin/env python
-import argparse
-
+from auxiliary_shared import process_command_line_arguments
 from auxiliary_reliability import run
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Run reliability exercise for the package')
+    is_debug = process_command_line_arguments('Run reliability exercise for the package')
 
-    parser.add_argument('--debug', action='store_true', dest='is_debug', default=False,
-                        help='use debugging specification')
-
-    args = parser.parse_args()
-    is_debug = args.is_debug
+    # The following key value pairs describe the quantification exercise itself.
+    spec_dict = dict()
+    spec_dict['fname'] = 'kw_data_one_types.ini'
 
     # The following key value pairs are the requested updates from the baseline initialization
     # file.
-    spec_dict = dict()
     spec_dict['update'] = dict()
 
     spec_dict['update']['is_store'] = True

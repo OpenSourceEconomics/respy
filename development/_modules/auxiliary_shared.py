@@ -1,6 +1,7 @@
 from string import Formatter
 
 import subprocess
+import argparse
 import socket
 import sys
 import os
@@ -63,6 +64,7 @@ def strfdelta(tdelta, fmt):
 
 def cleanup():
     os.system('git clean -d -f')
+
 
 def compile_package(is_debug=False):
     """ Compile the package for use.
@@ -175,7 +177,6 @@ def aggregate_information(which):
 
     dirnames =SPECS
 
-
     with open(fname_info, 'w') as outfile:
         outfile.write('\n')
         for dirname in dirnames:
@@ -189,3 +190,17 @@ def aggregate_information(which):
                 outfile.write(infile.read())
             os.chdir('../')
             outfile.write('\n\n')
+
+
+def process_command_line_arguments(description):
+    """ Process command line arguments for the request.
+    """
+    parser = argparse.ArgumentParser(description=description)
+
+    parser.add_argument('--debug', action='store_true', dest='is_debug', default=False,
+                        help='use debugging specification')
+
+    args = parser.parse_args()
+    is_debug = args.is_debug
+
+    return is_debug
