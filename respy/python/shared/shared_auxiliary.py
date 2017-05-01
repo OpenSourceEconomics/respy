@@ -755,10 +755,9 @@ def get_est_info():
     return rslt
 
 
-def remove_estimation_scratch():
-    """ This function removes all scratch files.
+def remove_scratch(fname):
+    """ This function removes scratch files.
     """
-    fname = '.estimation.respy.scratch'
     if os.path.exists(fname):
         os.unlink(fname)
 

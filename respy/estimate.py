@@ -2,7 +2,7 @@ import atexit
 import os
 
 from respy.python.shared.shared_auxiliary import generate_optimizer_options
-from respy.python.shared.shared_auxiliary import remove_estimation_scratch
+from respy.python.shared.shared_auxiliary import remove_scratch
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_constants import OPT_EST_FORT
@@ -31,7 +31,7 @@ def estimate(respy_obj):
     assert check_estimation(respy_obj)
 
     # This locks the estimation directory for additional estimation requests.
-    atexit.register(remove_estimation_scratch)
+    atexit.register(remove_scratch, '.estimation.respy.scratch')
     open('.estimation.respy.scratch', 'w').close()
 
     # Read in estimation dataset. It only reads in the number of agents requested for the
@@ -52,7 +52,8 @@ def estimate(respy_obj):
     rslt = get_est_info()
     x, val = rslt['paras_step'], rslt['value_step']
 
-    remove_estimation_scratch()
+    for fname in ['.estimation.respy.scratch', '.stop.respy.scratch']:
+        remove_scratch(fname)
 
     # Finishing
     return x, val

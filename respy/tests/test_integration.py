@@ -297,8 +297,7 @@ class TestClass(object):
 
     def test_9(self):
         """ We ensure that the number of types does not matter for the evaluation of the criterion 
-        function if a weight of one is put on the
-        first group.
+        function if a weight of one is put on the first group.
         """
 
         constr = dict()
