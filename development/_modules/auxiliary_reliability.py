@@ -69,11 +69,11 @@ def run_single(spec_dict, fname):
                 respy_obj.attr['optim_paras']['paras_fixed'][1] = True
                 # We do only need a subset of the available processors
                 num_procs = spec_dict['update']['num_procs']
-                respy_obj.attr['num_procs'] = min(num_procs, 5)
+                respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['truth'])
 
         elif request == 'Static':
             # We do only need a subset of the available processors
-            respy_obj.attr['num_procs'] = 3
+            respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['static'])
 
             # There is no update required, we start with the true parameters from the dynamic
             # ambiguity model.
@@ -85,7 +85,7 @@ def run_single(spec_dict, fname):
         elif request == 'Risk':
             # We do only need a subset of the available processors
             num_procs = spec_dict['update']['num_procs']
-            respy_obj.attr['num_procs'] = min(num_procs, 5)
+            respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['risk'])
 
             # This is an update with the results from the static estimation.
             respy_obj.update_optim_paras(x)
@@ -100,7 +100,7 @@ def run_single(spec_dict, fname):
 
         elif request == 'Ambiguity':
             # We need the full set of available processors.
-            respy_obj.attr['num_procs'] = spec_dict['update']['num_procs']
+            respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['ambiguity'])
 
             # This is an update with the results from the dynamic risk estimation.
             respy_obj.update_optim_paras(x)

@@ -25,6 +25,8 @@ if __name__ == '__main__':
     spec_dict['ambi_spec']['measure'] = 'kl'
     spec_dict['ambi_spec']['mean'] = True
 
+    spec_dict['update']['num_draws_prob'] = 200
+    spec_dict['update']['num_draws_emax'] = 500
     spec_dict['update']['is_store'] = False
     spec_dict['update']['is_debug'] = False
     spec_dict['update']['delta'] = 0.95
