@@ -135,10 +135,10 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                     contribs[:] = 1
                     return contribs
 
-            prob_type[type_] = np.prod(prob_obs[:num_obs])
+            prob_type[type_] = np.prod(optim_paras['type_shares'][type_] * prob_obs[:num_obs])
 
         # Adjust  and record likelihood contribution
-        contribs[j] = np.sum(np.multiply(optim_paras['type_shares'], prob_type))
+        contribs[j] = np.sum(prob_type)
 
     # If there is no random variation in rewards and no agent violated the implications of
     # observed wages and choices, then the evaluation return value of one.

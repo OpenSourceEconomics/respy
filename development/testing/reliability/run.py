@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     # The following key value pairs describe the quantification exercise itself.
     spec_dict = dict()
-    spec_dict['fname'] = 'kw_data_one_types.ini'
+    spec_dict['fnames'] = ['kw_data_one_types.ini', 'kw_data_one.ini']
 
     # The following key value pairs are the requested updates from the baseline initialization
     # file.

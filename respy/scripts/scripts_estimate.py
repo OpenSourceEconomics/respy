@@ -2,6 +2,7 @@
 import argparse
 import os
 
+from respy.custom_exceptions import UserError
 from respy import estimate
 from respy import RespyCls
 
@@ -18,7 +19,8 @@ def dist_input_arguments(parser):
 
     # Check attributes
     assert (single in [True, False])
-    assert (os.path.exists(init_file))
+    if not os.path.exists(init_file):
+        raise UserError('Initialization file does not exist')
 
     # Finishing
     return single, init_file
@@ -30,8 +32,7 @@ def scripts_estimate(single, init_file):
     # Read in baseline model specification.
     respy_obj = RespyCls(init_file)
 
-    # Set maximum iteration count when only an evaluation of the criterion
-    # function is requested.
+    # Set maximum iteration count when only an evaluation of the criterion function is requested.
     if single:
         respy_obj.unlock()
         respy_obj.set_attr('maxfun', 0)
@@ -51,15 +52,13 @@ def scripts_estimate(single, init_file):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description=
-        'Start of estimation run with the RESPY package.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Start of estimation run with the RESPY package.')
 
-    parser.add_argument('--single', action='store_true', dest='single',
-        default=False, help='single evaluation')
+    parser.add_argument('--single', action='store_true', dest='single', default=False,
+                        help='single evaluation')
 
     parser.add_argument('--init_file', action='store', dest='init_file',
-        default='model.respy.ini', help='initialization file')
+                        default='model.respy.ini', help='initialization file')
 
     # Process command line arguments
     args = dist_input_arguments(parser)

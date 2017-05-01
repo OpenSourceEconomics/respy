@@ -40,14 +40,21 @@ from respy.python.process.process_python import process
 #write_draws(5, 5000)
 np.random.seed(123)
 #print 'running with types'
-respy_obj = RespyCls('model.respy.ini')
 # This ensures that the experience effect is taken care of properly.
 open('.restud.respy.scratch', 'w').close()
 
-#respy_obj, _ = simulate(respy_obj)
+respy_obj = RespyCls('truth.respy.ini')
+respy_obj, _ = simulate(respy_obj)
 
 #respy_obj.write_out('test.respy.ini')
-#respy_obj = RespyCls('test.respy.ini')
-_, crit = estimate(respy_obj)
-print crit
+#respy_obj = RespyCls('truth.respy.ini')
+
+#_, crit = estimate(respy_obj)
+#print crit
+
+
+#respy_obj = RespyCls('stop.respy.ini')
+#_, crit = estimate(respy_obj)
+#print crit
+
 #np.testing.assert_almost_equal(crit, 7.91370454659)

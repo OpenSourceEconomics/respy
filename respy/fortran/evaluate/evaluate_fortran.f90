@@ -19,7 +19,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, num_agents_est, num_obs_agent, num_types, optim_paras)
+SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, num_agents_contrib, num_obs_agent, num_types, optim_paras)
 
     !   DEVELOPMENT NOTES
     !
@@ -32,7 +32,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     REAL(our_dble), INTENT(IN)      :: data_evaluate(:, :)
 
-    REAL(our_dble), INTENT(OUT)     :: contribs(num_agents_est)
+    REAL(our_dble), INTENT(OUT)     :: contribs(num_agents_contrib)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
@@ -43,9 +43,9 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
-    INTEGER(our_int), INTENT(IN)    :: num_obs_agent(num_agents_est)
+    INTEGER(our_int), INTENT(IN)    :: num_obs_agent(num_agents_contrib)
+    INTEGER(our_int), INTENT(IN)    :: num_agents_contrib
     INTEGER(our_int), INTENT(IN)    :: num_draws_prob
-    INTEGER(our_int), INTENT(IN)    :: num_agents_est
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: num_types
@@ -71,7 +71,9 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: counts(4)
+    INTEGER(our_int)                :: row_start
     INTEGER(our_int)                :: num_rows
+    INTEGER(our_int)                :: num_obs
     INTEGER(our_int)                :: choice
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: exp_a
@@ -82,7 +84,8 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: s
     INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: j, p, row_start, num_obs
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: p
 
     LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_wage_missing
@@ -101,7 +104,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     ! Initialize container for likelihood contributions
     contribs = -HUGE_FLOAT
 
-    DO j = 1, num_agents_est
+    DO j = 1, num_agents_contrib
 
         prob_type = one_dble
         DO type_ = 0, num_types - 1
@@ -222,18 +225,18 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 END IF
 
             END DO
-            prob_type(type_ + 1) = PRODUCT(prob_obs(:num_obs))
+            prob_type(type_ + 1) = PRODUCT(optim_paras%type_shares(type_ + 1) * prob_obs(:num_obs))
 
         END DO
 
         ! Adjust and record likelihood contribution
-        contribs(j) = SUM(optim_paras%type_shares * prob_type)
+        contribs(j) = SUM(prob_type)
 
     END DO
 
     ! If there is no random variation in rewards and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
     IF (is_deterministic) THEN
-        contribs = EXP(one_dble)
+     contribs = EXP(one_dble)
     END IF
 
 

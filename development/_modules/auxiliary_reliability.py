@@ -25,9 +25,10 @@ def run(spec_dict):
     os.mkdir('rslt')
     os.chdir('rslt')
 
-    run_single(spec_dict, spec_dict['fname'])
+    for fname in spec_dict['fnames']:
+        run_single(spec_dict, fname)
 
-    aggregate_information('reliability')
+    aggregate_information('reliability', spec_dict['fnames'])
 
     send_notification('reliability')
 

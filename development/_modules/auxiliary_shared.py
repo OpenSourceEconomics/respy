@@ -168,7 +168,7 @@ def send_notification(which, **kwargs):
     mail_obj.send()
 
 
-def aggregate_information(which):
+def aggregate_information(which, fnames):
 
     if which == 'scalability':
         fname_info = 'scalability.respy.info'
@@ -177,8 +177,9 @@ def aggregate_information(which):
     else:
         raise AssertionError
 
-
-    dirnames =SPECS
+    dirnames = []
+    for fname in fnames:
+        dirnames += [fname.replace('.ini', '')]
 
     with open(fname_info, 'w') as outfile:
         outfile.write('\n')

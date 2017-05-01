@@ -476,13 +476,11 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1, type_ + 1)
     emaxs(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
-    !Working in Occupation B
+    ! Working in Occupation B
     future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1, type_ + 1)
     emaxs(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
-    ! Increasing schooling. Note that adding an additional year
-    ! of schooling is only possible for those that have strictly
-    ! less than the maximum level of additional education allowed.
+    ! Increasing schooling. Note that adding an additional year of schooling is only possible for those that have strictly less than the maximum level of additional education allowed.
     is_inadmissible = (edu .GE. edu_max - edu_start)
     IF(is_inadmissible) THEN
         emaxs(3) = zero_dble

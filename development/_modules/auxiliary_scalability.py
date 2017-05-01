@@ -24,10 +24,10 @@ def run(spec_dict):
     os.chdir('rslt')
 
     grid_slaves = spec_dict['slaves']
+    for fname in spec_dict['fnames']:
+        run_single(spec_dict, fname, grid_slaves)
 
-    run_single(spec_dict, spec_dict['fname'], grid_slaves)
-
-    aggregate_information('scalability')
+    aggregate_information('scalability', spec_dict['fnames'])
 
     send_notification('scalability')
     os.chdir('../')

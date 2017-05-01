@@ -143,8 +143,7 @@ class TestClass(object):
         respy_obj = RespyCls('test.respy.ini')
         simulate_observed(respy_obj)
 
-        # Evaluate at different points, ensuring that the simulated dataset
-        # still fits.
+        # Evaluate at different points, ensuring that the simulated dataset still fits.
         generate_init(constr)
 
         respy_obj = RespyCls('test.respy.ini')

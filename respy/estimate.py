@@ -12,6 +12,7 @@ from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.process.process_python import process
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
+from respy.custom_exceptions import UserError
 
 OPTIMIZERS = OPT_EST_FORT + OPT_AMB_FORT + OPT_AMB_PYTH + OPT_EST_PYTH
 
@@ -67,9 +68,13 @@ def check_estimation(respy_obj):
     assert not os.path.exists('.estimation.respy.scratch')
 
     # Distribute class attributes
-    optimizer_options, optimizer_used, optim_paras, version, maxfun, num_paras = \
+    optimizer_options, optimizer_used, optim_paras, version, maxfun, num_paras, file_est = \
         dist_class_attributes(respy_obj, 'optimizer_options', 'optimizer_used', 'optim_paras',
-                              'version', 'maxfun', 'num_paras')
+                              'version', 'maxfun', 'num_paras', 'file_est')
+
+    # We need to make sure that the estimation dataset is actually present.
+    if not os.path.exists(file_est):
+        raise UserError('Estimation dataset does not exist')
 
     # Ensure that at least one free parameter.
     assert sum(optim_paras['paras_fixed']) != num_paras
