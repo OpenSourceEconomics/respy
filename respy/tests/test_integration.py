@@ -9,6 +9,7 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
+from respy.scripts.scripts_check import scripts_check
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
 from respy.custom_exceptions import UserError
@@ -194,7 +195,7 @@ class TestClass(object):
 
             identifiers = np.random.choice(set_, num_draws, replace=False)
             values = np.random.uniform(size=num_draws)
-
+            scripts_check('estimate', init_file)
             scripts_estimate(single, init_file)
             scripts_update(init_file)
 

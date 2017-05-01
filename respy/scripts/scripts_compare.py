@@ -25,9 +25,11 @@ def dist_input_arguments(parser):
     is_update = args.is_update
 
     # Check attributes
-    assert (os.path.exists(init_file))
-    if is_update:
-        os.path.exists('est.respy.info')
+    if not os.path.exists(init_file):
+        raise UserError('Initialization file does not exist')
+
+    if not os.path.exists('est.respy.info') and is_update:
+        raise UserError('Information on parameter values from last step unavailable')
 
     # Finishing
     return init_file, is_update
@@ -187,10 +189,9 @@ def scripts_compare(base_init, is_update):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Compare observed and simulated economy.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Compare observed and simulated economy.')
 
-    parser.add_argument('--init_file', action='store', dest='init_file', default='model.respy.ini',
+    parser.add_argument('--init', action='store', dest='init_file', default='model.respy.ini',
                         help='initialization file')
 
     parser.add_argument('--update', action='store_true', dest='is_update', default=False,

@@ -165,8 +165,7 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Modify parameter values for an estimation.',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Modify parameter values for an estimation.')
 
     parser.add_argument('--identifiers', action='store', dest='identifiers', nargs='*',
                         default=None, help='parameter identifiers', required=True)
@@ -181,8 +180,8 @@ if __name__ == '__main__':
                         help='requested action', type=str, required=True,
                         choices=['fix', 'free', 'value', 'bounds'])
 
-    parser.add_argument('--init_file', action='store', dest='init_file',
-                        default='model.respy.ini', help='initialization file')
+    parser.add_argument('--init', action='store', dest='init_file', default='model.respy.ini',
+                        help='initialization file')
 
     # Process command line arguments
     args = dist_input_arguments(parser)

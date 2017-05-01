@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('--single', action='store_true', dest='single', default=False,
                         help='single evaluation')
 
-    parser.add_argument('--init_file', action='store', dest='init_file',
+    parser.add_argument('--init', action='store', dest='init_file',
                         default='model.respy.ini', help='initialization file')
 
     # Process command line arguments
