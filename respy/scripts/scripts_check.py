@@ -40,13 +40,13 @@ def scripts_check(request, init_file):
     respy_obj = RespyCls(init_file)
 
     # Distribute model parameters
-    num_periods, edu_start, num_types, edu_max, min_idx = dist_class_attributes(respy_obj,
-        'num_periods', 'edu_start', 'num_types', 'edu_max', 'min_idx')
+    num_periods, edu_spec, num_types, min_idx = dist_class_attributes(respy_obj,
+        'num_periods', 'edu_spec', 'num_types', 'min_idx')
 
     # We need to run additional checks if an estimation is requested.
     if request == 'estimate':
         # Create the grid of the admissible states.
-        args = (num_periods, edu_start, edu_max, min_idx, num_types)
+        args = (num_periods, edu_spec, min_idx, num_types)
         mapping_state_idx = pyth_create_state_space(*args)[2]
 
         # We also check the structure of the dataset.
@@ -57,7 +57,7 @@ def scripts_check(request, init_file):
             period = int(data_array[j, 1])
             # Extract observable components of state space as well as agent decision.
             exp_a, exp_b, edu, edu_lagged = data_array[j, 4:].astype(int)
-            edu = edu - edu_start
+            edu = edu
 
             # First of all, we need to ensure that all observed years of schooling are larger
             # than the initial condition of the model.

@@ -19,7 +19,6 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, 
     states_all, states_number_period, mapping_state_idx, max_states_period = \
         pyth_create_state_space(num_periods, edu_spec, min_idx, num_types)
 
-    raise SystemExit('.. stopping for now')
     # Cutting to size
     states_all = states_all[:, :max(states_number_period), :]
 
@@ -32,8 +31,7 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, 
 
     # Calculate all systematic rewards
     periods_rewards_systematic = pyth_calculate_rewards_systematic(num_periods,
-        states_number_period, states_all, edu_start, max_states_period,
-        optim_paras)
+        states_number_period, states_all, edu_spec, max_states_period, optim_paras)
 
     record_solution_progress(-1, file_sim)
 
@@ -42,24 +40,23 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, 
     # procedure is not called upon.
     record_solution_progress(3, file_sim)
 
-    periods_emax, opt_ambi_details = pyth_backward_induction(num_periods,
-        is_myopic, max_states_period, periods_draws_emax, num_draws_emax,
-        states_number_period, periods_rewards_systematic, edu_max, edu_start,
-        mapping_state_idx, states_all, is_debug, is_interpolated,
-        num_points_interp, ambi_spec, optim_paras, optimizer_options,
+    periods_emax, opt_ambi_details = pyth_backward_induction(num_periods, is_myopic,
+        max_states_period, periods_draws_emax, num_draws_emax, states_number_period,
+        periods_rewards_systematic, edu_spec, mapping_state_idx, states_all, is_debug,
+        is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options,
         file_sim, True)
 
     if not is_myopic:
         record_solution_progress(-1, file_sim)
-        # Only if individuals are not myopic is there a need to record the
-        # results from the worst-case determination.
+        # Only if individuals are not myopic is there a need to record the results from the
+        # worst-case determination.
         if optim_paras['level'] > MIN_AMBIGUITY:
             record_ambiguity(opt_ambi_details, states_number_period, num_periods,
                 file_sim, optim_paras)
 
     # Collect return arguments in tuple
-    args = (periods_rewards_systematic, states_number_period,
-        mapping_state_idx, periods_emax, states_all)
+    args = (periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax,
+            states_all)
 
     # Finishing
     return args

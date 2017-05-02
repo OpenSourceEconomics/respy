@@ -67,7 +67,8 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         assert (isinstance(max_, int))
         assert (max_ > start)
         # Replace in initialization file
-        dict_['EDUCATION']['start'] = start
+        dict_['EDUCATION']['start'] = [start]
+        dict_['EDUCATION']['share'] = [1.0]
         dict_['EDUCATION']['max'] = max_
 
     # Replace measure of ambiguity

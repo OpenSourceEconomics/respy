@@ -187,8 +187,8 @@ def extract_cholesky(x, info=None):
         return shocks_cholesky, None
 
 
-def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws, edu_max,
-                     edu_start, mapping_state_idx, periods_emax, k, states_all):
+def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws, edu_spec,
+                     mapping_state_idx, periods_emax, k, states_all):
     """ Get total value of all possible states.
     """
     # Initialize containers
@@ -203,8 +203,8 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
 
     # Get future values
     if period != (num_periods - 1):
-        emaxs, is_inadmissible = get_emaxs(edu_max, edu_start, mapping_state_idx, period,
-                                           periods_emax, k, states_all)
+        emaxs, is_inadmissible = get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k,
+                                           states_all)
     else:
         is_inadmissible = False
         emaxs = np.tile(0.0, 4)
@@ -212,10 +212,9 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
     # Calculate total utilities
     total_values = rewards_ex_post + optim_paras['delta'] * emaxs
 
-    # This is required to ensure that the agent does not choose any
-    # inadmissible states. If the state is inadmissible emaxs takes
-    # value zero. This aligns the treatment of inadmissible values with the
-    # original paper.
+    # This is required to ensure that the agent does not choose any inadmissible states. If the
+    # state is inadmissible emaxs takes value zero. This aligns the treatment of inadmissible
+    # values with the original paper.
     if is_inadmissible:
         total_values[2] += INADMISSIBILITY_PENALTY
 
@@ -223,7 +222,7 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
     return total_values
 
 
-def get_emaxs(edu_max, edu_start, mapping_state_idx, period, periods_emax, k, states_all):
+def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     """ Get emaxs for additional choices.
     """
     # Distribute state space
@@ -240,10 +239,9 @@ def get_emaxs(edu_max, edu_start, mapping_state_idx, period, periods_emax, k, st
     future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 0, type_]
     emaxs[1] = periods_emax[period + 1, future_idx]
 
-    # Increasing schooling. Note that adding an additional year
-    # of schooling is only possible for those that have strictly
-    # less than the maximum level of additional education allowed.
-    is_inadmissible = (edu >= edu_max - edu_start)
+    # Increasing schooling. Note that adding an additional year of schooling is only possible for
+    # those that have strictly less than the maximum level of additional education allowed.
+    is_inadmissible = (edu >= edu_spec['max'])
     if is_inadmissible:
         emaxs[2] = 0.00
     else:
@@ -497,10 +495,9 @@ def generate_optimizer_options(which, optim_paras, num_paras):
 
 
 def print_init_dict(dict_, file_name='test.respy.ini'):
-    """ Print initialization dictionary to file. The different formatting
-    makes the file rather involved. The resulting initialization files are
-    read by PYTHON and FORTRAN routines. Thus, the formatting with respect to
-    the number of decimal places is rather small.
+    """ Print initialization dictionary to file. The different formatting makes the file rather 
+    involved. The resulting initialization files are rad by PYTHON and FORTRAN routines. Thus, 
+    the formatting with respect to the number of decimal places is rather small.
     """
     assert (isinstance(dict_, dict))
 
@@ -615,7 +612,11 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write('\n')
                 str_ = '{0:<10} {1:>20}\n'
-                file_.write(str_.format('start', dict_[flag]['start']))
+                for i, start in enumerate(dict_[flag]['start']):
+                    file_.write(str_.format('start', start))
+                    file_.write(str_.format('share', dict_[flag]['share'][i]))
+                    file_.write('\n')
+
                 file_.write(str_.format('max', dict_[flag]['max']))
 
                 file_.write('\n')

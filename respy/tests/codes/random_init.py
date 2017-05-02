@@ -10,7 +10,7 @@ from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 
 from codes.process_constraints import process_constraints
-from codes.auxiliary import get_valid_shares_for_types
+from codes.auxiliary import get_valid_shares
 from codes.auxiliary import get_valid_values
 from codes.auxiliary import get_valid_bounds
 from codes.auxiliary import OPTIMIZERS_EST
@@ -59,7 +59,7 @@ def generate_random_dict(constr=None):
         assert isinstance(num_types, int)
         assert num_types > 0
 
-    type_shares = get_valid_shares_for_types(num_types)
+    type_shares = get_valid_shares(num_types)
     num_paras = 35 + num_types + (num_types - 1) * 4
 
     # We now draw all parameter values. This is necessarily done here as we
@@ -154,8 +154,10 @@ def generate_random_dict(constr=None):
     dict_['EDUCATION']['bounds'] = paras_bounds[lower:upper]
     dict_['EDUCATION']['fixed'] = paras_fixed[lower:upper]
 
-    dict_['EDUCATION']['start'] = np.random.randint(1, 10)
-    dict_['EDUCATION']['max'] = np.random.randint(dict_['EDUCATION']['start'] + 1, 20)
+    num_start = np.random.choice(range(1, 3))
+    dict_['EDUCATION']['start'] = np.random.randint(1, 10, size=num_start).tolist()
+    dict_['EDUCATION']['share'] = get_valid_shares(num_start)
+    dict_['EDUCATION']['max'] = np.random.randint(max(dict_['EDUCATION']['start']) + 1, 20)
 
     # Home
     lower, upper = 24, 25

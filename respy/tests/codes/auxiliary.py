@@ -165,14 +165,13 @@ def write_interpolation_grid(file_name):
     respy_obj = RespyCls(file_name)
 
     # Distribute class attribute
-    num_periods, num_points_interp, edu_start, edu_max, min_idx, num_types = \
-        dist_class_attributes(respy_obj, 'num_periods', 'num_points_interp', 'edu_start',
-            'edu_max', 'min_idx', 'num_types')
+    num_periods, num_points_interp, edu_spec, min_idx, num_types = \
+        dist_class_attributes(respy_obj, 'num_periods', 'num_points_interp', 'edu_spec',
+            'min_idx', 'num_types')
 
     # Determine maximum number of states
-    _, states_number_period, _, max_states_period = \
-        pyth_create_state_space(num_periods, edu_start, edu_max, min_idx,
-            num_types)
+    _, states_number_period, _, max_states_period = pyth_create_state_space(num_periods,
+        edu_spec, min_idx, num_types)
 
     # Initialize container
     booleans = np.tile(True, (max_states_period, num_periods))
@@ -189,8 +188,8 @@ def write_interpolation_grid(file_name):
             continue
 
         # Draw points for interpolation
-        indicators = np.random.choice(range(num_states),
-            size=(num_states - num_points_interp), replace=False)
+        indicators = np.random.choice(range(num_states), size=(num_states - num_points_interp),
+            replace=False)
 
         # Replace indicators
         for i in range(num_states):
@@ -269,10 +268,10 @@ def get_valid_bounds(which, value):
     return bounds
 
 
-def get_valid_shares_for_types(num_types):
+def get_valid_shares(num_groups):
     """ We simply need a valid request for the shares of types summing to one.
     """
-    shares = np.random.uniform(size=num_types)
+    shares = np.random.uniform(size=num_groups)
     shares = shares / np.sum(shares)
     shares = shares.tolist()
     return shares

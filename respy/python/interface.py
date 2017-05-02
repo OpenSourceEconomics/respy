@@ -46,12 +46,11 @@ def respy_interface(respy_obj, request, data_array=None):
 
         # Construct starting values
         x_optim_free_unscaled_start = get_optim_paras(optim_paras, num_paras, 'free', is_debug)
-
         x_optim_all_unscaled_start = get_optim_paras(optim_paras, num_paras, 'all', is_debug)
 
         # Construct the state space
         states_all, states_number_period, mapping_state_idx, max_states_period = \
-            pyth_create_state_space(num_periods, edu_start, edu_max, min_idx, num_types)
+            pyth_create_state_space(num_periods, edu_spec, min_idx, num_types)
 
         # Cutting to size
         states_all = states_all[:, :max(states_number_period), :]
@@ -59,7 +58,7 @@ def respy_interface(respy_obj, request, data_array=None):
         # Collect arguments that are required for the criterion function. These must be in the
         # correct order already.
         args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-                edu_start, is_debug, edu_max, data_array, num_draws_prob, tau, periods_draws_emax,
+                edu_spec, is_debug, data_array, num_draws_prob, tau, periods_draws_emax,
                 periods_draws_prob, states_all, states_number_period, mapping_state_idx,
                 max_states_period, num_agents_est, num_obs, num_types, ambi_spec, optimizer_options)
 
@@ -201,7 +200,7 @@ def respy_interface(respy_obj, request, data_array=None):
                     periods_emax, states_all)
 
         data_array = pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
-            states_all, num_periods, edu_start, edu_max, num_agents_sim,  periods_draws_sims,
+            states_all, num_periods, edu_spec, num_agents_sim,  periods_draws_sims,
             seed_sim, file_sim, optim_paras, num_types, is_debug)
 
         args = (solution, data_array)

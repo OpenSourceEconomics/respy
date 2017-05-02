@@ -37,8 +37,7 @@ class TestClass(object):
             respy_obj = simulate_observed(respy_obj)
 
             # Extract class attributes
-            states_number_period, periods_emax = \
-                dist_class_attributes(respy_obj,
+            states_number_period, periods_emax = dist_class_attributes(respy_obj,
                     'states_number_period', 'periods_emax')
 
             # Store and check results
@@ -47,8 +46,8 @@ class TestClass(object):
             else:
                 np.testing.assert_array_almost_equal(baseline, periods_emax)
 
-            # Updates for second iteration. This ensures that there is at least
-            # one interpolation taking place.
+            # Updates for second iteration. This ensures that there is at least one interpolation
+            #  taking place.
             init_dict['INTERPOLATION']['points'] = max(states_number_period) - 1
             init_dict['INTERPOLATION']['flag'] = True
 

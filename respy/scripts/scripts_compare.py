@@ -58,6 +58,22 @@ def _prepare_wages(data_obs, data_sim, which):
     return rslt
 
 
+def _update_edu_spec(data_obs, num_agents_est, edu_max):
+    """ This function updates the distribution of initial schooling to correspond to the one in 
+    the empirical data. 
+    """
+    dat = data_obs['Years_Schooling'][:, 0].value_counts().to_dict()
+
+    edu_spec = dict()
+    edu_spec['max'] = edu_max
+    edu_spec['start'] = dat.keys()
+    edu_spec['share'] = []
+    for start in edu_spec['start']:
+        edu_spec['share'] += [dat[start] / float(num_agents_est)]
+
+    return edu_spec
+
+
 def _prepare_choices(data_obs, data_sim):
     """ This function prepares the information about the choice probabilities for easy printing.
     """
@@ -104,19 +120,29 @@ def scripts_compare(base_init, is_update):
     # Read in relevant model specification.
     respy_obj = RespyCls(init_file)
 
+    # Distribute some information for further processing.
+    num_agents_est = respy_obj.get_attr('num_agents_est')
+    num_periods = respy_obj.get_attr('num_periods')
+    edu_max = respy_obj.get_attr('edu_spec')['max']
+
+    # First we need to read in the empirical data. We automatically adjust the distribution of
+    # initial schooling levels.
+    data_obs = process(respy_obj)
+
+    edu_spec = _update_edu_spec(data_obs, num_agents_est, edu_max)
+    respy_obj.unlock()
+    respy_obj.set_attr('edu_spec', edu_spec)
+    respy_obj.lock()
+
+    respy_obj.write_out('compare.respy.ini')
+
     # The comparison does make sense when the file of the simulated dataset and estimation dataset
-    #  are the same. Then the estimation dataset is overwritten by the simulated dataset.
+    # are the same. Then the estimation dataset is overwritten by the simulated dataset.
     fname_est = respy_obj.attr['file_est'].split('.')[0]
     fname_sim = respy_obj.attr['file_sim'].split('.')[0]
     if fname_est == fname_sim:
         raise UserError(' Simulation would overwrite estimation dataset')
-
-    # Auxiliary information
-    num_periods = respy_obj.get_attr('num_periods')
-
-    # First we need to read in the empirical data
     data_sim = simulate(respy_obj)[1]
-    data_obs = process(respy_obj)
 
     if num_periods > 1:
         tf = []

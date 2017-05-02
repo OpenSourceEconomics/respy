@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.process.process_auxiliary import check_dataset_est
 
 
@@ -22,10 +23,8 @@ def write_info(respy_obj, data_frame):
     """ Write information about the simulated economy.
     """
     # Distribute class attributes
-    optim_paras = respy_obj.get_attr('optim_paras')
-    num_types = respy_obj.get_attr('num_types')
-    file_sim = respy_obj.get_attr('file_sim')
-    seed_sim = respy_obj.get_attr('seed_sim')
+    optim_paras, num_types, file_sim, seed_sim, edu_spec = dist_class_attributes(respy_obj,
+        'optim_paras', 'num_types', 'file_sim', 'seed_sim', 'edu_spec')
 
     # Get basic information
     num_agents_sim = len(data_frame['Identifier'].unique())
@@ -129,17 +128,28 @@ def write_info(respy_obj, data_frame):
         dat = data_frame['Experience_B'].loc[slice(None), num_periods - 1]
         file_.write(string.format(['Average Experience B', dat.mean()]))
 
-        file_.write('\n\n  Simulated Type Probabilities\n\n')
+        file_.write('\n\n   Type Shares\n\n')
         dat = data_frame['Type'].value_counts().to_dict()
         fmt_ = '   {:>10}' + '    {:25.5f}\n'
         for type_ in range(num_types):
             try:
                 share = dat[type_] / float(num_obs)
                 file_.write(fmt_.format(*[type_, share]))
-            # Some types might not occur in the simulated dataset. Then these
-            # are not part of the dictionary with the value counts.
+            # Some types might not occur in the simulated dataset. Then these are not part of the
+            # dictionary with the value counts.
             except KeyError:
                 file_.write(fmt_.format(*[type_, 0.0]))
+
+        file_.write('\n\n   Initial Schooling Shares\n\n')
+        dat = data_frame['Years_Schooling'][:, 0].value_counts().to_dict()
+        for start in edu_spec['start']:
+            try:
+                share = dat[start] / float(num_obs)
+                file_.write(fmt_.format(*[start, share]))
+            # Some types might not occur in the simulated dataset. Then these are not part of the
+            # dictionary with the value counts.
+            except KeyError:
+                file_.write(fmt_.format(*[start, 0.0]))
 
         file_.write('\n\n   Economic Parameters\n\n')
         fmt_ = '\n   {0:>10}' + '    {1:>25}\n\n'

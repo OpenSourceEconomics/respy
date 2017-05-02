@@ -9,19 +9,17 @@ from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MISSING_FLOAT
 
 
-def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
-        states_all, num_periods, edu_start, edu_max, num_agents_sim,
-        periods_draws_sims, seed_sim, file_sim, optim_paras,
-        num_types, is_debug):
+def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
+                  num_periods, edu_spec, num_agents_sim, periods_draws_sims, seed_sim,
+                  file_sim, optim_paras, num_types, is_debug):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
 
     record_simulation_start(num_agents_sim, seed_sim, file_sim)
 
-    # Standard deviates transformed to the distributions relevant for
-    # the agents actual decision making as traversing the tree.
-    periods_draws_sims_transformed = np.tile(np.nan,
-        (num_periods, num_agents_sim, 4))
+    # Standard deviates transformed to the distributions relevant for the agents actual decision
+    # making as traversing the tree.
+    periods_draws_sims_transformed = np.tile(np.nan, (num_periods, num_agents_sim, 4))
 
     for period in range(num_periods):
         periods_draws_sims_transformed[period, :, :] = transform_disturbances(
@@ -30,6 +28,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
 
     # We also need to sample the set of initial conditions.
     types = get_random_types(num_types, optim_paras, num_agents_sim, is_debug)
+    edu_start = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
 
     # Simulate agent experiences
     count = 0
@@ -41,8 +40,10 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
 
         current_state = states_all[0, 0, :].copy()
 
-        # We need to modify the initial conditions
-        current_state[-1] = types[i]
+        # We need to modify the initial conditions: (1) Schooling when entering the model and (2)
+        # individual type.
+        current_state[2] = edu_start[i]
+        current_state[4] = types[i]
 
         record_simulation_progress(i, file_sim)
 
@@ -61,9 +62,8 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
-            total_values = get_total_values(period, num_periods, optim_paras,
-                rewards_systematic, draws, edu_max, edu_start,
-                mapping_state_idx, periods_emax, k, states_all)
+            total_values = get_total_values(period, num_periods, optim_paras, rewards_systematic,
+                draws, edu_spec, mapping_state_idx, periods_emax, k, states_all)
 
             # Determine optimal choice
             max_idx = np.argmax(total_values)
@@ -76,18 +76,13 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
             if max_idx in [0, 1]:
                 dataset[count, 3] = rewards_systematic[max_idx] * draws[max_idx]
 
-            # Write relevant state space for period to data frame. However,
-            # the individual's type is not part of the observed dataset. This
-            # is included in the simulated dataset.
+            # Write relevant state space for period to data frame. However, the individual's type
+            #  is not part of the observed dataset. This is included in the simulated dataset.
             dataset[count, 4:8] = current_state[:4]
 
-            # Special treatment for education
-            dataset[count, 6] += edu_start
-
-            # As we are working with a simulated dataset, we can also output
-            # additional information that is not available in an observed
-            # dataset. The discount rate is included as this allows to
-            # construct the EMAX with the information provided in the
+            # As we are working with a simulated dataset, we can also output additional
+            # information that is not available in an observed dataset. The discount rate is
+            # included as this allows to construct the EMAX with the information provided in the
             # simulation output.
             dataset[count,  8:9] = type_
             dataset[count,  9:13] = total_values
