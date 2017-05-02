@@ -41,8 +41,16 @@ def run_single(spec_dict, fname, grid_slaves):
 
     # Read in the baseline specification.
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
-    update_class_instance(respy_obj, spec_dict)
 
+    # We remove all bounds as this makes it easier to request static models for example with an
+    # initialization file for a risk model. Usually, there are bounds on the discount rate that
+    # will raise an error otherwise.
+    optim_paras = respy_obj.get_attr('optim_paras')
+    optim_paras['paras_bounds'][0] = [0.00, None]
+    optim_paras['paras_bounds'][1] = [0.00, None]
+
+    # Now we update the class instance with the details of the request.
+    update_class_instance(respy_obj, spec_dict)
     min_slave = min(grid_slaves)
 
     # Simulate the baseline dataset, which is used regardless of the number of slaves. We will
