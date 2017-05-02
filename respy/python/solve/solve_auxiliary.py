@@ -16,8 +16,7 @@ from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
-def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx,
-        num_types):
+def pyth_create_state_space(num_periods, edu_spec, min_idx, num_types):
     """ Create grid for state space.
     """
     # Array for possible realization of state space by period
@@ -40,59 +39,57 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx,
         # Loop over all unobserved types
         for type_ in range(num_types):
 
-            # Loop over all admissible work experiences for Occupation A
-            for exp_a in range(num_periods + 1):
+            # Loop overall all initial levels of schooling
+            for edu_start in edu_spec['start']:
 
-                # Loop over all admissible work experience for Occupation B
-                for exp_b in range(num_periods + 1):
+                # Loop over all admissible work experiences for Occupation A
+                for exp_a in range(num_periods + 1):
 
-                    # Loop over all admissible additional education levels
-                    for edu in range(num_periods + 1):
+                    # Loop over all admissible work experience for Occupation B
+                    for exp_b in range(num_periods + 1):
 
-                        # Agent cannot attain more additional education
-                        # than (EDU_MAX - EDU_START).
-                        if edu > (edu_max - edu_start):
-                            continue
+                        # Loop over all admissible additional education levels
+                        for edu in range(num_periods + 1):
 
-                        # Loop over all admissible values for leisure. Note that
-                        # the leisure variable takes only zero/value. The time path
-                        # does not matter.
-                        for edu_lagged in [0, 1]:
-
-                            # Check if lagged education admissible. (1) In the
-                            # first period all agents have lagged schooling equal
-                            # to one.
-                            if (edu_lagged == 0) and (period == 0):
-                                continue
-                            # (2) Whenever an agent has not acquired any additional
-                            # education and we are not in the first period,
-                            # then this cannot be the case.
-                            if (edu_lagged == 1) and (edu == 0) and (period > 0):
-                                continue
-                            # (3) Whenever an agent has only acquired additional
-                            # education, then edu_lagged cannot be zero.
-                            if (edu_lagged == 0) and (edu == period):
+                            # Agent cannot attain more additional education than (EDU_MAX -
+                            # EDU_START).
+                            if edu > (edu_spec['max'] - edu_start):
                                 continue
 
-                            # Check if admissible for time constraints
-                            total = edu + exp_a + exp_b
+                            # Loop over all admissible values for leisure. Note that the leisure
+                            # variable takes only zero/value. The time path does not matter.
+                            for edu_lagged in [0, 1]:
 
-                            # Note that the total number of activities does not
-                            # have is less or equal to the total possible number of
-                            # activities as the rest is implicitly filled with
-                            # leisure.
-                            if total > period:
-                                continue
+                                # Check if lagged education admissible. (1) In the first period all
+                                # agents have lagged schooling equal to one.
+                                if (edu_lagged == 0) and (period == 0):
+                                    continue
+                                # (2) Whenever an agent has not acquired any additional education
+                                # and we are not in the first period, then this cannot be the case.
+                                if (edu_lagged == 1) and (edu == 0) and (period > 0):
+                                    continue
+                                # (3) Whenever an agent has only acquired additional education,
+                                # then edu_lagged cannot be zero.
+                                if (edu_lagged == 0) and (edu == period):
+                                    continue
 
-                            # Collect all possible realizations of state space
-                            states_all[period, k, :] = [exp_a, exp_b, edu, edu_lagged, type_]
+                                # Check if admissible for time constraints
+                                total = edu + exp_a + exp_b
 
-                            # Collect mapping of state space to array index.
-                            mapping_state_idx[period, exp_a, exp_b, edu,
-                                              edu_lagged, type_] = k
+                                # Note that the total number of activities does not have is less or
+                                # equal to the total possible number of activities as the rest is
+                                # implicitly filled with leisure.
+                                if total > period:
+                                    continue
 
-                            # Update count
-                            k += 1
+                                # Collect all possible realizations of state space
+                                states_all[period, k, :] = [exp_a, exp_b, edu, edu_lagged, type_]
+
+                                # Collect mapping of state space to array index.
+                                mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged, type_] = k
+
+                                # Update count
+                                k += 1
 
         # Record maximum number of state space realizations by time period
         states_number_period[period] = k
@@ -101,8 +98,7 @@ def pyth_create_state_space(num_periods, edu_start, edu_max, min_idx,
     max_states_period = max(states_number_period)
 
     # Collect arguments
-    args = (states_all, states_number_period)
-    args += (mapping_state_idx, max_states_period,)
+    args = (states_all, states_number_period, mapping_state_idx, max_states_period,)
 
     # Finishing
     return args
@@ -146,8 +142,8 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
             covars_wages += [co_graduate]
             covars_wages += [None]
 
-            # This used for testing purposes, where we compare the results
-            # from the RESPY package to the original RESTUD program.
+            # This used for testing purposes, where we compare the results from the RESPY package
+            #  to the original RESTUD program.
             if os.path.exists('.restud.respy.scratch'):
                 covars_wages[3] *= 100.00
                 covars_wages[5] *= 100.00
@@ -165,8 +161,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period,
             # Calculate systematic part of schooling utility
             reward = optim_paras['coeffs_edu'][0]
 
-            # Tuition cost for higher education if agents move
-            # beyond high school.
+            # Tuition cost for higher education if agents move beyond high school.
             if hs_graduate:
                 reward += optim_paras['coeffs_edu'][1]
 

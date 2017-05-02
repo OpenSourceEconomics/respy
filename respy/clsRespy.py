@@ -21,21 +21,21 @@ from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.read.read_python import read
 from respy.custom_exceptions import UserError
 
-# Special care with derived attributes is required to maintain integrity of
-# the class instance. These derived attributes cannot be changed directly.
+# Special care with derived attributes is required to maintain integrity of the class instance.
+# These derived attributes cannot be changed directly.
 DERIVED_ATTR = ['min_idx', 'is_myopic']
 
-# Special care with solution attributes is required. These are only returned
-# if the class instance was solved.
+# Special care with solution attributes is required. These are only returned if the class
+# instance was solved.
 SOLUTION_ATTR = ['periods_rewards_systematic', 'states_number_period']
 SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
 
 # Full list of admissible optimizers
 OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
 
-# We need to do some reorganization as the parameters from the initialization
-# file describing the covariance structure need to be mapped to the Cholesky
-# factors that are the parameters the optimizer actually iterates on.
+# We need to do some reorganization as the parameters from the initialization file describing the
+#  covariance structure need to be mapped to the Cholesky factors that are the parameters the
+# optimizer actually iterates on.
 PARAS_MAPPING = []
 PARAS_MAPPING += [(25, 25), (26, 26), (27, 28), (28, 31)]
 PARAS_MAPPING += [(29, 27), (30, 29), (31, 32), (32, 30)]
@@ -43,8 +43,7 @@ PARAS_MAPPING += [(33, 33), (34, 34)]
 
 
 class RespyCls(object):
-    """ This class manages the distribution of the use requests throughout
-    the toolbox.
+    """ This class manages the distribution of the use requests throughout the toolbox.
     """
 
     def __init__(self, fname):
@@ -90,8 +89,6 @@ class RespyCls(object):
 
         self.attr['is_solved'] = None
 
-        self.attr['edu_start'] = None
-
         self.attr['ambi_spec'] = dict()
         self.attr['ambi_spec']['measure'] = None
         self.attr['ambi_spec']['mean'] = None
@@ -100,6 +97,11 @@ class RespyCls(object):
         self.attr['precond_spec']['minimum'] = None
         self.attr['precond_spec']['type'] = None
         self.attr['precond_spec']['eps'] = None
+
+        self.attr['edu_spec'] = dict()
+        self.attr['edu_spec']['start'] = None
+        self.attr['edu_spec']['share'] = None
+        self.attr['edu_spec']['max'] = None
 
         self.attr['seed_sim'] = None
 
@@ -216,8 +218,7 @@ class RespyCls(object):
         assert self.attr['is_locked']
         assert self._check_key(key)
 
-        # If solution attributes are requested, make sure the class instance
-        # is solved.
+        # If solution attributes are requested, make sure the class instance is solved.
         if key in SOLUTION_ATTR:
             assert self.get_attr('is_solved'), 'invalid request'
 
@@ -234,19 +235,17 @@ class RespyCls(object):
         # Finishing
         self.attr[key] = value
 
-        # Special care is required for the attributes which are derived from
-        # other core attributes. These derived attributes cannot be set and
-        # are checked after each modification. Also, the model
-        # parametrization can only be changed by a special function. The
-        # initialization dictionary can only be set initially.
+        # Special care is required for the attributes which are derived from other core
+        # attributes. These derived attributes cannot be set and are checked after each
+        # modification. Also, the model parametrization can only be changed by a special
+        # function. The initialization dictionary can only be set initially.
         invalid_attr = DERIVED_ATTR + ['optim_paras', 'init_dict']
         if key in invalid_attr:
             raise AssertionError('invalid request')
 
-        # Special care is required for solution attributes. These cannot be
-        # set when the class instance is solved. The status attribute is
-        # accessed directly as the class instance is unlocked, which does not
-        # allow to access attributes using the get method.
+        # Special care is required for solution attributes. These cannot be set when the class
+        # instance is solved. The status attribute is accessed directly as the class instance is
+        # unlocked, which does not allow to access attributes using the get method.
         if key in SOLUTION_ATTR:
             assert not self.attr['is_solved'], 'invalid request'
 
@@ -272,8 +271,8 @@ class RespyCls(object):
 
         num_types = self.attr['num_types']
 
-        # We reconstruct the initialization dictionary as otherwise we need
-        # to constantly update the original one.
+        # We reconstruct the initialization dictionary as otherwise we need to constantly update
+        # the original one.
         init_dict = dict()
 
         # Basics
@@ -286,8 +285,7 @@ class RespyCls(object):
         # Occupation A
         lower, upper = 2, 11
         init_dict['OCCUPATION A'] = dict()
-        init_dict['OCCUPATION A']['coeffs'] = \
-            self.attr['optim_paras']['coeffs_a']
+        init_dict['OCCUPATION A']['coeffs'] = self.attr['optim_paras']['coeffs_a']
 
         init_dict['OCCUPATION A']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
         init_dict['OCCUPATION A']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
@@ -295,8 +293,7 @@ class RespyCls(object):
         # Occupation B
         lower, upper = 11, 20
         init_dict['OCCUPATION B'] = dict()
-        init_dict['OCCUPATION B']['coeffs'] = \
-            self.attr['optim_paras']['coeffs_b']
+        init_dict['OCCUPATION B']['coeffs'] = self.attr['optim_paras']['coeffs_b']
 
         init_dict['OCCUPATION B']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
         init_dict['OCCUPATION B']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
@@ -304,20 +301,19 @@ class RespyCls(object):
         # Education
         lower, upper = 20, 24
         init_dict['EDUCATION'] = dict()
-        init_dict['EDUCATION']['coeffs'] = \
-            self.attr['optim_paras']['coeffs_edu']
+        init_dict['EDUCATION']['coeffs'] = self.attr['optim_paras']['coeffs_edu']
 
         init_dict['EDUCATION']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
         init_dict['EDUCATION']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
-        init_dict['EDUCATION']['start'] = self.attr['edu_start']
-        init_dict['EDUCATION']['max'] = self.attr['edu_max']
+        init_dict['EDUCATION']['start'] = self.attr['edu_spec']['start']
+        init_dict['EDUCATION']['share'] = self.attr['edu_spec']['share']
+        init_dict['EDUCATION']['max'] = self.attr['edu_spec']['max']
 
         # Home
         lower, upper = 24, 25
         init_dict['HOME'] = dict()
-        init_dict['HOME']['coeffs'] = \
-            self.attr['optim_paras']['coeffs_home']
+        init_dict['HOME']['coeffs'] = self.attr['optim_paras']['coeffs_home']
 
         init_dict['HOME']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
         init_dict['HOME']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
@@ -464,8 +460,6 @@ class RespyCls(object):
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 
-        self.attr['edu_start'] = init_dict['EDUCATION']['start']
-
         self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
 
         self.attr['maxfun'] = init_dict['ESTIMATION']['maxfun']
@@ -494,6 +488,11 @@ class RespyCls(object):
         self.attr['precond_spec']['minimum'] = init_dict['PRECONDITIONING']['minimum']
         self.attr['precond_spec']['type'] = init_dict['PRECONDITIONING']['type']
         self.attr['precond_spec']['eps'] = init_dict['PRECONDITIONING']['eps']
+
+        self.attr['edu_spec'] = dict()
+        self.attr['edu_spec']['start'] = init_dict['EDUCATION']['start']
+        self.attr['edu_spec']['share'] = init_dict['EDUCATION']['share']
+        self.attr['edu_spec']['max'] = init_dict['EDUCATION']['max']
 
         self.attr['num_types'] = len(init_dict['TYPE_SHARES']['coeffs'])
 
@@ -579,9 +578,8 @@ class RespyCls(object):
 
         self.attr['optim_paras']['paras_fixed'] = paras_fixed_reordered
 
-        # Delete the duplicated information from the initialization
-        # dictionary. Special treatment of EDUCATION is required as it
-        # contains other information about education than just the
+        # Delete the duplicated information from the initialization dictionary. Special treatment
+        #  of EDUCATION is required as it contains other information about education than just the
         # rewards parametrization.
         del self.attr['init_dict']
 
@@ -589,13 +587,13 @@ class RespyCls(object):
         """ Update derived attributes.
         """
         # Distribute model parameters
+        edu_start = min(self.attr['edu_spec']['start'])
+
+        edu_max = self.attr['edu_spec']['max']
+
         num_periods = self.attr['num_periods']
 
-        edu_start = self.attr['edu_start']
-
         num_types = self.attr['num_types']
-
-        edu_max = self.attr['edu_max']
 
         # Update derived attributes
         self.attr['min_idx'] = min(num_periods, (edu_max - edu_start + 1))
@@ -633,7 +631,7 @@ class RespyCls(object):
 
         optim_paras = self.attr['optim_paras']
 
-        edu_start = self.attr['edu_start']
+        edu_spec = self.attr['edu_spec']
 
         is_myopic = self.attr['is_myopic']
 
@@ -650,8 +648,6 @@ class RespyCls(object):
         is_debug = self.attr['is_debug']
 
         seed_sim = self.attr['seed_sim']
-
-        edu_max = self.attr['edu_max']
 
         version = self.attr['version']
 
@@ -702,21 +698,10 @@ class RespyCls(object):
         assert (isinstance(num_periods, int))
         assert (num_periods > 0)
 
-        # Start of education level
-        assert (np.isfinite(edu_start))
-        assert (isinstance(edu_start, int))
-        assert (edu_start >= 0)
-
         # Number of draws for Monte Carlo integration
         assert (np.isfinite(num_draws_emax))
         assert (isinstance(num_draws_emax, int))
         assert (num_draws_emax >= 0)
-
-        # Maximum level of education
-        assert (np.isfinite(edu_max))
-        assert (isinstance(edu_max, int))
-        assert (edu_max >= 0)
-        assert (edu_max >= edu_start)
 
         # Debugging mode
         assert (is_debug in [True, False])
@@ -746,6 +731,17 @@ class RespyCls(object):
         for key_ in ['minimum', 'eps']:
             assert (isinstance(precond_spec[key_], float))
             assert (precond_spec[key_] > 0.0)
+
+        # Education
+        assert isinstance(edu_spec['max'], int)
+        assert edu_spec['max'] > 0
+        assert isinstance(edu_spec['start'], list)
+        assert all(isinstance(item, int) for item in edu_spec['start'])
+        assert all(item > 0 for item in edu_spec['start'])
+        assert all(item <= edu_spec['max'] for item in edu_spec['start'])
+        assert all(isinstance(item, float) for item in edu_spec['share'])
+        assert all(0 <= item <= 1 for item in edu_spec['share'])
+        np.testing.assert_almost_equal(np.sum(edu_spec['share']), 1.0)
 
         # Derivatives
         assert (derivatives in ['FORWARD-DIFFERENCES'])
@@ -829,13 +825,13 @@ class RespyCls(object):
                 assert (self.attr[label] is None)
 
         # Distribute class attributes
+        edu_start = min(self.attr['edu_spec']['start'])
+
+        edu_max = self.attr['edu_spec']['max']
+
         num_periods = self.attr['num_periods']
 
-        edu_start = self.attr['edu_start']
-
         num_types = self.attr['num_types']
-
-        edu_max = self.attr['edu_max']
 
         # Distribute results
         periods_rewards_systematic = self.attr['periods_rewards_systematic']
@@ -916,9 +912,7 @@ class RespyCls(object):
             # If valid, the number of state space realizations in period two is
             # four.
             if num_periods > 1:
-                assert (
-                np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4 *
-                num_types)
+                assert (np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4 * num_types)
 
             # Check that mapping is defined for all possible realizations of the state space by
             # period. Check that mapping is not defined for all inadmissible values.
