@@ -153,24 +153,8 @@ def run(request, is_compile, is_background):
 
             # The specified number of types affects the interpolation equation regardless of the
             # weight.
-            if init_dict['INTERPOLATION']['flag'] == 'True':
-                num_types = 1
-            else:
-                num_types = np.random.choice(range(1, 3))
-
-            init_dict['TYPE_SHIFTS'] = dict()
-            init_dict['TYPE_SHARES'] = dict()
-
-            shifts = np.random.uniform(-0.05, 0.05, size=(num_types - 1) * 4)
-            shares = [1.0] + [0.0] * (num_types - 1)
-
-            init_dict['TYPE_SHIFTS']['coeffs'] = shifts
-            init_dict['TYPE_SHIFTS']['fixed'] = [False] * (num_types * 4)
-            init_dict['TYPE_SHIFTS']['bounds'] = [[None, None]] * (num_types * 4)
-
-            init_dict['TYPE_SHARES']['coeffs'] = shares
-            init_dict['TYPE_SHARES']['fixed'] = [True] * num_types
-            init_dict['TYPE_SHARES']['bounds'] = [[None, None]] * num_types
+            init_dict['EDUCATION']['share'] = [1.0]
+            init_dict['EDUCATION']['start'] = [init_dict['EDUCATION']['start']]
 
             # This is the baseline code again.
             print_init_dict(init_dict)
