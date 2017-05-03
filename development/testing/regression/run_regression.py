@@ -134,6 +134,7 @@ def run(request, is_compile, is_background):
         is_failure = False
 
         for i, idx in enumerate(indices):
+
             print('\n\n Checking Test ', idx, ' at iteration ',  i, '\n')
 
             init_dict, crit_val = tests[idx]
@@ -148,14 +149,31 @@ def run(request, is_compile, is_background):
                 print(msg)
                 continue
 
-            # For now I also need to ensure that there is only one relevant type. The baseline
-            # type has a share of one and then all the shifts should not matter at all.
+            print('\n new')
+            # Some edits to make the additional feature irrelevant for the evaluation. It is
+            # important that there is a share of one on the original initial condition.
+            edu_start_base = init_dict['EDUCATION']['start']
+            init_dict['EDUCATION']['start'] = [edu_start_base]
+            print(init_dict['EDUCATION']['start'])
 
-            # The specified number of types affects the interpolation equation regardless of the
-            # weight.
-            init_dict['EDUCATION']['share'] = [1.0]
-            init_dict['EDUCATION']['start'] = [init_dict['EDUCATION']['start']]
+            num_edu_start = np.random.choice(range(1, 3))
+            edu_start = np.random.choice(range(1, init_dict['EDUCATION']['max']),
+                size=num_edu_start, replace=False).tolist()
 
+            if edu_start_base in edu_start:
+                edu_start.remove(edu_start_base)
+                edu_start.insert(0, edu_start_base)
+            else:
+                edu_start[0] = edu_start_base
+
+            init_dict['EDUCATION']['start'] = edu_start
+
+
+            init_dict['EDUCATION']['share'] = [0.0] * num_edu_start
+            init_dict['EDUCATION']['share'][0] = 1.0
+
+            print('share', init_dict['EDUCATION']['share'])
+            print('start', init_dict['EDUCATION']['start'])
             # This is the baseline code again.
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
