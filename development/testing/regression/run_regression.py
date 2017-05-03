@@ -134,7 +134,6 @@ def run(request, is_compile, is_background):
         is_failure = False
 
         for i, idx in enumerate(indices):
-
             print('\n\n Checking Test ', idx, ' at iteration ',  i, '\n')
 
             init_dict, crit_val = tests[idx]
@@ -146,6 +145,11 @@ def run(request, is_compile, is_background):
                 print(msg)
                 continue
             if init_dict['PROGRAM']['procs'] > 1 and not IS_PARALLEL:
+                print(msg)
+                continue
+
+            msg = ' ... skipped as interpolation requested'
+            if init_dict['INTERPOLATION']['flag'] == 'True':
                 print(msg)
                 continue
 
@@ -188,8 +192,7 @@ def run(request, is_compile, is_background):
                 is_failure = True
                 break
 
-        # This allows to call this test from another script, that runs other
-        # tests as well.
+        # This allows to call this test from another script, that runs other tests as well.
         if not is_background:
             send_notification('regression', is_failed=is_failure, test_idx=idx)
 
