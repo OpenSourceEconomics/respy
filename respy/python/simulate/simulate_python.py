@@ -3,6 +3,7 @@ import numpy as np
 from respy.python.record.record_simulation import record_simulation_progress
 from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.record.record_simulation import record_simulation_start
+from respy.python.simulate.simulate_auxiliary import get_random_edu_start
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.simulate.simulate_auxiliary import get_random_types
 from respy.python.shared.shared_auxiliary import get_total_values
@@ -28,7 +29,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
 
     # We also need to sample the set of initial conditions.
     types = get_random_types(num_types, optim_paras, num_agents_sim, is_debug)
-    edu_start = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
+    edu_start = get_random_edu_start(edu_spec, num_agents_sim, is_debug)
 
     # Simulate agent experiences
     count = 0

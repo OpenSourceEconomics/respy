@@ -15,6 +15,7 @@ from codes.random_init import generate_random_dict
 from codes.auxiliary import simulate_observed
 from codes.auxiliary import compare_est_log
 from codes.random_init import generate_init
+from codes.auxiliary import write_edu_start
 from codes.auxiliary import write_draws
 from codes.auxiliary import write_types
 from respy import estimate
@@ -47,44 +48,43 @@ class TestClass(object):
 
         init_dict = generate_random_dict(constr)
 
-        # The use of the interpolation routines is a another special case.
-        # Constructing a request that actually involves the use of the
-        # interpolation routine is a little involved as the number of
-        # interpolation points needs to be lower than the actual number of
-        # states. And to know the number of states each period, I need to
-        # construct the whole state space.
+        edu_spec = dict()
+        edu_spec['start'] = init_dict['EDUCATION']['start']
+        edu_spec['share'] = init_dict['EDUCATION']['share']
+        edu_spec['max'] = init_dict['EDUCATION']['max']
+
+        # The use of the interpolation routines is a another special case. Constructing a request
+        #  that actually involves the use of the interpolation routine is a little involved as
+        # the number of interpolation points needs to be lower than the actual number of states.
+        # And to know the number of states each period, I need to construct the whole state space.
         if is_interpolated:
-            # Extract from future initialization file the information
-            # required to construct the state space. The number of periods
-            # needs to be at least three in order to provide enough state
-            # points.
+            # Extract from future initialization file the information required to construct the
+            # state space. The number of periods needs to be at least three in order to provide
+            # enough state points.
             num_periods = np.random.randint(3, 6)
-            edu_start = init_dict['EDUCATION']['start']
-            edu_max = init_dict['EDUCATION']['max']
-            min_idx = min(num_periods, (edu_max - edu_start + 1))
+
+            min_idx = edu_spec['max'] + 1
             num_types = len(init_dict['TYPE_SHARES']['coeffs'])
 
-            max_states_period = pyth_create_state_space(num_periods, edu_start, edu_max, min_idx,
-                                                        num_types)[3]
+            max_states_period = pyth_create_state_space(num_periods, edu_spec, min_idx,
+                num_types)[3]
 
-            # Updates to initialization dictionary that trigger a use of the
-            # interpolation code.
+            # Updates to initialization dictionary that trigger a use of the interpolation code.
             init_dict['BASICS']['periods'] = num_periods
             init_dict['INTERPOLATION']['flag'] = True
-            init_dict['INTERPOLATION']['points'] = \
-                np.random.randint(10, max_states_period)
+            init_dict['INTERPOLATION']['points'] = np.random.randint(10, max_states_period)
 
         # Print out the relevant initialization file.
         print_init_dict(init_dict)
 
-        # Write out random components and interpolation grid to align the
-        # three implementations.
+        # Write out random components and interpolation grid to align the three implementations.
         num_agents_sim = init_dict['SIMULATION']['agents']
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
         write_interpolation_grid('test.respy.ini')
         type_shares = init_dict['TYPE_SHARES']['coeffs']
         write_types(type_shares, num_agents_sim)
+        write_edu_start(edu_spec, num_agents_sim)
 
         # Clean evaluations based on interpolation grid,
         base_val, base_data = None, None
@@ -100,8 +100,8 @@ class TestClass(object):
             # Solve the model
             respy_obj = simulate_observed(respy_obj)
 
-            # This parts checks the equality of simulated dataset for the
-            # different versions of the code.
+            # This parts checks the equality of simulated dataset for the different versions of
+            # the code.
             data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True)
 
             if base_data is None:
@@ -109,8 +109,7 @@ class TestClass(object):
 
             assert_frame_equal(base_data, data_frame)
 
-            # This part checks the equality of an evaluation of the
-            # criterion function.
+            # This part checks the equality of an evaluation of the criterion function.
             _, crit_val = estimate(respy_obj)
 
             if base_val is None:
@@ -290,8 +289,7 @@ class TestClass(object):
                 assert open(fname, 'r').read() == base_amb_log
 
     def test_5(self, flag_ambiguity=False):
-        """ This test ensures that the scaling matrix is identical between
-        the alternative versions.
+        """ This test ensures that the scaling matrix is identical between the alternative versions.
         """
         max_draws = np.random.randint(10, 300)
 
@@ -321,9 +319,8 @@ class TestClass(object):
         for version in ['FORTRAN', 'PYTHON']:
             respy_obj = copy.deepcopy(respy_base)
 
-            # The actual optimizer does not matter for the scaling matrix. We
-            # also need to make sure that PYTHON is only called with a
-            # single processor.
+            # The actual optimizer does not matter for the scaling matrix. We also need to make
+            # sure that PYTHON is only called with a single processor.
             if version in ['PYTHON']:
                 optimizer_used = 'SCIPY-LBFGSB'
                 num_procs = 1

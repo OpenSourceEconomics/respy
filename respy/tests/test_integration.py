@@ -74,16 +74,15 @@ class TestClass(object):
                 base = periods_emax.copy()
 
             # Statistic
-            diff = np.max(abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(
-                periods_emax)))
+            diff = np.max(abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(periods_emax)))
 
             # Checks
             assert (np.isfinite(diff))
             assert (diff < 10e-10)
 
     def test_3(self, flag_ambiguity=False):
-        """ Testing whether the a simulated dataset and the evaluation of the
-        criterion function are the same for a tiny delta and a myopic agent.
+        """ Testing whether the a simulated dataset and the evaluation of the criterion function 
+        are the same for a tiny delta and a myopic agent.
         """
         # Generate random initialization dictionary
         constr = dict()
@@ -108,8 +107,8 @@ class TestClass(object):
 
             simulate_observed(respy_obj)
 
-            # This parts checks the equality of simulated dataset for the
-            # different versions of the code.
+            # This parts checks the equality of simulated dataset for the different versions of
+            # the code.
             data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True)
 
             if base_data is None:
@@ -117,8 +116,7 @@ class TestClass(object):
 
             assert_frame_equal(base_data, data_frame)
 
-            # This part checks the equality of an evaluation of the
-            # criterion function.
+            # This part checks the equality of an evaluation of the criterion function.
             _, crit_val = estimate(respy_obj)
 
             if base_val is None:

@@ -53,6 +53,7 @@ def run_single(spec_dict, fname):
     x = None
 
     is_risk = spec_dict['update']['level'] == 0.00
+    num_procs = spec_dict['update']['num_procs']
 
     for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
 
@@ -68,7 +69,6 @@ def run_single(spec_dict, fname):
             if is_risk:
                 respy_obj.attr['optim_paras']['paras_fixed'][1] = True
                 # We do only need a subset of the available processors
-                num_procs = spec_dict['update']['num_procs']
                 respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['truth'])
 
         elif request == 'Static':

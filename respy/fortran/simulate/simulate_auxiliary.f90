@@ -20,36 +20,45 @@ MODULE simulate_auxiliary
 
 CONTAINS
 !******************************************************************************
-!******************************************************************************
-FUNCTION get_random_type(num_types, optim_paras) RESULT(type_)
+!*****************************************************************************
+FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 
     !/* external objects    */
 
-    TYPE(OPTIMPARAS_DICT), INTENT(IN) :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)      :: edu_spec
 
-    INTEGER(our_int), INTENT(IN)      :: num_types
+    LOGICAL, INTENT(IN)             :: is_debug
 
-    INTEGER(our_int)                  :: type_
+    INTEGER(our_int)                :: edu_start(num_agents_sim)
 
     !/* internal objects    */
 
-    INTEGER(our_int)                :: candidates(num_types)
-    INTEGER(our_int)                :: i
+    INTEGER                         :: i
 
-    REAL(our_dble)                  :: u
+    LOGICAL                         :: READ_IN
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    candidates = (/ (i, i = 0, num_types - 1) /)
+    INQUIRE(FILE='.initial.respy.test', EXIST=READ_IN)
 
-    CALL RANDOM_NUMBER(u)
+    IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-    DO type_ = 0, num_types - 1
-        IF (u < optim_paras%type_shares(type_ + 1)) EXIT
-        u = u - optim_paras%type_shares(type_ + 1)
-    END DO
+        OPEN(UNIT=99, FILE='.initial.respy.test', ACTION='READ')
+        DO i = 1, num_agents_sim
+            88 FORMAT(i10)
+            READ(99, 88) edu_start(i)
+        END DO
+
+        CLOSE(99)
+
+    ELSE
+        DO i = 1, num_agents_sim
+            edu_start(i) = get_random_draw(edu_spec%start, edu_spec%share)
+        END DO
+
+    END IF
 
 END FUNCTION
 !******************************************************************************
@@ -68,6 +77,7 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, is_debug) RESU
 
     !/* internal objects    */
 
+    INTEGER                           :: candidates(num_types)
     INTEGER                           :: i
 
     LOGICAL                           :: READ_IN
@@ -85,13 +95,48 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, is_debug) RESU
             87 FORMAT(i10)
             READ(99, 87) types(i)
         END DO
+
         CLOSE(99)
+
     ELSE
+        candidates = (/ (i, i = 0, num_types - 1) /)
         DO i = 1, num_agents_sim
-            types(i) = get_random_type(num_types, optim_paras)
+            types(i) = get_random_draw(candidates, optim_paras%type_shares)
         END DO
 
     END IF
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION get_random_draw(candidates, probs) RESULT(rslt)
+
+    !/* external objects    */
+
+    REAL(our_dble), INTENT(IN)      :: probs(:)
+
+    INTEGER(our_int), INTENT(IN)    :: candidates(:)
+
+    INTEGER(our_int)                :: rslt
+
+    !/* internal objects    */
+
+    INTEGER(our_int)                :: i
+
+    REAL(our_dble)                  :: u
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    CALL RANDOM_NUMBER(u)
+
+    DO i = 1, SIZE(candidates)
+        IF (u < probs(i)) EXIT
+        u = u - probs(i)
+    END DO
+
+    rslt = candidates(i)
 
 END FUNCTION
 !******************************************************************************

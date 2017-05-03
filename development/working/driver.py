@@ -9,7 +9,7 @@ if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
     assert os.system('./waf distclean; ./waf configure build '
-                     '--debug --without_f2py') == 0
+                     '--debug --without_f2py --without_parallelism') == 0
     os.chdir(cwd)
 
 
@@ -44,13 +44,13 @@ np.random.seed(123)
 open('.restud.respy.scratch', 'w').close()
 
 respy_obj = RespyCls('model.respy.ini')
-#respy_obj, _ = simulate(respy_obj)
+respy_obj, _ = simulate(respy_obj)
 
 #respy_obj.write_out('test.respy.ini')
 #respy_obj = RespyCls('truth.respy.ini')
 
 _, crit = estimate(respy_obj)
-#print crit
+print(crit)
 
 
 #respy_obj = RespyCls('stop.respy.ini')

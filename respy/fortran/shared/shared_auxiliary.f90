@@ -373,19 +373,18 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)
+SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)                 :: total_values(4)
+    REAL(our_dble), INTENT(OUT)         :: total_values(4)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -415,7 +414,7 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
-        CALL get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
+        CALL get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_spec)
     ELSE
         is_inadmissible = .False.
         emaxs = zero_dble
@@ -435,9 +434,11 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
+SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_spec)
 
     !/* external objects        */
+
+    TYPE(EDU_DICT), INTENT(IN)      :: edu_spec
 
     REAL(our_dble), INTENT(OUT)     :: emaxs(4)
 
@@ -445,8 +446,6 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -481,8 +480,8 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
     emaxs(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
     ! Increasing schooling. Note that adding an additional year of schooling is only possible for those that have strictly less than the maximum level of additional education allowed.
-    is_inadmissible = (edu .GE. edu_max - edu_start)
-    IF(is_inadmissible) THEN
+    is_inadmissible = (edu .GE. edu_spec%max)
+     IF(is_inadmissible) THEN
         emaxs(3) = zero_dble
     ELSE
         future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 2, type_ + 1)
@@ -874,7 +873,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
+SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in all required information about the model parameterization. It just reads in all required information.
@@ -885,6 +884,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     TYPE(PRECOND_DICT), INTENT(OUT)         :: precond_spec
     TYPE(OPTIMPARAS_DICT), INTENT(OUT)      :: optim_paras
     TYPE(AMBI_DICT), INTENT(OUT)            :: ambi_spec
+    TYPE(EDU_DICT), INTENT(OUT)             :: edu_spec
 
     REAL(our_dble), INTENT(OUT)     :: tau
 
@@ -893,11 +893,9 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     INTEGER(our_int), INTENT(OUT)   :: num_procs
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax
-    INTEGER(our_int), INTENT(OUT)   :: edu_start
     INTEGER(our_int), INTENT(OUT)   :: num_paras
     INTEGER(our_int), INTENT(OUT)   :: seed_sim
     INTEGER(our_int), INTENT(OUT)   :: num_free
-    INTEGER(our_int), INTENT(OUT)   :: edu_max
     INTEGER(our_int), INTENT(OUT)   :: num_rows
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
@@ -925,8 +923,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     ! Fix formatting
     1500 FORMAT(9(1x,f25.15))
 
-    1505 FORMAT(i10)
-    1515 FORMAT(i10,1x,i10)
+    1505 FORMAT(100(1x,i10))
 
     1525 FORMAT(100(1x,f25.15))
 
@@ -936,11 +933,15 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
         READ(99, 1505) num_paras
         READ(99, 1505) num_types
+        READ(99, 1505) num_edu_start
 
         ALLOCATE(optim_paras%type_shifts(num_types, 4))
         ALLOCATE(optim_paras%type_shares(num_types))
         ALLOCATE(optim_paras%paras_bounds(2, num_paras))
         ALLOCATE(optim_paras%paras_fixed(num_paras))
+
+        ALLOCATE(edu_spec%start(num_edu_start))
+        ALLOCATE(edu_spec%share(num_edu_start))
 
         ! BASICS
         READ(99, 1505) num_periods
@@ -951,8 +952,10 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         READ(99, 1500) optim_paras%coeffs_b
 
         ! EDUCATION
-        READ(99, 1500) optim_paras%coeffs_edu
-        READ(99, 1515) edu_start, edu_max
+        READ(99, 1525) optim_paras%coeffs_edu
+        READ(99, 1505) edu_spec%start
+        READ(99, 1525) edu_spec%share
+        READ(99, 1505) edu_spec%max
 
         ! HOME
         READ(99, 1500) optim_paras%coeffs_home

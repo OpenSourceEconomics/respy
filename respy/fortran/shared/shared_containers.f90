@@ -33,8 +33,6 @@ MODULE shared_containers
     REAL(our_dble)                  :: tau
 
     INTEGER(our_int), ALLOCATABLE   :: num_obs_agent(:)
-    INTEGER(our_int)                :: edu_start
-    INTEGER(our_int)                :: edu_max
 
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_myopic
@@ -46,6 +44,7 @@ MODULE shared_containers
     TYPE(OPTIMIZER_COLLECTION)      :: optimizer_options
     TYPE(OPTIMPARAS_DICT)           :: optim_paras
     TYPE(AMBI_DICT)                 :: ambi_spec
+    TYPE(EDU_DICT)                  :: edu_spec
 
     INTEGER(our_int)                :: maxfun
 

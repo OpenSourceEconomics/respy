@@ -17,20 +17,16 @@ def resfort_interface(respy_obj, request, data_array=None):
     """ This function provides the interface to the FORTRAN functionality.
     """
     # Distribute class attributes
-    optim_paras, num_periods, edu_start, is_debug, edu_max, \
-        num_draws_emax, seed_emax, is_interpolated, num_points_interp, \
-        is_myopic, min_idx, tau, num_procs, num_agents_sim, \
-        num_draws_prob, num_agents_est, seed_prob, seed_sim, \
-        optimizer_options, optimizer_used, maxfun, \
+    optim_paras, num_periods, edu_spec, is_debug, num_draws_emax, seed_emax, is_interpolated, \
+    num_points_interp, is_myopic, min_idx, tau, num_procs, num_agents_sim, num_draws_prob, \
+    num_agents_est, seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, \
         precond_spec, ambi_spec, file_sim, num_paras, num_types = \
-            dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
-                'edu_start', 'is_debug', 'edu_max',
-                'num_draws_emax', 'seed_emax', 'is_interpolated',
-                'num_points_interp', 'is_myopic', 'min_idx', 'tau',
-                'num_procs', 'num_agents_sim', 'num_draws_prob',
-                'num_agents_est', 'seed_prob', 'seed_sim',
-                'optimizer_options', 'optimizer_used', 'maxfun',
-                'precond_spec', 'ambi_spec', 'file_sim', 'num_paras', 'num_types')
+            dist_class_attributes(respy_obj, 'optim_paras', 'num_periods', 'edu_spec',
+                'is_debug', 'num_draws_emax', 'seed_emax', 'is_interpolated',
+                'num_points_interp', 'is_myopic', 'min_idx', 'tau', 'num_procs',
+                'num_agents_sim', 'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim',
+                'optimizer_options', 'optimizer_used', 'maxfun', 'precond_spec', 'ambi_spec',
+                'file_sim', 'num_paras', 'num_types')
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -43,7 +39,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         write_dataset(data_array)
 
     args = (optim_paras, is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_start, is_debug, edu_max, min_idx, num_draws_prob, num_agents_est,
+            is_myopic, edu_spec, is_debug, min_idx, num_draws_prob, num_agents_est,
             num_agents_sim, seed_prob, seed_emax, tau, num_procs, request, seed_sim,
             optimizer_options, optimizer_used, maxfun, num_paras, precond_spec, ambi_spec,
             file_sim, data_array, num_types)
@@ -76,9 +72,8 @@ def get_results(num_periods, min_idx, num_agents_sim, num_types, which):
     """ Add results to container.
     """
 
-    # Get the maximum number of states. The special treatment is required as
-    # it informs about the dimensions of some of the arrays that are
-    # processed below.
+    # Get the maximum number of states. The special treatment is required as it informs about the
+    #  dimensions of some of the arrays that are processed below.
     max_states_period = int(np.loadtxt('.max_states_period.resfort.dat'))
 
     os.unlink('.max_states_period.resfort.dat')
@@ -86,9 +81,8 @@ def get_results(num_periods, min_idx, num_agents_sim, num_types, which):
     shape = (num_periods, num_periods, num_periods, min_idx, 2, num_types)
     mapping_state_idx = read_data('mapping_state_idx', shape).astype('int')
 
-    shape = (num_periods,)
-    states_number_period = \
-        read_data('states_number_period', shape).astype('int')
+    shape = (num_periods, )
+    states_number_period = read_data('states_number_period', shape).astype('int')
 
     shape = (num_periods, max_states_period, 5)
     states_all = read_data('states_all', shape).astype('int')
@@ -119,9 +113,8 @@ def read_data(label, shape):
     """
     file_ = '.' + label + '.resfort.dat'
 
-    # This special treatment is required as it is crucial for this data
-    # to stay of integer type. All other data is transformed to float in
-    # the replacement of missing values.
+    # This special treatment is required as it is crucial for this data to stay of integer type.
+    # All other data is transformed to float in the replacement of missing values.
     if label == 'states_number_period':
         data = np.loadtxt(file_, dtype=np.int64)
     else:
@@ -137,7 +130,7 @@ def read_data(label, shape):
 
 
 def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, num_periods,
-        num_points_interp, is_myopic, edu_start, is_debug, edu_max, min_idx, num_draws_prob,
+        num_points_interp, is_myopic, edu_spec, is_debug, min_idx, num_draws_prob,
         num_agents_est, num_agents_sim, seed_prob, seed_emax, tau, num_procs, request, seed_sim,
         optimizer_options, optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim,
         data_array, num_types):
@@ -150,12 +143,16 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
     else:
         num_rows = -1
 
+    num_edu_start = len(edu_spec['start'])
+
     # Write out to link file
     with open('.model.resfort.ini', 'w') as file_:
 
         line = '{0:10d}\n'.format(num_paras)
         file_.write(line)
         line = '{0:10d}\n'.format(num_types)
+        file_.write(line)
+        line = '{0:10d}\n'.format(num_edu_start)
         file_.write(line)
 
         # BASICS
@@ -175,10 +172,13 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         fmt_ = ' {:25.15f}' * 4 + '\n'
         file_.write(fmt_.format(*num))
 
-        line = '{0:10d} '.format(edu_start)
-        file_.write(line)
+        fmt_ = ' {:10d}' * num_edu_start + '\n'
+        file_.write(fmt_.format(*edu_spec['start']))
 
-        line = '{0:10d}\n'.format(edu_max)
+        fmt_ = ' {:25.15f} ' * num_edu_start + '\n'
+        file_.write(fmt_.format(*edu_spec['share']))
+
+        line = ' {0:10d}\n'.format(edu_spec['max'])
         file_.write(line)
 
         # HOME
@@ -353,15 +353,14 @@ def write_dataset(data_array):
     """ Write the dataset to a temporary file. Missing values are set
     to large values.
     """
-    # Transfer to data frame as this allows to fill the missing values with
-    # HUGE FLOAT. The numpy array is passed in to align the interfaces across
-    # implementations
+    # Transfer to data frame as this allows to fill the missing values with HUGE FLOAT. The numpy
+    #  array is passed in to align the interfaces across implementations
     data_frame = pd.DataFrame(data_array)
     with open('.data.resfort.dat', 'w') as file_:
         data_frame.to_string(file_, index=False,
             header=None, na_rep=str(HUGE_FLOAT))
 
-    # An empty line is added as otherwise this might lead to problems on the
-    # TRAVIS servers. The FORTRAN routine read_dataset() raises an error.
+    # An empty line is added as otherwise this might lead to problems on the TRAVIS servers. The
+    # FORTRAN routine read_dataset() raises an error.
     with open('.data.resfort.dat', 'a') as file_:
         file_.write('\n')

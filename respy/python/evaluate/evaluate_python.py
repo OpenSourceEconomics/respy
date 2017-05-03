@@ -45,9 +45,8 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                 is_wage_missing = np.isnan(wage)
                 is_working = choice in [1, 2]
 
-                # Transform total years of education to additional years of education and create
-                # an index from the choice.
-                edu, idx = edu, choice - 1
+                # Create an index for the choice.
+                idx = choice - 1
 
                 # Extract relevant deviates from standard normal distribution. The same set of
                 # baseline draws are used for each agent and period.

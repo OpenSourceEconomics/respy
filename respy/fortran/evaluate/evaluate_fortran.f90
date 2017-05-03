@@ -19,7 +19,7 @@ MODULE evaluate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, num_agents_contrib, num_obs_agent, num_types, optim_paras)
+SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_evaluate, periods_draws_prob, tau, edu_spec, num_periods, num_draws_prob, num_agents_contrib, num_obs_agent, num_types, optim_paras)
 
     !   DEVELOPMENT NOTES
     !
@@ -35,6 +35,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble), INTENT(OUT)     :: contribs(num_agents_contrib)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_prob(num_periods, num_draws_prob, 4)
@@ -47,9 +48,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     INTEGER(our_int), INTENT(IN)    :: num_agents_contrib
     INTEGER(our_int), INTENT(IN)    :: num_draws_prob
     INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: num_types
-    INTEGER(our_int), INTENT(IN)    :: edu_max
 
     !/* internal objects        */
 
@@ -129,10 +128,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 is_wage_missing = (wage == HUGE_FLOAT)
                 is_working = (choice == 1) .OR. (choice == 2)
 
-                ! Transform total years of education to additional years of education and create an index from the choice.
-                edu = edu - edu_start
-
-                ! This is only done for alignment
+                ! Create an index for the choice.
                 idx = choice
 
                 ! Extract relevant deviates from standard normal distribution.
@@ -202,7 +198,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
                     ! Calculate total values.
 
-                    CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)
+                    CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
                     ! Record optimal choices
                     counts(MAXLOC(total_values)) = counts(MAXLOC(total_values)) + 1

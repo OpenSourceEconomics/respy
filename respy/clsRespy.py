@@ -587,11 +587,7 @@ class RespyCls(object):
         """ Update derived attributes.
         """
         # Distribute model parameters
-        edu_start = min(self.attr['edu_spec']['start'])
-
         edu_max = self.attr['edu_spec']['max']
-
-        num_periods = self.attr['num_periods']
 
         num_types = self.attr['num_types']
 

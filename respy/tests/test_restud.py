@@ -13,32 +13,29 @@ from codes.auxiliary import simulate_observed
 from respy import RespyCls
 
 
-def transform_respy_to_restud(optim_paras, edu_start, edu_max, num_agents_sim,
-        num_periods, num_draws_emax):
+def transform_respy_to_restud(optim_paras, edu_spec, num_agents_sim, num_periods,
+        num_draws_emax):
     """ Transform a RESPY initialization file to a RESTUD file.
     """
     # Ensure restrictions
-    assert (edu_start == 10)
-    assert (edu_max == 20)
+    assert (edu_spec['start'][0] == 10)
+    assert (edu_spec['max'] == 20)
 
     # Write to initialization file
     with open('in.txt', 'w') as file_:
 
         # Write out some basic information about the problem.
-        file_.write(' {0:03d} {1:05d} {2:06d} {3:06f}'
-            ' {4:06f}\n'.format(num_periods, num_agents_sim, num_draws_emax,
-            -99.0, 500.0))
+        file_.write(' {0:03d} {1:05d} {2:06d} {3:06f} {4:06f}\n'.format(
+            num_periods, num_agents_sim, num_draws_emax, -99.0, 500.0))
 
         # Write out coefficients for the two occupations.
         coeffs_a, coeffs_b = optim_paras['coeffs_a'], optim_paras['coeffs_b']
         for coeffs in [coeffs_a, coeffs_b]:
-            line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}  {4:10.6f}' \
-                    ' {5:10.6f}\n'.format(*coeffs)
+            line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}  {4:10.6f} {5:10.6f}\n'.format(*coeffs)
             file_.write(line)
 
-        # Write out coefficients for education and home rewards as well as
-        # the discount factor. The intercept is scaled. This is later undone
-        # again in the original FORTRAN code.
+        # Write out coefficients for education and home rewards as well as the discount factor.
+        # The intercept is scaled. This is later undone again in the original FORTRAN code.
         coeffs_edu = optim_paras['coeffs_edu']
         coeffs_home = optim_paras['coeffs_home']
 
@@ -52,10 +49,9 @@ def transform_respy_to_restud(optim_paras, edu_start, edu_max, num_agents_sim,
         line = fmt.format(*coeffs)
         file_.write(line)
 
-        # Write out coefficients of correlation and standard deviations in the
-        # standard deviations in the education and home equation required.
-        # This is undone again in the original FORTRAN code. All this is
-        # working only under the imposed absence of any randomness.
+        # Write out coefficients of correlation and standard deviations in the standard deviations
+        # in the education and home equation required. This is undone again in the original
+        # FORTRAN code. All this is working only under the imposed absence of any randomness.
         rho = np.zeros((4, 4))
         for j in range(4):
             line = ' {0:10.5f} {1:10.5f} {2:10.5f} ' \
@@ -72,18 +68,16 @@ class TestClass(object):
     def test_1(self):
         """  Compare results from the RESTUD program and the RESPY package.
         """
-        # Impose some constraints on the initialization file which ensures that
-        # the problem can be solved by the RESTUD code. The code is adjusted to
-        # run with zero draws.
+        # Impose some constraints on the initialization file which ensures that the problem can
+        # be solved by the RESTUD code. The code is adjusted to run with zero draws.
         constr = dict()
         constr['edu'] = (10, 20)
         constr['flag_deterministic'] = True
         constr['level'] = 0.00
 
-        # Generate random initialization file. The RESTUD code uses the same
-        # random draws for the solution and simulation of the model. Thus,
-        # the number of draws is required to be less or equal to the number
-        # of agents.
+        # Generate random initialization file. The RESTUD code uses the same random draws for the
+        #  solution and simulation of the model. Thus, the number of draws is required to be less
+        #  or equal to the number of agents.
         init_dict = generate_random_dict(constr)
 
         num_agents_sim = init_dict['SIMULATION']['agents']
@@ -91,10 +85,9 @@ class TestClass(object):
         if num_draws_emax < num_agents_sim:
             init_dict['SOLUTION']['draws'] = num_agents_sim
 
-        # There are also some coefficients here that are not part of the
-        # original RESTUD program, such as (1) separate cost of re-entry into
-        # education, (2) sheepskin effects, and (3) bonus for any experience
-        # in occupation. 
+        # There are also some coefficients here that are not part of the original RESTUD program,
+        # such as (1) separate cost of re-entry into education, (2) sheepskin effects,
+        # and (3) bonus for any experience in occupation.
         init_dict['EDUCATION']['coeffs'][-1] = init_dict['EDUCATION']['coeffs'][-2]
         init_dict['OCCUPATION A']['coeffs'][-3:] = [0.0, 0.0, 0.0]
         init_dict['OCCUPATION B']['coeffs'][-3:] = [0.0, 0.0, 0.0]
@@ -107,16 +100,14 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
 
-        # This flag aligns the random components between the RESTUD program and
-        # RESPY package. The existence of the file leads to the RESTUD program
-        # to write out the random components.
-        optim_paras, edu_start, edu_max, num_agents_sim, num_periods, \
-            num_draws_emax = dist_class_attributes(respy_obj,
-                'optim_paras', 'edu_start', 'edu_max', 'num_agents_sim',
+        # This flag aligns the random components between the RESTUD program and RESPY package.
+        # The existence of the file leads to the RESTUD program to write out the random components.
+        optim_paras, edu_spec, num_agents_sim, num_periods, num_draws_emax = \
+            dist_class_attributes(respy_obj, 'optim_paras', 'edu_spec', 'num_agents_sim',
                 'num_periods', 'num_draws_emax')
 
-        transform_respy_to_restud(optim_paras, edu_start, edu_max,
-            num_agents_sim, num_periods, num_draws_emax)
+        transform_respy_to_restud(optim_paras, edu_spec, num_agents_sim, num_periods,
+            num_draws_emax)
 
         # Solve model using RESTUD code.
         cmd = TEST_RESOURCES_DIR + '/kw_dp3asim'
@@ -130,11 +121,10 @@ class TestClass(object):
         column_labels += ['Experience_A', 'Experience_B']
         column_labels += ['Years_Schooling', 'Lagged_Schooling']
 
-        py = pd.read_csv('data.respy.dat', delim_whitespace=True, header=0,
-            na_values='.', usecols=column_labels).astype(np.float)
+        py = pd.read_csv('data.respy.dat', delim_whitespace=True, header=0, na_values='.',
+            usecols=column_labels).astype(np.float)
 
-        fort = pd.DataFrame(np.array(np.genfromtxt('ftest.txt',
-            missing_values='.'), ndmin=2)[:, -4:],
-            columns=column_labels).astype(np.float)
+        fort = pd.DataFrame(np.array(np.genfromtxt('ftest.txt', missing_values='.'), ndmin=2)[:,
+                            -4:], columns=column_labels).astype(np.float)
 
         assert_frame_equal(py, fort)

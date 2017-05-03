@@ -83,6 +83,15 @@ MODULE shared_types
 
     END TYPE
 
+    TYPE EDU_DICT
+
+        INTEGER(our_int), ALLOCATABLE   :: start(:)
+        INTEGER(our_int)                :: max
+
+        REAL(our_dble), ALLOCATABLE     :: share(:)
+
+    END TYPE
+
 !******************************************************************************
 !******************************************************************************
 END MODULE

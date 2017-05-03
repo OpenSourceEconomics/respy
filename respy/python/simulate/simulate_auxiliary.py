@@ -285,3 +285,18 @@ def get_random_types(num_types, optim_paras, num_agents_sim, is_debug):
     types = np.array(types, ndmin=1)
 
     return types
+
+
+def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
+    """ This function provides random draws for the initial schooling level, or reads them in 
+    from a file.
+    """
+    if is_debug and os.path.exists('.initial.respy.test'):
+        edu_start = np.genfromtxt('.initial.respy.test')
+    else:
+        edu_start = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
+
+    # If we only have one individual, we need to ensure that types are a vector.
+    edu_start = np.array(edu_start, ndmin=1)
+
+    return edu_start

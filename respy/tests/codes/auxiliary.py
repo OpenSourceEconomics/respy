@@ -222,12 +222,19 @@ def write_draws(num_periods, max_draws):
 
 
 def write_types(type_shares, num_agents_sim):
-    """ We also need to fully control the random types to ensure the
-    comparability between PYTHON and FORTRAN simulations.
+    """ We also need to fully control the random types to ensure the comparability between PYTHON and FORTRAN simulations.
     """
     num_types = len(type_shares)
     types = np.random.choice(range(num_types), p=type_shares, size=num_agents_sim)
     np.savetxt('.types.respy.test', types, fmt='%i')
+
+
+def write_edu_start(edu_spec, num_agents_sim):
+    """ We also need to fully control the random initial schooling to ensure the comparability 
+    between PYTHON and FORTRAN simulations.
+    """
+    types = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
+    np.savetxt('.initial.respy.test', types, fmt='%i')
 
 
 def get_valid_values(which):

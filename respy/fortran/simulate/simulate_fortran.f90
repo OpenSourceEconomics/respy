@@ -19,13 +19,14 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_start, edu_max, seed_sim, file_sim, optim_paras, num_types, is_debug)
+SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_spec, seed_sim, file_sim, optim_paras, num_types, is_debug)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(OUT)    :: data_sim(:, :)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(num_periods, num_agents_sim, 4)
@@ -35,9 +36,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_agents_sim
     INTEGER(our_int), INTENT(IN)    :: num_types
-    INTEGER(our_int), INTENT(IN)    :: edu_start
     INTEGER(our_int), INTENT(IN)    :: seed_sim
-    INTEGER(our_int), INTENT(IN)    :: edu_max
 
     CHARACTER(225), INTENT(IN)      :: file_sim
 
@@ -49,7 +48,12 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     REAL(our_dble)                  :: draws_sims_transformed(num_agents_sim, 4)
     REAL(our_dble)                  :: draws_sims(num_agents_sim, 4)
     REAL(our_dble)                  :: shocks_mean(4) = zero_dble
+    REAL(our_dble)                  :: rewards_systematic(4)
+    REAL(our_dble)                  :: total_values(4)
+    REAL(our_dble)                  :: draws(4)
 
+    INTEGER(our_int)                :: edu_start(num_agents_sim)
+    INTEGER(our_int)                :: types(num_agents_sim)
     INTEGER(our_int)                :: current_state(5)
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: choice(1)
@@ -61,11 +65,6 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: k
-    INTEGER(our_int)                :: types(num_agents_sim)
-
-    REAL(our_dble)                  :: rewards_systematic(4)
-    REAL(our_dble)                  :: total_values(4)
-    REAL(our_dble)                  :: draws(4)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -88,6 +87,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
 
     ! We also need to sample the set of initial conditions.
     types = get_random_types(num_types, optim_paras, num_agents_sim, is_debug)
+    edu_start = get_random_edu_start(edu_spec, is_debug)
 
     ! Iterate over agents and periods
     count = 0
@@ -98,6 +98,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
         current_state = states_all(1, 1, :)
 
         ! We need to modify the initial conditions.
+        current_state(3) = edu_start(i + 1)
         current_state(5) = types(i + 1)
 
         CALL record_simulation(i, file_sim)
@@ -123,13 +124,10 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             draws = periods_draws_sims_transformed(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)
+            CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
             ! Write relevant state space for period to data frame
             data_sim(count + 1, 5:8) = current_state(:4)
-
-            ! Special treatment for education
-            data_sim(count + 1, 7) = data_sim(count + 1, 7) + edu_start
 
             ! As we are working with a simulated dataset, we can also output additional information that is not available in an observed dataset. The discount rate is included as this allows to construct the EMAX with the information provided in the simulation output.
             data_sim(count + 1,  9: 9) = type_

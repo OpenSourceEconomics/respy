@@ -33,9 +33,11 @@ MODULE parallelism_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_start, edu_max, optim_paras, num_paras, file_sim)
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras, num_paras, file_sim)
 
     !/* external objects        */
+
+    TYPE(EDU_DICT), INTENT(IN)                      :: edu_spec
 
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
@@ -47,8 +49,6 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
 
     INTEGER(our_int), INTENT(IN)                    :: num_paras
-    INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: edu_max
 
     CHARACTER(225), INTENT(IN)                      :: file_sim
 
@@ -80,9 +80,9 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     CALL MPI_Bcast(x_all_current, num_paras, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx, num_types)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, min_idx, num_types)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_spec, max_states_period, optim_paras)
 
 
     ALLOCATE(periods_emax(num_periods, max_states_period))
@@ -220,7 +220,7 @@ SUBROUTINE distribute_information_slaves(num_states_slaves, period, send_slave, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, update_master)
 
     !/* external objects        */
 
@@ -229,6 +229,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
     TYPE(AMBI_DICT), INTENT(IN)             :: ambi_spec
+    TYPE(EDU_DICT), INTENT(IN)              :: edu_spec
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
@@ -239,8 +240,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: num_points_interp
     INTEGER(our_int), INTENT(IN)        :: num_periods
-    INTEGER(our_int), INTENT(IN)        :: edu_start
-    INTEGER(our_int), INTENT(IN)        :: edu_max
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
     LOGICAL, INTENT(IN)                 :: update_master
@@ -375,7 +374,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
             is_simulated = get_simulated_indicator(num_points_interp, num_states, period, is_debug)
 
             ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
-            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, optim_paras, edu_start, edu_max)
+            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, optim_paras, edu_spec)
 
             ! Initialize missing values
             endogenous = MISSING_FLOAT
@@ -395,9 +394,9 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
+                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
                 ELSE
-                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, optim_paras)
                 END IF
 
                 ! Construct dependent variable
@@ -430,9 +429,9 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
+                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
                 ELSE
-                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, optim_paras)
                 END IF
 
                 ! Collect information
