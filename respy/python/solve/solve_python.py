@@ -31,7 +31,7 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, 
 
     # Calculate all systematic rewards
     periods_rewards_systematic = pyth_calculate_rewards_systematic(num_periods,
-        states_number_period, states_all, edu_spec, max_states_period, optim_paras)
+        states_number_period, states_all, max_states_period, optim_paras)
 
     record_solution_progress(-1, file_sim)
 

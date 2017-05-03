@@ -278,8 +278,8 @@ def get_random_types(num_types, optim_paras, num_agents_sim, is_debug):
     if is_debug and os.path.exists('.types.respy.test'):
         types = np.genfromtxt('.types.respy.test')
     else:
-        types = np.random.choice(range(num_types), p=optim_paras['type_shares'],
-                                 size=num_agents_sim)
+        probs = optim_paras['type_shares'] / np.sum(optim_paras['type_shares'])
+        types = np.random.choice(range(num_types), p=probs, size=num_agents_sim)
 
     # If we only have one individual, we need to ensure that types are a vector.
     types = np.array(types, ndmin=1)

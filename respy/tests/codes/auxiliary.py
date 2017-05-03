@@ -26,8 +26,8 @@ OPTIMIZERS_AMB = OPT_AMB_FORT + OPT_AMB_PYTH
 
 
 def simulate_observed(respy_obj, is_missings=True):
-    """ This function addes two important features of observed datasests: (1)
-    missing observations and missing wage information.
+    """ This function adds two important features of observed datasests: (1) missing observations 
+    and missing wage information.
     """
     def drop_agents_obs(group, num_drop):
         """ We drop a random number of observations for each agent.
@@ -42,9 +42,8 @@ def simulate_observed(respy_obj, is_missings=True):
 
     simulate(respy_obj)
 
-    # It is important to set the seed after the simulation call. Otherwise,
-    # the value of the seed differs due to the different implementations of
-    # the PYTHON and FORTRAN programs.
+    # It is important to set the seed after the simulation call. Otherwise, the value of the seed
+    # differs due to the different implementations of the PYTHON and FORTRAN programs.
     np.random.seed(seed_sim)
 
     if is_missings:
@@ -57,25 +56,23 @@ def simulate_observed(respy_obj, is_missings=True):
         share_missing_wages = 0
         share_missing_obs = 0
 
-    # We want to drop random observations by agents. This mimics the frequent
-    # empirical fact that we loose track of agents (at least temporarily).
-    data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True, header=0,
-        na_values='.', dtype=DATA_FORMATS_SIM, names=DATA_LABELS_SIM)
+    # We want to drop random observations by agents. This mimics the frequent empirical fact that
+    #  we loose track of agents (at least temporarily).
+    data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True, header=0, na_values='.',
+        dtype=DATA_FORMATS_SIM, names=DATA_LABELS_SIM)
 
     if share_missing_obs != 0:
         num_drop_obs = int(num_periods * share_missing_obs)
     else:
         num_drop_obs = 0
 
-    data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs,
-        num_drop=num_drop_obs)
+    data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs, num_drop=num_drop_obs)
 
     # We also want to drop the some wage observations.
     is_working = data_subset['Choice'].isin([1, 2])
     num_drop_wages = int(np.sum(is_working) * share_missing_wages)
 
-    # As a special case, we might be dealing with a dataset where not one is
-    # working anyway.
+    # As a special case, we might be dealing with a dataset where not one is working anyway.
     if num_drop_wages > 0:
         indices = data_subset['Wage'][is_working].index
         index_missing = np.random.choice(indices, num_drop_wages, False)

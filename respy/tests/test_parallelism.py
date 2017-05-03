@@ -28,10 +28,9 @@ class TestClass(object):
         constr['maxfun'] = np.random.randint(0, 50)
         init_dict = generate_random_dict(constr)
 
-        # If ambiguity or delta is a not fixed, we need to ensure a
-        # bound-constraint optimizer. However, this is not the standard
-        # flag_estimation as the number of function evaluation is possibly
-        # much larger to detect and differences in the updates of the optimizer
+        # If ambiguity or delta is a not fixed, we need to ensure a bound-constraint optimizer.
+        # However, this is not the standard flag_estimation as the number of function evaluation
+        # is possibly much larger to detect and differences in the updates of the optimizer
         # steps depending on the implementation.
         if not init_dict['BASICS']['fixed'][0]:
             init_dict['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
@@ -59,10 +58,9 @@ class TestClass(object):
     def test_2(self):
         """ This test ensures that the record files are identical.
         """
-        # Generate random initialization file. The number of periods is
-        # higher than usual as only FORTRAN implementations are used to
-        # solve the random request. This ensures that also some cases of
-        # interpolation are explored.
+        # Generate random initialization file. The number of periods is higher than usual as only
+        #  FORTRAN implementations are used to solve the random request. This ensures that also
+        # some cases of interpolation are explored.
         constr = dict()
         constr['version'] = 'FORTRAN'
         constr['periods'] = np.random.randint(3, 10)

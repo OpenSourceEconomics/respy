@@ -105,8 +105,8 @@ def pyth_create_state_space(num_periods, edu_spec, min_idx, num_types):
     return args
 
 
-def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_all, edu_start,
-                                      max_states_period, optim_paras):
+def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_all,
+        max_states_period, optim_paras):
     """ Calculate ex systematic rewards.
     """
     # Initialize

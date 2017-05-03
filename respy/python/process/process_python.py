@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.process.process_auxiliary import check_dataset_est
 from respy.python.shared.shared_constants import DATA_FORMATS_EST
 from respy.python.shared.shared_constants import DATA_LABELS_EST
@@ -10,8 +11,7 @@ def process(respy_obj):
     """ This function processes the dataset from disk.
     """
     # Distribute class attributes
-    num_agents_est = respy_obj.get_attr('num_agents_est')
-    file_est = respy_obj.get_attr('file_est')
+    num_agents_est, file_est = dist_class_attributes(respy_obj, 'num_agents_est', 'file_est')
 
     # Process dataset from files.
     data_frame = pd.read_csv(file_est, delim_whitespace=True, header=0, na_values='.')
@@ -30,7 +30,7 @@ def process(respy_obj):
     # We want to make sure that the dataset contains exactly the number of agents that were
     # requested. This might not necessarily be the case if a user requests an estimation with
     # more agents than available. This cannot be part of the check_dataset_est() function that is
-    #  also called by simulate().
+    # also called by simulate().
     dat = len(data_frame['Identifier'].unique())
     np.testing.assert_equal(dat, num_agents_est)
 

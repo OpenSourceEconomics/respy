@@ -152,8 +152,6 @@ def extract_type_information(x):
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
-    type_shares = type_shares / np.sum(type_shares)
-
     return type_shares, type_shifts
 
 

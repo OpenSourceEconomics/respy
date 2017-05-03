@@ -26,8 +26,7 @@ if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call('rm -rf .bld', shell=True)
-    subprocess.check_call('./waf distclean; ./waf configure build --debug --without_f2py '
-                          '--without_parallelism',
+    subprocess.check_call('./waf distclean; ./waf configure build --debug --without_f2py ',
         shell=True)
     os.chdir(cwd)
 else:
@@ -50,10 +49,10 @@ module, method = get_random_request(test_dict)
 module, method = 'test_versions', 'test_1'
 count = 0
 #os.system('git clean -d -f')
-for i in range(100):
+for i in range(1000):
 
-    #seed = 35721
-    seed = i + 35715
+#    seed = 35762
+    seed = i + 38715
     #seed = 67846
     np.random.seed(seed)
     print("seed ", seed)

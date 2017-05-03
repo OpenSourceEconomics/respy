@@ -732,6 +732,7 @@ class RespyCls(object):
         assert isinstance(edu_spec['max'], int)
         assert edu_spec['max'] > 0
         assert isinstance(edu_spec['start'], list)
+        assert len(edu_spec['start']) == len(set(edu_spec['start']))
         assert all(isinstance(item, int) for item in edu_spec['start'])
         assert all(item > 0 for item in edu_spec['start'])
         assert all(item <= edu_spec['max'] for item in edu_spec['start'])
@@ -826,8 +827,6 @@ class RespyCls(object):
         edu_max = self.attr['edu_spec']['max']
 
         num_periods = self.attr['num_periods']
-
-        num_types = self.attr['num_types']
 
         # Distribute results
         periods_rewards_systematic = self.attr['periods_rewards_systematic']

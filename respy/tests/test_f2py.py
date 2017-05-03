@@ -305,7 +305,7 @@ class TestClass(object):
         args = ()
         args += (num_periods, states_number_period, states_all, edu_start)
         args += (max_states_period, )
-        pyth = pyth_calculate_rewards_systematic(*args + (optim_paras, ))
+        pyth = pyth_calculate_rewards_systematic(*args + (optim_paras,))
 
         args += (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         args += (type_spec_shares, type_spec_shifts)

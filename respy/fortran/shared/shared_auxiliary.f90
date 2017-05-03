@@ -921,19 +921,16 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
 !------------------------------------------------------------------------------
 
     ! Fix formatting
-    1500 FORMAT(9(1x,f25.15))
-
-    1505 FORMAT(100(1x,i10))
-
-    1525 FORMAT(100(1x,f25.15))
+    1500 FORMAT(100(1x,i10))
+    1510 FORMAT(100(1x,f25.15))
 
     ! Read model specification
     OPEN(UNIT=99, FILE='.model.resfort.ini', ACTION='READ')
 
 
-        READ(99, 1505) num_paras
-        READ(99, 1505) num_types
-        READ(99, 1505) num_edu_start
+        READ(99, 1500) num_paras
+        READ(99, 1500) num_types
+        READ(99, 1500) num_edu_start
 
         ALLOCATE(optim_paras%type_shifts(num_types, 4))
         ALLOCATE(optim_paras%type_shares(num_types))
@@ -944,70 +941,70 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         ALLOCATE(edu_spec%share(num_edu_start))
 
         ! BASICS
-        READ(99, 1505) num_periods
-        READ(99, 1500) optim_paras%delta
+        READ(99, 1500) num_periods
+        READ(99, 1510) optim_paras%delta
 
         ! WORK
-        READ(99, 1500) optim_paras%coeffs_a
-        READ(99, 1500) optim_paras%coeffs_b
+        READ(99, 1510) optim_paras%coeffs_a
+        READ(99, 1510) optim_paras%coeffs_b
 
         ! EDUCATION
-        READ(99, 1525) optim_paras%coeffs_edu
-        READ(99, 1505) edu_spec%start
-        READ(99, 1525) edu_spec%share
-        READ(99, 1505) edu_spec%max
+        READ(99, 1510) optim_paras%coeffs_edu
+        READ(99, 1500) edu_spec%start
+        READ(99, 1510) edu_spec%share
+        READ(99, 1500) edu_spec%max
 
         ! HOME
-        READ(99, 1500) optim_paras%coeffs_home
+        READ(99, 1510) optim_paras%coeffs_home
 
         ! SHOCKS
         DO j = 1, 4
-            READ(99, 1500) (optim_paras%shocks_cholesky(j, k), k = 1, 4)
+            READ(99, 1510) (optim_paras%shocks_cholesky(j, k), k = 1, 4)
         END DO
 
         ! SOLUTION
-        READ(99, 1505) num_draws_emax
-        READ(99, 1505) seed_emax
+        READ(99, 1500) num_draws_emax
+        READ(99, 1500) seed_emax
 
         ! AMBIGUITY
         READ(99, *) ambi_spec%measure
         READ(99, *) ambi_spec%mean
-        READ(99, 1500) optim_paras%level
+        READ(99, 1510) optim_paras%level
 
         ! TYPES
-        READ(99, 1500) optim_paras%type_shares
+        READ(99, 1510) optim_paras%type_shares
         DO j = 1, num_types
-            READ(99, 1500) (optim_paras%type_shifts(j, k), k = 1, 4)
+            READ(99, 1510) (optim_paras%type_shifts(j, k), k = 1, 4)
         END DO
 
         ! PROGRAM
         READ(99, *) is_debug
-        READ(99, 1505) num_procs
+        READ(99, 1500) num_procs
 
         ! INTERPOLATION
         READ(99, *) is_interpolated
-        READ(99, 1505) num_points_interp
+        READ(99, 1500) num_points_interp
 
         ! ESTIMATION
-        READ(99, 1505) maxfun
-        READ(99, 1505) num_agents_est
-        READ(99, 1505) num_draws_prob
-        READ(99, 1505) seed_prob
-        READ(99, 1500) tau
-        READ(99, 1505) num_rows
+        READ(99, 1500) maxfun
+        READ(99, 1500) num_agents_est
+        READ(99, 1500) num_draws_prob
+        READ(99, 1500) seed_prob
+        READ(99, 1510) tau
+        READ(99, 1500) num_rows
 
         ! SCALING
         READ(99, *) precond_spec%type
         READ(99, *) precond_spec%minimum
-        READ(99, 1500) precond_spec%eps
+        READ(99, 1510) precond_spec%eps
 
         ! SIMULATION
-        READ(99, 1505) num_agents_sim
-        READ(99, 1505) seed_sim
+        READ(99, 1500) num_agents_sim
+        READ(99, 1500) seed_sim
         READ(99, *) file_sim
 
         ! AUXILIARY
-        READ(99, 1505) min_idx
+        READ(99, 1500) min_idx
         READ(99, *) is_myopic
         READ(99, *) optim_paras%paras_fixed
 
@@ -1020,27 +1017,27 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         ! OPTIMIZERS
         READ(99, *) optimizer_used
 
-        READ(99, 1505) optimizer_options%newuoa%npt
-        READ(99, 1505) optimizer_options%newuoa%maxfun
-        READ(99, 1500) optimizer_options%newuoa%rhobeg
-        READ(99, 1500) optimizer_options%newuoa%rhoend
+        READ(99, 1500) optimizer_options%newuoa%npt
+        READ(99, 1500) optimizer_options%newuoa%maxfun
+        READ(99, 1510) optimizer_options%newuoa%rhobeg
+        READ(99, 1510) optimizer_options%newuoa%rhoend
 
-        READ(99, 1505) optimizer_options%bobyqa%npt
-        READ(99, 1505) optimizer_options%bobyqa%maxfun
-        READ(99, 1500) optimizer_options%bobyqa%rhobeg
-        READ(99, 1500) optimizer_options%bobyqa%rhoend
+        READ(99, 1500) optimizer_options%bobyqa%npt
+        READ(99, 1500) optimizer_options%bobyqa%maxfun
+        READ(99, 1510) optimizer_options%bobyqa%rhobeg
+        READ(99, 1510) optimizer_options%bobyqa%rhoend
 
-        READ(99, 1500) optimizer_options%bfgs%gtol
-        READ(99, 1500) optimizer_options%bfgs%stpmx
-        READ(99, 1505) optimizer_options%bfgs%maxiter
-        READ(99, 1500) optimizer_options%bfgs%eps
+        READ(99, 1510) optimizer_options%bfgs%gtol
+        READ(99, 1510) optimizer_options%bfgs%stpmx
+        READ(99, 1500) optimizer_options%bfgs%maxiter
+        READ(99, 1510) optimizer_options%bfgs%eps
 
-        READ(99, 1500) optimizer_options%slsqp%ftol
-        READ(99, 1505) optimizer_options%slsqp%maxiter
-        READ(99, 1500) optimizer_options%slsqp%eps
+        READ(99, 1510) optimizer_options%slsqp%ftol
+        READ(99, 1500) optimizer_options%slsqp%maxiter
+        READ(99, 1510) optimizer_options%slsqp%eps
 
-        READ(99, 1525) optim_paras%paras_bounds(1, :)
-        READ(99, 1525) optim_paras%paras_bounds(2, :)
+        READ(99, 1510) optim_paras%paras_bounds(1, :)
+        READ(99, 1510) optim_paras%paras_bounds(2, :)
 
     CLOSE(99)
 
@@ -1235,8 +1232,8 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
         CALL extract_cholesky(optim_paras%shocks_cholesky, x)
     END IF
 
+    ! The shares do not necessarily sum to one. The adjustment is done when the criterion function is evaluated.
     optim_paras%type_shares = x(36:(36 + num_types - 1))
-    optim_paras%type_shares = optim_paras%type_shares / SUM(optim_paras%type_shares)
 
     optim_paras%type_shifts = zero_dble
     optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(36 + num_types:num_paras), (/4, num_types  - 1/)))

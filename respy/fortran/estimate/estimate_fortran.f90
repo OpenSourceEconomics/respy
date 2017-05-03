@@ -37,7 +37,7 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_spec, optimizer_options, num_types)
+SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, edu_spec, precond_spec, optimizer_options, num_types)
 
     !/* external objects    */
 
@@ -46,6 +46,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
     REAL(our_dble), INTENT(OUT)         :: crit_val
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
     TYPE(PRECOND_DICT), INTENT(IN)      :: precond_spec
 
@@ -143,8 +144,8 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
 
-    REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
     REAL(our_dble)                  :: x_optim_all_unscaled(num_paras)
+    REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
     REAL(our_dble)                  :: contribs(num_agents_est)
     REAL(our_dble)                  :: start
 
@@ -173,7 +174,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     CALL dist_optim_paras(optim_paras, x_optim_all_unscaled, dist_optim_paras_info)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_spec, max_states_period, optim_paras)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, max_states_period, optim_paras)
 
     CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_spec, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
@@ -205,8 +206,8 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_all_current(num_paras)
-    REAL(our_dble)                  :: x_input(num_free)
+    REAL(our_dble)                  :: x_optim_all_unscaled(num_paras)
+    REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
     REAL(our_dble)                  :: contribs(num_agents_est)
     REAL(our_dble)                  :: start
 
@@ -234,16 +235,16 @@ FUNCTION fort_criterion_parallel(x)
         RETURN
     END IF
 
-    x_input = apply_scaling(x, precond_matrix, 'undo')
+    x_optim_free_unscaled = apply_scaling(x, precond_matrix, 'undo')
 
-    CALL construct_all_current_values(x_all_current, x_input, optim_paras, num_paras)
+    CALL construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras, num_paras)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
-    CALL MPI_Bcast(x_all_current, num_paras, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_Bcast(x_optim_all_unscaled, num_paras, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
-    CALL dist_optim_paras(optim_paras, x_all_current, dist_optim_paras_info)
+    CALL dist_optim_paras(optim_paras, x_optim_all_unscaled, dist_optim_paras_info)
 
     ! We need to know how the workload is distributed across the slaves.
     IF (.NOT. ALLOCATED(num_states_slaves)) THEN
@@ -271,7 +272,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, num_paras, num_types, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x, x_optim_all_unscaled, fort_criterion_parallel, num_eval, num_paras, num_types, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 

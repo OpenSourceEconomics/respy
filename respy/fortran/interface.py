@@ -350,15 +350,13 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
 
 
 def write_dataset(data_array):
-    """ Write the dataset to a temporary file. Missing values are set
-    to large values.
+    """ Write the dataset to a temporary file. Missing values are set to large values.
     """
     # Transfer to data frame as this allows to fill the missing values with HUGE FLOAT. The numpy
-    #  array is passed in to align the interfaces across implementations
+    # array is passed in to align the interfaces across implementations
     data_frame = pd.DataFrame(data_array)
     with open('.data.resfort.dat', 'w') as file_:
-        data_frame.to_string(file_, index=False,
-            header=None, na_rep=str(HUGE_FLOAT))
+        data_frame.to_string(file_, index=False, header=None, na_rep=str(HUGE_FLOAT))
 
     # An empty line is added as otherwise this might lead to problems on the TRAVIS servers. The
     # FORTRAN routine read_dataset() raises an error.

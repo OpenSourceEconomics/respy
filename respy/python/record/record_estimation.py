@@ -71,10 +71,9 @@ def record_estimation_stop():
         out_file.write('\n TERMINATED\n')
 
 
-def record_estimation_eval(opt_obj, fval, opt_ambi_details,
-        x_optim_all_unscaled, start):
-    """ Logging the progress of an estimation. This function contains two
-    parts as two files provide information about the progress.
+def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled, start):
+    """ Logging the progress of an estimation. This function contains two parts as two files 
+    provide information about the progress.
     """
 
     # Distribute class attributes

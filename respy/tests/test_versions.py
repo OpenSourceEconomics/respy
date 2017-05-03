@@ -247,8 +247,14 @@ class TestClass(object):
 
         type_shares = init_dict['TYPE_SHARES']['coeffs']
         num_periods = init_dict['BASICS']['periods']
+
+        edu_spec = dict()
+        edu_spec['start'] = init_dict['EDUCATION']['start']
+        edu_spec['share'] = init_dict['EDUCATION']['share']
+
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
+        write_edu_start(edu_spec, num_agents_sim)
 
         for version in ['FORTRAN', 'PYTHON']:
 

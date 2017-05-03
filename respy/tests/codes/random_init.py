@@ -155,7 +155,8 @@ def generate_random_dict(constr=None):
     dict_['EDUCATION']['fixed'] = paras_fixed[lower:upper]
 
     num_edu_start = np.random.choice(range(1, 3))
-    dict_['EDUCATION']['start'] = np.random.randint(1, 10, size=num_edu_start).tolist()
+    dict_['EDUCATION']['start'] = np.random.choice(range(1, 10), size=num_edu_start,
+        replace=False).tolist()
     dict_['EDUCATION']['share'] = get_valid_shares(num_edu_start)
     dict_['EDUCATION']['max'] = np.random.randint(max(dict_['EDUCATION']['start']) + 1, 20)
 

@@ -16,7 +16,7 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods, num_points_i
 
     # Calculate all systematic rewards
     periods_rewards_systematic = pyth_calculate_rewards_systematic(num_periods,
-        states_number_period, states_all, edu_spec, max_states_period, optim_paras)
+        states_number_period, states_all, max_states_period, optim_paras)
 
     periods_emax, opt_ambi_details = pyth_backward_induction(num_periods, is_myopic,
         max_states_period, periods_draws_emax, num_draws_emax, states_number_period,
