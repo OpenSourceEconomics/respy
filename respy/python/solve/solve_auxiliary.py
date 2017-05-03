@@ -16,9 +16,12 @@ from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
-def pyth_create_state_space(num_periods, edu_spec, min_idx, num_types):
+def pyth_create_state_space(num_periods, edu_spec, num_types):
     """ Create grid for state space.
     """
+    # Auxiliary information
+    min_idx = edu_spec['max'] + 1
+
     # Array for possible realization of state space by period
     states_all = np.tile(MISSING_INT, (num_periods, 100000, 5))
 

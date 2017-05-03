@@ -19,7 +19,7 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_spec, is_debug, min_idx, periods_draws_emax, ambi_spec, optim_paras, optimizer_options, file_sim)
+SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_spec, is_debug, periods_draws_emax, ambi_spec, optim_paras, optimizer_options, file_sim)
 
     !/* external objects        */
 
@@ -34,7 +34,6 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     INTEGER(our_int), INTENT(IN)                    :: num_points_interp
     INTEGER(our_int), INTENT(IN)                    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)                    :: num_periods
-    INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(: ,:)
@@ -59,7 +58,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(1, file_sim)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, min_idx, num_types)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, num_types)
 
     CALL record_solution(-1, file_sim)
 

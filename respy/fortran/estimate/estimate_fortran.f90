@@ -83,7 +83,7 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
     CALL get_optim_paras(x_all_start, optim_paras, .True.)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, min_idx, num_types)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, num_types)
 
     CALL get_optim_paras(x_optim_free_unscaled_start, optim_paras, .False.)
 

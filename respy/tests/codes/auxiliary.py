@@ -162,13 +162,12 @@ def write_interpolation_grid(file_name):
     respy_obj = RespyCls(file_name)
 
     # Distribute class attribute
-    num_periods, num_points_interp, edu_spec, min_idx, num_types = \
-        dist_class_attributes(respy_obj, 'num_periods', 'num_points_interp', 'edu_spec',
-            'min_idx', 'num_types')
+    num_periods, num_points_interp, edu_spec, num_types = dist_class_attributes(respy_obj,
+        'num_periods', 'num_points_interp', 'edu_spec', 'num_types')
 
     # Determine maximum number of states
     _, states_number_period, _, max_states_period = pyth_create_state_space(num_periods,
-        edu_spec, min_idx, num_types)
+        edu_spec, num_types)
 
     # Initialize container
     booleans = np.tile(True, (max_states_period, num_periods))

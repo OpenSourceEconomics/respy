@@ -66,7 +66,7 @@ PROGRAM resfort_parallel_slave
 
     CALL read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, min_idx, num_types)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, num_types)
 
     CALL distribute_workload(num_states_slaves, num_agents_slaves)
 

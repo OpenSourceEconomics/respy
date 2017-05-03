@@ -23,7 +23,7 @@ from respy.custom_exceptions import UserError
 
 # Special care with derived attributes is required to maintain integrity of the class instance.
 # These derived attributes cannot be changed directly.
-DERIVED_ATTR = ['min_idx', 'is_myopic']
+DERIVED_ATTR = ['is_myopic']
 
 # Special care with solution attributes is required. These are only returned if the class
 # instance was solved.
@@ -123,8 +123,6 @@ class RespyCls(object):
 
         # Derived attributes
         self.attr['is_myopic'] = None
-
-        self.attr['min_idx'] = None
 
         # Solution attributes
         self.attr['periods_rewards_systematic'] = None
@@ -587,13 +585,9 @@ class RespyCls(object):
         """ Update derived attributes.
         """
         # Distribute model parameters
-        edu_max = self.attr['edu_spec']['max']
-
         num_types = self.attr['num_types']
 
         # Update derived attributes
-        self.attr['min_idx'] = edu_max + 1
-
         self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)[0]
 
         self.attr['num_paras'] = 35 + num_types + (num_types - 1) * 4

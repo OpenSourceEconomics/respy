@@ -62,12 +62,9 @@ class TestClass(object):
             # state space. The number of periods needs to be at least three in order to provide
             # enough state points.
             num_periods = np.random.randint(3, 6)
-
-            min_idx = edu_spec['max'] + 1
             num_types = len(init_dict['TYPE_SHARES']['coeffs'])
 
-            max_states_period = pyth_create_state_space(num_periods, edu_spec, min_idx,
-                num_types)[3]
+            max_states_period = pyth_create_state_space(num_periods, edu_spec, num_types)[3]
 
             # Updates to initialization dictionary that trigger a use of the interpolation code.
             init_dict['BASICS']['periods'] = num_periods

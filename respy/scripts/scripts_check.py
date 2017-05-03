@@ -40,13 +40,13 @@ def scripts_check(request, init_file):
     respy_obj = RespyCls(init_file)
 
     # Distribute model parameters
-    num_periods, edu_spec, num_types, min_idx = dist_class_attributes(respy_obj,
-        'num_periods', 'edu_spec', 'num_types', 'min_idx')
+    num_periods, edu_spec, num_types = dist_class_attributes(respy_obj, 'num_periods',
+        'edu_spec', 'num_types')
 
     # We need to run additional checks if an estimation is requested.
     if request == 'estimate':
         # Create the grid of the admissible states.
-        args = (num_periods, edu_spec, min_idx, num_types)
+        args = (num_periods, edu_spec, num_types)
         mapping_state_idx = pyth_create_state_space(*args)[2]
 
         # We also check the structure of the dataset.

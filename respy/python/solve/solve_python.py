@@ -7,7 +7,7 @@ from respy.python.shared.shared_constants import MIN_AMBIGUITY
 
 
 def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic,
-        edu_spec, is_debug, min_idx, periods_draws_emax, ambi_spec, optim_paras,
+        edu_spec, is_debug, periods_draws_emax, ambi_spec, optim_paras,
         file_sim, optimizer_options, num_types):
     """ Solving the model using pure PYTHON code.
     """
@@ -17,7 +17,7 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, 
 
     # Create state space
     states_all, states_number_period, mapping_state_idx, max_states_period = \
-        pyth_create_state_space(num_periods, edu_spec, min_idx, num_types)
+        pyth_create_state_space(num_periods, edu_spec, num_types)
 
     # Cutting to size
     states_all = states_all[:, :max(states_number_period), :]

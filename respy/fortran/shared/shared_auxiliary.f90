@@ -765,6 +765,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 
     !/* internal objects        */
 
+    INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -774,6 +775,9 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    ! Auxiliary variables
+    min_idx = SIZE(mapping_state_idx, 4)
 
     IF (request == 'simulate') THEN
 
@@ -1004,7 +1008,6 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         READ(99, *) file_sim
 
         ! AUXILIARY
-        READ(99, 1500) min_idx
         READ(99, *) is_myopic
         READ(99, *) optim_paras%paras_fixed
 
@@ -1070,6 +1073,7 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
 
     num_free =  COUNT(.NOT. optim_paras%paras_fixed)
     num_slaves = num_procs - 1
+    min_idx = edu_spec%max + 1
 
 END SUBROUTINE
 !******************************************************************************

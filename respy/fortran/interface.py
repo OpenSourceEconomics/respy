@@ -18,13 +18,13 @@ def resfort_interface(respy_obj, request, data_array=None):
     """
     # Distribute class attributes
     optim_paras, num_periods, edu_spec, is_debug, num_draws_emax, seed_emax, is_interpolated, \
-    num_points_interp, is_myopic, min_idx, tau, num_procs, num_agents_sim, num_draws_prob, \
+    num_points_interp, is_myopic, tau, num_procs, num_agents_sim, num_draws_prob, \
     num_agents_est, seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, \
         precond_spec, ambi_spec, file_sim, num_paras, num_types = \
             dist_class_attributes(respy_obj, 'optim_paras', 'num_periods', 'edu_spec',
                 'is_debug', 'num_draws_emax', 'seed_emax', 'is_interpolated',
-                'num_points_interp', 'is_myopic', 'min_idx', 'tau', 'num_procs',
-                'num_agents_sim', 'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim',
+                'num_points_interp', 'is_myopic', 'tau', 'num_procs', 'num_agents_sim',
+                'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim',
                 'optimizer_options', 'optimizer_used', 'maxfun', 'precond_spec', 'ambi_spec',
                 'file_sim', 'num_paras', 'num_types')
 
@@ -39,10 +39,10 @@ def resfort_interface(respy_obj, request, data_array=None):
         write_dataset(data_array)
 
     args = (optim_paras, is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_spec, is_debug, min_idx, num_draws_prob, num_agents_est,
-            num_agents_sim, seed_prob, seed_emax, tau, num_procs, request, seed_sim,
-            optimizer_options, optimizer_used, maxfun, num_paras, precond_spec, ambi_spec,
-            file_sim, data_array, num_types)
+            is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_est, num_agents_sim,
+            seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
+            optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim, data_array,
+            num_types)
 
     write_resfort_initialization(*args)
 
@@ -58,7 +58,7 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     # Return arguments depends on the request.
     if request == 'simulate':
-        results = get_results(num_periods, min_idx, num_agents_sim, num_types, 'simulate')
+        results = get_results(num_periods, edu_spec, num_agents_sim, num_types, 'simulate')
         args = (results[:-1], results[-1])
     elif request == 'estimate':
         args = None
@@ -68,12 +68,15 @@ def resfort_interface(respy_obj, request, data_array=None):
     return args
 
 
-def get_results(num_periods, min_idx, num_agents_sim, num_types, which):
+def get_results(num_periods, edu_spec, num_agents_sim, num_types, which):
     """ Add results to container.
     """
 
+    # Auxiliary information
+    min_idx = edu_spec['max'] + 1
+
     # Get the maximum number of states. The special treatment is required as it informs about the
-    #  dimensions of some of the arrays that are processed below.
+    # dimensions of some of the arrays that are processed below.
     max_states_period = int(np.loadtxt('.max_states_period.resfort.dat'))
 
     os.unlink('.max_states_period.resfort.dat')
@@ -130,10 +133,10 @@ def read_data(label, shape):
 
 
 def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, num_periods,
-        num_points_interp, is_myopic, edu_spec, is_debug, min_idx, num_draws_prob,
-        num_agents_est, num_agents_sim, seed_prob, seed_emax, tau, num_procs, request, seed_sim,
-        optimizer_options, optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim,
-        data_array, num_types):
+        num_points_interp, is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_est,
+        num_agents_sim, seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
+        optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim, data_array,
+        num_types):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -268,9 +271,6 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         file_.write(line + '\n')
 
         # Auxiliary
-        line = '{0:10d}\n'.format(min_idx)
-        file_.write(line)
-
         line = '{0}'.format(is_myopic)
         file_.write(line + '\n')
 

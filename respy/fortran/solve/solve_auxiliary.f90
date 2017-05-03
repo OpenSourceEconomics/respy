@@ -21,7 +21,7 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, min_idx, num_types)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, num_types)
 
     !/* external objects        */
 
@@ -33,7 +33,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 
     INTEGER(our_int), INTENT(IN)                    :: num_periods
     INTEGER(our_int), INTENT(IN)                    :: num_types
-    INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     !/* internals objects       */
 
@@ -41,6 +40,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     INTEGER(our_int)                    :: edu_lagged
     INTEGER(our_int)                    :: edu_start
     INTEGER(our_int)                    :: edu_add
+    INTEGER(our_int)                    :: min_idx
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: total
     INTEGER(our_int)                    :: type_
@@ -52,6 +52,9 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    ! Auxiliary variables
+    min_idx = edu_spec%max + 1 
 
     ! Allocate containers that contain information about the model structure
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types))
