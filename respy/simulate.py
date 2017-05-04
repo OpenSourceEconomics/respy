@@ -18,9 +18,8 @@ def simulate(respy_obj):
     the initialization file.
     """
     # Distribute class attributes
-    is_debug, version, is_store, file_sim = \
-        dist_class_attributes(respy_obj, 'is_debug', 'version', 'is_store',
-            'file_sim')
+    is_debug, version, is_store, file_sim = dist_class_attributes(respy_obj, 'is_debug',
+        'version', 'is_store', 'file_sim')
 
     # Cleanup
     for ext in ['sim', 'sol', 'amb', 'dat', 'info']:
