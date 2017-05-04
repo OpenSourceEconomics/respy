@@ -11,6 +11,7 @@ from auxiliary_shared import cleanup
 
 from config import SPEC_DIR
 
+from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_compare import scripts_compare
 import respy
 
@@ -257,6 +258,10 @@ def simulate_specification(respy_obj, subdir, update, paras=None):
     # The initialization file is specified to run the actual estimation in the directory above.
     respy_copy.attr['file_est'] = '../' + respy_copy.attr['file_est']
     respy_copy.write_out()
+
+    # When the observed dataset does not exist, we need to simulate it.
+    if not os.path.exists(respy_copy.attr['file_est']):
+        scripts_simulate('model.respy.ini', 'data')
 
     scripts_compare('model.respy.ini', False)
 

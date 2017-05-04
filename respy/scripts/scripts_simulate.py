@@ -26,7 +26,7 @@ def dist_input_arguments(parser):
 
 
 def scripts_simulate(init_file, file_sim):
-    """ Wrapper for the estimation.
+    """ Wrapper for the simulation.
     """
     respy_obj = RespyCls(init_file)
 
