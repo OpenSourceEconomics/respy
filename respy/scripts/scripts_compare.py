@@ -6,6 +6,7 @@ import shutil
 import os
 
 from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.simulate.simulate_auxiliary import format_float
 from respy.python.process.process_python import process
 from respy.scripts.scripts_update import scripts_update
@@ -58,26 +59,6 @@ def _prepare_wages(data_obs, data_sim, which):
     return rslt
 
 
-def _update_edu_spec(data_obs, num_agents_est, edu_max):
-    """ This function updates the distribution of initial schooling to correspond to the one in 
-    the empirical data. 
-    """
-    dat = data_obs['Years_Schooling'][:, 0].value_counts().to_dict()
-
-    edu_spec = dict()
-    edu_spec['max'] = edu_max
-
-    edu_spec['start'] = []
-    for key in dat.keys():
-        edu_spec['start'] += [int(key)]
-
-    edu_spec['share'] = []
-    for start in edu_spec['start']:
-        edu_spec['share'] += [dat[start] / float(num_agents_est)]
-
-    return edu_spec
-
-
 def _prepare_choices(data_obs, data_sim):
     """ This function prepares the information about the choice probabilities for easy printing.
     """
@@ -123,22 +104,10 @@ def scripts_compare(base_init, is_update):
 
     # Read in relevant model specification.
     respy_obj = RespyCls(init_file)
+    respy_obj.write_out('compare.respy.ini')
 
     # Distribute some information for further processing.
-    num_agents_est = respy_obj.get_attr('num_agents_est')
-    num_periods = respy_obj.get_attr('num_periods')
-    edu_max = respy_obj.get_attr('edu_spec')['max']
-
-    # First we need to read in the empirical data. We automatically adjust the distribution of
-    # initial schooling levels.
-    data_obs = process(respy_obj)
-
-    edu_spec = _update_edu_spec(data_obs, num_agents_est, edu_max)
-    respy_obj.unlock()
-    respy_obj.set_attr('edu_spec', edu_spec)
-    respy_obj.lock()
-
-    respy_obj.write_out('compare.respy.ini')
+    num_periods = dist_class_attributes(respy_obj, 'num_periods')
 
     # The comparison does make sense when the file of the simulated dataset and estimation dataset
     # are the same. Then the estimation dataset is overwritten by the simulated dataset.
@@ -146,6 +115,7 @@ def scripts_compare(base_init, is_update):
     fname_sim = respy_obj.attr['file_sim'].split('.')[0]
     if fname_est == fname_sim:
         raise UserError(' Simulation would overwrite estimation dataset')
+    data_obs = process(respy_obj)
     data_sim = simulate(respy_obj)[1]
 
     if num_periods > 1:

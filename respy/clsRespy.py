@@ -564,10 +564,9 @@ class RespyCls(object):
                 self.attr['optimizer_options'][optimizer] = \
                     init_dict[optimizer]
 
-        # We need to align the indicator for the fixed parameters. In the
-        # initialization file, these refer to the upper triangular matrix of
-        # the covariances. Inside the program, we rely on the lower
-        # triangular Cholesky decomposition.
+        # We need to align the indicator for the fixed parameters. In the initialization file,
+        # these refer to the upper triangular matrix of the covariances. Inside the  program,
+        # we rely on the lower triangular Cholesky decomposition.
         paras_fixed = self.attr['optim_paras']['paras_fixed'][:]
 
         paras_fixed_reordered = paras_fixed[:]

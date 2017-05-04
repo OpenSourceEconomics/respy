@@ -28,13 +28,13 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import get_predictions
-from respy.python.process.process_python import process
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.shared.shared_constants import IS_F2PY
 from respy.python.interface import get_scales_magnitudes
+from respy.python.process.process_python import process
 from respy.python.solve.solve_python import pyth_solve
 from respy.fortran.interface import resfort_interface
 from codes.auxiliary import write_interpolation_grid

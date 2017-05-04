@@ -104,7 +104,7 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, is_debug) RESU
         candidates = (/ (i, i = 0, num_types - 1) /)
         probs = optim_paras%type_shares / SUM(optim_paras%type_shares)
         DO i = 1, num_agents_sim
-            types(i) = get_random_draw(candidates, optim_paras%type_shares)
+            types(i) = get_random_draw(candidates, probs)
         END DO
 
     END IF

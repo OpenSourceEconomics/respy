@@ -29,7 +29,6 @@ def write_info(respy_obj, data_frame):
     # Get basic information
     num_agents_sim = len(data_frame['Identifier'].unique())
     num_periods = len(data_frame['Period'].unique())
-    num_obs = num_agents_sim * num_periods
 
     # Write information to file
     with open(file_sim + '.respy.info', 'w') as file_:
@@ -55,10 +54,9 @@ def write_info(respy_obj, data_frame):
             fmt_ = '{:>10}' + '{:14.4f}' * 4 + '\n'
             file_.write(fmt_.format((t + 1), *args))
 
-        # We also print out the transition matrix as it provides some
-        # insights about the persistence of choices. However, we can only
-        # compute this transition matrix if the number of periods is larger
-        # than one.
+        # We also print out the transition matrix as it provides some insights about the
+        # persistence of choices. However, we can only compute this transition matrix if the
+        # number of periods is larger than one.
         if num_periods > 1:
             file_.write('\n\n')
             file_.write('    Transition Matrix\n\n')
@@ -114,26 +112,25 @@ def write_info(respy_obj, data_frame):
         file_.write('\n')
 
         # Additional information about the simulated economy
-        string = '''       {0[0]:<25}    {0[1]:10.4f}\n'''
-
+        fmt_ = '    {:<20}' + '   {:15.5f}\n'
         file_.write('   Additional Information\n\n')
 
         dat = data_frame['Years_Schooling'].loc[slice(None), num_periods - 1]
-        file_.write(string.format(['Average Education', dat.mean()]))
+        file_.write(fmt_.format(*['Average Education', dat.mean()]))
         file_.write('\n')
 
         dat = data_frame['Experience_A'].loc[slice(None), num_periods - 1]
-        file_.write(string.format(['Average Experience A',  dat.mean()]))
+        file_.write(fmt_.format(*['Average Experience A',  dat.mean()]))
 
         dat = data_frame['Experience_B'].loc[slice(None), num_periods - 1]
-        file_.write(string.format(['Average Experience B', dat.mean()]))
+        file_.write(fmt_.format(*['Average Experience B', dat.mean()]))
 
         file_.write('\n\n   Type Shares\n\n')
-        dat = data_frame['Type'].value_counts().to_dict()
+        dat = data_frame['Type'][:, 0].value_counts().to_dict()
         fmt_ = '   {:>10}' + '    {:25.5f}\n'
         for type_ in range(num_types):
             try:
-                share = dat[type_] / float(num_obs)
+                share = dat[type_] / float(num_agents_sim)
                 file_.write(fmt_.format(*[type_, share]))
             # Some types might not occur in the simulated dataset. Then these are not part of the
             # dictionary with the value counts.
@@ -142,9 +139,9 @@ def write_info(respy_obj, data_frame):
 
         file_.write('\n\n   Initial Schooling Shares\n\n')
         dat = data_frame['Years_Schooling'][:, 0].value_counts().to_dict()
-        for start in edu_spec['start']:
+        for start in sorted(edu_spec['start']):
             try:
-                share = dat[start] / float(num_obs)
+                share = dat[start] / float(num_agents_sim)
                 file_.write(fmt_.format(*[start, share]))
             # Some types might not occur in the simulated dataset. Then these are not part of the
             # dictionary with the value counts.
@@ -279,7 +276,7 @@ def get_random_types(num_types, optim_paras, num_agents_sim, is_debug):
         types = np.genfromtxt('.types.respy.test')
     else:
         probs = optim_paras['type_shares'] / np.sum(optim_paras['type_shares'])
-        types = np.random.choice(range(num_types), p=probs, size=num_agents_sim)
+        types = np.random.choice(range(num_types), p=probs,size=num_agents_sim)
 
     # If we only have one individual, we need to ensure that types are a vector.
     types = np.array(types, ndmin=1)
