@@ -66,7 +66,11 @@ def _update_edu_spec(data_obs, num_agents_est, edu_max):
 
     edu_spec = dict()
     edu_spec['max'] = edu_max
-    edu_spec['start'] = dat.keys()
+
+    edu_spec['start'] = []
+    for key in dat.keys():
+        edu_spec['start'] += [int(key)]
+
     edu_spec['share'] = []
     for start in edu_spec['start']:
         edu_spec['share'] += [dat[start] / float(num_agents_est)]
