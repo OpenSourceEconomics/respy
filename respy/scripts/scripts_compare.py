@@ -36,6 +36,32 @@ def dist_input_arguments(parser):
     return init_file, is_update
 
 
+def _prepare_initial(data_obs, data_sim, num_agents_est, num_agents_sim):
+    """ This function prepares the information about the distribution of initial schooling levels 
+    in both datasets.
+    """
+    # First we want to construct a fill list of available initial schooling levels
+    obs_info = data_obs['Years_Schooling'][:, 0].value_counts().to_dict()
+    sim_info = data_sim['Years_Schooling'][:, 0].value_counts().to_dict()
+    initial_levels = sorted(list(set(list(obs_info.keys()) + list(sim_info.keys()))))
+
+    infos = []
+    for level in initial_levels:
+        # We need to account for the possibility that a particular initial level of schooling
+        # is only present in one of the datasets.
+        info = [level, None, None]
+
+        if level in obs_info.keys():
+            info[1] = obs_info[level] / float(num_agents_est)
+
+        if level in sim_info.keys():
+            info[2] = sim_info[level] / float(num_agents_sim)
+
+        infos += [info]
+
+    return infos
+
+
 def _prepare_wages(data_obs, data_sim, which):
     """ Prepare the results from the wages for the print out.
     """
@@ -107,7 +133,8 @@ def scripts_compare(base_init, is_update):
     respy_obj.write_out('compare.respy.ini')
 
     # Distribute some information for further processing.
-    num_periods = dist_class_attributes(respy_obj, 'num_periods')
+    num_periods, num_agents_est, num_agents_sim = dist_class_attributes(respy_obj, 'num_periods',
+        'num_agents_est', 'num_agents_sim')
 
     # The comparison does make sense when the file of the simulated dataset and estimation dataset
     # are the same. Then the estimation dataset is overwritten by the simulated dataset.
@@ -127,6 +154,7 @@ def scripts_compare(base_init, is_update):
     max_periods = len(data_obs['Period'].unique())
 
     # Prepare results
+    rslt_initial = _prepare_initial(data_obs, data_sim, num_agents_est, num_agents_sim)
     rslt_choice, rmse_choice = _prepare_choices(data_obs, data_sim)
     rslt_A = _prepare_wages(data_obs, data_sim, 'Occupation A')
     rslt_B = _prepare_wages(data_obs, data_sim, 'Occupation B')
@@ -137,8 +165,16 @@ def scripts_compare(base_init, is_update):
 
         file_.write('   Number of Periods:      ' + str(max_periods) + '\n\n')
 
+        file_.write('\n   Initial Schooling Shares \n\n')
+        fmt_ = '{:>15}' * 3 + '\n'
+        labels = ['Level', 'Observed', 'Simulated']
+        file_.write(fmt_.format(*labels) + '\n')
+        for info in rslt_initial:
+            info[1:] = [format_float(x) for x in info[1:]]
+            file_.write(fmt_.format(*info))
+
         # Comparing the choice distributions
-        file_.write('\n   Choices \n\n')
+        file_.write('\n\n   Choices \n\n')
         fmt_ = '{:>15}' * 7 + '\n'
         labels = ['Data', 'Period', 'Count', 'White', 'Blue', 'School', 'Home']
         file_.write(fmt_.format(*labels) + '\n')
@@ -164,10 +200,8 @@ def scripts_compare(base_init, is_update):
                     file_.write(fmt_.format(*line))
                 file_.write('\n')
 
-            file_.write('\n\n')
-
         # Comparing the wages distributions
-        file_.write('\n\n   Outcomes \n\n')
+        file_.write('\n   Outcomes \n\n')
         fmt_ = '{:>15}' * 8 + '\n'
 
         labels = []

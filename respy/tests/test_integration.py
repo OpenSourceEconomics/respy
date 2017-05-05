@@ -301,8 +301,7 @@ class TestClass(object):
         constr = dict()
         constr['flag_estimation'] = True
 
-        # The interpolation equation is affected by the number of types
-        # regardless of the weights.
+        # The interpolation equation is affected by the number of types regardless of the weights.
         constr['flag_interpolation'] = False
 
         init_dict = generate_init(constr)
@@ -322,6 +321,52 @@ class TestClass(object):
             init_dict['TYPE_SHARES']['coeffs'] = shares
             init_dict['TYPE_SHARES']['fixed'] = [True] * num_types
             init_dict['TYPE_SHARES']['bounds'] = [[None, None]] * num_types
+            print_init_dict(init_dict)
+
+            respy_obj = RespyCls('test.respy.ini')
+            simulate_observed(respy_obj)
+            _, val = estimate(respy_obj)
+            if base_val is None:
+                base_val = val
+
+            np.testing.assert_almost_equal(base_val, val)
+
+    def test_10(self):
+        """ We ensure that the number of types does not matter for the evaluation of the criterion 
+        function if a weight of one is put on the first group.
+        """
+
+        constr = dict()
+        constr['flag_estimation'] = True
+
+        # The interpolation equation is affected by the number of types regardless of the weights.
+        constr['flag_interpolation'] = False
+
+        init_dict = generate_init(constr)
+
+        base_val, edu_start_base = None, np.random.randint(1, 5, size=1).tolist()[0]
+
+        # We need to make sure that the maximum level of education is the same across
+        # iterations, but also larger than any of the initial starting levels.
+        init_dict['EDUCATION']['max'] = np.random.randint(15, 25, size=1).tolist()[0]
+
+        for num_edu_start in [1, np.random.choice([2, 3, 4]).tolist()]:
+
+            # We always need to ensure that a weight of one is on the first level of initial
+            # schooling.
+            init_dict['EDUCATION']['share'] = [1.0] + [0.0] * (num_edu_start - 1)
+
+            # We need to make sure that the baseline level of initial schooling is always
+            # included. At the same time we cannot have any duplicates.
+            edu_start = np.random.choice(range(1, 10), size=num_edu_start, replace=False).tolist()
+            if edu_start_base in edu_start:
+                edu_start.remove(edu_start_base)
+                edu_start.insert(0, edu_start_base)
+            else:
+                edu_start[0] = edu_start_base
+
+            init_dict['EDUCATION']['start'] = edu_start
+
             print_init_dict(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
