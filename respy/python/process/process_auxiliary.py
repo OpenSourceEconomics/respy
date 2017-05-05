@@ -29,34 +29,30 @@ def check_dataset_est(data_frame, respy_obj):
     dat = data_frame['Wage'].fillna(99) > 0.00
     np.testing.assert_equal(dat.all(), True)
 
-    # TODO: The commented out tests need to reactivated when the routine for the simulation of
-    # the observed dataset is fixed. Right now it simply drops random observations by agents and
-    # not truncates history. No agent might be observed in the first period?!
-
     # Checks for EXPERIENCE. We also know that both need to take value of zero in the very first
     # period.
     for label in ['Experience_A', 'Experience_B']:
         dat = data_frame[label] >= 0.00
         np.testing.assert_equal(dat.all(), True)
 
-        # dat = data_frame[label][slice(None), 0] == 0
-        # np.testing.assert_equal(dat.all(), True)
+        dat = data_frame[label][slice(None), 0] == 0
+        np.testing.assert_equal(dat.all(), True)
 
     # Checks for LAGGED SCHOOLING. We also know that all individuals were in school when entering
     # the model.
     dat = data_frame['Lagged_Schooling'].isin([0, 1])
     np.testing.assert_equal(dat.all(), True)
 
-    # dat = data_frame['Lagged_Schooling'][slice(None), 0] == 1
-    # np.testing.assert_equal(dat.all(), True)
+    dat = data_frame['Lagged_Schooling'][slice(None), 0] == 1
+    np.testing.assert_equal(dat.all(), True)
 
     # Checks for YEARS SCHOOLING. We also know that the initial years of schooling can only take
     # values specified in the initialization file.
     dat = data_frame['Years_Schooling'] >= 0.00
     np.testing.assert_equal(dat.all(), True)
 
-    # dat = data_frame['Years_Schooling'][slice(None), 0].isin(edu_spec['start'])
-    # np.testing.assert_equal(dat.all(), True)
+    dat = data_frame['Years_Schooling'][slice(None), 0].isin(edu_spec['start'])
+    np.testing.assert_equal(dat.all(), True)
 
     # Check that there are no duplicated observations for any period by agent.
     def check_unique_periods(group):

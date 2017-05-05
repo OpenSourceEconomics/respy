@@ -26,59 +26,46 @@ OPTIMIZERS_AMB = OPT_AMB_FORT + OPT_AMB_PYTH
 
 
 def simulate_observed(respy_obj, is_missings=True):
-    """ This function adds two important features of observed datasests: (1) missing observations 
-    and missing wage information.
+    """ This function adds two important features of observed datasests: (1) missing 
+    observations and missing wage information.
     """
-    def drop_agents_obs(group, num_drop):
-        """ We drop a random number of observations for each agent.
+    def drop_agents_obs(agent):
+        """ We now determine the exact period from which onward the history is truncated and
+        cut the simulated dataset down to size.
         """
-        group.set_index('Period', drop=False, inplace=True)
-        indices = np.random.choice(group.index, num_drop, replace=False)
-        group.drop(indices, inplace=True)
-        return group
+        start_truncation = np.random.choice(range(1, agent['Period'].max() + 2))
+        agent = agent[agent['Period'] < start_truncation]
+        return agent
 
-    num_periods = respy_obj.get_attr('num_periods')
-    seed_sim = respy_obj.get_attr('seed_sim')
+    num_periods, seed_sim = dist_class_attributes(respy_obj, 'num_periods', 'seed_sim')
 
     simulate(respy_obj)
 
-    # It is important to set the seed after the simulation call. Otherwise, the value of the seed
-    # differs due to the different implementations of the PYTHON and FORTRAN programs.
+    # It is important to set the seed after the simulation call. Otherwise, the value of the
+    # seed differs due to the different implementations of the PYTHON and FORTRAN programs.
     np.random.seed(seed_sim)
 
-    if is_missings:
-        share = np.random.uniform(high=0.9, size=1)
-        share_missing_obs = np.random.choice([0, share])
-
-        share = np.random.uniform(high=0.9, size=1)
-        share_missing_wages = np.random.choice([0, share])
-    else:
-        share_missing_wages = 0
-        share_missing_obs = 0
-
-    # We want to drop random observations by agents. This mimics the frequent empirical fact that
-    #  we loose track of agents (at least temporarily).
+    # We read in the baseline simulated dataset.
     data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True, header=0, na_values='.',
         dtype=DATA_FORMATS_SIM, names=DATA_LABELS_SIM)
 
-    if share_missing_obs != 0:
-        num_drop_obs = int(num_periods * share_missing_obs)
+    if is_missings:
+        # We truncate the histories of agents. This mimics the frequent empirical fact that we loose
+        # track of more and more agents over time.
+        data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs)
+
+        # We also want to drop the some wage observations. Note that we might be dealing with a
+        # dataset where nobody is working anyway.
+        is_working = data_subset['Choice'].isin([1, 2])
+        num_drop_wages = int(np.sum(is_working) * np.random.uniform(high=0.5, size=1))
+        if num_drop_wages > 0:
+            indices = data_subset['Wage'][is_working].index
+            index_missing = np.random.choice(indices, num_drop_wages, False)
+            data_subset.loc[index_missing, 'Wage'] = None
+        else:
+            pass
     else:
-        num_drop_obs = 0
-
-    data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs, num_drop=num_drop_obs)
-
-    # We also want to drop the some wage observations.
-    is_working = data_subset['Choice'].isin([1, 2])
-    num_drop_wages = int(np.sum(is_working) * share_missing_wages)
-
-    # As a special case, we might be dealing with a dataset where not one is working anyway.
-    if num_drop_wages > 0:
-        indices = data_subset['Wage'][is_working].index
-        index_missing = np.random.choice(indices, num_drop_wages, False)
-        data_subset.loc[index_missing, 'Wage'] = None
-    else:
-        pass
+        data_subset = data_frame
 
     # We can restrict the information to observed entities only.
     data_subset = data_subset[DATA_LABELS_EST]
