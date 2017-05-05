@@ -151,7 +151,7 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_am
             0.0, HUGE_FLOAT)
 
     emax = construct_emax_risk(num_periods, num_draws_emax, period, k, draws_emax_relevant,
-        rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, optim_paras)
+        rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
     return emax
 

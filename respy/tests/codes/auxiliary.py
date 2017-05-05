@@ -166,8 +166,8 @@ def write_interpolation_grid(file_name):
         'num_periods', 'num_points_interp', 'edu_spec', 'num_types')
 
     # Determine maximum number of states
-    _, states_number_period, _, max_states_period = pyth_create_state_space(num_periods,
-        edu_spec, num_types)
+    _, states_number_period, _, max_states_period = pyth_create_state_space(num_periods, num_types,
+        edu_spec)
 
     # Initialize container
     booleans = np.tile(True, (max_states_period, num_periods))

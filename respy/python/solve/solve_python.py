@@ -6,9 +6,9 @@ from respy.python.record.record_ambiguity import record_ambiguity
 from respy.python.shared.shared_constants import MIN_AMBIGUITY
 
 
-def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic,
-        edu_spec, is_debug, periods_draws_emax, ambi_spec, optim_paras,
-        file_sim, optimizer_options, num_types):
+def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug,
+        periods_draws_emax, edu_spec, ambi_spec, optim_paras, file_sim, optimizer_options,
+        num_types):
     """ Solving the model using pure PYTHON code.
     """
     # Creating the state space of the model and collect the results in the
@@ -17,7 +17,7 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, 
 
     # Create state space
     states_all, states_number_period, mapping_state_idx, max_states_period = \
-        pyth_create_state_space(num_periods, edu_spec, num_types)
+        pyth_create_state_space(num_periods, num_types, edu_spec)
 
     # Cutting to size
     states_all = states_all[:, :max(states_number_period), :]
@@ -42,9 +42,8 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, 
 
     periods_emax, opt_ambi_details = pyth_backward_induction(num_periods, is_myopic,
         max_states_period, periods_draws_emax, num_draws_emax, states_number_period,
-        periods_rewards_systematic, edu_spec, mapping_state_idx, states_all, is_debug,
-        is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options,
-        file_sim, True)
+        periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated,
+        num_points_interp, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, True)
 
     if not is_myopic:
         record_solution_progress(-1, file_sim)

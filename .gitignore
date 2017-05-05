@@ -7,5 +7,4 @@ respy/.config
 respy/.lock-*
 development/working
 respy/fortran/bin
-respy/tests/resources/*.so
-respy/tests/resources/kw_*
+

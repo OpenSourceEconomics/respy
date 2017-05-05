@@ -49,7 +49,7 @@ def respy_interface(respy_obj, request, data_array=None):
 
         # Construct the state space
         states_all, states_number_period, mapping_state_idx, max_states_period = \
-            pyth_create_state_space(num_periods, edu_spec, num_types)
+            pyth_create_state_space(num_periods, num_types, edu_spec)
 
         # Cutting to size
         states_all = states_all[:, :max(states_number_period), :]
@@ -57,9 +57,10 @@ def respy_interface(respy_obj, request, data_array=None):
         # Collect arguments that are required for the criterion function. These must be in the
         # correct order already.
         args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-                edu_spec, is_debug, data_array, num_draws_prob, tau, periods_draws_emax,
+                is_debug, data_array, num_draws_prob, tau, periods_draws_emax,
                 periods_draws_prob, states_all, states_number_period, mapping_state_idx,
-                max_states_period, num_agents_est, num_obs, num_types, ambi_spec, optimizer_options)
+                max_states_period, num_agents_est, num_obs, num_types, edu_spec, ambi_spec,
+                optimizer_options)
 
         # Special case where just an evaluation at the starting values is requested is accounted
         # for. Note, that the relevant value of the criterion function is always the one
@@ -191,16 +192,16 @@ def respy_interface(respy_obj, request, data_array=None):
 
         # Collect arguments to pass in different implementations of the simulation.
         periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, \
-            states_all = pyth_solve(is_interpolated, num_points_interp, num_draws_emax,
-            num_periods, is_myopic, edu_spec, is_debug, periods_draws_emax, ambi_spec,
-            optim_paras, file_sim, optimizer_options, num_types)
+            states_all = pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
+            is_myopic, is_debug, periods_draws_emax, edu_spec, ambi_spec, optim_paras, file_sim,
+            optimizer_options, num_types)
 
         solution = (periods_rewards_systematic, states_number_period, mapping_state_idx,
                     periods_emax, states_all)
 
         data_array = pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
-            states_all, num_periods, edu_spec, num_agents_sim,  periods_draws_sims,
-            seed_sim, file_sim, optim_paras, num_types, is_debug)
+            states_all, num_periods, num_agents_sim, periods_draws_sims, seed_sim, file_sim,
+            edu_spec, optim_paras, num_types, is_debug)
 
         args = (solution, data_array)
 

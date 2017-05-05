@@ -11,8 +11,8 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 
 
 def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
-                  num_periods, edu_spec, num_agents_sim, periods_draws_sims, seed_sim,
-                  file_sim, optim_paras, num_types, is_debug):
+        num_periods, num_agents_sim, periods_draws_sims, seed_sim, file_sim, edu_spec, optim_paras,
+        num_types, is_debug):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
     """
 

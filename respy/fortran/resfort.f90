@@ -73,11 +73,11 @@ PROGRAM resfort_scalar
 
         ELSE IF (request == 'simulate') THEN
 
-            CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_spec, is_debug, periods_draws_emax, ambi_spec, optim_paras, optimizer_options, file_sim)
+            CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim)
 
             CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-            CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_spec, seed_sim, file_sim, optim_paras, num_types, is_debug)
+            CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, seed_sim, file_sim, edu_spec, optim_paras, num_types, is_debug)
 
         END IF
 
@@ -99,7 +99,7 @@ PROGRAM resfort_scalar
 
             CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 
-            CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_spec, seed_sim, file_sim, optim_paras, num_types, is_debug)
+            CALL fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, seed_sim, file_sim, edu_spec, optim_paras, num_types, is_debug)
 
         END IF
 

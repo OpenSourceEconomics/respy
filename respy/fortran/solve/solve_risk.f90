@@ -17,7 +17,7 @@ MODULE solve_risk
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, optim_paras)
+SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
     !/* external objects    */
 

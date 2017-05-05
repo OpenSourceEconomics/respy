@@ -80,7 +80,7 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     CALL MPI_Bcast(x_all_current, num_paras, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, num_types)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, num_types, edu_spec)
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, max_states_period, optim_paras)
 
@@ -396,7 +396,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
                     CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
                 ELSE
-                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, optim_paras)
+                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
                 END IF
 
                 ! Construct dependent variable
@@ -431,7 +431,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
                     CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
                 ELSE
-                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, optim_paras)
+                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
                 END IF
 
                 ! Collect information

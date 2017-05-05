@@ -144,8 +144,11 @@ def run(request, is_compile, is_background):
             print(init_dict['EDUCATION']['start'])
 
             num_edu_start = np.random.choice(range(1, 3))
-            edu_start = np.random.choice(range(1, init_dict['EDUCATION']['max']),
+            try:
+                edu_start = np.random.choice(range(1, init_dict['EDUCATION']['max']),
                 size=num_edu_start, replace=False).tolist()
+            except ValueError:
+                edu_start = [edu_start_base]
 
             if edu_start_base in edu_start:
                 edu_start.remove(edu_start_base)

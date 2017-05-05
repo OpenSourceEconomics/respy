@@ -47,7 +47,7 @@ def scripts_check(request, init_file):
     if request == 'estimate':
         # Create the grid of the admissible states.
         args = (num_periods, edu_spec, num_types)
-        mapping_state_idx = pyth_create_state_space(*args)[2]
+        mapping_state_idx = pyth_create_state_space(*args, )[2]
 
         # We also check the structure of the dataset.
         data_array = process(respy_obj).as_matrix()

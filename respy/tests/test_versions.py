@@ -64,7 +64,7 @@ class TestClass(object):
             num_periods = np.random.randint(3, 6)
             num_types = len(init_dict['TYPE_SHARES']['coeffs'])
 
-            max_states_period = pyth_create_state_space(num_periods, edu_spec, num_types)[3]
+            max_states_period = pyth_create_state_space(num_periods, num_types, edu_spec)[3]
 
             # Updates to initialization dictionary that trigger a use of the interpolation code.
             init_dict['BASICS']['periods'] = num_periods

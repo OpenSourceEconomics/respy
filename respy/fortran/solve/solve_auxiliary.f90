@@ -21,7 +21,7 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, num_types)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, num_types, edu_spec)
 
     !/* external objects        */
 
@@ -54,7 +54,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 !------------------------------------------------------------------------------
 
     ! Auxiliary variables
-    min_idx = edu_spec%max + 1 
+    min_idx = edu_spec%max + 1
 
     ! Allocate containers that contain information about the model structure
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types))
@@ -286,7 +286,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_spec, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim, is_write)
+SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, is_write)
 
     !/* external objects        */
 
@@ -430,7 +430,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
                     CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
                 ELSE
-                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, optim_paras)
+                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
                 END IF
 
                 periods_emax(period + 1, k + 1) = emax
@@ -640,7 +640,7 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
         IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
             CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
         ELSE
-            CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, optim_paras)
+            CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
         END IF
 
         ! Construct dependent variable

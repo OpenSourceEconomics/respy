@@ -3,9 +3,8 @@ import numpy as np
 from respy.python.shared.shared_auxiliary import get_total_values
 
 
-def construct_emax_risk(num_periods, num_draws_emax, period, k, draws_emax_risk,
-                        rewards_systematic, edu_spec, periods_emax, states_all,
-                        mapping_state_idx, optim_paras):
+def construct_emax_risk(num_periods, num_draws_emax, period, k, draws_emax_risk, rewards_systematic,
+        periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras):
     """ Simulate expected future value for a given distribution of the unobservables.
     """
     # Antibugging

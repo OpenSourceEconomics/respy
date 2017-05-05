@@ -66,7 +66,7 @@ PROGRAM resfort_parallel_slave
 
     CALL read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_spec, num_types)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, num_types, edu_spec)
 
     CALL distribute_workload(num_states_slaves, num_agents_slaves)
 
@@ -154,7 +154,7 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, .False.)
 
-            CALL fort_contributions(contribs(start_agent:stop_agent), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, edu_spec, num_periods, num_draws_prob, num_agents_slaves(rank + 1), num_obs_agent(start_agent:stop_agent), num_types, optim_paras)
+            CALL fort_contributions(contribs(start_agent:stop_agent), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, num_periods, num_draws_prob, num_agents_slaves(rank + 1), num_obs_agent(start_agent:stop_agent), num_types, edu_spec, optim_paras)
 
             CALL MPI_GATHERV(contribs(start_agent:stop_agent), num_agents_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
 
