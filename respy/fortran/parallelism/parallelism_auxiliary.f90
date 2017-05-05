@@ -374,7 +374,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
             is_simulated = get_simulated_indicator(num_points_interp, num_states, period, is_debug)
 
             ! Constructing the dependent variable for all states, including the ones where simulation will take place. All information will be used in either the construction of the prediction model or the prediction step.
-            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, optim_paras, edu_spec)
+            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras)
 
             ! Initialize missing values
             endogenous = MISSING_FLOAT
@@ -394,7 +394,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
+                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, ambi_spec, optim_paras, optimizer_options)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
                 END IF
@@ -429,7 +429,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_spec, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
+                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, ambi_spec, optim_paras, optimizer_options)
                 ELSE
                     CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
                 END IF

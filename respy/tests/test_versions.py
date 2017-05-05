@@ -185,6 +185,8 @@ class TestClass(object):
         resources += ['kw_data_one_types.ini']
         fname = np.random.choice(resources)
 
+        raise AssertionError('... currently not maintained')
+
         # Select expected result
         rslt = None
         if 'one.ini' in fname:

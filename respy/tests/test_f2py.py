@@ -133,7 +133,7 @@ class TestClass(object):
             args = base_args + (edu_spec, )
             py_a, py_b, py_c, py_d = pyth_create_state_space(*args)
             args = base_args + (edu_spec['start'], edu_spec['max'], min_idx)
-            fort_a, fort_b, fort_c, fort_d = fort_debug.f2py_create_state_space(*args)
+            fort_a, fort_b, fort_c, fort_d = fort_debug.wrapper_create_state_space(*args)
 
             # Ensure equivalence
             rslts = [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]
@@ -295,7 +295,7 @@ class TestClass(object):
         pyth = pyth_create_state_space(*args)
 
         args = base_args + (edu_spec['start'], edu_spec['max'], min_idx)
-        f2py = fort_debug.f2py_create_state_space(*args)
+        f2py = fort_debug.wrapper_create_state_space(*args)
         for i in range(4):
             np.testing.assert_allclose(pyth[i], f2py[i])
 
@@ -313,7 +313,7 @@ class TestClass(object):
 
         args += (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         args += (type_spec_shares, type_spec_shifts)
-        f2py = fort_debug.f2py_calculate_rewards_systematic(*args)
+        f2py = fort_debug.wrapper_calculate_rewards_systematic(*args)
         np.testing.assert_allclose(pyth, f2py)
 
         # Carry some results from the systematic rewards calculation for future use and create
@@ -336,7 +336,7 @@ class TestClass(object):
         args += base_args + (edu_spec['start'], edu_spec['max'], ambi_spec_measure, ambi_spec_mean)
         args += (shocks_cholesky, level, delta, fort_slsqp_maxiter)
         args += (fort_slsqp_ftol, fort_slsqp_eps, file_sim, False)
-        f2py = fort_debug.f2py_backward_induction(*args)
+        f2py = fort_debug.wrapper_backward_induction(*args)
         np.testing.assert_allclose(pyth, f2py)
 
     def test_5(self, flag_ambiguity=False):
@@ -417,7 +417,7 @@ class TestClass(object):
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (max_states_period, num_types)
         args += (type_spec_shares, type_spec_shifts)
-        f2py = fort_debug.f2py_solve(*args)
+        f2py = fort_debug.wrapper_solve(*args)
 
         for alt in [fort, f2py]:
             for i in range(5):
@@ -436,7 +436,7 @@ class TestClass(object):
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
         args += (shocks_cholesky, delta, num_types, type_spec_shares, type_spec_shifts, is_debug)
-        f2py = fort_debug.f2py_simulate(*args)
+        f2py = fort_debug.wrapper_simulate(*args)
         np.testing.assert_allclose(py, f2py)
 
         # Is is very important to cut the data array down to the size of the estimation sample.
@@ -453,7 +453,7 @@ class TestClass(object):
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'])
         args += (shocks_cholesky, delta, type_spec_shares, type_spec_shifts)
-        f2py = fort_debug.f2py_contributions(*args)
+        f2py = fort_debug.wrapper_contributions(*args)
 
         np.testing.assert_allclose(py, f2py)
 
@@ -474,7 +474,7 @@ class TestClass(object):
         args += (ambi_spec_measure, ambi_spec_mean)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (type_spec_shares, type_spec_shifts, num_paras)
-        f2py = fort_debug.f2py_criterion(x0, *args)
+        f2py = fort_debug.wrapper_criterion(x0, *args)
 
         np.testing.assert_allclose(py, f2py)
 
@@ -492,12 +492,12 @@ class TestClass(object):
 
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, seed_prob, \
-        periods_emax, num_periods, states_all, num_points_interp, edu_start, num_draws_emax, \
-        is_debug, edu_max, ambi_spec, optim_paras, optimizer_options, file_sim, num_types = \
+        periods_emax, num_periods, states_all, num_points_interp, edu_spec, num_draws_emax, \
+        is_debug, ambi_spec, optim_paras, optimizer_options, file_sim, num_types = \
             dist_class_attributes(respy_obj, 'periods_rewards_systematic',
                 'states_number_period', 'mapping_state_idx', 'seed_prob', 'periods_emax',
-                'num_periods', 'states_all', 'num_points_interp', 'edu_start', 'num_draws_emax',
-                'is_debug', 'edu_max', 'ambi_spec', 'optim_paras', 'optimizer_options', 'file_sim',
+                'num_periods', 'states_all', 'num_points_interp', 'edu_spec', 'num_draws_emax',
+                'is_debug', 'ambi_spec', 'optim_paras', 'optimizer_options', 'file_sim',
                 'num_types')
 
         # Initialize containers
@@ -521,13 +521,12 @@ class TestClass(object):
         # Add some additional objects required for the interfaces to the functions.
         period = np.random.choice(range(num_periods))
 
-        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_prob,
-            is_debug)
+        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_prob, is_debug)
 
         draws_emax_standard = periods_draws_emax[period, :, :]
 
-        draws_emax_risk = transform_disturbances(draws_emax_standard,
-            np.tile(0, 4), shocks_cholesky)
+        draws_emax_risk = transform_disturbances(draws_emax_standard, np.tile(0, 4),
+            shocks_cholesky)
 
         draws_emax_ambiguity_standard = draws_emax_standard
         draws_emax_ambiguity_transformed = np.dot(shocks_cholesky, draws_emax_standard.T).T
@@ -545,15 +544,15 @@ class TestClass(object):
         is_simulated = get_simulated_indicator(*args)
 
         # Construct the exogenous variables for all points of the state space.
-        base_args = (period, num_periods, num_states, periods_rewards_systematic, shifts, edu_max,
-                     edu_start, mapping_state_idx, periods_emax, states_all)
+        base_args = (period, num_periods, num_states, periods_rewards_systematic, shifts,
+                     mapping_state_idx, periods_emax, states_all)
 
         args = ()
-        args += base_args + (optim_paras,)
+        args += base_args + (edu_spec, optim_paras)
         py = get_exogenous_variables(*args)
 
         args = ()
-        args += base_args + (delta, num_types)
+        args += base_args + (edu_spec['start'], edu_spec['max'], delta, num_types)
         f90 = fort_debug.wrapper_get_exogenous_variables(*args)
 
         np.testing.assert_equal(py, f90)
@@ -562,18 +561,18 @@ class TestClass(object):
         exogenous, maxe = py
 
         # Construct endogenous variable so that the prediction model can be fitted.
-        base_args = (period, num_periods, num_states, periods_rewards_systematic, edu_max,
-            edu_start, mapping_state_idx, periods_emax, states_all, is_simulated,
-            num_draws_emax, maxe, draws_emax_risk, draws_emax_ambiguity_standard,
-            draws_emax_ambiguity_transformed)
+        base_args = (period, num_periods, num_states, periods_rewards_systematic,
+                     mapping_state_idx, periods_emax, states_all, is_simulated, num_draws_emax,
+                     maxe, draws_emax_risk, draws_emax_ambiguity_standard,
+                     draws_emax_ambiguity_transformed)
 
         args = ()
-        args += base_args + (ambi_spec, optim_paras, optimizer_options)
+        args += base_args + (edu_spec, ambi_spec, optim_paras, optimizer_options)
         args += (opt_ambi_details, )
         py, _ = get_endogenous_variable(*args)
 
         args = ()
-        args += base_args + (shocks_cov, ambi_spec_measure)
+        args += base_args + (edu_spec['start'], edu_spec['max'], shocks_cov, ambi_spec_measure)
         args += (ambi_spec_mean, level, delta)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
@@ -662,8 +661,7 @@ class TestClass(object):
         np.testing.assert_equal(fort, py)
 
     def test_9(self):
-        """ We test the some of the functions that were added when improving
-        the ambiguity set.
+        """ We test the some of the functions that were added when improving the ambiguity set.
         """
 
         for _ in range(100):
@@ -736,7 +734,7 @@ class TestClass(object):
     def test_11(self):
         """ Function that calculates the number of observations by individual.
         """
-        for _ in range(10):
+        for _ in range(2):
 
             generate_init()
 
@@ -752,273 +750,3 @@ class TestClass(object):
             f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)
 
             np.testing.assert_almost_equal(py, f90)
-
-    def test_12(self):
-        """ This is a temporary test that ensures that the change in the calculation of the 
-        criterion function does not have any unintended consequences.
-        """
-        # Generate random initialization file
-        constr = dict()
-        constr['types'] = 1
-        generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls('test.respy.ini')
-        respy_obj = simulate_observed(respy_obj)
-
-        # Ensure that backward induction routines use the same grid for the
-        # interpolation.
-        max_states_period = write_interpolation_grid('test.respy.ini')
-
-        # Extract class attributes
-        num_periods, edu_start, edu_max, min_idx, optim_paras, num_draws_emax, is_debug, \
-            is_interpolated, num_points_interp, is_myopic, num_agents_sim, num_draws_prob, tau,\
-            seed_sim, ambi_spec, num_agents_est, states_number_period, optimizer_options, \
-            file_sim, num_types, num_paras = dist_class_attributes(respy_obj, 'num_periods',
-                'edu_start', 'edu_max', 'min_idx', 'optim_paras', 'num_draws_emax', 'is_debug',
-                'is_interpolated', 'num_points_interp', 'is_myopic', 'num_agents_sim',
-                'num_draws_prob', 'tau', 'seed_sim', 'ambi_spec', 'num_agents_est',
-                'states_number_period', 'optimizer_options', 'file_sim', 'num_types', 'num_paras')
-
-        data_array = process(respy_obj).as_matrix()
-        num_obs_agent = get_num_obs_agent(data_array, num_agents_est)
-
-        # Distribute variables for FORTRAN interface
-        fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
-        fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
-
-        shocks_cholesky = optim_paras['shocks_cholesky']
-        coeffs_home = optim_paras['coeffs_home']
-        coeffs_edu = optim_paras['coeffs_edu']
-        coeffs_a = optim_paras['coeffs_a']
-        coeffs_b = optim_paras['coeffs_b']
-        level = optim_paras['level']
-        delta = optim_paras['delta']
-
-        ambi_spec_measure = ambi_spec['measure']
-        ambi_spec_mean = ambi_spec['mean']
-
-        type_spec_shares = optim_paras['type_shares']
-        type_spec_shifts = optim_paras['type_shifts']
-
-        # Write out random components and interpolation grid to align the three implementations.
-        max_draws = max(num_agents_sim, num_draws_emax, num_draws_prob)
-        write_draws(num_periods, max_draws)
-        write_types(type_spec_shares, num_agents_sim)
-
-        periods_draws_emax = read_draws(num_periods, num_draws_emax)
-        periods_draws_prob = read_draws(num_periods, num_draws_prob)
-        periods_draws_sims = read_draws(num_periods, num_agents_sim)
-
-        # Check the full solution procedure
-        base_args = (is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic,
-            edu_start, is_debug, edu_max, min_idx, periods_draws_emax)
-
-        fort, _ = resfort_interface(respy_obj, 'simulate')
-
-        args = ()
-        args += base_args + (ambi_spec, optim_paras, file_sim)
-        args += (optimizer_options, num_types)
-        py = pyth_solve(*args)
-
-        args = ()
-        args += base_args + (min_idx, edu_spec['start'], edu_spec['max'])
-        args += (ambi_spec_measure, ambi_spec_mean)
-        args += (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
-        args += (shocks_cholesky, level, delta, file_sim)
-        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
-        args += (max_states_period, num_types)
-        args += (type_spec_shares, type_spec_shifts)
-        f2py = fort_debug.f2py_solve(*args)
-
-        # Distribute solution arguments for further use in simulation test.
-        periods_rewards_systematic, _, mapping_state_idx, periods_emax, states_all = py
-
-        base_args = (periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
-            num_periods, edu_start, edu_max, num_agents_sim, periods_draws_sims, seed_sim,
-            file_sim)
-
-        args = ()
-        args += base_args + (optim_paras, num_types, is_debug)
-        py = pyth_simulate(*args)
-
-        args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
-        args += (shocks_cholesky, delta, num_types, type_spec_shares, type_spec_shifts, is_debug)
-        f2py = fort_debug.f2py_simulate(*args)
-        np.testing.assert_allclose(py, f2py)
-
-        # Is is very important to cut the data array down to the size of the estimation sample.
-        data_array = py[:num_agents_est * num_periods, :]
-
-        base_args = (periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
-            data_array, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob,
-            num_agents_est, num_obs_agent, num_types)
-
-        args = ()
-        args += base_args + (optim_paras, )
-        py = pyth_contributions(*args)
-
-
-        from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
-        from respy.python.shared.shared_auxiliary import get_total_values
-        from respy.python.shared.shared_constants import SMALL_FLOAT
-        from respy.python.shared.shared_constants import HUGE_FLOAT
-
-        def pyth_contributions_old(periods_rewards_systematic, mapping_state_idx,
-                                   periods_emax, states_all, data_array, periods_draws_prob, tau,
-                                   edu_start, edu_max, num_periods, num_draws_prob, optim_paras):
-            """ Evaluate criterion function. This code allows for a deterministic
-            model, where there is no random variation in the rewards. If that is the
-            case and all agents have corresponding experiences, then one is returned.
-            If a single agent violates the implications, then the zero is returned.
-            """
-            # Construct auxiliary object
-            shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
-                                   optim_paras['shocks_cholesky'].T)
-            is_deterministic = (np.count_nonzero(optim_paras['shocks_cholesky']) == 0)
-            num_types = len(optim_paras['type_shares'])
-            num_obs = data_array.shape[0]
-
-            # Initialize auxiliary objects
-            contribs = np.tile(-HUGE_FLOAT, num_obs)
-
-            # Calculate the probability over agents and time.
-            for j in range(num_obs):
-                period = int(data_array[j, 1])
-                # Extract observable components of state space as well as agent
-                # decision.
-                exp_a, exp_b, edu, edu_lagged = data_array[j, 4:8].astype(int)
-                choice = data_array[j, 2].astype(int)
-                wage = data_array[j, 3]
-
-                # We now determine whether we also have information about the agent's
-                # wage.
-                is_wage_missing = np.isnan(wage)
-                is_working = choice in [1, 2]
-
-                # Transform total years of education to additional years of
-                # education and create an index from the choice.
-                edu, idx = edu - edu_start, choice - 1
-
-                # Extract relevant deviates from standard normal distribution.
-                # The same set of baseline draws are used for each agent and period.
-                draws_prob_raw = periods_draws_prob[period, :, :].copy()
-
-                prob_type = np.tile(0.0, num_types)
-
-                for type_ in range(num_types):
-
-                    # Get state indicator to obtain the systematic component of the
-                    # agents rewards. These feed into the simulation of choice
-                    # probabilities.
-                    k = mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged, type_]
-                    rewards_systematic = periods_rewards_systematic[period, k, :]
-
-                    # If an agent is observed working, then the the labor market shocks
-                    # are observed and the conditional distribution is used to determine
-                    # the choice probabilities. At least if the wage information is
-                    # available as well.
-                    if is_working and (not is_wage_missing):
-                        # Calculate the disturbance which are implied by the model
-                        # and the observed wages.
-                        dist = np.clip(np.log(wage), -HUGE_FLOAT, HUGE_FLOAT) - \
-                               np.clip(np.log(rewards_systematic[idx]), -HUGE_FLOAT,
-                                       HUGE_FLOAT)
-
-                        # If there is no random variation in rewards, then the
-                        # observed wages need to be identical their systematic
-                        # components. The discrepancy between the observed wages and
-                        # their systematic components might be small due to the
-                        # reading in of the dataset (FORTRAN only).
-                        if is_deterministic and (dist > SMALL_FLOAT):
-                            contribs[:] = 1
-                            return contribs
-
-                    # Simulate the conditional distribution of alternative-specific
-                    # value functions and determine the choice probabilities.
-                    counts = np.tile(0, 4)
-
-                    for s in range(num_draws_prob):
-
-                        # Extract the standard normal deviates sample for the iteration.
-                        draws_stan = draws_prob_raw[s, :]
-
-                        # Construct independent normal draws implied by the agents
-                        # state experience. This is need to maintain the correlation
-                        # structure of the disturbances.  Special care is needed in case
-                        # of a deterministic model, as otherwise a zero division error
-                        # occurs.
-                        if is_working and (not is_wage_missing):
-                            if is_deterministic:
-                                prob_wage = HUGE_FLOAT
-                            else:
-                                if choice == 1:
-                                    draws_stan[0] = dist / optim_paras['shocks_cholesky'][
-                                        idx, idx]
-                                else:
-                                    draws_stan[1] = (dist - optim_paras['shocks_cholesky'][idx, 0] *
-                                                     draws_stan[0]) / \
-                                                    optim_paras['shocks_cholesky'][idx, idx]
-
-                                prob_wage = norm.pdf(draws_stan[idx], 0.0, 1.0) / \
-                                            np.sqrt(shocks_cov[idx, idx])
-                        else:
-                            prob_wage = 1.0
-
-                        # As deviates are aligned with the state experiences, create
-                        # the conditional draws. Note, that the realization of the
-                        # random component of wages align withe their observed
-                        # counterpart in the data.
-                        draws_cond = np.dot(optim_paras['shocks_cholesky'], draws_stan.T).T
-
-                        # Extract deviates from (un-)conditional normal distributions
-                        # and transform labor market shocks.
-                        draws = draws_cond[:]
-                        draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
-
-                        # Calculate total values.
-                        total_values = get_total_values(period, num_periods, optim_paras,
-                                                        rewards_systematic, draws, edu_max,
-                                                        edu_start,
-                                                        mapping_state_idx, periods_emax, k,
-                                                        states_all)
-
-                        # Record optimal choices
-                        counts[np.argmax(total_values)] += 1
-
-                        # Get the smoothed choice probability.
-                        prob_choice = get_smoothed_probability(total_values, idx, tau)
-                        prob_type[type_] += prob_choice * prob_wage
-
-                    # Determine relative shares
-                    prob_type[type_] = prob_type[type_] / num_draws_prob
-
-                    # If there is no random variation in rewards, then this implies
-                    # that the observed choice in the dataset is the only choice.
-                    if is_deterministic and (not (counts[idx] == num_draws_prob)):
-                        contribs[:] = 1
-                        return contribs
-
-                # Adjust  and record likelihood contribution
-                contribs[j] = np.sum(np.multiply(optim_paras['type_shares'], prob_type))
-
-                j += 1
-
-            # If there is no random variation in rewards and no agent violated the
-            # implications of observed wages and choices, then the evaluation return
-            # a value of one.
-            if is_deterministic:
-                contribs[:] = np.exp(1.0)
-
-            # Finishing
-            return contribs
-
-
-        old_args = (periods_rewards_systematic, mapping_state_idx,
-                                   periods_emax, states_all, data_array, periods_draws_prob, tau,
-                                   edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
-
-        py_old = pyth_contributions_old(*old_args)
-        np.testing.assert_almost_equal(np.log(np.prod(py_old)), np.log(np.prod(py)))

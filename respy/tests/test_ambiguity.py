@@ -90,15 +90,12 @@ class TestClass(object):
         respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
-        periods_rewards_systematic, states_number_period, mapping_state_idx, \
-        periods_emax, num_periods, states_all, num_draws_emax, edu_start, \
-        edu_max, ambi_spec, optim_paras, optimizer_options, file_sim, \
-        num_types = \
-            dist_class_attributes(respy_obj, 'periods_rewards_systematic',
-                'states_number_period', 'mapping_state_idx', 'periods_emax',
-                'num_periods', 'states_all', 'num_draws_emax', 'edu_start',
-                'edu_max', 'ambi_spec', 'optim_paras', 'optimizer_options',
-                'file_sim', 'num_types')
+        periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax,\
+        num_periods, states_all, num_draws_emax, edu_spec, ambi_spec, optim_paras, \
+        optimizer_options, file_sim, num_types = dist_class_attributes(respy_obj,
+            'periods_rewards_systematic', 'states_number_period', 'mapping_state_idx',
+            'periods_emax', 'num_periods', 'states_all', 'num_draws_emax', 'edu_spec',
+            'ambi_spec', 'optim_paras', 'optimizer_options', 'file_sim', 'num_types')
 
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
         fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
@@ -118,8 +115,8 @@ class TestClass(object):
         opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 7))
 
         # Sample draws
-        draws_standard = np.random.multivariate_normal(np.zeros(4),
-            np.identity(4), (num_draws_emax,))
+        draws_standard = np.random.multivariate_normal(np.zeros(4), np.identity(4),
+            (num_draws_emax,))
 
         draws_emax_ambiguity_standard = draws_standard
         draws_emax_ambiguity_transformed = np.dot(shocks_cholesky, draws_standard.T).T
@@ -132,17 +129,17 @@ class TestClass(object):
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
-            draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx)
+                    draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all,
+                    mapping_state_idx)
 
         args = ()
-        args += base_args + (ambi_spec, optim_paras, optimizer_options)
+        args += base_args + (edu_spec, ambi_spec, optim_paras, optimizer_options)
         args += (opt_ambi_details, )
         py, _ = construct_emax_ambiguity(*args)
 
         args = ()
-        args += base_args + (shocks_cov, ambi_spec_measure)
-        args += (ambi_spec_mean, level, delta)
+        args += base_args + (edu_spec['start'], edu_spec['max'], ambi_spec_measure)
+        args += (ambi_spec_mean, level, shocks_cov, delta)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (file_sim, False, num_types)
 
@@ -155,36 +152,32 @@ class TestClass(object):
             x = np.append(x, np.random.uniform(low=0.01, size=2))
             num_free_ambi = 4
 
-        base_args = (num_periods, num_draws_emax, period, k,
-            draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
-            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx)
+        base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+                     draws_emax_ambiguity_transformed, rewards_systematic, periods_emax,
+                     states_all, mapping_state_idx)
 
         args = ()
-        args += base_args + (optim_paras, shocks_cov, ambi_spec)
+        args += base_args + (edu_spec, optim_paras, shocks_cov, ambi_spec)
         py = criterion_ambiguity(x, *args)
 
         args = ()
-        args += base_args + (delta, shocks_cov)
-        args += (ambi_spec_mean, )
+        args += base_args + (edu_spec['start'], edu_spec['max'], delta, shocks_cov, ambi_spec_mean)
         f90 = fort_debug.wrapper_criterion_ambiguity(x, *args)
         np.testing.assert_allclose(py, f90)
 
         # Let us check the calculation of the derivatives for the criterion
         # function of the ambiguity optimization.
-        base_args = (num_periods, num_draws_emax, period, k,
-            draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
-            rewards_systematic, edu_max,  edu_start, periods_emax,
-            states_all, mapping_state_idx)
+        base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+                     draws_emax_ambiguity_transformed, rewards_systematic, periods_emax,
+                     states_all, mapping_state_idx)
 
         args = ()
-        args += base_args + (optim_paras, shocks_cov, ambi_spec)
+        args += base_args + (edu_spec, optim_paras, shocks_cov, ambi_spec)
         py = approx_fprime(x, criterion_ambiguity, fort_slsqp_eps, *args)
 
         args = ()
-        args += base_args + (delta, shocks_cov)
-        args += (ambi_spec_mean, fort_slsqp_eps)
-        args += (num_free_ambi, )
+        args += base_args + (edu_spec['start'], edu_spec['max'], delta, shocks_cov)
+        args += (ambi_spec_mean, fort_slsqp_eps, num_free_ambi)
         f90 = fort_debug.wrapper_criterion_ambiguity_derivative(x, *args)
         np.testing.assert_allclose(py, f90)
 
@@ -207,17 +200,16 @@ class TestClass(object):
         f90 = fort_debug.wrapper_constraint_ambiguity_derivative(x, *args)
         np.testing.assert_allclose(py, f90)
 
-        base_args = (num_periods, num_draws_emax, period, k,
-            draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
-            rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-            mapping_state_idx, shocks_cov)
+        base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+                     draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all,
+                     mapping_state_idx, shocks_cov)
 
         args = ()
-        args += base_args + (optim_paras, optimizer_options, ambi_spec)
+        args += base_args + (edu_spec, optim_paras, optimizer_options, ambi_spec)
         py, _, _ = get_worst_case(*args)
 
         args = ()
-        args += base_args + (level, delta)
+        args += base_args + (edu_spec['start'], edu_spec['max'], level, delta)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (ambi_spec_mean, num_free_ambi)
         f90, _, _ = fort_debug.wrapper_get_worst_case(*args)
