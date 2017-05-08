@@ -57,5 +57,9 @@ def check_dataset_est(data_frame, respy_obj):
     # Check that there are no duplicated observations for any period by agent.
     def check_unique_periods(group):
         np.testing.assert_equal(group['Period'].duplicated().any(), False)
-
     data_frame.groupby('Identifier').apply(check_unique_periods)
+
+    # Check that we observe the whole sequence of observations and that they are in the right order.
+    def check_series_observations(group):
+        np.testing.assert_equal(group['Period'].tolist(), range(group['Period'].max() + 1))
+    data_frame.groupby('Identifier').apply(check_series_observations)
