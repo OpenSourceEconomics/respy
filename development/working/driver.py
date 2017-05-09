@@ -44,7 +44,7 @@ np.random.seed(123)
 open('.restud.respy.scratch', 'w').close()
 
 respy_obj = RespyCls('model.respy.ini')
-#respy_obj, _ = simulate(respy_obj)
+respy_obj, _ = simulate(respy_obj)
     #respy_obj.write_out('test.respy.ini')
 #respy_obj = RespyCls('truth.respy.ini')
 

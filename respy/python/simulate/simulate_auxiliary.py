@@ -68,7 +68,14 @@ def write_info(respy_obj, data_frame):
             for i in range(4):
                 fmt_ = '    {:6}' + '{:14.4f}' * 4 + '\n'
                 line = [labels[i]] + tb[i, :].tolist()
-                file_.write(fmt_.format(*line))
+
+                # In contrast to the official documentation, the crosstab command omits
+                # categories in the current pandas release when they are not part of the data. We
+                # suspect this will be ironed out in the next releases.
+                try:
+                    file_.write(fmt_.format(*line))
+                except IndexError:
+                    pass
 
             file_.write('\n\n')
 

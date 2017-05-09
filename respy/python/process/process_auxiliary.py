@@ -61,5 +61,5 @@ def check_dataset_est(data_frame, respy_obj):
 
     # Check that we observe the whole sequence of observations and that they are in the right order.
     def check_series_observations(group):
-        np.testing.assert_equal(group['Period'].tolist(), range(group['Period'].max() + 1))
+        np.testing.assert_equal(group['Period'].tolist(), list(range(group['Period'].max() + 1)))
     data_frame.groupby('Identifier').apply(check_series_observations)
