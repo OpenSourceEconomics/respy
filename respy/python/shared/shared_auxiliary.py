@@ -609,7 +609,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
-                str_ = '{0:<10} {1:>20}\n'
+                str_ = '{0:<10} {1:>25}\n'
                 for i, start in enumerate(dict_[flag]['start']):
                     file_.write(str_.format('start', start))
                     file_.write(str_.format('share', dict_[flag]['share'][i]))
