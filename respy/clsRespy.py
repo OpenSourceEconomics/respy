@@ -178,6 +178,10 @@ class RespyCls(object):
 
         optim_paras['delta'] = delta
 
+        optim_paras['type_shares'] = type_shares
+
+        optim_paras['type_shifts'] = type_shifts
+
         # Check integrity
         check_model_parameters(optim_paras)
 
@@ -356,6 +360,7 @@ class RespyCls(object):
         init_dict['TYPE_SHARES']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Type Shifts
+        print('type_shifts', self.attr['optim_paras']['type_shifts'].flatten()[4:])
         lower, upper = 35 + num_types, num_paras
         init_dict['TYPE_SHIFTS'] = dict()
         init_dict['TYPE_SHIFTS']['coeffs'] = self.attr['optim_paras']['type_shifts'].flatten()[4:]
