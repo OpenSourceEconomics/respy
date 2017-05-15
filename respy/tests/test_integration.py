@@ -239,7 +239,7 @@ class TestClass(object):
         constr = dict()
         constr['flag_estimation'] = True
         constr['flag_ambiguity'] = flag_ambiguity
-        constr['version'] = 'PYTHON'
+        constr['version'] = 'FORTRAN'
         generate_init(constr)
 
         respy_obj = RespyCls('test.respy.ini')

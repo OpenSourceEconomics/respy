@@ -9,7 +9,7 @@ if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
     assert os.system('./waf distclean; ./waf configure build '
-                     '--debug --without_f2py ') == 0
+                     '--debug  ') == 0
     os.chdir(cwd)
 
 

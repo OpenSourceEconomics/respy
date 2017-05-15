@@ -60,6 +60,8 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
 
             # Select relevant subset
             rewards_systematic = periods_rewards_systematic[period, k, :]
+
+
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
