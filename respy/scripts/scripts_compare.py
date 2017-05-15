@@ -197,7 +197,7 @@ def scripts_compare(base_init, is_update):
                 for j, source in enumerate(['Observed', 'Simulated']):
                     fmt_ = '{:>15}{:>15}' + '{:15.4f}' * 4 + '\n'
                     line = [source, labels[i]] + tf[j][i, :].tolist()
-                    file_.write(fmt_.format(*line))
+          #          file_.write(fmt_.format(*line))
                 file_.write('\n')
 
         # Comparing the wages distributions

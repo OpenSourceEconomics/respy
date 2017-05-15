@@ -15,29 +15,26 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
     experiences, then one is returned. If a single agent violates the implications, then the zero 
     is returned.
     """
-
-    print('I am in')
     # Construct auxiliary object
     shocks_cov = np.matmul(optim_paras['shocks_cholesky'], optim_paras['shocks_cholesky'].T)
     is_deterministic = (np.count_nonzero(optim_paras['shocks_cholesky']) == 0)
 
-    print(is_deterministic)
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, num_agents_est)
     prob_obs = np.tile(-HUGE_FLOAT, num_periods)
 
     # Calculate the probability over agents and time.
     for j in range(num_agents_est):
-        print(' Agent', j)
+
         prob_type = np.tile(1.0, num_types)
         for type_ in range(num_types):
-            print('Type', type_)
+
             row_start = sum(num_obs_agent[:j])
             num_obs = num_obs_agent[j]
 
             prob_obs[:] = 0.00
             for p in range(num_obs):
-                print('Period', p)
+
                 period = int(data_array[row_start + p, 1])
                 # Extract observable components of state space as well as agent decision.
                 exp_a, exp_b, edu, edu_lagged = data_array[row_start + p, 4:8].astype(int)
@@ -95,7 +92,8 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                             prob_wage = HUGE_FLOAT
                         else:
                             if choice == 1:
-                                draws_stan[0] = dist / optim_paras['shocks_cholesky'][idx, idx]
+                                draws_stan[0] = dist / optim_paras['shocks_cholesky'][
+                                    idx, idx]
                             else:
                                 draws_stan[1] = (dist - optim_paras['shocks_cholesky'][idx, 0] *
                                     draws_stan[0]) / optim_paras['shocks_cholesky'][idx, idx]
@@ -114,7 +112,6 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                     draws = draws_cond[:]
                     draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
 
-
                     # Calculate total values.
                     total_values = get_total_values(period, num_periods, optim_paras,
                         rewards_systematic, draws, edu_spec, mapping_state_idx, periods_emax, k,
@@ -132,19 +129,15 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
                 # If there is no random variation in rewards, then this implies that the observed
                 # choice in the dataset is the only choice.
- #               print('I am testing', counts, num_draws_prob)
- #               if is_deterministic and (not (counts[idx] == num_draws_prob)):
- #                   contribs[:] = 1
- #                   return contribs
+                if is_deterministic and (not (counts[idx] == num_draws_prob)):
+                    contribs[:] = 1
+                    return contribs
 
             prob_type[type_] = np.prod(prob_obs[:num_obs])
-            pass
 
-            #raise SystemExit('Stopping, investigation of type 0 at the moment')
-        print(prob_obs[:num_obs])
         # Adjust  and record likelihood contribution
         contribs[j] = np.sum(prob_type * optim_paras['type_shares'])
-    pass
+
     # If there is no random variation in rewards and no agent violated the implications of
     # observed wages and choices, then the evaluation return value of one.
     if is_deterministic:

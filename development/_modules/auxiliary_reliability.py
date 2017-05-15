@@ -56,6 +56,7 @@ def run_single(spec_dict, fname):
     is_risk = spec_dict['update']['level'] == 0.00
     num_procs = spec_dict['update']['num_procs']
 
+
     for request in ['Truth', 'Static', 'Risk', 'Ambiguity']:
 
         # If there is no ambiguity in the dataset, then we can skip the AMBIGUITY estimation.
@@ -71,10 +72,12 @@ def run_single(spec_dict, fname):
                 respy_obj.attr['optim_paras']['paras_fixed'][1] = True
                 # We do only need a subset of the available processors
                 respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['truth'])
+                respy_obj.attr['maxfun'] = 0
 
         elif request == 'Static':
             # We do only need a subset of the available processors
             respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['static'])
+            respy_obj.attr['maxfun'] = spec_dict['update']['maxfun']
 
             # There is no update required, we start with the true parameters from the dynamic
             # ambiguity model.
@@ -87,6 +90,7 @@ def run_single(spec_dict, fname):
             # We do only need a subset of the available processors
             num_procs = spec_dict['update']['num_procs']
             respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['risk'])
+            respy_obj.attr['maxfun'] = spec_dict['update']['maxfun']
 
             # This is an update with the results from the static estimation.
             respy_obj.update_optim_paras(x)
