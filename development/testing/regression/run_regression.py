@@ -22,7 +22,7 @@ from codes.random_init import generate_init
 HOSTNAME = socket.gethostname()
 
 
-def run(request, is_compile, is_background):
+def run(request, is_compile, is_background, is_strict):
     """ Run the regression tests.
     """
     if is_compile:
@@ -110,7 +110,8 @@ def run(request, is_compile, is_background):
         indices = list(range(num_tests))
         np.random.shuffle(indices)
 
-        is_failure = False
+        # We collect the indices for the failed tests which allows for easy investigation.
+        idx_failures = []
 
         for i, idx in enumerate(indices):
             print('\n\n Checking Test ', idx, ' at iteration ',  i, '\n')
@@ -138,12 +139,20 @@ def run(request, is_compile, is_background):
                 print(' ... success')
             except AssertionError:
                 print(' ..failure')
-                is_failure = True
-                break
+                idx_failures += [idx]
+                # We do not always want to break immediately as for some reason a very small
+                # number of tests might fail on a machine that was not used to create the test
+                # vault.
+                if is_strict:
+                    break
 
         # This allows to call this test from another script, that runs other tests as well.
+        is_failure = False
+        if len(idx_failures) > 0:
+            is_failure = True
+
         if not is_background:
-            send_notification('regression', is_failed=is_failure, test_idx=idx)
+            send_notification('regression', is_failed=is_failure, idx_failures=idx_failures)
 
         return not is_failure
 
@@ -161,8 +170,12 @@ if __name__ == '__main__':
     parser.add_argument('--compile', action='store_true', dest='is_compile', default=False,
                         help='compile RESPY package')
 
+    parser.add_argument('--strict', action='store_true', dest='is_strict', default=False,
+                        help='immediate termination if failure')
+
     args = parser.parse_args()
     request, is_compile = args.request, args.is_compile,
     is_background = args.is_background
+    is_strict = args.is_strict
 
-    run(request, is_compile, is_background)
+    run(request, is_compile, is_background, is_strict)

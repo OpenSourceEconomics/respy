@@ -109,8 +109,8 @@ def send_notification(which, **kwargs):
     if 'seed' in kwargs.keys():
         seed = '{}'.format(kwargs['seed'])
 
-    if 'test_idx' in kwargs.keys():
-        test_idx = '{}'.format(kwargs['test_idx'])
+    if 'idx_failures' in kwargs.keys():
+        idx_failures = ', '.join(str(e) for e in kwargs['idx_failures'])
 
     if 'old_release' in kwargs.keys():
         old_release = kwargs['old_release']
@@ -128,14 +128,13 @@ def send_notification(which, **kwargs):
         message = ' Reliability testing is completed on @' + hostname + '.'
     elif which == 'property':
         subject = ' RESPY: Property Testing'
-        message = ' A ' + hours + ' hour run of the testing battery on @' + \
-                  hostname + ' is completed.'
+        message = ' A ' + hours + ' hour run of the testing battery on @' + hostname + \
+                  ' is completed.'
 
     elif which == 'regression':
         subject = ' RESPY: Regression Testing'
         if is_failed:
-            message = 'Failure during regression testing for test ' + \
-                      test_idx + '.'
+            message = 'Failure during regression testing for test(s): ' + idx_failures + '.'
         else:
             message = ' Regression testing is completed on @' + hostname + '.'
 
