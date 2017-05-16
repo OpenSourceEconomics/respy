@@ -178,6 +178,10 @@ class RespyCls(object):
 
         optim_paras['delta'] = delta
 
+        optim_paras['type_shares'] = type_shares
+
+        optim_paras['type_shifts'] = type_shifts
+
         # Check integrity
         check_model_parameters(optim_paras)
 

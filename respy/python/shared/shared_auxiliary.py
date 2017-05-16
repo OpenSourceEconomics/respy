@@ -553,7 +553,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                         pass
                     else:
                         for j in range(4):
-                            val = dict_['TYPE_SHIFTS']['coeffs'][j]
+                            val = dict_['TYPE_SHIFTS']['coeffs'][(i - 1) * 4 + j]
                             pos = (35 + num_types) + (i - 1) * 4 + j
                             line = format_opt_parameters(val, pos, paras_fixed, paras_bounds)
                             line[0] = 'shift'
