@@ -221,12 +221,12 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 END IF
 
             END DO
-            prob_type(type_ + 1) = PRODUCT(optim_paras%type_shares(type_ + 1) * prob_obs(:num_obs))
+            prob_type(type_ + 1) = PRODUCT(prob_obs(:num_obs))
 
         END DO
 
         ! Adjust and record likelihood contribution
-        contribs(j) = SUM(prob_type) / SUM(optim_paras%type_shares)
+        contribs(j) = SUM(optim_paras%type_shares  * prob_type) 
 
     END DO
 
