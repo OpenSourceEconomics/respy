@@ -117,7 +117,7 @@ def generate_random_dict(constr=None):
     if num_types == 1:
         is_fixed = True
     else:
-        is_fixed = np.random.choice([True, False])
+        is_fixed = np.random.choice([True, False]).tolist()
     paras_fixed += [is_fixed] * num_types
     paras_fixed += np.random.choice([True, False], num_types * 4).tolist()
 

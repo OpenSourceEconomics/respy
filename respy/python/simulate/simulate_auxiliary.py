@@ -14,7 +14,7 @@ def construct_transition_matrix(base_df):
     args = []
     for label in ['Choice', 'Choice_Next']:
         args += [pd.Categorical(df[label], categories=range(1, 5))]
-    tm = pd.crosstab(*args, normalize='index').as_matrix()
+    tm = pd.crosstab(*args, normalize='index', dropna=False).as_matrix()
 
     return tm
 

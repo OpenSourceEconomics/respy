@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-""" This script checks the regression tests vault for any unintended changes
-during further development and refactoring efforts.
+""" This script checks the regression tests vault for any unintended changes during further 
+development and refactoring efforts.
 """
 from __future__ import print_function
 
@@ -28,9 +28,9 @@ def run(request, is_compile, is_background):
     if is_compile:
         compile_package(True)
 
-    # The late import is required so a potentially just compiled FORTRAN
-    # implementation is recognized. This is important for the creation of the
-    # regression vault as we want to include FORTRAN use cases.
+    # The late import is required so a potentially just compiled FORTRAN implementation is
+    # recognized. This is important for the creation of the regression vault as we want to
+    # include FORTRAN use cases.
     from respy import RespyCls
     from respy import estimate
 
@@ -59,9 +59,6 @@ def run(request, is_compile, is_background):
         tests = json.load(open(fname, 'r'))
 
         init_dict, crit_val = tests[idx]
-
-        init_dict['EDUCATION']['start'] = [init_dict['EDUCATION']['start']]
-        init_dict['EDUCATION']['share'] = [1.0]
         print_init_dict(init_dict)
         respy_obj = RespyCls('test.respy.ini')
 
@@ -89,8 +86,7 @@ def run(request, is_compile, is_background):
         for idx in range(num_tests):
             print('\n Creating Test ', idx)
 
-            # We impose a couple of constraints that make the requests
-            # manageable.
+            # We impose a couple of constraints that make the requests manageable.
             np.random.seed(idx)
             constr = dict()
             constr['flag_estimation'] = True
@@ -121,8 +117,8 @@ def run(request, is_compile, is_background):
 
             init_dict, crit_val = tests[idx]
 
-            # During development it is useful that I can only run the PYTHON
-            # versions of the program.
+            # During development it is useful that we can only run the PYTHON versions of the
+            # program.
             msg = ' ... skipped as required version of package not available'
             if init_dict['PROGRAM']['version'] == 'FORTRAN' and not IS_FORTRAN:
                 print(msg)
@@ -131,39 +127,6 @@ def run(request, is_compile, is_background):
                 print(msg)
                 continue
 
-            msg = ' ... skipped as interpolation requested'
-            if init_dict['INTERPOLATION']['flag'] == 'True':
-                print(msg)
-                continue
-
-            print('\n new')
-            # Some edits to make the additional feature irrelevant for the evaluation. It is
-            # important that there is a share of one on the original initial condition.
-            edu_start_base = init_dict['EDUCATION']['start']
-            init_dict['EDUCATION']['start'] = [edu_start_base]
-            print(init_dict['EDUCATION']['start'])
-
-            num_edu_start = np.random.choice(range(1, 3))
-            try:
-                edu_start = np.random.choice(range(1, init_dict['EDUCATION']['max']),
-                size=num_edu_start, replace=False).tolist()
-            except ValueError:
-                edu_start = [edu_start_base]
-
-            if edu_start_base in edu_start:
-                edu_start.remove(edu_start_base)
-                edu_start.insert(0, edu_start_base)
-            else:
-                edu_start[0] = edu_start_base
-
-            init_dict['EDUCATION']['start'] = edu_start
-
-
-            init_dict['EDUCATION']['share'] = [0.0] * num_edu_start
-            init_dict['EDUCATION']['share'][0] = 1.0
-
-            print('share', init_dict['EDUCATION']['share'])
-            print('start', init_dict['EDUCATION']['start'])
             # This is the baseline code again.
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
