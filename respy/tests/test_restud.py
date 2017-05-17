@@ -31,7 +31,7 @@ def transform_respy_to_restud(optim_paras, edu_spec, num_agents_sim, num_periods
         # Write out coefficients for the two occupations.
         coeffs_a, coeffs_b = optim_paras['coeffs_a'], optim_paras['coeffs_b']
         for coeffs in [coeffs_a, coeffs_b]:
-            line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f}  {4:10.6f} {5:10.6f}\n'.format(*coeffs)
+            line = ' {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f} {4:10.6f} {5:10.6f}\n'.format(*coeffs)
             file_.write(line)
 
         # Write out coefficients for education and home rewards as well as the discount factor.
@@ -96,6 +96,9 @@ class TestClass(object):
 
         # Indicate RESTUD code the special case of zero disturbance.
         open('.restud.testing.scratch', 'a').close()
+
+        # We need to indicate to the RESFORT code to rescale the experience covariates.
+        open('.restud.respy.scratch', 'a').close()
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
