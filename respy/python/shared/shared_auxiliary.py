@@ -470,9 +470,8 @@ def generate_optimizer_options(which, optim_paras, num_paras):
         dict_['rhobeg'] = rhobeg
         dict_['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
 
-        # It is not recommended that N is larger than upper as the code might
-        # break down due to a segmentation fault. See the source files for the
-        # absolute upper bounds.
+        # It is not recommended that N is larger than upper as the code might break down due to a
+        # segmentation fault. See the source files for the absolute upper bounds.
         assert sum(optim_paras['paras_fixed']) != num_paras
         lower = (num_paras - sum(optim_paras['paras_fixed'])) + 2
         upper = (2 * (num_paras - sum(optim_paras['paras_fixed'])) + 1)

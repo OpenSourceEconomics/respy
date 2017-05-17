@@ -62,8 +62,9 @@ def generate_random_dict(constr=None):
     type_shares = get_valid_shares(num_types)
     num_paras = 35 + num_types + (num_types - 1) * 4
 
-    # We now draw all parameter values. This is necessarily done here as we
-    # subsequently determine a set of valid bounds.
+
+    # We now draw all parameter values. This is necessarily done here as we subsequently
+    # determine a set of valid bounds.
     paras_values = []
     for i in range(num_paras):
         if i in [0]:
@@ -83,10 +84,9 @@ def generate_random_dict(constr=None):
 
         paras_values += [value]
 
-    # Construct a set of valid bounds. Note that there are now bounds for the
-    # coefficients of the covariance matrix. It is not clear how to enforce
-    # these during an estimation on the Cholesky factors. Same problem occurs
-    # for the set of fixed parameters.
+    # Construct a set of valid bounds. Note that there are now bounds for the coefficients of the
+    #  covariance matrix. It is not clear how to enforce these during an estimation on the
+    # Cholesky factors. Same problem occurs for the set of fixed parameters.
     paras_bounds = []
     for i, value in enumerate(paras_values):
         if i in [0]:
@@ -119,7 +119,7 @@ def generate_random_dict(constr=None):
     else:
         is_fixed = np.random.choice([True, False]).tolist()
     paras_fixed += [is_fixed] * num_types
-    paras_fixed += np.random.choice([True, False], num_types * 4).tolist()
+    paras_fixed += np.random.choice([True, False], (num_types - 1) * 4).tolist()
 
     # Sampling number of agents for the simulation. This is then used as the upper bound for the
     # dataset used in the estimation.
@@ -260,13 +260,12 @@ def generate_random_dict(constr=None):
     for optimizer in OPTIMIZERS_EST + OPTIMIZERS_AMB:
         dict_[optimizer] = generate_optimizer_options(optimizer, mock, num_paras)
 
-    # The options for the optimizers across the program versions are
-    # identical. Otherwise it is not possible to simply run the solution of a
-    # model with just changing the program version.
+    # The options for the optimizers across the program versions are identical. Otherwise it is
+    # not possible to simply run the solution of a model with just changing the program version.
     dict_['FORT-SLSQP'] = dict_['SCIPY-SLSQP']
 
-    # We now impose selected constraints on the final model specification.
-    # These constraints can be very useful in the generation of test cases.
+    # We now impose selected constraints on the final model specification. These constraints can
+    # be very useful in the generation of test cases.
     dict_ = process_constraints(dict_, constr, paras_fixed, paras_bounds)
 
     # Finishing
