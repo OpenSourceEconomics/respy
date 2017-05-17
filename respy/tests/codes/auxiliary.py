@@ -252,9 +252,7 @@ def get_valid_bounds(which, value):
     elif which in ['cov']:
         bounds = [None, None]
     elif which in ['share']:
-        upper = min(1.0, np.random.choice([value + np.random.uniform(low=0.1)]))
-        lower = max(0.0, np.random.choice([value - np.random.uniform(low=0.1)]))
-        bounds = [lower, upper]
+        bounds = [0.0, None]
     return bounds
 
 

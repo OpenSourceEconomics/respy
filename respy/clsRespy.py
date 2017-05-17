@@ -768,14 +768,19 @@ class RespyCls(object):
         if not (all_free or all_fixed or off_diagonal):
             raise UserError(' Misspecified constraints for covariance matrix')
 
-        # Discount rate and ambiguity needs to be larger than on zero. The constraint needs to be
-        #  present all the time.
+        # Discount rate, ambiguity, and type shares need to be larger than on zero. The constraint
+        # needs to be present all the time.
         for label in ['paras_fixed', 'paras_bounds']:
             assert isinstance(optim_paras[label], list)
             assert (len(optim_paras[label]) == num_paras)
 
         for i in range(2):
             assert optim_paras['paras_bounds'][i][0] >= 0.00
+
+        # For the type shares, we only allow for (0.00, None) bounds at this point.
+        for i in range(35, 35 + num_types):
+            assert optim_paras['paras_bounds'][i][0] == 0.00
+            assert optim_paras['paras_bounds'][i][1] is None
 
         for i in range(num_paras):
             lower, upper = optim_paras['paras_bounds'][i]
@@ -792,15 +797,7 @@ class RespyCls(object):
             # At this point no bounds for the elements of the covariance matrix are allowed.
             if i in range(25, 35):
                 assert optim_paras['paras_bounds'][i] == [None, None]
-            # Now we check the type shares.
-            if i in range(35, 35 + num_types):
-                if lower is not None:
-                    assert lower >= 0.00
-                if upper is not None:
-                    assert upper <= 1.00
-
-        # TODO: At this point we want the type shares to be fixed. Once there are free, we need to
-        # ensure that the bounds are specified correctly when the shares are free.
+    
         all_fixed = np.all(optim_paras['paras_fixed'][35:35 + num_types]) == True
         all_free = np.all(optim_paras['paras_fixed'][35:35 + num_types]) == False
         assert all_fixed or all_free

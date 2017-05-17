@@ -377,11 +377,8 @@ def check_model_parameters(optim_paras):
     assert (optim_paras['shocks_cholesky'].shape == (4, 4))
     np.allclose(optim_paras['shocks_cholesky'], np.tril(optim_paras['shocks_cholesky']))
 
-    # TODO: In the current implementation this is not valid.
     # Checks for type shares
-    # np.testing.assert_almost_equal(np.sum(optim_paras['type_shares']), 1.0)
-    # assert np.all(optim_paras['type_shares'] <= 1.0)
-    # assert np.all(optim_paras['type_shares'] >= 0.0)
+    assert np.all(optim_paras['type_shares'] >= 0.0)
 
     # Checks for type shifts
     assert optim_paras['type_shifts'].shape == (num_types, 4)

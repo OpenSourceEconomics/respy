@@ -62,7 +62,6 @@ def generate_random_dict(constr=None):
     type_shares = get_valid_shares(num_types)
     num_paras = 35 + num_types + (num_types - 1) * 4
 
-
     # We now draw all parameter values. This is necessarily done here as we subsequently
     # determine a set of valid bounds.
     paras_values = []

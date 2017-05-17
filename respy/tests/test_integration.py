@@ -1,8 +1,12 @@
 from pandas.util.testing import assert_frame_equal
 import numpy as np
 import pandas as pd
+import filecmp
 import pytest
+import glob
 
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.scripts.scripts_simulate import scripts_simulate
@@ -233,8 +237,7 @@ class TestClass(object):
             np.testing.assert_almost_equal(arg[0], arg[1])
 
     def test_7(self, flag_ambiguity=False):
-        """ We test whether a restart does result in the exact function
-        evaluation. Additionally, we change the status of parameters at random.
+        """ We test whether a restart does result in the exact function evaluation. Additionally, we change the status of parameters at random.
         """
         constr = dict()
         constr['flag_estimation'] = True
@@ -319,7 +322,7 @@ class TestClass(object):
 
             init_dict['TYPE_SHARES']['coeffs'] = shares
             init_dict['TYPE_SHARES']['fixed'] = [True] * num_types
-            init_dict['TYPE_SHARES']['bounds'] = [[None, None]] * num_types
+            init_dict['TYPE_SHARES']['bounds'] = [[0.00, None]] * num_types
             print_init_dict(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
@@ -375,3 +378,80 @@ class TestClass(object):
                 base_val = val
 
             np.testing.assert_almost_equal(base_val, val)
+
+    def test_11(self):
+        """ We ensure that the scale of the type shares does not matter.
+        """
+        # Generate random initialization dictionary
+        constr = dict()
+        constr['maxfun'] = 0
+
+        generate_init(constr)
+
+        respy_obj = RespyCls('test.respy.ini')
+        num_types = dist_class_attributes(respy_obj, 'num_types')[0]
+
+        # After scaling the bounds might not fit anymore. Thus we simply remove them.
+        lower, upper = 35, 35 + num_types
+        respy_obj.attr['optim_paras']['paras_bounds'][lower:upper] = [[0.0, None]] * num_types
+
+        base_val = None
+        for i, scale in enumerate(np.random.lognormal(size=2)):
+
+            respy_obj.attr['optim_paras']['type_shares'] *= scale
+
+            simulate_observed(respy_obj)
+
+            _, crit_val = estimate(respy_obj)
+
+            if base_val is None:
+                base_val = crit_val
+
+            np.testing.assert_allclose(base_val, crit_val)
+
+    def test_12(self):
+        """ This step ensures that the printing of the initialization file is done properly.      
+        """
+        for fname in glob.glob(TEST_RESOURCES_DIR + '/*.ini'):
+            respy_obj = RespyCls(fname)
+            respy_obj.write_out('test.respy.ini')
+            np.testing.assert_equal(filecmp.cmp(fname, 'test.respy.ini'), True)
+
+    @pytest.mark.slow
+    def test_13(self):
+        """ This test just locks in the evaluation of the criterion function for the original 
+        Keane & Wolpin data. We create an additional initialization file that includes the types.
+        """
+        # Sample one task
+        resources = []
+        resources += ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']
+        resources += ['kw_data_one_types.ini', 'kw_data_one_initial.ini']
+        fname = np.random.choice(resources)
+
+        raise AssertionError('... currently not maintained')
+
+        # Select expected result
+        rslt = None
+        if 'one.ini' in fname:
+            rslt = 0.261487735867433
+        elif 'two.ini' in fname:
+            rslt = 1.126138097174159
+        elif 'three.ini' in fname:
+            rslt = 1.895699121131644
+        elif 'one_types.ini' in fname:
+            rslt = 0.352057450315807
+
+        # This ensures that the experience effect is taken care of properly.
+        open('.restud.respy.scratch', 'w').close()
+
+        # Evaluate criterion function at true values.
+        respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)
+
+        respy_obj.unlock()
+        respy_obj.set_attr('maxfun', 0)
+        respy_obj.lock()
+
+        simulate_observed(respy_obj, is_missings=False)
+
+        _, val = estimate(respy_obj)
+        np.testing.assert_allclose(val, rslt)

@@ -6,7 +6,6 @@ import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import IS_FORTRAN
@@ -174,46 +173,7 @@ class TestClass(object):
                 base_val = val
             np.testing.assert_allclose(base_val, val)
 
-    @pytest.mark.slow
-    def test_3(self):
-        """ This test just locks in the evaluation of the criterion function for the original 
-        Keane & Wolpin data. We create an additional initialization file that includes the types.
-        """
-        # Sample one task
-        resources = []
-        resources += ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']
-        resources += ['kw_data_one_types.ini']
-        fname = np.random.choice(resources)
-
-        raise AssertionError('... currently not maintained')
-
-        # Select expected result
-        rslt = None
-        if 'one.ini' in fname:
-            rslt = 0.261487735867433
-        elif 'two.ini' in fname:
-            rslt = 1.126138097174159
-        elif 'three.ini' in fname:
-            rslt = 1.895699121131644
-        elif 'one_types.ini' in fname:
-            rslt = 0.352057450315807
-
-        # This ensures that the experience effect is taken care of properly.
-        open('.restud.respy.scratch', 'w').close()
-
-        # Evaluate criterion function at true values.
-        respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)
-
-        respy_obj.unlock()
-        respy_obj.set_attr('maxfun', 0)
-        respy_obj.lock()
-
-        simulate_observed(respy_obj, is_missings=False)
-
-        _, val = estimate(respy_obj)
-        np.testing.assert_allclose(val, rslt)
-
-    def test_4(self, flag_ambiguity=False):
+    def test_3(self, flag_ambiguity=False):
         """ This test ensures that the logging looks exactly the same for the
         different versions.
         """
@@ -293,7 +253,7 @@ class TestClass(object):
                     base_amb_log = open(fname, 'r').read()
                 assert open(fname, 'r').read() == base_amb_log
 
-    def test_5(self, flag_ambiguity=False):
+    def test_4(self, flag_ambiguity=False):
         """ This test ensures that the scaling matrix is identical between the alternative versions.
         """
         max_draws = np.random.randint(10, 300)
