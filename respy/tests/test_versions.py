@@ -111,8 +111,7 @@ class TestClass(object):
             if base_val is None:
                 base_val = crit_val
 
-            np.testing.assert_allclose(base_val, crit_val, rtol=1e-05,
-                                       atol=1e-06)
+            np.testing.assert_allclose(base_val, crit_val, rtol=1e-05, atol=1e-06)
 
             # We know even more for the deterministic case.
             if constr['flag_deterministic']:

@@ -186,7 +186,6 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
     # Replace discount factor
     if 'flag_myopic' in constr.keys():
         # Extract object
-        assert ('delta' not in constr.keys())
         assert (constr['flag_myopic'] in [True, False])
         # Replace in initialization files
         if constr['flag_myopic']:
@@ -279,9 +278,6 @@ def _check_constraints(constr):
 
     # Address incompatibility issues
     keys = constr.keys()
-
-    if 'flag_myopic' in keys:
-        assert 'delta' not in keys
 
     if 'flag_estimation' in keys:
         assert 'maxfun' not in keys
