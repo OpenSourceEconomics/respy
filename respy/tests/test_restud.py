@@ -74,10 +74,11 @@ class TestClass(object):
         constr['edu'] = (10, 20)
         constr['flag_deterministic'] = True
         constr['level'] = 0.00
+        constr['types'] = 1
 
         # Generate random initialization file. The RESTUD code uses the same random draws for the
-        #  solution and simulation of the model. Thus, the number of draws is required to be less
-        #  or equal to the number of agents.
+        # solution and simulation of the model. Thus, the number of draws is required to be less
+        # or equal to the number of agents.
         init_dict = generate_random_dict(constr)
 
         num_agents_sim = init_dict['SIMULATION']['agents']
