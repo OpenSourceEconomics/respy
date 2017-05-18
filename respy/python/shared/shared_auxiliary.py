@@ -2,10 +2,8 @@ import numpy as np
 
 import linecache
 import shlex
-import glob
 import os
 
-from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import OPT_AMB_FORT
@@ -201,20 +199,17 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
 
     # Get future values
     if period != (num_periods - 1):
-        emaxs, is_inadmissible = get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k,
-                                           states_all)
+        emaxs = get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all)
     else:
-        is_inadmissible = False
         emaxs = np.tile(0.0, 4)
 
     # Calculate total utilities
     total_values = rewards_ex_post + optim_paras['delta'] * emaxs
 
     # This is required to ensure that the agent does not choose any inadmissible states. If the
-    # state is inadmissible emaxs takes value zero. This aligns the treatment of inadmissible
-    # values with the original paper.
-    if is_inadmissible:
-        total_values[2] += INADMISSIBILITY_PENALTY
+    # state is inadmissible emaxs takes value zero.
+    if states_all[period, k, 2] >= edu_spec['max']:
+        total_values[2] -= HUGE_FLOAT
 
     # Finishing
     return total_values
@@ -251,7 +246,7 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     emaxs[3] = periods_emax[period + 1, future_idx]
 
     # Finishing
-    return emaxs, is_inadmissible
+    return emaxs
 
 
 def create_draws(num_periods, num_draws, seed, is_debug):

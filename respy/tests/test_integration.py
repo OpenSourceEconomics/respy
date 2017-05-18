@@ -343,8 +343,8 @@ class TestClass(object):
             np.testing.assert_almost_equal(base_val, val)
 
     def test_10(self):
-        """ We ensure that the number of types does not matter for the evaluation of the criterion 
-        function if a weight of one is put on the first group.
+        """ We ensure that the number of initial conditions does not matter for the evaluation of 
+        the criterion function if a weight of one is put on the first group.
         """
 
         constr = dict()
@@ -435,20 +435,21 @@ class TestClass(object):
         resources = []
         resources += ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']
         resources += ['kw_data_one_types.ini', 'kw_data_one_initial.ini']
-        fname = np.random.choice(resources)
 
-        raise AssertionError('... currently not maintained')
+        fname = np.random.choice(resources)
 
         # Select expected result
         rslt = None
         if 'one.ini' in fname:
-            rslt = 0.261487735867433
+            rslt = 10.459509434697358
         elif 'two.ini' in fname:
-            rslt = 1.126138097174159
+            rslt = 45.04552388696635
         elif 'three.ini' in fname:
-            rslt = 1.895699121131644
+            rslt = 75.82796484512875
         elif 'one_types.ini' in fname:
-            rslt = 0.352057450315807
+            rslt = 8.957176118440145
+        elif 'one_initial.ini' in fname:
+            rslt = 8.263655342390024
 
         # This ensures that the experience effect is taken care of properly.
         open('.restud.respy.scratch', 'w').close()

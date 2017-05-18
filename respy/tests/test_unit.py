@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
 
-from respy.python.shared.shared_auxiliary import get_optim_paras
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from respy import simulate
@@ -122,8 +123,10 @@ class TestClass(object):
         _, df = simulate(respy_obj)
 
         # Check special case
-        shocks_cholesky = respy_obj.get_attr('optim_paras')['shocks_cholesky']
-        num_types = respy_obj.get_attr('num_types')
+        optim_paras, num_types, edu_spec = dist_class_attributes(respy_obj, 'optim_paras',
+            'num_types', 'edu_spec')
+
+        shocks_cholesky = optim_paras['shocks_cholesky']
 
         is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
 
@@ -153,8 +156,12 @@ class TestClass(object):
                 else:
                     df[label] = df[label_sys] + df[label_sho]
 
-                col_1 = df['Total_Reward_' + str(i)]
-                col_2 = df[label]
+                # The equality does not hold if a state is inadmissible.
+                cond = (df['Years_Schooling'] != edu_spec['max'])
+
+                col_1 = df['Total_Reward_' + str(i)].loc[:, cond]
+                col_2 = df[label].loc[:, cond]
+
                 np.testing.assert_array_almost_equal(col_1, col_2)
 
         # If the model is deterministic, all shocks should be equal to zero. Of course,

@@ -397,8 +397,6 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
     REAL(our_dble)                  :: rewards_ex_post(4)
     REAL(our_dble)                  :: emaxs(4)
 
-    LOGICAL                         :: is_inadmissible
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -414,32 +412,29 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
-        CALL get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_spec)
+        CALL get_emaxs(emaxs, mapping_state_idx, period, periods_emax, k, states_all, edu_spec)
     ELSE
-        is_inadmissible = .False.
         emaxs = zero_dble
     END IF
 
     ! Calculate total utilities
     total_values = rewards_ex_post + optim_paras%delta(1) * emaxs
 
-    ! This is required to ensure that the agent does not choose any inadmissible states. If the state is inadmissible emaxs takes value zero. This aligns the treatment of inadmissible values with the original paper.
-    IF (is_inadmissible) THEN
-        total_values(3) = total_values(3) + INADMISSIBILITY_PENALTY
+    ! This is required to ensure that the agent does not choose any inadmissible states. If the state is inadmissible emaxs takes value zero.
+    IF (states_all(period + 1, k + 1, 3) >= edu_spec%max) THEN
+        total_values(3) = total_values(3) - HUGE_FLOAT
     END IF
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_spec)
+SUBROUTINE get_emaxs(emaxs, mapping_state_idx, period, periods_emax, k, states_all, edu_spec)
 
     !/* external objects        */
 
     TYPE(EDU_DICT), INTENT(IN)      :: edu_spec
 
     REAL(our_dble), INTENT(OUT)     :: emaxs(4)
-
-    LOGICAL, INTENT(OUT)            :: is_inadmissible
 
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
@@ -477,8 +472,7 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
     emaxs(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
     ! Increasing schooling. Note that adding an additional year of schooling is only possible for those that have strictly less than the maximum level of additional education allowed.
-    is_inadmissible = (edu .GE. edu_spec%max)
-     IF(is_inadmissible) THEN
+    IF(edu .GE. edu_spec%max) THEN
         emaxs(3) = zero_dble
     ELSE
         future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 2, type_ + 1)

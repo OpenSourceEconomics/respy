@@ -863,7 +863,7 @@ class RespyCls(object):
             # take value one in the first period.
             for period in range(num_periods):
                 assert (np.all(states_all[0, :, 3]) == 1)
-                assert (np.nanmax(states_all[period, :, 3]) == 1)
+                assert (np.nanmax(states_all[period, :, 3]) in [0, 1])
                 assert (np.nanmin(states_all[period, :, :3]) == 0)
 
             # All finite values have to be larger or equal to zero. The loop is required as
