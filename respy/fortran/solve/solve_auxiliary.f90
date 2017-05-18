@@ -129,11 +129,16 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                                     CYCLE
                                 END IF
 
-                                ! Collect all possible realizations of state space
-                                states_all_tmp(period + 1, k + 1, :) = (/ exp_a, exp_b, edu_start + edu_add, edu_lagged, type_ /)
+                                ! If we have multiple initial conditions it might well be the case that we have a duplicate state, i.e. the same state is possible with other initial condition that period.
+                                IF (mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , edu_lagged + 1, type_ + 1) .NE. MISSING_INT)  THEN
+                                    CYCLE
+                                END IF
 
                                 ! Collect mapping of state space to array index.
                                 mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , edu_lagged + 1, type_ + 1) = k
+
+                                ! Collect all possible realizations of state space
+                                states_all_tmp(period + 1, k + 1, :) = (/ exp_a, exp_b, edu_start + edu_add, edu_lagged, type_ /)
 
                                 ! Update count
                                 k = k + 1

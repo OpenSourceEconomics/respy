@@ -84,13 +84,20 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                 if total > period:
                                     continue
 
-                                # Collect all possible realizations of state space
-                                states_all[period, k, :] = [exp_a, exp_b, edu_start + edu_add,
-                                                            edu_lagged, type_]
+                                # If we have multiple initial conditions it might well be the
+                                # case that we have a duplicate state, i.e. the same state is
+                                # possible with other initial condition that period.
+                                if mapping_state_idx[period, exp_a, exp_b, edu_start + edu_add,
+                                                     edu_lagged, type_] != MISSING_INT:
+                                    continue
 
                                 # Collect mapping of state space to array index.
                                 mapping_state_idx[period, exp_a, exp_b, edu_start + edu_add,
                                                   edu_lagged, type_] = k
+
+                                # Collect all possible realizations of state space
+                                states_all[period, k, :] = [exp_a, exp_b, edu_start + edu_add,
+                                                            edu_lagged, type_]
 
                                 # Update count
                                 k += 1

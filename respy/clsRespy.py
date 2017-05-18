@@ -816,11 +816,15 @@ class RespyCls(object):
                 assert (self.attr[label] is None)
 
         # Distribute class attributes
-        edu_start = min(self.attr['edu_spec']['start'])
+        num_initial = len(self.attr['edu_spec']['start'])
+
+        edu_start = max(self.attr['edu_spec']['start'])
 
         edu_max = self.attr['edu_spec']['max']
 
         num_periods = self.attr['num_periods']
+
+        num_types = self.attr['num_types']
 
         # Distribute results
         periods_rewards_systematic = self.attr['periods_rewards_systematic']
@@ -850,19 +854,10 @@ class RespyCls(object):
         is_applicable = is_applicable and (mapping_state_idx is not None)
 
         if is_applicable:
-            # If the agent never increased their level of education, the lagged education
-            # variable cannot take a value larger than zero.
-            # TODO: Is this test worth saving?
-            #for period in range(1, num_periods):
-            #    indices = (np.where(states_all[period, :, :][:, 2] == 0))
-            #    for index in indices:
-            #        assert (np.all(states_all[period, :, :][index, 3]) == 0)
-
             # No values can be larger than constraint time. The exception in the lagged
             # schooling variable in the first period, which takes value one but has index zero.
-            # TODO: Is this test worth saving?
-            #for period in range(num_periods):
-            #    assert (np.nanmax(states_all[period, :, :3]) <= (period + edu_start))
+            for period in range(num_periods):
+                assert (np.nanmax(states_all[period, :, :3]) <= (period + edu_start))
 
             # Lagged schooling can only take value zero or one if finite. In fact, it can only
             # take value one in the first period.
@@ -874,102 +869,94 @@ class RespyCls(object):
             # All finite values have to be larger or equal to zero. The loop is required as
             # np.all evaluates to FALSE for this condition (see NUMPY documentation).
             for period in range(num_periods):
-                assert (np.all(
-                    states_all[period, :states_number_period[period]] >= 0))
+                assert (np.all(states_all[period, :states_number_period[period]] >= 0))
 
             # The maximum number of education years is never larger than `edu_max'.
             for period in range(num_periods):
                 assert (np.nanmax(states_all[period, :, :][:, 2], axis=0) <= edu_max)
 
-            # Check for duplicate rows in each period
-            # TODO: Revisit later.
-            #for period in range(num_periods):
-            #    assert (np.sum(pd.DataFrame(
-            #        states_all[period, :states_number_period[period], :]).duplicated()) == 0)
-        #
-        #     # Checking validity of state space values. All valid values need to be finite.
-        #     for period in range(num_periods):
-        #         assert (np.all(np.isfinite(states_all[period, :states_number_period[period]])))
-        #
-        #     # There are no infinite values in final period.
-        #     assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))
-        #
-        #     # There are is only one finite realization in period one.
-        #     assert (np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == num_types)
-        #
-        #     # If valid, the number of state space realizations in period two is
-        #     # four.
-        #     if num_periods > 1:
-        #         assert (np.sum(np.isfinite(mapping_state_idx[1, :, :, :, :])) == 4 * num_types)
-        #
-        #     # Check that mapping is defined for all possible realizations of the state space by
-        #     # period. Check that mapping is not defined for all inadmissible values.
-        #     is_infinite = np.tile(False, reps=mapping_state_idx.shape)
-        #     for period in range(num_periods):
-        #         # Subsetting valid indices
-        #         indices = states_all[period, :states_number_period[
-        #             period], :].astype('int')
-        #         for index in indices:
-        #             # Check for finite value at admissible state
-        #             assert (np.isfinite(mapping_state_idx[period, index[0],
-        #                 index[1], index[2], index[3], index[4]]))
-        #             # Record finite value
-        #             is_infinite[
-        #                 period, index[0], index[1], index[2], index[3],
-        #                 index[4]] = True
-        #     # Check that all admissible states are finite
-        #     assert (np.all(np.isfinite(mapping_state_idx[is_infinite == True])))
-        #
-        #     # Check that all inadmissible states are infinite
-        #     assert (np.all(np.isfinite(
-        #         mapping_state_idx[is_infinite == False])) == False)
-        #
-        # # Check the calculated systematic rewards
-        # is_applicable = (states_all is not None)
-        # is_applicable = is_applicable and (states_number_period is not None)
-        # is_applicable = is_applicable and (periods_rewards_systematic is not None)
-        #
-        # if is_applicable:
-        #     # Check that the rewards are finite for all admissible values and infinite for all
-        #     # others.
-        #     is_infinite = np.tile(False, reps=periods_rewards_systematic.shape)
-        #     for period in range(num_periods):
-        #         # Loop over all possible states
-        #         for k in range(states_number_period[period]):
-        #             # Check that wages are all positive
-        #             assert (np.all(periods_rewards_systematic[period, k, :2] >= 0.0))
-        #             # Check for finite value at admissible state
-        #             assert (np.all(np.isfinite(periods_rewards_systematic[
-        #             period, k, :])))
-        #             # Record finite value
-        #             is_infinite[period, k, :] = True
-        #         # Check that all admissible states are finite
-        #         assert (np.all(np.isfinite(periods_rewards_systematic[
-        #             is_infinite == True])))
-        #         # Check that all inadmissible states are infinite
-        #         if num_periods > 1:
-        #             assert (np.all(np.isfinite(periods_rewards_systematic[is_infinite == False])) == False)
-        #
-        # # Check the expected future value
-        # is_applicable = (periods_emax is not None)
-        #
-        # if is_applicable:
-        #     # Check that the emaxs are finite for all admissible values and infinite for all others.
-        #     is_infinite = np.tile(False, reps=periods_emax.shape)
-        #     for period in range(num_periods):
-        #         # Loop over all possible states
-        #         for k in range(states_number_period[period]):
-        #             # Check for finite value at admissible state
-        #             assert (np.all(np.isfinite(periods_emax[period, k])))
-        #             # Record finite value
-        #             is_infinite[period, k] = True
-        #         # Check that all admissible states are finite
-        #         assert (np.all(np.isfinite(periods_emax[is_infinite == True])))
-        #         # Check that all inadmissible states are infinite
-        #         if num_periods == 1:
-        #             assert (len(periods_emax[is_infinite == False]) == 0)
-        #         else:
-        #             assert (np.all(np.isfinite(periods_emax[is_infinite == False])) == False)
+            # Check for duplicate rows in each period. We only have possible duplicates if there are
+            # multiple initial conditions.
+            for period in range(num_periods):
+                assert (np.sum(pd.DataFrame(
+                        states_all[period, :states_number_period[period], :]).duplicated()) == 0)
+
+            # Checking validity of state space values. All valid values need to be finite.
+            for period in range(num_periods):
+                assert (np.all(np.isfinite(states_all[period, :states_number_period[period]])))
+
+            # There are no infinite values in final period.
+            assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))
+
+            # We just briefly check the number of states in the first time period.
+            assert (np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == num_types * num_initial)
+
+            # Check that mapping is defined for all possible realizations of the state space by
+            # period. Check that mapping is not defined for all inadmissible values.
+            is_infinite = np.tile(False, reps=mapping_state_idx.shape)
+            for period in range(num_periods):
+                # Subsetting valid indices
+                indices = states_all[period, :states_number_period[
+                    period], :].astype('int')
+                for index in indices:
+                    # Check for finite value at admissible state
+                    assert (np.isfinite(mapping_state_idx[period, index[0],
+                        index[1], index[2], index[3], index[4]]))
+                    # Record finite value
+                    is_infinite[
+                        period, index[0], index[1], index[2], index[3],
+                        index[4]] = True
+            # Check that all admissible states are finite
+            assert (np.all(np.isfinite(mapping_state_idx[is_infinite == True])))
+
+            # Check that all inadmissible states are infinite
+            assert (np.all(np.isfinite(
+                mapping_state_idx[is_infinite == False])) == False)
+
+        # Check the calculated systematic rewards
+        is_applicable = (states_all is not None)
+        is_applicable = is_applicable and (states_number_period is not None)
+        is_applicable = is_applicable and (periods_rewards_systematic is not None)
+
+        if is_applicable:
+            # Check that the rewards are finite for all admissible values and infinite for all
+            # others.
+            is_infinite = np.tile(False, reps=periods_rewards_systematic.shape)
+            for period in range(num_periods):
+                # Loop over all possible states
+                for k in range(states_number_period[period]):
+                    # Check that wages are all positive
+                    assert (np.all(periods_rewards_systematic[period, k, :2] >= 0.0))
+                    # Check for finite value at admissible state
+                    assert (np.all(np.isfinite(periods_rewards_systematic[period, k, :])))
+                    # Record finite value
+                    is_infinite[period, k, :] = True
+                # Check that all admissible states are finite
+                assert (np.all(np.isfinite(periods_rewards_systematic[is_infinite == True])))
+                # Check that all inadmissible states are infinite
+                if num_periods > 1:
+                    assert (np.all(np.isfinite(periods_rewards_systematic[is_infinite == False])) == False)
+
+        # Check the expected future value
+        is_applicable = (periods_emax is not None)
+
+        if is_applicable:
+            # Check that the emaxs are finite for all admissible values and infinite for all others.
+            is_infinite = np.tile(False, reps=periods_emax.shape)
+            for period in range(num_periods):
+                # Loop over all possible states
+                for k in range(states_number_period[period]):
+                    # Check for finite value at admissible state
+                    assert (np.all(np.isfinite(periods_emax[period, k])))
+                    # Record finite value
+                    is_infinite[period, k] = True
+                # Check that all admissible states are finite
+                assert (np.all(np.isfinite(periods_emax[is_infinite == True])))
+                # Check that all inadmissible states are infinite
+                if num_periods == 1:
+                    assert (len(periods_emax[is_infinite == False]) == 0)
+                else:
+                    assert (np.all(np.isfinite(periods_emax[is_infinite == False])) == False)
 
     def _check_key(self, key):
         """ Check that key is present.

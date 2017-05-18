@@ -59,6 +59,11 @@ def run(request, is_compile, is_background, is_strict):
         tests = json.load(open(fname, 'r'))
 
         init_dict, crit_val = tests[idx]
+
+        # TODO: All other bounds are not enforceble at this point.
+        num_types = len(init_dict['TYPE_SHARES']['coeffs'])
+        init_dict['TYPE_SHARES']['bounds'] = [[0.0, None]] * num_types
+        
         print_init_dict(init_dict)
         respy_obj = RespyCls('test.respy.ini')
 
@@ -128,7 +133,7 @@ def run(request, is_compile, is_background, is_strict):
                 print(msg)
                 continue
 
-            # TODO: All other bounds are not enforcable at this point.
+            # TODO: All other bounds are not enforceble at this point.
             num_types = len(init_dict['TYPE_SHARES']['coeffs'])
             init_dict['TYPE_SHARES']['bounds'] = [[0.0, None]] * num_types
 

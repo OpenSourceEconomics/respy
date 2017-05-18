@@ -19,6 +19,8 @@ from codes.random_init import generate_random_dict
 from respy.custom_exceptions import UserError
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
+from codes.auxiliary import write_edu_start
+from codes.auxiliary import write_types
 
 from respy import estimate
 from respy import RespyCls
@@ -95,6 +97,13 @@ class TestClass(object):
         constr['flag_myopic'] = True
 
         generate_init(constr)
+        respy_obj = RespyCls('test.respy.ini')
+
+        optim_paras, num_agents_sim, edu_spec = dist_class_attributes(respy_obj, 'optim_paras',
+            'num_agents_sim', 'edu_spec')
+
+        write_types(optim_paras['type_shares'], num_agents_sim)
+        write_edu_start(edu_spec, num_agents_sim)
 
         # Iterate over alternative discount rates.
         base_data, base_val = None, None
