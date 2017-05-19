@@ -133,7 +133,6 @@ def run(request, is_compile, is_background, is_strict):
                 print(msg)
                 continue
 
-            # TODO: These are the manual modifications.
             # These tests fail as I removed all duplicated rows and thus the interpolation
             # equation changes.
             if idx in [309, 94, 70, 681, 696, 487, 194, 771, 868, 387, 940, 906, 449]:
