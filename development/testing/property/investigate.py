@@ -50,9 +50,9 @@ count = 0
 #os.system('git clean -d -f')
 for i in range(100):
 
-#    seed = 1223
+    #seed = 1223
     seed = i + 3825
-#    seed = 38280
+    #seed = 38280
     np.random.seed(seed)
     print("seed ", seed)
 

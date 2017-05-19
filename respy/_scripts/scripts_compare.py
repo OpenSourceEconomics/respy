@@ -37,7 +37,7 @@ def dist_input_arguments(parser):
 
 
 def _prepare_initial(data_obs, data_sim, num_agents_est, num_agents_sim):
-    """ This function prepares the information about the distribution of initial schooling levels 
+    """ This function prepares the information about the distribution of initial schooling levels
     in both datasets.
     """
     # First we want to construct a fill list of available initial schooling levels
