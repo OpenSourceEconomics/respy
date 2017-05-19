@@ -817,7 +817,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 
         CLOSE(99)
 
-        2100 FORMAT(i5)
+        2100 FORMAT(i10)
 
         OPEN(UNIT=99, FILE='.states_number_period.resfort.dat', ACTION='WRITE')
 
@@ -828,7 +828,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
         CLOSE(99)
 
 
-        2200 FORMAT(i5)
+        2200 FORMAT(i10)
 
         OPEN(UNIT=99, FILE='.max_states_period.resfort.dat', ACTION='WRITE')
 
