@@ -80,8 +80,8 @@ def compare_init(fname_base, fname_alt):
     base_lines = [line.rstrip('\n') for line in open(fname_base, 'r')]
     alt_lines = [line.rstrip('\n') for line in open(fname_alt, 'r')]
 
-    for i in range(len(base_lines)):
-        if alt_lines[i].replace(' ', '') != base_lines[i].replace(' ', ''):
+    for i, base_line in enumerate(base_lines):
+        if alt_lines[i].replace(' ', '') != base_line.replace(' ', ''):
             return False
     return True
 

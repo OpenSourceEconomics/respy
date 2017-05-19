@@ -77,7 +77,7 @@ def _prepare_wages(data_obs, data_sim, which):
             data = data_obs
         else:
             data = data_sim
-        for period in range(len(data_obs['Period'].unique())):
+        for period in range(data_obs['Period'].nunique()):
             is_occupation = data['Choice'] == choice_ind
             series = data['Wage'].ix[is_occupation][:, period]
             rslt[label] += [list(series.describe().values)]
@@ -101,7 +101,7 @@ def _prepare_choices(data_obs, data_sim):
         else:
             data = data_sim
 
-        for period in range(len(data_obs['Period'].unique())):
+        for period in range(data_obs['Period'].nunique()):
             shares = []
             total = data['Choice'].loc[:, period].count()
             for choice in [1, 2, 3, 4]:
@@ -156,8 +156,8 @@ def scripts_compare(base_init, is_update):
     # Prepare results
     rslt_initial = _prepare_initial(data_obs, data_sim, num_agents_est, num_agents_sim)
     rslt_choice, rmse_choice = _prepare_choices(data_obs, data_sim)
-    rslt_A = _prepare_wages(data_obs, data_sim, 'Occupation A')
-    rslt_B = _prepare_wages(data_obs, data_sim, 'Occupation B')
+    rslt_a = _prepare_wages(data_obs, data_sim, 'Occupation A')
+    rslt_b = _prepare_wages(data_obs, data_sim, 'Occupation B')
 
     with open('compare.respy.info', 'w') as file_:
 
@@ -209,7 +209,7 @@ def scripts_compare(base_init, is_update):
         labels += ['25%', '50%', '75%']
 
         file_.write(fmt_.format(*labels) + '\n')
-        for rslt, name in [(rslt_A, 'Occupation A'), (rslt_B, 'Occupation B')]:
+        for rslt, name in [(rslt_a, 'Occupation A'), (rslt_b, 'Occupation B')]:
             file_.write('\n    ' + name + ' \n\n')
             for period in range(max_periods):
                 for label in ['Observed', 'Simulated']:

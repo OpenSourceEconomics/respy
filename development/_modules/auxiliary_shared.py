@@ -168,7 +168,8 @@ def send_notification(which, **kwargs):
 
 
 def aggregate_information(which, fnames):
-
+    """ This function simply aggregates the information from the different specifications.
+    """
     if which == 'scalability':
         fname_info = 'scalability.respy.info'
     elif which == 'reliability':

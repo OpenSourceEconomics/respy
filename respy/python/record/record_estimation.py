@@ -24,8 +24,8 @@ def record_estimation_scaling(x_optim_free_unscaled_start,
         out_file.write(fmt_.format(*labels))
 
         j = 0
-        for i in range(len(paras_fixed)):
-            if paras_fixed[i]:
+        for i, is_fixed in enumerate(paras_fixed):
+            if is_fixed:
                 continue
 
             paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j, j]]
