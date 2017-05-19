@@ -29,7 +29,7 @@ request_dict = dict()
 request_dict['REGRESSION'] = True
 request_dict['PROPERTY'] = True
 request_dict['RELEASE'] = False
-request_dict['PYTEST'] = True
+request_dict['PYTEST'] = False
 
 # We need to specify the arguments for each of the tests.
 test_spec = dict()

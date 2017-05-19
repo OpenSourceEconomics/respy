@@ -421,8 +421,8 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
     total_values = rewards_ex_post + optim_paras%delta(1) * emaxs
 
     ! This is required to ensure that the agent does not choose any inadmissible states. If the state is inadmissible emaxs takes value zero.
-    IF (states_all(period + 1, k + 1, 3) >= edu_spec%max) THEN
-        total_values(3) = total_values(3) - HUGE_FLOAT
+    IF ((states_all(period + 1, k + 1, 3) >= edu_spec%max) .AND. (period .NE. (num_periods - one_int))) THEN
+        total_values(3) = total_values(3) + INADMISSIBILITY_PENALTY
     END IF
 
 END SUBROUTINE

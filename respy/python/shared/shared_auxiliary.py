@@ -4,6 +4,7 @@ import linecache
 import shlex
 import os
 
+from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import OPT_AMB_FORT
@@ -208,8 +209,8 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
 
     # This is required to ensure that the agent does not choose any inadmissible states. If the
     # state is inadmissible emaxs takes value zero.
-    if states_all[period, k, 2] >= edu_spec['max']:
-        total_values[2] -= HUGE_FLOAT
+    if states_all[period, k, 2] >= edu_spec['max'] and period != (num_periods - 1):
+        total_values[2] += INADMISSIBILITY_PENALTY
 
     # Finishing
     return total_values
