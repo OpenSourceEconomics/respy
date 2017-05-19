@@ -26,12 +26,12 @@ if __name__ == '__main__':
         subprocess.check_call(cmd)
 
         # We also need to add some additional directories to the PYTHONPATH.
-        top = ["import sys; sys.__plen = len(sys.path)"]
+        top = "import sys; sys.__plen = len(sys.path)"
 
-        bottom = []
-        bottom += ["import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:];"]
-        bottom += ["p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert ="]
-        bottom += [" p+len(""new)"]
+        bottom = ''
+        bottom += "import sys; new=sys.path[sys.__plen:]; del sys.path[sys.__plen:];"
+        bottom += "p=getattr(sys,'__egginsert',0); sys.path[p:p]=new; sys.__egginsert ="
+        bottom += "p+len(new)"
 
         # Here we collect the manual additions to the PYTHONPATH of the virutal environment.
         subdirs = []
@@ -43,10 +43,10 @@ if __name__ == '__main__':
         for subdir in subdirs:
             dirnames += [PROJECT_DIR + subdir]
 
-        path_additions = top
+        path_additions = [top]
         for dirname in dirnames:
             path_additions += [dirname]
-        path_additions += bottom
+        path_additions += [bottom]
 
         os.chdir(ENV_DIR + '/' + name + '/lib')
         fname = glob.glob('python*')[0] + '/site-packages/_virtualenv_path_extensions.pth'

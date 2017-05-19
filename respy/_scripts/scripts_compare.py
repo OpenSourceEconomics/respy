@@ -9,7 +9,7 @@ from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.simulate.simulate_auxiliary import format_float
 from respy.python.process.process_python import process
-from respy.scripts.scripts_update import scripts_update
+from respy._scripts.scripts_update import scripts_update
 from respy.custom_exceptions import UserError
 from respy import RespyCls
 from respy import simulate

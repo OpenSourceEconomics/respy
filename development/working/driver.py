@@ -30,7 +30,7 @@ from respy.python.solve.solve_ambiguity import criterion_ambiguity, \
 from respy import RespyCls
 from respy import simulate
 from respy import estimate
-from respy.scripts.scripts_compare import scripts_compare
+from respy._scripts.scripts_compare import scripts_compare
 from codes.auxiliary import simulate_observed
 from codes.auxiliary import write_draws
 
