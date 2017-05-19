@@ -74,6 +74,18 @@ def simulate_observed(respy_obj, is_missings=True):
     return respy_obj
 
 
+def compare_init(fname_base, fname_alt):
+    """ This function compares the content of each line of a file without any regards for spaces.
+    """
+    base_lines = [line.rstrip('\n') for line in open(fname_base, 'r')]
+    alt_lines = [line.rstrip('\n') for line in open(fname_alt, 'r')]
+
+    for i in range(len(base_lines)):
+        if alt_lines[i].replace(' ', '') != base_lines[i].replace(' ', ''):
+            return False
+    return True
+
+
 def compare_est_log(base_est_log):
     """ This function is required as the log files can be slightly different
     for good reasons. The error capturing of an IndexError is required as

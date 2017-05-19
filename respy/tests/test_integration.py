@@ -1,7 +1,6 @@
 from pandas.util.testing import assert_frame_equal
 import numpy as np
 import pandas as pd
-import filecmp
 import pytest
 import glob
 
@@ -20,6 +19,7 @@ from respy.custom_exceptions import UserError
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from codes.auxiliary import write_edu_start
+from codes.auxiliary import compare_init
 from codes.auxiliary import write_types
 
 from respy import estimate
@@ -419,12 +419,13 @@ class TestClass(object):
             np.testing.assert_allclose(base_val, crit_val)
 
     def test_12(self):
-        """ This step ensures that the printing of the initialization file is done properly.      
+        """ This step ensures that the printing of the initialization file is done properly. We 
+        compare the content of the files line by line, but drop any spaces.   
         """
         for fname in glob.glob(TEST_RESOURCES_DIR + '/*.ini'):
             respy_obj = RespyCls(fname)
             respy_obj.write_out('test.respy.ini')
-            np.testing.assert_equal(filecmp.cmp(fname, 'test.respy.ini'), True)
+            np.testing.assert_equal(compare_init(fname, 'test.respy.ini'), True)
 
     @pytest.mark.slow
     def test_13(self):
