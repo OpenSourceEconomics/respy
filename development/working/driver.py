@@ -41,15 +41,15 @@ from respy.python.process.process_python import process
 np.random.seed(123)
 #print 'running with types'
 # This ensures that the experience effect is taken care of properly.
-open('.restud.respy.scratch', 'w').close()
+#open('.restud.respy.scratch', 'w').close()
 
 respy_obj = RespyCls('model.respy.ini')
 respy_obj, _ = simulate(respy_obj)
     #respy_obj.write_out('test.respy.ini')
 #respy_obj = RespyCls('truth.respy.ini')
 
-_, crit = estimate(respy_obj)
-print(crit)
+#_, crit = estimate(respy_obj)
+#print(crit)
 
 
 #respy_obj = RespyCls('stop.respy.ini')

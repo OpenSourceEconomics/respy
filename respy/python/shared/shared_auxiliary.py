@@ -520,7 +520,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write('BASICS\n\n')
 
-                str_ = '{0:<10} {1:>20}\n'
+                str_ = '{0:<10} {1:>25}\n'
                 file_.write(str_.format('periods', dict_[flag]['periods']))
 
                 val = dict_['BASICS']['coeffs'][0]
@@ -572,10 +572,10 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for key_ in keys:
 
                     if key_ in ['tau']:
-                        str_ = '{0:<10} {1:20.15f}\n'
+                        str_ = '{0:<10} {1:25.15f}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
-                        str_ = '{0:<10} {1:>20}\n'
+                        str_ = '{0:<10} {1:>25}\n'
                         file_.write(str_.format(key_, str(dict_[flag][key_])))
 
                 file_.write('\n')
@@ -618,7 +618,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 line = format_opt_parameters(val, 1, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
-                str_ = '{0:<10} {1:>20}\n'
+                str_ = '{0:<10} {1:>25}\n'
                 file_.write(str_.format('measure', dict_[flag]['measure']))
                 file_.write(str_.format('mean', str(dict_[flag]['mean'])))
 
@@ -656,10 +656,10 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for key_ in keys:
 
                     if key_ in ['maxfun', 'npt', 'maxiter', 'm', 'maxls']:
-                        str_ = '{0:<10} {1:>20}\n'
+                        str_ = '{0:<10} {1:>25}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
-                        str_ = '{0:<10} {1:20.15f}\n'
+                        str_ = '{0:<10} {1:25.15f}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
 
                 file_.write('\n')

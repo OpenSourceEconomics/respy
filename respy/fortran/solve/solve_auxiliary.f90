@@ -36,7 +36,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 
     !/* internals objects       */
 
-    INTEGER(our_int)                    :: states_all_tmp(num_periods, 100000, 5)
+    INTEGER(our_int)                    :: states_all_tmp(num_periods, 1000000, 5)
     INTEGER(our_int)                    :: num_edu_start
     INTEGER(our_int)                    :: edu_lagged
     INTEGER(our_int)                    :: edu_start
