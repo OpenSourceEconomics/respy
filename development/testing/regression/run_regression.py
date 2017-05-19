@@ -138,6 +138,7 @@ def run(request, is_compile, is_background, is_strict):
             if idx in [309, 94, 70, 681, 696, 487, 194, 771, 868, 387, 940, 906, 449]:
                 msg = ' ... skipped due to removal of duplicated states'
                 print(msg)
+                continue
 
             # All other bounds are not enforceble at this point.
             num_types = len(init_dict['TYPE_SHARES']['coeffs'])
