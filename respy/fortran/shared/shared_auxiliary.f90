@@ -773,7 +773,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
     IF (request == 'simulate') THEN
 
         ! Write out results for the store results.
-        1800 FORMAT(5(1x,i5))
+        1800 FORMAT(5(1x,i10))
 
         OPEN(UNIT=99, FILE='.mapping_state_idx.resfort.dat', ACTION='WRITE')
 
@@ -837,7 +837,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
         CLOSE(99)
 
 
-        2400 FORMAT(100000(1x,f45.15))
+        2400 FORMAT(1000000(1x,f45.15))
 
         OPEN(UNIT=99, FILE='.periods_emax.resfort.dat', ACTION='WRITE')
 
