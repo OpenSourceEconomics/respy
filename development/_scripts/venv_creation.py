@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
         with open(fname, 'w') as outfile:
             for line in path_additions:
-                outfile.write("%s\n".format(line))
+                outfile.write("{}\n".format(line))
 
         # We now also create links to all scripts. We first do so for the scripts that are included
         # in the package and then also for some auxiliary scripts.

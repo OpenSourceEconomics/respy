@@ -209,7 +209,7 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
 
     # This is required to ensure that the agent does not choose any inadmissible states. If the
     # state is inadmissible emaxs takes value zero.
-    if states_all[period, k, 2] >= edu_spec['max'] and period != (num_periods - 1):
+    if states_all[period, k, 2] >= edu_spec['max']:
         total_values[2] += INADMISSIBILITY_PENALTY
 
     # Finishing

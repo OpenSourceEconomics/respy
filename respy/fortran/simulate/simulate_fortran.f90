@@ -136,6 +136,9 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             data_sim(count + 1, 18:21) = draws
             data_sim(count + 1, 22:22) = optim_paras%delta
 
+            ! We need to ensure that no individual chooses an inadmissible state. This cannot be done directly in the get_total_values function as the penalty otherwise dominates the interpolation equation. The parameter INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very constructed cases.
+            IF (edu >= edu_spec%max) total_values(3) = -HUGE_FLOAT
+
             ! Determine and record optimal choice
             choice = MAXLOC(total_values)
 

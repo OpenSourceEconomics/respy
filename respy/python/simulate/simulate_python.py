@@ -8,6 +8,7 @@ from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.simulate.simulate_auxiliary import get_random_types
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
 def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
@@ -65,6 +66,13 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             # Get total value of admissible states
             total_values = get_total_values(period, num_periods, optim_paras, rewards_systematic,
                 draws, edu_spec, mapping_state_idx, periods_emax, k, states_all)
+
+            # We need to ensure that no individual chooses an inadmissible state. This cannot be
+            # done directly in the get_total_values function as the penalty otherwise dominates
+            # the interpolation equation. The parameter INADMISSIBILITY_PENALTY is a compromise.
+            # It is only relevant in very constructed cases.
+            if edu >= edu_spec['max']:
+                total_values[2] = -HUGE_FLOAT
 
             # Determine optimal choice
             max_idx = np.argmax(total_values)

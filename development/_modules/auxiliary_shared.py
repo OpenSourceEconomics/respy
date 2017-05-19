@@ -9,12 +9,8 @@ import os
 import numpy as np
 
 from config import PACKAGE_DIR
-from config import python2_exec
-from config import python3_exec
 
 from clsMail import MailCls
-
-from config import SPECS
 
 
 def update_class_instance(respy_obj, spec_dict):
@@ -40,18 +36,6 @@ def update_class_instance(respy_obj, spec_dict):
     return respy_obj
 
 
-def get_executable():
-
-    PYTHON_VERSION = sys.version_info[0]
-
-    if PYTHON_VERSION == 2:
-        python_exec = python2_exec
-    else:
-        python_exec = python3_exec
-
-    return python_exec
-
-
 def strfdelta(tdelta, fmt):
     """ Get a string from a timedelta.
     """
@@ -72,7 +56,7 @@ def cleanup():
 def compile_package(is_debug=False):
     """ Compile the package for use.
     """
-    python_exec = get_executable()
+    python_exec = sys.executable
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call(python_exec + ' waf distclean', shell=True)

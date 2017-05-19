@@ -161,7 +161,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
         # Get information on the spectral condition number of the covariance matrix of the shock
         # distribution.
         cond = []
-        for i, which in enumerate(['Start', 'Step', 'Current']):
+        for i in range(3):
             shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-3]
             cond += [np.log(spectral_condition_number(shocks_cov))]
         fmt_ = '   {:>9} ' + '    {:25.15f}' * 3 + '\n'
@@ -219,13 +219,12 @@ def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
 def char_floats(floats):
     """ Pretty printing of floats.
     """
-    # We ensure that this function can also be called on for a single float
-    # value.
+    # We ensure that this function can also be called on for a single float value.
     if isinstance(floats, float):
         floats = [floats]
 
     line = []
-    for i, value in enumerate(floats):
+    for value in floats:
         if abs(value) > LARGE_FLOAT:
             line += ['{:>25}'.format('---')]
         else:
