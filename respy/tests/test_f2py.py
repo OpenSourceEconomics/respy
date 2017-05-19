@@ -724,7 +724,7 @@ class TestClass(object):
     def test_10(self):
         """ Functions related to the scaling procedure.
         """
-        for i in range(1000):
+        for _ in range(1000):
             num_free = np.random.randint(1, 100)
             values = np.random.uniform(-1000.0, 1000.0, size=num_free)
             py = get_scales_magnitudes(values)

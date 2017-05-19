@@ -405,7 +405,7 @@ class TestClass(object):
         respy_obj.attr['optim_paras']['paras_bounds'][lower:upper] = [[0.0, None]] * num_types
 
         base_val = None
-        for i, scale in enumerate(np.random.lognormal(size=2)):
+        for scale in np.random.lognormal(size=2):
 
             respy_obj.attr['optim_paras']['type_shares'] *= scale
 

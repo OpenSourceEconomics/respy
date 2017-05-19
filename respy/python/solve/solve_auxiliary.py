@@ -307,7 +307,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period, periods_d
 
                 # Simulate the expected future value.
                 if optim_paras['level'] > MIN_AMBIGUITY:
-                    emax, optim_ambi_details = construct_emax_ambiguity(num_periods, num_draws_emax,
+                    emax, opt_ambi_details = construct_emax_ambiguity(num_periods, num_draws_emax,
                         period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
                         rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec,
                         ambi_spec, optim_paras, optimizer_options, opt_ambi_details)
@@ -403,7 +403,7 @@ def get_endogenous_variable(period, num_periods, num_states, periods_rewards_sys
 
         # Simulate the expected future value.
         if optim_paras['level'] > MIN_AMBIGUITY:
-            emax, optim_ambi_details = construct_emax_ambiguity(num_periods, num_draws_emax, period,
+            emax, opt_ambi_details = construct_emax_ambiguity(num_periods, num_draws_emax, period,
                 k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
                 rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec,
                 ambi_spec, optim_paras, optimizer_options, opt_ambi_details)

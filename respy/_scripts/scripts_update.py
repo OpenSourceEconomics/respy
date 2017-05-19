@@ -2,7 +2,6 @@
 """ This script allows upgrades the initialization file with the parameter values from the last 
 step.
 """
-import numpy as np
 import argparse
 import shutil
 import os

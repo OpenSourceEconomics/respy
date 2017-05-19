@@ -267,8 +267,7 @@ class TestClass(object):
 
         respy_base = RespyCls('test.respy.ini')
 
-        num_agents_sim, optim_paras = dist_class_attributes(respy_base, 'num_agents_sim',
-                                                            'optim_paras')
+        num_agents_sim = dist_class_attributes(respy_base, 'num_agents_sim')
 
         type_shares = init_dict['TYPE_SHARES']['coeffs']
         num_periods = init_dict['BASICS']['periods']
