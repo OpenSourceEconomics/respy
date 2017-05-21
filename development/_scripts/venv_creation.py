@@ -3,6 +3,7 @@
 """
 
 import subprocess
+import socket
 import glob
 import os
 
@@ -17,10 +18,18 @@ if __name__ == '__main__':
 
     for name in ['restudToolbox', 'restudToolbox2']:
 
+        # This baseline works on most systems, but some special case is needed for the estimation
+        # server.
         if name in ['restudToolbox2']:
             exec_ = '/usr/bin/python2'
         else:
             exec_ = '/usr/bin/python3'
+
+        if socket.gethostname() in ['acropolis']:
+            if name in ['restudToolbox2']:
+                exec_ = '/usr/local/bin/python2.7'
+            else:
+                exec_ = '/usr/local/bin/python3.5'
 
         cmd = ['virtualenv', ENV_DIR + '/' + name, '--clear', '--python=' + exec_]
         subprocess.check_call(cmd)
