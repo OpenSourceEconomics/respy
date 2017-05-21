@@ -37,7 +37,7 @@ def simulate_observed(respy_obj, is_missings=True):
         agent = agent[agent['Period'] < start_truncation]
         return agent
 
-    seed_sim = dist_class_attributes(respy_obj, 'seed_sim')
+    seed_sim = dist_class_attributes(respy_obj, 'seed_sim')[0]
 
     simulate(respy_obj)
 
