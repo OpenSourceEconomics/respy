@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" This script checks the regression tests vault for any unintended changes during further 
+""" This script checks the regression tests vault for any unintended changes during further
 development and refactoring efforts.
 """
 from __future__ import print_function
@@ -135,7 +135,7 @@ def run(request, is_compile, is_background, is_strict):
             if socket.gethostname() == 'zeus' and idx in []:
                 print(msg)
                 continue
-            if socket.gethostname() == 'acropolis' and idx in []:
+            if socket.gethostname() == 'acropolis' and idx in [22]:
                 print(msg)
                 continue
 
