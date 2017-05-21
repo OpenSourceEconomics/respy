@@ -129,6 +129,16 @@ def run(request, is_compile, is_background, is_strict):
                 print(msg)
                 continue
 
+            # In the past we also had the problem that some of the testing machines report
+            # selective failures when the regression vault was created on another machine.
+            msg = ' ... test is known to fail on this machine'
+            if socket.gethostname() == 'zeus' and idx in []:
+                print(msg)
+                continue
+            if socket.gethostname() == 'acropolis' and idx in []:
+                print(msg)
+                continue
+
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
