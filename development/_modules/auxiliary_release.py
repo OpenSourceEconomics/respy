@@ -35,7 +35,11 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_4(constr)
     elif OLD_RELEASE == '2.0.0.dev11' and NEW_RELEASE == '2.0.0.dev12':
         prepare_release_tests_5(constr)
-    elif OLD_RELEASE == '2.0.0.dev12' and NEW_RELEASE == '2.0.0.dev13':
+    elif OLD_RELEASE == '2.0.0.dev12' and NEW_RELEASE == '2.0.0.dev14':
+        # In principle it is better to simulate an observed dataset. However, it was changed between
+        # the two releases v2.0.0.dev12 and v2.0.0.dev14. So we rely on a synthetic simulation in
+        # these cases.
+        open('.simulate_observed.cfg', 'w').close()
         prepare_release_tests_6(constr)
     else:
         raise AssertionError('Misspecified request ...')
@@ -284,7 +288,10 @@ def prepare_release_tests_6(constr):
 
     init_dict = generate_init(constr)
 
-    json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
+    old_dict = init_dict.copy()
+    old_dict['EDUCATION']['start'] = old_dict['EDUCATION']['start'][0]
+    del old_dict['TYPE_SHARES'], old_dict['TYPE_SHIFTS'], old_dict['EDUCATION']['share']
+    json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
 
     # We need to specify a sample with a baseline type only a single initial condition.
     init_dict['TYPE_SHIFTS'] = dict()
@@ -353,10 +360,9 @@ def run_estimation(which):
 
     respy_obj = RespyCls('test.respy.ini')
 
-    # In principle it is better to simulate an observed dataset. However, it was changed between
-    # the two releases v2.0.0.dev12 and v2.0.0.dev13. So we rely on a synthetic simulation in
-    # these cases. This can be removed later.
-    if any(venv in sys.executable for venv in ['2.0.0.dev12', '2.0.0.dev13']):
+    # This flag ensures a clean switch to the synthetic simulation for cases where the
+    # simulate_observed() was changed in between releases.
+    if os.path.exists('../.simulate_observed.cfg'):
         respy.simulate(respy_obj)
     else:
         simulate_observed(respy_obj)

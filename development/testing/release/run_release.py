@@ -167,14 +167,17 @@ if __name__ == '__main__':
     #   2.0.0.dev12 We added a first-experience effect and scaled the squared term for the
     #               experience variable by 100.
     #
-    #   2.0.0.dev13 We added initial conditions and unobserved type heterogeneity.
+    #   2.0.0.dev13 Flawed submission, simply just ignore.
+
+    #   2.0.0.dev14 We added initial conditions and unobserved type heterogeneity. It needs to be
+    #               checked against 2.0.0.dev14
     #
     #   TODO:   Isn't it a better way to have the candidate branch not set up as a release from
     #           PYPI as well?
     #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev12', '2.0.0.dev13'
+    old_release, new_release = '2.0.0.dev12', '2.0.0.dev14'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 
