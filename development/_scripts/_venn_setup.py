@@ -14,6 +14,10 @@ if __name__ == '__main__':
 
     os.chdir(PROJECT_DIR)
 
+    # Before anything else, we need to update PIP to ensure the installation order of the packages.
+    cmd = ['install', '--update', 'pip']
+    pip.main(cmd)
+
     # We now install all packages that are part of the requirements file anyway.
     cmd = ['install', '-r', 'requirements.txt']
     pip.main(cmd)
