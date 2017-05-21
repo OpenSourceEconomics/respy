@@ -21,8 +21,7 @@ def install(version):
 
 
 def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
-    """ This function ensures that the right preparations are applied to the
-    initialization files.
+    """ This function ensures that the right preparations are applied to the initialization files.
     """
     if OLD_RELEASE == '1.0.0' and NEW_RELEASE in ['2.0.0.dev7', '2.0.0.dev8']:
         prepare_release_tests_1(constr)
@@ -36,18 +35,19 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_4(constr)
     elif OLD_RELEASE == '2.0.0.dev11' and NEW_RELEASE == '2.0.0.dev12':
         prepare_release_tests_5(constr)
+    elif OLD_RELEASE == '2.0.0.dev12' and NEW_RELEASE == '2.0.0.dev13':
+        prepare_release_tests_6(constr)
     else:
         raise AssertionError('Misspecified request ...')
 
 
 def prepare_release_tests_1(constr):
-    """ This function prepares the initialization files so that they can be
-    processed by both releases under investigation. The idea is to have all
-    hand-crafted modifications grouped in this function only.
+    """ This function prepares the initialization files so that they can be processed by both 
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    this function only.
     """
-    # This script is also imported (but not used) for the creation of the
-    # virtual environments. Thus, the imports might not be valid when
-    # starting with a clean slate.
+    # This script is also imported (but not used) for the creation of the virtual environments.
+    # Thus, the imports might not be valid when starting with a clean slate.
     import numpy as np
 
     sys.path.insert(0, '../../../respy/tests')
@@ -66,20 +66,19 @@ def prepare_release_tests_1(constr):
 
     init_dict = generate_init(constr)
 
-    # In the old release, there was just one location to define the step size
-    # for all derivative approximations.
+    # In the old release, there was just one location to define the step size for all derivative
+    # approximations.
     eps = np.round(init_dict['SCIPY-BFGS']['eps'], decimals=15)
     init_dict['PRECONDITIONING']['eps'] = eps
     init_dict['FORT-BFGS']['eps'] = eps
 
-    # We also endogenized the discount rate, so we need to restrict the
-    # analysis to estimations where the discount rate is fixed.
+    # We also endogenized the discount rate, so we need to restrict the analysis to estimations
+    # where the discount rate is fixed.
     init_dict['BASICS']['delta'] = init_dict['BASICS']['coeffs'][0]
 
-    # We did not have any preconditioning implemented in the PYTHON version
-    # initially. We had to switch the preconditioning scheme in the new
-    # release and now use the absolute value and thus preserve the sign of
-    # the derivative.
+    # We did not have any preconditioning implemented in the PYTHON version initially. We had to
+    # switch the preconditioning scheme in the new release and now use the absolute value and
+    # thus preserve the sign of the derivative.
     init_dict['PRECONDITIONING']['type'] = 'identity'
 
     # Some of the optimization algorithms were not available in the old release.
@@ -94,35 +93,30 @@ def prepare_release_tests_1(constr):
     del init_dict['FORT-BOBYQA']
     del init_dict['SCIPY-LBFGSB']
 
-    # The concept of bounds for parameters was not available and the
-    # coefficients in the initialization file were only printed to the first
-    # four digits.
+    # The concept of bounds for parameters was not available and the coefficients in the
+    # initialization file were only printed to the first four digits.
     for label in ['HOME', 'OCCUPATION A', 'OCCUPATION B', 'EDUCATION', 'SHOCKS']:
         num = len(init_dict[label]['fixed'])
         coeffs = np.round(init_dict[label]['coeffs'], decimals=4).tolist()
         init_dict[label]['bounds'] = [(None, None)] * num
         init_dict[label]['coeffs'] = coeffs
 
-    # In the original release we treated TAU as an integer when printing to
-    # file by accident.
+    # In the original release we treated TAU as an integer when printing to file by accident.
     init_dict['ESTIMATION']['tau'] = int(init_dict['ESTIMATION']['tau'])
     json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
 
-    # Added more fine grained scaling. Needs to be aligned across old/new
-    # with identity or flag False first and then we want to allow for more
-    # nuanced check.
+    # Added more fine grained scaling. Needs to be aligned across old/new with identity or flag
+    # False first and then we want to allow for more nuanced check.
     init_dict['SCALING'] = dict()
     init_dict['SCALING']['flag'] = (init_dict['PRECONDITIONING']['type'] == 'gradient')
     init_dict['SCALING']['minimum'] = init_dict['PRECONDITIONING']['minimum']
 
-    # More flexible parallelism. We removed the extra section onn
-    # parallelism.
+    # More flexible parallelism. We removed the extra section onn parallelism.
     init_dict['PARALLELISM'] = dict()
     init_dict['PARALLELISM']['flag'] = init_dict['PROGRAM']['procs'] > 1
     init_dict['PARALLELISM']['procs'] = init_dict['PROGRAM']['procs']
 
-    # We had a section that enforced the same step size for the derivative
-    # calculation in each.
+    # We had a section that enforced the same step size for the derivative calculation in each.
     init_dict['DERIVATIVES'] = dict()
     init_dict['DERIVATIVES']['version'] = 'FORWARD-DIFFERENCES'
     init_dict['DERIVATIVES']['eps'] = eps
@@ -140,9 +134,9 @@ def prepare_release_tests_1(constr):
 
 
 def prepare_release_tests_2(constr):
-    """ This function prepares the initialization files so that they can be
-    processed by both releases under investigation. The idea is to have all
-    hand-crafted modifications grouped in this function only.
+    """ This function prepares the initialization files so that they can be processed by both 
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
     from codes.random_init import generate_init
@@ -161,17 +155,16 @@ def prepare_release_tests_2(constr):
 
     json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
 
-    # In the old version, we did not allow for variability in the standard
-    # deviations.
+    # In the old version, we did not allow for variability in the standard deviations.
     del init_dict['AMBIGUITY']['mean']
 
     json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
 
 
 def prepare_release_tests_3(constr):
-    """ This function prepares the initialization files so that they can be
-    processed by both releases under investigation. The idea is to have all
-    hand-crafted modifications grouped in this function only.
+    """ This function prepares the initialization files so that they can be processed by both 
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    this function only.
     """
     import numpy as np
 
@@ -192,9 +185,9 @@ def prepare_release_tests_3(constr):
 
 
 def prepare_release_tests_4(constr):
-    """ This function prepares the initialization files so that they can be
-    processed by both releases under investigation. The idea is to have all
-    hand-crafted modifications grouped in this function only.
+    """ This function prepares the initialization files so that they can be processed by both 
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
     from codes.random_init import generate_init
@@ -207,9 +200,8 @@ def prepare_release_tests_4(constr):
 
     init_dict = generate_init(constr)
 
-    # We need to make sure that there are no effects on the reentry costs,
-    # as there are separately estimation in the new release. They are fixed
-    # during an estimation there as well.
+    # We need to make sure that there are no effects on the reentry costs, as there are
+    # separately estimation in the new release. They are fixed during an estimation there as well.
     init_dict['EDUCATION']['fixed'][-1] = True
     json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
 
@@ -222,8 +214,7 @@ def prepare_release_tests_4(constr):
     init_dict['OCCUPATION B']['fixed'] += [True, True]
     init_dict['OCCUPATION B']['bounds'] += [[None, None], [None, None]]
 
-    # We are also splitting up the re-entry costs between high school
-    # and college graduation
+    # We are also splitting up the re-entry costs between high school and college graduation
     init_dict['EDUCATION']['coeffs'].append(init_dict['EDUCATION']['coeffs'][-1])
     init_dict['EDUCATION']['fixed'].append(True)
     init_dict['EDUCATION']['bounds'].append(init_dict['EDUCATION']['bounds'][-1])
@@ -232,9 +223,9 @@ def prepare_release_tests_4(constr):
 
 
 def prepare_release_tests_5(constr):
-    """ This function prepares the initialization files so that they can be
-    processed by both releases under investigation. The idea is to have all
-    hand-crafted modifications grouped in this function only.
+    """ This function prepares the initialization files so that they can be processed by both 
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
     from codes.random_init import generate_init
@@ -249,8 +240,8 @@ def prepare_release_tests_5(constr):
 
     json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
 
-    # We added an additional coefficient indicating whether there is any
-    # experience in a particular job.
+    # We added an additional coefficient indicating whether there is any experience in a
+    # particular job.
     init_dict['OCCUPATION A']['coeffs'].append(0.00)
     init_dict['OCCUPATION A']['bounds'].append([None, None])
     init_dict['OCCUPATION A']['fixed'].append(True)
@@ -259,17 +250,64 @@ def prepare_release_tests_5(constr):
     init_dict['OCCUPATION B']['bounds'].append([None, None])
     init_dict['OCCUPATION B']['fixed'].append(True)
 
-    # This release rescaled the squared term in the experience variable by
-    # 100. The presence of the scratch file ensures that this is undone
+    # This release rescaled the squared term in the experience variable by 100. The presence of
+    # the scratch file ensures that this is undone
     open('new/.restud.respy.scratch', 'w').close()
 
     json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
 
 
+def prepare_release_tests_6(constr):
+    """ This function prepares the initialization files so that they can be processed by both 
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    this function only.
+    """
+    # This script is also imported (but not used) for the creation of the virtual environments.
+    # Thus, the imports might not be valid when starting with a clean slate.
+    import numpy as np
+
+    sys.path.insert(0, '../../../respy/tests')
+    from codes.random_init import generate_init
+
+    # Prepare fresh subdirectories
+    for which in ['old', 'new']:
+        if os.path.exists(which):
+            shutil.rmtree(which)
+        os.mkdir(which)
+
+    # Unfortunately, we needed to perform edits to the likelihood function which breaks
+    # comparability in all cases but for a model with a single period. We also changed the
+    # treatment of inadmissible states, so we need to ensure that these are not relevant.
+    constr['periods'] = 1
+    edu_start = np.random.randint(1, 5)
+    constr['edu'] = (edu_start, edu_start + 100)
+
+    init_dict = generate_init(constr)
+
+    json.dump(init_dict, open('old/init_dict.respy.json', 'w'))
+
+    # We need to specify a sample with a baseline type only a single initial condition.
+    init_dict['TYPE_SHIFTS'] = dict()
+    init_dict['TYPE_SHIFTS']['coeffs'] = [0.0, 0.0, 0.0, 0.0]
+    init_dict['TYPE_SHIFTS']['bounds'] = [(None, None), (None, None), (None, None), (None, None)]
+    init_dict['TYPE_SHIFTS']['fixed'] = [True, True, True, True]
+
+    init_dict['TYPE_SHARES'] = dict()
+    init_dict['TYPE_SHARES']['coeffs'] = [1.0]
+    init_dict['TYPE_SHARES']['bounds'] = [(0.0, None)]
+    init_dict['TYPE_SHARES']['fixed'] = [True]
+
+    init_dict['EDUCATION']['start'] = [init_dict['EDUCATION']['start']]
+    init_dict['EDUCATION']['share'] = [1.0]
+    init_dict['EDUCATION']['max'] = init_dict['EDUCATION']['max']
+
+    json.dump(init_dict, open('new/init_dict.respy.json', 'w'))
+
+
 def no_preparations_required(constr):
-    """ This function prepares the initialization files so that they can be
-    processed by both releases under investigation. The idea is to have all
-    hand-crafted modifications grouped in this function only.
+    """ This function prepares the initialization files so that they can be processed by both 
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
     from codes.random_init import generate_init
@@ -298,16 +336,16 @@ def run_estimation(which):
 
     from respy.python.shared.shared_auxiliary import print_init_dict
 
-    # We need to make sure that the function simulate_observed() is imported
-    # from the original package. Otherwise dependencies might not work properly.
+    # We need to make sure that the function simulate_observed() is imported from the original
+    # package. Otherwise dependencies might not work properly.
     import respy
     sys.path.insert(0, os.path.dirname(respy.__file__) + '/tests')
     from codes.auxiliary import simulate_observed
 
     init_dict = json.load(open('init_dict.respy.json', 'r'))
 
-    # There was a change in the setup for releases after 1.00. This is only
-    # required when comparing to v1.0.0.
+    # There was a change in the setup for releases after 1.00. This is only required when
+    # comparing to v1.0.0.
     if '1.0.0' in sys.executable:
         init_dict['SHOCKS']['fixed'] = np.array(init_dict['SHOCKS']['fixed'])
 
@@ -315,12 +353,18 @@ def run_estimation(which):
 
     respy_obj = RespyCls('test.respy.ini')
 
-    simulate_observed(respy_obj)
+    # In principle it is better to simulate an observed dataset. However, it was changed between
+    # the two releases v2.0.0.dev12 and v2.0.0.dev13. So we rely on a synthetic simulation in
+    # these cases. This can be removed later.
+    if any(venv in sys.executable for venv in ['2.0.0.dev12', '2.0.0.dev13']):
+        respy.simulate(respy_obj)
+    else:
+        simulate_observed(respy_obj)
+
     _, crit_val = estimate(respy_obj)
 
-    # There was a bug in version 1.0 which might lead to crit_val not to
-    # actually take the lowest value that was visited by the optimizer. So,
-    # we reprocess the log file again to be sure.
+    # There was a bug in version 1.0 which might lead to crit_val not to actually take the lowest
+    #  value that was visited by the optimizer. So, we reprocess the log file again to be sure.
     if '1.0.0' in sys.executable:
         crit_val = 1e10
         with open('est.respy.log') as infile:

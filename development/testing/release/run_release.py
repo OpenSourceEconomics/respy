@@ -136,18 +136,16 @@ def run(request, is_create, is_background, old_release, new_release):
             break
 
     if not is_background and not is_investigation:
-        send_notification('release', hours=hours, is_failed=is_failure,
-            seed=seed, num_tests=num_tests, old_release=old_release,
-            new_release=new_release)
+        send_notification('release', hours=hours, is_failed=is_failure, seed=seed,
+            num_tests=num_tests, old_release=old_release, new_release=new_release)
 
 if __name__ == '__main__':
 
     # NOTES:
     #
-    #   All the versions are available on PYPI. Those marked as development
-    #   versions are not downloaded by an unsuspecting user. Instead, they
-    #   need to be explicitly requested. Please also make sure these versions
-    #   are tagged in GIT.
+    #   All the versions are available on PYPI. Those marked as development versions are not
+    # downloaded by an unsuspecting user. Instead, they need to be explicitly requested. Please
+    # also make sure these versions are tagged in GIT.
     #
     #   Version     Description
     #
@@ -155,41 +153,39 @@ if __name__ == '__main__':
     #
     #   2.0.0.dev7  Ambiguity, probably same as v2.0.4
     #
-    #   2.0.0.dev8  Ambiguity, now with free variances in worst-case
-    #               determination
+    #   2.0.0.dev8  Ambiguity, now with free variances in worst-case determination
     #
-    #   2.0.0.dev9  We added additional output for simulated datasets and
-    #               included a script to gently terminate an estimation.
+    #   2.0.0.dev9  We added additional output for simulated datasets and included a script to
+    #               gently terminate an estimation.
     #
-    #   2.0.0.dev10 We added additional information to the simulated dataset
-    #               such as all simulated rewards available for the individual
-    #               each period. We also added the ability to scale each
-    #               coefficient simply by their magnitudes.
+    #   2.0.0.dev10 We added additional information to the simulated dataset such as all
+    #               simulated rewards available for the individual each period. We also added the
+    #               ability to scale each coefficient simply by their magnitudes.
     #
-    #   2.0.0.dev11 We added sheepskin effects and separate reentry cost by
-    #               level of education.
-
-    #   2.0.0.dev12 We added a first-experience effect and scaled the squared
-    #               term for the experience variable by 100.
+    #   2.0.0.dev11 We added sheepskin effects and separate reentry cost by level of education.
     #
-    #   TODO:   Isn't it a better way to have the candidate branch not set up
-    #           as a release from PYPI as well?
+    #   2.0.0.dev12 We added a first-experience effect and scaled the squared term for the
+    #               experience variable by 100.
     #
-    # The two releases that are tested against each other. These are
-    # downloaded from PYPI in their own virtual environments.
-    old_release, new_release = '2.0.0.dev11', '2.0.0.dev12'
+    #   2.0.0.dev13 We added initial conditions and unobserved type heterogeneity.
+    #
+    #   TODO:   Isn't it a better way to have the candidate branch not set up as a release from
+    #           PYPI as well?
+    #
+    # The two releases that are tested against each other. These are downloaded from PYPI in
+    # their own virtual environments.
+    old_release, new_release = '2.0.0.dev12', '2.0.0.dev13'
 
-    parser = argparse.ArgumentParser(description='Run release testing.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Run release testing.')
 
-    parser.add_argument('--request', action='store', dest='request',
-        help='task to perform', nargs=2, required=True)
+    parser.add_argument('--request', action='store', dest='request', help='task to perform',
+        nargs=2, required=True)
 
-    parser.add_argument('--create', action='store_true', dest='is_create',
-        default=False, help='create new virtual environments')
+    parser.add_argument('--create', action='store_true', dest='is_create', default=False,
+        help='create new virtual environments')
 
-    parser.add_argument('--background', action='store_true',
-        dest='is_background', default=False, help='background process')
+    parser.add_argument('--background', action='store_true', dest='is_background', default=False,
+        help='background process')
 
     # Distribute arguments
     args = parser.parse_args()
