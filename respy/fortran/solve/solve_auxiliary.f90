@@ -21,36 +21,45 @@ MODULE solve_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, num_types, edu_spec)
 
     !/* external objects        */
 
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :)
+    TYPE(EDU_DICT), INTENT(IN)                       :: edu_spec
+
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: mapping_state_idx(:, :, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)     :: states_all(:, :, :)
 
     INTEGER(our_int), INTENT(IN)                    :: num_periods
-    INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: edu_max
-    INTEGER(our_int), INTENT(IN)                    :: min_idx
+    INTEGER(our_int), INTENT(IN)                    :: num_types
 
     !/* internals objects       */
 
-    INTEGER(our_int)                    :: states_all_tmp(num_periods, 100000, 4)
+    INTEGER(our_int)                    :: states_all_tmp(num_periods, 1000000, 5)
+    INTEGER(our_int)                    :: num_edu_start
     INTEGER(our_int)                    :: edu_lagged
+    INTEGER(our_int)                    :: edu_start
+    INTEGER(our_int)                    :: edu_add
+    INTEGER(our_int)                    :: min_idx
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: total
+    INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
-    INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
+    INTEGER(our_int)                    :: j
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Auxiliary variables
+    num_edu_start = SIZE(edu_spec%start)
+    min_idx = edu_spec%max + 1
+
     ! Allocate containers that contain information about the model structure
-    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2))
+    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types))
     ALLOCATE(states_number_period(num_periods))
 
     ! Initialize output
@@ -64,73 +73,87 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
         ! Count admissible realizations of state space by period
         k = 0
 
-        ! Loop over all admissible work experiences for Occupation A
-        DO exp_a = 0, num_periods
+        ! Loop over all types.
+        DO type_ = 0, num_types - 1
 
-            ! Loop over all admissible work experience for Occupation B
-            DO exp_b = 0, num_periods
+            ! Loop over all initial level of schooling
+            DO j = 1, num_edu_start
 
-                ! Loop over all admissible additional education levels
-                DO edu = 0, num_periods
+                edu_start = edu_spec%start(j)
 
-                    ! Agent cannot attain more additional education than (EDU_MAX - EDU_START).
-                    IF (edu .GT. edu_max - edu_start) THEN
-                        CYCLE
-                    END IF
+                ! Loop over all admissible work experiences for Occupation A
+                DO exp_a = 0, num_periods
 
-                    ! Loop over all admissible values for leisure. Note that the leisure variable takes only zero/value. The time path does not matter.
-                    DO edu_lagged = 0, 1
+                    ! Loop over all admissible work experience for Occupation B
+                    DO exp_b = 0, num_periods
 
-                        ! Check if lagged education admissible. (1) In the first period all agents have lagged schooling equal to one.
-                        IF (edu_lagged .EQ. zero_int) THEN
-                            IF (period .EQ. zero_int) THEN
+                        ! Loop over all admissible additional education levels
+                        DO edu_add = 0, num_periods
+
+                            ! Agent cannot attain more additional education than (EDU_MAX - EDU_START).
+                            IF (edu_add .GT. (edu_spec%max - edu_start)) THEN
                                 CYCLE
                             END IF
-                        END IF
 
-                        ! (2) Whenever an agent has not acquired any additional education and we are not in the first period, then this cannot be the case.
-                        IF (edu_lagged .EQ. one_int) THEN
-                            IF (edu .EQ. zero_int) THEN
-                                IF (period .GT. zero_int) THEN
+                            ! Loop over all admissible values for leisure. Note that the leisure variable takes only zero/value. The time path does not matter.
+                            DO edu_lagged = 0, 1
+
+                                ! Check if lagged education admissible. (1) In the first period all agents have lagged schooling equal to one.
+                                IF (edu_lagged .EQ. zero_int) THEN
+                                    IF (period .EQ. zero_int) THEN
+                                        CYCLE
+                                    END IF
+                                END IF
+
+                                ! (2) Whenever an agent has not acquired any additional education and we are not in the first period, then this cannot be the case.
+                                IF (edu_lagged .EQ. one_int) THEN
+                                    IF (edu_add .EQ. zero_int) THEN
+                                        IF (period .GT. zero_int) THEN
+                                            CYCLE
+                                        END IF
+                                    END IF
+                                END IF
+
+                                ! (3) Whenever an agent has only acquired additional education, then edu_lagged cannot be zero.
+                                IF (edu_lagged .EQ. zero_int) THEN
+                                    IF (edu_add .EQ. period) THEN
+                                        CYCLE
+                                    END IF
+                                END IF
+
+                                ! Check if admissible for time constraints
+                                total = edu_add + exp_a + exp_b
+
+                                ! Note that the total number of activities does not have is less or equal to the total possible number of activities as the rest is implicitly filled with leisure.
+                                IF (total .GT. period) THEN
                                     CYCLE
                                 END IF
-                            END IF
-                        END IF
 
-                        ! (3) Whenever an agent has only acquired additional education, then edu_lagged cannot be zero.
-                        IF (edu_lagged .EQ. zero_int) THEN
-                            IF (edu .EQ. period) THEN
-                                CYCLE
-                            END IF
-                        END IF
+                                ! If we have multiple initial conditions it might well be the case that we have a duplicate state, i.e. the same state is possible with other initial condition that period.
+                                IF (mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , edu_lagged + 1, type_ + 1) .NE. MISSING_INT)  THEN
+                                    CYCLE
+                                END IF
 
-                        ! Check if admissible for time constraints
-                        total = edu + exp_a + exp_b
+                                ! Collect mapping of state space to array index.
+                                mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , edu_lagged + 1, type_ + 1) = k
 
-                        ! Note that the total number of activities does not have is less or equal to the total possible number of activities as the rest is implicitly filled with leisure.
-                        IF (total .GT. period) THEN
-                            CYCLE
-                        END IF
+                                ! Collect all possible realizations of state space
+                                states_all_tmp(period + 1, k + 1, :) = (/ exp_a, exp_b, edu_start + edu_add, edu_lagged, type_ /)
 
-                        ! Collect all possible realizations of state space
-                        states_all_tmp(period + 1, k + 1, 1) = exp_a
-                        states_all_tmp(period + 1, k + 1, 2) = exp_b
-                        states_all_tmp(period + 1, k + 1, 3) = edu
-                        states_all_tmp(period + 1, k + 1, 4) = edu_lagged
+                                ! Update count
+                                k = k + 1
 
-                        ! Collect mapping of state space to array index.
-                        mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1 , edu_lagged + 1) = k
+                             END DO
 
-                        ! Update count
-                        k = k + 1
+                         END DO
 
                      END DO
 
                  END DO
 
-             END DO
+            END DO
 
-         END DO
+        END DO
 
         ! Record maximum number of state space realizations by time period
         states_number_period(period + 1) = k
@@ -141,25 +164,24 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     max_states_period = MAXVAL(states_number_period)
 
     ! Initialize a host of containers, whose dimensions are not clear.
-    ALLOCATE(states_all(num_periods, max_states_period, 4))
+    ALLOCATE(states_all(num_periods, max_states_period, 5))
     states_all = states_all_tmp(:, :max_states_period, :)
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
+SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, max_states_period, optim_paras)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(: ,:, :)
 
-    TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
 
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: max_states_period
     INTEGER(our_int), INTENT(IN)        :: num_periods
-    INTEGER(our_int), INTENT(IN)        :: edu_start
 
     !/* internals objects       */
 
@@ -169,6 +191,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: any_exp_b
     INTEGER(our_int)                    :: edu_lagged
     INTEGER(our_int)                    :: period
+    INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
     INTEGER(our_int)                    :: info
@@ -176,6 +199,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: k
 
     REAL(our_dble)                      :: covars_wages(9)
+    REAL(our_dble)                      :: rewards(4)
     REAL(our_dble)                      :: reward
 
     LOGICAL                             :: IS_RESTUD
@@ -201,16 +225,17 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             exp_b = states_all(period, k, 2)
             edu = states_all(period, k, 3)
             edu_lagged = states_all(period, k, 4)
+            type_ = states_all(period, k, 5)
 
             ! Construct auxiliary information
-            hs_graduate = TRANSFER(edu + edu_start >= 12, hs_graduate)
-            co_graduate = TRANSFER(edu + edu_start >= 16, co_graduate)
+            hs_graduate = TRANSFER(edu >= 12, hs_graduate)
+            co_graduate = TRANSFER(edu >= 16, co_graduate)
             any_exp_a = TRANSFER(exp_a > 0, any_exp_a)
             any_exp_b = TRANSFER(exp_b > 0, any_exp_b)
 
             ! Auxiliary objects
             covars_wages(1) = one_dble
-            covars_wages(2) = edu + edu_start
+            covars_wages(2) = edu
             covars_wages(3) = exp_a
             covars_wages(4) = (exp_a ** 2) / one_hundred_dble
             covars_wages(5) = exp_b
@@ -227,11 +252,11 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
             ! Calculate systematic part of reward in Occupation A
             covars_wages(9) = any_exp_a
-            CALL clip_value(periods_rewards_systematic(period, k, 1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a)), zero_dble, HUGE_FLOAT, info)
+            CALL clip_value(rewards(1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of reward in Occupation B
             covars_wages(9) = any_exp_b
-            CALL clip_value(periods_rewards_systematic(period, k, 2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
+            CALL clip_value(rewards(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of schooling utility
             reward = optim_paras%coeffs_edu(1)
@@ -248,10 +273,18 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
                 reward = reward + optim_paras%coeffs_edu(4)
             END IF
 
-            periods_rewards_systematic(period, k, 3) = reward
+            rewards(3) = reward
 
             ! Calculate systematic part of reward in home production
-            periods_rewards_systematic(period, k, 4) = optim_paras%coeffs_home(1)
+            rewards(4) = optim_paras%coeffs_home(1)
+
+            ! Now we add the type-specific deviation.
+            rewards(1) = rewards(1) * EXP(optim_paras%type_shifts(type_ + 1, 1))
+            rewards(2) = rewards(2) * EXP(optim_paras%type_shifts(type_ + 1, 2))
+            rewards(3) = rewards(3) + optim_paras%type_shifts(type_ + 1, 3)
+            rewards(4) = rewards(4) + optim_paras%type_shifts(type_ + 1, 4)
+
+            periods_rewards_systematic(period, k, :) = rewards
 
         END DO
 
@@ -260,7 +293,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim, is_write)
+SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, is_write)
 
     !/* external objects        */
 
@@ -269,19 +302,18 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)           :: optim_paras
     TYPE(AMBI_DICT), INTENT(IN)                 :: ambi_spec
+    TYPE(EDU_DICT), INTENT(IN)                  :: edu_spec
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: max_states_period
     INTEGER(our_int), INTENT(IN)        :: num_points_interp
     INTEGER(our_int), INTENT(IN)        :: num_draws_emax
     INTEGER(our_int), INTENT(IN)        :: num_periods
-    INTEGER(our_int), INTENT(IN)        :: edu_start
-    INTEGER(our_int), INTENT(IN)        :: edu_max
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
     LOGICAL, INTENT(IN)                 :: is_myopic
@@ -386,9 +418,9 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
 
             is_simulated = get_simulated_indicator(num_points_interp, num_states, period, is_debug)
 
-            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, optim_paras, edu_start, edu_max)
+            CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras)
 
-            CALL get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options)
+            CALL get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_spec, ambi_spec, optim_paras, optimizer_options)
 
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, file_sim, is_write)
 
@@ -403,9 +435,9 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
+                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, ambi_spec, optim_paras, optimizer_options)
                 ELSE
-                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
                 END IF
 
                 periods_emax(period + 1, k + 1) = emax
@@ -450,11 +482,11 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
     ! Check if standardization requested
     IF (is_debug) THEN
 
-        INQUIRE(FILE='interpolation.txt', EXIST=READ_IN)
+        INQUIRE(FILE='.interpolation.respy.test', EXIST=READ_IN)
 
         IF (READ_IN) THEN
 
-            OPEN(UNIT=99, FILE='interpolation.txt', ACTION='READ')
+            OPEN(UNIT=99, FILE='.interpolation.respy.test', ACTION='READ')
 
                DO i = 1, num_states
 
@@ -505,7 +537,7 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, optim_paras, edu_start, edu_max)
+SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras)
 
     !/* external objects        */
 
@@ -513,16 +545,15 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     REAL(our_dble), INTENT(OUT)         :: maxe(num_states)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: shifts(4)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: num_states
-    INTEGER(our_int), INTENT(IN)        :: edu_start
-    INTEGER(our_int), INTENT(IN)        :: edu_max
     INTEGER(our_int), INTENT(IN)        :: period
 
     !/* internal objects        */
@@ -542,7 +573,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-        CALL get_total_values(total_values, period, num_periods, rewards_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)
+        CALL get_total_values(total_values, period, num_periods, rewards_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
         ! Implement level shifts
         maxe(k + 1) = MAXVAL(total_values)
@@ -561,7 +592,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_start, edu_max, ambi_spec, optim_paras, optimizer_options)
+SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_spec, ambi_spec, optim_paras, optimizer_options)
 
     !/* external objects        */
 
@@ -570,6 +601,7 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
     TYPE(AMBI_DICT), INTENT(IN)         :: ambi_spec
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: draws_emax_ambiguity_transformed(num_periods, max_states_period)
@@ -578,11 +610,9 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: maxe(num_states)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: num_states
-    INTEGER(our_int), INTENT(IN)        :: edu_start
-    INTEGER(our_int), INTENT(IN)        :: edu_max
     INTEGER(our_int), INTENT(IN)        :: period
 
     LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
@@ -615,9 +645,9 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
         IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-            CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, ambi_spec, optim_paras, optimizer_options)
+            CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, ambi_spec, optim_paras, optimizer_options)
         ELSE
-            CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+            CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
         END IF
 
         ! Construct dependent variable

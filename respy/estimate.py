@@ -1,16 +1,18 @@
+import atexit
 import os
 
 from respy.python.shared.shared_auxiliary import generate_optimizer_options
-from respy.python.shared.shared_auxiliary import remove_scratch_files
+from respy.python.shared.shared_auxiliary import remove_scratch
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
-from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.process.process_python import process
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
+from respy.custom_exceptions import UserError
 
 OPTIMIZERS = OPT_EST_FORT + OPT_AMB_FORT + OPT_AMB_PYTH + OPT_EST_PYTH
 
@@ -29,12 +31,12 @@ def estimate(respy_obj):
     assert check_estimation(respy_obj)
 
     # This locks the estimation directory for additional estimation requests.
+    atexit.register(remove_scratch, '.estimation.respy.scratch')
     open('.estimation.respy.scratch', 'w').close()
 
-    # Read in estimation dataset. It only reads in the number of agents
-    # requested for the estimation.
-    data_frame = process(respy_obj)
-    data_array = data_frame.as_matrix()
+    # Read in estimation dataset. It only reads in the number of agents requested for the
+    # estimation.
+    data_array = process(respy_obj).as_matrix()
 
     # Distribute class attributes
     version = respy_obj.get_attr('version')
@@ -50,7 +52,8 @@ def estimate(respy_obj):
     rslt = get_est_info()
     x, val = rslt['paras_step'], rslt['value_step']
 
-    remove_scratch_files()
+    for fname in ['.estimation.respy.scratch', '.stop.respy.scratch']:
+        remove_scratch(fname)
 
     # Finishing
     return x, val
@@ -66,14 +69,16 @@ def check_estimation(respy_obj):
     assert not os.path.exists('.estimation.respy.scratch')
 
     # Distribute class attributes
-    optimizer_options = respy_obj.get_attr('optimizer_options')
-    optimizer_used = respy_obj.get_attr('optimizer_used')
-    optim_paras = respy_obj.get_attr('optim_paras')
-    version = respy_obj.get_attr('version')
-    maxfun = respy_obj.get_attr('maxfun')
+    optimizer_options, optimizer_used, optim_paras, version, maxfun, num_paras, file_est = \
+        dist_class_attributes(respy_obj, 'optimizer_options', 'optimizer_used', 'optim_paras',
+                              'version', 'maxfun', 'num_paras', 'file_est')
+
+    # We need to make sure that the estimation dataset is actually present.
+    if not os.path.exists(file_est):
+        raise UserError('Estimation dataset does not exist')
 
     # Ensure that at least one free parameter.
-    assert sum(optim_paras['paras_fixed']) != NUM_PARAS
+    assert sum(optim_paras['paras_fixed']) != num_paras
 
     # Check that the used optimizers were defined by the user.
     if optim_paras['level'][0] > 0:
@@ -85,8 +90,8 @@ def check_estimation(respy_obj):
     if maxfun > 0:
         assert optimizer_used in optimizer_options.keys()
 
-        # We need to make sure that an optimizer that aligns with the
-        # requested optimization is requested.
+        # We need to make sure that an optimizer that aligns with the requested optimization is
+        # requested.
         if version == 'PYTHON':
             assert optimizer_used in OPT_EST_PYTH
         elif version == 'FORTRAN':
@@ -94,8 +99,8 @@ def check_estimation(respy_obj):
         else:
             raise AssertionError
 
-        # When the level of ambiguity is a free parameter, then we can only
-        # allow for the constraint optimizers in the estimation.
+        # When the level of ambiguity is a free parameter, then we can only allow for the
+        # constraint optimizers in the estimation.
         if not optim_paras['paras_fixed'][0]:
             if version == 'PYTHON':
                 assert optimizer_used in ['SCIPY-LBFGSB']
@@ -104,14 +109,14 @@ def check_estimation(respy_obj):
                 assert optimizer_used in ['FORT-BOBYQA']
                 assert 'FORT-SLSQP' in optimizer_options.keys()
 
-    # We need to make sure that all optimizers are fully defined for the
-    # FORTRAN interface. At the same time, we do not want to require the user
-    # to specify only the optimizers that are used. So, we sample a full set
-    # and replace the optimizers that are used with the user specification.
+    # We need to make sure that all optimizers are fully defined for the FORTRAN interface. At
+    # the same time, we do not want to require the user to specify only the optimizers that are
+    # used. So, we sample a full set and replace the optimizers that are used with the user
+    # specification.
     full_options = dict()
     for optimizer in OPTIMIZERS:
         full_options[optimizer] = \
-            generate_optimizer_options(optimizer, optim_paras)
+            generate_optimizer_options(optimizer, optim_paras, num_paras)
 
     for optimizer in optimizer_options.keys():
         full_options[optimizer] = optimizer_options[optimizer]

@@ -1,6 +1,7 @@
 from string import Formatter
 
 import subprocess
+import argparse
 import socket
 import sys
 import os
@@ -8,12 +9,8 @@ import os
 import numpy as np
 
 from config import PACKAGE_DIR
-from config import python2_exec
-from config import python3_exec
 
 from clsMail import MailCls
-
-from config import SPECS
 
 
 def update_class_instance(respy_obj, spec_dict):
@@ -22,30 +19,21 @@ def update_class_instance(respy_obj, spec_dict):
 
     respy_obj.unlock()
 
-    # Varying the baseline level of ambiguity requires special case.
+    # Varying the baseline level of ambiguity requires special case. The same is true for the
+    # discount rate.
     if 'level' in spec_dict['update'].keys():
         respy_obj.attr['optim_paras']['level'] = np.array([spec_dict['update']['level']])
+    if 'delta' in spec_dict['update'].keys():
+        respy_obj.attr['optim_paras']['delta'] = np.array([spec_dict['update']['delta']])
 
     for key_ in spec_dict['update'].keys():
-        if key_ in ['level']:
+        if key_ in ['level', 'delta']:
             continue
         respy_obj.set_attr(key_, spec_dict['update'][key_])
 
     respy_obj.lock()
 
     return respy_obj
-
-
-def get_executable():
-
-    PYTHON_VERSION = sys.version_info[0]
-
-    if PYTHON_VERSION == 2:
-        python_exec = python2_exec
-    else:
-        python_exec = python3_exec
-
-    return python_exec
 
 
 def strfdelta(tdelta, fmt):
@@ -64,10 +52,11 @@ def strfdelta(tdelta, fmt):
 def cleanup():
     os.system('git clean -d -f')
 
+
 def compile_package(is_debug=False):
     """ Compile the package for use.
     """
-    python_exec = get_executable()
+    python_exec = sys.executable
     cwd = os.getcwd()
     os.chdir(PACKAGE_DIR + '/respy')
     subprocess.check_call(python_exec + ' waf distclean', shell=True)
@@ -104,8 +93,8 @@ def send_notification(which, **kwargs):
     if 'seed' in kwargs.keys():
         seed = '{}'.format(kwargs['seed'])
 
-    if 'test_idx' in kwargs.keys():
-        test_idx = '{}'.format(kwargs['test_idx'])
+    if 'idx_failures' in kwargs.keys():
+        idx_failures = ', '.join(str(e) for e in kwargs['idx_failures'])
 
     if 'old_release' in kwargs.keys():
         old_release = kwargs['old_release']
@@ -123,14 +112,13 @@ def send_notification(which, **kwargs):
         message = ' Reliability testing is completed on @' + hostname + '.'
     elif which == 'property':
         subject = ' RESPY: Property Testing'
-        message = ' A ' + hours + ' hour run of the testing battery on @' + \
-                  hostname + ' is completed.'
+        message = ' A ' + hours + ' hour run of the testing battery on @' + hostname + \
+                  ' is completed.'
 
     elif which == 'regression':
         subject = ' RESPY: Regression Testing'
         if is_failed:
-            message = 'Failure during regression testing for test ' + \
-                      test_idx + '.'
+            message = 'Failure during regression testing for test(s): ' + idx_failures + '.'
         else:
             message = ' Regression testing is completed on @' + hostname + '.'
 
@@ -163,8 +151,9 @@ def send_notification(which, **kwargs):
     mail_obj.send()
 
 
-def aggregate_information(which):
-
+def aggregate_information(which, fnames):
+    """ This function simply aggregates the information from the different specifications.
+    """
     if which == 'scalability':
         fname_info = 'scalability.respy.info'
     elif which == 'reliability':
@@ -172,9 +161,9 @@ def aggregate_information(which):
     else:
         raise AssertionError
 
-
-    dirnames =SPECS
-
+    dirnames = []
+    for fname in fnames:
+        dirnames += [fname.replace('.ini', '')]
 
     with open(fname_info, 'w') as outfile:
         outfile.write('\n')
@@ -189,3 +178,17 @@ def aggregate_information(which):
                 outfile.write(infile.read())
             os.chdir('../')
             outfile.write('\n\n')
+
+
+def process_command_line_arguments(description):
+    """ Process command line arguments for the request.
+    """
+    parser = argparse.ArgumentParser(description=description)
+
+    parser.add_argument('--debug', action='store_true', dest='is_debug', default=False,
+                        help='use debugging specification')
+
+    args = parser.parse_args()
+    is_debug = args.is_debug
+
+    return is_debug

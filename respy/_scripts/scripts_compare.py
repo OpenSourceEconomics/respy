@@ -6,10 +6,13 @@ import shutil
 import os
 
 from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.simulate.simulate_auxiliary import format_float
 from respy.python.process.process_python import process
-from respy.scripts.scripts_update import scripts_update
-from respy import RespyCls, simulate
+from respy._scripts.scripts_update import scripts_update
+from respy.custom_exceptions import UserError
+from respy import RespyCls
+from respy import simulate
 
 
 def dist_input_arguments(parser):
@@ -23,12 +26,40 @@ def dist_input_arguments(parser):
     is_update = args.is_update
 
     # Check attributes
-    assert (os.path.exists(init_file))
-    if is_update:
-        os.path.exists('est.respy.info')
+    if not os.path.exists(init_file):
+        raise UserError('Initialization file does not exist')
+
+    if not os.path.exists('est.respy.info') and is_update:
+        raise UserError('Information on parameter values from last step unavailable')
 
     # Finishing
     return init_file, is_update
+
+
+def _prepare_initial(data_obs, data_sim, num_agents_est, num_agents_sim):
+    """ This function prepares the information about the distribution of initial schooling levels
+    in both datasets.
+    """
+    # First we want to construct a fill list of available initial schooling levels
+    obs_info = data_obs['Years_Schooling'][:, 0].value_counts().to_dict()
+    sim_info = data_sim['Years_Schooling'][:, 0].value_counts().to_dict()
+    initial_levels = sorted(list(set(list(obs_info.keys()) + list(sim_info.keys()))))
+
+    infos = []
+    for level in initial_levels:
+        # We need to account for the possibility that a particular initial level of schooling
+        # is only present in one of the datasets.
+        info = [level, None, None]
+
+        if level in obs_info.keys():
+            info[1] = obs_info[level] / float(num_agents_est)
+
+        if level in sim_info.keys():
+            info[2] = sim_info[level] / float(num_agents_sim)
+
+        infos += [info]
+
+    return infos
 
 
 def _prepare_wages(data_obs, data_sim, which):
@@ -46,7 +77,7 @@ def _prepare_wages(data_obs, data_sim, which):
             data = data_obs
         else:
             data = data_sim
-        for period in range(len(data_obs['Period'].unique())):
+        for period in range(data_obs['Period'].nunique()):
             is_occupation = data['Choice'] == choice_ind
             series = data['Wage'].ix[is_occupation][:, period]
             rslt[label] += [list(series.describe().values)]
@@ -55,8 +86,7 @@ def _prepare_wages(data_obs, data_sim, which):
 
 
 def _prepare_choices(data_obs, data_sim):
-    """ This function prepares the information about the choice probabilities
-    for easy printing.
+    """ This function prepares the information about the choice probabilities for easy printing.
     """
     rslt_full = dict()
     rslt_shares = dict()
@@ -71,7 +101,7 @@ def _prepare_choices(data_obs, data_sim):
         else:
             data = data_sim
 
-        for period in range(len(data_obs['Period'].unique())):
+        for period in range(data_obs['Period'].nunique()):
             shares = []
             total = data['Choice'].loc[:, period].count()
             for choice in [1, 2, 3, 4]:
@@ -87,11 +117,10 @@ def _prepare_choices(data_obs, data_sim):
 
 
 def scripts_compare(base_init, is_update):
-    """ Construct some model fit statistics by comparing the observed and
-    simulated dataset.
+    """ Construct some model fit statistics by comparing the observed and simulated dataset.
     """
-    # In case of updating, we create a new initialization file that contains
-    # the updated parameter values.
+    # In case of updating, we create a new initialization file that contains the updated
+    # parameter values.
     if is_update:
         init_file = 'compare.respy.ini'
         shutil.copy(base_init, init_file)
@@ -101,13 +130,20 @@ def scripts_compare(base_init, is_update):
 
     # Read in relevant model specification.
     respy_obj = RespyCls(init_file)
+    respy_obj.write_out('compare.respy.ini')
 
-    # Auxiliary information
-    num_periods = respy_obj.get_attr('num_periods')
+    # Distribute some information for further processing.
+    num_periods, num_agents_est, num_agents_sim = dist_class_attributes(respy_obj, 'num_periods',
+        'num_agents_est', 'num_agents_sim')
 
-    # First we need to read in the empirical data
-    data_sim = simulate(respy_obj)[1]
+    # The comparison does make sense when the file of the simulated dataset and estimation dataset
+    # are the same. Then the estimation dataset is overwritten by the simulated dataset.
+    fname_est = respy_obj.attr['file_est'].split('.')[0]
+    fname_sim = respy_obj.attr['file_sim'].split('.')[0]
+    if fname_est == fname_sim:
+        raise UserError(' Simulation would overwrite estimation dataset')
     data_obs = process(respy_obj)
+    data_sim = simulate(respy_obj)[1]
 
     if num_periods > 1:
         tf = []
@@ -118,9 +154,10 @@ def scripts_compare(base_init, is_update):
     max_periods = len(data_obs['Period'].unique())
 
     # Prepare results
+    rslt_initial = _prepare_initial(data_obs, data_sim, num_agents_est, num_agents_sim)
     rslt_choice, rmse_choice = _prepare_choices(data_obs, data_sim)
-    rslt_A = _prepare_wages(data_obs, data_sim, 'Occupation A')
-    rslt_B = _prepare_wages(data_obs, data_sim, 'Occupation B')
+    rslt_a = _prepare_wages(data_obs, data_sim, 'Occupation A')
+    rslt_b = _prepare_wages(data_obs, data_sim, 'Occupation B')
 
     with open('compare.respy.info', 'w') as file_:
 
@@ -128,8 +165,16 @@ def scripts_compare(base_init, is_update):
 
         file_.write('   Number of Periods:      ' + str(max_periods) + '\n\n')
 
+        file_.write('\n   Initial Schooling Shares \n\n')
+        fmt_ = '{:>15}' * 3 + '\n'
+        labels = ['Level', 'Observed', 'Simulated']
+        file_.write(fmt_.format(*labels) + '\n')
+        for info in rslt_initial:
+            info[1:] = [format_float(x) for x in info[1:]]
+            file_.write(fmt_.format(*info))
+
         # Comparing the choice distributions
-        file_.write('\n   Choices \n\n')
+        file_.write('\n\n   Choices \n\n')
         fmt_ = '{:>15}' * 7 + '\n'
         labels = ['Data', 'Period', 'Count', 'White', 'Blue', 'School', 'Home']
         file_.write(fmt_.format(*labels) + '\n')
@@ -142,7 +187,7 @@ def scripts_compare(base_init, is_update):
         line = '   Overall RMSE {:14.5f}\n'.format(rmse_choice)
         file_.write(line)
 
-        # Comparing the transition matrices
+        #Comparing the transition matrices
         if num_periods > 1:
             file_.write('\n\n   Transition Matrix \n\n')
             fmt_ = '{:>15}' * 6 + '\n\n'
@@ -155,10 +200,8 @@ def scripts_compare(base_init, is_update):
                     file_.write(fmt_.format(*line))
                 file_.write('\n')
 
-            file_.write('\n\n')
-
         # Comparing the wages distributions
-        file_.write('\n\n   Outcomes \n\n')
+        file_.write('\n   Outcomes \n\n')
         fmt_ = '{:>15}' * 8 + '\n'
 
         labels = []
@@ -166,7 +209,7 @@ def scripts_compare(base_init, is_update):
         labels += ['25%', '50%', '75%']
 
         file_.write(fmt_.format(*labels) + '\n')
-        for rslt, name in [(rslt_A, 'Occupation A'), (rslt_B, 'Occupation B')]:
+        for rslt, name in [(rslt_a, 'Occupation A'), (rslt_b, 'Occupation B')]:
             file_.write('\n    ' + name + ' \n\n')
             for period in range(max_periods):
                 for label in ['Observed', 'Simulated']:
@@ -180,15 +223,13 @@ def scripts_compare(base_init, is_update):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description=
-        'Compare observed and simulated economy.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Compare observed and simulated economy.')
 
-    parser.add_argument('--init_file', action='store', dest='init_file',
-        default='model.respy.ini', help='initialization file')
+    parser.add_argument('--init', action='store', dest='init_file', default='model.respy.ini',
+                        help='initialization file')
 
-    parser.add_argument('--update', action='store_true', dest='is_update',
-        default=False, help='update parameterizations')
+    parser.add_argument('--update', action='store_true', dest='is_update', default=False,
+                        help='update parameterizations')
 
     init_file, is_update = dist_input_arguments(parser)
 

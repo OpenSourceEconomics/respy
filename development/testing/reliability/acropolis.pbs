@@ -2,7 +2,7 @@
 #PBS -N mpi 
 #PBS -j oe
 #PBS -l walltime=99:00:00
-#PBS -l procs=200
+#PBS -l procs=10
 #PBS -V          
 #PBS -m ae
 #PBS -M eisenhauer@policy-lab.org

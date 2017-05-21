@@ -37,7 +37,7 @@ MODULE estimate_fortran
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, precond_spec, optimizer_options)
+SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used, maxfun, num_procs, edu_spec, precond_spec, optimizer_options, num_types)
 
     !/* external objects    */
 
@@ -46,10 +46,12 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
     REAL(our_dble), INTENT(OUT)         :: crit_val
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
     TYPE(PRECOND_DICT), INTENT(IN)      :: precond_spec
 
     INTEGER(our_int), INTENT(IN)        :: num_procs
+    INTEGER(our_int), INTENT(IN)        :: num_types
     INTEGER(our_int), INTENT(IN)        :: maxfun
 
     CHARACTER(225), INTENT(IN)          :: optimizer_used
@@ -75,11 +77,13 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
         criterion_function => fort_criterion_parallel
     END IF
 
+    ! We need to determine the number of observations we have for each individual before any evaluation of the criterion function can be conducted. However, we only need to do this here if we are not letting the slaves do all the work. In that case the dataset is not read on the head node.
+    IF (num_procs == 1) num_obs_agent = get_num_obs_agent(data_est)
 
     ! Some ingredients for the evaluation of the criterion function need to be created once and shared globally.
     CALL get_optim_paras(x_all_start, optim_paras, .True.)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, num_types, edu_spec)
 
     CALL get_optim_paras(x_optim_free_unscaled_start, optim_paras, .False.)
 
@@ -92,7 +96,6 @@ SUBROUTINE fort_estimate(crit_val, success, message, optim_paras, optimizer_used
     CALL record_estimation(precond_matrix, x_optim_free_unscaled_start, optim_paras, .False.)
 
     CALL auto_adjustment_optimizers(optimizer_options, optimizer_used)
-
 
     crit_estimation = .True.
 
@@ -141,9 +144,9 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
 
+    REAL(our_dble)                  :: x_optim_all_unscaled(num_paras)
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
-    REAL(our_dble)                  :: x_optim_all_unscaled(NUM_PARAS)
-    REAL(our_dble)                  :: contribs(num_obs)
+    REAL(our_dble)                  :: contribs(num_agents_est)
     REAL(our_dble)                  :: start
 
     INTEGER(our_int)                :: dist_optim_paras_info
@@ -167,16 +170,15 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     x_optim_free_unscaled = apply_scaling(x_optim_free_scaled, precond_matrix, 'undo')
 
-    CALL construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras)
+    CALL construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras, num_paras)
 
     CALL dist_optim_paras(optim_paras, x_optim_all_unscaled, dist_optim_paras_info)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, max_states_period, optim_paras)
 
-    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, edu_start, edu_max, num_periods, num_draws_prob, optim_paras)
-
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, num_periods, num_draws_prob, num_agents_est, num_obs_agent, num_types, edu_spec, optim_paras)
 
     fort_criterion_scalar = get_log_likl(contribs)
 
@@ -186,7 +188,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
         CALL summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
 
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, num_paras, num_types, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -204,18 +206,18 @@ FUNCTION fort_criterion_parallel(x)
 
     !/* internal objects    */
 
-    REAL(our_dble)                  :: x_all_current(NUM_PARAS)
-    REAL(our_dble)                  :: x_input(num_free)
-    REAL(our_dble)                  :: contribs(num_obs)
+    REAL(our_dble)                  :: x_optim_all_unscaled(num_paras)
+    REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
+    REAL(our_dble)                  :: contribs(num_agents_est)
     REAL(our_dble)                  :: start
 
-    INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
-    INTEGER(our_int), ALLOCATABLE   :: num_obs_slaves(:)
+    INTEGER(our_int), SAVE, ALLOCATABLE   :: num_states_slaves(:, :)
+    INTEGER(our_int), SAVE, ALLOCATABLE   :: num_agents_slaves(:)
+    INTEGER(our_int), SAVE, ALLOCATABLE   :: displs(:)
 
     INTEGER(our_int)                :: opt_ambi_summary_slaves(2, num_slaves)
     INTEGER(our_int)                :: dist_optim_paras_info
     INTEGER(our_int)                :: opt_ambi_summary(2)
-    INTEGER(our_int)                :: displs(num_slaves)
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
@@ -233,30 +235,31 @@ FUNCTION fort_criterion_parallel(x)
         RETURN
     END IF
 
-    x_input = apply_scaling(x, precond_matrix, 'undo')
+    x_optim_free_unscaled = apply_scaling(x, precond_matrix, 'undo')
 
-    CALL construct_all_current_values(x_all_current, x_input, optim_paras)
+    CALL construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras, num_paras)
 
     CALL MPI_Bcast(3, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
 
-    CALL MPI_Bcast(x_all_current, NUM_PARAS, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_Bcast(x_optim_all_unscaled, num_paras, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     ! This extra work is only required to align the logging across the scalar and parallel implementation. In the case of an otherwise zero variance, we stabilize the algorithm. However, we want this indicated as a warning in the log file.
-    CALL dist_optim_paras(optim_paras, x_all_current, dist_optim_paras_info)
+    CALL dist_optim_paras(optim_paras, x_optim_all_unscaled, dist_optim_paras_info)
 
     ! We need to know how the workload is distributed across the slaves.
     IF (.NOT. ALLOCATED(num_states_slaves)) THEN
-        CALL distribute_workload(num_states_slaves, num_obs_slaves)
+        CALL distribute_workload(num_states_slaves, num_agents_slaves)
 
+        ALLOCATE(displs(num_slaves))
         DO i = 1, num_slaves
-            displs(i) = SUM(num_obs_slaves(:i - 1))
+            displs(i) = SUM(num_agents_slaves(:i - 1))
         END DO
 
     END IF
 
     contribs = -HUGE_FLOAT
 
-    CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_obs_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
+    CALL MPI_GATHERV(contribs, 0, MPI_DOUBLE, contribs, num_agents_slaves, displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
 
     fort_criterion_parallel = get_log_likl(contribs)
 
@@ -269,7 +272,7 @@ FUNCTION fort_criterion_parallel(x)
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x, x_all_current, fort_criterion_parallel, num_eval, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x, x_optim_all_unscaled, fort_criterion_parallel, num_eval, num_paras, num_types, optim_paras, start, opt_ambi_summary)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -323,15 +326,17 @@ FUNCTION fort_dcriterion(x_optim_free_scaled)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras)
+SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unscaled, optim_paras, num_paras)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: x_optim_all_unscaled(NUM_PARAS)
+    REAL(our_dble), INTENT(OUT)         :: x_optim_all_unscaled(num_paras)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
-    REAL(our_dble), INTENT(IN)                  :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
 
+    REAL(our_dble), INTENT(IN)          :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
+
+    INTEGER(our_int), INTENT(IN)        :: num_paras
 
     !/* internal objects        */
 
@@ -344,7 +349,7 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     j = 1
 
-    DO i = 1, NUM_PARAS
+    DO i = 1, num_paras
 
         IF(optim_paras%paras_fixed(i)) THEN
             x_optim_all_unscaled(i) = x_all_start(i)

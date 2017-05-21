@@ -18,9 +18,8 @@ def simulate(respy_obj):
     the initialization file.
     """
     # Distribute class attributes
-    is_debug, version, is_store, file_sim = \
-        dist_class_attributes(respy_obj, 'is_debug', 'version', 'is_store',
-            'file_sim')
+    is_debug, version, is_store, file_sim = dist_class_attributes(respy_obj, 'is_debug',
+        'version', 'is_store', 'file_sim')
 
     # Cleanup
     for ext in ['sim', 'sol', 'amb', 'dat', 'info']:
@@ -48,8 +47,7 @@ def simulate(respy_obj):
         respy_obj.store('solution.respy.pkl')
 
     # Create pandas data frame with missing values.
-    data_frame = pd.DataFrame(replace_missing_values(data_array),
-        columns=DATA_LABELS_SIM)
+    data_frame = pd.DataFrame(replace_missing_values(data_array), columns=DATA_LABELS_SIM)
     data_frame = data_frame.astype(DATA_FORMATS_SIM)
     data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
 

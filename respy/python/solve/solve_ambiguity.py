@@ -8,27 +8,22 @@ from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
-def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
-        draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
-        rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, ambi_spec, optim_paras, optimizer_options,
-        opt_ambi_details):
+def construct_emax_ambiguity(num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+        draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all,
+        mapping_state_idx, edu_spec, ambi_spec, optim_paras, optimizer_options, opt_ambi_details):
     """ Construct EMAX accounting for a worst case evaluation.
     """
     # Construct auxiliary objects
-    shocks_cov = np.matmul(optim_paras['shocks_cholesky'],
-        optim_paras['shocks_cholesky'].T)
+    shocks_cov = np.matmul(optim_paras['shocks_cholesky'], optim_paras['shocks_cholesky'].T)
 
     # Determine special cases
     is_deterministic = (np.count_nonzero(shocks_cov) == 0)
 
-    base_args = (num_periods, num_draws_emax, period, k,
-        draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
-        rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx)
+    base_args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+                 draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all,
+                 mapping_state_idx)
 
-    # The following two scenarios are only maintained for testing and
-    # debugging purposes.
+    # The following two scenarios are only maintained for testing and debugging purposes.
     if is_deterministic:
         rslt_mean, rslt_sd = [0.0, 0.0], [0.0, 0.0]
         div, is_success, mode = 0.0, 1.0, 15
@@ -39,11 +34,10 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
         div, is_success, mode = optim_paras['level'], 1.0, 16
 
     elif ambi_spec['measure'] == 'kl':
-        # In conflict with the usual design, we pass in shocks_cov directly.
-        # Otherwise it needs to be constructed over and over for each of the
-        # evaluations of the criterion functions.
+        # In conflict with the usual design, we pass in shocks_cov directly. Otherwise it needs
+        # to be constructed over and over for each of the evaluations of the criterion functions.
         args = ()
-        args += base_args + (shocks_cov, optim_paras, optimizer_options)
+        args += base_args + (shocks_cov, edu_spec, optim_paras, optimizer_options)
         args += (ambi_spec, )
         opt_return, is_success, mode = get_worst_case(*args)
 
@@ -64,25 +58,22 @@ def construct_emax_ambiguity(num_periods, num_draws_emax, period, k,
     # Now we recombine the results from the optimization for easier access.
     rslt_all = np.append(rslt_mean, rslt_sd)
 
-    # We collect the information from the optimization step for future
-    # recording.
+    # We collect the information from the optimization step for future recording.
     opt_ambi_details[period, k, :4] = rslt_all
     opt_ambi_details[period, k, 4:] = (div, is_success, mode)
 
-    # The optimizer does not always return the actual value of the criterion
-    # function at the optimum.
+    # The optimizer does not always return the actual value of the criterion function at the
+    # optimum.
     args = ()
-    args += base_args + (optim_paras, shocks_cov, ambi_spec)
+    args += base_args + (edu_spec, optim_paras, shocks_cov, ambi_spec)
     emax = criterion_ambiguity(rslt_all, *args)
 
     return emax, opt_ambi_details
 
 
-def get_worst_case(num_periods, num_draws_emax, period, k,
-        draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
-        rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, shocks_cov, optim_paras, optimizer_options,
-        ambi_spec):
+def get_worst_case(num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+        draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all,
+        mapping_state_idx, shocks_cov, edu_spec, optim_paras, optimizer_options, ambi_spec):
     """ Run the optimization.
     """
     # Initialize options.
@@ -91,8 +82,7 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     options['ftol'] = optimizer_options['SCIPY-SLSQP']['ftol']
     options['eps'] = optimizer_options['SCIPY-SLSQP']['eps']
 
-    # The construction of starting value is straightforward. It is simply the
-    # benchmark model.
+    # The construction of starting value is straightforward. It is simply the benchmark model.
     sd_base = np.sqrt(shocks_cov[[(0, 1), (0, 1)]])
     mean_base = np.tile(0.0, 2)
 
@@ -118,18 +108,16 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     # Collection.
     constraints = [constraint_divergence, ]
 
-    args = (num_periods, num_draws_emax, period, k,
-        draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
-        rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, optim_paras, shocks_cov, ambi_spec)
+    args = (num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+            draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all,
+            mapping_state_idx, edu_spec, optim_paras, shocks_cov, ambi_spec)
 
     # Run optimization
-    opt = minimize(criterion_ambiguity, x0, args, method='SLSQP',
-        options=options, constraints=constraints, bounds=bounds)
+    opt = minimize(criterion_ambiguity, x0, args, method='SLSQP', options=options,
+        constraints=constraints, bounds=bounds)
 
-    # Stabilization. If the optimization fails the starting values are
-    # used otherwise it happens that the constraint is not satisfied by far
-    # at the return values from the interface.
+    # Stabilization. If the optimization fails the starting values are used otherwise it happens
+    # that the constraint is not satisfied by far at the return values from the interface.
     if not opt['success']:
         opt['x'] = x0
 
@@ -139,22 +127,19 @@ def get_worst_case(num_periods, num_draws_emax, period, k,
     return rslt, is_success, mode
 
 
-def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
-        draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed,
-        rewards_systematic, edu_max, edu_start, periods_emax, states_all,
-        mapping_state_idx, optim_paras, shocks_cov, ambi_spec):
+def criterion_ambiguity(x, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard,
+        draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all,
+        mapping_state_idx, edu_spec, optim_paras, shocks_cov, ambi_spec):
     """ Evaluating the constructed EMAX with the admissible distribution.
     """
-    # We construct the candidate values for the mean and the dependence of
-    # the shocks.
+    # We construct the candidate values for the mean and the dependence of the shocks.
     shocks_cholesky_cand = get_relevant_dependence(shocks_cov, x)[1]
     shocks_mean_cand = np.append(x[:2], [0.0, 0.0])
 
     if ambi_spec['mean']:
         draws_emax_relevant = draws_emax_ambiguity_transformed.copy()
     else:
-        draws_emax_relevant = np.dot(shocks_cholesky_cand,
-            draws_emax_ambiguity_standard.T).T
+        draws_emax_relevant = np.dot(shocks_cholesky_cand, draws_emax_ambiguity_standard.T).T
 
     for i in range(2):
         draws_emax_relevant[:, i] += shocks_mean_cand[i]
@@ -163,20 +148,17 @@ def criterion_ambiguity(x, num_periods, num_draws_emax, period, k,
         draws_emax_relevant[:, i] = np.clip(np.exp(draws_emax_relevant[:, i]),
             0.0, HUGE_FLOAT)
 
-    emax = construct_emax_risk(num_periods, num_draws_emax, period, k,
-            draws_emax_relevant, rewards_systematic, edu_max, edu_start,
-            periods_emax, states_all, mapping_state_idx, optim_paras)
+    emax = construct_emax_risk(num_periods, num_draws_emax, period, k, draws_emax_relevant,
+        rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
     return emax
 
 
 def get_relevant_dependence(shocks_cov, x):
-    """ This function creates the objects that describe the relevant
-    dependence structures for the random disturbances during the worst-case
-    determination.
+    """ This function creates the objects that describe the relevant dependence structures for 
+    the random disturbances during the worst-case determination.
     """
-    # We need to deal with the special case when there is no variation in the
-    # random disturbances.
+    # We need to deal with the special case when there is no variation in the random disturbances.
     is_deterministic = (np.count_nonzero(shocks_cov) == 0)
     if is_deterministic:
         return np.zeros((4, 4)), np.zeros((4, 4))

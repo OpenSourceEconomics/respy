@@ -220,13 +220,13 @@ FUNCTION get_log_likl(contribs)
 
       REAL(our_dble)                  :: get_log_likl
 
-      REAL(our_dble), INTENT(IN)      :: contribs(num_obs)
+      REAL(our_dble), INTENT(IN)      :: contribs(num_agents_est)
 
       !/* internal objects        */
 
       INTEGER(our_int), ALLOCATABLE   :: infos(:)
 
-      REAL(our_dble)                  :: contribs_clipped(num_obs)
+      REAL(our_dble)                  :: contribs_clipped(num_agents_est)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -295,7 +295,7 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
 
-    REAL(our_dble), INTENT(IN)      :: x(NUM_PARAS)
+    REAL(our_dble), INTENT(IN)      :: x(:)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)    :: info
 
@@ -317,7 +317,7 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky(3, :3) = x(29:31)
 
-    shocks_cholesky(4, :4) = x(32:NUM_PARAS)
+    shocks_cholesky(4, :4) = x(32:35)
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -373,19 +373,18 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)
+SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)                 :: total_values(4)
+    REAL(our_dble), INTENT(OUT)         :: total_values(4)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -397,8 +396,6 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 
     REAL(our_dble)                  :: rewards_ex_post(4)
     REAL(our_dble)                  :: emaxs(4)
-
-    LOGICAL                         :: is_inadmissible
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -415,38 +412,32 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
-        CALL get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
+        CALL get_emaxs(emaxs, mapping_state_idx, period, periods_emax, k, states_all, edu_spec)
     ELSE
-        is_inadmissible = .False.
         emaxs = zero_dble
     END IF
 
     ! Calculate total utilities
     total_values = rewards_ex_post + optim_paras%delta(1) * emaxs
 
-    ! This is required to ensure that the agent does not choose any
-    ! inadmissible states. If the state is inadmissible emaxs takes
-    ! value zero. This aligns the treatment of inadmissible values with the
-    ! original paper.
-    IF (is_inadmissible) THEN
+    ! This is required to ensure that the agent does not choose any inadmissible states. If the state is inadmissible emaxs takes value zero.
+    IF (states_all(period + 1, k + 1, 3) >= edu_spec%max) THEN
         total_values(3) = total_values(3) + INADMISSIBILITY_PENALTY
     END IF
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_emax, k, states_all, edu_start, edu_max)
+SUBROUTINE get_emaxs(emaxs, mapping_state_idx, period, periods_emax, k, states_all, edu_spec)
 
     !/* external objects        */
 
+    TYPE(EDU_DICT), INTENT(IN)      :: edu_spec
+
     REAL(our_dble), INTENT(OUT)     :: emaxs(4)
 
-    LOGICAL, INTENT(OUT)            :: is_inadmissible
-
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -458,6 +449,7 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
     INTEGER(our_int)                :: future_idx
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
+    INTEGER(our_int)                :: type_
     INTEGER(our_int)                :: edu
 
 !------------------------------------------------------------------------------
@@ -469,28 +461,26 @@ SUBROUTINE get_emaxs(emaxs, is_inadmissible, mapping_state_idx, period, periods_
     exp_b = states_all(period + 1, k + 1, 2)
     edu = states_all(period + 1, k + 1, 3)
     edu_lagged = states_all(period + 1, k + 1, 4)
+    type_ = states_all(period + 1, k + 1, 5)
 
     ! Working in Occupation A
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1, type_ + 1)
     emaxs(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
-    !Working in Occupation B
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1)
+    ! Working in Occupation B
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1, type_ + 1)
     emaxs(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
-    ! Increasing schooling. Note that adding an additional year
-    ! of schooling is only possible for those that have strictly
-    ! less than the maximum level of additional education allowed.
-    is_inadmissible = (edu .GE. edu_max - edu_start)
-    IF(is_inadmissible) THEN
+    ! Increasing schooling. Note that adding an additional year of schooling is only possible for those that have strictly less than the maximum level of additional education allowed.
+    IF(edu .GE. edu_spec%max) THEN
         emaxs(3) = zero_dble
     ELSE
-        future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 2)
+        future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 2, type_ + 1)
         emaxs(3) = periods_emax(period + 1 + 1, future_idx + 1)
     END IF
 
     ! Staying at home
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1, 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1, 1, type_ + 1)
     emaxs(4) = periods_emax(period + 1 + 1, future_idx + 1)
 
 END SUBROUTINE
@@ -536,11 +526,11 @@ SUBROUTINE create_draws(draws, num_draws, seed, is_debug)
     ! Draw random deviates from a standard normal distribution or read it in
     ! from disk. The latter is available to allow for testing across
     ! implementations.
-    INQUIRE(FILE='draws.txt', EXIST=READ_IN)
+    INQUIRE(FILE='.draws.respy.test', EXIST=READ_IN)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        OPEN(UNIT=99, FILE='draws.txt', ACTION='READ')
+        OPEN(UNIT=99, FILE='.draws.respy.test', ACTION='READ')
 
         DO period = 1, num_periods
 
@@ -754,8 +744,8 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
     !/* external objects        */
 
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
 
     REAL(our_dble), ALLOCATABLE, INTENT(IN)      :: periods_rewards_systematic(: ,:, :)
@@ -766,19 +756,24 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 
     !/* internal objects        */
 
+    INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: l
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! Auxiliary variables
+    min_idx = SIZE(mapping_state_idx, 4)
+
     IF (request == 'simulate') THEN
 
         ! Write out results for the store results.
-        1800 FORMAT(5(1x,i5))
+        1800 FORMAT(5(1x,i10))
 
         OPEN(UNIT=99, FILE='.mapping_state_idx.resfort.dat', ACTION='WRITE')
 
@@ -786,7 +781,9 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
             DO i = 1, num_periods
                 DO j = 1, num_periods
                     DO k = 1, min_idx
-                        WRITE(99, 1800) mapping_state_idx(period, i, j, k, :)
+                        DO l = 1, 2
+                            WRITE(99, 1800) mapping_state_idx(period, i, j, k, l, :)
+                        END DO
                     END DO
                 END DO
             END DO
@@ -795,7 +792,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
         CLOSE(99)
 
 
-        2000 FORMAT(4(1x,i5))
+        2000 FORMAT(5(1x,i5))
 
         OPEN(UNIT=99, FILE='.states_all.resfort.dat', ACTION='WRITE')
 
@@ -820,7 +817,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 
         CLOSE(99)
 
-        2100 FORMAT(i5)
+        2100 FORMAT(i10)
 
         OPEN(UNIT=99, FILE='.states_number_period.resfort.dat', ACTION='WRITE')
 
@@ -831,7 +828,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
         CLOSE(99)
 
 
-        2200 FORMAT(i5)
+        2200 FORMAT(i10)
 
         OPEN(UNIT=99, FILE='.max_states_period.resfort.dat', ACTION='WRITE')
 
@@ -840,7 +837,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
         CLOSE(99)
 
 
-        2400 FORMAT(100000(1x,f45.15))
+        2400 FORMAT(1000000(1x,f45.15))
 
         OPEN(UNIT=99, FILE='.periods_emax.resfort.dat', ACTION='WRITE')
 
@@ -871,12 +868,10 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_obs)
+SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
 
     !
-    !   This function serves as the replacement for the RespyCls and reads in
-    !   all required information about the model parameterization. It just
-    !   reads in all required information.
+    !   This function serves as the replacement for the RespyCls and reads in all required information about the model parameterization. It just reads in all required information.
     !
 
     !/* external objects        */
@@ -884,6 +879,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     TYPE(PRECOND_DICT), INTENT(OUT)         :: precond_spec
     TYPE(OPTIMPARAS_DICT), INTENT(OUT)      :: optim_paras
     TYPE(AMBI_DICT), INTENT(OUT)            :: ambi_spec
+    TYPE(EDU_DICT), INTENT(OUT)             :: edu_spec
 
     REAL(our_dble), INTENT(OUT)     :: tau
 
@@ -892,11 +888,10 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     INTEGER(our_int), INTENT(OUT)   :: num_procs
     INTEGER(our_int), INTENT(OUT)   :: seed_prob
     INTEGER(our_int), INTENT(OUT)   :: seed_emax
-    INTEGER(our_int), INTENT(OUT)   :: edu_start
+    INTEGER(our_int), INTENT(OUT)   :: num_paras
     INTEGER(our_int), INTENT(OUT)   :: seed_sim
     INTEGER(our_int), INTENT(OUT)   :: num_free
-    INTEGER(our_int), INTENT(OUT)   :: edu_max
-    INTEGER(our_int), INTENT(OUT)   :: num_obs
+    INTEGER(our_int), INTENT(OUT)   :: num_rows
     INTEGER(our_int), INTENT(OUT)   :: maxfun
 
     CHARACTER(225), INTENT(OUT)     :: optimizer_used
@@ -921,73 +916,89 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 !------------------------------------------------------------------------------
 
     ! Fix formatting
-    1500 FORMAT(9(1x,f25.15))
-
-    1505 FORMAT(i10)
-    1515 FORMAT(i10,1x,i10)
-
-    1525 FORMAT(35(1x,f25.15))
+    1500 FORMAT(100(1x,i10))
+    1510 FORMAT(100(1x,f25.15))
 
     ! Read model specification
     OPEN(UNIT=99, FILE='.model.resfort.ini', ACTION='READ')
 
+
+        READ(99, 1500) num_paras
+        READ(99, 1500) num_types
+        READ(99, 1500) num_edu_start
+
+        ALLOCATE(optim_paras%type_shifts(num_types, 4))
+        ALLOCATE(optim_paras%type_shares(num_types))
+        ALLOCATE(optim_paras%paras_bounds(2, num_paras))
+        ALLOCATE(optim_paras%paras_fixed(num_paras))
+
+        ALLOCATE(edu_spec%start(num_edu_start))
+        ALLOCATE(edu_spec%share(num_edu_start))
+
         ! BASICS
-        READ(99, 1505) num_periods
-        READ(99, 1500) optim_paras%delta
+        READ(99, 1500) num_periods
+        READ(99, 1510) optim_paras%delta
 
         ! WORK
-        READ(99, 1500) optim_paras%coeffs_a
-        READ(99, 1500) optim_paras%coeffs_b
+        READ(99, 1510) optim_paras%coeffs_a
+        READ(99, 1510) optim_paras%coeffs_b
 
         ! EDUCATION
-        READ(99, 1500) optim_paras%coeffs_edu
-        READ(99, 1515) edu_start, edu_max
+        READ(99, 1510) optim_paras%coeffs_edu
+        READ(99, 1500) edu_spec%start
+        READ(99, 1510) edu_spec%share
+        READ(99, 1500) edu_spec%max
 
         ! HOME
-        READ(99, 1500) optim_paras%coeffs_home
+        READ(99, 1510) optim_paras%coeffs_home
 
         ! SHOCKS
         DO j = 1, 4
-            READ(99, 1500) (optim_paras%shocks_cholesky(j, k), k = 1, 4)
+            READ(99, 1510) (optim_paras%shocks_cholesky(j, k), k = 1, 4)
         END DO
 
         ! SOLUTION
-        READ(99, 1505) num_draws_emax
-        READ(99, 1505) seed_emax
+        READ(99, 1500) num_draws_emax
+        READ(99, 1500) seed_emax
 
         ! AMBIGUITY
         READ(99, *) ambi_spec%measure
         READ(99, *) ambi_spec%mean
-        READ(99, 1500) optim_paras%level
+        READ(99, 1510) optim_paras%level
+
+        ! TYPES
+        READ(99, 1510) optim_paras%type_shares
+        DO j = 1, num_types
+            READ(99, 1510) (optim_paras%type_shifts(j, k), k = 1, 4)
+        END DO
 
         ! PROGRAM
         READ(99, *) is_debug
-        READ(99, 1505) num_procs
+        READ(99, 1500) num_procs
 
         ! INTERPOLATION
         READ(99, *) is_interpolated
-        READ(99, 1505) num_points_interp
+        READ(99, 1500) num_points_interp
 
         ! ESTIMATION
-        READ(99, 1505) maxfun
-        READ(99, 1505) num_agents_est
-        READ(99, 1505) num_draws_prob
-        READ(99, 1505) seed_prob
-        READ(99, 1500) tau
-        READ(99, 1505) num_obs
+        READ(99, 1500) maxfun
+        READ(99, 1500) num_agents_est
+        READ(99, 1500) num_draws_prob
+        READ(99, 1500) seed_prob
+        READ(99, 1510) tau
+        READ(99, 1500) num_rows
 
         ! SCALING
         READ(99, *) precond_spec%type
         READ(99, *) precond_spec%minimum
-        READ(99, 1500) precond_spec%eps
+        READ(99, 1510) precond_spec%eps
 
         ! SIMULATION
-        READ(99, 1505) num_agents_sim
-        READ(99, 1505) seed_sim
+        READ(99, 1500) num_agents_sim
+        READ(99, 1500) seed_sim
         READ(99, *) file_sim
 
         ! AUXILIARY
-        READ(99, 1505) min_idx
         READ(99, *) is_myopic
         READ(99, *) optim_paras%paras_fixed
 
@@ -1000,32 +1011,32 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
         ! OPTIMIZERS
         READ(99, *) optimizer_used
 
-        READ(99, 1505) optimizer_options%newuoa%npt
-        READ(99, 1505) optimizer_options%newuoa%maxfun
-        READ(99, 1500) optimizer_options%newuoa%rhobeg
-        READ(99, 1500) optimizer_options%newuoa%rhoend
+        READ(99, 1500) optimizer_options%newuoa%npt
+        READ(99, 1500) optimizer_options%newuoa%maxfun
+        READ(99, 1510) optimizer_options%newuoa%rhobeg
+        READ(99, 1510) optimizer_options%newuoa%rhoend
 
-        READ(99, 1505) optimizer_options%bobyqa%npt
-        READ(99, 1505) optimizer_options%bobyqa%maxfun
-        READ(99, 1500) optimizer_options%bobyqa%rhobeg
-        READ(99, 1500) optimizer_options%bobyqa%rhoend
+        READ(99, 1500) optimizer_options%bobyqa%npt
+        READ(99, 1500) optimizer_options%bobyqa%maxfun
+        READ(99, 1510) optimizer_options%bobyqa%rhobeg
+        READ(99, 1510) optimizer_options%bobyqa%rhoend
 
-        READ(99, 1500) optimizer_options%bfgs%gtol
-        READ(99, 1500) optimizer_options%bfgs%stpmx
-        READ(99, 1505) optimizer_options%bfgs%maxiter
-        READ(99, 1500) optimizer_options%bfgs%eps
+        READ(99, 1510) optimizer_options%bfgs%gtol
+        READ(99, 1510) optimizer_options%bfgs%stpmx
+        READ(99, 1500) optimizer_options%bfgs%maxiter
+        READ(99, 1510) optimizer_options%bfgs%eps
 
-        READ(99, 1500) optimizer_options%slsqp%ftol
-        READ(99, 1505) optimizer_options%slsqp%maxiter
-        READ(99, 1500) optimizer_options%slsqp%eps
+        READ(99, 1510) optimizer_options%slsqp%ftol
+        READ(99, 1500) optimizer_options%slsqp%maxiter
+        READ(99, 1510) optimizer_options%slsqp%eps
 
-        READ(99, 1525) optim_paras%paras_bounds(1, :)
-        READ(99, 1525) optim_paras%paras_bounds(2, :)
+        READ(99, 1510) optim_paras%paras_bounds(1, :)
+        READ(99, 1510) optim_paras%paras_bounds(2, :)
 
     CLOSE(99)
 
     ! TODO: This setup should be revisited and cleaned up later.
-    DO i = 1, NUM_PARAS
+    DO i = 1, num_paras
         IF(optim_paras%paras_bounds(1, i) == -MISSING_FLOAT) optim_paras%paras_bounds(1, i) = - HUGE_FLOAT
         IF(optim_paras%paras_bounds(2, i) == MISSING_FLOAT) optim_paras%paras_bounds(2, i) = HUGE_FLOAT
 
@@ -1035,7 +1046,7 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
     ALLOCATE(x_optim_bounds_free_unscaled(2, COUNT(.NOT. optim_paras%paras_fixed)))
 
     k = 1
-    DO i = 1, NUM_PARAS
+    DO i = 1, num_paras
         IF (.NOT. optim_paras%paras_fixed(i)) THEN
             DO j = 1, 2
                 x_optim_bounds_free_unscaled(j, k) = optim_paras%paras_bounds(j, i)
@@ -1053,17 +1064,18 @@ SUBROUTINE read_specification(optim_paras, edu_start, edu_max, tau, seed_sim, se
 
     num_free =  COUNT(.NOT. optim_paras%paras_fixed)
     num_slaves = num_procs - 1
+    min_idx = edu_spec%max + 1
 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_dataset(data_est, num_obs)
+SUBROUTINE read_dataset(data_est, num_rows)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)  :: data_est(:, :)
 
-    INTEGER(our_int), INTENT(IN)                :: num_obs
+    INTEGER(our_int), INTENT(IN)                :: num_rows
 
     !/* internal objects        */
 
@@ -1075,12 +1087,12 @@ SUBROUTINE read_dataset(data_est, num_obs)
 !------------------------------------------------------------------------------
 
     ! Allocate data container
-    ALLOCATE(data_est(num_obs, 8))
+    ALLOCATE(data_est(num_rows, 8))
 
     ! Read observed data to double precision array
     OPEN(UNIT=99, FILE='.data.resfort.dat', ACTION='READ')
 
-        DO j = 1, num_obs
+        DO j = 1, num_rows
             READ(99, *) (data_est(j, k), k = 1, 8)
         END DO
 
@@ -1185,9 +1197,9 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     !/* external objects        */
 
-    TYPE(OPTIMPARAS_DICT), INTENT(OUT)  :: optim_paras
+    TYPE(OPTIMPARAS_DICT), INTENT(INOUT)  :: optim_paras
 
-    REAL(our_dble), INTENT(IN)      :: x(NUM_PARAS)
+    REAL(our_dble), INTENT(IN)      :: x(num_paras)
 
     INTEGER(our_int), OPTIONAL, INTENT(OUT)   :: info
 
@@ -1215,7 +1227,52 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
         CALL extract_cholesky(optim_paras%shocks_cholesky, x)
     END IF
 
+    ! The shares do not necessarily sum to one. The adjustment is done when the criterion function is evaluated.
+    optim_paras%type_shares = x(36:(36 + num_types - 1))
+
+    optim_paras%type_shifts = zero_dble
+    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(36 + num_types:num_paras), (/4, num_types  - 1/)))
+
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION get_num_obs_agent(data_array) RESULT(num_obs_agent)
+
+    !/* external objects        */
+
+    INTEGER(our_int)                    :: num_obs_agent(num_agents_est)
+
+    REAL(our_dble) , INTENT(IN)         :: data_array(:, :)
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                    :: num_rows
+    INTEGER(our_int)                    :: q
+    INTEGER(our_int)                    :: i
+
+    REAL(our_dble)                      :: agent_number
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    num_rows = SIZE(data_array, 1)
+    num_obs_agent = zero_int
+    q = 1
+
+    agent_number = data_array(1, 1)
+
+    DO i = 1, num_rows
+        IF (data_array(i, 1) .NE. agent_number) THEN
+            q = q + 1
+            agent_number = data_array(i, 1)
+        END IF
+
+        num_obs_agent(q) = num_obs_agent(q) + 1
+
+    END DO
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE get_optim_paras(x, optim_paras, is_all)
@@ -1230,7 +1287,8 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     !/* internal objects        */
 
-    REAL(our_dble)                  :: x_internal(NUM_PARAS)
+    REAL(our_dble)                  :: x_internal(num_paras)
+    REAL(our_dble)                  :: shifts(num_types * 4)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -1257,7 +1315,12 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     x_internal(29:31) = optim_paras%shocks_cholesky(3, :3)
 
-    x_internal(32:NUM_PARAS) = optim_paras%shocks_cholesky(4, :4)
+    x_internal(32:35) = optim_paras%shocks_cholesky(4, :4)
+
+    x_internal(36:(36 + num_types - 1)) = optim_paras%type_shares(:)
+
+    shifts = PACK(TRANSPOSE(optim_paras%type_shifts), .TRUE.)
+    x_internal(36 + num_types:num_paras) = shifts(5:)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN
@@ -1268,7 +1331,7 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
         j = 1
 
-        DO i = 1, NUM_PARAS
+        DO i = 1, num_paras
 
             IF(optim_paras%paras_fixed(i)) CYCLE
 

@@ -6,6 +6,8 @@ MODULE simulate_fortran
 
     USE recording_simulation
 
+    USE simulate_auxiliary
+
     USE shared_interface
 
     !/*	setup	*/
@@ -17,26 +19,28 @@ MODULE simulate_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, edu_start, edu_max, seed_sim, file_sim, optim_paras)
+SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, num_agents_sim, periods_draws_sims, seed_sim, file_sim, edu_spec, optim_paras, num_types, is_debug)
 
     !/* external objects        */
 
     REAL(our_dble), ALLOCATABLE, INTENT(OUT)    :: data_sim(:, :)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
     REAL(our_dble), INTENT(IN)      :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(num_periods, num_agents_sim, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_agents_sim
-    INTEGER(our_int), INTENT(IN)    :: edu_start
+    INTEGER(our_int), INTENT(IN)    :: num_types
     INTEGER(our_int), INTENT(IN)    :: seed_sim
-    INTEGER(our_int), INTENT(IN)    :: edu_max
 
     CHARACTER(225), INTENT(IN)      :: file_sim
+
+    LOGICAL, INTENT(IN)             :: is_debug
 
     !/* internal objects        */
 
@@ -44,21 +48,23 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     REAL(our_dble)                  :: draws_sims_transformed(num_agents_sim, 4)
     REAL(our_dble)                  :: draws_sims(num_agents_sim, 4)
     REAL(our_dble)                  :: shocks_mean(4) = zero_dble
+    REAL(our_dble)                  :: rewards_systematic(4)
+    REAL(our_dble)                  :: total_values(4)
+    REAL(our_dble)                  :: draws(4)
 
-    INTEGER(our_int)                :: current_state(4)
+    INTEGER(our_int)                :: edu_start(num_agents_sim)
+    INTEGER(our_int)                :: types(num_agents_sim)
+    INTEGER(our_int)                :: current_state(5)
     INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: choice(1)
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
     INTEGER(our_int)                :: count
+    INTEGER(our_int)                :: type_
     INTEGER(our_int)                :: edu
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: k
-
-    REAL(our_dble)                  :: rewards_systematic(4)
-    REAL(our_dble)                  :: total_values(4)
-    REAL(our_dble)                  :: draws(4)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -67,7 +73,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     CALL record_simulation(num_agents_sim, seed_sim, file_sim)
 
 
-    ALLOCATE(data_sim(num_periods * num_agents_sim, 21))
+    ALLOCATE(data_sim(num_periods * num_agents_sim, 22))
 
     !Standard deviates transformed to the distributions relevant for the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
@@ -79,6 +85,10 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     ! Initialize containers
     data_sim = MISSING_FLOAT
 
+    ! We also need to sample the set of initial conditions.
+    types = get_random_types(num_types, optim_paras, num_agents_sim, is_debug)
+    edu_start = get_random_edu_start(edu_spec, is_debug)
+
     ! Iterate over agents and periods
     count = 0
 
@@ -86,6 +96,10 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
 
         ! Baseline state
         current_state = states_all(1, 1, :)
+
+        ! We need to modify the initial conditions.
+        current_state(3) = edu_start(i + 1)
+        current_state(5) = types(i + 1)
 
         CALL record_simulation(i, file_sim)
 
@@ -96,9 +110,10 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             exp_b = current_state(2)
             edu = current_state(3)
             edu_lagged = current_state(4)
+            type_ = current_state(5)
 
             ! Getting state index
-            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1)
+            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1, type_ + 1)
 
             ! Write agent identifier and current period to data frame
             data_sim(count + 1, 1) = DBLE(i)
@@ -109,19 +124,20 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             draws = periods_draws_sims_transformed(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)
+            CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
             ! Write relevant state space for period to data frame
-            data_sim(count + 1, 5:8) = current_state
-
-            ! Special treatment for education
-            data_sim(count + 1, 7) = data_sim(count + 1, 7) + edu_start
+            data_sim(count + 1, 5:8) = current_state(:4)
 
             ! As we are working with a simulated dataset, we can also output additional information that is not available in an observed dataset. The discount rate is included as this allows to construct the EMAX with the information provided in the simulation output.
-            data_sim(count + 1,  9:12) = total_values
-            data_sim(count + 1, 13:16) = rewards_systematic
-            data_sim(count + 1, 17:20) = draws
-            data_sim(count + 1, 21:21) = optim_paras%delta
+            data_sim(count + 1,  9: 9) = type_
+            data_sim(count + 1, 10:13) = total_values
+            data_sim(count + 1, 14:17) = rewards_systematic
+            data_sim(count + 1, 18:21) = draws
+            data_sim(count + 1, 22:22) = optim_paras%delta
+
+            ! We need to ensure that no individual chooses an inadmissible state. This cannot be done directly in the get_total_values function as the penalty otherwise dominates the interpolation equation. The parameter INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very constructed cases.
+            IF (edu >= edu_spec%max) total_values(3) = -HUGE_FLOAT
 
             ! Determine and record optimal choice
             choice = MAXLOC(total_values)

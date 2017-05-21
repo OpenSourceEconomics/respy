@@ -29,8 +29,7 @@ def read(fname):
             # Prepare dictionary
             if is_group:
                 group = list_[0]
-                # Special treatment for OCCUPATION, which consists of two
-                # entries.
+                # Special treatment for OCCUPATION, which consists of two entries.
                 if group == 'OCCUPATION':
                     group = list_[0] + ' ' + list_[1]
                 dict_[group] = {}
@@ -40,7 +39,9 @@ def read(fname):
             flag, value = list_[:2]
             is_fixed, bounds = None, None
 
-            if flag in ['coeff']:
+            # Unfortunately, the flag `share' does refer to a parameter that can be estimated or
+            # not, depending on the group.
+            if flag in ['coeff', 'shift'] or (group == 'TYPES' and flag == 'share'):
                 is_fixed, bounds = process_coefficient_line(line)
 
             # Type conversions
@@ -51,6 +52,25 @@ def read(fname):
 
     # Type conversion for Shocks
     dict_['SHOCKS']['coeffs'] = np.array(dict_['SHOCKS']['coeffs'])
+    dict_['TYPES']['coeffs'] = np.array(dict_['TYPES']['coeffs'])
+
+    # We further process the TYPES for easier processing later.
+    num_types = int((len(dict_['TYPES']['coeffs'][1:]) / 4) + 1)
+
+    for label in ['SHARES', 'SHIFTS']:
+        dict_['TYPE_' + label] = dict()
+        dict_['TYPE_' + label]['coeffs'] = []
+        dict_['TYPE_' + label]['fixed'] = []
+        dict_['TYPE_' + label]['bounds'] = []
+
+    for idx in range((num_types - 1) * 5 + 1):
+        for label in ['coeffs', 'fixed', 'bounds']:
+            if idx in [0] + list(range(1, (num_types - 1) * 5, 5)):
+                dict_['TYPE_SHARES'][label] += [dict_['TYPES'][label][idx]]
+            else:
+                dict_['TYPE_SHIFTS'][label] += [dict_['TYPES'][label][idx]]
+
+    del dict_['TYPES']
 
     # Finishing
     return dict_
@@ -95,9 +115,8 @@ def _type_conversions(flag, value):
     """ Type conversions
     """
     # Type conversion
-    if flag in ['agents', 'periods', 'start', 'max', 'draws',
-        'seed', 'points', 'maxiter', 'maxfun', 'procs', 'npt', 'maxiter',
-                'm', 'maxls']:
+    if flag in ['agents', 'periods', 'start', 'max', 'draws', 'seed', 'points', 'maxiter',
+                'maxfun', 'procs', 'npt', 'maxiter', 'm', 'maxls']:
         value = int(value)
     elif flag in ['file', 'options', 'measure', 'type']:
         value = str(value)
@@ -116,9 +135,8 @@ def _type_conversions(flag, value):
 def _process_line(group, flag, value, is_fixed, bounds, dict_):
     """ This function processes most parts of the initialization file.
     """
-    # This aligns the label from the initialization file with the label
-    # inside the RESPY logic.
-    if flag in ['coeff']:
+    # This aligns the label from the initialization file with the label inside the RESPY logic.
+    if flag in ['coeff', 'shift'] or (group == 'TYPES' and flag == 'share'):
         flag = 'coeffs'
 
     # Prepare container for information about coefficients
@@ -126,13 +144,17 @@ def _process_line(group, flag, value, is_fixed, bounds, dict_):
         dict_[group]['coeffs'] = []
         dict_[group]['bounds'] = []
         dict_[group]['fixed'] = []
+    elif group == 'EDUCATION' and flag not in dict_[group].keys():
+        dict_[group][flag] = []
 
     # Collect information
     if flag in ['coeffs']:
         dict_[group]['coeffs'] += [value]
         dict_[group]['bounds'] += [bounds]
         dict_[group]['fixed'] += [is_fixed]
-    else:
+    elif group == 'EDUCATION' and (flag in ['share', 'start']):
+        dict_[group][flag] += [value]
+    elif flag not in ['shift'] or (group == 'TYPES' and flag == 'share'):
         dict_[group][flag] = value
 
     # Finishing.

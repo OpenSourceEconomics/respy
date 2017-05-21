@@ -34,18 +34,19 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_draws_emax
     INTEGER(our_int)            :: num_draws_prob
     INTEGER(our_int)            :: num_free_ambi
+    INTEGER(our_int)            :: num_edu_start
     INTEGER(our_int)            :: num_periods
     INTEGER(our_int)            :: num_slaves
+    INTEGER(our_int)            :: num_paras
+    INTEGER(our_int)            :: num_types
     INTEGER(our_int)            :: num_free
     INTEGER(our_int)            :: min_idx
-    INTEGER(our_int)            :: num_obs
+    INTEGER(our_int)            :: num_rows
 
     ! This variable needs to be accessible during optimization. It is defined here as it is required by the optimizers as well.
     INTEGER(our_int)            :: num_eval = zero_int
 
     ! Variables that need to be aligned across FORTRAN and PYTHON implementations.
-    INTEGER(our_int), PARAMETER :: NUM_PARAS                    = 35
-
     INTEGER(our_int), PARAMETER :: MISSING_INT                  = -99_our_int
 
     REAL(our_dble), PARAMETER   :: MIN_AMBIGUITY                = 1.0e-20_our_dble

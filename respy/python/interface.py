@@ -14,74 +14,61 @@ from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_wrapper import OptimizationClass
+from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_constants import NUM_PARAS
 from respy.python.solve.solve_python import pyth_solve
 from respy.custom_exceptions import MaxfunError
 
 
 def respy_interface(respy_obj, request, data_array=None):
-    """ This function provides the interface to the PYTHOn functionality.
+    """ This function provides the interface to the PYTHON functionality.
     """
     # Distribute class attributes
-    optim_paras, num_periods, edu_start, is_debug, edu_max, \
-        num_draws_prob, seed_prob, num_draws_emax, seed_emax, \
-        min_idx, is_myopic, is_interpolated, num_points_interp, maxfun, \
-        optimizer_used, tau, optimizer_options, seed_sim, \
-        num_agents_sim, ambi_spec, file_sim, precond_spec = \
-            dist_class_attributes(respy_obj, 'optim_paras', 'num_periods',
-                'edu_start', 'is_debug', 'edu_max', 'num_draws_prob',
-                'seed_prob', 'num_draws_emax', 'seed_emax', 'min_idx',
-                'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
-                'optimizer_used', 'tau', 'optimizer_options',
-                'seed_sim', 'num_agents_sim', 'ambi_spec', 'file_sim',
-                'precond_spec')
+    optim_paras, num_periods, edu_spec, is_debug, num_draws_prob, seed_prob, num_draws_emax, \
+    seed_emax, is_myopic, is_interpolated, num_points_interp, maxfun, optimizer_used, \
+    tau, optimizer_options, seed_sim, num_agents_sim, ambi_spec, file_sim, precond_spec, \
+    num_types, num_paras, num_agents_est = dist_class_attributes(respy_obj, 'optim_paras',
+        'num_periods', 'edu_spec', 'is_debug', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
+        'seed_emax', 'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
+        'optimizer_used', 'tau', 'optimizer_options', 'seed_sim', 'num_agents_sim', 'ambi_spec',
+        'file_sim', 'precond_spec', 'num_types', 'num_paras', 'num_agents_est')
 
     if request == 'estimate':
 
-        periods_draws_prob = create_draws(num_periods, num_draws_prob,
-            seed_prob, is_debug)
-
-        # Draw standard normal deviates for the solution and evaluation step.
-        periods_draws_emax = create_draws(num_periods, num_draws_emax,
-            seed_emax, is_debug)
+        num_obs = get_num_obs_agent(data_array, num_agents_est)
+        periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob, is_debug)
+        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax, is_debug)
 
         # Construct starting values
-        x_optim_free_unscaled_start = get_optim_paras(optim_paras, 'free',
-            is_debug)
-
-        x_optim_all_unscaled_start = get_optim_paras(optim_paras, 'all',
-            is_debug)
+        x_optim_free_unscaled_start = get_optim_paras(optim_paras, num_paras, 'free', is_debug)
+        x_optim_all_unscaled_start = get_optim_paras(optim_paras, num_paras, 'all', is_debug)
 
         # Construct the state space
-        states_all, states_number_period, mapping_state_idx, \
-            max_states_period = pyth_create_state_space(num_periods,
-                edu_start, edu_max, min_idx)
+        states_all, states_number_period, mapping_state_idx, max_states_period = \
+            pyth_create_state_space(num_periods, num_types, edu_spec)
 
         # Cutting to size
         states_all = states_all[:, :max(states_number_period), :]
 
-        # Collect arguments that are required for the criterion function. These
-        # must be in the correct order already.
-        args = (is_interpolated, num_draws_emax, num_periods,
-            num_points_interp, is_myopic, edu_start, is_debug, edu_max,
-            data_array, num_draws_prob, tau, periods_draws_emax,
-            periods_draws_prob, states_all, states_number_period,
-            mapping_state_idx, max_states_period, ambi_spec,
+        # Collect arguments that are required for the criterion function. These must be in the
+        # correct order already.
+        args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
+                is_debug, data_array, num_draws_prob, tau, periods_draws_emax,
+                periods_draws_prob, states_all, states_number_period, mapping_state_idx,
+                max_states_period, num_agents_est, num_obs, num_types, edu_spec, ambi_spec,
                 optimizer_options)
 
-        # Special case where just an evaluation at the starting values is
-        # requested is accounted for. Note, that the relevant value of the
-        # criterion function is always the one indicated by the class
-        # attribute and not the value returned by the optimization algorithm.
+        # Special case where just an evaluation at the starting values is requested is accounted
+        # for. Note, that the relevant value of the criterion function is always the one
+        # indicated by the class attribute and not the value returned by the optimization algorithm.
         num_free = optim_paras['paras_fixed'].count(False)
 
         paras_bounds_free_unscaled = []
-        for i in range(NUM_PARAS):
+        for i in range(num_paras):
             if not optim_paras['paras_fixed'][i]:
                 lower, upper = optim_paras['paras_bounds'][i][:]
                 if lower is None:
@@ -98,8 +85,8 @@ def respy_interface(respy_obj, request, data_array=None):
 
         paras_bounds_free_unscaled = np.array(paras_bounds_free_unscaled)
 
-        precond_matrix = get_precondition_matrix(precond_spec,
-            optim_paras, x_optim_all_unscaled_start, args, maxfun)
+        precond_matrix = get_precondition_matrix(precond_spec, optim_paras,
+            x_optim_all_unscaled_start, args, maxfun, num_paras, num_types)
 
         x_optim_free_scaled_start = apply_scaling(x_optim_free_unscaled_start,
             precond_matrix, 'do')
@@ -109,15 +96,12 @@ def respy_interface(respy_obj, request, data_array=None):
             paras_bounds_free_scaled[:, i] = apply_scaling(
                 paras_bounds_free_unscaled[:, i], precond_matrix, 'do')
 
-        record_estimation_scaling(x_optim_free_unscaled_start,
-            x_optim_free_scaled_start, paras_bounds_free_scaled,
-            precond_matrix, optim_paras['paras_fixed'])
+        record_estimation_scaling(x_optim_free_unscaled_start, x_optim_free_scaled_start,
+            paras_bounds_free_scaled, precond_matrix, optim_paras['paras_fixed'])
 
-        opt_obj = OptimizationClass()
+        opt_obj = OptimizationClass(x_optim_all_unscaled_start, optim_paras['paras_fixed'],
+                                    precond_matrix, num_types)
         opt_obj.maxfun = maxfun
-        opt_obj.paras_fixed = optim_paras['paras_fixed']
-        opt_obj.x_optim_all_unscaled_start = x_optim_all_unscaled_start
-        opt_obj.precond_matrix = precond_matrix
 
         if maxfun == 0:
 
@@ -161,12 +145,10 @@ def respy_interface(respy_obj, request, data_array=None):
             lbfgsb_m = optimizer_options['SCIPY-LBFGSB']['m']
 
             try:
-                rslt = fmin_l_bfgs_b(opt_obj.crit_func,
-                    x_optim_free_scaled_start, args=args, approx_grad=True,
-                    bounds=paras_bounds_free_scaled, m=lbfgsb_m,
-                    factr=lbfgsb_factr, pgtol=lbfgsb_pgtol,
-                    epsilon=lbfgsb_eps, iprint=-1, maxfun=maxfun,
-                    maxiter=lbfgsb_maxiter, maxls=lbfgsb_maxls)
+                rslt = fmin_l_bfgs_b(opt_obj.crit_func, x_optim_free_scaled_start, args=args,
+                    approx_grad=True, bounds=paras_bounds_free_scaled, m=lbfgsb_m,
+                    factr=lbfgsb_factr, pgtol=lbfgsb_pgtol, epsilon=lbfgsb_eps, iprint=-1,
+                    maxfun=maxfun, maxiter=lbfgsb_maxiter, maxls=lbfgsb_maxls)
 
                 success = (rslt[2]['warnflag'] in [0])
                 message = rslt[2]['task']
@@ -183,9 +165,8 @@ def respy_interface(respy_obj, request, data_array=None):
             powell_ftol = optimizer_options['SCIPY-POWELL']['ftol']
 
             try:
-                rslt = fmin_powell(opt_obj.crit_func, x_optim_free_scaled_start,
-                    args, powell_xtol, powell_ftol, powell_maxiter,
-                    powell_maxfun, disp=0)
+                rslt = fmin_powell(opt_obj.crit_func, x_optim_free_scaled_start, args, powell_xtol,
+                    powell_ftol, powell_maxiter, powell_maxfun, disp=0)
 
                 success = (rslt[5] not in [1, 2])
                 message = 'Optimization terminated successfully.'
@@ -204,28 +185,23 @@ def respy_interface(respy_obj, request, data_array=None):
     elif request == 'simulate':
 
         # Draw draws for the simulation.
-        periods_draws_sims = create_draws(num_periods, num_agents_sim,
-            seed_sim, is_debug)
+        periods_draws_sims = create_draws(num_periods, num_agents_sim, seed_sim, is_debug)
 
         # Draw standard normal deviates for the solution and evaluation step.
-        periods_draws_emax = create_draws(num_periods, num_draws_emax,
-            seed_emax, is_debug)
+        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax, is_debug)
 
-        # Collect arguments to pass in different implementations of the
-        # simulation.
-        periods_rewards_systematic, states_number_period, mapping_state_idx, \
-            periods_emax, states_all = pyth_solve(is_interpolated,
-            num_points_interp, num_draws_emax, num_periods, is_myopic,
-            edu_start, is_debug, edu_max, min_idx, periods_draws_emax,
-            ambi_spec, optim_paras, file_sim, optimizer_options)
+        # Collect arguments to pass in different implementations of the simulation.
+        periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, \
+            states_all = pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
+            is_myopic, is_debug, periods_draws_emax, edu_spec, ambi_spec, optim_paras, file_sim,
+            optimizer_options, num_types)
 
-        solution = (periods_rewards_systematic, states_number_period,
-            mapping_state_idx, periods_emax, states_all)
+        solution = (periods_rewards_systematic, states_number_period, mapping_state_idx,
+                    periods_emax, states_all)
 
-        data_array = pyth_simulate(periods_rewards_systematic,
-            mapping_state_idx, periods_emax, states_all, num_periods, edu_start,
-            edu_max, num_agents_sim, periods_draws_sims, seed_sim, file_sim,
-            optim_paras)
+        data_array = pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax,
+            states_all, num_periods, num_agents_sim, periods_draws_sims, seed_sim, file_sim,
+            edu_spec, optim_paras, num_types, is_debug)
 
         args = (solution, data_array)
 
@@ -235,19 +211,19 @@ def respy_interface(respy_obj, request, data_array=None):
     return args
 
 
-def get_precondition_matrix(precond_spec, optim_paras,
-        x_optim_all_unscaled_start, args, maxfun):
+def get_precondition_matrix(precond_spec, optim_paras, x_optim_all_unscaled_start, args, maxfun,
+                            num_paras, num_types):
     """ Get the preconditioning matrix for the optimization.
     """
     # Auxiliary objects
     num_free = optim_paras['paras_fixed'].count(False)
 
     # Set up a special instance of the optimization class.
-    opt_obj = OptimizationClass()
+    precond_matrix = np.identity(num_free)
 
-    opt_obj.x_optim_all_unscaled_start = x_optim_all_unscaled_start
-    opt_obj.precond_matrix = np.identity(num_free)
-    opt_obj.paras_fixed = optim_paras['paras_fixed']
+    opt_obj = OptimizationClass(x_optim_all_unscaled_start, optim_paras['paras_fixed'],
+                                precond_matrix, num_types)
+
     opt_obj.is_scaling = False
 
     # Distribute information about user request.
@@ -258,7 +234,7 @@ def get_precondition_matrix(precond_spec, optim_paras,
     # Get the subset of free parameters for subsequent numerical
     # approximation of the gradient.
     x_optim_free_unscaled_start = []
-    for i in range(NUM_PARAS):
+    for i in range(num_paras):
         if not optim_paras['paras_fixed'][i]:
             x_optim_free_unscaled_start += [x_optim_all_unscaled_start[i]]
 
@@ -268,9 +244,7 @@ def get_precondition_matrix(precond_spec, optim_paras,
         precond_matrix = get_scales_magnitudes(x_optim_free_unscaled_start)
     elif precond_type == 'gradient':
         opt_obj.is_scaling = None
-        grad = approx_fprime(x_optim_free_unscaled_start, opt_obj.crit_func,
-            precond_eps, *args)
-
+        grad = approx_fprime(x_optim_free_unscaled_start, opt_obj.crit_func, precond_eps, *args)
         precond_matrix = np.zeros((num_free, num_free))
         for i in range(num_free):
             grad[i] = max(np.abs(grad[i]), precond_minimum)

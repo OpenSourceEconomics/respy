@@ -26,6 +26,7 @@ def build(ctx):
            'record/record_solution.f90',
            'record/record_simulation.f90',
            'record/record_ambiguity.f90',
+           'simulate/simulate_auxiliary.f90',
            'simulate/simulate_fortran.f90',
            'optimizers/slsqp.f',
            'optimizers/bobyqa.f90',

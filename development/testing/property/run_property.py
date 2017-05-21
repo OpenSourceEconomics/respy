@@ -11,8 +11,8 @@ import random
 import sys
 import os
 
-# RESPY testing codes. The import of the PYTEST configuration file ensures
-# that the PYTHONPATH is modified to allow for the use of the tests..
+# RESPY testing codes. The import of the PYTEST configuration file ensures that the PYTHONPATH is
+#  modified to allow for the use of the tests..
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/property', '')
 
@@ -62,8 +62,7 @@ def run(request, is_compile, is_background):
     # Get a dictionary with all candidate test cases.
     test_dict = get_test_dict(PACKAGE_DIR + 'respy/tests')
 
-    # We initialize a dictionary that allows to keep track of each test's
-    # success or failure.
+    # We initialize a dictionary that allows to keep track of each test's success or failure.
     full_test_record = dict()
     for key_ in test_dict.keys():
         full_test_record[key_] = dict()
@@ -123,8 +122,7 @@ def run(request, is_compile, is_background):
 
         # Record iteration
         if not is_investigation:
-            update_testing_record(module, method, seed, is_success, msg,
-                full_test_record)
+            update_testing_record(module, method, seed, is_success, msg, full_test_record)
             cleanup_testing_infrastructure(True)
 
         #  Timeout.
@@ -134,25 +132,23 @@ def run(request, is_compile, is_background):
     if not is_investigation:
         finalize_testing_record(full_test_record)
 
-    # This allows to call this test from another script, that runs other
-    # tests as well.
+    # This allows to call this test from another script, that runs other tests as well.
     if not is_background and not is_investigation:
         send_notification('property', hours=hours)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Run development test '
-                'battery of RESPY package.',
-                formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--request', action='store', dest='request',
-        help='task to perform', nargs=2, required=True)
+    parser = argparse.ArgumentParser(description='Run development test battery of RESPY package.')
 
-    parser.add_argument('--compile', action='store_true', dest='is_compile',
-        default=False, help='compile RESPY package')
+    parser.add_argument('--request', action='store', dest='request', help='task to perform',
+                        nargs=2, required=True)
 
-    parser.add_argument('--background', action='store_true',
-        dest='is_background', default=False, help='background process')
+    parser.add_argument('--compile', action='store_true', dest='is_compile', default=False,
+                        help='compile RESPY package')
+
+    parser.add_argument('--background', action='store_true', dest='is_background', default=False,
+                        help='background process')
 
     args = parser.parse_args()
 

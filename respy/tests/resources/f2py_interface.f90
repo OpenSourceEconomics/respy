@@ -1,12 +1,11 @@
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 !
-!   This module serves as the F2PY interface to the core functions. All the
-!   functions have counterparts as PYTHON implementations.
+!   This module serves as the F2PY interface to the core functions. All the functions have counterparts as PYTHON implementations.
 !
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, measure, mean, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, is_debug_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, num_agents_est_int, num_obs_agent_int, num_types_int, edu_start, edu_max, edu_share, measure, mean, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, type_spec_shares, type_spec_shifts, num_paras_int)
 
     !/* external libraries      */
 
@@ -20,25 +19,32 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, INTENT(OUT)   :: crit_val
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(35)
+    DOUBLE PRECISION, INTENT(IN)    :: x(:)
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
     INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
     INTEGER, INTENT(IN)             :: num_points_interp_int
     INTEGER, INTENT(IN)             :: max_states_period_int
+    INTEGER, INTENT(IN)             :: num_obs_agent_int(:)
     INTEGER, INTENT(IN)             :: num_draws_prob_int
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
+    INTEGER, INTENT(IN)             :: num_agents_est_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: num_paras_int
+    INTEGER, INTENT(IN)             :: num_types_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
+    INTEGER, INTENT(IN)             :: edu_max
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
+    DOUBLE PRECISION, INTENT(IN)    :: edu_share(:)
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
@@ -52,27 +58,36 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
 
     DOUBLE PRECISION, ALLOCATABLE   :: opt_ambi_details(:, :, :)
 
-    DOUBLE PRECISION                :: contribs(SIZE(data_est_int, 1))
+    DOUBLE PRECISION                :: contribs(num_agents_est_int)
 
     INTEGER                         :: dist_optim_paras_info
 
     CHARACTER(225)                  :: file_sim_mock
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESPFRT variables
     max_states_period = max_states_period_int
     min_idx = SIZE(mapping_state_idx_int, 4)
-    num_obs = SIZE(data_est_int, 1)
+    num_rows = SIZE(data_est_int, 1)
 
     ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
     num_agents_est = SIZE(data_est_int, 1) / INT(num_periods_int)
     num_draws_emax = num_draws_emax_int
     num_draws_prob = num_draws_prob_int
+    num_agents_est = num_agents_est_int
+    num_obs_agent = num_obs_agent_int
+
     num_periods = num_periods_int
+    num_types = num_types_int
+    num_paras = num_paras_int
+
+    ! Ensure that not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
+    IF(ALLOCATED(edu_spec%share)) DEALLOCATE(edu_spec%share)
 
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
@@ -82,21 +97,28 @@ SUBROUTINE f2py_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, 
     ambi_spec%measure = measure
     ambi_spec%mean = mean
 
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
+
+    edu_spec%share = edu_share
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
     !# Distribute model parameters
     CALL dist_optim_paras(optim_paras, x, dist_optim_paras_info)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, optim_paras)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, max_states_period_int, optim_paras)
 
-    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, optim_paras)
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, data_est_int, periods_draws_prob_int, tau_int, num_periods_int, num_draws_prob_int, num_agents_est, num_obs_agent, num_types, edu_spec, optim_paras)
 
     crit_val = get_log_likl(contribs)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, shocks_cholesky, delta, num_agents_est_int)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_contributions(contribs, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, tau_int, num_periods_int, num_draws_prob_int, num_agents_est_int, num_obs_agent_int, num_types_int, edu_start, edu_max, shocks_cholesky, delta, type_spec_shares, type_spec_shifts)
 
     !/* external libraries      */
 
@@ -108,28 +130,32 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: contribs(num_agents_est_int * num_periods_int)
+    DOUBLE PRECISION, INTENT(OUT)   :: contribs(num_agents_est_int)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_prob_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
+    INTEGER, INTENT(IN)             :: num_obs_agent_int(:)
     INTEGER, INTENT(IN)             :: num_agents_est_int
     INTEGER, INTENT(IN)             :: num_draws_prob_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: num_types_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
+    INTEGER, INTENT(IN)             :: edu_max
 
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(:, :)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESPFRT variables
     max_states_period = SIZE(states_all_int, 2)
@@ -139,19 +165,30 @@ SUBROUTINE f2py_contributions(contribs, periods_rewards_systematic_int, mapping_
     periods_rewards_systematic = periods_rewards_systematic_int
     num_agents_est = num_agents_est_int
     num_draws_prob = num_draws_prob_int
+    num_obs_agent = num_obs_agent_int
     num_periods = num_periods_int
+    num_types = num_types_int
     tau = tau_int
+
+    ! Esnure that not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
 
     ! Construct derived types
     optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%delta = delta
 
-    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, tau_int, edu_start_int, edu_max_int, num_periods_int, num_draws_prob_int, optim_paras)
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
+
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
+    CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax_int, states_all_int, data_est_int, periods_draws_prob_int, tau_int, num_periods_int, num_draws_prob_int, num_agents_est, num_obs_agent, num_types, edu_spec, optim_paras)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx_int, periods_draws_emax_int, measure, mean, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, is_debug_int, periods_draws_emax_int, min_idx_int, edu_start, edu_max, measure, mean, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int, num_types_int, type_spec_shares, type_spec_shifts)
 
     ! The presence of max_states_period breaks the quality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -165,8 +202,8 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2)
-    INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, max_states_period_int, 4)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2, num_types_int)
+    INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, max_states_period_int, 5)
     INTEGER, INTENT(OUT)            :: states_number_period_int(num_periods_int)
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_rewards_systematic_int(num_periods_int, max_states_period_int, 4)
@@ -177,12 +214,15 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: num_types_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
     INTEGER, INTENT(IN)             :: min_idx_int
+    INTEGER, INTENT(IN)             :: edu_max
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(1)
@@ -200,22 +240,31 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     CHARACTER(225), INTENT(IN)      :: file_sim
     CHARACTER(10), INTENT(IN)       :: measure
 
-!-----------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!-----------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     !# Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
     max_states_period = max_states_period_int
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
-    min_idx = min_idx_int
+    num_types = num_types_int
+    min_idx = edu_max + 1
 
     IF (mean) THEN
         num_free_ambi = 2
     ELSE
         num_free_ambi = 4
     END IF
+
+    ! Ensure that there is no problem with the repeated allocation of the containers.
+    IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
+    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
+    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
+    IF (ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
+    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
+    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
@@ -233,16 +282,14 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     ambi_spec%measure = measure
     ambi_spec%mean = mean
 
-    ! Ensure that there is no problem with the repeated allocation of the containers.
-    IF (ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
-    IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
-    IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
-    IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
-    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
-    IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
+
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
 
     ! Call FORTRAN solution
-    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated_int, num_points_interp_int, num_draws_emax, num_periods, is_myopic_int, edu_start_int, is_debug_int, edu_max_int, min_idx, periods_draws_emax_int, ambi_spec, optim_paras, optimizer_options, file_sim)
+    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated_int, num_points_interp_int, num_draws_emax, num_periods, is_myopic_int, is_debug_int, periods_draws_emax_int, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim)
 
     ! Assign to initial objects for return to PYTHON
     periods_rewards_systematic_int = periods_rewards_systematic
@@ -252,9 +299,9 @@ SUBROUTINE f2py_solve(periods_rewards_systematic_int, states_number_period_int, 
     states_all_int = states_all
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_periods_int, edu_start_int, edu_max_int, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim, shocks_cholesky, delta)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_periods_int, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim, edu_start, edu_max, edu_share, shocks_cholesky, delta, num_types_int, type_spec_shares, type_spec_shifts, is_debug_int)
 
     !/* external libraries      */
 
@@ -266,32 +313,38 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 21)
+    DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 22)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
+    DOUBLE PRECISION, INTENT(IN)    :: edu_share(:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: num_types_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
     INTEGER, INTENT(IN)             :: seed_sim
+    INTEGER, INTENT(IN)             :: edu_max
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
     INTEGER, INTENT(IN)             :: num_agents_sim_int
 
     CHARACTER(225), INTENT(IN)      :: file_sim
 
+    LOGICAL, INTENT(IN)             :: is_debug_int
+
     !/* internal objects        */
 
     DOUBLE PRECISION, ALLOCATABLE   :: data_sim(:, :)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESPFRT variables
     max_states_period = SIZE(states_all_int, 2)
@@ -300,21 +353,34 @@ SUBROUTINE f2py_simulate(data_sim_int, periods_rewards_systematic_int, mapping_s
     ! Transfer global RESFORT variables
     num_agents_sim = num_agents_sim_int
     num_periods = num_periods_int
+    num_types = num_types_int
+    is_debug = is_debug_int
+
+    ! Ensure that not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
+    IF(ALLOCATED(edu_spec%share)) DEALLOCATE(edu_spec%share)
 
     ! Construct derived types
     optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%delta = delta
 
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
+
+    edu_spec%start = edu_start
+    edu_spec%share = edu_share
+    edu_spec%max = edu_max
+
     ! Call function of interest
-    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, edu_start_int, edu_max_int, seed_sim, file_sim, optim_paras)
+    CALL fort_simulate(data_sim, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_agents_sim, periods_draws_sims, seed_sim, file_sim, edu_spec, optim_paras, num_types, is_debug)
 
     ! Assign to initial objects for return to PYTHON
     data_sim_int = data_sim
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int,  is_debug_int, is_interpolated_int, num_points_interp_int, measure, mean, shocks_cholesky, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int,  is_debug_int, is_interpolated_int, num_points_interp_int, edu_start, edu_max, measure, mean, shocks_cholesky, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
 
     !/* external libraries      */
 
@@ -336,7 +402,7 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
     INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
     INTEGER, INTENT(IN)             :: max_states_period_int
@@ -344,8 +410,8 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
+    INTEGER, INTENT(IN)             :: edu_max
 
     LOGICAL, INTENT(IN)             :: is_interpolated_int
     LOGICAL, INTENT(IN)             :: is_myopic_int
@@ -360,21 +426,26 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
 
     DOUBLE PRECISION, ALLOCATABLE   :: opt_ambi_details(:, :, :)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     !# Transfer auxiliary variable to global variable.
     num_points_interp = num_points_interp_int
     max_states_period = max_states_period_int
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
+    min_idx = edu_max + 1
 
     IF (mean) THEN
         num_free_ambi = 2
     ELSE
         num_free_ambi = 4
     END IF
+
+    ! Ensure that there is no problem with the repeated allocation of the containers.
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
+    IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
 
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
@@ -388,19 +459,19 @@ SUBROUTINE f2py_backward_induction(periods_emax_int, num_periods_int, is_myopic_
     ambi_spec%measure = measure
     ambi_spec%mean = mean
 
-    ! Ensure that there is no problem with the repeated allocation of the containers.
-    IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, edu_max_int, edu_start_int, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, ambi_spec, optim_paras, optimizer_options, file_sim, is_write)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, is_write)
 
     ! Allocate to intermidiaries
     periods_emax_int = periods_emax
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, num_periods_int, edu_start_int, edu_max_int, min_idx_int)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_create_state_space(states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, num_periods_int, num_types_int, edu_start, edu_max, min_idx_int)
 
     !/* external libraries      */
 
@@ -412,24 +483,24 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2)
-    INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, 100000, 4)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2, num_types_int)
+    INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, 100000, 5)
     INTEGER, INTENT(OUT)            :: states_number_period_int(num_periods_int)
     INTEGER, INTENT(OUT)            :: max_states_period_int
 
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: num_types_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
     INTEGER, INTENT(IN)             :: min_idx_int
+    INTEGER, INTENT(IN)             :: edu_max
 
-
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     !# Transfer global RESFORT variables
-    max_states_period = max_states_period_int
     num_periods = num_periods_int
+    num_types = num_types_int
     min_idx = min_idx_int
 
     states_all_int = MISSING_INT
@@ -437,9 +508,14 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF (ALLOCATED(states_number_period)) DEALLOCATE(states_number_period)
     IF (ALLOCATED(mapping_state_idx)) DEALLOCATE(mapping_state_idx)
+    IF (ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods_int, edu_start_int, edu_max_int, min_idx_int)
+    ! Construct derived types
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods_int, num_types, edu_spec)
 
     states_all_int(:, :max_states_period, :) = states_all
     states_number_period_int = states_number_period
@@ -449,9 +525,9 @@ SUBROUTINE f2py_create_state_space(states_all_int, states_number_period_int, map
     max_states_period_int = max_states_period
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num_periods_int, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, num_periods_int, states_number_period_int, states_all_int, max_states_period_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, type_spec_shares, type_spec_shifts)
 
     !/* external libraries      */
 
@@ -465,6 +541,8 @@ SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num
 
     DOUBLE PRECISION, INTENT(OUT)   :: periods_rewards_systematic_int(num_periods_int, max_states_period_int, 4)
 
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
+    DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(1)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(4)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(9)
@@ -474,11 +552,10 @@ SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num
     INTEGER, INTENT(IN)             :: max_states_period_int
     INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Transfer global RESOFORT variables
     max_states_period = max_states_period_int
@@ -490,17 +567,20 @@ SUBROUTINE f2py_calculate_rewards_systematic(periods_rewards_systematic_int, num
     optim_paras%coeffs_a = coeffs_a
     optim_paras%coeffs_b = coeffs_b
 
+    optim_paras%type_shares = type_spec_shares
+    optim_paras%type_shifts = type_spec_shifts
+
     ! Ensure that there is no problem with the repeated allocation of the containers.
     IF(ALLOCATED(periods_rewards_systematic)) DEALLOCATE(periods_rewards_systematic)
 
     ! Call function of interest
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, edu_start_int, max_states_period_int, optim_paras)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, max_states_period_int, optim_paras)
 
     periods_rewards_systematic_int = periods_rewards_systematic
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_normal_pdf(rslt, x, mean, sd)
 
     !/* external libraries      */
@@ -519,16 +599,16 @@ SUBROUTINE wrapper_normal_pdf(rslt, x, mean, sd)
     DOUBLE PRECISION, INTENT(IN)       :: mean
     DOUBLE PRECISION, INTENT(IN)       :: sd
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     rslt = normal_pdf(x, mean, sd)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_pinv(rslt, A, m)
 
     !/* external libraries      */
@@ -547,16 +627,16 @@ SUBROUTINE wrapper_pinv(rslt, A, m)
 
     INTEGER, INTENT(IN)             :: m
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     rslt = pinv(A, m)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_svd(U, S, VT, A, m)
 
     !/* external libraries      */
@@ -577,17 +657,17 @@ SUBROUTINE wrapper_svd(U, S, VT, A, m)
 
     INTEGER, INTENT(IN)             :: m
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     CALL svd(U, S, VT, A, m)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov, mean)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_start, edu_max, delta, shocks_cov, mean)
 
     !/* external libraries      */
 
@@ -609,20 +689,20 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
     DOUBLE PRECISION, INTENT(IN)    :: delta
     DOUBLE PRECISION, INTENT(IN)    :: x(:)
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
+    INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
     LOGICAL, INTENT(IN)             :: mean
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESFORT variables
     max_states_period = SIZE(states_all_int, 2)
@@ -632,17 +712,23 @@ SUBROUTINE wrapper_criterion_ambiguity(emax, x, num_periods_int, num_draws_emax_
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
 
+    ! Esnure array not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
+
     ! Construct derived types
     optim_paras%delta = delta
 
     ambi_spec%mean = mean
 
-    emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov, ambi_spec)
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
+    emax = criterion_ambiguity(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_spec, optim_paras, shocks_cov, ambi_spec)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta, shocks_cov, mean, fort_slsqp_eps, num_free_ambi_int)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_start, edu_max, delta, shocks_cov, mean, fort_slsqp_eps, num_free_ambi_int)
 
     !/* external libraries      */
 
@@ -665,22 +751,22 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: num_free_ambi_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
+    INTEGER, INTENT(IN)             :: edu_max
 
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
     LOGICAL, INTENT(IN)             :: mean
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESFORT variables
     max_states_period = SIZE(states_all_int, 2)
@@ -689,17 +775,23 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_
     num_free_ambi = num_free_ambi_int
     num_periods = num_periods_int
 
+    ! Ensure array not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
+
     ! Construct derived types
     optim_paras%delta = delta
 
     ambi_spec%mean = mean
 
-    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras, shocks_cov, ambi_spec, fort_slsqp_eps)
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
+    grad = criterion_ambiguity_derivative(x, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_spec, optim_paras, shocks_cov, ambi_spec, fort_slsqp_eps)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_risk, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, delta)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_risk, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_start, edu_max, delta, num_types_int)
 
     !/* external libraries      */
 
@@ -718,18 +810,19 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
     INTEGER, INTENT(IN)             :: num_draws_emax_int
-    INTEGER, INTENT(IN)             :: edu_max_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
+    INTEGER, INTENT(IN)             :: num_types_int
+    INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESFORT variables
     max_states_period = SIZE(states_all_int, 2)
@@ -738,17 +831,25 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
     !# Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
+    num_types = num_types_int
+    min_idx = edu_max + 1
+
+    ! Ensure array not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
 
     ! Construct derived types
     optim_paras%delta = delta
 
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
     ! Call function of interest
-    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, optim_paras)
+    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_spec, optim_paras)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, measure, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_start, edu_max, measure, mean, level, shocks_cov, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write, num_types_int)
 
     !/* external libraries      */
 
@@ -775,13 +876,14 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     CHARACTER(225), INTENT(IN)      :: file_sim
     CHARACTER(10), INTENT(IN)       :: measure
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:,:,:,:,:)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all_int(:,:,:)
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: num_types_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
+    INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
@@ -796,13 +898,16 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
 
     DOUBLE PRECISION                :: shocks_cholesky(4, 4)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESFORT variables
     max_states_period = SIZE(states_all_int, 2)
     min_idx = SIZE(mapping_state_idx_int, 4)
+    num_draws_emax = num_draws_emax_int
+    num_periods = num_periods_int
+    num_types = num_types_int
 
     IF (mean) THEN
         num_free_ambi = 2
@@ -819,6 +924,9 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
         STOP 'Problem in the Cholesky decomposition'
     END IF
 
+    ! Ensure that not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
+
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
@@ -831,16 +939,15 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     ambi_spec%measure = measure
     ambi_spec%mean = mean
 
-    !# Transfer global RESFORT variables
-    num_draws_emax = num_draws_emax_int
-    num_periods = num_periods_int
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
 
     ! Call function of interest
-    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, ambi_spec, optim_paras, optimizer_options)
+    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_spec, ambi_spec, optim_paras, optimizer_options)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_standard_normal(draw, dim)
 
     !/* external libraries      */
@@ -857,16 +964,16 @@ SUBROUTINE wrapper_standard_normal(draw, dim)
 
     DOUBLE PRECISION, INTENT(OUT)   :: draw(dim)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     CALL standard_normal(draw)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_determinant(det, A)
 
     !/* external libraries      */
@@ -883,16 +990,16 @@ SUBROUTINE wrapper_determinant(det, A)
 
     DOUBLE PRECISION, INTENT(IN)    :: A(:, :)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     det = determinant(A)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_inverse(inv, A, n)
 
     !/* external libraries      */
@@ -911,16 +1018,16 @@ SUBROUTINE wrapper_inverse(inv, A, n)
 
     INTEGER, INTENT(IN)             :: n
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     inv = inverse(A, n)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_trace(rslt, A)
 
     !/* external libraries      */
@@ -937,16 +1044,16 @@ SUBROUTINE wrapper_trace(rslt, A)
 
     DOUBLE PRECISION, INTENT(IN)  :: A(:,:)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     rslt = trace(A)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, num_values)
 
     !/* external libraries      */
@@ -971,17 +1078,17 @@ SUBROUTINE wrapper_clip_value(clipped_value, value, lower_bound, upper_bound, nu
 
     INTEGER, ALLOCATABLE                :: infos(:)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     CALL clip_value(clipped_value, value, lower_bound, upper_bound, infos)
 
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_pred_info(r_squared, bse, Y, P, X, num_states, num_covars)
 
     !/* external libraries      */
@@ -1004,16 +1111,16 @@ SUBROUTINE wrapper_get_pred_info(r_squared, bse, Y, P, X, num_states, num_covars
     INTEGER, INTENT(IN)             :: num_states
     INTEGER, INTENT(IN)             :: num_covars
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     CALL get_pred_info(r_squared, bse, Y, P, X, num_states, num_covars)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_states)
 
     !/* external libraries      */
@@ -1033,16 +1140,16 @@ SUBROUTINE wrapper_point_predictions(Y, X, coeffs, num_states)
 
     INTEGER, INTENT(IN)                 :: num_states
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     CALL point_predictions(Y, X, coeffs, num_states)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_points_interp_int, num_states, file_sim, is_write)
 
     !/* external libraries      */
@@ -1069,10 +1176,10 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_
 
     CHARACTER(225), INTENT(IN)                  :: file_sim
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Transfer global RESFORT variables
     num_points_interp = num_points_interp_int
@@ -1081,8 +1188,8 @@ SUBROUTINE wrapper_get_predictions(predictions, endogenous, exogenous, maxe, is_
     CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, file_sim, is_write)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
 
     !/* external libraries      */
@@ -1101,16 +1208,16 @@ SUBROUTINE wrapper_random_choice(sample, candidates, num_candidates, num_points)
     INTEGER, INTENT(IN)             :: candidates(:)
     INTEGER, INTENT(IN)             :: num_points
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
      CALL random_choice(sample, candidates, num_candidates, num_points)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 
     !/* external libraries      */
@@ -1131,17 +1238,17 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
     INTEGER, INTENT(IN)             :: num_covars
     INTEGER, INTENT(IN)             :: num_states
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Call function of interest
     CALL get_coefficients(coeffs, Y, X, num_covars, num_states)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, shocks_cov, measure, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_start, edu_max, shocks_cov, measure, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -1168,14 +1275,14 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
 
-    INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all_int(:, :, :)
     INTEGER, INTENT(IN)                 :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)                 :: num_draws_emax_int
     INTEGER, INTENT(IN)                 :: num_periods_int
-    INTEGER, INTENT(IN)                 :: edu_start_int
-    INTEGER, INTENT(IN)                 :: edu_max_int
+    INTEGER, INTENT(IN)                 :: edu_start(:)
     INTEGER, INTENT(IN)                 :: num_states
+    INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
 
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
@@ -1188,9 +1295,9 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     DOUBLE PRECISION, ALLOCATABLE       :: opt_ambi_details(:, :, :)
     DOUBLE PRECISION                    :: shocks_cholesky(4, 4)
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Construct auxiliary objects
     max_states_period = SIZE(states_all_int, 2)
@@ -1202,6 +1309,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     ! Transfer global RESFORT variables
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
+    min_idx = edu_max + 1
 
     IF (mean) THEN
         num_free_ambi = 2
@@ -1213,6 +1321,9 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     IF (info .NE. zero_dble) THEN
         STOP 'Problem in the Cholesky decomposition'
     END IF
+
+    ! Ensure that array not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
 
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
@@ -1226,13 +1337,16 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     ambi_spec%measure = measure
     ambi_spec%mean = mean
 
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, opt_ambi_details, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_start_int, edu_max_int, ambi_spec, optim_paras, optimizer_options)
+    CALL get_endogenous_variable(exogenous_variable, opt_ambi_details, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_spec, ambi_spec, optim_paras, optimizer_options)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, periods_rewards_systematic_int, shifts, edu_max_int, edu_start_int, mapping_state_idx_int, periods_emax_int, states_all_int, delta)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, periods_rewards_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, edu_start, edu_max, delta, num_types_int)
 
     !/* external libraries      */
 
@@ -1247,23 +1361,23 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
     DOUBLE PRECISION, INTENT(OUT)       :: independent_variables(num_states, 9)
     DOUBLE PRECISION, INTENT(OUT)       :: maxe(num_states)
 
-
     DOUBLE PRECISION, INTENT(IN)        :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
 
-    INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all_int(:, :, :)
     INTEGER, INTENT(IN)                 :: num_periods_int
-    INTEGER, INTENT(IN)                 :: edu_start_int
-    INTEGER, INTENT(IN)                 :: edu_max_int
+    INTEGER, INTENT(IN)                 :: num_types_int
+    INTEGER, INTENT(IN)                 :: edu_start(:)
     INTEGER, INTENT(IN)                 :: num_states
+    INTEGER, INTENT(IN)                 :: edu_max
     INTEGER, INTENT(IN)                 :: period
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     !# Assign global RESFORT variables
     max_states_period = SIZE(states_all_int, 2)
@@ -1271,16 +1385,23 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
 
     !# Transfer global RESFORT variables
     num_periods = num_periods_int
+    num_types = num_types_int
+
+    ! Esnure that array not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
 
     !# Derived types
     optim_paras%delta = delta
 
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
     ! Call function of interest
-    CALL get_exogenous_variables(independent_variables, maxe, period, num_states, periods_rewards_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, optim_paras, edu_start_int, edu_max_int)
+    CALL get_exogenous_variables(independent_variables, maxe, period, num_states, periods_rewards_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, edu_spec, optim_paras)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states, period, is_debug_int, num_periods_int)
 
     !/* external libraries      */
@@ -1302,9 +1423,9 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states,
 
     LOGICAL, INTENT(IN)             :: is_debug_int
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     !# Transfer global RESFORT variables
     num_periods = num_periods_int
@@ -1313,8 +1434,8 @@ SUBROUTINE wrapper_get_simulated_indicator(is_simulated, num_points, num_states,
     is_simulated = get_simulated_indicator(num_points, num_states, period, is_debug_int)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 
     !/* external libraries      */
@@ -1333,15 +1454,15 @@ SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 
     INTEGER, INTENT(OUT)            :: info
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     CALL extract_cholesky(shocks_cholesky, x, info)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_kl_divergence(rslt, mean_old, cov_old, mean_new, cov_new)
 
     !/* external libraries      */
@@ -1361,15 +1482,15 @@ SUBROUTINE wrapper_kl_divergence(rslt, mean_old, cov_old, mean_new, cov_new)
     DOUBLE PRECISION, INTENT(IN)    :: mean_old(:)
     DOUBLE PRECISION, INTENT(IN)    :: mean_new(:)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     rslt = kl_divergence(mean_old, cov_old, mean_new, cov_new)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
 
     !/* external libraries      */
@@ -1419,9 +1540,9 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
 
     LOGICAL                             :: is_finished
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     meq = 1         ! Number of equality constraints
     mieq = 0        ! Number of inequality constraints
@@ -1495,8 +1616,8 @@ SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
     END DO
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE debug_criterion_function  (rslt, x, n)
 
     !/* external libraries      */
@@ -1519,9 +1640,9 @@ SUBROUTINE debug_criterion_function  (rslt, x, n)
 
     INTEGER                             :: i
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Initialize containers
     rslt = zero_dble
@@ -1532,8 +1653,8 @@ SUBROUTINE debug_criterion_function  (rslt, x, n)
     END DO
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE debug_criterion_derivative(rslt, x, n)
 
     !/* external libraries      */
@@ -1557,9 +1678,9 @@ SUBROUTINE debug_criterion_derivative(rslt, x, n)
     DOUBLE PRECISION                    :: xm_p1(n - 2)
     DOUBLE PRECISION                    :: xm(n - 2)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Extract sets of evaluation points
     xm = x(2:(n - 1))
@@ -1576,8 +1697,8 @@ SUBROUTINE debug_criterion_derivative(rslt, x, n)
     rslt(n) = 200_our_dble * (x(n) - x(n - 1) ** 2)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE debug_constraint_function(rslt, x, n, la)
 
     !/* external libraries      */
@@ -1597,15 +1718,15 @@ SUBROUTINE debug_constraint_function(rslt, x, n, la)
     INTEGER, INTENT(IN)                 :: la
     INTEGER, INTENT(IN)                 :: n
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     rslt(:) = SUM(x) - 10_our_dble
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE debug_constraint_derivative(rslt, x, n, la)
 
     !/* external libraries      */
@@ -1625,17 +1746,17 @@ SUBROUTINE debug_constraint_derivative(rslt, x, n, la)
     INTEGER, INTENT(IN)                 :: la
     INTEGER, INTENT(IN)                 :: n
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     rslt = one_dble
 
     rslt(n + 1) = zero_dble
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level, num_free_ambi_int)
 
     !/* external libraries      */
@@ -1656,9 +1777,9 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level, num_free_amb
 
     INTEGER, INTENT(IN)                 :: num_free_ambi_int
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESFORT variables
     num_free_ambi = num_free_ambi_int
@@ -1669,9 +1790,9 @@ SUBROUTINE wrapper_constraint_ambiguity(rslt, x, shocks_cov, level, num_free_amb
     rslt = constraint_ambiguity(x, shocks_cov, optim_paras)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, mean, num_free_ambi_int)
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, edu_start, edu_max, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, mean, num_free_ambi_int)
 
     !/* external libraries      */
 
@@ -1698,22 +1819,22 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, nu
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
-    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :)
+    INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)             :: states_all_int(:, :, :)
     INTEGER, INTENT(IN)             :: num_draws_emax_int
     INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_free_ambi_int
     INTEGER, INTENT(IN)             :: num_periods_int
-    INTEGER, INTENT(IN)             :: edu_start_int
-    INTEGER, INTENT(IN)             :: edu_max_int
+    INTEGER, INTENT(IN)             :: edu_start(:)
+    INTEGER, INTENT(IN)             :: edu_max
     INTEGER, INTENT(IN)             :: period
     INTEGER, INTENT(IN)             :: k
 
     LOGICAL, INTENT(IN)             :: mean
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESFORT variables
     IF (mean) THEN
@@ -1728,6 +1849,9 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, nu
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
 
+    ! Ensure not already allocated
+    IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
+
     ! Construct derived types
     optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
     optimizer_options%slsqp%ftol = fort_slsqp_ftol
@@ -1738,11 +1862,14 @@ SUBROUTINE wrapper_get_worst_case(x_shift, is_success, mode, num_periods_int, nu
 
     ambi_spec%mean = mean
 
-    CALL get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic_int, edu_max_int, edu_start_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, optim_paras, optimizer_options, ambi_spec)
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
+    CALL get_worst_case(x_shift, is_success, mode, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic_int, periods_emax_int, states_all_int, mapping_state_idx_int, shocks_cov, edu_spec, optim_paras, optimizer_options, ambi_spec)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level, eps_der_approx, num_free_ambi_int)
 
     !/* external libraries      */
@@ -1764,9 +1891,9 @@ SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level, e
 
     INTEGER, INTENT(IN)                 :: num_free_ambi_int
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESFORT variables
     num_free_ambi = num_free_ambi_int
@@ -1777,8 +1904,8 @@ SUBROUTINE wrapper_constraint_ambiguity_derivative(rslt, x, shocks_cov, level, e
     rslt = constraint_ambiguity_derivative(x, shocks_cov, optim_paras, eps_der_approx)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_spectral_condition_number(rslt, A)
 
     !/* external libraries      */
@@ -1795,15 +1922,15 @@ SUBROUTINE wrapper_spectral_condition_number(rslt, A)
 
     DOUBLE PRECISION, INTENT(IN)        :: A(:, :)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     CALL spectral_condition_number(rslt, A)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_cholesky_decomposition(cholesky, matrix, nrows)
 
     !/* external libraries      */
@@ -1826,9 +1953,9 @@ SUBROUTINE wrapper_get_cholesky_decomposition(cholesky, matrix, nrows)
 
     INTEGER                             :: info
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     CALL get_cholesky_decomposition(cholesky, info, matrix)
 
@@ -1837,8 +1964,8 @@ SUBROUTINE wrapper_get_cholesky_decomposition(cholesky, matrix, nrows)
     END IF
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_correlation_to_covariance(cov, corr, sd, nrows)
 
     !/* external libraries      */
@@ -1859,15 +1986,15 @@ SUBROUTINE wrapper_correlation_to_covariance(cov, corr, sd, nrows)
 
     INTEGER, INTENT(IN)                 :: nrows
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     CALL correlation_to_covariance(cov, corr, sd)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_covariance_to_correlation(corr, cov, nrows)
 
     !/* external libraries      */
@@ -1886,15 +2013,45 @@ SUBROUTINE wrapper_covariance_to_correlation(corr, cov, nrows)
 
     INTEGER, INTENT(IN)                 :: nrows
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     CALL covariance_to_correlation(corr, cov)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_get_num_obs_agent(num_rows_agent, data_array, num_agents_est_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: num_rows_agent(num_agents_est_int)
+
+    DOUBLE PRECISION, INTENT(IN)        :: data_array(:, :)
+
+    INTEGER, INTENT(IN)                 :: num_agents_est_int
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Assign global RESFORT variables
+    num_agents_est = num_agents_est_int
+
+    num_rows_agent = get_num_obs_agent(data_array)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_relevant_dependence(shocks_cov_cand, shocks_cholesky_cand, shocks_cov, x)
 
     !/* external libraries      */
@@ -1913,15 +2070,15 @@ SUBROUTINE wrapper_get_relevant_dependence(shocks_cov_cand, shocks_cholesky_cand
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: x(:)
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     CALL get_relevant_dependence(shocks_cov_cand, shocks_cholesky_cand, shocks_cov, x)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_scales_magnitude(precond_matrix_int, values, num_free_int)
 
     !/* external libraries      */
@@ -1940,9 +2097,9 @@ SUBROUTINE wrapper_get_scales_magnitude(precond_matrix_int, values, num_free_int
 
     INTEGER, INTENT(IN)                 :: num_free_int
 
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------
 
     ! Assign global RESFORT variables
     num_free = num_free_int
@@ -1950,5 +2107,5 @@ SUBROUTINE wrapper_get_scales_magnitude(precond_matrix_int, values, num_free_int
     precond_matrix_int = get_scales_magnitudes(values)
 
 END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
+!*******************************************************************************
+!*******************************************************************************

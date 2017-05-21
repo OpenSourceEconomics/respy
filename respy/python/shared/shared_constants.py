@@ -23,9 +23,6 @@ SMALL_FLOAT = 1e-5
 TINY_FLOAT = 1.0e-8
 PRINT_FLOAT = 1e10
 
-# Total number of parameters to can potentially be estimated.
-NUM_PARAS = 35
-
 # Ambiguity
 MIN_AMBIGUITY = 1e-20
 
@@ -62,6 +59,7 @@ DATA_LABELS_EST += ['Lagged_Schooling']
 
 # There is additional information available in a simulated dataset.
 DATA_LABELS_SIM = DATA_LABELS_EST[:]
+DATA_LABELS_SIM += ['Type']
 DATA_LABELS_SIM += ['Total_Reward_1', 'Total_Reward_2']
 DATA_LABELS_SIM += ['Total_Reward_3', 'Total_Reward_4']
 DATA_LABELS_SIM += ['Systematic_Reward_1', 'Systematic_Reward_2']
@@ -80,5 +78,7 @@ DATA_FORMATS_SIM = dict(DATA_FORMATS_EST)
 for key_ in DATA_LABELS_SIM:
     if key_ in DATA_FORMATS_SIM.keys():
         continue
+    elif key_ in ['Type']:
+        DATA_FORMATS_SIM[key_] = np.int
     else:
         DATA_FORMATS_SIM[key_] = np.float

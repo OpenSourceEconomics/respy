@@ -66,8 +66,14 @@ MODULE shared_types
 
     ! This container holds all the parameters that are potentially updated during the estimation step.
     TYPE OPTIMPARAS_DICT
+
+        REAL(our_dble), ALLOCATABLE :: paras_bounds(:, :)
+        REAL(our_dble), ALLOCATABLE :: type_shifts(:, :)
+        REAL(our_dble), ALLOCATABLE :: type_shares(:)
+
+        LOGICAL, ALLOCATABLE        :: paras_fixed(:)
+
         REAL(our_dble)          :: shocks_cholesky(4, 4)
-        REAL(our_dble)          :: paras_bounds(2, NUM_PARAS)
         REAL(our_dble)          :: coeffs_edu(4)
         REAL(our_dble)          :: coeffs_home(1)
         REAL(our_dble)          :: coeffs_a(9)
@@ -75,7 +81,15 @@ MODULE shared_types
         REAL(our_dble)          :: level(1)
         REAL(our_dble)          :: delta(1)
 
-        LOGICAL                 :: paras_fixed(NUM_PARAS)
+    END TYPE
+
+    TYPE EDU_DICT
+
+        INTEGER(our_int), ALLOCATABLE   :: start(:)
+        INTEGER(our_int)                :: max
+
+        REAL(our_dble), ALLOCATABLE     :: share(:)
+
     END TYPE
 
 !******************************************************************************

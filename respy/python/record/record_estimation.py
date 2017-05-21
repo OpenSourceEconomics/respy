@@ -9,7 +9,6 @@ from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
-from respy.python.shared.shared_constants import NUM_PARAS
 
 
 def record_estimation_scaling(x_optim_free_unscaled_start,
@@ -25,12 +24,11 @@ def record_estimation_scaling(x_optim_free_unscaled_start,
         out_file.write(fmt_.format(*labels))
 
         j = 0
-        for i in range(NUM_PARAS):
-            if paras_fixed[i]:
+        for i, is_fixed in enumerate(paras_fixed):
+            if is_fixed:
                 continue
 
-            paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j,
-                                                                       j]]
+            paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j, j]]
             paras += [x_optim_free_scaled_start[j]]
             paras += [paras_bounds_free_scaled[j, 0]]
             paras += [paras_bounds_free_scaled[j, 1]]
@@ -73,14 +71,15 @@ def record_estimation_stop():
         out_file.write('\n TERMINATED\n')
 
 
-def record_estimation_eval(opt_obj, fval, opt_ambi_details,
-        x_optim_all_unscaled, start):
-    """ Logging the progress of an estimation. This function contains two
-    parts as two files provide information about the progress.
+def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled, start):
+    """ Logging the progress of an estimation. This function contains two parts as two files 
+    provide information about the progress.
     """
 
     # Distribute class attributes
     paras_fixed = opt_obj.paras_fixed
+    num_paras = opt_obj.num_paras
+    num_types = opt_obj.num_types
 
     shocks_cholesky, _ = extract_cholesky(x_optim_all_unscaled, 0)
     shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
@@ -88,27 +87,28 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
     # Identify events
     is_start = (opt_obj.num_eval == 0)
     is_step = (opt_obj.crit_vals[1] > fval)
+    x_optim_shares = x_optim_all_unscaled[35:35 + num_types]
+    x_optim_shares = x_optim_shares / np.sum(x_optim_shares)
 
-    # Update class attributes
-    if is_start:
-        opt_obj.crit_vals[0] = fval
-        opt_obj.x_optim_container[:, 0] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:25, 0] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:NUM_PARAS, 0] = shocks_coeffs
+    for i in range(3):
+        if i == 0 and not is_start:
+            continue
 
-    if is_step:
-        opt_obj.num_step += 1
-        opt_obj.crit_vals[1] = fval
-        opt_obj.x_optim_container[:, 1] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:25, 1] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:NUM_PARAS, 1] = shocks_coeffs
+        if i == 1:
+            if not is_step:
+                continue
+            else:
+                opt_obj.num_step += 1
 
-    if True:
-        opt_obj.num_eval += 1
-        opt_obj.crit_vals[2] = fval
-        opt_obj.x_optim_container[:, 2] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:25, 2] = x_optim_all_unscaled[:25]
-        opt_obj.x_econ_container[25:NUM_PARAS, 2] = shocks_coeffs
+        if i == 2:
+            opt_obj.num_eval += 1
+
+        opt_obj.crit_vals[i] = fval
+        opt_obj.x_optim_container[:, i] = x_optim_all_unscaled
+        opt_obj.x_econ_container[:25, i] = x_optim_all_unscaled[:25]
+        opt_obj.x_econ_container[25:35, i] = shocks_coeffs
+        opt_obj.x_econ_container[35:35 + num_types, i] = x_optim_shares
+        opt_obj.x_econ_container[35 + num_types:num_paras, i] = x_optim_all_unscaled[35 + num_types:]
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container
@@ -151,18 +151,18 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
 
         # Formatting for the file
         fmt_ = '   {:>10}' + '    {:>25}' * 3
-        for i in range(NUM_PARAS):
+        for i in range(num_paras):
             if paras_fixed[i]:
                 continue
             line = [i] + char_floats(x_optim_container[i, :])
             out_file.write(fmt_.format(*line) + '\n')
         out_file.write('\n')
 
-        # Get information on the spectral condition number of the covariance
-        # matrix of the shock distribution.
+        # Get information on the spectral condition number of the covariance matrix of the shock
+        # distribution.
         cond = []
-        for i, which in enumerate(['Start', 'Step', 'Current']):
-            shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-1]
+        for i in range(3):
+            shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-3]
             cond += [np.log(spectral_condition_number(shocks_cov))]
         fmt_ = '   {:>9} ' + '    {:25.15f}' * 3 + '\n'
         out_file.write(fmt_.format(*['Condition'] + cond))
@@ -184,11 +184,11 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details,
 
     write_est_info(opt_obj.crit_vals[0], x_econ_container[:, 0],
         opt_obj.num_step, opt_obj.crit_vals[1], x_econ_container[:, 1],
-        opt_obj.num_eval, opt_obj.crit_vals[2], x_econ_container[:, 2])
+        opt_obj.num_eval, opt_obj.crit_vals[2], x_econ_container[:, 2], num_paras)
 
 
 def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
-        num_eval, value_current, paras_current):
+        num_eval, value_current, paras_current, num_paras):
 
     # Formatting for the file
     fmt_ = '{:>25}    ' * 4
@@ -205,7 +205,7 @@ def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
         out_file.write('\n{:>25}\n\n'.format('Economic Parameters'))
         line = ['Identifier', 'Start', 'Step', 'Current']
         out_file.write(fmt_.format(*line) + '\n\n')
-        for i, _ in enumerate(range(NUM_PARAS)):
+        for i, _ in enumerate(range(num_paras)):
             line = [i]
             line += char_floats([paras_start[i], paras_step[i]])
             line += char_floats(paras_current[i])
@@ -219,13 +219,12 @@ def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
 def char_floats(floats):
     """ Pretty printing of floats.
     """
-    # We ensure that this function can also be called on for a single float
-    # value.
+    # We ensure that this function can also be called on for a single float value.
     if isinstance(floats, float):
         floats = [floats]
 
     line = []
-    for i, value in enumerate(floats):
+    for value in floats:
         if abs(value) > LARGE_FLOAT:
             line += ['{:>25}'.format('---')]
         else:

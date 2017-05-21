@@ -15,6 +15,7 @@ from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import HUGE_FLOAT
 
 from respy import RespyCls
 from respy import simulate
@@ -25,68 +26,64 @@ OPTIMIZERS_AMB = OPT_AMB_FORT + OPT_AMB_PYTH
 
 
 def simulate_observed(respy_obj, is_missings=True):
-    """ This function addes two important features of observed datasests: (1)
-    missing observations and missing wage information.
+    """ This function adds two important features of observed datasests: (1) missing 
+    observations and missing wage information.
     """
-    def drop_agents_obs(group, num_drop):
-        """ We drop a random number of observations for each agent.
+    def drop_agents_obs(agent):
+        """ We now determine the exact period from which onward the history is truncated and
+        cut the simulated dataset down to size.
         """
-        group.set_index('Period', drop=False, inplace=True)
-        indices = np.random.choice(group.index, num_drop, replace=False)
-        group.drop(indices, inplace=True)
-        return group
+        start_truncation = np.random.choice(range(1, agent['Period'].max() + 2))
+        agent = agent[agent['Period'] < start_truncation]
+        return agent
 
-    num_periods = respy_obj.get_attr('num_periods')
-    seed_sim = respy_obj.get_attr('seed_sim')
+    seed_sim = dist_class_attributes(respy_obj, 'seed_sim')
 
     simulate(respy_obj)
 
-    # It is important to set the seed after the simulation call. Otherwise,
-    # the value of the seed differs due to the different implementations of
-    # the PYTHON and FORTRAN programs.
+    # It is important to set the seed after the simulation call. Otherwise, the value of the
+    # seed differs due to the different implementations of the PYTHON and FORTRAN programs.
     np.random.seed(seed_sim)
 
+    # We read in the baseline simulated dataset.
+    data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True, header=0, na_values='.',
+        dtype=DATA_FORMATS_SIM, names=DATA_LABELS_SIM)
+
     if is_missings:
-        share = np.random.uniform(high=0.9, size=1)
-        share_missing_obs = np.random.choice([0, share])
+        # We truncate the histories of agents. This mimics the frequent empirical fact that we loose
+        # track of more and more agents over time.
+        data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs)
 
-        share = np.random.uniform(high=0.9, size=1)
-        share_missing_wages = np.random.choice([0, share])
+        # We also want to drop the some wage observations. Note that we might be dealing with a
+        # dataset where nobody is working anyway.
+        is_working = data_subset['Choice'].isin([1, 2])
+        num_drop_wages = int(np.sum(is_working) * np.random.uniform(high=0.5, size=1))
+        if num_drop_wages > 0:
+            indices = data_subset['Wage'][is_working].index
+            index_missing = np.random.choice(indices, num_drop_wages, False)
+            data_subset.loc[index_missing, 'Wage'] = None
+        else:
+            pass
     else:
-        share_missing_wages = 0
-        share_missing_obs = 0
-
-    # We want to drop random observations by agents. This mimics the frequent
-    # empirical fact that we loose track of agents (at least temporarily).
-    data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True, header=0,
-        na_values='.', dtype=DATA_FORMATS_SIM, names=DATA_LABELS_SIM)
-
-    if share_missing_obs != 0:
-        num_drop_obs = int(num_periods * share_missing_obs)
-    else:
-        num_drop_obs = 0
-
-    data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs,
-        num_drop=num_drop_obs)
-
-    # We also want to drop the some wage observations.
-    is_working = data_subset['Choice'].isin([1, 2])
-    num_drop_wages = int(np.sum(is_working) * share_missing_wages)
-
-    # As a special case, we might be dealing with a dataset where not one is
-    # working anyway.
-    if num_drop_wages > 0:
-        indices = data_subset['Wage'][is_working].index
-        index_missing = np.random.choice(indices, num_drop_wages, False)
-        data_subset.loc[index_missing, 'Wage'] = None
-    else:
-        pass
+        data_subset = data_frame
 
     # We can restrict the information to observed entities only.
     data_subset = data_subset[DATA_LABELS_EST]
     write_out(respy_obj, data_subset)
 
     return respy_obj
+
+
+def compare_init(fname_base, fname_alt):
+    """ This function compares the content of each line of a file without any regards for spaces.
+    """
+    base_lines = [line.rstrip('\n') for line in open(fname_base, 'r')]
+    alt_lines = [line.rstrip('\n') for line in open(fname_alt, 'r')]
+
+    for i, base_line in enumerate(base_lines):
+        if alt_lines[i].replace(' ', '') != base_line.replace(' ', ''):
+            return False
+    return True
 
 
 def compare_est_log(base_est_log):
@@ -114,19 +111,46 @@ def compare_est_log(base_est_log):
                     base_val = float(shlex.split(base_line)[1])
                     np.testing.assert_almost_equal(alt_val, base_val)
                 elif list_[0] in ['Ambiguity']:
-                    # We know that the results from the worst-case
-                    # determination are very sensitive for ill-conditioned
-                    # problems and thus the performance varies across versions.
+                    # We know that the results from the worst-case determination are very
+                    # sensitive for ill-conditioned problems and thus the performance varies
+                    # across versions.
                     pass
                 elif list_[0] in ['Time', 'Duration']:
                     pass
                 else:
-                    assert alt_line == base_line
 
+                    is_floats = False
+                    try:
+                        int(shlex.split(alt_line)[0])
+                        is_floats = True
+                    except ValueError:
+                        pass
+                    # We need to cut the floats some slack. It might very well happen that in the
+                    # very last digits they are in fact different across the versions.
+                    if not is_floats:
+                        assert alt_line == base_line
+                    else:
+                        base_floats = get_floats(base_line)
+                        alt_floats = get_floats(alt_line)
+                        np.testing.assert_almost_equal(alt_floats, base_floats)
             return
 
         except IndexError:
             pass
+
+
+def get_floats(line):
+    """ This extracts the floats from the line
+    """
+    list_ = shlex.split(line)[1:]
+    rslt = []
+    for val in list_:
+        if val == '---':
+            val = HUGE_FLOAT
+        else:
+            val = float(val)
+        rslt += [val]
+    return rslt
 
 
 def write_interpolation_grid(file_name):
@@ -137,13 +161,12 @@ def write_interpolation_grid(file_name):
     respy_obj = RespyCls(file_name)
 
     # Distribute class attribute
-    num_periods, num_points_interp, edu_start, edu_max, min_idx = \
-        dist_class_attributes(respy_obj,
-            'num_periods', 'num_points_interp', 'edu_start', 'edu_max', 'min_idx')
+    num_periods, num_points_interp, edu_spec, num_types = dist_class_attributes(respy_obj,
+        'num_periods', 'num_points_interp', 'edu_spec', 'num_types')
 
     # Determine maximum number of states
-    _, states_number_period, _, max_states_period = \
-        pyth_create_state_space(num_periods, edu_start, edu_max, min_idx)
+    _, states_number_period, _, max_states_period = pyth_create_state_space(num_periods, num_types,
+        edu_spec)
 
     # Initialize container
     booleans = np.tile(True, (max_states_period, num_periods))
@@ -160,8 +183,8 @@ def write_interpolation_grid(file_name):
             continue
 
         # Draw points for interpolation
-        indicators = np.random.choice(range(num_states),
-            size=(num_states - num_points_interp), replace=False)
+        indicators = np.random.choice(range(num_states), size=(num_states - num_points_interp),
+            replace=False)
 
         # Replace indicators
         for i in range(num_states):
@@ -169,7 +192,7 @@ def write_interpolation_grid(file_name):
                 booleans[i, period] = False
 
     # Write out to file
-    np.savetxt('interpolation.txt', booleans, fmt='%s')
+    np.savetxt('.interpolation.respy.test', booleans, fmt='%s')
 
     # Some information that is useful elsewhere.
     return max_states_period
@@ -185,12 +208,28 @@ def write_draws(num_periods, max_draws):
         np.identity(4), (num_periods, max_draws))
 
     # Write to file to they can be read in by the different implementations.
-    with open('draws.txt', 'w') as file_:
+    with open('.draws.respy.test', 'w') as file_:
         for period in range(num_periods):
             for i in range(max_draws):
                 fmt = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'
                 line = fmt.format(*draws_standard[period, i, :])
                 file_.write(line)
+
+
+def write_types(type_shares, num_agents_sim):
+    """ We also need to fully control the random types to ensure the comparability between PYTHON and FORTRAN simulations.
+    """
+    num_types = len(type_shares)
+    types = np.random.choice(range(num_types), p=type_shares, size=num_agents_sim)
+    np.savetxt('.types.respy.test', types, fmt='%i')
+
+
+def write_edu_start(edu_spec, num_agents_sim):
+    """ We also need to fully control the random initial schooling to ensure the comparability 
+    between PYTHON and FORTRAN simulations.
+    """
+    types = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
+    np.savetxt('.initial.respy.test', types, fmt='%i')
 
 
 def get_valid_values(which):
@@ -211,7 +250,7 @@ def get_valid_values(which):
 def get_valid_bounds(which, value):
     """ Simply get a valid set of bounds.
     """
-    assert which in ['amb', 'cov', 'coeff', 'delta']
+    assert which in ['amb', 'cov', 'coeff', 'delta', 'share']
 
     # The bounds cannot be too tight as otherwise the BOBYQA might not start
     # properly.
@@ -224,5 +263,15 @@ def get_valid_bounds(which, value):
         bounds = [lower, upper]
     elif which in ['cov']:
         bounds = [None, None]
-
+    elif which in ['share']:
+        bounds = [0.0, None]
     return bounds
+
+
+def get_valid_shares(num_groups):
+    """ We simply need a valid request for the shares of types summing to one.
+    """
+    shares = np.random.uniform(size=num_groups)
+    shares = shares / np.sum(shares)
+    shares = shares.tolist()
+    return shares

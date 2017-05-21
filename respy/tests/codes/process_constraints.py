@@ -2,7 +2,6 @@ import numpy as np
 
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.shared.shared_constants import NUM_PARAS
 
 from codes.auxiliary import get_valid_bounds
 
@@ -13,7 +12,7 @@ VALID_KEYS += ['flag_estimation', 'flag_ambiguity', 'agents']
 VALID_KEYS += ['flag_parallelism', 'version', 'file_est', 'flag_interpolation']
 VALID_KEYS += ['points', 'maxfun', 'flag_deterministic']
 VALID_KEYS += ['edu', 'measure', 'level', 'fixed_ambiguity', 'flag_ambiguity']
-VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
+VALID_KEYS += ['max_draws', 'flag_precond', 'periods', 'types']
 VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta', 'precond_type']
 
 
@@ -68,7 +67,8 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         assert (isinstance(max_, int))
         assert (max_ > start)
         # Replace in initialization file
-        dict_['EDUCATION']['start'] = start
+        dict_['EDUCATION']['start'] = [start]
+        dict_['EDUCATION']['share'] = [1.0]
         dict_['EDUCATION']['max'] = max_
 
     # Replace measure of ambiguity
@@ -186,7 +186,6 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
     # Replace discount factor
     if 'flag_myopic' in constr.keys():
         # Extract object
-        assert ('delta' not in constr.keys())
         assert (constr['flag_myopic'] in [True, False])
         # Replace in initialization files
         if constr['flag_myopic']:
@@ -236,8 +235,8 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
 
             # Ensure that a valid estimator is selected in the case that a
             # free parameter has bounds.
-            for i in range(NUM_PARAS):
-                if paras_fixed[i]:
+            for i, para_fixed in enumerate(paras_fixed):
+                if para_fixed:
                     continue
                 if any(item is not None for item in paras_bounds[i]):
                     if dict_['PROGRAM']['version'] == 'FORTRAN':
@@ -279,9 +278,6 @@ def _check_constraints(constr):
 
     # Address incompatibility issues
     keys = constr.keys()
-
-    if 'flag_myopic' in keys:
-        assert 'delta' not in keys
 
     if 'flag_estimation' in keys:
         assert 'maxfun' not in keys

@@ -19,23 +19,21 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, edu_start, is_debug, edu_max, min_idx, periods_draws_emax, ambi_spec, optim_paras, optimizer_options, file_sim)
+SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim)
 
     !/* external objects        */
 
-    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: mapping_state_idx(:, :, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
     TYPE(AMBI_DICT), INTENT(IN)                     :: ambi_spec
+    TYPE(EDU_DICT), INTENT(IN)                      :: edu_spec
 
     INTEGER(our_int), INTENT(IN)                    :: num_points_interp
     INTEGER(our_int), INTENT(IN)                    :: num_draws_emax
     INTEGER(our_int), INTENT(IN)                    :: num_periods
-    INTEGER(our_int), INTENT(IN)                    :: edu_start
-    INTEGER(our_int), INTENT(IN)                    :: edu_max
-    INTEGER(our_int), INTENT(IN)                    :: min_idx
 
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_rewards_systematic(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(: ,:)
@@ -60,21 +58,19 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(1, file_sim)
 
-    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, edu_start, edu_max, min_idx)
+    CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, num_types, edu_spec)
 
     CALL record_solution(-1, file_sim)
-
 
     CALL record_solution(2, file_sim)
 
-    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, edu_start, max_states_period, optim_paras)
+    CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, max_states_period, optim_paras)
 
     CALL record_solution(-1, file_sim)
 
-
     CALL record_solution(3, file_sim)
 
-    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, edu_max, edu_start, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, ambi_spec, optim_paras, optimizer_options, file_sim, .True.)
+    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, .True.)
 
     IF (.NOT. is_myopic) THEN
         CALL record_solution(-1, file_sim)

@@ -2,6 +2,7 @@
 import argparse
 import os
 
+from respy.custom_exceptions import UserError
 from respy import simulate
 from respy import RespyCls
 
@@ -17,14 +18,15 @@ def dist_input_arguments(parser):
     file_sim = args.file_sim
 
     # Check attributes
-    assert (os.path.exists(init_file))
+    if not os.path.exists(init_file):
+        raise UserError('Initialization file does not exist')
 
     # Finishing
     return init_file, file_sim
 
 
 def scripts_simulate(init_file, file_sim):
-    """ Wrapper for the estimation.
+    """ Wrapper for the simulation.
     """
     respy_obj = RespyCls(init_file)
 
@@ -40,15 +42,13 @@ def scripts_simulate(init_file, file_sim):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description=
-        'Start of simulation with the RESPY package.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Start of simulation with the RESPY package.')
 
-    parser.add_argument('--init_file', action='store', dest='init_file',
-        default='model.respy.ini', help='initialization file')
+    parser.add_argument('--init', action='store', dest='init_file', default='model.respy.ini',
+                        help='initialization file')
 
-    parser.add_argument('--file_sim', action='store', dest='file_sim',
-        default=None, help='output file')
+    parser.add_argument('--file_sim', action='store', dest='file_sim', default=None,
+                        help='output file')
 
     # Process command line arguments
     args = dist_input_arguments(parser)

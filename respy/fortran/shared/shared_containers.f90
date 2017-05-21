@@ -15,7 +15,7 @@ MODULE shared_containers
 !******************************************************************************
 
     ! Containers required for the evaluation of the criterion function
-    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :)
+    INTEGER(our_int), ALLOCATABLE   :: mapping_state_idx(:, :, :, :, :, :)
     INTEGER(our_int), ALLOCATABLE   :: states_number_period(:)
     INTEGER(our_int), ALLOCATABLE   :: states_all(:, :, :)
 
@@ -27,13 +27,12 @@ MODULE shared_containers
 
     REAL(our_dble), ALLOCATABLE     :: precond_matrix(:, :)
 
-    REAL(our_dble)                  :: x_all_start(NUM_PARAS)
+    REAL(our_dble), ALLOCATABLE     :: x_all_start(:)
 
     REAL(our_dble)                  :: dfunc_eps
     REAL(our_dble)                  :: tau
 
-    INTEGER(our_int)                :: edu_start
-    INTEGER(our_int)                :: edu_max
+    INTEGER(our_int), ALLOCATABLE   :: num_obs_agent(:)
 
     LOGICAL                         :: is_interpolated
     LOGICAL                         :: is_myopic
@@ -45,6 +44,7 @@ MODULE shared_containers
     TYPE(OPTIMIZER_COLLECTION)      :: optimizer_options
     TYPE(OPTIMPARAS_DICT)           :: optim_paras
     TYPE(AMBI_DICT)                 :: ambi_spec
+    TYPE(EDU_DICT)                  :: edu_spec
 
     INTEGER(our_int)                :: maxfun
 

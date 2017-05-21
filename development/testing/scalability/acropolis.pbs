@@ -8,4 +8,4 @@
 #PBS -M eisenhauer@policy-lab.org
 
 cd $PBS_O_WORKDIR
-~/.envs/restudToolbox2/bin/python run.py
+~/.envs/restudToolbox/bin/python run.py

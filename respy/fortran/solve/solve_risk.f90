@@ -17,18 +17,17 @@ MODULE solve_risk
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, edu_max, edu_start, periods_emax, states_all, mapping_state_idx, optim_paras)
+SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
     !/* external objects    */
 
-    REAL(our_dble), INTENT(OUT)                 :: emax
+    REAL(our_dble), INTENT(OUT)         :: emax
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2)
-    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 4)
-    INTEGER(our_int), INTENT(IN)    :: edu_start
-    INTEGER(our_int), INTENT(IN)    :: edu_max
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
@@ -56,7 +55,7 @@ SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systema
         draws = draws_emax_risk(i, :)
 
         ! Calculate total value
-        CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_start, edu_max)
+        CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
         ! Determine optimal choice
         maximum = MAXVAL(total_values)

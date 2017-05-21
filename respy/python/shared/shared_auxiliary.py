@@ -1,9 +1,7 @@
 import numpy as np
 
 import linecache
-import atexit
 import shlex
-import glob
 import os
 
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
@@ -16,7 +14,6 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
-from respy.python.shared.shared_constants import NUM_PARAS
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
 
@@ -50,6 +47,10 @@ def check_optimization_parameters(x):
 def dist_econ_paras(x_all_curre):
     """ Update parameter values. The np.array type is maintained.
     """
+    # Auxiliary objects
+    num_paras = len(x_all_curre)
+    num_types = int((num_paras - 35 - 1) / 5 + 1)
+
     # Discount rates
     delta = x_all_curre[0:1]
 
@@ -68,7 +69,7 @@ def dist_econ_paras(x_all_curre):
     # Home
     coeffs_home = x_all_curre[24:25]
 
-    shocks_coeffs = x_all_curre[25:NUM_PARAS]
+    shocks_coeffs = x_all_curre[25:35]
     for i in [0, 4, 7, 9]:
         shocks_coeffs[i] **= 2
 
@@ -80,9 +81,15 @@ def dist_econ_paras(x_all_curre):
 
     shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
 
+    # Type Shares
+    type_shares = x_all_curre[35:35 + num_types]
+
+    type_shifts = np.reshape(x_all_curre[35 + num_types:num_paras], (num_types - 1, 4))
+    type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
+
     # Collect arguments
-    args = (delta, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov)
+    args = (delta, level, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov, type_shares,
+            type_shifts)
 
     # Finishing
     return args
@@ -118,12 +125,33 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     # Cholesky
     optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
 
+    type_shares, type_shifts = extract_type_information(x_all_curre)
+    optim_paras['type_shares'] = type_shares
+    optim_paras['type_shifts'] = type_shifts
+
     # Checks
     if is_debug:
         assert check_model_parameters(optim_paras)
 
     # Finishing
     return optim_paras
+
+
+def extract_type_information(x):
+    """ This function extracts the information about types from the estimation vector.
+    """
+
+    num_types = int((len(x[35:]) - 1) / 5 + 1)
+
+    # Type shares
+    type_shares = x[35:35 + num_types]
+
+    # Type shifts
+    type_shifts = x[35 + num_types:]
+    type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
+    type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
+
+    return type_shares, type_shifts
 
 
 def extract_cholesky(x, info=None):
@@ -133,7 +161,7 @@ def extract_cholesky(x, info=None):
     shocks_cholesky[0, :1] = x[25:26]
     shocks_cholesky[1, :2] = x[26:28]
     shocks_cholesky[2, :3] = x[28:31]
-    shocks_cholesky[3, :4] = x[31:NUM_PARAS]
+    shocks_cholesky[3, :4] = x[31:35]
 
     # Stabilization
     if info is not None:
@@ -156,9 +184,8 @@ def extract_cholesky(x, info=None):
         return shocks_cholesky, None
 
 
-def get_total_values(period, num_periods, optim_paras, rewards_systematic,
-        draws, edu_max, edu_start, mapping_state_idx, periods_emax, k,
-        states_all):
+def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws, edu_spec,
+                     mapping_state_idx, periods_emax, k, states_all):
     """ Get total value of all possible states.
     """
     # Initialize containers
@@ -173,79 +200,71 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic,
 
     # Get future values
     if period != (num_periods - 1):
-        emaxs, is_inadmissible = get_emaxs(edu_max, edu_start, mapping_state_idx, period, periods_emax, k,
-                                                   states_all)
+        emaxs = get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all)
     else:
-        is_inadmissible = False
         emaxs = np.tile(0.0, 4)
 
     # Calculate total utilities
     total_values = rewards_ex_post + optim_paras['delta'] * emaxs
 
-    # This is required to ensure that the agent does not choose any
-    # inadmissible states. If the state is inadmissible emaxs takes
-    # value zero. This aligns the treatment of inadmissible values with the
-    # original paper.
-    if is_inadmissible:
+    # This is required to ensure that the agent does not choose any inadmissible states. If the
+    # state is inadmissible emaxs takes value zero.
+    if states_all[period, k, 2] >= edu_spec['max']:
         total_values[2] += INADMISSIBILITY_PENALTY
 
     # Finishing
     return total_values
 
 
-def get_emaxs(edu_max, edu_start, mapping_state_idx, period,
-             periods_emax, k, states_all):
+def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     """ Get emaxs for additional choices.
     """
     # Distribute state space
-    exp_a, exp_b, edu, _ = states_all[period, k, :]
+    exp_a, exp_b, edu, _, type_ = states_all[period, k, :]
 
     # Future utilities
     emaxs = np.tile(np.nan, 4)
 
     # Working in Occupation A
-    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 0]
+    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 0, type_]
     emaxs[0] = periods_emax[period + 1, future_idx]
 
     # Working in Occupation B
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 0]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 0, type_]
     emaxs[1] = periods_emax[period + 1, future_idx]
 
-    # Increasing schooling. Note that adding an additional year
-    # of schooling is only possible for those that have strictly
-    # less than the maximum level of additional education allowed.
-    is_inadmissible = (edu >= edu_max - edu_start)
+    # Increasing schooling. Note that adding an additional year of schooling is only possible for
+    # those that have strictly less than the maximum level of additional education allowed.
+    is_inadmissible = (edu >= edu_spec['max'])
     if is_inadmissible:
         emaxs[2] = 0.00
     else:
-        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 1]
+        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 1, type_]
         emaxs[2] = periods_emax[period + 1, future_idx]
 
     # Staying at home
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 0]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 0, type_]
     emaxs[3] = periods_emax[period + 1, future_idx]
 
     # Finishing
-    return emaxs, is_inadmissible
+    return emaxs
 
 
 def create_draws(num_periods, num_draws, seed, is_debug):
-    """ Create the relevant set of draws. Handle special case of zero v
-    variances as thi case is useful for hand-based testing. The draws
-    are drawn from a standard normal distribution and transformed later in
-    the code.
+    """ Create the relevant set of draws. Handle special case of zero variances as thi case is 
+    useful for hand-based testing. The draws are drawn from a standard normal distribution and 
+    transformed later in the code.
     """
     # Control randomness by setting seed value
     np.random.seed(seed)
 
-    # Draw random deviates from a standard normal distribution or read it in
-    # from disk. The latter is available to allow for testing across
-    # implementations.
-    if is_debug and os.path.exists('draws.txt'):
+    # Draw random deviates from a standard normal distribution or read it in from disk. The
+    # latter is available to allow for testing across implementation.
+    if is_debug and os.path.exists('.draws.respy.test'):
         draws = read_draws(num_periods, num_draws)
     else:
-        draws = np.random.multivariate_normal(np.zeros(4),
-                        np.identity(4), (num_periods, num_draws))
+        draws = np.random.multivariate_normal(np.zeros(4), np.identity(4), (num_periods, num_draws))
+
     # Finishing
     return draws
 
@@ -264,8 +283,8 @@ def cholesky_to_coeffs(shocks_cholesky):
     return shocks_coeffs
 
 
-def add_solution(respy_obj, periods_rewards_systematic,
-        states_number_period, mapping_state_idx, periods_emax, states_all):
+def add_solution(respy_obj, periods_rewards_systematic, states_number_period, mapping_state_idx,
+                 periods_emax, states_all):
     """ Add solution to class instance.
     """
     respy_obj.unlock()
@@ -324,10 +343,13 @@ def replace_missing_values(arguments):
 def check_model_parameters(optim_paras):
     """ Check the integrity of all model parameters.
     """
+    # Auxiliary objects
+    num_types = len(optim_paras['type_shifts'])
+
     # Checks for all arguments
     keys = []
-    keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-    keys += ['level', 'shocks_cholesky', 'delta']
+    keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home', 'level', 'shocks_cholesky']
+    keys += ['delta', 'type_shares', 'type_shifts']
 
     for key in keys:
         assert (isinstance(optim_paras[key], np.ndarray))
@@ -349,8 +371,13 @@ def check_model_parameters(optim_paras):
 
     # Checks shock matrix
     assert (optim_paras['shocks_cholesky'].shape == (4, 4))
-    np.allclose(optim_paras['shocks_cholesky'],
-        np.tril(optim_paras['shocks_cholesky']))
+    np.allclose(optim_paras['shocks_cholesky'], np.tril(optim_paras['shocks_cholesky']))
+
+    # Checks for type shares
+    assert np.all(optim_paras['type_shares'] >= 0.0)
+
+    # Checks for type shifts
+    assert optim_paras['type_shifts'].shape == (num_types, 4)
 
     # Finishing
     return True
@@ -378,7 +405,7 @@ def read_draws(num_periods, num_draws):
     periods_draws = np.tile(np.nan, (num_periods, num_draws, 4))
 
     # Read and distribute draws
-    draws = np.array(np.genfromtxt('draws.txt'), ndmin=2)
+    draws = np.array(np.genfromtxt('.draws.respy.test'), ndmin=2)
     for period in range(num_periods):
         lower = 0 + num_draws * period
         upper = lower + num_draws
@@ -407,7 +434,7 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     return draws_transformed
 
 
-def generate_optimizer_options(which, optim_paras):
+def generate_optimizer_options(which, optim_paras, num_paras):
 
     dict_ = dict()
 
@@ -436,12 +463,11 @@ def generate_optimizer_options(which, optim_paras):
         dict_['rhobeg'] = rhobeg
         dict_['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
 
-        # It is not recommended that N is larger than upper as the code might
-        # break down due to a segmentation fault. See the source files for the
-        # absolute upper bounds.
-        assert sum(optim_paras['paras_fixed']) != NUM_PARAS
-        lower = (NUM_PARAS - sum(optim_paras['paras_fixed'])) + 2
-        upper = (2 * (NUM_PARAS - sum(optim_paras['paras_fixed'])) + 1)
+        # It is not recommended that N is larger than upper as the code might break down due to a
+        # segmentation fault. See the source files for the absolute upper bounds.
+        assert sum(optim_paras['paras_fixed']) != num_paras
+        lower = (num_paras - sum(optim_paras['paras_fixed'])) + 2
+        upper = (2 * (num_paras - sum(optim_paras['paras_fixed'])) + 1)
         dict_['npt'] = np.random.randint(lower, upper + 1)
 
     elif which == 'FORT-BFGS':
@@ -459,37 +485,30 @@ def generate_optimizer_options(which, optim_paras):
 
 
 def print_init_dict(dict_, file_name='test.respy.ini'):
-    """ Print initialization dictionary to file. The different formatting
-    makes the file rather involved. The resulting initialization files are
-    read by PYTHON and FORTRAN routines. Thus, the formatting with respect to
-    the number of decimal places is rather small.
+    """ Print initialization dictionary to file. The different formatting makes the file rather 
+    involved. The resulting initialization files are rad by PYTHON and FORTRAN routines. Thus, 
+    the formatting with respect to the number of decimal places is rather small.
     """
-    # Antibugging.
     assert (isinstance(dict_, dict))
 
-    paras_fixed = dict_['BASICS']['fixed'][:]
-    paras_fixed += dict_['AMBIGUITY']['fixed'][:]
-    paras_fixed += dict_['OCCUPATION A']['fixed'][:]
-    paras_fixed += dict_['OCCUPATION B']['fixed'][:]
-    paras_fixed += dict_['EDUCATION']['fixed'][:]
-    paras_fixed += dict_['HOME']['fixed'][:]
-    paras_fixed += dict_['SHOCKS']['fixed'][:]
+    opt_labels = []
+    opt_labels += ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B', 'EDUCATION']
+    opt_labels += ['HOME', 'SHOCKS', 'TYPE_SHARES', 'TYPE_SHIFTS']
 
-    paras_bounds = dict_['BASICS']['bounds'][:]
-    paras_bounds += dict_['AMBIGUITY']['bounds'][:]
-    paras_bounds += dict_['OCCUPATION A']['bounds'][:]
-    paras_bounds += dict_['OCCUPATION B']['bounds'][:]
-    paras_bounds += dict_['EDUCATION']['bounds'][:]
-    paras_bounds += dict_['HOME']['bounds'][:]
-    paras_bounds += dict_['SHOCKS']['bounds'][:]
+    # We first vectorize the information about the parameter bounds and status.
+    rslt = []
+    for label in ['fixed', 'bounds']:
+        paras = []
+        for opt in opt_labels:
+            paras += dict_[opt][label][:]
+        rslt += [paras]
+    paras_fixed, paras_bounds = rslt
 
     str_optim = '{0:<10} {1:25.15f} {2:>5} {3:>15}\n'
 
-    # Construct labels. This ensures that the initialization files always look
-    # identical.
-    labels = ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B']
-    labels += ['EDUCATION', 'HOME', 'SHOCKS', 'SOLUTION']
-    labels += ['SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'PRECONDITIONING']
+    # Construct labels. This ensures that the initialization files always look identical.
+    labels = opt_labels[:-2]
+    labels += ['TYPES', 'SOLUTION', 'SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'PRECONDITIONING']
     labels += ['PROGRAM', 'INTERPOLATION']
     labels += OPT_EST_FORT + OPT_EST_PYTH + ['SCIPY-SLSQP', 'FORT-SLSQP']
 
@@ -501,7 +520,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write('BASICS\n\n')
 
-                str_ = '{0:<10} {1:>20}\n'
+                str_ = '{0:<10} {1:>25}\n'
                 file_.write(str_.format('periods', dict_[flag]['periods']))
 
                 val = dict_['BASICS']['coeffs'][0]
@@ -509,6 +528,30 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
+
+            if flag in ['TYPES']:
+                num_types = len(dict_['TYPE_SHARES']['coeffs'])
+                file_.write(flag.upper() + '\n\n')
+
+                for i in range(num_types):
+                    val = dict_['TYPE_SHARES']['coeffs'][i]
+                    line = format_opt_parameters(val, 35 + i, paras_fixed, paras_bounds)
+                    line[0] = 'share'
+                    file_.write(str_optim.format(*line))
+
+                    # The first group serves as the baseline and thus there are no shifts printed
+                    # to the file.
+                    if i == 0:
+                        pass
+                    else:
+                        for j in range(4):
+                            val = dict_['TYPE_SHIFTS']['coeffs'][(i - 1) * 4 + j]
+                            pos = (35 + num_types) + (i - 1) * 4 + j
+                            line = format_opt_parameters(val, pos, paras_fixed, paras_bounds)
+                            line[0] = 'shift'
+                            file_.write(str_optim.format(*line))
+
+                    file_.write('\n')
 
             if flag in ['HOME']:
 
@@ -529,10 +572,10 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for key_ in keys:
 
                     if key_ in ['tau']:
-                        str_ = '{0:<10} {1:20.15f}\n'
+                        str_ = '{0:<10} {1:25.15f}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
-                        str_ = '{0:<10} {1:>20}\n'
+                        str_ = '{0:<10} {1:>25}\n'
                         file_.write(str_.format(key_, str(dict_[flag][key_])))
 
                 file_.write('\n')
@@ -544,8 +587,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
-                    line = format_opt_parameters(val, 25 + i, paras_fixed,
-                        paras_bounds)
+                    line = format_opt_parameters(val, 25 + i, paras_fixed, paras_bounds)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
 
@@ -555,13 +597,16 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(4):
                     val = dict_['EDUCATION']['coeffs'][i]
-                    line = format_opt_parameters(val, i + 20, paras_fixed,
-                        paras_bounds)
+                    line = format_opt_parameters(val, i + 20, paras_fixed, paras_bounds)
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
-                str_ = '{0:<10} {1:>20}\n'
-                file_.write(str_.format('start', dict_[flag]['start']))
+                str_ = '{0:<10} {1:>25}\n'
+                for i, start in enumerate(dict_[flag]['start']):
+                    file_.write(str_.format('start', start))
+                    file_.write(str_.format('share', dict_[flag]['share'][i]))
+                    file_.write('\n')
+
                 file_.write(str_.format('max', dict_[flag]['max']))
 
                 file_.write('\n')
@@ -573,7 +618,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 line = format_opt_parameters(val, 1, paras_fixed, paras_bounds)
                 file_.write(str_optim.format(*line))
 
-                str_ = '{0:<10} {1:>20}\n'
+                str_ = '{0:<10} {1:>25}\n'
                 file_.write(str_.format('measure', dict_[flag]['measure']))
                 file_.write(str_.format('mean', str(dict_[flag]['mean'])))
 
@@ -591,8 +636,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 # Coefficient
                 for j in range(9):
                     val = dict_[flag]['coeffs'][j]
-                    line = format_opt_parameters(val, identifier, paras_fixed,
-                                                 paras_bounds)
+                    line = format_opt_parameters(val, identifier, paras_fixed, paras_bounds)
                     identifier += 1
 
                     file_.write(str_optim.format(*line))
@@ -601,9 +645,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
             if flag in OPTIMIZERS:
 
-                # This function can also be used to print out initialization
-                # files without any optimization options. This is enough for
-                # simulation tasks.
+                # This function can also be used to print out initialization files without any
+                # optimization options. This is enough for simulation tasks.
                 if flag not in dict_.keys():
                     continue
 
@@ -613,10 +656,10 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for key_ in keys:
 
                     if key_ in ['maxfun', 'npt', 'maxiter', 'm', 'maxls']:
-                        str_ = '{0:<10} {1:>20}\n'
+                        str_ = '{0:<10} {1:>25}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
                     else:
-                        str_ = '{0:<10} {1:20.15f}\n'
+                        str_ = '{0:<10} {1:25.15f}\n'
                         file_.write(str_.format(key_, dict_[flag][key_]))
 
                 file_.write('\n')
@@ -693,32 +736,35 @@ def get_est_info():
     # Parameter values
     for i, key_ in enumerate(['start', 'step', 'current']):
         rslt['paras_' + key_] = []
-        for j in range(13, NUM_PARAS + 13):
+        for j in range(13, 100):
             line = shlex.split(linecache.getline('est.respy.info', j))
+            if not line:
+                break
             rslt['paras_' + key_] += [_process_value(line[i + 1], 'float')]
         rslt['paras_' + key_] = np.array(rslt['paras_' + key_])
 
-    # Finishing
     return rslt
 
 
-@atexit.register
-def remove_scratch_files():
-    """ This function removes all scratch files.
+def remove_scratch(fname):
+    """ This function removes scratch files.
     """
-    for fname in glob.glob('.*.respy.scratch'):
+    if os.path.exists(fname):
         os.unlink(fname)
 
 
-def get_optim_paras(optim_paras, which, is_debug):
+def get_optim_paras(optim_paras, num_paras, which, is_debug):
     """ Get optimization parameters.
     """
     # Checks
     if is_debug:
         assert check_model_parameters(optim_paras)
 
+    # Auxiliary objects
+    num_types = len(optim_paras['type_shifts'])
+
     # Initialize container
-    x = np.tile(np.nan, NUM_PARAS)
+    x = np.tile(np.nan, num_paras)
 
     # Discount rate
     x[0:1] = optim_paras['delta']
@@ -739,7 +785,12 @@ def get_optim_paras(optim_paras, which, is_debug):
     x[24:25] = optim_paras['coeffs_home']
 
     # Shocks
-    x[25:NUM_PARAS] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+    x[25:35] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+
+    # Shares
+    x[35:35 + num_types] = optim_paras['type_shares']
+
+    x[35 + num_types:num_paras] = optim_paras['type_shifts'].flatten()[4:]
 
     # Checks
     if is_debug:
@@ -748,7 +799,7 @@ def get_optim_paras(optim_paras, which, is_debug):
     # Select subset
     if which == 'free':
         x_free_curre = []
-        for i in range(NUM_PARAS):
+        for i in range(num_paras):
             if not optim_paras['paras_fixed'][i]:
                 x_free_curre += [x[i]]
 
@@ -759,8 +810,7 @@ def get_optim_paras(optim_paras, which, is_debug):
 
 
 def covariance_to_correlation(cov):
-    """ This function constructs the correlation matrix from the information on
-    the covariances.
+    """ This function constructs the correlation matrix from the information on the covariances.
     """
     # Auxiliary objects
     corr = np.tile(np.nan, cov.shape)
@@ -779,8 +829,7 @@ def covariance_to_correlation(cov):
 
 
 def correlation_to_covariance(corr, sd):
-    """ This function constructs the covariance matrix from the information on
-    the correlations.
+    """ This function constructs the covariance matrix from the information on the correlations.
     """
     # Auxiliary objects
     cov = np.tile(np.nan, corr.shape)
@@ -799,19 +848,33 @@ def correlation_to_covariance(corr, sd):
 
 
 def check_early_termination(maxfun, num_eval):
-    """ This function checks for reasons that require an early termination of
-    the optimization procedure.
+    """ This function checks for reasons that require an early termination of the optimization 
+    procedure.
     """
-    # We want an early termination if the number of function evaluations is
-    # already at the maximum number requested. This is not strictly enforced
-    # in some of the SCIPY algorithms.
+    # We want an early termination if the number of function evaluations is already at the
+    # maximum number requested. This is not strictly enforced in some of the SCIPY algorithms.
     if maxfun == num_eval:
         raise MaxfunError
 
-    # We also want the opportunity for an immediate, but gentle termination from
-    # the user.
+    # We also want the opportunity for an immediate, but gentle termination from the user.
     if os.path.exists('.stop.respy.scratch'):
         raise MaxfunError
 
 
+def get_num_obs_agent(data_array, num_agents_est):
+    """ Get a list with the number of observations for each agent. 
+    """
+    num_obs_agent = np.tile(0, num_agents_est)
+    agent_number = data_array[0, 0]
+    num_rows = data_array.shape[0]
 
+    q = 0
+    for i in range(num_rows):
+        # We need to check whether we are faced with a new agent.
+        if data_array[i, 0] != agent_number:
+            q += 1
+            agent_number = data_array[i, 0]
+
+        num_obs_agent[q] += 1
+
+    return num_obs_agent
