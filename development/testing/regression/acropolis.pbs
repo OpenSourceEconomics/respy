@@ -8,4 +8,4 @@
 #PBS -M eisenhauer@policy-lab.org
 
 cd $PBS_O_WORKDIR
-~/.envs/restudToolbox/bin/python run_regression.py --request check 1
+~/.envs/restudToolbox/bin/python run_regression.py --request check 1000
