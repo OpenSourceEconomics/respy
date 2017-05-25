@@ -135,7 +135,7 @@ def run(request, is_compile, is_background, is_strict):
             if socket.gethostname() == 'zeus' and idx in []:
                 print(msg)
                 continue
-            if socket.gethostname() == 'acropolis' and idx in [22]:
+            if 'acropolis' in socket.gethostname() and idx in [22]:
                 print(msg)
                 continue
 

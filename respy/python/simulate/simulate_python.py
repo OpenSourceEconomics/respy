@@ -86,7 +86,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
                 dataset[count, 3] = rewards_systematic[max_idx] * draws[max_idx]
 
             # Write relevant state space for period to data frame. However, the individual's type
-            #  is not part of the observed dataset. This is included in the simulated dataset.
+            # is not part of the observed dataset. This is included in the simulated dataset.
             dataset[count, 4:8] = current_state[:4]
 
             # As we are working with a simulated dataset, we can also output additional
