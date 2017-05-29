@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-""" This script runs a series of tests that are required before merging a candidate branch into a 
+""" This script runs a series of tests that are required before merging a candidate branch into a
 target branch.
 
     Development Notes:
-    
+
     * We need to add notifications.
     * We want to run tests in Python 2 and Python 3.
 """
@@ -28,8 +28,8 @@ from run_release import run as run_release
 request_dict = dict()
 request_dict['REGRESSION'] = True
 request_dict['PROPERTY'] = True
-request_dict['RELEASE'] = False
-request_dict['PYTEST'] = False
+request_dict['RELEASE'] = True
+request_dict['PYTEST'] = True
 
 # We need to specify the arguments for each of the tests.
 test_spec = dict()
@@ -42,16 +42,16 @@ test_spec['REGRESSION']['is_compile'] = False
 test_spec['REGRESSION']['is_strict'] = True
 
 test_spec['PROPERTY'] = dict()
-test_spec['PROPERTY']['request'] = ('run', 8)
+test_spec['PROPERTY']['request'] = ('run', 10)
 test_spec['PROPERTY']['is_background'] = False
 test_spec['PROPERTY']['is_compile'] = False
 
 # During release testing we compare the results from short estimation runs rom the candidate
 # branch to the relevant master.
 test_spec['RELEASE'] = dict()
-test_spec['RELEASE']['new_release'] = '2.0.0.dev11'
+test_spec['RELEASE']['new_release'] = '2.0.0.dev14'
 test_spec['RELEASE']['old_release'] = '2.0.0.dev12'
-test_spec['RELEASE']['request'] = ('run', 0.00001)
+test_spec['RELEASE']['request'] = ('run', 10)
 test_spec['RELEASE']['is_background'] = False
 test_spec['RELEASE']['is_create'] = True
 
