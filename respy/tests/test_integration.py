@@ -9,6 +9,7 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy._scripts.scripts_estimate import scripts_estimate
 from respy._scripts.scripts_simulate import scripts_simulate
+from respy.python.shared.shared_constants import IS_FORTRAN
 from respy._scripts.scripts_update import scripts_update
 from respy._scripts.scripts_modify import scripts_modify
 from respy.python.process.process_python import process
@@ -401,7 +402,7 @@ class TestClass(object):
         num_types = dist_class_attributes(respy_obj, 'num_types')[0]
 
         # After scaling the bounds might not fit anymore. Thus we simply remove them.
-        lower, upper = 35, 35 + num_types
+        lower, upper = 37, 37 + num_types
         respy_obj.attr['optim_paras']['paras_bounds'][lower:upper] = [[0.0, None]] * num_types
 
         base_val = None
@@ -418,6 +419,7 @@ class TestClass(object):
 
             np.testing.assert_allclose(base_val, crit_val)
 
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_12(self):
         """ This step ensures that the printing of the initialization file is done properly. We 
         compare the content of the files line by line, but drop any spaces.   
@@ -427,6 +429,7 @@ class TestClass(object):
             respy_obj.write_out('test.respy.ini')
             np.testing.assert_equal(compare_init(fname, 'test.respy.ini'), True)
 
+    @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     @pytest.mark.slow
     def test_13(self):
         """ This test just locks in the evaluation of the criterion function for the original 

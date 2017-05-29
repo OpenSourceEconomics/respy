@@ -87,11 +87,11 @@ def compare_init(fname_base, fname_alt):
 
 
 def compare_est_log(base_est_log):
-    """ This function is required as the log files can be slightly different
-    for good reasons. The error capturing of an IndexError is required as
-    sometimes the ...
+    """ This function is required as the log files can be slightly different for good reasons.
+    The error capturing of an IndexError is required as sometimes the ...
     """
 
+    # TODO: What is going on here?
     for _ in range(25):
 
         try:

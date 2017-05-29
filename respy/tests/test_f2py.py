@@ -114,7 +114,7 @@ class TestClass(object):
         """ Compare results between FORTRAN and PYTHON of selected hand-crafted functions. In 
         test_97() we test FORTRAN implementations against PYTHON intrinsic routines.
         """
-        for _ in range(25):
+        for _ in range(33):
 
             # Create grid of admissible state space values.
             num_edu_start = np.random.choice(range(1, 3))
@@ -647,11 +647,10 @@ class TestClass(object):
         np.testing.assert_equal(sum(f90), num_states)
 
     def test_8(self):
-        """ We test the construction of the Cholesky decomposition against
-        each other.
+        """ We test the construction of the Cholesky decomposition against each other.
         """
         # Draw a random vector of parameters
-        x = np.random.uniform(size=35)
+        x = np.random.uniform(size=37)
 
         # Construct the Cholesky decompositions
         py = extract_cholesky(x, info=0)

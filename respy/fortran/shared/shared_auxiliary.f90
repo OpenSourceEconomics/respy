@@ -311,13 +311,13 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky = zero_dble
 
-    shocks_cholesky(1, :1) = x(26:26)
+    shocks_cholesky(1, :1) = x(28:28)
 
-    shocks_cholesky(2, :2) = x(27:28)
+    shocks_cholesky(2, :2) = x(29:30)
 
-    shocks_cholesky(3, :3) = x(29:31)
+    shocks_cholesky(3, :3) = x(31:33)
 
-    shocks_cholesky(4, :4) = x(32:35)
+    shocks_cholesky(4, :4) = x(34:37)
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -1218,7 +1218,7 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     optim_paras%coeffs_edu = x(21:24)
 
-    optim_paras%coeffs_home = x(25:25)
+    optim_paras%coeffs_home = x(25:27)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
@@ -1228,10 +1228,10 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
     END IF
 
     ! The shares do not necessarily sum to one. The adjustment is done when the criterion function is evaluated.
-    optim_paras%type_shares = x(36:(36 + num_types - 1))
+    optim_paras%type_shares = x(38:(38 + num_types - 1))
 
     optim_paras%type_shifts = zero_dble
-    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(36 + num_types:num_paras), (/4, num_types  - 1/)))
+    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(38 + num_types:num_paras), (/4, num_types  - 1/)))
 
 END SUBROUTINE
 !******************************************************************************
@@ -1307,20 +1307,20 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     x_internal(21:24) = optim_paras%coeffs_edu(:)
 
-    x_internal(25:25) = optim_paras%coeffs_home(:)
+    x_internal(25:27) = optim_paras%coeffs_home(:)
 
-    x_internal(26:26) = optim_paras%shocks_cholesky(1, :1)
+    x_internal(28:28) = optim_paras%shocks_cholesky(1, :1)
 
-    x_internal(27:28) = optim_paras%shocks_cholesky(2, :2)
+    x_internal(29:30) = optim_paras%shocks_cholesky(2, :2)
 
-    x_internal(29:31) = optim_paras%shocks_cholesky(3, :3)
+    x_internal(31:33) = optim_paras%shocks_cholesky(3, :3)
 
-    x_internal(32:35) = optim_paras%shocks_cholesky(4, :4)
+    x_internal(34:37) = optim_paras%shocks_cholesky(4, :4)
 
-    x_internal(36:(36 + num_types - 1)) = optim_paras%type_shares(:)
+    x_internal(38:(38 + num_types - 1)) = optim_paras%type_shares(:)
 
     shifts = PACK(TRANSPOSE(optim_paras%type_shifts), .TRUE.)
-    x_internal(36 + num_types:num_paras) = shifts(5:)
+    x_internal(38 + num_types:num_paras) = shifts(5:)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN

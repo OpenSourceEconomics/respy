@@ -275,8 +275,13 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
             rewards(3) = reward
 
-            ! Calculate systematic part of reward in home production
+            ! Calculate systematic part of HOME
             rewards(4) = optim_paras%coeffs_home(1)
+
+            ! The payoff for home differs by age. (1) Age range of 18 - 20, (2) age above 21
+            IF((period .GE. 3) .AND. (period .LE. 5)) rewards(4) = rewards(4) + optim_paras%coeffs_home(2)
+
+            IF(period .GE. 6) rewards(4) = rewards(4) + optim_paras%coeffs_home(3)
 
             ! Now we add the type-specific deviation.
             rewards(1) = rewards(1) * EXP(optim_paras%type_shifts(type_ + 1, 1))

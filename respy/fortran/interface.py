@@ -171,9 +171,8 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
             file_.write(fmt_.format(*num))
 
         # EDUCATION
-        num = optim_paras['coeffs_edu']
         fmt_ = ' {:25.15f}' * 4 + '\n'
-        file_.write(fmt_.format(*num))
+        file_.write(fmt_.format(*optim_paras['coeffs_edu']))
 
         fmt_ = ' {:10d}' * num_edu_start + '\n'
         file_.write(fmt_.format(*edu_spec['start']))
@@ -185,8 +184,8 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         file_.write(line)
 
         # HOME
-        line = ' {0:25.15f}\n'.format(optim_paras['coeffs_home'][0])
-        file_.write(line)
+        fmt_ = ' {:25.15f}' * 3 + '\n'
+        file_.write(fmt_.format(*optim_paras['coeffs_home']))
 
         # SHOCKS
         for j in range(4):

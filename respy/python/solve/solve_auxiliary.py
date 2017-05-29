@@ -188,6 +188,13 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             # Calculate systematic part of HOME
             rewards[3] = optim_paras['coeffs_home'][0]
 
+            # The payoff for home differs by age. (1) Age range of 18 - 20, (2) age above 21
+            if period in [2, 3, 4]:
+                rewards[3] += optim_paras['coeffs_home'][1]
+
+            if period >= 5:
+                rewards[3] += optim_paras['coeffs_home'][2]
+
             # Now we add the type-specific deviation.
             for j in [0, 1]:
                 rewards[j] = rewards[j] * np.exp(optim_paras['type_shifts'][type_, j])

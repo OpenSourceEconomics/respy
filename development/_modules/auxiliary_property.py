@@ -169,8 +169,7 @@ def get_test_dict(test_dir):
             if 'test_' in candidate_method:
                 test_dict[test_module].append(candidate_method)
 
-    # If the PARALLELISM or FORTRAN is not available, we remove the
-    # parallel tests.
+    # If the PARALLELISM or FORTRAN is not available, we remove the parallel tests.
     if not IS_PARALLEL:
         del test_dict['test_parallelism']
 
@@ -181,15 +180,13 @@ def get_test_dict(test_dir):
     if not IS_F2PY:
         del test_dict['test_f2py']
 
-    # The ambiguity tests require special care as they are a collected from
-    # different modules, which have their own requirements.
+    # The ambiguity tests require special care as they are a collected from different modules,
+    # which have their own requirements.
     tests = []
     if not IS_FORTRAN:
         tests += ['test_versions_1', 'test_versions_2', 'test_versions_4']
-        tests += ['test_versions_5']
     if not IS_F2PY:
-        tests += ['test_2', 'test_3', 'test_4']
-        tests += ['test_f2py_4', 'test_f2py_5', 'test_f2py_6']
+        tests += ['test_2', 'test_3', 'test_4', 'test_f2py_4', 'test_f2py_5', 'test_f2py_6']
 
     for test in tests:
         test_dict['test_ambiguity'].remove(test)
