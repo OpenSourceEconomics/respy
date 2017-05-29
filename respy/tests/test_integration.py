@@ -84,8 +84,7 @@ class TestClass(object):
             diff = np.max(abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(periods_emax)))
 
             # Checks
-            assert (np.isfinite(diff))
-            assert (diff < 10e-10)
+            np.testing.assert_almost_equal(diff, 0.0)
 
     def test_3(self, flag_ambiguity=False):
         """ Testing whether the a simulated dataset and the evaluation of the criterion function 
@@ -402,7 +401,7 @@ class TestClass(object):
         num_types = dist_class_attributes(respy_obj, 'num_types')[0]
 
         # After scaling the bounds might not fit anymore. Thus we simply remove them.
-        lower, upper = 37, 37 + num_types
+        lower, upper = 41, 41 + num_types
         respy_obj.attr['optim_paras']['paras_bounds'][lower:upper] = [[0.0, None]] * num_types
 
         base_val = None

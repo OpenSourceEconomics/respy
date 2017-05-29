@@ -140,6 +140,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             co_graduate = float(edu >= 16)
             any_exp_a = float(exp_a > 0)
             any_exp_b = float(exp_b > 0)
+            is_minor = float(period < 2)
 
             # Auxiliary objects
             covars_wages = []
@@ -152,6 +153,8 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             covars_wages += [hs_graduate]
             covars_wages += [co_graduate]
             covars_wages += [None]
+            covars_wages += [period]
+            covars_wages += [is_minor]
 
             # This used for testing purposes, where we compare the results from the RESPY package
             #  to the original RESTUD program.
@@ -160,12 +163,12 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
                 covars_wages[5] *= 100.00
 
             # Calculate systematic part of wages in occupation A
-            covars_wages[-1] = any_exp_a
+            covars_wages[8] = any_exp_a
             rewards[0] = np.clip(np.exp(np.dot(optim_paras['coeffs_a'], covars_wages)), 0.0,
                                  HUGE_FLOAT)
 
             # Calculate systematic part pf wages in occupation B
-            covars_wages[-1] = any_exp_b
+            covars_wages[8] = any_exp_b
             rewards[1] = np.clip(np.exp(np.dot(optim_paras['coeffs_b'], covars_wages)), 0.0,
                                  HUGE_FLOAT)
 

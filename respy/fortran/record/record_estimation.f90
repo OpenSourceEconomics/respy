@@ -233,7 +233,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         END DO
     END DO
 
-    x_optim_shares = x_optim_all_unscaled(38:(38 + num_types - 1))
+    x_optim_shares = x_optim_all_unscaled(42:(42 + num_types - 1))
     x_optim_shares = x_optim_shares / SUM(x_optim_shares)
 
     DO i = 1, 3
@@ -241,10 +241,10 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         IF ((i == 1) .AND. (.NOT. is_start)) CYCLE
         IF ((i == 2) .AND. (.NOT. is_step)) CYCLE
 
-        x_econ_container(:27, i) = x_optim_all_unscaled(:27)
-        x_econ_container(28:37, i) = flattened_cov(i, :)
-        x_econ_container(38:(38 + num_types - 1), i) = x_optim_shares
-        x_econ_container(38 + num_types:num_paras, i) = x_optim_all_unscaled(38 + num_types:num_paras)
+        x_econ_container(:31, i) = x_optim_all_unscaled(:31)
+        x_econ_container(32:41, i) = flattened_cov(i, :)
+        x_econ_container(42:(42 + num_types - 1), i) = x_optim_shares
+        x_econ_container(42 + num_types:num_paras, i) = x_optim_all_unscaled(42 + num_types:num_paras)
 
     END DO
 

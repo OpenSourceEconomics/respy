@@ -18,7 +18,7 @@ from codes.auxiliary import OPTIMIZERS_AMB
 
 MAX_AGENTS = 1000
 MAX_DRAWS = 100
-MAX_PERIODS = 10
+MAX_PERIODS = 5
 
 
 def generate_init(constr=None):
@@ -60,7 +60,7 @@ def generate_random_dict(constr=None):
         assert num_types > 0
 
     type_shares = get_valid_shares(num_types)
-    num_paras = 37 + num_types + (num_types - 1) * 4
+    num_paras = 41 + num_types + (num_types - 1) * 4
 
     # We now draw all parameter values. This is necessarily done here as we subsequently
     # determine a set of valid bounds.
@@ -70,13 +70,13 @@ def generate_random_dict(constr=None):
             value = get_valid_values('delta')
         elif i in [1]:
             value = get_valid_values('amb')
-        elif i in range(2, 27):
+        elif i in range(2, 31):
             value = get_valid_values('coeff')
-        elif i in [27, 31, 34, 36]:
+        elif i in [31, 35, 38, 40]:
             value = get_valid_values('cov')
-        elif i in range(37, 37 + num_types):
+        elif i in range(41, 41 + num_types):
             value = type_shares.pop()
-        elif i in range(37 + num_types, num_paras):
+        elif i in range(41 + num_types, num_paras):
             value = get_valid_values('coeff')
         else:
             value = 0.0
@@ -92,11 +92,11 @@ def generate_random_dict(constr=None):
             bounds = get_valid_bounds('delta', value)
         elif i in [1]:
             bounds = get_valid_bounds('amb', value)
-        elif i in range(27, 37):
+        elif i in range(31, 41):
             bounds = get_valid_bounds('cov', value)
-        elif i in range(37, 37 + num_types):
+        elif i in range(41, 41 + num_types):
             bounds = get_valid_bounds('share', value)
-        elif i in range(37 + num_types, num_paras):
+        elif i in range(41 + num_types, num_paras):
             bounds = get_valid_bounds('coeff', value)
         else:
             bounds = get_valid_bounds('coeff', value)
@@ -107,9 +107,9 @@ def generate_random_dict(constr=None):
     # estimation. We need to ensure that at least one parameter is always free. At this point we
     # also want to ensure that either all shock coefficients are fixed or none. It is not clear
     # how to ensure other constraints on the Cholesky factors.
-    paras_fixed = np.random.choice([True, False], 27).tolist()
-    if sum(paras_fixed) == 27:
-        paras_fixed[np.random.randint(0, 27)] = True
+    paras_fixed = np.random.choice([True, False], 31).tolist()
+    if sum(paras_fixed) == 31:
+        paras_fixed[np.random.randint(0, 31)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
 
     # Either all shares are fixed or free. In case of just a single type, the share fixed.
@@ -133,21 +133,21 @@ def generate_random_dict(constr=None):
     dict_['BASICS']['fixed'] = paras_fixed[lower:upper]
 
     # Occupation A
-    lower, upper = 2, 11
+    lower, upper = 2, 13
     dict_['OCCUPATION A'] = dict()
     dict_['OCCUPATION A']['coeffs'] = paras_values[lower:upper]
     dict_['OCCUPATION A']['bounds'] = paras_bounds[lower:upper]
     dict_['OCCUPATION A']['fixed'] = paras_fixed[lower:upper]
 
     # Occupation B
-    lower, upper = 11, 20
+    lower, upper = 13, 24
     dict_['OCCUPATION B'] = dict()
     dict_['OCCUPATION B']['coeffs'] = paras_values[lower:upper]
     dict_['OCCUPATION B']['bounds'] = paras_bounds[lower:upper]
     dict_['OCCUPATION B']['fixed'] = paras_fixed[lower:upper]
 
     # Education
-    lower, upper = 20, 24
+    lower, upper = 24, 28
     dict_['EDUCATION'] = dict()
     dict_['EDUCATION']['coeffs'] = paras_values[lower:upper]
     dict_['EDUCATION']['bounds'] = paras_bounds[lower:upper]
@@ -160,7 +160,7 @@ def generate_random_dict(constr=None):
     dict_['EDUCATION']['max'] = np.random.randint(max(dict_['EDUCATION']['start']) + 1, 20)
 
     # Home
-    lower, upper = 24, 27
+    lower, upper = 28, 31
     dict_['HOME'] = dict()
     dict_['HOME']['coeffs'] = paras_values[lower:upper]
     dict_['HOME']['bounds'] = paras_bounds[lower:upper]
@@ -231,19 +231,19 @@ def generate_random_dict(constr=None):
     dict_['SIMULATION']['file'] = 'data'
 
     # SHOCKS
-    lower, upper = 27, 37
+    lower, upper = 31, 41
     dict_['SHOCKS'] = dict()
     dict_['SHOCKS']['coeffs'] = paras_values[lower:upper]
     dict_['SHOCKS']['bounds'] = paras_bounds[lower:upper]
     dict_['SHOCKS']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 37, 37 + num_types
+    lower, upper = 41, 41 + num_types
     dict_['TYPE_SHARES'] = dict()
     dict_['TYPE_SHARES']['coeffs'] = paras_values[lower:upper]
     dict_['TYPE_SHARES']['bounds'] = paras_bounds[lower:upper]
     dict_['TYPE_SHARES']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 37 + num_types, num_paras
+    lower, upper = 41 + num_types, num_paras
     dict_['TYPE_SHIFTS'] = dict()
     dict_['TYPE_SHIFTS']['coeffs'] = paras_values[lower:upper]
     dict_['TYPE_SHIFTS']['bounds'] = paras_bounds[lower:upper]

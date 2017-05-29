@@ -76,8 +76,8 @@ MODULE shared_types
         REAL(our_dble)          :: shocks_cholesky(4, 4)
         REAL(our_dble)          :: coeffs_edu(4)
         REAL(our_dble)          :: coeffs_home(3)
-        REAL(our_dble)          :: coeffs_a(9)
-        REAL(our_dble)          :: coeffs_b(9)
+        REAL(our_dble)          :: coeffs_a(11)
+        REAL(our_dble)          :: coeffs_b(11)
         REAL(our_dble)          :: level(1)
         REAL(our_dble)          :: delta(1)
 

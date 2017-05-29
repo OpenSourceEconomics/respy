@@ -142,9 +142,10 @@ def run(request, is_compile, is_background, is_strict):
             # TODO: Create new regression vault.
             # These edits are required as we are in the process of adding additional variables to
             # the model.
-            init_dict['HOME']['fixed'] += [True, True]
-            init_dict['HOME']['bounds'] += [[None, None], [None, None]]
-            init_dict['HOME']['coeffs'] += [0.0, 0.0]
+            for label in ['HOME', 'OCCUPATION B', 'OCCUPATION A']:
+                init_dict[label]['fixed'] += [True, True]
+                init_dict[label]['bounds'] += [[None, None], [None, None]]
+                init_dict[label]['coeffs'] += [0.0, 0.0]
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')

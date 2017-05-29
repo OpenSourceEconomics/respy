@@ -187,9 +187,10 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     INTEGER(our_int)                    :: hs_graduate
     INTEGER(our_int)                    :: co_graduate
+    INTEGER(our_int)                    :: edu_lagged
     INTEGER(our_int)                    :: any_exp_a
     INTEGER(our_int)                    :: any_exp_b
-    INTEGER(our_int)                    :: edu_lagged
+    INTEGER(our_int)                    :: is_minor
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
@@ -198,7 +199,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
 
-    REAL(our_dble)                      :: covars_wages(9)
+    REAL(our_dble)                      :: covars_wages(11)
     REAL(our_dble)                      :: rewards(4)
     REAL(our_dble)                      :: reward
 
@@ -228,10 +229,11 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             type_ = states_all(period, k, 5)
 
             ! Construct auxiliary information
-            hs_graduate = TRANSFER(edu >= 12, hs_graduate)
-            co_graduate = TRANSFER(edu >= 16, co_graduate)
-            any_exp_a = TRANSFER(exp_a > 0, any_exp_a)
-            any_exp_b = TRANSFER(exp_b > 0, any_exp_b)
+            hs_graduate = TRANSFER(edu .GE. 12, hs_graduate)
+            co_graduate = TRANSFER(edu .GE. 16, co_graduate)
+            any_exp_a = TRANSFER(exp_a .GT. 0, any_exp_a)
+            any_exp_b = TRANSFER(exp_b .GT. 0, any_exp_b)
+            is_minor = TRANSFER(period .LT. 3, is_minor)
 
             ! Auxiliary objects
             covars_wages(1) = one_dble
@@ -242,6 +244,9 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             covars_wages(6) = (exp_b ** 2) / one_hundred_dble
             covars_wages(7) = hs_graduate
             covars_wages(8) = co_graduate
+            covars_wages(9) = HUGE_FLOAT
+            covars_wages(10) = period - 1
+            covars_wages(11) = is_minor
 
             ! This used for testing purposes, where we compare the results from the RESPY package to the original RESTUD program.
             INQUIRE(FILE='.restud.respy.scratch', EXIST=IS_RESTUD)
