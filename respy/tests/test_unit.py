@@ -123,8 +123,8 @@ class TestClass(object):
         _, df = simulate(respy_obj)
 
         # Check special case
-        optim_paras, num_types, edu_spec = dist_class_attributes(respy_obj, 'optim_paras',
-            'num_types', 'edu_spec')
+        optim_paras, num_types, edu_spec, num_periods = dist_class_attributes(respy_obj,
+            'optim_paras', 'num_types', 'edu_spec', 'num_periods')
 
         shocks_cholesky = optim_paras['shocks_cholesky']
 
@@ -141,9 +141,10 @@ class TestClass(object):
             col_2 = df['Wage'].loc[:, cond]
             np.testing.assert_array_almost_equal(col_1, col_2)
 
-        # The systematic component for the alternative to stay home should always be identical.
-        # TODO: It should be identical within period.
-        #  assert (df['Systematic_Reward_4'].nunique() <= num_types)
+        # The systematic component for the alternative to stay home should always be identical
+        # by type, at least within periods.
+        for period in range(num_periods):
+            assert (df['Systematic_Reward_4'].loc[:, period].nunique() <= num_types)
 
         # In the myopic case, the total reward should the equal to the ex post rewards.
         if respy_obj.get_attr('is_myopic'):

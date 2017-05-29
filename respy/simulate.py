@@ -14,8 +14,8 @@ from respy.python.interface import respy_interface
 
 
 def simulate(respy_obj):
-    """ Simulate dataset of synthetic agent following the model specified in
-    the initialization file.
+    """ Simulate dataset of synthetic agent following the model specified in the initialization
+    file.
     """
     # Distribute class attributes
     is_debug, version, is_store, file_sim = dist_class_attributes(respy_obj, 'is_debug',
@@ -51,8 +51,8 @@ def simulate(respy_obj):
     data_frame = data_frame.astype(DATA_FORMATS_SIM)
     data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
 
-    # Wrapping up by running some checks on the dataset and then writing out
-    # the file and some basic information.
+    # Wrapping up by running some checks on the dataset and then writing out the file and some
+    # basic information.
     if is_debug:
         check_dataset_sim(data_frame, respy_obj)
 

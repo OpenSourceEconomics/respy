@@ -11,7 +11,7 @@ import os
 def set_seed():
     """ Each test is executed with the same random seed.
     """
-    np.random.seed(1223)
+    np.random.seed(1423)
 
 
 @pytest.fixture(scope='function')

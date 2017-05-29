@@ -187,7 +187,7 @@ def scripts_compare(base_init, is_update):
         line = '   Overall RMSE {:14.5f}\n'.format(rmse_choice)
         file_.write(line)
 
-        #Comparing the transition matrices
+        # Comparing the transition matrices
         if num_periods > 1:
             file_.write('\n\n   Transition Matrix \n\n')
             fmt_ = '{:>15}' * 6 + '\n\n'
