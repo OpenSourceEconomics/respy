@@ -203,7 +203,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: k
 
     REAL(our_dble)                      :: covars_wages(11)
-    REAL(our_dble)                      :: covars_edu(6)
+    REAL(our_dble)                      :: covars_edu(7)
 
     REAL(our_dble)                      :: rewards(4)
 
@@ -273,10 +273,11 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             ! Calculate systematic part of schooling utility
             covars_edu(1) = one_dble
             covars_edu(2) = hs_graduate
-            covars_edu(3) = is_return_not_high_school
-            covars_edu(4) = is_return_high_school
-            covars_edu(5) = period - one_dble
-            covars_edu(6) = is_minor
+            covars_edu(3) = co_graduate
+            covars_edu(4) = is_return_not_high_school
+            covars_edu(5) = is_return_high_school
+            covars_edu(6) = period - one_dble
+            covars_edu(7) = is_minor
 
             rewards(3) = DOT_PRODUCT(covars_edu, optim_paras%coeffs_edu)
 

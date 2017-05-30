@@ -99,7 +99,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
     # Identify events
     is_start = (opt_obj.num_eval == 0)
     is_step = (opt_obj.crit_vals[1] > fval)
-    x_optim_shares = x_optim_all_unscaled[43:43 + num_types]
+    x_optim_shares = x_optim_all_unscaled[44:44 + num_types]
     x_optim_shares = x_optim_shares / np.sum(x_optim_shares)
 
     for i in range(3):
@@ -117,10 +117,10 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
 
         opt_obj.crit_vals[i] = fval
         opt_obj.x_optim_container[:, i] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:33, i] = x_optim_all_unscaled[:33]
-        opt_obj.x_econ_container[33:43, i] = shocks_coeffs
-        opt_obj.x_econ_container[43:43 + num_types, i] = x_optim_shares
-        opt_obj.x_econ_container[43 + num_types:num_paras, i] = x_optim_all_unscaled[43 + num_types:]
+        opt_obj.x_econ_container[:34, i] = x_optim_all_unscaled[:34]
+        opt_obj.x_econ_container[34:44, i] = shocks_coeffs
+        opt_obj.x_econ_container[44:44 + num_types, i] = x_optim_shares
+        opt_obj.x_econ_container[44 + num_types:num_paras, i] = x_optim_all_unscaled[44 + num_types:]
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container

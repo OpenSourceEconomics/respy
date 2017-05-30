@@ -37,8 +37,8 @@ OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
 # covariance structure need to be mapped to the Cholesky factors that are the parameters the
 # optimizer actually iterates on.
 PARAS_MAPPING = []
-PARAS_MAPPING += [(33, 33), (34, 34), (35, 36), (36, 39), (37, 35), (38, 37), (39, 40), (40, 38)]
-PARAS_MAPPING += [(41, 41), (42, 42)]
+PARAS_MAPPING += [(34, 34), (35, 35), (36, 37), (37, 40), (38, 36), (39, 38), (40, 41), (41, 39)]
+PARAS_MAPPING += [(42, 42), (43, 43)]
 
 
 class RespyCls(object):
@@ -300,7 +300,7 @@ class RespyCls(object):
         init_dict['OCCUPATION B']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Education
-        lower, upper = 24, 30
+        lower, upper = 24, 31
         init_dict['EDUCATION'] = dict()
         init_dict['EDUCATION']['coeffs'] = self.attr['optim_paras']['coeffs_edu']
 
@@ -312,7 +312,7 @@ class RespyCls(object):
         init_dict['EDUCATION']['max'] = self.attr['edu_spec']['max']
 
         # Home
-        lower, upper = 30, 33
+        lower, upper = 31, 34
         init_dict['HOME'] = dict()
         init_dict['HOME']['coeffs'] = self.attr['optim_paras']['coeffs_home']
 
@@ -320,7 +320,7 @@ class RespyCls(object):
         init_dict['HOME']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Shocks
-        lower, upper = 33, 43
+        lower, upper = 34, 44
         init_dict['SHOCKS'] = dict()
         shocks_cholesky = self.attr['optim_paras']['shocks_cholesky']
         shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
@@ -335,7 +335,7 @@ class RespyCls(object):
         for old, new in PARAS_MAPPING:
             paras_fixed[old] = paras_fixed_reordered[new]
 
-        init_dict['SHOCKS']['fixed'] = paras_fixed[33:43]
+        init_dict['SHOCKS']['fixed'] = paras_fixed[34:44]
 
         # Solution
         init_dict['SOLUTION'] = dict()
@@ -352,14 +352,14 @@ class RespyCls(object):
         init_dict['AMBIGUITY']['mean'] = self.attr['ambi_spec']['mean']
 
         # Type Shares
-        lower, upper = 43, 43 + num_types
+        lower, upper = 44, 44 + num_types
         init_dict['TYPE_SHARES'] = dict()
         init_dict['TYPE_SHARES']['coeffs'] = self.attr['optim_paras']['type_shares']
         init_dict['TYPE_SHARES']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
         init_dict['TYPE_SHARES']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Type Shifts
-        lower, upper = 43 + num_types, num_paras
+        lower, upper = 44 + num_types, num_paras
         init_dict['TYPE_SHIFTS'] = dict()
         init_dict['TYPE_SHIFTS']['coeffs'] = self.attr['optim_paras']['type_shifts'].flatten()[4:]
         init_dict['TYPE_SHIFTS']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
@@ -592,7 +592,7 @@ class RespyCls(object):
         # Update derived attributes
         self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)[0]
 
-        self.attr['num_paras'] = 43 + num_types + (num_types - 1) * 4
+        self.attr['num_paras'] = 44 + num_types + (num_types - 1) * 4
 
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
@@ -752,7 +752,7 @@ class RespyCls(object):
         # matrix in a flexible manner. So, either all fixed or none. As a special case,
         # we also allow for all off-diagonal elements to be fixed to zero.
         shocks_coeffs = optim_paras['shocks_cholesky'][np.tril_indices(4)]
-        shocks_fixed = optim_paras['paras_fixed'][33:43]
+        shocks_fixed = optim_paras['paras_fixed'][34:44]
 
         all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
         all_free = all(is_free is True for is_free in shocks_fixed)
@@ -777,7 +777,7 @@ class RespyCls(object):
             assert optim_paras['paras_bounds'][i][0] >= 0.00
 
         # For the type shares, we only allow for (0.00, None) bounds at this point.
-        for i in range(43, 43 + num_types):
+        for i in range(44, 44 + num_types):
             assert optim_paras['paras_bounds'][i][0] == 0.00
             assert optim_paras['paras_bounds'][i][1] is None
 
@@ -794,11 +794,11 @@ class RespyCls(object):
             if (upper is not None) and (lower is not None):
                 assert upper >= lower
             # At this point no bounds for the elements of the covariance matrix are allowed.
-            if i in range(33, 43):
+            if i in range(34, 44):
                 assert optim_paras['paras_bounds'][i] == [None, None]
     
-        all_fixed = np.all(optim_paras['paras_fixed'][43:43 + num_types]) == True
-        all_free = np.all(optim_paras['paras_fixed'][43:43 + num_types]) == False
+        all_fixed = np.all(optim_paras['paras_fixed'][44:44 + num_types]) == True
+        all_free = np.all(optim_paras['paras_fixed'][44:44 + num_types]) == False
         assert all_fixed or all_free
 
         if num_types == 1:

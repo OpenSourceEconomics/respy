@@ -650,7 +650,7 @@ class TestClass(object):
         """ We test the construction of the Cholesky decomposition against each other.
         """
         # Draw a random vector of parameters
-        x = np.random.uniform(size=43)
+        x = np.random.uniform(size=44)
 
         # Construct the Cholesky decompositions
         py = extract_cholesky(x, info=0)

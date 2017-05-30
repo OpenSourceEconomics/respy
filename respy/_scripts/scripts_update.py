@@ -47,7 +47,7 @@ def scripts_update(init_file):
 
     # Get and construct ingredients
     optim_paras = dist_optim_paras(paras_steps, True)
-    shocks_coeffs = paras_steps[33:43]
+    shocks_coeffs = paras_steps[34:44]
 
     # Update initialization dictionary
     init_dict['OCCUPATION A']['coeffs'] = optim_paras['coeffs_a']

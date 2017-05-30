@@ -11,8 +11,11 @@ NUM_TESTS = 1000
 
 
 # Initially we want to make sure that all the previous tests are running properly.
-if False:
+if True:
     cleanup()
+
+    # This scratch file indicates that the required modification is done properly.
+    open('.old.respy.scratch', 'w').close()
     cmd = './run_regression.py --request check ' + str(NUM_TESTS) + ' --strict'
     subprocess.check_call(cmd, shell=True)
 

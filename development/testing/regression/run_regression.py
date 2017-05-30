@@ -8,6 +8,7 @@ import numpy as np
 import argparse
 import socket
 import json
+import os
 
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
@@ -145,9 +146,15 @@ def run(request, is_compile, is_background, is_strict):
                 continue
 
             # TODO: Create fresh set of regression tests
-            init_dict['EDUCATION']['coeffs'] += [0.00, 0.00]
-            init_dict['EDUCATION']['bounds'] += [(None, None), (None, None)]
-            init_dict['EDUCATION']['fixed'] += [True, True]
+            if os.path.exists('.old.respy.scratch'):
+                init_dict['EDUCATION']['coeffs'].insert(2, 0.0)
+                init_dict['EDUCATION']['coeffs'] += [0.00, 0.00]
+
+                init_dict['EDUCATION']['bounds'].insert(2, (None, None))
+                init_dict['EDUCATION']['bounds'] += [(None, None), (None, None)]
+
+                init_dict['EDUCATION']['fixed'].insert(2, True)
+                init_dict['EDUCATION']['fixed'] += [True, True]
 
             print_init_dict(init_dict)
             respy_obj = RespyCls('test.respy.ini')

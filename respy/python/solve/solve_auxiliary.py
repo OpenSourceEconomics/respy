@@ -179,6 +179,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             covars_edu = []
             covars_edu += [1.0]
             covars_edu += [hs_graduate]
+            covars_edu += [co_graduate]
             covars_edu += [is_return_not_high_school]
             covars_edu += [is_return_high_school]
             covars_edu += [period]
