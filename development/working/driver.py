@@ -52,7 +52,7 @@ np.random.seed(123)
 #open('.restud.respy.scratch', 'w').close()
 
 respy_obj = RespyCls('model.respy.ini')
-respy_obj, _ = simulate(respy_obj)
+#respy_obj, _ = simulate(respy_obj)
     #respy_obj.write_out('test.respy.ini')
 #respy_obj = RespyCls('truth.respy.ini')
 
@@ -64,7 +64,7 @@ _, crit = estimate(respy_obj)
 #_, crit = estimate(respy_obj)
 #print crit
 
-if respy_obj.get_attr('version') == 'PYTHON':
-    np.testing.assert_almost_equal(crit, 1.833468386869271)
-else:
-    np.testing.assert_almost_equal(crit, 1.912570541713162)
+#if respy_obj.get_attr('version') == 'PYTHON':
+#    np.testing.assert_almost_equal(crit, 1.833468386869271)
+#else:
+#    np.testing.assert_almost_equal(crit, 1.912570541713162)

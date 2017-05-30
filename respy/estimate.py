@@ -2,8 +2,9 @@ import atexit
 import os
 
 from respy.python.shared.shared_auxiliary import generate_optimizer_options
-from respy.python.shared.shared_auxiliary import remove_scratch
+from respy.python.record.record_estimation import record_estimation_sample
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import remove_scratch
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_AMB_FORT
@@ -35,8 +36,11 @@ def estimate(respy_obj):
     open('.estimation.respy.scratch', 'w').close()
 
     # Read in estimation dataset. It only reads in the number of agents requested for the
-    # estimation.
-    data_array = process(respy_obj).as_matrix()
+    # estimation (or all available, depending on which is less). It allows read in only a subset of
+    # the initial conditions.
+    data_frame = process(respy_obj)
+    record_estimation_sample(data_frame)
+    data_array = data_frame.as_matrix()
 
     # Distribute class attributes
     version = respy_obj.get_attr('version')

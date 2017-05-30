@@ -144,16 +144,18 @@ def write_info(respy_obj, data_frame):
             except KeyError:
                 file_.write(fmt_.format(*[type_, 0.0]))
 
-        file_.write('\n\n   Initial Schooling Shares\n\n')
+        file_.write('\n\n   Initial Schooling\n\n')
+        fmt_ = '   {:>10}' + '    {:>25}    {:>25}\n\n'
+        file_.write(fmt_.format(*['', 'Count', 'Share']))
+        fmt_ = '   {:>10}' + '    {:>25}    {:>25.5f}\n'
         dat = data_frame['Years_Schooling'][:, 0].value_counts().to_dict()
         for start in sorted(edu_spec['start']):
             try:
-                share = dat[start] / float(num_agents_sim)
-                file_.write(fmt_.format(*[start, share]))
+                file_.write(fmt_.format(*[start, dat[start], dat[start] / float(num_agents_sim)]))
             # Some types might not occur in the simulated dataset. Then these are not part of the
             # dictionary with the value counts.
             except KeyError:
-                file_.write(fmt_.format(*[start, 0.0]))
+                file_.write(fmt_.format(*[start, 0, 0]))
 
         file_.write('\n\n   Economic Parameters\n\n')
         fmt_ = '\n   {0:>10}' + '    {1:>25}\n\n'

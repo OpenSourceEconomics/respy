@@ -11,11 +11,23 @@ from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 
-def record_estimation_scaling(x_optim_free_unscaled_start,
-        x_optim_free_scaled_start, paras_bounds_free_scaled,
-        precond_matrix, paras_fixed):
+def record_estimation_sample(data_frame):
+    """ This function briefly records the size of the estimation sample. It is called before the
+    code separates between the PYTHON and FORTRAN version.
+    """
+
+    num_agents_est = str(data_frame['Identifier'].nunique())
 
     with open('est.respy.log', 'w') as out_file:
+        out_file.write(' {:}\n\n'.format('ESTIMATION SAMPLE'))
+        line = '   The estimation is based on a sample of ' + num_agents_est + ' agents.\n\n'
+        out_file.write(line)
+
+
+def record_estimation_scaling(x_optim_free_unscaled_start, x_optim_free_scaled_start,
+        paras_bounds_free_scaled, precond_matrix, paras_fixed):
+
+    with open('est.respy.log', 'a') as out_file:
         out_file.write(' {:}\n\n'.format('PRECONDITIONING'))
         fmt_ = '   {:>10}' + '    {:>25}' * 5 + '\n\n'
         labels = ['Identifier', 'Original', 'Scale']

@@ -27,8 +27,8 @@ DERIVED_ATTR = ['is_myopic']
 
 # Special care with solution attributes is required. These are only returned if the class
 # instance was solved.
-SOLUTION_ATTR = ['periods_rewards_systematic', 'states_number_period']
-SOLUTION_ATTR += ['mapping_state_idx', 'periods_emax', 'states_all']
+SOLUTION_ATTR = ['periods_rewards_systematic', 'states_number_period', 'mapping_state_idx']
+SOLUTION_ATTR += ['periods_emax', 'states_all']
 
 # Full list of admissible optimizers
 OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
@@ -37,8 +37,7 @@ OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
 # covariance structure need to be mapped to the Cholesky factors that are the parameters the
 # optimizer actually iterates on.
 PARAS_MAPPING = []
-PARAS_MAPPING += [(31, 31), (32, 32), (33, 34), (34, 37)]
-PARAS_MAPPING += [(35, 33), (36, 35), (37, 38), (38, 36)]
+PARAS_MAPPING += [(31, 31), (32, 32), (33, 34), (34, 37), (35, 33), (36, 35), (37, 38), (38, 36)]
 PARAS_MAPPING += [(39, 39), (40, 40)]
 
 

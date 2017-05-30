@@ -35,7 +35,7 @@ def check_dataset_est(data_frame, respy_obj):
         dat = data_frame[label] >= 0.00
         np.testing.assert_equal(dat.all(), True)
 
-        dat = data_frame[label][slice(None), 0] == 0
+        dat = data_frame[label][:, 0] == 0
         np.testing.assert_equal(dat.all(), True)
 
     # Checks for LAGGED SCHOOLING. We also know that all individuals were in school when entering
@@ -43,7 +43,7 @@ def check_dataset_est(data_frame, respy_obj):
     dat = data_frame['Lagged_Schooling'].isin([0, 1])
     np.testing.assert_equal(dat.all(), True)
 
-    dat = data_frame['Lagged_Schooling'][slice(None), 0] == 1
+    dat = data_frame['Lagged_Schooling'][:, 0] == 1
     np.testing.assert_equal(dat.all(), True)
 
     # Checks for YEARS SCHOOLING. We also know that the initial years of schooling can only take
@@ -51,7 +51,7 @@ def check_dataset_est(data_frame, respy_obj):
     dat = data_frame['Years_Schooling'] >= 0.00
     np.testing.assert_equal(dat.all(), True)
 
-    dat = data_frame['Years_Schooling'][slice(None), 0].isin(edu_spec['start'])
+    dat = data_frame['Years_Schooling'][:, 0].isin(edu_spec['start'])
     np.testing.assert_equal(dat.all(), True)
 
     # Check that there are no duplicated observations for any period by agent.

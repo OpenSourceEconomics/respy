@@ -418,10 +418,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, optim_paras, is_setup)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
-        ! The initial setup serves to remind users that scaling is going on
-        ! in the background. Otherwise, they remain puzzled as there is no
-        ! output for quite some time if the gradient evaluations are
-        ! time consuming.
+        ! The initial setup serves to remind users that scaling is going on in the background. Otherwise, they remain puzzled as there is no output for quite some time if the gradient evaluations are time consuming.
         IF (is_setup) THEN
 
             WRITE(99, *) 'PRECONDITIONING'
