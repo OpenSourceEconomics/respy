@@ -191,6 +191,9 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: any_exp_a
     INTEGER(our_int)                    :: any_exp_b
     INTEGER(our_int)                    :: is_minor
+
+    INTEGER(our_int)                    :: is_return_not_high_school
+    INTEGER(our_int)                    :: is_return_high_school
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
@@ -200,8 +203,9 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: k
 
     REAL(our_dble)                      :: covars_wages(11)
+    REAL(our_dble)                      :: covars_edu(6)
+
     REAL(our_dble)                      :: rewards(4)
-    REAL(our_dble)                      :: reward
 
     LOGICAL                             :: IS_RESTUD
 
@@ -235,6 +239,9 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             any_exp_b = TRANSFER(exp_b .GT. 0, any_exp_b)
             is_minor = TRANSFER(period .LT. 3, is_minor)
 
+            is_return_not_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate)), is_return_not_high_school)
+            is_return_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. to_boolean(hs_graduate), is_return_high_school)
+
             ! Auxiliary objects
             covars_wages(1) = one_dble
             covars_wages(2) = edu
@@ -245,7 +252,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             covars_wages(7) = hs_graduate
             covars_wages(8) = co_graduate
             covars_wages(9) = HUGE_FLOAT
-            covars_wages(10) = period - 1
+            covars_wages(10) = period - one_dble
             covars_wages(11) = is_minor
 
             ! This used for testing purposes, where we compare the results from the RESPY package to the original RESTUD program.
@@ -264,21 +271,14 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             CALL clip_value(rewards(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of schooling utility
-            reward = optim_paras%coeffs_edu(1)
+            covars_edu(1) = one_dble
+            covars_edu(2) = hs_graduate
+            covars_edu(3) = is_return_not_high_school
+            covars_edu(4) = is_return_high_school
+            covars_edu(5) = period - one_dble
+            covars_edu(6) = is_minor
 
-            ! Tuition cost for higher education if agents move beyond high school.
-            IF(to_boolean(hs_graduate)) reward = reward + optim_paras%coeffs_edu(2)
-
-            ! Psychic cost of going back to school
-            IF((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate))) THEN
-                reward = reward + optim_paras%coeffs_edu(3)
-            END IF
-
-            IF((.NOT. to_boolean(edu_lagged)) .AND. to_boolean(hs_graduate)) THEN
-                reward = reward + optim_paras%coeffs_edu(4)
-            END IF
-
-            rewards(3) = reward
+            rewards(3) = DOT_PRODUCT(covars_edu, optim_paras%coeffs_edu)
 
             ! Calculate systematic part of HOME
             rewards(4) = optim_paras%coeffs_home(1)

@@ -10,6 +10,12 @@ from auxiliary_shared import cleanup
 NUM_TESTS = 1000
 
 
+# Initially we want to make sure that all the previous tests are running properly.
+if False:
+    cleanup()
+    cmd = './run_regression.py --request check ' + str(NUM_TESTS) + ' --strict'
+    subprocess.check_call(cmd, shell=True)
+
 # We create a new set of regression tests.
 cleanup()
 cmd = './run_regression.py --request create ' + str(NUM_TESTS)

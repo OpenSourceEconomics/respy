@@ -226,7 +226,7 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(4)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(6)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(11)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(11)
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
@@ -544,7 +544,7 @@ SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, 
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(4)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(6)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(11)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(11)
 
@@ -1450,7 +1450,7 @@ SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 
     DOUBLE PRECISION, INTENT(OUT)   :: shocks_cholesky(4, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(41)
+    DOUBLE PRECISION, INTENT(IN)    :: x(43)
 
     INTEGER, INTENT(OUT)            :: info
 

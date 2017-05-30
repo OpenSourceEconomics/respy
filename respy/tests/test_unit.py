@@ -71,13 +71,13 @@ class TestClass(object):
         """
         for i in range(10):
             num_types = np.random.randint(1, 5)
-            num_paras = 41 + 1 + (num_types - 1) * 5
+            num_paras = 43 + 1 + (num_types - 1) * 5
 
             # Create random parameter vector
             base = np.random.uniform(size=num_paras)
 
             # We need to manually ensure that the sum of the shares is equal to one.
-            base[41:41 + num_types] /= np.sum(base[41:41 + num_types])
+            base[43:43 + num_types] /= np.sum(base[43:43 + num_types])
 
             x = base.copy()
 

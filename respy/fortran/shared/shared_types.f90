@@ -74,7 +74,7 @@ MODULE shared_types
         LOGICAL, ALLOCATABLE        :: paras_fixed(:)
 
         REAL(our_dble)          :: shocks_cholesky(4, 4)
-        REAL(our_dble)          :: coeffs_edu(4)
+        REAL(our_dble)          :: coeffs_edu(6)
         REAL(our_dble)          :: coeffs_home(3)
         REAL(our_dble)          :: coeffs_a(11)
         REAL(our_dble)          :: coeffs_b(11)
