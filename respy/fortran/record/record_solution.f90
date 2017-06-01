@@ -150,10 +150,10 @@ SUBROUTINE record_solution_time(which)
   CALL get_time_structRecomputation(today, now)
 
   IF (which == 'Start') THEN
-    OPEN(UNIT=99, FILE='solution_time.structRecomputation.log', ACTION='WRITE')
+    OPEN(UNIT=99, FILE='.structRecomputation.performance', ACTION='WRITE')
         WRITE(99, 115) which, today, now
   ELSE
-    OPEN(UNIT=99, FILE='solution_time.structRecomputation.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE='.structRecomputation.performance', ACCESS='APPEND', ACTION='WRITE')
         WRITE(99, 125) which, today, now
   END IF
 
