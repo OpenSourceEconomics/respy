@@ -18,7 +18,7 @@ MODULE recording_solution
 
     PRIVATE
 
-    PUBLIC :: record_solution
+    PUBLIC :: record_solution, record_solution_time
 
     !/* explicit interface   */
 
@@ -122,6 +122,70 @@ SUBROUTINE record_prediction_model(coeffs, r_squared, bse)
         WRITE(99, *)
 
     CLOSE(99)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+! The following two functions are only added to address the referees requests for the structRecomputation resbumission.
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE record_solution_time(which)
+
+    !/* external objects        */
+
+    CHARACTER(*), INTENT(IN)   :: which
+
+    !/* internal objects        */
+
+    CHARACTER(55)               :: today
+    CHARACTER(55)               :: now
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+  115 FORMAT(3x,A5,6X,A10,5X,A8)
+  125 FORMAT(3x,A4,7X,A10,5X,A8)
+
+  CALL get_time_structRecomputation(today, now)
+
+  IF (which == 'Start') THEN
+    OPEN(UNIT=99, FILE='solution_time.structRecomputation.log', ACTION='WRITE')
+        WRITE(99, 115) which, today, now
+  ELSE
+    OPEN(UNIT=99, FILE='solution_time.structRecomputation.log', ACCESS='APPEND', ACTION='WRITE')
+        WRITE(99, 125) which, today, now
+  END IF
+
+  CLOSE(99)
+
+END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE get_time_structRecomputation(today_char, now_char)
+
+    !/* external objects        */
+
+    CHARACTER(*), INTENT(OUT)       :: today_char
+    CHARACTER(*), INTENT(OUT)       :: now_char
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: today(3)
+    INTEGER(our_int)                :: now(3)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    CALL IDATE(today)
+    CALL ITIME(now)
+
+    5503 FORMAT(i0.2,'/',i0.2,'/',i0.4)
+    5504 FORMAT(i0.2,':',i0.2,':',i0.2)
+
+    WRITE(today_char, 5503) today
+    WRITE(now_char, 5504) now
 
 END SUBROUTINE
 !******************************************************************************

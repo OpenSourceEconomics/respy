@@ -49,6 +49,8 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    CALL record_solution_time('Start')
+
     CALL record_solution(1)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, edu_start, edu_max)
@@ -72,6 +74,8 @@ SUBROUTINE fort_solve(periods_payoffs_systematic, states_number_period, mapping_
     ELSE
         CALL record_solution(-2)
     END IF
+
+    CALL record_solution_time('Stop')
 
 END SUBROUTINE
 !******************************************************************************
