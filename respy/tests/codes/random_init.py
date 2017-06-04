@@ -16,9 +16,7 @@ from codes.auxiliary import get_valid_bounds
 from codes.auxiliary import OPTIMIZERS_EST
 from codes.auxiliary import OPTIMIZERS_AMB
 
-MAX_AGENTS = 1000
-MAX_DRAWS = 100
-MAX_PERIODS = 5
+
 
 
 def generate_init(constr=None):
@@ -49,9 +47,32 @@ def generate_random_dict(constr=None):
     # Initialize container
     dict_ = dict()
 
+    # We need to be more restrictive with the type of initialization files that we generate for
+    # the PYTHON version. Otherwise the execution times just take too long.
+    if 'version' in constr.keys():
+        version = constr['version']
+    elif not IS_FORTRAN:
+        version = 'PYTHON'
+    else:
+        version = np.random.choice(['FORTRAN', 'PYTHON'])
+
+    MAX_AGENTS = 1000
+    MAX_DRAWS = 100
+
+    if version == 'PYTHON':
+        MAX_TYPES = 2
+        MAX_PERIODS = 3
+        MAX_EDU_START = 2
+    elif version == 'FORTRAN':
+        MAX_TYPES = 4
+        MAX_PERIODS = 10
+        MAX_EDU_START = 4
+    else:
+        raise NotImplementedError
+
     # We need to determine the final number of types right here, as it determines the number of
     # parameters. This includes imposing constraints.
-    num_types = np.random.choice(range(1, 3))
+    num_types = np.random.choice(range(1, MAX_TYPES))
     if 'types' in constr.keys():
         # Extract objects
         num_types = constr['types']
@@ -153,11 +174,11 @@ def generate_random_dict(constr=None):
     dict_['EDUCATION']['bounds'] = paras_bounds[lower:upper]
     dict_['EDUCATION']['fixed'] = paras_fixed[lower:upper]
 
-    num_edu_start = np.random.choice(range(1, 3))
-    dict_['EDUCATION']['start'] = np.random.choice(range(1, 10), size=num_edu_start,
+    num_edu_start = np.random.choice(range(1, MAX_EDU_START))
+    dict_['EDUCATION']['start'] = np.random.choice(range(1, 20), size=num_edu_start,
         replace=False).tolist()
     dict_['EDUCATION']['share'] = get_valid_shares(num_edu_start)
-    dict_['EDUCATION']['max'] = np.random.randint(max(dict_['EDUCATION']['start']) + 1, 20)
+    dict_['EDUCATION']['max'] = np.random.randint(max(dict_['EDUCATION']['start']) + 1, 30)
 
     # Home
     lower, upper = 31, 34
@@ -203,20 +224,13 @@ def generate_random_dict(constr=None):
 
     # PROGRAM
     dict_['PROGRAM'] = dict()
-    if IS_PARALLEL:
+    if IS_PARALLEL and version == 'FORTRAN':
         dict_['PROGRAM']['procs'] = np.random.randint(1, 5)
     else:
         dict_['PROGRAM']['procs'] = 1
 
-    versions = ['FORTRAN', 'PYTHON']
-    if dict_['PROGRAM']['procs'] > 1:
-        versions = ['FORTRAN']
-
-    if not IS_FORTRAN:
-        versions = ['PYTHON']
-
-    dict_['PROGRAM']['debug'] = 'True'
-    dict_['PROGRAM']['version'] = np.random.choice(versions)
+    dict_['PROGRAM']['debug'] = True
+    dict_['PROGRAM']['version'] = version
 
     # The optimizer has to align with the Program version.
     if dict_['PROGRAM']['version'] == 'FORTRAN':

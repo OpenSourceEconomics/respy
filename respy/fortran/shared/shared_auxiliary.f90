@@ -1035,11 +1035,9 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
 
     CLOSE(99)
 
-    ! TODO: This setup should be revisited and cleaned up later.
     DO i = 1, num_paras
         IF(optim_paras%paras_bounds(1, i) == -MISSING_FLOAT) optim_paras%paras_bounds(1, i) = - HUGE_FLOAT
         IF(optim_paras%paras_bounds(2, i) == MISSING_FLOAT) optim_paras%paras_bounds(2, i) = HUGE_FLOAT
-
     END DO
 
     ALLOCATE(x_optim_bounds_free_scaled(2, COUNT(.NOT. optim_paras%paras_fixed)))

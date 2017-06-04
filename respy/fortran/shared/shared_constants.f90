@@ -59,7 +59,6 @@ MODULE shared_constants
     REAL(our_dble), PARAMETER   :: HUGE_FLOAT                   = 1.0e20_our_dble
     REAL(our_dble), PARAMETER   :: LARGE_FLOAT                  = 1.0e8_our_dble
 
-    ! TODO: Move around
     REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_unscaled(:, :)
     REAL(our_dble), ALLOCATABLE  :: x_optim_bounds_free_scaled(:, :)
 
