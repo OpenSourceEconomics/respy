@@ -104,6 +104,14 @@ def run(request, is_compile, is_background, is_strict):
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
             crit_val = estimate(respy_obj)[1]
+
+            # In rare instances, the value of the criterion function might be too large and thus
+            # printed as a string. This occured in the past, when the gradient perconditioning
+            # had zero probability observations. We now generate random initialization files with
+            # smaller gradient step sizes.
+            if not isinstance(crit_val, float):
+                raise AssertionError(' ... value of crtierion function too large.')
+
             test = (init_dict, crit_val)
             tests += [test]
             print_init_dict(init_dict)

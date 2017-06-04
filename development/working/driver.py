@@ -51,20 +51,50 @@ np.random.seed(123)
 # This ensures that the experience effect is taken care of properly.
 #open('.restud.respy.scratch', 'w').close()
 
-respy_obj = RespyCls('model.respy.ini')
-respy_obj, _ = simulate(respy_obj)
     #respy_obj.write_out('test.respy.ini')
 #respy_obj = RespyCls('truth.respy.ini')
 
-_, crit = estimate(respy_obj)
-#print(crit)
+
+num_agents_sim = dist_class_attributes(respy_obj, 'num_agents_sim')
+
+# Simulate a dataset
+simulate_observed(respy_obj)
+
+# Iterate over alternative implementations
+base_x, base_val = None, None
+
+num_periods = init_dict['BASICS']['periods']
+type_shares = init_dict['TYPE_SHARES']['coeffs']
+
+write_draws(num_periods, max_draws)
+write_types(type_shares, num_agents_sim)
+
+for version in ['FORTRAN', 'PYTHON']:
+
+    respy_obj.unlock()
+
+    respy_obj.set_attr('version', version)
+
+    respy_obj.lock()
+
+    x, val = estimate(respy_obj)
+
+    # Check for the returned parameters.
+    if base_x is None:
+        base_x = x
+    np.testing.assert_allclose(base_x, x)
+
+    # Check for the value of the criterion function.
+    if base_val is None:
+        base_val = val
+    np.testing.assert_allclose(base_val, val)
 
 
 #respy_obj = RespyCls('stop.respy.ini')
 #_, crit = estimate(respy_obj)
 #print crit
 
-if respy_obj.get_attr('version') == 'PYTHON':
-    np.testing.assert_almost_equal(crit, 4.283019001562922)
-else:
-    np.testing.assert_almost_equal(crit, 3.326039372111592)
+#if respy_obj.get_attr('version') == 'PYTHON':
+#    np.testing.assert_almost_equal(crit, 4.283019001562922)
+#else:
+#    np.testing.assert_almost_equal(crit, 3.326039372111592)

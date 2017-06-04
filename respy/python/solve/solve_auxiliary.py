@@ -191,7 +191,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             covars_home = []
             covars_home += [1.0]
             covars_home += [float(period in [2, 3, 4])]     # Age 18 - 20
-            covars_home += [float(period > 5)]              # Age 21 and over
+            covars_home += [float(period >= 5)]             # Age 21 and over
 
             rewards[3] = np.dot(optim_paras['coeffs_home'], covars_home)
 
