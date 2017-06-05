@@ -45,7 +45,13 @@ def scripts_update(init_file):
     if '---' in paras_steps.tolist():
         raise UserError('Missing values in est.respy.info')
 
-    # Get and construct ingredients
+    # We need to make sure that the size of the parameter vector does fit the initialization
+    # file. For example, this might not be the case when the number of types is changed in the
+    # initialization file and an update is requested with an earlier logfile.
+    num_types, num_paras = len(init_dict['TYPE_SHARES']['coeffs']), len(paras_steps)
+    if num_paras != 44 + num_types + (num_types - 1) * 4:
+        raise UserError('Info does not fit the current model specification')
+
     optim_paras = dist_optim_paras(paras_steps, True)
     shocks_coeffs = paras_steps[34:44]
 

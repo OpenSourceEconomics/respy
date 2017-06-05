@@ -85,6 +85,9 @@ def respy_interface(respy_obj, request, data_array=None):
 
         paras_bounds_free_unscaled = np.array(paras_bounds_free_unscaled)
 
+        record_estimation_scaling(x_optim_free_unscaled_start, None, None, None, optim_paras[
+            'paras_fixed'], True)
+
         precond_matrix = get_precondition_matrix(precond_spec, optim_paras,
             x_optim_all_unscaled_start, args, maxfun, num_paras, num_types)
 
@@ -97,7 +100,7 @@ def respy_interface(respy_obj, request, data_array=None):
                 paras_bounds_free_unscaled[:, i], precond_matrix, 'do')
 
         record_estimation_scaling(x_optim_free_unscaled_start, x_optim_free_scaled_start,
-            paras_bounds_free_scaled, precond_matrix, optim_paras['paras_fixed'])
+            paras_bounds_free_scaled, precond_matrix, optim_paras['paras_fixed'], False)
 
         opt_obj = OptimizationClass(x_optim_all_unscaled_start, optim_paras['paras_fixed'],
                                     precond_matrix, num_types)

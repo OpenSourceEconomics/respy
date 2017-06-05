@@ -25,39 +25,40 @@ def record_estimation_sample(data_frame):
 
 
 def record_estimation_scaling(x_optim_free_unscaled_start, x_optim_free_scaled_start,
-        paras_bounds_free_scaled, precond_matrix, paras_fixed):
+        paras_bounds_free_scaled, precond_matrix, paras_fixed, is_setup):
 
     with open('est.respy.log', 'a') as out_file:
-        out_file.write(' {:}\n\n'.format('PRECONDITIONING'))
-        fmt_ = '   {:>10}' + '    {:>25}' * 5 + '\n\n'
-        labels = ['Identifier', 'Original', 'Scale']
-        labels += ['Transformed Value', 'Transformed Lower']
-        labels += ['Transformed Upper']
-        out_file.write(fmt_.format(*labels))
+        if is_setup:
+            out_file.write(' {:}\n\n'.format('PRECONDITIONING'))
+            fmt_ = '   {:>10}' + '    {:>25}' * 5 + '\n\n'
+            labels = ['Identifier', 'Original', 'Scale']
+            labels += ['Transformed Value', 'Transformed Lower']
+            labels += ['Transformed Upper']
+            out_file.write(fmt_.format(*labels))
+        else:
+            j = 0
+            for i, is_fixed in enumerate(paras_fixed):
+                if is_fixed:
+                    continue
 
-        j = 0
-        for i, is_fixed in enumerate(paras_fixed):
-            if is_fixed:
-                continue
+                paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j, j]]
+                paras += [x_optim_free_scaled_start[j]]
+                paras += [paras_bounds_free_scaled[j, 0]]
+                paras += [paras_bounds_free_scaled[j, 1]]
 
-            paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j, j]]
-            paras += [x_optim_free_scaled_start[j]]
-            paras += [paras_bounds_free_scaled[j, 0]]
-            paras += [paras_bounds_free_scaled[j, 1]]
+                for k in [4, 5]:
+                    if abs(paras[k]) > LARGE_FLOAT:
+                        paras[k] = '---'
+                    else:
+                        paras[k] = '{:25.15f}'.format(paras[k])
 
-            for k in [4, 5]:
-                if abs(paras[k]) > LARGE_FLOAT:
-                    paras[k] = '---'
-                else:
-                    paras[k] = '{:25.15f}'.format(paras[k])
+                fmt = '   {:>10}' + '    {:25.15f}' * 3 + '    {:>25}' * 2 + \
+                      '\n'
+                out_file.write(fmt.format(*paras))
 
-            fmt = '   {:>10}' + '    {:25.15f}' * 3 + '    {:>25}' * 2 + \
-                  '\n'
-            out_file.write(fmt.format(*paras))
+                j += 1
 
-            j += 1
-
-        out_file.write('\n')
+            out_file.write('\n')
 
 
 def record_estimation_scalability(which):

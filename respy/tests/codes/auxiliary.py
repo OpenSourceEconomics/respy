@@ -88,55 +88,45 @@ def compare_init(fname_base, fname_alt):
 
 def compare_est_log(base_est_log):
     """ This function is required as the log files can be slightly different for good reasons.
-    The error capturing of an IndexError is required as sometimes the ...
     """
+    with open('est.respy.log') as in_file:
+        alt_est_log = in_file.readlines()
 
-    # TODO: What is going on here?
-    for _ in range(25):
+    for j, _ in enumerate(alt_est_log):
+        alt_line, base_line = alt_est_log[j], base_est_log[j]
+        list_ = shlex.split(alt_line)
 
-        try:
+        # We can skip empty lines.
+        if not list_:
+            continue
 
-            with open('est.respy.log') as in_file:
-                alt_est_log = in_file.readlines()
-
-            for j, _ in enumerate(alt_est_log):
-                alt_line, base_line = alt_est_log[j], base_est_log[j]
-                list_ = shlex.split(alt_line)
-
-                if not list_:
-                    continue
-
-                if list_[0] in ['Criterion']:
-                    alt_val = float(shlex.split(alt_line)[1])
-                    base_val = float(shlex.split(base_line)[1])
-                    np.testing.assert_almost_equal(alt_val, base_val)
-                elif list_[0] in ['Ambiguity']:
-                    # We know that the results from the worst-case determination are very
-                    # sensitive for ill-conditioned problems and thus the performance varies
-                    # across versions.
-                    pass
-                elif list_[0] in ['Time', 'Duration']:
-                    pass
-                else:
-
-                    is_floats = False
-                    try:
-                        int(shlex.split(alt_line)[0])
-                        is_floats = True
-                    except ValueError:
-                        pass
-                    # We need to cut the floats some slack. It might very well happen that in the
-                    # very last digits they are in fact different across the versions.
-                    if not is_floats:
-                        assert alt_line == base_line
-                    else:
-                        base_floats = get_floats(base_line)
-                        alt_floats = get_floats(alt_line)
-                        np.testing.assert_almost_equal(alt_floats, base_floats)
-            return
-
-        except IndexError:
+        if list_[0] in ['Criterion']:
+            alt_val = float(shlex.split(alt_line)[1])
+            base_val = float(shlex.split(base_line)[1])
+            np.testing.assert_almost_equal(alt_val, base_val)
+        elif list_[0] in ['Ambiguity']:
+            # We know that the results from the worst-case determination are very
+            # sensitive for ill-conditioned problems and thus the performance varies
+            # across versions.
             pass
+        elif list_[0] in ['Time', 'Duration']:
+            pass
+        else:
+
+            is_floats = False
+            try:
+                int(shlex.split(alt_line)[0])
+                is_floats = True
+            except ValueError:
+                pass
+            # We need to cut the floats some slack. It might very well happen that in the
+            # very last digits they are in fact different across the versions.
+            if not is_floats:
+                assert alt_line == base_line
+            else:
+                base_floats = get_floats(base_line)
+                alt_floats = get_floats(alt_line)
+                np.testing.assert_almost_equal(alt_floats, base_floats)
 
 
 def get_floats(line):
