@@ -36,6 +36,9 @@ def create_single(idx):
     constr = dict()
     constr['flag_estimation'] = True
 
+    # TODO: We need to revisit the gradient preconditioning. An issue is filed on GITLAB.
+    constr['precond_type'] = np.random.choice(['identity', 'magnitudes'])
+
     init_dict = generate_init(constr)
     respy_obj = RespyCls('test.respy.ini')
     simulate_observed(respy_obj)
