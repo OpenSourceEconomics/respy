@@ -1,11 +1,12 @@
 #!/bin/bash
-#PBS -N mpi 
+#PBS -N mpi
 #PBS -j oe
 #PBS -l walltime=99:00:00
 #PBS -l procs=5
-#PBS -V          
+#PBS -V
 #PBS -m ae
 #PBS -M eisenhauer@policy-lab.org
 
 cd $PBS_O_WORKDIR
 ~/.envs/restudToolbox/bin/python run_regression.py --request check 1000
+#~/.envs/restudToolbox/bin/python update.py --check --procs 10 --tests 1000

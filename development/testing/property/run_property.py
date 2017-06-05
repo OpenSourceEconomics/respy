@@ -27,9 +27,9 @@ from auxiliary_property import finalize_testing_record
 from auxiliary_property import update_testing_record
 from auxiliary_property import get_random_request
 from auxiliary_shared import send_notification
+from auxiliary_shared import get_random_dirname
 from auxiliary_shared import compile_package
 from auxiliary_property import get_test_dict
-from auxiliary_property import get_testdir
 from auxiliary_shared import cleanup
 
 
@@ -99,7 +99,7 @@ def run(request, is_compile, is_background):
         is_success, msg = None, None
 
         # Create a fresh test directory.
-        tmp_dir = get_testdir(5)
+        tmp_dir = get_random_dirname(5)
 
         if not is_investigation:
             os.mkdir(tmp_dir)

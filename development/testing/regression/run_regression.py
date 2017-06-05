@@ -4,6 +4,9 @@ development and refactoring efforts.
 """
 from __future__ import print_function
 
+from functools import partial
+
+import multiprocessing as mp
 import numpy as np
 import argparse
 import socket
@@ -13,21 +16,25 @@ import os
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
 
+from auxiliary_regression import create_single
+from auxiliary_regression import check_single
+from auxiliary_regression import get_chunks
+
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.shared.shared_constants import IS_PARALLEL
-from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.auxiliary import simulate_observed
-from codes.random_init import generate_init
 
 HOSTNAME = socket.gethostname()
 
 
-def run(request, is_compile, is_background, is_strict):
+def run(request, is_compile, is_background, is_strict, num_procs):
     """ Run the regression tests.
     """
     if is_compile:
         compile_package(True)
+
+    # We can set up a multiprocessing pool right away.
+    mp_pool = mp.Pool(num_procs)
 
     # The late import is required so a potentially just compiled FORTRAN implementation is
     # recognized. This is important for the creation of the regression vault as we want to
@@ -91,31 +98,7 @@ def run(request, is_compile, is_background, is_strict):
         return
 
     if is_creation:
-        tests = []
-        for idx in range(num_tests):
-            print('\n Creating Test ', idx)
-
-            # We impose a couple of constraints that make the requests manageable.
-            np.random.seed(idx)
-            constr = dict()
-            constr['flag_estimation'] = True
-
-            init_dict = generate_init(constr)
-            respy_obj = RespyCls('test.respy.ini')
-            simulate_observed(respy_obj)
-            crit_val = estimate(respy_obj)[1]
-
-            # In rare instances, the value of the criterion function might be too large and thus
-            # printed as a string. This occurred in the past, when the gradient preconditioning
-            # had zero probability observations. We now generate random initialization files with
-            # smaller gradient step sizes.
-            if not isinstance(crit_val, float):
-                raise AssertionError(' ... value of criterion function too large.')
-
-            test = (init_dict, crit_val)
-            tests += [test]
-            print_init_dict(init_dict)
-
+        tests = mp_pool.map(create_single, range(num_tests))
         json.dump(tests, open('regression_vault.respy.json', 'w'))
         return
 
@@ -124,67 +107,21 @@ def run(request, is_compile, is_background, is_strict):
         tests = json.load(open(fname, 'r'))
 
         # We shuffle the order of the tests so checking subset is insightful.
+        run_single = partial(check_single, tests)
         indices = list(range(num_tests))
         np.random.shuffle(indices)
 
-        # We collect the indices for the failed tests which allows for easy investigation.
-        idx_failures = []
-
-        for i, idx in enumerate(indices):
-            print('\n\n Checking Test ', idx, ' at iteration ',  i, '\n')
-
-            init_dict, crit_val = tests[idx]
-
-            # During development it is useful that we can only run the PYTHON versions of the
-            # program.
-            msg = ' ... skipped as required version of package not available'
-            if init_dict['PROGRAM']['version'] == 'FORTRAN' and not IS_FORTRAN:
-                print(msg)
-                continue
-            if init_dict['PROGRAM']['procs'] > 1 and not IS_PARALLEL:
-                print(msg)
-                continue
-
-            # In the past we also had the problem that some of the testing machines report
-            # selective failures when the regression vault was created on another machine.
-            msg = ' ... test is known to fail on this machine'
-            if socket.gethostname() == 'zeus' and idx in []:
-                print(msg)
-                continue
-            if 'acropolis' in socket.gethostname() and idx in [22]:
-                print(msg)
-                continue
-
-            # TODO: Create fresh set of regression tests
-            if os.path.exists('.old.respy.scratch'):
-                init_dict['EDUCATION']['coeffs'].insert(2, 0.0)
-                init_dict['EDUCATION']['coeffs'] += [0.00, 0.00]
-
-                init_dict['EDUCATION']['bounds'].insert(2, (None, None))
-                init_dict['EDUCATION']['bounds'] += [(None, None), (None, None)]
-
-                init_dict['EDUCATION']['fixed'].insert(2, True)
-                init_dict['EDUCATION']['fixed'] += [True, True]
-
-            print_init_dict(init_dict)
-            respy_obj = RespyCls('test.respy.ini')
-            simulate_observed(respy_obj)
-
-            est_val = estimate(respy_obj)[1]
-            try:
-                np.testing.assert_almost_equal(est_val, crit_val)
-                print(' ... success')
-            except AssertionError:
-                print(' ..failure')
-                idx_failures += [idx]
-                # We do not always want to break immediately as for some reason a very small
-                # number of tests might fail on a machine that was not used to create the test
-                # vault.
-                if is_strict:
-                    break
+        ret = []
+        for chunk in get_chunks(indices, num_procs):
+            ret += mp_pool.map(run_single, chunk)
+            # We need an early termination if a strict test run is requested. So we check whether
+            # there are any failures in the last batch.
+            if is_strict and (False in ret):
+                break
 
         # This allows to call this test from another script, that runs other tests as well.
-        is_failure = False
+        is_failure, idx_failures = False, [i for i, x in enumerate(ret) if x is False]
+
         if len(idx_failures) > 0:
             is_failure = True
 
@@ -196,7 +133,7 @@ def run(request, is_compile, is_background, is_strict):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Create or check both vaults')
+    parser = argparse.ArgumentParser(description='Create or check regression vault')
 
     parser.add_argument('--request', action='store', dest='request', help='task to perform',
                         required=True, nargs=2)
@@ -210,9 +147,14 @@ if __name__ == '__main__':
     parser.add_argument('--strict', action='store_true', dest='is_strict', default=False,
                         help='immediate termination if failure')
 
+    parser.add_argument('--procs', action='store', dest='num_procs', default=1, type=int,
+                        help='number of processors')
+
+
     args = parser.parse_args()
     request, is_compile = args.request, args.is_compile,
     is_background = args.is_background
     is_strict = args.is_strict
+    num_procs = args.num_procs
 
-    run(request, is_compile, is_background, is_strict)
+    run(request, is_compile, is_background, is_strict, num_procs)

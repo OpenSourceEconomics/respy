@@ -1,15 +1,14 @@
-from datetime import datetime
-import numpy as np
 import fileinput
-import importlib
-import fnmatch
-import string
-import random
-import shutil
-import shlex
 import glob
+import shlex
 import sys
+from datetime import datetime
+
+import fnmatch
+import importlib
+import numpy as np
 import os
+import shutil
 
 # RESPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.
@@ -22,13 +21,6 @@ PYTHON_EXEC = sys.executable
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import IS_F2PY
-
-
-def get_testdir(length):
-    """ This function creates a random string that is used as the testing
-    subdirectory.
-    """
-    return ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
 
 
 def compile_package():

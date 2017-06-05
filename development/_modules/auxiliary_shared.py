@@ -1,3 +1,4 @@
+import string
 from string import Formatter
 
 import subprocess
@@ -7,6 +8,7 @@ import sys
 import os
 
 import numpy as np
+import random
 
 from config import PACKAGE_DIR
 
@@ -192,3 +194,10 @@ def process_command_line_arguments(description):
     is_debug = args.is_debug
 
     return is_debug
+
+
+def get_random_dirname(length):
+    """ This function creates a random string that is used as the testing
+    subdirectory.
+    """
+    return ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
