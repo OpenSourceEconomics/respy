@@ -5,8 +5,11 @@
 import subprocess
 import argparse
 import shutil
+import sys
 
 from auxiliary_shared import cleanup
+
+PYTHON_EXEC = sys.executable
 
 
 def run(num_procs, num_tests, is_check):
@@ -16,23 +19,24 @@ def run(num_procs, num_tests, is_check):
 
         # This scratch file indicates that the required modification is done properly.
         open('.old.respy.scratch', 'w').close()
-        cmd = './run_regression.py --request check ' + str(num_tests) + ' --strict' + ' --procs ' + str(num_procs)
+        cmd = PYTHON_EXEC + ' run_regression.py --request check '
+        cmd += str(num_tests) + ' --strict' + ' --procs ' + str(num_procs)
         subprocess.check_call(cmd, shell=True)
 
     # We create a new set of regression tests.
     cleanup()
-    cmd = './run_regression.py --request create ' + str(num_tests) + ' --procs ' + str(num_procs)
+    cmd = PYTHON_EXEC + ' run_regression.py --request create ' + str(num_tests)
+    cmd += ' --procs ' + str(num_procs)
     subprocess.check_call(cmd, shell=True)
 
     # These are subsequently copied into the test resources of the package.
-    src = 'regression_vault.respy.json'
-    dst = '../../../respy/tests/resources'
-    shutil.copy(src, dst)
+    shutil.copy('regression_vault.respy.json', '../../../respy/tests/resources')
 
     # Just to be sure, we immediately check them again. This might fail if the random elements are
     # not properly controlled for.
     cleanup()
-    cmd = './run_regression.py --request check ' + str(num_tests) + ' --strict' + ' --procs ' + str(num_procs)
+    cmd = PYTHON_EXEC + ' run_regression.py --request check ' + str(num_tests)
+    cmd += ' --strict' + ' --procs ' + str(num_procs)
     subprocess.check_call(cmd, shell=True)
 
 
