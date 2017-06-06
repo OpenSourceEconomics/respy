@@ -61,19 +61,8 @@ def create_single(idx):
 def check_single(tests, idx):
     """ This function checks a single test from the dictionary.
     """
-    # We need to create an temporary directory, so the multiprocessing does not interfere with
-    # any of the files that are printed and used during the small estimation request.
-    dirname = get_random_dirname(5)
-    os.mkdir(dirname)
-    os.chdir(dirname)
-
+    # Distribute test information.
     init_dict, crit_val = tests[idx]
-
-    # The late import is required so a potentially just compiled FORTRAN implementation is
-    # recognized. This is important for the creation of the regression vault as we want to
-    # include FORTRAN use cases.
-    from respy import RespyCls
-    from respy import estimate
 
     # During development it is useful that we can only run the PYTHON versions of the
     # program.
@@ -85,8 +74,8 @@ def check_single(tests, idx):
         print(msg)
         return None
 
-    # In the past we also had the problem that some of the testing machines report
-    # selective failures when the regression vault was created on another machine.
+    # In the past we also had the problem that some of the testing machines report selective
+    # failures when the regression vault was created on another machine.
     msg = ' ... test is known to fail on this machine'
     if socket.gethostname() == 'zeus' and idx in []:
         print(msg)
@@ -94,6 +83,18 @@ def check_single(tests, idx):
     if 'acropolis' in socket.gethostname() and idx in [22]:
         print(msg)
         return None
+
+    # We need to create an temporary directory, so the multiprocessing does not interfere with
+    # any of the files that are printed and used during the small estimation request.
+    dirname = get_random_dirname(5)
+    os.mkdir(dirname)
+    os.chdir(dirname)
+
+    # The late import is required so a potentially just compiled FORTRAN implementation is
+    # recognized. This is important for the creation of the regression vault as we want to
+    # include FORTRAN use cases.
+    from respy import RespyCls
+    from respy import estimate
 
     # TODO: Create fresh set of regression tests
     if os.path.exists('../.old.respy.scratch'):
