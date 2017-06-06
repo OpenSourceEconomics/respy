@@ -98,7 +98,16 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         return
 
     if is_creation:
-        tests = mp_pool.map(create_single, range(num_tests))
+        # We maintain the separate execution in the case of a single processor for debugging
+        # purposes. The error messages are generally much more informative.
+
+        if num_procs == 1:
+            tests = []
+            for idx in range(num_tests):
+                tests += [create_single(idx)]
+        else:
+            tests = mp_pool.map(create_single, range(num_tests))
+
         json.dump(tests, open('regression_vault.respy.json', 'w'))
         return
 
@@ -111,13 +120,23 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         indices = list(range(num_tests))
         np.random.shuffle(indices)
 
-        ret = []
-        for chunk in get_chunks(indices, num_procs):
-            ret += mp_pool.map(run_single, chunk)
-            # We need an early termination if a strict test run is requested. So we check whether
-            # there are any failures in the last batch.
-            if is_strict and (False in ret):
-                break
+        # We maintain the separate execution in the case of a single processor for debugging
+        # purposes. The error messages are generally much more informative.
+        if num_procs == 1:
+            ret = []
+            for index in indices:
+                ret += [run_single(index)]
+                # We need an early termination if a strict test run is requested.
+                if is_strict and (False in ret):
+                    break
+        else:
+            ret = []
+            for chunk in get_chunks(indices, num_procs):
+                ret += mp_pool.map(run_single, chunk)
+                # We need an early termination if a strict test run is requested. So we check
+                # whether there are any failures in the last batch.
+                if is_strict and (False in ret):
+                    break
 
         # This allows to call this test from another script, that runs other tests as well.
         is_failure, idx_failures = False, [i for i, x in enumerate(ret) if x is False]
