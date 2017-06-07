@@ -53,7 +53,7 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_6(constr)
     elif OLD_RELEASE == '2.0.0.dev14' and NEW_RELEASE == '2.0.0.dev15':
         no_preparations_required(constr)
-    elif OLD_RELEASE == '2.0.0.dev15' and NEW_RELEASE == 'current':
+    elif OLD_RELEASE == '2.0.0.dev15' and NEW_RELEASE == '2.0.0.dev16':
         prepare_release_tests_7(constr)
     else:
         raise AssertionError('Misspecified request ...')

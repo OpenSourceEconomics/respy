@@ -166,12 +166,11 @@ if __name__ == '__main__':
     #   2.0.0.dev15 This is a nuisance release as we did some minor work in the develop branch at
     #               did not create a new branch right away.
     #
-    #   TODO:   Isn't it a better way to have the candidate branch not set up as a release from
-    #           PYPI as well?
+    #   2.0.0.dev16 I added age/period effects to each of the rewards.
     #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev15', 'current'
+    old_release, new_release = '2.0.0.dev15', '2.0.0.dev16'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 
