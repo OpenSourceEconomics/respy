@@ -96,17 +96,6 @@ def check_single(tests, idx):
     from respy import RespyCls
     from respy import estimate
 
-    # TODO: Create fresh set of regression tests
-    if os.path.exists('../.old.respy.scratch'):
-        init_dict['EDUCATION']['coeffs'].insert(2, 0.0)
-        init_dict['EDUCATION']['coeffs'] += [0.00, 0.00]
-
-        init_dict['EDUCATION']['bounds'].insert(2, (None, None))
-        init_dict['EDUCATION']['bounds'] += [(None, None), (None, None)]
-
-        init_dict['EDUCATION']['fixed'].insert(2, True)
-        init_dict['EDUCATION']['fixed'] += [True, True]
-
     print_init_dict(init_dict)
     respy_obj = RespyCls('test.respy.ini')
     simulate_observed(respy_obj)

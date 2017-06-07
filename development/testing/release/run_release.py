@@ -1,17 +1,6 @@
 #!/usr/bin/env python
-""" This script allows to test alternative releases against each other that
-are supposed to lead to the same results for selected requests.
-
-    The usual procedure is as follows:
-
-    1)  A CANDIDATE branch is well tested and a tag for a new development
-        release is created. This tag is then submitted to PYPI as a
-        development release, e.g. 2.0.0.devXX.
-
-    2) Then the release tests are run from the TARGET branch.
-
-    3) The two branches are merged.
-
+""" This script allows to test alternative releases against each other that are supposed to lead
+to the same results for selected requests.
 """
 from datetime import timedelta
 from datetime import datetime
