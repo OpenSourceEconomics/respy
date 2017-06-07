@@ -172,12 +172,15 @@ if __name__ == '__main__':
     #   2.0.0.dev14 We added initial conditions and unobserved type heterogeneity. It needs to be
     #               checked against 2.0.0.dev14
     #
+    #   2.0.0.dev15 This is a nuisance release as we did some minor work in the develop branch at
+    #               did not create a new branch right away.
+    #
     #   TODO:   Isn't it a better way to have the candidate branch not set up as a release from
     #           PYPI as well?
     #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev12', '2.0.0.dev14'
+    old_release, new_release = '2.0.0.dev14', '2.0.0.dev15'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 
