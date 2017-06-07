@@ -115,10 +115,8 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         fname = TEST_RESOURCES_DIR + '/regression_vault.respy.json'
         tests = json.load(open(fname, 'r'))
 
-        # We shuffle the order of the tests so checking subset is insightful.
         run_single = partial(check_single, tests)
         indices = list(range(num_tests))
-        np.random.shuffle(indices)
 
         # We maintain the separate execution in the case of a single processor for debugging
         # purposes. The error messages are generally much more informative.
