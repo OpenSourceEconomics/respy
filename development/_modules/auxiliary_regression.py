@@ -80,7 +80,7 @@ def check_single(tests, idx):
     if socket.gethostname() == 'zeus' and idx in []:
         print(msg)
         return None
-    if 'acropolis' in socket.gethostname() and idx in []:
+    if 'acropolis' in socket.gethostname() and idx in [911]:
         print(msg)
         return None
 
