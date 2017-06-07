@@ -97,15 +97,14 @@ def run(request, is_create, is_background, old_release, new_release):
 
         np.random.seed(seed)
 
-        # The idea is to have all elements that are hand-crafted for the
-        # release comparison in the function below.
+        # The idea is to have all elements that are hand-crafted for the release comparison in
+        # the function below.
         constr = dict()
         constr['flag_estimation'] = True
 
         prepare_release_tests(constr, old_release, new_release)
 
-        # We use the current release for the simulation of the underlying
-        # dataset.
+        # We use the current release for the simulation of the underlying dataset.
         respy_obj = RespyCls('test.respy.ini')
         simulate(respy_obj)
 
@@ -125,10 +124,13 @@ def run(request, is_create, is_background, old_release, new_release):
         crit_val_old = pkl.load(open('old/crit_val.respy.pkl', 'rb'))
         crit_val_new = pkl.load(open('new/crit_val.respy.pkl', 'rb'))
 
-        try:
+        if not is_investigation:
+            try:
+                np.testing.assert_allclose(crit_val_old, crit_val_new)
+            except AssertionError:
+                is_failure = True
+        else:
             np.testing.assert_allclose(crit_val_old, crit_val_new)
-        except AssertionError:
-            is_failure = True
 
         is_timeout = timeout < datetime.now() - start
 
@@ -180,7 +182,7 @@ if __name__ == '__main__':
     #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev14', '2.0.0.dev15'
+    old_release, new_release = '2.0.0.dev15', 'current'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 
