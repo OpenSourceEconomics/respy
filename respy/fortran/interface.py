@@ -167,7 +167,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
 
         # WORK
         for num in [optim_paras['coeffs_a'], optim_paras['coeffs_b']]:
-            fmt_ = ' {:25.15f}' * 11 + '\n'
+            fmt_ = ' {:25.15f}' * 12 + '\n'
             file_.write(fmt_.format(*num))
 
         # EDUCATION

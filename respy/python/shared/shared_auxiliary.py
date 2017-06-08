@@ -49,7 +49,7 @@ def dist_econ_paras(x_all_curre):
     """
     # Auxiliary objects
     num_paras = len(x_all_curre)
-    num_types = int((num_paras - 44 - 1) / 5 + 1)
+    num_types = int((num_paras - 46 - 1) / 5 + 1)
 
     # Discount rates
     delta = x_all_curre[0:1]
@@ -58,18 +58,18 @@ def dist_econ_paras(x_all_curre):
     level = x_all_curre[1:2]
 
     # Occupation A
-    coeffs_a = x_all_curre[2:13]
+    coeffs_a = x_all_curre[2:14]
 
     # Occupation B
-    coeffs_b = x_all_curre[13:24]
+    coeffs_b = x_all_curre[14:26]
 
     # Education
-    coeffs_edu = x_all_curre[24:31]
+    coeffs_edu = x_all_curre[26:33]
 
     # Home
-    coeffs_home = x_all_curre[31:34]
+    coeffs_home = x_all_curre[33:36]
 
-    shocks_coeffs = x_all_curre[34:44]
+    shocks_coeffs = x_all_curre[36:46]
     for i in [0, 4, 7, 9]:
         shocks_coeffs[i] **= 2
 
@@ -82,9 +82,9 @@ def dist_econ_paras(x_all_curre):
     shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
 
     # Type Shares
-    type_shares = x_all_curre[44:44 + num_types]
+    type_shares = x_all_curre[46:46 + num_types]
 
-    type_shifts = np.reshape(x_all_curre[44 + num_types:num_paras], (num_types - 1, 4))
+    type_shifts = np.reshape(x_all_curre[46 + num_types:num_paras], (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
     # Collect arguments
@@ -111,16 +111,16 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     optim_paras['level'] = max(x_all_curre[1:2], 0.00)
 
     # Occupation A
-    optim_paras['coeffs_a'] = x_all_curre[2:13]
+    optim_paras['coeffs_a'] = x_all_curre[2:14]
 
     # Occupation B
-    optim_paras['coeffs_b'] = x_all_curre[13:24]
+    optim_paras['coeffs_b'] = x_all_curre[14:26]
 
     # Education
-    optim_paras['coeffs_edu'] = x_all_curre[24:31]
+    optim_paras['coeffs_edu'] = x_all_curre[26:33]
 
     # Home
-    optim_paras['coeffs_home'] = x_all_curre[31:34]
+    optim_paras['coeffs_home'] = x_all_curre[33:36]
 
     # Cholesky
     optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
@@ -141,13 +141,13 @@ def extract_type_information(x):
     """ This function extracts the information about types from the estimation vector.
     """
 
-    num_types = int((len(x[44:]) - 1) / 5 + 1)
+    num_types = int((len(x[46:]) - 1) / 5 + 1)
 
     # Type shares
-    type_shares = x[44:44 + num_types]
+    type_shares = x[46:46 + num_types]
 
     # Type shifts
-    type_shifts = x[44 + num_types:]
+    type_shifts = x[46 + num_types:]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
@@ -158,10 +158,10 @@ def extract_cholesky(x, info=None):
     """ Construct the Cholesky matrix.
     """
     shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x[34:35]
-    shocks_cholesky[1, :2] = x[35:37]
-    shocks_cholesky[2, :3] = x[37:40]
-    shocks_cholesky[3, :4] = x[40:44]
+    shocks_cholesky[0, :1] = x[36:37]
+    shocks_cholesky[1, :2] = x[37:39]
+    shocks_cholesky[2, :3] = x[39:42]
+    shocks_cholesky[3, :4] = x[42:46]
 
     # Stabilization
     if info is not None:
@@ -364,8 +364,8 @@ def check_model_parameters(optim_paras):
     assert (optim_paras['level'] >= 0)
 
     # Checks for occupations
-    assert (optim_paras['coeffs_a'].size == 11)
-    assert (optim_paras['coeffs_b'].size == 11)
+    assert (optim_paras['coeffs_a'].size == 12)
+    assert (optim_paras['coeffs_b'].size == 12)
     assert (optim_paras['coeffs_edu'].size == 7)
     assert (optim_paras['coeffs_home'].size == 3)
 
@@ -535,7 +535,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(num_types):
                     val = dict_['TYPE_SHARES']['coeffs'][i]
-                    line = format_opt_parameters(val, 44 + i, paras_fixed, paras_bounds)
+                    line = format_opt_parameters(val, 46 + i, paras_fixed, paras_bounds)
                     line[0] = 'share'
                     file_.write(str_optim.format(*line))
 
@@ -546,7 +546,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                     else:
                         for j in range(4):
                             val = dict_['TYPE_SHIFTS']['coeffs'][(i - 1) * 4 + j]
-                            pos = (44 + num_types) + (i - 1) * 4 + j
+                            pos = (46 + num_types) + (i - 1) * 4 + j
                             line = format_opt_parameters(val, pos, paras_fixed, paras_bounds)
                             line[0] = 'shift'
                             file_.write(str_optim.format(*line))
@@ -559,7 +559,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(3):
                     val = dict_['HOME']['coeffs'][i]
-                    line = format_opt_parameters(val, 31 + i, paras_fixed, paras_bounds)
+                    line = format_opt_parameters(val, 33 + i, paras_fixed, paras_bounds)
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -588,7 +588,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(10):
                     val = dict_['SHOCKS']['coeffs'][i]
-                    line = format_opt_parameters(val, 34 + i, paras_fixed, paras_bounds)
+                    line = format_opt_parameters(val, 36 + i, paras_fixed, paras_bounds)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
 
@@ -598,7 +598,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 for i in range(7):
                     val = dict_['EDUCATION']['coeffs'][i]
-                    line = format_opt_parameters(val, i + 24, paras_fixed, paras_bounds)
+                    line = format_opt_parameters(val, i + 26, paras_fixed, paras_bounds)
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -630,12 +630,12 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 if flag == 'OCCUPATION A':
                     identifier = 2
                 if flag == 'OCCUPATION B':
-                    identifier = 13
+                    identifier = 14
 
                 file_.write(flag + '\n\n')
 
                 # Coefficient
-                for j in range(11):
+                for j in range(12):
                     val = dict_[flag]['coeffs'][j]
                     line = format_opt_parameters(val, identifier, paras_fixed, paras_bounds)
                     identifier += 1
@@ -774,24 +774,24 @@ def get_optim_paras(optim_paras, num_paras, which, is_debug):
     x[1:2] = optim_paras['level']
 
     # Occupation A
-    x[2:13] = optim_paras['coeffs_a']
+    x[2:14] = optim_paras['coeffs_a']
 
     # Occupation B
-    x[13:24] = optim_paras['coeffs_b']
+    x[14:26] = optim_paras['coeffs_b']
 
     # Education
-    x[24:31] = optim_paras['coeffs_edu']
+    x[26:33] = optim_paras['coeffs_edu']
 
     # Home
-    x[31:34] = optim_paras['coeffs_home']
+    x[33:36] = optim_paras['coeffs_home']
 
     # Shocks
-    x[34:44] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+    x[36:46] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Shares
-    x[44:44 + num_types] = optim_paras['type_shares']
+    x[46:46 + num_types] = optim_paras['type_shares']
 
-    x[44 + num_types:num_paras] = optim_paras['type_shifts'].flatten()[4:]
+    x[46 + num_types:num_paras] = optim_paras['type_shifts'].flatten()[4:]
 
     # Checks
     if is_debug:

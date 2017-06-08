@@ -202,7 +202,7 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2, num_types_int)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 4, num_types_int)
     INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, max_states_period_int, 5)
     INTEGER, INTENT(OUT)            :: states_number_period_int(num_periods_int)
 
@@ -227,8 +227,8 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(11)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(11)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(12)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(12)
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta(1)
 
@@ -483,7 +483,7 @@ SUBROUTINE wrapper_create_state_space(states_all_int, states_number_period_int, 
 
     !/* external objects        */
 
-    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 2, num_types_int)
+    INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 4, num_types_int)
     INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, 100000, 5)
     INTEGER, INTENT(OUT)            :: states_number_period_int(num_periods_int)
     INTEGER, INTENT(OUT)            :: max_states_period_int
@@ -545,8 +545,8 @@ SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, 
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(11)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(11)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(12)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(12)
 
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
     INTEGER, INTENT(IN)             :: max_states_period_int
@@ -1450,7 +1450,7 @@ SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 
     DOUBLE PRECISION, INTENT(OUT)   :: shocks_cholesky(4, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(44)
+    DOUBLE PRECISION, INTENT(IN)    :: x(46)
 
     INTEGER, INTENT(OUT)            :: info
 

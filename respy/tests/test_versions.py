@@ -152,7 +152,7 @@ class TestClass(object):
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
 
-        for version in ['FORTRAN', 'PYTHON']:
+        for version in ['PYTHON', 'FORTRAN']:
 
             respy_obj.unlock()
 

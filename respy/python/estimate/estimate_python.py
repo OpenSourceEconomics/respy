@@ -11,7 +11,6 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods, num_points_i
         num_obs_agent, num_types, edu_spec, ambi_spec, optimizer_options):
     """ This function provides the wrapper for optimization routines.
     """
-
     optim_paras = dist_optim_paras(x, is_debug)
 
     # Calculate all systematic rewards

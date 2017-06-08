@@ -401,7 +401,7 @@ class TestClass(object):
         num_types = dist_class_attributes(respy_obj, 'num_types')[0]
 
         # After scaling the bounds might not fit anymore. Thus we simply remove them.
-        lower, upper = 44, 44 + num_types
+        lower, upper = 46, 46 + num_types
         respy_obj.attr['optim_paras']['paras_bounds'][lower:upper] = [[0.0, None]] * num_types
 
         base_val = None

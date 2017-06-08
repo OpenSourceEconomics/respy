@@ -90,8 +90,8 @@ class TestClass(object):
         # such as (1) separate cost of re-entry into education, (2) sheepskin effects,
         # and (3) bonus for any experience in occupation.
         init_dict['EDUCATION']['coeffs'][-1] = init_dict['EDUCATION']['coeffs'][-2]
-        init_dict['OCCUPATION A']['coeffs'][-3:] = [0.0, 0.0, 0.0]
-        init_dict['OCCUPATION B']['coeffs'][-3:] = [0.0, 0.0, 0.0]
+        init_dict['OCCUPATION A']['coeffs'][-4:] = [0.0, 0.0, 0.0, 0.0]
+        init_dict['OCCUPATION B']['coeffs'][-4:] = [0.0, 0.0, 0.0, 0.0]
 
         print_init_dict(init_dict)
 
@@ -130,5 +130,8 @@ class TestClass(object):
 
         fort = pd.DataFrame(np.array(np.genfromtxt('ftest.txt', missing_values='.'), ndmin=2)[:,
                             -4:], columns=column_labels).astype(np.float)
+
+        # The simulated dataset from FORTRAN includes an indicator for the lagged activities.
+        py['Lagged_Activity'] = py['Lagged_Activity'].map({0: 0.0, 1: 1.0, 2: 0.0, 3: 0.0})
 
         assert_frame_equal(py, fort)
