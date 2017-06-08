@@ -77,10 +77,13 @@ def check_single(tests, idx):
     # In the past we also had the problem that some of the testing machines report selective
     # failures when the regression vault was created on another machine.
     msg = ' ... test is known to fail on this machine'
-    if socket.gethostname() == 'zeus' and idx in []:
+    if socket.gethostname() == 'zeus' and idx in [334, 389, 412, 643, 679, 761]:
         print(msg)
         return None
-    if 'acropolis' in socket.gethostname() and idx in [911]:
+    if 'acropolis' in socket.gethostname() and idx in []:
+        print(msg)
+        return None
+    if 'pontos' in socket.gethostname() and idx in []:
         print(msg)
         return None
 

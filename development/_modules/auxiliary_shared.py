@@ -120,7 +120,8 @@ def send_notification(which, **kwargs):
     elif which == 'regression':
         subject = ' RESPY: Regression Testing'
         if is_failed:
-            message = 'Failure during regression testing for test(s): ' + idx_failures + '.'
+            message = 'Failure during regression testing @' + hostname + ' for test(s): ' + \
+                      idx_failures + '.'
         else:
             message = ' Regression testing is completed on @' + hostname + '.'
 
