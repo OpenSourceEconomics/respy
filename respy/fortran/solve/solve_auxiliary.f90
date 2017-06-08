@@ -37,13 +37,12 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     !/* internals objects       */
 
     INTEGER(our_int)                    :: states_all_tmp(num_periods, 1000000, 5)
+    INTEGER(our_int)                    :: activity_lagged
     INTEGER(our_int)                    :: num_edu_start
-    INTEGER(our_int)                    :: edu_lagged
     INTEGER(our_int)                    :: edu_start
     INTEGER(our_int)                    :: edu_add
     INTEGER(our_int)                    :: min_idx
     INTEGER(our_int)                    :: period
-    INTEGER(our_int)                    :: total
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
@@ -59,7 +58,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     min_idx = edu_spec%max + 1
 
     ! Allocate containers that contain information about the model structure
-    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types))
+    ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4    , num_types))
     ALLOCATE(states_number_period(num_periods))
 
     ! Initialize output
@@ -90,55 +89,50 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                         ! Loop over all admissible additional education levels
                         DO edu_add = 0, num_periods
 
+                            ! Note that the total number of activities does not have is less or equal to the total possible number of activities as the rest is implicitly filled with leisure.
+                            IF (edu_add + exp_a + exp_b .GT. period) THEN
+                                CYCLE
+                            END IF
+
                             ! Agent cannot attain more additional education than (EDU_MAX - EDU_START).
                             IF (edu_add .GT. (edu_spec%max - edu_start)) THEN
                                 CYCLE
                             END IF
 
-                            ! Loop over all admissible values for leisure. Note that the leisure variable takes only zero/value. The time path does not matter.
-                            DO edu_lagged = 0, 1
+                            ! Loop over all admissible values for the lagged activity: (0) Home, (1) Education, (2) Occupation A, and (3) Occupation B.
+                            DO activity_lagged = 0, 3
 
-                                ! Check if lagged education admissible. (1) In the first period all agents have lagged schooling equal to one.
-                                IF (edu_lagged .EQ. zero_int) THEN
-                                    IF (period .EQ. zero_int) THEN
-                                        CYCLE
-                                    END IF
-                                END IF
+                                ! (0, 1) Whenever an agent has only acquired additional education, then activity_lagged cannot be zero.
+                                IF ((activity_lagged .EQ. zero_int) .AND. (edu_add .EQ. period)) CYCLE
 
-                                ! (2) Whenever an agent has not acquired any additional education and we are not in the first period, then this cannot be the case.
-                                IF (edu_lagged .EQ. one_int) THEN
-                                    IF (edu_add .EQ. zero_int) THEN
-                                        IF (period .GT. zero_int) THEN
-                                            CYCLE
-                                        END IF
-                                    END IF
-                                END IF
+                                ! (0, 2) Whenever an agent has only worked in Occupation A, then activity_lagged cannot be zero.
+                                IF ((activity_lagged .EQ. zero_int) .AND. (exp_a .EQ. period)) CYCLE
 
-                                ! (3) Whenever an agent has only acquired additional education, then edu_lagged cannot be zero.
-                                IF (edu_lagged .EQ. zero_int) THEN
-                                    IF (edu_add .EQ. period) THEN
-                                        CYCLE
-                                    END IF
-                                END IF
+                                ! (0, 3) Whenever an agent has only worked in Occupation B, then activity_lagged cannot be zero.
+                                IF ((activity_lagged .EQ. zero_int) .AND. (exp_b .EQ. period)) CYCLE
 
-                                ! Check if admissible for time constraints
-                                total = edu_add + exp_a + exp_b
+                                ! (1, 1) In the first period all agents have lagged schooling equal to one.
+                                IF ((activity_lagged .NE. one_int) .AND. (period .EQ. zero_int)) CYCLE
 
-                                ! Note that the total number of activities does not have is less or equal to the total possible number of activities as the rest is implicitly filled with leisure.
-                                IF (total .GT. period) THEN
-                                    CYCLE
-                                END IF
+                                ! (1, 2) Whenever an agent has not acquired any additional education and we are not in the first period, then lagged education cannot take a value of one.
+                                IF ((activity_lagged .EQ. one_int) .AND. (edu_add .EQ. zero_int) .AND. (period .GT. zero_int)) CYCLE
+
+                                ! (2, 1) An individual that has never worked in Occupation A cannot have a that lagged activity.
+                                IF ((activity_lagged .EQ. two_int) .AND. (exp_a .EQ. zero_int)) CYCLE
+
+                                ! (3, 1) An individual that has never worked in Occupation B cannot have a that lagged activity.
+                                IF ((activity_lagged .EQ. three_int) .AND. (exp_b .EQ. zero_int)) CYCLE
 
                                 ! If we have multiple initial conditions it might well be the case that we have a duplicate state, i.e. the same state is possible with other initial condition that period.
-                                IF (mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , edu_lagged + 1, type_ + 1) .NE. MISSING_INT)  THEN
+                                IF (mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , activity_lagged + 1, type_ + 1) .NE. MISSING_INT)  THEN
                                     CYCLE
                                 END IF
 
                                 ! Collect mapping of state space to array index.
-                                mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , edu_lagged + 1, type_ + 1) = k
+                                mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , activity_lagged + 1, type_ + 1) = k
 
                                 ! Collect all possible realizations of state space
-                                states_all_tmp(period + 1, k + 1, :) = (/ exp_a, exp_b, edu_start + edu_add, edu_lagged, type_ /)
+                                states_all_tmp(period + 1, k + 1, :) = (/ exp_a, exp_b, edu_start + edu_add, activity_lagged, type_ /)
 
                                 ! Update count
                                 k = k + 1
@@ -185,6 +179,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     !/* internals objects       */
 
+    INTEGER(our_int)                    :: activity_lagged
     INTEGER(our_int)                    :: hs_graduate
     INTEGER(our_int)                    :: co_graduate
     INTEGER(our_int)                    :: edu_lagged
@@ -229,8 +224,10 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             exp_a = states_all(period, k, 1)
             exp_b = states_all(period, k, 2)
             edu = states_all(period, k, 3)
-            edu_lagged = states_all(period, k, 4)
+            activity_lagged = states_all(period, k, 4)
             type_ = states_all(period, k, 5)
+
+            edu_lagged = TRANSFER(activity_lagged .EQ. one_int, edu_lagged)
 
             ! Construct auxiliary information
             hs_graduate = TRANSFER(edu .GE. 12, hs_graduate)
@@ -318,7 +315,7 @@ SUBROUTINE fort_backward_induction(periods_emax, opt_ambi_details, num_periods, 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: max_states_period
@@ -562,7 +559,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: shifts(4)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: period
@@ -621,7 +618,7 @@ SUBROUTINE get_endogenous_variable(endogenous, opt_ambi_details, period, num_sta
     REAL(our_dble), INTENT(IN)          :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)          :: maxe(num_states)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: num_states
     INTEGER(our_int), INTENT(IN)        :: period

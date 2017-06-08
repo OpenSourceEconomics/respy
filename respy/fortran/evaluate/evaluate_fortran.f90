@@ -42,7 +42,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
     REAL(our_dble), INTENT(IN)      :: tau
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_obs_agent(num_agents_contrib)
     INTEGER(our_int), INTENT(IN)    :: num_agents_contrib
@@ -68,7 +68,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble)                  :: dist
     REAL(our_dble)                  :: wage
 
-    INTEGER(our_int)                :: edu_lagged
+    INTEGER(our_int)                :: activity_lagged
     INTEGER(our_int)                :: counts(4)
     INTEGER(our_int)                :: row_start
     INTEGER(our_int)                :: num_rows
@@ -120,7 +120,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 exp_a = INT(data_evaluate(row_start + p, 5))
                 exp_b = INT(data_evaluate(row_start + p, 6))
                 edu = INT(data_evaluate(row_start + p, 7))
-                edu_lagged = INT(data_evaluate(row_start + p, 8))
+                activity_lagged = INT(data_evaluate(row_start + p, 8))
                 choice = INT(data_evaluate(row_start + p, 3))
                 wage = data_evaluate(row_start + p, 4)
 
@@ -135,7 +135,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 draws_prob_raw = periods_draws_prob(period + 1, :, :)
 
                 ! Get state indicator to obtain the systematic component of the agents rewards. These feed into the simulation of choice probabilities.
-                k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1, type_ + 1)
+                k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, activity_lagged + 1, type_ + 1)
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 ! If an agent is observed working, then the the labor market shocks are observed and the conditional distribution is used to determine the choice probabilities.

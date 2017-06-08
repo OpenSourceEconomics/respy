@@ -37,7 +37,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
                 period = int(data_array[row_start + p, 1])
                 # Extract observable components of state space as well as agent decision.
-                exp_a, exp_b, edu, edu_lagged = data_array[row_start + p, 4:8].astype(int)
+                exp_a, exp_b, edu, activity_lagged = data_array[row_start + p, 4:8].astype(int)
                 choice = data_array[row_start + p, 2].astype(int)
                 wage = data_array[row_start + p, 3]
 
@@ -54,7 +54,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
                 # Get state indicator to obtain the systematic component of the  agents rewards.
                 # These feed into the simulation of choice probabilities.
-                k = mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged, type_]
+                k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged, type_]
                 rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # If an agent is observed working, then the the labor market shocks are observed and

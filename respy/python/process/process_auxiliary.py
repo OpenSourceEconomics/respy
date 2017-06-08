@@ -40,10 +40,10 @@ def check_dataset_est(data_frame, respy_obj):
 
     # Checks for LAGGED SCHOOLING. We also know that all individuals were in school when entering
     # the model.
-    dat = data_frame['Lagged_Schooling'].isin([0, 1])
+    dat = data_frame['Lagged_Activity'].isin(range(4))
     np.testing.assert_equal(dat.all(), True)
 
-    dat = data_frame['Lagged_Schooling'][:, 0] == 1
+    dat = data_frame['Lagged_Activity'][:, 0] == 1
     np.testing.assert_equal(dat.all(), True)
 
     # Checks for YEARS SCHOOLING. We also know that the initial years of schooling can only take

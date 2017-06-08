@@ -55,7 +55,7 @@ OPT_AMB_FORT = ['FORT-SLSQP']
 DATA_LABELS_EST = []
 DATA_LABELS_EST += ['Identifier', 'Period', 'Choice', 'Wage']
 DATA_LABELS_EST += ['Experience_A', 'Experience_B', 'Years_Schooling']
-DATA_LABELS_EST += ['Lagged_Schooling']
+DATA_LABELS_EST += ['Lagged_Activity']
 
 # There is additional information available in a simulated dataset.
 DATA_LABELS_SIM = DATA_LABELS_EST[:]

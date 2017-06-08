@@ -382,7 +382,7 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
     TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: period
@@ -436,7 +436,7 @@ SUBROUTINE get_emaxs(emaxs, mapping_state_idx, period, periods_emax, k, states_a
 
     REAL(our_dble), INTENT(OUT)     :: emaxs(4)
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
@@ -445,7 +445,6 @@ SUBROUTINE get_emaxs(emaxs, mapping_state_idx, period, periods_emax, k, states_a
 
     !/* internals objects       */
 
-    INTEGER(our_int)                :: edu_lagged
     INTEGER(our_int)                :: future_idx
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
@@ -460,15 +459,14 @@ SUBROUTINE get_emaxs(emaxs, mapping_state_idx, period, periods_emax, k, states_a
     exp_a = states_all(period + 1, k + 1, 1)
     exp_b = states_all(period + 1, k + 1, 2)
     edu = states_all(period + 1, k + 1, 3)
-    edu_lagged = states_all(period + 1, k + 1, 4)
     type_ = states_all(period + 1, k + 1, 5)
 
     ! Working in Occupation A
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1, type_ + 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 3, type_ + 1)
     emaxs(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
     ! Working in Occupation B
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 1, type_ + 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 4, type_ + 1)
     emaxs(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
     ! Increasing schooling. Note that adding an additional year of schooling is only possible for those that have strictly less than the maximum level of additional education allowed.
@@ -744,7 +742,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
     !/* external objects        */
 
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: states_number_period(num_periods)
 
@@ -781,7 +779,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
             DO i = 1, num_periods
                 DO j = 1, num_periods
                     DO k = 1, min_idx
-                        DO l = 1, 2
+                        DO l = 1, 4
                             WRITE(99, 1800) mapping_state_idx(period, i, j, k, l, :)
                         END DO
                     END DO

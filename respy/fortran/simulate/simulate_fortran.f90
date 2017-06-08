@@ -32,7 +32,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     REAL(our_dble), INTENT(IN)      :: periods_draws_sims(num_periods, num_agents_sim, 4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
 
-    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_agents_sim
     INTEGER(our_int), INTENT(IN)    :: num_types
@@ -55,7 +55,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     INTEGER(our_int)                :: edu_start(num_agents_sim)
     INTEGER(our_int)                :: types(num_agents_sim)
     INTEGER(our_int)                :: current_state(5)
-    INTEGER(our_int)                :: edu_lagged
+    INTEGER(our_int)                :: activity_lagged
     INTEGER(our_int)                :: choice(1)
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: exp_a
@@ -109,11 +109,11 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             exp_a = current_state(1)
             exp_b = current_state(2)
             edu = current_state(3)
-            edu_lagged = current_state(4)
+            activity_lagged = current_state(4)
             type_ = current_state(5)
 
             ! Getting state index
-            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, edu_lagged + 1, type_ + 1)
+            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, activity_lagged + 1, type_ + 1)
 
             ! Write agent identifier and current period to data frame
             data_sim(count + 1, 1) = DBLE(i)
@@ -157,7 +157,12 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
                 current_state(3) = current_state(3) + 1
             END IF
 
-            IF (choice(1) .EQ. three_int) THEN
+            !# Update lagged activity variable.
+            IF (choice(1) .EQ. one_int) THEN
+                current_state(4) = two_int
+            ELSEIF (choice(1) .EQ. two_int) THEN
+                current_state(4) = three_int
+            ELSEIF (choice(1) .EQ. three_int) THEN
                 current_state(4) = one_int
             ELSE
                 current_state(4) = zero_int

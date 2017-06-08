@@ -74,6 +74,12 @@ def check_single(tests, idx):
         print(msg)
         return None
 
+    # TODO: Create new regression tests ...
+    msg = ' ... skipped due to changed interpolation setup'
+    if init_dict['INTERPOLATION']['flag'] == 'True':
+        print(msg)
+        return None
+
     # In the past we also had the problem that some of the testing machines report selective
     # failures when the regression vault was created on another machine.
     msg = ' ... test is known to fail on this machine'

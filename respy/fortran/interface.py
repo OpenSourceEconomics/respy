@@ -81,7 +81,7 @@ def get_results(num_periods, edu_spec, num_agents_sim, num_types, which):
 
     os.unlink('.max_states_period.resfort.dat')
 
-    shape = (num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    shape = (num_periods, num_periods, num_periods, min_idx, 4, num_types)
     mapping_state_idx = read_data('mapping_state_idx', shape).astype('int')
 
     shape = (num_periods, )

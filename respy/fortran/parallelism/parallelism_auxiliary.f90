@@ -234,7 +234,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
 
-    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: num_states_slaves(num_periods, num_slaves)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)

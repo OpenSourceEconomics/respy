@@ -26,7 +26,7 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     states_all = np.tile(MISSING_INT, (num_periods, 100000, 5))
 
     # Array for the mapping of state space values to indices in variety of matrices.
-    shape = (num_periods, num_periods, num_periods, min_idx, 2, num_types)
+    shape = (num_periods, num_periods, num_periods, min_idx, 4, num_types)
     mapping_state_idx = np.tile(MISSING_INT, shape)
 
     # Array for maximum number of realizations of state space by period
@@ -53,51 +53,73 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                         # Loop over all admissible additional education levels
                         for edu_add in range(num_periods + 1):
 
+                            # Check if admissible for time constraints. Note that the total
+                            # number of activities does not have is less or equal to the
+                            # total possible number of activities as the rest is implicitly
+                            # filled with leisure.
+                            if edu_add + exp_a + exp_b > period:
+                                continue
+
                             # Agent cannot attain more additional education than (EDU_MAX -
                             # EDU_START).
                             if edu_add > (edu_spec['max'] - edu_start):
                                 continue
 
-                            # Loop over all admissible values for leisure. Note that the leisure
-                            # variable takes only zero/value. The time path does not matter.
-                            for edu_lagged in [0, 1]:
+                            # Loop over all admissible values for the lagged activity: (0) Home,
+                            # (1) Education, (2) Occupation A, and (3) Occupation B.
+                            for activity_lagged in [0, 1, 2, 3]:
 
-                                # Check if lagged education admissible. (1) In the first period all
-                                # agents have lagged schooling equal to one.
-                                if (edu_lagged == 0) and (period == 0):
-                                    continue
-                                # (2) Whenever an agent has not acquired any additional education
-                                # and we are not in the first period, then this cannot be the case.
-                                if (edu_lagged == 1) and (edu_add == 0) and (period > 0):
-                                    continue
-                                # (3) Whenever an agent has only acquired additional education,
-                                # then edu_lagged cannot be zero.
-                                if (edu_lagged == 0) and (edu_add == period):
+                                # (0, 1) Whenever an agent has only acquired additional education,
+                                # then activity_lagged cannot be zero.
+                                if (activity_lagged == 0) and (edu_add == period):
                                     continue
 
-                                # Check if admissible for time constraints
-                                total = edu_add + exp_a + exp_b
+                                # (0, 2) Whenever an agent has only worked in Occupation A,
+                                # then activity_lagged cannot be zero.
+                                if (activity_lagged == 0) and (exp_a == period):
+                                    continue
 
-                                # Note that the total number of activities does not have is less or
-                                # equal to the total possible number of activities as the rest is
-                                # implicitly filled with leisure.
-                                if total > period:
+                                # (0, 3) Whenever an agent has only worked in Occupation B,
+                                # then activity lagged cannot be zero.
+                                if (activity_lagged == 0) and (exp_b == period):
+                                    continue
+
+                                # (1, 1) In the first period all agents have lagged schooling equal
+                                # to one and nothing else.
+                                if (activity_lagged != 1) and (period == 0):
+                                    continue
+
+                                # TODO: Can I get this better? without the third condition.
+                                # (1, 2) Whenever an agent has not acquired any additional education
+                                # and we are not in the first period, then lagged activity
+                                # cannot take a value of one.
+                                if (activity_lagged == 1) and (edu_add == 0) and (period > 0):
+                                    continue
+
+                                # (2, 1) An individual that has never worked in Occupation A
+                                # cannot have a that lagged activity.
+                                if (activity_lagged == 2) and (exp_a == 0):
+                                    continue
+
+                                # (3, 1) An individual that has never worked in Occupation B
+                                # cannot have a that lagged activity.
+                                if (activity_lagged == 3) and (exp_b == 0):
                                     continue
 
                                 # If we have multiple initial conditions it might well be the
                                 # case that we have a duplicate state, i.e. the same state is
                                 # possible with other initial condition that period.
                                 if mapping_state_idx[period, exp_a, exp_b, edu_start + edu_add,
-                                                     edu_lagged, type_] != MISSING_INT:
+                                                     activity_lagged, type_] != MISSING_INT:
                                     continue
 
                                 # Collect mapping of state space to array index.
                                 mapping_state_idx[period, exp_a, exp_b, edu_start + edu_add,
-                                                  edu_lagged, type_] = k
+                                                  activity_lagged, type_] = k
 
                                 # Collect all possible realizations of state space
                                 states_all[period, k, :] = [exp_a, exp_b, edu_start + edu_add,
-                                                            edu_lagged, type_]
+                                                            activity_lagged, type_]
 
                                 # Update count
                                 k += 1
@@ -130,7 +152,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
         for k in range(states_number_period[period]):
 
             # Distribute state space
-            exp_a, exp_b, edu, edu_lagged, type_ = states_all[period, k, :]
+            exp_a, exp_b, edu, activity_lagged, type_ = states_all[period, k, :]
 
             # Initialize container
             rewards = np.tile(np.nan, 4)
@@ -141,6 +163,8 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             any_exp_a = float(exp_a > 0)
             any_exp_b = float(exp_b > 0)
             is_minor = float(period < 2)
+
+            edu_lagged = int(activity_lagged == 1)
 
             is_return_not_high_school = float((not edu_lagged) and (not hs_graduate))
             is_return_high_school = float((not edu_lagged) and hs_graduate)

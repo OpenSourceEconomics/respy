@@ -53,8 +53,8 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
         for period in range(num_periods):
 
             # Distribute state space
-            exp_a, exp_b, edu, edu_lagged, type_ = current_state
-            k = mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged, type_]
+            exp_a, exp_b, edu, activity_lagged, type_ = current_state
+            k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged, type_]
 
             # Write agent identifier and current period to data frame
             dataset[count, :2] = i, period
@@ -107,11 +107,15 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             elif max_idx == 2:
                 current_state[2] += 1
 
-            # Update lagged education
-            current_state[3] = 0
-
-            if max_idx == 2:
+            # Update lagged activity variable.
+            if max_idx == 0:
+                current_state[3] = 2
+            elif max_idx == 1:
+                current_state[3] = 3
+            elif max_idx == 2:
                 current_state[3] = 1
+            else:
+                current_state[3] = 0
 
             # Update row indicator
             count += 1

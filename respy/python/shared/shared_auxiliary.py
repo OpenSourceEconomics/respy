@@ -226,11 +226,11 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     emaxs = np.tile(np.nan, 4)
 
     # Working in Occupation A
-    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 0, type_]
+    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 2, type_]
     emaxs[0] = periods_emax[period + 1, future_idx]
 
     # Working in Occupation B
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 0, type_]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 3, type_]
     emaxs[1] = periods_emax[period + 1, future_idx]
 
     # Increasing schooling. Note that adding an additional year of schooling is only possible for
