@@ -38,13 +38,21 @@ def check_dataset_est(data_frame, respy_obj):
         dat = data_frame[label][:, 0] == 0
         np.testing.assert_equal(dat.all(), True)
 
-    # Checks for LAGGED SCHOOLING. We also know that all individuals were in school when entering
-    # the model.
+    # Checks for LAGGED ACTIVITY. We also know that all individuals were in school when entering
+    # the model. Just to be sure, we also construct the correct lagged activity here as well and
+    # compare it to the one provided in the dataset.
     dat = data_frame['Lagged_Activity'].isin(range(4))
     np.testing.assert_equal(dat.all(), True)
 
     dat = data_frame['Lagged_Activity'][:, 0] == 1
     np.testing.assert_equal(dat.all(), True)
+
+    data_frame['TEMP'] = data_frame.groupby(level='Identifier')['Choice'].shift(+1)
+    data_frame['TEMP'] = data_frame['TEMP'].map({1: 2, 2: 3, 3: 1, 4: 0})
+    data_frame['TEMP'].loc[:, 0] = 1
+    data_frame['TEMP'] = data_frame['TEMP'].astype(int)
+    np.testing.assert_equal(data_frame['TEMP'].equals(data_frame['Lagged_Activity']), True)
+    del data_frame['TEMP']
 
     # Checks for YEARS SCHOOLING. We also know that the initial years of schooling can only take
     # values specified in the initialization file.
