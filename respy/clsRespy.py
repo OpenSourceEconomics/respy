@@ -37,8 +37,8 @@ OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
 # covariance structure need to be mapped to the Cholesky factors that are the parameters the
 # optimizer actually iterates on.
 PARAS_MAPPING = []
-PARAS_MAPPING += [(34, 34), (35, 35), (36, 37), (37, 40), (38, 36), (39, 38), (40, 41), (41, 39)]
-PARAS_MAPPING += [(42, 42), (43, 43)]
+PARAS_MAPPING += [(36, 36), (37, 37), (38, 39), (39, 42), (40, 38), (41, 40), (42, 43), (43, 41)]
+PARAS_MAPPING += [(44, 44), (45, 45)]
 
 
 class RespyCls(object):

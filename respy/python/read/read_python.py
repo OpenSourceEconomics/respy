@@ -20,10 +20,10 @@ def read(fname):
             list_ = shlex.split(line)
 
             # Determine special cases
-            is_empty, is_group = _process_cases(list_)
+            is_empty, is_group, is_comment = _process_cases(list_)
 
             # Applicability
-            if is_empty:
+            if is_empty or is_comment:
                 continue
 
             # Prepare dictionary
@@ -172,12 +172,15 @@ def _process_cases(list_):
 
     if not is_empty:
         is_group = list_[0].isupper()
+        is_comment = list_[0] == '#'
     else:
         is_group = False
+        is_comment = False
 
     # Antibugging
-    assert (is_group in [True, False])
-    assert (is_empty in [True, False])
+    assert is_group in [True, False]
+    assert is_empty in [True, False]
+    assert is_comment in [True, False]
 
     # Finishing
-    return is_empty, is_group
+    return is_empty, is_group, is_comment

@@ -45,13 +45,13 @@ np.random.seed(seed)
 test_dict = get_test_dict(PACKAGE_DIR + '/respy/tests')
 module, method = get_random_request(test_dict)
 
-module, method = 'test_versions', 'test_2'
+module, method = 'test_integration', 'test_8'
 count = 0
 #os.system('git clean -d -f')
-for i in range(1):
+for i in range(100):
 
-    seed = 1223
-#    seed = i + 3825
+    #seed = 3829
+    seed = i + 3825
     #seed = 38280
     np.random.seed(seed)
     print("seed ", seed)
