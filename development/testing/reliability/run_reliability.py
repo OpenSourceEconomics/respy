@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     # The following key value pairs describe the quantification exercise itself.
     spec_dict = dict()
-    spec_dict['fnames'] = ['kw_data_one_types.ini']
+    spec_dict['fnames'] = ['reliability_short.ini']
 
     # The following key-value pairs are the requested updates from the baseline initialization
     # file.
@@ -27,9 +27,9 @@ if __name__ == '__main__':
     # model. The requested number of processors is never larger than the one specified as part of
     # the update dictionary.
     spec_dict['procs'] = dict()
-    spec_dict['procs']['ambiguity'] = 4
-    spec_dict['procs']['static'] = 3
-    spec_dict['procs']['truth'] = 2
+    spec_dict['procs']['ambiguity'] = 1
+    spec_dict['procs']['static'] = 1
+    spec_dict['procs']['truth'] = 1
     spec_dict['procs']['risk'] = 1
 
     # The following key-value pair describes the debugging setup.
