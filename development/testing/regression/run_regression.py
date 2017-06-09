@@ -11,7 +11,6 @@ import numpy as np
 import argparse
 import socket
 import json
-import os
 
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package

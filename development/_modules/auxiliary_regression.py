@@ -75,20 +75,20 @@ def check_single(tests, idx):
         return None
 
     # TODO: Create new regression tests ...
-    msg = ' ... skipped due to changed interpolation setup'
-    if init_dict['INTERPOLATION']['flag'] == 'True':
-        print(msg)
-        return None
-
-    for name in ['OCCUPATION A', 'OCCUPATION B']:
-        init_dict[name]['coeffs'].insert(8, 0.00)
-        init_dict[name]['bounds'].insert(8, [None, None])
-        init_dict[name]['fixed'].insert(8, True)
+    if os.path.exists('.old.respy.scratch'):
+        msg = ' ... skipped due to changed interpolation setup'
+        if init_dict['INTERPOLATION']['flag'] == 'True':
+            print(msg)
+            return None
+        for name in ['OCCUPATION A', 'OCCUPATION B']:
+            init_dict[name]['coeffs'].insert(8, 0.00)
+            init_dict[name]['bounds'].insert(8, [None, None])
+            init_dict[name]['fixed'].insert(8, True)
 
     # In the past we also had the problem that some of the testing machines report selective
     # failures when the regression vault was created on another machine.
     msg = ' ... test is known to fail on this machine'
-    if socket.gethostname() == 'zeus' and idx in [334, 389, 412, 643, 679, 761]:
+    if 'zeus' in socket.gethostname() and idx in []:
         print(msg)
         return None
     if 'acropolis' in socket.gethostname() and idx in []:
