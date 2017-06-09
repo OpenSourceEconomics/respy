@@ -66,13 +66,6 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         tests = json.load(open(fname, 'r'))
 
         init_dict, crit_val = tests[idx]
-
-        # TODO: Create new set of regression tests.
-        for name in ['OCCUPATION A', 'OCCUPATION B']:
-            init_dict[name]['coeffs'].insert(8, 0.00)
-            init_dict[name]['bounds'].insert(8, [None, None])
-            init_dict[name]['fixed'].insert(8, True)
-
         print_init_dict(init_dict)
         respy_obj = RespyCls('test.respy.ini')
 
