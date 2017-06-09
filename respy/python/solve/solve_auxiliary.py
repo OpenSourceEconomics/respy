@@ -89,7 +89,6 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                 if (activity_lagged != 1) and (period == 0):
                                     continue
 
-                                # TODO: Can I get this better? without the third condition.
                                 # (1, 2) Whenever an agent has not acquired any additional education
                                 # and we are not in the first period, then lagged activity
                                 # cannot take a value of one.

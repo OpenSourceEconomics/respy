@@ -90,14 +90,10 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                         DO edu_add = 0, num_periods
 
                             ! Note that the total number of activities does not have is less or equal to the total possible number of activities as the rest is implicitly filled with leisure.
-                            IF (edu_add + exp_a + exp_b .GT. period) THEN
-                                CYCLE
-                            END IF
+                            IF (edu_add + exp_a + exp_b .GT. period) CYCLE
 
                             ! Agent cannot attain more additional education than (EDU_MAX - EDU_START).
-                            IF (edu_add .GT. (edu_spec%max - edu_start)) THEN
-                                CYCLE
-                            END IF
+                            IF (edu_add .GT. (edu_spec%max - edu_start)) CYCLE
 
                             ! Loop over all admissible values for the lagged activity: (0) Home, (1) Education, (2) Occupation A, and (3) Occupation B.
                             DO activity_lagged = 0, 3
@@ -124,9 +120,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                                 IF ((activity_lagged .EQ. three_int) .AND. (exp_b .EQ. zero_int)) CYCLE
 
                                 ! If we have multiple initial conditions it might well be the case that we have a duplicate state, i.e. the same state is possible with other initial condition that period.
-                                IF (mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , activity_lagged + 1, type_ + 1) .NE. MISSING_INT)  THEN
-                                    CYCLE
-                                END IF
+                                IF (mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , activity_lagged + 1, type_ + 1) .NE. MISSING_INT) CYCLE
 
                                 ! Collect mapping of state space to array index.
                                 mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , activity_lagged + 1, type_ + 1) = k

@@ -15,58 +15,6 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self):
-        """ Testing ten admissible realizations of state space for the first three periods.
-        """
-        edu = np.random.randint(5, 10)
-
-        constr = dict()
-        constr['periods'] = np.random.randint(3, 5)
-        constr['types'] = 1
-        constr['edu'] = (edu, edu + 8)
-
-        # # Generate random initialization file
-        # generate_init(constr)
-        #
-        # # Perform toolbox actions
-        # respy_obj = RespyCls('test.respy.ini')
-        #
-        # respy_obj = simulate_observed(respy_obj)
-        #
-        # # Distribute class attributes
-        # states_number_period = respy_obj.get_attr('states_number_period')
-        #
-        # states_all = respy_obj.get_attr('states_all')
-        #
-        # # The next hard-coded results assume that at least two more years of education are
-        # # admissible.
-        # edu_spec = respy_obj.get_attr('edu_spec')
-        # if edu_spec['max'] - max(edu_spec['start']) < 2:
-        #     return
-        #
-        # # The number of admissible states in the first three periods
-        # for j, number_period in enumerate([1, 4, 19]):
-        #     assert (states_number_period[j] == number_period)
-        #
-        # # The actual realizations of admissible states in period one
-        # assert ((states_all[0, 0, :-1] == [0, 0, edu, 1]).all())
-        #
-        # # The actual realizations of admissible states in period two
-        # states = [[0, 0, edu, 0], [0, 0, edu + 1, 1], [0, 1, edu, 0], [1, 0, edu, 0]]
-        #
-        # for j, state in enumerate(states):
-        #     assert ((states_all[1, j, :-1] == state).all())
-        #
-        # # The actual realizations of admissible states in period three
-        # states = [[0, 0, edu, 0], [0, 0, edu + 1, 0], [0, 0, edu + 1, 1]]
-        # states += [[0, 0, edu + 2, 1], [0, 1, edu + 0, 0], [0, 1, edu + 1, 0]]
-        # states += [[0, 1, edu + 1, 1], [0, 2, edu + 0, 0], [1, 0, edu + 0, 0]]
-        # states += [[1, 0, edu + 1, 0], [1, 0, edu + 1, 1], [1, 1, edu + 0, 0]]
-        # states += [[2, 0, edu + 0, 0]]
-        #
-        # for j, state in enumerate(states):
-        #     assert ((states_all[2, j, :-1] == state).all())
-
-    def test_2(self):
         """ Testing whether back-and-forth transformation have no effect.
         """
         for i in range(10):
@@ -90,7 +38,7 @@ class TestClass(object):
             # Checks
             np.testing.assert_allclose(base, x)
 
-    def test_3(self):
+    def test_2(self):
         """ Testing whether the back and forth transformation works.
         """
         for _ in range(100):
@@ -107,7 +55,7 @@ class TestClass(object):
             alt_ini = open('alt.respy.ini', 'r').read()
             assert base_ini == alt_ini
 
-    def test_4(self):
+    def test_3(self):
         """ Testing some of the relationships in the simulated dataset.
         """
         # Generate constraint periods
