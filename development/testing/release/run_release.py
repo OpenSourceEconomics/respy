@@ -170,7 +170,7 @@ if __name__ == '__main__':
     #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev15', '2.0.0.dev16'
+    old_release, new_release = '2.0.0.dev16', 'current'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 

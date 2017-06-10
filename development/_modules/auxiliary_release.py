@@ -55,6 +55,8 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         no_preparations_required(constr)
     elif OLD_RELEASE == '2.0.0.dev15' and NEW_RELEASE == '2.0.0.dev16':
         prepare_release_tests_7(constr)
+    elif OLD_RELEASE == '2.0.0.dev16' and NEW_RELEASE == 'current':
+        prepare_release_tests_8(constr)
     else:
         raise AssertionError('Misspecified request ...')
 
@@ -369,6 +371,45 @@ def prepare_release_tests_7(constr):
     for label in ['coeffs', 'bounds', 'fixed']:
         del old_dict['EDUCATION'][label][2]
         del old_dict['EDUCATION'][label][-2:]
+    json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
+
+
+def prepare_release_tests_8(constr):
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
+    this function only.
+    """
+    # This script is also imported (but not used) for the creation of the virtual environments.
+    # Thus, the imports might not be valid when starting with a clean slate.
+    import numpy as np
+
+    sys.path.insert(0, '../../../respy/tests')
+    from codes.random_init import generate_init
+
+    # Prepare fresh subdirectories
+    for which in ['old', 'new']:
+        if os.path.exists(which):
+            shutil.rmtree(which)
+        os.mkdir(which)
+
+    # As we added more information about lagged activities the interpolation estimation does not
+    # yield the same results.
+    constr['flag_interpolation'] = False
+    init_dict = generate_init(constr)
+
+    new_dict = init_dict.copy()
+    for name in ['OCCUPATION A', 'OCCUPATION B']:
+        new_dict[name]['coeffs'][8] = 0.00
+        new_dict[name]['bounds'][8] = [None, None]
+        new_dict[name]['fixed'][8] = True
+    json.dump(new_dict, open('new/init_dict.respy.json', 'w'))
+
+    # We need to remove the coefficient denoting whether an individual worked in the same
+    # occupation last period.
+    old_dict = init_dict.copy()
+    for name in ['OCCUPATION A', 'OCCUPATION B']:
+        for label in ['coeffs', 'bounds', 'fixed']:
+            old_dict[name][label].pop(8)
     json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
 
 
