@@ -1,10 +1,9 @@
 import fileinput
-import glob
 import shlex
+import glob
 import sys
 from datetime import datetime
 
-import fnmatch
 import importlib
 import numpy as np
 import os
@@ -208,38 +207,15 @@ def cleanup_testing_infrastructure(keep_results):
     """ This function cleans up before and after a testing run. If requested,
     the log file is retained.
     """
-    # Collect all candidates files and directories.
-    matches = []
-    for root, dirnames, filenames in os.walk('.'):
-        for filename in fnmatch.filter(filenames, '*'):
-            matches.append(os.path.join(root, filename))
-        for filename in fnmatch.filter(filenames, '.*'):
-            matches.append(os.path.join(root, filename))
-        for dirname in fnmatch.filter(dirnames, '*'):
-            matches.append(os.path.join(root, dirname))
-
-    # Remove all files, unless explicitly to be saved.
-    if keep_results:
-        for fname in ['./property.respy.info']:
-            if fname in matches:
-                matches.remove(fname)
-
-    # Iterate over all remaining files.
-    for match in matches:
-        if '.py' in match:
+    for fname in glob.glob('*'):
+        if '.py' in fname or '.pbs' in fname:
             continue
-
-        if match == './_modules':
-            continue
-        if match == './tools':
-            continue
-
-        if os.path.isdir(match):
-            shutil.rmtree(match)
-        elif os.path.isfile(match):
-            os.unlink(match)
+        if keep_results:
+            if 'property.respy.info' in fname:
+                continue
+        if os.path.isdir(fname):
+            shutil.rmtree(fname)
+        elif os.path.isfile(fname):
+            os.unlink(fname)
         else:
             pass
-
-
-
