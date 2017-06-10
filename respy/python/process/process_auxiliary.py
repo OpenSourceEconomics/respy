@@ -38,6 +38,9 @@ def check_dataset_est(data_frame, respy_obj):
         dat = data_frame[label][:, 0] == 0
         np.testing.assert_equal(dat.all(), True)
 
+    # We check individual state variables against the recorded choices
+    data_frame.groupby('Identifier').apply(check_state_variables)
+
     # Checks for LAGGED ACTIVITY. We also know that all individuals were in school when entering
     # the model. Just to be sure, we also construct the correct lagged activity here as well and
     # compare it to the one provided in the dataset.
@@ -71,3 +74,29 @@ def check_dataset_est(data_frame, respy_obj):
     def check_series_observations(group):
         np.testing.assert_equal(group['Period'].tolist(), list(range(group['Period'].max() + 1)))
     data_frame.groupby('Identifier').apply(check_series_observations)
+
+
+def check_state_variables(agent):
+    """ This function constructs the experience and schooling levels implied by the
+    reported choices and compares them to the information provided in the dataset.
+    """
+    for index, row in agent.iterrows():
+        identifier, period = index
+        choice = row['Choice']
+        # We know that the level of experience is zero in the initial period and we get the
+        # initial level of schooling.
+        if period == 0:
+            exp_a, exp_b, edu = 0.0, 0.0, row['Years_Schooling']
+        # Check statistics
+        for pair in [(exp_a, 'Experience_A'), (exp_b, 'Experience_B'), (edu, 'Years_Schooling')]:
+            stat, label = pair
+            np.testing.assert_equal(stat, row[label])
+        # Update experience statistics.
+        if choice == 1:
+            exp_a += 1
+        elif choice == 2:
+            exp_b += 1
+        elif choice == 3:
+            edu += 1
+        else:
+            pass
