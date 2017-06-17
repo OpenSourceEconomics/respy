@@ -168,9 +168,11 @@ if __name__ == '__main__':
     #
     #   2.0.0.dev16 I added age/period effects to each of the rewards.
     #
+    #   2.0.0.dev17 I added state variables that capture last year's occupation.
+    #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev16', 'current'
+    old_release, new_release = '2.0.0.dev16', '2.0.0.dev17'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 
