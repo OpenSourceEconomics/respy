@@ -495,7 +495,7 @@ class RespyCls(object):
         self.attr['edu_spec']['share'] = init_dict['EDUCATION']['share']
         self.attr['edu_spec']['max'] = init_dict['EDUCATION']['max']
 
-        self.attr['num_types'] = len(init_dict['TYPE_SHARES']['coeffs'])
+        self.attr['num_types'] = int(len(init_dict['TYPE SHARES']['coeffs']) / 2) + 1
 
         # Initialize model parameters
         self.attr['optim_paras'] = dict()
@@ -522,14 +522,19 @@ class RespyCls(object):
             self.attr['optim_paras']['shocks_cholesky'] = shocks_cholesky
 
         # Constructing the shifts for each type.
-        type_shifts = init_dict['TYPE_SHIFTS']['coeffs']
+        type_shifts = init_dict['TYPE SHIFTS']['coeffs']
+        type_shares = init_dict['TYPE SHARES']['coeffs']
+
         if self.attr['num_types'] == 1:
+            type_shares = np.tile(0.0, 2)
             type_shifts = np.tile(0.0, (1, 4))
         else:
+            type_shares = np.array([0.0, 0.0] + type_shares)
             type_shifts = np.reshape(type_shifts, (self.attr['num_types'] - 1, 4))
             type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
         self.attr['optim_paras']['type_shifts'] = type_shifts
+        self.attr['optim_paras']['type_shares'] = type_shares
 
         self.attr['optim_paras']['coeffs_a'] = init_dict['OCCUPATION A']['coeffs']
         self.attr['optim_paras']['coeffs_b'] = init_dict['OCCUPATION B']['coeffs']
@@ -537,12 +542,11 @@ class RespyCls(object):
         self.attr['optim_paras']['coeffs_home'] = init_dict['HOME']['coeffs']
         self.attr['optim_paras']['level'] = init_dict['AMBIGUITY']['coeffs']
         self.attr['optim_paras']['delta'] = init_dict['BASICS']['coeffs']
-        self.attr['optim_paras']['type_shares'] = init_dict['TYPE_SHARES']['coeffs']
 
         # Initialize information about optimization parameters
         keys = []
         keys += ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B', 'EDUCATION']
-        keys += ['HOME', 'SHOCKS', 'TYPE_SHARES', 'TYPE_SHIFTS']
+        keys += ['HOME', 'SHOCKS', 'TYPE SHARES', 'TYPE SHIFTS']
 
         for which in ['fixed', 'bounds']:
             self.attr['optim_paras']['paras_' + which] = []
@@ -592,7 +596,7 @@ class RespyCls(object):
         # Update derived attributes
         self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)[0]
 
-        self.attr['num_paras'] = 46 + num_types + (num_types - 1) * 4
+        self.attr['num_paras'] = 46 + (num_types - 1) * 2 + (num_types - 1) * 4
 
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
@@ -776,11 +780,6 @@ class RespyCls(object):
         for i in range(2):
             assert optim_paras['paras_bounds'][i][0] >= 0.00
 
-        # For the type shares, we only allow for (0.00, None) bounds at this point.
-        for i in range(46, 46 + num_types):
-            assert optim_paras['paras_bounds'][i][0] == 0.00
-            assert optim_paras['paras_bounds'][i][1] is None
-
         for i in range(num_paras):
             lower, upper = optim_paras['paras_bounds'][i]
             if lower is not None:
@@ -796,13 +795,6 @@ class RespyCls(object):
             # At this point no bounds for the elements of the covariance matrix are allowed.
             if i in range(36, 46):
                 assert optim_paras['paras_bounds'][i] == [None, None]
-    
-        all_fixed = np.all(optim_paras['paras_fixed'][46:46 + num_types]) == True
-        all_free = np.all(optim_paras['paras_fixed'][46:46 + num_types]) == False
-        assert all_fixed or all_free
-
-        if num_types == 1:
-            assert all_fixed
 
     def _check_integrity_results(self):
         """ This methods check the integrity of the results.

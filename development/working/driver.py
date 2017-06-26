@@ -8,7 +8,7 @@ import sys
 if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('./waf distclean; ./waf configure build --debug') == 0
+    assert os.system('./waf distclean; ./waf configure build --without_fortran') == 0
     os.chdir(cwd)
 
 
@@ -54,12 +54,12 @@ np.random.seed(123)
 #respy_obj = RespyCls('truth.respy.ini')
 
 
-respy_obj = RespyCls('test.respy.ini')
+respy_obj = RespyCls('model.respy.ini')
 simulate(respy_obj)
 _, crit = estimate(respy_obj)
-#print(crit)
+print(crit)
 
-#if respy_obj.get_attr('version') == 'PYTHON':
-#    np.testing.assert_almost_equal(crit, 6.968784835756134)
-# else:
-#    np.testing.assert_almost_equal(crit, 8.715438932765824)
+if respy_obj.get_attr('version') == 'PYTHON':
+    np.testing.assert_almost_equal(crit, 1.150232850473709)
+else:
+    raise AssertionError

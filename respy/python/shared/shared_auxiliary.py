@@ -82,9 +82,10 @@ def dist_econ_paras(x_all_curre):
     shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
 
     # Type Shares
-    type_shares = x_all_curre[46:46 + num_types]
-
-    type_shifts = np.reshape(x_all_curre[46 + num_types:num_paras], (num_types - 1, 4))
+    type_shares = x_all_curre[46:46 + ((num_types - 1) * 2)]
+    type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
+    
+    type_shifts = np.reshape(x_all_curre[46 + ((num_types - 1) * 2):num_paras], (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
     # Collect arguments
@@ -137,17 +138,29 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     return optim_paras
 
 
+def get_conditional_probabilities(type_shares, edu_start):
+    num_types = int(len(type_shares) / 2)
+    probs = np.tile(np.nan, num_types)
+    for i in range(num_types):
+        lower, upper = i * 2, (i + 1) * 2
+        probs[i] = np.exp(np.sum(type_shares[lower:upper] * [1.0, edu_start]))
+
+    probs = probs / sum(probs)
+    return probs
+
 def extract_type_information(x):
     """ This function extracts the information about types from the estimation vector.
     """
 
     num_types = int((len(x[46:]) - 1) / 5 + 1)
+    # TODO: Does this need extra inspection ...
 
     # Type shares
-    type_shares = x[46:46 + num_types]
+    type_shares = x[46:46 + ((num_types - 1) * 2)]
+    type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
 
     # Type shifts
-    type_shifts = x[46 + num_types:]
+    type_shifts = x[46 + ((num_types - 1) * 2):]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
@@ -374,7 +387,7 @@ def check_model_parameters(optim_paras):
     np.allclose(optim_paras['shocks_cholesky'], np.tril(optim_paras['shocks_cholesky']))
 
     # Checks for type shares
-    assert np.all(optim_paras['type_shares'] >= 0.0)
+    assert optim_paras['type_shares'].size == num_types * 2
 
     # Checks for type shifts
     assert optim_paras['type_shifts'].shape == (num_types, 4)
@@ -789,9 +802,9 @@ def get_optim_paras(optim_paras, num_paras, which, is_debug):
     x[36:46] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Shares
-    x[46:46 + num_types] = optim_paras['type_shares']
+    x[46:46 + (num_types - 1) * 2] = optim_paras['type_shares'][2:]
 
-    x[46 + num_types:num_paras] = optim_paras['type_shifts'].flatten()[4:]
+    x[46 + ((num_types - 1) * 2):num_paras] = optim_paras['type_shifts'].flatten()[4:]
 
     # Checks
     if is_debug:

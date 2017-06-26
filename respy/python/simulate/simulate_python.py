@@ -29,8 +29,8 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             optim_paras['shocks_cholesky'])
 
     # We also need to sample the set of initial conditions.
-    types = get_random_types(num_types, optim_paras, num_agents_sim, is_debug)
     edu_start = get_random_edu_start(edu_spec, num_agents_sim, is_debug)
+    types = get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug)
 
     # Simulate agent experiences
     count = 0

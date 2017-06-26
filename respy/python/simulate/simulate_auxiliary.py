@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 
+from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.process.process_auxiliary import check_dataset_est
 
@@ -132,30 +133,43 @@ def write_info(respy_obj, data_frame):
         dat = data_frame['Experience_B'].loc[slice(None), num_periods - 1]
         file_.write(fmt_.format(*['Average Experience B', dat.mean()]))
 
-        file_.write('\n\n   Type Shares\n\n')
-        dat = data_frame['Type'][:, 0].value_counts().to_dict()
-        fmt_ = '   {:>10}' + '    {:25.5f}\n'
-        for type_ in range(num_types):
-            try:
-                share = dat[type_] / float(num_agents_sim)
-                file_.write(fmt_.format(*[type_, share]))
-            # Some types might not occur in the simulated dataset. Then these are not part of the
-            # dictionary with the value counts.
-            except KeyError:
-                file_.write(fmt_.format(*[type_, 0.0]))
+        file_.write('\n\n   Initial Conditions\n\n')
 
-        file_.write('\n\n   Initial Schooling\n\n')
-        fmt_ = '   {:>10}' + '    {:>25}    {:>25}\n\n'
-        file_.write(fmt_.format(*['', 'Count', 'Share']))
-        fmt_ = '   {:>10}' + '    {:>25}    {:>25.5f}\n'
-        dat = data_frame['Years_Schooling'][:, 0].value_counts().to_dict()
-        for start in sorted(edu_spec['start']):
-            try:
-                file_.write(fmt_.format(*[start, dat[start], dat[start] / float(num_agents_sim)]))
-            # Some types might not occur in the simulated dataset. Then these are not part of the
-            # dictionary with the value counts.
-            except KeyError:
-                file_.write(fmt_.format(*[start, 0, 0]))
+        cat_schl = pd.Categorical(data_frame['Years_Schooling'][:, 0], categories=edu_spec['start'])
+        cat_type = pd.Categorical(data_frame['Type'][:, 0], categories=range(num_types))
+
+        for normalize in ['all', 'columns', 'index']:
+
+            if normalize == 'columns':
+                file_.write('\n    ... by Type \n\n')
+                num_columns = num_types + 1
+            elif normalize == 'index':
+                file_.write('\n    ... by Schooling \n\n')
+                num_columns = num_types
+            else:
+                file_.write('\n    ... jointly \n\n')
+                num_columns = num_types
+
+            info = pd.crosstab(cat_schl, cat_type, normalize=normalize, dropna=False,
+                margins=True).as_matrix()
+
+            fmt_ = '    {:>10}    ' + '{:>25}' * num_columns + '\n\n'
+            line = ['Schooling']
+            for i in range(num_types):
+                line += ['Type ' + str(i)]
+            if num_columns == num_types + 1:
+                line += ['All']
+            file_.write(fmt_.format(*line))
+
+            fmt_ = '    {:>10}    ' + '{:25.5f}' * num_columns + '\n'
+            for i, start in enumerate(sorted(edu_spec['start'])):
+                line = [start] + info[i, :].tolist()
+                file_.write(fmt_.format(*line))
+
+            if normalize == 'index':
+                fmt_ = '    {:>10}    ' + '{:25.5f}' * num_columns + '\n'
+                line = ['All'] + info[-1, :].tolist()
+                file_.write(fmt_.format(*line))
 
         file_.write('\n\n   Economic Parameters\n\n')
         fmt_ = '\n   {0:>10}' + '    {1:>25}\n\n'
@@ -203,7 +217,7 @@ def get_estimation_vector(optim_paras):
     """ Construct the vector estimation arguments.
     """
     # Auxiliary objects
-    num_types = len(optim_paras['type_shares'])
+    num_types = int(len(optim_paras['type_shares']) / 2)
 
     # Collect parameters
     vector = list()
@@ -277,16 +291,20 @@ def check_dataset_sim(data_frame, respy_obj):
     data_frame.groupby('Identifier').apply(check_number_periods)
 
 
-def get_random_types(num_types, optim_paras, num_agents_sim, is_debug):
+def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug):
     """ This function provides random draws for the types, or reads them
     in from a file.
     """
     if is_debug and os.path.exists('.types.respy.test'):
         types = np.genfromtxt('.types.respy.test')
     else:
-        probs = optim_paras['type_shares'] / np.sum(optim_paras['type_shares'])
-        types = np.random.choice(range(num_types), p=probs, size=num_agents_sim)
 
+        types = []
+        for i in range(num_agents_sim):
+            probs = get_conditional_probabilities(optim_paras['type_shares'], edu_start[i])
+            types += np.random.choice(range(num_types), p=probs, size=1).tolist()
+
+            print(probs)
     # If we only have one individual, we need to ensure that types are a vector.
     types = np.array(types, ndmin=1)
 

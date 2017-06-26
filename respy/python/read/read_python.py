@@ -29,8 +29,8 @@ def read(fname):
             # Prepare dictionary
             if is_group:
                 group = list_[0]
-                # Special treatment for OCCUPATION, which consists of two entries.
-                if group == 'OCCUPATION':
+                # Special treatment for OCCUPATION or TYPES, which consists of two entries.
+                if group in ['OCCUPATION', 'TYPE']:
                     group = list_[0] + ' ' + list_[1]
                 dict_[group] = {}
                 continue
@@ -41,7 +41,7 @@ def read(fname):
 
             # Unfortunately, the flag `share' does refer to a parameter that can be estimated or
             # not, depending on the group.
-            if flag in ['coeff', 'shift'] or (group == 'TYPES' and flag == 'share'):
+            if flag in ['coeff']:
                 is_fixed, bounds = process_coefficient_line(line)
 
             # Type conversions
@@ -50,27 +50,8 @@ def read(fname):
             # Process blocks of information
             dict_ = _process_line(group, flag, value, is_fixed, bounds, dict_)
 
-    # Type conversion for Shocks
+    # Type conversion for SHOCKS
     dict_['SHOCKS']['coeffs'] = np.array(dict_['SHOCKS']['coeffs'])
-    dict_['TYPES']['coeffs'] = np.array(dict_['TYPES']['coeffs'])
-
-    # We further process the TYPES for easier processing later.
-    num_types = int((len(dict_['TYPES']['coeffs'][1:]) / 4) + 1)
-
-    for label in ['SHARES', 'SHIFTS']:
-        dict_['TYPE_' + label] = dict()
-        dict_['TYPE_' + label]['coeffs'] = []
-        dict_['TYPE_' + label]['fixed'] = []
-        dict_['TYPE_' + label]['bounds'] = []
-
-    for idx in range((num_types - 1) * 5 + 1):
-        for label in ['coeffs', 'fixed', 'bounds']:
-            if idx in [0] + list(range(1, (num_types - 1) * 5, 5)):
-                dict_['TYPE_SHARES'][label] += [dict_['TYPES'][label][idx]]
-            else:
-                dict_['TYPE_SHIFTS'][label] += [dict_['TYPES'][label][idx]]
-
-    del dict_['TYPES']
 
     # Finishing
     return dict_

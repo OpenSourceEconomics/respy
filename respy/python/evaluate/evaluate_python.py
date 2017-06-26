@@ -1,6 +1,7 @@
 from scipy.stats import norm
 import numpy as np
 
+from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import SMALL_FLOAT
@@ -26,11 +27,20 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
     # Calculate the probability over agents and time.
     for j in range(num_agents_est):
 
-        prob_type = np.tile(1.0, num_types)
-        for type_ in range(num_types):
+        row_start = sum(num_obs_agent[:j])
+        num_obs = num_obs_agent[j]
+        edu_start = data_array[row_start + 0, 6].astype(int)
 
-            row_start = sum(num_obs_agent[:j])
-            num_obs = num_obs_agent[j]
+        # TODO: Rename type shares key to sth. elese type_model
+        type_shares = get_conditional_probabilities(optim_paras['type_shares'], edu_start)
+
+        # TODO: Now sample the conditional type probabilities.
+        print(edu_start)
+
+        # This is the container for the probabilites for each type to observe the choices.
+        prob_type = np.tile(1.0, num_types)
+
+        for type_ in range(num_types):
 
             prob_obs[:] = 0.00
             for p in range(num_obs):
@@ -137,7 +147,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
         # Adjust  and record likelihood contribution
 
-        contribs[j] = np.sum(prob_type * optim_paras['type_shares']) / np.sum(optim_paras['type_shares'])
+        contribs[j] = np.sum(prob_type * type_shares)
 
     # If there is no random variation in rewards and no agent violated the implications of
     # observed wages and choices, then the evaluation return value of one.
