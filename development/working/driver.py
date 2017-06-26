@@ -57,11 +57,17 @@ np.random.seed(123)
 
 respy_obj = RespyCls('model.respy.ini')
 
+#edu_spec = respy_obj.get_attr('edu_spec')
+#num_agents_sim = respy_obj.get_attr('num_agents_sim')
+#write_types([0.5, 0.1, 0.3, 0.1], num_agents_sim)
+#write_edu_start(edu_spec, num_agents_sim)
+
+
 simulate(respy_obj)
 _, crit = estimate(respy_obj)
 print(crit)
 
 if respy_obj.get_attr('version') == 'PYTHON':
-    np.testing.assert_almost_equal(crit, 1.150232850473709)
+    np.testing.assert_almost_equal(crit, 1.30697639634384)
 else:
     raise AssertionError

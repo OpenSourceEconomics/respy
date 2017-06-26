@@ -12,7 +12,7 @@ VALID_KEYS += ['flag_estimation', 'flag_ambiguity', 'agents']
 VALID_KEYS += ['flag_parallelism', 'version', 'file_est', 'flag_interpolation']
 VALID_KEYS += ['points', 'maxfun', 'flag_deterministic']
 VALID_KEYS += ['edu', 'measure', 'level', 'fixed_ambiguity', 'flag_ambiguity']
-VALID_KEYS += ['max_draws', 'flag_precond', 'periods', 'types']
+VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
 VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta', 'precond_type']
 
 

@@ -139,21 +139,28 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
 
 
 def get_conditional_probabilities(type_shares, edu_start):
+    """ This function calculates the conditional choice probabilities based on the mulitnomial
+    logit model for one particular initial condition.
+    """
+    # Auxiliary objects
     num_types = int(len(type_shares) / 2)
+
     probs = np.tile(np.nan, num_types)
     for i in range(num_types):
         lower, upper = i * 2, (i + 1) * 2
         probs[i] = np.exp(np.sum(type_shares[lower:upper] * [1.0, edu_start]))
 
+    # Scaling
     probs = probs / sum(probs)
+
     return probs
+
 
 def extract_type_information(x):
     """ This function extracts the information about types from the estimation vector.
     """
 
-    num_types = int((len(x[46:]) - 1) / 5 + 1)
-    # TODO: Does this need extra inspection ...
+    num_types = int(len(x[46:]) / 6) + 1
 
     # Type shares
     type_shares = x[46:46 + ((num_types - 1) * 2)]
@@ -506,7 +513,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
     opt_labels = []
     opt_labels += ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B', 'EDUCATION']
-    opt_labels += ['HOME', 'SHOCKS', 'TYPE_SHARES', 'TYPE_SHIFTS']
+    opt_labels += ['HOME', 'SHOCKS', 'TYPE SHARES', 'TYPE SHIFTS']
 
     # We first vectorize the information about the parameter bounds and status.
     rslt = []
@@ -520,10 +527,12 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     str_optim = '{0:<10} {1:25.15f} {2:>5} {3:>15}\n'
 
     # Construct labels. This ensures that the initialization files always look identical.
-    labels = opt_labels[:-2]
-    labels += ['TYPES', 'SOLUTION', 'SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'PRECONDITIONING']
+    labels = opt_labels
+    labels += ['SOLUTION', 'SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'PRECONDITIONING']
     labels += ['PROGRAM', 'INTERPOLATION']
     labels += OPT_EST_FORT + OPT_EST_PYTH + ['SCIPY-SLSQP', 'FORT-SLSQP']
+
+    num_types = int(len(dict_['TYPE SHARES']['coeffs']) / 2) + 1
 
     # Create initialization.
     with open(file_name, 'w') as file_:
@@ -542,28 +551,26 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write('\n')
 
-            if flag in ['TYPES']:
-                num_types = len(dict_['TYPE_SHARES']['coeffs'])
+            if flag in ['TYPE SHARES']:
                 file_.write(flag.upper() + '\n\n')
 
-                for i in range(num_types):
-                    val = dict_['TYPE_SHARES']['coeffs'][i]
-                    line = format_opt_parameters(val, 46 + i, paras_fixed, paras_bounds)
-                    line[0] = 'share'
-                    file_.write(str_optim.format(*line))
+                for i in range(num_types - 1):
+                    for j in range(2):
+                        pos = 46 + (i * 2) + j
+                        val = dict_['TYPE SHARES']['coeffs'][(i * 2) + j]
+                        line = format_opt_parameters(val, pos, paras_fixed, paras_bounds)
+                        file_.write(str_optim.format(*line))
+                    file_.write('\n')
 
-                    # The first group serves as the baseline and thus there are no shifts printed
-                    # to the file.
-                    if i == 0:
-                        pass
-                    else:
-                        for j in range(4):
-                            val = dict_['TYPE_SHIFTS']['coeffs'][(i - 1) * 4 + j]
-                            pos = (46 + num_types) + (i - 1) * 4 + j
-                            line = format_opt_parameters(val, pos, paras_fixed, paras_bounds)
-                            line[0] = 'shift'
-                            file_.write(str_optim.format(*line))
+            if flag in ['TYPE SHIFTS']:
+                file_.write(flag.upper() + '\n\n')
 
+                for i in range(num_types - 1):
+                    for j in range(4):
+                        pos = 46 + ((num_types - 1) * 2) + (i * 4) + j
+                        val = dict_['TYPE SHIFTS']['coeffs'][(i * 4) + j]
+                        line = format_opt_parameters(val, pos, paras_fixed, paras_bounds)
+                        file_.write(str_optim.format(*line))
                     file_.write('\n')
 
             if flag in ['HOME']:

@@ -529,7 +529,7 @@ class RespyCls(object):
             type_shares = np.tile(0.0, 2)
             type_shifts = np.tile(0.0, (1, 4))
         else:
-            type_shares = np.array([0.0, 0.0] + type_shares)
+            type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
             type_shifts = np.reshape(type_shifts, (self.attr['num_types'] - 1, 4))
             type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 

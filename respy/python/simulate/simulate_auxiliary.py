@@ -303,7 +303,6 @@ def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug
             probs = get_conditional_probabilities(optim_paras['type_shares'], edu_start[i])
             types += np.random.choice(range(num_types), p=probs, size=1).tolist()
 
-            print(probs)
     # If we only have one individual, we need to ensure that types are a vector.
     types = np.array(types, ndmin=1)
 

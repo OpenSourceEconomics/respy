@@ -31,13 +31,9 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
         num_obs = num_obs_agent[j]
         edu_start = data_array[row_start + 0, 6].astype(int)
 
-        # TODO: Rename type shares key to sth. elese type_model
         type_shares = get_conditional_probabilities(optim_paras['type_shares'], edu_start)
 
-        # TODO: Now sample the conditional type probabilities.
-        print(edu_start)
-
-        # This is the container for the probabilites for each type to observe the choices.
+        # This is the container for the probabilities for each type to observe the choices.
         prob_type = np.tile(1.0, num_types)
 
         for type_ in range(num_types):

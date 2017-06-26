@@ -80,8 +80,9 @@ def generate_random_dict(constr=None):
         assert isinstance(num_types, int)
         assert num_types > 0
 
-    type_shares = get_valid_shares(num_types)
-    num_paras = 46 + num_types + (num_types - 1) * 4
+    # TODO: COmment back out
+    num_types = 4
+    num_paras = 46 + (num_types - 1) * 6
 
     # We now draw all parameter values. This is necessarily done here as we subsequently
     # determine a set of valid bounds.
@@ -95,9 +96,7 @@ def generate_random_dict(constr=None):
             value = get_valid_values('coeff')
         elif i in [36, 40, 43, 45]:
             value = get_valid_values('cov')
-        elif i in range(46, 46 + num_types):
-            value = type_shares.pop()
-        elif i in range(46 + num_types, num_paras):
+        elif i in range(46, 46 + num_paras):
             value = get_valid_values('coeff')
         else:
             value = 0.0
@@ -115,10 +114,6 @@ def generate_random_dict(constr=None):
             bounds = get_valid_bounds('amb', value)
         elif i in range(36, 46):
             bounds = get_valid_bounds('cov', value)
-        elif i in range(46, 46 + num_types):
-            bounds = get_valid_bounds('share', value)
-        elif i in range(46 + num_types, num_paras):
-            bounds = get_valid_bounds('coeff', value)
         else:
             bounds = get_valid_bounds('coeff', value)
 
@@ -139,7 +134,7 @@ def generate_random_dict(constr=None):
     else:
         is_fixed = np.random.choice([True, False]).tolist()
     paras_fixed += [is_fixed] * num_types
-    paras_fixed += np.random.choice([True, False], (num_types - 1) * 4).tolist()
+    paras_fixed += np.random.choice([True, False], (num_types - 1) * 6).tolist()
 
     # Sampling number of agents for the simulation. This is then used as the upper bound for the
     # dataset used in the estimation.
@@ -251,17 +246,17 @@ def generate_random_dict(constr=None):
     dict_['SHOCKS']['bounds'] = paras_bounds[lower:upper]
     dict_['SHOCKS']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 46, 46 + num_types
-    dict_['TYPE_SHARES'] = dict()
-    dict_['TYPE_SHARES']['coeffs'] = paras_values[lower:upper]
-    dict_['TYPE_SHARES']['bounds'] = paras_bounds[lower:upper]
-    dict_['TYPE_SHARES']['fixed'] = paras_fixed[lower:upper]
+    lower, upper = 46, 46 + (num_types - 1) * 2
+    dict_['TYPE SHARES'] = dict()
+    dict_['TYPE SHARES']['coeffs'] = paras_values[lower:upper]
+    dict_['TYPE SHARES']['bounds'] = paras_bounds[lower:upper]
+    dict_['TYPE SHARES']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 46 + num_types, num_paras
-    dict_['TYPE_SHIFTS'] = dict()
-    dict_['TYPE_SHIFTS']['coeffs'] = paras_values[lower:upper]
-    dict_['TYPE_SHIFTS']['bounds'] = paras_bounds[lower:upper]
-    dict_['TYPE_SHIFTS']['fixed'] = paras_fixed[lower:upper]
+    lower, upper = 46 + (num_types - 1) * 2, num_paras
+    dict_['TYPE SHIFTS'] = dict()
+    dict_['TYPE SHIFTS']['coeffs'] = paras_values[lower:upper]
+    dict_['TYPE SHIFTS']['bounds'] = paras_bounds[lower:upper]
+    dict_['TYPE SHIFTS']['fixed'] = paras_fixed[lower:upper]
 
     # INTERPOLATION
     dict_['INTERPOLATION'] = dict()
