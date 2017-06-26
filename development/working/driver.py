@@ -37,9 +37,10 @@ from codes.random_init import generate_init
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.process.process_python import process
 #write_draws(5, 5000)
+
+from codes.auxiliary import write_types
+from codes.auxiliary import write_edu_start
 np.random.seed(123)
-
-
 
 
 
@@ -55,6 +56,7 @@ np.random.seed(123)
 
 
 respy_obj = RespyCls('model.respy.ini')
+
 simulate(respy_obj)
 _, crit = estimate(respy_obj)
 print(crit)

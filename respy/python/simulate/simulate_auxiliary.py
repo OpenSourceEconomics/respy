@@ -298,7 +298,6 @@ def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug
     if is_debug and os.path.exists('.types.respy.test'):
         types = np.genfromtxt('.types.respy.test')
     else:
-
         types = []
         for i in range(num_agents_sim):
             probs = get_conditional_probabilities(optim_paras['type_shares'], edu_start[i])
