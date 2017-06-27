@@ -212,11 +212,12 @@ class TestClass(object):
 
             # The error can occur as the RESPY package is actually running an estimation step
             # that can result in very ill-conditioned covariance matrices.
-            try:
-                scripts_simulate(init_file, file_sim)
-                scripts_modify(identifiers, action, init_file, values)
-            except np.linalg.linalg.LinAlgError:
-                pass
+            # try:
+            # TODO: Is this still relevant?
+            scripts_simulate(init_file, file_sim)
+            scripts_modify(identifiers, action, init_file, values)
+            # except np.linalg.linalg.LinAlgError:
+            #     pass
 
     @pytest.mark.slow
     def test_6(self, flag_ambiguity=False):
@@ -305,44 +306,6 @@ class TestClass(object):
             RespyCls('test.respy.ini')
 
     def test_9(self):
-        """ We ensure that the number of types does not matter for the evaluation of the criterion 
-        function if a weight of one is put on the first group.
-        """
-
-        constr = dict()
-        constr['flag_estimation'] = True
-
-        # The interpolation equation is affected by the number of types regardless of the weights.
-        constr['flag_interpolation'] = False
-
-        init_dict = generate_init(constr)
-
-        base_val = None
-
-        for num_types in [1, np.random.choice([2, 3, 4]).tolist()]:
-
-            # We always need to ensure that a weight of one is on the first type. We need to fix
-            # the weight in this case to not change during an estimation as well.
-            shifts = np.random.uniform(-0.05, 0.05, size=(num_types - 1) * 4)
-            shares = [1.0] + [0.0] * (num_types - 1)
-            init_dict['TYPE_SHIFTS']['coeffs'] = shifts
-            init_dict['TYPE_SHIFTS']['fixed'] = [False] * (num_types * 4)
-            init_dict['TYPE_SHIFTS']['bounds'] = [[None, None]] * (num_types * 4)
-
-            init_dict['TYPE_SHARES']['coeffs'] = shares
-            init_dict['TYPE_SHARES']['fixed'] = [True] * num_types
-            init_dict['TYPE_SHARES']['bounds'] = [[0.00, None]] * num_types
-            print_init_dict(init_dict)
-
-            respy_obj = RespyCls('test.respy.ini')
-            simulate_observed(respy_obj)
-            _, val = estimate(respy_obj)
-            if base_val is None:
-                base_val = val
-
-            np.testing.assert_almost_equal(base_val, val)
-
-    def test_10(self):
         """ We ensure that the number of initial conditions does not matter for the evaluation of 
         the criterion function if a weight of one is put on the first group.
         """
@@ -388,38 +351,8 @@ class TestClass(object):
 
             np.testing.assert_almost_equal(base_val, val)
 
-    def test_11(self):
-        """ We ensure that the scale of the type shares does not matter.
-        """
-        # Generate random initialization dictionary
-        constr = dict()
-        constr['maxfun'] = 0
-
-        generate_init(constr)
-
-        respy_obj = RespyCls('test.respy.ini')
-        num_types = dist_class_attributes(respy_obj, 'num_types')[0]
-
-        # After scaling the bounds might not fit anymore. Thus we simply remove them.
-        lower, upper = 46, 46 + num_types
-        respy_obj.attr['optim_paras']['paras_bounds'][lower:upper] = [[0.0, None]] * num_types
-
-        base_val = None
-        for scale in np.random.lognormal(size=2):
-
-            respy_obj.attr['optim_paras']['type_shares'] *= scale
-
-            simulate_observed(respy_obj)
-
-            _, crit_val = estimate(respy_obj)
-
-            if base_val is None:
-                base_val = crit_val
-
-            np.testing.assert_allclose(base_val, crit_val)
-
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
-    def test_12(self):
+    def test_11(self):
         """ This step ensures that the printing of the initialization file is done properly. We 
         compare the content of the files line by line, but drop any spaces.   
         """
@@ -430,7 +363,7 @@ class TestClass(object):
 
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     @pytest.mark.slow
-    def test_13(self):
+    def test_12(self):
         """ This test just locks in the evaluation of the criterion function for the original 
         Keane & Wolpin data. We create an additional initialization file that includes the types.
         """

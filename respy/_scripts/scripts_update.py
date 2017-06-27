@@ -48,8 +48,8 @@ def scripts_update(init_file):
     # We need to make sure that the size of the parameter vector does fit the initialization
     # file. For example, this might not be the case when the number of types is changed in the
     # initialization file and an update is requested with an earlier logfile.
-    num_types, num_paras = len(init_dict['TYPE_SHARES']['coeffs']), len(paras_steps)
-    if num_paras != 46 + num_types + (num_types - 1) * 4:
+    num_types, num_paras = len(init_dict['TYPE SHARES']['coeffs']) / 2 + 1, len(paras_steps)
+    if num_paras != 46 + (num_types - 1) * 6:
         raise UserError('Info does not fit the current model specification')
 
     optim_paras = dist_optim_paras(paras_steps, True)
@@ -63,8 +63,8 @@ def scripts_update(init_file):
     init_dict['AMBIGUITY']['coeffs'] = optim_paras['level']
     init_dict['BASICS']['coeffs'] = optim_paras['delta']
     init_dict['SHOCKS']['coeffs'] = shocks_coeffs
-    init_dict['TYPE_SHARES']['coeffs'] = optim_paras['type_shares']
-    init_dict['TYPE_SHIFTS']['coeffs'] = optim_paras['type_shifts'].flatten()[4:]
+    init_dict['TYPE SHARES']['coeffs'] = optim_paras['type_shares'][2:]
+    init_dict['TYPE SHIFTS']['coeffs'] = optim_paras['type_shifts'].flatten()[4:]
 
     # We first print to an intermediate file as otherwise the original file is lost in case a
     # problem during printing occurs.

@@ -167,6 +167,8 @@ def get_test_dict(test_dir):
     if not IS_FORTRAN:
         del test_dict['test_versions']
         del test_dict['test_restud']
+        test_dict['test_integration'].remove('test_11')
+        test_dict['test_integration'].remove('test_12')
 
     if not IS_F2PY:
         del test_dict['test_f2py']
@@ -176,6 +178,7 @@ def get_test_dict(test_dir):
     tests = []
     if not IS_FORTRAN:
         tests += ['test_versions_1', 'test_versions_2', 'test_versions_4']
+        tests += ['test_versions_3']
     if not IS_F2PY:
         tests += ['test_2', 'test_3', 'test_4', 'test_f2py_4', 'test_f2py_5', 'test_f2py_6']
 

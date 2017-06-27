@@ -352,18 +352,18 @@ class RespyCls(object):
         init_dict['AMBIGUITY']['mean'] = self.attr['ambi_spec']['mean']
 
         # Type Shares
-        lower, upper = 46, 46 + num_types
-        init_dict['TYPE_SHARES'] = dict()
-        init_dict['TYPE_SHARES']['coeffs'] = self.attr['optim_paras']['type_shares']
-        init_dict['TYPE_SHARES']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
-        init_dict['TYPE_SHARES']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
+        lower, upper = 46, 46 + (num_types - 1) * 2
+        init_dict['TYPE SHARES'] = dict()
+        init_dict['TYPE SHARES']['coeffs'] = self.attr['optim_paras']['type_shares'][2:]
+        init_dict['TYPE SHARES']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
+        init_dict['TYPE SHARES']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Type Shifts
-        lower, upper = 46 + num_types, num_paras
-        init_dict['TYPE_SHIFTS'] = dict()
-        init_dict['TYPE_SHIFTS']['coeffs'] = self.attr['optim_paras']['type_shifts'].flatten()[4:]
-        init_dict['TYPE_SHIFTS']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
-        init_dict['TYPE_SHIFTS']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
+        lower, upper = 46 + ((num_types - 1) * 2), num_paras
+        init_dict['TYPE SHIFTS'] = dict()
+        init_dict['TYPE SHIFTS']['coeffs'] = self.attr['optim_paras']['type_shifts'].flatten()[4:]
+        init_dict['TYPE SHIFTS']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
+        init_dict['TYPE SHIFTS']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
         # Simulation
         init_dict['SIMULATION'] = dict()
@@ -595,8 +595,7 @@ class RespyCls(object):
 
         # Update derived attributes
         self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)[0]
-
-        self.attr['num_paras'] = 46 + (num_types - 1) * 2 + (num_types - 1) * 4
+        self.attr['num_paras'] = 46 + ((num_types - 1) * 6)
 
     def _check_integrity_attributes(self):
         """ Check integrity of class instance. This testing is done the first
@@ -638,8 +637,6 @@ class RespyCls(object):
         num_procs = self.attr['num_procs']
 
         num_paras = self.attr['num_paras']
-
-        num_types = self.attr['num_types']
 
         is_debug = self.attr['is_debug']
 

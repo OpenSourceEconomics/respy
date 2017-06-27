@@ -5,6 +5,7 @@ import numpy as np
 
 import shlex
 
+from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import DATA_FORMATS_SIM
@@ -207,10 +208,13 @@ def write_draws(num_periods, max_draws):
 
 
 def write_types(type_shares, num_agents_sim):
-    """ We also need to fully control the random types to ensure the comparability between PYTHON and FORTRAN simulations.
+    """ We also need to fully control the random types to ensure the comparability between PYTHON
+    and FORTRAN simulations.
     """
-    num_types = len(type_shares)
-    types = np.random.choice(range(num_types), p=type_shares, size=num_agents_sim)
+    # Note that the we simply set the relevant initial condition to a random value. This seems to
+    # be sufficient for the testing purposes.
+    type_probs = get_conditional_probabilities(type_shares, np.random.choice([10, 12, 15]))
+    types = np.random.choice(len(type_probs), p=type_probs, size=num_agents_sim)
     np.savetxt('.types.respy.test', types, fmt='%i')
 
 

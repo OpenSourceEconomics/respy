@@ -49,7 +49,7 @@ def dist_econ_paras(x_all_curre):
     """
     # Auxiliary objects
     num_paras = len(x_all_curre)
-    num_types = int((num_paras - 46 - 1) / 5 + 1)
+    num_types = int(len(x_all_curre[46:]) / 6) + 1
 
     # Discount rates
     delta = x_all_curre[0:1]
@@ -515,15 +515,6 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     opt_labels += ['BASICS', 'AMBIGUITY', 'OCCUPATION A', 'OCCUPATION B', 'EDUCATION']
     opt_labels += ['HOME', 'SHOCKS', 'TYPE SHARES', 'TYPE SHIFTS']
 
-    # We first vectorize the information about the parameter bounds and status.
-    rslt = []
-    for label in ['fixed', 'bounds']:
-        paras = []
-        for opt in opt_labels:
-            paras += dict_[opt][label][:]
-        rslt += [paras]
-    paras_fixed, paras_bounds = rslt
-
     str_optim = '{0:<10} {1:25.15f} {2:>5} {3:>15}\n'
 
     # Construct labels. This ensures that the initialization files always look identical.
@@ -545,41 +536,36 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 str_ = '{0:<10} {1:>25}\n'
                 file_.write(str_.format('periods', dict_[flag]['periods']))
 
-                val = dict_['BASICS']['coeffs'][0]
-                line = format_opt_parameters(val, 0, paras_fixed, paras_bounds)
+                line = format_opt_parameters(dict_['BASICS'], 0)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
 
-            if flag in ['TYPE SHARES']:
+            if flag in ['TYPE SHARES'] and num_types > 1:
                 file_.write(flag.upper() + '\n\n')
 
                 for i in range(num_types - 1):
                     for j in range(2):
-                        pos = 46 + (i * 2) + j
-                        val = dict_['TYPE SHARES']['coeffs'][(i * 2) + j]
-                        line = format_opt_parameters(val, pos, paras_fixed, paras_bounds)
+                        pos = (i * 2) + j
+                        line = format_opt_parameters(dict_['TYPE SHARES'], pos)
                         file_.write(str_optim.format(*line))
                     file_.write('\n')
 
-            if flag in ['TYPE SHIFTS']:
+            if flag in ['TYPE SHIFTS'] and num_types > 1:
                 file_.write(flag.upper() + '\n\n')
 
                 for i in range(num_types - 1):
                     for j in range(4):
-                        pos = 46 + ((num_types - 1) * 2) + (i * 4) + j
-                        val = dict_['TYPE SHIFTS']['coeffs'][(i * 4) + j]
-                        line = format_opt_parameters(val, pos, paras_fixed, paras_bounds)
+                        pos = (i * 4) + j
+                        line = format_opt_parameters(dict_['TYPE SHIFTS'], pos)
                         file_.write(str_optim.format(*line))
                     file_.write('\n')
 
             if flag in ['HOME']:
 
                 file_.write(flag.upper() + '\n\n')
-
                 for i in range(3):
-                    val = dict_['HOME']['coeffs'][i]
-                    line = format_opt_parameters(val, 33 + i, paras_fixed, paras_bounds)
+                    line = format_opt_parameters(dict_['HOME'], i)
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -605,10 +591,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 # Type conversion
                 file_.write(flag.upper() + '\n\n')
-
                 for i in range(10):
-                    val = dict_['SHOCKS']['coeffs'][i]
-                    line = format_opt_parameters(val, 36 + i, paras_fixed, paras_bounds)
+                    line = format_opt_parameters(dict_['SHOCKS'], i)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
 
@@ -617,8 +601,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 for i in range(7):
-                    val = dict_['EDUCATION']['coeffs'][i]
-                    line = format_opt_parameters(val, i + 26, paras_fixed, paras_bounds)
+                    line = format_opt_parameters(dict_['EDUCATION'], i)
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -634,9 +617,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
             if flag in ['AMBIGUITY']:
                 file_.write(flag.upper() + '\n\n')
-
-                val = dict_['AMBIGUITY']['coeffs'][0]
-                line = format_opt_parameters(val, 1, paras_fixed, paras_bounds)
+                line = format_opt_parameters(dict_['AMBIGUITY'], 0)
                 file_.write(str_optim.format(*line))
 
                 str_ = '{0:<10} {1:>25}\n'
@@ -646,20 +627,9 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write('\n')
 
             if flag in ['OCCUPATION A', 'OCCUPATION B']:
-                identifier = None
-                if flag == 'OCCUPATION A':
-                    identifier = 2
-                if flag == 'OCCUPATION B':
-                    identifier = 14
-
                 file_.write(flag + '\n\n')
-
-                # Coefficient
                 for j in range(12):
-                    val = dict_[flag]['coeffs'][j]
-                    line = format_opt_parameters(val, identifier, paras_fixed, paras_bounds)
-                    identifier += 1
-
+                    line = format_opt_parameters(dict_[flag], j)
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -686,17 +656,20 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write('\n')
 
 
-def format_opt_parameters(val, identifier, paras_fixed, paras_bounds):
+def format_opt_parameters(dict_, pos):
     """ This function formats the values depending on whether they are fixed
     during the optimization or not.
     """
     # Initialize baseline line
+    val = dict_['coeffs'][pos]
+    is_fixed = dict_['fixed'][pos]
+    bounds = dict_['bounds'][pos]
+
     line = ['coeff', val, ' ', ' ']
-    if paras_fixed[identifier]:
+    if is_fixed:
         line[-2] = '!'
 
     # Check if any bounds defined
-    bounds = paras_bounds[identifier]
     if any(x is not None for x in bounds):
         line[-1] = '(' + str(bounds[0]) + ',' + str(bounds[1]) + ')'
 

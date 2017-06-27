@@ -60,7 +60,7 @@ def generate_random_dict(constr=None):
     MAX_DRAWS = 100
 
     if version == 'PYTHON':
-        MAX_TYPES = 2
+        MAX_TYPES = 3
         MAX_PERIODS = 3
         MAX_EDU_START = 2
     elif version == 'FORTRAN':
@@ -73,6 +73,7 @@ def generate_random_dict(constr=None):
     # We need to determine the final number of types right here, as it determines the number of
     # parameters. This includes imposing constraints.
     num_types = np.random.choice(range(1, MAX_TYPES))
+
     if 'types' in constr.keys():
         # Extract objects
         num_types = constr['types']
@@ -80,8 +81,6 @@ def generate_random_dict(constr=None):
         assert isinstance(num_types, int)
         assert num_types > 0
 
-    # TODO: COmment back out
-    num_types = 4
     num_paras = 46 + (num_types - 1) * 6
 
     # We now draw all parameter values. This is necessarily done here as we subsequently

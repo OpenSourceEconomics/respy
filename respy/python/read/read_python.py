@@ -39,8 +39,6 @@ def read(fname):
             flag, value = list_[:2]
             is_fixed, bounds = None, None
 
-            # Unfortunately, the flag `share' does refer to a parameter that can be estimated or
-            # not, depending on the group.
             if flag in ['coeff']:
                 is_fixed, bounds = process_coefficient_line(line)
 
@@ -49,6 +47,16 @@ def read(fname):
 
             # Process blocks of information
             dict_ = _process_line(group, flag, value, is_fixed, bounds, dict_)
+
+    # For ease of usability, we allow to skip the TYPE SHARES and TYPE SHIFTS blocks. If they are
+    # not present, then this implies that there is only a single type.
+    for group in ['TYPE SHARES', 'TYPE SHIFTS']:
+        if group in dict_.keys():
+            continue
+
+        dict_[group] = dict()
+        for flag in ['coeffs', 'fixed', 'bounds']:
+            dict_[group][flag] = []
 
     # Type conversion for SHOCKS
     dict_['SHOCKS']['coeffs'] = np.array(dict_['SHOCKS']['coeffs'])
