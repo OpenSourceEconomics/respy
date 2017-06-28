@@ -211,7 +211,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
 
         # TYPES
         num = optim_paras['type_shares']
-        fmt_ = ' {:25.15f}' * num_types + '\n'
+        fmt_ = ' {:25.15f}' * num_types * 2 + '\n'
         file_.write(fmt_.format(*num))
         for j in range(num_types):
             fmt_ = ' {:25.15f}' * 4 + '\n'

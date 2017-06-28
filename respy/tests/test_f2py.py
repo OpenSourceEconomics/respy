@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 import scipy
 
+from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.shared.shared_auxiliary import correlation_to_covariance
 from respy.python.shared.shared_auxiliary import covariance_to_correlation
@@ -749,3 +750,21 @@ class TestClass(object):
             f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)
 
             np.testing.assert_almost_equal(py, f90)
+
+    def test_12(self):
+        """ Function that calculates the conditional type probabilites.
+        """
+        for _ in range(1000):
+
+            num_types = np.random.randint(1, 10)
+            edu_start = np.random.randint(10, 100)
+            type_shares = np.random.normal(0, 1, size=num_types * 2)
+
+            args = [type_shares, edu_start]
+
+            py = get_conditional_probabilities(*args)
+            fort = fort_debug.wrapper_get_conditional_probabilities(*args + [num_types])
+
+            np.testing.assert_almost_equal(np.sum(py), 1.0)
+            np.testing.assert_almost_equal(py, fort)
+

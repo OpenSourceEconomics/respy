@@ -82,10 +82,10 @@ def dist_econ_paras(x_all_curre):
     shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
 
     # Type Shares
-    type_shares = x_all_curre[46:46 + ((num_types - 1) * 2)]
+    type_shares = x_all_curre[46:46 + (num_types - 1) * 2]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
     
-    type_shifts = np.reshape(x_all_curre[46 + ((num_types - 1) * 2):num_paras], (num_types - 1, 4))
+    type_shifts = np.reshape(x_all_curre[46 + (num_types - 1) * 2:num_paras], (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
     # Collect arguments
@@ -144,7 +144,6 @@ def get_conditional_probabilities(type_shares, edu_start):
     """
     # Auxiliary objects
     num_types = int(len(type_shares) / 2)
-
     probs = np.tile(np.nan, num_types)
     for i in range(num_types):
         lower, upper = i * 2, (i + 1) * 2
@@ -163,11 +162,11 @@ def extract_type_information(x):
     num_types = int(len(x[46:]) / 6) + 1
 
     # Type shares
-    type_shares = x[46:46 + ((num_types - 1) * 2)]
+    type_shares = x[46:46 + (num_types - 1) * 2]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
 
     # Type shifts
-    type_shifts = x[46 + ((num_types - 1) * 2):]
+    type_shifts = x[46 + (num_types - 1) * 2:]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
@@ -784,7 +783,7 @@ def get_optim_paras(optim_paras, num_paras, which, is_debug):
     # Shares
     x[46:46 + (num_types - 1) * 2] = optim_paras['type_shares'][2:]
 
-    x[46 + ((num_types - 1) * 2):num_paras] = optim_paras['type_shifts'].flatten()[4:]
+    x[46 + (num_types - 1) * 2:num_paras] = optim_paras['type_shifts'].flatten()[4:]
 
     # Checks
     if is_debug:

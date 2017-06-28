@@ -27,8 +27,7 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self, flag_ambiguity=False):
-        """ Testing the equality of an evaluation of the criterion function for
-        a random request.
+        """ Testing the equality of an evaluation of the criterion function for a random request.
         """
         # Run evaluation for multiple random requests.
         flag_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
@@ -61,8 +60,7 @@ class TestClass(object):
             # state space. The number of periods needs to be at least three in order to provide
             # enough state points.
             num_periods = np.random.randint(3, 6)
-            num_types = len(init_dict['TYPE_SHARES']['coeffs'])
-
+            num_types = int(len(init_dict['TYPE SHARES']['coeffs']) / 2) + 1
             max_states_period = pyth_create_state_space(num_periods, num_types, edu_spec)[3]
 
             # Updates to initialization dictionary that trigger a use of the interpolation code.
@@ -78,7 +76,7 @@ class TestClass(object):
         num_periods = init_dict['BASICS']['periods']
         write_draws(num_periods, max_draws)
         write_interpolation_grid('test.respy.ini')
-        type_shares = init_dict['TYPE_SHARES']['coeffs']
+        type_shares = np.array([0.0, 0.0] + init_dict['TYPE SHARES']['coeffs'])
         write_types(type_shares, num_agents_sim)
         write_edu_start(edu_spec, num_agents_sim)
 
@@ -147,7 +145,7 @@ class TestClass(object):
         base_x, base_val = None, None
 
         num_periods = init_dict['BASICS']['periods']
-        type_shares = init_dict['TYPE_SHARES']['coeffs']
+        type_shares = np.array([0.0, 0.0] + init_dict['TYPE SHARES']['coeffs'])
 
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
@@ -203,7 +201,7 @@ class TestClass(object):
         base_sol_log, base_est_info, base_est_log = None, None, None
         base_sim_log, base_amb_log = None, None
 
-        type_shares = init_dict['TYPE_SHARES']['coeffs']
+        type_shares = np.array([0.0, 0.0] + init_dict['TYPE SHARES']['coeffs'])
         num_periods = init_dict['BASICS']['periods']
 
         edu_spec = dict()
@@ -269,7 +267,7 @@ class TestClass(object):
 
         num_agents_sim = dist_class_attributes(respy_base, 'num_agents_sim')
 
-        type_shares = init_dict['TYPE_SHARES']['coeffs']
+        type_shares = np.array([0.0, 0.0] + init_dict['TYPE SHARES']['coeffs'])
         num_periods = init_dict['BASICS']['periods']
 
         write_draws(num_periods, max_draws)

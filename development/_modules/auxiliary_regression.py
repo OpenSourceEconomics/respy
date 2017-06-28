@@ -87,6 +87,20 @@ def check_single(tests, idx):
         print(msg)
         return None
 
+    # TODO: We now have conditional type probabilities.
+    is_single_type = len(init_dict['TYPE_SHARES']['coeffs']) == 1
+    if not is_single_type:
+        msg = ' ... test failing due to conditional type probabilities'
+        print(msg)
+        return None
+
+    else:
+        init_dict['TYPE SHARES'] = init_dict['TYPE_SHARES']
+        del init_dict['TYPE_SHARES']
+
+        init_dict['TYPE SHIFTS'] = init_dict['TYPE_SHIFTS']
+        del init_dict['TYPE SHIFTS']
+
     # We need to create an temporary directory, so the multiprocessing does not interfere with
     # any of the files that are printed and used during the small estimation request.
     dirname = get_random_dirname(5)

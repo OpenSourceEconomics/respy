@@ -177,8 +177,8 @@ def get_test_dict(test_dir):
     # which have their own requirements.
     tests = []
     if not IS_FORTRAN:
-        tests += ['test_versions_1', 'test_versions_2', 'test_versions_4']
-        tests += ['test_versions_3']
+        tests += ['test_versions_1', 'test_versions_2', 'test_versions_3']
+        tests += ['test_versions_4']
     if not IS_F2PY:
         tests += ['test_2', 'test_3', 'test_4', 'test_f2py_4', 'test_f2py_5', 'test_f2py_6']
 

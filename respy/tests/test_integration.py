@@ -383,9 +383,9 @@ class TestClass(object):
         elif 'three.ini' in fname:
             rslt = 75.82796484512875
         elif 'one_types.ini' in fname:
-            rslt = 8.957176118440145
+            rslt = 9.043933764903148
         elif 'one_initial.ini' in fname:
-            rslt = 8.263655342390024
+            rslt = 8.063294972360962
 
         # This ensures that the experience effect is taken care of properly.
         open('.restud.respy.scratch', 'w').close()

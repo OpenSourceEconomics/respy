@@ -86,8 +86,8 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     data_sim = MISSING_FLOAT
 
     ! We also need to sample the set of initial conditions.
-    types = get_random_types(num_types, optim_paras, num_agents_sim, is_debug)
     edu_start = get_random_edu_start(edu_spec, is_debug)
+    types = get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug)
 
     ! Iterate over agents and periods
     count = 0

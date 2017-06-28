@@ -53,6 +53,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     !/* internal objects        */
 
     REAL(our_dble)                  :: draws_prob_raw(num_draws_prob, 4)
+    REAL(our_dble)                  :: type_shares(num_types)
     REAL(our_dble)                  :: rewards_systematic(4)
     REAL(our_dble)                  :: prob_obs(num_periods)
     REAL(our_dble)                  :: prob_type(num_types)
@@ -71,6 +72,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     INTEGER(our_int)                :: activity_lagged
     INTEGER(our_int)                :: counts(4)
     INTEGER(our_int)                :: row_start
+    INTEGER(our_int)                :: edu_start
     INTEGER(our_int)                :: num_rows
     INTEGER(our_int)                :: num_obs
     INTEGER(our_int)                :: choice
@@ -105,11 +107,15 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     DO j = 1, num_agents_contrib
 
+        row_start = SUM(num_obs_agent(:(j -1))) + 1
+        num_obs = num_obs_agent(j)
+
+        edu_start = INT(data_evaluate(row_start, 7))
+        type_shares = get_conditional_probabilities(optim_paras%type_shares, edu_start)
+
         prob_type = one_dble
         DO type_ = 0, num_types - 1
 
-            row_start = SUM(num_obs_agent(:(j -1))) + 1
-            num_obs = num_obs_agent(j)
 
             prob_obs = zero_dble
             DO p = 0, num_obs - 1
@@ -226,13 +232,13 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
         END DO
 
         ! Adjust and record likelihood contribution
-        contribs(j) = SUM(optim_paras%type_shares * prob_type) / SUM(optim_paras%type_shares)
+        contribs(j) = SUM(prob_type * type_shares)
 
     END DO
 
     ! If there is no random variation in rewards and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
     IF (is_deterministic) THEN
-     contribs = EXP(one_dble)
+        contribs = EXP(one_dble)
     END IF
 
 

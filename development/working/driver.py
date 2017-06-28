@@ -8,8 +8,11 @@ import sys
 if len(sys.argv) > 1:
     cwd = os.getcwd()
     os.chdir('../../respy')
-    assert os.system('./waf distclean; ./waf configure build --without_fortran') == 0
+    assert os.system('./waf distclean; ./waf configure build --debug') == 0
     os.chdir(cwd)
+
+
+
 
 
 
@@ -34,40 +37,31 @@ from codes.auxiliary import simulate_observed
 from codes.auxiliary import write_draws
 
 from codes.random_init import generate_init
-from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import dist_class_attributes, get_conditional_probabilities
 from respy.python.process.process_python import process
 #write_draws(5, 5000)
 
 from codes.auxiliary import write_types
 from codes.auxiliary import write_edu_start
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+
+sys.path.insert(0, TEST_RESOURCES_DIR)
+
+import f2py_interface as fort_debug
 np.random.seed(123)
 
 
 
+open('.restud.respy.scratch', 'w').close()
+respy_obj = RespyCls('kw_data_one_types.ini')
 
+respy_obj.unlock()
+respy_obj.set_attr('maxfun', 0)
+respy_obj.lock()
 
+simulate_observed(respy_obj, is_missings=False)
 
-#print 'running with types'
-# This ensures that the experience effect is taken care of properly.
-#open('.restud.respy.scratch', 'w').close()
+_, val = estimate(respy_obj)
 
-    #respy_obj.write_out('test.respy.ini')
-#respy_obj = RespyCls('truth.respy.ini')
-
-
-respy_obj = RespyCls('model.respy.ini')
-
-#edu_spec = respy_obj.get_attr('edu_spec')
-#num_agents_sim = respy_obj.get_attr('num_agents_sim')
-#write_types([0.5, 0.1, 0.3, 0.1], num_agents_sim)
-#write_edu_start(edu_spec, num_agents_sim)
-
-
-simulate(respy_obj)
-_, crit = estimate(respy_obj)
-print(crit)
-
-if respy_obj.get_attr('version') == 'PYTHON':
-    np.testing.assert_almost_equal(crit, 1.30697639634384)
-else:
-    raise AssertionError
+rslt = 8.263655342390024
+np.testing.assert_allclose(val, rslt)

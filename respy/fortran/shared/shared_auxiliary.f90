@@ -78,6 +78,38 @@ FUNCTION get_scales_magnitudes(x_optim_free_start) RESULT(precond_matrix)
     END DO
 
 END FUNCTION
+!*******************************************************************************
+!*******************************************************************************
+FUNCTION get_conditional_probabilities(type_shares, edu_start) RESULT(probs)
+
+    !/* external objects        */
+
+    REAL(our_dble)                      :: probs(num_types)
+
+    REAL(our_dble), INTENT(IN)          :: type_shares(num_types * 2)
+
+    INTEGER(our_int), INTENT(IN)        :: edu_start
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                    :: lower
+    INTEGER(our_int)                    :: upper
+    INTEGER(our_int)                    :: i
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    probs = -HUGE_FLOAT
+    DO i = 1, num_types
+        lower = (i - 1) * 2 + 1
+        upper = i * 2
+        probs(i) = DEXP(SUM(type_shares(lower:upper) * (/one_int, edu_start/)))
+    END DO
+
+    probs = probs / SUM(probs)
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 FUNCTION check_early_termination(maxfun, num_eval, crit_estimation) RESULT(is_termination)
@@ -925,7 +957,7 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         READ(99, 1500) num_edu_start
 
         ALLOCATE(optim_paras%type_shifts(num_types, 4))
-        ALLOCATE(optim_paras%type_shares(num_types))
+        ALLOCATE(optim_paras%type_shares(num_types * 2))
         ALLOCATE(optim_paras%paras_bounds(2, num_paras))
         ALLOCATE(optim_paras%paras_fixed(num_paras))
 
@@ -1223,10 +1255,11 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
     END IF
 
     ! The shares do not necessarily sum to one. The adjustment is done when the criterion function is evaluated.
-    optim_paras%type_shares = x(47:(47 + num_types - 1))
+    optim_paras%type_shares = zero_dble
+    optim_paras%type_shares(3:) = x(47:47 + (num_types - 1) * 2 - 1)
 
     optim_paras%type_shifts = zero_dble
-    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(47 + num_types:num_paras), (/4, num_types  - 1/)))
+    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(47 + (num_types - 1) * 2:num_paras), (/4, num_types  - 1/)))
 
 END SUBROUTINE
 !******************************************************************************
@@ -1312,10 +1345,10 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     x_internal(43:46) = optim_paras%shocks_cholesky(4, :4)
 
-    x_internal(47:(47 + num_types - 1)) = optim_paras%type_shares(:)
+    x_internal(47:(47 + (num_types - 1) * 2) - 1) = optim_paras%type_shares(3:)
 
     shifts = PACK(TRANSPOSE(optim_paras%type_shifts), .TRUE.)
-    x_internal(47 + num_types:num_paras) = shifts(5:)
+    x_internal(47 + (num_types - 1) * 2:num_paras) = shifts(5:)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN

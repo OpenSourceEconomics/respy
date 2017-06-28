@@ -141,14 +141,14 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
             init_dict['SHOCKS']['fixed'][j] = is_fixed
             if is_bounds:
                 init_dict['SHOCKS']['bounds'][j] = bounds
-        elif identifier in list(range(46, 46 + ((num_types - 1) * 2))):
+        elif identifier in list(range(46, 46 + (num_types - 1) * 2)):
             j = identifier - 46
             init_dict['TYPE_SHARES']['coeffs'][j] = x[identifier]
             init_dict['TYPE_SHARES']['fixed'][j] = is_fixed
             if is_bounds:
                 init_dict['TYPE_SHARES']['bounds'][j] = bounds
-        elif identifier in list(range(46 + ((num_types - 1) * 2), num_paras)):
-            j = identifier - (46 + ((num_types - 1) * 2))
+        elif identifier in list(range(46 + (num_types - 1) * 2, num_paras)):
+            j = identifier - (46 + (num_types - 1) * 2)
             init_dict['TYPE_SHIFTS']['coeffs'][j] = x[identifier]
             init_dict['TYPE_SHIFTS']['fixed'][j] = is_fixed
             if is_bounds:

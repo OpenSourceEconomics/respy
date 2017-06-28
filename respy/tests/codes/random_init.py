@@ -73,7 +73,6 @@ def generate_random_dict(constr=None):
     # We need to determine the final number of types right here, as it determines the number of
     # parameters. This includes imposing constraints.
     num_types = np.random.choice(range(1, MAX_TYPES))
-
     if 'types' in constr.keys():
         # Extract objects
         num_types = constr['types']

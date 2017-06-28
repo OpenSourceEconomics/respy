@@ -15,11 +15,14 @@ VALID_KEYS += ['edu', 'measure', 'level', 'fixed_ambiguity', 'flag_ambiguity']
 VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
 VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta', 'precond_type']
 
+# This constraint is already enforced in the head module as it affects all other components of
+# a valid initialization file.
+VALID_KEYS += ['types']
+
 
 def process_constraints(dict_, constr, paras_fixed, paras_bounds):
     """ Check and process constraints.
     """
-
     # Check request
     _check_constraints(constr)
 

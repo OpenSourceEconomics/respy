@@ -4,13 +4,7 @@ MODULE simulate_auxiliary
 
     !/* external modules    */
 
-    USE shared_interfaces
-
-    USE shared_constants
-
-    USE shared_utilities
-
-    USE shared_types
+    USE shared_interface
 
     !/* setup   */
 
@@ -63,12 +57,13 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, is_debug) RESULT(types)
+FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug) RESULT(types)
 
     !/* external objects    */
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN) :: optim_paras
 
+    INTEGER(our_int)                  :: edu_start(num_agents_sim)
     INTEGER(our_int)                  :: types(num_agents_sim)
     INTEGER(our_int)                  :: num_agents_sim
     INTEGER(our_int)                  :: num_types
@@ -102,8 +97,9 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, is_debug) RESU
 
     ELSE
         candidates = (/ (i, i = 0, num_types - 1) /)
-        probs = optim_paras%type_shares / SUM(optim_paras%type_shares)
         DO i = 1, num_agents_sim
+            probs = get_conditional_probabilities(optim_paras%type_shares, edu_start(i))
+
             types(i) = get_random_draw(candidates, probs)
         END DO
 

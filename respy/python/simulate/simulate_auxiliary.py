@@ -162,7 +162,7 @@ def write_info(respy_obj, data_frame):
             file_.write(fmt_.format(*line))
 
             fmt_ = '    {:>10}    ' + '{:25.5f}' * num_columns + '\n'
-            for i, start in enumerate(sorted(edu_spec['start'])):
+            for i, start in enumerate(edu_spec['start']):
                 line = [start] + info[i, :].tolist()
                 file_.write(fmt_.format(*line))
 

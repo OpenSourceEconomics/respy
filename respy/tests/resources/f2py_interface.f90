@@ -2079,6 +2079,37 @@ SUBROUTINE wrapper_get_relevant_dependence(shocks_cov_cand, shocks_cholesky_cand
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_get_conditional_probabilities(probs, type_shares, edu_start, num_types_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: probs(num_types_int)
+
+    DOUBLE PRECISION, INTENT(IN)        :: type_shares(num_types_int * 2)
+
+    INTEGER, INTENT(IN)                 :: num_types_int
+    INTEGER, INTENT(IN)                 :: edu_start
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Assign global resfort variables
+    num_types = num_types_int
+
+    probs = get_conditional_probabilities(type_shares, edu_start)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
 SUBROUTINE wrapper_get_scales_magnitude(precond_matrix_int, values, num_free_int)
 
     !/* external libraries      */

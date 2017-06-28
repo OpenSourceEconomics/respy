@@ -157,7 +157,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
     REAL(our_dble), SAVE            :: crit_vals(3)
 
-    REAL(our_dble)                  :: x_optim_shares(num_types)
+    REAL(our_dble)                  :: x_optim_shares((num_types - 1) * 2)
     REAL(our_dble)                  :: shocks_cholesky(4, 4)
     REAL(our_dble)                  :: shocks_cov(3, 4, 4)
     REAL(our_dble)                  :: flattened_cov(3, 10)
@@ -227,14 +227,12 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
             DO l = j, 4
                 flattened_cov(i, k) = shocks_cov(i, j, l)
                 IF (j == l) flattened_cov(i, k) = SQRT(flattened_cov(i, k))
-
                 k = k + 1
             END DO
         END DO
     END DO
 
-    x_optim_shares = x_optim_all_unscaled(47:(47 + num_types - 1))
-    x_optim_shares = x_optim_shares / SUM(x_optim_shares)
+    x_optim_shares = x_optim_all_unscaled(47:47 + (num_types - 1) * 2 - 1)
 
     DO i = 1, 3
 
@@ -243,8 +241,8 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
         x_econ_container(:36, i) = x_optim_all_unscaled(:36)
         x_econ_container(37:46, i) = flattened_cov(i, :)
-        x_econ_container(47:(47 + num_types - 1), i) = x_optim_shares
-        x_econ_container(47 + num_types:num_paras, i) = x_optim_all_unscaled(47 + num_types:num_paras)
+        x_econ_container(47:47 + (num_types - 1) * 2 - 1, i) = x_optim_shares
+        x_econ_container(47 + (num_types - 1) * 2:num_paras, i) = x_optim_all_unscaled(47 + (num_types - 1) * 2:num_paras)
 
     END DO
 
