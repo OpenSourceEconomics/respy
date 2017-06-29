@@ -166,9 +166,11 @@ if __name__ == '__main__':
     #   2.0.0.dev15 This is a nuisance release as we did some minor work in the develop branch at
     #               did not create a new branch right away.
     #
-    #   2.0.0.dev16 I added age/period effects to each of the rewards.
+    #   2.0.0.dev16 We added age/period effects to each of the rewards.
     #
-    #   2.0.0.dev17 I added state variables that capture last year's occupation.
+    #   2.0.0.dev17 We added state variables that capture last year's occupation.
+    #
+    #   2.0.0.dev18 We now allow for conditional type probabilities.
     #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
