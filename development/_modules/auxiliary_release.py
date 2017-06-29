@@ -57,7 +57,7 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_7(constr)
     elif OLD_RELEASE == '2.0.0.dev16' and NEW_RELEASE == '2.0.0.dev17':
         prepare_release_tests_8(constr)
-    elif OLD_RELEASE == '2.0.0.dev17' and NEW_RELEASE == 'current':
+    elif OLD_RELEASE == '2.0.0.dev17' and NEW_RELEASE == '2.0.0.dev18':
         prepare_release_tests_9(constr)
     else:
         raise AssertionError('Misspecified request ...')
@@ -539,8 +539,7 @@ def run_estimation(which):
 
     # Moving from 2.0.0.dev17 to 2.0.0.dev18 breaks the equality because the simulated datasets
     # differ. So, we just copy the one from old.
-    # TODO: Rename condition to release number ...
-    if 'current' in sys.executable:
+    if '2.0.0.dev18' in sys.executable:
         os.chdir('../old')
         import glob
         files = glob.glob('data.respy.*')

@@ -159,7 +159,7 @@ if __name__ == '__main__':
     #               experience variable by 100.
     #
     #   2.0.0.dev13 Flawed submission, simply just ignore.
-
+    #
     #   2.0.0.dev14 We added initial conditions and unobserved type heterogeneity. It needs to be
     #               checked against 2.0.0.dev14
     #
@@ -172,7 +172,7 @@ if __name__ == '__main__':
     #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev17', 'current'
+    old_release, new_release = '2.0.0.dev17', '2.0.0.dev18'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 
