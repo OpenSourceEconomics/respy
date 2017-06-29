@@ -120,7 +120,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
         opt_obj.x_econ_container[:36, i] = x_optim_all_unscaled[:36]
         opt_obj.x_econ_container[36:46, i] = shocks_coeffs
         opt_obj.x_econ_container[46:46 + (num_types - 1) * 2, i] = x_optim_shares
-        opt_obj.x_econ_container[46 + (num_types - 1) * 2:num_paras, i] = x_optim_all_unscaled[46 + ((num_types - 1) * 2):]
+        opt_obj.x_econ_container[46 + (num_types - 1) * 2:num_paras, i] = x_optim_all_unscaled[46 + (num_types - 1) * 2:]
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container

@@ -269,3 +269,15 @@ def get_valid_shares(num_groups):
     shares = shares / np.sum(shares)
     shares = shares.tolist()
     return shares
+
+
+def transform_to_logit(shares):
+    """ This function transform
+    """
+    denominator = (1.0 / shares[0])
+    coeffs = []
+    for i in range(len(shares)):
+        coeffs += [np.log(shares[i] * denominator)]
+        coeffs += [0.0]
+
+    return coeffs

@@ -99,7 +99,6 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_
         candidates = (/ (i, i = 0, num_types - 1) /)
         DO i = 1, num_agents_sim
             probs = get_conditional_probabilities(optim_paras%type_shares, edu_start(i))
-
             types(i) = get_random_draw(candidates, probs)
         END DO
 

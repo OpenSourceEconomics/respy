@@ -1254,7 +1254,6 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
         CALL extract_cholesky(optim_paras%shocks_cholesky, x)
     END IF
 
-    ! The shares do not necessarily sum to one. The adjustment is done when the criterion function is evaluated.
     optim_paras%type_shares = zero_dble
     optim_paras%type_shares(3:) = x(47:47 + (num_types - 1) * 2 - 1)
 

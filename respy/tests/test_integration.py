@@ -16,6 +16,7 @@ from respy.python.process.process_python import process
 from respy._scripts.scripts_check import scripts_check
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
+from codes.auxiliary import transform_to_logit
 from respy.custom_exceptions import UserError
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
@@ -192,10 +193,6 @@ class TestClass(object):
             file_sim = 'sim.respy.dat'
 
             single = np.random.choice([True, False])
-
-            # TODO: Extend set of admissible actions. If we want to include values and bounds
-            # then we need to put in some extra effort to ensure that all are valid, i.e. that a
-            # random value is within the bounds.
             action = np.random.choice(['fix', 'free'])
             num_draws = np.random.randint(1, 22)
 
@@ -212,12 +209,8 @@ class TestClass(object):
 
             # The error can occur as the RESPY package is actually running an estimation step
             # that can result in very ill-conditioned covariance matrices.
-            # try:
-            # TODO: Is this still relevant?
             scripts_simulate(init_file, file_sim)
             scripts_modify(identifiers, action, init_file, values)
-            # except np.linalg.linalg.LinAlgError:
-            #     pass
 
     @pytest.mark.slow
     def test_6(self, flag_ambiguity=False):
@@ -365,7 +358,8 @@ class TestClass(object):
     @pytest.mark.slow
     def test_12(self):
         """ This test just locks in the evaluation of the criterion function for the original 
-        Keane & Wolpin data. We create an additional initialization file that includes the types.
+        Keane & Wolpin data. We create an additional initialization files that include numerous
+        types and initial conditions.
         """
         # Sample one task
         resources = []
@@ -401,3 +395,44 @@ class TestClass(object):
 
         _, val = estimate(respy_obj)
         np.testing.assert_allclose(val, rslt)
+
+    def test_13(self):
+        """ We ensure that the number of types does not matter for the evaluation of the criterion
+        function if a weight of one is put on the first group.
+        """
+
+        constr = dict()
+        constr['flag_estimation'] = True
+
+        # The interpolation equation is affected by the number of types regardless of the weights.
+        constr['flag_interpolation'] = False
+
+        init_dict = generate_init(constr)
+
+        base_val = None
+
+        for num_types in [1, np.random.choice([2, 3, 4]).tolist()]:
+
+            # We construct a set of coefficients that matches the type shares.
+            coeffs = transform_to_logit([1.0] + [0.00000001] * (num_types - 1))
+
+            # We always need to ensure that a weight of one is on the first type. We need to fix
+            # the weight in this case to not change during an estimation as well.
+            shifts = np.random.uniform(-0.05, 0.05, size=(num_types - 1) * 4)
+            init_dict['TYPE SHIFTS']['coeffs'] = shifts
+            init_dict['TYPE SHIFTS']['fixed'] = [False] * (num_types * 4)
+            init_dict['TYPE SHIFTS']['bounds'] = [[None, None]] * (num_types * 4)
+
+            init_dict['TYPE SHARES']['coeffs'] = coeffs[2:]
+            init_dict['TYPE SHARES']['fixed'] = [True, True] * (num_types - 1)
+            init_dict['TYPE SHARES']['bounds'] = [[None, None], [None, None]]* (num_types - 1)
+
+            print_init_dict(init_dict)
+
+            respy_obj = RespyCls('test.respy.ini')
+            simulate_observed(respy_obj)
+            _, val = estimate(respy_obj)
+            if base_val is None:
+                base_val = val
+
+            np.testing.assert_almost_equal(base_val, val)

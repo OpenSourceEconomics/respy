@@ -57,6 +57,8 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_7(constr)
     elif OLD_RELEASE == '2.0.0.dev16' and NEW_RELEASE == '2.0.0.dev17':
         prepare_release_tests_8(constr)
+    elif OLD_RELEASE == '2.0.0.dev17' and NEW_RELEASE == 'current':
+        prepare_release_tests_9(constr)
     else:
         raise AssertionError('Misspecified request ...')
 
@@ -413,6 +415,72 @@ def prepare_release_tests_8(constr):
     json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
 
 
+def prepare_release_tests_9(constr):
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
+    this function only.
+    """
+    def transform_to_logit(shares):
+        """ This function transform
+        """
+        num_types = len(shares)
+        denominator = (1.0 / shares[0])
+
+        coeffs = []
+        for i in range(num_types):
+            coeffs += [np.log(shares[i] * denominator)]
+
+        return coeffs
+
+    # This script is also imported (but not used) for the creation of the virtual environments.
+    # Thus, the imports might not be valid when starting with a clean slate.
+    import numpy as np
+
+    sys.path.insert(0, '../../../respy/tests')
+    from codes.auxiliary import get_valid_shares
+    from codes.random_init import generate_init
+
+    # Prepare fresh subdirectories
+    for which in ['old', 'new']:
+        if os.path.exists(which):
+            shutil.rmtree(which)
+        os.mkdir(which)
+
+    constr['flag_estimation'] = True
+    init_dict = generate_init(constr)
+
+    # I now need to determine the number of types and sample the fixed type probabilites.
+    num_types = int((len(init_dict['TYPE SHARES']['coeffs']) / 2) + 1)
+    shares = get_valid_shares(num_types)
+
+    new_dict = init_dict.copy()
+    coeffs = transform_to_logit(shares)
+
+    new_dict['TYPE SHARES']['coeffs'] = []
+    new_dict['TYPE SHARES']['fixed'] = []
+    new_dict['TYPE SHARES']['bounds'] = []
+
+    for coeff in coeffs[1:]:
+        new_dict['TYPE SHARES']['coeffs'] += [coeff]
+        new_dict['TYPE SHARES']['coeffs'] += [0.0]
+        new_dict['TYPE SHARES']['fixed'] += [True, True]
+        new_dict['TYPE SHARES']['bounds'] += [[None, None], [None, None]]
+
+    json.dump(new_dict, open('new/init_dict.respy.json', 'w'))
+
+    old_dict = init_dict.copy()
+
+    old_dict['TYPE_SHIFTS'] = old_dict['TYPE SHIFTS']
+    del old_dict['TYPE SHIFTS']
+
+    old_dict['TYPE_SHARES'] = dict()
+    old_dict['TYPE_SHARES']['coeffs'] = shares
+    old_dict['TYPE_SHARES']['fixed'] = [True] * num_types
+    old_dict['TYPE_SHARES']['bounds'] = [[0.00, None]] * num_types
+
+    json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
+
+
 def no_preparations_required(constr):
     """ This function prepares the initialization files so that they can be processed by both 
     releases under investigation. The idea is to have all hand-crafted modifications grouped in 
@@ -469,10 +537,21 @@ def run_estimation(which):
     else:
         simulate_observed(respy_obj)
 
+    # Moving from 2.0.0.dev17 to 2.0.0.dev18 breaks the equality because the simulated datasets
+    # differ. So, we just copy the one from old.
+    # TODO: Rename condition to release number ...
+    if 'current' in sys.executable:
+        os.chdir('../old')
+        import glob
+        files = glob.glob('data.respy.*')
+        for file in files:
+            shutil.copy(file, '../new')
+        os.chdir('../new')
+
     _, crit_val = estimate(respy_obj)
 
     # There was a bug in version 1.0 which might lead to crit_val not to actually take the lowest
-    #  value that was visited by the optimizer. So, we reprocess the log file again to be sure.
+    # value that was visited by the optimizer. So, we reprocess the log file again to be sure.
     if '1.0.0' in sys.executable:
         crit_val = 1e10
         with open('est.respy.log') as infile:

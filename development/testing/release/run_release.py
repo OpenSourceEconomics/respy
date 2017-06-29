@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     # NOTES:
     #
-    #   All the versions are available on PYPI. Those marked as development versions are not
+    # All the versions are available on PYPI. Those marked as development versions are not
     # downloaded by an unsuspecting user. Instead, they need to be explicitly requested. Please
     # also make sure these versions are tagged in GIT.
     #
@@ -172,7 +172,7 @@ if __name__ == '__main__':
     #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev16', '2.0.0.dev17'
+    old_release, new_release = '2.0.0.dev17', 'current'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 

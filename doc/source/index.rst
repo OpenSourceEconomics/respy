@@ -33,6 +33,3 @@ Welcome to respy's documentation!
    changes
    bibliography
 
-.. todo::
-
-   All TODOs are collected on GitLab.

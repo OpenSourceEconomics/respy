@@ -36,8 +36,6 @@ def build(ctx):
            'parallelism/parallelism_auxiliary.f90',
            'resfort_library.f90']
 
-    # TODO: When revising the build process, it want to explore ways to
-    # impose the check for ZeroDivision Errors in all modules besides the SLSQP.
     flags = ctx.env.FCFLAGS + ['-fPIC']
     ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)
 

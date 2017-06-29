@@ -157,13 +157,11 @@ if __name__ == '__main__':
     parser.add_argument('--procs', action='store', dest='num_procs', default=1, type=int,
                         help='number of processors')
 
-
     args = parser.parse_args()
     request, is_compile = args.request, args.is_compile,
 
     if is_compile:
         raise AssertionError('... probably not working at this point due to reload issues.')
-
 
     is_background = args.is_background
     is_strict = args.is_strict
