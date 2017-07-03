@@ -735,7 +735,7 @@ class RespyCls(object):
         assert all(item <= edu_spec['max'] for item in edu_spec['start'])
         assert all(isinstance(item, float) for item in edu_spec['share'])
         assert all(0 <= item <= 1 for item in edu_spec['share'])
-        np.testing.assert_almost_equal(np.sum(edu_spec['share']), 1.0)
+        np.testing.assert_almost_equal(np.sum(edu_spec['share']), 1.0, decimal=4)
 
         # Derivatives
         assert (derivatives in ['FORWARD-DIFFERENCES'])

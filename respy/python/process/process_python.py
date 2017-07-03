@@ -11,12 +11,16 @@ def process(respy_obj):
     """ This function processes the dataset from disk.
     """
     # Distribute class attributes
-    num_agents_est, file_est, edu_spec = dist_class_attributes(respy_obj, 'num_agents_est',
-        'file_est', 'edu_spec')
+    num_agents_est, file_est, edu_spec, num_periods = dist_class_attributes(respy_obj,
+        'num_agents_est', 'file_est', 'edu_spec', 'num_periods')
 
     # Process dataset from files.
     data_frame = pd.read_csv(file_est, delim_whitespace=True, header=0, na_values='.')
     data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
+
+    # We want to allow to estimate with only a subset of periods in the sample.
+    cond = data_frame['Period'] < num_periods
+    data_frame = data_frame[cond]
 
     # We only keep the information that is relevant for the estimation. Once that is done,
     # we can also impose some type restrictions.
