@@ -61,9 +61,8 @@ respy_obj.lock()
 
 simulate_observed(respy_obj, is_missings=False)
 
-respy_obj.attr['num_periods'] = 2
-
-_, val = estimate(respy_obj)
+#respy_obj.attr['num_periods'] = 2
+#_, val = estimate(respy_obj)
 
 #rslt = 8.263655342390024
 #np.testing.assert_allclose(val, rslt)

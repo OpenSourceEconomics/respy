@@ -3,7 +3,9 @@ import pickle as pkl
 import subprocess
 import shutil
 import shlex
+import glob
 import json
+import copy
 import sys
 import pip
 import os
@@ -59,6 +61,8 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_8(constr)
     elif OLD_RELEASE == '2.0.0.dev17' and NEW_RELEASE == '2.0.0.dev18':
         prepare_release_tests_9(constr)
+    elif OLD_RELEASE == '2.0.0.dev18' and NEW_RELEASE == 'current':
+        prepare_release_tests_10(constr)
     else:
         raise AssertionError('Misspecified request ...')
 
@@ -481,6 +485,48 @@ def prepare_release_tests_9(constr):
     json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
 
 
+def prepare_release_tests_10(constr):
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
+    this function only.
+    """
+
+    # This script is also imported (but not used) for the creation of the virtual environments.
+    # Thus, the imports might not be valid when starting with a clean slate.
+    import numpy as np
+
+    sys.path.insert(0, '../../../respy/tests')
+    from codes.auxiliary import get_valid_shares
+    from codes.random_init import generate_init
+
+    # Prepare fresh subdirectories
+    for which in ['old', 'new']:
+        if os.path.exists(which):
+            shutil.rmtree(which)
+        os.mkdir(which)
+
+    constr['flag_estimation'] = True
+    init_dict = generate_init(constr)
+
+    for label in ['OCCUPATION A', 'OCCUPATION B']:
+        for j in [8, 9]:
+            init_dict[label]['coeffs'][j] = 0
+            init_dict[label]['bounds'][j] = (None, None)
+    new_dict = copy.deepcopy(init_dict)
+
+    # We swapped to the order to align it with the KW1997 setup.
+    for label in ['OCCUPATION A', 'OCCUPATION B']:
+        new_dict[label]['coeffs'][8], new_dict[label]['coeffs'][10] = \
+            new_dict[label]['coeffs'][10], new_dict[label]['coeffs'][8]
+        new_dict[label]['coeffs'][9], new_dict[label]['coeffs'][11] = \
+            new_dict[label]['coeffs'][11], new_dict[label]['coeffs'][9]
+
+    json.dump(new_dict, open('new/init_dict.respy.json', 'w'))
+
+    old_dict = copy.deepcopy(init_dict)
+    json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
+
+
 def no_preparations_required(constr):
     """ This function prepares the initialization files so that they can be processed by both 
     releases under investigation. The idea is to have all hand-crafted modifications grouped in 
@@ -538,10 +584,10 @@ def run_estimation(which):
         simulate_observed(respy_obj)
 
     # Moving from 2.0.0.dev17 to 2.0.0.dev18 breaks the equality because the simulated datasets
-    # differ. So, we just copy the one from old.
-    if '2.0.0.dev18' in sys.executable:
+    # differ. So, we just copy the one from old. However, this is only relevant if 2.0.0.dev18 is
+    # the candidate.
+    if ('2.0.0.dev18' in sys.executable) and ('/new' is os.getcwd()):
         os.chdir('../old')
-        import glob
         files = glob.glob('data.respy.*')
         for file in files:
             shutil.copy(file, '../new')

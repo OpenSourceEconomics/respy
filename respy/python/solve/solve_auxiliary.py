@@ -159,13 +159,13 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             # Construct auxiliary information
             hs_graduate = float(edu >= 12)
             co_graduate = float(edu >= 16)
-            any_exp_a = float(exp_a > 0)
-            any_exp_b = float(exp_b > 0)
+            not_any_exp_a = float(exp_a == 0)
+            not_any_exp_b = float(exp_b == 0)
             is_minor = float(period < 2)
 
             edu_lagged = int(activity_lagged == 1)
-            exp_a_lagged = int(activity_lagged == 2)
-            exp_b_lagged = int(activity_lagged == 3)
+            not_exp_a_lagged = int(activity_lagged != 2)
+            not_exp_b_lagged = int(activity_lagged != 3)
 
             is_return_not_high_school = float((not edu_lagged) and (not hs_graduate))
             is_return_high_school = float((not edu_lagged) and hs_graduate)
@@ -180,10 +180,10 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             covars_wages += [(exp_b ** 2) / 100.00]
             covars_wages += [hs_graduate]
             covars_wages += [co_graduate]
-            covars_wages += [HUGE_FLOAT]
-            covars_wages += [HUGE_FLOAT]
             covars_wages += [period]
             covars_wages += [is_minor]
+            covars_wages += [HUGE_FLOAT]
+            covars_wages += [HUGE_FLOAT]
 
             # This used for testing purposes, where we compare the results from the RESPY package
             # to the original RESTUD program.
@@ -192,12 +192,12 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
                 covars_wages[5] *= 100.00
 
             # Calculate systematic part of wages in occupation A
-            covars_wages[8:10] = [exp_a_lagged, any_exp_a]
+            covars_wages[10:12] = [not_exp_a_lagged, not_any_exp_a]
             rewards[0] = np.clip(np.exp(np.dot(optim_paras['coeffs_a'], covars_wages)), 0.0,
                                  HUGE_FLOAT)
 
             # Calculate systematic part pf wages in occupation B
-            covars_wages[8:10] = [exp_b_lagged, any_exp_b]
+            covars_wages[10:12] = [not_exp_b_lagged, not_any_exp_b]
             rewards[1] = np.clip(np.exp(np.dot(optim_paras['coeffs_b'], covars_wages)), 0.0,
                                  HUGE_FLOAT)
 

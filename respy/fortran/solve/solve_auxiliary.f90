@@ -177,14 +177,14 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: hs_graduate
     INTEGER(our_int)                    :: co_graduate
     INTEGER(our_int)                    :: edu_lagged
-    INTEGER(our_int)                    :: any_exp_a
-    INTEGER(our_int)                    :: any_exp_b
+    INTEGER(our_int)                    :: not_any_exp_a
+    INTEGER(our_int)                    :: not_any_exp_b
     INTEGER(our_int)                    :: is_minor
 
     INTEGER(our_int)                    :: is_return_not_high_school
     INTEGER(our_int)                    :: is_return_high_school
-    INTEGER(our_int)                    :: exp_a_lagged
-    INTEGER(our_int)                    :: exp_b_lagged
+    INTEGER(our_int)                    :: not_exp_a_lagged
+    INTEGER(our_int)                    :: not_exp_b_lagged
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
@@ -224,14 +224,14 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             type_ = states_all(period, k, 5)
 
             edu_lagged = TRANSFER(activity_lagged .EQ. one_int, edu_lagged)
-            exp_a_lagged = TRANSFER(activity_lagged .EQ. two_int, exp_a_lagged)
-            exp_b_lagged = TRANSFER(activity_lagged .EQ. three_int, exp_b_lagged)
+            not_exp_a_lagged = TRANSFER(activity_lagged .NE. two_int, not_exp_a_lagged)
+            not_exp_b_lagged = TRANSFER(activity_lagged .NE. three_int, not_exp_b_lagged)
 
             ! Construct auxiliary information
             hs_graduate = TRANSFER(edu .GE. 12, hs_graduate)
             co_graduate = TRANSFER(edu .GE. 16, co_graduate)
-            any_exp_a = TRANSFER(exp_a .GT. 0, any_exp_a)
-            any_exp_b = TRANSFER(exp_b .GT. 0, any_exp_b)
+            not_any_exp_a = TRANSFER(exp_a .EQ. 0, not_any_exp_a)
+            not_any_exp_b = TRANSFER(exp_b .EQ. 0, not_any_exp_b)
             is_minor = TRANSFER(period .LT. 3, is_minor)
 
             is_return_not_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate)), is_return_not_high_school)
@@ -246,10 +246,10 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             covars_wages(6) = (exp_b ** 2) / one_hundred_dble
             covars_wages(7) = hs_graduate
             covars_wages(8) = co_graduate
-            covars_wages(9) = HUGE_FLOAT
-            covars_wages(10) = HUGE_FLOAT
-            covars_wages(11) = period - one_dble
-            covars_wages(12) = is_minor
+            covars_wages(9) = period - one_dble
+            covars_wages(10) = is_minor
+            covars_wages(11) = HUGE_FLOAT
+            covars_wages(12) = HUGE_FLOAT
 
             ! This used for testing purposes, where we compare the results from the RESPY package to the original RESTUD program.
             INQUIRE(FILE='.restud.respy.scratch', EXIST=IS_RESTUD)
@@ -259,11 +259,11 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             END IF
 
             ! Calculate systematic part of reward in Occupation A
-            covars_wages(9:10) = (/ exp_a_lagged, any_exp_a /)
+            covars_wages(11:12) = (/ not_exp_a_lagged, not_any_exp_a /)
             CALL clip_value(rewards(1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of reward in Occupation B
-            covars_wages(9:10) = (/ exp_b_lagged, any_exp_b /)
+            covars_wages(11:12) = (/ not_exp_b_lagged, not_any_exp_b /)
             CALL clip_value(rewards(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of schooling utility
