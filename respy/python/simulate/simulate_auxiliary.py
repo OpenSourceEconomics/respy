@@ -316,7 +316,10 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     if is_debug and os.path.exists('.initial.respy.test'):
         edu_start = np.genfromtxt('.initial.respy.test')
     else:
-        edu_start = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
+        # As we do not want to be too strict at the user-level the sum of edu_spec might be
+        # slightly larger than one. This needs to be corrected here.
+        probs = edu_spec['share'] / np.sum(edu_spec['share'])
+        edu_start = np.random.choice(edu_spec['start'], p=probs, size=num_agents_sim)
 
     # If we only have one individual, we need to ensure that types are a vector.
     edu_start = np.array(edu_start, ndmin=1)

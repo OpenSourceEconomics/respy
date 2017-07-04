@@ -47,13 +47,12 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 sys.path.insert(0, TEST_RESOURCES_DIR)
 
-import f2py_interface as fort_debug
 np.random.seed(123)
 
 
 
 open('.restud.respy.scratch', 'w').close()
-respy_obj = RespyCls('model.respy.ini')
+respy_obj = RespyCls('test.respy.ini')
 
 respy_obj.unlock()
 respy_obj.set_attr('maxfun', 0)
