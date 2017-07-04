@@ -49,6 +49,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     REAL(our_dble)                  :: draws_sims(num_agents_sim, 4)
     REAL(our_dble)                  :: shocks_mean(4) = zero_dble
     REAL(our_dble)                  :: rewards_systematic(4)
+    REAL(our_dble)                  :: wages_systematic(2)
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws(4)
 
@@ -169,12 +170,16 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             END IF
 
             ! Record wages
+            ! TODO: CAN'T I MERGE THIS?
             IF (choice(1) .EQ. one_int) THEN
-                data_sim(count + 1, 4) = rewards_systematic(1) * draws(1)
+                wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras)
+                data_sim(count + 1, 4) = wages_systematic(1) * draws(1)
             END IF
 
             IF (choice(1) .EQ. two_int) THEN
-                data_sim(count + 1, 4) = rewards_systematic(2) * draws(2)
+                wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras)
+
+                data_sim(count + 1, 4) = wages_systematic(2) * draws(2)
             END IF
 
             ! Update row indicator

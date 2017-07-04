@@ -1,9 +1,10 @@
 import numpy as np
 
 from respy.python.record.record_simulation import record_simulation_progress
-from respy.python.record.record_simulation import record_simulation_stop
+from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.record.record_simulation import record_simulation_start
 from respy.python.simulate.simulate_auxiliary import get_random_edu_start
+from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.simulate.simulate_auxiliary import get_random_types
 from respy.python.shared.shared_auxiliary import get_total_values
@@ -83,7 +84,9 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             # Record wages
             dataset[count, 3] = MISSING_FLOAT
             if max_idx in [0, 1]:
-                dataset[count, 3] = rewards_systematic[max_idx] * draws[max_idx]
+                wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b,
+                    activity_lagged, optim_paras)
+                dataset[count, 3] = wages_systematic[max_idx] * draws[max_idx]
 
             # Write relevant state space for period to data frame. However, the individual's type
             # is not part of the observed dataset. This is included in the simulated dataset.

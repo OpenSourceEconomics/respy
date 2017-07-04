@@ -871,3 +871,27 @@ def get_num_obs_agent(data_array, num_agents_est):
         num_obs_agent[q] += 1
 
     return num_obs_agent
+
+
+def back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras,
+        is_test=False):
+    """ This function constructs the wage component for the labor market rewards.
+    """
+    # Construct covariates to construct the general component of labor market rewards.
+    not_exp_a_lagged = int(activity_lagged != 2)
+    not_exp_b_lagged = int(activity_lagged != 3)
+    not_any_exp_a = float(exp_a == 0)
+    not_any_exp_b = float(exp_b == 0)
+
+    # First we calculate the general component.
+    general, wages_systematic = np.tile(np.nan, 2), np.tile(np.nan, 2)
+    general[0] = np.dot(optim_paras['coeffs_a'][10:], [not_exp_a_lagged, not_any_exp_a])
+    general[1] = np.dot(optim_paras['coeffs_b'][10:], [not_exp_b_lagged, not_any_exp_b])
+
+    for j in [0, 1]:
+        wages_systematic[j] = rewards_systematic[j] - general[j]
+        # TODO: Remove once extension is settled.
+        if not is_test:
+            np.testing.assert_equal(wages_systematic[j] >= 0, True)
+
+    return wages_systematic

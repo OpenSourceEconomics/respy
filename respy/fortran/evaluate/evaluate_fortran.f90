@@ -57,17 +57,18 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble)                  :: rewards_systematic(4)
     REAL(our_dble)                  :: prob_obs(num_periods)
     REAL(our_dble)                  :: prob_type(num_types)
+    REAL(our_dble)                  :: wages_systematic(2)
     REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws_cond(4)
     REAL(our_dble)                  :: draws_stan(4)
+    REAL(our_dble)                  :: wage_observed
     REAL(our_dble)                  :: prob_choice
     REAL(our_dble)                  :: prob_wage
     REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: dist_1
     REAL(our_dble)                  :: dist_2
     REAL(our_dble)                  :: dist
-    REAL(our_dble)                  :: wage
 
     INTEGER(our_int)                :: activity_lagged
     INTEGER(our_int)                :: counts(4)
@@ -128,10 +129,10 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 edu = INT(data_evaluate(row_start + p, 7))
                 activity_lagged = INT(data_evaluate(row_start + p, 8))
                 choice = INT(data_evaluate(row_start + p, 3))
-                wage = data_evaluate(row_start + p, 4)
+                wage_observed = data_evaluate(row_start + p, 4)
 
                 ! We now determine whether we also have information about the agent's wage.
-                is_wage_missing = (wage == HUGE_FLOAT)
+                is_wage_missing = (wage_observed == HUGE_FLOAT)
                 is_working = (choice == 1) .OR. (choice == 2)
 
                 ! Create an index for the choice.
@@ -148,9 +149,11 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 dist = zero_dble
                 IF (is_working .AND. (.NOT. is_wage_missing)) THEN
 
+                    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras)
+
                     ! Calculate the disturbance, which follows a normal distribution.
-                    CALL clip_value(dist_1, LOG(wage), -HUGE_FLOAT, HUGE_FLOAT, info)
-                    CALL clip_value(dist_2, LOG(rewards_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT, info)
+                    CALL clip_value(dist_1, LOG(wage_observed), -HUGE_FLOAT, HUGE_FLOAT, info)
+                    CALL clip_value(dist_2, LOG(wages_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT, info)
                     dist = dist_1 - dist_2
 
                     ! If there is no random variation in rewards, then the observed wages need to be identical their systematic components. The discrepancy between the observed wages and their systematic components might be small due to the reading in of the dataset.

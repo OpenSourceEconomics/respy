@@ -193,7 +193,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
 
-    REAL(our_dble)                      :: covars_wages(12)
+    REAL(our_dble)                      :: covars_wages(10), wages(2), general(2)
     REAL(our_dble)                      :: covars_edu(7)
 
     REAL(our_dble)                      :: rewards(4)
@@ -248,8 +248,6 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             covars_wages(8) = co_graduate
             covars_wages(9) = period - one_dble
             covars_wages(10) = is_minor
-            covars_wages(11) = HUGE_FLOAT
-            covars_wages(12) = HUGE_FLOAT
 
             ! This used for testing purposes, where we compare the results from the RESPY package to the original RESTUD program.
             INQUIRE(FILE='.restud.respy.scratch', EXIST=IS_RESTUD)
@@ -259,12 +257,19 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             END IF
 
             ! Calculate systematic part of reward in Occupation A
-            covars_wages(11:12) = (/ not_exp_a_lagged, not_any_exp_a /)
-            CALL clip_value(rewards(1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a)), zero_dble, HUGE_FLOAT, info)
+            CALL clip_value(wages(1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a(:10))), zero_dble, HUGE_FLOAT, info)
 
             ! Calculate systematic part of reward in Occupation B
-            covars_wages(11:12) = (/ not_exp_b_lagged, not_any_exp_b /)
-            CALL clip_value(rewards(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b)), zero_dble, HUGE_FLOAT, info)
+            CALL clip_value(wages(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b(:10))), zero_dble, HUGE_FLOAT, info)
+
+            wages(1) = wages(1) * EXP(optim_paras%type_shifts(type_ + 1, 1))
+            wages(2) = wages(2) * EXP(optim_paras%type_shifts(type_ + 1, 2))
+
+            general(1) = DOT_PRODUCT((/ not_exp_a_lagged, not_any_exp_a /), optim_paras%coeffs_a(11:12))
+            general(2) = DOT_PRODUCT((/ not_exp_b_lagged, not_any_exp_b /), optim_paras%coeffs_b(11:12))
+
+            rewards(1) = wages(1) + general(1)
+            rewards(2) = wages(2) + general(2)
 
             ! Calculate systematic part of schooling utility
             covars_edu(1) = one_dble
@@ -286,8 +291,6 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             IF(period .GE. 6) rewards(4) = rewards(4) + optim_paras%coeffs_home(3)
 
             ! Now we add the type-specific deviation.
-            rewards(1) = rewards(1) * EXP(optim_paras%type_shifts(type_ + 1, 1))
-            rewards(2) = rewards(2) * EXP(optim_paras%type_shifts(type_ + 1, 2))
             rewards(3) = rewards(3) + optim_paras%type_shifts(type_ + 1, 3)
             rewards(4) = rewards(4) + optim_paras%type_shifts(type_ + 1, 4)
 

@@ -12,6 +12,7 @@ from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.shared.shared_auxiliary import correlation_to_covariance
 from respy.python.shared.shared_auxiliary import covariance_to_correlation
 from respy.python.shared.shared_utilities import spectral_condition_number
+from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
@@ -768,3 +769,26 @@ class TestClass(object):
             np.testing.assert_almost_equal(np.sum(py), 1.0)
             np.testing.assert_almost_equal(py, fort)
 
+    def test_13(self):
+        """ Function that backs out the systematic wages from the systematic rewards
+        """
+        for _ in range(1000):
+
+            rewards_systematic = np.random.normal(0, 1, size=4)
+            activity_lagged = np.random.randint(1, 4)
+            exp_a = np.random.randint(1, 10)
+            exp_b = np.random.randint(1, 10)
+
+            coeffs_a = np.random.normal(0, 1, size=12)
+            coeffs_b = np.random.normal(0, 1, size=12)
+
+            optim_paras = dict()
+            optim_paras['coeffs_a'] = coeffs_a
+            optim_paras['coeffs_b'] = coeffs_b
+
+            args = [rewards_systematic, exp_a, exp_b, activity_lagged]
+
+            py = back_out_systematic_wages(*args + [optim_paras, True])
+            fort = fort_debug.wrapper_back_out_systematic_wages(*args + [coeffs_a, coeffs_b])
+
+            np.testing.assert_almost_equal(py, fort)

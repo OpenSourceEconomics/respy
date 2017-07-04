@@ -222,8 +222,7 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         else:
             dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents)
 
-    # Estimation task, but very small. A host of other constraints need to be
-    # honored as well.
+    # Estimation task, but very small. A host of other constraints need to be honored as well.
     if 'flag_estimation' in constr.keys():
         # Checks
         assert (constr['flag_estimation'] in [True, False])

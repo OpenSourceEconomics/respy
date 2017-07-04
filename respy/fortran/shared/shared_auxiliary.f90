@@ -1417,6 +1417,50 @@ FUNCTION float_to_boolean(input) RESULT(output)
     END IF
 
 END FUNCTION
+!*******************************************************************************
+!*******************************************************************************
+FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras) RESULT(wages_systematic)
+
+    !/* external objects        */
+
+    REAL(our_dble)                              :: wages_systematic(2)
+
+    REAL(our_dble), INTENT(IN)                  :: rewards_systematic(4)
+
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)           :: optim_paras
+
+    INTEGER(our_int), INTENT(IN)                :: exp_a
+    INTEGER(our_int), INTENT(IN)                :: exp_b
+    INTEGER(our_int), INTENT(IN)                :: activity_lagged
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                            :: not_exp_a_lagged
+    INTEGER(our_int)                            :: not_exp_b_lagged
+    INTEGER(our_int)                            :: not_any_exp_a
+    INTEGER(our_int)                            :: not_any_exp_b
+    INTEGER(our_int)                            :: i
+
+    REAL(our_dble)                              :: general(2)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    not_exp_a_lagged = TRANSFER(activity_lagged .NE. two_int, not_exp_a_lagged)
+    not_exp_b_lagged = TRANSFER(activity_lagged .NE. three_int, not_exp_b_lagged)
+
+    not_any_exp_a = TRANSFER(exp_a .EQ. 0, not_any_exp_a)
+    not_any_exp_b = TRANSFER(exp_b .EQ. 0, not_any_exp_b)
+
+    general(1) = DOT_PRODUCT((/ not_exp_a_lagged, not_any_exp_a /), optim_paras%coeffs_a(11:12))
+    general(2) = DOT_PRODUCT((/ not_exp_b_lagged, not_any_exp_b /), optim_paras%coeffs_b(11:12))
+
+    DO i = 1, 2
+        wages_systematic(i) = rewards_systematic(i) - general(i)
+    END DO
+
+END FUNCTIOn
 !******************************************************************************
 !******************************************************************************
 END MODULE

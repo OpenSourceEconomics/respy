@@ -3,6 +3,7 @@ import numpy as np
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
+from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
@@ -11,9 +12,9 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
         data_array, periods_draws_prob, tau, num_periods, num_draws_prob, num_agents_est,
         num_obs_agent, num_types, edu_spec, optim_paras):
-    """ Evaluate criterion function. This code allows for a deterministic model, where there is 
-    no random variation in the rewards. If that is the case and all agents have corresponding 
-    experiences, then one is returned. If a single agent violates the implications, then the zero 
+    """ Evaluate criterion function. This code allows for a deterministic model, where there is
+    no random variation in the rewards. If that is the case and all agents have corresponding
+    experiences, then one is returned. If a single agent violates the implications, then the zero
     is returned.
     """
     # Construct auxiliary object
@@ -45,10 +46,10 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                 # Extract observable components of state space as well as agent decision.
                 exp_a, exp_b, edu, activity_lagged = data_array[row_start + p, 4:8].astype(int)
                 choice = data_array[row_start + p, 2].astype(int)
-                wage = data_array[row_start + p, 3]
+                wage_observed = data_array[row_start + p, 3]
 
                 # We now determine whether we also have information about the agent's wage.
-                is_wage_missing = np.isnan(wage)
+                is_wage_missing = np.isnan(wage_observed)
                 is_working = choice in [1, 2]
 
                 # Create an index for the choice.
@@ -67,10 +68,13 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                 # the conditional distribution is used to determine the choice probabilities. At
                 # least if the wage information is available as well.
                 if is_working and (not is_wage_missing):
+                    # We need to back out the systematic wage implied by the model.
+                    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b,
+                        activity_lagged, optim_paras)
                     # Calculate the disturbance which are implied by the model and the observed
                     # wages.
-                    dist = np.clip(np.log(wage), -HUGE_FLOAT, HUGE_FLOAT) - \
-                            np.clip(np.log(rewards_systematic[idx]), -HUGE_FLOAT, HUGE_FLOAT)
+                    dist = np.clip(np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT) - \
+                            np.clip(np.log(wages_systematic[idx]), -HUGE_FLOAT, HUGE_FLOAT)
 
                     # If there is no random variation in rewards, then the observed wages need to be
                     # identical their systematic components. The discrepancy between the observed
@@ -150,5 +154,3 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
         contribs[:] = np.exp(1.0)
     # Finishing
     return contribs
-
-

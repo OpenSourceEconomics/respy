@@ -2140,3 +2140,39 @@ SUBROUTINE wrapper_get_scales_magnitude(precond_matrix_int, values, num_free_int
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
+SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systematic, exp_a, exp_b, activity_lagged, coeffs_a, coeffs_b)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: wages_systematic(2)
+
+    DOUBLE PRECISION, INTENT(IN)        :: rewards_systematic(4)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(12)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(12)
+
+    INTEGER, INTENT(IN)                 :: activity_lagged
+    INTEGER, INTENT(IN)                 :: exp_a
+    INTEGER, INTENT(IN)                 :: exp_b
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Construct derived types
+    optim_paras%coeffs_a = coeffs_a
+    optim_paras%coeffs_b = coeffs_b
+
+    ! Call interface
+    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************

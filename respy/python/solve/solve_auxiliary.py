@@ -182,8 +182,6 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             covars_wages += [co_graduate]
             covars_wages += [period]
             covars_wages += [is_minor]
-            covars_wages += [HUGE_FLOAT]
-            covars_wages += [HUGE_FLOAT]
 
             # This used for testing purposes, where we compare the results from the RESPY package
             # to the original RESTUD program.
@@ -191,17 +189,28 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
                 covars_wages[3] *= 100.00
                 covars_wages[5] *= 100.00
 
-            # Calculate systematic part of wages in occupation A
-            covars_wages[10:12] = [not_exp_a_lagged, not_any_exp_a]
-            rewards[0] = np.clip(np.exp(np.dot(optim_paras['coeffs_a'], covars_wages)), 0.0,
+            wages = np.tile(np.nan, 2)
+            # Calculate systematic part of wages in OCCUPATION A
+            wages[0] = np.clip(np.exp(np.dot(optim_paras['coeffs_a'][:10], covars_wages)), 0.0,
                                  HUGE_FLOAT)
 
-            # Calculate systematic part pf wages in occupation B
-            covars_wages[10:12] = [not_exp_b_lagged, not_any_exp_b]
-            rewards[1] = np.clip(np.exp(np.dot(optim_paras['coeffs_b'], covars_wages)), 0.0,
+            # Calculate systematic part pf wages in OCCUPATION B
+            wages[1] = np.clip(np.exp(np.dot(optim_paras['coeffs_b'][:10], covars_wages)), 0.0,
                                  HUGE_FLOAT)
 
-            # Calculate systematic part of schooling rewards
+            # We need to add the type-specific deviations here as these are part of
+            # skill-function component.
+            for j in [0, 1]:
+                wages[j] = wages[j] * np.exp(optim_paras['type_shifts'][type_, j])
+
+            general = np.tile(np.nan, 2)
+            general[0] = np.dot(optim_paras['coeffs_a'][10:], [not_exp_a_lagged, not_any_exp_a])
+            general[1] = np.dot(optim_paras['coeffs_b'][10:], [not_exp_b_lagged, not_any_exp_b])
+
+            for j in [0, 1]:
+                rewards[j] = wages[j] + general[j]
+
+            # Calculate systematic part of SCHOOL rewards
             covars_edu = []
             covars_edu += [1.0]
             covars_edu += [hs_graduate]
@@ -221,10 +230,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
 
             rewards[3] = np.dot(optim_paras['coeffs_home'], covars_home)
 
-            # Now we add the type-specific deviation.
-            for j in [0, 1]:
-                rewards[j] = rewards[j] * np.exp(optim_paras['type_shifts'][type_, j])
-
+            # Now we add the type-specific deviation for SCHOOL and HOME.
             for j in [2, 3]:
                 rewards[j] = rewards[j] + optim_paras['type_shifts'][type_, j]
 
