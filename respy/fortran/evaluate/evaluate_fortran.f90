@@ -149,7 +149,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 dist = zero_dble
                 IF (is_working .AND. (.NOT. is_wage_missing)) THEN
 
-                    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras)
+                    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
 
                     ! Calculate the disturbance, which follows a normal distribution.
                     CALL clip_value(dist_1, LOG(wage_observed), -HUGE_FLOAT, HUGE_FLOAT, info)

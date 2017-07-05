@@ -160,6 +160,10 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             # Construct auxiliary information
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
 
+            # Calculate common returns
+            covars_common = [covariates['hs_graduate'], covariates['co_graduate']]
+            common = np.dot(optim_paras['coeffs_common'], covars_common)
+
             # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards. These are
             # defined in a general sense, where not only wages matter.
             wages = calculate_systematic_wages(covariates, optim_paras)
@@ -197,6 +201,10 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             # Now we add the type-specific deviation for SCHOOL and HOME.
             for j in [2, 3]:
                 rewards[j] = rewards[j] + optim_paras['type_shifts'][type_, j]
+
+            # We can now also added the common component of rewards.
+            for j in range(4):
+                rewards[j] = rewards[j] + common
 
             periods_rewards_systematic[period, k, :] = rewards
 

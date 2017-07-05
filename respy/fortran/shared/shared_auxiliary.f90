@@ -343,13 +343,13 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky = zero_dble
 
-    shocks_cholesky(1, :1) = x(39:39)
+    shocks_cholesky(1, :1) = x(41:41)
 
-    shocks_cholesky(2, :2) = x(40:41)
+    shocks_cholesky(2, :2) = x(42:43)
 
-    shocks_cholesky(3, :3) = x(42:44)
+    shocks_cholesky(3, :3) = x(44:46)
 
-    shocks_cholesky(4, :4) = x(45:48)
+    shocks_cholesky(4, :4) = x(47:50)
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -968,6 +968,9 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         READ(99, 1500) num_periods
         READ(99, 1510) optim_paras%delta
 
+        ! COMMON
+        READ(99, 1510) optim_paras%coeffs_common
+
         ! WORK
         READ(99, 1510) optim_paras%coeffs_a
         READ(99, 1510) optim_paras%coeffs_b
@@ -1239,13 +1242,15 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     optim_paras%level = MAX(x(2:2), zero_dble)
 
-    optim_paras%coeffs_a = x(3:15)
+    optim_paras%coeffs_common = x(3:4)
 
-    optim_paras%coeffs_b = x(16:28)
+    optim_paras%coeffs_a = x(5:17)
 
-    optim_paras%coeffs_edu = x(29:35)
+    optim_paras%coeffs_b = x(18:30)
 
-    optim_paras%coeffs_home = x(36:38)
+    optim_paras%coeffs_edu = x(31:37)
+
+    optim_paras%coeffs_home = x(38:40)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
@@ -1255,10 +1260,10 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
     END IF
 
     optim_paras%type_shares = zero_dble
-    optim_paras%type_shares(3:) = x(49:49 + (num_types - 1) * 2 - 1)
+    optim_paras%type_shares(3:) = x(51:51 + (num_types - 1) * 2 - 1)
 
     optim_paras%type_shifts = zero_dble
-    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(49 + (num_types - 1) * 2:num_paras), (/4, num_types  - 1/)))
+    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(51 + (num_types - 1) * 2:num_paras), (/4, num_types  - 1/)))
 
 END SUBROUTINE
 !******************************************************************************
@@ -1328,26 +1333,28 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     x_internal(2:2) = optim_paras%level
 
-    x_internal(3:15) = optim_paras%coeffs_a(:)
+    x_internal(3:4) = optim_paras%coeffs_common(:)
 
-    x_internal(16:28) = optim_paras%coeffs_b(:)
+    x_internal(5:17) = optim_paras%coeffs_a(:)
 
-    x_internal(29:35) = optim_paras%coeffs_edu(:)
+    x_internal(18:30) = optim_paras%coeffs_b(:)
 
-    x_internal(36:38) = optim_paras%coeffs_home(:)
+    x_internal(31:37) = optim_paras%coeffs_edu(:)
 
-    x_internal(39:39) = optim_paras%shocks_cholesky(1, :1)
+    x_internal(38:40) = optim_paras%coeffs_home(:)
 
-    x_internal(40:41) = optim_paras%shocks_cholesky(2, :2)
+    x_internal(41:41) = optim_paras%shocks_cholesky(1, :1)
 
-    x_internal(42:44) = optim_paras%shocks_cholesky(3, :3)
+    x_internal(42:43) = optim_paras%shocks_cholesky(2, :2)
 
-    x_internal(45:48) = optim_paras%shocks_cholesky(4, :4)
+    x_internal(44:46) = optim_paras%shocks_cholesky(3, :3)
 
-    x_internal(49:(49 + (num_types - 1) * 2) - 1) = optim_paras%type_shares(3:)
+    x_internal(47:50) = optim_paras%shocks_cholesky(4, :4)
+
+    x_internal(51:(51 + (num_types - 1) * 2) - 1) = optim_paras%type_shares(3:)
 
     shifts = PACK(TRANSPOSE(optim_paras%type_shifts), .TRUE.)
-    x_internal(49 + (num_types - 1) * 2:num_paras) = shifts(5:)
+    x_internal(51 + (num_types - 1) * 2:num_paras) = shifts(5:)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN
@@ -1419,7 +1426,7 @@ FUNCTION float_to_boolean(input) RESULT(output)
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras) RESULT(wages_systematic)
+FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras) RESULT(wages_systematic)
 
     !/* external objects        */
 
@@ -1430,6 +1437,7 @@ FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_la
     INTEGER(our_int), INTENT(IN)                :: activity_lagged
     INTEGER(our_int), INTENT(IN)                :: exp_a
     INTEGER(our_int), INTENT(IN)                :: exp_b
+    INTEGER(our_int), INTENT(IN)                :: edu
 
     REAL(our_dble), INTENT(IN)                  :: rewards_systematic(4)
 
@@ -1437,16 +1445,18 @@ FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_la
 
     TYPE(COVARIATES_DICT)                       :: covariates
 
+    INTEGER(our_int)                            :: covars_general(3)
+    INTEGER(our_int)                            :: covars_common(2)
     INTEGER(our_int)                            :: i
 
-    REAL(our_dble)                              :: covars_general(3)
+    REAL(our_dble)                              :: rewards_common
     REAL(our_dble)                              :: general(2)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    covariates = construct_covariates(exp_a, exp_b, MISSING_INT, activity_lagged, MISSING_INT, MISSING_INT)
+    covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, MISSING_INT, MISSING_INT)
 
     covars_general = (/ one_int, covariates%not_exp_a_lagged, covariates%not_any_exp_a /)
     general(1) = DOT_PRODUCT(covars_general, optim_paras%coeffs_a(11:13))
@@ -1454,8 +1464,12 @@ FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_la
     covars_general = (/ one_int, covariates%not_exp_b_lagged, covariates%not_any_exp_b /)
     general(2) = DOT_PRODUCT(covars_general, optim_paras%coeffs_b(11:13))
 
+    ! Second we do the same with the common component.
+    covars_common = (/ covariates%hs_graduate, covariates%co_graduate /)
+    rewards_common = DOT_PRODUCT(optim_paras%coeffs_common, covars_common)
+
     DO i = 1, 2
-        wages_systematic(i) = rewards_systematic(i) - general(i)
+        wages_systematic(i) = rewards_systematic(i) - general(i) - rewards_common
     END DO
 
 END FUNCTION

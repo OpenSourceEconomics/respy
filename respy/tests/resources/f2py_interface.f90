@@ -188,7 +188,7 @@ SUBROUTINE wrapper_contributions(contribs, periods_rewards_systematic_int, mappi
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, is_debug_int, periods_draws_emax_int, min_idx_int, edu_start, edu_max, measure, mean, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int, num_types_int, type_spec_shares, type_spec_shifts)
+SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, is_debug_int, periods_draws_emax_int, min_idx_int, edu_start, edu_max, measure, mean, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, level, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int, num_types_int, type_spec_shares, type_spec_shifts)
 
     ! The presence of max_states_period breaks the quality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -223,6 +223,7 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
@@ -272,6 +273,7 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
     optim_paras%shocks_cholesky = shocks_cholesky
+    optim_paras%coeffs_common = coeffs_common
     optim_paras%coeffs_home = coeffs_home
     optim_paras%coeffs_edu = coeffs_edu
     optim_paras%coeffs_a = coeffs_a
@@ -301,7 +303,7 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_periods_int, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim, edu_start, edu_max, edu_share, shocks_cholesky, delta, num_types_int, type_spec_shares, type_spec_shifts, is_debug_int)
+SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_periods_int, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim, edu_start, edu_max, edu_share, coeffs_common, coeffs_a, coeffs_b, shocks_cholesky, delta, num_types_int, type_spec_shares, type_spec_shifts, is_debug_int)
 
     !/* external libraries      */
 
@@ -321,6 +323,9 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
     DOUBLE PRECISION, INTENT(IN)    :: edu_share(:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -362,6 +367,9 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
 
     ! Construct derived types
     optim_paras%shocks_cholesky = shocks_cholesky
+    optim_paras%coeffs_common = coeffs_common
+    optim_paras%coeffs_a = coeffs_a
+    optim_paras%coeffs_b = coeffs_b
     optim_paras%delta = delta
 
     optim_paras%type_shares = type_spec_shares
@@ -527,7 +535,7 @@ SUBROUTINE wrapper_create_state_space(states_all_int, states_number_period_int, 
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, num_periods_int, states_number_period_int, states_all_int, max_states_period_int, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, type_spec_shares, type_spec_shifts)
+SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, num_periods_int, states_number_period_int, states_all_int, max_states_period_int, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, type_spec_shares, type_spec_shifts)
 
     !/* external libraries      */
 
@@ -543,6 +551,7 @@ SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, 
 
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
@@ -562,6 +571,7 @@ SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, 
     num_periods = num_periods_int
 
     ! Construct derived types
+    optim_paras%coeffs_common = coeffs_common
     optim_paras%coeffs_home = coeffs_home
     optim_paras%coeffs_edu = coeffs_edu
     optim_paras%coeffs_a = coeffs_a
@@ -1450,7 +1460,7 @@ SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 
     DOUBLE PRECISION, INTENT(OUT)   :: shocks_cholesky(4, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(48)
+    DOUBLE PRECISION, INTENT(IN)    :: x(50)
 
     INTEGER, INTENT(OUT)            :: info
 
@@ -2140,7 +2150,7 @@ SUBROUTINE wrapper_get_scales_magnitude(precond_matrix_int, values, num_free_int
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systematic, exp_a, exp_b, activity_lagged, coeffs_a, coeffs_b)
+SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systematic, exp_a, exp_b, edu, activity_lagged, coeffs_a, coeffs_b)
 
     !/* external libraries      */
 
@@ -2161,6 +2171,7 @@ SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systemati
     INTEGER, INTENT(IN)                 :: activity_lagged
     INTEGER, INTENT(IN)                 :: exp_a
     INTEGER, INTENT(IN)                 :: exp_b
+    INTEGER, INTENT(IN)                 :: edu
 
 !-------------------------------------------------------------------------------
 ! Algorithm
@@ -2171,7 +2182,7 @@ SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systemati
     optim_paras%coeffs_b = coeffs_b
 
     ! Call interface
-    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras)
+    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
 
 END SUBROUTINE
 !*******************************************************************************

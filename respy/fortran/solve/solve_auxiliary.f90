@@ -178,13 +178,16 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: activity_lagged
 
     INTEGER(our_int)                    :: covars_general(3)
+    INTEGER(our_int)                    :: covars_common(2)
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
+    INTEGER(our_int)                    :: i
 
+    REAL(our_dble)                      :: rewards_common
     REAL(our_dble)                      :: covars_edu(7)
     REAL(our_dble)                      :: general(2)
     REAL(our_dble)                      :: wages(2)
@@ -216,6 +219,10 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
             ! Construct auxiliary information
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
+
+            ! Calculate common returns
+            covars_common = (/ covariates%hs_graduate, covariates%co_graduate /)
+            rewards_common = DOT_PRODUCT(optim_paras%coeffs_common, covars_common)
 
             ! Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards. these are defined in a general sense, where not only wages matter.
             wages = calculate_systematic_wages(covariates, optim_paras)
@@ -251,6 +258,11 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             ! Now we add the type-specific deviation.
             rewards(3) = rewards(3) + optim_paras%type_shifts(type_ + 1, 3)
             rewards(4) = rewards(4) + optim_paras%type_shifts(type_ + 1, 4)
+
+            ! We can now also added the common component of rewards.
+            DO i = 1, 4
+                rewards(i) = rewards(i) + rewards_common
+            END DO
 
             periods_rewards_systematic(period, k, :) = rewards
 

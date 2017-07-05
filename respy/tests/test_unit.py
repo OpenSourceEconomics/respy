@@ -21,7 +21,7 @@ class TestClass(object):
         """
         for i in range(10):
             num_types = np.random.randint(1, 5)
-            num_paras = 48 + (num_types - 1) * 6
+            num_paras = 50 + (num_types - 1) * 6
 
             # Create random parameter vector
             base = np.random.uniform(size=num_paras)
@@ -138,7 +138,7 @@ class TestClass(object):
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
             wages = calculate_systematic_wages(covariates, optim_paras)
 
-            args = (rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras)
+            args = (rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
             rslt = back_out_systematic_wages(*args)
 
             np.testing.assert_almost_equal(rslt, wages)

@@ -83,9 +83,10 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
 
             # Record wages
             dataset[count, 3] = MISSING_FLOAT
+            wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b,
+                edu, activity_lagged, optim_paras)
+
             if max_idx in [0, 1]:
-                wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b,
-                    activity_lagged, optim_paras)
                 dataset[count, 3] = wages_systematic[max_idx] * draws[max_idx]
 
             # Write relevant state space for period to data frame. However, the individual's type

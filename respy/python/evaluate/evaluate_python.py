@@ -70,7 +70,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                 if is_working and (not is_wage_missing):
                     # We need to back out the systematic wage implied by the model.
                     wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b,
-                        activity_lagged, optim_paras)
+                        edu, activity_lagged, optim_paras)
                     # Calculate the disturbance which are implied by the model and the observed
                     # wages.
                     dist = np.clip(np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT) - \

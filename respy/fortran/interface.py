@@ -165,6 +165,10 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         line = '{0:25.15f}\n'.format(optim_paras['delta'][0])
         file_.write(line)
 
+        # COMMON
+        fmt_ = ' {:25.15f}' * 2 + '\n'
+        file_.write(fmt_.format(*optim_paras['coeffs_common']))
+
         # WORK
         for num in [optim_paras['coeffs_a'], optim_paras['coeffs_b']]:
             fmt_ = ' {:25.15f}' * 13 + '\n'

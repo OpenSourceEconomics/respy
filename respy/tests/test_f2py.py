@@ -275,6 +275,7 @@ class TestClass(object):
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         shocks_cholesky = optim_paras['shocks_cholesky']
+        coeffs_common = optim_paras['coeffs_common']
         coeffs_home = optim_paras['coeffs_home']
         coeffs_edu = optim_paras['coeffs_edu']
         coeffs_a = optim_paras['coeffs_a']
@@ -313,7 +314,7 @@ class TestClass(object):
         args += (num_periods, states_number_period, states_all, max_states_period)
         pyth = pyth_calculate_rewards_systematic(*args + (optim_paras,))
 
-        args += (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+        args += (coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         args += (type_spec_shares, type_spec_shifts)
         f2py = fort_debug.wrapper_calculate_rewards_systematic(*args)
         np.testing.assert_allclose(pyth, f2py)
@@ -377,6 +378,7 @@ class TestClass(object):
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         shocks_cholesky = optim_paras['shocks_cholesky']
+        coeffs_common = optim_paras['coeffs_common']
         coeffs_home = optim_paras['coeffs_home']
         coeffs_edu = optim_paras['coeffs_edu']
         coeffs_a = optim_paras['coeffs_a']
@@ -414,7 +416,7 @@ class TestClass(object):
         args = ()
         args += base_args + (min_idx, edu_spec['start'], edu_spec['max'])
         args += (ambi_spec_measure, ambi_spec_mean)
-        args += (coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
+        args += (coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         args += (shocks_cholesky, level, delta, file_sim)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (max_states_period, num_types)
@@ -437,6 +439,7 @@ class TestClass(object):
 
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
+        args += (optim_paras['coeffs_common'], optim_paras['coeffs_a'], optim_paras['coeffs_b'])
         args += (shocks_cholesky, delta, num_types, type_spec_shares, type_spec_shifts, is_debug)
         f2py = fort_debug.wrapper_simulate(*args)
         np.testing.assert_allclose(py, f2py)
@@ -652,7 +655,7 @@ class TestClass(object):
         """ We test the construction of the Cholesky decomposition against each other.
         """
         # Draw a random vector of parameters
-        x = np.random.uniform(size=48)
+        x = np.random.uniform(size=50)
 
         # Construct the Cholesky decompositions
         py = extract_cholesky(x, info=0)
@@ -778,15 +781,18 @@ class TestClass(object):
             activity_lagged = np.random.randint(1, 4)
             exp_a = np.random.randint(1, 10)
             exp_b = np.random.randint(1, 10)
+            edu = np.random.randint(1, 10)
 
+            coeffs_common = np.random.normal(0, 1, size=2)
             coeffs_a = np.random.normal(0, 1, size=13)
             coeffs_b = np.random.normal(0, 1, size=13)
 
             optim_paras = dict()
+            optim_paras['coeffs_common'] = coeffs_common
             optim_paras['coeffs_a'] = coeffs_a
             optim_paras['coeffs_b'] = coeffs_b
 
-            args = [rewards_systematic, exp_a, exp_b, activity_lagged]
+            args = [rewards_systematic, exp_a, exp_b, edu, activity_lagged]
 
             py = back_out_systematic_wages(*args + [optim_paras])
             fort = fort_debug.wrapper_back_out_systematic_wages(*args + [coeffs_a, coeffs_b])
