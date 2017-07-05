@@ -173,32 +173,23 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     !/* internals objects       */
 
-    INTEGER(our_int)                    :: activity_lagged
-    INTEGER(our_int)                    :: hs_graduate
-    INTEGER(our_int)                    :: co_graduate
-    INTEGER(our_int)                    :: edu_lagged
-    INTEGER(our_int)                    :: not_any_exp_a
-    INTEGER(our_int)                    :: not_any_exp_b
-    INTEGER(our_int)                    :: is_minor
+    TYPE(COVARIATES_DICT)               :: covariates
 
-    INTEGER(our_int)                    :: is_return_not_high_school
-    INTEGER(our_int)                    :: is_return_high_school
-    INTEGER(our_int)                    :: not_exp_a_lagged
-    INTEGER(our_int)                    :: not_exp_b_lagged
+    INTEGER(our_int)                    :: activity_lagged
+
+    INTEGER(our_int)                    :: covars_general(3)
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
     INTEGER(our_int)                    :: exp_b
-    INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: edu
     INTEGER(our_int)                    :: k
 
-    REAL(our_dble)                      :: covars_wages(10), wages(2), general(2)
     REAL(our_dble)                      :: covars_edu(7)
+    REAL(our_dble)                      :: general(2)
+    REAL(our_dble)                      :: wages(2)
 
     REAL(our_dble)                      :: rewards(4)
-
-    LOGICAL                             :: IS_RESTUD
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -223,62 +214,29 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             activity_lagged = states_all(period, k, 4)
             type_ = states_all(period, k, 5)
 
-            edu_lagged = TRANSFER(activity_lagged .EQ. one_int, edu_lagged)
-            not_exp_a_lagged = TRANSFER(activity_lagged .NE. two_int, not_exp_a_lagged)
-            not_exp_b_lagged = TRANSFER(activity_lagged .NE. three_int, not_exp_b_lagged)
-
             ! Construct auxiliary information
-            hs_graduate = TRANSFER(edu .GE. 12, hs_graduate)
-            co_graduate = TRANSFER(edu .GE. 16, co_graduate)
-            not_any_exp_a = TRANSFER(exp_a .EQ. 0, not_any_exp_a)
-            not_any_exp_b = TRANSFER(exp_b .EQ. 0, not_any_exp_b)
-            is_minor = TRANSFER(period .LT. 3, is_minor)
+            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
 
-            is_return_not_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate)), is_return_not_high_school)
-            is_return_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. to_boolean(hs_graduate), is_return_high_school)
+            ! Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards. these are defined in a general sense, where not only wages matter.
+            wages = calculate_systematic_wages(covariates, optim_paras)
 
-            ! Auxiliary objects
-            covars_wages(1) = one_dble
-            covars_wages(2) = edu
-            covars_wages(3) = exp_a
-            covars_wages(4) = (exp_a ** 2) / one_hundred_dble
-            covars_wages(5) = exp_b
-            covars_wages(6) = (exp_b ** 2) / one_hundred_dble
-            covars_wages(7) = hs_graduate
-            covars_wages(8) = co_graduate
-            covars_wages(9) = period - one_dble
-            covars_wages(10) = is_minor
+            covars_general = (/ one_int, covariates%not_exp_a_lagged, covariates%not_any_exp_a /)
+            general(1) = DOT_PRODUCT(covars_general, optim_paras%coeffs_a(11:13))
 
-            ! This used for testing purposes, where we compare the results from the RESPY package to the original RESTUD program.
-            INQUIRE(FILE='.restud.respy.scratch', EXIST=IS_RESTUD)
-            IF (IS_RESTUD) THEN
-                covars_wages(4) = covars_wages(4) * one_hundred_dble
-                covars_wages(6) = covars_wages(6) * one_hundred_dble
-            END IF
-
-            ! Calculate systematic part of reward in Occupation A
-            CALL clip_value(wages(1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a(:10))), zero_dble, HUGE_FLOAT, info)
-
-            ! Calculate systematic part of reward in Occupation B
-            CALL clip_value(wages(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b(:10))), zero_dble, HUGE_FLOAT, info)
-
-            wages(1) = wages(1) * EXP(optim_paras%type_shifts(type_ + 1, 1))
-            wages(2) = wages(2) * EXP(optim_paras%type_shifts(type_ + 1, 2))
-
-            general(1) = DOT_PRODUCT((/ not_exp_a_lagged, not_any_exp_a /), optim_paras%coeffs_a(11:12))
-            general(2) = DOT_PRODUCT((/ not_exp_b_lagged, not_any_exp_b /), optim_paras%coeffs_b(11:12))
+            covars_general = (/ one_int, covariates%not_exp_b_lagged, covariates%not_any_exp_b /)
+            general(2) = DOT_PRODUCT(covars_general, optim_paras%coeffs_b(11:13))
 
             rewards(1) = wages(1) + general(1)
             rewards(2) = wages(2) + general(2)
 
             ! Calculate systematic part of schooling utility
             covars_edu(1) = one_dble
-            covars_edu(2) = hs_graduate
-            covars_edu(3) = co_graduate
-            covars_edu(4) = is_return_not_high_school
-            covars_edu(5) = is_return_high_school
-            covars_edu(6) = period - one_dble
-            covars_edu(7) = is_minor
+            covars_edu(2) = covariates%hs_graduate
+            covars_edu(3) = covariates%co_graduate
+            covars_edu(4) = covariates%is_return_not_high_school
+            covars_edu(5) = covariates%is_return_high_school
+            covars_edu(6) = covariates%period - one_dble
+            covars_edu(7) = covariates%is_minor
 
             rewards(3) = DOT_PRODUCT(covars_edu, optim_paras%coeffs_edu)
 
@@ -935,6 +893,60 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
     END IF
 
 END SUBROUTINE
+!******************************************************************************
+!******************************************************************************
+FUNCTION calculate_systematic_wages(covariates, optim_paras) RESULT(wages)
+
+    !/* external objects        */
+
+    REAL(our_dble)                      :: wages(2)
+
+    TYPE(COVARIATES_DICT), INTENT(IN)   :: covariates
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                    :: info
+    INTEGER(our_int)                    :: i
+
+    REAL(our_dble)                      :: covars_wages(10)
+
+    LOGICAL                             :: IS_RESTUD
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Auxiliary objects
+    covars_wages(1) = one_dble
+    covars_wages(2) = covariates%edu
+    covars_wages(3) = covariates%exp_a
+    covars_wages(4) = (covariates%exp_a ** 2) / one_hundred_dble
+    covars_wages(5) = covariates%exp_b
+    covars_wages(6) = (covariates%exp_b ** 2) / one_hundred_dble
+    covars_wages(7) = covariates%hs_graduate
+    covars_wages(8) = covariates%co_graduate
+    covars_wages(9) = covariates%period - one_dble
+    covars_wages(10) = covariates%is_minor
+
+    ! This used for testing purposes, where we compare the results from the RESPY package to the original RESTUD program.
+    INQUIRE(FILE='.restud.respy.scratch', EXIST=IS_RESTUD)
+    IF (IS_RESTUD) THEN
+        covars_wages(4) = covars_wages(4) * one_hundred_dble
+        covars_wages(6) = covars_wages(6) * one_hundred_dble
+    END IF
+
+    ! Calculate systematic part of reward in OCCUPAION A and OCCUPATION B
+    CALL clip_value(wages(1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a(:10))), zero_dble, HUGE_FLOAT, info)
+
+    ! Calculate systematic part of reward in Occupation B
+    CALL clip_value(wages(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b(:10))), zero_dble, HUGE_FLOAT, info)
+
+    DO i = 1, 2
+        wages(i) = wages(i) * EXP(optim_paras%type_shifts(covariates%type + 1, i))
+    END DO
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 END MODULE

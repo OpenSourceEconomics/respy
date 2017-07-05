@@ -76,8 +76,8 @@ MODULE shared_types
         REAL(our_dble)          :: shocks_cholesky(4, 4)
         REAL(our_dble)          :: coeffs_edu(7)
         REAL(our_dble)          :: coeffs_home(3)
-        REAL(our_dble)          :: coeffs_a(12)
-        REAL(our_dble)          :: coeffs_b(12)
+        REAL(our_dble)          :: coeffs_a(13)
+        REAL(our_dble)          :: coeffs_b(13)
         REAL(our_dble)          :: level(1)
         REAL(our_dble)          :: delta(1)
 
@@ -89,6 +89,27 @@ MODULE shared_types
         INTEGER(our_int)                :: max
 
         REAL(our_dble), ALLOCATABLE     :: share(:)
+
+    END TYPE
+
+    TYPE COVARIATES_DICT
+
+        INTEGER(our_int)                :: is_return_not_high_school
+        INTEGER(our_int)                :: is_return_high_school
+        INTEGER(our_int)                :: not_exp_a_lagged
+        INTEGER(our_int)                :: not_exp_b_lagged
+        INTEGER(our_int)                :: activity_lagged
+        INTEGER(our_int)                :: not_any_exp_a
+        INTEGER(our_int)                :: not_any_exp_b
+        INTEGER(our_int)                :: hs_graduate
+        INTEGER(our_int)                :: co_graduate
+        INTEGER(our_int)                :: edu_lagged
+        INTEGER(our_int)                :: is_minor
+        INTEGER(our_int)                :: period
+        INTEGER(our_int)                :: exp_a
+        INTEGER(our_int)                :: exp_b
+        INTEGER(our_int)                :: type
+        INTEGER(our_int)                :: edu
 
     END TYPE
 

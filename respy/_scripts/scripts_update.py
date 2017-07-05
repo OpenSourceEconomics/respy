@@ -49,11 +49,11 @@ def scripts_update(init_file):
     # file. For example, this might not be the case when the number of types is changed in the
     # initialization file and an update is requested with an earlier logfile.
     num_types, num_paras = len(init_dict['TYPE SHARES']['coeffs']) / 2 + 1, len(paras_steps)
-    if num_paras != 46 + (num_types - 1) * 6:
+    if num_paras != 48 + (num_types - 1) * 6:
         raise UserError('Info does not fit the current model specification')
 
     optim_paras = dist_optim_paras(paras_steps, True)
-    shocks_coeffs = paras_steps[36:46]
+    shocks_coeffs = paras_steps[38:48]
 
     # Update initialization dictionary
     init_dict['OCCUPATION A']['coeffs'] = optim_paras['coeffs_a']
@@ -65,7 +65,6 @@ def scripts_update(init_file):
     init_dict['SHOCKS']['coeffs'] = shocks_coeffs
     init_dict['TYPE SHARES']['coeffs'] = optim_paras['type_shares'][2:]
     init_dict['TYPE SHIFTS']['coeffs'] = optim_paras['type_shifts'].flatten()[4:]
-
     # We first print to an intermediate file as otherwise the original file is lost in case a
     # problem during printing occurs.
     print_init_dict(init_dict, '.model.respy.ini')

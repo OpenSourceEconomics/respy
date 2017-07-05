@@ -381,8 +381,6 @@ class TestClass(object):
         elif 'one_initial.ini' in fname:
             rslt = 8.063294972360962
 
-        raise AssertionError('.. this needs to be checked again when code is settled.')
-
         # This ensures that the experience effect is taken care of properly.
         open('.restud.respy.scratch', 'w').close()
 

@@ -508,24 +508,31 @@ def prepare_release_tests_10(constr):
     constr['flag_estimation'] = True
     init_dict = generate_init(constr)
 
+    # We aligned the indicator functions with the KW1997 setup and also added a constant term for
+    # the general rewards.
     for label in ['OCCUPATION A', 'OCCUPATION B']:
-        for j in [8, 9]:
+        for j in range(8, 13):
             init_dict[label]['coeffs'][j] = 0
             init_dict[label]['bounds'][j] = (None, None)
+            init_dict[label]['fixed'][j] = True
+
     new_dict = copy.deepcopy(init_dict)
 
     # We swapped to the order to align it with the KW1997 setup.
     for label in ['OCCUPATION A', 'OCCUPATION B']:
-        new_dict[label]['coeffs'][8], new_dict[label]['coeffs'][10] = \
-            new_dict[label]['coeffs'][10], new_dict[label]['coeffs'][8]
-        new_dict[label]['coeffs'][9], new_dict[label]['coeffs'][11] = \
-            new_dict[label]['coeffs'][11], new_dict[label]['coeffs'][9]
+        new_dict[label]['coeffs'][8], new_dict[label]['coeffs'][11] = \
+            new_dict[label]['coeffs'][11], new_dict[label]['coeffs'][8]
+        new_dict[label]['coeffs'][9], new_dict[label]['coeffs'][12] = \
+            new_dict[label]['coeffs'][12], new_dict[label]['coeffs'][9]
 
     json.dump(new_dict, open('new/init_dict.respy.json', 'w'))
 
     old_dict = copy.deepcopy(init_dict)
-    json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
+    for label in ['OCCUPATION A', 'OCCUPATION B']:
+        for name in ['coeffs', 'bounds', 'fixed']:
+            old_dict[label][name].pop(10)
 
+    json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
 
 def no_preparations_required(constr):
     """ This function prepares the initialization files so that they can be processed by both 
@@ -586,7 +593,7 @@ def run_estimation(which):
     # Moving from 2.0.0.dev17 to 2.0.0.dev18 breaks the equality because the simulated datasets
     # differ. So, we just copy the one from old. However, this is only relevant if 2.0.0.dev18 is
     # the candidate.
-    if ('2.0.0.dev18' in sys.executable) and ('/new' is os.getcwd()):
+    if ('2.0.0.dev18' in sys.executable) and ('/new' in os.getcwd()):
         os.chdir('../old')
         files = glob.glob('data.respy.*')
         for file in files:

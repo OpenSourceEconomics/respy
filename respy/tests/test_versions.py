@@ -171,8 +171,7 @@ class TestClass(object):
             np.testing.assert_allclose(base_val, val)
 
     def test_3(self, flag_ambiguity=False):
-        """ This test ensures that the logging looks exactly the same for the
-        different versions.
+        """ This test ensures that the logging looks exactly the same for the different versions.
         """
         max_draws = np.random.randint(10, 300)
 

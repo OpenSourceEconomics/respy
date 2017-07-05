@@ -80,7 +80,7 @@ def generate_random_dict(constr=None):
         assert isinstance(num_types, int)
         assert num_types > 0
 
-    num_paras = 46 + (num_types - 1) * 6
+    num_paras = 48 + (num_types - 1) * 6
 
     # We now draw all parameter values. This is necessarily done here as we subsequently
     # determine a set of valid bounds.
@@ -90,11 +90,11 @@ def generate_random_dict(constr=None):
             value = get_valid_values('delta')
         elif i in [1]:
             value = get_valid_values('amb')
-        elif i in range(2, 36):
+        elif i in range(2, 38):
             value = get_valid_values('coeff')
-        elif i in [36, 40, 43, 45]:
+        elif i in [38, 42, 45, 47]:
             value = get_valid_values('cov')
-        elif i in range(46, 46 + num_paras):
+        elif i in range(48, 48 + num_paras):
             value = get_valid_values('coeff')
         else:
             value = 0.0
@@ -110,7 +110,7 @@ def generate_random_dict(constr=None):
             bounds = get_valid_bounds('delta', value)
         elif i in [1]:
             bounds = get_valid_bounds('amb', value)
-        elif i in range(36, 46):
+        elif i in range(38, 48):
             bounds = get_valid_bounds('cov', value)
         else:
             bounds = get_valid_bounds('coeff', value)
@@ -121,9 +121,9 @@ def generate_random_dict(constr=None):
     # estimation. We need to ensure that at least one parameter is always free. At this point we
     # also want to ensure that either all shock coefficients are fixed or none. It is not clear
     # how to ensure other constraints on the Cholesky factors.
-    paras_fixed = np.random.choice([True, False], 36).tolist()
-    if sum(paras_fixed) == 36:
-        paras_fixed[np.random.randint(0, 36)] = True
+    paras_fixed = np.random.choice([True, False], 38).tolist()
+    if sum(paras_fixed) == 38:
+        paras_fixed[np.random.randint(0, 38)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
 
     # Either all shares are fixed or free. In case of just a single type, the share fixed.
@@ -147,21 +147,21 @@ def generate_random_dict(constr=None):
     dict_['BASICS']['fixed'] = paras_fixed[lower:upper]
 
     # Occupation A
-    lower, upper = 2, 14
+    lower, upper = 2, 15
     dict_['OCCUPATION A'] = dict()
     dict_['OCCUPATION A']['coeffs'] = paras_values[lower:upper]
     dict_['OCCUPATION A']['bounds'] = paras_bounds[lower:upper]
     dict_['OCCUPATION A']['fixed'] = paras_fixed[lower:upper]
 
     # Occupation B
-    lower, upper = 14, 26
+    lower, upper = 15, 28
     dict_['OCCUPATION B'] = dict()
     dict_['OCCUPATION B']['coeffs'] = paras_values[lower:upper]
     dict_['OCCUPATION B']['bounds'] = paras_bounds[lower:upper]
     dict_['OCCUPATION B']['fixed'] = paras_fixed[lower:upper]
 
     # Education
-    lower, upper = 26, 33
+    lower, upper = 28, 35
     dict_['EDUCATION'] = dict()
     dict_['EDUCATION']['coeffs'] = paras_values[lower:upper]
     dict_['EDUCATION']['bounds'] = paras_bounds[lower:upper]
@@ -174,7 +174,7 @@ def generate_random_dict(constr=None):
     dict_['EDUCATION']['max'] = np.random.randint(max(dict_['EDUCATION']['start']) + 1, 30)
 
     # Home
-    lower, upper = 33, 36
+    lower, upper = 35, 38
     dict_['HOME'] = dict()
     dict_['HOME']['coeffs'] = paras_values[lower:upper]
     dict_['HOME']['bounds'] = paras_bounds[lower:upper]
@@ -238,19 +238,19 @@ def generate_random_dict(constr=None):
     dict_['SIMULATION']['file'] = 'data'
 
     # SHOCKS
-    lower, upper = 36, 46
+    lower, upper = 38, 48
     dict_['SHOCKS'] = dict()
     dict_['SHOCKS']['coeffs'] = paras_values[lower:upper]
     dict_['SHOCKS']['bounds'] = paras_bounds[lower:upper]
     dict_['SHOCKS']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 46, 46 + (num_types - 1) * 2
+    lower, upper = 48, 48 + (num_types - 1) * 2
     dict_['TYPE SHARES'] = dict()
     dict_['TYPE SHARES']['coeffs'] = paras_values[lower:upper]
     dict_['TYPE SHARES']['bounds'] = paras_bounds[lower:upper]
     dict_['TYPE SHARES']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 46 + (num_types - 1) * 2, num_paras
+    lower, upper = 48 + (num_types - 1) * 2, num_paras
     dict_['TYPE SHIFTS'] = dict()
     dict_['TYPE SHIFTS']['coeffs'] = paras_values[lower:upper]
     dict_['TYPE SHIFTS']['bounds'] = paras_bounds[lower:upper]

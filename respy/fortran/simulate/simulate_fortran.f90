@@ -170,7 +170,6 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             END IF
 
             ! Record wages
-            ! TODO: CAN'T I MERGE THIS?
             IF (choice(1) .EQ. one_int) THEN
                 wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras)
                 data_sim(count + 1, 4) = wages_systematic(1) * draws(1)

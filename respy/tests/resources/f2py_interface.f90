@@ -227,8 +227,8 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(12)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(12)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta(1)
 
@@ -545,8 +545,8 @@ SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, 
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(12)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(12)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
 
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
     INTEGER, INTENT(IN)             :: max_states_period_int
@@ -1450,7 +1450,7 @@ SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 
     DOUBLE PRECISION, INTENT(OUT)   :: shocks_cholesky(4, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(46)
+    DOUBLE PRECISION, INTENT(IN)    :: x(48)
 
     INTEGER, INTENT(OUT)            :: info
 
@@ -2155,8 +2155,8 @@ SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systemati
     DOUBLE PRECISION, INTENT(OUT)       :: wages_systematic(2)
 
     DOUBLE PRECISION, INTENT(IN)        :: rewards_systematic(4)
-    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(12)
-    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(12)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(13)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(13)
 
     INTEGER, INTENT(IN)                 :: activity_lagged
     INTEGER, INTENT(IN)                 :: exp_a

@@ -100,7 +100,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
     # Identify events
     is_start = (opt_obj.num_eval == 0)
     is_step = (opt_obj.crit_vals[1] > fval)
-    x_optim_shares = x_optim_all_unscaled[46:46 + (num_types - 1) * 2]
+    x_optim_shares = x_optim_all_unscaled[48:48 + (num_types - 1) * 2]
 
     for i in range(3):
         if i == 0 and not is_start:
@@ -117,10 +117,11 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
 
         opt_obj.crit_vals[i] = fval
         opt_obj.x_optim_container[:, i] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:36, i] = x_optim_all_unscaled[:36]
-        opt_obj.x_econ_container[36:46, i] = shocks_coeffs
-        opt_obj.x_econ_container[46:46 + (num_types - 1) * 2, i] = x_optim_shares
-        opt_obj.x_econ_container[46 + (num_types - 1) * 2:num_paras, i] = x_optim_all_unscaled[46 + (num_types - 1) * 2:]
+        opt_obj.x_econ_container[:38, i] = x_optim_all_unscaled[:38]
+        opt_obj.x_econ_container[38:48, i] = shocks_coeffs
+        opt_obj.x_econ_container[48:48 + (num_types - 1) * 2, i] = x_optim_shares
+        opt_obj.x_econ_container[48 + (num_types - 1) * 2:num_paras, i] = x_optim_all_unscaled[48
+                                                                                               + (num_types - 1) * 2:]
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container

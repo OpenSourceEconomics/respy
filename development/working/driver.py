@@ -47,7 +47,7 @@ from codes.auxiliary import write_edu_start
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 sys.path.insert(0, TEST_RESOURCES_DIR)
-import f2py_interface as fort_debug
+#import f2py_interface as fort_debug
 
 np.random.seed(123)
 
@@ -58,9 +58,8 @@ for _ in range(1):
     print(' Iteration ', _)
     #constr = dict()
     #constr['flag_estimation'] = True
-    #generate_init(constr)
-    respy_obj = RespyCls('/home/peisenha/restudToolbox/package/respy/tests/resources/reliability'
-                         '_short.ini')
+    #generate_init()
+    respy_obj = RespyCls('test.respy.ini')
 
     #respy_obj.unlock()
     #respy_obj.set_attr('maxfun', 0)
@@ -69,7 +68,11 @@ for _ in range(1):
     simulate_observed(respy_obj, is_missings=False)
 
     #respy_obj.attr['num_periods'] = 2
-    #_, val = estimate(respy_obj)
+    _, val = estimate(respy_obj)
 
-    #rslt = 8.263655342390024
-    #np.testing.assert_allclose(val, rslt)
+    if respy_obj.get_attr('version') == 'FORTRAN':
+        rslt = 3.215198875033329
+        np.testing.assert_allclose(val, rslt)
+    else:
+        rslt = 2.796522237104254
+        np.testing.assert_allclose(val, rslt)

@@ -1,10 +1,12 @@
 import numpy as np
 import pytest
 
+from respy.python.shared.shared_auxiliary import back_out_systematic_wages
+from respy.python.solve.solve_auxiliary import calculate_systematic_wages
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.solve.solve_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from respy import simulate
 from respy import RespyCls
@@ -19,7 +21,7 @@ class TestClass(object):
         """
         for i in range(10):
             num_types = np.random.randint(1, 5)
-            num_paras = 46 + (num_types - 1) * 6
+            num_paras = 48 + (num_types - 1) * 6
 
             # Create random parameter vector
             base = np.random.uniform(size=num_paras)
@@ -75,17 +77,6 @@ class TestClass(object):
 
         is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
 
-        # The wage entries should correspond to the ex-post rewards
-        for choice in [1, 2]:
-            cond = (df['Choice'] == choice)
-            label_sys = 'Systematic_Reward_{}'.format(choice)
-            label_sho = 'Shock_Reward_{}'.format(choice)
-            df['Ex_Post_Reward'] = df[label_sys] * df[label_sho]
-
-            col_1 = df['Ex_Post_Reward'].loc[:, cond]
-            col_2 = df['Wage'].loc[:, cond]
-            np.testing.assert_array_almost_equal(col_1, col_2)
-
         # The systematic component for the alternative to stay home should always be identical
         # by type, at least within periods.
         for period in range(num_periods):
@@ -121,3 +112,33 @@ class TestClass(object):
                 else:
                     cond = (df[label] == 0)
                 assert np.all(cond)
+
+    def test_4(self):
+        """ Testing whether back and forth transformations for the wage does work.
+        """
+        # Generate random initialization file
+        generate_init()
+
+        # Perform toolbox actions
+        respy_obj = RespyCls('test.respy.ini')
+        respy_obj, _ = simulate(respy_obj)
+
+        periods_rewards_systematic, states_number_period, states_all, num_periods, optim_paras = \
+        dist_class_attributes(respy_obj, 'periods_rewards_systematic', 'states_number_period',
+            'states_all', 'num_periods', 'optim_paras')
+
+        for _ in range(10):
+            # Construct a random state for the calculations.
+            period = np.random.choice(range(num_periods))
+            k = np.random.choice(range(states_number_period[period]))
+
+            rewards_systematic = periods_rewards_systematic[period, k, :]
+            exp_a, exp_b, edu, activity_lagged, type_ = states_all[period, k, :]
+
+            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
+            wages = calculate_systematic_wages(covariates, optim_paras)
+
+            args = (rewards_systematic, exp_a, exp_b, activity_lagged, optim_paras)
+            rslt = back_out_systematic_wages(*args)
+
+            np.testing.assert_almost_equal(rslt, wages)

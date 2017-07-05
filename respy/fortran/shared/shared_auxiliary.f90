@@ -343,13 +343,13 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky = zero_dble
 
-    shocks_cholesky(1, :1) = x(37:37)
+    shocks_cholesky(1, :1) = x(39:39)
 
-    shocks_cholesky(2, :2) = x(38:39)
+    shocks_cholesky(2, :2) = x(40:41)
 
-    shocks_cholesky(3, :3) = x(40:42)
+    shocks_cholesky(3, :3) = x(42:44)
 
-    shocks_cholesky(4, :4) = x(43:46)
+    shocks_cholesky(4, :4) = x(45:48)
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -1239,13 +1239,13 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 
     optim_paras%level = MAX(x(2:2), zero_dble)
 
-    optim_paras%coeffs_a = x(3:14)
+    optim_paras%coeffs_a = x(3:15)
 
-    optim_paras%coeffs_b = x(15:26)
+    optim_paras%coeffs_b = x(16:28)
 
-    optim_paras%coeffs_edu = x(27:33)
+    optim_paras%coeffs_edu = x(29:35)
 
-    optim_paras%coeffs_home = x(34:36)
+    optim_paras%coeffs_home = x(36:38)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
@@ -1255,10 +1255,10 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
     END IF
 
     optim_paras%type_shares = zero_dble
-    optim_paras%type_shares(3:) = x(47:47 + (num_types - 1) * 2 - 1)
+    optim_paras%type_shares(3:) = x(49:49 + (num_types - 1) * 2 - 1)
 
     optim_paras%type_shifts = zero_dble
-    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(47 + (num_types - 1) * 2:num_paras), (/4, num_types  - 1/)))
+    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(49 + (num_types - 1) * 2:num_paras), (/4, num_types  - 1/)))
 
 END SUBROUTINE
 !******************************************************************************
@@ -1328,26 +1328,26 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     x_internal(2:2) = optim_paras%level
 
-    x_internal(3:14) = optim_paras%coeffs_a(:)
+    x_internal(3:15) = optim_paras%coeffs_a(:)
 
-    x_internal(15:26) = optim_paras%coeffs_b(:)
+    x_internal(16:28) = optim_paras%coeffs_b(:)
 
-    x_internal(27:33) = optim_paras%coeffs_edu(:)
+    x_internal(29:35) = optim_paras%coeffs_edu(:)
 
-    x_internal(34:36) = optim_paras%coeffs_home(:)
+    x_internal(36:38) = optim_paras%coeffs_home(:)
 
-    x_internal(37:37) = optim_paras%shocks_cholesky(1, :1)
+    x_internal(39:39) = optim_paras%shocks_cholesky(1, :1)
 
-    x_internal(38:39) = optim_paras%shocks_cholesky(2, :2)
+    x_internal(40:41) = optim_paras%shocks_cholesky(2, :2)
 
-    x_internal(40:42) = optim_paras%shocks_cholesky(3, :3)
+    x_internal(42:44) = optim_paras%shocks_cholesky(3, :3)
 
-    x_internal(43:46) = optim_paras%shocks_cholesky(4, :4)
+    x_internal(45:48) = optim_paras%shocks_cholesky(4, :4)
 
-    x_internal(47:(47 + (num_types - 1) * 2) - 1) = optim_paras%type_shares(3:)
+    x_internal(49:(49 + (num_types - 1) * 2) - 1) = optim_paras%type_shares(3:)
 
     shifts = PACK(TRANSPOSE(optim_paras%type_shifts), .TRUE.)
-    x_internal(47 + (num_types - 1) * 2:num_paras) = shifts(5:)
+    x_internal(49 + (num_types - 1) * 2:num_paras) = shifts(5:)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN
@@ -1425,42 +1425,88 @@ FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, activity_la
 
     REAL(our_dble)                              :: wages_systematic(2)
 
-    REAL(our_dble), INTENT(IN)                  :: rewards_systematic(4)
-
     TYPE(OPTIMPARAS_DICT), INTENT(IN)           :: optim_paras
 
+    INTEGER(our_int), INTENT(IN)                :: activity_lagged
     INTEGER(our_int), INTENT(IN)                :: exp_a
     INTEGER(our_int), INTENT(IN)                :: exp_b
-    INTEGER(our_int), INTENT(IN)                :: activity_lagged
+
+    REAL(our_dble), INTENT(IN)                  :: rewards_systematic(4)
 
     !/* internal objects        */
 
-    INTEGER(our_int)                            :: not_exp_a_lagged
-    INTEGER(our_int)                            :: not_exp_b_lagged
-    INTEGER(our_int)                            :: not_any_exp_a
-    INTEGER(our_int)                            :: not_any_exp_b
+    TYPE(COVARIATES_DICT)                       :: covariates
+
     INTEGER(our_int)                            :: i
 
+    REAL(our_dble)                              :: covars_general(3)
     REAL(our_dble)                              :: general(2)
 
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    not_exp_a_lagged = TRANSFER(activity_lagged .NE. two_int, not_exp_a_lagged)
-    not_exp_b_lagged = TRANSFER(activity_lagged .NE. three_int, not_exp_b_lagged)
+    covariates = construct_covariates(exp_a, exp_b, MISSING_INT, activity_lagged, MISSING_INT, MISSING_INT)
 
-    not_any_exp_a = TRANSFER(exp_a .EQ. 0, not_any_exp_a)
-    not_any_exp_b = TRANSFER(exp_b .EQ. 0, not_any_exp_b)
+    covars_general = (/ one_int, covariates%not_exp_a_lagged, covariates%not_any_exp_a /)
+    general(1) = DOT_PRODUCT(covars_general, optim_paras%coeffs_a(11:13))
 
-    general(1) = DOT_PRODUCT((/ not_exp_a_lagged, not_any_exp_a /), optim_paras%coeffs_a(11:12))
-    general(2) = DOT_PRODUCT((/ not_exp_b_lagged, not_any_exp_b /), optim_paras%coeffs_b(11:12))
+    covars_general = (/ one_int, covariates%not_exp_b_lagged, covariates%not_any_exp_b /)
+    general(2) = DOT_PRODUCT(covars_general, optim_paras%coeffs_b(11:13))
 
     DO i = 1, 2
         wages_systematic(i) = rewards_systematic(i) - general(i)
     END DO
 
-END FUNCTIOn
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period) RESULT(covariates)
+
+    !/* external objects        */
+
+    TYPE(COVARIATES_DICT)           :: covariates
+
+    INTEGER(our_int), INTENT(IN)    :: activity_lagged
+    INTEGER(our_int), INTENT(IN)    :: period
+    INTEGER(our_int), INTENT(IN)    :: type_
+    INTEGER(our_int), INTENT(IN)    :: exp_a
+    INTEGER(our_int), INTENT(IN)    :: exp_b
+    INTEGER(our_int), INTENT(IN)    :: edu
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: hs_graduate
+    INTEGER(our_int)                :: edu_lagged
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! Auxiliary objects
+    edu_lagged = TRANSFER(activity_lagged .EQ. one_int, our_int)
+    hs_graduate = TRANSFER(edu .GE. 12, our_int)
+
+    covariates%not_exp_a_lagged = TRANSFER(activity_lagged .NE. two_int, our_int)
+    covariates%not_exp_b_lagged = TRANSFER(activity_lagged .NE. three_int, our_int)
+    covariates%edu_lagged = TRANSFER(activity_lagged .EQ. one_int, our_int)
+    covariates%not_any_exp_a = TRANSFER(exp_a .EQ. 0, our_int)
+    covariates%not_any_exp_b = TRANSFER(exp_b .EQ. 0, our_int)
+    covariates%is_minor = TRANSFER(period .LT. 3, our_int)
+    covariates%co_graduate = TRANSFER(edu .GE. 16, our_int)
+    covariates%hs_graduate = hs_graduate
+
+    covariates%is_return_not_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate)), our_int)
+    covariates%is_return_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. to_boolean(hs_graduate), our_int)
+
+    covariates%activity_lagged = activity_lagged
+    covariates%period = period
+    covariates%exp_a = exp_a
+    covariates%exp_b = exp_b
+    covariates%type = type_
+    covariates%edu = edu
+
+END FUNCTION
 !******************************************************************************
 !******************************************************************************
 END MODULE

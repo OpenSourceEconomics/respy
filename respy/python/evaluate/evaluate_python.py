@@ -154,3 +154,5 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
         contribs[:] = np.exp(1.0)
     # Finishing
     return contribs
+
+

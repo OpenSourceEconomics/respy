@@ -8,6 +8,7 @@ from respy.python.record.record_solution import record_solution_prediction
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
+from respy.python.shared.shared_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import MISSING_FLOAT
@@ -157,55 +158,18 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             rewards = np.tile(np.nan, 4)
 
             # Construct auxiliary information
-            hs_graduate = float(edu >= 12)
-            co_graduate = float(edu >= 16)
-            not_any_exp_a = float(exp_a == 0)
-            not_any_exp_b = float(exp_b == 0)
-            is_minor = float(period < 2)
+            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
 
-            edu_lagged = int(activity_lagged == 1)
-            not_exp_a_lagged = int(activity_lagged != 2)
-            not_exp_b_lagged = int(activity_lagged != 3)
-
-            is_return_not_high_school = float((not edu_lagged) and (not hs_graduate))
-            is_return_high_school = float((not edu_lagged) and hs_graduate)
-
-            # Auxiliary objects
-            covars_wages = []
-            covars_wages += [1.0]
-            covars_wages += [edu]
-            covars_wages += [exp_a]
-            covars_wages += [(exp_a ** 2) / 100.00]
-            covars_wages += [exp_b]
-            covars_wages += [(exp_b ** 2) / 100.00]
-            covars_wages += [hs_graduate]
-            covars_wages += [co_graduate]
-            covars_wages += [period]
-            covars_wages += [is_minor]
-
-            # This used for testing purposes, where we compare the results from the RESPY package
-            # to the original RESTUD program.
-            if os.path.exists('.restud.respy.scratch'):
-                covars_wages[3] *= 100.00
-                covars_wages[5] *= 100.00
-
-            wages = np.tile(np.nan, 2)
-            # Calculate systematic part of wages in OCCUPATION A
-            wages[0] = np.clip(np.exp(np.dot(optim_paras['coeffs_a'][:10], covars_wages)), 0.0,
-                                 HUGE_FLOAT)
-
-            # Calculate systematic part pf wages in OCCUPATION B
-            wages[1] = np.clip(np.exp(np.dot(optim_paras['coeffs_b'][:10], covars_wages)), 0.0,
-                                 HUGE_FLOAT)
-
-            # We need to add the type-specific deviations here as these are part of
-            # skill-function component.
-            for j in [0, 1]:
-                wages[j] = wages[j] * np.exp(optim_paras['type_shifts'][type_, j])
+            # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards. These are
+            # defined in a general sense, where not only wages matter.
+            wages = calculate_systematic_wages(covariates, optim_paras)
 
             general = np.tile(np.nan, 2)
-            general[0] = np.dot(optim_paras['coeffs_a'][10:], [not_exp_a_lagged, not_any_exp_a])
-            general[1] = np.dot(optim_paras['coeffs_b'][10:], [not_exp_b_lagged, not_any_exp_b])
+            covars_general = [1.0, covariates['not_exp_a_lagged'], covariates['not_any_exp_a']]
+            general[0] = np.dot(optim_paras['coeffs_a'][10:], covars_general)
+
+            covars_general = [1.0, covariates['not_exp_b_lagged'], covariates['not_any_exp_b']]
+            general[1] = np.dot(optim_paras['coeffs_b'][10:], covars_general)
 
             for j in [0, 1]:
                 rewards[j] = wages[j] + general[j]
@@ -213,12 +177,12 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             # Calculate systematic part of SCHOOL rewards
             covars_edu = []
             covars_edu += [1.0]
-            covars_edu += [hs_graduate]
-            covars_edu += [co_graduate]
-            covars_edu += [is_return_not_high_school]
-            covars_edu += [is_return_high_school]
-            covars_edu += [period]
-            covars_edu += [is_minor]
+            covars_edu += [covariates['hs_graduate']]
+            covars_edu += [covariates['co_graduate']]
+            covars_edu += [covariates['is_return_not_high_school']]
+            covars_edu += [covariates['is_return_high_school']]
+            covars_edu += [covariates['period']]
+            covars_edu += [covariates['is_minor']]
 
             rewards[2] = np.dot(optim_paras['coeffs_edu'], covars_edu)
 
@@ -512,3 +476,42 @@ def check_input(respy_obj):
 
     # Finishing
     return True
+
+
+def calculate_systematic_wages(covariates, optim_paras):
+    """ Calculate the systematic component of wages.
+    """
+    # Collect all relevant covariates
+    covars_wages = []
+    covars_wages += [1.0]
+    covars_wages += [covariates['edu']]
+    covars_wages += [covariates['exp_a']]
+    covars_wages += [(covariates['exp_a'] ** 2) / 100.00]
+    covars_wages += [covariates['exp_b']]
+    covars_wages += [(covariates['exp_b'] ** 2) / 100.00]
+    covars_wages += [covariates['hs_graduate']]
+    covars_wages += [covariates['co_graduate']]
+    covars_wages += [covariates['period']]
+    covars_wages += [covariates['is_minor']]
+
+    # This used for testing purposes, where we compare the results from the RESPY package
+    # to the original RESTUD program.
+    if os.path.exists('.restud.respy.scratch'):
+        covars_wages[3] *= 100.00
+        covars_wages[5] *= 100.00
+
+    # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
+    wages = np.tile(np.nan, 2)
+
+    wage = np.exp(np.dot(optim_paras['coeffs_a'][:10], covars_wages))
+    wages[0] = np.clip(wage, 0.0, HUGE_FLOAT)
+
+    wage = np.exp(np.dot(optim_paras['coeffs_b'][:10], covars_wages))
+    wages[1] = np.clip(wage, 0.0, HUGE_FLOAT)
+
+    # We need to add the type-specific deviations here as these are part of
+    # skill-function component.
+    for j in [0, 1]:
+        wages[j] = wages[j] * np.exp(optim_paras['type_shifts'][covariates['type'], j])
+
+    return wages

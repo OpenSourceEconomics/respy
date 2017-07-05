@@ -652,7 +652,7 @@ class TestClass(object):
         """ We test the construction of the Cholesky decomposition against each other.
         """
         # Draw a random vector of parameters
-        x = np.random.uniform(size=46)
+        x = np.random.uniform(size=48)
 
         # Construct the Cholesky decompositions
         py = extract_cholesky(x, info=0)
@@ -779,8 +779,8 @@ class TestClass(object):
             exp_a = np.random.randint(1, 10)
             exp_b = np.random.randint(1, 10)
 
-            coeffs_a = np.random.normal(0, 1, size=12)
-            coeffs_b = np.random.normal(0, 1, size=12)
+            coeffs_a = np.random.normal(0, 1, size=13)
+            coeffs_b = np.random.normal(0, 1, size=13)
 
             optim_paras = dict()
             optim_paras['coeffs_a'] = coeffs_a
@@ -788,7 +788,7 @@ class TestClass(object):
 
             args = [rewards_systematic, exp_a, exp_b, activity_lagged]
 
-            py = back_out_systematic_wages(*args + [optim_paras, True])
+            py = back_out_systematic_wages(*args + [optim_paras])
             fort = fort_debug.wrapper_back_out_systematic_wages(*args + [coeffs_a, coeffs_b])
 
             np.testing.assert_almost_equal(py, fort)
