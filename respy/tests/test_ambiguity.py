@@ -45,9 +45,8 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self):
-        """ This test ensures that using the ambiguity functionality with a
-        tiny level yields the same results as using the risk functionality
-        directly.
+        """ This test ensures that using the ambiguity functionality with a tiny level yields the
+        same results as using the risk functionality directly.
         """
         constr = dict()
         constr['maxfun'] = 0
@@ -102,6 +101,9 @@ class TestClass(object):
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         shocks_cholesky = optim_paras['shocks_cholesky']
+        coeffs_common = optim_paras['coeffs_common']
+        coeffs_a = optim_paras['coeffs_a']
+        coeffs_b = optim_paras['coeffs_b']
         delta = optim_paras['delta']
         level = optim_paras['level']
 
@@ -140,6 +142,7 @@ class TestClass(object):
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], ambi_spec_measure)
         args += (ambi_spec_mean, level, shocks_cov, delta)
+        args += (coeffs_common, coeffs_a, coeffs_b)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (file_sim, False, num_types)
 

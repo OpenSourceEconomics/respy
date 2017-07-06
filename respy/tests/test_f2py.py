@@ -108,7 +108,9 @@ class TestClass(object):
         py = construct_emax_risk(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], optim_paras['delta'], num_types)
+        args += base_args + (edu_spec['start'], edu_spec['max'], optim_paras['delta'])
+        args += (optim_paras['coeffs_common'], optim_paras['coeffs_a'], optim_paras['coeffs_b'])
+        args += (num_types, )
         f90 = fort_debug.wrapper_construct_emax_risk(*args)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
@@ -246,8 +248,8 @@ class TestClass(object):
             np.testing.assert_almost_equal(py, fort)
 
     def test_4(self, flag_ambiguity=False):
-        """ Testing the core functions of the solution step for the equality
-        of results between the PYTHON and FORTRAN implementations.
+        """ Testing the core functions of the solution step for the equality of results
+        between the PYTHON and FORTRAN implementations.
         """
 
         # Generate random initialization file

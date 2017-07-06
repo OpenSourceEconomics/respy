@@ -44,6 +44,8 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
 
     !/* internal objects        */
 
+    TYPE(COVARIATES_DICT)           :: covariates
+
     REAL(our_dble)                  :: periods_draws_sims_transformed(num_periods, num_agents_sim, 4)
     REAL(our_dble)                  :: draws_sims_transformed(num_agents_sim, 4)
     REAL(our_dble)                  :: draws_sims(num_agents_sim, 4)
@@ -74,7 +76,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     CALL record_simulation(num_agents_sim, seed_sim, file_sim)
 
 
-    ALLOCATE(data_sim(num_periods * num_agents_sim, 22))
+    ALLOCATE(data_sim(num_periods * num_agents_sim, 26))
 
     !Standard deviates transformed to the distributions relevant for the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
@@ -137,6 +139,11 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             data_sim(count + 1, 18:21) = draws
             data_sim(count + 1, 22:22) = optim_paras%delta
 
+            ! For testing purposes, we also explicitly include the general reward component and the common component.
+            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
+            data_sim(count + 1, 23:24) = calculate_rewards_general(covariates, optim_paras)
+            data_sim(count + 1, 25:25) = calculate_rewards_common(covariates, optim_paras)
+
             ! We need to ensure that no individual chooses an inadmissible state. This cannot be done directly in the get_total_values function as the penalty otherwise dominates the interpolation equation. The parameter INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very constructed cases.
             IF (edu >= edu_spec%max) total_values(3) = -HUGE_FLOAT
 
@@ -169,17 +176,22 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
                 current_state(4) = zero_int
             END IF
 
+            ! TODO: Out of order with Python code. 
             ! Record wages
             wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
 
             IF (choice(1) .EQ. one_int) THEN
                 wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
                 data_sim(count + 1, 4) = wages_systematic(1) * draws(1)
+                data_sim(count + 1, 26:26) = data_sim(count + 1, 4)
+
             END IF
 
             IF (choice(1) .EQ. two_int) THEN
                 wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
                 data_sim(count + 1, 4) = wages_systematic(2) * draws(2)
+                data_sim(count + 1, 26:26) = data_sim(count + 1, 4)
+
             END IF
 
             ! Update row indicator

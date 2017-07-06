@@ -426,21 +426,41 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
 
     !/* internal objects        */
 
+    REAL(our_dble)                  :: wages_systematic(2)
+    REAL(our_dble)                  :: total_increment(2)
     REAL(our_dble)                  :: rewards_ex_post(4)
     REAL(our_dble)                  :: emaxs(4)
+
+    INTEGER(our_int)                :: activity_lagged
+    INTEGER(our_int)                :: exp_a
+    INTEGER(our_int)                :: exp_b
+    INTEGER(our_int)                :: edu
+    INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    ! We need to back out the wages from the total systematic rewards to working in the labor market to add the shock properly.
+    exp_a = states_all(period + 1, k + 1, 1)
+    exp_b = states_all(period + 1, k + 1, 2)
+    edu = states_all(period + 1, k + 1, 3)
+    activity_lagged = states_all(period + 1, k + 1, 4)
+
+    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
+
     ! Initialize containers
     rewards_ex_post = zero_dble
 
     ! Calculate ex post rewards
-    rewards_ex_post(1) = rewards_systematic(1) * draws(1)
-    rewards_ex_post(2) = rewards_systematic(2) * draws(2)
-    rewards_ex_post(3) = rewards_systematic(3) + draws(3)
-    rewards_ex_post(4) = rewards_systematic(4) + draws(4)
+    DO i = 1, 2
+        total_increment(i) = rewards_systematic(i) - wages_systematic(i)
+        rewards_ex_post(i) = wages_systematic(i) * draws(i) + total_increment(i)
+    END DO
+
+    Do i = 3, 4
+        rewards_ex_post(i) = rewards_systematic(i) + draws(i)
+    END DO
 
     ! Get future values
     IF (period .NE. (num_periods - one_int)) THEN
@@ -1519,6 +1539,55 @@ FUNCTION construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
     covariates%exp_b = exp_b
     covariates%type = type_
     covariates%edu = edu
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION calculate_rewards_general(covariates, optim_paras) RESULT(rewards_general)
+
+    !/* external objects        */
+
+    REAL(our_dble)                      :: rewards_general(2)
+
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+    TYPE(COVARIATES_DICT), INTENT(IN)   :: covariates
+
+    !/* internal objects        */
+
+    REAL(our_dble)                      :: covars_general(3)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    covars_general = (/ one_int, covariates%not_exp_a_lagged, covariates%not_any_exp_a /)
+    rewards_general(1) = DOT_PRODUCT(covars_general, optim_paras%coeffs_a(11:13))
+
+    covars_general = (/ one_int, covariates%not_exp_b_lagged, covariates%not_any_exp_b /)
+    rewards_general(2) = DOT_PRODUCT(covars_general, optim_paras%coeffs_b(11:13))
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
+FUNCTION calculate_rewards_common(covariates, optim_paras) RESULT(rewards_common)
+
+    !/* external objects        */
+
+    REAL(our_dble)                      :: rewards_common
+
+    TYPE(COVARIATES_DICT), INTENT(IN)   :: covariates
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
+
+    !/* internal objects        */
+
+    REAL(our_dble)                      :: covars_common(2)
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    covars_common = (/ covariates%hs_graduate, covariates%co_graduate /)
+    rewards_common = DOT_PRODUCT(optim_paras%coeffs_common, covars_common)
 
 END FUNCTION
 !******************************************************************************

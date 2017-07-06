@@ -82,22 +82,51 @@ class TestClass(object):
         for period in range(num_periods):
             assert (df['Systematic_Reward_4'].loc[:, period].nunique() <= num_types)
 
+        # We can back out the wage information from other information provided in the simulated
+        # dataset.
+        for choice in [1, 2]:
+            cond = (df['Choice'] == choice)
+            label_sys = 'Systematic_Reward_{}'.format(choice)
+            label_sho = 'Shock_Reward_{}'.format(choice)
+            label_gen = 'General_Reward_{}'.format(choice)
+            label_com = 'Common_Reward'
+            df['Ex_Post_Reward'] = (df[label_sys] - df[label_gen] - df[label_com]) * df[label_sho]
+
+            col_1 = df['Ex_Post_Reward'].loc[:, cond]
+            col_2 = df['Wage'].loc[:, cond]
+            np.testing.assert_array_almost_equal(col_1, col_2)
+
         # In the myopic case, the total reward should the equal to the ex post rewards.
         if respy_obj.get_attr('is_myopic'):
-            for i in range(1, 5):
-                label = 'Ex_Post_Reward_{}'.format(i)
-                label_sys = 'Systematic_Reward_{}'.format(i)
-                label_sho = 'Shock_Reward_{}'.format(i)
+            # The shock only affects the skill-function and not the other components determining
+            # the overall reward.
+            for choice in [1, 2]:
+                cond = (df['Choice'] == choice)
 
-                if i in [1, 2]:
-                    df[label] = df[label_sys] * df[label_sho]
-                else:
-                    df[label] = df[label_sys] + df[label_sho]
+                label = 'Ex_Post_Reward_{}'.format(choice)
+                label_gen = 'General_Reward_{}'.format(choice)
+                label_com = 'Common_Reward'
+                label_wag = 'Wage_Internal'
+
+                df[label] = df[label_wag] + df[label_gen] + df[label_com]
+
+                col_1 = df['Total_Reward_' + str(choice)].loc[:, cond]
+                col_2 = df[label].loc[:, cond]
+
+                np.testing.assert_array_almost_equal(col_1, col_2)
+
+            for choice in [3, 4]:
+                label = 'Ex_Post_Reward_{}'.format(choice)
+                label_sys = 'Systematic_Reward_{}'.format(choice)
+                label_sho = 'Shock_Reward_{}'.format(choice)
+
+                df[label] = df[label_sys] * df[label_sho]
+                df[label] = df[label_sys] + df[label_sho]
 
                 # The equality does not hold if a state is inadmissible.
                 cond = (df['Years_Schooling'] != edu_spec['max'])
 
-                col_1 = df['Total_Reward_' + str(i)].loc[:, cond]
+                col_1 = df['Total_Reward_' + str(choice)].loc[:, cond]
                 col_2 = df[label].loc[:, cond]
 
                 np.testing.assert_array_almost_equal(col_1, col_2)

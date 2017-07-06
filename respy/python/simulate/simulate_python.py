@@ -2,11 +2,14 @@ import numpy as np
 
 from respy.python.record.record_simulation import record_simulation_progress
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
+from respy.python.shared.shared_auxiliary import calculate_rewards_general
+from respy.python.shared.shared_auxiliary import calculate_rewards_common
 from respy.python.record.record_simulation import record_simulation_start
 from respy.python.simulate.simulate_auxiliary import get_random_edu_start
 from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.simulate.simulate_auxiliary import get_random_types
+from respy.python.shared.shared_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
@@ -37,7 +40,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
     count = 0
 
     # Initialize data
-    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 22))
+    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 26))
 
     for i in range(num_agents_sim):
 
@@ -102,6 +105,14 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             dataset[count, 13:17] = rewards_systematic
             dataset[count, 17:21] = draws
             dataset[count, 21:22] = optim_paras['delta']
+
+            # For testing purposes, we also explicitly include the general reward component and
+            # the common component. We also include an internal version of the wage variables as
+            # otherwise it gets truncated to two digits which does make some unit tests untenable.
+            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
+            dataset[count, 22:24] = calculate_rewards_general(covariates, optim_paras)
+            dataset[count, 24:25] = calculate_rewards_common(covariates, optim_paras)
+            dataset[count, 25:26] = dataset[count, 3]
 
             # Update work experiences and education
             if max_idx == 0:

@@ -315,7 +315,7 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 22)
+    DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 26)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
@@ -801,7 +801,7 @@ SUBROUTINE wrapper_criterion_ambiguity_derivative(grad, x, num_periods_int, num_
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_risk, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_start, edu_max, delta, num_types_int)
+SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_risk, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_start, edu_max, delta, coeffs_common, coeffs_a, coeffs_b, num_types_int)
 
     !/* external libraries      */
 
@@ -818,6 +818,9 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
     DOUBLE PRECISION, INTENT(IN)    :: draws_emax_risk(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
@@ -848,6 +851,9 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
     IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
 
     ! Construct derived types
+    optim_paras%coeffs_common = coeffs_common
+    optim_paras%coeffs_a = coeffs_a
+    optim_paras%coeffs_b = coeffs_b
     optim_paras%delta = delta
 
     edu_spec%start = edu_start
@@ -859,7 +865,7 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_start, edu_max, measure, mean, level, shocks_cov, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write, num_types_int)
+SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_emax_int, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax_int, states_all_int, mapping_state_idx_int, edu_start, edu_max, measure, mean, level, shocks_cov, delta, coeffs_common, coeffs_a, coeffs_b, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write, num_types_int)
 
     !/* external libraries      */
 
@@ -878,8 +884,11 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
     DOUBLE PRECISION, INTENT(IN)    :: level
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -943,6 +952,9 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
     optim_paras%shocks_cholesky = shocks_cholesky
+    optim_paras%coeffs_common = coeffs_common
+    optim_paras%coeffs_a = coeffs_a
+    optim_paras%coeffs_b = coeffs_b
     optim_paras%level = level
     optim_paras%delta = delta
 

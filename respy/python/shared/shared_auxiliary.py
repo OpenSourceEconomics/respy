@@ -213,12 +213,19 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
                      mapping_state_idx, periods_emax, k, states_all):
     """ Get total value of all possible states.
     """
+    # We need to back out the wages from the total systematic rewards to working in the labor
+    # market to add the shock properly.
+    exp_a, exp_b, edu, activity_lagged, type_ = states_all[period, k, :]
+    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu,
+        activity_lagged, optim_paras)
+
     # Initialize containers
     rewards_ex_post = np.tile(np.nan, 4)
 
     # Calculate ex post rewards
     for j in [0, 1]:
-        rewards_ex_post[j] = rewards_systematic[j] * draws[j]
+        total_increment = rewards_systematic[j] - wages_systematic[j]
+        rewards_ex_post[j] = wages_systematic[j] * draws[j] + total_increment
 
     for j in [2, 3]:
         rewards_ex_post[j] = rewards_systematic[j] + draws[j]
@@ -951,3 +958,25 @@ def construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period):
         covariates['is_minor'] = int(period < 2)
 
     return covariates
+
+
+def calculate_rewards_common(covariates, optim_paras):
+    """ Calculate the reward component that is common to all alternatives.
+    """
+    covars_common = [covariates['hs_graduate'], covariates['co_graduate']]
+    rewards_common = np.dot(optim_paras['coeffs_common'], covars_common)
+
+    return rewards_common
+
+
+def calculate_rewards_general(covariates, optim_paras):
+    """ Calculate the non-skill related reward components.
+    """
+    rewards_general = np.tile(np.nan, 2)
+    covars_general = [1.0, covariates['not_exp_a_lagged'], covariates['not_any_exp_a']]
+    rewards_general[0] = np.dot(optim_paras['coeffs_a'][10:], covars_general)
+
+    covars_general = [1.0, covariates['not_exp_b_lagged'], covariates['not_any_exp_b']]
+    rewards_general[1] = np.dot(optim_paras['coeffs_b'][10:], covars_general)
+
+    return rewards_general

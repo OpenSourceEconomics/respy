@@ -177,8 +177,6 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     INTEGER(our_int)                    :: activity_lagged
 
-    INTEGER(our_int)                    :: covars_general(3)
-    INTEGER(our_int)                    :: covars_common(2)
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
@@ -187,9 +185,9 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: k
     INTEGER(our_int)                    :: i
 
+    REAL(our_dble)                      :: rewards_general(2)
     REAL(our_dble)                      :: rewards_common
     REAL(our_dble)                      :: covars_edu(7)
-    REAL(our_dble)                      :: general(2)
     REAL(our_dble)                      :: wages(2)
 
     REAL(our_dble)                      :: rewards(4)
@@ -220,21 +218,16 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             ! Construct auxiliary information
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
 
-            ! Calculate common returns
-            covars_common = (/ covariates%hs_graduate, covariates%co_graduate /)
-            rewards_common = DOT_PRODUCT(optim_paras%coeffs_common, covars_common)
+            ! Calculate common and general rewards component.
+            rewards_general = calculate_rewards_general(covariates, optim_paras)
+            rewards_common = calculate_rewards_common(covariates, optim_paras)
 
             ! Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards. these are defined in a general sense, where not only wages matter.
             wages = calculate_systematic_wages(covariates, optim_paras)
 
-            covars_general = (/ one_int, covariates%not_exp_a_lagged, covariates%not_any_exp_a /)
-            general(1) = DOT_PRODUCT(covars_general, optim_paras%coeffs_a(11:13))
-
-            covars_general = (/ one_int, covariates%not_exp_b_lagged, covariates%not_any_exp_b /)
-            general(2) = DOT_PRODUCT(covars_general, optim_paras%coeffs_b(11:13))
-
-            rewards(1) = wages(1) + general(1)
-            rewards(2) = wages(2) + general(2)
+            DO i = 1, 2
+                rewards(i) = wages(i) + rewards_general(i)
+            END DO
 
             ! Calculate systematic part of schooling utility
             covars_edu(1) = one_dble
@@ -256,8 +249,9 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             IF(period .GE. 6) rewards(4) = rewards(4) + optim_paras%coeffs_home(3)
 
             ! Now we add the type-specific deviation.
-            rewards(3) = rewards(3) + optim_paras%type_shifts(type_ + 1, 3)
-            rewards(4) = rewards(4) + optim_paras%type_shifts(type_ + 1, 4)
+            DO i = 3, 4
+                rewards(i) = rewards(i) + optim_paras%type_shifts(type_ + 1, i)
+            END DO
 
             ! We can now also added the common component of rewards.
             DO i = 1, 4

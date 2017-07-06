@@ -509,12 +509,17 @@ def prepare_release_tests_10(constr):
     init_dict = generate_init(constr)
 
     # We aligned the indicator functions with the KW1997 setup and also added a constant term for
-    # the general rewards.
+    # the general rewards. Finally, we added the common rewards.
     for label in ['OCCUPATION A', 'OCCUPATION B']:
         for j in range(8, 13):
             init_dict[label]['coeffs'][j] = 0
             init_dict[label]['bounds'][j] = (None, None)
             init_dict[label]['fixed'][j] = True
+
+    for j in [0, 1]:
+        init_dict['COMMON']['coeffs'][j] = 0
+        init_dict['COMMON']['bounds'][j] = (None, None)
+        init_dict['COMMON']['fixed'][j] = True
 
     new_dict = copy.deepcopy(init_dict)
 
@@ -531,6 +536,8 @@ def prepare_release_tests_10(constr):
     for label in ['OCCUPATION A', 'OCCUPATION B']:
         for name in ['coeffs', 'bounds', 'fixed']:
             old_dict[label][name].pop(10)
+
+    del old_dict['COMMON']
 
     json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
 

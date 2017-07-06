@@ -5,6 +5,8 @@ import statsmodels.api as sm
 import numpy as np
 
 from respy.python.record.record_solution import record_solution_prediction
+from respy.python.shared.shared_auxiliary import calculate_rewards_general
+from respy.python.shared.shared_auxiliary import calculate_rewards_common
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_ambiguity import construct_emax_ambiguity
@@ -160,23 +162,16 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             # Construct auxiliary information
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
 
-            # Calculate common returns
-            covars_common = [covariates['hs_graduate'], covariates['co_graduate']]
-            common = np.dot(optim_paras['coeffs_common'], covars_common)
+            # Calculate common and general rewards component.
+            rewards_general = calculate_rewards_general(covariates, optim_paras)
+            rewards_common = calculate_rewards_common(covariates, optim_paras)
 
             # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards. These are
             # defined in a general sense, where not only wages matter.
             wages = calculate_systematic_wages(covariates, optim_paras)
 
-            general = np.tile(np.nan, 2)
-            covars_general = [1.0, covariates['not_exp_a_lagged'], covariates['not_any_exp_a']]
-            general[0] = np.dot(optim_paras['coeffs_a'][10:], covars_general)
-
-            covars_general = [1.0, covariates['not_exp_b_lagged'], covariates['not_any_exp_b']]
-            general[1] = np.dot(optim_paras['coeffs_b'][10:], covars_general)
-
             for j in [0, 1]:
-                rewards[j] = wages[j] + general[j]
+                rewards[j] = wages[j] + rewards_general[j]
 
             # Calculate systematic part of SCHOOL rewards
             covars_edu = []
@@ -204,7 +199,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
 
             # We can now also added the common component of rewards.
             for j in range(4):
-                rewards[j] = rewards[j] + common
+                rewards[j] = rewards[j] + rewards_common
 
             periods_rewards_systematic[period, k, :] = rewards
 
