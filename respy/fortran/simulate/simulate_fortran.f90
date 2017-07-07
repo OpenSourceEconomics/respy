@@ -59,7 +59,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     INTEGER(our_int)                :: types(num_agents_sim)
     INTEGER(our_int)                :: current_state(5)
     INTEGER(our_int)                :: activity_lagged
-    INTEGER(our_int)                :: choice(1)
+    INTEGER(our_int)                :: choice
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
@@ -129,6 +129,20 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             ! Calculate total utilities
             CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
+            ! We need to ensure that no individual chooses an inadmissible state. This cannot be done directly in the get_total_values function as the penalty otherwise dominates the interpolation equation. The parameter INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very constructed cases.
+            IF (edu >= edu_spec%max) total_values(3) = -HUGE_FLOAT
+
+            ! Determine and record optimal choice
+            choice = MAXLOC(total_values, DIM=one_int)
+
+            data_sim(count + 1, 3) = DBLE(choice)
+
+            ! Record wages
+            IF ((choice .EQ. one_int) .OR. (choice .EQ. two_int)) THEN
+                wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
+                data_sim(count + 1, 4) = wages_systematic(choice) * draws(choice)
+            END IF
+
             ! Write relevant state space for period to data frame
             data_sim(count + 1, 5:8) = current_state(:4)
 
@@ -143,55 +157,22 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
             data_sim(count + 1, 23:24) = calculate_rewards_general(covariates, optim_paras)
             data_sim(count + 1, 25:25) = calculate_rewards_common(covariates, optim_paras)
+            data_sim(count + 1, 26:26) = data_sim(count + 1, 4)
 
-            ! We need to ensure that no individual chooses an inadmissible state. This cannot be done directly in the get_total_values function as the penalty otherwise dominates the interpolation equation. The parameter INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very constructed cases.
-            IF (edu >= edu_spec%max) total_values(3) = -HUGE_FLOAT
-
-            ! Determine and record optimal choice
-            choice = MAXLOC(total_values)
-
-            data_sim(count + 1, 3) = DBLE(choice(1))
-
-            !# Update work experiences and education
-            IF (choice(1) .EQ. one_int) THEN
-                current_state(1) = current_state(1) + 1
-            END IF
-
-            IF (choice(1) .EQ. two_int) THEN
-                current_state(2) = current_state(2) + 1
-            END IF
-
-            IF (choice(1) .EQ. three_int) THEN
-                current_state(3) = current_state(3) + 1
+            !# Update work experiences or education
+            IF ((choice .EQ. one_int) .OR. (choice .EQ. two_int) .OR. (choice .EQ. three_int)) THEN
+                current_state(choice) = current_state(choice) + 1
             END IF
 
             !# Update lagged activity variable.
-            IF (choice(1) .EQ. one_int) THEN
+            IF (choice .EQ. one_int) THEN
                 current_state(4) = two_int
-            ELSEIF (choice(1) .EQ. two_int) THEN
+            ELSEIF (choice .EQ. two_int) THEN
                 current_state(4) = three_int
-            ELSEIF (choice(1) .EQ. three_int) THEN
+            ELSEIF (choice .EQ. three_int) THEN
                 current_state(4) = one_int
             ELSE
                 current_state(4) = zero_int
-            END IF
-
-            ! TODO: Out of order with Python code. 
-            ! Record wages
-            wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
-
-            IF (choice(1) .EQ. one_int) THEN
-                wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
-                data_sim(count + 1, 4) = wages_systematic(1) * draws(1)
-                data_sim(count + 1, 26:26) = data_sim(count + 1, 4)
-
-            END IF
-
-            IF (choice(1) .EQ. two_int) THEN
-                wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
-                data_sim(count + 1, 4) = wages_systematic(2) * draws(2)
-                data_sim(count + 1, 26:26) = data_sim(count + 1, 4)
-
             END IF
 
             ! Update row indicator

@@ -223,7 +223,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             rewards_common = calculate_rewards_common(covariates, optim_paras)
 
             ! Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards. these are defined in a general sense, where not only wages matter.
-            wages = calculate_systematic_wages(covariates, optim_paras)
+            wages = calculate_wages_systematic(covariates, optim_paras)
 
             DO i = 1, 2
                 rewards(i) = wages(i) + rewards_general(i)
@@ -901,7 +901,7 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-FUNCTION calculate_systematic_wages(covariates, optim_paras) RESULT(wages)
+FUNCTION calculate_wages_systematic(covariates, optim_paras) RESULT(wages)
 
     !/* external objects        */
 

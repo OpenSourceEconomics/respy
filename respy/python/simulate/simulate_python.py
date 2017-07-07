@@ -114,13 +114,9 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             dataset[count, 24:25] = calculate_rewards_common(covariates, optim_paras)
             dataset[count, 25:26] = dataset[count, 3]
 
-            # Update work experiences and education
-            if max_idx == 0:
-                current_state[0] += 1
-            elif max_idx == 1:
-                current_state[1] += 1
-            elif max_idx == 2:
-                current_state[2] += 1
+            # Update work experiences or education
+            if max_idx in [0, 1, 2]:
+                current_state[max_idx] += 1
 
             # Update lagged activity variable.
             if max_idx == 0:

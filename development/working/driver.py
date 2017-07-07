@@ -55,24 +55,28 @@ np.random.seed(123)
 open('.restud.respy.scratch', 'w').close()
 
 for _ in range(1):
-    print(' Iteration ', _)
-    #constr = dict()
-    #constr['flag_estimation'] = True
-    #generate_init()
-    respy_obj = RespyCls('test.respy.ini')
 
-    #respy_obj.unlock()
-    #respy_obj.set_attr('maxfun', 0)
-    #respy_obj.lock()
+    for version in ['PYTHON', 'FORTRAN']:
+        print(' Iteration ', _)
 
-    simulate_observed(respy_obj, is_missings=False)
+        #constr = dict()
+        #constr['flag_estimation'] = True
+        #generate_init()
+        respy_obj = RespyCls('model.respy.ini')
 
-    #respy_obj.attr['num_periods'] = 2
-    _, val = estimate(respy_obj)
+        respy_obj.attr['version'] = version
+        #respy_obj.unlock()
+        #respy_obj.set_attr('maxfun', 0)
+        #respy_obj.lock()
 
-    if respy_obj.get_attr('version') == 'FORTRAN':
-        rslt = 6.610937421483355
-        np.testing.assert_allclose(val, rslt)
-    else:
-        rslt = 2.796522237104254
-        np.testing.assert_allclose(val, rslt)
+        simulate_observed(respy_obj, is_missings=False)
+
+        #respy_obj.attr['num_periods'] = 2
+        _, val = estimate(respy_obj)
+
+        if respy_obj.get_attr('version') == 'FORTRAN':
+            rslt =0.999996800787684
+            np.testing.assert_allclose(val, rslt)
+        else:
+            rslt = 1.209583690740061
+            np.testing.assert_allclose(val, rslt)

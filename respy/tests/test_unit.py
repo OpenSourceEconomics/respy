@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
-from respy.python.solve.solve_auxiliary import calculate_systematic_wages
+from respy.python.solve.solve_auxiliary import calculate_wages_systematic
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import dist_optim_paras
@@ -165,7 +165,7 @@ class TestClass(object):
             exp_a, exp_b, edu, activity_lagged, type_ = states_all[period, k, :]
 
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
-            wages = calculate_systematic_wages(covariates, optim_paras)
+            wages = calculate_wages_systematic(covariates, optim_paras)
 
             args = (rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
             rslt = back_out_systematic_wages(*args)

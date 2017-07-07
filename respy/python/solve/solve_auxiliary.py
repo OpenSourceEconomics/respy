@@ -168,7 +168,7 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
 
             # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards. These are
             # defined in a general sense, where not only wages matter.
-            wages = calculate_systematic_wages(covariates, optim_paras)
+            wages = calculate_wages_systematic(covariates, optim_paras)
 
             for j in [0, 1]:
                 rewards[j] = wages[j] + rewards_general[j]
@@ -481,7 +481,7 @@ def check_input(respy_obj):
     return True
 
 
-def calculate_systematic_wages(covariates, optim_paras):
+def calculate_wages_systematic(covariates, optim_paras):
     """ Calculate the systematic component of wages.
     """
     # Collect all relevant covariates
