@@ -56,6 +56,7 @@ def scripts_update(init_file):
     shocks_coeffs = paras_steps[40:50]
 
     # Update initialization dictionary
+    init_dict['COMMON']['coeffs'] = optim_paras['coeffs_common']
     init_dict['OCCUPATION A']['coeffs'] = optim_paras['coeffs_a']
     init_dict['OCCUPATION B']['coeffs'] = optim_paras['coeffs_b']
     init_dict['EDUCATION']['coeffs'] = optim_paras['coeffs_edu']
