@@ -920,8 +920,6 @@ class RespyCls(object):
             for period in range(num_periods):
                 # Loop over all possible states
                 for k in range(states_number_period[period]):
-                    # Check that wages are all positive
-                    assert (np.all(periods_rewards_systematic[period, k, :2] >= 0.0))
                     # Check for finite value at admissible state
                     assert (np.all(np.isfinite(periods_rewards_systematic[period, k, :])))
                     # Record finite value
