@@ -229,8 +229,8 @@ class TestClass(object):
         simulate_observed(respy_obj)
         base_x, base_val = estimate(respy_obj)
 
-        # We also check whether updating the class instance and a single
-        # evaluation of the criterion function give the same result.
+        # We also check whether updating the class instance and a single evaluation of the
+        # criterion function give the same result.
         respy_obj.update_optim_paras(base_x)
         respy_obj.attr['maxfun'] = 0
 
@@ -367,6 +367,8 @@ class TestClass(object):
         resources += ['kw_data_one_types.ini', 'kw_data_one_initial.ini']
 
         fname = np.random.choice(resources)
+
+        raise AssertionError('... some need fixing due to removal of coeffs in edu')
 
         # Select expected result
         rslt = None

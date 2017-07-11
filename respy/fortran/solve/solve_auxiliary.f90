@@ -177,6 +177,8 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     INTEGER(our_int)                    :: activity_lagged
 
+    INTEGER(our_int)                    :: covars_home(3)
+    INTEGER(our_int)                    :: covars_edu(5)
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
@@ -187,10 +189,8 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     REAL(our_dble)                      :: rewards_general(2)
     REAL(our_dble)                      :: rewards_common
-    REAL(our_dble)                      :: covars_edu(7)
-    REAL(our_dble)                      :: wages(2)
-
     REAL(our_dble)                      :: rewards(4)
+    REAL(our_dble)                      :: wages(2)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -230,23 +230,20 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             END DO
 
             ! Calculate systematic part of schooling utility
-            covars_edu(1) = one_dble
-            covars_edu(2) = covariates%hs_graduate
-            covars_edu(3) = covariates%co_graduate
-            covars_edu(4) = covariates%is_return_not_high_school
-            covars_edu(5) = covariates%is_return_high_school
-            covars_edu(6) = covariates%period - one_dble
-            covars_edu(7) = covariates%is_minor
+            covars_edu(1) = one_int
+            covars_edu(2) = covariates%is_return_not_high_school
+            covars_edu(3) = covariates%is_return_high_school
+            covars_edu(4) = covariates%period - one_dble
+            covars_edu(5) = covariates%is_minor
 
             rewards(3) = DOT_PRODUCT(covars_edu, optim_paras%coeffs_edu)
 
             ! Calculate systematic part of HOME
-            rewards(4) = optim_paras%coeffs_home(1)
+            covars_home(1) = one_int
+            covars_home(2) = covariates%is_young_adult
+            covars_home(3) = covariates%is_adult
 
-            ! The payoff for home differs by age. (1) Age range of 18 - 20, (2) age above 21
-            IF((period .GE. 3) .AND. (period .LE. 5)) rewards(4) = rewards(4) + optim_paras%coeffs_home(2)
-
-            IF(period .GE. 6) rewards(4) = rewards(4) + optim_paras%coeffs_home(3)
+            rewards(4) = DOT_PRODUCT(covars_home, optim_paras%coeffs_home)
 
             ! Now we add the type-specific deviation.
             DO i = 3, 4

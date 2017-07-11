@@ -248,11 +248,10 @@ class TestClass(object):
     def test_4(self):
         """ Check the SLSQP implementations.
         """
-        # Test the FORTRAN codes against the PYTHON implementation. This is
-        # expected to fail sometimes due to differences in precision between the
-        # two implementations. In particular, as updating steps of the optimizer
-        # are very sensitive to just small differences in the derivative
-        # information. The same functions are available as a FORTRAN
+        # Test the FORTRAN codes against the PYTHON implementation. This is expected to fail
+        # sometimes due to differences in precision between the two implementations. In
+        # particular, as updating steps of the optimizer are very sensitive to just small
+        # differences in the derivative information. The same functions are available as a FORTRAN
         # implementations.
         def debug_constraint_derivative(x):
             return np.ones(len(x))
@@ -267,8 +266,8 @@ class TestClass(object):
 
         x0 = np.random.normal(size=num_dim)
 
-        # Evaluation of Rosenbrock function. We are using the FORTRAN version
-        # in the development of the optimization routines.
+        # Evaluation of Rosenbrock function. We are using the FORTRAN version in the development
+        # of the optimization routines.
         f90 = fort_debug.debug_criterion_function(x0, num_dim)
         py = rosen(x0)
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)

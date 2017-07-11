@@ -509,7 +509,8 @@ def prepare_release_tests_10(constr):
     init_dict = generate_init(constr)
 
     # We aligned the indicator functions with the KW1997 setup and also added a constant term for
-    # the general rewards. Finally, we added the common rewards.
+    # the general rewards. Finally, we added the common rewards. This required the removal of the
+    # same covariates in the EDUCATION block as these are otherwise counted twice.
     for label in ['OCCUPATION A', 'OCCUPATION B']:
         for j in range(8, 13):
             init_dict[label]['coeffs'][j] = 0
@@ -539,7 +540,13 @@ def prepare_release_tests_10(constr):
 
     del old_dict['COMMON']
 
+    for _ in range(2):
+        old_dict['EDUCATION']['coeffs'].insert(1, 0)
+        old_dict['EDUCATION']['bounds'].insert(1, (None, None))
+        old_dict['EDUCATION']['fixed'].insert(1, True)
+
     json.dump(old_dict, open('old/init_dict.respy.json', 'w'))
+
 
 def no_preparations_required(constr):
     """ This function prepares the initialization files so that they can be processed by both 

@@ -49,7 +49,7 @@ def dist_econ_paras(x_all_curre):
     """
     # Auxiliary objects
     num_paras = len(x_all_curre)
-    num_types = int(len(x_all_curre[50:]) / 6) + 1
+    num_types = int(len(x_all_curre[48:]) / 6) + 1
 
     # Discount rates
     delta = x_all_curre[0:1]
@@ -67,12 +67,12 @@ def dist_econ_paras(x_all_curre):
     coeffs_b = x_all_curre[17:30]
 
     # Education
-    coeffs_edu = x_all_curre[30:37]
+    coeffs_edu = x_all_curre[30:35]
 
     # Home
-    coeffs_home = x_all_curre[37:40]
+    coeffs_home = x_all_curre[35:38]
 
-    shocks_coeffs = x_all_curre[40:50]
+    shocks_coeffs = x_all_curre[38:48]
     for i in [0, 4, 7, 9]:
         shocks_coeffs[i] **= 2
 
@@ -85,10 +85,10 @@ def dist_econ_paras(x_all_curre):
     shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
 
     # Type Shares
-    type_shares = x_all_curre[50:50 + (num_types - 1) * 2]
+    type_shares = x_all_curre[48:48 + (num_types - 1) * 2]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
     
-    type_shifts = np.reshape(x_all_curre[50 + (num_types - 1) * 2:num_paras], (num_types - 1, 4))
+    type_shifts = np.reshape(x_all_curre[48 + (num_types - 1) * 2:num_paras], (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
     # Collect arguments
@@ -124,10 +124,10 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     optim_paras['coeffs_b'] = x_all_curre[17:30]
 
     # Education
-    optim_paras['coeffs_edu'] = x_all_curre[30:37]
+    optim_paras['coeffs_edu'] = x_all_curre[30:35]
 
     # Home
-    optim_paras['coeffs_home'] = x_all_curre[37:40]
+    optim_paras['coeffs_home'] = x_all_curre[35:38]
 
     # Cholesky
     optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
@@ -165,14 +165,14 @@ def extract_type_information(x):
     """ This function extracts the information about types from the estimation vector.
     """
 
-    num_types = int(len(x[50:]) / 6) + 1
+    num_types = int(len(x[48:]) / 6) + 1
 
     # Type shares
-    type_shares = x[50:50 + (num_types - 1) * 2]
+    type_shares = x[48:48 + (num_types - 1) * 2]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
 
     # Type shifts
-    type_shifts = x[50 + (num_types - 1) * 2:]
+    type_shifts = x[48 + (num_types - 1) * 2:]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
@@ -183,10 +183,10 @@ def extract_cholesky(x, info=None):
     """ Construct the Cholesky matrix.
     """
     shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x[40:41]
-    shocks_cholesky[1, :2] = x[41:43]
-    shocks_cholesky[2, :3] = x[43:46]
-    shocks_cholesky[3, :4] = x[46:50]
+    shocks_cholesky[0, :1] = x[38:39]
+    shocks_cholesky[1, :2] = x[39:41]
+    shocks_cholesky[2, :3] = x[41:44]
+    shocks_cholesky[3, :4] = x[44:48]
 
     # Stabilization
     if info is not None:
@@ -401,7 +401,8 @@ def check_model_parameters(optim_paras):
     # Checks for occupations
     assert (optim_paras['coeffs_a'].size == 13)
     assert (optim_paras['coeffs_b'].size == 13)
-    assert (optim_paras['coeffs_edu'].size == 7)
+    assert (optim_paras['coeffs_edu'].size == 5)
+
     assert (optim_paras['coeffs_home'].size == 3)
 
     # Checks shock matrix
@@ -615,7 +616,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write(flag.upper() + '\n\n')
 
-                for i in range(7):
+                for i in range(5):
                     line = format_opt_parameters(dict_['EDUCATION'], i)
                     file_.write(str_optim.format(*line))
 
@@ -656,7 +657,6 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                     # Visual separation of the parameters from the skill function.
                     if j == 9:
                         file_.write('\n')
-
 
                 file_.write('\n')
 
@@ -747,10 +747,10 @@ def get_est_info():
         rslt['value_' + key_] = _process_value(line.pop(0), 'float')
 
     # Total number of evaluations and steps
-    line = shlex.split(linecache.getline('est.respy.info', 46))
+    line = shlex.split(linecache.getline('est.respy.info', 44))
     rslt['num_step'] = _process_value(line[3], 'int')
 
-    line = shlex.split(linecache.getline('est.respy.info', 48))
+    line = shlex.split(linecache.getline('est.respy.info', 46))
     rslt['num_eval'] = _process_value(line[3], 'int')
 
     # Parameter values
@@ -802,18 +802,18 @@ def get_optim_paras(optim_paras, num_paras, which, is_debug):
     x[17:30] = optim_paras['coeffs_b']
 
     # Education
-    x[30:37] = optim_paras['coeffs_edu']
+    x[30:35] = optim_paras['coeffs_edu']
 
     # Home
-    x[37:40] = optim_paras['coeffs_home']
+    x[35:38] = optim_paras['coeffs_home']
 
     # Shocks
-    x[40:50] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+    x[38:48] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Shares
-    x[50:50 + (num_types - 1) * 2] = optim_paras['type_shares'][2:]
+    x[48:48 + (num_types - 1) * 2] = optim_paras['type_shares'][2:]
 
-    x[50 + (num_types - 1) * 2:num_paras] = optim_paras['type_shifts'].flatten()[4:]
+    x[48 + (num_types - 1) * 2:num_paras] = optim_paras['type_shifts'].flatten()[4:]
 
     # Checks
     if is_debug:
@@ -932,8 +932,11 @@ def construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period):
     """ Construction of some additional covariates for the reward calculations.
     """
     covariates = dict()
-    covariates['not_exp_a_lagged'] = int(activity_lagged != 2)
-    covariates['not_exp_b_lagged'] = int(activity_lagged != 3)
+
+    # These are covariates that are supposed to capture the entry costs.
+    covariates['not_exp_a_lagged'] = int((exp_a > 0) and (activity_lagged != 2))
+    covariates['not_exp_b_lagged'] = int((exp_b > 0) and (activity_lagged != 3))
+
     covariates['edu_lagged'] = int(activity_lagged == 1)
     covariates['not_any_exp_a'] = int(exp_a == 0)
     covariates['not_any_exp_b'] = int(exp_b == 0)
@@ -956,6 +959,8 @@ def construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period):
 
     if period is not None:
         covariates['is_minor'] = int(period < 2)
+        covariates['is_young_adult'] = int(period in [2, 3, 4])
+        covariates['is_adult'] = int(period >= 5)
 
     return covariates
 

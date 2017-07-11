@@ -227,7 +227,7 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(5)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
@@ -553,7 +553,7 @@ SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, 
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(5)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
 
