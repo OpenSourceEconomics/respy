@@ -178,7 +178,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     INTEGER(our_int)                    :: activity_lagged
 
     INTEGER(our_int)                    :: covars_home(3)
-    INTEGER(our_int)                    :: covars_edu(5)
+    INTEGER(our_int)                    :: covars_edu(7)
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
@@ -231,10 +231,12 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
             ! Calculate systematic part of schooling utility
             covars_edu(1) = one_int
-            covars_edu(2) = covariates%is_return_not_high_school
-            covars_edu(3) = covariates%is_return_high_school
-            covars_edu(4) = covariates%period - one_dble
-            covars_edu(5) = covariates%is_minor
+            covars_edu(2) = covariates%hs_graduate
+            covars_edu(3) = covariates%co_graduate
+            covars_edu(4) = covariates%is_return_not_high_school
+            covars_edu(5) = covariates%is_return_high_school
+            covars_edu(6) = covariates%period - one_dble
+            covars_edu(7) = covariates%is_minor
 
             rewards(3) = DOT_PRODUCT(covars_edu, optim_paras%coeffs_edu)
 

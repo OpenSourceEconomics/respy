@@ -2,11 +2,14 @@ from pandas.util.testing import assert_frame_equal
 import numpy as np
 import pandas as pd
 import pytest
+import shutil
 import glob
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy._scripts.scripts_estimate import scripts_estimate
 from respy._scripts.scripts_simulate import scripts_simulate
 from respy.python.shared.shared_constants import IS_FORTRAN
@@ -368,8 +371,6 @@ class TestClass(object):
 
         fname = np.random.choice(resources)
 
-        raise AssertionError('... some need fixing due to removal of coeffs in edu')
-
         # Select expected result
         rslt = None
         if 'one.ini' in fname:
@@ -438,3 +439,27 @@ class TestClass(object):
                 base_val = val
 
             np.testing.assert_almost_equal(base_val, val)
+
+    def test_14(self):
+        """ Testing the modification routine.
+        """
+
+        generate_init()
+
+        respy_obj = RespyCls('test.respy.ini')
+        num_paras, optim_paras = dist_class_attributes(respy_obj, 'num_paras', 'optim_paras')
+
+        # We need to switch perspective where the initialization file is the flattened covariance
+        # matrix.
+        x_econ = get_optim_paras(optim_paras, num_paras, 'all', True)
+        x_econ[40:50] = cholesky_to_coeffs(optim_paras['shocks_cholesky'])
+
+        # We now draw a random set of points where we replace the value with their actual value.
+        # Thus, there should be no differences in the initialization files afterwards.
+        shutil.copy('test.respy.ini', 'baseline.respy.ini')
+
+        num_subset = np.random.random_integers(low=0, high=num_paras)
+        identifiers = np.random.choice(range(num_paras), size=num_subset, replace=False)
+
+        scripts_modify(identifiers, 'values', 'test.respy.ini', values=x_econ[identifiers])
+        np.testing.assert_equal(compare_init('baseline.respy.ini', 'test.respy.ini'), True)

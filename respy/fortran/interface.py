@@ -175,7 +175,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
             file_.write(fmt_.format(*num))
 
         # EDUCATION
-        fmt_ = ' {:25.15f}' * 5 + '\n'
+        fmt_ = ' {:25.15f}' * 7 + '\n'
         file_.write(fmt_.format(*optim_paras['coeffs_edu']))
 
         fmt_ = ' {:10d}' * num_edu_start + '\n'
