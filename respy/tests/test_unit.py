@@ -77,11 +77,6 @@ class TestClass(object):
 
         is_deterministic = (np.count_nonzero(shocks_cholesky) == 0)
 
-        # The systematic component for the alternative to stay home should always be identical
-        # by type, at least within periods.
-        for period in range(num_periods):
-            assert (df['Systematic_Reward_4'].loc[:, period].nunique() <= num_types)
-
         # We can back out the wage information from other information provided in the simulated
         # dataset.
         for choice in [1, 2]:

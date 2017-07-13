@@ -339,8 +339,8 @@ class TestClass(object):
 
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], ambi_spec_measure, ambi_spec_mean)
-        args += (shocks_cholesky, level, delta, fort_slsqp_maxiter)
-        args += (fort_slsqp_ftol, fort_slsqp_eps, file_sim, False)
+        args += (shocks_cholesky, level, delta, coeffs_common, coeffs_a, coeffs_b)
+        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, False)
         f2py = fort_debug.wrapper_backward_induction(*args)
         np.testing.assert_allclose(pyth, f2py)
 
@@ -519,6 +519,9 @@ class TestClass(object):
         fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         shocks_cholesky = optim_paras['shocks_cholesky']
+        coeffs_common = optim_paras['coeffs_common']
+        coeffs_a = optim_paras['coeffs_a']
+        coeffs_b = optim_paras['coeffs_b']
         level = optim_paras['level']
         delta = optim_paras['delta']
 
@@ -559,7 +562,8 @@ class TestClass(object):
         py = get_exogenous_variables(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], delta, num_types)
+        args += base_args + (edu_spec['start'], edu_spec['max'], delta)
+        args += (coeffs_common, coeffs_a, coeffs_b, num_types)
         f90 = fort_debug.wrapper_get_exogenous_variables(*args)
 
         np.testing.assert_equal(py, f90)
@@ -580,7 +584,7 @@ class TestClass(object):
 
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], shocks_cov, ambi_spec_measure)
-        args += (ambi_spec_mean, level, delta)
+        args += (ambi_spec_mean, level, delta, coeffs_common, coeffs_a, coeffs_b)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
         np.testing.assert_almost_equal(py, replace_missing_values(f90))
@@ -596,6 +600,7 @@ class TestClass(object):
         args += base_args + (num_points_interp, num_states, file_sim, False)
         f90 = fort_debug.wrapper_get_predictions(*args)
 
+        # This assertion fails if a collumn is all zeros.
         np.testing.assert_array_almost_equal(py, f90)
 
     def test_7(self):

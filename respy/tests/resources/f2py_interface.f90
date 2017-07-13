@@ -388,7 +388,7 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int,  is_debug_int, is_interpolated_int, num_points_interp_int, edu_start, edu_max, measure, mean, shocks_cholesky, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
+SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int,  is_debug_int, is_interpolated_int, num_points_interp_int, edu_start, edu_max, measure, mean, shocks_cholesky, level, delta, coeffs_common, coeffs_a, coeffs_b, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
 
     !/* external libraries      */
 
@@ -405,8 +405,11 @@ SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myop
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :   )
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -461,6 +464,9 @@ SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myop
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
     optim_paras%shocks_cholesky = shocks_cholesky
+    optim_paras%coeffs_common = coeffs_common
+    optim_paras%coeffs_a = coeffs_a
+    optim_paras%coeffs_b = coeffs_b
     optim_paras%level = level
     optim_paras%delta = delta
 
@@ -1270,7 +1276,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_start, edu_max, shocks_cov, measure, mean, level, delta, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_risk, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, edu_start, edu_max, shocks_cov, measure, mean, level, delta, coeffs_common, coeffs_a, coeffs_b, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
 
     !/* external libraries      */
 
@@ -1293,6 +1299,9 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_eps
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_common(2)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(13)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(13)
     DOUBLE PRECISION, INTENT(IN)        :: level(1)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
@@ -1353,6 +1362,9 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     optimizer_options%slsqp%eps = fort_slsqp_eps
 
     optim_paras%shocks_cholesky = shocks_cholesky
+    optim_paras%coeffs_common = coeffs_common
+    optim_paras%coeffs_a = coeffs_a
+    optim_paras%coeffs_b = coeffs_b
     optim_paras%level = level
     optim_paras%delta = delta
 
@@ -1368,7 +1380,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, periods_rewards_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, edu_start, edu_max, delta, num_types_int)
+SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, num_periods_int, num_states, periods_rewards_systematic_int, shifts, mapping_state_idx_int, periods_emax_int, states_all_int, edu_start, edu_max, delta, coeffs_common, coeffs_a, coeffs_b, num_types_int)
 
     !/* external libraries      */
 
@@ -1385,6 +1397,9 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
 
     DOUBLE PRECISION, INTENT(IN)        :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_common(2)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(13)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(13)
     DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
 
@@ -1413,6 +1428,9 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
     IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
 
     !# Derived types
+    optim_paras%coeffs_common = coeffs_common
+    optim_paras%coeffs_a = coeffs_a
+    optim_paras%coeffs_b = coeffs_b
     optim_paras%delta = delta
 
     edu_spec%start = edu_start

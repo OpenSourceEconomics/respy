@@ -243,7 +243,8 @@ class TestClass(object):
             np.testing.assert_almost_equal(arg[0], arg[1])
 
     def test_7(self, flag_ambiguity=False):
-        """ We test whether a restart does result in the exact function evaluation. Additionally, we change the status of parameters at random.
+        """ We test whether a restart does result in the exact function evaluation. Additionally,
+        we change the status of parameters at random.
         """
         constr = dict()
         constr['flag_estimation'] = True
