@@ -496,7 +496,6 @@ def prepare_release_tests_10(constr):
     import numpy as np
 
     sys.path.insert(0, '../../../respy/tests')
-    from codes.auxiliary import get_valid_shares
     from codes.random_init import generate_init
 
     # Prepare fresh subdirectories
@@ -511,7 +510,7 @@ def prepare_release_tests_10(constr):
     # We aligned the indicator functions with the KW1997 setup and also added a constant term for
     # the general rewards. Finally, we added the common rewards.
     for label in ['OCCUPATION A', 'OCCUPATION B']:
-        for j in range(8, 13):
+        for j in range(8, 15):
             init_dict[label]['coeffs'][j] = 0
             init_dict[label]['bounds'][j] = (None, None)
             init_dict[label]['fixed'][j] = True

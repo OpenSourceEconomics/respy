@@ -914,7 +914,7 @@ FUNCTION calculate_wages_systematic(covariates, optim_paras) RESULT(wages)
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: i
 
-    REAL(our_dble)                      :: covars_wages(10)
+    REAL(our_dble)                      :: covars_wages(12)
 
     LOGICAL                             :: IS_RESTUD
 
@@ -942,10 +942,12 @@ FUNCTION calculate_wages_systematic(covariates, optim_paras) RESULT(wages)
     END IF
 
     ! Calculate systematic part of reward in OCCUPAION A and OCCUPATION B
-    CALL clip_value(wages(1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a(:10))), zero_dble, HUGE_FLOAT, info)
+    covars_wages(11:) = (/ covariates%any_exp_a, covariates%work_a_lagged/)
+    CALL clip_value(wages(1), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_a(:12))), zero_dble, HUGE_FLOAT, info)
 
     ! Calculate systematic part of reward in Occupation B
-    CALL clip_value(wages(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b(:10))), zero_dble, HUGE_FLOAT, info)
+    covars_wages(11:) = (/ covariates%any_exp_b, covariates%work_b_lagged/)
+    CALL clip_value(wages(2), EXP(DOT_PRODUCT(covars_wages, optim_paras%coeffs_b(:12))), zero_dble, HUGE_FLOAT, info)
 
     DO i = 1, 2
         wages(i) = wages(i) * EXP(optim_paras%type_shifts(covariates%type + 1, i))

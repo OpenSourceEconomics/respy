@@ -21,7 +21,7 @@ class TestClass(object):
         """
         for i in range(10):
             num_types = np.random.randint(1, 5)
-            num_paras = 50 + (num_types - 1) * 6
+            num_paras = 54 + (num_types - 1) * 6
 
             # Create random parameter vector
             base = np.random.uniform(size=num_paras)

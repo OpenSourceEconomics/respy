@@ -662,7 +662,7 @@ class TestClass(object):
         """ We test the construction of the Cholesky decomposition against each other.
         """
         # Draw a random vector of parameters
-        x = np.random.uniform(size=50)
+        x = np.random.uniform(size=54)
 
         # Construct the Cholesky decompositions
         py = extract_cholesky(x, info=0)
@@ -791,8 +791,8 @@ class TestClass(object):
             edu = np.random.randint(1, 10)
 
             coeffs_common = np.random.normal(0, 1, size=2)
-            coeffs_a = np.random.normal(0, 1, size=13)
-            coeffs_b = np.random.normal(0, 1, size=13)
+            coeffs_a = np.random.normal(0, 1, size=15)
+            coeffs_b = np.random.normal(0, 1, size=15)
 
             optim_paras = dict()
             optim_paras['coeffs_common'] = coeffs_common

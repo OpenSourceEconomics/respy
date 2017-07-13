@@ -453,7 +453,7 @@ class TestClass(object):
         # We need to switch perspective where the initialization file is the flattened covariance
         # matrix.
         x_econ = get_optim_paras(optim_paras, num_paras, 'all', True)
-        x_econ[40:50] = cholesky_to_coeffs(optim_paras['shocks_cholesky'])
+        x_econ[44:54] = cholesky_to_coeffs(optim_paras['shocks_cholesky'])
 
         # We now draw a random set of points where we replace the value with their actual value.
         # Thus, there should be no differences in the initialization files afterwards.

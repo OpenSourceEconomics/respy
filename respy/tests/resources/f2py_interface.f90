@@ -228,8 +228,8 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(15)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(15)
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta(1)
 
@@ -324,8 +324,8 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(15)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(15)
     DOUBLE PRECISION, INTENT(IN)    :: edu_share(:)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -408,8 +408,8 @@ SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myop
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(15)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(15)
     DOUBLE PRECISION, INTENT(IN)    :: level(1)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -560,8 +560,8 @@ SUBROUTINE wrapper_calculate_rewards_systematic(periods_rewards_systematic_int, 
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(15)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(15)
 
     INTEGER, INTENT(IN)             :: states_number_period_int(:)
     INTEGER, INTENT(IN)             :: max_states_period_int
@@ -825,8 +825,8 @@ SUBROUTINE wrapper_construct_emax_risk(emax, num_periods_int, num_draws_emax_int
     DOUBLE PRECISION, INTENT(IN)    :: rewards_systematic(:)
     DOUBLE PRECISION, INTENT(IN)    :: periods_emax_int(:,:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(15)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(15)
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
     INTEGER, INTENT(IN)             :: mapping_state_idx_int(:, :, :, :, :, :)
@@ -893,8 +893,8 @@ SUBROUTINE wrapper_construct_emax_ambiguity(emax, num_periods_int, num_draws_ema
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(13)
-    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(13)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(15)
+    DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(15)
     DOUBLE PRECISION, INTENT(IN)    :: level
     DOUBLE PRECISION, INTENT(IN)    :: delta
 
@@ -1300,8 +1300,8 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_ftol
     DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_common(2)
-    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(13)
-    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(13)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(15)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(15)
     DOUBLE PRECISION, INTENT(IN)        :: level(1)
     DOUBLE PRECISION, INTENT(IN)        :: maxe(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
@@ -1398,8 +1398,8 @@ SUBROUTINE wrapper_get_exogenous_variables(independent_variables, maxe, period, 
     DOUBLE PRECISION, INTENT(IN)        :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_common(2)
-    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(13)
-    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(13)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(15)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(15)
     DOUBLE PRECISION, INTENT(IN)        :: shifts(:)
     DOUBLE PRECISION, INTENT(IN)        :: delta
 
@@ -1490,7 +1490,7 @@ SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 
     DOUBLE PRECISION, INTENT(OUT)   :: shocks_cholesky(4, 4)
 
-    DOUBLE PRECISION, INTENT(IN)    :: x(50)
+    DOUBLE PRECISION, INTENT(IN)    :: x(54)
 
     INTEGER, INTENT(OUT)            :: info
 
@@ -2195,8 +2195,8 @@ SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systemati
     DOUBLE PRECISION, INTENT(OUT)       :: wages_systematic(2)
 
     DOUBLE PRECISION, INTENT(IN)        :: rewards_systematic(4)
-    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(13)
-    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(13)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(15)
+    DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(15)
 
     INTEGER, INTENT(IN)                 :: activity_lagged
     INTEGER, INTENT(IN)                 :: exp_a

@@ -496,6 +496,8 @@ def calculate_wages_systematic(covariates, optim_paras):
     covars_wages += [covariates['co_graduate']]
     covars_wages += [covariates['period']]
     covars_wages += [covariates['is_minor']]
+    covars_wages += [None]
+    covars_wages += [None]
 
     # This used for testing purposes, where we compare the results from the RESPY package
     # to the original RESTUD program.
@@ -506,10 +508,12 @@ def calculate_wages_systematic(covariates, optim_paras):
     # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
     wages = np.tile(np.nan, 2)
 
-    wage = np.exp(np.dot(optim_paras['coeffs_a'][:10], covars_wages))
+    covars_wages[-2:] = [covariates['any_exp_a'], covariates['work_a_lagged']]
+    wage = np.exp(np.dot(optim_paras['coeffs_a'][:12], covars_wages))
     wages[0] = np.clip(wage, 0.0, HUGE_FLOAT)
 
-    wage = np.exp(np.dot(optim_paras['coeffs_b'][:10], covars_wages))
+    covars_wages[-2:] = [covariates['any_exp_b'], covariates['work_b_lagged']]
+    wage = np.exp(np.dot(optim_paras['coeffs_b'][:12], covars_wages))
     wages[1] = np.clip(wage, 0.0, HUGE_FLOAT)
 
     # We need to add the type-specific deviations here as these are part of

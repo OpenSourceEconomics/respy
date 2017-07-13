@@ -90,7 +90,7 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
     # We now need to ensure a consistent perspective, i.e. all are the parameter values as
     # specified in the initialization file.
     x = get_optim_paras(optim_paras, num_paras, 'all', True)
-    x[40:50] = cholesky_to_coeffs(optim_paras['shocks_cholesky'])
+    x[44:54] = cholesky_to_coeffs(optim_paras['shocks_cholesky'])
 
     if action == 'value':
         for i, j in enumerate(identifiers):
@@ -118,50 +118,50 @@ def scripts_modify(identifiers, action, init_file, values=None, bounds=None):
                 init_dict['COMMON']['fixed'][j] = is_fixed
             elif is_bounds:
                 init_dict['COMMON']['bounds'][j] = bounds
-        elif identifier in list(range(4, 17)):
+        elif identifier in list(range(4, 19)):
             j = identifier - 4
             init_dict['OCCUPATION A']['coeffs'][j] = x[identifier]
             if is_fixed:
                 init_dict['OCCUPATION A']['fixed'][j] = is_fixed
             elif is_bounds:
                 init_dict['OCCUPATION A']['bounds'][j] = bounds
-        elif identifier in list(range(17, 30)):
-            j = identifier - 17
+        elif identifier in list(range(19, 34)):
+            j = identifier - 19
             init_dict['OCCUPATION B']['coeffs'][j] = x[identifier]
             if is_fixed:
                 init_dict['OCCUPATION B']['fixed'][j] = is_fixed
             elif is_bounds:
                 init_dict['OCCUPATION B']['bounds'][j] = bounds
-        elif identifier in list(range(30, 37)):
-            j = identifier - 30
+        elif identifier in list(range(34, 41)):
+            j = identifier - 34
             init_dict['EDUCATION']['coeffs'][j] = x[identifier]
             if is_fixed:
                 init_dict['EDUCATION']['fixed'][j] = is_fixed
             elif is_bounds:
                 init_dict['EDUCATION']['bounds'][j] = bounds
-        elif identifier in list(range(37, 40)):
-            j = identifier - 37
+        elif identifier in list(range(41, 44)):
+            j = identifier - 41
             init_dict['HOME']['coeffs'][j] = x[identifier]
             if is_fixed:
                 init_dict['HOME']['fixed'][j] = is_fixed
             elif is_bounds:
                 init_dict['HOME']['bounds'][j] = bounds
-        elif identifier in list(range(40, 50)):
-            j = identifier - 40
+        elif identifier in list(range(44, 54)):
+            j = identifier - 44
             init_dict['SHOCKS']['coeffs'][j] = x[identifier]
             if is_fixed:
                 init_dict['SHOCKS']['fixed'][j] = is_fixed
             elif is_bounds:
                 init_dict['SHOCKS']['bounds'][j] = bounds
-        elif identifier in list(range(50, 50 + (num_types - 1) * 2)):
-            j = identifier - 50
+        elif identifier in list(range(54, 54 + (num_types - 1) * 2)):
+            j = identifier - 54
             init_dict['TYPE SHARES']['coeffs'][j] = x[identifier]
             if is_fixed:
                 init_dict['TYPE SHARES']['fixed'][j] = is_fixed
             elif is_bounds:
                 init_dict['TYPE SHARES']['bounds'][j] = bounds
-        elif identifier in list(range(50 + (num_types - 1) * 2, num_paras)):
-            j = identifier - (50 + (num_types - 1) * 2)
+        elif identifier in list(range(54 + (num_types - 1) * 2, num_paras)):
+            j = identifier - (54 + (num_types - 1) * 2)
             init_dict['TYPE SHIFTS']['coeffs'][j] = x[identifier]
             if is_fixed:
                 init_dict['TYPE SHIFTS']['fixed'][j] = is_fixed
