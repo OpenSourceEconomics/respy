@@ -61,7 +61,7 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_8(constr)
     elif OLD_RELEASE == '2.0.0.dev17' and NEW_RELEASE == '2.0.0.dev18':
         prepare_release_tests_9(constr)
-    elif OLD_RELEASE == '2.0.0.dev18' and NEW_RELEASE == 'current':
+    elif OLD_RELEASE == '2.0.0.dev18' and NEW_RELEASE == '2.0.0.dev19':
         prepare_release_tests_10(constr)
     else:
         raise AssertionError('Misspecified request ...')

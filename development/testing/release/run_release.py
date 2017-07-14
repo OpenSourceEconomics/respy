@@ -172,9 +172,11 @@ if __name__ == '__main__':
     #
     #   2.0.0.dev18 We now allow for conditional type probabilities.
     #
+    #   2.0.0.dev19 We now have more general rewards, i.e. not income maximizing.
+    #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev18', 'current'
+    old_release, new_release = '2.0.0.dev18', '2.0.0.dev19'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 
