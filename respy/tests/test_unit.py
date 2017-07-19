@@ -101,7 +101,7 @@ class TestClass(object):
                 label = 'Ex_Post_Reward_{}'.format(choice)
                 label_gen = 'General_Reward_{}'.format(choice)
                 label_com = 'Common_Reward'
-                label_wag = 'Wage_Internal'
+                label_wag = 'Wage'
 
                 df[label] = df[label_wag] + df[label_gen] + df[label_com]
 

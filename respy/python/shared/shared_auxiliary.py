@@ -2,6 +2,7 @@ import numpy as np
 
 import linecache
 import shlex
+import copy
 import os
 
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
@@ -427,6 +428,10 @@ def dist_class_attributes(respy_obj, *args):
     # Process requests
     for arg in args:
         ret.append(respy_obj.get_attr(arg))
+
+    # There is some special handling for the case where only one element is returned.
+    if len(ret) == 1:
+        ret = ret[0]
 
     # Finishing
     return ret
@@ -987,3 +992,42 @@ def calculate_rewards_general(covariates, optim_paras):
     rewards_general[1] = np.dot(optim_paras['coeffs_b'][12:], covars_general)
 
     return rewards_general
+
+
+def sort_edu_spec(edu_spec):
+    """ This function sorts the dictionary that provides the information about initial education.
+    It adjusts the order of the shares accordingly.
+    """
+    edu_start_ordered = sorted(edu_spec['start'])
+
+    edu_share_ordered = []
+    for start in edu_start_ordered:
+        idx = edu_spec['start'].index(start)
+        edu_share_ordered += [edu_spec['share'][idx]]
+
+    edu_spec_ordered = copy.deepcopy(edu_spec)
+    edu_spec_ordered['start'] = edu_start_ordered
+    edu_spec_ordered['share'] = edu_share_ordered
+
+    return edu_spec_ordered
+
+
+def get_valid_bounds(which, value):
+    """ Simply get a valid set of bounds.
+    """
+    assert which in ['amb', 'cov', 'coeff', 'delta', 'share']
+
+    # The bounds cannot be too tight as otherwise the BOBYQA might not start
+    # properly.
+    if which in ['delta', 'amb']:
+        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
+        bounds = [max(0.0, value - np.random.uniform(low=0.1)), upper]
+    elif which in ['coeff']:
+        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
+        lower = np.random.choice([None, value - np.random.uniform(low=0.1)])
+        bounds = [lower, upper]
+    elif which in ['cov']:
+        bounds = [None, None]
+    elif which in ['share']:
+        bounds = [0.0, None]
+    return bounds

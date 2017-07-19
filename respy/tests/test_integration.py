@@ -3,11 +3,13 @@ import numpy as np
 import pandas as pd
 import pytest
 import shutil
+import copy
 import glob
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy._scripts.scripts_estimate import scripts_estimate
@@ -48,7 +50,7 @@ class TestClass(object):
         process(respy_obj)
 
     def test_2(self):
-        """ If there is no random variation in rewards then the number of draws to simulate the 
+        """ If there is no random variation in rewards then the number of draws to simulate the
         expected future value should have no effect.
         """
         # Generate constraints
@@ -91,7 +93,7 @@ class TestClass(object):
             np.testing.assert_almost_equal(diff, 0.0)
 
     def test_3(self, flag_ambiguity=False):
-        """ Testing whether the a simulated dataset and the evaluation of the criterion function 
+        """ Testing whether the a simulated dataset and the evaluation of the criterion function
         are the same for a tiny delta and a myopic agent.
         """
         # Generate random initialization dictionary
@@ -142,7 +144,7 @@ class TestClass(object):
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
     def test_4(self, flag_ambiguity=False):
-        """ Test the evaluation of the criterion function for random requests, not just at the 
+        """ Test the evaluation of the criterion function for random requests, not just at the
         true values.
         """
         # Constraints that ensure that two alternative initialization files can be used for the
@@ -196,24 +198,51 @@ class TestClass(object):
             file_sim = 'sim.respy.dat'
 
             single = np.random.choice([True, False])
-            action = np.random.choice(['fix', 'free'])
-            num_draws = np.random.randint(1, 22)
 
-            # The set of identifiers is a little complicated as we only allow sampling of the
-            # diagonal terms of the covariance matrix. Otherwise, we sometimes run into the
-            # problem of very ill conditioned matrices resulting in a failed Cholesky decomposition.
-            set_ = list(range(22))
-
-            identifiers = np.random.choice(set_, num_draws, replace=False)
-            values = np.random.uniform(size=num_draws)
             scripts_check('estimate', init_file)
             scripts_estimate(single, init_file)
             scripts_update(init_file)
 
-            # The error can occur as the RESPY package is actually running an estimation step
-            # that can result in very ill-conditioned covariance matrices.
+            action = np.random.choice(['fix', 'free', 'bounds', 'values'])
+
+            # The set of identifiers is a little complicated as we only allow sampling of the
+            # diagonal terms of the covariance matrix. Otherwise, we sometimes run into the
+            # problem of very ill conditioned matrices resulting in a failed Cholesky decomposition.
+            valid_identifiers = list(range(44))
+
+            respy_obj = RespyCls('test.respy.ini')
+            optim_paras, num_paras = dist_class_attributes(respy_obj, 'optim_paras', 'num_paras')
+
+            # Now we need to handle some different case distinctions.
+            if action in ['bounds']:
+                identifiers = np.random.choice(valid_identifiers, size=2)[0:1]
+                value = get_optim_paras(optim_paras, num_paras, 'all', True)[identifiers][0]
+
+                if identifiers in [0]:
+                    which = 'delta'
+                elif identifiers in [1]:
+                    which = 'amb'
+                else:
+                    which = 'coeff'
+
+                bounds = get_valid_bounds(which, value)
+                values = None
+
+            elif action in ['fix', 'free']:
+                num_draws = np.random.randint(1, 44)
+                identifiers = np.random.choice(valid_identifiers, num_draws, replace=False)
+                bounds, values = None, None
+            else:
+                # This is restrictive in the sense that the original value will be used for the
+                # replacement. However, otherwise the handling of the bounds requires too much
+                # effort at this point.
+                num_draws = np.random.randint(1, 44)
+                identifiers = np.random.choice(valid_identifiers, num_draws, replace=False)
+                values = get_optim_paras(optim_paras, num_paras, 'all', True)[identifiers]
+                bounds = None
+
             scripts_simulate(init_file, file_sim)
-            scripts_modify(identifiers, action, init_file, values)
+            scripts_modify(identifiers, action, init_file, values, bounds)
 
     @pytest.mark.slow
     def test_6(self, flag_ambiguity=False):
@@ -303,7 +332,7 @@ class TestClass(object):
             RespyCls('test.respy.ini')
 
     def test_9(self):
-        """ We ensure that the number of initial conditions does not matter for the evaluation of 
+        """ We ensure that the number of initial conditions does not matter for the evaluation of
         the criterion function if a weight of one is put on the first group.
         """
 
@@ -350,8 +379,8 @@ class TestClass(object):
 
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     def test_11(self):
-        """ This step ensures that the printing of the initialization file is done properly. We 
-        compare the content of the files line by line, but drop any spaces.   
+        """ This step ensures that the printing of the initialization file is done properly. We
+        compare the content of the files line by line, but drop any spaces.
         """
         for fname in glob.glob(TEST_RESOURCES_DIR + '/*.ini'):
             respy_obj = RespyCls(fname)
@@ -361,7 +390,7 @@ class TestClass(object):
     @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
     @pytest.mark.slow
     def test_12(self):
-        """ This test just locks in the evaluation of the criterion function for the original 
+        """ This test just locks in the evaluation of the criterion function for the original
         Keane & Wolpin data. We create an additional initialization files that include numerous
         types and initial conditions.
         """
@@ -384,6 +413,9 @@ class TestClass(object):
             rslt = 9.043933764903148
         elif 'one_initial.ini' in fname:
             rslt = 8.063294972360962
+
+        # TODO: Maybe some should be unaffected
+        raise AssertionError('... needs adjustment due to reorder of types in simulation')
 
         # This ensures that the experience effect is taken care of properly.
         open('.restud.respy.scratch', 'w').close()
@@ -464,3 +496,100 @@ class TestClass(object):
 
         scripts_modify(identifiers, 'values', 'test.respy.ini', values=x_econ[identifiers])
         np.testing.assert_equal(compare_init('baseline.respy.ini', 'test.respy.ini'), True)
+
+    def test_15(self):
+        """ This test ensures that the order of the initial schooling level specified in the
+        initialization files does not matter for the simulation of a dataset and subsequent
+        evaluation of the criterion function.
+        """
+
+        constr = dict()
+        constr['maxfun'] = 0
+
+        # We cannot allow for interpolation as the order of states within each period changes and
+        # thus the prediction model is altered even if the same state identifier is used.
+        constr['flag_interpolation'] = False
+
+        # TODO: also aadd to ambiguity test
+        constr['flag_ambiguity'] = np.random.choice([True, False])
+
+        generate_init(constr)
+
+        respy_obj = RespyCls('test.respy.ini')
+
+        edu_baseline_spec, num_types, num_paras, optim_paras = dist_class_attributes(respy_obj,
+            'edu_spec', 'num_types', 'num_paras', 'optim_paras')
+
+        # We want to randomly shuffle the list of initial schooling but need to maintain the
+        # order of the shares.
+        edu_shuffled_start = np.random.permutation(edu_baseline_spec['start']).tolist()
+
+        edu_shuffled_share = []
+        for start in edu_shuffled_start:
+            idx = edu_baseline_spec['start'].index(start)
+            edu_shuffled_share += [edu_baseline_spec['share'][idx]]
+
+        edu_shuffled_spec = copy.deepcopy(edu_baseline_spec)
+        edu_shuffled_spec['start'] = edu_shuffled_start
+        edu_shuffled_spec['share'] = edu_shuffled_share
+
+        # We are only looking at a single evaluation as otherwise the reordering affects the
+        # optimizer that is trying better parameter values one-by-one. The reordering might also
+        # violate the bounds.
+        for i in range(54, num_paras):
+            optim_paras['paras_bounds'][i] = [None, None]
+            optim_paras['paras_fixed'][i] = False
+
+        # We need to ensure that the baseline type is still in the first position.
+        types_order = [0] + np.random.permutation(range(1, num_types)).tolist()
+
+        type_shares = []
+        for i in range(num_types):
+            lower, upper = i * 2, (i + 1) * 2
+            type_shares += [optim_paras['type_shares'][lower:upper].tolist()]
+
+        optim_paras_baseline = copy.deepcopy(optim_paras)
+        optim_paras_shuffled = copy.deepcopy(optim_paras)
+
+        list_ = list(optim_paras['type_shifts'][i, :].tolist() for i in types_order)
+        optim_paras_shuffled['type_shifts'] = np.array(list_)
+
+        list_ = list(type_shares[i] for i in types_order)
+        optim_paras_shuffled['type_shares'] = np.array(list_).flatten()
+
+
+        base_data, base_val = None, None
+
+        for optim_paras in [optim_paras_baseline, optim_paras_shuffled]:
+             for edu_spec in [edu_baseline_spec, edu_shuffled_spec]:
+
+                respy_obj.unlock()
+                respy_obj.set_attr('edu_spec', edu_spec)
+                respy_obj.lock()
+
+                #respy_obj.unlock()
+                #respy_obj.set_attr('optim_paras', optim_paras)
+                # TODO: use proper Channels
+                respy_obj.attr['optim_paras'] = optim_paras
+                #respy_obj.lock()
+
+                respy_obj.write_out('debug.respy.ini')
+
+                respy_obj.reset()
+
+                simulate_observed(respy_obj)
+
+                # This part checks the equality of simulated dataset.
+                data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True)
+
+                if base_data is None:
+                    base_data = data_frame.copy()
+                assert_frame_equal(base_data, data_frame)
+
+                # This part checks the equality of a single function evaluation.
+                _, val = estimate(respy_obj)
+                if base_val is None:
+                    base_val = val
+                np.testing.assert_almost_equal(base_val, val)
+
+                respy_obj.reset()

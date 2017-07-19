@@ -75,8 +75,8 @@ for _ in range(1):
         g, val = estimate(respy_obj)
 
         if respy_obj.get_attr('version') == 'FORTRAN':
-            rslt = 0.623618863896619
+            rslt = 0.653385234710539
             np.testing.assert_allclose(val, rslt)
         else:
-            rslt = 0.806091853446796
+            rslt = 0.93461600819129
             np.testing.assert_allclose(val, rslt)

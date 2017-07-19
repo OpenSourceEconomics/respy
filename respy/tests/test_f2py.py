@@ -24,11 +24,13 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.simulate.simulate_auxiliary import sort_type_info
 from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
+from respy.python.shared.shared_auxiliary import sort_edu_spec
 from respy.python.solve.solve_auxiliary import get_predictions
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
@@ -805,3 +807,35 @@ class TestClass(object):
             fort = fort_debug.wrapper_back_out_systematic_wages(*args + [coeffs_a, coeffs_b])
 
             np.testing.assert_almost_equal(py, fort)
+
+    def test_14(self):
+        """ Testing the functionality introduced to ensure that the simulation is independent of
+        the order of initial conditions and types in the initialization file.
+        """
+
+        num_elements = np.random.random_integers(1, 10)
+
+        input_array = np.random.normal(size=num_elements)
+
+        # We first check the sorting implementation.
+        py = sorted(input_array)
+        f90 = fort_debug.wrapper_sorted(input_array, num_elements)
+        np.testing.assert_equal(py, f90)
+
+        # We now turn to the more complicated testing of hand-crafted functions for this purpose.
+        generate_init()
+        respy_obj = RespyCls('test.respy.ini')
+
+        edu_spec, optim_paras, num_types = dist_class_attributes(respy_obj, 'edu_spec',
+            'optim_paras', 'num_types')
+
+        args = (edu_spec['start'], edu_spec['share'], edu_spec['max'])
+        f90 = fort_debug.wrapper_sort_edu_spec(*args)
+        py = sort_edu_spec(edu_spec)
+        for i, label in enumerate(['start', 'share', 'max']):
+            np.testing.assert_equal(py[label], f90[i])
+
+        py = sort_type_info(optim_paras, num_types)
+        f90 = fort_debug.wrapper_sort_type_info(optim_paras['type_shares'], num_types)
+        for i, label in enumerate(['order', 'shares']):
+            np.testing.assert_equal(py[label], f90[i])

@@ -315,7 +315,7 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 26)
+    DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 25)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)
@@ -2213,6 +2213,109 @@ SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systemati
 
     ! Call interface
     wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_sorted(sorted_array, input_array, num_elements)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: sorted_array(num_elements)
+
+    DOUBLE PRECISION, INTENT(IN)        :: input_array(num_elements)
+
+    INTEGER, INTENT(IN)                 :: num_elements
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    sorted_array = sorted(input_array, num_elements)
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_sort_edu_spec(edu_start_sorted, edu_share_sorted, edu_max_sorted, edu_start, edu_share, edu_max, num_elements)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    INTEGER, INTENT(OUT)            :: edu_start_sorted(num_elements)
+    INTEGER, INTENT(OUT)            :: edu_max_sorted
+
+    DOUBLE PRECISION, INTENT(OUT)   :: edu_share_sorted(num_elements)
+
+    INTEGER, INTENT(IN)             :: edu_start(num_elements)
+    INTEGER, INTENT(IN)             :: num_elements
+    INTEGER, INTENT(IN)             :: edu_max
+
+    DOUBLE PRECISION, INTENT(IN)    :: edu_share(num_elements)
+
+    !/* internal objects        */
+
+    TYPE(EDU_DICT)                  :: edu_spec_sorted
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Construct derived types
+    edu_spec%share = edu_share
+    edu_spec%start = edu_start
+    edu_spec%max = edu_max
+
+    edu_spec_sorted = sort_edu_spec(edu_spec)
+
+    edu_start_sorted = edu_spec_sorted%start
+    edu_share_sorted = edu_spec_sorted%share
+    edu_max_sorted = edu_spec_sorted%max
+
+END SUBROUTINE
+!*******************************************************************************
+!*******************************************************************************
+SUBROUTINE wrapper_sort_type_info(type_info_order, type_info_shares, type_shares, num_types_int)
+
+    !/* external libraries      */
+
+    USE resfort_library
+
+    !/* setup                   */
+
+    IMPLICIT NONE
+
+    !/* external objects        */
+
+    DOUBLE PRECISION, INTENT(OUT)       :: type_info_shares(num_types_int * 2)
+    INTEGER, INTENT(OUT)       :: type_info_order(num_types_int)
+
+    INTEGER, INTENT(IN)                 :: num_types_int
+
+    DOUBLE PRECISION, INTENT(IN)        :: type_shares(num_types_int * 2)
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Assing global RESPFRT variables
+    num_types = num_types_int
+
+    CALL sort_type_info(type_info_order, type_info_shares, type_shares)
 
 END SUBROUTINE
 !*******************************************************************************

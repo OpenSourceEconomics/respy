@@ -4,6 +4,7 @@
     Example:
 
         respy-modify --fix --identifiers 1-5 5-9
+        respy-modify --identifiers 1 --action bounds --bounds 0.0 1.0
 
 """
 import argparse

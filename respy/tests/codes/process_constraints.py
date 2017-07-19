@@ -1,9 +1,9 @@
 import numpy as np
 
+from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 
-from codes.auxiliary import get_valid_bounds
 
 # We maintain a list of all valid constraints and check all specified keys
 # against it.

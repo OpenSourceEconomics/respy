@@ -742,8 +742,8 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_states)
 
     REAL(our_dble), INTENT(OUT)     :: coeffs(:)
 
-    INTEGER, INTENT(IN)             :: num_covars
-    INTEGER, INTENT(IN)             :: num_states
+    INTEGER(our_int), INTENT(IN)    :: num_covars
+    INTEGER(our_int), INTENT(IN)    :: num_states
 
     REAL(our_dble), INTENT(IN)      :: X(:, :)
     REAL(our_dble), INTENT(IN)      :: Y(:)
@@ -754,53 +754,17 @@ SUBROUTINE get_coefficients(coeffs, Y, X, num_covars, num_states)
     REAL(our_dble)                  :: C(num_covars, num_covars)
     REAL(our_dble)                  :: D(num_covars, num_states)
 
-
-    ! Temporary clutter for the structRecomputation project.
-    REAL(our_dble)                  :: A_sub(8, 8)
-    REAL(our_dble)                  :: C_sub(8, 8)
-    REAL(our_dble)                  :: D_sub(8, num_states)
-
-    REAL(our_dble)                  :: X_sub(num_states, 8)
-    REAL(our_dble)                  :: coeffs_sub(8)
-
-    LOGICAL                         :: IS_TEMPORARY
-
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
+    A = MATMUL(TRANSPOSE(X), X)
 
-    ! This temporary modification allows to run the more restricted interpolation model for the structRecomputation project.
-    INQUIRE(FILE='.structRecomputation.tmp', EXIST=IS_TEMPORARY)
+    C =  pinv(A, num_covars)
 
-    IF(IS_TEMPORARY) THEN
+    D = MATMUL(C, TRANSPOSE(X))
 
-        X_sub(:, :2) = X(:, :2)
-        X_sub(:, 3:) = X(:, 4:)
-
-        A_sub = MATMUL(TRANSPOSE(X_sub), X_sub)
-
-        C_sub =  pinv(A_sub, num_covars - 1)
-
-        D_sub = MATMUL(C_sub, TRANSPOSE(X_sub))
-
-        coeffs_sub = MATMUL(D_sub, Y)
-
-        coeffs(:2) = coeffs_sub(:2)
-        coeffs(3) = zero_dble
-        coeffs(4:) = coeffs_sub(3:)
-
-    ELSE
-
-        A = MATMUL(TRANSPOSE(X), X)
-
-        C =  pinv(A, num_covars)
-
-        D = MATMUL(C, TRANSPOSE(X))
-
-        coeffs = MATMUL(D, Y)
-
-    END IF
+    coeffs = MATMUL(D, Y)
 
 END SUBROUTINE
 !******************************************************************************

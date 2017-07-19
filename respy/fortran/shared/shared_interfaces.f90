@@ -177,6 +177,25 @@ MODULE shared_interfaces
 
           END FUNCTION
 
+          PURE SUBROUTINE DLASRT(ID, N, D, INFO)
+
+              !/* external modules    */
+
+              USE shared_constants
+
+              !/* external objects    */
+
+              INTEGER(our_int), INTENT(OUT)   :: INFO
+
+              REAL(our_dble), INTENT(INOUT)   :: D(N)
+
+              CHARACTER(1), INTENT(IN)        :: ID
+
+              INTEGER(our_int), INTENT(IN)    :: N
+
+           END SUBROUTINE
+
+
     END INTERFACE
 !******************************************************************************
 !******************************************************************************

@@ -27,6 +27,8 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 
     !/* internal objects    */
 
+    TYPE(EDU_DICT)                  :: edu_spec_sorted
+
     INTEGER                         :: i
 
     LOGICAL                         :: READ_IN
@@ -34,6 +36,10 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+
+    ! We want to ensure that the order of initial schooling levels in the initialization files does not matter for the simulated sample. That is why we create an ordered version for this function.
+    edu_spec_sorted = sort_edu_spec(edu_spec)
 
     INQUIRE(FILE='.initial.respy.test', EXIST=READ_IN)
 
@@ -49,7 +55,7 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 
     ELSE
         DO i = 1, num_agents_sim
-            edu_start(i) = get_random_draw(edu_spec%start, edu_spec%share)
+            edu_start(i) = get_random_draw(edu_spec_sorted%start, edu_spec_sorted%share)
         END DO
 
     END IF
@@ -72,16 +78,20 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_
 
     !/* internal objects    */
 
-    INTEGER(our_int)                  :: candidates(num_types)
     INTEGER(our_int)                  :: i
 
     REAL(our_dble)                    :: probs(num_types)
 
     LOGICAL                           :: READ_IN
 
+    INTEGER(our_int)                :: type_info_order(num_types)
+    REAL(our_dble)                    :: type_info_shares(num_types * 2)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
+
+    CALL sort_type_info(type_info_order, type_info_shares, optim_paras%type_shares)
 
     INQUIRE(FILE='.types.respy.test', EXIST=READ_IN)
 
@@ -96,10 +106,9 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_
         CLOSE(99)
 
     ELSE
-        candidates = (/ (i, i = 0, num_types - 1) /)
         DO i = 1, num_agents_sim
-            probs = get_conditional_probabilities(optim_paras%type_shares, edu_start(i))
-            types(i) = get_random_draw(candidates, probs)
+            probs = get_conditional_probabilities(type_info_shares, edu_start(i))
+            types(i) = get_random_draw(type_info_order, probs)
         END DO
 
     END IF
@@ -137,6 +146,58 @@ FUNCTION get_random_draw(candidates, probs) RESULT(rslt)
     rslt = candidates(i)
 
 END FUNCTION
+!******************************************************************************
+!******************************************************************************
+SUBROUTINE sort_type_info(type_info_order, type_info_shares, type_shares)
+
+    !/* external objects    */
+        
+
+        DOUBLE PRECISION, INTENT(IN)    :: type_shares(num_types * 2)
+
+        INTEGER, INTENT(OUT)    :: type_info_order(num_types)
+        DOUBLE PRECISION, INTENT(OUT)    :: type_info_shares(num_types * 2)
+
+
+        !/* internal objects        */
+        DOUBLE PRECISION        :: type_intercepts(num_types)
+
+        DOUBLE PRECISION        :: type_intercepts_sorted(num_types)
+        DOUBLE PRECISION        :: type_shares_array(num_types, 2)
+
+        INTEGER     :: i, j, lower, upper
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    ! We first start by determining a unique ordering of the types based on the value of the intercept.
+    j = 1
+    DO i = 1, num_types * 2, 2
+        type_intercepts(j) = type_shares(i)
+        j = j + 1
+    END DO
+
+    type_intercepts_sorted = sorted(type_intercepts, num_types)
+
+     DO i = 1, num_types
+         DO j = 1, num_types
+             IF(type_intercepts_sorted(i) .NE. type_intercepts(j)) CYCLE
+             type_info_order(i) = j - 1
+         END DO
+    END DO
+
+    ! We then align the coefficients with the new ordering.
+    type_shares_array = TRANSPOSE(RESHAPE(type_shares, (/2, num_types/)))
+
+    DO i = 1, num_types
+        j = type_info_order(i) + 1
+        lower = (i - 1) * 2 + 1
+        upper = i  * 2
+        type_info_shares(lower:upper) = type_shares_array(j, :)
+     END DO
+
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 END MODULE

@@ -76,7 +76,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     CALL record_simulation(num_agents_sim, seed_sim, file_sim)
 
 
-    ALLOCATE(data_sim(num_periods * num_agents_sim, 26))
+    ALLOCATE(data_sim(num_periods * num_agents_sim, 25))
 
     !Standard deviates transformed to the distributions relevant for the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
@@ -157,7 +157,6 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
             data_sim(count + 1, 23:24) = calculate_rewards_general(covariates, optim_paras)
             data_sim(count + 1, 25:25) = calculate_rewards_common(covariates, optim_paras)
-            data_sim(count + 1, 26:26) = data_sim(count + 1, 4)
 
             !# Update work experiences or education
             IF ((choice .EQ. one_int) .OR. (choice .EQ. two_int) .OR. (choice .EQ. three_int)) THEN

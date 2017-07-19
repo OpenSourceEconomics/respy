@@ -39,7 +39,7 @@ def check_dataset_est(data_frame, respy_obj):
         np.testing.assert_equal(dat.all(), True)
 
     # We check individual state variables against the recorded choices
-    data_frame.groupby('Identifier').apply(check_state_variables)
+    data_frame.groupby(level='Identifier').apply(check_state_variables)
 
     # Checks for LAGGED ACTIVITY. We also know that all individuals were in school when entering
     # the model. Just to be sure, we also construct the correct lagged activity here as well and
@@ -68,12 +68,12 @@ def check_dataset_est(data_frame, respy_obj):
     # Check that there are no duplicated observations for any period by agent.
     def check_unique_periods(group):
         np.testing.assert_equal(group['Period'].duplicated().any(), False)
-    data_frame.groupby('Identifier').apply(check_unique_periods)
+    data_frame.groupby(level='Identifier').apply(check_unique_periods)
 
     # Check that we observe the whole sequence of observations and that they are in the right order.
     def check_series_observations(group):
         np.testing.assert_equal(group['Period'].tolist(), list(range(group['Period'].max() + 1)))
-    data_frame.groupby('Identifier').apply(check_series_observations)
+    data_frame.groupby(level='Identifier').apply(check_series_observations)
 
 
 def check_state_variables(agent):

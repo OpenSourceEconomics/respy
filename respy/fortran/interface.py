@@ -98,7 +98,7 @@ def get_results(num_periods, edu_spec, num_agents_sim, num_types, which):
 
     # In case of  a simulation, we can also process the simulated dataset.
     if which == 'simulate':
-        shape = (num_periods * num_agents_sim, 26)
+        shape = (num_periods * num_agents_sim, 25)
         data_array = read_data('simulated', shape)
     else:
         raise AssertionError
@@ -181,7 +181,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         fmt_ = ' {:10d}' * num_edu_start + '\n'
         file_.write(fmt_.format(*edu_spec['start']))
 
-        fmt_ = ' {:25.15f} ' * num_edu_start + '\n'
+        fmt_ = ' {:25.15f}' * num_edu_start + '\n'
         file_.write(fmt_.format(*edu_spec['share']))
 
         line = ' {0:10d}\n'.format(edu_spec['max'])

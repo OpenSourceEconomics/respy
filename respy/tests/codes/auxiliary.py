@@ -1,25 +1,23 @@
 """ This module contains auxiliary functions for the PYTEST suite.
 """
-import pandas as pd
-import numpy as np
-
 import shlex
 
-from respy.python.shared.shared_auxiliary import get_conditional_probabilities
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+import numpy as np
+import pandas as pd
+from respy import RespyCls
+from respy import simulate
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_constants import DATA_FORMATS_SIM
-from respy.python.shared.shared_constants import DATA_LABELS_SIM
 from respy.python.shared.shared_constants import DATA_LABELS_EST
-from respy.python.simulate.simulate_auxiliary import write_out
+from respy.python.shared.shared_constants import DATA_LABELS_SIM
+from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.shared.shared_constants import HUGE_FLOAT
-
-from respy import RespyCls
-from respy import simulate
+from respy.python.simulate.simulate_auxiliary import write_out
+from respy.python.solve.solve_auxiliary import pyth_create_state_space
 
 # module-wide variables
 OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
@@ -27,7 +25,7 @@ OPTIMIZERS_AMB = OPT_AMB_FORT + OPT_AMB_PYTH
 
 
 def simulate_observed(respy_obj, is_missings=True):
-    """ This function adds two important features of observed datasests: (1) missing 
+    """ This function adds two important features of observed datasests: (1) missing
     observations and missing wage information.
     """
     def drop_agents_obs(agent):
@@ -38,7 +36,7 @@ def simulate_observed(respy_obj, is_missings=True):
         agent = agent[agent['Period'] < start_truncation]
         return agent
 
-    seed_sim = dist_class_attributes(respy_obj, 'seed_sim')[0]
+    seed_sim = dist_class_attributes(respy_obj, 'seed_sim')
 
     simulate(respy_obj)
 
@@ -219,7 +217,7 @@ def write_types(type_shares, num_agents_sim):
 
 
 def write_edu_start(edu_spec, num_agents_sim):
-    """ We also need to fully control the random initial schooling to ensure the comparability 
+    """ We also need to fully control the random initial schooling to ensure the comparability
     between PYTHON and FORTRAN simulations.
     """
     types = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
@@ -239,27 +237,6 @@ def get_valid_values(which):
         value = np.random.uniform(0.05, 1)
 
     return value
-
-
-def get_valid_bounds(which, value):
-    """ Simply get a valid set of bounds.
-    """
-    assert which in ['amb', 'cov', 'coeff', 'delta', 'share']
-
-    # The bounds cannot be too tight as otherwise the BOBYQA might not start
-    # properly.
-    if which in ['delta', 'amb']:
-        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
-        bounds = [max(0.0, value - np.random.uniform(low=0.1)), upper]
-    elif which in ['coeff']:
-        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
-        lower = np.random.choice([None, value - np.random.uniform(low=0.1)])
-        bounds = [lower, upper]
-    elif which in ['cov']:
-        bounds = [None, None]
-    elif which in ['share']:
-        bounds = [0.0, None]
-    return bounds
 
 
 def get_valid_shares(num_groups):

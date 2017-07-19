@@ -3,6 +3,7 @@
 import numpy as np
 
 from respy.python.shared.shared_auxiliary import generate_optimizer_options
+from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
@@ -12,11 +13,8 @@ from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.process_constraints import process_constraints
 from codes.auxiliary import get_valid_shares
 from codes.auxiliary import get_valid_values
-from codes.auxiliary import get_valid_bounds
 from codes.auxiliary import OPTIMIZERS_EST
 from codes.auxiliary import OPTIMIZERS_AMB
-
-
 
 
 def generate_init(constr=None):
@@ -62,7 +60,7 @@ def generate_random_dict(constr=None):
     if version == 'PYTHON':
         MAX_TYPES = 3
         MAX_PERIODS = 3
-        MAX_EDU_START = 2
+        MAX_EDU_START = 3
     elif version == 'FORTRAN':
         MAX_TYPES = 4
         MAX_PERIODS = 10

@@ -234,4 +234,33 @@ PURE SUBROUTINE spectral_condition_number(rslt, A)
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+FUNCTION sorted(input_array, num_elements) RESULT(sorted_array)
+
+    !/* external objects        */
+
+    REAL(our_dble)                      :: sorted_array(num_elements)
+
+    REAL(our_dble), INTENT(IN)          :: input_array(num_elements)
+
+    INTEGER(our_int), INTENT(IN)        :: num_elements
+
+    !/* internal objects        */
+
+    INTEGER(our_int)                   :: INFO
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    sorted_array = input_array
+
+    CALL DLASRT('I', num_elements, sorted_array, INFO)
+
+    IF (INFO .NE. zero_int) THEN
+        STOP 'sorting failed'
+    END IF
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
 END MODULE

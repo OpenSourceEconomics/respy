@@ -1607,4 +1607,57 @@ FUNCTION calculate_rewards_common(covariates, optim_paras) RESULT(rewards_common
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
+FUNCTION sort_edu_spec(edu_spec) RESULT(edu_spec_sorted)
+
+    !/* external objects        */
+
+    TYPE(EDU_DICT)                  :: edu_spec_sorted
+
+    TYPE(EDU_DICT), INTENT(IN)      :: edu_spec
+
+
+    !/* internal objects        */
+
+    REAL(our_dble), ALLOCATABLE     :: edu_start_dble(:)
+
+    INTEGER(our_int)                :: num_elements
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
+
+!-------------------------------------------------------------------------------
+! Algorithm
+!-------------------------------------------------------------------------------
+
+    ! Auxiliary information
+    num_elements = SIZE(edu_spec%start, 1)
+
+    ! Allocate new dictionary with sorted elements and auxiliary object.
+    ALLOCATE(edu_spec_sorted%start(num_elements))
+    ALLOCATE(edu_spec_sorted%share(num_elements))
+    ALLOCATE(edu_start_dble(num_elements))
+
+    ! We need to put in some extra work to ensure the proper type conversions.
+    edu_start_dble = DBLE(edu_spec%start)
+    edu_start_dble = sorted(edu_start_dble, num_elements)
+    edu_spec_sorted%start = INT(edu_start_dble)
+
+    edu_spec_sorted%max = edu_spec%max
+    edu_spec_sorted%share = -HUGE_FLOAT
+
+    DO i = 1, num_elements
+
+        DO j = 1, num_elements
+
+            IF (edu_spec_sorted%start(i) .NE. edu_spec%start(j))  CYCLE
+
+            edu_spec_sorted%share(i) = edu_spec%share(j)
+
+        END DO
+
+    END DO
+
+
+END FUNCTION
+!******************************************************************************
+!******************************************************************************
 END MODULE

@@ -5,6 +5,7 @@ import os
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.process.process_auxiliary import check_dataset_est
+from respy.python.shared.shared_auxiliary import sort_edu_spec
 
 
 def construct_transition_matrix(base_df):
@@ -186,13 +187,8 @@ def write_out(respy_obj, data_frame):
     # Distribute class attributes
     file_sim = respy_obj.get_attr('file_sim')
 
-    # The wage variable is formatted for two digits precision only.
-    formatter = dict()
-    formatter['Wage'] = format_float
-
     with open(file_sim + '.respy.dat', 'w') as file_:
-        data_frame.to_string(file_, index=False, header=True, na_rep='.',
-            formatters=formatter)
+        data_frame.to_string(file_, index=False, header=True, na_rep='.')
 
 
 def format_float(x):
@@ -275,7 +271,7 @@ def check_dataset_sim(data_frame, respy_obj):
     dat = data_frame['Type']
     np.testing.assert_equal(dat.max() <= num_types - 1, True)
     np.testing.assert_equal(dat.isnull().any(), False)
-    data_frame.groupby('Identifier').apply(check_check_time_constant)
+    data_frame.groupby(level='Identifier').apply(check_check_time_constant)
 
     # Check that there are not missing wage observations if an agent is working. Also, we check
     # that if an agent is not working, there also is no wage observation.
@@ -288,20 +284,41 @@ def check_dataset_sim(data_frame, respy_obj):
     np.testing.assert_equal(dat.isnull().all(), True)
 
     # Check that there are no missing observations and we follow an agent each period.
-    data_frame.groupby('Identifier').apply(check_number_periods)
+    data_frame.groupby(level='Identifier').apply(check_number_periods)
+
+
+def sort_type_info(optim_paras, num_types):
+    """ We fix an order for the sampling of the types.
+    """
+    type_info = dict()
+
+    # We simply fix the order by the size of the intercepts.
+    type_info['order'] = np.argsort(optim_paras['type_shares'].tolist()[0::2])
+
+    # We need to reorder the coefficients determining the type probabilities accordingly.
+    type_shares = []
+    for i in range(num_types):
+        lower, upper = i * 2, (i + 1) * 2
+        type_shares += [optim_paras['type_shares'][lower:upper].tolist()]
+    type_info['shares'] = np.array(list(type_shares[i] for i in type_info['order'])).flatten()
+
+    return type_info
 
 
 def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug):
-    """ This function provides random draws for the types, or reads them
-    in from a file.
+    """ This function provides random draws for the types, or reads them in from a file.
     """
+    # We want to ensure that the order of types in the initialization file does not matter for
+    # the simulated sample.
+    type_info = sort_type_info(optim_paras, num_types)
+
     if is_debug and os.path.exists('.types.respy.test'):
         types = np.genfromtxt('.types.respy.test')
     else:
         types = []
         for i in range(num_agents_sim):
-            probs = get_conditional_probabilities(optim_paras['type_shares'], edu_start[i])
-            types += np.random.choice(range(num_types), p=probs, size=1).tolist()
+            probs = get_conditional_probabilities(type_info['shares'], edu_start[i])
+            types += np.random.choice(type_info['order'], p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that types are a vector.
     types = np.array(types, ndmin=1)
@@ -310,16 +327,22 @@ def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug
 
 
 def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
-    """ This function provides random draws for the initial schooling level, or reads them in 
+    """ This function provides random draws for the initial schooling level, or reads them in
     from a file.
     """
+    # We want to ensure that the order of initial schooling levels in the initialization files
+    # does not matter for the simulated sample. That is why we create an ordered version for this
+    # function.
+    # TODO: Why function not in this module? If move, then also FORTRAN
+    edu_spec_ordered = sort_edu_spec(edu_spec)
+
     if is_debug and os.path.exists('.initial.respy.test'):
         edu_start = np.genfromtxt('.initial.respy.test')
     else:
         # As we do not want to be too strict at the user-level the sum of edu_spec might be
         # slightly larger than one. This needs to be corrected here.
-        probs = edu_spec['share'] / np.sum(edu_spec['share'])
-        edu_start = np.random.choice(edu_spec['start'], p=probs, size=num_agents_sim)
+        probs = edu_spec_ordered['share'] / np.sum(edu_spec_ordered['share'])
+        edu_start = np.random.choice(edu_spec_ordered['start'], p=probs, size=num_agents_sim)
 
     # If we only have one individual, we need to ensure that types are a vector.
     edu_start = np.array(edu_start, ndmin=1)

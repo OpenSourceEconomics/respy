@@ -77,12 +77,15 @@ def check_estimation(respy_obj):
         dist_class_attributes(respy_obj, 'optimizer_options', 'optimizer_used', 'optim_paras',
                               'version', 'maxfun', 'num_paras', 'file_est')
 
+    # Ensure that at least one free parameter. It is not enough to check this in the case of at
+    # least one function evaluation due to the random sampling of optimizer options in
+    # generate_optimizer_options() which requires at least one free parameter.
+    if sum(optim_paras['paras_fixed']) == num_paras:
+        raise UserError('Estimation requires at least one free parameter')
+
     # We need to make sure that the estimation dataset is actually present.
     if not os.path.exists(file_est):
         raise UserError('Estimation dataset does not exist')
-
-    # Ensure that at least one free parameter.
-    assert sum(optim_paras['paras_fixed']) != num_paras
 
     # Check that the used optimizers were defined by the user.
     if optim_paras['level'][0] > 0:

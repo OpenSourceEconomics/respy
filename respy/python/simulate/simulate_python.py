@@ -40,7 +40,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
     count = 0
 
     # Initialize data
-    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 26))
+    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 25))
 
     for i in range(num_agents_sim):
 
@@ -107,12 +107,10 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             dataset[count, 21:22] = optim_paras['delta']
 
             # For testing purposes, we also explicitly include the general reward component and
-            # the common component. We also include an internal version of the wage variables as
-            # otherwise it gets truncated to two digits which does make some unit tests untenable.
+            # the common component.
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
             dataset[count, 22:24] = calculate_rewards_general(covariates, optim_paras)
             dataset[count, 24:25] = calculate_rewards_common(covariates, optim_paras)
-            dataset[count, 25:26] = dataset[count, 3]
 
             # Update work experiences or education
             if max_idx in [0, 1, 2]:
