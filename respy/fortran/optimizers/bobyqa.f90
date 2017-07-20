@@ -47,7 +47,7 @@ SUBROUTINE bobyqa(FUNC, X, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE
 
     REAL(our_dble)                  :: XL(SIZE(X))
     REAL(our_dble)                  :: XU(SIZE(X))
-    REAL(our_dble)                  :: W(20000)
+    REAL(our_dble)                  :: W(200000)
 
     INTEGER(our_int)                :: N
 
@@ -169,6 +169,8 @@ IF (TEMP .LT. RHOBEG+RHOBEG) THEN
 END IF
 JSL=ISL+J-1
 JSU=JSL+N
+PRINT *, 'bob', J, N, JSL
+
 W(JSL)=XL(J)-X(J)
 W(JSU)=XU(J)-X(J)
 IF (W(JSL) .GE. -RHOBEG) THEN
