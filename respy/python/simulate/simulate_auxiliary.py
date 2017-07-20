@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
+import copy
 import os
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.process.process_auxiliary import check_dataset_est
-from respy.python.shared.shared_auxiliary import sort_edu_spec
 
 
 def construct_transition_matrix(base_df):
@@ -305,6 +305,24 @@ def sort_type_info(optim_paras, num_types):
     return type_info
 
 
+def sort_edu_spec(edu_spec):
+    """ This function sorts the dictionary that provides the information about initial education.
+    It adjusts the order of the shares accordingly.
+    """
+    edu_start_ordered = sorted(edu_spec['start'])
+
+    edu_share_ordered = []
+    for start in edu_start_ordered:
+        idx = edu_spec['start'].index(start)
+        edu_share_ordered += [edu_spec['share'][idx]]
+
+    edu_spec_ordered = copy.deepcopy(edu_spec)
+    edu_spec_ordered['start'] = edu_start_ordered
+    edu_spec_ordered['share'] = edu_share_ordered
+
+    return edu_spec_ordered
+
+
 def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug):
     """ This function provides random draws for the types, or reads them in from a file.
     """
@@ -333,7 +351,6 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     # We want to ensure that the order of initial schooling levels in the initialization files
     # does not matter for the simulated sample. That is why we create an ordered version for this
     # function.
-    # TODO: Why function not in this module? If move, then also FORTRAN
     edu_spec_ordered = sort_edu_spec(edu_spec)
 
     if is_debug and os.path.exists('.initial.respy.test'):

@@ -25,12 +25,12 @@ from respy.python.solve.solve_auxiliary import get_endogenous_variable
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.simulate.simulate_auxiliary import sort_type_info
+from respy.python.simulate.simulate_auxiliary import sort_edu_spec
 from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
-from respy.python.shared.shared_auxiliary import sort_edu_spec
 from respy.python.solve.solve_auxiliary import get_predictions
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk

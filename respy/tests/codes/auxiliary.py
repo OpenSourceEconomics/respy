@@ -1,23 +1,24 @@
 """ This module contains auxiliary functions for the PYTEST suite.
 """
+import pandas as pd
+import numpy as np
 import shlex
 
-import numpy as np
-import pandas as pd
-from respy import RespyCls
-from respy import simulate
-from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_constants import DATA_FORMATS_SIM
 from respy.python.shared.shared_constants import DATA_LABELS_EST
 from respy.python.shared.shared_constants import DATA_LABELS_SIM
-from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.simulate.simulate_auxiliary import write_out
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.shared.shared_constants import HUGE_FLOAT
+
+from respy import RespyCls
+from respy import simulate
 
 # module-wide variables
 OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH

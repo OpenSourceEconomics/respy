@@ -994,24 +994,6 @@ def calculate_rewards_general(covariates, optim_paras):
     return rewards_general
 
 
-def sort_edu_spec(edu_spec):
-    """ This function sorts the dictionary that provides the information about initial education.
-    It adjusts the order of the shares accordingly.
-    """
-    edu_start_ordered = sorted(edu_spec['start'])
-
-    edu_share_ordered = []
-    for start in edu_start_ordered:
-        idx = edu_spec['start'].index(start)
-        edu_share_ordered += [edu_spec['share'][idx]]
-
-    edu_spec_ordered = copy.deepcopy(edu_spec)
-    edu_spec_ordered['start'] = edu_start_ordered
-    edu_spec_ordered['share'] = edu_share_ordered
-
-    return edu_spec_ordered
-
-
 def get_valid_bounds(which, value):
     """ Simply get a valid set of bounds.
     """

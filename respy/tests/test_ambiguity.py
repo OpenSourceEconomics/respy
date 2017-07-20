@@ -332,3 +332,6 @@ class TestClass(object):
 
     def test_integration_7(self, flag_ambiguity=True):
         link_integration().test_7(flag_ambiguity)
+
+    def test_integration_15(self, flag_ambiguity=True):
+        link_integration().test_15(flag_ambiguity)

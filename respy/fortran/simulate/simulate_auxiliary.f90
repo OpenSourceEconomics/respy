@@ -67,25 +67,25 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_
 
     !/* external objects    */
 
-    TYPE(OPTIMPARAS_DICT), INTENT(IN) :: optim_paras
+    INTEGER(our_int)                    :: types(num_agents_sim)
 
-    INTEGER(our_int)                  :: edu_start(num_agents_sim)
-    INTEGER(our_int)                  :: types(num_agents_sim)
-    INTEGER(our_int)                  :: num_agents_sim
-    INTEGER(our_int)                  :: num_types
+    TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
-    LOGICAL, INTENT(IN)               :: is_debug
+    INTEGER(our_int), INTENT(IN)        :: edu_start(num_agents_sim)
+    INTEGER(our_int), INTENT(IN)        :: num_agents_sim
+    INTEGER(our_int), INTENT(IN)        :: num_types
+
+    LOGICAL, INTENT(IN)                 :: is_debug
 
     !/* internal objects    */
 
-    INTEGER(our_int)                  :: i
+    INTEGER(our_int)                    :: type_info_order(num_types)
+    INTEGER(our_int)                    :: i
 
-    REAL(our_dble)                    :: probs(num_types)
+    REAL(our_dble)                      :: type_info_shares(num_types * 2)
+    REAL(our_dble)                      :: probs(num_types)
 
-    LOGICAL                           :: READ_IN
-
-    INTEGER(our_int)                :: type_info_order(num_types)
-    REAL(our_dble)                    :: type_info_shares(num_types * 2)
+    LOGICAL                             :: READ_IN
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -151,21 +151,23 @@ END FUNCTION
 SUBROUTINE sort_type_info(type_info_order, type_info_shares, type_shares)
 
     !/* external objects    */
-        
 
-        DOUBLE PRECISION, INTENT(IN)    :: type_shares(num_types * 2)
+    REAL(our_dble), INTENT(OUT)     :: type_info_shares(num_types * 2)
 
-        INTEGER, INTENT(OUT)    :: type_info_order(num_types)
-        DOUBLE PRECISION, INTENT(OUT)    :: type_info_shares(num_types * 2)
+    REAL(our_dble), INTENT(IN)      :: type_shares(num_types * 2)
 
+    INTEGER(our_int), INTENT(OUT)   :: type_info_order(num_types)
 
-        !/* internal objects        */
-        DOUBLE PRECISION        :: type_intercepts(num_types)
+    !/* internal objects        */
 
-        DOUBLE PRECISION        :: type_intercepts_sorted(num_types)
-        DOUBLE PRECISION        :: type_shares_array(num_types, 2)
+    REAL(our_dble)                  :: type_intercepts_sorted(num_types)
+    REAL(our_dble)                  :: type_intercepts(num_types)
+    REAL(our_dble)                  :: type_shares_array(num_types, 2)
 
-        INTEGER     :: i, j, lower, upper
+    INTEGER(our_int)                :: lower
+    INTEGER(our_int)                :: upper
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
 
 !------------------------------------------------------------------------------
 ! Algorithm

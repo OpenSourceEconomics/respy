@@ -1,4 +1,5 @@
 from pandas.util.testing import assert_frame_equal
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -10,6 +11,8 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import get_valid_bounds
+from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy._scripts.scripts_estimate import scripts_estimate
@@ -400,8 +403,7 @@ class TestClass(object):
         resources += ['kw_data_one_types.ini', 'kw_data_one_initial.ini']
 
         fname = np.random.choice(resources)
-
-        # Select expected result
+        
         rslt = None
         if 'one.ini' in fname:
             rslt = 10.459509434697358
@@ -410,12 +412,9 @@ class TestClass(object):
         elif 'three.ini' in fname:
             rslt = 75.82796484512875
         elif 'one_types.ini' in fname:
-            rslt = 9.043933764903148
+            rslt = 9.098738585839529
         elif 'one_initial.ini' in fname:
-            rslt = 8.063294972360962
-
-        # TODO: Maybe some should be unaffected
-        raise AssertionError('... needs adjustment due to reorder of types in simulation')
+            rslt = 7.965981443864549
 
         # This ensures that the experience effect is taken care of properly.
         open('.restud.respy.scratch', 'w').close()
@@ -497,22 +496,19 @@ class TestClass(object):
         scripts_modify(identifiers, 'values', 'test.respy.ini', values=x_econ[identifiers])
         np.testing.assert_equal(compare_init('baseline.respy.ini', 'test.respy.ini'), True)
 
-    def test_15(self):
+    def test_15(self,flag_ambigutiy=False):
         """ This test ensures that the order of the initial schooling level specified in the
         initialization files does not matter for the simulation of a dataset and subsequent
         evaluation of the criterion function.
         """
 
         constr = dict()
+        constr['flag_ambiguity'] = flag_ambigutiy
         constr['maxfun'] = 0
 
         # We cannot allow for interpolation as the order of states within each period changes and
         # thus the prediction model is altered even if the same state identifier is used.
         constr['flag_interpolation'] = False
-
-        # TODO: also aadd to ambiguity test
-        constr['flag_ambiguity'] = np.random.choice([True, False])
-
         generate_init(constr)
 
         respy_obj = RespyCls('test.respy.ini')
@@ -557,7 +553,6 @@ class TestClass(object):
         list_ = list(type_shares[i] for i in types_order)
         optim_paras_shuffled['type_shares'] = np.array(list_).flatten()
 
-
         base_data, base_val = None, None
 
         for optim_paras in [optim_paras_baseline, optim_paras_shuffled]:
@@ -567,16 +562,15 @@ class TestClass(object):
                 respy_obj.set_attr('edu_spec', edu_spec)
                 respy_obj.lock()
 
-                #respy_obj.unlock()
-                #respy_obj.set_attr('optim_paras', optim_paras)
-                # TODO: use proper Channels
-                respy_obj.attr['optim_paras'] = optim_paras
-                #respy_obj.lock()
-
-                respy_obj.write_out('debug.respy.ini')
+                # There is some more work to do to update the coefficients as we distinguish
+                # between the economic and optimization version of the parameters.
+                x = get_optim_paras(optim_paras, num_paras, 'all', True)
+                shocks_cholesky, _ = extract_cholesky(x)
+                shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
+                x[44:54] = shocks_coeffs
+                respy_obj.update_optim_paras(x)
 
                 respy_obj.reset()
-
                 simulate_observed(respy_obj)
 
                 # This part checks the equality of simulated dataset.

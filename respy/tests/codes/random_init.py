@@ -123,13 +123,6 @@ def generate_random_dict(constr=None):
     if sum(paras_fixed) == 44:
         paras_fixed[np.random.randint(0, 44)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
-
-    # Either all shares are fixed or free. In case of just a single type, the share fixed.
-    if num_types == 1:
-        is_fixed = True
-    else:
-        is_fixed = np.random.choice([True, False]).tolist()
-    paras_fixed += [is_fixed] * num_types
     paras_fixed += np.random.choice([True, False], (num_types - 1) * 6).tolist()
 
     # Sampling number of agents for the simulation. This is then used as the upper bound for the

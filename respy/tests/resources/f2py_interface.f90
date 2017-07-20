@@ -2302,7 +2302,8 @@ SUBROUTINE wrapper_sort_type_info(type_info_order, type_info_shares, type_shares
     !/* external objects        */
 
     DOUBLE PRECISION, INTENT(OUT)       :: type_info_shares(num_types_int * 2)
-    INTEGER, INTENT(OUT)       :: type_info_order(num_types_int)
+
+    INTEGER, INTENT(OUT)       		:: type_info_order(num_types_int)
 
     INTEGER, INTENT(IN)                 :: num_types_int
 

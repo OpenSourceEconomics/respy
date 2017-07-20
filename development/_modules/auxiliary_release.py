@@ -63,6 +63,8 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
         prepare_release_tests_9(constr)
     elif OLD_RELEASE == '2.0.0.dev18' and NEW_RELEASE == '2.0.0.dev19':
         prepare_release_tests_10(constr)
+    elif OLD_RELEASE == '2.0.0.dev19' and NEW_RELEASE == 'current':
+	    no_preparations_required(constr)
     else:
         raise AssertionError('Misspecified request ...')
 
@@ -596,6 +598,14 @@ def run_estimation(which):
         respy.simulate(respy_obj)
     else:
         simulate_observed(respy_obj)
+
+    # This flag ensures that the change in the truncation of the wage variable has no effect. We
+    # simply copy the dataset from the new release to the old.
+    # TODO: Adjust release ...
+    if ('current' in sys.executable) and ('/new' in os.getcwd()):
+        fnames = glob.glob('data.respy.*')
+        for fname in fnames:
+            shutil.copy('../old/' + fname, '.')
 
     # Moving from 2.0.0.dev17 to 2.0.0.dev18 breaks the equality because the simulated datasets
     # differ. So, we just copy the one from old. However, this is only relevant if 2.0.0.dev18 is

@@ -483,7 +483,7 @@ SUBROUTINE auto_adjustment_optimizers(optimizer_options, optimizer_used)
     IF (optimizer_used == 'FORT-NEWUOA') THEN
 
         npt = optimizer_options%newuoa%npt
-        is_misspecified = (npt .LT. num_free + 2 .OR. npt .GT. ((num_free + 2)* num_free) / 2)
+        is_misspecified = (npt .LT. num_free + 2 .OR. npt .GT. ((num_free + 2) * (num_free + 1)) / 2)
         IF (is_misspecified) THEN
             optimizer_options%newuoa%npt = (2 * num_free) + 1
             CALL record_estimation('NEWUOA', optimizer_options%newuoa%npt)
@@ -494,7 +494,7 @@ SUBROUTINE auto_adjustment_optimizers(optimizer_options, optimizer_used)
     IF (optimizer_used == 'FORT-BOBYQA') THEN
 
         npt = optimizer_options%bobyqa%npt
-        is_misspecified = (npt .LT. num_free + 2 .OR. npt .GT. ((num_free + 2)* num_free) / 2)
+        is_misspecified = (npt .LT. num_free + 2 .OR. npt .GT. ((num_free + 2) * (num_free + 1)) / 2)
         IF (is_misspecified) THEN
             optimizer_options%bobyqa%npt =  (2 * num_free) + 1
             CALL record_estimation('BOBYQA', optimizer_options%bobyqa%npt)
@@ -506,7 +506,7 @@ SUBROUTINE auto_adjustment_optimizers(optimizer_options, optimizer_used)
         rhobeg = optimizer_options%bobyqa%rhobeg
         is_misspecified = ANY(tmp .LT. rhobeg + rhobeg)
         IF (is_misspecified) THEN
-            optimizer_options%bobyqa%rhobeg = MINval(tmp) * 0.5_our_dble
+            optimizer_options%bobyqa%rhobeg = MINVAL(tmp) * 0.5_our_dble
             optimizer_options%bobyqa%rhoend = optimizer_options%bobyqa%rhobeg * 1e-6
             CALL record_estimation('BOBYQA', optimizer_options%bobyqa%rhobeg, optimizer_options%bobyqa%rhoend)
         END IF
