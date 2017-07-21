@@ -42,6 +42,7 @@ class TestClass(object):
         constr['flag_parallelism'] = False
         constr['flag_myopic'] = flag_myopic
         constr['max_draws'] = max_draws
+        constr['version'] = 'PYTHON'
         constr['maxfun'] = 0
 
         init_dict = generate_random_dict(constr)
@@ -125,9 +126,11 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['flag_ambiguity'] = flag_ambiguity
+        constr['flag_interpolation'] = False
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
-        constr['flag_interpolation'] = False
+        constr['version'] = 'PYTHON'
+
         constr['maxfun'] = 0
 
         # Generate random initialization file
@@ -182,6 +185,7 @@ class TestClass(object):
         constr['flag_interpolation'] = False
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
+        constr['version'] = 'PYTHON'
         constr['maxfun'] = 0
 
         # Generate random initialization file
@@ -259,6 +263,7 @@ class TestClass(object):
         constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_estimation'] = True
         constr['max_draws'] = max_draws
+        constr['version'] = 'PYTHON'
 
         # Simulate a dataset
         init_dict = generate_init(constr)
