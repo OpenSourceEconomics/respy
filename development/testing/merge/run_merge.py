@@ -40,6 +40,7 @@ test_spec['REGRESSION']['request'] = ('check', 1000)
 test_spec['REGRESSION']['is_background'] = False
 test_spec['REGRESSION']['is_compile'] = False
 test_spec['REGRESSION']['is_strict'] = True
+test_spec['REGRESSION']['num_procs'] = 1
 
 test_spec['PROPERTY'] = dict()
 test_spec['PROPERTY']['request'] = ('run', 10)
