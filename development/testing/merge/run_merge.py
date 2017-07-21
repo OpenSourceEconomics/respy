@@ -49,8 +49,8 @@ test_spec['PROPERTY']['is_compile'] = False
 # During release testing we compare the results from short estimation runs rom the candidate
 # branch to the relevant master.
 test_spec['RELEASE'] = dict()
-test_spec['RELEASE']['new_release'] = '2.0.0.dev14'
-test_spec['RELEASE']['old_release'] = '2.0.0.dev12'
+test_spec['RELEASE']['new_release'] = '2.0.0.dev19'
+test_spec['RELEASE']['old_release'] = '2.0.0.dev20'
 test_spec['RELEASE']['request'] = ('run', 10)
 test_spec['RELEASE']['is_background'] = False
 test_spec['RELEASE']['is_create'] = True
