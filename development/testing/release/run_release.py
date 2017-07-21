@@ -174,9 +174,12 @@ if __name__ == '__main__':
     #
     #   2.0.0.dev19 We now have more general rewards, i.e. not income maximizing.
     #
+    #   2.0.0.dev19 We just worked on some issues to cleanup the code base. We did not find any
+    #               errors.
+    #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev19', 'current'
+    old_release, new_release = '2.0.0.dev19', '2.0.0.dev20'
 
     parser = argparse.ArgumentParser(description='Run release testing.')
 

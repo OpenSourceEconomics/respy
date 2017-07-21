@@ -12,7 +12,7 @@ from respy.estimate import estimate
 from respy.simulate import simulate
 from respy.clsRespy import RespyCls
 
-__version__ = '2.0.0'
+__version__ = '2.0.0.dev20'
 
 
 def test(opt=None):
