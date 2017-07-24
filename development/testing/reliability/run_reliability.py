@@ -20,7 +20,7 @@ if __name__ == '__main__':
     spec_dict['update']['num_draws_emax'] = 500
     spec_dict['update']['num_procs'] = 10
     spec_dict['update']['maxfun'] = 1500
-    spec_dict['update']['level'] = 0.00
+    spec_dict['update']['level'] = 0.05
 
     # The following key-value pair sets the number of processors for each of the estimations.
     # This is required as the maximum number of useful cores varies drastically depending on the

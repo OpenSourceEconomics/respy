@@ -71,6 +71,9 @@ def run_single(spec_dict, fname):
             # We do only need a subset of the available processors
             respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['truth'])
 
+        elif request == 'Truth' and not is_risk:
+            respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['truth'])
+
         elif request == 'Static':
             # We do only need a subset of the available processors
             respy_obj.attr['num_procs'] = min(num_procs, spec_dict['procs']['static'])
@@ -109,6 +112,7 @@ def run_single(spec_dict, fname):
             respy_obj.attr['optim_paras']['level'] = np.array([0.10])
             respy_obj.attr['optim_paras']['paras_fixed'][:2] = [False, False]
             respy_obj.attr['optim_paras']['paras_bounds'][0] = [0.70, 1.00]
+            respy_obj.attr['optim_paras']['paras_bounds'][1] = [0.01, 0.15]
 
         else:
             raise AssertionError
