@@ -297,8 +297,8 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period, periods_d
             # Create prediction model based on the random subset of points where the EMAX is
             # actually simulated and thus dependent and independent variables are available. For
             # the interpolation points, the actual values are used.
-            predictions = get_predictions(endogenous, exogenous, maxe,
-                is_simulated, file_sim, is_write)
+            predictions = get_predictions(endogenous, exogenous, maxe, is_simulated, file_sim,
+                is_write)
 
             # Store results
             periods_emax[period, :num_states] = predictions
@@ -425,23 +425,21 @@ def get_endogenous_variable(period, num_periods, num_states, periods_rewards_sys
     return endogenous_variable, opt_ambi_details
 
 
-def get_predictions(endogenous, exogenous, maxe, is_simulated, file_sim,
-        is_write):
-    """ Fit an OLS regression of the exogenous variables on the endogenous
-    variables and use the results to predict the endogenous variables for all
-    points in the state space.
+def get_predictions(endogenous, exogenous, maxe, is_simulated, file_sim, is_write):
+    """ Fit an OLS regression of the exogenous variables on the endogenous variables and use the
+    results to predict the endogenous variables for all points in the state space.
     """
     # Define ordinary least squares model and fit to the data.
     model = sm.OLS(endogenous[is_simulated], exogenous[is_simulated])
     results = model.fit()
 
-    # Use the model to predict EMAX for all states. As in
-    # Keane & Wolpin (1994), negative predictions are truncated to zero.
+    # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994), negative
+    # predictions are truncated to zero.
     endogenous_predicted = results.predict(exogenous)
     endogenous_predicted = np.clip(endogenous_predicted, 0.00, None)
 
-    # Construct predicted EMAX for all states and the replace
-    # interpolation points with simulated values.
+    # Construct predicted EMAX for all states and the replace interpolation points with simulated
+    # values.
     predictions = endogenous_predicted + maxe
     predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
 

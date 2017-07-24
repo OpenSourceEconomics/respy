@@ -52,11 +52,10 @@ class TestClass(object):
             init_dict['INTERPOLATION']['flag'] = True
 
     def test_2(self):
-        """ This test compares the results from a solution using the
-        interpolation code for the special case where the number of interpolation
-        points is exactly the number of states in the final period. In this case
-        the interpolation code is run and then all predicted values replaced
-        with their actual values.
+        """ This test compares the results from a solution using the interpolation code for the
+        special case where the number of interpolation points is exactly the number of states in
+        the final period. In this case the interpolation code is run and then all predicted
+        values replaced with their actual values.
         """
         # Set initial constraints
         constr = dict()
