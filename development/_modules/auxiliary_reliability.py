@@ -108,6 +108,12 @@ def run_single(spec_dict, fname):
             # This is an update with the results from the dynamic risk estimation.
             respy_obj.update_optim_paras(x)
 
+            # We want to be able to start the ambiguity estimation directly from the risk-only
+            # case. This requires that we adjust the the starting values for the discount factor
+            # manually from zero as it otherwise violates the bounds.
+            if respy_obj.attr['optim_paras']['delta'] == 0.0:
+                respy_obj.attr['optim_paras']['delta'] = np.array([0.85])
+
             # Note that we start with the maximum level to perturb the system.
             respy_obj.attr['optim_paras']['level'] = np.array([0.10])
             respy_obj.attr['optim_paras']['paras_fixed'][:2] = [False, False]

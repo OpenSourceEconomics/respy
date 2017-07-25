@@ -36,7 +36,7 @@ if __name__ == '__main__':
     if is_debug:
         spec_dict['update']['num_periods'] = 3
         spec_dict['update']['num_procs'] = 4
-        spec_dict['update']['level'] = 0.00
+        spec_dict['update']['level'] = 0.01
         spec_dict['update']['maxfun'] = 0
 
     run(spec_dict)
