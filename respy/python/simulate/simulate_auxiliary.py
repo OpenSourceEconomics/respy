@@ -187,8 +187,11 @@ def write_out(respy_obj, data_frame):
     # Distribute class attributes
     file_sim = respy_obj.get_attr('file_sim')
 
+    # We maintain several versions of the file.
     with open(file_sim + '.respy.dat', 'w') as file_:
         data_frame.to_string(file_, index=False, header=True, na_rep='.')
+
+    data_frame.to_pickle(file_)
 
 
 def format_float(x):
