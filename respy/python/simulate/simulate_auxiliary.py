@@ -191,7 +191,8 @@ def write_out(respy_obj, data_frame):
     with open(file_sim + '.respy.dat', 'w') as file_:
         data_frame.to_string(file_, index=False, header=True, na_rep='.')
 
-    data_frame.to_pickle(file_)
+    with open(file_sim + '.respy.pkl', 'wb') as file_:
+        data_frame.to_pickle(file_)
 
 
 def format_float(x):
