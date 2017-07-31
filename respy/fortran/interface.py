@@ -238,7 +238,9 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         line = '{0:10d}\n'.format(maxfun)
         file_.write(line)
 
-        line = '{0:10d}\n'.format(num_agents_est)
+        # We allow to estimate only on a subset of the requested number of agents to ease use of
+        # program, i.e. iteratively add different initial conditions.
+        line = '{0:10d}\n'.format(len(np.unique(data_array[:, 0])))
         file_.write(line)
 
         line = '{0:10d}\n'.format(num_draws_prob)

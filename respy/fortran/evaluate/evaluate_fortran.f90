@@ -74,7 +74,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     INTEGER(our_int)                :: counts(4)
     INTEGER(our_int)                :: row_start
     INTEGER(our_int)                :: edu_start
-    INTEGER(our_int)                :: num_rows
     INTEGER(our_int)                :: num_obs
     INTEGER(our_int)                :: choice
     INTEGER(our_int)                :: period
@@ -96,9 +95,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    ! Construct auxiliary objects
-    num_rows = SIZE(data_evaluate, 1)
 
     shocks_cov = MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(optim_paras%shocks_cholesky))
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
