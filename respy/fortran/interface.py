@@ -1,5 +1,4 @@
-""" This module serves as the interface between the PYTHON code and the
-FORTRAN implementations.
+""" This module serves as the interface between the PYTHON code and the FORTRAN implementations.
 """
 import pandas as pd
 import numpy as np
@@ -7,8 +6,9 @@ import subprocess
 import os
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import EXEC_DIR
 
@@ -19,14 +19,12 @@ def resfort_interface(respy_obj, request, data_array=None):
     # Distribute class attributes
     optim_paras, num_periods, edu_spec, is_debug, num_draws_emax, seed_emax, is_interpolated, \
     num_points_interp, is_myopic, tau, num_procs, num_agents_sim, num_draws_prob, \
-    num_agents_est, seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, \
-        precond_spec, ambi_spec, file_sim, num_paras, num_types = \
-            dist_class_attributes(respy_obj, 'optim_paras', 'num_periods', 'edu_spec',
-                'is_debug', 'num_draws_emax', 'seed_emax', 'is_interpolated',
-                'num_points_interp', 'is_myopic', 'tau', 'num_procs', 'num_agents_sim',
-                'num_draws_prob', 'num_agents_est', 'seed_prob', 'seed_sim',
-                'optimizer_options', 'optimizer_used', 'maxfun', 'precond_spec', 'ambi_spec',
-                'file_sim', 'num_paras', 'num_types')
+    seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, precond_spec, ambi_spec, \
+    file_sim, num_paras, num_types = dist_class_attributes(respy_obj, 'optim_paras',
+        'num_periods', 'edu_spec', 'is_debug', 'num_draws_emax', 'seed_emax', 'is_interpolated',
+        'num_points_interp', 'is_myopic', 'tau', 'num_procs', 'num_agents_sim',
+        'num_draws_prob', 'seed_prob', 'seed_sim', 'optimizer_options', 'optimizer_used',
+        'maxfun', 'precond_spec', 'ambi_spec', 'file_sim', 'num_paras', 'num_types')
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -39,7 +37,7 @@ def resfort_interface(respy_obj, request, data_array=None):
         write_dataset(data_array)
 
     args = (optim_paras, is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_est, num_agents_sim,
+            is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim,
             seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
             optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim, data_array,
             num_types)
@@ -133,8 +131,8 @@ def read_data(label, shape):
 
 
 def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, num_periods,
-        num_points_interp, is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_est,
-        num_agents_sim, seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
+        num_points_interp, is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim,
+        seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim, data_array,
         num_types):
     """ Write out model request to hidden file .model.resfort.ini.
@@ -239,8 +237,14 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         file_.write(line)
 
         # We allow to estimate only on a subset of the requested number of agents to ease use of
-        # program, i.e. iteratively add different initial conditions.
-        line = '{0:10d}\n'.format(len(np.unique(data_array[:, 0])))
+        # program, i.e. iteratively add different initial conditions. We need to handle the case
+        # where only a simulation in requested and thus data_array is None.
+        if data_array is not None:
+            num_agents_est = len(np.unique(data_array[:, 0]))
+        else:
+            num_agents_est = MISSING_INT
+
+        line = '{0:10d}\n'.format(num_agents_est)
         file_.write(line)
 
         line = '{0:10d}\n'.format(num_draws_prob)
