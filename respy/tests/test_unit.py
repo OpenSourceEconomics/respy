@@ -6,7 +6,10 @@ from respy.python.solve.solve_auxiliary import calculate_wages_systematic
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_auxiliary import get_optim_paras
+from respy.python.shared.shared_auxiliary import print_init_dict
+
 from codes.random_init import generate_init
 from respy import simulate
 from respy import RespyCls
@@ -166,3 +169,34 @@ class TestClass(object):
             rslt = back_out_systematic_wages(*args)
 
             np.testing.assert_almost_equal(rslt, wages)
+
+    def test_5(self):
+        """ Testing the return values for the total values in case of myopic individuals.
+        """
+        constr = dict()
+        constr['flag_myopic'] = True
+
+        init_dict = generate_init(constr)
+
+        # The equality below does not hold if schooling is an inadmissible state.
+        init_dict['EDUCATION']['max'] = 99
+        print_init_dict(init_dict)
+
+        respy_obj = RespyCls('test.respy.ini')
+        respy_obj, _ = simulate(respy_obj)
+
+        num_periods, optim_paras, edu_spec, mapping_state_idx, periods_emax, states_all, \
+            periods_rewards_systematic, states_number_period = dist_class_attributes(respy_obj,
+            'num_periods', 'optim_paras', 'edu_spec', 'mapping_state_idx', 'periods_emax',
+            'states_all', 'periods_rewards_systematic', 'states_number_period')
+
+        period = np.random.choice(range(num_periods))
+        k = np.random.choice(range(states_number_period[period]))
+
+        rewards_systematic = periods_rewards_systematic[period, k, :]
+        draws = np.random.normal(size=4)
+
+        total_values, rewards_ex_post = get_total_values(period, num_periods, optim_paras,
+            rewards_systematic, draws, edu_spec, mapping_state_idx, periods_emax, k, states_all)
+
+        np.testing.assert_almost_equal(total_values, rewards_ex_post)
