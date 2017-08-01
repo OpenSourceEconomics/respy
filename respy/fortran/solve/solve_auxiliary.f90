@@ -532,6 +532,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
     !/* internal objects        */
 
     REAL(our_dble)                      :: rewards_systematic(4)
+    REAL(our_dble)                      :: rewards_ex_post(4)
     REAL(our_dble)                      :: total_values(4)
     REAL(our_dble)                      :: diff(4)
 
@@ -546,7 +547,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 
         rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-        CALL get_total_values(total_values, period, num_periods, rewards_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
+        CALL get_total_values(total_values, rewards_ex_post, period, num_periods, rewards_systematic, shifts, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
         ! Implement level shifts
         maxe(k + 1) = MAXVAL(total_values)

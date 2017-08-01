@@ -405,10 +405,11 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
+SUBROUTINE get_total_values(total_values, rewards_ex_post, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
     !/* external objects        */
 
+    REAL(our_dble), INTENT(OUT)         :: rewards_ex_post(4)
     REAL(our_dble), INTENT(OUT)         :: total_values(4)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
@@ -420,15 +421,14 @@ SUBROUTINE get_total_values(total_values, period, num_periods, rewards_systemati
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 
-    REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: periods_emax(num_periods, max_states_period)
+    REAL(our_dble), INTENT(IN)      :: rewards_systematic(4)
     REAL(our_dble), INTENT(IN)      :: draws(4)
 
     !/* internal objects        */
 
     REAL(our_dble)                  :: wages_systematic(2)
     REAL(our_dble)                  :: total_increment(2)
-    REAL(our_dble)                  :: rewards_ex_post(4)
     REAL(our_dble)                  :: emaxs(4)
 
     INTEGER(our_int)                :: activity_lagged

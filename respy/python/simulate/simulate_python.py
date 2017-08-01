@@ -40,7 +40,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
     count = 0
 
     # Initialize data
-    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 25))
+    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 29))
 
     for i in range(num_agents_sim):
 
@@ -68,8 +68,8 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
-            total_values = get_total_values(period, num_periods, optim_paras, rewards_systematic,
-                draws, edu_spec, mapping_state_idx, periods_emax, k, states_all)
+            total_values, rewards_ex_post = get_total_values(period, num_periods, optim_paras,
+                rewards_systematic, draws, edu_spec, mapping_state_idx, periods_emax, k, states_all)
 
             # We need to ensure that no individual chooses an inadmissible state. This cannot be
             # done directly in the get_total_values function as the penalty otherwise dominates
@@ -106,11 +106,12 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             dataset[count, 17:21] = draws
             dataset[count, 21:22] = optim_paras['delta']
 
-            # For testing purposes, we also explicitly include the general reward component and
-            # the common component.
+            # For testing purposes, we also explicitly include the general reward component,
+            # the common component, and the immediate ex post rewards.
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
             dataset[count, 22:24] = calculate_rewards_general(covariates, optim_paras)
             dataset[count, 24:25] = calculate_rewards_common(covariates, optim_paras)
+            dataset[count, 25:29] = rewards_ex_post
 
             # Update work experiences or education
             if max_idx in [0, 1, 2]:

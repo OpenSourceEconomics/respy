@@ -315,7 +315,7 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
 
     !/* external objects        */
 
-    DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 25)
+    DOUBLE PRECISION, INTENT(OUT)   :: data_sim_int(num_agents_sim_int * num_periods_int, 29)
 
     DOUBLE PRECISION, INTENT(IN)    :: periods_rewards_systematic_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_sims(:, :, :)

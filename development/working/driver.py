@@ -56,7 +56,7 @@ open('.restud.respy.scratch', 'w').close()
 
 for _ in range(1):
 
-    for version in ['FORTRAN', 'PYTHON']:
+    for version in ['PYTHON', 'FORTRAN']:
         print(' Iteration ', _)
 
         #constr = dict()
@@ -75,8 +75,8 @@ for _ in range(1):
         g, val = estimate(respy_obj)
 
         if respy_obj.get_attr('version') == 'FORTRAN':
-            rslt = 0.653385234710539
+            rslt = 3.537671851739037
             np.testing.assert_allclose(val, rslt)
         else:
-            rslt = 0.93461600819129
+            rslt = 4.038332716547668
             np.testing.assert_allclose(val, rslt)

@@ -18,7 +18,7 @@ def construct_emax_risk(num_periods, num_draws_emax, period, k, draws_emax_risk,
         draws = draws_emax_risk[i, :]
 
         # Get total value of admissible states
-        total_values = get_total_values(period, num_periods, optim_paras, rewards_systematic,
+        total_values, _ = get_total_values(period, num_periods, optim_paras, rewards_systematic,
             draws, edu_spec, mapping_state_idx, periods_emax, k, states_all)
 
         # Determine optimal choice

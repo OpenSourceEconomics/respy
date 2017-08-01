@@ -67,6 +67,8 @@ DATA_LABELS_SIM += ['Systematic_Reward_3', 'Systematic_Reward_4']
 DATA_LABELS_SIM += ['Shock_Reward_1', 'Shock_Reward_2']
 DATA_LABELS_SIM += ['Shock_Reward_3', 'Shock_Reward_4']
 DATA_LABELS_SIM += ['Discount_Rate', 'General_Reward_1', 'General_Reward_2', 'Common_Reward']
+DATA_LABELS_SIM += ['Immediate_Reward_1', 'Immediate_Reward_2', 'Immediate_Reward_3']
+DATA_LABELS_SIM += ['Immediate_Reward_4']
 
 DATA_FORMATS_EST = dict()
 for key_ in DATA_LABELS_EST:

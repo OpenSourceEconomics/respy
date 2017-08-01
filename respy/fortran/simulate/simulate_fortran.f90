@@ -52,6 +52,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     REAL(our_dble)                  :: shocks_mean(4) = zero_dble
     REAL(our_dble)                  :: rewards_systematic(4)
     REAL(our_dble)                  :: wages_systematic(2)
+    REAL(our_dble)                  :: rewards_ex_post(4)
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws(4)
 
@@ -76,7 +77,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     CALL record_simulation(num_agents_sim, seed_sim, file_sim)
 
 
-    ALLOCATE(data_sim(num_periods * num_agents_sim, 25))
+    ALLOCATE(data_sim(num_periods * num_agents_sim, 29))
 
     !Standard deviates transformed to the distributions relevant for the agents actual decision making as traversing the tree.
     DO period = 1, num_periods
@@ -127,7 +128,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             draws = periods_draws_sims_transformed(period + 1, i + 1, :)
 
             ! Calculate total utilities
-            CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
+            CALL get_total_values(total_values, rewards_ex_post, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
             ! We need to ensure that no individual chooses an inadmissible state. This cannot be done directly in the get_total_values function as the penalty otherwise dominates the interpolation equation. The parameter INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very constructed cases.
             IF (edu >= edu_spec%max) total_values(3) = -HUGE_FLOAT
@@ -157,7 +158,8 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
             data_sim(count + 1, 23:24) = calculate_rewards_general(covariates, optim_paras)
             data_sim(count + 1, 25:25) = calculate_rewards_common(covariates, optim_paras)
-
+            data_sim(count + 1, 26:29) = rewards_ex_post
+            
             !# Update work experiences or education
             IF ((choice .EQ. one_int) .OR. (choice .EQ. two_int) .OR. (choice .EQ. three_int)) THEN
                 current_state(choice) = current_state(choice) + 1

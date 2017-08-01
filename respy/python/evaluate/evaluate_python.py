@@ -123,7 +123,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                     draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
 
                     # Calculate total values.
-                    total_values = get_total_values(period, num_periods, optim_paras,
+                    total_values, _ = get_total_values(period, num_periods, optim_paras,
                         rewards_systematic, draws, edu_spec, mapping_state_idx, periods_emax, k,
                         states_all)
 

@@ -372,7 +372,7 @@ def get_exogenous_variables(period, num_periods, num_states, periods_rewards_sys
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Get total value
-        total_values = get_total_values(period, num_periods, optim_paras, rewards_systematic,
+        total_values, _ = get_total_values(period, num_periods, optim_paras, rewards_systematic,
             shifts, edu_spec, mapping_state_idx, periods_emax, k, states_all)
 
         # Implement level shifts

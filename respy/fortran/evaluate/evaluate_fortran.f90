@@ -58,6 +58,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble)                  :: prob_obs(num_periods)
     REAL(our_dble)                  :: prob_type(num_types)
     REAL(our_dble)                  :: wages_systematic(2)
+    REAL(our_dble)                  :: rewards_ex_post(4)
     REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws_cond(4)
@@ -203,7 +204,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
                     ! Calculate total values.
 
-                    CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
+                    CALL get_total_values(total_values, rewards_ex_post, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
                     ! Record optimal choices
                     counts(MAXLOC(total_values)) = counts(MAXLOC(total_values)) + 1

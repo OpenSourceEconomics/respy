@@ -246,7 +246,7 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
         total_values[2] += INADMISSIBILITY_PENALTY
 
     # Finishing
-    return total_values
+    return total_values, rewards_ex_post
 
 
 def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):

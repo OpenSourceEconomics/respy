@@ -39,6 +39,7 @@ SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systema
 
     INTEGER(our_int)                :: i
 
+    REAL(our_dble)                  :: rewards_ex_post(4)
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws(4)
     REAL(our_dble)                  :: maximum
@@ -55,7 +56,7 @@ SUBROUTINE construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systema
         draws = draws_emax_risk(i, :)
 
         ! Calculate total value
-        CALL get_total_values(total_values, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
+        CALL get_total_values(total_values, rewards_ex_post, period, num_periods, rewards_systematic, draws, mapping_state_idx, periods_emax, k, states_all, optim_paras, edu_spec)
 
         ! Determine optimal choice
         maximum = MAXVAL(total_values)

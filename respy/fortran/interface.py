@@ -96,7 +96,7 @@ def get_results(num_periods, edu_spec, num_agents_sim, num_types, which):
 
     # In case of  a simulation, we can also process the simulated dataset.
     if which == 'simulate':
-        shape = (num_periods * num_agents_sim, 25)
+        shape = (num_periods * num_agents_sim, 29)
         data_array = read_data('simulated', shape)
     else:
         raise AssertionError
