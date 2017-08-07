@@ -121,18 +121,24 @@ def write_info(respy_obj, data_frame):
         file_.write('\n')
 
         # Additional information about the simulated economy
-        fmt_ = '    {:<20}' + '   {:15.5f}\n'
+        fmt_ = '    {:<16}' + '   {:15.5f}\n'
         file_.write('   Additional Information\n\n')
 
+        stat = (data_frame['Choice'] == 1).sum() / float(num_agents_sim)
+        file_.write(fmt_.format(*['Average Work A',  stat]))
+
+        stat = (data_frame['Choice'] == 2).sum() / float(num_agents_sim)
+        file_.write(fmt_.format(*['Average Work B', stat]))
+
+        # TODO: This is wrong, see Issue #45
+        # The calculation of years of schooling does need to account for the different levels of
+        # initial schooling.
         dat = data_frame['Years_Schooling'].loc[slice(None), num_periods - 1]
-        file_.write(fmt_.format(*['Average Education', dat.mean()]))
+        file_.write(fmt_.format(*['Average School', dat.mean()]))
+
+        stat = (data_frame['Choice'] == 4).sum() / float(num_agents_sim)
+        file_.write(fmt_.format(*['Average Home', stat]))
         file_.write('\n')
-
-        dat = data_frame['Experience_A'].loc[slice(None), num_periods - 1]
-        file_.write(fmt_.format(*['Average Experience A',  dat.mean()]))
-
-        dat = data_frame['Experience_B'].loc[slice(None), num_periods - 1]
-        file_.write(fmt_.format(*['Average Experience B', dat.mean()]))
 
         file_.write('\n\n   Initial Conditions\n\n')
 
