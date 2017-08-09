@@ -21,6 +21,19 @@ def construct_transition_matrix(base_df):
     return tm
 
 
+def get_final_education(agent):
+    """ This method construct the final level of schooling for each individual.
+    """
+    edu_final = agent['Years_Schooling'].iloc[0] + (agent['Choice'] == 3).sum()
+
+    # As a little test, we just ensure that the final level of education is equal or less the
+    # level the agent entered the final period.
+    valid = [agent['Years_Schooling'].iloc[-1], agent['Years_Schooling'].iloc[-1] + 1]
+    np.testing.assert_equal(edu_final in valid, True)
+
+    return edu_final
+
+
 def write_info(respy_obj, data_frame):
     """ Write information about the simulated economy.
     """
@@ -130,11 +143,13 @@ def write_info(respy_obj, data_frame):
         stat = (data_frame['Choice'] == 2).sum() / float(num_agents_sim)
         file_.write(fmt_.format(*['Average Work B', stat]))
 
-        # TODO: This is wrong, see Issue #45
-        # The calculation of years of schooling does need to account for the different levels of
-        # initial schooling.
-        dat = data_frame['Years_Schooling'].loc[slice(None), num_periods - 1]
-        file_.write(fmt_.format(*['Average School', dat.mean()]))
+        # The calculation of years of schooling is a little more difficult to determine as we
+        # need to account for the different levels of initial schooling. The column on
+        # Years_Schooling only contains information on the level of schooling attainment going in
+        # the period, thus is not identical to the final level of schooling for individuals that
+        # enroll in school in the very last period.
+        stat = data_frame.groupby(level='Identifier').apply(get_final_education).mean()
+        file_.write(fmt_.format(*['Average School', stat]))
 
         stat = (data_frame['Choice'] == 4).sum() / float(num_agents_sim)
         file_.write(fmt_.format(*['Average Home', stat]))
