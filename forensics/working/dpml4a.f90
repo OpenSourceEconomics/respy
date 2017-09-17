@@ -2,6 +2,9 @@
 !*******************************************************************************
 PROGRAM dpml4a
 
+  ! PEI: Interface to added functions
+  USE PEI_ADDITIONS
+
   ! PEI: Interface to IMSL replacements
   USE IMSL_REPLACEMENTS
 
@@ -63,10 +66,10 @@ PROGRAM dpml4a
       DIMENSION XX(10,10),XXI(10,10)
       DIMENSION XXIV(100)
 !C***ALLOWS FOR FORTY PERIODS AND 500 POINTS IN INTERPOLATING
-      DIMENSION EMAXS(500)
-      INTEGER TK(500,40)
-      INTEGER TK1(500)
-      DIMENSION Y(500)
+      DIMENSION EMAXS(13150)
+      INTEGER TK(13150,40)
+      INTEGER TK1(13150)
+      DIMENSION Y(13150)
       INTEGER X1,X2,E,T
       INTEGER TM20,T20
       CHARACTER*4 TRANS
@@ -1879,7 +1882,8 @@ PROGRAM dpml4a
 !* WRITE OUT REPLICATION NUMBER AND THE SEEDS FOR NEXT REPLICATION *
 !*******************************************************************
       REWIND(UNIT=13)
-      WRITE(13,1313) IRUN+1,ISEED,ISEED1,ISEED2
+      ! PEI: This is turned off, I am just interested in the first iteration.
+      ! WRITE(13,1313) IRUN+1,ISEED,ISEED1,ISEED2
       STOP
       END
 !**********************************
