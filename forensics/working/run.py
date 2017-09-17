@@ -17,7 +17,7 @@ PRODUCTION_OPTIONS = ' -O3'
 
 # I rely on production options for this script, as I also run the estimation
 # below.
-OPTIONS = PRODUCTION_OPTIONS
+OPTIONS = DEBUG_OPTIONS
 
 # Some strings that show up repeatedly in compiler command.
 MODULES = '_imsl_replacements.f90'
@@ -27,4 +27,3 @@ LAPACK = '-L/usr/lib/lapack -llapack'
 cmd = ' gfortran ' + OPTIONS + ' -o dpml4a ' + MODULES + \
       ' dpml4a.f90 ' + LAPACK
 os.system(cmd + '; ./dpml4a')
-

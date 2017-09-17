@@ -63,12 +63,12 @@ PROGRAM dpml4a
       DIMENSION XX(10,10),XXI(10,10)
       DIMENSION XXIV(100)
 !C***ALLOWS FOR FORTY PERIODS AND 500 POINTS IN INTERPOLATING
-      DIMENSION EMAXS(500)    
+      DIMENSION EMAXS(500)
       INTEGER TK(500,40)
       INTEGER TK1(500)
-      DIMENSION Y(500) 
+      DIMENSION Y(500)
       INTEGER X1,X2,E,T
-      INTEGER TM20,T20 
+      INTEGER TM20,T20
       CHARACTER*4 TRANS
 
       ! PEI: Set up file connectors
@@ -76,7 +76,7 @@ PROGRAM dpml4a
       open(11,file='output1.txt'); open(12,file='in1new.txt')
       open(13,file='seed.txt'); open(14,file='PARMtest.txt')
       open(15,file='STDERRtest.txt'); open(17,file='emax1test.txt')
-      
+
       READ(9,1500) NPER,NPOP,DRAW,DRAW1,TAU,NITER,MAXIT,MAXSTP,TRANS,INTP,PMIN
       WRITE(11,1500) NPER,NPOP,DRAW,DRAW1,TAU,NITER,MAXIT,MAXSTP,TRANS,INTP,PMIN
       WRITE(12,1500) NPER,NPOP,DRAW,DRAW1,TAU,NITER,MAXIT,MAXSTP,TRANS,INTP,PMIN
@@ -85,10 +85,10 @@ PROGRAM dpml4a
       NPARM=27
       PMIN = 1.0/(10.0**PMIN)
 !C***SET NUMBER OF PARAMS IN INTERPOLATING REGRESSION
-      NPTA=8 
+      NPTA=8
       NPT=8
 !C***SET NUMBER OF INTERPOLATING POINTS
-!C     INTP=50 
+!C     INTP=50
 !C     INTP=100
 !C     INTP=250
 !C     INTP=500
@@ -96,17 +96,17 @@ PROGRAM dpml4a
 !C     INTP=2000
 !C     INTP=13150
 !C**CHOOSE PERIOD AT WHICH INTERPOLATION BEGINS
-      IF(INTP.EQ.50) INTPER=5 
-      IF(INTP.EQ.100) INTPER=7 
-      IF(INTP.EQ.150) INTPER=8 
-      IF(INTP.EQ.200) INTPER=8 
-      IF(INTP.EQ.250) INTPER=9 
+      IF(INTP.EQ.50) INTPER=5
+      IF(INTP.EQ.100) INTPER=7
+      IF(INTP.EQ.150) INTPER=8
+      IF(INTP.EQ.200) INTPER=8
+      IF(INTP.EQ.250) INTPER=9
       IF(INTP.EQ.500) INTPER=11
       IF(INTP.EQ.1000) INTPER=15
       IF(INTP.EQ.2000) INTPER=19
       IF(INTP.EQ.3000) INTPER=22
       IF(INTP.EQ.13150) INTPER=41
-!C     INTPER = 3                 
+!C     INTPER = 3
       ALPHA=0.1
 !C     GAMA=0.57
       WNA=-9.99
@@ -114,17 +114,17 @@ PROGRAM dpml4a
 !*****************************************************************
 !* READ IN REPLICATION NUMBER AND THE SEEDS FOR THIS REPLICATION *
 !*****************************************************************
-      READ(13,1313) IRUN,ISEED,ISEED1,ISEED2                               
-      WRITE(11,1313) IRUN,ISEED,ISEED1,ISEED2                               
+      READ(13,1313) IRUN,ISEED,ISEED1,ISEED2
+      WRITE(11,1313) IRUN,ISEED,ISEED1,ISEED2
  1313 FORMAT(I4,1x,I10,1x,I10,1x,I10)
 !*****************************
 !*  READ IN STARTING VALUES  *
 !*****************************
-      WRITE(11,1504) 
+      WRITE(11,1504)
  1504 FORMAT(' STARTING PARAMETER VECTOR:')
       DO 1 J=1,2
-      READ(9,1501) (BETA(J,K),K=1,6)                         
-      WRITE(11,1501) (BETA(J,K),K=1,6)                         
+      READ(9,1501) (BETA(J,K),K=1,6)
+      WRITE(11,1501) (BETA(J,K),K=1,6)
  1501 FORMAT(6(1x,f10.6))
     1 CONTINUE
       READ(9,1502) CBAR1,CBAR2,CS,VHOME,DELTA
@@ -140,13 +140,13 @@ PROGRAM dpml4a
 !*******************
 !*  READ IN NAMES  *
 !*******************
-      WRITE(11,1607) 
+      WRITE(11,1607)
  1607 FORMAT(' NAMES OF PARAMETERS:')
       DO 201 J=1,2
        READ(9,1601) (NAME(K),K=(J-1)*6+1,J*6)
-       WRITE(11,1601) (NAME(K),K=(J-1)*6+1,J*6) 
+       WRITE(11,1601) (NAME(K),K=(J-1)*6+1,J*6)
  1601  FORMAT(6(1X,A8))
-  201 CONTINUE  
+  201 CONTINUE
       READ(9,1602) (NAME(K),K=2*6+1,2*6+5)
       WRITE(11,1602) (NAME(K),K=2*6+1,2*6+5)
  1602 FORMAT(5(1X,A8))
@@ -160,13 +160,13 @@ PROGRAM dpml4a
 !**************************
 !*  READ IN IPARM VECTOR  *
 !**************************
-      WRITE(11,1608) 
+      WRITE(11,1608)
  1608 FORMAT(' PARAMETERS ITERATED ON:')
       DO 203 J=1,2
        READ(9,1604) (IPARM(K),K=(J-1)*6+1,J*6)
        WRITE(11,1604) (IPARM(K),K=(J-1)*6+1,J*6)
  1604  FORMAT(6I1)
-  203 CONTINUE  
+  203 CONTINUE
       READ(9,1605) (IPARM(K),K=2*6+1,2*6+5)
       WRITE(11,1605) (IPARM(K),K=2*6+1,2*6+5)
  1605 FORMAT(5I1)
@@ -203,14 +203,14 @@ PROGRAM dpml4a
       DO 4 K=1,6
        NP = NP + 1
        CPARM(NP) = BETA(J,K)
-    4 CONTINUE  
+    4 CONTINUE
     3 CONTINUE
        NP = NP + 1
        CPARM(NP) = CBAR1
        NP = NP + 1
        CPARM(NP) = CBAR2
        NP = NP + 1
-       CPARM(NP) = CS   
+       CPARM(NP) = CS
        NP = NP + 1
        CPARM(NP) = VHOME
        NP = NP + 1
@@ -231,7 +231,7 @@ PROGRAM dpml4a
           GOTO 7000
         ENDIF
         CPARMS(JJ) = CPARM(JJ)
-       ELSE 
+       ELSE
         CPARMS(JJ) = CPARM(JJ)
        ENDIF
  7000 CONTINUE
@@ -243,7 +243,7 @@ PROGRAM dpml4a
 !******************
 !C***SKIP TO THE PROPER PLACE IN THE DATA FILE FOR THIS REPLICATION
       DO 7777 J=1,4000*(IRUN-1)
-       READ(10,*)            
+       READ(10,*)
  7777 CONTINUE
       DO 7 I=1,NPOP
       READ(10,1000) IPPP,TIME(I),STATE(I,1),WAGE(I,1),EXPER(I,1,1),EXPER(I,1,2),EDUC(I,1),LSCHL(I,1)
@@ -298,7 +298,7 @@ PROGRAM dpml4a
 !CCC      IF(ICOUNT0(K).GT.0) THEN
 !CCC       WRITE(11,1715) T,K,(ICOUNT(K,J),J=1,4)
 !C1715     FORMAT(' T=',I2,' K=',I4,' COUNTS=',4I6)
-!CCC      ENDIF   
+!CCC      ENDIF
 !CC713   CONTINUE
 !CC707 CONTINUE
 !***************************
@@ -314,11 +314,11 @@ PROGRAM dpml4a
        CALL RNNOR(4,RV)
        RNN(J,T,1)=RV(1)
        RNN(J,T,2)=RV(2)
-       RNN(J,T,3)=RV(3) 
+       RNN(J,T,3)=RV(3)
        RNN(J,T,4)=RV(4)
    10 CONTINUE
     9 CONTINUE
-      CALL RNGET(ISEED) 
+      CALL RNGET(ISEED)
 !C     CALL RNSET(2020202020)
       CALL RNSET(ISEED1)
 !C***DRAW THE RANDOM VARIABLES FOR SIMULATING THE LIKELIHOOD
@@ -347,7 +347,7 @@ PROGRAM dpml4a
        IBAD = 0
  5001 CONTINUE
        ISTEP = ISTEP + 1
-       WRITE(11,4000) ITER,ISTEP 
+       WRITE(11,4000) ITER,ISTEP
  4000  FORMAT(/,' ITERATION = ',I2,'  STEP =',I2,/)
 !**********************************************
 !*  IF ISTEP IS 0 THEN CALCULATE DERIVATIVES  *
@@ -355,10 +355,10 @@ PROGRAM dpml4a
       IP = 0
       IF(ISTEP.EQ.0) NP = 0
       IF(ISTEP.GT.0) NP = NPARM
- 6000 CONTINUE 
+ 6000 CONTINUE
       NP = NP + 1
 !C     WRITE(11,4005) NP
-!C4005 FORMAT(' NP = ',I2) 
+!C4005 FORMAT(' NP = ',I2)
 !C***WHEN NP=NPARM+1 CALCULATE THE LOG LIKELIHOOD
       IF(NP.EQ.NPARM+1) GOTO 6001
 !C***JUMP TO 6003 AFTER DERIVS AND LIKELIHOOD HAVE BEEN CONSTRUCTED
@@ -370,7 +370,7 @@ PROGRAM dpml4a
 !*  IF ISTEP IS 0 THEN CALCULATE DERIVATIVES  *
 !**********************************************
 !C     WRITE(11,4006) NP,IP
-!C4006 FORMAT(' WORKING ON DERIV FOR NP = ',I2,' IP = ',I2) 
+!C4006 FORMAT(' WORKING ON DERIV FOR NP = ',I2,' IP = ',I2)
       DO 100 JJ = 1,NPARM
 !C      IF(JJ.EQ.NP) CPARMB(JJ) = CPARM(JJ)*(1.0 + BUMP) + BUMP
 !C      IF(JJ.EQ.NP) CPARMB(JJ) = CPARM(JJ) + BUMP
@@ -385,7 +385,7 @@ PROGRAM dpml4a
          CPARMB(JJ) = CPARM(JJ) + BUMP
         ELSE
          CPARMB(JJ) = CPARM(JJ) + BUMP
-        ENDIF 
+        ENDIF
        ENDIF
        IF(JJ.NE.NP) CPARMB(JJ) = CPARM(JJ)
   100 CONTINUE
@@ -393,15 +393,15 @@ PROGRAM dpml4a
       DO 101 J=1,2
       DO 102 K=1,6
        L = L + 1
-       BETA(J,K) = CPARMB(L) 
-  102 CONTINUE  
+       BETA(J,K) = CPARMB(L)
+  102 CONTINUE
   101 CONTINUE
        L = L + 1
-       CBAR1 = CPARMB(L) 
+       CBAR1 = CPARMB(L)
        L = L + 1
-       CBAR2 = CPARMB(L) 
+       CBAR2 = CPARMB(L)
        L = L + 1
-       CS = CPARMB(L) 
+       CS = CPARMB(L)
        L = L + 1
        VHOME = CPARMB(L)
        L = L + 1
@@ -428,15 +428,15 @@ PROGRAM dpml4a
       DO 109 J=1,2
       DO 110 K=1,6
        L = L + 1
-       BETA(J,K) = CPARM(L) 
-  110 CONTINUE  
+       BETA(J,K) = CPARM(L)
+  110 CONTINUE
   109 CONTINUE
        L = L + 1
-       CBAR1 = CPARM(L) 
+       CBAR1 = CPARM(L)
        L = L + 1
-       CBAR2 = CPARM(L) 
+       CBAR2 = CPARM(L)
        L = L + 1
-       CS = CPARM(L) 
+       CS = CPARM(L)
        L = L + 1
        VHOME = CPARM(L)
        L = L + 1
@@ -510,7 +510,7 @@ PROGRAM dpml4a
       DO 16 X1=0,NPER-1
       DO 17 X2=0,NPER-1
         IF(X1+X2+E-10.LT.NPER) THEN
-          DO 18 LS=0,1 
+          DO 18 LS=0,1
           IF((LS.EQ.0).AND.((E-NPER).EQ.9)) GOTO 18
           IF((LS.EQ.1).AND.(E.EQ.10)) GOTO 18
            K=K+1
@@ -529,8 +529,8 @@ PROGRAM dpml4a
 !*  SET NUMBER OF INTERPOLATING POINTS  *
 !****************************************
       IF(NPER.GE.INTPER) THEN
-        IF(KMAX.GE.INTP) KKMAX=INTP 
-        IF(KMAX.LT.INTP) KKMAX=KMAX 
+        IF(KMAX.GE.INTP) KKMAX=INTP
+        IF(KMAX.LT.INTP) KKMAX=KMAX
        ELSE
         KKMAX=KMAX
       ENDIF
@@ -541,7 +541,7 @@ PROGRAM dpml4a
 !************************************
       IF((ITER.EQ.1).AND.(ISTEP.EQ.0).AND.(IP.EQ.1)) THEN
       IF(NPER.GE.INTPER) THEN
-!C      write(11,1512) NPER,INTPER 
+!C      write(11,1512) NPER,INTPER
 !C1512  format(' A: NPER=',I2,' INTPER=',I2)
        CALL RNOPT(1)
        CALL RNSET(ISEED2)
@@ -549,13 +549,13 @@ PROGRAM dpml4a
 !C9666  format(' CALLING RNSRI, T= ',I2,' KMAX=',I5,' SEED=',I10)
        CALL RNSRI(KKMAX,KMAX,TK1)
 !C      write(11,9667) (TK1(k),k=1,50)
-!C9667  format(8I7)  
+!C9667  format(8I7)
        CALL RNGET(ISEED2)
        DO 715 K=1,KKMAX
         TK(K,NPER) = TK1(K)
   715  CONTINUE
       ELSE
-!C     write(11,1513) NPER,INTPER 
+!C     write(11,1513) NPER,INTPER
 !C1513 format(' B: NPER=',I2,' INTPER=',I2)
        DO 716 K=1,KMAX
         TK(K,NPER) = K
@@ -565,7 +565,7 @@ PROGRAM dpml4a
 !C****INITIALIZE THE MATRICES FOR THE INTERPOLATING REGRESSION
       DO 520 IQ=1,NPTA
         XY(IQ) = 0.0
-       DO 521 IR=1,NPTA 
+       DO 521 IR=1,NPTA
          XX(IQ,IR) = 0.0
   521  CONTINUE
   520 CONTINUE
@@ -586,8 +586,8 @@ PROGRAM dpml4a
 !*  SIMULATE THE EXPECTED MAX ONLY AT THE INTERPOLATING POINTS  *
 !****************************************************************
       YBAR = 0.0
-      DO 7021 KK=1,KKMAX 
-       K = TK(KK,NPER)   
+      DO 7021 KK=1,KKMAX
+       K = TK(KK,NPER)
 !C      IF(NP.EQ.NPARM+1) WRITE(11,4016) NPER,KK,K,E-9,X1,X2,LS
 !C4016  FORMAT(' T=',I2,' KK=',I2,' K=',I5,' E=',I2,' X1=',I2,
 !C    *    ' X2=',I2,' LS=',I2)
@@ -609,7 +609,7 @@ PROGRAM dpml4a
         V1=W1*EU1(J,NPER)
         V2=W2*EU2(J,NPER)
         V3=CBAR+C(J,NPER)
-        V4=VHOME+B(J,NPER) 
+        V4=VHOME+B(J,NPER)
 !C       WRITE(11,4148) J,RNN(J,NPER,1),RNN(J,NPER,2),
 !C    *       RNN(J,NPER,3),RNN(J,NPER,4)
 !C4148   FORMAT(/,' DRAW=',I2,' N1=',F10.4,' N2=',F10.4,' N3=',f10.4,
@@ -631,19 +631,19 @@ PROGRAM dpml4a
       EMAXS(KK) = EMAX(K)
 !C     write(17,9921) KK,K,EMAX(K),EMAXS(KK)
       IF(NPER.GE.INTPER) THEN
-      EV1 = W1*EXP(SIGMA(1)**2/2.0)             
-      EV2 = W2*EXP(SIGMA(2)**2/2.0)             
+      EV1 = W1*EXP(SIGMA(1)**2/2.0)
+      EV2 = W2*EXP(SIGMA(2)**2/2.0)
       RMAXV(K) = AMAX1(EV1,EV2,CBAR,VHOME)
 !C     write(11,1190) k,X1,X2,E,LS
 !C1190 format(' k=',I5,' X1=',I2,' X2=',I2,' E=',I2,' LS=',I2)
 !C     WRITE(11,1191) EV1,EV2,CBAR,VHOME
 !C1191 format(' EV1=',f10.2,' EV2=',f10.2,' EV3=',f10.2,' EV4=',F10.2)
-      IF(RMAXV(K).GT.EMAX(K)) EMAX(K) = RMAXV(K) 
+      IF(RMAXV(K).GT.EMAX(K)) EMAX(K) = RMAXV(K)
 !C     ARG = (EMAX(K)-RMAXV(K))/RMAXV(K)
-!C     write(11,1122) K,EMAX(K),RMAXV(K),ARG  
+!C     write(11,1122) K,EMAX(K),RMAXV(K),ARG
 !C1122 format(' K=',I5,' EMAX=',f10.2,' maxe=',f10.2,' y=',f10.6)
       Y(KK) = EMAX(K)-RMAXV(K)
-      YBAR = YBAR + Y(KK)/KKMAX 
+      YBAR = YBAR + Y(KK)/KKMAX
       XR(1) = 1.0
       XR(2) = PEI_SQRT(0.00001 + RMAXV(K) - EV1)
       XR(3) = PEI_SQRT(0.00001 + RMAXV(K) - EV2)
@@ -666,9 +666,9 @@ PROGRAM dpml4a
 !**************************************
       IF(NPER.GE.INTPER) THEN
 !C     DO 5528 IQ=1,NPTA
-!C     WRITE(11,5557) (XX(IQ,IR),IR=1,IQ) 
+!C     WRITE(11,5557) (XX(IQ,IR),IR=1,IQ)
 !C5557 FORMAT(' XX=',5f12.1)
-!C5528 CONTINUE 
+!C5528 CONTINUE
       CALL LINDS(NPTA,XX,10,XXI,10)
       DO 526 IQ=2,NPTA
       DO 527 IR=1,IQ-1
@@ -679,13 +679,13 @@ PROGRAM dpml4a
       DO 626 IQ=1,NPTA
       DO 627 IR=1,NPTA
         J=J+1
-        XXIV(J) = XXI(IQ,IR) 
+        XXIV(J) = XXI(IQ,IR)
   627 CONTINUE
-  626 CONTINUE  
+  626 CONTINUE
 !C     DO 5529 IQ=1,NPTA
-!C     WRITE(11,5530) (XXI(IQ,IR),IR=1,IQ) 
+!C     WRITE(11,5530) (XXI(IQ,IR),IR=1,IQ)
 !C5530 FORMAT(' XXI=',8f9.6)
-!C5529 CONTINUE 
+!C5529 CONTINUE
       DO 524 IQ=1,NPTA
          RGAMA(IQ) = 0.0
        DO 525 IR=1,NPTA
@@ -694,17 +694,17 @@ PROGRAM dpml4a
   524 CONTINUE
 !C     WRITE(11,5553)
 !C5553 FORMAT(20X,'  C     MAXE-EV1   MAXE-EV2   MAXE-EV3   MAXE-EV4',/,
-!C    *       '    MAXE-EV1   MAXE-EV2   MAXE-EV3   MAXE-EV4') 
+!C    *       '    MAXE-EV1   MAXE-EV2   MAXE-EV3   MAXE-EV4')
 !C     WRITE(11,5554) NPER,(RGAMA(IQ),IQ=1,NPTA)
-!C***CALCULATE STANDARD ERRORS 
+!C***CALCULATE STANDARD ERRORS
 !C     SSE = 0.0
 !C     SST = 0.0
-!C     DO 528 KK=1,KKMAX 
+!C     DO 528 KK=1,KKMAX
 !C      K=TK(KK,NPER)
 !C      KKN=0
 !C      DO 928 KKK=1,NPTA
 !C       KKN = KKN + 1
-!C 928  CONTINUE 
+!C 928  CONTINUE
 !C      X1=KSTATE(K,1)
 !C      X2=KSTATE(K,2)
 !C      E=KSTATE(K,3)
@@ -713,11 +713,11 @@ PROGRAM dpml4a
 !C    *        +BETA(1,5)*X2+BETA(1,6)*X2**2)
 !C      W2=EXP(BETA(2,1)+BETA(2,2)*E+BETA(2,3)*X1+BETA(2,4)*X1**2
 !C    *        +BETA(2,5)*X2+BETA(2,6)*X2**2)
-!C      IF(E.GE.12) THEN                
+!C      IF(E.GE.12) THEN
 !C       CBAR = CBAR1 - CBAR2
-!C      ELSE                    
+!C      ELSE
 !C       CBAR = CBAR1
-!C      ENDIF                   
+!C      ENDIF
 !C      IF(LS.EQ.0) CBAR = CBAR - CS
 !C      IF(E.GT.19) CBAR = CBAR - 50000.0
 !C      RMAXV(K) = AMAX1(EV1,EV2,CBAR,VHOME)
@@ -729,23 +729,23 @@ PROGRAM dpml4a
 !C      XR7 = (RMAXV(K) - EV2)/100.0
 !CC     XR8 = (RMAXV(K) - CBAR)/100.0
 !C      XR8 = (RMAXV(K) - VHOME)/100.0
-!C      XGAMA = RGAMA(1) + RGAMA(2)*XR2  + RGAMA(3)*XR3 
-!C    *                  + RGAMA(4)*XR4  + RGAMA(5)*XR5 
-!C    *                  + RGAMA(6)*XR6  + RGAMA(7)*XR7 
-!C    *                  + RGAMA(8)*XR8                   
-!CC   *                  + RGAMA(8)*XR8  + RGAMA(9)*XR9 
+!C      XGAMA = RGAMA(1) + RGAMA(2)*XR2  + RGAMA(3)*XR3
+!C    *                  + RGAMA(4)*XR4  + RGAMA(5)*XR5
+!C    *                  + RGAMA(6)*XR6  + RGAMA(7)*XR7
+!C    *                  + RGAMA(8)*XR8
+!CC   *                  + RGAMA(8)*XR8  + RGAMA(9)*XR9
 !C      EMAX(K) = RMAXV(K) + AMAX1(0.0,XGAMA)
-!C      SSE = SSE + ( Y(KK) - XGAMA )**2 
-!C      SST = SST + ( Y(KK) - YBAR )**2 
+!C      SSE = SSE + ( Y(KK) - XGAMA )**2
+!C      SST = SST + ( Y(KK) - YBAR )**2
 !C      WRITE(11,5700) NPER,KK,K,EMAX(K),RMAXV(K)
 !C      WRITE(11,6554) KK,Y(KK),XGAMA,YBAR,SSE,SST
 !C 528 CONTINUE
 !C     RSQ=(SST-SSE)/SST
 !C     DO 561 IQ=1,NPTA
-!C       IR=IQ*(NPTA+1)-NPTA   
+!C       IR=IQ*(NPTA+1)-NPTA
 !C       VGAMA(IQ) = XXIV(IR)*SSE/(KKMAX-NPTA)
 !C 561 CONTINUE
-!C     DO 571 IR=1,NPTA    
+!C     DO 571 IR=1,NPTA
 !C       SEGAMA(IR) = SQRT(VGAMA(IR))
 !C 571 CONTINUE
 !C     WRITE(11,5555) NPER,(SEGAMA(IQ),IQ=1,NPTA)
@@ -753,8 +753,8 @@ PROGRAM dpml4a
 !C6555 FORMAT(' SSE=',f12.3,' SST=',F12.3,' RSQ=',F6.4,' YBAR=',f8.2,
 !C    *     ' INTP=',I5)
 !*******************************************************
-!*  USE THE INTERPOLATING REGRESSION TO CONSTRUCT THE  * 
-!*  FITTED EXPECTED MAXIMA                             * 
+!*  USE THE INTERPOLATING REGRESSION TO CONSTRUCT THE  *
+!*  FITTED EXPECTED MAXIMA                             *
 !*******************************************************
       DO 529 K=1,KMAX
        X1=KSTATE(K,1)
@@ -770,8 +770,8 @@ PROGRAM dpml4a
        ENDIF
        IF(LS.EQ.0) CBAR = CBAR - CS
        IF(E.GT.19) CBAR = CBAR - 50000.0
-       EV1 = W1*EXP(SIGMA(1)**2/2.0)             
-       EV2 = W2*EXP(SIGMA(2)**2/2.0)             
+       EV1 = W1*EXP(SIGMA(1)**2/2.0)
+       EV2 = W2*EXP(SIGMA(2)**2/2.0)
        RMAXV(K) = AMAX1(EV1,EV2,CBAR,VHOME)
        XR2 = PEI_SQRT(0.00001 + RMAXV(K) - EV1)
        XR3 = PEI_SQRT(0.00001 + RMAXV(K) - EV2)
@@ -781,27 +781,27 @@ PROGRAM dpml4a
        XR7 = (RMAXV(K) - EV2)/100.0
 !C      XR8 = (RMAXV(K) - CBAR)/100.0
        XR8 = (RMAXV(K) - VHOME)/100.0
-       XGAMA = RGAMA(1) + RGAMA(2)*XR2  + RGAMA(3)*XR3 & 
+       XGAMA = RGAMA(1) + RGAMA(2)*XR2  + RGAMA(3)*XR3 &
                         + RGAMA(4)*XR4  + RGAMA(5)*XR5 &
                         + RGAMA(6)*XR6  + RGAMA(7)*XR7 &
-                        + RGAMA(8)*XR8                   
-!C    *                  + RGAMA(8)*XR8  + RGAMA(9)*XR9 
+                        + RGAMA(8)*XR8
+!C    *                  + RGAMA(8)*XR8  + RGAMA(9)*XR9
        EMAX(K) = RMAXV(K) + AMAX1(0.0,XGAMA)
 !CC     IF(NP.EQ.NPARM+1) write(11,4100) NPER,k,emax(k),RMAXV(K)
-  529 CONTINUE 
+  529 CONTINUE
       DO 9021 KK=1,KKMAX
        K = TK(KK,NPER)
 !C      write(17,9921) KK,K,EMAX(K),EMAXS(KK)
 !C9921  format(' KK=',I2,' K=',I5,' EMAX=',F10.2,' EMAXS=',F10.2)
        EMAX(K) = EMAXS(KK)
  9021 CONTINUE
-      ENDIF                   
+      ENDIF
 !**************************************************************
 !*  CONSTRUCT THE LOG LIKELIHOOD FUNCTION CONTIBUTIONS FOR    *
 !*  ALL PEOPLE AT PERIOD NPER                                 *
 !**************************************************************
-!C     GOTO 998         
-      T = NPER         
+!C     GOTO 998
+      T = NPER
       DO 7160 K=1,KMAX
        ICOUNT0(K) = 0
  7160 CONTINUE
@@ -832,8 +832,8 @@ PROGRAM dpml4a
           IF(ICOUNT0(K).EQ.1) THEN
            PROBI3(K)=0.0
            PROBI4(K)=0.0
-          ENDIF         
-         ENDIF 
+          ENDIF
+         ENDIF
 !C****RETURN TO MAIN SECTION
          W1=EXP(BETA(1,1)+BETA(1,2)*E &
              +BETA(1,3)*X1+BETA(1,4)*X1**2 &
@@ -850,7 +850,7 @@ PROGRAM dpml4a
 !*****************************************************
         IF(STATE(I,T).EQ.1) THEN
           U1L = LOG(WAGE(I,T))-LOG(W1)
-          U1J = U1L 
+          U1J = U1L
           RNNL1 = U1L/SIGMA(1)
           U2L   = A(2,1)*RNNL1
           CL    = A(3,1)*RNNL1
@@ -859,7 +859,7 @@ PROGRAM dpml4a
           PROBI=0.0
         ENDIF
         IF(STATE(I,T).EQ.2) THEN
-          U2L=LOG(WAGE(I,T))-LOG(W2) 
+          U2L=LOG(WAGE(I,T))-LOG(W2)
           U2J=U2L
           V2=WAGE(I,T)
           PROBI=0.0
@@ -871,15 +871,15 @@ PROGRAM dpml4a
          RNNL4=RNNL(J,T,4)
          U2J = U2L + A(2,2)*RNNL2
          CJ  = CL  + A(3,2)*RNNL2+A(3,3)*RNNL3
-         BJ  = BL  + A(4,2)*RNNL2+A(4,3)*RNNL3 + A(4,4)*RNNL4   
+         BJ  = BL  + A(4,2)*RNNL2+A(4,3)*RNNL3 + A(4,4)*RNNL4
          V2 = W2*EXP(U2J)
-         V3 = CBAR+CJ 
-         V4 = VHOME+BJ   
+         V3 = CBAR+CJ
+         V4 = VHOME+BJ
          VMAX=AMAX1(V1,V2,V3,V4)
          A1=EXP((V1-VMAX)/TAU)
          A2=EXP((V2-VMAX)/TAU)
          A3=EXP((V3-VMAX)/TAU)
-         A4=EXP((V4-VMAX)/TAU) 
+         A4=EXP((V4-VMAX)/TAU)
          SUMV=A1+A2+A3+A4
          PROB = A1/SUMV
          PROBI = PROBI + PROB
@@ -895,20 +895,20 @@ PROGRAM dpml4a
          RNNJ2 = (U2J-A(2,1)*RNNL1)/A(2,2)
          CJ    = A(3,1)*RNNL1+A(3,2)*RNNJ2+A(3,3)*RNNL3
          BJ    = A(4,1)*RNNL1+A(4,2)*RNNJ2+A(4,3)*RNNL3+A(4,4)*RNNL4
-         V1 = W1*EXP(U1J) 
-         V3 = CBAR+CJ 
-         V4 = VHOME+BJ   
+         V1 = W1*EXP(U1J)
+         V3 = CBAR+CJ
+         V4 = VHOME+BJ
          VMAX=AMAX1(V1,V2,V3,V4)
          A1=EXP((V1-VMAX)/TAU)
          A2=EXP((V2-VMAX)/TAU)
          A3=EXP((V3-VMAX)/TAU)
-         A4=EXP((V4-VMAX)/TAU) 
+         A4=EXP((V4-VMAX)/TAU)
          SUMV=A1+A2+A3+A4
          PROB = A2/SUMV
          DENW = 0.3989423*EXP(-0.5*RNNJ2**2)/A(2,2)
          PROB = PROB*DENW
          PROBI = PROBI + PROB
-  163   CONTINUE  
+  163   CONTINUE
         PROBI = PROBI/DRAW1
        ENDIF
        IF((STATE(I,T).EQ.3).OR.(STATE(I,T).EQ.4)) THEN
@@ -922,24 +922,24 @@ PROGRAM dpml4a
          U2J = A(2,1)*RNNL1+A(2,2)*RNNL2
          CJ  = A(3,1)*RNNL1+A(3,2)*RNNL2+A(3,3)*RNNL3
          BJ  = A(4,1)*RNNL1+A(4,2)*RNNL2+A(4,3)*RNNL3+A(4,4)*RNNL4
-         V1 = W1*EXP(U1J) 
+         V1 = W1*EXP(U1J)
          V2 = W2*EXP(U2J)
-         V3 = CBAR+CJ 
-         V4 = VHOME+BJ   
+         V3 = CBAR+CJ
+         V4 = VHOME+BJ
          VMAX=AMAX1(V1,V2,V3,V4)
          A1=EXP((V1-VMAX)/TAU)
          A2=EXP((V2-VMAX)/TAU)
          A3=EXP((V3-VMAX)/TAU)
-         A4=EXP((V4-VMAX)/TAU) 
+         A4=EXP((V4-VMAX)/TAU)
          SUMV=A1+A2+A3+A4
-         PROB3 = A3/SUMV  
-         PROB4 = A4/SUMV  
+         PROB3 = A3/SUMV
+         PROB4 = A4/SUMV
          PROBI3(K) = PROBI3(K) + PROB3
          PROBI4(K) = PROBI4(K) + PROB4
   164   CONTINUE
         PROBI3(K) = PROBI3(K)/DRAW1
         PROBI4(K) = PROBI4(K)/DRAW1
-       ENDIF 
+       ENDIF
        ENDIF
       IF(STATE(I,T).eq.1) THEN
         DENW = 0.3989423*EXP(-0.5*(U1L/SIGMA(1))**2)/SIGMA(1)
@@ -949,15 +949,15 @@ PROGRAM dpml4a
       IF(PROBI.GT.PMIN) THEN
 !C       WRITE(11,6656) I,T,STATE(I,T),PROBI,DENW
 !C6656   FORMAT(' I=',I2,' T=',I2,' STATE=',I2,' PROBI=',F6.3,
-!C    *     ' DENW=',F6.3)  
+!C    *     ' DENW=',F6.3)
         RLLFI(I,IP) = RLLFI(I,IP) + LOG(PROBI)
-        RLOGLF(IP) = RLOGLF(IP) + LOG(PROBI)   
+        RLOGLF(IP) = RLOGLF(IP) + LOG(PROBI)
        ELSE
         IF(NP.EQ.NPARM+1) WRITE(11,6655) I,T,STATE(I,T),PROBI
         RLLFI(I,IP) = RLLFI(I,IP) + LOG(PMIN)
         RLOGLF(IP) = RLOGLF(IP) + LOG(PMIN)
-      ENDIF  
-      ENDIF  
+      ENDIF
+      ENDIF
       IF(STATE(I,T).eq.3) THEN
       IF(PROBI3(K).GT.PMIN) THEN
 !C       WRITE(11,6655) I,T,STATE(I,T),PROBI3(K)
@@ -982,8 +982,8 @@ PROGRAM dpml4a
       ENDIF
 !C     IF(NP.EQ.NPARM+1) WRITE(11,4010) I,NPER,STATE(I,T),
 !C    *   PROBI,RLOGLF(IP)
-!C4010 FORMAT(' I=',I2,' T=',I2,' STATE=',i2,' PROB=',          
-!C    *   F11.8,' RLOGLF=',F12.3) 
+!C4010 FORMAT(' I=',I2,' T=',I2,' STATE=',i2,' PROB=',
+!C    *   F11.8,' RLOGLF=',F12.3)
 !C***END OF LOOP OVER PEOPLE
   160 CONTINUE
 !C 998 CONTINUE
@@ -1001,12 +1001,12 @@ PROGRAM dpml4a
 !C       IF(NP.EQ.NPARM+1) WRITE(11,4105) T,K,EMAX1(K),EMAX(K)
 !C4105   FORMAT(' t=',I2,' k=',I2,' EMAX1=',F10.2,' EMAX=',F10.2)
    35 CONTINUE
-      DO 36 E=10,20       
+      DO 36 E=10,20
         IF(E.GT.10+T) GOTO 36
       DO 37 X1=0,T
       DO 38 X2=0,T
         IF(X1+X2+E-10.LT.T+1) THEN
-        DO 39 LS=0,1 
+        DO 39 LS=0,1
         IF((LS.EQ.0).AND.((E-T-1).EQ.9)) GOTO 39
         IF((LS.EQ.1).AND.(E.EQ.10)) GOTO 39
           FSTATE1(X1+1,X2+1,E-9,LS+1) = FSTATE(X1+1,X2+1,E-9,LS+1)
@@ -1019,7 +1019,7 @@ PROGRAM dpml4a
    38 CONTINUE
    37 CONTINUE
    36 CONTINUE
-!CC    IF(T.EQ.1) GOTO 3000 
+!CC    IF(T.EQ.1) GOTO 3000
 !C****CREATE THE STATE INDEX FOR TIME = T
       K=0
       DO 40 E=10,20
@@ -1027,7 +1027,7 @@ PROGRAM dpml4a
       DO 41 X1=0,T-1
       DO 42 X2=0,T-1
         IF(X1+X2+E-10.LT.T) THEN
-         DO 43 LS=0,1 
+         DO 43 LS=0,1
          IF((LS.EQ.0).AND.((E-T).EQ.9)) GOTO 43
          IF((LS.EQ.1).AND.(E.EQ.10).AND.(T.GT.1)) GOTO 43
            K=K+1
@@ -1043,10 +1043,10 @@ PROGRAM dpml4a
    40 CONTINUE
       KMAX=K
 !C     WRITE(11,5015) T,KMAX
-!C5015 FORMAT(' T=',I2,' KMAX=',I5) 
+!C5015 FORMAT(' T=',I2,' KMAX=',I5)
       IF(T.GE.INTPER) THEN
-        IF(KMAX.GE.INTP) KKMAX=INTP 
-        IF(KMAX.LT.INTP) KKMAX=KMAX 
+        IF(KMAX.GE.INTP) KKMAX=INTP
+        IF(KMAX.LT.INTP) KKMAX=KMAX
       ELSE
         KKMAX=KMAX
       ENDIF
@@ -1068,7 +1068,7 @@ PROGRAM dpml4a
       ENDIF
 !C     IF(T.eq.1) WRITE(11,7200) T,KMAX,FSTATE(1,1,1)
 !C7200 FORMAT(' T=',I2,' KMAX=',I2,' FSTATE(1,1,1)=',I2)
-      IF(T.EQ.1) GOTO 3000 
+      IF(T.EQ.1) GOTO 3000
 !C     IF(NP.EQ.NPARM+1) WRITE(11,4015) T,KMAX
 !C****INITIALIZE THE MATRICES FOR THE INTERPOLATING REGRESSION
       DO 550 IQ=1,NPT
@@ -1077,7 +1077,7 @@ PROGRAM dpml4a
          XX(IQ,IR) = 0.0
   551  CONTINUE
   550 CONTINUE
-!C****CONSTRUCT THE RANDOM VARIABLES FOR EACH ALTERNATIVE             
+!C****CONSTRUCT THE RANDOM VARIABLES FOR EACH ALTERNATIVE
       DO 153 J=1,DRAW
         RNN1=RNN(J,T,1)
         RNN2=RNN(J,T,2)
@@ -1094,10 +1094,10 @@ PROGRAM dpml4a
 !*  SIMULATE THE EXPECTED MAXIMA ONLY AT THE INTERPOLATING POINTS  *
 !*******************************************************************
       YBAR = 0.0
-      DO 7052 KK=1,KKMAX                           
-      K = TK(KK,T) 
+      DO 7052 KK=1,KKMAX
+      K = TK(KK,T)
 !C     WRITE(11,5018) KK,K
-!C5018 FORMAT(' KK=',I2,' K=',I5)  
+!C5018 FORMAT(' KK=',I2,' K=',I5)
       X1=KSTATE(K,1)
       X2=KSTATE(K,2)
       E=KSTATE(K,3)
@@ -1114,16 +1114,16 @@ PROGRAM dpml4a
       E1 = DELTA*EMAX1(FSTATE1(X1+2,X2+1,E-9,1))
       E2 = DELTA*EMAX1(FSTATE1(X1+1,X2+2,E-9,1))
       IF(E.LE.19) E3 = CBAR + DELTA*EMAX1(FSTATE1(X1+1,X2+1,E-8,2))
-      IF(E.GT.19) E3 = CBAR - 50000.0                  
+      IF(E.GT.19) E3 = CBAR - 50000.0
       E4 = VHOME + DELTA*EMAX1(FSTATE1(X1+1,X2+1,E-9,1))
-      EMAX(K) = 0.0   
+      EMAX(K) = 0.0
       DO 53 J=1,DRAW
-!C       IF((T.EQ.36).and.(KK.GE.48)) THEN                 
+!C       IF((T.EQ.36).and.(KK.GE.48)) THEN
 !C         WRITE(11,1054) J,DRAW
 !C       ENDIF
 !C1054   FORMAT(' DRAW=',I4,' DRAWS=',F5.0)
-        V1=W1*EU1(J,T)  + E1    
-        V2=W2*EU2(J,T)  + E2 
+        V1=W1*EU1(J,T)  + E1
+        V2=W2*EU2(J,T)  + E2
         V3=C(J,T)       + E3
         V4=B(J,T)       + E4
         VMAX=AMAX1(V1,V2,V3,V4)
@@ -1144,13 +1144,13 @@ PROGRAM dpml4a
       EW1 = W1*EXP(SIGMA(1)**2/2.0)
       EW2 = W2*EXP(SIGMA(2)**2/2.0)
       RMAXV(K) = AMAX1(EW1+E1,EW2+E2,E3,E4)
-      IF(RMAXV(K).GT.EMAX(K)) EMAX(K) = RMAXV(K) 
+      IF(RMAXV(K).GT.EMAX(K)) EMAX(K) = RMAXV(K)
 !C     ARG = (EMAX(K)-RMAXV(K))/RMAXV(K)
 !C     write(11,1190) k,X1,X2,E,LS
-!C     WRITE(11,1191) E1+EW1,E2+EW2,E3,E4     
-!C     write(11,1122) K,EMAX(K),RMAXV(K),ARG  
+!C     WRITE(11,1191) E1+EW1,E2+EW2,E3,E4
+!C     write(11,1122) K,EMAX(K),RMAXV(K),ARG
       Y(KK) = EMAX(K)-RMAXV(K)
-      YBAR = YBAR + Y(KK)/KKMAX 
+      YBAR = YBAR + Y(KK)/KKMAX
       XR(1) = 1.0
       XR(2) = PEI_SQRT(0.00001 + RMAXV(K) - EW1 - E1)
       XR(3) = PEI_SQRT(0.00001 + RMAXV(K) - EW2 - E2)
@@ -1174,7 +1174,7 @@ PROGRAM dpml4a
       IF(T.GE.INTPER) THEN
 !C     DO 5558 IQ=1,NPT
 !C     WRITE(11,5557) (XX(IQ,IR),IR=1,IQ)
-!C5558 CONTINUE 
+!C5558 CONTINUE
       CALL LINDS(NPT,XX,10,XXI,10)
       DO 557 IQ=2,NPT
       DO 558 IR=1,IQ-1
@@ -1185,12 +1185,12 @@ PROGRAM dpml4a
       DO 628 IQ=1,NPT
       DO 629 IR=1,NPT
         J=J+1
-        XXIV(J) = XXI(IQ,IR) 
+        XXIV(J) = XXI(IQ,IR)
   629 CONTINUE
-  628 CONTINUE  
+  628 CONTINUE
 !C     DO 5559 IQ=1,NPT
 !C     WRITE(11,5530) (XXI(IQ,IR),IR=1,NPT)
-!C5559 CONTINUE 
+!C5559 CONTINUE
       DO 554 IQ=1,NPT
         RGAMA(IQ) = 0.0
        DO 555 IR=1,NPT
@@ -1199,16 +1199,16 @@ PROGRAM dpml4a
   554 CONTINUE
 !C     WRITE(11,5553)
 !C     WRITE(11,5554) T,(RGAMA(IQ),IQ=1,NPT)
-!C5554 FORMAT(' T=',I2,' GAMA=',5F12.6,/,11x,5F12.6) 
-!C***CALCULATE STANDARD ERRORS 
+!C5554 FORMAT(' T=',I2,' GAMA=',5F12.6,/,11x,5F12.6)
+!C***CALCULATE STANDARD ERRORS
 !C     SSE = 0.0
 !C     SST = 0.0
-!C     DO 562 KK=1,KKMAX 
+!C     DO 562 KK=1,KKMAX
 !C      K=TK(KK,T)
 !C      KKN=0
 !C      DO 929 KKK=1,NPT
 !C       KKN = KKN + 1
-!C 929  CONTINUE 
+!C 929  CONTINUE
 !C      K=TK(KK,T)
 !C      X1=KSTATE(K,1)
 !C      X2=KSTATE(K,2)
@@ -1224,17 +1224,17 @@ PROGRAM dpml4a
 !C        CBAR = CBAR1
 !C      ENDIF
 !C      IF(LS.EQ.0) CBAR = CBAR - CS
-!C      EW1 = W1*EXP(SIGMA(1)**2/2.0)             
-!C      EW2 = W2*EXP(SIGMA(2)**2/2.0)             
+!C      EW1 = W1*EXP(SIGMA(1)**2/2.0)
+!C      EW2 = W2*EXP(SIGMA(2)**2/2.0)
 !C      V1=EW1   + DELTA*EMAX1(FSTATE1(X1+2,X2+1,E-9,1))
 !C      V2=EW2   + DELTA*EMAX1(FSTATE1(X1+1,X2+2,E-9,1))
-!C      IF(E.LE.19) THEN 
+!C      IF(E.LE.19) THEN
 !C        V3=CBAR  + DELTA*EMAX1(FSTATE1(X1+1,X2+1,E-8,2))
-!C       ELSE              
-!C        V3=CBAR  - 50000.0             
-!C      ENDIF                                      
+!C       ELSE
+!C        V3=CBAR  - 50000.0
+!C      ENDIF
 !C      V4=VHOME + DELTA*EMAX1(FSTATE1(X1+1,X2+1,E-9,1))
-!C      RMAXV(K) = AMAX1(V1,V2,V3,V4)        
+!C      RMAXV(K) = AMAX1(V1,V2,V3,V4)
 !C      XR2 = SQRT(0.00001 + RMAXV(K) - V1)
 !C      XR3 = SQRT(0.00001 + RMAXV(K) - V2)
 !C      XR4 = SQRT(0.00001 + RMAXV(K) - V3)
@@ -1243,34 +1243,34 @@ PROGRAM dpml4a
 !C      XR7 = (RMAXV(K) - V2)/100.0
 !CC     XR8 = (RMAXV(K) - V3)/100.0
 !C      XR8 = (RMAXV(K) - V4)/100.0
-!C      XGAMA = RGAMA(1) + RGAMA(2)*XR2  + RGAMA(3)*XR3 
-!C    *                  + RGAMA(4)*XR4  + RGAMA(5)*XR5  
-!C    *                  + RGAMA(6)*XR6  + RGAMA(7)*XR7  
-!C    *                  + RGAMA(8)*XR8                   
-!CC   *                  + RGAMA(8)*XR8  + RGAMA(9)*XR9  
+!C      XGAMA = RGAMA(1) + RGAMA(2)*XR2  + RGAMA(3)*XR3
+!C    *                  + RGAMA(4)*XR4  + RGAMA(5)*XR5
+!C    *                  + RGAMA(6)*XR6  + RGAMA(7)*XR7
+!C    *                  + RGAMA(8)*XR8
+!CC   *                  + RGAMA(8)*XR8  + RGAMA(9)*XR9
 !C      EMAX(K) = RMAXV(K) + AMAX1(0.0,XGAMA)
-!C      SSE = SSE + ( Y(KK) - XGAMA )**2 
-!C      SST = SST + ( Y(KK) - YBAR )**2 
+!C      SSE = SSE + ( Y(KK) - XGAMA )**2
+!C      SST = SST + ( Y(KK) - YBAR )**2
 !C      WRITE(11,6551) KK,K,X1,X2,E,LS
 !C      WRITE(11,5700) T,KK,K,EMAX(K),RMAXV(K)
 !C      WRITE(11,6554) KK,Y(KK),XGAMA,YBAR,SSE,SST
-!C6554  FORMAT(' KK=',I2,' Y=',F8.3,' YHAT=',F8.3,' YBAR=',F8.3,  
+!C6554  FORMAT(' KK=',I2,' Y=',F8.3,' YHAT=',F8.3,' YBAR=',F8.3,
 !C    *     ' SSE=',F8.3,' SST=',F8.3)
 !C 562 CONTINUE
-!C     RSQ = (SST - SSE)/SST 
+!C     RSQ = (SST - SSE)/SST
 !C     DO 560 IQ=1,NPT
-!C       IR=IQ*(NPT+1)-NPT   
+!C       IR=IQ*(NPT+1)-NPT
 !C       VGAMA(IQ) = XXIV(IR)*SSE/(KKMAX-NPT)
 !C 560 CONTINUE
 !C     DO 570 IR=1,NPT
 !C       SEGAMA(IR) = SQRT(VGAMA(IR))
-!C 570 CONTINUE       
+!C 570 CONTINUE
 !C     WRITE(11,5555) T,(SEGAMA(IQ),IQ=1,NPT)
-!C5555 FORMAT(' T=',I2,' SE  =',5F12.6,/,11x,5F12.6)  
+!C5555 FORMAT(' T=',I2,' SE  =',5F12.6,/,11x,5F12.6)
 !C     WRITE(11,6555) SSE,SST,RSQ,YBAR,INTP
 !*******************************************************
-!*  USE THE INTERPOLATING REGRESSION TO CONSTRUCT THE  * 
-!*  FITTED EXPECTED MAXIMA                             * 
+!*  USE THE INTERPOLATING REGRESSION TO CONSTRUCT THE  *
+!*  FITTED EXPECTED MAXIMA                             *
 !*******************************************************
       DO 559 K=1,KMAX
        X1=KSTATE(K,1)
@@ -1285,17 +1285,17 @@ PROGRAM dpml4a
          CBAR = CBAR1
        ENDIF
        IF(LS.EQ.0) CBAR = CBAR - CS
-       EW1 = W1*EXP(SIGMA(1)**2/2.0)             
-       EW2 = W2*EXP(SIGMA(2)**2/2.0)             
+       EW1 = W1*EXP(SIGMA(1)**2/2.0)
+       EW2 = W2*EXP(SIGMA(2)**2/2.0)
        V1=EW1   + DELTA*EMAX1(FSTATE1(X1+2,X2+1,E-9,1))
        V2=EW2   + DELTA*EMAX1(FSTATE1(X1+1,X2+2,E-9,1))
-       IF(E.LE.19) THEN 
+       IF(E.LE.19) THEN
          V3=CBAR  + DELTA*EMAX1(FSTATE1(X1+1,X2+1,E-8,2))
-        ELSE              
-         V3=CBAR  - 50000.0             
-       ENDIF                                      
+        ELSE
+         V3=CBAR  - 50000.0
+       ENDIF
        V4=VHOME + DELTA*EMAX1(FSTATE1(X1+1,X2+1,E-9,1))
-       RMAXV(K) = AMAX1(V1,V2,V3,V4)        
+       RMAXV(K) = AMAX1(V1,V2,V3,V4)
        XR2 = PEI_SQRT(0.00001 + RMAXV(K) - V1)
        XR3 = PEI_SQRT(0.00001 + RMAXV(K) - V2)
        XR4 = PEI_SQRT(0.00001 + RMAXV(K) - V3)
@@ -1305,14 +1305,14 @@ PROGRAM dpml4a
 !C      XR8 = (RMAXV(K) - V3)/100.0
        XR8 = (RMAXV(K) - V4)/100.0
        XGAMA = RGAMA(1) + RGAMA(2)*XR2  + RGAMA(3)*XR3 &
-                        + RGAMA(4)*XR4  + RGAMA(5)*XR5 & 
-                        + RGAMA(6)*XR6  + RGAMA(7)*XR7 & 
-                        + RGAMA(8)*XR8                   
-!C    *                  + RGAMA(8)*XR8  + RGAMA(9)*XR9  
+                        + RGAMA(4)*XR4  + RGAMA(5)*XR5 &
+                        + RGAMA(6)*XR6  + RGAMA(7)*XR7 &
+                        + RGAMA(8)*XR8
+!C    *                  + RGAMA(8)*XR8  + RGAMA(9)*XR9
        EMAX(K) = RMAXV(K) + AMAX1(0.0,XGAMA)
 !CC     IF(NP.EQ.NPARM+1) write(11,4100) T,k,emax(k),RMAXV(K)
 !C4100 FORMAT(' T=',i2,' K=',i3,' EMAX=',f12.2,' RMAXV=',F12.2)
-  559 CONTINUE 
+  559 CONTINUE
       DO 9052 KK=1,KKMAX
        K = TK(KK,T)
 !C      write(17,9921) KK,K,EMAX(K),EMAXS(KK)
@@ -1341,9 +1341,9 @@ PROGRAM dpml4a
          ENDIF
          IF(LS.EQ.0) CBAR = CBAR - CS
          E1 = DELTA*EMAX1(FSTATE1(X1+2,X2+1,E-9,1))
-         E2 = DELTA*EMAX1(FSTATE1(X1+1,X2+2,E-9,1))   
+         E2 = DELTA*EMAX1(FSTATE1(X1+1,X2+2,E-9,1))
          IF(E.LE.19) E3 = CBAR + DELTA*EMAX1(FSTATE1(X1+1,X2+1,E-8,2))
-         IF(E.GT.19) E3 = CBAR - 50000.0  
+         IF(E.GT.19) E3 = CBAR - 50000.0
          E4 = VHOME + DELTA*EMAX1(FSTATE1(X1+1,X2+1,E-9,1))
 !**********************************************************
 !*  PROBS OF STATES 3 and 4 NEED ONLY BE SIMULATED ONCE   *
@@ -1356,31 +1356,31 @@ PROGRAM dpml4a
           IF(ICOUNT0(K).EQ.1) THEN
            PROBI3(K)=0.0
            PROBI4(K)=0.0
-          ENDIF         
-         ENDIF 
+          ENDIF
+         ENDIF
 !C****RETURN TO MAIN SECTION
          W1=EXP(BETA(1,1)+BETA(1,2)*E       &
-             +BETA(1,3)*X1+BETA(1,4)*X1**2  & 
+             +BETA(1,3)*X1+BETA(1,4)*X1**2  &
              +BETA(1,5)*X2+BETA(1,6)*X2**2)
          W2=EXP(BETA(2,1)+BETA(2,2)*E       &
              +BETA(2,3)*X1+BETA(2,4)*X1**2  &
              +BETA(2,5)*X2+BETA(2,6)*X2**2)
        IF(STATE(I,T).EQ.1) THEN
-         U1L = LOG(WAGE(I,T))-LOG(W1) 
-         U1J = U1L      
+         U1L = LOG(WAGE(I,T))-LOG(W1)
+         U1J = U1L
          RNNL1 = U1L/SIGMA(1)
          U2L = A(2,1)*RNNL1
          CL = A(3,1)*RNNL1
          BL = A(4,1)*RNNL1
-         V1 = WAGE(I,T) + E1                                   
+         V1 = WAGE(I,T) + E1
          PROBI=0.0
        ENDIF
        IF(STATE(I,T).EQ.2) THEN
          U2L = LOG(WAGE(I,T))-LOG(W2)
          U2J = U2L
-         V2  = WAGE(I,T) + E2                                      
+         V2  = WAGE(I,T) + E2
          PROBI=0.0
-       ENDIF  
+       ENDIF
        IF(STATE(I,T).EQ.1) THEN
         DO 62 J=1,DRAW1
          RNNL2=RNNL(J,T,2)
@@ -1388,10 +1388,10 @@ PROGRAM dpml4a
          RNNL4=RNNL(J,T,4)
          U2J = U2L + A(2,2)*RNNL2
          CJ = CL   + A(3,2)*RNNL2+A(3,3)*RNNL3
-         BJ = BL   + A(4,2)*RNNL2+A(4,3)*RNNL3 + A(4,4)*RNNL4       
-         V2 = W2*EXP(U2J) + E2                                   
-         V3 = CJ          + E3                                   
-         V4 = BJ          + E4                                    
+         BJ = BL   + A(4,2)*RNNL2+A(4,3)*RNNL3 + A(4,4)*RNNL4
+         V2 = W2*EXP(U2J) + E2
+         V3 = CJ          + E3
+         V4 = BJ          + E4
          VMAX=AMAX1(V1,V2,V3,V4)
          A1 = EXP((V1-VMAX)/TAU)
          A2 = EXP((V2-VMAX)/TAU)
@@ -1403,7 +1403,7 @@ PROGRAM dpml4a
 !C        IF(NP.EQ.NPARM+1)
 !C    *   write(11,1061) I,T,STATE(I,T),J,PROB,V1,V2,V3,V4
 !C1061    format(' I=',I3,' t=',I2,' STATE=',I2,' DRAW=',I3,
-!C    *      ' PROB=',F16.12,/,  
+!C    *      ' PROB=',F16.12,/,
 !C    *      '      V1=',F13.3,' V2=',F13.3,' V3=',F13.3,
 !C    *      ' V4=',F13.4)
    62   CONTINUE
@@ -1418,19 +1418,19 @@ PROGRAM dpml4a
          RNNJ2 = (U2J-A(2,1)*RNNL1)/A(2,2)
          CJ = A(3,1)*RNNL1+A(3,2)*RNNJ2+A(3,3)*RNNL3
          BJ = A(4,1)*RNNL1+A(4,2)*RNNJ2+A(4,3)*RNNL3+A(4,4)*RNNL4
-         V1 = W1*EXP(U1J) + E1                                   
-         V3 = CJ          + E3                                     
-         V4 = BJ          + E4                                    
+         V1 = W1*EXP(U1J) + E1
+         V3 = CJ          + E3
+         V4 = BJ          + E4
          VMAX=AMAX1(V1,V2,V3,V4)
          A1 = EXP((V1-VMAX)/TAU)
          A2 = EXP((V2-VMAX)/TAU)
          A3 = EXP((V3-VMAX)/TAU)
          A4 = EXP((V4-VMAX)/TAU)
          SUMV = A1+A2+A3+A4
-         PROB = A2/SUMV  
-!C        IF(NP.EQ.NPARM+1)                                              
+         PROB = A2/SUMV
+!C        IF(NP.EQ.NPARM+1)
 !C    *     write(11,1061) I,T,STATE(I,T),J,PROB,V1,V2,V3,V4
-         DENW = 0.3989423*EXP(-0.5*RNNJ2**2)/A(2,2)  
+         DENW = 0.3989423*EXP(-0.5*RNNJ2**2)/A(2,2)
          PROB = PROB*DENW
          PROBI = PROBI + PROB
 !C        write(11,1061) I,T,STATE(I,T),J,PROB,V1,V2,V3,V4
@@ -1448,22 +1448,22 @@ PROGRAM dpml4a
          U2J = A(2,1)*RNNL1+A(2,2)*RNNL2
          CJ  = A(3,1)*RNNL1+A(3,2)*RNNL2+A(3,3)*RNNL3
          BJ  = A(4,1)*RNNL1+A(4,2)*RNNL2+A(4,3)*RNNL3+A(4,4)*RNNL4
-         V1 = W1*EXP(U1J) + E1                                   
-         V2 = W2*EXP(U2J) + E2                                   
-         V3 = CJ          + E3                                   
-         V4 = BJ          + E4                                    
+         V1 = W1*EXP(U1J) + E1
+         V2 = W2*EXP(U2J) + E2
+         V3 = CJ          + E3
+         V4 = BJ          + E4
          VMAX=AMAX1(V1,V2,V3,V4)
          A1 = EXP((V1-VMAX)/TAU)
          A2 = EXP((V2-VMAX)/TAU)
          A3 = EXP((V3-VMAX)/TAU)
          A4 = EXP((V4-VMAX)/TAU)
          SUMV = A1+A2+A3+A4
-         PROB3 = A3/SUMV  
-         PROB4 = A4/SUMV  
+         PROB3 = A3/SUMV
+         PROB4 = A4/SUMV
          PROBI3(K) = PROBI3(K) + PROB3
          PROBI4(K) = PROBI4(K) + PROB4
 !C        IF(NP.EQ.NPARM+1) THEN
-!C        IF(STATE(I,T).EQ.3) THEN     
+!C        IF(STATE(I,T).EQ.3) THEN
 !C           write(11,1061) I,T,STATE(I,T),J,PROB3,V1,V2,V3,V4
 !C         ELSE
 !C           write(11,1061) I,T,STATE(I,T),J,PROB4,V1,V2,V3,V4
@@ -1488,8 +1488,8 @@ PROGRAM dpml4a
  6655   FORMAT(' *** WARNING: PERSON',I5,' T=',I2,' J=',I2,' PROB=',F16.14)
         RLLFI(I,IP) = RLLFI(I,IP) + LOG(PMIN)
         RLOGLF(IP) = RLOGLF(IP) + LOG(PMIN)
-      ENDIF  
-      ENDIF  
+      ENDIF
+      ENDIF
       IF(STATE(I,T).eq.3) THEN
       IF(PROBI3(K).GT.PMIN) THEN
 !C       WRITE(11,6656) I,T,STATE(I,T),PROBI,DENW
@@ -1499,8 +1499,8 @@ PROGRAM dpml4a
         IF(NP.EQ.NPARM+1) WRITE(11,6655) I,T,STATE(I,T),PROBI3(K)
         RLLFI(I,IP) = RLLFI(I,IP) + LOG(PMIN)
         RLOGLF(IP) = RLOGLF(IP) + LOG(PMIN)
-      ENDIF  
-      ENDIF  
+      ENDIF
+      ENDIF
       IF(STATE(I,T).eq.4) THEN
       IF(PROBI4(K).GT.PMIN) THEN
 !C       WRITE(11,6656) I,T,STATE(I,T),PROBI,DENW
@@ -1510,13 +1510,13 @@ PROGRAM dpml4a
         IF(NP.EQ.NPARM+1) WRITE(11,6655) I,T,STATE(I,T),PROBI4(K)
         RLLFI(I,IP) = RLLFI(I,IP) + LOG(PMIN)
         RLOGLF(IP) = RLOGLF(IP) + LOG(PMIN)
-      ENDIF  
-      ENDIF  
+      ENDIF
+      ENDIF
 !C     IF(NP.EQ.NPARM+1) WRITE(11,4010) I,T,STATE(I,T),PROBI,
 !C    *     RLOGLF(IP)
 !C***END OF LOOP OVER PEOPLE
    60 CONTINUE
-!C 997 CONTINUE                   
+!C 997 CONTINUE
 !C***END OF LOOP OVER TIME PERIODS
    30 CONTINUE
 !C***END OF LOOP OVER PARAMETERS (NP) FOR CALCULATION OF NUMERICAL
@@ -1533,10 +1533,10 @@ PROGRAM dpml4a
 !CCC  *       ' SIMULATED LOG LIKELIHOOD = ',F20.6,/)
 !***********************************************************
 !*  IF STEP IS 0 THEN CONSTRUCT THE NUMERICAL DERIVATIVES  *
-!*  AND THE APPROXIMATE HESSIAN AND ITS INVERSE            * 
+!*  AND THE APPROXIMATE HESSIAN AND ITS INVERSE            *
 !***********************************************************
       IF(ISTEP.EQ.0) THEN
-      IP=0 
+      IP=0
       DO 70 JJ = 1,NPARM
        IF(IPARM(JJ).eq.0) GOTO 70
        IP=IP+1
@@ -1545,7 +1545,7 @@ PROGRAM dpml4a
 !CCC    WRITE(11,1200) IP,FOC(IP)
 !C1200  FORMAT(' IP = ',I2,' FOC = ',f20.5)
    70 CONTINUE
-      IP1=0 
+      IP1=0
       DO 71 JJ1 = 1,NPARM
         IF(IPARM(JJ1).eq.0) GOTO 71
         IP1=IP1+1
@@ -1564,11 +1564,11 @@ PROGRAM dpml4a
         SPDM(IP1,IP2) = SPDM(IP1,IP2) + FOC1*FOC2
    73 CONTINUE
    72 CONTINUE
-   71 CONTINUE 
+   71 CONTINUE
       DO 1071 IP1=1,NITER
       DO 1072 IP2=1,NITER
         IF(IP1.EQ.IP2) SPDMR(IP1,IP2) = SPDM(IP1,IP2)*(1.0 + ALPHA)
-        IF(IP1.NE.IP2) SPDMR(IP1,IP2) = SPDM(IP1,IP2) 
+        IF(IP1.NE.IP2) SPDMR(IP1,IP2) = SPDM(IP1,IP2)
  1072 CONTINUE
  1071 CONTINUE
 !CCC   IF(ITER.EQ.1) THEN
@@ -1576,9 +1576,9 @@ PROGRAM dpml4a
 !C4002  FORMAT(/,' OUTER PRODUCT APPROXIMATION OF HESSIAN:')
 !CCC   DO 74 IP1 = 1,NITER
 !CCC    WRITE(11,4003) (SPDM(IP1,IP2),IP2=1,NITER)
-!C4003  FORMAT(6F12.2)                               
+!C4003  FORMAT(6F12.2)
 !CCC74 CONTINUE
-!CCC   ENDIF 
+!CCC   ENDIF
 !C***INVERT PDM
       CALL LINDS(NITER,SPDM,27,SPDMI,27)
       CALL LINDS(NITER,SPDMR,27,SPDMRI,27)
@@ -1593,7 +1593,7 @@ PROGRAM dpml4a
 !C     DO 77 IP1 = 1,NITER
 !C      WRITE(11,4003) (SPDMI(IP1,IP2),IP2=1,NITER)
 !C  77 CONTINUE
-      DO 80 IP1 = 1,NITER 
+      DO 80 IP1 = 1,NITER
         DELTAP(IP1) = 0.0
       DO 81 IP2 = 1,NITER
         DELTAP(IP1) = DELTAP(IP1) + SPDMRI(IP1,IP2)*FOC(IP2)
@@ -1605,20 +1605,20 @@ PROGRAM dpml4a
 !CC380 CONTINUE
       ENDIF
 !*******************************************************
-!*  IF THIS STEP IMPROVED THE LOGLIKELIHOOD THEN SAVE  * 
+!*  IF THIS STEP IMPROVED THE LOGLIKELIHOOD THEN SAVE  *
 !*  THE NEW PARAMETER VECTOR IN SPARM AND SAVE THE     *
 !*  NEW LOGLIKELIHOOD FUNCTION IN SRLOGLF. OTHERWISE,  *
 !*  RESTORE THE OLD PARMETER VECTOR                    *
 !*******************************************************
-      IF(ISTEP.GT.0) THEN 
+      IF(ISTEP.GT.0) THEN
       WRITE(11,4020) ITER,ISTEP,SRLOGLF,RLOGLF(NITER+1)
  4020 FORMAT(/,' ITER ',I2,' STEP ',I2,/, &
         ' CHECK IF STEP IMPROVED LIKELIHOOD:',/, &
         ' OLD LOGLF=',F20.12,' NEW LOGLF=',F20.12)
-      IF(RLOGLF(NITER+1).GT.SRLOGLF) THEN 
+      IF(RLOGLF(NITER+1).GT.SRLOGLF) THEN
          SRLOGLF = RLOGLF(NITER+1)
          DO 83 NP = 1,NPARM
-           SPARM(NP) = CPARM(NP) 
+           SPARM(NP) = CPARM(NP)
    83    CONTINUE
          IGOOD = IGOOD + 1
          WRITE(11,4383) ISTEP
@@ -1633,14 +1633,14 @@ PROGRAM dpml4a
          SSIZE = 0.5*SSIZE
          IBAD = IBAD + 1
          WRITE(11,4384) ISTEP
- 4384    FORMAT(/,' STEP ',I2,' WAS BAD')  
+ 4384    FORMAT(/,' STEP ',I2,' WAS BAD')
          IF(IBAD.EQ.MAXSTP) THEN
            WRITE(11,6666) ITER
  6666      FORMAT(/,' ITER=',I2,' COULD NOT FIND INCREASING',' STEP ',/)
            GOTO 9999
          ENDIF
       ENDIF
-!C***END THE ITERATION IF FOUR GOOD STEPS HAVE BEEN ACHEIVED 
+!C***END THE ITERATION IF FOUR GOOD STEPS HAVE BEEN ACHEIVED
 !C***OR IF THE MAX NUMBER OF STEPS HAS BEEN REACHED
       IF(IGOOD.EQ.4) GOTO 5002
       IF((IGOOD.GE.1).AND.(IBAD.GT.0)) GOTO 5002
@@ -1651,7 +1651,7 @@ PROGRAM dpml4a
         SPARM(NP) = CPARM(NP)
    85  CONTINUE
 !C      WRITE(11,4385) ITER,ISTEP
-!C4385  FORMAT(/,'ITER ',I2,' STEP ',I2,': SAVING PARM', 
+!C4385  FORMAT(/,'ITER ',I2,' STEP ',I2,': SAVING PARM',
 !C    *      ' VECTOR AS:')
 !C      WRITE(11,4001) (CPARM(NP),NP=1,NPARM)
       ENDIF
@@ -1661,13 +1661,13 @@ PROGRAM dpml4a
       IP = 0
       DO 86 NP = 1,NPARM
         IF(IPARM(NP).EQ.0) GOTO 86
-        IP = IP + 1 
+        IP = IP + 1
         IF(TRANS.EQ.'YES') THEN
          IF(NP.EQ.17) THEN
           CT = (1.0/CPARM(NP)) - 1.0
           CT = CT + SSIZE*DELTAP(IP)
           CPARM(NP) = 1.0/(1.0+CT)
-          GOTO 86 
+          GOTO 86
          ENDIF
          IF(NP.LE.17) THEN
           CPARM(NP) = CPARM(NP) + SSIZE*DELTAP(IP)
@@ -1700,23 +1700,23 @@ PROGRAM dpml4a
           CPARMT(JJ) = (1.0/CPARM(JJ)) - 1.0
           GOTO 7001
         ENDIF
-        CPARMT(JJ) = CPARM(JJ) 
+        CPARMT(JJ) = CPARM(JJ)
        ELSE
         CPARMT(JJ) = CPARM(JJ)
-       ENDIF 
+       ENDIF
  7001 CONTINUE
 !*********************************************************
 !*  CONSTRUCT CHI SQUARED TEST FOR WHETHER PARAMS EQUAL  *
 !*  THE STARTING VALUES (CPARMS VS. CPARMT).             *
 !*********************************************************
-!C     IP1 = 0                
+!C     IP1 = 0
 !C     DO 8000 NP1 = 1,NPARM
-!C       IF(IPARM(NP1).eq.0) GOTO 8000 
+!C       IF(IPARM(NP1).eq.0) GOTO 8000
 !C       IP1 = IP1 + 1
 !C       C1(IP1) = 0.0
-!C       IP2 = 0                
+!C       IP2 = 0
 !C       DO 8001 NP2 = 1,NPARM
-!C         IF(IPARM(NP2).eq.0) GOTO 8001 
+!C         IF(IPARM(NP2).eq.0) GOTO 8001
 !C         IP2 = IP2 + 1
 !C         DC = CPARMS(NP2) - CPARMT(NP2)
 !C         C1(IP1) = C1(IP1) + SPDM(IP1,IP2)*DC
@@ -1725,7 +1725,7 @@ PROGRAM dpml4a
 !C     CHISQR = 0.0
 !C     IP1 = 0
 !C     DO 8002 NP1 = 1,NPARM
-!C       IF(IPARM(NP1).eq.0) GOTO 8002 
+!C       IF(IPARM(NP1).eq.0) GOTO 8002
 !C       IP1 = IP1 + 1
 !C       DC = CPARMS(NP1) - CPARMT(NP1)
 !C       CHISQR = CHISQR + DC*C1(IP1)
@@ -1743,19 +1743,19 @@ PROGRAM dpml4a
       WRITE(11,1111) ITER
  1111 FORMAT(//,' RESULTS AT END OF ITERATION ',I2,//, &
         ' PARAMETER   ESTIMATE      TRANSFORM   ', &
-        ' TRUE VALUE    STD.ERR.      T-STAT') 
+        ' TRUE VALUE    STD.ERR.      T-STAT')
       IP = 0
       DO 91 NP = 1,NPARM
        IF(IPARM(NP).EQ.0) GOTO 91
        IP = IP + 1
        WRITE(11,1091) NAME(NP),CPARM(NP),CPARMT(NP),CPARMS(NP),STDERR(IP),TSTAT(IP)
- 1091  FORMAT(1x,A8,2f14.7,f10.4,2f14.7)                               
-   91 CONTINUE 
+ 1091  FORMAT(1x,A8,2f14.7,f10.4,2f14.7)
+   91 CONTINUE
 !CCC   WRITE(11,8005) CHISQR
 !C8005 FORMAT(/,' CHISQR STAT FOR EQUALITY OF PARAMETER ',
 !CCC  *         'VECTOR WITH TRUE PARAMETER VECTOR:',/,3x,F15.4,/)
-!C***WRITE OUT THE CORRELATION MATRIX IMPLIED BY THE CPARM VECTOR 
-      L = 15 
+!C***WRITE OUT THE CORRELATION MATRIX IMPLIED BY THE CPARM VECTOR
+      L = 15
       DO 7010 J=1,4
       DO 7011 K=1,J
        L = L + 1
@@ -1805,15 +1805,15 @@ PROGRAM dpml4a
       DO 7109 J=1,2
       DO 7110 K=1,6
        L = L + 1
-       BETA(J,K) = CPARM(L) 
- 7110 CONTINUE  
+       BETA(J,K) = CPARM(L)
+ 7110 CONTINUE
  7109 CONTINUE
        L = L + 1
-       CBAR1 = CPARM(L) 
+       CBAR1 = CPARM(L)
        L = L + 1
-       CBAR2 = CPARM(L) 
+       CBAR2 = CPARM(L)
        L = L + 1
-       CS = CPARM(L) 
+       CS = CPARM(L)
        L = L + 1
        VHOME = CPARM(L)
        L = L + 1
@@ -1842,7 +1842,7 @@ PROGRAM dpml4a
  8016 CONTINUE
  8015 CONTINUE
       DO 7113 J=1,2
-      WRITE(12,1501) (BETA(J,K),K=1,6)                         
+      WRITE(12,1501) (BETA(J,K),K=1,6)
  7113 CONTINUE
       WRITE(12,1502) CBAR1,CBAR2,CS,VHOME,DELTA
       DO 7114 J=1,4
@@ -1850,8 +1850,8 @@ PROGRAM dpml4a
  7114 CONTINUE
       WRITE(12,1503) (SIGMA(J),J=1,4)
       DO 7115 J=1,2
-       WRITE(12,1601) (NAME(K),K=(J-1)*6+1,J*6) 
- 7115 CONTINUE  
+       WRITE(12,1601) (NAME(K),K=(J-1)*6+1,J*6)
+ 7115 CONTINUE
       WRITE(12,1602) (NAME(K),K=2*6+1,2*6+5)
       DO 7116 J=1,4
        WRITE(12,1603) (NAME(K),K=2*6+5+J*(J-1)/2+1,2*6+5+J*(J+1)/2)
@@ -1859,7 +1859,7 @@ PROGRAM dpml4a
       WRITE(12,1603) (NAME(K),K=2*6+5+4*(4+1)/2+1,2*6+5+4*(4+1)/2+4)
       DO 7203 J=1,2
        WRITE(12,1604) (IPARM(K),K=(J-1)*6+1,J*6)
- 7203 CONTINUE  
+ 7203 CONTINUE
       WRITE(12,1605) (IPARM(K),K=2*6+1,2*6+5)
       DO 7204 J=1,4
       WRITE(12,1606)(IPARM(K),K=2*6+5+J*(J-1)/2+1,2*6+5+J*(J+1)/2)
@@ -1879,7 +1879,7 @@ PROGRAM dpml4a
 !* WRITE OUT REPLICATION NUMBER AND THE SEEDS FOR NEXT REPLICATION *
 !*******************************************************************
       REWIND(UNIT=13)
-      WRITE(13,1313) IRUN+1,ISEED,ISEED1,ISEED2                               
+      WRITE(13,1313) IRUN+1,ISEED,ISEED1,ISEED2
       STOP
       END
 !**********************************
