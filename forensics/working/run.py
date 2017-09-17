@@ -8,6 +8,8 @@ import os
 
 import numpy as np
 
+np.random.seed(123)
+
 # Compiler options. Note that the original codes are not robust enough to execute in debug mode.
 DEBUG_OPTIONS = ' -O2  -Wall -Wline-truncation -Wcharacter-truncation -Wsurprising  -Waliasing ' \
                 '-Wimplicit-interface  -Wunused-parameter -fwhole-file -fcheck=all  -fbacktrace ' \
@@ -27,11 +29,10 @@ cmd = ' gfortran ' + OPTIONS + ' -o dpml4a ' + MODULES + ' dpml4a.f90 ' + LAPACK
 os.system(cmd)
 
 # This is the first take at standardizing the disturbances.
-num_periods, max_draws = 40, 500
-np.random.seed(123)
+num_periods, max_draws = 40, 1
 draws_standard = np.random.multivariate_normal(np.zeros(4), np.identity(4), (num_periods, max_draws))
 
-with open('.draws.respy.test', 'w') as file_:
+with open('draws.respy.test', 'w') as file_:
     for period in range(num_periods):
         for i in range(max_draws):
             fmt = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'
@@ -41,4 +42,4 @@ with open('.draws.respy.test', 'w') as file_:
 # Let me just fix a small regression test just to be sure ...
 os.system('./dpml4a')
 stat = float(shlex.split(linecache.getline('output1.txt', 65))[2])
-np.testing.assert_equal(stat, -1019.77734375)
+np.testing.assert_equal(stat, -28.948249816895)

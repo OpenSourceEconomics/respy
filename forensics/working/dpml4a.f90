@@ -321,19 +321,6 @@ PROGRAM dpml4a
        RNN(J,T,4)=RV(4)
    10 CONTINUE
     9 CONTINUE
-
-    2001 FORMAT(4(1x,f15.10))
-
-    IF(.FALSE.) THEN
-        OPEN(UNIT=99, FILE='.draws.respy.test', ACTION='READ')
-        DO T = 1, NPER
-            DO J = 1, DRAW
-                READ(99,2001) RNN(J, T, :)
-            END DO
-        END DO
-        CLOSE(99)
-    END IF
-
       CALL RNGET(ISEED)
 !C     CALL RNSET(2020202020)
       CALL RNSET(ISEED1)
@@ -348,15 +335,8 @@ PROGRAM dpml4a
    12 CONTINUE
    11 CONTINUE
 
-   IF(.FALSE.) THEN
-       OPEN(UNIT=99, FILE='.draws.respy.test', ACTION='READ')
-       DO T = 1, NPER
-           DO J = 1, DRAW
-               READ(99,2001) RNNL(J, T, :)
-           END DO
-       END DO
-       CLOSE(99)
-   END IF
+   ! PEI: Read disturbances from disk
+   CALL READ_IN_DISTURBANCES(RNN, RNNL, NPER, DRAW, DRAW1)
 
       CALL RNGET(ISEED1)
 !********************
