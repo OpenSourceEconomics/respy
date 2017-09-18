@@ -169,6 +169,8 @@ SUBROUTINE sort_type_info(type_info_order, type_info_shares, type_shares)
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
 
+    LOGICAL                         :: is_duplicated
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -188,6 +190,20 @@ SUBROUTINE sort_type_info(type_info_order, type_info_shares, type_shares)
              type_info_order(i) = j - 1
          END DO
     END DO
+
+    ! We cannot enforce a unique oder if types are identical with respect to their intercepts. In that case we defaul to their order of specification.
+    is_duplicated = .False.
+    DO i = 1, num_types - 1
+        DO j = i + 1, num_types
+            IF(type_info_order(i) .EQ. type_info_order(j)) is_duplicated = .True.
+        END DO
+    END DO
+
+    IF(is_duplicated) THEN
+        DO i = 1, num_types
+            type_info_order(i) = i - 1
+        END DO
+    END IF
 
     ! We then align the coefficients with the new ordering.
     type_shares_array = TRANSPOSE(RESHAPE(type_shares, (/2, num_types/)))

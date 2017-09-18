@@ -496,10 +496,13 @@ class TestClass(object):
         scripts_modify(identifiers, 'values', 'test.respy.ini', values=x_econ[identifiers])
         np.testing.assert_equal(compare_init('baseline.respy.ini', 'test.respy.ini'), True)
 
-    def test_15(self,flag_ambigutiy=False):
+    def test_15(self, flag_ambigutiy=False):
         """ This test ensures that the order of the initial schooling level specified in the
         initialization files does not matter for the simulation of a dataset and subsequent
         evaluation of the criterion function.
+
+        WARNING: This test fails if types have the identical intercept as no unique ordering is
+        determined than.
         """
 
         constr = dict()
