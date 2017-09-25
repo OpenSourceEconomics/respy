@@ -226,8 +226,9 @@ def post(ctx):
         shutil.copy('.bld/fortran/resfort_slave', subdir)
 
     # Copy the KW executable.
-    src = '.bld/tests/resources/kw_dp3asim'
-    shutil.copy(src, 'tests/resources')
+    for fname in ['kw_dp3asim', 'kw_dpml4a']:
+        src = '.bld/tests/resources/' + fname
+        shutil.copy(src, 'tests/resources')
 
 
 def pre(ctx):
@@ -237,16 +238,16 @@ def pre(ctx):
     if os.path.exists('fortran/bin'):
         shutil.rmtree('fortran/bin')
 
-    if os.path.exists('tests/resources/kw_dp3asim'):
-        os.unlink('tests/resources/kw_dp3asim')
+    for fname in ['kw_dp3asim', 'kw_dpml4a']:
+        if os.path.exists('tests/resources/' + fname):
+            os.unlink('tests/resources/' + fname)
 
 
 def _get_mpif90_details(ctx):
 
     output, _ = Popen(['mpif90', '-v'], stdout=PIPE, stderr=PIPE).communicate()
 
-    # In PYTHON 2, output is already a string, but in PYTHON 3 we need to
-    # decode it first.
+    # In PYTHON 2, output is already a string, but in PYTHON 3 we need to decode it first.
     try:
         output = output.decode()
     except AttributeError:

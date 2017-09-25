@@ -20,7 +20,7 @@ PRODUCTION_OPTIONS = ' -O3'
 OPTIONS = PRODUCTION_OPTIONS
 
 # Some strings that show up repeatedly in compiler command.
-MODULES = '_imsl_replacements.f90'
+MODULES = 'imsl_replacements.f90'
 LAPACK = '-L/usr/lib/lapack -llapack'
 
 # Copy required initialization files from the original codes.
