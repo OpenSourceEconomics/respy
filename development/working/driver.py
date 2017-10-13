@@ -51,32 +51,7 @@ sys.path.insert(0, TEST_RESOURCES_DIR)
 
 np.random.seed(123)
 
+respy_obj = RespyCls("model.respy.ini")
+simulate(respy_obj)
 
-open('.restud.respy.scratch', 'w').close()
-
-for _ in range(1):
-
-    for version in ['PYTHON', 'FORTRAN']:
-        print(' Iteration ', _)
-
-        #constr = dict()
-        #constr['flag_estimation'] = True
-        #generate_init()
-        respy_obj = RespyCls('model.respy.ini')
-
-        respy_obj.attr['version'] = version
-        #respy_obj.unlock()
-        #respy_obj.set_attr('maxfun', 0)
-        #respy_obj.lock()
-
-        simulate_observed(respy_obj, is_missings=False)
-
-        #respy_obj.attr['num_periods'] = 2
-        g, val = estimate(respy_obj)
-
-        if respy_obj.get_attr('version') == 'FORTRAN':
-            rslt = 3.537671851739037
-            np.testing.assert_allclose(val, rslt)
-        else:
-            rslt = 4.038332716547668
-            np.testing.assert_allclose(val, rslt)
+#estimate(respy_obj)
