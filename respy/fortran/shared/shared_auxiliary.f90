@@ -92,6 +92,7 @@ FUNCTION get_conditional_probabilities(type_shares, edu_start) RESULT(probs)
 
     !/* internal objects        */
 
+    INTEGER(our_int)                    :: covariate
     INTEGER(our_int)                    :: lower
     INTEGER(our_int)                    :: upper
     INTEGER(our_int)                    :: i
@@ -104,7 +105,9 @@ FUNCTION get_conditional_probabilities(type_shares, edu_start) RESULT(probs)
     DO i = 1, num_types
         lower = (i - 1) * 2 + 1
         upper = i * 2
-        probs(i) = DEXP(SUM(type_shares(lower:upper) * (/one_int, edu_start/)))
+
+        covariate = TRANSFER(edu_start > 9, our_int)
+        probs(i) = DEXP(SUM(type_shares(lower:upper) * (/one_int, covariate/)))
     END DO
 
     probs = probs / SUM(probs)
