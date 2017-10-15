@@ -105,6 +105,12 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
         current_state(3) = edu_start(i + 1)
         current_state(5) = types(i + 1)
 
+        IF (edu_start(i + 1) < 10) THEN
+            current_state(4) = 0
+        ELSE
+            current_state(4) = 1
+        END IF
+
         CALL record_simulation(i, file_sim)
 
         DO period = 0, (num_periods - 1)
@@ -159,7 +165,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             data_sim(count + 1, 23:24) = calculate_rewards_general(covariates, optim_paras)
             data_sim(count + 1, 25:25) = calculate_rewards_common(covariates, optim_paras)
             data_sim(count + 1, 26:29) = rewards_ex_post
-            
+
             !# Update work experiences or education
             IF ((choice .EQ. one_int) .OR. (choice .EQ. two_int) .OR. (choice .EQ. three_int)) THEN
                 current_state(choice) = current_state(choice) + 1

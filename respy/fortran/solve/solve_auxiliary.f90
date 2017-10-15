@@ -98,17 +98,23 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                             ! Loop over all admissible values for the lagged activity: (0) Home, (1) Education, (2) Occupation A, and (3) Occupation B.
                             DO activity_lagged = 0, 3
 
-                                ! (0, 1) Whenever an agent has only acquired additional education, then activity_lagged cannot be zero.
-                                IF ((activity_lagged .EQ. zero_int) .AND. (edu_add .EQ. period)) CYCLE
+                                ! We need to allow for initial schooling to take value zero or one.
+                                IF (period .GT. zero_int) THEN
 
-                                ! (0, 2) Whenever an agent has only worked in Occupation A, then activity_lagged cannot be zero.
-                                IF ((activity_lagged .EQ. zero_int) .AND. (exp_a .EQ. period)) CYCLE
+                                    ! (0, 1) Whenever an agent has only acquired additional education, then activity_lagged cannot be zero.
+                                    IF ((activity_lagged .EQ. zero_int) .AND. (edu_add .EQ. period)) CYCLE
 
-                                ! (0, 3) Whenever an agent has only worked in Occupation B, then activity_lagged cannot be zero.
-                                IF ((activity_lagged .EQ. zero_int) .AND. (exp_b .EQ. period)) CYCLE
+                                    ! (0, 2) Whenever an agent has only worked in Occupation A, then activity_lagged cannot be zero.
+                                    IF ((activity_lagged .EQ. zero_int) .AND. (exp_a .EQ. period)) CYCLE
 
-                                ! (1, 1) In the first period all agents have lagged schooling equal to one.
-                                IF ((activity_lagged .NE. one_int) .AND. (period .EQ. zero_int)) CYCLE
+                                    ! (0, 3) Whenever an agent has only worked in Occupation B, then activity_lagged cannot be zero.
+                                    IF ((activity_lagged .EQ. zero_int) .AND. (exp_b .EQ. period)) CYCLE
+
+                                END IF
+
+                                ! (1, 1) Individuals enter the model either from the home state or the schooling.
+                                IF ((activity_lagged .EQ. two_int) .AND. (period .EQ. zero_int)) CYCLE
+                                IF ((activity_lagged .EQ. three_int) .AND. (period .EQ. zero_int)) CYCLE
 
                                 ! (1, 2) Whenever an agent has not acquired any additional education and we are not in the first period, then lagged education cannot take a value of one.
                                 IF ((activity_lagged .EQ. one_int) .AND. (edu_add .EQ. zero_int) .AND. (period .GT. zero_int)) CYCLE
