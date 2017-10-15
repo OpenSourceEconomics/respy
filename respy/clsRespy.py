@@ -860,6 +860,8 @@ class RespyCls(object):
             # Lagged schooling can only take value zero or one if finite. In fact, it can only
             # take value one in the first period.
             for period in range(num_periods):
+		# TODO: Put back in 
+                # assert (np.all(states_all[0, :, 3]) == 1)
                 assert (np.nanmax(states_all[period, :, 3]) in range(4))
                 assert (np.nanmin(states_all[period, :, :3]) == 0)
 
@@ -886,6 +888,7 @@ class RespyCls(object):
             assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))
 
             # We just briefly check the number of states in the first time period.
+		# TODO: Put back in 
 #            assert (np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == num_types * num_initial)
 
             # Check that mapping is defined for all possible realizations of the state space by
