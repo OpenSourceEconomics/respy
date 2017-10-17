@@ -198,6 +198,7 @@ def generate_constraints_dict():
     constr['level'] = 0.00
     constr['maxfun'] = 0
     constr['types'] = 1
+    constr['periods'] = int(np.random.choice(range(2, 10)))
 
     max_draws = np.random.randint(10, 100)
     constr['max_draws'] = max_draws
@@ -288,6 +289,8 @@ class TestClass(object):
 
         init_dict = adjust_initialization_dict(init_dict)
 
+        max_draws = constr['max_draws']
+
         # At this point, the random initialization file does only provide diagonal covariances.
         cov_sampled = wishart.rvs(4, 0.01 * np.identity(4))
         cov_sampled[np.diag_indices(4)] = np.sqrt(cov_sampled[np.diag_indices(4)])
@@ -326,11 +329,12 @@ class TestClass(object):
                     outfile.write(infile.read())
 
         draws_standard = np.random.multivariate_normal(np.zeros(4), np.identity(4),
-            (num_periods, num_draws_emax))
+            (num_periods, max_draws))
 
         with open('.draws.respy.test', 'w') as file_:
+            print(num_periods, num_draws_emax)
             for period in range(num_periods):
-                for i in range(num_draws_emax):
+                for i in range(max_draws):
                     fmt = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'
                     line = fmt.format(*draws_standard[period, i, :])
                     file_.write(line)

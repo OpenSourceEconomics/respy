@@ -58,8 +58,7 @@ for i in range(1000):
         else:
             method = 'test_2'
 
-        seed = 95508
-        seed = i + 547896
+        seed = 547896 + count
     #    seed = 52565
         np.random.seed(seed)
         print("seed ", seed)
@@ -76,3 +75,5 @@ for i in range(1000):
         #print('completed ', count)
 
         os.system('git clean -d -f')
+
+        count = count + 1

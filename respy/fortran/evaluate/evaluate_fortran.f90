@@ -70,6 +70,8 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble)                  :: dist_1
     REAL(our_dble)                  :: dist_2
     REAL(our_dble)                  :: dist
+    REAL(our_dble)                  :: mean
+    REAL(our_dble)                  :: sd
 
     INTEGER(our_int)                :: activity_lagged
     INTEGER(our_int)                :: counts(4)
@@ -182,11 +184,17 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
                             IF (choice == 1) THEN
                                 draws_stan(idx) = dist / optim_paras%shocks_cholesky(idx, idx)
+                                mean = zero_dble
+                                sd = optim_paras%shocks_cholesky(idx, idx)
+
                             ELSE
                                 draws_stan(idx) = (dist - optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)) / optim_paras%shocks_cholesky(idx, idx)
+                                mean = optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)
+                                sd = optim_paras%shocks_cholesky(idx, idx)
+
                             END IF
 
-                            prob_wage = normal_pdf(draws_stan(idx), zero_dble, one_dble) / SQRT(shocks_cov(idx, idx))
+                            prob_wage = normal_pdf(dist, mean, sd)
 
                         END IF
 

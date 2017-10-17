@@ -54,4 +54,4 @@ np.random.seed(123)
 respy_obj = RespyCls("model.respy.ini")
 simulate(respy_obj)
 
-#estimate(respy_obj)
+estimate(respy_obj)
