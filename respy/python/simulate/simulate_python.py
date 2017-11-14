@@ -51,11 +51,10 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
         current_state[2] = edu_start[i]
         current_state[4] = types[i]
 
-        if (edu_start[i] < 10):
+        if edu_start[i] < 10:
             current_state[3] = 0
         else:
             current_state[3] = 1
-
 
         record_simulation_progress(i, file_sim)
 
