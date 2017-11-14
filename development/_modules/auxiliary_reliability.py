@@ -9,7 +9,7 @@ from auxiliary_shared import aggregate_information
 from auxiliary_shared import send_notification
 from auxiliary_shared import cleanup
 
-from config import SPEC_DIR
+from config_analysis import SPEC_DIR
 
 from respy._scripts.scripts_simulate import scripts_simulate
 from respy._scripts.scripts_compare import scripts_compare

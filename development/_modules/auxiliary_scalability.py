@@ -8,7 +8,7 @@ from auxiliary_shared import aggregate_information
 from auxiliary_shared import send_notification
 from auxiliary_shared import strfdelta
 from auxiliary_shared import cleanup
-from config import SPEC_DIR
+from config_analysis import SPEC_DIR
 
 import respy
 

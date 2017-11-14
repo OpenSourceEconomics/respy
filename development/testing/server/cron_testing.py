@@ -17,7 +17,7 @@ from respy.python.shared.shared_constants import ROOT_DIR
 
 # We are using features for the automatic creation of the virtual environment
 # for the release testing which are only available in Python 3.
-from config import python3_exec
+from config_analysis import python3_exec
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 PACKAGE_DIR = ROOT_DIR.replace('respy', '')

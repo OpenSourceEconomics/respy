@@ -10,7 +10,7 @@ import os
 import numpy as np
 import random
 
-from config import PACKAGE_DIR
+from config_analysis import PACKAGE_DIR
 
 from clsMail import MailCls
 
