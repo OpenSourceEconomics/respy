@@ -74,8 +74,8 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
 
                                 if period > 0:
 
-                                    # (0, 1) Whenever an agent has only acquired additional education,
-                                    # then activity_lagged cannot be zero.
+                                    # (0, 1) Whenever an agent has only acquired additional
+                                    # education, then activity_lagged cannot be zero.
                                     if (activity_lagged == 0) and (edu_add == period):
                                         continue
 
@@ -89,16 +89,22 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                     if (activity_lagged == 0) and (exp_b == period):
                                         continue
 
-                                # (1, 1) In the first period all agents have lagged schooling equal
-                                # to one and nothing else.
-                                if (activity_lagged in [2, 3]) and (period == 0):
-                                    continue
+                                    # (0, 4) Whenever an agent has not acquired any additional
+                                    # education and we are not in the first period, then lagged
+                                    # activity cannot take a value of one.
+                                    if (activity_lagged == 1) and (edu_add == 0):
+                                        continue
 
-                                # (1, 2) Whenever an agent has not acquired any additional education
-                                # and we are not in the first period, then lagged activity
-                                # cannot take a value of one.
-                                if (activity_lagged == 1) and (edu_add == 0) and (period > 0):
-                                    continue
+                                # (1, 1) In the first period all agents have lagged schooling equal
+                                # to one or zero. What is admissible depends on their level os
+                                # initial education.
+                                if period == 0:
+                                    if activity_lagged in [2, 3]:
+                                        continue
+                                    if edu_start < 10 and activity_lagged == 1:
+                                        continue
+                                    if edu_start >= 10 and activity_lagged == 0:
+                                        continue
 
                                 # (2, 1) An individual that has never worked in Occupation A
                                 # cannot have a that lagged activity.

@@ -41,9 +41,8 @@ def check_dataset_est(data_frame, respy_obj):
     # We check individual state variables against the recorded choices
     data_frame.groupby(level='Identifier').apply(check_state_variables)
 
-    # Checks for LAGGED ACTIVITY. We also know that all individuals were in school when entering
-    # the model. Just to be sure, we also construct the correct lagged activity here as well and
-    # compare it to the one provided in the dataset.
+    # Checks for LAGGED ACTIVITY. Just to be sure, we also construct the correct lagged activity
+    # here as well and compare it to the one provided in the dataset.
     dat = data_frame['Lagged_Activity'].isin(range(4))
     np.testing.assert_equal(dat.all(), True)
 
@@ -52,10 +51,15 @@ def check_dataset_est(data_frame, respy_obj):
 
     data_frame['TEMP'] = data_frame.groupby(level='Identifier')['Choice'].shift(+1)
     data_frame['TEMP'] = data_frame['TEMP'].map({1: 2, 2: 3, 3: 1, 4: 0})
-    data_frame['TEMP'].loc[:, 0] = 1
+
+    # We need to distinguish the cases where individuals come in with different values for lagged
+    # schooling based on their level of education obtained.
+    is_lagged = data_frame.loc[(slice(None), 0), 'Years_Schooling'] >= 10
+    data_frame['TEMP'].loc[:, 0] = 0
+    index = list(is_lagged[is_lagged].index.get_level_values(0))
+    data_frame.loc[(index, 0), 'TEMP'] = 1
     data_frame['TEMP'] = data_frame['TEMP'].astype(int)
-    # TODO: I want this to be reactivated.
-    # np.testing.assert_equal(data_frame['TEMP'].equals(data_frame['Lagged_Activity']), True)
+    np.testing.assert_equal(data_frame['TEMP'].equals(data_frame['Lagged_Activity']), True)
     del data_frame['TEMP']
 
     # Checks for YEARS SCHOOLING. We also know that the initial years of schooling can only take

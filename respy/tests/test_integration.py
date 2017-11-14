@@ -403,18 +403,18 @@ class TestClass(object):
         resources += ['kw_data_one_types.ini', 'kw_data_one_initial.ini']
 
         fname = np.random.choice(resources)
-        
+
         rslt = None
         if 'one.ini' in fname:
-            rslt = 10.459509434697358
+            rslt = 10.45950941513551
         elif 'two.ini' in fname:
-            rslt = 45.04552388696635
+            rslt = 45.04552402391903
         elif 'three.ini' in fname:
-            rslt = 75.82796484512875
+            rslt = 74.28253652773714
         elif 'one_types.ini' in fname:
             rslt = 9.098738585839529
         elif 'one_initial.ini' in fname:
-            rslt = 7.965981443864549
+            rslt = 7.965979149372883
 
         # This ensures that the experience effect is taken care of properly.
         open('.restud.respy.scratch', 'w').close()
