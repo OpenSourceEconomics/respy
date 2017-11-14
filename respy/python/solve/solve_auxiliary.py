@@ -72,24 +72,26 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                             # (1) Education, (2) Occupation A, and (3) Occupation B.
                             for activity_lagged in [0, 1, 2, 3]:
 
-                                # (0, 1) Whenever an agent has only acquired additional education,
-                                # then activity_lagged cannot be zero.
-                                if (activity_lagged == 0) and (edu_add == period):
-                                    continue
+                                if period > 0:
 
-                                # (0, 2) Whenever an agent has only worked in Occupation A,
-                                # then activity_lagged cannot be zero.
-                                if (activity_lagged == 0) and (exp_a == period):
-                                    continue
+                                    # (0, 1) Whenever an agent has only acquired additional education,
+                                    # then activity_lagged cannot be zero.
+                                    if (activity_lagged == 0) and (edu_add == period):
+                                        continue
 
-                                # (0, 3) Whenever an agent has only worked in Occupation B,
-                                # then activity lagged cannot be zero.
-                                if (activity_lagged == 0) and (exp_b == period):
-                                    continue
+                                    # (0, 2) Whenever an agent has only worked in Occupation A,
+                                    # then activity_lagged cannot be zero.
+                                    if (activity_lagged == 0) and (exp_a == period):
+                                        continue
+
+                                    # (0, 3) Whenever an agent has only worked in Occupation B,
+                                    # then activity lagged cannot be zero.
+                                    if (activity_lagged == 0) and (exp_b == period):
+                                        continue
 
                                 # (1, 1) In the first period all agents have lagged schooling equal
                                 # to one and nothing else.
-                                if (activity_lagged != 1) and (period == 0):
+                                if (activity_lagged in [2, 3]) and (period == 0):
                                     continue
 
                                 # (1, 2) Whenever an agent has not acquired any additional education

@@ -154,7 +154,8 @@ def get_conditional_probabilities(type_shares, edu_start):
     probs = np.tile(np.nan, num_types)
     for i in range(num_types):
         lower, upper = i * 2, (i + 1) * 2
-        probs[i] = np.exp(np.sum(type_shares[lower:upper] * [1.0, edu_start]))
+        covariate = edu_start > 9
+        probs[i] = np.exp(np.sum(type_shares[lower:upper] * [1.0, covariate]))
 
     # Scaling
     probs = probs / sum(probs)
