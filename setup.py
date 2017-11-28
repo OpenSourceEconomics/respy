@@ -13,7 +13,7 @@ class CustomDevelopCommand(develop):
         """
         os.chdir('respy')
 
-        os.system('./waf distclean; ./waf configure build')
+        os.system('./waf distclean; ./waf configure build -j 1')
 
         os.chdir('../')
 
@@ -28,7 +28,7 @@ class CustomBuildCommand(build_py):
         """
         os.chdir('respy')
 
-        os.system('./waf distclean; ./waf configure build')
+        os.system('./waf distclean; ./waf configure build -j 1')
 
         os.chdir('../')
 
