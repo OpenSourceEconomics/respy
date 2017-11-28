@@ -52,6 +52,6 @@ sys.path.insert(0, TEST_RESOURCES_DIR)
 np.random.seed(123)
 
 respy_obj = RespyCls("model.respy.ini")
-simulate(respy_obj)
+#simulate(respy_obj)
 
 estimate(respy_obj)
