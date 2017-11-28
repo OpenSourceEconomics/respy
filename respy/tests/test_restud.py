@@ -316,6 +316,7 @@ class TestClass(object):
         transform_respy_to_restud_sim(optim_paras, edu_spec, num_agents_sim, num_periods,
             num_draws_emax, cov)
 
+        open('.restud.testing.scratch', 'a').close()
         cmd = TEST_RESOURCES_DIR + '/kw_dp3asim'
         subprocess.check_call(cmd, shell=True)
 
@@ -332,7 +333,6 @@ class TestClass(object):
             (num_periods, max_draws))
 
         with open('.draws.respy.test', 'w') as file_:
-            print(num_periods, num_draws_emax)
             for period in range(num_periods):
                 for i in range(max_draws):
                     fmt = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'
