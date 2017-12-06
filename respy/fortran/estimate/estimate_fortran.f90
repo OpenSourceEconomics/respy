@@ -190,6 +190,9 @@ FUNCTION fort_criterion(x)
 
     fort_criterion = get_log_likl(contribs, num_agents_est, num_periods)
 
+
+    PRINT *, 'return value', fort_criterion
+
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
         num_eval = num_eval + 1

@@ -87,11 +87,24 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
 ! Algorithm
 !------------------------------------------------------------------------------
 
+
+
     ! Construct auxiliary objects
     num_obs = SIZE(data_evaluate, 1)
 
     shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
     is_deterministic = ALL(shocks_cov .EQ. zero_dble)
+
+    PRINT *, 'going in '
+    PRINT *, shocks_cholesky(1, :)
+    PRINT *, shocks_cholesky(2, :)
+    PRINT *, shocks_cholesky(3, :)
+    PRINT *, shocks_cholesky(4, :)
+    PRINT *, ''
+    PRINT *, shocks_cov(1, :)
+    PRINT *, shocks_cov(2, :)
+    PRINT *, shocks_cov(3, :)
+    PRINT *, shocks_cov(4, :)
 
     ! Initialize container for likelihood contributions
     contribs = -HUGE_FLOAT
@@ -171,6 +184,7 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
                         END IF
 
                         prob_wage = normal_pdf(dist, mean, sd)
+                        IF (prob_wage < zero_dble) PRINT *, 'This is the request', dist, mean, sd
 
                     END IF
 
@@ -196,6 +210,10 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
                 prob_choice = get_smoothed_probability(total_payoffs, idx, tau)
                 prob_obs = prob_obs + prob_choice * prob_wage
 
+                IF (prob_obs < zero_dble) THEN
+                    PRINT *, 'flawed pob:obs', prob_wage, dist, mean, sd
+                    STOP
+                END IF
             END DO
 
             ! Determine relative shares
@@ -212,12 +230,21 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
             ! Adjust  and record likelihood contribution
             contribs(j) = prob_obs
 
+
+
         END DO
 
     ! If there is no random variation in payoffs and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
     IF (is_deterministic) THEN
         contribs = EXP(one_dble)
     END IF
+
+
+    DO j = 1, SIZE(data_evaluate, 1)
+        PRINT *,         contribs(j)
+    END DO
+
+
 
 END SUBROUTINE
 !******************************************************************************
