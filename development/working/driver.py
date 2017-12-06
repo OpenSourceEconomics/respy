@@ -35,6 +35,31 @@ import pickle as pkl
 
 
 respy_obj = RespyCls('model.respy.ini')
-estimate(respy_obj)
+simulate(respy_obj)
 
 
+base = None
+for num_procs in [1, 2]:
+
+    respy_obj.unlock()
+    respy_obj.set_attr('num_procs', num_procs)
+    respy_obj.set_attr('is_parallel', (num_procs > 1))
+    respy_obj.lock()
+
+    x, crit_val = estimate(respy_obj)
+    if base is None:
+        base = crit_val
+
+    np.testing.assert_equal(crit_val, base)
+    print(num_procs, crit_val)
+# print('working PYTHON')
+# respy_obj = RespyCls('model.respy.ini')
+# #respy_obj.attr['version'] = 'PYTHON'
+# #respy_obj.attr['optimizer_used'] = 'SCIPY-POWELL'
+# import time
+# start = time.time()
+#
+# x, crit_val = estimate(respy_obj)
+# print(crit_val, 'ONLY WORKING WIT MAXFUN 0')
+#
+# np.testing.assert_almost_equal(crit_val, 0.66798246030058295)
