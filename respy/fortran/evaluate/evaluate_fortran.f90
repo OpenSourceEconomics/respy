@@ -185,7 +185,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                             IF (choice == 1) THEN
                                 draws_stan(idx) = dist / optim_paras%shocks_cholesky(idx, idx)
                                 mean = zero_dble
-                                sd = optim_paras%shocks_cholesky(idx, idx)
+                                sd = ABS(optim_paras%shocks_cholesky(idx, idx))
 
                             ELSE
                                 draws_stan(idx) = (dist - optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)) / optim_paras%shocks_cholesky(idx, idx)
