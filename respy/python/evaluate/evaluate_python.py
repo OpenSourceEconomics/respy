@@ -97,12 +97,12 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
                         if choice == 1:
                             draws_stan[0] = dist / shocks_cholesky[idx, idx]
                             mean = 0.0
-                            sd = shocks_cholesky[idx, idx]
+                            sd = abs(shocks_cholesky[idx, idx])
                         else:
                             draws_stan[1] = (dist - shocks_cholesky[idx, 0] *
                                 draws_stan[0]) / shocks_cholesky[idx, idx]
                             mean = shocks_cholesky[idx, 0] * draws_stan[0]
-                            sd = shocks_cholesky[idx, idx]
+                            sd = abs(shocks_cholesky[idx, idx])
 
                         prob_wage = norm.pdf(dist, mean, sd)
 
