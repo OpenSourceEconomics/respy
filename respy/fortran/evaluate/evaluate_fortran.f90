@@ -190,7 +190,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                             ELSE
                                 draws_stan(idx) = (dist - optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)) / optim_paras%shocks_cholesky(idx, idx)
                                 mean = optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)
-                                sd = optim_paras%shocks_cholesky(idx, idx)
+                                sd = ABS(optim_paras%shocks_cholesky(idx, idx))
 
                             END IF
 
