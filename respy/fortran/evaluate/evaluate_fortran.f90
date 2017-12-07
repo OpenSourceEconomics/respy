@@ -167,7 +167,7 @@ SUBROUTINE fort_contributions(contribs, periods_payoffs_systematic, mapping_stat
                         ELSE
                             draws_stan(idx) = (dist - shocks_cholesky(idx, 1) * draws_stan(1)) / shocks_cholesky(idx, idx)
                             mean = shocks_cholesky(idx, 1) *  draws_stan(1)
-                            sd = shocks_cholesky(idx, idx)
+                            sd = ABS(shocks_cholesky(idx, idx))
                         END IF
 
                         prob_wage = normal_pdf(dist, mean, sd)
