@@ -607,7 +607,7 @@ class TestClass(object):
             np.testing.assert_array_almost_equal(py, f90)
 
     def test_7(self):
-        """ This is a special test for auxiliary functions related to the interpolation setup.
+        """ This is a special test for shared functions related to the interpolation setup.
         """
         # Impose constraints
         constr = dict()
