@@ -8,4 +8,4 @@
 
 cd $PBS_O_WORKDIR
 #~/.envs/restudToolbox/bin/python run_regression.py --request check 1000 --procs 10
-~/.envs/restudToolbox/bin/python update.py --procs 5 --tests 1000
+~/.envs/restudToolbox/bin/python update.py --procs 5 --tests 10000
