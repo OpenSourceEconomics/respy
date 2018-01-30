@@ -1549,7 +1549,9 @@ FUNCTION construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
     covariates%hs_graduate = hs_graduate
 
     covariates%is_return_not_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate)), our_int)
-    covariates%is_return_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. to_boolean(hs_graduate), our_int)
+
+    ! STRUCT_AMBIGUOUS: No distinction between reenrollment costs.
+    covariates%is_return_high_school = covariates%is_return_not_high_school
 
     covariates%activity_lagged = activity_lagged
     covariates%period = period

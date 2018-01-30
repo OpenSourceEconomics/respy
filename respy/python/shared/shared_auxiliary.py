@@ -88,7 +88,7 @@ def dist_econ_paras(x_all_curre):
     # Type Shares
     type_shares = x_all_curre[54:54 + (num_types - 1) * 2]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
-    
+
     type_shifts = np.reshape(x_all_curre[54 + (num_types - 1) * 2:num_paras], (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
@@ -285,8 +285,8 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
 
 
 def create_draws(num_periods, num_draws, seed, is_debug):
-    """ Create the relevant set of draws. Handle special case of zero variances as thi case is 
-    useful for hand-based testing. The draws are drawn from a standard normal distribution and 
+    """ Create the relevant set of draws. Handle special case of zero variances as thi case is
+    useful for hand-based testing. The draws are drawn from a standard normal distribution and
     transformed later in the code.
     """
     # Control randomness by setting seed value
@@ -405,6 +405,17 @@ def check_model_parameters(optim_paras):
     assert (optim_paras['coeffs_b'].size == 15)
     assert (optim_paras['coeffs_edu'].size == 7)
     assert (optim_paras['coeffs_home'].size == 3)
+
+    # STRUCT_AMBIGUOUS: I to turn off any increments to tuition costs for post-graduate education.
+    assert optim_paras['coeffs_edu'][2] == 0.00
+
+    # STRUCT_AMBIGUOUS: I need to turn off the distinction the distinction between reenrollent
+    # costs for individuals who did not complete high school.
+    assert optim_paras['coeffs_edu'][4] == 0.00
+
+    if 'paras_fixed' in optim_paras.keys():
+        assert optim_paras['paras_fixed'][38]
+        assert optim_paras['paras_fixed'][36]
 
     # Checks shock matrix
     assert (optim_paras['shocks_cholesky'].shape == (4, 4))
@@ -526,8 +537,8 @@ def generate_optimizer_options(which, optim_paras, num_paras):
 
 
 def print_init_dict(dict_, file_name='test.respy.ini'):
-    """ Print initialization dictionary to file. The different formatting makes the file rather 
-    involved. The resulting initialization files are rad by PYTHON and FORTRAN routines. Thus, 
+    """ Print initialization dictionary to file. The different formatting makes the file rather
+    involved. The resulting initialization files are rad by PYTHON and FORTRAN routines. Thus,
     the formatting with respect to the number of decimal places is rather small.
     """
     assert (isinstance(dict_, dict))
@@ -876,7 +887,7 @@ def correlation_to_covariance(corr, sd):
 
 
 def check_early_termination(maxfun, num_eval):
-    """ This function checks for reasons that require an early termination of the optimization 
+    """ This function checks for reasons that require an early termination of the optimization
     procedure.
     """
     # We want an early termination if the number of function evaluations is already at the
@@ -890,7 +901,7 @@ def check_early_termination(maxfun, num_eval):
 
 
 def get_num_obs_agent(data_array, num_agents_est):
-    """ Get a list with the number of observations for each agent. 
+    """ Get a list with the number of observations for each agent.
     """
     num_obs_agent = np.tile(0, num_agents_est)
     agent_number = data_array[0, 0]
@@ -963,7 +974,7 @@ def construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period):
         covariates['is_return_not_high_school'] = int(cond)
 
         cond = (not covariates['edu_lagged']) and covariates['hs_graduate']
-        covariates['is_return_high_school'] = int(cond)
+        covariates['is_return_high_school'] = covariates['is_return_not_high_school']
 
     if period is not None:
         covariates['is_minor'] = int(period < 2)

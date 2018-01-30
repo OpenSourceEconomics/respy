@@ -47,11 +47,11 @@ from codes.auxiliary import write_edu_start
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 sys.path.insert(0, TEST_RESOURCES_DIR)
-#import f2py_interface as fort_debug
+#import f2py_interface as fort_debugt  tr
 
 np.random.seed(123)
 
 respy_obj = RespyCls("model.respy.ini")
 simulate(respy_obj)
 
-estimate(respy_obj)
+#estimate(respy_obj)

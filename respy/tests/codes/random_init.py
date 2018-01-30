@@ -271,5 +271,11 @@ def generate_random_dict(constr=None):
     # be very useful in the generation of test cases.
     dict_ = process_constraints(dict_, constr, paras_fixed, paras_bounds)
 
+    # STRUCT_AMBIGUOUS: I impose some constraints by default now.
+    for i in [2, 4]:
+        dict_['EDUCATION']['coeffs'][i] = 0
+        dict_['EDUCATION']['fixed'][i] = True
+        dict_['EDUCATION']['bounds'][i] = (None, None)
+
     # Finishing
     return dict_
