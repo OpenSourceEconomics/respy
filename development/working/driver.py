@@ -47,16 +47,11 @@ from codes.auxiliary import write_edu_start
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 sys.path.insert(0, TEST_RESOURCES_DIR)
-#import f2py_interface as fort_debugt  tr
+#import f2py_interface as fort_debug
 
 np.random.seed(123)
 
 respy_obj = RespyCls("kw_data_two.ini")
-#respy_obj = RespyCls("kw_data_alt.ini")
-
-
 open('.restud.respy.scratch', 'a').close()
 simulate(respy_obj)
 os.remove('.restud.respy.scratch')
-
-#estimate(respy_obj)
