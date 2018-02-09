@@ -191,6 +191,11 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
             covars_edu += [covariates['period']]
             covars_edu += [covariates['is_minor']]
 
+            # STRUCT_AMBIGUOUS: No distinction between reenrollment costs.
+            covars_edu[3] = int(activity_lagged != 1)
+            covars_edu[4] = 0
+            # STRUCT_AMBIGUOUS
+
             rewards[2] = np.dot(optim_paras['coeffs_edu'], covars_edu)
 
             # Calculate systematic part of HOME
@@ -219,7 +224,7 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period, periods_d
         num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx,
         states_all, is_debug, is_interpolated, num_points_interp, edu_spec, ambi_spec, optim_paras,
         optimizer_options, file_sim, is_write):
-    """ Backward induction procedure. There are two main threads to this function depending on 
+    """ Backward induction procedure. There are two main threads to this function depending on
     whether interpolation is requested or not.
     """
     # Initialize containers, which contain a lot of missing values as we capture the tree
@@ -366,7 +371,7 @@ def get_simulated_indicator(num_points_interp, num_candidates, period, is_debug)
 
 def get_exogenous_variables(period, num_periods, num_states, periods_rewards_systematic, shifts,
         mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras):
-    """ Get exogenous variables for interpolation scheme. The unused argument is present to align 
+    """ Get exogenous variables for interpolation scheme. The unused argument is present to align
     the interface between the PYTHON and FORTRAN implementations.
     """
     # Construct auxiliary objects

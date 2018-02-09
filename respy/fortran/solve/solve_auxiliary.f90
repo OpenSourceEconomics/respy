@@ -256,10 +256,9 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             ! STRUCT_AMBIGUOUS: No distinction between reenrollment costs.
             covars_edu(4) = TRANSFER(.NOT. (activity_lagged .EQ. one_int), our_int)
             covars_edu(5) = zero_dble
+            ! STRUCT_AMBIGUOUS
 
             rewards(3) = DOT_PRODUCT(covars_edu, optim_paras%coeffs_edu)
-            
-            ! STRUCT_AMBIGUOUS
 
             ! Calculate systematic part of HOME
             covars_home(1) = one_int

@@ -88,7 +88,7 @@ def dist_econ_paras(x_all_curre):
     # Type Shares
     type_shares = x_all_curre[54:54 + (num_types - 1) * 2]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
-
+    
     type_shifts = np.reshape(x_all_curre[54 + (num_types - 1) * 2:num_paras], (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
@@ -411,7 +411,7 @@ def check_model_parameters(optim_paras):
 
     # STRUCT_AMBIGUOUS: I need to turn off the distinction the distinction between reenrollent
     # costs for individuals who did not complete high school.
-    #assert optim_paras['coeffs_edu'][4] == 0.00
+    assert optim_paras['coeffs_edu'][4] == 0.00
 
     if 'paras_fixed' in optim_paras.keys():
         assert optim_paras['paras_fixed'][38]
@@ -974,7 +974,7 @@ def construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period):
         covariates['is_return_not_high_school'] = int(cond)
 
         cond = (not covariates['edu_lagged']) and covariates['hs_graduate']
-        covariates['is_return_high_school'] = covariates['is_return_not_high_school']
+        covariates['is_return_high_school'] = int(cond)
 
     if period is not None:
         covariates['is_minor'] = int(period < 2)
