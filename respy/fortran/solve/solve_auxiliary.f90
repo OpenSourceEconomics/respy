@@ -204,6 +204,9 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     REAL(our_dble)                      :: rewards(4)
     REAL(our_dble)                      :: wages(2)
 
+    ! STRUCT_AMBIGUOUS
+    REAL(our_dble)                      :: coeffs_edu(7)
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -250,7 +253,15 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             covars_edu(6) = covariates%period - one_int
             covars_edu(7) = covariates%is_minor
 
-            rewards(3) = DOT_PRODUCT(covars_edu, optim_paras%coeffs_edu)
+            ! STRUCT_AMBIGUOUS: No distinction between reenrollment costs.
+            covars_edu(4) = TRANSFER(.NOT. (activity_lagged .EQ. one_int), our_int)
+            covars_edu(5) = TRANSFER(.NOT. (activity_lagged .EQ. one_int), our_int)
+
+            coeffs_edu = optim_paras%coeffs_edu
+            coeffs_edu(5) = optim_paras%coeffs_edu(4)
+
+            rewards(3) = DOT_PRODUCT(covars_edu, coeffs_edu)
+            ! STRUCT_AMBIGUOUS
 
             ! Calculate systematic part of HOME
             covars_home(1) = one_int
