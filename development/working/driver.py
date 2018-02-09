@@ -51,8 +51,8 @@ sys.path.insert(0, TEST_RESOURCES_DIR)
 
 np.random.seed(123)
 
-#respy_obj = RespyCls("model.respy.ini")
 respy_obj = RespyCls("kw_data_two.ini")
+#respy_obj = RespyCls("kw_data_alt.ini")
 
 
 open('.restud.respy.scratch', 'a').close()

@@ -411,7 +411,7 @@ def check_model_parameters(optim_paras):
 
     # STRUCT_AMBIGUOUS: I need to turn off the distinction the distinction between reenrollent
     # costs for individuals who did not complete high school.
-    assert optim_paras['coeffs_edu'][4] == 0.00
+    #assert optim_paras['coeffs_edu'][4] == 0.00
 
     if 'paras_fixed' in optim_paras.keys():
         assert optim_paras['paras_fixed'][38]
