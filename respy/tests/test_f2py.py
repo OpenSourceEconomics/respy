@@ -16,7 +16,6 @@ from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
-from respy.python.solve.solve_ambiguity import get_relevant_dependence
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
@@ -63,9 +62,9 @@ class TestClass(object):
     """ This class groups together some tests.
     """
     def test_1(self, flag_ambiguity=False):
-        """ Compare the evaluation of the criterion function for the ambiguity optimization and 
-        the simulated expected future value between the FORTRAN and PYTHON implementations. These 
-        tests are set up a separate test case due to the large setup cost to construct the 
+        """ Compare the evaluation of the criterion function for the ambiguity optimization and
+        the simulated expected future value between the FORTRAN and PYTHON implementations. These
+        tests are set up a separate test case due to the large setup cost to construct the
         ingredients for the interface.
         """
         # Generate constraint periods
@@ -117,7 +116,7 @@ class TestClass(object):
         np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
 
     def test_2(self):
-        """ Compare results between FORTRAN and PYTHON of selected hand-crafted functions. In 
+        """ Compare results between FORTRAN and PYTHON of selected hand-crafted functions. In
         test_97() we test FORTRAN implementations against PYTHON intrinsic routines.
         """
         for _ in range(33):
@@ -347,7 +346,7 @@ class TestClass(object):
         np.testing.assert_allclose(pyth, f2py)
 
     def test_5(self, flag_ambiguity=False):
-        """ This methods ensures that the core functions yield the same results across 
+        """ This methods ensures that the core functions yield the same results across
         implementations.
         """
         # Generate random initialization file
@@ -728,9 +727,6 @@ class TestClass(object):
             x0 = np.random.uniform(low=-1.0, high=1.0, size=2)
             if not mean:
                 x0 = np.append(x0, np.random.uniform(low=0.0, high=1.0, size=2))
-
-            py = get_relevant_dependence(cov, x0)
-            f90 = fort_debug.wrapper_get_relevant_dependence(cov, x0)
 
             for i in range(2):
                 np.testing.assert_almost_equal(py[i], f90[i])

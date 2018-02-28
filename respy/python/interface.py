@@ -30,11 +30,11 @@ def respy_interface(respy_obj, request, data_array=None):
     # Distribute class attributes
     optim_paras, num_periods, edu_spec, is_debug, num_draws_prob, seed_prob, num_draws_emax, \
     seed_emax, is_myopic, is_interpolated, num_points_interp, maxfun, optimizer_used, \
-    tau, optimizer_options, seed_sim, num_agents_sim, ambi_spec, file_sim, precond_spec, \
+    tau, optimizer_options, seed_sim, num_agents_sim, file_sim, precond_spec, \
     num_types, num_paras, num_agents_est = dist_class_attributes(respy_obj, 'optim_paras',
         'num_periods', 'edu_spec', 'is_debug', 'num_draws_prob', 'seed_prob', 'num_draws_emax',
         'seed_emax', 'is_myopic', 'is_interpolated', 'num_points_interp', 'maxfun',
-        'optimizer_used', 'tau', 'optimizer_options', 'seed_sim', 'num_agents_sim', 'ambi_spec',
+        'optimizer_used', 'tau', 'optimizer_options', 'seed_sim', 'num_agents_sim',
         'file_sim', 'precond_spec', 'num_types', 'num_paras', 'num_agents_est')
 
     if request == 'estimate':
@@ -59,7 +59,7 @@ def respy_interface(respy_obj, request, data_array=None):
         args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
                 is_debug, data_array, num_draws_prob, tau, periods_draws_emax,
                 periods_draws_prob, states_all, states_number_period, mapping_state_idx,
-                max_states_period, num_agents_est, num_obs, num_types, edu_spec, ambi_spec,
+                max_states_period, num_agents_est, num_obs, num_types, edu_spec,
                 optimizer_options)
 
         # Special case where just an evaluation at the starting values is requested is accounted
@@ -196,7 +196,7 @@ def respy_interface(respy_obj, request, data_array=None):
         # Collect arguments to pass in different implementations of the simulation.
         periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, \
             states_all = pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods,
-            is_myopic, is_debug, periods_draws_emax, edu_spec, ambi_spec, optim_paras, file_sim,
+            is_myopic, is_debug, periods_draws_emax, edu_spec, optim_paras, file_sim,
             optimizer_options, num_types)
 
         solution = (periods_rewards_systematic, states_number_period, mapping_state_idx,

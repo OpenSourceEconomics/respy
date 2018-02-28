@@ -87,13 +87,6 @@ def check_estimation(respy_obj):
     if not os.path.exists(file_est):
         raise UserError('Estimation dataset does not exist')
 
-    # Check that the used optimizers were defined by the user.
-    if optim_paras['level'][0] > 0:
-        if version == 'FORTRAN':
-            assert 'FORT-SLSQP' in optimizer_options.keys()
-        if version == 'PYTHON':
-            assert 'SCIPY-SLSQP' in optimizer_options.keys()
-
     if maxfun > 0:
         assert optimizer_used in optimizer_options.keys()
 

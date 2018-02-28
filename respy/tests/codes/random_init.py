@@ -86,13 +86,11 @@ def generate_random_dict(constr=None):
     for i in range(num_paras):
         if i in [0]:
             value = get_valid_values('delta')
-        elif i in [1]:
-            value = get_valid_values('amb')
-        elif i in range(2, 44):
+        elif i in range(1, 43):
             value = get_valid_values('coeff')
-        elif i in [44, 48, 51, 53]:
+        elif i in [43, 47, 50, 52]:
             value = get_valid_values('cov')
-        elif i in range(54, 54 + num_paras):
+        elif i in range(53, 53 + num_paras):
             value = get_valid_values('coeff')
         else:
             value = 0.0
@@ -106,9 +104,7 @@ def generate_random_dict(constr=None):
     for i, value in enumerate(paras_values):
         if i in [0]:
             bounds = get_valid_bounds('delta', value)
-        elif i in [1]:
-            bounds = get_valid_bounds('amb', value)
-        elif i in range(44, 54):
+        elif i in range(43, 53):
             bounds = get_valid_bounds('cov', value)
         else:
             bounds = get_valid_bounds('coeff', value)
@@ -119,9 +115,9 @@ def generate_random_dict(constr=None):
     # estimation. We need to ensure that at least one parameter is always free. At this point we
     # also want to ensure that either all shock coefficients are fixed or none. It is not clear
     # how to ensure other constraints on the Cholesky factors.
-    paras_fixed = np.random.choice([True, False], 44).tolist()
-    if sum(paras_fixed) == 44:
-        paras_fixed[np.random.randint(0, 44)] = True
+    paras_fixed = np.random.choice([True, False], 43).tolist()
+    if sum(paras_fixed) == 43:
+        paras_fixed[np.random.randint(0, 43)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
     paras_fixed += np.random.choice([True, False], (num_types - 1) * 6).tolist()
 
@@ -138,27 +134,27 @@ def generate_random_dict(constr=None):
     dict_['BASICS']['fixed'] = paras_fixed[lower:upper]
 
     # Common Returns
-    lower, upper = 2, 4
+    lower, upper = 1, 3
     dict_['COMMON'] = dict()
     dict_['COMMON']['coeffs'] = paras_values[lower:upper]
     dict_['COMMON']['bounds'] = paras_bounds[lower:upper]
     dict_['COMMON']['fixed'] = paras_fixed[lower:upper]
     # Occupation A
-    lower, upper = 4, 19
+    lower, upper = 3, 18
     dict_['OCCUPATION A'] = dict()
     dict_['OCCUPATION A']['coeffs'] = paras_values[lower:upper]
     dict_['OCCUPATION A']['bounds'] = paras_bounds[lower:upper]
     dict_['OCCUPATION A']['fixed'] = paras_fixed[lower:upper]
 
     # Occupation B
-    lower, upper = 19, 34
+    lower, upper = 18, 33
     dict_['OCCUPATION B'] = dict()
     dict_['OCCUPATION B']['coeffs'] = paras_values[lower:upper]
     dict_['OCCUPATION B']['bounds'] = paras_bounds[lower:upper]
     dict_['OCCUPATION B']['fixed'] = paras_fixed[lower:upper]
 
     # Education
-    lower, upper = 34, 41
+    lower, upper = 33, 40
     dict_['EDUCATION'] = dict()
     dict_['EDUCATION']['coeffs'] = paras_values[lower:upper]
     dict_['EDUCATION']['bounds'] = paras_bounds[lower:upper]
@@ -171,7 +167,7 @@ def generate_random_dict(constr=None):
     dict_['EDUCATION']['max'] = np.random.randint(max(dict_['EDUCATION']['start']) + 1, 30)
 
     # Home
-    lower, upper = 41, 44
+    lower, upper = 40, 43
     dict_['HOME'] = dict()
     dict_['HOME']['coeffs'] = paras_values[lower:upper]
     dict_['HOME']['bounds'] = paras_bounds[lower:upper]
@@ -183,13 +179,6 @@ def generate_random_dict(constr=None):
     dict_['SOLUTION']['seed'] = np.random.randint(1, 10000)
     dict_['SOLUTION']['store'] = np.random.choice(['True', 'False'])
 
-    # AMBIGUITY
-    dict_['AMBIGUITY'] = dict()
-    dict_['AMBIGUITY']['mean'] = np.random.choice(['True', 'False'])
-    dict_['AMBIGUITY']['measure'] = np.random.choice(['abs', 'kl'])
-    dict_['AMBIGUITY']['coeffs'] = paras_values[1:2]
-    dict_['AMBIGUITY']['bounds'] = paras_bounds[1:2]
-    dict_['AMBIGUITY']['fixed'] = paras_fixed[1:2]
 
     # ESTIMATION
     dict_['ESTIMATION'] = dict()
@@ -235,19 +224,19 @@ def generate_random_dict(constr=None):
     dict_['SIMULATION']['file'] = 'data'
 
     # SHOCKS
-    lower, upper = 44, 54
+    lower, upper = 43, 53
     dict_['SHOCKS'] = dict()
     dict_['SHOCKS']['coeffs'] = paras_values[lower:upper]
     dict_['SHOCKS']['bounds'] = paras_bounds[lower:upper]
     dict_['SHOCKS']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 54, 54 + (num_types - 1) * 2
+    lower, upper = 53, 53 + (num_types - 1) * 2
     dict_['TYPE SHARES'] = dict()
     dict_['TYPE SHARES']['coeffs'] = paras_values[lower:upper]
     dict_['TYPE SHARES']['bounds'] = paras_bounds[lower:upper]
     dict_['TYPE SHARES']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 54 + (num_types - 1) * 2, num_paras
+    lower, upper = 53 + (num_types - 1) * 2, num_paras
     dict_['TYPE SHIFTS'] = dict()
     dict_['TYPE SHIFTS']['coeffs'] = paras_values[lower:upper]
     dict_['TYPE SHIFTS']['bounds'] = paras_bounds[lower:upper]

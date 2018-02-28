@@ -50,30 +50,27 @@ def dist_econ_paras(x_all_curre):
     """
     # Auxiliary objects
     num_paras = len(x_all_curre)
-    num_types = int(len(x_all_curre[54:]) / 6) + 1
+    num_types = int(len(x_all_curre[53:]) / 6) + 1
 
     # Discount rates
     delta = x_all_curre[0:1]
 
-    # Level of Ambiguity
-    level = x_all_curre[1:2]
-
     # Common Returns
-    coeffs_common = x_all_curre[2:4]
+    coeffs_common = x_all_curre[1:3]
 
     # Occupation A
-    coeffs_a = x_all_curre[4:19]
+    coeffs_a = x_all_curre[3:18]
 
     # Occupation B
-    coeffs_b = x_all_curre[19:34]
+    coeffs_b = x_all_curre[18:33]
 
     # Education
-    coeffs_edu = x_all_curre[34:41]
+    coeffs_edu = x_all_curre[33:40]
 
     # Home
-    coeffs_home = x_all_curre[41:44]
+    coeffs_home = x_all_curre[40:43]
 
-    shocks_coeffs = x_all_curre[44:54]
+    shocks_coeffs = x_all_curre[43:53]
     for i in [0, 4, 7, 9]:
         shocks_coeffs[i] **= 2
 
@@ -86,14 +83,14 @@ def dist_econ_paras(x_all_curre):
     shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
 
     # Type Shares
-    type_shares = x_all_curre[54:54 + (num_types - 1) * 2]
+    type_shares = x_all_curre[53:53 + (num_types - 1) * 2]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
-    
-    type_shifts = np.reshape(x_all_curre[54 + (num_types - 1) * 2:num_paras], (num_types - 1, 4))
+
+    type_shifts = np.reshape(x_all_curre[53 + (num_types - 1) * 2:num_paras], (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
     # Collect arguments
-    args = (delta, level, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
+    args = (delta, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cov,
             type_shares, type_shifts)
 
     # Finishing
@@ -112,23 +109,20 @@ def dist_optim_paras(x_all_curre, is_debug, info=None):
     # Discount rate
     optim_paras['delta'] = max(x_all_curre[0:1], 0.00)
 
-    # Level of Ambiguity
-    optim_paras['level'] = max(x_all_curre[1:2], 0.00)
-
     # Common Rewards
-    optim_paras['coeffs_common'] = x_all_curre[2:4]
+    optim_paras['coeffs_common'] = x_all_curre[1:3]
 
     # Occupation A
-    optim_paras['coeffs_a'] = x_all_curre[4:19]
+    optim_paras['coeffs_a'] = x_all_curre[3:18]
 
     # Occupation B
-    optim_paras['coeffs_b'] = x_all_curre[19:34]
+    optim_paras['coeffs_b'] = x_all_curre[18:33]
 
     # Education
-    optim_paras['coeffs_edu'] = x_all_curre[34:41]
+    optim_paras['coeffs_edu'] = x_all_curre[33:40]
 
     # Home
-    optim_paras['coeffs_home'] = x_all_curre[41:44]
+    optim_paras['coeffs_home'] = x_all_curre[40:43]
 
     # Cholesky
     optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
@@ -167,14 +161,14 @@ def extract_type_information(x):
     """ This function extracts the information about types from the estimation vector.
     """
 
-    num_types = int(len(x[54:]) / 6) + 1
+    num_types = int(len(x[53:]) / 6) + 1
 
     # Type shares
-    type_shares = x[54:54 + (num_types - 1) * 2]
+    type_shares = x[53:53 + (num_types - 1) * 2]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
 
     # Type shifts
-    type_shifts = x[54 + (num_types - 1) * 2:]
+    type_shifts = x[53 + (num_types - 1) * 2:]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
@@ -185,10 +179,10 @@ def extract_cholesky(x, info=None):
     """ Construct the Cholesky matrix.
     """
     shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x[44:45]
-    shocks_cholesky[1, :2] = x[45:47]
-    shocks_cholesky[2, :3] = x[47:50]
-    shocks_cholesky[3, :4] = x[50:54]
+    shocks_cholesky[0, :1] = x[43:44]
+    shocks_cholesky[1, :2] = x[44:46]
+    shocks_cholesky[2, :3] = x[46:49]
+    shocks_cholesky[3, :4] = x[49:53]
 
     # Stabilization
     if info is not None:
@@ -285,8 +279,8 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
 
 
 def create_draws(num_periods, num_draws, seed, is_debug):
-    """ Create the relevant set of draws. Handle special case of zero variances as thi case is 
-    useful for hand-based testing. The draws are drawn from a standard normal distribution and 
+    """ Create the relevant set of draws. Handle special case of zero variances as thi case is
+    useful for hand-based testing. The draws are drawn from a standard normal distribution and
     transformed later in the code.
     """
     # Control randomness by setting seed value
@@ -382,7 +376,7 @@ def check_model_parameters(optim_paras):
 
     # Checks for all arguments
     keys = []
-    keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home', 'level', 'shocks_cholesky']
+    keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home', 'shocks_cholesky']
     keys += ['delta', 'type_shares', 'type_shifts', 'coeffs_common']
 
     for key in keys:
@@ -393,9 +387,6 @@ def check_model_parameters(optim_paras):
 
     # Check for discount rate
     assert (optim_paras['delta'] >= 0)
-
-    # Check for level of ambiguity
-    assert (optim_paras['level'] >= 0)
 
     # Checks for common returns
     assert (optim_paras['coeffs_common'].size == 2)
@@ -526,14 +517,14 @@ def generate_optimizer_options(which, optim_paras, num_paras):
 
 
 def print_init_dict(dict_, file_name='test.respy.ini'):
-    """ Print initialization dictionary to file. The different formatting makes the file rather 
-    involved. The resulting initialization files are rad by PYTHON and FORTRAN routines. Thus, 
+    """ Print initialization dictionary to file. The different formatting makes the file rather
+    involved. The resulting initialization files are rad by PYTHON and FORTRAN routines. Thus,
     the formatting with respect to the number of decimal places is rather small.
     """
     assert (isinstance(dict_, dict))
 
     opt_labels = []
-    opt_labels += ['BASICS', 'AMBIGUITY', 'COMMON', 'OCCUPATION A', 'OCCUPATION B', 'EDUCATION']
+    opt_labels += ['BASICS', 'COMMON', 'OCCUPATION A', 'OCCUPATION B', 'EDUCATION']
     opt_labels += ['HOME', 'SHOCKS', 'TYPE SHARES', 'TYPE SHIFTS']
 
     str_optim = '{0:<10} {1:25.15f} {2:>5} {3:>15}\n'
@@ -633,17 +624,6 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                     file_.write('\n')
 
                 file_.write(str_.format('max', dict_[flag]['max']))
-
-                file_.write('\n')
-
-            if flag in ['AMBIGUITY']:
-                file_.write(flag.upper() + '\n\n')
-                line = format_opt_parameters(dict_['AMBIGUITY'], 0)
-                file_.write(str_optim.format(*line))
-
-                str_ = '{0:<10} {1:>25}\n'
-                file_.write(str_.format('measure', dict_[flag]['measure']))
-                file_.write(str_.format('mean', str(dict_[flag]['mean'])))
 
                 file_.write('\n')
 
@@ -752,16 +732,16 @@ def get_est_info():
         rslt['value_' + key_] = _process_value(line.pop(0), 'float')
 
     # Total number of evaluations and steps
-    line = shlex.split(linecache.getline('est.respy.info', 50))
+    line = shlex.split(linecache.getline('est.respy.info', 49))
     rslt['num_step'] = _process_value(line[3], 'int')
 
-    line = shlex.split(linecache.getline('est.respy.info', 52))
+    line = shlex.split(linecache.getline('est.respy.info', 51))
     rslt['num_eval'] = _process_value(line[3], 'int')
 
     # Parameter values
     for i, key_ in enumerate(['start', 'step', 'current']):
         rslt['paras_' + key_] = []
-        for j in range(13, 100):
+        for j in range(13, 99):
             line = shlex.split(linecache.getline('est.respy.info', j))
             if not line:
                 break
@@ -794,31 +774,28 @@ def get_optim_paras(optim_paras, num_paras, which, is_debug):
     # Discount rate
     x[0:1] = optim_paras['delta']
 
-    # Level of Ambiguity
-    x[1:2] = optim_paras['level']
+    # Occupation A
+    x[1:3] = optim_paras['coeffs_common']
 
     # Occupation A
-    x[2:4] = optim_paras['coeffs_common']
-
-    # Occupation A
-    x[4:19] = optim_paras['coeffs_a']
+    x[3:18] = optim_paras['coeffs_a']
 
     # Occupation B
-    x[19:34] = optim_paras['coeffs_b']
+    x[18:33] = optim_paras['coeffs_b']
 
     # Education
-    x[34:41] = optim_paras['coeffs_edu']
+    x[33:40] = optim_paras['coeffs_edu']
 
     # Home
-    x[41:44] = optim_paras['coeffs_home']
+    x[40:43] = optim_paras['coeffs_home']
 
     # Shocks
-    x[44:54] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+    x[43:53] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
 
     # Shares
-    x[54:54 + (num_types - 1) * 2] = optim_paras['type_shares'][2:]
+    x[53:53 + (num_types - 1) * 2] = optim_paras['type_shares'][2:]
 
-    x[54 + (num_types - 1) * 2:num_paras] = optim_paras['type_shifts'].flatten()[4:]
+    x[53 + (num_types - 1) * 2:num_paras] = optim_paras['type_shifts'].flatten()[4:]
 
     # Checks
     if is_debug:
@@ -876,7 +853,7 @@ def correlation_to_covariance(corr, sd):
 
 
 def check_early_termination(maxfun, num_eval):
-    """ This function checks for reasons that require an early termination of the optimization 
+    """ This function checks for reasons that require an early termination of the optimization
     procedure.
     """
     # We want an early termination if the number of function evaluations is already at the
@@ -890,7 +867,7 @@ def check_early_termination(maxfun, num_eval):
 
 
 def get_num_obs_agent(data_array, num_agents_est):
-    """ Get a list with the number of observations for each agent. 
+    """ Get a list with the number of observations for each agent.
     """
     num_obs_agent = np.tile(0, num_agents_est)
     agent_number = data_array[0, 0]

@@ -7,4 +7,7 @@ respy/.config
 respy/.lock-*
 development/working
 respy/fortran/bin
+.waf*
+doc/build
+.idea
 

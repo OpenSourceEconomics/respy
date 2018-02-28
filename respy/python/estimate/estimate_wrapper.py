@@ -48,14 +48,14 @@ class OptimizationClass(object):
         # Construct full set of optimization parameters and evaluate criterion function.
         x_optim_all_unscaled = self._construct_all_current_values(
             apply_scaling(x_optim_free_scaled, precond_matrix, 'undo'))
-        fval, opt_ambi_details = pyth_criterion(x_optim_all_unscaled, *args)
+        fval = pyth_criterion(x_optim_all_unscaled, *args)
 
         # We do not want to record anything if we are evaluating the criterion function simply to
         #  get the precondition matrix.
         if not hasattr(self, 'is_scaling'):
 
             # Record the progress of the estimation.
-            record_estimation_eval(self, fval, opt_ambi_details, x_optim_all_unscaled, start)
+            record_estimation_eval(self, fval, x_optim_all_unscaled, start)
 
             # This is only used to determine whether a stabilization of the Cholesky matrix is
             # required.

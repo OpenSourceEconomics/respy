@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" This script allows upgrades the initialization file with the parameter values from the last 
+""" This script allows upgrades the initialization file with the parameter values from the last
 step.
 """
 import argparse
@@ -49,11 +49,11 @@ def scripts_update(init_file):
     # file. For example, this might not be the case when the number of types is changed in the
     # initialization file and an update is requested with an earlier logfile.
     num_types, num_paras = len(init_dict['TYPE SHARES']['coeffs']) / 2 + 1, len(paras_steps)
-    if num_paras != 54 + (num_types - 1) * 6:
+    if num_paras != 53 + (num_types - 1) * 6:
         raise UserError('Info does not fit the current model specification')
 
     optim_paras = dist_optim_paras(paras_steps, True)
-    shocks_coeffs = paras_steps[44:54]
+    shocks_coeffs = paras_steps[43:53]
 
     # Update initialization dictionary
     init_dict['COMMON']['coeffs'] = optim_paras['coeffs_common']
@@ -61,7 +61,6 @@ def scripts_update(init_file):
     init_dict['OCCUPATION B']['coeffs'] = optim_paras['coeffs_b']
     init_dict['EDUCATION']['coeffs'] = optim_paras['coeffs_edu']
     init_dict['HOME']['coeffs'] = optim_paras['coeffs_home']
-    init_dict['AMBIGUITY']['coeffs'] = optim_paras['level']
     init_dict['BASICS']['coeffs'] = optim_paras['delta']
     init_dict['SHOCKS']['coeffs'] = shocks_coeffs
     init_dict['TYPE SHARES']['coeffs'] = optim_paras['type_shares'][2:]
