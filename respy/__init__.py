@@ -10,7 +10,7 @@ from respy.simulate import simulate
 from respy.clsRespy import RespyCls
 
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 def test(opt=None):

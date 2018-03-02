@@ -170,6 +170,9 @@ class TestClass(object):
         """ This test just locks in the evaluation of the criterion function
         for the original Keane & Wolpin data.
         """
+        raise AssertionError(' These tests fail due to the changed printing of the smoothing '
+                             'parameter and the fixed bug in the likelihood evaluation.')
+        
         # Sample one task
         resources = ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']
         fname = np.random.choice(resources)

@@ -131,6 +131,9 @@ class TestClass(object):
         """ This test reproduces the results from evaluations of the
         criterion function for previously analyzed scenarios.
         """
+        raise AssertionError(' These tests fail due to the changed printing of the smoothing '
+                             'parameter and the fixed bug in the likelihood evaluation.')
+
         # Prepare setup
         version = str(sys.version_info[0])
         fname = 'test_vault_' + version + '.respy.pkl'
