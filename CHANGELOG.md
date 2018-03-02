@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ### Fixed
 - Fix bug in likelihood function.
-- Fix integer formatting of smoothing parameter
+- Fix integer formatting of smoothing parameter.
 
 ## [1.0.0] - 2016-09-01
 
