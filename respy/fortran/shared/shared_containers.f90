@@ -43,7 +43,6 @@ MODULE shared_containers
     ! Parameters for the optimization
     TYPE(OPTIMIZER_COLLECTION)      :: optimizer_options
     TYPE(OPTIMPARAS_DICT)           :: optim_paras
-    TYPE(AMBI_DICT)                 :: ambi_spec
     TYPE(EDU_DICT)                  :: edu_spec
 
     INTEGER(our_int)                :: maxfun

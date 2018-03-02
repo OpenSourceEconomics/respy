@@ -61,7 +61,7 @@ if IS_F2PY:
 class TestClass(object):
     """ This class groups together some tests.
     """
-    def test_1(self, flag_ambiguity=False):
+    def test_1(self):
         """ Compare the evaluation of the criterion function for the ambiguity optimization and
         the simulated expected future value between the FORTRAN and PYTHON implementations. These
         tests are set up a separate test case due to the large setup cost to construct the
@@ -70,7 +70,6 @@ class TestClass(object):
         # Generate constraint periods
         constr = dict()
         constr['version'] = 'PYTHON'
-        constr['flag_ambiguity'] = flag_ambiguity
 
         # Generate random initialization file
         generate_init(constr)
@@ -248,14 +247,16 @@ class TestClass(object):
             fort = fort_debug.wrapper_spectral_condition_number(cov)
             np.testing.assert_almost_equal(py, fort)
 
-    def test_4(self, flag_ambiguity=False):
+    def test_4(self):
         """ Testing the core functions of the solution step for the equality of results
         between the PYTHON and FORTRAN implementations.
         """
 
         # Generate random initialization file
+
+        # I stop the test here because the call to the wrappers aborts pytest
+        assert True == False
         constr = dict()
-        constr['flag_ambiguity'] = flag_ambiguity
 
         generate_init(constr)
 
@@ -267,10 +268,10 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_spec, optim_paras, num_draws_emax, seed_emax, is_debug, is_interpolated, \
-        num_points_interp, ambi_spec, optimizer_options, file_sim, num_types =  \
+        num_points_interp, optimizer_options, file_sim, num_types =  \
             dist_class_attributes(respy_obj, 'num_periods', 'edu_spec', 'optim_paras',
                 'num_draws_emax', 'seed_emax', 'is_debug', 'is_interpolated',
-                'num_points_interp', 'ambi_spec', 'optimizer_options', 'file_sim', 'num_types')
+                'num_points_interp', 'optimizer_options', 'file_sim', 'num_types')
 
         # Distribute variables for FORTRAN interface
         fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
@@ -283,14 +284,10 @@ class TestClass(object):
         coeffs_edu = optim_paras['coeffs_edu']
         coeffs_a = optim_paras['coeffs_a']
         coeffs_b = optim_paras['coeffs_b']
-        level = optim_paras['level']
         delta = optim_paras['delta']
 
         type_spec_shifts = optim_paras['type_shifts']
         type_spec_shares = optim_paras['type_shares']
-
-        ambi_spec_measure = ambi_spec['measure']
-        ambi_spec_mean = ambi_spec['mean']
 
         min_idx = edu_spec['max'] + 1
 
@@ -334,24 +331,25 @@ class TestClass(object):
             is_debug, is_interpolated, num_points_interp)
 
         args = ()
-        args += base_args + (edu_spec, ambi_spec, optim_paras, optimizer_options)
+        args += base_args + (edu_spec, optim_paras, optimizer_options)
         args += (file_sim, False)
-        pyth, _ = pyth_backward_induction(*args)
+        pyth = pyth_backward_induction(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], ambi_spec_measure, ambi_spec_mean)
-        args += (shocks_cholesky, level, delta, coeffs_common, coeffs_a, coeffs_b)
+        args += base_args + (edu_spec['start'], edu_spec['max'])
+        args += (shocks_cholesky, delta, coeffs_common, coeffs_a, coeffs_b)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, False)
         f2py = fort_debug.wrapper_backward_induction(*args)
         np.testing.assert_allclose(pyth, f2py)
 
-    def test_5(self, flag_ambiguity=False):
+    def test_5(self):
         """ This methods ensures that the core functions yield the same results across
         implementations.
         """
+        # I stop the test here because the call to the wrappers aborts pytest
+        assert True == False
         # Generate random initialization file
         constr = dict()
-        constr['flag_ambiguity'] = flag_ambiguity
         generate_init(constr)
 
         # Perform toolbox actions
@@ -364,11 +362,11 @@ class TestClass(object):
 
         # Extract class attributes
         num_periods, edu_spec, optim_paras, num_draws_emax, is_debug, is_interpolated, \
-        num_points_interp, is_myopic, num_agents_sim, num_draws_prob, tau, seed_sim, ambi_spec, \
+        num_points_interp, is_myopic, num_agents_sim, num_draws_prob, tau, seed_sim, \
         num_agents_est, states_number_period, optimizer_options,  file_sim, num_types, num_paras \
             = dist_class_attributes(respy_obj, 'num_periods', 'edu_spec', 'optim_paras',
             'num_draws_emax', 'is_debug', 'is_interpolated', 'num_points_interp', 'is_myopic',
-            'num_agents_sim', 'num_draws_prob', 'tau', 'seed_sim', 'ambi_spec', 'num_agents_est',
+            'num_agents_sim', 'num_draws_prob', 'tau', 'seed_sim', 'num_agents_est',
             'states_number_period', 'optimizer_options', 'file_sim', 'num_types', 'num_paras')
 
         data_array = process(respy_obj).as_matrix()
@@ -386,11 +384,9 @@ class TestClass(object):
         coeffs_edu = optim_paras['coeffs_edu']
         coeffs_a = optim_paras['coeffs_a']
         coeffs_b = optim_paras['coeffs_b']
-        level = optim_paras['level']
         delta = optim_paras['delta']
 
-        ambi_spec_measure = ambi_spec['measure']
-        ambi_spec_mean = ambi_spec['mean']
+
 
         type_spec_shares = optim_paras['type_shares']
         type_spec_shifts = optim_paras['type_shifts']
@@ -412,15 +408,14 @@ class TestClass(object):
         fort, _ = resfort_interface(respy_obj, 'simulate')
 
         args = ()
-        args += base_args + (edu_spec, ambi_spec, optim_paras, file_sim)
+        args += base_args + (edu_spec, optim_paras, file_sim)
         args += (optimizer_options, num_types)
         py = pyth_solve(*args)
 
         args = ()
         args += base_args + (min_idx, edu_spec['start'], edu_spec['max'])
-        args += (ambi_spec_measure, ambi_spec_mean)
         args += (coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
-        args += (shocks_cholesky, level, delta, file_sim)
+        args += (shocks_cholesky, delta, file_sim)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (max_states_period, num_types)
         args += (type_spec_shares, type_spec_shifts)
@@ -474,24 +469,22 @@ class TestClass(object):
             num_agents_est, num_obs_agent, num_types)
 
         args = ()
-        args += base_args + (edu_spec, ambi_spec, optimizer_options)
+        args += base_args + (edu_spec, optimizer_options)
         py, _ = pyth_criterion(x0, *args)
 
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
-        args += (ambi_spec_measure, ambi_spec_mean)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (type_spec_shares, type_spec_shifts, num_paras)
         f2py = fort_debug.wrapper_criterion(x0, *args)
 
         np.testing.assert_allclose(py, f2py)
 
-    def test_6(self, flag_ambiguity=False):
+    def test_6(self):
         """ Further tests for the interpolation routines.
         """
         # Generate random initialization file
         constr = dict()
-        constr['flag_ambiguity'] = flag_ambiguity
         generate_init(constr)
 
         # Perform toolbox actions
@@ -501,16 +494,15 @@ class TestClass(object):
         # Extract class attributes
         periods_rewards_systematic, states_number_period, mapping_state_idx, seed_prob, \
         periods_emax, num_periods, states_all, num_points_interp, edu_spec, num_draws_emax, \
-        is_debug, ambi_spec, optim_paras, optimizer_options, file_sim, num_types = \
+        is_debug, optim_paras, optimizer_options, file_sim, num_types = \
             dist_class_attributes(respy_obj, 'periods_rewards_systematic',
                 'states_number_period', 'mapping_state_idx', 'seed_prob', 'periods_emax',
                 'num_periods', 'states_all', 'num_points_interp', 'edu_spec', 'num_draws_emax',
-                'is_debug', 'ambi_spec', 'optim_paras', 'optimizer_options', 'file_sim',
+                'is_debug', 'optim_paras', 'optimizer_options', 'file_sim',
                 'num_types')
 
         # Initialize containers
         i, j = num_periods, max(states_number_period)
-        opt_ambi_details = np.tile(MISSING_FLOAT, (i, j, 7))
 
         shocks_cov = np.matmul(optim_paras['shocks_cholesky'], optim_paras['shocks_cholesky'].T)
 
@@ -523,11 +515,7 @@ class TestClass(object):
         coeffs_common = optim_paras['coeffs_common']
         coeffs_a = optim_paras['coeffs_a']
         coeffs_b = optim_paras['coeffs_b']
-        level = optim_paras['level']
         delta = optim_paras['delta']
-
-        ambi_spec_measure = ambi_spec['measure']
-        ambi_spec_mean = ambi_spec['mean']
 
         # Add some additional objects required for the interfaces to the functions.
         period = np.random.choice(range(num_periods))
@@ -538,9 +526,6 @@ class TestClass(object):
 
         draws_emax_risk = transform_disturbances(draws_emax_standard, np.tile(0, 4),
             shocks_cholesky)
-
-        draws_emax_ambiguity_standard = draws_emax_standard
-        draws_emax_ambiguity_transformed = np.dot(shocks_cholesky, draws_emax_standard.T).T
 
         num_states = states_number_period[period]
 
@@ -575,17 +560,15 @@ class TestClass(object):
         # Construct endogenous variable so that the prediction model can be fitted.
         base_args = (period, num_periods, num_states, periods_rewards_systematic,
                      mapping_state_idx, periods_emax, states_all, is_simulated, num_draws_emax,
-                     maxe, draws_emax_risk, draws_emax_ambiguity_standard,
-                     draws_emax_ambiguity_transformed)
+                     maxe, draws_emax_risk)
 
         args = ()
-        args += base_args + (edu_spec, ambi_spec, optim_paras, optimizer_options)
-        args += (opt_ambi_details, )
-        py, _ = get_endogenous_variable(*args)
+        args += base_args + (edu_spec, optim_paras, optimizer_options)
+        py = get_endogenous_variable(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], shocks_cov, ambi_spec_measure)
-        args += (ambi_spec_mean, level, delta, coeffs_common, coeffs_a, coeffs_b)
+        args += base_args + (edu_spec['start'], edu_spec['max'], shocks_cov)
+        args += (delta, coeffs_common, coeffs_a, coeffs_b)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
         np.testing.assert_almost_equal(py, replace_missing_values(f90))

@@ -19,7 +19,7 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim)
+SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, optim_paras, optimizer_options, file_sim)
 
     !/* external objects        */
 
@@ -28,7 +28,6 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
     INTEGER(our_int), ALLOCATABLE, INTENT(INOUT)    :: states_all(:, :, :)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
-    TYPE(AMBI_DICT), INTENT(IN)                     :: ambi_spec
     TYPE(EDU_DICT), INTENT(IN)                      :: edu_spec
 
     INTEGER(our_int), INTENT(IN)                    :: num_points_interp
@@ -50,7 +49,6 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     !/* internal objects    */
 
-    REAL(our_dble), ALLOCATABLE                     :: opt_ambi_details(:, :, :)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -70,15 +68,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(3, file_sim)
 
-    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, .True.)
-
-    IF (.NOT. is_myopic) THEN
-        CALL record_solution(-1, file_sim)
-        ! Only if individuals are not myopic is there a need to record the results from the worst-case determination.
-        IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim, optim_paras)
-    ELSE
-        CALL record_solution(-2, file_sim)
-    END IF
+    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, optim_paras, optimizer_options, file_sim, .True.)
 
 END SUBROUTINE
 !******************************************************************************

@@ -107,7 +107,7 @@ def _type_conversions(flag, value):
     if flag in ['agents', 'periods', 'start', 'max', 'draws', 'seed', 'points', 'maxiter',
                 'maxfun', 'procs', 'npt', 'maxiter', 'm', 'maxls']:
         value = int(value)
-    elif flag in ['file', 'options', 'measure', 'type']:
+    elif flag in ['file', 'options', 'type']:
         value = str(value)
     elif flag in ['debug', 'store', 'flag', 'mean']:
         assert (value.upper() in ['TRUE', 'FALSE'])

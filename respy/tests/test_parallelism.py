@@ -77,7 +77,6 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
 
-            level = respy_obj.get_attr('optim_paras')['level']
             delta = respy_obj.get_attr('optim_paras')['delta']
             file_sim = respy_obj.get_attr('file_sim')
 

@@ -129,7 +129,7 @@ SUBROUTINE record_estimation_stop()
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val_current, num_eval, num_paras, num_types, optim_paras, start, opt_ambi_summary)
+SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val_current, num_eval, num_paras, num_types, optim_paras, start)
 
     ! We record all things related to the optimization in est.respy.log. That is why we print the values actually relevant for the optimization, i.e. free and scaled. In est.respy.info we switch to the users perspective, all parameter are printed with their economic interpreation intact.
 
@@ -142,7 +142,6 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     REAL(our_dble), INTENT(IN)      :: val_current
     REAL(our_dble), INTENT(IN)      :: start
 
-    INTEGER(our_int), INTENT(IN)    :: opt_ambi_summary(2)
     INTEGER(our_int), INTENT(IN)    :: num_types
     INTEGER(our_int), INTENT(IN)    :: num_paras
     INTEGER(our_int), INTENT(IN)    :: num_eval
@@ -232,17 +231,17 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         END DO
     END DO
 
-    x_optim_shares = x_optim_all_unscaled(55:55 + (num_types - 1) * 2 - 1)
+    x_optim_shares = x_optim_all_unscaled(54:54 + (num_types - 1) * 2 - 1)
 
     DO i = 1, 3
 
         IF ((i == 1) .AND. (.NOT. is_start)) CYCLE
         IF ((i == 2) .AND. (.NOT. is_step)) CYCLE
 
-        x_econ_container(:44, i) = x_optim_all_unscaled(:44)
-        x_econ_container(45:54, i) = flattened_cov(i, :)
-        x_econ_container(55:55 + (num_types - 1) * 2 - 1, i) = x_optim_shares
-        x_econ_container(55 + (num_types - 1) * 2:num_paras, i) = x_optim_all_unscaled(55 + (num_types - 1) * 2:num_paras)
+        x_econ_container(:43, i) = x_optim_all_unscaled(:43)
+        x_econ_container(44:53, i) = flattened_cov(i, :)
+        x_econ_container(54:54 + (num_types - 1) * 2 - 1, i) = x_optim_shares
+        x_econ_container(54 + (num_types - 1) * 2:num_paras, i) = x_optim_all_unscaled(54 + (num_types - 1) * 2:num_paras)
 
     END DO
 
@@ -270,13 +269,6 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
         WRITE(99, *)
 
         WRITE(99, 130) 'Criterion', char_floats(crit_vals(3:3))
-
-        IF (.NOT. opt_ambi_summary(1) == zero_int) THEN
-            WRITE(99, 157) 'Ambiguity', (DBLE(opt_ambi_summary(2)) / DBLE(opt_ambi_summary(1)) * 100), '%'
-        ELSE
-            WRITE(99, 135) 'Ambiguity', '---'
-        END IF
-
 
         WRITE(99, *)
         WRITE(99, 140) 'Identifier', 'Start', 'Step', 'Current'

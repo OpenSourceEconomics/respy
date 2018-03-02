@@ -104,11 +104,6 @@ def compare_est_log(base_est_log):
             alt_val = float(shlex.split(alt_line)[1])
             base_val = float(shlex.split(base_line)[1])
             np.testing.assert_almost_equal(alt_val, base_val)
-        elif list_[0] in ['Ambiguity']:
-            # We know that the results from the worst-case determination are very
-            # sensitive for ill-conditioned problems and thus the performance varies
-            # across versions.
-            pass
         elif list_[0] in ['Time', 'Duration']:
             pass
         else:

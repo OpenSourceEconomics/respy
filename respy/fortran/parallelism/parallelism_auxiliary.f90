@@ -12,8 +12,6 @@ MODULE parallelism_auxiliary
 
     USE shared_interface
 
-    USE solve_ambiguity
-
     USE solve_fortran
 
 #if MPI_AVAILABLE
@@ -53,8 +51,6 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
     CHARACTER(225), INTENT(IN)                      :: file_sim
 
     !/* internal objects        */
-
-    REAL(our_dble), ALLOCATABLE                     :: opt_ambi_details(:, :, :)
     REAL(our_dble)                                  :: x_all_current(num_paras)
 
     INTEGER(our_int), ALLOCATABLE                   :: num_states_slaves(:, :)
@@ -95,24 +91,6 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
         CALL MPI_RECV(periods_emax(period + 1, :num_states) , num_states, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, SLAVECOMM, status, ierr)
 
     END DO
-
-    ! I also need the information about the performance of the worst-case optimization.
-    IF (.NOT. ALLOCATED(num_states_slaves)) THEN
-        CALL distribute_workload(num_states_slaves, num_rows_slaves)
-    END IF
-
-    ALLOCATE(opt_ambi_details(num_periods, max_states_period, 7))
-    opt_ambi_details = MISSING_FLOAT
-    DO period = 1, num_periods
-        DO i = 1, num_slaves
-            displs(i) = SUM(num_states_slaves(period, :i - 1))
-        END DO
-        DO k = 1, 7
-            CALL MPI_GATHERV(opt_ambi_details(period, :, k), 0, MPI_DOUBLE, opt_ambi_details(period, :, k), num_states_slaves(period, :), displs, MPI_DOUBLE, MPI_ROOT, SLAVECOMM, ierr)
-        END DO
-    END DO
-
-    IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) CALL record_ambiguity(opt_ambi_details, states_number_period, file_sim, optim_paras)
 
 #endif
 
@@ -220,15 +198,13 @@ SUBROUTINE distribute_information_slaves(num_states_slaves, period, send_slave, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, update_master)
 
     !/* external objects        */
 
-    REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: opt_ambi_details(:, :, :)
     REAL(our_dble), ALLOCATABLE, INTENT(INOUT)      :: periods_emax(:, :)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
-    TYPE(AMBI_DICT), INTENT(IN)             :: ambi_spec
     TYPE(EDU_DICT), INTENT(IN)              :: edu_spec
 
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
@@ -269,8 +245,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     REAL(our_dble)                      :: shifts(4)
     REAL(our_dble)                      :: emax
 
-    REAL(our_dble)                      :: draws_emax_ambiguity_standard(num_draws_emax, 4)
-    REAL(our_dble)                      :: draws_emax_ambiguity_transformed(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax_standard(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax_risk(num_draws_emax, 4)
 
@@ -292,10 +266,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
 !------------------------------------------------------------------------------
 #if MPI_AVAILABLE
 
-    IF (.NOT. ALLOCATED(opt_ambi_details)) ALLOCATE(opt_ambi_details(num_periods, max_states_period, 7))
     IF (.NOT. ALLOCATED(periods_emax)) ALLOCATE(periods_emax(num_periods, max_states_period))
 
-    opt_ambi_details = MISSING_FLOAT
     periods_emax = MISSING_FLOAT
 
 
@@ -329,8 +301,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
     CALL clip_value(shifts(2), EXP(shocks_cov(2, 2)/two_dble), zero_dble, HUGE_FLOAT, info)
 
     ! Initialize containers for disturbances with empty values.
-    draws_emax_ambiguity_transformed = MISSING_FLOAT
-    draws_emax_ambiguity_standard = MISSING_FLOAT
     draws_emax_risk = MISSING_FLOAT
 
     shocks_mean = zero_int
@@ -342,17 +312,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
         num_states = states_number_period(period + 1)
 
         ! Transform disturbances
-        IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-            IF (ambi_spec%mean) THEN
-                DO i = 1, num_draws_emax
-                    draws_emax_ambiguity_transformed(i:i, :) = TRANSPOSE(MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(draws_emax_standard(i:i, :))))
-                END DO
-            ELSE
-                draws_emax_ambiguity_standard = draws_emax_standard
-            END IF
-        ELSE
-            CALL transform_disturbances(draws_emax_risk, draws_emax_standard, shocks_mean, optim_paras%shocks_cholesky)
-        END IF
+        CALL transform_disturbances(draws_emax_risk, draws_emax_standard, shocks_mean, optim_paras%shocks_cholesky)
 
         ALLOCATE(periods_emax_slaves(num_states), endogenous_slaves(num_states))
 
@@ -393,11 +353,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 ! Extract rewards
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, ambi_spec, optim_paras, optimizer_options)
-                ELSE
-                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
-                END IF
+                CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
                 ! Construct dependent variable
                 endogenous_slaves(count) = emax - maxe(k + 1)
@@ -428,11 +384,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, opt_ambi_details, num_per
                 ! Extract rewards
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
-                IF (optim_paras%level(1) .GT. MIN_AMBIGUITY) THEN
-                    CALL construct_emax_ambiguity(emax, opt_ambi_details, num_periods, num_draws_emax, period, k, draws_emax_ambiguity_standard, draws_emax_ambiguity_transformed, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, ambi_spec, optim_paras, optimizer_options)
-                ELSE
-                    CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
-                END IF
+                CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
                 ! Collect information
                 periods_emax_slaves(count) = emax

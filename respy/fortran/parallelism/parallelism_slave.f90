@@ -22,7 +22,6 @@ PROGRAM resfort_parallel_slave
 
     TYPE(PRECOND_DICT)              :: precond_spec
 
-    INTEGER(our_int), ALLOCATABLE   :: opt_ambi_summary_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_states_slaves(:, :)
     INTEGER(our_int), ALLOCATABLE   :: num_agents_slaves(:)
     INTEGER(our_int), ALLOCATABLE   :: displs(:)
@@ -41,7 +40,6 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int)                :: task
     INTEGER(our_int)                :: k
 
-    REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
     REAL(our_dble), ALLOCATABLE     :: x_optim_all_unscaled(:)
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)
     REAL(our_dble), ALLOCATABLE     :: contribs(:)
@@ -64,7 +62,7 @@ PROGRAM resfort_parallel_slave
     CALL MPI_COMM_GET_PARENT(PARENTCOMM, ierr)
 
 
-    CALL read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
+    CALL read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
 
     CALL fort_create_state_space(states_all, states_number_period, mapping_state_idx, num_periods, num_types, edu_spec)
 
@@ -73,7 +71,6 @@ PROGRAM resfort_parallel_slave
 
     CALL create_draws(periods_draws_emax, num_draws_emax, seed_emax, is_debug)
 
-    ALLOCATE(opt_ambi_summary_slaves(2, num_slaves)); opt_ambi_summary_slaves = MISSING_INT
     ALLOCATE(displs(num_slaves)); displs = MISSING_INT
     ALLOCATE(x_optim_all_unscaled(num_paras))
 
@@ -107,16 +104,12 @@ PROGRAM resfort_parallel_slave
 
             IF (rank == zero_int) CALL record_solution(3, file_sim)
 
-            CALL fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, .True.)
+            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, .True.)
 
             DO period = 1, num_periods
 
                 lower_bound_states = SUM(num_states_slaves(period, :rank)) + 1
                 upper_bound_states = SUM(num_states_slaves(period, :rank + 1))
-
-                DO k = 1, 7
-                    CALL MPI_GATHERV(opt_ambi_details(period, lower_bound_states:upper_bound_states, k), num_states_slaves(period, rank + 1), MPI_DOUBLE, opt_ambi_details, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
-                END DO
 
             END DO
 
@@ -152,16 +145,11 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, max_states_period, optim_paras)
 
-            CALL fort_backward_induction_slave(periods_emax, opt_ambi_details, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, .False.)
+            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, .False.)
 
             CALL fort_contributions(contribs(start_agent:stop_agent), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, num_periods, num_draws_prob, num_agents_slaves(rank + 1), num_obs_agent(start_agent:stop_agent), num_types, edu_spec, optim_paras)
 
             CALL MPI_GATHERV(contribs(start_agent:stop_agent), num_agents_slaves(rank + 1), MPI_DOUBLE, contribs, 0, displs, MPI_DOUBLE, 0, PARENTCOMM, ierr)
-
-            ! We also need to monitor the quality of the worst-case determination. We do not send around detailed information to save on communication time. The details are provided for simulations only.
-            CALL summarize_worst_case_success(opt_ambi_summary_slaves(:, rank + 1), opt_ambi_details)
-
-            CALL MPI_GATHER(opt_ambi_summary_slaves(:, rank + 1), 2, MPI_INT, opt_ambi_summary_slaves, 0, MPI_INT, 0, PARENTCOMM, ierr)
 
         END IF
 

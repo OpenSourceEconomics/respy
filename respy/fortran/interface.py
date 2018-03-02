@@ -19,12 +19,12 @@ def resfort_interface(respy_obj, request, data_array=None):
     # Distribute class attributes
     optim_paras, num_periods, edu_spec, is_debug, num_draws_emax, seed_emax, is_interpolated, \
     num_points_interp, is_myopic, tau, num_procs, num_agents_sim, num_draws_prob, \
-    seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, precond_spec, ambi_spec, \
+    seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, precond_spec, \
     file_sim, num_paras, num_types = dist_class_attributes(respy_obj, 'optim_paras',
         'num_periods', 'edu_spec', 'is_debug', 'num_draws_emax', 'seed_emax', 'is_interpolated',
         'num_points_interp', 'is_myopic', 'tau', 'num_procs', 'num_agents_sim',
         'num_draws_prob', 'seed_prob', 'seed_sim', 'optimizer_options', 'optimizer_used',
-        'maxfun', 'precond_spec', 'ambi_spec', 'file_sim', 'num_paras', 'num_types')
+        'maxfun', 'precond_spec', 'file_sim', 'num_paras', 'num_types')
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -39,7 +39,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     args = (optim_paras, is_interpolated, num_draws_emax, num_periods, num_points_interp,
             is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim,
             seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-            optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim, data_array,
+            optimizer_used, maxfun, num_paras, precond_spec, file_sim, data_array,
             num_types)
 
     write_resfort_initialization(*args)
@@ -133,7 +133,7 @@ def read_data(label, shape):
 def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, num_periods,
         num_points_interp, is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim,
         seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-        optimizer_used, maxfun, num_paras, precond_spec, ambi_spec, file_sim, data_array,
+        optimizer_used, maxfun, num_paras, precond_spec, file_sim, data_array,
         num_types):
     """ Write out model request to hidden file .model.resfort.ini.
     """
@@ -199,16 +199,6 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         file_.write(line)
 
         line = '{0:10d}\n'.format(seed_emax)
-        file_.write(line)
-
-        # AMBIGUITY
-        line = '"{0}"'.format(ambi_spec['measure'])
-        file_.write(line + '\n')
-
-        line = '{0}'.format(ambi_spec['mean'])
-        file_.write(line + '\n')
-
-        line = '{0:25.15f}\n'.format(optim_paras['level'][0])
         file_.write(line)
 
         # TYPES

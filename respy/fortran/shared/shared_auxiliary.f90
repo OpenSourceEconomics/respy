@@ -299,31 +299,6 @@ FUNCTION apply_scaling(x_in, precond_matrix, request)
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
-
-    !/* external objects        */
-
-    INTEGER(our_int), INTENT(OUT)   :: opt_ambi_summary(2)
-
-    REAL(our_dble), INTENT(IN)      :: opt_ambi_details(num_periods, max_states_period, 7)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                :: period
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    opt_ambi_summary = zero_int
-    DO period = 1, num_periods
-        opt_ambi_summary(1) = opt_ambi_summary(1) + COUNT(opt_ambi_details(period, : , 4) .GE. zero_int)
-        opt_ambi_summary(2) = opt_ambi_summary(2) + COUNT(opt_ambi_details(period, : , 4) .EQ. one_int)
-    END DO
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
 SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     !/* external objects        */
@@ -346,13 +321,13 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky = zero_dble
 
-    shocks_cholesky(1, :1) = x(45:45)
+    shocks_cholesky(1, :1) = x(44:44)
 
-    shocks_cholesky(2, :2) = x(46:47)
+    shocks_cholesky(2, :2) = x(45:46)
 
-    shocks_cholesky(3, :3) = x(48:50)
+    shocks_cholesky(3, :3) = x(47:49)
 
-    shocks_cholesky(4, :4) = x(51:54)
+    shocks_cholesky(4, :4) = x(50:53)
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -921,7 +896,7 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
+SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
 
     !
     !   This function serves as the replacement for the RespyCls and reads in all required information about the model parameterization. It just reads in all required information.
@@ -931,7 +906,6 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
 
     TYPE(PRECOND_DICT), INTENT(OUT)         :: precond_spec
     TYPE(OPTIMPARAS_DICT), INTENT(OUT)      :: optim_paras
-    TYPE(AMBI_DICT), INTENT(OUT)            :: ambi_spec
     TYPE(EDU_DICT), INTENT(OUT)             :: edu_spec
 
     REAL(our_dble), INTENT(OUT)     :: tau
@@ -1015,11 +989,6 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         ! SOLUTION
         READ(99, 1500) num_draws_emax
         READ(99, 1500) seed_emax
-
-        ! AMBIGUITY
-        READ(99, *) ambi_spec%measure
-        READ(99, *) ambi_spec%mean
-        READ(99, 1510) optim_paras%level
 
         ! TYPES
         READ(99, 1510) optim_paras%type_shares
@@ -1108,12 +1077,6 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         END IF
     END DO
 
-    ! Constructed attributes
-    IF (ambi_spec%mean) THEN
-        num_free_ambi = 2
-    ELSE
-        num_free_ambi = 4
-    END IF
 
     num_free =  COUNT(.NOT. optim_paras%paras_fixed)
     num_slaves = num_procs - 1
@@ -1263,17 +1226,15 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
     ! Extract model ingredients
     optim_paras%delta = MAX(x(1:1), zero_dble)
 
-    optim_paras%level = MAX(x(2:2), zero_dble)
+    optim_paras%coeffs_common = x(2:3)
 
-    optim_paras%coeffs_common = x(3:4)
+    optim_paras%coeffs_a = x(4:18)
 
-    optim_paras%coeffs_a = x(5:19)
+    optim_paras%coeffs_b = x(19:33)
 
-    optim_paras%coeffs_b = x(20:34)
+    optim_paras%coeffs_edu = x(34:40)
 
-    optim_paras%coeffs_edu = x(35:41)
-
-    optim_paras%coeffs_home = x(42:44)
+    optim_paras%coeffs_home = x(41:43)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
@@ -1283,10 +1244,10 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
     END IF
 
     optim_paras%type_shares = zero_dble
-    optim_paras%type_shares(3:) = x(55:55 + (num_types - 1) * 2 - 1)
+    optim_paras%type_shares(3:) = x(54:54 + (num_types - 1) * 2 - 1)
 
     optim_paras%type_shifts = zero_dble
-    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(55 + (num_types - 1) * 2:num_paras), (/4, num_types  - 1/)))
+    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(54 + (num_types - 1) * 2:num_paras), (/4, num_types  - 1/)))
 
 END SUBROUTINE
 !******************************************************************************
@@ -1354,30 +1315,28 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     x_internal(1:1) = optim_paras%delta
 
-    x_internal(2:2) = optim_paras%level
+    x_internal(2:3) = optim_paras%coeffs_common(:)
 
-    x_internal(3:4) = optim_paras%coeffs_common(:)
+    x_internal(4:18) = optim_paras%coeffs_a(:)
 
-    x_internal(5:19) = optim_paras%coeffs_a(:)
+    x_internal(19:33) = optim_paras%coeffs_b(:)
 
-    x_internal(20:34) = optim_paras%coeffs_b(:)
+    x_internal(34:40) = optim_paras%coeffs_edu(:)
 
-    x_internal(35:41) = optim_paras%coeffs_edu(:)
+    x_internal(41:43) = optim_paras%coeffs_home(:)
 
-    x_internal(42:44) = optim_paras%coeffs_home(:)
+    x_internal(44:44) = optim_paras%shocks_cholesky(1, :1)
 
-    x_internal(45:45) = optim_paras%shocks_cholesky(1, :1)
+    x_internal(45:46) = optim_paras%shocks_cholesky(2, :2)
 
-    x_internal(46:47) = optim_paras%shocks_cholesky(2, :2)
+    x_internal(47:49) = optim_paras%shocks_cholesky(3, :3)
 
-    x_internal(48:50) = optim_paras%shocks_cholesky(3, :3)
+    x_internal(50:53) = optim_paras%shocks_cholesky(4, :4)
 
-    x_internal(51:54) = optim_paras%shocks_cholesky(4, :4)
-
-    x_internal(55:(55 + (num_types - 1) * 2) - 1) = optim_paras%type_shares(3:)
+    x_internal(54:(54 + (num_types - 1) * 2) - 1) = optim_paras%type_shares(3:)
 
     shifts = PACK(TRANSPOSE(optim_paras%type_shifts), .TRUE.)
-    x_internal(55 + (num_types - 1) * 2:num_paras) = shifts(5:)
+    x_internal(54 + (num_types - 1) * 2:num_paras) = shifts(5:)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN
