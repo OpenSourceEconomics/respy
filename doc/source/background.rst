@@ -5,7 +5,7 @@ Background
 
 Here is some of the recent work:
 
-* Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/dist/initial/eisenhauer-manuscript.pdf>`_. *Unpublished Manuscript*.
+* Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/distribution/eisenhauer-manuscript.pdf>`_. *Unpublished Manuscript*.
 
     The estimation of finite-horizon discrete choice dynamic programming models is computationally expensive. This limits their realism and impedes verification and validation efforts. Keane & Wolpin (1994) propose an interpolation method that ameliorates the computational burden but introduces approximation error. I describe their approach in detail, successfully recompute their original quality diagnostics, and provide some additional insights that underscore the trade-off between computation time and the accuracy of estimation results.
 

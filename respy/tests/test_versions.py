@@ -165,39 +165,7 @@ class TestClass(object):
                 base_val = val
             np.testing.assert_allclose(base_val, val)
 
-    @pytest.mark.slow
     def test_3(self):
-        """ This test just locks in the evaluation of the criterion function
-        for the original Keane & Wolpin data.
-        """
-        raise AssertionError(' These tests fail due to the changed printing of the smoothing '
-                             'parameter and the fixed bug in the likelihood evaluation.')
-        
-        # Sample one task
-        resources = ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']
-        fname = np.random.choice(resources)
-
-        # Select expected result
-        rslt = None
-        if 'one' in fname:
-            rslt = 0.261487735867433
-        elif 'two' in fname:
-            rslt = 1.126138097174159
-        elif 'three' in fname:
-            rslt = 1.895699121131644
-
-        # Evaluate criterion function at true values.
-        respy_obj = RespyCls(TEST_RESOURCES_DIR + '/' + fname)
-
-        respy_obj.unlock()
-        respy_obj.set_attr('maxfun', 0)
-        respy_obj.lock()
-
-        simulate(respy_obj)
-        _, val = estimate(respy_obj)
-        np.testing.assert_allclose(val, rslt)
-
-    def test_4(self):
         """ Test the solution of deterministic model with ambiguity and
         interpolation. This test has the same result as in the absence of
         random variation in payoffs, it does not matter whether the
@@ -223,7 +191,7 @@ class TestClass(object):
             _, val = estimate(respy_obj)
             np.testing.assert_allclose(val, -1.0)
 
-    def test_5(self):
+    def test_4(self):
         """ Test the solution of deterministic model without ambiguity,
         but with interpolation. As a deterministic model is requested,
         all versions should yield the same result without any additional effort.
@@ -248,7 +216,7 @@ class TestClass(object):
             _, val = estimate(respy_obj)
             np.testing.assert_allclose(val, -1.0)
 
-    def test_6(self):
+    def test_5(self):
         """ This test ensures that the logging looks exactly the same for the
         different versions.
         """
