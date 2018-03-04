@@ -19,6 +19,9 @@ install:
   - pip install codecov
   - pip install tox
 
+script:
+  - travis_wait pytest --cov=respy
+
 after_success:
   - codecov
 
