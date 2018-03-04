@@ -74,10 +74,6 @@ Continuous Integration Workflow
 .. image:: https://travis-ci.org/restudToolbox/package.svg?branch=master
    :target: https://travis-ci.org/restudToolbox/package
 
-.. image:: https://requires.io/github/restudToolbox/package/requirements.svg?branch=master
-    :target: https://requires.io/github/restudToolbox/package/requirements/?branch=master
-    :alt: Requirements Status
-
 .. image:: https://badge.fury.io/py/respy.svg
     :target: https://badge.fury.io/py/respy
 
