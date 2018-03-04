@@ -15,7 +15,7 @@ addons:
 bundler_args: --retry 3
 
 install:
-  - travis_retry travis_wait pip install -r requirements.txt
+  - travis_retry travis_wait pip install -e .
   - pip install codecov
   - pip install pytest-cov
 
@@ -28,4 +28,3 @@ after_success:
 notifications:
   slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
   email: false
-
