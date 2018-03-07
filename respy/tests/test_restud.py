@@ -195,7 +195,6 @@ def generate_constraints_dict():
     constr['flag_deterministic'] = True
     constr['version'] = 'FORTRAN'
     constr['edu'] = (10, 20)
-    constr['level'] = 0.00
     constr['maxfun'] = 0
     constr['types'] = 1
     constr['periods'] = int(np.random.choice(range(2, 10)))

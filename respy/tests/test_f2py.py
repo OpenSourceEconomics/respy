@@ -254,8 +254,6 @@ class TestClass(object):
 
         # Generate random initialization file
 
-        # I stop the test here because the call to the wrappers aborts pytest
-        assert True == False
         constr = dict()
 
         generate_init(constr)
@@ -346,8 +344,6 @@ class TestClass(object):
         """ This methods ensures that the core functions yield the same results across
         implementations.
         """
-        # I stop the test here because the call to the wrappers aborts pytest
-        assert True == False
         # Generate random initialization file
         constr = dict()
         generate_init(constr)
