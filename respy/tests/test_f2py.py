@@ -466,7 +466,7 @@ class TestClass(object):
 
         args = ()
         args += base_args + (edu_spec, optimizer_options)
-        py, _ = pyth_criterion(x0, *args)
+        py = pyth_criterion(x0, *args)
 
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
