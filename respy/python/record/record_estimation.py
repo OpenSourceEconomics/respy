@@ -143,6 +143,11 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
         fmt_ = '   {0:>9}     {1:>25}\n'
         out_file.write(fmt_.format(*['Criterion', char_floats(fval)[0]]))
 
+        out_file.write('\n')
+        fmt_ = '{:>13}    ' + '{:>25}    ' * 3
+        out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
+        out_file.write('\n\n')
+
 
         # Formatting for the file
         fmt_ = '   {:>10}' + '    {:>25}' * 3
@@ -150,7 +155,7 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
             if paras_fixed[i]:
                 continue
             line = [i] + char_floats(x_optim_container[i, :])
-            out_file.write(fmt_.format(*line) + '\n')
+            out_file.write(fmt_.format(*line).rstrip(' ') + '\n')
         out_file.write('\n')
 
         # Get information on the spectral condition number of the covariance matrix of the shock

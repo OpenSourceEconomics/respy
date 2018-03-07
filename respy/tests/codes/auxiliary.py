@@ -3,6 +3,7 @@
 import pandas as pd
 import numpy as np
 import shlex
+from os import getcwd
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
@@ -92,6 +93,13 @@ def compare_est_log(base_est_log):
     with open('est.respy.log') as in_file:
         alt_est_log = in_file.readlines()
 
+    print(getcwd())
+    for l, (line_base, line_alt) in enumerate(zip(base_est_log, alt_est_log)):
+        if line_base != line_alt:
+            print(l)
+            print(line_base)
+            print(line_alt, '\n\n\n')
+
     for j, _ in enumerate(alt_est_log):
         alt_line, base_line = alt_est_log[j], base_est_log[j]
         list_ = shlex.split(alt_line)
@@ -104,7 +112,7 @@ def compare_est_log(base_est_log):
             alt_val = float(shlex.split(alt_line)[1])
             base_val = float(shlex.split(base_line)[1])
             np.testing.assert_almost_equal(alt_val, base_val)
-        elif list_[0] in ['Time', 'Duration']:
+        elif list_[0] in ['Time', 'Duration', 'Identifier']:
             pass
         else:
 
