@@ -24,8 +24,7 @@ def estimate(respy_obj):
     # Cleanup
     for fname in ['est.respy.log', 'est.respy.info']:
         if os.path.exists(fname):
-            # os.unlink(fname)
-            os.rename(fname, fname[:-4] + '_old.log')
+            os.unlink(fname)
 
     if respy_obj.get_attr('is_solved'):
         respy_obj.reset()

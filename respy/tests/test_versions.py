@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import pytest
 import copy
-from os import getcwd
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import pyth_create_state_space

@@ -86,8 +86,10 @@ class TestClass(object):
 
             # Check for identical records
             fname = file_sim + '.respy.sol'
+
             if base_sol_log is None:
                 base_sol_log = open(fname, 'r').read()
+
             assert open(fname, 'r').read() == base_sol_log
 
             if base_est_info_log is None:

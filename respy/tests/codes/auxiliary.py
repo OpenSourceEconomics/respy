@@ -93,13 +93,6 @@ def compare_est_log(base_est_log):
     with open('est.respy.log') as in_file:
         alt_est_log = in_file.readlines()
 
-    print(getcwd())
-    for l, (line_base, line_alt) in enumerate(zip(base_est_log, alt_est_log)):
-        if line_base != line_alt:
-            print(l)
-            print(line_base)
-            print(line_alt, '\n\n\n')
-
     for j, _ in enumerate(alt_est_log):
         alt_line, base_line = alt_est_log[j], base_est_log[j]
         list_ = shlex.split(alt_line)
