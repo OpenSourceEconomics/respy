@@ -240,8 +240,6 @@ class TestClass(object):
 
             if base_est_log is None:
                 base_est_log = open('est.respy.log', 'r').readlines()
-            print(version)
-            print(getcwd())
             compare_est_log(base_est_log)
 
 
