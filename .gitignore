@@ -11,4 +11,4 @@ respy/fortran/bin
 .waf*
 doc/build
 .idea
-
+*.diff

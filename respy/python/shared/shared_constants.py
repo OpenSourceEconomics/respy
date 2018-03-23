@@ -23,6 +23,10 @@ SMALL_FLOAT = 1e-5
 TINY_FLOAT = 1.0e-8
 PRINT_FLOAT = 1e10
 
+# Number of decimals that are compared for tests
+# This is currently only used in regression tests.
+DECIMALS = 6
+
 # Interpolation
 INADMISSIBILITY_PENALTY = -400000.00
 

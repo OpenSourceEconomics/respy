@@ -6,6 +6,7 @@ import os
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
+from respy.python.shared.shared_constants import DECIMALS
 from auxiliary_shared import get_random_dirname
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
@@ -103,7 +104,9 @@ def check_single(tests, idx):
 
     est_val = estimate(respy_obj)[1]
 
-    is_success = np.isclose(est_val, crit_val)
+    tolerance = 10 ** - DECIMALS
+
+    is_success = np.isclose(est_val, crit_val, rtol=tolerance)
 
     # Cleanup of temporary directories.from
     os.chdir('../')
