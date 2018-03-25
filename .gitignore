@@ -5,7 +5,8 @@ respy.egg-info
 respy/.waf-*
 respy/.config
 respy/.lock-*
-development/working/*
+development/working/peisenha/*
+development/working/jansog/*
 !development/working/inspect_vault.ipynb
 respy/fortran/bin
 .waf*
