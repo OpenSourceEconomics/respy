@@ -47,6 +47,14 @@ from codes.random_init import generate_init
 from codes.auxiliary import write_edu_start
 from codes.auxiliary import write_draws
 from codes.auxiliary import write_types
+from functools import partial
+
+from respy.python.shared.shared_constants import DECIMALS, TOL
+assert_allclose = partial(np.testing.assert_allclose, rtol=TOL, atol=TOL)
+assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
+from numpy.testing import assert_equal, assert_array_equal
+
+
 
 from respy import RespyCls
 
@@ -113,7 +121,7 @@ class TestClass(object):
         args += (optim_paras['coeffs_common'], optim_paras['coeffs_a'], optim_paras['coeffs_b'])
         args += (num_types, )
         f90 = fort_debug.wrapper_construct_emax_risk(*args)
-        np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+        assert_allclose(py, f90)
 
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected hand-crafted functions. In
@@ -143,7 +151,7 @@ class TestClass(object):
             # Ensure equivalence
             rslts = [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]
             for obj in rslts:
-                np.testing.assert_allclose(obj[0], obj[1])
+                assert_allclose(obj[0], obj[1])
 
         for _ in range(100):
 
@@ -164,18 +172,18 @@ class TestClass(object):
             # Check parameters
             py = results.params
             f90 = fort_debug.wrapper_get_coefficients(endog, exog, num_covars, num_agents)
-            np.testing.assert_almost_equal(py, f90)
+            assert_almost_equal(py, f90)
 
             # Check prediction
             py = results.predict(exog)
             f90 = fort_debug.wrapper_point_predictions(exog, f90, num_agents)
-            np.testing.assert_almost_equal(py, f90)
+            assert_almost_equal(py, f90)
 
             # Check coefficient of determination and the standard errors.
             py = [results.rsquared, results.bse]
             f90 = fort_debug.wrapper_get_pred_info(endog, f90, exog, num_agents, num_covars)
             for i in range(2):
-                np.testing.assert_almost_equal(py[i], f90[i])
+                assert_almost_equal(py[i], f90[i])
 
     def test_3(self):
         """ Compare results between FORTRAN and PYTHON of selected functions.
@@ -196,37 +204,37 @@ class TestClass(object):
             f90 = fort_debug.wrapper_normal_pdf(*args)
             py = norm.pdf(*args)
 
-            np.testing.assert_almost_equal(py, f90)
+            assert_almost_equal(py, f90)
 
             # Singular Value Decomposition
             py = scipy.linalg.svd(matrix)
             f90 = fort_debug.wrapper_svd(matrix, dim)
 
             for i in range(3):
-                np.testing.assert_allclose(py[i], f90[i], rtol=1e-05, atol=1e-06)
+                assert_allclose(py[i], f90[i])
 
             # Pseudo-Inverse
             py = np.linalg.pinv(matrix)
             f90 = fort_debug.wrapper_pinv(matrix, dim)
 
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+            assert_allclose(py, f90)
 
             # Inverse
             py = np.linalg.inv(cov)
             f90 = fort_debug.wrapper_inverse(cov, dim)
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+            assert_allclose(py, f90)
 
             # Determinant
             py = np.linalg.det(cov)
             f90 = fort_debug.wrapper_determinant(cov)
 
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+            assert_allclose(py, f90)
 
             # Trace
             py = np.trace(cov)
             f90 = fort_debug.wrapper_trace(cov)
 
-            np.testing.assert_allclose(py, f90, rtol=1e-05, atol=1e-06)
+            assert_allclose(py, f90)
 
             # Random normal deviates. This only tests the interface, requires
             # visual inspection in IPYTHON notebook as well.
@@ -241,12 +249,12 @@ class TestClass(object):
             f90 = fort_debug.wrapper_clip_value(values, lower_bound, upper_bound, num_values)
             py = np.clip(values, lower_bound, upper_bound)
 
-            np.testing.assert_almost_equal(py, f90)
+            assert_almost_equal(py, f90)
 
             # Spectral condition number
             py = spectral_condition_number(cov)
             fort = fort_debug.wrapper_spectral_condition_number(cov)
-            np.testing.assert_almost_equal(py, fort)
+            assert_almost_equal(py, fort)
 
     def test_4(self):
         """ Testing the core functions of the solution step for the equality of results
@@ -299,7 +307,7 @@ class TestClass(object):
         args = base_args + (edu_spec['start'], edu_spec['max'], min_idx)
         f2py = fort_debug.wrapper_create_state_space(*args)
         for i in range(4):
-            np.testing.assert_allclose(pyth[i], f2py[i])
+            assert_allclose(pyth[i], f2py[i])
 
         # Carry some results from the state space creation for future use.
         states_all, states_number_period = pyth[:2]
@@ -316,7 +324,7 @@ class TestClass(object):
         args += (coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         args += (type_spec_shares, type_spec_shifts)
         f2py = fort_debug.wrapper_calculate_rewards_systematic(*args)
-        np.testing.assert_allclose(pyth, f2py)
+        assert_allclose(pyth, f2py)
 
         # Carry some results from the systematic rewards calculation for future use and create
         # the required set of disturbances.
@@ -339,7 +347,7 @@ class TestClass(object):
         args += (shocks_cholesky, delta, coeffs_common, coeffs_a, coeffs_b)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, False)
         f2py = fort_debug.wrapper_backward_induction(*args)
-        np.testing.assert_allclose(pyth, f2py)
+        assert_allclose(pyth, f2py)
 
     def test_5(self):
         """ This methods ensures that the core functions yield the same results across
@@ -421,7 +429,7 @@ class TestClass(object):
 
         for alt in [fort, f2py]:
             for i in range(5):
-                np.testing.assert_allclose(py[i], alt[i], rtol=1e-6)
+                assert_allclose(py[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
         periods_rewards_systematic, _, mapping_state_idx, periods_emax, states_all = py
@@ -438,7 +446,7 @@ class TestClass(object):
         args += (optim_paras['coeffs_common'], optim_paras['coeffs_a'], optim_paras['coeffs_b'])
         args += (shocks_cholesky, delta, num_types, type_spec_shares, type_spec_shifts, is_debug)
         f2py = fort_debug.wrapper_simulate(*args)
-        np.testing.assert_allclose(py, f2py)
+        assert_allclose(py, f2py)
 
         # Is is very important to cut the data array down to the size of the estimation sample.
         data_array = py[:num_agents_est * num_periods, :]
@@ -456,7 +464,7 @@ class TestClass(object):
         args += (shocks_cholesky, delta, type_spec_shares, type_spec_shifts)
         f2py = fort_debug.wrapper_contributions(*args)
 
-        np.testing.assert_allclose(py, f2py)
+        assert_allclose(py, f2py)
 
         # Evaluation of criterion function
         x0 = get_optim_paras(optim_paras, num_paras, 'all', is_debug)
@@ -476,7 +484,7 @@ class TestClass(object):
         args += (type_spec_shares, type_spec_shifts, num_paras)
         f2py = fort_debug.wrapper_criterion(x0, *args)
 
-        np.testing.assert_allclose(py, f2py)
+        assert_allclose(py, f2py)
 
     def test_6(self):
         """ Further tests for the interpolation routines.
@@ -550,7 +558,7 @@ class TestClass(object):
         args += (coeffs_common, coeffs_a, coeffs_b, num_types)
         f90 = fort_debug.wrapper_get_exogenous_variables(*args)
 
-        np.testing.assert_equal(py, f90)
+        assert_equal(py, f90)
 
         # Distribute validated results for further functions.
         exogenous, maxe = py
@@ -569,7 +577,7 @@ class TestClass(object):
         args += (delta, coeffs_common, coeffs_a, coeffs_b)
         args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
-        np.testing.assert_almost_equal(py, replace_missing_values(f90))
+        assert_almost_equal(py, replace_missing_values(f90))
 
         # Distribute validated results for further functions.
         base_args = (py, exogenous, maxe, is_simulated)
@@ -584,7 +592,7 @@ class TestClass(object):
 
         # This assertion fails if a column is all zeros.
         if not exogenous.any(axis=0).any():
-            np.testing.assert_array_almost_equal(py, f90)
+            assert_array_almost_equal(py, f90)
 
     def test_7(self):
         """ This is a special test for auxiliary functions related to the interpolation setup.
@@ -615,15 +623,15 @@ class TestClass(object):
         # Check function for random choice and make sure that there are no duplicates.
         args = (candidates, num_states, num_points_interp)
         f90 = fort_debug.wrapper_random_choice(*args)
-        np.testing.assert_equal(len(set(f90)), len(f90))
-        np.testing.assert_equal(len(f90), num_points_interp)
+        assert_equal(len(set(f90)), len(f90))
+        assert_equal(len(f90), num_points_interp)
 
         # Check the standard cases of the function.
         args = (num_points_interp, num_states, period, is_debug, num_periods)
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
 
-        np.testing.assert_equal(len(f90), num_states)
-        np.testing.assert_equal(np.all(f90) in [0, 1], True)
+        assert_equal(len(f90), num_states)
+        assert_equal(np.all(f90) in [0, 1], True)
 
         # Test the standardization across PYTHON, F2PY, and FORTRAN implementations. This is
         # possible as we write out an interpolation grid to disk which is used for both functions.
@@ -632,14 +640,14 @@ class TestClass(object):
         py = get_simulated_indicator(*args)
         args = base_args + (num_periods, )
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
-        np.testing.assert_array_equal(f90, 1*py)
+        assert_array_equal(f90, 1*py)
         os.unlink('.interpolation.respy.test')
 
         # Special case where number of interpolation points are same as the number of candidates.
         # In that case the returned indicator should be all TRUE.
         args = (num_states, num_states, period, True, num_periods)
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
-        np.testing.assert_equal(sum(f90), num_states)
+        assert_equal(sum(f90), num_states)
 
     def test_8(self):
         """ We test the construction of the Cholesky decomposition against each other.
@@ -672,25 +680,25 @@ class TestClass(object):
             if not is_deterministic:
                 py = np.linalg.cholesky(cov)
                 f90 = fort_debug.wrapper_get_cholesky_decomposition(cov, dim)
-                np.testing.assert_almost_equal(py, f90)
+                assert_almost_equal(py, f90)
 
             py = covariance_to_correlation(cov)
             f90 = fort_debug.wrapper_covariance_to_correlation(cov, dim)
-            np.testing.assert_almost_equal(py, f90)
+            assert_almost_equal(py, f90)
 
             corr, sd = covariance_to_correlation(cov), np.sqrt(np.diag(cov))
             py = correlation_to_covariance(corr, sd)
             f90 = fort_debug.wrapper_correlation_to_covariance(corr, sd)
-            np.testing.assert_almost_equal(py, f90)
+            assert_almost_equal(py, f90)
 
             # Now we also check that the back-and-forth transformations work.
             corr = fort_debug.wrapper_covariance_to_correlation(cov, dim)
             cov_cand = fort_debug.wrapper_correlation_to_covariance(corr, sd, dim)
-            np.testing.assert_almost_equal(cov, cov_cand)
+            assert_almost_equal(cov, cov_cand)
 
             corr = covariance_to_correlation(cov)
             cov_cand = correlation_to_covariance(corr, sd)
-            np.testing.assert_almost_equal(cov, cov_cand)
+            assert_almost_equal(cov, cov_cand)
 
 
     def test_10(self):
@@ -701,7 +709,7 @@ class TestClass(object):
             values = np.random.uniform(-1000.0, 1000.0, size=num_free)
             py = get_scales_magnitudes(values)
             f90 = fort_debug.wrapper_get_scales_magnitude(values, num_free)
-            np.testing.assert_almost_equal(py, f90)
+            assert_almost_equal(py, f90)
 
     def test_11(self):
         """ Function that calculates the number of observations by individual.
@@ -721,7 +729,7 @@ class TestClass(object):
             py = get_num_obs_agent(data_array, num_agents_est)
             f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)
 
-            np.testing.assert_almost_equal(py, f90)
+            assert_almost_equal(py, f90)
 
     def test_12(self):
         """ Function that calculates the conditional type probabilites.
@@ -737,8 +745,8 @@ class TestClass(object):
             py = get_conditional_probabilities(*args)
             fort = fort_debug.wrapper_get_conditional_probabilities(*args + [num_types])
 
-            np.testing.assert_almost_equal(np.sum(py), 1.0)
-            np.testing.assert_almost_equal(py, fort)
+            assert_almost_equal(np.sum(py), 1.0)
+            assert_almost_equal(py, fort)
 
     def test_13(self):
         """ Function that backs out the systematic wages from the systematic rewards
@@ -765,7 +773,7 @@ class TestClass(object):
             py = back_out_systematic_wages(*args + [optim_paras])
             fort = fort_debug.wrapper_back_out_systematic_wages(*args + [coeffs_a, coeffs_b])
 
-            np.testing.assert_almost_equal(py, fort)
+            assert_almost_equal(py, fort)
 
     def test_14(self):
         """ Testing the functionality introduced to ensure that the simulation is independent of
@@ -779,7 +787,7 @@ class TestClass(object):
         # We first check the sorting implementation.
         py = sorted(input_array)
         f90 = fort_debug.wrapper_sorted(input_array, num_elements)
-        np.testing.assert_equal(py, f90)
+        assert_equal(py, f90)
 
         # We now turn to the more complicated testing of hand-crafted functions for this purpose.
         generate_init()
@@ -792,9 +800,9 @@ class TestClass(object):
         f90 = fort_debug.wrapper_sort_edu_spec(*args)
         py = sort_edu_spec(edu_spec)
         for i, label in enumerate(['start', 'share', 'max']):
-            np.testing.assert_equal(py[label], f90[i])
+            assert_equal(py[label], f90[i])
 
         py = sort_type_info(optim_paras, num_types)
         f90 = fort_debug.wrapper_sort_type_info(optim_paras['type_shares'], num_types)
         for i, label in enumerate(['order', 'shares']):
-            np.testing.assert_equal(py[label], f90[i])
+            assert_equal(py[label], f90[i])
