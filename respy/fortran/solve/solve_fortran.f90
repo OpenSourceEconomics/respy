@@ -70,7 +70,12 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, optim_paras, optimizer_options, file_sim, .True.)
 
-    Call record_solution(-1, file_sim)
+    IF (.NOT. is_myopic) THEN
+        CALL record_solution(-1, file_sim)
+    ELSE
+        CALL record_solution(-2, file_sim)
+    END IF
+
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
