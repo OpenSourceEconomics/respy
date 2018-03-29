@@ -9,6 +9,7 @@ development/working/peisenha/*
 development/working/jansog/*
 !development/working/inspect_vault.ipynb
 respy/fortran/bin
+*.ipynb_checkpoints
 .waf*
 doc/build
 .idea

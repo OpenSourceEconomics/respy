@@ -6,6 +6,7 @@ from scipy.stats import norm
 import numpy as np
 import pytest
 import scipy
+from socket import gethostname
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
@@ -254,6 +255,10 @@ class TestClass(object):
 
         # Generate random initialization file
 
+        # break the test on Janos' computer
+        if gethostname() == 'socrates':
+            assert True is False
+
         constr = dict()
 
         generate_init(constr)
@@ -345,6 +350,11 @@ class TestClass(object):
         implementations.
         """
         # Generate random initialization file
+
+        # break the test on Janos' computer
+        if gethostname() == 'socrates':
+            assert True is False
+
         constr = dict()
         generate_init(constr)
 
@@ -690,25 +700,6 @@ class TestClass(object):
             cov_cand = correlation_to_covariance(corr, sd)
             np.testing.assert_almost_equal(cov, cov_cand)
 
-        # We also check whether the construction of the candidate
-        # covariance matrix during the worst-case determination works
-        # well. These functions only work for the 4x4 covariance matrix.
-        for _ in range(100):
-            is_deterministic = np.random.choice([True, False], p=[0.1, 0.9])
-            mean = np.random.choice([True, False])
-
-            if is_deterministic:
-                cov = np.zeros((4, 4))
-            else:
-                matrix = np.random.uniform(size=16).reshape(4, 4)
-                cov = np.dot(matrix, matrix.T)
-
-            x0 = np.random.uniform(low=-1.0, high=1.0, size=2)
-            if not mean:
-                x0 = np.append(x0, np.random.uniform(low=0.0, high=1.0, size=2))
-
-            for i in range(2):
-                np.testing.assert_almost_equal(py[i], f90[i])
 
     def test_10(self):
         """ Functions related to the scaling procedure.

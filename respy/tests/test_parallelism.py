@@ -90,6 +90,8 @@ class TestClass(object):
             if base_sol_log is None:
                 base_sol_log = open(fname, 'r').read()
 
+            op = open(fname, 'r').read()
+
             assert open(fname, 'r').read() == base_sol_log
 
             if base_est_info_log is None:
