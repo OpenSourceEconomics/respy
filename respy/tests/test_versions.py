@@ -271,6 +271,7 @@ class TestClass(object):
 
         base_scaling_matrix = None
         for version in ['FORTRAN', 'PYTHON']:
+            print(version, '\n\n')
             respy_obj = copy.deepcopy(respy_base)
 
             # The actual optimizer does not matter for the scaling matrix. We also need to make
@@ -296,4 +297,8 @@ class TestClass(object):
                 base_scaling_matrix = np.genfromtxt('scaling.respy.out')
 
             scaling_matrix = np.genfromtxt('scaling.respy.out')
+            print('real')
+            print(scaling_matrix, '\n')
+            print('desired')
+            print(base_scaling_matrix, '\n\n\n')
             np.testing.assert_almost_equal(base_scaling_matrix, scaling_matrix)

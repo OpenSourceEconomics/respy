@@ -255,10 +255,6 @@ class TestClass(object):
 
         # Generate random initialization file
 
-        # break the test on Janos' computer
-        if gethostname() == 'socrates':
-            assert True is False
-
         constr = dict()
 
         generate_init(constr)
@@ -350,10 +346,6 @@ class TestClass(object):
         implementations.
         """
         # Generate random initialization file
-
-        # break the test on Janos' computer
-        if gethostname() == 'socrates':
-            assert True is False
 
         constr = dict()
         generate_init(constr)

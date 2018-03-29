@@ -71,7 +71,9 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         respy_obj = RespyCls('test.respy.ini')
 
         simulate_observed(respy_obj)
-        np.testing.assert_almost_equal(estimate(respy_obj)[1], crit_val, decimal=DECIMALS)
+
+        result = estimate(respy_obj)[1]
+        np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
 
     if is_modification:
         fname = TEST_RESOURCES_DIR + '/regression_vault.respy.json'
