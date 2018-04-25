@@ -88,6 +88,9 @@ def send_notification(which, **kwargs):
     if 'hours' in kwargs.keys():
         hours = '{}'.format(kwargs['hours'])
 
+    if 'procs' in kwargs.keys():
+        procs = str(kwargs['procs'])
+
     if 'num_tests' in kwargs.keys():
         num_tests = '{}'.format(kwargs['num_tests'])
 
@@ -102,6 +105,9 @@ def send_notification(which, **kwargs):
 
     if 'new_release' in kwargs.keys():
         new_release = kwargs['new_release']
+
+    if 'failed_seeds' in kwargs.keys():
+        failed_seeds = kwargs['failed_seeds']
 
     hostname = socket.gethostname()
 
@@ -134,6 +140,22 @@ def send_notification(which, **kwargs):
                 hours + ' hours on @' + hostname + '. We compared release ' + \
                 old_release + ' against ' + new_release + ' for a total of ' + \
                 num_tests + ' tests.'
+    elif which == 'robustness':
+        subject = ' RESPY: Robustness Testing'
+        if is_failed is True:
+            failed_pct = len(failed_seeds) / float(num_tests) * 100
+            failed_pct = '({} %)'.format(failed_pct)
+            message = \
+                ' Failure during robustness testing on @{}. In total {} ' + \
+                'tests were run in {} hours on {} cores. {} tests failed ' + \
+                '{}. The failed tests have the following seeds: {}.'
+            message = message.format(
+                hostname, num_tests, hours, procs, len(failed_seeds),
+                failed_pct, str(failed_seeds))
+        else:
+            message = ' Robustness testing completed successfully  after ' + \
+                hours + ' hours, running on ' + procs + ' cores on @' + \
+                hostname + '.'
     else:
         raise AssertionError
 
@@ -147,6 +169,8 @@ def send_notification(which, **kwargs):
         mail_obj.set_attr('attachment', 'scalability.respy.info')
     elif which == 'reliability':
         mail_obj.set_attr('attachment', 'reliability.respy.info')
+    elif which == 'robustness':
+        mail_obj.set_attr('attachment', 'robustness.respy.info')
 
     mail_obj.lock()
 
