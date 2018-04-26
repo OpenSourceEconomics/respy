@@ -34,9 +34,9 @@ def run_robustness_test(seed, is_investigation):
     # define the constraints (constr)
     constr = {}
     constr['file_est'] = join(new_dir, 'career_data.respy.dat')
-    constr['maxfun'] = np.random.randint(500, 1000)
     constr['agents'] = np.random.randint(500, 1372 + 1)
     constr['edu'] = (10, np.random.randint(11, 21))
+    constr['flag_estimation'] = True
     ini = generate_init(constr)
     print_init_dict(ini)
     try:
@@ -58,7 +58,7 @@ def run_for_hours_sequential(hours, initial_seed):
     failed_dict = {}
     start = datetime.now()
     counter = 0
-    timeout = timedelta(seconds=10)
+    timeout = timedelta(hours=hours)
     while timeout >= (datetime.now() - start):
         counter += 1
         seed = np.random.randint(1, 100000)

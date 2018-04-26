@@ -38,7 +38,10 @@ def run(request, is_compile, is_background, num_procs):
         # run a single test with args['seed']
         passed, error_message = run_robustness_test(
             seed_investigation, is_investigation)
-        failed_dict = {seed_investigation: error_message}
+        if passed is True:
+            failed_dict = {}
+        else:
+            failed_dict = {seed_investigation: error_message}
     else:
         # make seed list
         if num_procs == 1:
@@ -64,6 +67,8 @@ def run(request, is_compile, is_background, num_procs):
                 file.write('\n\n')
                 file.write(message)
                 file.write('\n\n\n\n\n')
+        else:
+            file.write('All tests passed.')
 
     if is_investigation is False:
         send_notification('robustness', is_failed=failed,

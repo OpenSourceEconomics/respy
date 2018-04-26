@@ -975,11 +975,11 @@ def calculate_rewards_general(covariates, optim_paras):
 def get_valid_bounds(which, value):
     """ Simply get a valid set of bounds.
     """
-    assert which in ['amb', 'cov', 'coeff', 'delta', 'share']
+    assert which in ['cov', 'coeff', 'delta', 'share']
 
     # The bounds cannot be too tight as otherwise the BOBYQA might not start
     # properly.
-    if which in ['delta', 'amb']:
+    if which in ['delta']:
         upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
         bounds = [max(0.0, value - np.random.uniform(low=0.1)), upper]
     elif which in ['coeff']:
