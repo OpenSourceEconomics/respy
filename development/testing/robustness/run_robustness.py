@@ -36,36 +36,39 @@ def run(request, is_compile, is_background, num_procs):
 
     if is_investigation is True:
         # run a single test with args['seed']
-        run_robustness_test(seed_investigation, is_investigation)
+        passed, error_message = run_robustness_test(
+            seed_investigation, is_investigation)
+        failed_dict = {seed_investigation: error_message}
     else:
         # make seed list
         if num_procs == 1:
             initial_seed = 26379  # np.random.randint(1, 100000)
-            failed_dict, num_tests = run_for_hours_sequential(hours, initial_seed)
+            failed_dict, num_tests = run_for_hours_sequential(
+                hours, initial_seed)
             failed_seeds = list(failed_dict.keys())
         else:
             initial_seeds = np.random.randint(1, 100000, size=num_procs)
             failed_dict, num_tests = run_for_hours_parallel(
                 hours, num_procs, initial_seeds)
-            failed_seeds = list(failed_dict.keys())
 
-        failed = bool(failed_seeds)
-        filepath = 'robustness.respy.info'
-        with open(filepath, 'w') as file:
-            file.write('Summary of Failed Robustness Tests')
-            file.write('\n\n')
-            if failed is True:
-                for seed, message in failed_dict.items():
-                    file.write(str(seed))
-                    file.write('\n\n')
-                    file.write(message)
-                    file.write('\n\n\n\n\n')
+    failed_seeds = list(failed_dict.keys())
 
+    failed = bool(failed_seeds)
+    filepath = 'robustness.respy.info'
+    with open(filepath, 'w') as file:
+        file.write('Summary of Failed Robustness Tests')
+        file.write('\n\n')
+        if failed is True:
+            for seed, message in failed_dict.items():
+                file.write(str(seed))
+                file.write('\n\n')
+                file.write(message)
+                file.write('\n\n\n\n\n')
+
+    if is_investigation is False:
         send_notification('robustness', is_failed=failed,
                           failed_seeds=failed_seeds, hours=hours,
                           procs=num_procs, num_tests=num_tests)
-
-
 
 
 if __name__ == '__main__':
