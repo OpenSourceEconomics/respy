@@ -13,9 +13,12 @@ import argparse
 import numpy as np
 from os.path import exists, join
 import os
+from auxiliary_property import cleanup_testing_infrastructure
 
 
-def run(request, is_compile, is_background, num_procs):
+def run(request, is_compile, is_background, num_procs, keep_dataset):
+    cleanup_testing_infrastructure(
+        keep_results=False, keep_dataset=keep_dataset)
     data_path = join(os.getcwd(), 'career_data.respy.dat')
     if not exists(data_path):
         prepare_dataset()
@@ -74,6 +77,8 @@ def run(request, is_compile, is_background, num_procs):
         send_notification('robustness', is_failed=failed,
                           failed_seeds=failed_seeds, hours=hours,
                           procs=num_procs, num_tests=num_tests)
+        cleanup_testing_infrastructure(
+            keep_results=False, keep_dataset=keep_dataset)
 
 
 if __name__ == '__main__':
@@ -95,6 +100,10 @@ if __name__ == '__main__':
     parser.add_argument('--procs', action='store', dest='num_procs', default=1,
                         type=int, help='number of processors')
 
+    parser.add_argument('--keep_dataset', action='store_true',
+                        dest='keep_dataset', default=False,
+                        help='Do not generate dataset if it already exists.')
+
     args = parser.parse_args()
     request, is_compile = args.request, args.is_compile,
 
@@ -103,5 +112,6 @@ if __name__ == '__main__':
 
     is_background = args.is_background
     num_procs = args.num_procs
+    keep_dataset = args.keep_dataset
 
-    run(request, is_compile, is_background, num_procs)
+    run(request, is_compile, is_background, num_procs, keep_dataset)

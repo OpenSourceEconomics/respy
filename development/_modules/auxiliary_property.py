@@ -206,7 +206,7 @@ def get_random_request(test_dict):
     return module, method
 
 
-def cleanup_testing_infrastructure(keep_results):
+def cleanup_testing_infrastructure(keep_results, keep_dataset=False):
     """ This function cleans up before and after a testing run. If requested,
     the log file is retained.
     """
@@ -215,6 +215,9 @@ def cleanup_testing_infrastructure(keep_results):
             continue
         if keep_results:
             if 'property.respy.info' in fname:
+                continue
+        if keep_dataset:
+            if 'career_data.respy' in fname:
                 continue
         if os.path.isdir(fname):
             shutil.rmtree(fname)
