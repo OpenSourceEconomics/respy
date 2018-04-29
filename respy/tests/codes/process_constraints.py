@@ -64,10 +64,9 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         # Extract objects
         start, max_ = constr['edu']
         # Checks
-        assert (isinstance(start, int))
-        assert (start > 0)
-        assert (isinstance(max_, int))
-        assert (max_ > start)
+        assert isinstance(start, (int, np.integer))
+        assert isinstance(max_, (int, np.integer))
+        assert (start > 0) and (max_ > start)
         # Replace in initialization file
         dict_['EDUCATION']['start'] = [start]
         dict_['EDUCATION']['share'] = [1.0]
@@ -156,7 +155,7 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         else:
             value = np.random.uniform(0.01, 1.0)
             dict_['BASICS']['coeffs'] = [value]
-            dict_['BASICS']['bounds'] = [get_valid_bounds('amb', value)]
+            dict_['BASICS']['bounds'] = [get_valid_bounds('delta', value)]
 
     # No random component to rewards
     if 'flag_deterministic' in constr.keys():
