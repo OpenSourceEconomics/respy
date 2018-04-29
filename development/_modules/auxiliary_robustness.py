@@ -4,6 +4,7 @@ from os.path import join, exists
 from shutil import rmtree, copy
 from time import time
 from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.tests.codes.random_init import VERSION_CONSTRAINTS
 from codes.random_init import generate_init
 from respy import RespyCls, estimate
 from datetime import timedelta, datetime
@@ -31,14 +32,27 @@ def run_robustness_test(seed, is_investigation):
         copy(join(old_dir, file), join(new_dir, file))
     os.chdir(new_dir)
 
-    # define the constraints (constr)
-    constr = {}
+    # We need to impose some constraints so that the random initialization file does meet the
+    # structure of the empirical dataset. We need to be particularly careful with the
+    # construction of the maximum level of schooling as we need to rule out that anyone in the
+    # estimation sample has a value larger then the specified maximum value.
+    version = np.random.choice(['PYTHON', 'FORTRAN'])
+    max_periods = VERSION_CONSTRAINTS['max_periods'][version]
+    num_periods = np.random.randint(1, max_periods)
+
+    edu_start = np.random.choice(range(7, 12))
+    edu_max = np.random.randint(edu_start + num_periods, 30)
+
+    constr = dict()
     constr['file_est'] = join(new_dir, 'career_data.respy.dat')
     constr['agents'] = np.random.randint(500, 1372 + 1)
-    constr['edu'] = (10, np.random.randint(11, 21))
+    constr['edu'] = (edu_start, edu_max)
     constr['flag_estimation'] = True
-    ini = generate_init(constr)
-    print_init_dict(ini)
+    constr['periods'] = num_periods
+    constr['version'] = version
+
+    generate_init(constr)
+
     try:
         respy_obj = RespyCls('test.respy.ini')
         estimate(respy_obj)
