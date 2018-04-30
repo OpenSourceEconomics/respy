@@ -63,12 +63,16 @@ def check_dataset_est(data_frame, respy_obj):
     del data_frame['TEMP']
 
     # Checks for YEARS SCHOOLING. We also know that the initial years of schooling can only take
-    # values specified in the initialization file.
+    # values specified in the initialization file and no individual in our estimation sample is
+    # allowed to have more than the maximum number of years of education.
     dat = data_frame['Years_Schooling'] >= 0.00
     np.testing.assert_equal(dat.all(), True)
 
     dat = data_frame['Years_Schooling'][:, 0].isin(edu_spec['start'])
     np.testing.assert_equal(dat.all(), True)
+
+    dat = data_frame['Years_Schooling'].max()
+    np.testing.assert_equal(dat <= edu_spec['max'], True)
 
     # Check that there are no duplicated observations for any period by agent.
     def check_unique_periods(group):

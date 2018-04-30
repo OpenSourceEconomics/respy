@@ -16,6 +16,22 @@ from codes.auxiliary import get_valid_values
 from codes.auxiliary import OPTIMIZERS_EST
 from codes.auxiliary import OPTIMIZERS_AMB
 
+# We need to impose some version-dependent constraints. Otherwise the execution times for some
+# tasks just takes too long.
+VERSION_CONSTRAINTS = dict()
+
+VERSION_CONSTRAINTS['max_types'] = dict()
+VERSION_CONSTRAINTS['max_types']['FORTRAN'] = 4
+VERSION_CONSTRAINTS['max_types']['PYTHON'] = 3
+
+VERSION_CONSTRAINTS['max_periods'] = dict()
+VERSION_CONSTRAINTS['max_periods']['FORTRAN'] = 10
+VERSION_CONSTRAINTS['max_periods']['PYTHON'] = 3
+
+VERSION_CONSTRAINTS['max_edu_start'] = dict()
+VERSION_CONSTRAINTS['max_edu_start']['FORTRAN'] = 4
+VERSION_CONSTRAINTS['max_edu_start']['PYTHON'] = 3
+
 
 def generate_init(constr=None):
     """ Get a random initialization file.
@@ -45,8 +61,6 @@ def generate_random_dict(constr=None):
     # Initialize container
     dict_ = dict()
 
-    # We need to be more restrictive with the type of initialization files that we generate for
-    # the PYTHON version. Otherwise the execution times just take too long.
     if 'version' in constr.keys():
         version = constr['version']
     elif not IS_FORTRAN:
@@ -54,23 +68,15 @@ def generate_random_dict(constr=None):
     else:
         version = np.random.choice(['FORTRAN', 'PYTHON'])
 
-    MAX_AGENTS = 1000
-    MAX_DRAWS = 100
-
-    if version == 'PYTHON':
-        MAX_TYPES = 3
-        MAX_PERIODS = 3
-        MAX_EDU_START = 3
-    elif version == 'FORTRAN':
-        MAX_TYPES = 4
-        MAX_PERIODS = 10
-        MAX_EDU_START = 4
-    else:
-        raise NotImplementedError
+    max_edu_start = VERSION_CONSTRAINTS['max_edu_start'][version]
+    max_periods = VERSION_CONSTRAINTS['max_periods'][version]
+    max_types = VERSION_CONSTRAINTS['max_types'][version]
+    max_agents = 1000
+    max_draws = 100
 
     # We need to determine the final number of types right here, as it determines the number of
     # parameters. This includes imposing constraints.
-    num_types = np.random.choice(range(1, MAX_TYPES))
+    num_types = np.random.choice(range(1, max_types))
     if 'types' in constr.keys():
         # Extract objects
         num_types = constr['types']
@@ -123,12 +129,12 @@ def generate_random_dict(constr=None):
 
     # Sampling number of agents for the simulation. This is then used as the upper bound for the
     # dataset used in the estimation.
-    num_agents_sim = np.random.randint(3, MAX_AGENTS)
+    num_agents_sim = np.random.randint(3, max_agents)
 
     # Basics
     dict_['BASICS'] = dict()
     lower, upper = 0, 1
-    dict_['BASICS']['periods'] = np.random.randint(1, MAX_PERIODS)
+    dict_['BASICS']['periods'] = np.random.randint(1, max_periods)
     dict_['BASICS']['coeffs'] = paras_values[lower:upper]
     dict_['BASICS']['bounds'] = paras_bounds[lower:upper]
     dict_['BASICS']['fixed'] = paras_fixed[lower:upper]
@@ -160,7 +166,7 @@ def generate_random_dict(constr=None):
     dict_['EDUCATION']['bounds'] = paras_bounds[lower:upper]
     dict_['EDUCATION']['fixed'] = paras_fixed[lower:upper]
 
-    num_edu_start = np.random.choice(range(1, MAX_EDU_START))
+    num_edu_start = np.random.choice(range(1, max_edu_start))
     dict_['EDUCATION']['start'] = np.random.choice(range(1, 20), size=num_edu_start,
         replace=False).tolist()
     dict_['EDUCATION']['share'] = get_valid_shares(num_edu_start)
@@ -175,7 +181,7 @@ def generate_random_dict(constr=None):
 
     # SOLUTION
     dict_['SOLUTION'] = dict()
-    dict_['SOLUTION']['draws'] = np.random.randint(1, MAX_DRAWS)
+    dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
     dict_['SOLUTION']['seed'] = np.random.randint(1, 10000)
     dict_['SOLUTION']['store'] = np.random.choice(['True', 'False'])
 
@@ -183,7 +189,7 @@ def generate_random_dict(constr=None):
     # ESTIMATION
     dict_['ESTIMATION'] = dict()
     dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
-    dict_['ESTIMATION']['draws'] = np.random.randint(1, MAX_DRAWS)
+    dict_['ESTIMATION']['draws'] = np.random.randint(1, max_draws)
     dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['file'] = 'data.respy.dat'
     dict_['ESTIMATION']['optimizer'] = np.random.choice(OPTIMIZERS_EST)
