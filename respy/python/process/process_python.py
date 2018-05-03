@@ -33,17 +33,20 @@ def process(respy_obj):
     data_frame = data_frame.loc[cond]
 
     # We now subset the dataframe to include only the number of agents that are requested for the
-    # estimation.
+    # estimation. However, this requires us to adjust the num_agents_est as the dataset might
+    # actually be smaller as we restrict initial conditions.
     drop_indices = data_frame.index.unique()[num_agents_est:]
     data_frame.drop(drop_indices, inplace=True)
 
     data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
 
-    # We need to make sure that we only use less or equal to the number of individuals requested
-    # for the estimation. It can be less than the number requested if we drop some initial
-    # conditions.
-    dat = len(data_frame['Identifier'].unique())
-    np.testing.assert_equal(0 < dat <= num_agents_est, True)
+    # We need to update the number of individuals for the estimation as the whole dataset might
+    # actually be lower.
+    num_agents_est = data_frame['Identifier'].nunique()
+
+    respy_obj.unlock()
+    respy_obj.set_attr('num_agents_est', num_agents_est)
+    respy_obj.lock()
 
     # Check the dataset against the initialization files.
     check_dataset_est(data_frame, respy_obj)

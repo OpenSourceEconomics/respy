@@ -8,7 +8,8 @@ def check_dataset_est(data_frame, respy_obj):
     """ This routine runs some consistency checks on the simulated data frame.
     """
     # Distribute class attributes
-    num_periods, edu_spec = dist_class_attributes(respy_obj, 'num_periods', 'edu_spec')
+    num_periods, edu_spec, num_agents_est = dist_class_attributes(respy_obj, 'num_periods',
+        'edu_spec', 'num_agents_est')
 
     # Check that there are not missing values in any of the columns but for the wages information.
     for label in DATA_LABELS_EST:
@@ -83,6 +84,11 @@ def check_dataset_est(data_frame, respy_obj):
     def check_series_observations(group):
         np.testing.assert_equal(group['Period'].tolist(), list(range(group['Period'].max() + 1)))
     data_frame.groupby(level='Identifier').apply(check_series_observations)
+
+    # We need to ensure that the number of individuals requested for the estimation is also
+    # available. We do not enforce a strict equality here as a simulated dataset is also checked
+    # for its estimation suitability in general, i.e. before any constraints on initial conditions.
+    np.testing.assert_equal(data_frame['Identifier'].nunique() >= num_agents_est, True)
 
 
 def check_state_variables(agent):
