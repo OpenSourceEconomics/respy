@@ -8,10 +8,9 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 # We maintain a list of all valid constraints and check all specified keys
 # against it.
 VALID_KEYS = []
-VALID_KEYS += ['flag_estimation', 'flag_ambiguity', 'agents']
+VALID_KEYS += ['flag_estimation', 'agents']
 VALID_KEYS += ['flag_parallelism', 'version', 'file_est', 'flag_interpolation']
-VALID_KEYS += ['points', 'maxfun', 'flag_deterministic']
-VALID_KEYS += ['edu', 'measure', 'level', 'fixed_ambiguity', 'flag_ambiguity']
+VALID_KEYS += ['points', 'maxfun', 'flag_deterministic', 'edu']
 VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
 VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta', 'precond_type']
 
@@ -65,54 +64,13 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         # Extract objects
         start, max_ = constr['edu']
         # Checks
-        assert (isinstance(start, int))
-        assert (start > 0)
-        assert (isinstance(max_, int))
-        assert (max_ > start)
+        assert isinstance(start, (int, np.integer))
+        assert isinstance(max_, (int, np.integer))
+        assert (start > 0) and (max_ > start)
         # Replace in initialization file
         dict_['EDUCATION']['start'] = [start]
         dict_['EDUCATION']['share'] = [1.0]
         dict_['EDUCATION']['max'] = max_
-
-    # Replace measure of ambiguity
-    if 'measure' in constr.keys():
-        # Extract object
-        measure = constr['measure']
-        # Checks
-        assert measure in ['kl', 'abs']
-        # Replace in initialization file
-        dict_['AMBIGUITY']['measure'] = measure
-
-    # Replace level of ambiguity
-    if 'level' in constr.keys():
-        # Extract object
-        level = constr['level']
-        # Checks
-        assert isinstance(level, float)
-        assert level >= 0.0
-        # Replace in initialization file
-        dict_['AMBIGUITY']['coeffs'] = [level]
-        dict_['AMBIGUITY']['bounds'] = [get_valid_bounds('amb', level)]
-
-    # Treat level of ambiguity as fixed in an estimation
-    if 'flag_ambiguity' in constr.keys():
-        # Checks
-        assert (constr['flag_ambiguity'] in [True, False])
-        # Replace in initialization files
-        if constr['flag_ambiguity']:
-            value = np.random.uniform(0.01, 1.0)
-            dict_['AMBIGUITY']['coeffs'] = [value]
-            dict_['AMBIGUITY']['bounds'] = [get_valid_bounds('amb', value)]
-        else:
-            dict_['AMBIGUITY']['coeffs'] = [0.00]
-            dict_['AMBIGUITY']['bounds'] = [get_valid_bounds('amb', 0.00)]
-
-    # Treat level of ambiguity as fixed in an estimation
-    if 'fixed_ambiguity' in constr.keys():
-        # Checks
-        assert (constr['fixed_ambiguity'] in [True, False])
-        # Replace in initialization files
-        dict_['AMBIGUITY']['fixed'] = [constr['fixed_ambiguity']]
 
     # Treat the discount rate as fixed in an estimation.
     if 'fixed_delta' in constr.keys():
@@ -197,7 +155,7 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         else:
             value = np.random.uniform(0.01, 1.0)
             dict_['BASICS']['coeffs'] = [value]
-            dict_['BASICS']['bounds'] = [get_valid_bounds('amb', value)]
+            dict_['BASICS']['bounds'] = [get_valid_bounds('delta', value)]
 
     # No random component to rewards
     if 'flag_deterministic' in constr.keys():
@@ -284,9 +242,6 @@ def _check_constraints(constr):
     if 'flag_estimation' in keys:
         assert 'maxfun' not in keys
         assert 'flag_precond' not in keys
-
-    if 'flag_ambiguity' in keys:
-        assert 'level' not in keys
 
     if 'agents' in keys:
         assert 'max_draws' not in keys

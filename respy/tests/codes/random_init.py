@@ -16,6 +16,22 @@ from codes.auxiliary import get_valid_values
 from codes.auxiliary import OPTIMIZERS_EST
 from codes.auxiliary import OPTIMIZERS_AMB
 
+# We need to impose some version-dependent constraints. Otherwise the execution times for some
+# tasks just takes too long.
+VERSION_CONSTRAINTS = dict()
+
+VERSION_CONSTRAINTS['max_types'] = dict()
+VERSION_CONSTRAINTS['max_types']['FORTRAN'] = 4
+VERSION_CONSTRAINTS['max_types']['PYTHON'] = 3
+
+VERSION_CONSTRAINTS['max_periods'] = dict()
+VERSION_CONSTRAINTS['max_periods']['FORTRAN'] = 10
+VERSION_CONSTRAINTS['max_periods']['PYTHON'] = 3
+
+VERSION_CONSTRAINTS['max_edu_start'] = dict()
+VERSION_CONSTRAINTS['max_edu_start']['FORTRAN'] = 4
+VERSION_CONSTRAINTS['max_edu_start']['PYTHON'] = 3
+
 
 def generate_init(constr=None):
     """ Get a random initialization file.
@@ -45,8 +61,6 @@ def generate_random_dict(constr=None):
     # Initialize container
     dict_ = dict()
 
-    # We need to be more restrictive with the type of initialization files that we generate for
-    # the PYTHON version. Otherwise the execution times just take too long.
     if 'version' in constr.keys():
         version = constr['version']
     elif not IS_FORTRAN:
@@ -54,23 +68,15 @@ def generate_random_dict(constr=None):
     else:
         version = np.random.choice(['FORTRAN', 'PYTHON'])
 
-    MAX_AGENTS = 1000
-    MAX_DRAWS = 100
-
-    if version == 'PYTHON':
-        MAX_TYPES = 3
-        MAX_PERIODS = 3
-        MAX_EDU_START = 3
-    elif version == 'FORTRAN':
-        MAX_TYPES = 4
-        MAX_PERIODS = 10
-        MAX_EDU_START = 4
-    else:
-        raise NotImplementedError
+    max_edu_start = VERSION_CONSTRAINTS['max_edu_start'][version]
+    max_periods = VERSION_CONSTRAINTS['max_periods'][version]
+    max_types = VERSION_CONSTRAINTS['max_types'][version]
+    max_agents = 1000
+    max_draws = 100
 
     # We need to determine the final number of types right here, as it determines the number of
     # parameters. This includes imposing constraints.
-    num_types = np.random.choice(range(1, MAX_TYPES))
+    num_types = np.random.choice(range(1, max_types))
     if 'types' in constr.keys():
         # Extract objects
         num_types = constr['types']
@@ -86,13 +92,11 @@ def generate_random_dict(constr=None):
     for i in range(num_paras):
         if i in [0]:
             value = get_valid_values('delta')
-        elif i in [1]:
-            value = get_valid_values('amb')
-        elif i in range(2, 44):
+        elif i in range(1, 43):
             value = get_valid_values('coeff')
-        elif i in [44, 48, 51, 53]:
+        elif i in [43, 47, 50, 52]:
             value = get_valid_values('cov')
-        elif i in range(54, 54 + num_paras):
+        elif i in range(53, 53 + num_paras):
             value = get_valid_values('coeff')
         else:
             value = 0.0
@@ -106,9 +110,7 @@ def generate_random_dict(constr=None):
     for i, value in enumerate(paras_values):
         if i in [0]:
             bounds = get_valid_bounds('delta', value)
-        elif i in [1]:
-            bounds = get_valid_bounds('amb', value)
-        elif i in range(44, 54):
+        elif i in range(43, 53):
             bounds = get_valid_bounds('cov', value)
         else:
             bounds = get_valid_bounds('coeff', value)
@@ -119,59 +121,59 @@ def generate_random_dict(constr=None):
     # estimation. We need to ensure that at least one parameter is always free. At this point we
     # also want to ensure that either all shock coefficients are fixed or none. It is not clear
     # how to ensure other constraints on the Cholesky factors.
-    paras_fixed = np.random.choice([True, False], 44).tolist()
-    if sum(paras_fixed) == 44:
-        paras_fixed[np.random.randint(0, 44)] = True
+    paras_fixed = np.random.choice([True, False], 43).tolist()
+    if sum(paras_fixed) == 43:
+        paras_fixed[np.random.randint(0, 43)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
     paras_fixed += np.random.choice([True, False], (num_types - 1) * 6).tolist()
 
     # Sampling number of agents for the simulation. This is then used as the upper bound for the
     # dataset used in the estimation.
-    num_agents_sim = np.random.randint(3, MAX_AGENTS)
+    num_agents_sim = np.random.randint(3, max_agents)
 
     # Basics
     dict_['BASICS'] = dict()
     lower, upper = 0, 1
-    dict_['BASICS']['periods'] = np.random.randint(1, MAX_PERIODS)
+    dict_['BASICS']['periods'] = np.random.randint(1, max_periods)
     dict_['BASICS']['coeffs'] = paras_values[lower:upper]
     dict_['BASICS']['bounds'] = paras_bounds[lower:upper]
     dict_['BASICS']['fixed'] = paras_fixed[lower:upper]
 
     # Common Returns
-    lower, upper = 2, 4
+    lower, upper = 1, 3
     dict_['COMMON'] = dict()
     dict_['COMMON']['coeffs'] = paras_values[lower:upper]
     dict_['COMMON']['bounds'] = paras_bounds[lower:upper]
     dict_['COMMON']['fixed'] = paras_fixed[lower:upper]
     # Occupation A
-    lower, upper = 4, 19
+    lower, upper = 3, 18
     dict_['OCCUPATION A'] = dict()
     dict_['OCCUPATION A']['coeffs'] = paras_values[lower:upper]
     dict_['OCCUPATION A']['bounds'] = paras_bounds[lower:upper]
     dict_['OCCUPATION A']['fixed'] = paras_fixed[lower:upper]
 
     # Occupation B
-    lower, upper = 19, 34
+    lower, upper = 18, 33
     dict_['OCCUPATION B'] = dict()
     dict_['OCCUPATION B']['coeffs'] = paras_values[lower:upper]
     dict_['OCCUPATION B']['bounds'] = paras_bounds[lower:upper]
     dict_['OCCUPATION B']['fixed'] = paras_fixed[lower:upper]
 
     # Education
-    lower, upper = 34, 41
+    lower, upper = 33, 40
     dict_['EDUCATION'] = dict()
     dict_['EDUCATION']['coeffs'] = paras_values[lower:upper]
     dict_['EDUCATION']['bounds'] = paras_bounds[lower:upper]
     dict_['EDUCATION']['fixed'] = paras_fixed[lower:upper]
 
-    num_edu_start = np.random.choice(range(1, MAX_EDU_START))
+    num_edu_start = np.random.choice(range(1, max_edu_start))
     dict_['EDUCATION']['start'] = np.random.choice(range(1, 20), size=num_edu_start,
         replace=False).tolist()
     dict_['EDUCATION']['share'] = get_valid_shares(num_edu_start)
     dict_['EDUCATION']['max'] = np.random.randint(max(dict_['EDUCATION']['start']) + 1, 30)
 
     # Home
-    lower, upper = 41, 44
+    lower, upper = 40, 43
     dict_['HOME'] = dict()
     dict_['HOME']['coeffs'] = paras_values[lower:upper]
     dict_['HOME']['bounds'] = paras_bounds[lower:upper]
@@ -179,22 +181,15 @@ def generate_random_dict(constr=None):
 
     # SOLUTION
     dict_['SOLUTION'] = dict()
-    dict_['SOLUTION']['draws'] = np.random.randint(1, MAX_DRAWS)
+    dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
     dict_['SOLUTION']['seed'] = np.random.randint(1, 10000)
     dict_['SOLUTION']['store'] = np.random.choice(['True', 'False'])
 
-    # AMBIGUITY
-    dict_['AMBIGUITY'] = dict()
-    dict_['AMBIGUITY']['mean'] = np.random.choice(['True', 'False'])
-    dict_['AMBIGUITY']['measure'] = np.random.choice(['abs', 'kl'])
-    dict_['AMBIGUITY']['coeffs'] = paras_values[1:2]
-    dict_['AMBIGUITY']['bounds'] = paras_bounds[1:2]
-    dict_['AMBIGUITY']['fixed'] = paras_fixed[1:2]
 
     # ESTIMATION
     dict_['ESTIMATION'] = dict()
     dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
-    dict_['ESTIMATION']['draws'] = np.random.randint(1, MAX_DRAWS)
+    dict_['ESTIMATION']['draws'] = np.random.randint(1, max_draws)
     dict_['ESTIMATION']['seed'] = np.random.randint(1, 10000)
     dict_['ESTIMATION']['file'] = 'data.respy.dat'
     dict_['ESTIMATION']['optimizer'] = np.random.choice(OPTIMIZERS_EST)
@@ -235,19 +230,19 @@ def generate_random_dict(constr=None):
     dict_['SIMULATION']['file'] = 'data'
 
     # SHOCKS
-    lower, upper = 44, 54
+    lower, upper = 43, 53
     dict_['SHOCKS'] = dict()
     dict_['SHOCKS']['coeffs'] = paras_values[lower:upper]
     dict_['SHOCKS']['bounds'] = paras_bounds[lower:upper]
     dict_['SHOCKS']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 54, 54 + (num_types - 1) * 2
+    lower, upper = 53, 53 + (num_types - 1) * 2
     dict_['TYPE SHARES'] = dict()
     dict_['TYPE SHARES']['coeffs'] = paras_values[lower:upper]
     dict_['TYPE SHARES']['bounds'] = paras_bounds[lower:upper]
     dict_['TYPE SHARES']['fixed'] = paras_fixed[lower:upper]
 
-    lower, upper = 54 + (num_types - 1) * 2, num_paras
+    lower, upper = 53 + (num_types - 1) * 2, num_paras
     dict_['TYPE SHIFTS'] = dict()
     dict_['TYPE SHIFTS']['coeffs'] = paras_values[lower:upper]
     dict_['TYPE SHIFTS']['bounds'] = paras_bounds[lower:upper]

@@ -16,8 +16,6 @@ MODULE estimate_fortran
 
     USE solve_fortran
 
-    USE solve_ambiguity
-
 #if MPI_AVAILABLE
 
     USE parallelism_constants
@@ -142,15 +140,12 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     !/* internal objects    */
 
-    REAL(our_dble), ALLOCATABLE     :: opt_ambi_details(:, :, :)
-
     REAL(our_dble)                  :: x_optim_all_unscaled(num_paras)
     REAL(our_dble)                  :: x_optim_free_unscaled(num_free)
     REAL(our_dble)                  :: contribs(num_agents_est)
     REAL(our_dble)                  :: start
 
     INTEGER(our_int)                :: dist_optim_paras_info
-    INTEGER(our_int)                :: opt_ambi_summary(2)
 
     ! This mock object is required as we cannot simply pass in '' as it turns out.
     CHARACTER(225)                  :: file_sim_mock
@@ -176,7 +171,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, max_states_period, optim_paras)
 
-    CALL fort_backward_induction(periods_emax, opt_ambi_details, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
+    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_est, periods_draws_prob, tau, num_periods, num_draws_prob, num_agents_est, num_obs_agent, num_types, edu_spec, optim_paras)
 
@@ -186,9 +181,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 
         num_eval = num_eval + 1
 
-        CALL summarize_worst_case_success(opt_ambi_summary, opt_ambi_details)
-
-        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, num_paras, num_types, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x_optim_free_scaled, x_optim_all_unscaled, fort_criterion_scalar, num_eval, num_paras, num_types, optim_paras, start)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 
@@ -215,9 +208,7 @@ FUNCTION fort_criterion_parallel(x)
     INTEGER(our_int), SAVE, ALLOCATABLE   :: num_agents_slaves(:)
     INTEGER(our_int), SAVE, ALLOCATABLE   :: displs(:)
 
-    INTEGER(our_int)                :: opt_ambi_summary_slaves(2, num_slaves)
     INTEGER(our_int)                :: dist_optim_paras_info
-    INTEGER(our_int)                :: opt_ambi_summary(2)
     INTEGER(our_int)                :: i
 
 !------------------------------------------------------------------------------
@@ -263,16 +254,11 @@ FUNCTION fort_criterion_parallel(x)
 
     fort_criterion_parallel = get_log_likl(contribs)
 
-    ! We also need to aggregate the information about the worst-case determination.
-    opt_ambi_summary = MISSING_INT
-    CALL MPI_GATHER(opt_ambi_summary_slaves, 0, MPI_INT, opt_ambi_summary_slaves, 2, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
-    opt_ambi_summary = SUM(opt_ambi_summary_slaves, 2)
-
     IF (crit_estimation .OR. (maxfun == zero_int)) THEN
 
         num_eval = num_eval + 1
 
-        CALL record_estimation(x, x_optim_all_unscaled, fort_criterion_parallel, num_eval, num_paras, num_types, optim_paras, start, opt_ambi_summary)
+        CALL record_estimation(x, x_optim_all_unscaled, fort_criterion_parallel, num_eval, num_paras, num_types, optim_paras, start)
 
         IF (dist_optim_paras_info .NE. zero_int) CALL record_warning(4)
 

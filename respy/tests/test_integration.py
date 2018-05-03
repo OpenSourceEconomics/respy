@@ -95,14 +95,13 @@ class TestClass(object):
             # Checks
             np.testing.assert_almost_equal(diff, 0.0)
 
-    def test_3(self, flag_ambiguity=False):
+    def test_3(self):
         """ Testing whether the a simulated dataset and the evaluation of the criterion function
         are the same for a tiny delta and a myopic agent.
         """
         # Generate random initialization dictionary
         constr = dict()
         constr['maxfun'] = 0
-        constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_myopic'] = True
 
         generate_init(constr)
@@ -146,7 +145,7 @@ class TestClass(object):
 
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
-    def test_4(self, flag_ambiguity=False):
+    def test_4(self):
         """ Test the evaluation of the criterion function for random requests, not just at the
         true values.
         """
@@ -155,7 +154,6 @@ class TestClass(object):
         constr = dict()
         constr['agents'] = np.random.randint(1, 100)
         constr['periods'] = np.random.randint(1, 4)
-        constr['flag_ambiguity'] = flag_ambiguity
         constr['edu'] = (7, 15)
         constr['maxfun'] = 0
 
@@ -211,7 +209,7 @@ class TestClass(object):
             # The set of identifiers is a little complicated as we only allow sampling of the
             # diagonal terms of the covariance matrix. Otherwise, we sometimes run into the
             # problem of very ill conditioned matrices resulting in a failed Cholesky decomposition.
-            valid_identifiers = list(range(44))
+            valid_identifiers = list(range(43))
 
             respy_obj = RespyCls('test.respy.ini')
             optim_paras, num_paras = dist_class_attributes(respy_obj, 'optim_paras', 'num_paras')
@@ -223,8 +221,6 @@ class TestClass(object):
 
                 if identifiers in [0]:
                     which = 'delta'
-                elif identifiers in [1]:
-                    which = 'amb'
                 else:
                     which = 'coeff'
 
@@ -232,14 +228,14 @@ class TestClass(object):
                 values = None
 
             elif action in ['fix', 'free']:
-                num_draws = np.random.randint(1, 44)
+                num_draws = np.random.randint(1, 43)
                 identifiers = np.random.choice(valid_identifiers, num_draws, replace=False)
                 bounds, values = None, None
             else:
                 # This is restrictive in the sense that the original value will be used for the
                 # replacement. However, otherwise the handling of the bounds requires too much
                 # effort at this point.
-                num_draws = np.random.randint(1, 44)
+                num_draws = np.random.randint(1, 43)
                 identifiers = np.random.choice(valid_identifiers, num_draws, replace=False)
                 values = get_optim_paras(optim_paras, num_paras, 'all', True)[identifiers]
                 bounds = None
@@ -248,12 +244,11 @@ class TestClass(object):
             scripts_modify(identifiers, action, init_file, values, bounds)
 
     @pytest.mark.slow
-    def test_6(self, flag_ambiguity=False):
+    def test_6(self):
         """ Test short estimation tasks.
         """
         constr = dict()
         constr['flag_estimation'] = True
-        constr['flag_ambiguity'] = flag_ambiguity
 
         generate_init(constr)
 
@@ -274,13 +269,12 @@ class TestClass(object):
         for arg in [(alt_val, base_val), (alt_x, base_x)]:
             np.testing.assert_almost_equal(arg[0], arg[1])
 
-    def test_7(self, flag_ambiguity=False):
+    def test_7(self):
         """ We test whether a restart does result in the exact function evaluation. Additionally,
         we change the status of parameters at random.
         """
         constr = dict()
         constr['flag_estimation'] = True
-        constr['flag_ambiguity'] = flag_ambiguity
         generate_init(constr)
 
         respy_obj = RespyCls('test.respy.ini')
@@ -386,6 +380,7 @@ class TestClass(object):
         compare the content of the files line by line, but drop any spaces.
         """
         for fname in glob.glob(TEST_RESOURCES_DIR + '/*.ini'):
+            print(fname)
             respy_obj = RespyCls(fname)
             respy_obj.write_out('test.respy.ini')
             np.testing.assert_equal(compare_init(fname, 'test.respy.ini'), True)
@@ -484,7 +479,7 @@ class TestClass(object):
         # We need to switch perspective where the initialization file is the flattened covariance
         # matrix.
         x_econ = get_optim_paras(optim_paras, num_paras, 'all', True)
-        x_econ[44:54] = cholesky_to_coeffs(optim_paras['shocks_cholesky'])
+        x_econ[43:53] = cholesky_to_coeffs(optim_paras['shocks_cholesky'])
 
         # We now draw a random set of points where we replace the value with their actual value.
         # Thus, there should be no differences in the initialization files afterwards.
@@ -496,7 +491,7 @@ class TestClass(object):
         scripts_modify(identifiers, 'values', 'test.respy.ini', values=x_econ[identifiers])
         np.testing.assert_equal(compare_init('baseline.respy.ini', 'test.respy.ini'), True)
 
-    def test_15(self, flag_ambigutiy=False):
+    def test_15(self):
         """ This test ensures that the order of the initial schooling level specified in the
         initialization files does not matter for the simulation of a dataset and subsequent
         evaluation of the criterion function.
@@ -506,7 +501,6 @@ class TestClass(object):
         """
 
         constr = dict()
-        constr['flag_ambiguity'] = flag_ambigutiy
         constr['maxfun'] = 0
 
         # We cannot allow for interpolation as the order of states within each period changes and
@@ -535,7 +529,7 @@ class TestClass(object):
         # We are only looking at a single evaluation as otherwise the reordering affects the
         # optimizer that is trying better parameter values one-by-one. The reordering might also
         # violate the bounds.
-        for i in range(54, num_paras):
+        for i in range(53, num_paras):
             optim_paras['paras_bounds'][i] = [None, None]
             optim_paras['paras_fixed'][i] = False
 
@@ -570,7 +564,7 @@ class TestClass(object):
                 x = get_optim_paras(optim_paras, num_paras, 'all', True)
                 shocks_cholesky, _ = extract_cholesky(x)
                 shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
-                x[44:54] = shocks_coeffs
+                x[43:53] = shocks_coeffs
                 respy_obj.update_optim_paras(x)
 
                 respy_obj.reset()

@@ -57,13 +57,6 @@ MODULE shared_types
         CHARACTER(10)           :: type
     END TYPE
 
-    ! This container holds the specification for the ambiguity setup.
-    TYPE AMBI_DICT
-        LOGICAL                 :: mean
-
-        CHARACTER(10)           :: measure
-    END TYPE
-
     ! This container holds all the parameters that are potentially updated during the estimation step.
     TYPE OPTIMPARAS_DICT
 
@@ -79,7 +72,6 @@ MODULE shared_types
         REAL(our_dble)          :: coeffs_edu(7)
         REAL(our_dble)          :: coeffs_a(15)
         REAL(our_dble)          :: coeffs_b(15)
-        REAL(our_dble)          :: level(1)
         REAL(our_dble)          :: delta(1)
 
     END TYPE

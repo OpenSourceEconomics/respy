@@ -7,7 +7,6 @@ import copy
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
@@ -19,6 +18,10 @@ from codes.auxiliary import write_draws
 from codes.auxiliary import write_types
 from respy import estimate
 from respy import RespyCls
+from functools import partial
+from respy.python.shared.shared_constants import DECIMALS
+
+assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
 
 @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
@@ -26,7 +29,7 @@ from respy import RespyCls
 class TestClass(object):
     """ This class groups together some tests.
     """
-    def test_1(self, flag_ambiguity=False):
+    def test_1(self):
         """ Testing the equality of an evaluation of the criterion function for a random request.
         """
         # Run evaluation for multiple random requests.
@@ -38,7 +41,6 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['flag_deterministic'] = flag_deterministic
-        constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_parallelism'] = False
         constr['flag_myopic'] = flag_myopic
         constr['max_draws'] = max_draws
@@ -116,8 +118,8 @@ class TestClass(object):
             if constr['flag_deterministic']:
                 assert (crit_val in [-1.0, 0.0])
 
-    def test_2(self, flag_ambiguity=False):
-        """ This test ensures that the evaluation of the criterion function at the starting value 
+    def test_2(self):
+        """ This test ensures that the evaluation of the criterion function at the starting value
         is identical between the different versions.
         """
 
@@ -125,7 +127,6 @@ class TestClass(object):
 
         # Generate random initialization file
         constr = dict()
-        constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_interpolation'] = False
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
@@ -173,7 +174,7 @@ class TestClass(object):
                 base_val = val
             np.testing.assert_allclose(base_val, val)
 
-    def test_3(self, flag_ambiguity=False):
+    def test_3(self):
         """ This test ensures that the logging looks exactly the same for the
         different versions.
         """
@@ -181,7 +182,6 @@ class TestClass(object):
 
         # Generate random initialization file
         constr = dict()
-        constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_interpolation'] = False
         constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
@@ -197,9 +197,7 @@ class TestClass(object):
         num_agents_sim, optim_paras, file_sim = dist_class_attributes(respy_obj, 'num_agents_sim',
                                                     'optim_paras', 'file_sim')
 
-        level, delta = optim_paras['level'], optim_paras['delta']
-
-        is_ambiguity = (level > MIN_AMBIGUITY)
+        delta = optim_paras['delta']
 
         # Iterate over alternative implementations
         base_sol_log, base_est_info, base_est_log = None, None, None
@@ -248,19 +246,13 @@ class TestClass(object):
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)
 
-            if delta > 0.00 and is_ambiguity:
-                fname = file_sim + '.respy.amb'
-                if base_amb_log is None:
-                    base_amb_log = open(fname, 'r').read()
-                assert open(fname, 'r').read() == base_amb_log
 
-    def test_4(self, flag_ambiguity=False):
+    def test_4(self):
         """ This test ensures that the scaling matrix is identical between the alternative versions.
         """
         max_draws = np.random.randint(10, 300)
 
         constr = dict()
-        constr['flag_ambiguity'] = flag_ambiguity
         constr['flag_estimation'] = True
         constr['max_draws'] = max_draws
         constr['version'] = 'PYTHON'
@@ -308,4 +300,4 @@ class TestClass(object):
                 base_scaling_matrix = np.genfromtxt('scaling.respy.out')
 
             scaling_matrix = np.genfromtxt('scaling.respy.out')
-            np.testing.assert_almost_equal(base_scaling_matrix, scaling_matrix)
+            assert_almost_equal(base_scaling_matrix, scaling_matrix)

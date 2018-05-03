@@ -34,7 +34,6 @@ MODULE shared_constants
     INTEGER(our_int)            :: num_agents_sim
     INTEGER(our_int)            :: num_draws_emax
     INTEGER(our_int)            :: num_draws_prob
-    INTEGER(our_int)            :: num_free_ambi
     INTEGER(our_int)            :: num_edu_start
     INTEGER(our_int)            :: num_periods
     INTEGER(our_int)            :: num_slaves
@@ -49,8 +48,6 @@ MODULE shared_constants
 
     ! Variables that need to be aligned across FORTRAN and PYTHON implementations.
     INTEGER(our_int), PARAMETER :: MISSING_INT                  = -99_our_int
-
-    REAL(our_dble), PARAMETER   :: MIN_AMBIGUITY                = 1.0e-20_our_dble
 
     REAL(our_dble), PARAMETER   :: INADMISSIBILITY_PENALTY      = -400000.00_our_dble
     REAL(our_dble), PARAMETER   :: MISSING_FLOAT                = -99.0_our_dble

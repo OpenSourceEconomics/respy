@@ -84,8 +84,8 @@ def record_estimation_stop():
         out_file.write('\n TERMINATED\n')
 
 
-def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled, start):
-    """ Logging the progress of an estimation. This function contains two parts as two files 
+def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
+    """ Logging the progress of an estimation. This function contains two parts as two files
     provide information about the progress.
     """
 
@@ -100,7 +100,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
     # Identify events
     is_start = (opt_obj.num_eval == 0)
     is_step = (opt_obj.crit_vals[1] > fval)
-    x_optim_shares = x_optim_all_unscaled[54:54 + (num_types - 1) * 2]
+    x_optim_shares = x_optim_all_unscaled[53:53 + (num_types - 1) * 2]
 
     for i in range(3):
         if i == 0 and not is_start:
@@ -117,11 +117,11 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
 
         opt_obj.crit_vals[i] = fval
         opt_obj.x_optim_container[:, i] = x_optim_all_unscaled
-        opt_obj.x_econ_container[:44, i] = x_optim_all_unscaled[:44]
-        opt_obj.x_econ_container[44:54, i] = shocks_coeffs
-        opt_obj.x_econ_container[54:54 + (num_types - 1) * 2, i] = x_optim_shares
-        opt_obj.x_econ_container[54 + (num_types - 1) * 2:num_paras, i] = x_optim_all_unscaled[54
-                                                                                               + (num_types - 1) * 2:]
+        opt_obj.x_econ_container[:43, i] = x_optim_all_unscaled[:43]
+        opt_obj.x_econ_container[43:53, i] = shocks_coeffs
+        opt_obj.x_econ_container[53:53 + (num_types - 1) * 2, i] = x_optim_shares
+        opt_obj.x_econ_container[53 + (num_types - 1) * 2:num_paras, i] = \
+            x_optim_all_unscaled[53 + (num_types - 1) * 2:]
 
     x_optim_container = opt_obj.x_optim_container
     x_econ_container = opt_obj.x_econ_container
@@ -143,24 +143,11 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
         fmt_ = '   {0:>9}     {1:>25}\n'
         out_file.write(fmt_.format(*['Criterion', char_floats(fval)[0]]))
 
-        # Record some information about the success rate of the nested
-        # optimization to determine the worst case outcomes.
-        if np.all(opt_ambi_details == MISSING_FLOAT):
-            fmt_ = '   {:<9} ' + '    {:>25}\n'
-            out_file.write(fmt_.format(*['Ambiguity', '---']))
-        else:
-            num_periods, max_states_periods = opt_ambi_details.shape[:2]
-            fmt_ = '   {:<9} ' + '    {:24.2f}%\n'
-            total, success = 0, 0
-            for period in range(num_periods):
-                subset = opt_ambi_details[period, :max_states_periods, 3]
-                total += np.sum(subset >= 0)
-                success += np.sum(subset == 1)
-            share = (success / float(total)) * 100
-            out_file.write(fmt_.format(*['Ambiguity', share]))
-
-        fmt_ = '\n   {:>10}' + '    {:>25}' * 3 + '\n\n'
+        out_file.write('\n')
+        fmt_ = '{:>13}    ' + '{:>25}    ' * 3
         out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
+        out_file.write('\n\n')
+
 
         # Formatting for the file
         fmt_ = '   {:>10}' + '    {:>25}' * 3
@@ -168,7 +155,7 @@ def record_estimation_eval(opt_obj, fval, opt_ambi_details, x_optim_all_unscaled
             if paras_fixed[i]:
                 continue
             line = [i] + char_floats(x_optim_container[i, :])
-            out_file.write(fmt_.format(*line) + '\n')
+            out_file.write(fmt_.format(*line).rstrip(' ') + '\n')
         out_file.write('\n')
 
         # Get information on the spectral condition number of the covariance matrix of the shock
@@ -252,4 +239,4 @@ def record_estimation_final(success, message):
     with open('est.respy.log', 'a') as out_file:
         out_file.write(' ESTIMATION REPORT\n\n')
         out_file.write('   Success ' + str(success) + '\n')
-        out_file.write('   Message ' + message + '\n')
+        out_file.write('   Message ' + str(message) + '\n')

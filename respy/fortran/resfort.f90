@@ -49,7 +49,7 @@ PROGRAM resfort_scalar
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, ambi_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
+    CALL read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
     ALLOCATE(x_all_start(num_paras))
     ALLOCATE(x_tmp(num_paras))
 
@@ -73,7 +73,7 @@ PROGRAM resfort_scalar
 
         ELSE IF (request == 'simulate') THEN
 
-            CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, ambi_spec, optim_paras, optimizer_options, file_sim)
+            CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, optim_paras, optimizer_options, file_sim)
 
             CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 

@@ -24,7 +24,7 @@ We are grateful to the `Social Science Computing Services <https://sscs.uchicago
 Suggested Citation
 ^^^^^^^^^^^^^^^^^^
 
-.. image:: https://zenodo.org/badge/doi/10.5281/zenodo.59297.svg
-   :target: http://dx.doi.org/10.5281/zenodo.59297
+.. image:: https://zenodo.org/badge/doi/10.5281/zenodo.595547.svg
+   :target: http://dx.doi.org/10.5281/zenodo.595547
 
-We appreciate citations for ``respy`` because it helps us to find out how people have been using the package and it motivates further work. Please use our Digital Object Identifier (DOI) and see `here <https://zenodo.org/record/59297>`_ for other citation styles.
+We appreciate citations for ``respy`` because it helps us to find out how people have been using the package and it motivates further work. Please use our Digital Object Identifier (DOI) and see `here <https://zenodo.org/record/595547>`_ for other citation styles.

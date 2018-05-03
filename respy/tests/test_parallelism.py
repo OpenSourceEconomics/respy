@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 
 from respy.python.shared.shared_auxiliary import print_init_dict
-from respy.python.shared.shared_constants import MIN_AMBIGUITY
 from respy.python.shared.shared_constants import IS_PARALLEL
 
 from codes.random_init import generate_random_dict
@@ -33,9 +32,6 @@ class TestClass(object):
         # is possibly much larger to detect and differences in the updates of the optimizer
         # steps depending on the implementation.
         if not init_dict['BASICS']['fixed'][0]:
-            init_dict['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
-
-        if not init_dict['AMBIGUITY']['fixed'][0]:
             init_dict['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
 
         base = None
@@ -81,10 +77,8 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
 
-            level = respy_obj.get_attr('optim_paras')['level']
             delta = respy_obj.get_attr('optim_paras')['delta']
             file_sim = respy_obj.get_attr('file_sim')
-            is_ambiguity = (level > MIN_AMBIGUITY)
 
             simulate_observed(respy_obj)
 
@@ -92,8 +86,12 @@ class TestClass(object):
 
             # Check for identical records
             fname = file_sim + '.respy.sol'
+
             if base_sol_log is None:
                 base_sol_log = open(fname, 'r').read()
+
+            op = open(fname, 'r').read()
+
             assert open(fname, 'r').read() == base_sol_log
 
             if base_est_info_log is None:
@@ -103,10 +101,3 @@ class TestClass(object):
             if base_est_log is None:
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)
-
-            # Check for identical logging
-            if delta > 0.00 and is_ambiguity:
-                fname = file_sim + '.respy.amb'
-                if base_amb_log is None:
-                    base_amb_log = open(fname, 'r').read()
-                assert open(fname, 'r').read() == base_amb_log

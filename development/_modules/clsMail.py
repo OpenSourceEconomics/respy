@@ -25,6 +25,7 @@ import socket
 import copy
 import json
 import os
+from socket import gethostname
 
 
 class MailCls(object):
@@ -47,7 +48,10 @@ class MailCls(object):
         # Setup
         self.attr['sender'] = socket.gethostname()
 
-        self.attr['recipient'] = 'eisenhauer@policy-lab.org'
+        if gethostname() == 'socrates':
+            self.attr['recipient'] = 'janos.gabler@gmail.com'
+        else:
+            self.attr['recipient'] = 'eisenhauer@policy-lab.org'
 
         # Derived attributes
         self.attr['username'] = None
@@ -92,13 +96,13 @@ class MailCls(object):
 
         # Attachment
         if attachment is not None:
-            f = open(attachment, 'r')
+            with open(attachment, 'r') as f:
 
-            attached = MIMEText(f.read())
+                attached = MIMEText(f.read())
 
-            attached.add_header('Content-Disposition', 'attachment', filename=attachment)
+                attached.add_header('Content-Disposition', 'attachment', filename=attachment)
 
-            msg.attach(attached)
+                msg.attach(attached)
 
         # Message
         message = MIMEText(message, 'plain')

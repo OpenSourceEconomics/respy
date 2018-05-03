@@ -20,6 +20,7 @@ from auxiliary_regression import check_single
 from auxiliary_regression import get_chunks
 
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.python.shared.shared_constants import DECIMALS
 from respy.python.shared.shared_auxiliary import print_init_dict
 from codes.auxiliary import simulate_observed
 
@@ -70,7 +71,9 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         respy_obj = RespyCls('test.respy.ini')
 
         simulate_observed(respy_obj)
-        np.testing.assert_almost_equal(estimate(respy_obj)[1], crit_val)
+
+        result = estimate(respy_obj)[1]
+        np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
 
     if is_modification:
         fname = TEST_RESOURCES_DIR + '/regression_vault.respy.json'
