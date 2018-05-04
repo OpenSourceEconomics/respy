@@ -180,7 +180,10 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         else:
             dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents)
 
-    # Estimation task, but very small. A host of other constraints need to be honored as well.
+    # If flage_estimation is true, we ensure that the resulting init dict
+    # is suitable for estimation tasks. This means that maxfun is relatively
+    # small (otherwise the tests would run forever) and that the optimizer
+    # options are compatible with constraints on the parameters.
     if 'flag_estimation' in constr.keys():
         # Checks
         assert (constr['flag_estimation'] in [True, False])
