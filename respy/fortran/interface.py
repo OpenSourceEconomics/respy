@@ -20,11 +20,11 @@ def resfort_interface(respy_obj, request, data_array=None):
     optim_paras, num_periods, edu_spec, is_debug, num_draws_emax, seed_emax, is_interpolated, \
     num_points_interp, is_myopic, tau, num_procs, num_agents_sim, num_draws_prob, \
     seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, precond_spec, \
-    file_sim, num_paras, num_types = dist_class_attributes(respy_obj, 'optim_paras',
+    file_sim, num_paras, num_types, num_agents_est = dist_class_attributes(respy_obj, 'optim_paras',
         'num_periods', 'edu_spec', 'is_debug', 'num_draws_emax', 'seed_emax', 'is_interpolated',
         'num_points_interp', 'is_myopic', 'tau', 'num_procs', 'num_agents_sim',
         'num_draws_prob', 'seed_prob', 'seed_sim', 'optimizer_options', 'optimizer_used',
-        'maxfun', 'precond_spec', 'file_sim', 'num_paras', 'num_types')
+        'maxfun', 'precond_spec', 'file_sim', 'num_paras', 'num_types', 'num_agents_est')
 
     if request == 'estimate':
         # Check that selected optimizer is in line with version of program.
@@ -40,7 +40,7 @@ def resfort_interface(respy_obj, request, data_array=None):
             is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim,
             seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
             optimizer_used, maxfun, num_paras, precond_spec, file_sim, data_array,
-            num_types)
+            num_types, num_agents_est)
 
     write_resfort_initialization(*args)
 
@@ -134,7 +134,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         num_points_interp, is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim,
         seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
         optimizer_used, maxfun, num_paras, precond_spec, file_sim, data_array,
-        num_types):
+        num_types, num_agents_est):
     """ Write out model request to hidden file .model.resfort.ini.
     """
 
@@ -225,14 +225,6 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         # ESTIMATION
         line = '{0:10d}\n'.format(maxfun)
         file_.write(line)
-
-        # We allow to estimate only on a subset of the requested number of agents to ease use of
-        # program, i.e. iteratively add different initial conditions. We need to handle the case
-        # where only a simulation in requested and thus data_array is None.
-        if data_array is not None:
-            num_agents_est = len(np.unique(data_array[:, 0]))
-        else:
-            num_agents_est = MISSING_INT
 
         line = '{0:10d}\n'.format(num_agents_est)
         file_.write(line)
