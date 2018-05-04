@@ -9,6 +9,8 @@ from codes.random_init import generate_init
 from respy import RespyCls, estimate
 from datetime import timedelta, datetime
 import traceback
+from functools import partial
+from multiprocessing import Pool
 # import random_init
 # import estimate
 
@@ -67,7 +69,7 @@ def run_robustness_test(seed, is_investigation):
     return passed, error_message
 
 
-def run_for_hours_sequential(hours, initial_seed):
+def run_for_hours_sequential(initial_seed, hours):
     np.random.seed(initial_seed)
     failed_dict = {}
     start = datetime.now()
@@ -82,6 +84,16 @@ def run_for_hours_sequential(hours, initial_seed):
     return failed_dict, counter
 
 
-def run_for_hours_parallel(hours, num_procs, initial_seeds):
-    raise NotImplementedError
-    #return []
+def run_for_hours_parallel(initial_seeds, hours):
+    num_procs = len(initial_seeds)
+    with Pool(num_procs) as p:
+        run_sequential = partial(run_for_hours_sequential, hours=hours)
+        result_list = p.map(run_sequential, initial_seeds)
+
+    failed_dict = {}
+    counter = 0
+    for fd, c in result_list:
+        failed_dict.update(fd)
+        counter += c
+
+    return failed_dict, counter

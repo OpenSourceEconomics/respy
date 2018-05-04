@@ -48,14 +48,14 @@ def run(request, is_compile, is_background, num_procs, keep_dataset):
     else:
         # make seed list
         if num_procs == 1:
-            initial_seed = 26379  # np.random.randint(1, 100000)
+            initial_seed = np.random.randint(1, 100000)
             failed_dict, num_tests = run_for_hours_sequential(
-                hours, initial_seed)
+                initial_seed=initial_seed, hours=hours)
             failed_seeds = list(failed_dict.keys())
         else:
             initial_seeds = np.random.randint(1, 100000, size=num_procs)
             failed_dict, num_tests = run_for_hours_parallel(
-                hours, num_procs, initial_seeds)
+                initial_seeds=initial_seeds, hours=hours)
 
     failed_seeds = list(failed_dict.keys())
 

@@ -155,7 +155,7 @@ def send_notification(which, **kwargs):
         else:
             message = ' Robustness testing completed successfully  after ' + \
                 hours + ' hours, running on ' + procs + ' cores on @' + \
-                hostname + '.'
+                hostname + '. In total ' + num_tests + ' were run.'
     else:
         raise AssertionError
 
