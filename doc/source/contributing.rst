@@ -13,8 +13,7 @@ We aim for improvements to ``respy`` in three domains: Economics, Software Engin
 Economics
 ^^^^^^^^^
 
-* add unobserved heterogeneity to the model as in Keane and Wolpin (1996)
-* integrate codes from Eisenhauer (2016b) for decision making under ambiguity
+* support the full model of Keane and Wolpin (1997)
 
 Software Engineering
 ^^^^^^^^^^^^^^^^^^^^

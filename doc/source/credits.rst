@@ -14,7 +14,7 @@ Development Lead
 Contributors
 ^^^^^^^^^^^^
 
-None yet, want to be the first?
+`Janos Gabler <https://github.com/janosg>`_
 
 Acknowledgments
 ^^^^^^^^^^^^^^^

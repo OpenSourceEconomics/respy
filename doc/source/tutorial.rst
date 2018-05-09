@@ -188,6 +188,20 @@ ftol        float       relative error in func(xopt) acceptable for convergence
 xtol        float       line-search error tolerance
 =======     ======      ==========================
 
+
+**SCIPY-LBFGSB**
+
+=======     ======      ==========================
+Key         Value       Interpretation
+=======     ======      ==========================
+eps         float       Step size used when approx_grad is True, for numerically calculating the gradient
+factr       float       Multiple of the default machine precision used to determine the relative error in func(xopt) acceptable for convergence
+m           int         Maximum number of variable metric corrections used to define the limited memory matrix.
+maxiter     int         maximum number of iterations
+maxls       int         Maximum number of line search steps (per iteration). Default is 20.
+pgtol       float       gradient norm must be less than gtol before successful termination
+=======     ======      ==========================
+
 **FORT-BFGS**
 
 =======     ======      ==========================
@@ -207,6 +221,36 @@ npt         int         number of points for approximation model
 rhobeg      float       starting value for size of trust region
 rhoend      float       minimum value of size for trust region
 =======     ======      ==========================
+
+**FORT-BOBYQA**
+
+=======     ======      ==========================
+Key         Value       Interpretation
+=======     ======      ==========================
+maxfun      float       maximum number of function evaluations
+npt         int         number of points for approximation model
+rhobeg      float       starting value for size of trust region
+rhoend      float       minimum value of size for trust region
+=======     ======      ==========================
+
+
+
+Constraints for the Optimizer
+-----------------------------
+
+If you want to keep any parameter fixed at the value you specified (i.e. not estimate this parameter) you can simply add an exclamation mark after the value. If you want to provide bounds for a constrained optimizer you can specify a lower and upper bound in round brackets. A section of such an .ini file would look as follows:
+
+.. code::
+
+    coeff             -0.049538516229344
+    coeff              0.020000000000000     !
+    coeff             -0.037283956168153       (-0.5807488086366478,None)
+    coeff              0.036340835226155     ! (None,0.661243603948984)
+
+In this example, the first coefficient is free. The second one is fixed at 0.2. The third one will be estimated but has a lower bound. In the fourth case, the parameter is fixed and the bounds will be ignored.
+
+If you specify bounds for any free parameter, you have to choose a constraint optimizer such as SCIPY-LBFGSB or FORT-BOBYQA.
+
 
 Examples
 --------

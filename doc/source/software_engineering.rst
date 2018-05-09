@@ -27,7 +27,7 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
 * **regression testing**
 
-    We retain a set of 1,000 fixed model parameterizations and store their estimation results. This allows to ensure that a simple refactoring of the code or the addition of new features does not have any unintended consequences on the existing capabilities of the package.
+    We retain a set of 10,000 fixed model parameterizations and store their estimation results. This allows to ensure that a simple refactoring of the code or the addition of new features does not have any unintended consequences on the existing capabilities of the package.
 
 * **scalability testing**
 
@@ -40,6 +40,10 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 * **release testing**
 
     We thoroughly test new release candidates against previous releases. For minor and micro releases, user requests should yield identical results. For major releases, our goal is to ensure that the same is true for at least a subset of requests. If required, we will build supporting code infrastructure.
+
+* **robustness testing**
+
+    Numerical instabilities often only become apparent on real world data that is less well behaved than simulated data. To test the stability of our package we start thousands of estimation tasks on the NLSY dataset used by Keane and Wolpin. We use random start values for the parameter vector that can be far from the true values and make sure that the code can handle those cases.
 
 Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. As new features are added and the code matures, we constantly expand our testing harness. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`_  for an example output.
 

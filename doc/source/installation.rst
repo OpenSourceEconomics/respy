@@ -1,7 +1,7 @@
 Installation
 ============
 
-The ``respy`` package can be conveniently installed from the `Python Package Index <https://pypi.python.org/pypi>`_ (PyPI) or directly from its source files. We currently support Python 2.7 and Python 3.3+ on Linux systems.
+The ``respy`` package can be conveniently installed from the `Python Package Index <https://pypi.python.org/pypi>`_ (PyPI) or directly from its source files. We currently support Python 2.7 and Python 3.3+. We develop the package on Linux systems, but it can also be installed on MacOS and Windows.
 
 Python Package Index
 --------------------
@@ -17,7 +17,16 @@ We provide a pure Python implementation as our baseline. However, to address per
 ... adding Fortran
 ^^^^^^^^^^^^^^^^^^
 
-Please make sure that the ``gfortran`` compiler is available on your path and it knows where to find the `Linear Algebra PACKage (LAPACK) <http://www.netlib.org/lapack/>`_ library. If so, just call a slightly modified version of the installation command.
+Please make sure that the ``gfortran`` compiler is available on your path and it knows where to find the `Linear Algebra PACKage (LAPACK) <http://www.netlib.org/lapack/>`_ library.
+
+On Ubuntu systems, both can be achieved by the following commands:
+
+.. code-block:: bash
+
+    $ sudo apt-get install gfortran
+    $ sudo apt-get install libblas-dev liblapack-dev
+
+If so, just call a slightly modified version of the installation command.
 
 .. code-block:: bash
 
