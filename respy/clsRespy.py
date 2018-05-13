@@ -1,7 +1,4 @@
-""" Module that contains the class that carries around information for the
-    RESPY package
-"""
-
+"""Module that contains the class that carries around information for the RESPY package."""
 import pickle as pkl
 import pandas as pd
 import numpy as np

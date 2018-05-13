@@ -282,7 +282,7 @@ FUNCTION apply_scaling(x_in, precond_matrix, request)
     REAL(our_dble)                  :: apply_scaling(num_free)
 
     REAL(our_dble), INTENT(IN)      :: precond_matrix(num_free, num_free)
-    REAL(our_dble), INTENT(IN)      :: x_in(num_free)
+    REAL(our_dble), INTENT(IN)      :: x_in(:)
 
     CHARACTER(*), INTENT(IN)        :: request
 

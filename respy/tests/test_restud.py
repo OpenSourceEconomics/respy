@@ -84,7 +84,7 @@ def restud_sample_to_respy():
     # individual is working.
     cond = df['Choice'].isin([1, 2])
     df['Wage'] = np.nan
-    df['Wage'][cond] = df['Reward'][cond]
+    df.loc[cond, 'Wage'] = df.loc[cond, 'Reward']
 
     # Write out resulting sample.
     df = df[DATA_LABELS_EST].astype(DATA_FORMATS_EST)
@@ -152,13 +152,18 @@ def write_covariance_parameters(cov):
         # We need to undo the scaling procedure in the RESTUD codes and then write out the
         # correlation matrix and the standard deviations.
         sd = np.sqrt(np.diag(cov)).copy().tolist()
-
         corr = np.identity(4)
-        for i in range(4):
-            for j in range(4):
-                if j >= i:
-                    continue
-                corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
+
+        is_deterministic = (np.all(sd) == 0)
+
+        if is_deterministic:
+            corr[:, :] = 0
+        else:
+            for i in range(4):
+                for j in range(4):
+                    if j >= i:
+                        continue
+                    corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
 
         for j in range(4):
             fmt = ' {0:10.5f} {1:10.5f} {2:10.5f} {3:10.5f}\n'

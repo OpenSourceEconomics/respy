@@ -1,12 +1,17 @@
-import pandas as pd
-pd.options.mode.chained_assignment = None
-
+import warnings
+import json
 import os
 
-try:
-    import pytest
-except ImportError:
-    pass
+# We want to set up some module-wide variables.
+PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
+
+# We want to turn off the nuisance warnings while in production.
+config = json.load(open(PACKAGE_DIR + '/.config'))
+if not config['DEBUG']:
+    warnings.simplefilter(action='ignore', category=FutureWarning)
+
+import pandas as pd
+import pytest
 
 from respy.estimate import estimate
 from respy.simulate import simulate
@@ -16,13 +21,9 @@ __version__ = '2.0.0.dev20'
 
 
 def test(opt=None):
-    """ Run PYTEST for the package.
-    """
-
-    package_directory = os.path.dirname(os.path.realpath(__file__))
+    """Run PYTEST for the package."""
     current_directory = os.getcwd()
-
-    os.chdir(package_directory)
+    os.chdir(PACKAGE_DIR)
 
     if opt is None:
         opts = '-m"not slow"'

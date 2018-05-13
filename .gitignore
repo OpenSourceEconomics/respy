@@ -5,8 +5,7 @@ respy.egg-info
 respy/.waf-*
 respy/.config
 respy/.lock-*
-development/working/peisenha/*
-development/working/jansog/*
+development/working
 !development/working/inspect_vault.ipynb
 respy/fortran/bin
 *.ipynb_checkpoints

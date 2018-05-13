@@ -56,7 +56,7 @@ def check_dataset_est(data_frame, respy_obj):
     # We need to distinguish the cases where individuals come in with different values for lagged
     # schooling based on their level of education obtained.
     is_lagged = data_frame.loc[(slice(None), 0), 'Years_Schooling'] >= 10
-    data_frame['TEMP'].loc[:, 0] = 0
+    data_frame.loc[(slice(None), 0), 'TEMP'] = 0
     index = list(is_lagged[is_lagged].index.get_level_values(0))
     data_frame.loc[(index, 0), 'TEMP'] = 1
     data_frame['TEMP'] = data_frame['TEMP'].astype(int)
