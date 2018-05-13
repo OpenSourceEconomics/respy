@@ -62,7 +62,7 @@ SUBROUTINE record_solution_progress(indicator, file_sim, period, num_states)
 
     ELSEIF (indicator == 4) THEN
 
-        1900 FORMAT(2x,A18,1x,i2,1x,A4,1x,i5,1x,A7)
+        1900 FORMAT(2x,A18,1x,i2,1x,A4,1x,i7,1x,A7)
 
         WRITE(99, 1900) '... solving period', period, 'with', num_states, 'states'
         WRITE(99, *)

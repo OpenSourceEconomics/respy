@@ -1,5 +1,6 @@
 import warnings
 import json
+import sys
 import os
 
 # We want to set up some module-wide variables.
@@ -10,8 +11,13 @@ config = json.load(open(PACKAGE_DIR + '/.config'))
 if not config['DEBUG']:
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
-import pandas as pd
+import numpy as np
 import pytest
+
+# We only maintain the code base for modern Python.
+major, minor = sys.version_info[:2]
+np.testing.assert_equal(major == 3, True)
+np.testing.assert_equal(minor >= 6, True)
 
 from respy.estimate import estimate
 from respy.simulate import simulate

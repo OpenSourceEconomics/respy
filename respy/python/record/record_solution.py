@@ -13,8 +13,8 @@ def record_solution_progress(indicator, file_sim, period=None, num_states=None):
     elif indicator == 3:
         line = 'Starting backward induction procedure'
     elif indicator == 4:
-        string = '''{0[0]:>18}{0[1]:>3}{0[2]:>5}{0[3]:>6} {0[4]:>7}'''
-        line = string.format(['... solving period', period, 'with', num_states, 'states'])
+        string = '''{:>18}{:>3}{:>5} {:>7} {:>7}'''
+        line = string.format(*['... solving period', period, 'with', num_states, 'states'])
     elif indicator == -1:
         line = '... finished\n'
     elif indicator == -2:
