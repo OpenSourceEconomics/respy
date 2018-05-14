@@ -254,11 +254,11 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     emaxs = np.tile(np.nan, 4)
 
     # Working in Occupation A
-    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 0, type_]
+    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 1 - 1, type_]
     emaxs[0] = periods_emax[period + 1, future_idx]
 
     # Working in Occupation B
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 1, type_]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 2 - 1, type_]
     emaxs[1] = periods_emax[period + 1, future_idx]
 
     # Increasing schooling. Note that adding an additional year of schooling is only possible for
@@ -267,11 +267,11 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     if is_inadmissible:
         emaxs[2] = 0.00
     else:
-        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 2, type_]
+        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 3 - 1, type_]
         emaxs[2] = periods_emax[period + 1, future_idx]
 
     # Staying at home
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 3, type_]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 4 - 1, type_]
     emaxs[3] = periods_emax[period + 1, future_idx]
 
     # Finishing
@@ -916,11 +916,11 @@ def construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period):
     covariates = dict()
 
     # These are covariates that are supposed to capture the entry costs.
-    covariates['not_exp_a_lagged'] = int((exp_a > 0) and (activity_lagged != 0))
-    covariates['not_exp_b_lagged'] = int((exp_b > 0) and (activity_lagged != 1))
-    covariates['work_a_lagged'] = int(activity_lagged == 0)
-    covariates['work_b_lagged'] = int(activity_lagged == 1)
-    covariates['edu_lagged'] = int(activity_lagged == 2)
+    covariates['not_exp_a_lagged'] = int((exp_a > 0) and (activity_lagged != 1))
+    covariates['not_exp_b_lagged'] = int((exp_b > 0) and (activity_lagged != 2))
+    covariates['work_a_lagged'] = int(activity_lagged == 1)
+    covariates['work_b_lagged'] = int(activity_lagged == 2)
+    covariates['edu_lagged'] = int(activity_lagged == 3)
     covariates['activity_lagged'] = activity_lagged
     covariates['not_any_exp_a'] = int(exp_a == 0)
     covariates['not_any_exp_b'] = int(exp_b == 0)

@@ -66,68 +66,68 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                             if edu_add > (edu_spec['max'] - edu_start):
                                 continue
 
-                            # Loop over all admissible values for the lagged activity: (0)
-                            # Occupation A, (1) Occupation B, (2) Education, and (3) Home.
-                            for activity_lagged in [0, 1, 2, 3]:
+                            # Loop over all admissible values for the lagged activity: (1)
+                            # Occupation A, (2) Occupation B, (3) Education, and (4) Home.
+                            for activity_lagged in [1, 2, 3, 4]:
 
                                 if period > 0:
 
                                     # (0, 1) Whenever an agent has only acquired additional
-                                    # education, then activity_lagged cannot be three.
-                                    if (activity_lagged == 3) and (edu_add == period):
+                                    # education, then activity_lagged cannot be four.
+                                    if (activity_lagged == 4) and (edu_add == period):
                                         continue
 
                                     # (0, 2) Whenever an agent has only worked in Occupation A,
-                                    # then activity_lagged cannot be three.
-                                    if (activity_lagged == 3) and (exp_a == period):
+                                    # then activity_lagged cannot be four.
+                                    if (activity_lagged == 4) and (exp_a == period):
                                         continue
 
                                     # (0, 3) Whenever an agent has only worked in Occupation B,
-                                    # then activity lagged cannot be three.
-                                    if (activity_lagged == 3) and (exp_b == period):
+                                    # then activity lagged cannot be four.
+                                    if (activity_lagged == 4) and (exp_b == period):
                                         continue
 
                                     # (0, 4) Whenever an agent has not acquired any additional
                                     # education and we are not in the first period, then lagged
-                                    # activity cannot take a value of one.
-                                    if (activity_lagged == 2) and (edu_add == 0):
+                                    # activity cannot take a value of three.
+                                    if (activity_lagged == 3) and (edu_add == 0):
                                         continue
 
                                 # (1, 1) In the first period all agents have lagged schooling equal
                                 # to one or zero. What is admissible depends on their level os
                                 # initial education.
                                 if period == 0:
-                                    if activity_lagged in [0, 1]:
+                                    if activity_lagged in [1, 2]:
                                         continue
-                                    if edu_start < 10 and activity_lagged == 2:
+                                    if edu_start < 10 and activity_lagged == 3:
                                         continue
-                                    if edu_start >= 10 and activity_lagged == 3:
+                                    if edu_start >= 10 and activity_lagged == 4:
                                         continue
 
                                 # (2, 1) An individual that has never worked in Occupation A
                                 # cannot have that lagged activity.
-                                if (activity_lagged == 0) and (exp_a == 0):
+                                if (activity_lagged == 1) and (exp_a == 0):
                                     continue
 
                                 # (3, 1) An individual that has never worked in Occupation B
                                 # cannot have a that lagged activity.
-                                if (activity_lagged == 1) and (exp_b == 0):
+                                if (activity_lagged == 2) and (exp_b == 0):
                                     continue
 
                                 # If we have multiple initial conditions it might well be the
                                 # case that we have a duplicate state, i.e. the same state is
                                 # possible with other initial condition that period.
                                 if mapping_state_idx[period, exp_a, exp_b, edu_start + edu_add,
-                                                     activity_lagged, type_] != MISSING_INT:
+                                                     activity_lagged - 1, type_] != MISSING_INT:
                                     continue
 
                                 # Collect mapping of state space to array index.
                                 mapping_state_idx[period, exp_a, exp_b, edu_start + edu_add,
-                                                  activity_lagged, type_] = k
+                                                  activity_lagged - 1, type_] = k
 
                                 # Collect all possible realizations of state space
                                 states_all[period, k, :] = [exp_a, exp_b, edu_start + edu_add,
-                                                            activity_lagged, type_]
+                                                            activity_lagged - 1 , type_]
 
                                 # Update count
                                 k += 1
