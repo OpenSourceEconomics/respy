@@ -127,7 +127,7 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
 
                                 # Collect all possible realizations of state space
                                 states_all[period, k, :] = [exp_a, exp_b, edu_start + edu_add,
-                                                            activity_lagged - 1 , type_]
+                                                            activity_lagged, type_]
 
                                 # Update count
                                 k += 1
@@ -373,7 +373,7 @@ def get_exogenous_variables(period, num_periods, num_states, periods_rewards_sys
 
 def get_endogenous_variable(period, num_periods, num_states, periods_rewards_systematic,
         mapping_state_idx, periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_risk, edu_spec, optim_paras, optimizer_options):
+        draws_emax_risk, edu_spec, optim_paras):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects

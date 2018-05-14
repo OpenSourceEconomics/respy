@@ -69,7 +69,7 @@ def scripts_check(request, init_file):
             # might fail either because the state is simply infeasible at any period or just not
             # defined for the particular period requested.
             try:
-                k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged]
+                k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged - 1]
                 np.testing.assert_equal(k >= 0, True)
             except (IndexError, AssertionError):
                 raise UserError(ERR_MSG)

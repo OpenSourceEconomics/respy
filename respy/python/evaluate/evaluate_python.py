@@ -61,7 +61,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
                 # Get state indicator to obtain the systematic component of the  agents rewards.
                 # These feed into the simulation of choice probabilities.
-                k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged, type_]
+                k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged - 1, type_]
                 rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # If an agent is observed working, then the the labor market shocks are observed and

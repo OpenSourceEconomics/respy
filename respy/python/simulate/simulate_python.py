@@ -45,7 +45,6 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
     for i in range(num_agents_sim):
 
         current_state = states_all[0, 0, :].copy()
-        print(current_state)
 
         # We need to modify the initial conditions: (1) Schooling when entering the model and (2)
         # individual type.
