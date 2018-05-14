@@ -45,6 +45,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
     for i in range(num_agents_sim):
 
         current_state = states_all[0, 0, :].copy()
+        print(current_state)
 
         # We need to modify the initial conditions: (1) Schooling when entering the model and (2)
         # individual type.
@@ -52,9 +53,9 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
         current_state[4] = types[i]
 
         if edu_start[i] < 10:
-            current_state[3] = 0
+            current_state[3] = 3
         else:
-            current_state[3] = 1
+            current_state[3] = 2
 
         record_simulation_progress(i, file_sim)
 
@@ -63,6 +64,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
 
             # Distribute state space
             exp_a, exp_b, edu, activity_lagged, type_ = current_state
+
             k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged, type_]
 
             # Write agent identifier and current period to data frame
@@ -123,14 +125,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
                 current_state[max_idx] += 1
 
             # Update lagged activity variable.
-            if max_idx == 0:
-                current_state[3] = 2
-            elif max_idx == 1:
-                current_state[3] = 3
-            elif max_idx == 2:
-                current_state[3] = 1
-            else:
-                current_state[3] = 0
+            current_state[3] = max_idx
 
             # Update row indicator
             count += 1

@@ -47,21 +47,25 @@ def check_dataset_est(data_frame, respy_obj):
     dat = data_frame['Lagged_Activity'].isin(range(4))
     np.testing.assert_equal(dat.all(), True)
 
-    dat = data_frame['Lagged_Activity'][:, 0].isin([0, 1])
+    dat = data_frame['Lagged_Activity'][:, 0].isin([2, 3])
     np.testing.assert_equal(dat.all(), True)
-
-    data_frame['TEMP'] = data_frame.groupby(level='Identifier')['Choice'].shift(+1)
-    data_frame['TEMP'] = data_frame['TEMP'].map({1: 2, 2: 3, 3: 1, 4: 0})
-
-    # We need to distinguish the cases where individuals come in with different values for lagged
-    # schooling based on their level of education obtained.
-    is_lagged = data_frame.loc[(slice(None), 0), 'Years_Schooling'] >= 10
-    data_frame.loc[(slice(None), 0), 'TEMP'] = 0
-    index = list(is_lagged[is_lagged].index.get_level_values(0))
-    data_frame.loc[(index, 0), 'TEMP'] = 1
-    data_frame['TEMP'] = data_frame['TEMP'].astype(int)
-    np.testing.assert_equal(data_frame['TEMP'].equals(data_frame['Lagged_Activity']), True)
-    del data_frame['TEMP']
+    # # TODO: STreamelined version  needs to be out back in
+    #
+    # data_frame['TEMP'] = data_frame.groupby(level='Identifier')['Choice'].shift(+1)
+    # data_frame['TEMP'] += 1
+    #
+    # # We need to distinguish the cases where individuals come in with different values for lagged
+    # # schooling based on their level of education obtained.
+    # is_lagged = data_frame.loc[(slice(None), 0), 'Years_Schooling'] >= 10
+    # data_frame.loc[(slice(None), 0), 'TEMP'] = 2
+    # index = list(is_lagged[is_lagged].index.get_level_values(0))
+    # data_frame.loc[(index, 0), 'TEMP'] = 3
+    # data_frame['TEMP'] = data_frame['TEMP'].astype(int)
+    #
+    # print(data_frame[['TEMP', 'Lagged_Activity']])
+    # np.testing.assert_equal(data_frame['TEMP'].equals(data_frame['Lagged_Activity']), True)
+    #
+    # del data_frame['TEMP']
 
     # Checks for YEARS SCHOOLING. We also know that the initial years of schooling can only take
     # values specified in the initialization file and no individual in our estimation sample is

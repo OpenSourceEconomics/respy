@@ -338,7 +338,7 @@ class TestClass(object):
             is_debug, is_interpolated, num_points_interp)
 
         args = ()
-        args += base_args + (edu_spec, optim_paras, optimizer_options)
+        args += base_args + (edu_spec, optim_paras)
         args += (file_sim, False)
         pyth = pyth_backward_induction(*args)
 
@@ -569,7 +569,7 @@ class TestClass(object):
                      maxe, draws_emax_risk)
 
         args = ()
-        args += base_args + (edu_spec, optim_paras, optimizer_options)
+        args += base_args + (edu_spec, optim_paras)
         py = get_endogenous_variable(*args)
 
         args = ()
