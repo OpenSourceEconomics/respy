@@ -91,8 +91,8 @@ MODULE shared_types
         INTEGER(our_int)                :: is_return_high_school
         INTEGER(our_int)                :: not_exp_a_lagged
         INTEGER(our_int)                :: not_exp_b_lagged
-        INTEGER(our_int)                :: activity_lagged
         INTEGER(our_int)                :: is_young_adult
+        INTEGER(our_int)                :: choice_lagged
         INTEGER(our_int)                :: work_a_lagged
         INTEGER(our_int)                :: work_b_lagged
         INTEGER(our_int)                :: not_any_exp_a

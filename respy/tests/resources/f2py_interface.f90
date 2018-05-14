@@ -1720,7 +1720,7 @@ SUBROUTINE wrapper_get_scales_magnitude(precond_matrix_int, values, num_free_int
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systematic, exp_a, exp_b, edu, activity_lagged, coeffs_a, coeffs_b)
+SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systematic, exp_a, exp_b, edu, choice_lagged, coeffs_a, coeffs_b)
 
     !/* external libraries      */
 
@@ -1738,7 +1738,7 @@ SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systemati
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(15)
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(15)
 
-    INTEGER, INTENT(IN)                 :: activity_lagged
+    INTEGER, INTENT(IN)                 :: choice_lagged
     INTEGER, INTENT(IN)                 :: exp_a
     INTEGER, INTENT(IN)                 :: exp_b
     INTEGER, INTENT(IN)                 :: edu
@@ -1752,7 +1752,7 @@ SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systemati
     optim_paras%coeffs_b = coeffs_b
 
     ! Call interface
-    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
+    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras)
 
 END SUBROUTINE
 !*******************************************************************************

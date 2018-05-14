@@ -59,7 +59,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     INTEGER(our_int)                :: edu_start(num_agents_sim)
     INTEGER(our_int)                :: types(num_agents_sim)
     INTEGER(our_int)                :: current_state(5)
-    INTEGER(our_int)                :: activity_lagged
+    INTEGER(our_int)                :: choice_lagged
     INTEGER(our_int)                :: choice
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: exp_a
@@ -106,9 +106,9 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
         current_state(5) = types(i + 1)
 
         IF (edu_start(i + 1) < 10) THEN
-            current_state(4) = 0
+            current_state(4) = 4
         ELSE
-            current_state(4) = 1
+            current_state(4) = 3
         END IF
 
         CALL record_simulation(i, file_sim)
@@ -119,11 +119,11 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             exp_a = current_state(1)
             exp_b = current_state(2)
             edu = current_state(3)
-            activity_lagged = current_state(4)
+            choice_lagged = current_state(4)
             type_ = current_state(5)
 
             ! Getting state index
-            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, activity_lagged + 1, type_ + 1)
+            k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, choice_lagged, type_ + 1)
 
             ! Write agent identifier and current period to data frame
             data_sim(count + 1, 1) = DBLE(i)
@@ -146,7 +146,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
 
             ! Record wages
             IF ((choice .EQ. one_int) .OR. (choice .EQ. two_int)) THEN
-                wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
+                wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras)
                 data_sim(count + 1, 4) = wages_systematic(choice) * draws(choice)
             END IF
 
@@ -161,7 +161,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             data_sim(count + 1, 22:22) = optim_paras%delta
 
             ! For testing purposes, we also explicitly include the general reward component and the common component.
-            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
+            covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period)
             data_sim(count + 1, 23:24) = calculate_rewards_general(covariates, optim_paras)
             data_sim(count + 1, 25:25) = calculate_rewards_common(covariates, optim_paras)
             data_sim(count + 1, 26:29) = rewards_ex_post
@@ -172,15 +172,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
             END IF
 
             !# Update lagged activity variable.
-            IF (choice .EQ. one_int) THEN
-                current_state(4) = two_int
-            ELSEIF (choice .EQ. two_int) THEN
-                current_state(4) = three_int
-            ELSEIF (choice .EQ. three_int) THEN
-                current_state(4) = one_int
-            ELSE
-                current_state(4) = zero_int
-            END IF
+            current_state(4) = choice
 
             ! Update row indicator
             count = count + 1

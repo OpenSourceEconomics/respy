@@ -68,66 +68,66 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
 
                             # Loop over all admissible values for the lagged activity: (1)
                             # Occupation A, (2) Occupation B, (3) Education, and (4) Home.
-                            for activity_lagged in [1, 2, 3, 4]:
+                            for choice_lagged in [1, 2, 3, 4]:
 
                                 if period > 0:
 
                                     # (0, 1) Whenever an agent has only acquired additional
-                                    # education, then activity_lagged cannot be four.
-                                    if (activity_lagged == 4) and (edu_add == period):
+                                    # education, then choice_lagged cannot be four.
+                                    if (choice_lagged == 4) and (edu_add == period):
                                         continue
 
                                     # (0, 2) Whenever an agent has only worked in Occupation A,
-                                    # then activity_lagged cannot be four.
-                                    if (activity_lagged == 4) and (exp_a == period):
+                                    # then choice_lagged cannot be four.
+                                    if (choice_lagged == 4) and (exp_a == period):
                                         continue
 
                                     # (0, 3) Whenever an agent has only worked in Occupation B,
                                     # then activity lagged cannot be four.
-                                    if (activity_lagged == 4) and (exp_b == period):
+                                    if (choice_lagged == 4) and (exp_b == period):
                                         continue
 
                                     # (0, 4) Whenever an agent has not acquired any additional
                                     # education and we are not in the first period, then lagged
                                     # activity cannot take a value of three.
-                                    if (activity_lagged == 3) and (edu_add == 0):
+                                    if (choice_lagged == 3) and (edu_add == 0):
                                         continue
 
                                 # (1, 1) In the first period all agents have lagged schooling equal
                                 # to one or zero. What is admissible depends on their level os
                                 # initial education.
                                 if period == 0:
-                                    if activity_lagged in [1, 2]:
+                                    if choice_lagged in [1, 2]:
                                         continue
-                                    if edu_start < 10 and activity_lagged == 3:
+                                    if edu_start < 10 and choice_lagged == 3:
                                         continue
-                                    if edu_start >= 10 and activity_lagged == 4:
+                                    if edu_start >= 10 and choice_lagged == 4:
                                         continue
 
                                 # (2, 1) An individual that has never worked in Occupation A
                                 # cannot have that lagged activity.
-                                if (activity_lagged == 1) and (exp_a == 0):
+                                if (choice_lagged == 1) and (exp_a == 0):
                                     continue
 
                                 # (3, 1) An individual that has never worked in Occupation B
                                 # cannot have a that lagged activity.
-                                if (activity_lagged == 2) and (exp_b == 0):
+                                if (choice_lagged == 2) and (exp_b == 0):
                                     continue
 
                                 # If we have multiple initial conditions it might well be the
                                 # case that we have a duplicate state, i.e. the same state is
                                 # possible with other initial condition that period.
                                 if mapping_state_idx[period, exp_a, exp_b, edu_start + edu_add,
-                                                     activity_lagged - 1, type_] != MISSING_INT:
+                                                     choice_lagged - 1, type_] != MISSING_INT:
                                     continue
 
                                 # Collect mapping of state space to array index.
                                 mapping_state_idx[period, exp_a, exp_b, edu_start + edu_add,
-                                                  activity_lagged - 1, type_] = k
+                                                  choice_lagged - 1, type_] = k
 
                                 # Collect all possible realizations of state space
                                 states_all[period, k, :] = [exp_a, exp_b, edu_start + edu_add,
-                                                            activity_lagged, type_]
+                                                            choice_lagged, type_]
 
                                 # Update count
                                 k += 1
@@ -160,13 +160,13 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
         for k in range(states_number_period[period]):
 
             # Distribute state space
-            exp_a, exp_b, edu, activity_lagged, type_ = states_all[period, k, :]
+            exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
 
             # Initialize container
             rewards = np.tile(np.nan, 4)
 
             # Construct auxiliary information
-            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
+            covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period)
 
             # Calculate common and general rewards component.
             rewards_general = calculate_rewards_general(covariates, optim_paras)

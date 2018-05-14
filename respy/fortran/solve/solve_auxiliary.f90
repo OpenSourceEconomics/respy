@@ -35,7 +35,7 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     !/* internals objects       */
 
     INTEGER(our_int)                    :: states_all_tmp(num_periods, 1000000, 5)
-    INTEGER(our_int)                    :: activity_lagged
+    INTEGER(our_int)                    :: choice_lagged
     INTEGER(our_int)                    :: num_edu_start
     INTEGER(our_int)                    :: edu_start
     INTEGER(our_int)                    :: edu_add
@@ -94,49 +94,49 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                             IF (edu_add .GT. (edu_spec%max - edu_start)) CYCLE
 
                             ! Loop over all admissible values for the lagged activity: (0) Home, (1) Education, (2) Occupation A, and (3) Occupation B.
-                            DO activity_lagged = 0, 3
+                            DO choice_lagged = 1, 4
 
                                 IF (period .GT. zero_int) THEN
 
-                                    ! (0, 1) Whenever an agent has only acquired additional education, then activity_lagged cannot be zero.
-                                    IF ((activity_lagged .EQ. zero_int) .AND. (edu_add .EQ. period)) CYCLE
+                                    ! (0, 1) Whenever an agent has only acquired additional education, then choice_lagged cannot be four.
+                                    IF ((choice_lagged .EQ. four_int) .AND. (edu_add .EQ. period)) CYCLE
 
-                                    ! (0, 2) Whenever an agent has only worked in Occupation A, then activity_lagged cannot be zero.
-                                    IF ((activity_lagged .EQ. zero_int) .AND. (exp_a .EQ. period)) CYCLE
+                                    ! (0, 2) Whenever an agent has only worked in Occupation A, then choice_lagged cannot be four.
+                                    IF ((choice_lagged .EQ. four_int) .AND. (exp_a .EQ. period)) CYCLE
 
-                                    ! (0, 3) Whenever an agent has only worked in Occupation B, then activity_lagged cannot be zero.
-                                    IF ((activity_lagged .EQ. zero_int) .AND. (exp_b .EQ. period)) CYCLE
+                                    ! (0, 3) Whenever an agent has only worked in Occupation B, then choice_lagged cannot be zero.
+                                    IF ((choice_lagged .EQ. four_int) .AND. (exp_b .EQ. period)) CYCLE
 
-                                    ! (0, 2) Whenever an agent has not acquired any additional education and we are not in the first period, then lagged education cannot take a value of one.
-                                    IF ((activity_lagged .EQ. one_int) .AND. (edu_add .EQ. zero_int)) CYCLE
+                                    ! (0, 2) Whenever an agent has not acquired any additional education and we are not in the first period, then lagged education cannot take a value of three.
+                                    IF ((choice_lagged .EQ. three_int) .AND. (edu_add .EQ. zero_int)) CYCLE
 
                                 END IF
 
                                 ! We need some special treatment to deal with the different initial schooling levels.
                                 IF (period .EQ. zero_int) THEN
 
-                                    IF ((activity_lagged .EQ. two_int) .OR. (activity_lagged .EQ. three_int)) CYCLE
+                                    IF ((choice_lagged .EQ. one_int) .OR. (choice_lagged .EQ. two_int)) CYCLE
 
-                                    IF ((edu_start .GE. ten_int) .AND. (activity_lagged .EQ. zero_int)) CYCLE
+                                    IF ((edu_start .LT. ten_int) .AND. (choice_lagged .EQ. three_int)) CYCLE
 
-                                    IF ((edu_start .LT. ten_int) .AND. (activity_lagged .EQ. one_int)) CYCLE
+                                    IF ((edu_start .GE. ten_int) .AND. (choice_lagged .EQ. four_int)) CYCLE
 
                                 END IF
 
                                 ! (2, 1) An individual that has never worked in Occupation A cannot have a that lagged activity.
-                                IF ((activity_lagged .EQ. two_int) .AND. (exp_a .EQ. zero_int)) CYCLE
+                                IF ((choice_lagged .EQ. one_int) .AND. (exp_a .EQ. zero_int)) CYCLE
 
                                 ! (3, 1) An individual that has never worked in Occupation B cannot have a that lagged activity.
-                                IF ((activity_lagged .EQ. three_int) .AND. (exp_b .EQ. zero_int)) CYCLE
+                                IF ((choice_lagged .EQ. two_int) .AND. (exp_b .EQ. zero_int)) CYCLE
 
                                 ! If we have multiple initial conditions it might well be the case that we have a duplicate state, i.e. the same state is possible with other initial condition that period.
-                                IF (mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , activity_lagged + 1, type_ + 1) .NE. MISSING_INT) CYCLE
+                                IF (mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , choice_lagged, type_ + 1) .NE. MISSING_INT) CYCLE
 
                                 ! Collect mapping of state space to array index.
-                                mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , activity_lagged + 1, type_ + 1) = k
+                                mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu_start + edu_add + 1 , choice_lagged, type_ + 1) = k
 
                                 ! Collect all possible realizations of state space
-                                states_all_tmp(period + 1, k + 1, :) = (/ exp_a, exp_b, edu_start + edu_add, activity_lagged, type_ /)
+                                states_all_tmp(period + 1, k + 1, :) = (/ exp_a, exp_b, edu_start + edu_add, choice_lagged, type_ /)
 
                                 ! Update count
                                 k = k + 1
@@ -185,7 +185,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     TYPE(COVARIATES_DICT)               :: covariates
 
-    INTEGER(our_int)                    :: activity_lagged
+    INTEGER(our_int)                    :: choice_lagged
 
     INTEGER(our_int)                    :: covars_home(3)
     INTEGER(our_int)                    :: covars_edu(7)
@@ -222,11 +222,11 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             exp_a = states_all(period, k, 1)
             exp_b = states_all(period, k, 2)
             edu = states_all(period, k, 3)
-            activity_lagged = states_all(period, k, 4)
+            choice_lagged = states_all(period, k, 4)
             type_ = states_all(period, k, 5)
 
             ! Construct auxiliary information
-            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
+            covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period)
 
             ! Calculate common and general rewards component.
             rewards_general = calculate_rewards_general(covariates, optim_paras)
@@ -363,7 +363,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
 
     ! Initialize containers for disturbances with empty values.
     draws_emax_risk = MISSING_FLOAT
-
 
     DO period = (num_periods - 1), 0, -1
 

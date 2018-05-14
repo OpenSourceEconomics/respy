@@ -50,23 +50,11 @@ def restud_sample_to_respy():
         """This function iterates through an agent record and constructs the state variables for
         each point in time."""
         agent['Lagged_Activity'] = np.nan
-        lagged_activity = 1
+        lagged_activity = 3
         for index, row in agent.iterrows():
             period = int(row['Period'])
             agent['Lagged_Activity'].iloc[period] = lagged_activity
-
-            # Update lagged activity:
-            #   (0) Home, (1) Education, (2) Occupation A, and (3) Occupation B.
-            lagged_activity = 0
-
-            if row['Choice'] == 1:
-                lagged_activity = 2
-            elif row['Choice'] == 2:
-                lagged_activity = 3
-            elif row['Choice'] == 3:
-                lagged_activity = 1
-            else:
-                pass
+            lagged_activity = row['Choice']
 
         return agent
 
@@ -281,7 +269,7 @@ class TestClass(object):
                             -4:], columns=column_labels).astype(np.float)
 
         # The simulated dataset from FORTRAN includes an indicator for the lagged activities.
-        py['Lagged_Activity'] = py['Lagged_Activity'].map({0: 0.0, 1: 1.0, 2: 0.0, 3: 0.0})
+        py['Lagged_Activity'] = py['Lagged_Activity'].map({1: 0.0, 2: 0.0, 3: 1.0, 4: 0.0})
 
         assert_frame_equal(py, fort)
 

@@ -56,7 +56,7 @@ def scripts_check(request, init_file):
         for j in range(num_rows):
             period = int(data_array[j, 1])
             # Extract observable components of state space as well as agent decision.
-            exp_a, exp_b, edu, activity_lagged = data_array[j, 4:].astype(int)
+            exp_a, exp_b, edu, choice_lagged = data_array[j, 4:].astype(int)
 
             # First of all, we need to ensure that all observed years of schooling are larger
             # than the initial condition of the model.
@@ -69,7 +69,7 @@ def scripts_check(request, init_file):
             # might fail either because the state is simply infeasible at any period or just not
             # defined for the particular period requested.
             try:
-                k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged - 1]
+                k = mapping_state_idx[period, exp_a, exp_b, edu, choice_lagged - 1]
                 np.testing.assert_equal(k >= 0, True)
             except (IndexError, AssertionError):
                 raise UserError(ERR_MSG)

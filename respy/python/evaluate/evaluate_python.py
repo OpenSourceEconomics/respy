@@ -44,7 +44,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
                 period = int(data_array[row_start + p, 1])
                 # Extract observable components of state space as well as agent decision.
-                exp_a, exp_b, edu, activity_lagged = data_array[row_start + p, 4:8].astype(int)
+                exp_a, exp_b, edu, choice_lagged = data_array[row_start + p, 4:8].astype(int)
                 choice = data_array[row_start + p, 2].astype(int)
                 wage_observed = data_array[row_start + p, 3]
 
@@ -61,7 +61,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
                 # Get state indicator to obtain the systematic component of the  agents rewards.
                 # These feed into the simulation of choice probabilities.
-                k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged - 1, type_]
+                k = mapping_state_idx[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
                 rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # If an agent is observed working, then the the labor market shocks are observed and
@@ -70,7 +70,7 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                 if is_working and (not is_wage_missing):
                     # We need to back out the systematic wage implied by the model.
                     wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b,
-                        edu, activity_lagged, optim_paras)
+                        edu, choice_lagged, optim_paras)
                     # Calculate the disturbance which are implied by the model and the observed
                     # wages.
                     dist = np.clip(np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT) - \

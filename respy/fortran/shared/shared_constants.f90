@@ -14,6 +14,7 @@ MODULE shared_constants
     INTEGER(our_int), PARAMETER :: one_int      = 1_our_int
     INTEGER(our_int), PARAMETER :: two_int      = 2_our_int
     INTEGER(our_int), PARAMETER :: three_int    = 3_our_int
+    INTEGER(our_int), PARAMETER :: four_int     = 4_our_int
     INTEGER(our_int), PARAMETER :: ten_int      = 10_our_int
 
     REAL(our_dble), PARAMETER   :: zero_dble        = 0.00_our_dble

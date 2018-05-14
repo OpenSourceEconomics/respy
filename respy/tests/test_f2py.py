@@ -754,7 +754,7 @@ class TestClass(object):
         for _ in range(1000):
 
             rewards_systematic = np.random.normal(0, 1, size=4)
-            activity_lagged = np.random.randint(1, 4)
+            choice_lagged = np.random.randint(1, 4)
             exp_a = np.random.randint(1, 10)
             exp_b = np.random.randint(1, 10)
             edu = np.random.randint(1, 10)
@@ -768,7 +768,7 @@ class TestClass(object):
             optim_paras['coeffs_a'] = coeffs_a
             optim_paras['coeffs_b'] = coeffs_b
 
-            args = [rewards_systematic, exp_a, exp_b, edu, activity_lagged]
+            args = [rewards_systematic, exp_a, exp_b, edu, choice_lagged]
 
             py = back_out_systematic_wages(*args + [optim_paras])
             fort = fort_debug.wrapper_back_out_systematic_wages(*args + [coeffs_a, coeffs_b])

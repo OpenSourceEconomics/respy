@@ -211,9 +211,9 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
     """
     # We need to back out the wages from the total systematic rewards to working in the labor
     # market to add the shock properly.
-    exp_a, exp_b, edu, activity_lagged, type_ = states_all[period, k, :]
+    exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
     wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu,
-        activity_lagged, optim_paras)
+        choice_lagged, optim_paras)
 
     # Initialize containers
     rewards_ex_post = np.tile(np.nan, 4)
@@ -885,11 +885,11 @@ def get_num_obs_agent(data_array, num_agents_est):
     return num_obs_agent
 
 
-def back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras):
+def back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras):
     """ This function constructs the wage component for the labor market rewards.
     """
     # Construct covariates to construct the general component of labor market rewards.
-    covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, None, None)
+    covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, None, None)
 
     # First we calculate the general component.
     general, wages_systematic = np.tile(np.nan, 2), np.tile(np.nan, 2)
@@ -910,18 +910,18 @@ def back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_la
     return wages_systematic
 
 
-def construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period):
+def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
     """ Construction of some additional covariates for the reward calculations.
     """
     covariates = dict()
 
     # These are covariates that are supposed to capture the entry costs.
-    covariates['not_exp_a_lagged'] = int((exp_a > 0) and (activity_lagged != 1))
-    covariates['not_exp_b_lagged'] = int((exp_b > 0) and (activity_lagged != 2))
-    covariates['work_a_lagged'] = int(activity_lagged == 1)
-    covariates['work_b_lagged'] = int(activity_lagged == 2)
-    covariates['edu_lagged'] = int(activity_lagged == 3)
-    covariates['activity_lagged'] = activity_lagged
+    covariates['not_exp_a_lagged'] = int((exp_a > 0) and (choice_lagged != 1))
+    covariates['not_exp_b_lagged'] = int((exp_b > 0) and (choice_lagged != 2))
+    covariates['work_a_lagged'] = int(choice_lagged == 1)
+    covariates['work_b_lagged'] = int(choice_lagged == 2)
+    covariates['edu_lagged'] = int(choice_lagged == 3)
+    covariates['choice_lagged'] = choice_lagged
     covariates['not_any_exp_a'] = int(exp_a == 0)
     covariates['not_any_exp_b'] = int(exp_b == 0)
     covariates['any_exp_a'] = int(exp_a > 0)
