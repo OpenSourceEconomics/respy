@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import print_init_dict
@@ -8,7 +7,6 @@ from codes.auxiliary import simulate_observed
 from respy import RespyCls
 
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """

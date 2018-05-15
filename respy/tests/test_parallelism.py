@@ -13,7 +13,6 @@ from respy import RespyCls
 
 
 @pytest.mark.skipif(not IS_PARALLEL, reason='No PARALLELISM available')
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """

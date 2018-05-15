@@ -216,13 +216,10 @@ def adjust_initialization_dict(init_dict):
 
 
 @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
-    """ This class groups together some tests.
-    """
+    """ This class groups together some tests."""
     def test_1(self):
-        """  Compare simulation results from the RESTUD program and the RESPY package.
-        """
+        """Compare simulation results from the RESTUD program and the RESPY package."""
         constr = generate_constraints_dict()
         init_dict = generate_random_dict(constr)
 

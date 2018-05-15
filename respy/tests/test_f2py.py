@@ -6,7 +6,6 @@ from scipy.stats import norm
 import numpy as np
 import pytest
 import scipy
-from socket import gethostname
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
@@ -32,7 +31,6 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import get_predictions
-from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import read_draws
@@ -54,8 +52,6 @@ assert_allclose = partial(np.testing.assert_allclose, rtol=TOL, atol=TOL)
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 from numpy.testing import assert_equal, assert_array_equal
 
-
-
 from respy import RespyCls
 
 # Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests subdirectory. If __init__.py
@@ -66,7 +62,6 @@ if IS_F2PY:
 
 
 @pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """
