@@ -9,8 +9,8 @@ import os
 
 ENV_DIR = os.environ['HOME'] + '/.envs'
 PROJECT_DIR = os.path.dirname(os.path.realpath(__file__))
-PROJECT_DIR = PROJECT_DIR.replace('/development/_scripts', '')
-SCRIPTS_DIR = PROJECT_DIR + '/respy/_scripts'
+PROJECT_DIR = PROJECT_DIR.replace('/development/scripts', '')
+SCRIPTS_DIR = PROJECT_DIR + '/respy/scripts'
 BASE_DIR = os.getcwd()
 
 
@@ -73,7 +73,7 @@ if __name__ == '__main__':
                 os.remove(dst)
             os.symlink(src, dst)
 
-        for src in glob.glob(PROJECT_DIR + '/development/_scripts/scripts_*.py'):
+        for src in glob.glob(PROJECT_DIR + '/development/scripts/scripts_*.py'):
             dst = 'respy-' + src.split('_')[-1].replace('.py', '')
             if os.path.exists(dst):
                 os.remove(dst)

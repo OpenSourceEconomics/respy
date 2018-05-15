@@ -4,7 +4,7 @@ import sys
 import os
 
 PROJECT_DIR = os.path.dirname(os.path.realpath(__file__))
-PROJECT_DIR = PROJECT_DIR.replace('/development/_scripts', '')
+PROJECT_DIR = PROJECT_DIR.replace('/development/scripts', '')
 
 # The following packages are useful during development, but are not included in the requirements
 # file.
