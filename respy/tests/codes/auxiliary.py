@@ -217,8 +217,10 @@ def write_edu_start(edu_spec, num_agents_sim):
     """ We also need to fully control the random initial schooling to ensure the comparability
     between PYTHON and FORTRAN simulations.
     """
-    types = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
-    np.savetxt('.initial.respy.test', types, fmt='%i')
+    edu_start = np.tile(np.nan, (num_agents_sim, 2))
+    edu_start[:, 0] = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
+    edu_start[:, 1] = np.random.choice([3, 4], size=num_agents_sim)
+    np.savetxt('.initial.respy.test', edu_start, fmt='%4i')
 
 
 def get_valid_values(which):

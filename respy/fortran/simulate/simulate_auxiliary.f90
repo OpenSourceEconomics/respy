@@ -23,7 +23,7 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 
     LOGICAL, INTENT(IN)             :: is_debug
 
-    INTEGER(our_int)                :: edu_start(num_agents_sim)
+    INTEGER(our_int)                :: edu_start(num_agents_sim, 2)
 
     !/* internal objects    */
 
@@ -46,15 +46,16 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 
         OPEN(UNIT=99, FILE='.initial.respy.test', ACTION='READ')
         DO i = 1, num_agents_sim
-            88 FORMAT(i10)
-            READ(99, 88) edu_start(i)
+            88 FORMAT(i4,1x,i4)
+            READ(99, 88) edu_start(i, :)
         END DO
 
         CLOSE(99)
 
     ELSE
         DO i = 1, num_agents_sim
-            edu_start(i) = get_random_draw(edu_spec_sorted%start, edu_spec_sorted%share)
+            edu_start(i, 1) = get_random_draw(edu_spec_sorted%start, edu_spec_sorted%share)
+            edu_start(i, 2) = get_random_draw((/three_int, four_int/), (/half_dble, half_dble/))
         END DO
 
     END IF
@@ -70,7 +71,7 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
-    INTEGER(our_int), INTENT(IN)        :: edu_start(num_agents_sim)
+    INTEGER(our_int), INTENT(IN)        :: edu_start(num_agents_sim, 2)
     INTEGER(our_int), INTENT(IN)        :: num_agents_sim
     INTEGER(our_int), INTENT(IN)        :: num_types
 
@@ -106,7 +107,7 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_
 
     ELSE
         DO i = 1, num_agents_sim
-            probs = get_conditional_probabilities(type_info_shares, edu_start(i))
+            probs = get_conditional_probabilities(type_info_shares, edu_start(i, 1))
             types(i) = get_random_draw(type_info_order, probs)
         END DO
 

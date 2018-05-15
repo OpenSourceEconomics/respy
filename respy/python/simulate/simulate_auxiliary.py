@@ -359,7 +359,7 @@ def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug
     else:
         types = []
         for i in range(num_agents_sim):
-            probs = get_conditional_probabilities(type_info['shares'], edu_start[i])
+            probs = get_conditional_probabilities(type_info['shares'], edu_start[i, 0])
             types += np.random.choice(type_info['order'], p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that types are a vector.
@@ -382,8 +382,11 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     else:
         # As we do not want to be too strict at the user-level the sum of edu_spec might be
         # slightly larger than one. This needs to be corrected here.
+        edu_start = np.tile(np.nan, (num_agents_sim, 2))
         probs = edu_spec_ordered['share'] / np.sum(edu_spec_ordered['share'])
-        edu_start = np.random.choice(edu_spec_ordered['start'], p=probs, size=num_agents_sim)
+        edu_start[:, 0] = np.random.choice(edu_spec_ordered['start'], p=probs, size=num_agents_sim)
+        edu_start[:, 1] = np.random.choice([3, 4], size=num_agents_sim)
+
 
     # If we only have one individual, we need to ensure that types are a vector.
     edu_start = np.array(edu_start, ndmin=1)

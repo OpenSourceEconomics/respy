@@ -48,13 +48,14 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
 
         # We need to modify the initial conditions: (1) Schooling when entering the model and (2)
         # individual type.
-        current_state[2] = edu_start[i]
+        current_state[2:4] = edu_start[i, :]
         current_state[4] = types[i]
 
-        if edu_start[i] < 10:
-            current_state[3] = 4
-        else:
-            current_state[3] = 3
+        # TODO: Remove
+        #if edu_start[i, 0] < 10:
+        #    current_state[3] = 4
+        #else:
+        #    current_state[3] = 3
 
         record_simulation_progress(i, file_sim)
 
