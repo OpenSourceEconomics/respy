@@ -19,7 +19,7 @@ MODULE solve_fortran
  CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, optim_paras, optimizer_options, file_sim)
+SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, optim_paras, file_sim)
 
     !/* external objects        */
 
@@ -45,8 +45,6 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CHARACTER(225), INTENT(IN)                      :: file_sim
 
-    TYPE(OPTIMIZER_COLLECTION), INTENT(IN)          :: optimizer_options
-
     !/* internal objects    */
 
 
@@ -68,7 +66,7 @@ SUBROUTINE fort_solve(periods_rewards_systematic, states_number_period, mapping_
 
     CALL record_solution(3, file_sim)
 
-    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, optim_paras, optimizer_options, file_sim, .True.)
+    CALL fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, optim_paras, file_sim, .True.)
 
     IF (.NOT. is_myopic) THEN
         CALL record_solution(-1, file_sim)

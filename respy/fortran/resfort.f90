@@ -73,7 +73,7 @@ PROGRAM resfort_scalar
 
         ELSE IF (request == 'simulate') THEN
 
-            CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, optim_paras, optimizer_options, file_sim)
+            CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic, is_debug, periods_draws_emax, edu_spec, optim_paras, file_sim)
 
             CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 

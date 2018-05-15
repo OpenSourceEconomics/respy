@@ -5,7 +5,7 @@
 !
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, is_debug_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, num_agents_est_int, num_obs_agent_int, num_types_int, edu_start, edu_max, edu_share, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, type_spec_shares, type_spec_shifts, num_paras_int)
+SUBROUTINE wrapper_criterion(crit_val, x, is_interpolated_int, num_draws_emax_int, num_periods_int, num_points_interp_int, is_myopic_int, is_debug_int, data_est_int, num_draws_prob_int, tau_int, periods_draws_emax_int, periods_draws_prob_int, states_all_int, states_number_period_int, mapping_state_idx_int, max_states_period_int, num_agents_est_int, num_obs_agent_int, num_types_int, edu_start, edu_max, edu_share, type_spec_shares, type_spec_shifts, num_paras_int)
 
     !/* external libraries      */
 
@@ -29,7 +29,6 @@ SUBROUTINE wrapper_criterion(crit_val, x, is_interpolated_int, num_draws_emax_in
     INTEGER, INTENT(IN)             :: num_obs_agent_int(:)
     INTEGER, INTENT(IN)             :: num_draws_prob_int
     INTEGER, INTENT(IN)             :: num_draws_emax_int
-    INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_agents_est_int
     INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: num_paras_int
@@ -42,8 +41,6 @@ SUBROUTINE wrapper_criterion(crit_val, x, is_interpolated_int, num_draws_emax_in
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: data_est_int(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
-    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
-    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: edu_share(:)
     DOUBLE PRECISION, INTENT(IN)    :: tau_int
 
@@ -85,11 +82,6 @@ SUBROUTINE wrapper_criterion(crit_val, x, is_interpolated_int, num_draws_emax_in
     IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
     IF(ALLOCATED(edu_spec%share)) DEALLOCATE(edu_spec%share)
 
-    ! Construct derived types
-    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
-    optimizer_options%slsqp%ftol = fort_slsqp_ftol
-    optimizer_options%slsqp%eps = fort_slsqp_eps
-
     optim_paras%type_shares = type_spec_shares
     optim_paras%type_shifts = type_spec_shifts
 
@@ -102,7 +94,7 @@ SUBROUTINE wrapper_criterion(crit_val, x, is_interpolated_int, num_draws_emax_in
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, max_states_period_int, optim_paras)
 
-    CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, edu_spec, optim_paras, optimizer_options, file_sim_mock, .False.)
+    CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, edu_spec, optim_paras, file_sim_mock, .False.)
 
     CALL fort_contributions(contribs, periods_rewards_systematic, mapping_state_idx_int, periods_emax, states_all_int, data_est_int, periods_draws_prob_int, tau_int, num_periods_int, num_draws_prob_int, num_agents_est, num_obs_agent, num_types, edu_spec, optim_paras)
 
@@ -181,7 +173,7 @@ SUBROUTINE wrapper_contributions(contribs, periods_rewards_systematic_int, mappi
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, is_debug_int, periods_draws_emax_int, min_idx_int, edu_start, edu_max, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, delta, file_sim, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, max_states_period_int, num_types_int, type_spec_shares, type_spec_shifts)
+SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_interpolated_int, num_points_interp_int, num_draws_emax_int, num_periods_int, is_myopic_int, is_debug_int, periods_draws_emax_int, min_idx_int, edu_start, edu_max, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky, delta, file_sim, max_states_period_int, num_types_int, type_spec_shares, type_spec_shifts)
 
     ! The presence of max_states_period breaks the quality of interfaces. However, this is required so that the size of the return arguments is known from the beginning.
 
@@ -205,7 +197,6 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     INTEGER, INTENT(IN)             :: max_states_period_int
     INTEGER, INTENT(IN)             :: num_points_interp_int
     INTEGER, INTENT(IN)             :: num_draws_emax_int
-    INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: num_types_int
     INTEGER, INTENT(IN)             :: edu_start(:)
@@ -217,8 +208,6 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shifts(:, :)
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
-    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
-    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_home(3)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_edu(7)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(15)
@@ -252,11 +241,6 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     IF (ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
     IF (ALLOCATED(states_all)) DEALLOCATE(states_all)
 
-    ! Construct derived types
-    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
-    optimizer_options%slsqp%ftol = fort_slsqp_ftol
-    optimizer_options%slsqp%eps = fort_slsqp_eps
-
     optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%coeffs_common = coeffs_common
     optim_paras%coeffs_home = coeffs_home
@@ -272,7 +256,7 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
     edu_spec%max = edu_max
 
     ! Call FORTRAN solution
-    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated_int, num_points_interp_int, num_draws_emax, num_periods, is_myopic_int, is_debug_int, periods_draws_emax_int, edu_spec, optim_paras, optimizer_options, file_sim)
+    CALL fort_solve(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, is_interpolated_int, num_points_interp_int, num_draws_emax, num_periods, is_myopic_int, is_debug_int, periods_draws_emax_int, edu_spec, optim_paras, file_sim)
 
     ! Assign to initial objects for return to PYTHON
     periods_rewards_systematic_int = periods_rewards_systematic
@@ -369,7 +353,7 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int,  is_debug_int, is_interpolated_int, num_points_interp_int, edu_start, edu_max, shocks_cholesky, delta, coeffs_common, coeffs_a, coeffs_b, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, is_write)
+SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic_int, mapping_state_idx_int, states_all_int,  is_debug_int, is_interpolated_int, num_points_interp_int, edu_start, edu_max, shocks_cholesky, delta, coeffs_common, coeffs_a, coeffs_b, file_sim, is_write)
 
     !/* external libraries      */
 
@@ -387,8 +371,6 @@ SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myop
     DOUBLE PRECISION, INTENT(IN)    :: periods_draws_emax_int(:, :, :)
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
-    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_ftol
-    DOUBLE PRECISION, INTENT(IN)    :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(15)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(15)
     DOUBLE PRECISION, INTENT(IN)    :: delta
@@ -399,7 +381,6 @@ SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myop
     INTEGER, INTENT(IN)             :: max_states_period_int
     INTEGER, INTENT(IN)             :: num_points_interp_int
     INTEGER, INTENT(IN)             :: num_draws_emax_int
-    INTEGER, INTENT(IN)             :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)             :: num_periods_int
     INTEGER, INTENT(IN)             :: edu_start(:)
     INTEGER, INTENT(IN)             :: edu_max
@@ -428,11 +409,6 @@ SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myop
     IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
     IF(ALLOCATED(periods_emax)) DEALLOCATE(periods_emax)
 
-    ! Construct derived types
-    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
-    optimizer_options%slsqp%ftol = fort_slsqp_ftol
-    optimizer_options%slsqp%eps = fort_slsqp_eps
-
     optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%coeffs_common = coeffs_common
     optim_paras%coeffs_a = coeffs_a
@@ -443,7 +419,7 @@ SUBROUTINE wrapper_backward_induction(periods_emax_int, num_periods_int, is_myop
     edu_spec%max = edu_max
 
     ! Call actual function of interest
-    CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, edu_spec, optim_paras, optimizer_options, file_sim, is_write)
+    CALL fort_backward_induction(periods_emax, num_periods_int, is_myopic_int, max_states_period_int, periods_draws_emax_int, num_draws_emax_int, states_number_period_int, periods_rewards_systematic, mapping_state_idx_int, states_all_int, is_debug_int, is_interpolated_int, num_points_interp_int, edu_spec, optim_paras, file_sim, is_write)
 
     ! Allocate to intermidiaries
     periods_emax_int = periods_emax
@@ -1022,7 +998,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_risk, edu_start, edu_max, shocks_cov, delta, coeffs_common, coeffs_a, coeffs_b, fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_risk, edu_start, edu_max, shocks_cov, delta, coeffs_common, coeffs_a, coeffs_b)
 
     !/* external libraries      */
 
@@ -1041,8 +1017,6 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
     DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
-    DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_ftol
-    DOUBLE PRECISION, INTENT(IN)        :: fort_slsqp_eps
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(15)
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(15)
@@ -1051,7 +1025,6 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     INTEGER, INTENT(IN)                 :: mapping_state_idx_int(:, :, :, :, :, :)
     INTEGER, INTENT(IN)                 :: states_all_int(:, :, :)
-    INTEGER, INTENT(IN)                 :: fort_slsqp_maxiter
     INTEGER, INTENT(IN)                 :: num_draws_emax_int
     INTEGER, INTENT(IN)                 :: num_periods_int
     INTEGER, INTENT(IN)                 :: edu_start(:)
@@ -1089,11 +1062,6 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     ! Ensure that array not already allocated
     IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
 
-    ! Construct derived types
-    optimizer_options%slsqp%maxiter = fort_slsqp_maxiter
-    optimizer_options%slsqp%ftol = fort_slsqp_ftol
-    optimizer_options%slsqp%eps = fort_slsqp_eps
-
     optim_paras%shocks_cholesky = shocks_cholesky
     optim_paras%coeffs_common = coeffs_common
     optim_paras%coeffs_a = coeffs_a
@@ -1105,7 +1073,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     edu_spec%max = edu_max
 
     ! Call function of interest
-    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_risk, edu_spec, optim_paras, optimizer_options)
+    CALL get_endogenous_variable(exogenous_variable, period, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, maxe, draws_emax_risk, edu_spec, optim_paras)
 
 END SUBROUTINE
 !*******************************************************************************
@@ -1234,133 +1202,6 @@ END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_slsqp_debug(x_internal, x_start, maxiter, ftol, num_dim)
-
-    !/* external libraries      */
-
-    USE resfort_library
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)       :: x_internal(num_dim)
-    DOUBLE PRECISION, INTENT(IN)        :: x_start(num_dim)
-    DOUBLE PRECISION, INTENT(IN)        :: ftol
-
-    INTEGER, INTENT(IN)                 :: num_dim
-    INTEGER, INTENT(IN)                 :: maxiter
-
-    !/* internal objects        */
-
-    INTEGER                             :: m
-    INTEGER                             :: meq
-    INTEGER                             :: la
-    INTEGER                             :: n
-    INTEGER                             :: len_w
-    INTEGER                             :: len_jw
-    INTEGER                             :: mode
-    INTEGER                             :: iter
-    INTEGER                             :: n1
-    INTEGER                             :: mieq
-    INTEGER                             :: mineq
-    INTEGER                             :: l_jw
-    INTEGER                             :: l_w
-
-    INTEGER, ALLOCATABLE                :: jw(:)
-
-    DOUBLE PRECISION, ALLOCATABLE       :: a(:,:)
-    DOUBLE PRECISION, ALLOCATABLE       :: xl(:)
-    DOUBLE PRECISION, ALLOCATABLE       :: xu(:)
-    DOUBLE PRECISION, ALLOCATABLE       :: c(:)
-    DOUBLE PRECISION, ALLOCATABLE       :: g(:)
-    DOUBLE PRECISION, ALLOCATABLE       :: w(:)
-
-    DOUBLE PRECISION                    :: acc
-    DOUBLE PRECISION                    :: f
-
-    LOGICAL                             :: is_finished
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    meq = 1         ! Number of equality constraints
-    mieq = 0        ! Number of inequality constraints
-
-    ! Initialize starting values
-    x_internal = x_start
-
-    ! Derived attributes
-    m = meq + mieq
-    la = MAX(1, m)
-    n = SIZE(x_internal)
-    n1 = n + 1
-    mineq = m - meq + n1 + n1
-
-    len_w =  (3 * n1 + m) * (n1 + 1) + (n1 - meq + 1) * (mineq + 2) + 2 * mineq + (n1 + mineq) * (n1 - meq) + 2 * meq + n1 + ((n + 1) * n) / two_dble + 2 * m + 3 * n + 3 *  n1 + 1
-
-    len_jw = mineq
-
-    ! Allocate and initialize containers
-    ALLOCATE(w(len_w)); w = zero_dble
-    ALLOCATE(jw(len_jw)); jw = zero_int
-    ALLOCATE(a(la, n + 1)); a = zero_dble
-
-    ALLOCATE(g(n + 1)); g = zero_dble
-    ALLOCATE(c(la)); c = zero_dble
-
-    ! Decompose upper and lower bounds
-    ALLOCATE(xl(n)); ALLOCATE(xu(n))
-    xl = - HUGE_FLOAT; xu = HUGE_FLOAT
-
-    ! Initialize the iteration counter and mode value
-    acc = ftol
-    iter = maxiter
-
-    ! Transformations to match interface, deleted later
-    l_jw = len_jw
-    l_w = len_w
-
-    ! Initialization of SLSQP
-    mode = zero_int
-
-    is_finished = .False.
-
-    CALL debug_criterion_function(f, x_internal, n)
-    CALL debug_criterion_derivative(g, x_internal, n)
-
-    CALL debug_constraint_function(c, x_internal, n, la)
-    CALL debug_constraint_derivative(a, x_internal, n, la)
-
-    ! Iterate until completion
-    DO WHILE (.NOT. is_finished)
-
-        ! Evaluate criterion function and constraints
-        IF (mode == one_int) THEN
-            CALL debug_criterion_function(f, x_internal, n)
-            CALL debug_constraint_function(c, x_internal, n, la)
-        ! Evaluate gradient of criterion function and constraints
-        ELSEIF (mode == - one_int) THEN
-            CALL debug_criterion_derivative(g, x_internal, n)
-            CALL debug_constraint_derivative(a, x_internal, n, la)
-        END IF
-
-        !SLSQP Interface
-        CALL slsqp(m, meq, la, n, x_internal, xl, xu, f, c, g, a, acc, iter, mode, w, l_w, jw, l_jw)
-
-        ! Check if SLSQP has completed
-        IF (.NOT. ABS(mode) == one_int) THEN
-            is_finished = .True.
-        END IF
-
-    END DO
-
-END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
 SUBROUTINE debug_criterion_function  (rslt, x, n)
@@ -1500,12 +1341,6 @@ SUBROUTINE debug_constraint_derivative(rslt, x, n, la)
     rslt(n + 1) = zero_dble
 
 END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-
-!*******************************************************************************
-!*******************************************************************************
-
 !*******************************************************************************
 !*******************************************************************************
 

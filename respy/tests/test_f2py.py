@@ -48,13 +48,11 @@ from codes.auxiliary import write_edu_start
 from codes.auxiliary import write_draws
 from codes.auxiliary import write_types
 from functools import partial
+from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
 
 from respy.python.shared.shared_constants import DECIMALS, TOL
 assert_allclose = partial(np.testing.assert_allclose, rtol=TOL, atol=TOL)
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
-from numpy.testing import assert_equal, assert_array_equal
-
-
 
 from respy import RespyCls
 
@@ -280,11 +278,6 @@ class TestClass(object):
                 'num_draws_emax', 'seed_emax', 'is_debug', 'is_interpolated',
                 'num_points_interp', 'optimizer_options', 'file_sim', 'num_types')
 
-        # Distribute variables for FORTRAN interface
-        fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
-        fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
-
         shocks_cholesky = optim_paras['shocks_cholesky']
         coeffs_common = optim_paras['coeffs_common']
         coeffs_home = optim_paras['coeffs_home']
@@ -345,7 +338,7 @@ class TestClass(object):
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'])
         args += (shocks_cholesky, delta, coeffs_common, coeffs_a, coeffs_b)
-        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps, file_sim, False)
+        args += (file_sim, False)
         f2py = fort_debug.wrapper_backward_induction(*args)
         assert_allclose(pyth, f2py)
 
@@ -378,11 +371,6 @@ class TestClass(object):
         data_array = process(respy_obj).as_matrix()
         num_obs_agent = get_num_obs_agent(data_array, num_agents_est)
         min_idx = edu_spec['max'] + 1
-
-        # Distribute variables for FORTRAN interface
-        fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
-        fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         shocks_cholesky = optim_paras['shocks_cholesky']
         coeffs_common = optim_paras['coeffs_common']
@@ -422,7 +410,6 @@ class TestClass(object):
         args += base_args + (min_idx, edu_spec['start'], edu_spec['max'])
         args += (coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         args += (shocks_cholesky, delta, file_sim)
-        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         args += (max_states_period, num_types)
         args += (type_spec_shares, type_spec_shifts)
         f2py = fort_debug.wrapper_solve(*args)
@@ -474,13 +461,10 @@ class TestClass(object):
             states_all, states_number_period, mapping_state_idx, max_states_period,
             num_agents_est, num_obs_agent, num_types)
 
-        args = ()
-        args += base_args + (edu_spec)
+        args = base_args + (edu_spec, )
         py = pyth_criterion(x0, *args)
 
-        args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
-        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
+        args = base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
         args += (type_spec_shares, type_spec_shifts, num_paras)
         f2py = fort_debug.wrapper_criterion(x0, *args)
 
@@ -511,11 +495,6 @@ class TestClass(object):
         i, j = num_periods, max(states_number_period)
 
         shocks_cov = np.matmul(optim_paras['shocks_cholesky'], optim_paras['shocks_cholesky'].T)
-
-        # Distribute variables for FORTRAN interface
-        fort_slsqp_maxiter = optimizer_options['FORT-SLSQP']['maxiter']
-        fort_slsqp_ftol = optimizer_options['FORT-SLSQP']['ftol']
-        fort_slsqp_eps = optimizer_options['FORT-SLSQP']['eps']
 
         shocks_cholesky = optim_paras['shocks_cholesky']
         coeffs_common = optim_paras['coeffs_common']
@@ -575,7 +554,6 @@ class TestClass(object):
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], shocks_cov)
         args += (delta, coeffs_common, coeffs_a, coeffs_b)
-        args += (fort_slsqp_maxiter, fort_slsqp_ftol, fort_slsqp_eps)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
         assert_almost_equal(py, replace_missing_values(f90))
 

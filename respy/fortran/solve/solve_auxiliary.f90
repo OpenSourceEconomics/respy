@@ -276,7 +276,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, optim_paras, optimizer_options, file_sim, is_write)
+SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, edu_spec, optim_paras, file_sim, is_write)
 
     !/* external objects        */
 
@@ -302,8 +302,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
     LOGICAL, INTENT(IN)                 :: is_write
 
     CHARACTER(225), INTENT(IN)          :: file_sim
-
-    TYPE(OPTIMIZER_COLLECTION), INTENT(IN)  :: optimizer_options
 
     !/* internals objects       */
 
@@ -384,7 +382,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
 
             CALL get_exogenous_variables(exogenous, maxe, period, num_states, periods_rewards_systematic, shifts, mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras)
 
-            CALL get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, edu_spec, optim_paras, optimizer_options)
+            CALL get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, edu_spec, optim_paras)
 
             CALL get_predictions(predictions, endogenous, exogenous, maxe, is_simulated, num_states, file_sim, is_write)
 
@@ -553,7 +551,7 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, edu_spec, optim_paras, optimizer_options)
+SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, is_simulated, maxe, draws_emax_risk, edu_spec, optim_paras)
 
     !/* external objects        */
 
@@ -573,8 +571,6 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
     INTEGER(our_int), INTENT(IN)        :: period
 
     LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
-
-    TYPE(OPTIMIZER_COLLECTION), INTENT(IN)  :: optimizer_options
 
     !/* internal objects        */
 

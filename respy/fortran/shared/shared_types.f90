@@ -36,18 +36,10 @@ MODULE shared_types
         REAL(our_dble)          :: rhoend
     END TYPE
 
-    TYPE OPTIMIZER_SLSQP
-        INTEGER(our_int)        :: maxiter
-
-        REAL(our_dble)          :: ftol
-        REAL(our_dble)          :: eps
-    END TYPE
-
     TYPE OPTIMIZER_COLLECTION
         TYPE(OPTIMIZER_BOBYQA)  :: bobyqa
         TYPE(OPTIMIZER_NEWUOA)  :: newuoa
         TYPE(OPTIMIZER_BFGS)    :: bfgs
-        TYPE(OPTIMIZER_SLSQP)   :: slsqp
     END TYPE
 
     ! This container holds the specification for the preconditioning step.
