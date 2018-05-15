@@ -15,10 +15,9 @@ install:
   - travis_retry travis_wait pip install -r requirements.txt
   - pip install pytest-cov
   - pip install codecov
-  - pip install tox
 
 script:
-  - python tools/travis/run.py
+  - travis_wait pytest --cov
 
 after_success:
   - codecov
