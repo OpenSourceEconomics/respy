@@ -13,6 +13,7 @@ bundler_args: --retry 3
 
 install:
   - travis_retry travis_wait pip install -r requirements.txt
+  - pip install -e .
   - pip install pytest-cov
   - pip install codecov
 
