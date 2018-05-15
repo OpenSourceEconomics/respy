@@ -378,7 +378,6 @@ class TestClass(object):
         compare the content of the files line by line, but drop any spaces.
         """
         for fname in glob.glob(TEST_RESOURCES_DIR + '/*.ini'):
-            print(fname)
             respy_obj = RespyCls(fname)
             respy_obj.write_out('test.respy.ini')
             np.testing.assert_equal(compare_init(fname, 'test.respy.ini'), True)
