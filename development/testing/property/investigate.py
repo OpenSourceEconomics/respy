@@ -7,7 +7,7 @@ import importlib
 import sys
 import os
 
-sys.path.insert(0, '../_modules')
+sys.path.insert(0, '../modules')
 from auxiliary_property import cleanup_testing_infrastructure
 from auxiliary_property import get_random_request
 from auxiliary_property import get_test_dict

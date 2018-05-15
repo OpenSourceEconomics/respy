@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
         # Here we collect the manual additions to the PYTHONPATH of the virutal environment.
         subdirs = []
-        subdirs += ['/development/_modules']
+        subdirs += ['/development/modules']
         subdirs += ['/respy/tests']
         subdirs += ['/respy/tests/codes']
 

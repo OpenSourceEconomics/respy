@@ -14,3 +14,8 @@ respy/fortran/bin
 doc/build
 .idea
 *.diff
+respy.sublime-project
+respy.sublime-workspace
+*.so
+*kw_dp3asim
+*kw_dpml4a

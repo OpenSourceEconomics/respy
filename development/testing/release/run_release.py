@@ -20,7 +20,7 @@ from auxiliary_release import prepare_release_tests
 from auxiliary_shared import send_notification
 from auxiliary_shared import cleanup
 
-SCRIPT_FNAME = '../../_modules/auxiliary_release.py'
+SCRIPT_FNAME = '../../modules/auxiliary_release.py'
 
 
 def run(request, is_create, is_background, old_release, new_release):

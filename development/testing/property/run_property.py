@@ -19,7 +19,7 @@ PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/property', '')
 # PYTEST ensures the path is set up correctly.
 sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
 sys.path.insert(0, PACKAGE_DIR)
-sys.path.insert(0, '../_modules')
+sys.path.insert(0, '../modules')
 
 from auxiliary_property import cleanup_testing_infrastructure
 from auxiliary_property import initialize_record_canvas

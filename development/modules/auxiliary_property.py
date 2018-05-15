@@ -12,7 +12,7 @@ import shutil
 # RESPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.
 RESPY_DIR = os.path.dirname(os.path.realpath(__file__))
-RESPY_DIR = RESPY_DIR.replace('development/testing/property/_modules',
+RESPY_DIR = RESPY_DIR.replace('development/testing/property/modules',
                               '') + 'respy'
 
 PYTHON_EXEC = sys.executable
@@ -71,7 +71,7 @@ def initialize_record_canvas(full_test_record, start, timeout):
         log_file.write(str_.format(['PYTHON'] + list(sys.version_info[:3])))
 
         log_file.write('\n\n')
-        # Iterate over all _modules. There is a potential conflict in the
+        # Iterate over all modules. There is a potential conflict in the
         # namespace.
         for module_ in full_test_record.keys():
             str_ = '\t{0[0]:<27}{0[1]:<20}{0[2]:<20} \n\n'
@@ -138,10 +138,10 @@ def update_testing_record(module, method, seed_test, is_success, msg,
 
 def get_test_dict(test_dir):
     """ This function constructs a dictionary with the recognized test
-    _modules as the keys. The corresponding value is a list with all test
+    modules as the keys. The corresponding value is a list with all test
     methods inside that module.
     """
-    # Process all candidate _modules.
+    # Process all candidate modules.
     current_directory = os.getcwd()
     os.chdir(test_dir)
     test_modules = []
@@ -150,7 +150,7 @@ def get_test_dict(test_dir):
         test_modules.append(test_module)
     os.chdir(current_directory)
 
-    # Given the _modules, get all tests methods.
+    # Given the modules, get all tests methods.
     test_dict = dict()
     for test_module in test_modules:
         test_dict[test_module] = []
