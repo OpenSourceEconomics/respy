@@ -83,7 +83,8 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                         continue
 
                                     # (0, 3) Whenever an agent has only acquired additional
-                                    # education, then the lagged choice cannot be anything other than three..
+                                    # education, then the lagged choice cannot be anything other
+                                    # than three..
                                     if (choice_lagged != 3) and (edu_add == period):
                                         continue
 
