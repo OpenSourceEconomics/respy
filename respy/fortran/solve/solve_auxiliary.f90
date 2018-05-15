@@ -98,16 +98,16 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 
                                 IF (period .GT. zero_int) THEN
 
-                                    ! (0, 1) Whenever an agent has only acquired additional education, then choice_lagged cannot be four.
-                                    IF ((choice_lagged .EQ. four_int) .AND. (edu_add .EQ. period)) CYCLE
+                                    ! (0, 1) Whenever an agent has only worked in Occupation A, then choice_lagged cannot be anything other than one.
+                                    IF ((choice_lagged .NE. one_int) .AND. (exp_a .EQ. period)) CYCLE
 
-                                    ! (0, 2) Whenever an agent has only worked in Occupation A, then choice_lagged cannot be four.
-                                    IF ((choice_lagged .EQ. four_int) .AND. (exp_a .EQ. period)) CYCLE
+                                    ! (0, 2) Whenever an agent has only worked in Occupation B, then choice_lagged cannot be anything other than two.
+                                    IF ((choice_lagged .NE. two_int) .AND. (exp_b .EQ. period)) CYCLE
 
-                                    ! (0, 3) Whenever an agent has only worked in Occupation B, then choice_lagged cannot be zero.
-                                    IF ((choice_lagged .EQ. four_int) .AND. (exp_b .EQ. period)) CYCLE
+                                    ! (0, 3) Whenever an agent has only acquired additional education, then choice_lagged cannot be  anything other than three.
+                                    IF ((choice_lagged .NE. three_int) .AND. (edu_add .EQ. period)) CYCLE
 
-                                    ! (0, 2) Whenever an agent has not acquired any additional education and we are not in the first period, then lagged education cannot take a value of three.
+                                    ! (0, 4) Whenever an agent has not acquired any additional education and we are not in the first period, then lagged education cannot take a value of three.
                                     IF ((choice_lagged .EQ. three_int) .AND. (edu_add .EQ. zero_int)) CYCLE
 
                                 END IF
