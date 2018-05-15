@@ -117,9 +117,3 @@ def write_out(df):
 
     df.set_index(['Identifier', 'Period'], drop=False, inplace=True)
     df.to_pickle('career_data.respy.pkl')
-
-
-
-
-
-
