@@ -814,44 +814,6 @@ def get_optim_paras(optim_paras, num_paras, which, is_debug):
     return x
 
 
-def covariance_to_correlation(cov):
-    """ This function constructs the correlation matrix from the information on the covariances.
-    """
-    # Auxiliary objects
-    corr = np.tile(np.nan, cov.shape)
-    nrows = cov.shape[0]
-
-    # This special case is maintained for testing purposes.
-    is_deterministic = (np.count_nonzero(cov) == 0)
-    if is_deterministic:
-        return np.zeros((nrows, nrows))
-
-    for i in range(nrows):
-        for j in range(nrows):
-            corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
-
-    return corr
-
-
-def correlation_to_covariance(corr, sd):
-    """ This function constructs the covariance matrix from the information on the correlations.
-    """
-    # Auxiliary objects
-    cov = np.tile(np.nan, corr.shape)
-    nrows = corr.shape[0]
-
-    # This special case is maintained for testing purposes.
-    is_deterministic = (np.count_nonzero(sd) == 0)
-    if is_deterministic:
-        return np.zeros((nrows, nrows))
-
-    for i in range(nrows):
-        for j in range(nrows):
-            cov[i, j] = corr[i, j] * sd[j] * sd[i]
-
-    return cov
-
-
 def check_early_termination(maxfun, num_eval):
     """ This function checks for reasons that require an early termination of the optimization
     procedure.

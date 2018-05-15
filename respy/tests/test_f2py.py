@@ -9,8 +9,6 @@ import scipy
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
-from respy.python.shared.shared_auxiliary import correlation_to_covariance
-from respy.python.shared.shared_auxiliary import covariance_to_correlation
 from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import replace_missing_values
@@ -658,45 +656,6 @@ class TestClass(object):
         np.testing.assert_equal(fort, py)
 
     def test_9(self):
-        """ We test the some of the functions that were added when improving the ambiguity set.
-        """
-
-        for _ in range(100):
-
-            is_deterministic = np.random.choice([True, False], p=[0.1, 0.9])
-            dim = np.random.randint(1, 6)
-
-            if is_deterministic:
-                cov = np.zeros((dim, dim))
-            else:
-                matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
-                cov = np.dot(matrix, matrix.T)
-
-            if not is_deterministic:
-                py = np.linalg.cholesky(cov)
-                f90 = fort_debug.wrapper_get_cholesky_decomposition(cov, dim)
-                assert_almost_equal(py, f90)
-
-            py = covariance_to_correlation(cov)
-            f90 = fort_debug.wrapper_covariance_to_correlation(cov, dim)
-            assert_almost_equal(py, f90)
-
-            corr, sd = covariance_to_correlation(cov), np.sqrt(np.diag(cov))
-            py = correlation_to_covariance(corr, sd)
-            f90 = fort_debug.wrapper_correlation_to_covariance(corr, sd)
-            assert_almost_equal(py, f90)
-
-            # Now we also check that the back-and-forth transformations work.
-            corr = fort_debug.wrapper_covariance_to_correlation(cov, dim)
-            cov_cand = fort_debug.wrapper_correlation_to_covariance(corr, sd, dim)
-            assert_almost_equal(cov, cov_cand)
-
-            corr = covariance_to_correlation(cov)
-            cov_cand = correlation_to_covariance(corr, sd)
-            assert_almost_equal(cov, cov_cand)
-
-
-    def test_10(self):
         """ Functions related to the scaling procedure.
         """
         for _ in range(1000):
@@ -706,7 +665,7 @@ class TestClass(object):
             f90 = fort_debug.wrapper_get_scales_magnitude(values, num_free)
             assert_almost_equal(py, f90)
 
-    def test_11(self):
+    def test_10(self):
         """ Function that calculates the number of observations by individual.
         """
         for _ in range(2):
@@ -726,7 +685,7 @@ class TestClass(object):
 
             assert_almost_equal(py, f90)
 
-    def test_12(self):
+    def test_11(self):
         """ Function that calculates the conditional type probabilites.
         """
         for _ in range(1000):
@@ -743,7 +702,7 @@ class TestClass(object):
             assert_almost_equal(np.sum(py), 1.0)
             assert_almost_equal(py, fort)
 
-    def test_13(self):
+    def test_12(self):
         """ Function that backs out the systematic wages from the systematic rewards
         """
         for _ in range(1000):
@@ -770,7 +729,7 @@ class TestClass(object):
 
             assert_almost_equal(py, fort)
 
-    def test_14(self):
+    def test_13(self):
         """ Testing the functionality introduced to ensure that the simulation is independent of
         the order of initial conditions and types in the initialization file.
         """

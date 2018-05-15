@@ -1571,62 +1571,6 @@ SUBROUTINE wrapper_get_cholesky_decomposition(cholesky, matrix, nrows)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_correlation_to_covariance(cov, corr, sd, nrows)
-
-    !/* external libraries      */
-
-    USE resfort_library
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)       :: cov(nrows, nrows)
-
-    DOUBLE PRECISION, INTENT(IN)        :: corr(nrows, nrows)
-
-    DOUBLE PRECISION, INTENT(IN)        :: sd(nrows)
-
-    INTEGER, INTENT(IN)                 :: nrows
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    CALL correlation_to_covariance(cov, corr, sd)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_covariance_to_correlation(corr, cov, nrows)
-
-    !/* external libraries      */
-
-    USE resfort_library
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)       :: corr(nrows, nrows)
-
-    DOUBLE PRECISION, INTENT(IN)        :: cov(nrows, nrows)
-
-    INTEGER, INTENT(IN)                 :: nrows
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    CALL covariance_to_correlation(corr, cov)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
 SUBROUTINE wrapper_get_num_obs_agent(num_rows_agent, data_array, num_agents_est_int)
 
     !/* external libraries      */
