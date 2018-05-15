@@ -59,7 +59,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble)                  :: prob_type(num_types)
     REAL(our_dble)                  :: wages_systematic(2)
     REAL(our_dble)                  :: rewards_ex_post(4)
-    REAL(our_dble)                  :: shocks_cov(4, 4)
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws_cond(4)
     REAL(our_dble)                  :: draws_stan(4)
@@ -91,16 +90,12 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     INTEGER(our_int)                :: j
     INTEGER(our_int)                :: p
 
-    LOGICAL                         :: is_deterministic
     LOGICAL                         :: is_wage_missing
     LOGICAL                         :: is_working
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    shocks_cov = MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(optim_paras%shocks_cholesky))
-    is_deterministic = ALL(shocks_cov .EQ. zero_dble)
 
     ! Initialize container for likelihood contributions
     contribs = -HUGE_FLOAT
@@ -155,14 +150,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                     CALL clip_value(dist_2, LOG(wages_systematic(idx)), -HUGE_FLOAT, HUGE_FLOAT, info)
                     dist = dist_1 - dist_2
 
-                    ! If there is no random variation in rewards, then the observed wages need to be identical their systematic components. The discrepancy between the observed wages and their systematic components might be small due to the reading in of the dataset.
-                    IF (is_deterministic) THEN
-                        IF (dist .GT. SMALL_FLOAT) THEN
-                            contribs = one_dble
-                            RETURN
-                        END IF
-                    END IF
-
                 END IF
 
                 ! Simulate the conditional distribution of alternative-specific value functions and determine the choice probabilities.
@@ -175,29 +162,17 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
                     ! Construct independent normal draws implied by the agents state experience. This is need to maintain the correlation structure of the disturbances. Special care is needed in case of a deterministic model, as otherwise a zero division error occurs.
                     IF (is_working .AND. (.NOT. is_wage_missing)) THEN
-
-                        IF (is_deterministic) THEN
-
-                            prob_wage = HUGE_FLOAT
-
+                        IF (choice == 1) THEN
+                            draws_stan(idx) = dist / optim_paras%shocks_cholesky(idx, idx)
+                            mean = zero_dble
+                            sd = ABS(optim_paras%shocks_cholesky(idx, idx))
                         ELSE
-
-                            IF (choice == 1) THEN
-                                draws_stan(idx) = dist / optim_paras%shocks_cholesky(idx, idx)
-                                mean = zero_dble
-                                sd = ABS(optim_paras%shocks_cholesky(idx, idx))
-
-                            ELSE
-                                draws_stan(idx) = (dist - optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)) / optim_paras%shocks_cholesky(idx, idx)
-                                mean = optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)
-                                sd = ABS(optim_paras%shocks_cholesky(idx, idx))
-
-                            END IF
-
-                            prob_wage = normal_pdf(dist, mean, sd)
-
+                            draws_stan(idx) = (dist - optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)) / optim_paras%shocks_cholesky(idx, idx)
+                            mean = optim_paras%shocks_cholesky(idx, 1) * draws_stan(1)
+                            sd = ABS(optim_paras%shocks_cholesky(idx, idx))
                         END IF
 
+                        prob_wage = normal_pdf(dist, mean, sd)
                     ELSE
                         prob_wage = one_dble
                     END IF
@@ -226,14 +201,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 ! Determine relative shares
                 prob_obs(p + 1) = prob_obs(p + 1) / num_draws_prob
 
-                ! If there is no random variation in rewards, then this implies a unique optimal choice.
-                IF (is_deterministic) THEN
-                    IF  ((counts(idx) .EQ. num_draws_prob) .EQV. .FALSE.) THEN
-                        contribs = one_dble
-                        RETURN
-                    END IF
-                END IF
-
             END DO
             prob_type(type_ + 1) = PRODUCT(prob_obs(:num_obs))
 
@@ -243,12 +210,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
         contribs(j) = SUM(prob_type * type_shares)
 
     END DO
-
-    ! If there is no random variation in rewards and no agent violated the implications of observed wages and choices, then the evaluation return a value of one.
-    IF (is_deterministic) THEN
-        contribs = EXP(one_dble)
-    END IF
-
 
 END SUBROUTINE
 !******************************************************************************
