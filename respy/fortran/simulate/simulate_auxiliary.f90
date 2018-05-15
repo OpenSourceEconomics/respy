@@ -37,7 +37,6 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-
     ! We want to ensure that the order of initial schooling levels in the initialization files does not matter for the simulated sample. That is why we create an ordered version for this function.
     edu_spec_sorted = sort_edu_spec(edu_spec)
 

@@ -44,21 +44,19 @@ def check_dataset_est(data_frame, respy_obj):
 
     # Checks for LAGGED ACTIVITY. Just to be sure, we also construct the correct lagged activity
     # here as well and compare it to the one provided in the dataset.
-    dat = data_frame['Lagged_Activity'].isin([1, 2, 3, 4])
+    dat = data_frame['Lagged_Choice'].isin([1, 2, 3, 4])
     np.testing.assert_equal(dat.all(), True)
 
-    dat = data_frame['Lagged_Activity'][:, 0].isin([3, 4])
+    dat = data_frame['Lagged_Choice'][:, 0].isin([3, 4])
     np.testing.assert_equal(dat.all(), True)
 
-    # We need to distinguish the cases where individuals come in with different values for lagged
-    # schooling based on their level of education obtained.
+    # We can reconstruct the lagged choice easily in general, but the very first period is
+    # ambiguous.
     data_frame['TEMP'] = data_frame.groupby(level='Identifier')['Choice'].shift(+1)
-    is_lagged = data_frame.loc[(slice(None), 0), 'Years_Schooling'] >= 10
-    data_frame.loc[(slice(None), 0), 'TEMP'] = 4
-    index = list(is_lagged[is_lagged].index.get_level_values(0))
-    data_frame.loc[(index, 0), 'TEMP'] = 3
+    temp_initial = data_frame.loc[(slice(None), 0), 'Lagged_Choice'].copy()
+    data_frame.loc[(slice(None), 0), 'TEMP'] = temp_initial
     data_frame['TEMP'] = data_frame['TEMP'].astype(int)
-    np.testing.assert_equal(data_frame['TEMP'].equals(data_frame['Lagged_Activity']), True)
+    np.testing.assert_equal(data_frame['TEMP'].equals(data_frame['Lagged_Choice']), True)
     del data_frame['TEMP']
 
     # Checks for YEARS SCHOOLING. We also know that the initial years of schooling can only take
