@@ -213,10 +213,9 @@ def pyth_calculate_rewards_systematic(num_periods, states_number_period, states_
     return periods_rewards_systematic
 
 
-def pyth_backward_induction(num_periods, is_myopic, max_states_period, periods_draws_emax,
-        num_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx,
-        states_all, is_debug, is_interpolated, num_points_interp, edu_spec, optim_paras,
-        optimizer_options, file_sim, is_write):
+def pyth_backward_induction(num_periods, is_myopic, max_states_period, periods_draws_emax, num_draws_emax,
+                            states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug,
+                            is_interpolated, num_points_interp, edu_spec, optim_paras, file_sim, is_write):
     """ Backward induction procedure. There are two main threads to this function depending on
     whether interpolation is requested or not.
     """
@@ -283,10 +282,9 @@ def pyth_backward_induction(num_periods, is_myopic, max_states_period, periods_d
 
             # Constructing the dependent variables for at the random subset of points where the
             # EMAX is actually calculated.
-            endogenous = get_endogenous_variable(period, num_periods, num_states,
-                periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
-                is_simulated, num_draws_emax, maxe, draws_emax_risk, edu_spec, optim_paras,
-                optimizer_options)
+            endogenous = get_endogenous_variable(period, num_periods, num_states, periods_rewards_systematic,
+                                                 mapping_state_idx, periods_emax, states_all, is_simulated,
+                                                 num_draws_emax, maxe, draws_emax_risk, edu_spec, optim_paras)
 
             # Create prediction model based on the random subset of points where the EMAX is
             # actually simulated and thus dependent and independent variables are available. For
@@ -376,9 +374,9 @@ def get_exogenous_variables(period, num_periods, num_states, periods_rewards_sys
     return exogenous, maxe
 
 
-def get_endogenous_variable(period, num_periods, num_states, periods_rewards_systematic,
-        mapping_state_idx, periods_emax, states_all, is_simulated, num_draws_emax, maxe,
-        draws_emax_risk, edu_spec, optim_paras, optimizer_options):
+def get_endogenous_variable(period, num_periods, num_states, periods_rewards_systematic, mapping_state_idx,
+                            periods_emax, states_all, is_simulated, num_draws_emax, maxe, draws_emax_risk, edu_spec,
+                            optim_paras):
     """ Construct endogenous variable for the subset of interpolation points.
     """
     # Construct auxiliary objects

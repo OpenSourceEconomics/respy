@@ -8,8 +8,6 @@ import os
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
-from respy.python.shared.shared_constants import OPT_AMB_FORT
-from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
@@ -18,7 +16,7 @@ from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
 
-OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + OPT_AMB_FORT + OPT_AMB_PYTH
+OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
 
 
 def get_log_likl(contribs):
@@ -508,10 +506,10 @@ def generate_optimizer_options(which, optim_paras, num_paras):
         dict_['gtol'] = np.random.uniform(0.0001, 0.1)
         dict_['eps'] = np.random.uniform(1e-9, 1e-6)
 
-    elif which in ['FORT-SLSQP', 'SCIPY-SLSQP']:
-        dict_['maxiter'] = np.random.randint(50, 100)
-        dict_['ftol'] = np.random.uniform(1e-9, 1e-6)
-        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
+    else:
+        raise NotImplementedError(
+            'The optimizer you requested is not implemented.'
+        )
 
     return dict_
 
@@ -533,7 +531,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
     labels = opt_labels
     labels += ['SOLUTION', 'SIMULATION', 'ESTIMATION', 'DERIVATIVES', 'PRECONDITIONING']
     labels += ['PROGRAM', 'INTERPOLATION']
-    labels += OPT_EST_FORT + OPT_EST_PYTH + ['SCIPY-SLSQP', 'FORT-SLSQP']
+    labels += OPT_EST_FORT + OPT_EST_PYTH
 
     num_types = int(len(dict_['TYPE SHARES']['coeffs']) / 2) + 1
 

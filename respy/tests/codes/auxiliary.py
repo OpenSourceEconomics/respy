@@ -12,8 +12,6 @@ from respy.python.shared.shared_constants import DATA_FORMATS_SIM
 from respy.python.shared.shared_constants import DATA_LABELS_EST
 from respy.python.shared.shared_constants import DATA_LABELS_SIM
 from respy.python.simulate.simulate_auxiliary import write_out
-from respy.python.shared.shared_constants import OPT_AMB_FORT
-from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import HUGE_FLOAT
@@ -23,8 +21,6 @@ from respy import simulate
 
 # module-wide variables
 OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
-OPTIMIZERS_AMB = OPT_AMB_FORT + OPT_AMB_PYTH
-
 
 def simulate_observed(respy_obj, is_missings=True):
     """ This function adds two important features of observed datasests: (1) missing

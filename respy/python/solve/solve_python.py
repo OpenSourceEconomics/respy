@@ -38,10 +38,10 @@ def pyth_solve(is_interpolated, num_points_interp, num_draws_emax, num_periods, 
     # procedure is not called upon.
     record_solution_progress(3, file_sim)
 
-    periods_emax = pyth_backward_induction(num_periods, is_myopic,
-        max_states_period, periods_draws_emax, num_draws_emax, states_number_period,
-        periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated,
-        num_points_interp, edu_spec, optim_paras, optimizer_options, file_sim, True)
+    periods_emax = pyth_backward_induction(num_periods, is_myopic, max_states_period, periods_draws_emax,
+                                           num_draws_emax, states_number_period, periods_rewards_systematic,
+                                           mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp,
+                                           edu_spec, optim_paras, file_sim, True)
 
     if not is_myopic:
         record_solution_progress(-1, file_sim)

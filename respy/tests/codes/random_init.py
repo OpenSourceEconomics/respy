@@ -14,7 +14,6 @@ from codes.process_constraints import process_constraints
 from codes.auxiliary import get_valid_shares
 from codes.auxiliary import get_valid_values
 from codes.auxiliary import OPTIMIZERS_EST
-from codes.auxiliary import OPTIMIZERS_AMB
 
 # We need to impose some version-dependent constraints. Otherwise the execution times for some
 # tasks just takes too long.
@@ -255,12 +254,8 @@ def generate_random_dict(constr=None):
 
     mock = dict()
     mock['paras_fixed'] = paras_fixed
-    for optimizer in OPTIMIZERS_EST + OPTIMIZERS_AMB:
+    for optimizer in OPTIMIZERS_EST:
         dict_[optimizer] = generate_optimizer_options(optimizer, mock, num_paras)
-
-    # The options for the optimizers across the program versions are identical. Otherwise it is
-    # not possible to simply run the solution of a model with just changing the program version.
-    dict_['FORT-SLSQP'] = dict_['SCIPY-SLSQP']
 
     # We now impose selected constraints on the final model specification. These constraints can
     # be very useful in the generation of test cases.
