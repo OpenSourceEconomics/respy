@@ -30,12 +30,5 @@ def test(opt=None):
     """Run PYTEST for the package."""
     current_directory = os.getcwd()
     os.chdir(PACKAGE_DIR)
-
-    if opt is None:
-        opts = '-m"not slow"'
-    else:
-        opts = opt + ' -m"not slow"'
-
-    pytest.main(opts)
-
+    pytest.main(opt)
     os.chdir(current_directory)
