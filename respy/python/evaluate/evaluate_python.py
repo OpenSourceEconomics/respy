@@ -17,6 +17,10 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
     experiences, then one is returned. If a single agent violates the implications, then the zero
     is returned.
     """
+    # Construct auxiliary object
+    shocks_cov = np.matmul(optim_paras['shocks_cholesky'], optim_paras['shocks_cholesky'].T)
+    is_deterministic = (np.count_nonzero(optim_paras['shocks_cholesky']) == 0)
+
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, num_agents_est)
     prob_obs = np.tile(-HUGE_FLOAT, num_periods)
@@ -72,6 +76,14 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                     dist = np.clip(np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT) - \
                             np.clip(np.log(wages_systematic[idx]), -HUGE_FLOAT, HUGE_FLOAT)
 
+                    # If there is no random variation in rewards, then the observed wages need to be
+                    # identical their systematic components. The discrepancy between the observed
+                    # wages and their systematic components might be small due to the reading in of
+                    # the dataset (FORTRAN only).
+                    if is_deterministic and (dist > SMALL_FLOAT):
+                        contribs[:] = 1
+                        return contribs
+
                 # Simulate the conditional distribution of alternative-specific value functions and
                 # determine the choice probabilities.
                 counts = np.tile(0, 4)
@@ -86,17 +98,20 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                     # Special care is needed in case of a deterministic model, as otherwise a
                     # zero division error occurs.
                     if is_working and (not is_wage_missing):
-                        if choice == 1:
-                            draws_stan[0] = dist / optim_paras['shocks_cholesky'][idx, idx]
-                            mean = 0.00
-                            sd = abs(optim_paras['shocks_cholesky'][idx, idx])
+                        if is_deterministic:
+                            prob_wage = HUGE_FLOAT
                         else:
-                            draws_stan[1] = (dist - optim_paras['shocks_cholesky'][idx, 0] *
+                            if choice == 1:
+                                draws_stan[0] = dist / optim_paras['shocks_cholesky'][idx, idx]
+                                mean = 0.00
+                                sd = abs(optim_paras['shocks_cholesky'][idx, idx])
+                            else:
+                                draws_stan[1] = (dist - optim_paras['shocks_cholesky'][idx, 0] *
                                     draws_stan[0]) / optim_paras['shocks_cholesky'][idx, idx]
-                            mean = optim_paras['shocks_cholesky'][idx, 0] * draws_stan[1]
-                            sd = abs(optim_paras['shocks_cholesky'][idx, idx])
+                                mean = optim_paras['shocks_cholesky'][idx, 0] * draws_stan[1]
+                                sd = abs(optim_paras['shocks_cholesky'][idx, idx])
 
-                        prob_wage = norm.pdf(dist, mean, sd)
+                            prob_wage = norm.pdf(dist, mean, sd)
                     else:
                         prob_wage = 1.0
 
@@ -124,6 +139,12 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
 
                 # Determine relative shares
                 prob_obs[p] = prob_obs[p] / num_draws_prob
+
+                # If there is no random variation in rewards, then this implies that the observed
+                # choice in the dataset is the only choice.
+                if is_deterministic and (not (counts[idx] == num_draws_prob)):
+                    contribs[:] = 1
+                    return contribs
 
             prob_type[type_] = np.prod(prob_obs[:num_obs])
 
