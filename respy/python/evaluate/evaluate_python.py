@@ -151,6 +151,11 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
         # Adjust  and record likelihood contribution
         contribs[j] = np.sum(prob_type * type_shares)
 
+    # If there is no random variation in rewards and no agent violated the implications of
+    # observed wages and choices, then the evaluation return value of one.
+    if is_deterministic:
+        contribs[:] = np.exp(1.0)
+
     # Finishing
     return contribs
 
