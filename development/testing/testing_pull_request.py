@@ -10,12 +10,14 @@ for dirname in ['regression', 'property', 'release']:
 
 from run_regression import run as run_regression
 from run_property import run as run_property
+from run_robustness import run as run_robustness
 
 # Here we specify the group of tests to run. Later we also pin down the details.
 request_dict = dict()
 request_dict['REGRESSION'] = True
 request_dict['PROPERTY'] = True
 request_dict['PYTEST'] = True
+request_dict['ROBUSTNESS'] = True
 
 # We need to specify the arguments for each of the tests.
 test_spec = dict()
@@ -33,6 +35,12 @@ test_spec['PROPERTY']['request'] = ('run', 12)
 test_spec['PROPERTY']['is_background'] = False
 test_spec['PROPERTY']['is_compile'] = False
 
+test_spec['ROBUSTNESS']['request'] = ('run', 12)
+test_spec['ROBUSTNESS']['is_compile'] = False
+test_spec['ROBUSTNESS']['is_background'] = False
+test_spec['ROBUSTNESS']['num_procs'] = 1
+test_spec['ROBUSTNESS']['keep_dataset'] = False
+
 if request_dict['PYTEST']:
     respy.test()
 
@@ -44,4 +52,9 @@ if request_dict['REGRESSION']:
 if request_dict['PROPERTY']:
     os.chdir('property')
     run_property(**test_spec['PROPERTY'])
+    os.chdir(CURRENT_DIR)
+
+if request_dict['ROBUSTNESS']:
+    os.chdir('robustness')
+    run_property(**test_spec['ROBUSTNESS'])
     os.chdir(CURRENT_DIR)
