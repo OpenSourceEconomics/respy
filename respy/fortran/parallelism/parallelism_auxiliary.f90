@@ -198,7 +198,7 @@ SUBROUTINE distribute_information_slaves(num_states_slaves, period, send_slave, 
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, update_master)
+SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, optim_paras, file_sim, num_states_slaves, update_master)
 
     !/* external objects        */
 
@@ -223,8 +223,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     LOGICAL, INTENT(IN)                 :: is_debug
 
     CHARACTER(225), INTENT(IN)          :: file_sim
-
-    TYPE(optimizer_collection), INTENT(IN)  :: optimizer_options
 
     !/* internal objects        */
 

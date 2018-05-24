@@ -11,8 +11,8 @@ from auxiliary_shared import cleanup
 
 from config_analysis import SPEC_DIR
 
-from respy._scripts.scripts_simulate import scripts_simulate
-from respy._scripts.scripts_compare import scripts_compare
+from respy.scripts.scripts_simulate import scripts_simulate
+from respy.scripts.scripts_compare import scripts_compare
 import respy
 
 

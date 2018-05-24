@@ -69,9 +69,9 @@ def add_state_variables(df):
         # We simply assume that individuals who do not have the expected number of years of
         # education did spend the last year at home.
         if agent.loc[(slice(None), slice(16, 16)), 'Years_Schooling'].values < 10:
-            lagged_choice = 0
+            lagged_choice = 4
         else:
-            lagged_choice = 1
+            lagged_choice = 3
 
         for index, row in agent.iterrows():
             identifier, period = index

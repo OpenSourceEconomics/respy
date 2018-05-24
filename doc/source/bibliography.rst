@@ -3,6 +3,8 @@ Bibliography
 
 Bellman, R. (1957). Dynamic Programming. *Princeton University Press*, Princeton, NJ.
 
+Bellman, R. and Dreyfus, S. E. (1962). Applied Dynamic Programming. *Princeton University Press*, Princeton, NJ.
+
 Eisenhauer, P. and Wild, S. M. (2016). Numerical Upgrade to Finite-Horizon Discrete Choice Programming Models. *Unpublished Manuscript*.
 
 Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice Dynamic Programming Models: Revisiting Keane & Wolpin (1994) <https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdff>`_. *Unpublished Manuscript*.
@@ -33,3 +35,4 @@ Powell, M. J. D. (1964). `An Efficient Method for Finding the Minimum of a Funct
 
 
 Powell, M. J. D. (2006). The NEWUOA Software for Unconstrained Optimization Without Derivatives. In Pillo, Gianni, R. M., editor, Large-Scale Nonlinear Optimization, number 83 in Nonconvex Optimization and Its Applications, pages 255–297. Springer, New York, NY.
+

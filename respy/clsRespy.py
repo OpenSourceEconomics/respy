@@ -28,7 +28,7 @@ SOLUTION_ATTR = ['periods_rewards_systematic', 'states_number_period', 'mapping_
 SOLUTION_ATTR += ['periods_emax', 'states_all']
 
 # Full list of admissible optimizers
-OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH + ['FORT-SLSQP', 'SCIPY-SLSQP']
+OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
 
 # We need to do some reorganization as the parameters from the initialization file describing the
 # covariance structure need to be mapped to the Cholesky factors that are the parameters the

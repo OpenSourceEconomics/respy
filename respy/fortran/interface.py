@@ -308,15 +308,6 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         line = '{0:25.15f}\n'.format(optimizer_options['FORT-BFGS']['eps'])
         file_.write(line)
 
-        line = ' {0:25.15f}\n'.format(optimizer_options['FORT-SLSQP']['ftol'])
-        file_.write(line)
-
-        line = '{0:10d}\n'.format(optimizer_options['FORT-SLSQP']['maxiter'])
-        file_.write(line)
-
-        line = '{0:25.15f}\n'.format(optimizer_options['FORT-SLSQP']['eps'])
-        file_.write(line)
-
         # Transform bounds
         bounds_lower = []
         bounds_upper = []

@@ -7,15 +7,13 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import remove_scratch
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_AMB_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.shared.shared_constants import OPT_AMB_PYTH
 from respy.python.process.process_python import process
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
 from respy.custom_exceptions import UserError
 
-OPTIMIZERS = OPT_EST_FORT + OPT_AMB_FORT + OPT_AMB_PYTH + OPT_EST_PYTH
+OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
 
 
 def estimate(respy_obj):
@@ -99,16 +97,6 @@ def check_estimation(respy_obj):
         else:
             raise AssertionError
 
-        # When the level of ambiguity is a free parameter, then we can only allow for the
-        # constraint optimizers in the estimation.
-        if not optim_paras['paras_fixed'][0]:
-            if version == 'PYTHON':
-                assert optimizer_used in ['SCIPY-LBFGSB']
-                assert 'SCIPY-SLSQP' in optimizer_options.keys()
-            else:
-                assert optimizer_used in ['FORT-BOBYQA']
-                assert 'FORT-SLSQP' in optimizer_options.keys()
-
     # We need to make sure that all optimizers are fully defined for the FORTRAN interface. At
     # the same time, we do not want to require the user to specify only the optimizers that are
     # used. So, we sample a full set and replace the optimizers that are used with the user
@@ -160,16 +148,6 @@ def check_optimizer_options(optimizer_options):
         assert isinstance(var, float)
         assert (var > 0)
 
-    # FORT-SLSQP
-    maxiter = optimizer_options['FORT-SLSQP']['maxiter']
-    ftol = optimizer_options['FORT-SLSQP']['ftol']
-    eps = optimizer_options['FORT-SLSQP']['eps']
-    assert isinstance(maxiter, int)
-    assert (maxiter > 0)
-    for var in [eps, ftol]:
-        assert isinstance(var, float)
-        assert (var > 0)
-
     # SCIPY-BFGS
     maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
     gtol = optimizer_options['SCIPY-BFGS']['gtol']
@@ -209,13 +187,4 @@ def check_optimizer_options(optimizer_options):
     assert isinstance(ftol, float)
     assert (ftol > 0)
 
-    # SCIPY-SLSQP
-    maxiter = optimizer_options['SCIPY-SLSQP']['maxiter']
-    ftol = optimizer_options['SCIPY-SLSQP']['ftol']
-    eps = optimizer_options['SCIPY-SLSQP']['eps']
-    assert isinstance(maxiter, int)
-    assert (maxiter > 0)
-    for var in [eps, ftol]:
-        assert isinstance(var, float)
-        assert (var > 0)
 

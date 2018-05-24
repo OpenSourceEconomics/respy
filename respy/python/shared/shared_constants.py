@@ -51,9 +51,6 @@ IS_F2PY = config_dict['F2PY']
 OPT_EST_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL', 'SCIPY-LBFGSB']
 OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS', 'FORT-BOBYQA']
 
-OPT_AMB_PYTH = ['SCIPY-SLSQP']
-OPT_AMB_FORT = ['FORT-SLSQP']
-
 # Labels for columns in a dataset as well as the formatters.
 DATA_LABELS_EST = []
 DATA_LABELS_EST += ['Identifier', 'Period', 'Choice', 'Wage']

@@ -5,10 +5,9 @@ from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import get_log_likl
 
 
-def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-        is_debug, data_array, num_draws_prob, tau, periods_draws_emax, periods_draws_prob,
-        states_all, states_number_period, mapping_state_idx, max_states_period, num_agents_est,
-        num_obs_agent, num_types, edu_spec, optimizer_options):
+def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic, is_debug, data_array,
+                   num_draws_prob, tau, periods_draws_emax, periods_draws_prob, states_all, states_number_period,
+                   mapping_state_idx, max_states_period, num_agents_est, num_obs_agent, num_types, edu_spec):
     """ This function provides the wrapper for optimization routines.
     """
     optim_paras = dist_optim_paras(x, is_debug)

@@ -22,7 +22,7 @@ def simulate(respy_obj):
         'version', 'is_store', 'file_sim')
 
     # Cleanup
-    for ext in ['sim', 'sol', 'amb', 'dat', 'info']:
+    for ext in ['sim', 'sol', 'dat', 'info']:
         fname = file_sim + '.respy.' + ext
         if os.path.exists(fname):
             os.unlink(fname)

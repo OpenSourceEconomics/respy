@@ -971,10 +971,6 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         READ(99, 1500) optimizer_options%bfgs%maxiter
         READ(99, 1510) optimizer_options%bfgs%eps
 
-        READ(99, 1510) optimizer_options%slsqp%ftol
-        READ(99, 1500) optimizer_options%slsqp%maxiter
-        READ(99, 1510) optimizer_options%slsqp%eps
-
         READ(99, 1510) optim_paras%paras_bounds(1, :)
         READ(99, 1510) optim_paras%paras_bounds(2, :)
 

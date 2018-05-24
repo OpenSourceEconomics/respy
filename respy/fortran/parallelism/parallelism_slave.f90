@@ -104,7 +104,7 @@ PROGRAM resfort_parallel_slave
 
             IF (rank == zero_int) CALL record_solution(3, file_sim)
 
-            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, .True.)
+            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, optim_paras, file_sim, num_states_slaves, .True.)
 
             DO period = 1, num_periods
 
@@ -145,7 +145,7 @@ PROGRAM resfort_parallel_slave
 
             CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period, states_all, max_states_period, optim_paras)
 
-            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, optim_paras, optimizer_options, file_sim, num_states_slaves, .False.)
+            CALL fort_backward_induction_slave(periods_emax, num_periods, periods_draws_emax, states_number_period, periods_rewards_systematic, mapping_state_idx, states_all, is_debug, is_interpolated, num_points_interp, is_myopic, edu_spec, optim_paras, file_sim, num_states_slaves, .False.)
 
             CALL fort_contributions(contribs(start_agent:stop_agent), periods_rewards_systematic, mapping_state_idx, periods_emax, states_all, data_slave, periods_draws_prob, tau, num_periods, num_draws_prob, num_agents_slaves(rank + 1), num_obs_agent(start_agent:stop_agent), num_types, edu_spec, optim_paras)
 
