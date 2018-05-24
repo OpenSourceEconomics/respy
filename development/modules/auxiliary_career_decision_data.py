@@ -69,14 +69,14 @@ def add_state_variables(df):
         # We simply assume that individuals who do not have the expected number of years of
         # education did spend the last year at home.
         if agent.loc[(slice(None), slice(16, 16)), 'Years_Schooling'].values < 10:
-            lagged_activity = 0
+            lagged_choice = 4
         else:
-            lagged_activity = 1
+            lagged_choice = 3
 
         for index, row in agent.iterrows():
             identifier, period = index
 
-            agent['Lagged_Activity'].loc[:, period] = lagged_activity
+            agent['Lagged_Choice'].loc[:, period] = lagged_choice
             agent['Experience_A'].loc[:, period] = exp_a
             agent['Experience_B'].loc[:, period] = exp_b
 
@@ -90,20 +90,11 @@ def add_state_variables(df):
 
             # Update lagged activity:
             #   (0) Home, (1) Education, (2) Occupation A, and (3) Occupation B.
-            lagged_activity = 0
-
-            if row['Choice'] == 1:
-                lagged_activity = 2
-            elif row['Choice'] == 2:
-                lagged_activity = 3
-            elif row['Choice'] == 3:
-                lagged_activity = 1
-            else:
-                pass
+            lagged_choice = row['Choice']
 
         return agent
 
-    df['Lagged_Activity'] = np.nan
+    df['Lagged_Choice'] = np.nan
     df['Experience_A'] = np.nan
     df['Experience_B'] = np.nan
 
@@ -114,7 +105,7 @@ def add_state_variables(df):
 
 def write_out(df):
     labels = ['Identifier', 'Period', 'Choice', 'Wage', 'Experience_A',
-              'Experience_B', 'Years_Schooling', 'Lagged_Activity']
+              'Experience_B', 'Years_Schooling', 'Lagged_Choice']
 
     formats = {label: np.int for label in labels}
     formats['Wage'] = np.float
@@ -126,9 +117,3 @@ def write_out(df):
 
     df.set_index(['Identifier', 'Period'], drop=False, inplace=True)
     df.to_pickle('career_data.respy.pkl')
-
-
-
-
-
-

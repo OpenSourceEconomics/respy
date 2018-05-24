@@ -127,7 +127,7 @@ SUBROUTINE determine_workload(jobs_slaves, jobs_total)
 
     !/* external objects        */
 
-    INTEGER(our_int), INTENT(INOUT)     :: jobs_slaves(num_slaves)
+    INTEGER(our_int), INTENT(INOUT)     :: jobs_slaves(:)
 
     INTEGER(our_int), INTENT(IN)        :: jobs_total
 

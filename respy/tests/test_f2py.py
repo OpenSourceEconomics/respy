@@ -6,12 +6,9 @@ from scipy.stats import norm
 import numpy as np
 import pytest
 import scipy
-from socket import gethostname
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
-from respy.python.shared.shared_auxiliary import correlation_to_covariance
-from respy.python.shared.shared_auxiliary import covariance_to_correlation
 from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import replace_missing_values
@@ -32,7 +29,6 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import get_predictions
-from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import read_draws
@@ -49,12 +45,12 @@ from codes.auxiliary import write_draws
 from codes.auxiliary import write_types
 from functools import partial
 from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
+from respy import RespyCls
 
 from respy.python.shared.shared_constants import DECIMALS, TOL
 assert_allclose = partial(np.testing.assert_allclose, rtol=TOL, atol=TOL)
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
-from respy import RespyCls
 
 # Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests subdirectory. If __init__.py
 # is added, the path resolution for PYTEST breaks down.
@@ -64,7 +60,6 @@ if IS_F2PY:
 
 
 @pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """
@@ -641,45 +636,6 @@ class TestClass(object):
         np.testing.assert_equal(fort, py)
 
     def test_9(self):
-        """ We test the some of the functions that were added when improving the ambiguity set.
-        """
-
-        for _ in range(100):
-
-            is_deterministic = np.random.choice([True, False], p=[0.1, 0.9])
-            dim = np.random.randint(1, 6)
-
-            if is_deterministic:
-                cov = np.zeros((dim, dim))
-            else:
-                matrix = np.random.uniform(size=dim ** 2).reshape(dim, dim)
-                cov = np.dot(matrix, matrix.T)
-
-            if not is_deterministic:
-                py = np.linalg.cholesky(cov)
-                f90 = fort_debug.wrapper_get_cholesky_decomposition(cov, dim)
-                assert_almost_equal(py, f90)
-
-            py = covariance_to_correlation(cov)
-            f90 = fort_debug.wrapper_covariance_to_correlation(cov, dim)
-            assert_almost_equal(py, f90)
-
-            corr, sd = covariance_to_correlation(cov), np.sqrt(np.diag(cov))
-            py = correlation_to_covariance(corr, sd)
-            f90 = fort_debug.wrapper_correlation_to_covariance(corr, sd)
-            assert_almost_equal(py, f90)
-
-            # Now we also check that the back-and-forth transformations work.
-            corr = fort_debug.wrapper_covariance_to_correlation(cov, dim)
-            cov_cand = fort_debug.wrapper_correlation_to_covariance(corr, sd, dim)
-            assert_almost_equal(cov, cov_cand)
-
-            corr = covariance_to_correlation(cov)
-            cov_cand = correlation_to_covariance(corr, sd)
-            assert_almost_equal(cov, cov_cand)
-
-
-    def test_10(self):
         """ Functions related to the scaling procedure.
         """
         for _ in range(1000):
@@ -689,7 +645,7 @@ class TestClass(object):
             f90 = fort_debug.wrapper_get_scales_magnitude(values, num_free)
             assert_almost_equal(py, f90)
 
-    def test_11(self):
+    def test_10(self):
         """ Function that calculates the number of observations by individual.
         """
         for _ in range(2):
@@ -709,7 +665,7 @@ class TestClass(object):
 
             assert_almost_equal(py, f90)
 
-    def test_12(self):
+    def test_11(self):
         """ Function that calculates the conditional type probabilites.
         """
         for _ in range(1000):
@@ -726,13 +682,13 @@ class TestClass(object):
             assert_almost_equal(np.sum(py), 1.0)
             assert_almost_equal(py, fort)
 
-    def test_13(self):
+    def test_12(self):
         """ Function that backs out the systematic wages from the systematic rewards
         """
         for _ in range(1000):
 
             rewards_systematic = np.random.normal(0, 1, size=4)
-            activity_lagged = np.random.randint(1, 4)
+            choice_lagged = np.random.randint(1, 4)
             exp_a = np.random.randint(1, 10)
             exp_b = np.random.randint(1, 10)
             edu = np.random.randint(1, 10)
@@ -746,14 +702,14 @@ class TestClass(object):
             optim_paras['coeffs_a'] = coeffs_a
             optim_paras['coeffs_b'] = coeffs_b
 
-            args = [rewards_systematic, exp_a, exp_b, edu, activity_lagged]
+            args = [rewards_systematic, exp_a, exp_b, edu, choice_lagged]
 
             py = back_out_systematic_wages(*args + [optim_paras])
             fort = fort_debug.wrapper_back_out_systematic_wages(*args + [coeffs_a, coeffs_b])
 
             assert_almost_equal(py, fort)
 
-    def test_14(self):
+    def test_13(self):
         """ Testing the functionality introduced to ensure that the simulation is independent of
         the order of initial conditions and types in the initialization file.
         """

@@ -43,7 +43,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
     from respy import estimate
 
     # Process command line arguments
-    is_creation, is_modification = False, False
+    is_creation = False
     is_investigation, is_check = False, False
     num_tests, idx = None, None
 
@@ -51,12 +51,10 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         is_creation, num_tests = True, int(request[1])
     elif request[0] == 'check':
         is_check, num_tests = True, int(request[1])
-    elif request[0] == 'modify':
-        is_modification, num_tests = True, int(request[1])
     elif request[0] == 'investigate':
         is_investigation, idx = True, int(request[1])
     else:
-        raise AssertionError('request in [create, check, modify. investigate]')
+        raise AssertionError('request in [create, check. investigate]')
     if num_tests is not None:
         assert num_tests > 0
     if idx is not None:
@@ -74,22 +72,6 @@ def run(request, is_compile, is_background, is_strict, num_procs):
 
         result = estimate(respy_obj)[1]
         np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
-
-    if is_modification:
-        fname = TEST_RESOURCES_DIR + '/regression_vault.respy.json'
-        tests_old = json.load(open(fname, 'r'))
-
-        tests_new = []
-        for idx, _ in enumerate(tests_old):
-            print('\n Modfiying Test ', idx)
-
-            init_dict, crit_val = tests_old[idx]
-
-            # This is where the modifications take place
-            tests_new += [(init_dict, crit_val)]
-
-        json.dump(tests_new, open('regression_vault.respy.json', 'w'))
-        return
 
     if is_creation:
         # We maintain the separate execution in the case of a single processor for debugging

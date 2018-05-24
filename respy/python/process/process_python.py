@@ -35,9 +35,7 @@ def process(respy_obj):
     # We now subset the dataframe to include only the number of agents that are requested for the
     # estimation. However, this requires us to adjust the num_agents_est as the dataset might
     # actually be smaller as we restrict initial conditions.
-    drop_indices = data_frame.index.unique()[num_agents_est:]
-    data_frame.drop(drop_indices, inplace=True)
-
+    data_frame = data_frame.loc[data_frame.index.unique()[:num_agents_est]]
     data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
 
     # We need to update the number of individuals for the estimation as the whole dataset might

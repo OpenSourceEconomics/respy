@@ -209,9 +209,9 @@ def get_total_values(period, num_periods, optim_paras, rewards_systematic, draws
     """
     # We need to back out the wages from the total systematic rewards to working in the labor
     # market to add the shock properly.
-    exp_a, exp_b, edu, activity_lagged, type_ = states_all[period, k, :]
+    exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
     wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu,
-        activity_lagged, optim_paras)
+        choice_lagged, optim_paras)
 
     # Initialize containers
     rewards_ex_post = np.tile(np.nan, 4)
@@ -252,11 +252,11 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     emaxs = np.tile(np.nan, 4)
 
     # Working in Occupation A
-    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 2, type_]
+    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 1 - 1, type_]
     emaxs[0] = periods_emax[period + 1, future_idx]
 
     # Working in Occupation B
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 3, type_]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 2 - 1, type_]
     emaxs[1] = periods_emax[period + 1, future_idx]
 
     # Increasing schooling. Note that adding an additional year of schooling is only possible for
@@ -265,11 +265,11 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     if is_inadmissible:
         emaxs[2] = 0.00
     else:
-        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 1, type_]
+        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 3 - 1, type_]
         emaxs[2] = periods_emax[period + 1, future_idx]
 
     # Staying at home
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 0, type_]
+    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 4 - 1, type_]
     emaxs[3] = periods_emax[period + 1, future_idx]
 
     # Finishing
@@ -812,44 +812,6 @@ def get_optim_paras(optim_paras, num_paras, which, is_debug):
     return x
 
 
-def covariance_to_correlation(cov):
-    """ This function constructs the correlation matrix from the information on the covariances.
-    """
-    # Auxiliary objects
-    corr = np.tile(np.nan, cov.shape)
-    nrows = cov.shape[0]
-
-    # This special case is maintained for testing purposes.
-    is_deterministic = (np.count_nonzero(cov) == 0)
-    if is_deterministic:
-        return np.zeros((nrows, nrows))
-
-    for i in range(nrows):
-        for j in range(nrows):
-            corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
-
-    return corr
-
-
-def correlation_to_covariance(corr, sd):
-    """ This function constructs the covariance matrix from the information on the correlations.
-    """
-    # Auxiliary objects
-    cov = np.tile(np.nan, corr.shape)
-    nrows = corr.shape[0]
-
-    # This special case is maintained for testing purposes.
-    is_deterministic = (np.count_nonzero(sd) == 0)
-    if is_deterministic:
-        return np.zeros((nrows, nrows))
-
-    for i in range(nrows):
-        for j in range(nrows):
-            cov[i, j] = corr[i, j] * sd[j] * sd[i]
-
-    return cov
-
-
 def check_early_termination(maxfun, num_eval):
     """ This function checks for reasons that require an early termination of the optimization
     procedure.
@@ -883,11 +845,11 @@ def get_num_obs_agent(data_array, num_agents_est):
     return num_obs_agent
 
 
-def back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras):
+def back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras):
     """ This function constructs the wage component for the labor market rewards.
     """
     # Construct covariates to construct the general component of labor market rewards.
-    covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, None, None)
+    covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, None, None)
 
     # First we calculate the general component.
     general, wages_systematic = np.tile(np.nan, 2), np.tile(np.nan, 2)
@@ -908,18 +870,18 @@ def back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_la
     return wages_systematic
 
 
-def construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period):
+def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
     """ Construction of some additional covariates for the reward calculations.
     """
     covariates = dict()
 
     # These are covariates that are supposed to capture the entry costs.
-    covariates['not_exp_a_lagged'] = int((exp_a > 0) and (activity_lagged != 2))
-    covariates['not_exp_b_lagged'] = int((exp_b > 0) and (activity_lagged != 3))
-    covariates['work_a_lagged'] = int(activity_lagged == 2)
-    covariates['work_b_lagged'] = int(activity_lagged == 3)
-    covariates['edu_lagged'] = int(activity_lagged == 1)
-    covariates['activity_lagged'] = activity_lagged
+    covariates['not_exp_a_lagged'] = int((exp_a > 0) and (choice_lagged != 1))
+    covariates['not_exp_b_lagged'] = int((exp_b > 0) and (choice_lagged != 2))
+    covariates['work_a_lagged'] = int(choice_lagged == 1)
+    covariates['work_b_lagged'] = int(choice_lagged == 2)
+    covariates['edu_lagged'] = int(choice_lagged == 3)
+    covariates['choice_lagged'] = choice_lagged
     covariates['not_any_exp_a'] = int(exp_a == 0)
     covariates['not_any_exp_b'] = int(exp_b == 0)
     covariates['any_exp_a'] = int(exp_a > 0)

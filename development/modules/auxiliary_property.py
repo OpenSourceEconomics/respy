@@ -173,18 +173,6 @@ def get_test_dict(test_dir):
     if not IS_F2PY:
         del test_dict['test_f2py']
 
-    # The ambiguity tests require special care as they are a collected from different modules,
-    # which have their own requirements.
-    tests = []
-    if not IS_FORTRAN:
-        tests += ['test_versions_1', 'test_versions_2', 'test_versions_3']
-        tests += ['test_versions_4']
-    if not IS_F2PY:
-        tests += ['test_2', 'test_3', 'test_4', 'test_f2py_4', 'test_f2py_5', 'test_f2py_6']
-
-    for test in tests:
-        test_dict['test_ambiguity'].remove(test)
-
     # Finishing
     return test_dict
 

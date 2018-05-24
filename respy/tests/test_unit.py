@@ -15,7 +15,6 @@ from respy import simulate
 from respy import RespyCls
 
 
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """
@@ -160,12 +159,12 @@ class TestClass(object):
             k = np.random.choice(range(states_number_period[period]))
 
             rewards_systematic = periods_rewards_systematic[period, k, :]
-            exp_a, exp_b, edu, activity_lagged, type_ = states_all[period, k, :]
+            exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
 
-            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
+            covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period)
             wages = calculate_wages_systematic(covariates, optim_paras)
 
-            args = (rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
+            args = (rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras)
             rslt = back_out_systematic_wages(*args)
 
             np.testing.assert_almost_equal(rslt, wages)

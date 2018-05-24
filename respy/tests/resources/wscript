@@ -30,8 +30,10 @@ def build(ctx):
     if ctx.env['F2PY']:
         ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
 
-    base_src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90']
+    # We need to be a little more relaxed with the floating point traps when compiling the old code.
+    if ctx.env['DEBUG']:
+        ctx.env['FCFLAGS'].remove('-ffpe-trap=zero,overflow,invalid')
 
+    base_src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90']
     for fname in ['kw_dpml4a', 'kw_dp3asim']:
-        ctx(features=['fc', 'fcprogram'], source=base_src + [fname + '.f90'], target=fname,
-        fcflags=['-O2'])
+        ctx(features=['fc', 'fcprogram'], source=base_src + [fname + '.f90'], target=fname)

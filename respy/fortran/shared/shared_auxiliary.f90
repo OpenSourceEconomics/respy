@@ -139,85 +139,6 @@ FUNCTION check_early_termination(maxfun, num_eval, crit_estimation) RESULT(is_te
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE correlation_to_covariance(cov, corr, sd)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)         :: cov(:, :)
-
-    REAL(our_dble), INTENT(IN)          :: corr(:, :)
-    REAL(our_dble), INTENT(IN)          :: sd(:)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                    :: nrows
-    INTEGER(our_int)                    :: i
-    INTEGER(our_int)                    :: j
-
-    LOGICAL                             :: is_deterministic
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! This special case is maintained for testing purposes.
-    is_deterministic = ALL(corr .EQ. zero_dble)
-    IF (is_deterministic) THEN
-        cov = zero_dble
-        RETURN
-    END IF
-
-    ! Auxiliary objects
-    nrows = SIZE(corr, 1)
-
-    DO i = 1, nrows
-        DO j  = 1, nrows
-            cov(i, j) = corr(i, j) * sd(i) * sd(j)
-        END DO
-    END DO
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
-SUBROUTINE covariance_to_correlation(corr, cov)
-
-    !/* external objects    */
-
-    REAL(our_dble), INTENT(OUT)         :: corr(:, :)
-
-    REAL(our_dble), INTENT(IN)          :: cov(:, :)
-
-    !/* internal objects        */
-
-    INTEGER(our_int)                    :: nrows
-    INTEGER(our_int)                    :: i
-    INTEGER(our_int)                    :: j
-
-    LOGICAL                             :: is_deterministic
-
-!------------------------------------------------------------------------------
-! Algorithm
-!------------------------------------------------------------------------------
-
-    ! This special case is maintained for testing purposes.
-    is_deterministic = ALL(cov .EQ. zero_dble)
-    IF (is_deterministic) THEN
-        corr = zero_dble
-        RETURN
-    END IF
-
-    ! Auxiliary objects
-    nrows = SIZE(corr, 1)
-
-    DO i = 1, nrows
-        DO j = 1, nrows
-            corr(i, j) = cov(i, j) / (DSQRT(cov(i, i)) * DSQRT(cov(j, j)))
-        END DO
-    END DO
-
-END SUBROUTINE
-!******************************************************************************
-!******************************************************************************
 SUBROUTINE get_cholesky_decomposition(C, info, A)
 
     !/* external objects        */
@@ -282,7 +203,7 @@ FUNCTION apply_scaling(x_in, precond_matrix, request)
     REAL(our_dble)                  :: apply_scaling(num_free)
 
     REAL(our_dble), INTENT(IN)      :: precond_matrix(num_free, num_free)
-    REAL(our_dble), INTENT(IN)      :: x_in(num_free)
+    REAL(our_dble), INTENT(IN)      :: x_in(:)
 
     CHARACTER(*), INTENT(IN)        :: request
 
@@ -409,7 +330,7 @@ SUBROUTINE get_total_values(total_values, rewards_ex_post, period, num_periods, 
     REAL(our_dble)                  :: total_increment(2)
     REAL(our_dble)                  :: emaxs(4)
 
-    INTEGER(our_int)                :: activity_lagged
+    INTEGER(our_int)                :: choice_lagged
     INTEGER(our_int)                :: exp_a
     INTEGER(our_int)                :: exp_b
     INTEGER(our_int)                :: edu
@@ -423,9 +344,9 @@ SUBROUTINE get_total_values(total_values, rewards_ex_post, period, num_periods, 
     exp_a = states_all(period + 1, k + 1, 1)
     exp_b = states_all(period + 1, k + 1, 2)
     edu = states_all(period + 1, k + 1, 3)
-    activity_lagged = states_all(period + 1, k + 1, 4)
+    choice_lagged = states_all(period + 1, k + 1, 4)
 
-    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
+    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras)
 
     ! Initialize containers
     rewards_ex_post = zero_dble
@@ -492,23 +413,23 @@ SUBROUTINE get_emaxs(emaxs, mapping_state_idx, period, periods_emax, k, states_a
     type_ = states_all(period + 1, k + 1, 5)
 
     ! Working in Occupation A
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 3, type_ + 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1 + 1, exp_b + 1, edu + 1, 1, type_ + 1)
     emaxs(1) = periods_emax(period + 1 + 1, future_idx + 1)
 
     ! Working in Occupation B
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 4, type_ + 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1 + 1, edu + 1, 2, type_ + 1)
     emaxs(2) = periods_emax(period + 1 + 1, future_idx + 1)
 
     ! Increasing schooling. Note that adding an additional year of schooling is only possible for those that have strictly less than the maximum level of additional education allowed.
     IF(edu .GE. edu_spec%max) THEN
         emaxs(3) = zero_dble
     ELSE
-        future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 2, type_ + 1)
+        future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1 + 1, 3, type_ + 1)
         emaxs(3) = periods_emax(period + 1 + 1, future_idx + 1)
     END IF
 
     ! Staying at home
-    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1, 1, type_ + 1)
+    future_idx = mapping_state_idx(period + 1 + 1, exp_a + 1, exp_b + 1, edu + 1, 4, type_ + 1)
     emaxs(4) = periods_emax(period + 1 + 1, future_idx + 1)
 
 END SUBROUTINE
@@ -1404,7 +1325,7 @@ FUNCTION float_to_boolean(input) RESULT(output)
 END FUNCTION
 !*******************************************************************************
 !*******************************************************************************
-FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras) RESULT(wages_systematic)
+FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras) RESULT(wages_systematic)
 
     !/* external objects        */
 
@@ -1412,7 +1333,7 @@ FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activi
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)           :: optim_paras
 
-    INTEGER(our_int), INTENT(IN)                :: activity_lagged
+    INTEGER(our_int), INTENT(IN)                :: choice_lagged
     INTEGER(our_int), INTENT(IN)                :: exp_a
     INTEGER(our_int), INTENT(IN)                :: exp_b
     INTEGER(our_int), INTENT(IN)                :: edu
@@ -1434,7 +1355,7 @@ FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activi
 ! Algorithm
 !-------------------------------------------------------------------------------
 
-    covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, MISSING_INT, MISSING_INT)
+    covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, MISSING_INT, MISSING_INT)
 
     covars_general = (/ one_int, covariates%not_exp_a_lagged, covariates%not_any_exp_a /)
     general(1) = DOT_PRODUCT(covars_general, optim_paras%coeffs_a(13:15))
@@ -1453,13 +1374,13 @@ FUNCTION back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activi
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
-FUNCTION construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period) RESULT(covariates)
+FUNCTION construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period) RESULT(covariates)
 
     !/* external objects        */
 
     TYPE(COVARIATES_DICT)           :: covariates
 
-    INTEGER(our_int), INTENT(IN)    :: activity_lagged
+    INTEGER(our_int), INTENT(IN)    :: choice_lagged
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: type_
     INTEGER(our_int), INTENT(IN)    :: exp_a
@@ -1478,19 +1399,19 @@ FUNCTION construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
 !------------------------------------------------------------------------------
 
     ! Auxiliary objects
-    edu_lagged = TRANSFER(activity_lagged .EQ. one_int, our_int)
+    edu_lagged = TRANSFER(choice_lagged .EQ. three_int, our_int)
     hs_graduate = TRANSFER(edu .GE. 12, our_int)
 
     ! These are covariates that are supposed to capture the entry costs.
-    cond = ((exp_a .GT. 0) .AND. activity_lagged .NE. two_int)
+    cond = ((exp_a .GT. 0) .AND. choice_lagged .NE. one_int)
     covariates%not_exp_a_lagged = TRANSFER(cond, our_int)
 
-    cond = ((exp_b .GT. 0) .AND. activity_lagged .NE. three_int)
+    cond = ((exp_b .GT. 0) .AND. choice_lagged .NE. two_int)
     covariates%not_exp_b_lagged = TRANSFER(cond, our_int)
 
-    covariates%work_a_lagged = TRANSFER(activity_lagged .EQ. two_int, our_int)
-    covariates%work_b_lagged = TRANSFER(activity_lagged .EQ. three_int, our_int)
-    covariates%edu_lagged = TRANSFER(activity_lagged .EQ. one_int, our_int)
+    covariates%work_a_lagged = TRANSFER(choice_lagged .EQ. one_int, our_int)
+    covariates%work_b_lagged = TRANSFER(choice_lagged .EQ. two_int, our_int)
+    covariates%edu_lagged = TRANSFER(choice_lagged .EQ. three_int, our_int)
     covariates%not_any_exp_a = TRANSFER(exp_a .EQ. 0, our_int)
     covariates%not_any_exp_b = TRANSFER(exp_b .EQ. 0, our_int)
     covariates%any_exp_a = TRANSFER(exp_a .GT. 0, our_int)
@@ -1506,7 +1427,7 @@ FUNCTION construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
     covariates%is_return_not_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. (.NOT. to_boolean(hs_graduate)), our_int)
     covariates%is_return_high_school = TRANSFER((.NOT. to_boolean(edu_lagged)) .AND. to_boolean(hs_graduate), our_int)
 
-    covariates%activity_lagged = activity_lagged
+    covariates%choice_lagged = choice_lagged
     covariates%period = period
     covariates%exp_a = exp_a
     covariates%exp_b = exp_b

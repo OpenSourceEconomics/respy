@@ -73,7 +73,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     REAL(our_dble)                  :: mean
     REAL(our_dble)                  :: sd
 
-    INTEGER(our_int)                :: activity_lagged
+    INTEGER(our_int)                :: choice_lagged
     INTEGER(our_int)                :: counts(4)
     INTEGER(our_int)                :: row_start
     INTEGER(our_int)                :: edu_start
@@ -126,7 +126,7 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 exp_a = INT(data_evaluate(row_start + p, 5))
                 exp_b = INT(data_evaluate(row_start + p, 6))
                 edu = INT(data_evaluate(row_start + p, 7))
-                activity_lagged = INT(data_evaluate(row_start + p, 8))
+                choice_lagged = INT(data_evaluate(row_start + p, 8))
                 choice = INT(data_evaluate(row_start + p, 3))
                 wage_observed = data_evaluate(row_start + p, 4)
 
@@ -141,14 +141,14 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
                 draws_prob_raw = periods_draws_prob(period + 1, :, :)
 
                 ! Get state indicator to obtain the systematic component of the agents rewards. These feed into the simulation of choice probabilities.
-                k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, activity_lagged + 1, type_ + 1)
+                k = mapping_state_idx(period + 1, exp_a + 1, exp_b + 1, edu + 1, choice_lagged, type_ + 1)
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 ! If an agent is observed working, then the the labor market shocks are observed and the conditional distribution is used to determine the choice probabilities.
                 dist = zero_dble
                 IF (is_working .AND. (.NOT. is_wage_missing)) THEN
 
-                    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
+                    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras)
 
                     ! Calculate the disturbance, which follows a normal distribution.
                     CALL clip_value(dist_1, LOG(wage_observed), -HUGE_FLOAT, HUGE_FLOAT, info)

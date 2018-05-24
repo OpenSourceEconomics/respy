@@ -25,7 +25,6 @@ assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
 
 @pytest.mark.skipif(not IS_FORTRAN, reason='No FORTRAN available')
-@pytest.mark.usefixtures('fresh_directory', 'set_seed')
 class TestClass(object):
     """ This class groups together some tests.
     """

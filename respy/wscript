@@ -185,6 +185,7 @@ def configure(ctx):
     flags_debug += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
     flags_debug += ['-fbacktrace', '-g', '-fmax-errors=1']
     flags_debug += ['-ffree-line-length-0', '-cpp', '-Wcharacter-truncation']
+    flags_debug += ['-ffpe-trap=zero,overflow,invalid']
 
     # The build is currently only tested for GFORTRAN.
     if ctx.env['DEBUG']:

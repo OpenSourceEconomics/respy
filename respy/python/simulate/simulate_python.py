@@ -52,9 +52,9 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
         current_state[4] = types[i]
 
         if edu_start[i] < 10:
-            current_state[3] = 0
+            current_state[3] = 4
         else:
-            current_state[3] = 1
+            current_state[3] = 3
 
         record_simulation_progress(i, file_sim)
 
@@ -62,8 +62,9 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
         for period in range(num_periods):
 
             # Distribute state space
-            exp_a, exp_b, edu, activity_lagged, type_ = current_state
-            k = mapping_state_idx[period, exp_a, exp_b, edu, activity_lagged, type_]
+            exp_a, exp_b, edu, choice_lagged, type_ = current_state
+
+            k = mapping_state_idx[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
 
             # Write agent identifier and current period to data frame
             dataset[count, :2] = i, period
@@ -92,7 +93,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
             # Record wages
             dataset[count, 3] = MISSING_FLOAT
             wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b,
-                edu, activity_lagged, optim_paras)
+                edu, choice_lagged, optim_paras)
 
             if max_idx in [0, 1]:
                 dataset[count, 3] = wages_systematic[max_idx] * draws[max_idx]
@@ -113,7 +114,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
 
             # For testing purposes, we also explicitly include the general reward component,
             # the common component, and the immediate ex post rewards.
-            covariates = construct_covariates(exp_a, exp_b, edu, activity_lagged, type_, period)
+            covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period)
             dataset[count, 22:24] = calculate_rewards_general(covariates, optim_paras)
             dataset[count, 24:25] = calculate_rewards_common(covariates, optim_paras)
             dataset[count, 25:29] = rewards_ex_post
@@ -123,14 +124,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
                 current_state[max_idx] += 1
 
             # Update lagged activity variable.
-            if max_idx == 0:
-                current_state[3] = 2
-            elif max_idx == 1:
-                current_state[3] = 3
-            elif max_idx == 2:
-                current_state[3] = 1
-            else:
-                current_state[3] = 0
+            current_state[3] = max_idx + 1
 
             # Update row indicator
             count += 1

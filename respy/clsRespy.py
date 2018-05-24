@@ -1,7 +1,4 @@
-""" Module that contains the class that carries around information for the
-    RESPY package
-"""
-
+"""Module that contains the class that carries around information for the RESPY package."""
 import pickle as pkl
 import pandas as pd
 import numpy as np
@@ -838,7 +835,7 @@ class RespyCls(object):
 
             # Lagged schooling can only take value zero or one if finite.
             for period in range(num_periods):
-                assert (np.nanmax(states_all[period, :, 3]) in range(4))
+                assert (np.nanmax(states_all[period, :, 3]) in [1, 2, 3, 4])
                 assert (np.nanmin(states_all[period, :, :3]) == 0)
 
             # All finite values have to be larger or equal to zero. The loop is required as
@@ -876,9 +873,9 @@ class RespyCls(object):
                 for index in indices:
                     # Check for finite value at admissible state
                     assert (np.isfinite(mapping_state_idx[period, index[0],
-                        index[1], index[2], index[3], index[4]]))
+                        index[1], index[2], index[3] - 1, index[4]]))
                     # Record finite value
-                    is_infinite[period, index[0], index[1], index[2], index[3], index[4]] = True
+                    is_infinite[period, index[0], index[1], index[2], index[3] - 1, index[4]] = True
             # Check that all admissible states are finite
             assert (np.all(np.isfinite(mapping_state_idx[is_infinite == True])))
 

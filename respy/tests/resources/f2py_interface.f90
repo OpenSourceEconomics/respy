@@ -1406,62 +1406,6 @@ SUBROUTINE wrapper_get_cholesky_decomposition(cholesky, matrix, nrows)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_correlation_to_covariance(cov, corr, sd, nrows)
-
-    !/* external libraries      */
-
-    USE resfort_library
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)       :: cov(nrows, nrows)
-
-    DOUBLE PRECISION, INTENT(IN)        :: corr(nrows, nrows)
-
-    DOUBLE PRECISION, INTENT(IN)        :: sd(nrows)
-
-    INTEGER, INTENT(IN)                 :: nrows
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    CALL correlation_to_covariance(cov, corr, sd)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
-SUBROUTINE wrapper_covariance_to_correlation(corr, cov, nrows)
-
-    !/* external libraries      */
-
-    USE resfort_library
-
-    !/* setup                   */
-
-    IMPLICIT NONE
-
-    !/* external objects        */
-
-    DOUBLE PRECISION, INTENT(OUT)       :: corr(nrows, nrows)
-
-    DOUBLE PRECISION, INTENT(IN)        :: cov(nrows, nrows)
-
-    INTEGER, INTENT(IN)                 :: nrows
-
-!-------------------------------------------------------------------------------
-! Algorithm
-!-------------------------------------------------------------------------------
-
-    CALL covariance_to_correlation(corr, cov)
-
-END SUBROUTINE
-!*******************************************************************************
-!*******************************************************************************
 SUBROUTINE wrapper_get_num_obs_agent(num_rows_agent, data_array, num_agents_est_int)
 
     !/* external libraries      */
@@ -1555,7 +1499,7 @@ SUBROUTINE wrapper_get_scales_magnitude(precond_matrix_int, values, num_free_int
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systematic, exp_a, exp_b, edu, activity_lagged, coeffs_a, coeffs_b)
+SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systematic, exp_a, exp_b, edu, choice_lagged, coeffs_a, coeffs_b)
 
     !/* external libraries      */
 
@@ -1573,7 +1517,7 @@ SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systemati
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(15)
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(15)
 
-    INTEGER, INTENT(IN)                 :: activity_lagged
+    INTEGER, INTENT(IN)                 :: choice_lagged
     INTEGER, INTENT(IN)                 :: exp_a
     INTEGER, INTENT(IN)                 :: exp_b
     INTEGER, INTENT(IN)                 :: edu
@@ -1587,7 +1531,7 @@ SUBROUTINE wrapper_back_out_systematic_wages(wages_systematic, rewards_systemati
     optim_paras%coeffs_b = coeffs_b
 
     ! Call interface
-    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, activity_lagged, optim_paras)
+    wages_systematic = back_out_systematic_wages(rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras)
 
 END SUBROUTINE
 !*******************************************************************************

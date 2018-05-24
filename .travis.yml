@@ -13,12 +13,12 @@ bundler_args: --retry 3
 
 install:
   - travis_retry travis_wait pip install -r requirements.txt
+  - pip install -e .
   - pip install pytest-cov
   - pip install codecov
-  - pip install tox
 
 script:
-  - python tools/travis/run.py
+  - travis_wait 30 pytest --cov=respy
 
 after_success:
   - codecov
