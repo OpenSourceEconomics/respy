@@ -5,7 +5,7 @@ import sys
 import os
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-for dirname in ['regression', 'property', 'release']:
+for dirname in ['regression', 'property', 'release', 'robustness']:
     sys.path.insert(0, CURRENT_DIR + '/' + dirname)
 
 from run_regression import run as run_regression
@@ -24,21 +24,22 @@ test_spec = dict()
 test_spec['PYTEST'] = dict()
 
 test_spec['REGRESSION'] = dict()
-test_spec['REGRESSION']['request'] = ('check', 10000)
+test_spec['REGRESSION']['request'] = ('check', 1)
 test_spec['REGRESSION']['is_background'] = False
 test_spec['REGRESSION']['is_compile'] = False
 test_spec['REGRESSION']['is_strict'] = True
-test_spec['REGRESSION']['num_procs'] = 10
+test_spec['REGRESSION']['num_procs'] = 3
 
 test_spec['PROPERTY'] = dict()
-test_spec['PROPERTY']['request'] = ('run', 12)
+test_spec['PROPERTY']['request'] = ('run', 0.01)
 test_spec['PROPERTY']['is_background'] = False
 test_spec['PROPERTY']['is_compile'] = False
 
-test_spec['ROBUSTNESS']['request'] = ('run', 12)
+test_spec['ROBUSTNESS'] = dict()
+test_spec['ROBUSTNESS']['request'] = ('run', 0.01)
 test_spec['ROBUSTNESS']['is_compile'] = False
 test_spec['ROBUSTNESS']['is_background'] = False
-test_spec['ROBUSTNESS']['num_procs'] = 1
+test_spec['ROBUSTNESS']['num_procs'] = 2
 test_spec['ROBUSTNESS']['keep_dataset'] = False
 
 if request_dict['PYTEST']:
