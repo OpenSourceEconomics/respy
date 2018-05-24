@@ -52,8 +52,15 @@ def truncate_military_history(df):
                 return agent.loc[(slice(None, None), slice(None, period - 1)), :]
         return agent
 
-    df = df.groupby(level='Identifier').apply(_delete_military_service)
+    # pandas 23 does not allow for two index levels with the same name.
+    # this was introduced on purpose, but currently breaks many sensible
+    # groupby operations. This will probably be fixed in future versions
+    # but here we introduce a workaround:
+    # (the workaround should also work in all earlier and later versions.)
+    df['id'] = df['Identifier']
+    df = df.groupby('id').apply(_delete_military_service)
     df.set_index(['Identifier', 'Age'], inplace=True, drop=False)
+    df.drop('id', axis=1, inplace=True)
 
     return df
 
@@ -98,7 +105,17 @@ def add_state_variables(df):
     df['Experience_A'] = np.nan
     df['Experience_B'] = np.nan
 
-    df = df.groupby(level='Identifier').apply(_add_state_variables)
+
+    # pandas 23 does not allow for two index levels with the same name.
+    # this was introduced on purpose, but currently breaks many sensible
+    # groupby operations. This will probably be fixed in future versions
+    # but here we introduce a workaround:
+    # (the workaround should also work in all earlier and later versions.)
+    df['id'] = df['Identifier']
+    df = df.groupby('id').apply(_add_state_variables)
+    df.drop('id', axis=1, inplace=True)
+
+
 
     return df
 
