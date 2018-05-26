@@ -24,7 +24,7 @@ test_spec = dict()
 test_spec['PYTEST'] = dict()
 
 test_spec['REGRESSION'] = dict()
-test_spec['REGRESSION']['request'] = ('check', 1000)
+test_spec['REGRESSION']['request'] = ('check', 10000)
 test_spec['REGRESSION']['is_background'] = False
 test_spec['REGRESSION']['is_compile'] = False
 test_spec['REGRESSION']['is_strict'] = True
