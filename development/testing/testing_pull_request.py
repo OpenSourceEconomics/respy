@@ -24,30 +24,30 @@ test_spec = dict()
 test_spec['PYTEST'] = dict()
 
 test_spec['REGRESSION'] = dict()
-test_spec['REGRESSION']['request'] = ('check', 1)
+test_spec['REGRESSION']['request'] = ('check', 1000)
 test_spec['REGRESSION']['is_background'] = False
 test_spec['REGRESSION']['is_compile'] = False
 test_spec['REGRESSION']['is_strict'] = True
 test_spec['REGRESSION']['num_procs'] = 3
 
 test_spec['PROPERTY'] = dict()
-test_spec['PROPERTY']['request'] = ('run', 0.01)
+test_spec['PROPERTY']['request'] = ('run', 12)
 test_spec['PROPERTY']['is_background'] = False
 test_spec['PROPERTY']['is_compile'] = False
 
 test_spec['ROBUSTNESS'] = dict()
-test_spec['ROBUSTNESS']['request'] = ('run', 0.01)
+test_spec['ROBUSTNESS']['request'] = ('run', 12)
 test_spec['ROBUSTNESS']['is_compile'] = False
 test_spec['ROBUSTNESS']['is_background'] = False
-test_spec['ROBUSTNESS']['num_procs'] = 2
 test_spec['ROBUSTNESS']['keep_dataset'] = False
+test_spec['ROBUSTNESS']['num_procs'] = 3
 
 if request_dict['PYTEST']:
     respy.test()
 
 if request_dict['REGRESSION']:
     os.chdir('regression')
-    is_success_regression = run_regression(**test_spec['REGRESSION'])
+    run_regression(**test_spec['REGRESSION'])
     os.chdir(CURRENT_DIR)
 
 if request_dict['PROPERTY']:
@@ -57,5 +57,5 @@ if request_dict['PROPERTY']:
 
 if request_dict['ROBUSTNESS']:
     os.chdir('robustness')
-    run_property(**test_spec['ROBUSTNESS'])
+    run_robustness(**test_spec['ROBUSTNESS'])
     os.chdir(CURRENT_DIR)
