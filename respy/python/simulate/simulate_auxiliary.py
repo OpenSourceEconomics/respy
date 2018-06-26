@@ -16,7 +16,7 @@ def construct_transition_matrix(base_df):
     args = []
     for label in ['Choice', 'Choice_Next']:
         args += [pd.Categorical(df[label], categories=range(1, 5))]
-    tm = pd.crosstab(*args, normalize='index', dropna=False).as_matrix()
+    tm = pd.crosstab(*args, normalize='index', dropna=False).values
 
     return tm
 
@@ -172,8 +172,9 @@ def write_info(respy_obj, data_frame):
                 file_.write('\n    ... jointly \n\n')
                 num_columns = num_types
 
-            info = pd.crosstab(cat_schl, cat_type, normalize=normalize, dropna=False,
-                margins=True).as_matrix()
+            info = pd.crosstab(
+                cat_schl, cat_type, normalize=normalize, dropna=False,
+                margins=True).values
 
             fmt_ = '    {:>10}    ' + '{:>25}' * num_columns + '\n\n'
             line = ['Schooling']
