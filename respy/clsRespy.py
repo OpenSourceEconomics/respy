@@ -105,8 +105,6 @@ class RespyCls(object):
 
         self.attr['is_store'] = None
 
-        self.attr['edu_max'] = None
-
         self.attr['version'] = None
 
         self.attr['maxfun'] = None
