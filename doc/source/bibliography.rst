@@ -15,9 +15,9 @@ Fisher, R. A. (1922). `On the Mathematical Foundations of Theoretical Statistics
 
 Skrainka, B. S. and Judd, K. L. (2011). High Performance Quadrature Rules: How Numerical Integration Affects a Popular Model of Product Differentiation. *SSRN Working Paper*.
 
-Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <http://www.jstor.org/stable/2109768>`_. *The Review of Economics and Statistics*, 76(4): 648-672.
+Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <http://www.jstor.org/stable/2109768>`__. *The Review of Economics and Statistics*, 76(4): 648-672.
 
-Keane, M. P. and  Wolpin, K. I. (1994b). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_. *Federal Reserve Bank of Minneapolis*, No. 181.
+Keane, M. P. and  Wolpin, K. I. (1994b). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`__. *Federal Reserve Bank of Minneapolis*, No. 181.
 
 Keane, M. P. and Wolpin, K. I. (1996). `The Career Decisions of Young Men <http://www.jstor.org/stable/10.1086/262080>`_. *Journal of Political Economy*, 105(3): 473-522.
 

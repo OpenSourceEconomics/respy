@@ -45,7 +45,7 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
     Numerical instabilities often only become apparent on real world data that is less well behaved than simulated data. To test the stability of our package we start thousands of estimation tasks on the NLSY dataset used by Keane and Wolpin. We use random start values for the parameter vector that can be far from the true values and make sure that the code can handle those cases.
 
-Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. As new features are added and the code matures, we constantly expand our testing harness. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`_  for an example output.
+Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. As new features are added and the code matures, we constantly expand our testing harness. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`__  for an example output.
 
 Documentation
 -------------

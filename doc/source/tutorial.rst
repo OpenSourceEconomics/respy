@@ -6,7 +6,7 @@ We now illustrate the basic capabilities of the ``respy`` package. We start with
 Model Specification
 -------------------
 
-The model is specified in an initialization file. For an example, check out the first parameterization analyzed in Keane and Wolpin (1994) `here <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_. Let us discuss each of its elements in more detail.
+The model is specified in an initialization file. For an example, check out the first parameterization analyzed in Keane and Wolpin (1994) `here <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`__. Let us discuss each of its elements in more detail.
 
 **BASICS**
 
@@ -167,7 +167,7 @@ flag        bool        apply scaling to parameters
 minimum     float       minimum value for gradient approximation
 =======     ======      ==========================
 
-The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS  (Norcedal and Wright, 2006) and POWELL (Powell, 1964) algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For Fortran, we implemented the BFGS and NEWUOA (Powell, 2004) algorithms.
+The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS  (Norcedal and Wright, 2006) and POWELL (Powell, 1964) algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`__. For Fortran, we implemented the BFGS and NEWUOA (Powell, 2004) algorithms.
 
 **SCIPY-BFGS**
 
@@ -282,6 +282,7 @@ This directly returns the value of the coefficients at the final step of the opt
 
 We can now simulate a sample using the estimated parameters by updating the instance of the ``RespyCls``.
 ::
+
     respy_obj.update_model_paras(x)
 
     respy.simulate(respy_obj)
