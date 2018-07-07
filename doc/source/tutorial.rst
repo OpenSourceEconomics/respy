@@ -6,7 +6,7 @@ We now illustrate the basic capabilities of the ``respy`` package. We start with
 Model Specification
 -------------------
 
-The model is specified in an initialization file. For an example, check out the first parameterization analyzed in Keane and Wolpin (1994) `here <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`__. Let us discuss each of its elements in more detail.
+The model is specified in an initialization file. For an example, check out the first parameterization analyzed in Keane and Wolpin (1994) `here <../../../respy/tests/resources/kw_data_one.ini>`__. Let us discuss each of its elements in more detail.
 
 **BASICS**
 
