@@ -859,7 +859,7 @@ class RespyCls(object):
             assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))
 
             # We just briefly check the number of states in the first time period.
-            num_states_start = num_types * num_initial
+            num_states_start = num_types * num_initial * 2
             assert (np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == num_states_start)
 
             # Check that mapping is defined for all possible realizations of the state space by

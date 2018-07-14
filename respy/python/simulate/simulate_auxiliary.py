@@ -378,8 +378,8 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     # function.
     edu_spec_ordered = sort_edu_spec(edu_spec)
 
-    if is_debug and os.path.exists('.initial.respy.test'):
-        edu_start = np.genfromtxt('.initial.respy.test')
+    if is_debug and os.path.exists('.initial_schooling.respy.test'):
+        edu_start = np.genfromtxt('.initial_schooling.respy.test')
     else:
         # As we do not want to be too strict at the user-level the sum of edu_spec might be
         # slightly larger than one. This needs to be corrected here.
@@ -390,3 +390,18 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     edu_start = np.array(edu_start, ndmin=1)
 
     return edu_start
+
+
+def get_random_lagged_start(num_agents_sim, is_debug):
+    """ This function provides random draws for the initial lagged activity or reads them in
+    from a file.
+    """
+    if is_debug and os.path.exists('.initial_lagged.respy.test'):
+        lagged_start = np.genfromtxt('.initial_lagged.respy.test')
+    else:
+        lagged_start = np.random.choice([3, 4], size=num_agents_sim)
+
+    # If we only have one individual, we need to ensure that activities are a vector.
+    lagged_start = np.array(lagged_start, ndmin=1)
+
+    return lagged_start

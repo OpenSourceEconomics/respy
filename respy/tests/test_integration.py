@@ -24,6 +24,7 @@ from respy.scripts.scripts_check import scripts_check
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
 from codes.auxiliary import transform_to_logit
+from codes.auxiliary import write_lagged_start
 from respy.custom_exceptions import UserError
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
@@ -110,6 +111,7 @@ class TestClass(object):
 
         write_types(optim_paras['type_shares'], num_agents_sim)
         write_edu_start(edu_spec, num_agents_sim)
+        write_lagged_start(num_agents_sim)
 
         # Iterate over alternative discount rates.
         base_data, base_val = None, None

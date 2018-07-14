@@ -112,14 +112,10 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 
                                 END IF
 
-                                ! We need some special treatment to deal with the different initial schooling levels.
+                                ! (1, 1) In the first period individual either were in school the previous period as well or at home. The cannot have any work experience.
                                 IF (period .EQ. zero_int) THEN
 
                                     IF ((choice_lagged .EQ. one_int) .OR. (choice_lagged .EQ. two_int)) CYCLE
-
-                                    IF ((edu_start .LT. ten_int) .AND. (choice_lagged .EQ. three_int)) CYCLE
-
-                                    IF ((edu_start .GE. ten_int) .AND. (choice_lagged .EQ. four_int)) CYCLE
 
                                 END IF
 

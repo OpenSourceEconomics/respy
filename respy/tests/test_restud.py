@@ -251,6 +251,11 @@ class TestClass(object):
         cmd = TEST_RESOURCES_DIR + '/kw_dp3asim'
         subprocess.check_call(cmd, shell=True)
 
+        # We need to ensure for RESPY that the lagged activity variable indicates that the
+        # individuals were in school the period before entering the model.
+        types = np.random.choice([3], size=num_agents_sim)
+        np.savetxt('.initial_lagged.respy.test', types, fmt='%i')
+
         # Solve model using RESPY package.
         simulate_observed(respy_obj, is_missings=False)
 

@@ -1,6 +1,7 @@
 import numpy as np
 
 from respy.python.record.record_simulation import record_simulation_progress
+from respy.python.simulate.simulate_auxiliary import get_random_lagged_start
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import calculate_rewards_general
 from respy.python.shared.shared_auxiliary import calculate_rewards_common
@@ -35,6 +36,7 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
     # We also need to sample the set of initial conditions.
     edu_start = get_random_edu_start(edu_spec, num_agents_sim, is_debug)
     types = get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug)
+    lagged_start = get_random_lagged_start(num_agents_sim, is_debug)
 
     # Simulate agent experiences
     count = 0
@@ -47,14 +49,10 @@ def pyth_simulate(periods_rewards_systematic, mapping_state_idx, periods_emax, s
         current_state = states_all[0, 0, :].copy()
 
         # We need to modify the initial conditions: (1) Schooling when entering the model and (2)
-        # individual type.
+        # individual type. We need to determine the initial value for the lagged variable.
+        current_state[3] = lagged_start[i]
         current_state[2] = edu_start[i]
         current_state[4] = types[i]
-
-        if edu_start[i] < 10:
-            current_state[3] = 4
-        else:
-            current_state[3] = 3
 
         record_simulation_progress(i, file_sim)
 

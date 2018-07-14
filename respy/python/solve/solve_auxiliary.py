@@ -94,15 +94,11 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                     if (choice_lagged == 3) and (edu_add == 0):
                                         continue
 
-                                # (1, 1) In the first period all agents have lagged schooling equal
-                                # to one or zero. What is admissible depends on their level os
-                                # initial education.
+                                # (1, 1) In the first period individual either were in school the
+                                # previous period as well or at home. The cannot have any work
+                                # experience.
                                 if period == 0:
                                     if choice_lagged in [1, 2]:
-                                        continue
-                                    if edu_start < 10 and choice_lagged == 3:
-                                        continue
-                                    if edu_start >= 10 and choice_lagged == 4:
                                         continue
 
                                 # (2, 1) An individual that has never worked in Occupation A

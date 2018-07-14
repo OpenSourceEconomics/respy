@@ -41,11 +41,11 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
     ! We want to ensure that the order of initial schooling levels in the initialization files does not matter for the simulated sample. That is why we create an ordered version for this function.
     edu_spec_sorted = sort_edu_spec(edu_spec)
 
-    INQUIRE(FILE='.initial.respy.test', EXIST=READ_IN)
+    INQUIRE(FILE='.initial_schooling.respy.test', EXIST=READ_IN)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        OPEN(UNIT=99, FILE='.initial.respy.test', ACTION='READ')
+        OPEN(UNIT=99, FILE='.initial_schooling.respy.test', ACTION='READ')
         DO i = 1, num_agents_sim
             88 FORMAT(i10)
             READ(99, 88) edu_start(i)
@@ -56,6 +56,45 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
     ELSE
         DO i = 1, num_agents_sim
             edu_start(i) = get_random_draw(edu_spec_sorted%start, edu_spec_sorted%share)
+        END DO
+
+    END IF
+
+END FUNCTION
+!******************************************************************************
+!*****************************************************************************
+FUNCTION get_random_lagged_start(is_debug) RESULT(lagged_start)
+
+    !/* external objects    */
+
+    LOGICAL, INTENT(IN)             :: is_debug
+
+    INTEGER(our_int)                :: lagged_start(num_agents_sim)
+
+    !/* internal objects    */
+
+    INTEGER                         :: i
+
+    LOGICAL                         :: READ_IN
+
+!------------------------------------------------------------------------------
+! Algorithm
+!------------------------------------------------------------------------------
+
+    INQUIRE(FILE='.initial_lagged.respy.test', EXIST=READ_IN)
+
+    IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
+        OPEN(UNIT=99, FILE='.initial_lagged.respy.test', ACTION='READ')
+        DO i = 1, num_agents_sim
+            88 FORMAT(i10)
+            READ(99, 88) lagged_start(i)
+        END DO
+
+        CLOSE(99)
+
+    ELSE
+        DO i = 1, num_agents_sim
+            lagged_start(i) = get_random_draw((/ three_int, four_int /), (/ half_dble, half_dble /))
         END DO
 
     END IF
