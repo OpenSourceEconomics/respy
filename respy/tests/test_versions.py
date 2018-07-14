@@ -248,7 +248,6 @@ class TestClass(object):
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)
 
-
     def test_4(self):
         """ This test ensures that the scaling matrix is identical between the alternative versions.
         """
