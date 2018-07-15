@@ -168,6 +168,7 @@ def generate_random_dict(constr=None):
     num_edu_start = np.random.choice(range(1, max_edu_start))
     dict_['EDUCATION']['start'] = np.random.choice(range(1, 20), size=num_edu_start,
         replace=False).tolist()
+    dict_['EDUCATION']['lagged'] = np.random.uniform(size=num_edu_start).tolist()
     dict_['EDUCATION']['share'] = get_valid_shares(num_edu_start)
     dict_['EDUCATION']['max'] = np.random.randint(max(dict_['EDUCATION']['start']) + 1, 30)
 

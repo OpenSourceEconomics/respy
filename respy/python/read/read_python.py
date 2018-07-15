@@ -141,7 +141,7 @@ def _process_line(group, flag, value, is_fixed, bounds, dict_):
         dict_[group]['coeffs'] += [value]
         dict_[group]['bounds'] += [bounds]
         dict_[group]['fixed'] += [is_fixed]
-    elif group == 'EDUCATION' and (flag in ['share', 'start']):
+    elif group == 'EDUCATION' and (flag in ['share', 'start', 'lagged']):
         dict_[group][flag] += [value]
     elif flag not in ['shift'] or (group == 'TYPES' and flag == 'share'):
         dict_[group][flag] = value

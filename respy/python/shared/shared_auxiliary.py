@@ -619,6 +619,8 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for i, start in enumerate(dict_[flag]['start']):
                     file_.write(str_.format('start', start))
                     file_.write(str_.format('share', dict_[flag]['share'][i]))
+                    file_.write(str_.format('lagged', dict_[flag]['lagged'][i]))
+
                     file_.write('\n')
 
                 file_.write(str_.format('max', dict_[flag]['max']))

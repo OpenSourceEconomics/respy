@@ -332,11 +332,9 @@ class TestClass(object):
         """ We ensure that the number of initial conditions does not matter for the evaluation of
         the criterion function if a weight of one is put on the first group.
         """
-
         constr = dict()
-        constr['flag_estimation'] = True
-
-        # The interpolation equation is affected by the number of types regardless of the weights.
+        # We cannot allow for the interpolation as the results are affected by the number of
+        # types, regardless of the weights.
         constr['flag_interpolation'] = False
 
         init_dict = generate_init(constr)
@@ -347,11 +345,15 @@ class TestClass(object):
         # iterations, but also larger than any of the initial starting levels.
         init_dict['EDUCATION']['max'] = np.random.randint(15, 25, size=1).tolist()[0]
 
+        # We need to ensure that the initial lagged activity always has the same distribution.
+        edu_lagged_base = np.random.uniform(size=5).tolist()
+
         for num_edu_start in [1, np.random.choice([2, 3, 4]).tolist()]:
 
             # We always need to ensure that a weight of one is on the first level of initial
             # schooling.
             init_dict['EDUCATION']['share'] = [1.0] + [0.0] * (num_edu_start - 1)
+            init_dict['EDUCATION']['lagged'] = edu_lagged_base[:num_edu_start]
 
             # We need to make sure that the baseline level of initial schooling is always
             # included. At the same time we cannot have any duplicates.
