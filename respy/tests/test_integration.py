@@ -518,12 +518,14 @@ class TestClass(object):
         # order of the shares.
         edu_shuffled_start = np.random.permutation(edu_baseline_spec['start']).tolist()
 
-        edu_shuffled_share = []
+        edu_shuffled_share, edu_shuffled_lagged = [], []
         for start in edu_shuffled_start:
             idx = edu_baseline_spec['start'].index(start)
+            edu_shuffled_lagged += [edu_baseline_spec['lagged'][idx]]
             edu_shuffled_share += [edu_baseline_spec['share'][idx]]
 
         edu_shuffled_spec = copy.deepcopy(edu_baseline_spec)
+        edu_shuffled_spec['lagged'] = edu_shuffled_lagged
         edu_shuffled_spec['start'] = edu_shuffled_start
         edu_shuffled_spec['share'] = edu_shuffled_share
 
