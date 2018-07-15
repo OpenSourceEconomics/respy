@@ -106,9 +106,9 @@ def pyth_contributions(periods_rewards_systematic, mapping_state_idx, periods_em
                                 mean = 0.00
                                 sd = abs(optim_paras['shocks_cholesky'][idx, idx])
                             else:
-                                draws_stan[idx] = (dist - optim_paras['shocks_cholesky'][idx, 0] *
+                                draws_stan[1] = (dist - optim_paras['shocks_cholesky'][idx, 0] *
                                     draws_stan[0]) / optim_paras['shocks_cholesky'][idx, idx]
-                                mean = optim_paras['shocks_cholesky'][idx, 0] * draws_stan[0]
+                                mean = optim_paras['shocks_cholesky'][idx, 0] * draws_stan[1]
                                 sd = abs(optim_paras['shocks_cholesky'][idx, idx])
 
                             prob_wage = norm.pdf(dist, mean, sd)
