@@ -425,8 +425,9 @@ class TestClass(object):
 
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
-        args += (optim_paras['coeffs_common'], optim_paras['coeffs_a'], optim_paras['coeffs_b'])
-        args += (shocks_cholesky, delta, num_types, type_spec_shares, type_spec_shifts, is_debug)
+        args += (edu_spec['lagged'], optim_paras['coeffs_common'], optim_paras['coeffs_a'])
+        args += (optim_paras['coeffs_b'], shocks_cholesky, delta, num_types, type_spec_shares)
+        args += (type_spec_shifts, is_debug)
         f2py = fort_debug.wrapper_simulate(*args)
         assert_allclose(py, f2py)
 

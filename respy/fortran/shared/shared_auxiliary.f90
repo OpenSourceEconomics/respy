@@ -879,6 +879,7 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         ALLOCATE(optim_paras%paras_bounds(2, num_paras))
         ALLOCATE(optim_paras%paras_fixed(num_paras))
 
+        ALLOCATE(edu_spec%lagged(num_edu_start))
         ALLOCATE(edu_spec%start(num_edu_start))
         ALLOCATE(edu_spec%share(num_edu_start))
 
@@ -897,6 +898,7 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         READ(99, 1510) optim_paras%coeffs_edu
         READ(99, 1500) edu_spec%start
         READ(99, 1510) edu_spec%share
+        READ(99, 1510) edu_spec%lagged
         READ(99, 1500) edu_spec%max
 
         ! HOME

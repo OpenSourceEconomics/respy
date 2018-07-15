@@ -198,7 +198,7 @@ def write_info(respy_obj, data_frame):
         # model based on the level of initial education.
         cat_1 = pd.Categorical(data_frame['Years_Schooling'][:, 0], categories=edu_spec['start'])
         cat_2 = pd.Categorical(data_frame['Lagged_Choice'][:, 0], categories=[3, 4])
-        info = pd.crosstab(cat_1, cat_2, normalize=normalize).values
+        info = pd.crosstab(cat_1, cat_2, normalize=normalize, dropna=False).values
 
         file_.write('\n\n   Initial Lagged Activity by Schooling\n\n')
         fmt_ = '\n   {:>10}' + '    {:>25}' + '{:>25}\n\n'

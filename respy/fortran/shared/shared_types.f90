@@ -73,6 +73,7 @@ MODULE shared_types
         INTEGER(our_int), ALLOCATABLE   :: start(:)
         INTEGER(our_int)                :: max
 
+        REAL(our_dble), ALLOCATABLE     :: lagged(:)
         REAL(our_dble), ALLOCATABLE     :: share(:)
 
     END TYPE

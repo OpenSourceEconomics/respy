@@ -63,9 +63,13 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 END FUNCTION
 !******************************************************************************
 !*****************************************************************************
-FUNCTION get_random_lagged_start(is_debug) RESULT(lagged_start)
+FUNCTION get_random_lagged_start(edu_spec, edu_start, is_debug) RESULT(lagged_start)
 
     !/* external objects    */
+
+    TYPE(EDU_DICT), INTENT(IN)      :: edu_spec
+
+    INTEGER(our_int), INTENT(IN)    :: edu_start(num_agents_sim)
 
     LOGICAL, INTENT(IN)             :: is_debug
 
@@ -74,8 +78,11 @@ FUNCTION get_random_lagged_start(is_debug) RESULT(lagged_start)
     !/* internal objects    */
 
     INTEGER                         :: i
+    INTEGER                         :: j
 
     LOGICAL                         :: READ_IN
+
+    REAL(our_dble)                  :: probs(2)
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -94,7 +101,15 @@ FUNCTION get_random_lagged_start(is_debug) RESULT(lagged_start)
 
     ELSE
         DO i = 1, num_agents_sim
-            lagged_start(i) = get_random_draw((/ three_int, four_int /), (/ half_dble, half_dble /))
+
+            ! We need to determine the corresponding position of the lagged probability entry.
+            DO j = 1, 2
+                IF(edu_start(i) .EQ. edu_spec%start(j)) EXIT
+            END DO
+
+            probs = (/ edu_spec%lagged(j), one_dble - edu_spec%lagged(j) /)
+            lagged_start(i) = get_random_draw((/ three_int, four_int /), probs)
+
         END DO
 
     END IF
