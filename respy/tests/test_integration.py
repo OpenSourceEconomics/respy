@@ -333,8 +333,9 @@ class TestClass(object):
         the criterion function if a weight of one is put on the first group.
         """
         constr = dict()
-        # We cannot allow for the interpolation as the results are affected by the number of
-        # types, regardless of the weights.
+        constr['flag_estimation'] = True
+
+        # The interpolation equation is affected by the number of types regardless of the weights.
         constr['flag_interpolation'] = False
 
         init_dict = generate_init(constr)
