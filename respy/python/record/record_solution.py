@@ -31,11 +31,11 @@ def record_solution_prediction(results, file_sim):
     """
 
     with open(file_sim + '.respy.sol', 'a') as outfile:
-        outfile.write('    Information about Prediction Model')
+        outfile.write('    Information about Prediction Model\n\n')
 
-        string = '      {:<19}' + '{:15.4f}' * 9
+        string = '      {:<19}' + '{:15.4f}' * 9 + '\n\n'
         outfile.write(string.format('Coefficients', *results.params))
         outfile.write(string.format('Standard Errors', *results.bse))
 
-        string = '      {0:<19}{1:15.4f}\n'
+        string = '      {0:<19}{1:15.4f}\n\n\n'
         outfile.write(string.format('R-squared', results.rsquared))

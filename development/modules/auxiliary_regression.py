@@ -6,7 +6,7 @@ import os
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.python.shared.shared_constants import DECIMALS, TOL
+from respy.python.shared.shared_constants import TOL
 from auxiliary_shared import get_random_dirname
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
@@ -62,6 +62,15 @@ def check_single(tests, idx):
     """
     # Distribute test information.
     init_dict, crit_val = tests[idx]
+
+    # TODO: These are temporary modifications that ensure compatibility over time and will be
+    # removed once we update the regression test battery.
+    init_dict['EDUCATION']['lagged'] = []
+    for edu_start in init_dict['EDUCATION']['start']:
+        if edu_start >= 10:
+            init_dict['EDUCATION']['lagged'] += [1.0]
+        else:
+            init_dict['EDUCATION']['lagged'] += [0.0]
 
     # During development it is useful that we can only run the PYTHON versions of the
     # program.

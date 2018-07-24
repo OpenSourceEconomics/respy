@@ -22,6 +22,7 @@ from respy import simulate
 # module-wide variables
 OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
 
+
 def simulate_observed(respy_obj, is_missings=True):
     """ This function adds two important features of observed datasests: (1) missing
     observations and missing wage information.
@@ -214,7 +215,15 @@ def write_edu_start(edu_spec, num_agents_sim):
     between PYTHON and FORTRAN simulations.
     """
     types = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
-    np.savetxt('.initial.respy.test', types, fmt='%i')
+    np.savetxt('.initial_schooling.respy.test', types, fmt='%i')
+
+
+def write_lagged_start(num_agents_sim):
+    """ We also need to fully control the random initial lagged activity to ensure the
+    comparability between PYTHON and FORTRAN simulations.
+    """
+    types = np.random.choice([3, 4], size=num_agents_sim)
+    np.savetxt('.initial_lagged.respy.test', types, fmt='%i')
 
 
 def get_valid_values(which):

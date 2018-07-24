@@ -91,6 +91,7 @@ class RespyCls(object):
         self.attr['precond_spec']['eps'] = None
 
         self.attr['edu_spec'] = dict()
+        self.attr['edu_spec']['lagged'] = None
         self.attr['edu_spec']['start'] = None
         self.attr['edu_spec']['share'] = None
         self.attr['edu_spec']['max'] = None
@@ -304,6 +305,7 @@ class RespyCls(object):
         init_dict['EDUCATION']['bounds'] = self.attr['optim_paras']['paras_bounds'][lower:upper]
         init_dict['EDUCATION']['fixed'] = self.attr['optim_paras']['paras_fixed'][lower:upper]
 
+        init_dict['EDUCATION']['lagged'] = self.attr['edu_spec']['lagged']
         init_dict['EDUCATION']['start'] = self.attr['edu_spec']['start']
         init_dict['EDUCATION']['share'] = self.attr['edu_spec']['share']
         init_dict['EDUCATION']['max'] = self.attr['edu_spec']['max']
@@ -476,6 +478,7 @@ class RespyCls(object):
         self.attr['precond_spec']['eps'] = init_dict['PRECONDITIONING']['eps']
 
         self.attr['edu_spec'] = dict()
+        self.attr['edu_spec']['lagged'] = init_dict['EDUCATION']['lagged']
         self.attr['edu_spec']['start'] = init_dict['EDUCATION']['start']
         self.attr['edu_spec']['share'] = init_dict['EDUCATION']['share']
         self.attr['edu_spec']['max'] = init_dict['EDUCATION']['max']
@@ -717,6 +720,7 @@ class RespyCls(object):
         assert all(item > 0 for item in edu_spec['start'])
         assert all(item <= edu_spec['max'] for item in edu_spec['start'])
         assert all(isinstance(item, float) for item in edu_spec['share'])
+        assert all(0 <= item <= 1 for item in edu_spec['lagged'])
         assert all(0 <= item <= 1 for item in edu_spec['share'])
         np.testing.assert_almost_equal(np.sum(edu_spec['share']), 1.0, decimal=4)
 
@@ -859,7 +863,7 @@ class RespyCls(object):
             assert (np.all(np.isfinite(states_all[(num_periods - 1), :, :])))
 
             # We just briefly check the number of states in the first time period.
-            num_states_start = num_types * num_initial
+            num_states_start = num_types * num_initial * 2
             assert (np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == num_states_start)
 
             # Check that mapping is defined for all possible realizations of the state space by

@@ -24,6 +24,7 @@ from respy.scripts.scripts_check import scripts_check
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
 from codes.auxiliary import transform_to_logit
+from codes.auxiliary import write_lagged_start
 from respy.custom_exceptions import UserError
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
@@ -110,6 +111,7 @@ class TestClass(object):
 
         write_types(optim_paras['type_shares'], num_agents_sim)
         write_edu_start(edu_spec, num_agents_sim)
+        write_lagged_start(num_agents_sim)
 
         # Iterate over alternative discount rates.
         base_data, base_val = None, None
@@ -330,7 +332,6 @@ class TestClass(object):
         """ We ensure that the number of initial conditions does not matter for the evaluation of
         the criterion function if a weight of one is put on the first group.
         """
-
         constr = dict()
         constr['flag_estimation'] = True
 
@@ -345,11 +346,15 @@ class TestClass(object):
         # iterations, but also larger than any of the initial starting levels.
         init_dict['EDUCATION']['max'] = np.random.randint(15, 25, size=1).tolist()[0]
 
+        # We need to ensure that the initial lagged activity always has the same distribution.
+        edu_lagged_base = np.random.uniform(size=5).tolist()
+
         for num_edu_start in [1, np.random.choice([2, 3, 4]).tolist()]:
 
             # We always need to ensure that a weight of one is on the first level of initial
             # schooling.
             init_dict['EDUCATION']['share'] = [1.0] + [0.0] * (num_edu_start - 1)
+            init_dict['EDUCATION']['lagged'] = edu_lagged_base[:num_edu_start]
 
             # We need to make sure that the baseline level of initial schooling is always
             # included. At the same time we cannot have any duplicates.
@@ -514,12 +519,14 @@ class TestClass(object):
         # order of the shares.
         edu_shuffled_start = np.random.permutation(edu_baseline_spec['start']).tolist()
 
-        edu_shuffled_share = []
+        edu_shuffled_share, edu_shuffled_lagged = [], []
         for start in edu_shuffled_start:
             idx = edu_baseline_spec['start'].index(start)
+            edu_shuffled_lagged += [edu_baseline_spec['lagged'][idx]]
             edu_shuffled_share += [edu_baseline_spec['share'][idx]]
 
         edu_shuffled_spec = copy.deepcopy(edu_baseline_spec)
+        edu_shuffled_spec['lagged'] = edu_shuffled_lagged
         edu_shuffled_spec['start'] = edu_shuffled_start
         edu_shuffled_spec['share'] = edu_shuffled_share
 

@@ -10,6 +10,7 @@ from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
+from codes.auxiliary import write_lagged_start
 from codes.auxiliary import simulate_observed
 from codes.auxiliary import compare_est_log
 from codes.random_init import generate_init
@@ -81,6 +82,7 @@ class TestClass(object):
         type_shares = np.array([0.0, 0.0] + init_dict['TYPE SHARES']['coeffs'])
         write_types(type_shares, num_agents_sim)
         write_edu_start(edu_spec, num_agents_sim)
+        write_lagged_start(num_agents_sim)
 
         # Clean evaluations based on interpolation grid,
         base_val, base_data = None, None
@@ -212,6 +214,7 @@ class TestClass(object):
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
         write_edu_start(edu_spec, num_agents_sim)
+        write_lagged_start(num_agents_sim)
 
         for version in ['FORTRAN', 'PYTHON']:
 
@@ -244,7 +247,6 @@ class TestClass(object):
             if base_est_log is None:
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)
-
 
     def test_4(self):
         """ This test ensures that the scaling matrix is identical between the alternative versions.

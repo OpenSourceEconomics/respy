@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.process.process_auxiliary import check_dataset_est

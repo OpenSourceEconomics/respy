@@ -38,6 +38,7 @@ from respy.python.process.process_python import process
 from respy.python.solve.solve_python import pyth_solve
 from respy.fortran.interface import resfort_interface
 from codes.auxiliary import write_interpolation_grid
+from codes.auxiliary import write_lagged_start
 from codes.auxiliary import simulate_observed
 from codes.random_init import generate_init
 from codes.auxiliary import write_edu_start
@@ -375,8 +376,6 @@ class TestClass(object):
         coeffs_b = optim_paras['coeffs_b']
         delta = optim_paras['delta']
 
-
-
         type_spec_shares = optim_paras['type_shares']
         type_spec_shifts = optim_paras['type_shifts']
 
@@ -385,6 +384,7 @@ class TestClass(object):
         write_types(type_spec_shares, num_agents_sim)
         write_edu_start(edu_spec, num_agents_sim)
         write_draws(num_periods, max_draws)
+        write_lagged_start(num_agents_sim)
 
         periods_draws_emax = read_draws(num_periods, num_draws_emax)
         periods_draws_prob = read_draws(num_periods, num_draws_prob)
@@ -425,8 +425,9 @@ class TestClass(object):
 
         args = ()
         args += base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
-        args += (optim_paras['coeffs_common'], optim_paras['coeffs_a'], optim_paras['coeffs_b'])
-        args += (shocks_cholesky, delta, num_types, type_spec_shares, type_spec_shifts, is_debug)
+        args += (edu_spec['lagged'], optim_paras['coeffs_common'], optim_paras['coeffs_a'])
+        args += (optim_paras['coeffs_b'], shocks_cholesky, delta, num_types, type_spec_shares)
+        args += (type_spec_shifts, is_debug)
         f2py = fort_debug.wrapper_simulate(*args)
         assert_allclose(py, f2py)
 
