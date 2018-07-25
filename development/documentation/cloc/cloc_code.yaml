@@ -1,0 +1,56 @@
+---
+# http://cloc.sourceforge.net
+header :
+  cloc_url           : http://cloc.sourceforge.net
+  cloc_version       : 1.60
+  elapsed_seconds    : 0.64546799659729
+  n_files            : 166
+  n_lines            : 39073
+  files_per_second   : 257.177739059258
+  lines_per_second   : 60534.3722786891
+  report_file        : cloc_code.yaml
+Python:
+  nFiles: 117
+  blank: 1560
+  comment: 2324
+  code: 16357
+Fortran 90:
+  nFiles: 33
+  blank: 2338
+  comment: 3328
+  code: 8696
+Fortran 77:
+  nFiles: 4
+  blank: 0
+  comment: 1034
+  code: 2964
+YAML:
+  nFiles: 6
+  blank: 7
+  comment: 4
+  code: 196
+make:
+  nFiles: 1
+  blank: 31
+  comment: 6
+  code: 193
+Bourne Shell:
+  nFiles: 2
+  blank: 0
+  comment: 0
+  code: 12
+Bourne Again Shell:
+  nFiles: 2
+  blank: 2
+  comment: 14
+  code: 6
+ASP.Net:
+  nFiles: 1
+  blank: 0
+  comment: 0
+  code: 1
+SUM:
+  blank: 3938
+  code: 28425
+  comment: 6710
+  nFiles: 166
