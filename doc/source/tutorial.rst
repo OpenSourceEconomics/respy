@@ -251,6 +251,31 @@ In this example, the first coefficient is free. The second one is fixed at 0.2. 
 
 If you specify bounds for any free parameter, you have to choose a constraint optimizer such as SCIPY-LBFGSB or FORT-BOBYQA.
 
+Dataset
+-------
+
+To use respy, you need a dataset with the following columns:
+
+- Identifier: identifies the different individuals in the sample
+- Period: identifies the different rounds of observation for each individual
+- Choice: an integer variable that indicates the labor market choice
+    - 1 = Occupation A
+    - 2 = Occupation B
+    - 3 = Education
+    - 4 = Home
+- Earnings: a float variable that indicates how much people are earning. This variable is missing (indicated by a dot) if individuals don't work.
+- Experience_A: labor market experience in sector A
+- Experience_B: labor market experience in sector B
+- Years_Schooling: years of schooling
+- Lagged_Choice: choice in the period before the model starts. Codes are the same as in Choice.
+
+Datasets for respy are stored in simple text files, where columns are separated by spaces. The easiest way to write such a text file in Python is to create a pandas DataFrame with all relevant columns and then storing it in the following way:
+
+.. code::
+
+    with open('my_data.respy.dat', 'w') as file:
+        df.to_string(file, index=False, header=True, na_rep='.')
+
 
 Examples
 --------
