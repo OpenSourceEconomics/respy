@@ -48,7 +48,10 @@ process_python.py
 - Process is not a very good name for the main function in this module. I would call the module data_processing, and the main function process_data.
 
 
+estimate_python.py
+==================
 
+- pyth_criterion should be renamed to reflect that fact that it is a likelihood function. nloglike is a good name from statsmodels.
 
 
 
@@ -78,8 +81,11 @@ we should look for a better version.
 
 
 
+Directory Structure
+===================
 
-
+I would summarize 'evaluate' and 'estimate' to 'likelihood'
+I would summarize 'read' and 'process' to 'model_processing'
 
 
 
