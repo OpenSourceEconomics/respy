@@ -14,12 +14,10 @@ from respy.python.interface import respy_interface
 
 
 def simulate(respy_obj):
-    """ Simulate dataset of synthetic agent following the model specified in the initialization
-    file.
-    """
+    """Simulate dataset of synthetic agents following the model."""
     # Distribute class attributes
-    is_debug, version, is_store, file_sim = dist_class_attributes(respy_obj, 'is_debug',
-        'version', 'is_store', 'file_sim')
+    is_debug, version, is_store, file_sim = dist_class_attributes(
+        respy_obj, 'is_debug', 'version', 'is_store', 'file_sim')
 
     # Cleanup
     for ext in ['sim', 'sol', 'dat', 'info']:
@@ -47,19 +45,18 @@ def simulate(respy_obj):
         respy_obj.store('solution.respy.pkl')
 
     # Create pandas data frame with missing values.
-    data_frame = pd.DataFrame(replace_missing_values(data_array), columns=DATA_LABELS_SIM)
+    data_frame = pd.DataFrame(data=replace_missing_values(data_array),
+                              columns=DATA_LABELS_SIM)
     data_frame = data_frame.astype(DATA_FORMATS_SIM)
     data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
 
-    # Wrapping up by running some checks on the dataset and then writing out the file and some
-    # basic information.
+    # Checks
     if is_debug:
         check_dataset_sim(data_frame, respy_obj)
 
     write_out(respy_obj, data_frame)
     write_info(respy_obj, data_frame)
 
-    # Finishing
     return respy_obj, data_frame
 
 
