@@ -54,6 +54,12 @@ estimate_python.py
 - pyth_criterion should be renamed to reflect that fact that it is a likelihood function. nloglike is a good name from statsmodels.
 
 
+estimate_wrapper.py
+===================
+
+_constructvall_current_values needs a longer docstring. What is the purpose of this function?
+
+
 
 shared_auxiliary.py
 ===================
