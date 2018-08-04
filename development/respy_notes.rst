@@ -26,6 +26,23 @@ clsRespy
 - in check_integrity_attributes we could save the unpacking step and instead write a = self.attr for shortcut access to the attributes.
 
 
+estimate.py
+===========
+
+I don't understand this comment:
+    # Make sure all optimizers are fully defined for the FORTRAN interface.
+    # At the same time, we do not want to require the user to specify only
+    # the optimizers that are used. So, we sample a full set and replace the
+    # optimizers that are used with the user specification.
+
+
+process_python.py
+=================
+
+- Process is not a very good name for the main function in this module. I would call the module data_processing, and the main function process_data.
+
+
+
 shared_auxiliary.py
 ===================
 

@@ -17,8 +17,7 @@ OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
 
 
 def estimate(respy_obj):
-    """ Estimate the model
-    """
+    """Estimate the model."""
     # Cleanup
     for fname in ['est.respy.log', 'est.respy.info']:
         if os.path.exists(fname):
@@ -33,9 +32,9 @@ def estimate(respy_obj):
     atexit.register(remove_scratch, '.estimation.respy.scratch')
     open('.estimation.respy.scratch', 'w').close()
 
-    # Read in estimation dataset. It only reads in the number of agents requested for the
-    # estimation (or all available, depending on which is less). It allows read in only a subset of
-    # the initial conditions.
+    # Read in estimation dataset. It only reads in the number of agents
+    # requested for the estimation (or all available, depending on which is
+    # less). It allows to read in only a subset of the initial conditions.
     data_frame = process(respy_obj)
     record_estimation_sample(data_frame)
     data_array = data_frame.as_matrix()
@@ -71,25 +70,23 @@ def check_estimation(respy_obj):
     assert not os.path.exists('.estimation.respy.scratch')
 
     # Distribute class attributes
-    optimizer_options, optimizer_used, optim_paras, version, maxfun, num_paras, file_est = \
-        dist_class_attributes(respy_obj, 'optimizer_options', 'optimizer_used', 'optim_paras',
-                              'version', 'maxfun', 'num_paras', 'file_est')
+    optimizer_options, optimizer_used, optim_paras, version, maxfun, \
+        num_paras, file_est = dist_class_attributes(
+            respy_obj, 'optimizer_options', 'optimizer_used', 'optim_paras',
+            'version', 'maxfun', 'num_paras', 'file_est')
 
-    # Ensure that at least one free parameter. It is not enough to check this in the case of at
-    # least one function evaluation due to the random sampling of optimizer options in
-    # generate_optimizer_options() which requires at least one free parameter.
+    # Ensure that at least one parameter is free.
     if sum(optim_paras['paras_fixed']) == num_paras:
         raise UserError('Estimation requires at least one free parameter')
 
-    # We need to make sure that the estimation dataset is actually present.
+    # Make sure the estimation dataset exists
     if not os.path.exists(file_est):
         raise UserError('Estimation dataset does not exist')
 
     if maxfun > 0:
         assert optimizer_used in optimizer_options.keys()
 
-        # We need to make sure that an optimizer that aligns with the requested optimization is
-        # requested.
+        # Make sure the requested optimizer is valid
         if version == 'PYTHON':
             assert optimizer_used in OPT_EST_PYTH
         elif version == 'FORTRAN':
@@ -97,10 +94,10 @@ def check_estimation(respy_obj):
         else:
             raise AssertionError
 
-    # We need to make sure that all optimizers are fully defined for the FORTRAN interface. At
-    # the same time, we do not want to require the user to specify only the optimizers that are
-    # used. So, we sample a full set and replace the optimizers that are used with the user
-    # specification.
+    # Make sure all optimizers are fully defined for the FORTRAN interface.
+    # At the same time, we do not want to require the user to specify only
+    # the optimizers that are used. So, we sample a full set and replace the
+    # optimizers that are used with the user specification.
     full_options = dict()
     for optimizer in OPTIMIZERS:
         full_options[optimizer] = \
@@ -121,8 +118,7 @@ def check_estimation(respy_obj):
 
 
 def check_optimizer_options(optimizer_options):
-    """ This function makes sure that the optimizer options are all valid.
-    """
+    """Make sure that all optimizer options are valid."""
     # POWELL's algorithms
     for optimizer in ['FORT-NEWUOA', 'FORT-BOBYQA']:
         maxfun = optimizer_options[optimizer]['maxfun']
@@ -186,5 +182,3 @@ def check_optimizer_options(optimizer_options):
     assert (xtol > 0)
     assert isinstance(ftol, float)
     assert (ftol > 0)
-
-
