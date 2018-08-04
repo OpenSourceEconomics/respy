@@ -57,7 +57,7 @@ estimate_python.py
 estimate_wrapper.py
 ===================
 
-_constructvall_current_values needs a longer docstring. What is the purpose of this function?
+_construct_all_current_values needs a longer docstring. What is the purpose of this function?
 
 
 
@@ -66,6 +66,13 @@ shared_auxiliary.py
 
 
 - dist_econ_paras and dist_optim_paras shares most of the logic and just has different return types. It is not clear from the names what the difference is. I would suggest one public function with a switch (target='dict'; target='tuple') and potentially two private functions for the implementation.
+
+
+evaluate_python
+===============
+
+- The dimensions and meaning of some arguments is still unclear
+- Why is the covariance matrix never used. Is the use of the cholesky factors correct?
 
 
 
