@@ -26,14 +26,20 @@ clsRespy
 - in check_integrity_attributes we could save the unpacking step and instead write a = self.attr for shortcut access to the attributes.
 
 
-estimate.py
-===========
+estimate.py and simulate.py
+===========================
 
-I don't understand this comment:
+- I don't understand this comment:
     # Make sure all optimizers are fully defined for the FORTRAN interface.
     # At the same time, we do not want to require the user to specify only
     # the optimizers that are used. So, we sample a full set and replace the
     # optimizers that are used with the user specification.
+
+- I we should change the user interface in one of the following directions.
+    1) estimate and simulate become methods of clsRespy. This would be conceptually compatible with statsmodels and sklearn.
+    2) a user never explicitly makes an instance of clsRespy. Instead he just calls estimate or simulate with an init file. Stata people would like this one.
+
+- I think check_optimizer_options should be part of clsRespy. It might even be good to call that in the __init__ method. Moreover, I would make it optional to specify any optimizer options, so people who only simulate are not bothered by this check.
 
 
 process_python.py
@@ -43,11 +49,35 @@ process_python.py
 
 
 
+
+
+
 shared_auxiliary.py
 ===================
 
 
 - dist_econ_paras and dist_optim_paras shares most of the logic and just has different return types. It is not clear from the names what the difference is. I would suggest one public function with a switch (target='dict'; target='tuple') and potentially two private functions for the implementation.
+
+
+
+Control flow of the estimation
+==============================
+
+Current
+-------
+
+estimate calls interface(request='estimate')
+
+interface creates arguments and toes preconditioning
+
+interface calls OptimizationClass
+
+OptimizationClass calls pyth_criterion
+
+we should look for a better version.
+
+
+
 
 
 
