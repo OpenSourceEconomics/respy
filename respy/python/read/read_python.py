@@ -4,8 +4,7 @@ import os
 
 
 def read(fname):
-    """ Read and process a RESPY initialization file.
-    """
+    """Read and process a RESPY initialization file."""
     # Check input
     assert os.path.exists(fname)
 
@@ -29,7 +28,8 @@ def read(fname):
             # Prepare dictionary
             if is_group:
                 group = list_[0]
-                # Special treatment for OCCUPATION or TYPES, which consists of two entries.
+                # Special treatment for OCCUPATION or TYPES, which consists of
+                # two entries.
                 if group in ['OCCUPATION', 'TYPE']:
                     group = list_[0] + ' ' + list_[1]
                 dict_[group] = {}
@@ -48,8 +48,9 @@ def read(fname):
             # Process blocks of information
             dict_ = _process_line(group, flag, value, is_fixed, bounds, dict_)
 
-    # For ease of usability, we allow to skip the TYPE SHARES and TYPE SHIFTS blocks. If they are
-    # not present, then this implies that there is only a single type.
+    # For ease of usability, we allow to skip the TYPE SHARES and TYPE SHIFTS
+    # blocks. If they are not present, then this implies that there is only a
+    # single type.
     for group in ['TYPE SHARES', 'TYPE SHIFTS']:
         if group in dict_.keys():
             continue
@@ -66,8 +67,7 @@ def read(fname):
 
 
 def process_coefficient_line(line):
-    """ This function extracts the information about the estimation.
-    """
+    """Extract the information about the estimation."""
     def _process_bounds(line):
 
         start, end = line.find('(') + 1, line.find(')')
@@ -101,11 +101,10 @@ def process_coefficient_line(line):
 
 
 def _type_conversions(flag, value):
-    """ Type conversions
-    """
+    """Convert the type of a value according to its flag."""
     # Type conversion
-    if flag in ['agents', 'periods', 'start', 'max', 'draws', 'seed', 'points', 'maxiter',
-                'maxfun', 'procs', 'npt', 'maxiter', 'm', 'maxls']:
+    if flag in ['agents', 'periods', 'start', 'max', 'draws', 'seed', 'points',
+                'maxiter', 'maxfun', 'procs', 'npt', 'maxiter', 'm', 'maxls']:
         value = int(value)
     elif flag in ['file', 'options', 'type']:
         value = str(value)
@@ -122,9 +121,9 @@ def _type_conversions(flag, value):
 
 
 def _process_line(group, flag, value, is_fixed, bounds, dict_):
-    """ This function processes most parts of the initialization file.
-    """
-    # This aligns the label from the initialization file with the label inside the RESPY logic.
+    """Process most parts of the initialization file."""
+    # This aligns the label from the initialization file with the label inside
+    # the RESPY logic.
     if flag in ['coeff', 'shift'] or (group == 'TYPES' and flag == 'share'):
         flag = 'coeffs'
 

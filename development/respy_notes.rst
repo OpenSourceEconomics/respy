@@ -75,6 +75,11 @@ evaluate_python
 - Why is the covariance matrix never used. Is the use of the cholesky factors correct?
 
 
+read_python
+===========
+
+- The dict that comes out here should be already the attr dict, so we can just write self.attr.update(dict_) in clsRespy; Even better: maybe the whole function can be replaced by a call to json.load or yaml.load.
+
 
 Control flow of the estimation
 ==============================
@@ -84,7 +89,7 @@ Current
 
 estimate calls interface(request='estimate')
 
-interface creates arguments and toes preconditioning
+interface creates arguments and does preconditioning
 
 interface calls OptimizationClass
 
