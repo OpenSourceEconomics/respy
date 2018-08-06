@@ -6,26 +6,29 @@ from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import dist_econ_paras
-from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 
 def record_estimation_sample(data_frame):
-    """ This function briefly records the size of the estimation sample. It is called before the
-    code separates between the PYTHON and FORTRAN version.
-    """
+    """Record the size of the estimation sample.
 
+    Called before the code separates between the PYTHON and FORTRAN version.
+
+    """
     num_agents_est = str(data_frame['Identifier'].nunique())
 
     with open('est.respy.log', 'w') as out_file:
         out_file.write(' {:}\n\n'.format('ESTIMATION SAMPLE'))
-        line = '   The estimation is based on a sample of ' + num_agents_est + ' agents.\n\n'
+        line = '   The estimation is based on a sample of ' + \
+            num_agents_est + ' agents.\n\n'
         out_file.write(line)
 
 
-def record_estimation_scaling(x_optim_free_unscaled_start, x_optim_free_scaled_start,
-        paras_bounds_free_scaled, precond_matrix, paras_fixed, is_setup):
+def record_estimation_scaling(x_optim_free_unscaled_start,
+                              x_optim_free_scaled_start,
+                              paras_bounds_free_scaled, precond_matrix,
+                              paras_fixed, is_setup):
 
     with open('est.respy.log', 'a') as out_file:
         if is_setup:
@@ -41,10 +44,11 @@ def record_estimation_scaling(x_optim_free_unscaled_start, x_optim_free_scaled_s
                 if is_fixed:
                     continue
 
-                paras = [i, x_optim_free_unscaled_start[j], precond_matrix[j, j]]
-                paras += [x_optim_free_scaled_start[j]]
-                paras += [paras_bounds_free_scaled[j, 0]]
-                paras += [paras_bounds_free_scaled[j, 1]]
+                paras = [
+                    i, x_optim_free_unscaled_start[j], precond_matrix[j, j],
+                    x_optim_free_scaled_start[j],
+                    paras_bounds_free_scaled[j, 0],
+                    paras_bounds_free_scaled[j, 1]]
 
                 for k in [4, 5]:
                     if abs(paras[k]) > LARGE_FLOAT:
@@ -85,10 +89,12 @@ def record_estimation_stop():
 
 
 def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
-    """ Logging the progress of an estimation. This function contains two parts as two files
-    provide information about the progress.
-    """
+    """Log the progress of an estimation.
 
+    This function contains two parts as two files provide information about the
+    progress.
+
+    """
     # Distribute class attributes
     paras_fixed = opt_obj.paras_fixed
     num_paras = opt_obj.num_paras
@@ -119,7 +125,8 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
         opt_obj.x_optim_container[:, i] = x_optim_all_unscaled
         opt_obj.x_econ_container[:43, i] = x_optim_all_unscaled[:43]
         opt_obj.x_econ_container[43:53, i] = shocks_coeffs
-        opt_obj.x_econ_container[53:53 + (num_types - 1) * 2, i] = x_optim_shares
+        opt_obj.x_econ_container[53:53 + (num_types - 1) * 2, i] = \
+            x_optim_shares
         opt_obj.x_econ_container[53 + (num_types - 1) * 2:num_paras, i] = \
             x_optim_all_unscaled[53 + (num_types - 1) * 2:]
 
@@ -145,9 +152,9 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
 
         out_file.write('\n')
         fmt_ = '{:>13}    ' + '{:>25}    ' * 3
-        out_file.write(fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
+        out_file.write(
+            fmt_.format(*['Identifier', 'Start', 'Step', 'Current']))
         out_file.write('\n\n')
-
 
         # Formatting for the file
         fmt_ = '   {:>10}' + '    {:>25}' * 3
@@ -158,8 +165,8 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
             out_file.write(fmt_.format(*line).rstrip(' ') + '\n')
         out_file.write('\n')
 
-        # Get information on the spectral condition number of the covariance matrix of the shock
-        # distribution.
+        # Get information on the spectral condition number of the covariance
+        # matrix of the shock distribution.
         cond = []
         for i in range(3):
             shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-3]
@@ -182,13 +189,15 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
             if is_large[i]:
                 record_warning(i + 1)
 
-    write_est_info(opt_obj.crit_vals[0], x_econ_container[:, 0],
+    write_est_info(
+        opt_obj.crit_vals[0], x_econ_container[:, 0],
         opt_obj.num_step, opt_obj.crit_vals[1], x_econ_container[:, 1],
-        opt_obj.num_eval, opt_obj.crit_vals[2], x_econ_container[:, 2], num_paras)
+        opt_obj.num_eval, opt_obj.crit_vals[2], x_econ_container[:, 2],
+        num_paras)
 
 
 def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
-        num_eval, value_current, paras_current, num_paras):
+                   num_eval, value_current, paras_current, num_paras):
 
     # Formatting for the file
     fmt_ = '{:>25}    ' * 4
@@ -217,9 +226,16 @@ def write_est_info(value_start, paras_start, num_step, value_step, paras_step,
 
 
 def char_floats(floats):
-    """ Pretty printing of floats.
+    """Pretty printing of floats.
+
+    Args:
+        floats (list or float): if float it gets converted to a list with one
+            entry.
+
+    Returns:
+        line (list): list of strings.
+
     """
-    # We ensure that this function can also be called on for a single float value.
     if isinstance(floats, float):
         floats = [floats]
 
@@ -234,8 +250,7 @@ def char_floats(floats):
 
 
 def record_estimation_final(success, message):
-    """ We summarize the results of the estimation.
-    """
+    """Summarize the results of the estimation."""
     with open('est.respy.log', 'a') as out_file:
         out_file.write(' ESTIMATION REPORT\n\n')
         out_file.write('   Success ' + str(success) + '\n')
