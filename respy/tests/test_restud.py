@@ -9,6 +9,7 @@ import shlex
 import os
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_constants import TEST_KW_EXECUTABLE
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_constants import IS_FORTRAN
@@ -248,7 +249,7 @@ class TestClass(object):
             num_draws_emax, cov)
 
         # Solve model using RESTUD code.
-        cmd = TEST_RESOURCES_DIR + '/kw_dp3asim'
+        cmd = TEST_KW_EXECUTABLE + '/kw_dp3asim'
         subprocess.check_call(cmd, shell=True)
 
         # We need to ensure for RESPY that the lagged activity variable indicates that the
@@ -311,7 +312,7 @@ class TestClass(object):
             num_draws_emax, cov)
 
         open('.restud.testing.scratch', 'a').close()
-        cmd = TEST_RESOURCES_DIR + '/kw_dp3asim'
+        cmd = TEST_KW_EXECUTABLE + '/kw_dp3asim'
         subprocess.check_call(cmd, shell=True)
 
         transform_respy_to_restud_est(optim_paras, edu_spec, num_agents_est, num_draws_prob, tau,
@@ -335,7 +336,7 @@ class TestClass(object):
 
         # We always need the seed.txt
         shutil.copy(TEST_RESOURCES_DIR + '/seed.txt', 'seed.txt')
-        cmd = TEST_RESOURCES_DIR + '/kw_dpml4a'
+        cmd = TEST_KW_EXECUTABLE + '/kw_dpml4a'
         subprocess.check_call(cmd, shell=True)
         os.remove('seed.txt')
 

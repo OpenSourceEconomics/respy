@@ -1,16 +1,23 @@
 #!/usr/bin/env python
 
-from types import MethodType
 from subprocess import Popen
 from subprocess import PIPE
 import numpy as np
-import shutil
 import shlex
 import json
-import os
 
 top = '.'
 out = '.bld'
+
+# GFORTRAN FLAGS
+GFORTRAN_FLAGS_DEBUG = []
+GFORTRAN_FLAGS_DEBUG += ['-O', '-Wall', '-Wline-truncation', '-Wsurprising', '-Waliasing']
+GFORTRAN_FLAGS_DEBUG += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
+GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffree-line-length-0']
+GFORTRAN_FLAGS_DEBUG += ['-cpp', '-Wcharacter-truncation', '-ffpe-trap=zero,overflow,invalid']
+GFORTRAN_FLAGS_DEBUG += ['-Wimplicit-interface']
+
+GFORTRAN_FLAGS_PRODUCTION = ['-O3', '-ffree-line-length-0', '-cpp']
 
 
 def options(ctx):
@@ -19,19 +26,19 @@ def options(ctx):
 
     ctx.load('compiler_fc')
 
-    ctx.add_option('--debug', action='store_true', dest='is_debug',
-                   default=False, help='use debug compiler options')
+    ctx.add_option('--debug', action='store_true', dest='is_debug', default=False,
+                   help='use debug compiler flags')
 
-    ctx.add_option('--without_parallelism', action='store_true',
-        dest='without_parallelism', default=False, help='without PARALLELISM')
+    ctx.add_option('--no_parallelism', action='store_true', dest='no_parallelism', default=False,
+                   help='no support for parallelism')
 
-    ctx.add_option('--without_fortran', action='store_true',
-        dest='without_fortran', default=False, help='without FORTRAN')
+    ctx.add_option('--no_fortran', action='store_true', dest='no_fortran', default=False,
+                   help='no support for FORTRAN')
 
-    # This option is convenient in the development process as it allows to
-    # later analyze the F2PY testing battery.
-    ctx.add_option('--without_f2py', action='store_true',
-        dest='without_f2py', default=False, help='without F2PY')
+    # This option is convenient in the development process as it allows to later analyze the F2PY
+    # testing battery.
+    ctx.add_option('--no_f2py', action='store_true', dest='no_f2py', default=False,
+                   help='no support for F2PY')
 
 
 def configure_debug(ctx):
@@ -58,7 +65,7 @@ def support_f2py(ctx):
 
     ctx.start_msg('Support F2PY ')
 
-    if ctx.options.without_f2py:
+    if ctx.options.no_f2py:
         is_support = False
     else:
 
@@ -79,7 +86,7 @@ def support_fortran(ctx):
 
     ctx.start_msg('Support FORTRAN ')
 
-    if ctx.options.without_fortran:
+    if ctx.options.no_fortran:
         is_support = False
     else:
         try:
@@ -115,7 +122,7 @@ def support_parallelism(ctx):
 
     ctx.start_msg('Support PARALLELISM ')
 
-    if ctx.options.without_parallelism or ctx.options.without_fortran:
+    if ctx.options.no_parallelism or ctx.options.no_fortran:
         is_support = False
     else:
 
@@ -124,12 +131,7 @@ def support_parallelism(ctx):
             ctx.find_program('mpif90')
 
             # Check for MPICH implementation and version
-            implementation, version = _get_mpif90_details(ctx)
-            if implementation not in ['MPICH']:
-                raise ctx.errors.ConfigurationError
-
-            if int(version.split('.')[0]) < 3:
-                raise ctx.errors.ConfigurationError
+            check_mpi_implementation(ctx)
 
         except ctx.errors.ConfigurationError:
             is_support = False
@@ -144,120 +146,60 @@ def support_parallelism(ctx):
 def configure(ctx):
 
     # Configuration
-    ctx.env['DEBUG'] = MethodType(configure_debug, ctx)()
+    ctx.env['PARALLELISM'] = support_parallelism(ctx)
+    ctx.env['FORTRAN'] = support_fortran(ctx)
+    ctx.env['DEBUG'] = configure_debug(ctx)
+    ctx.env['F2PY'] = support_f2py(ctx)
 
-    ctx.env['PARALLELISM'] = MethodType(support_parallelism, ctx)()
-    ctx.env['FORTRAN'] = MethodType(support_fortran, ctx)()
-    ctx.env['F2PY'] = MethodType(support_f2py, ctx)()
+    write_configuration(ctx)
 
     # We need more details for the case of parallelism.
     if ctx.env['PARALLELISM']:
         ctx.env['FC'] = 'mpif90'
         ctx.env['COMPILER_FORTRAN'] = 'mpif90'
 
-    # We need a small configuration file, that allow to easily access what
-    # the exact version of the executable is.
-    config_dict = dict()
-    config_dict['DEBUG'] = ctx.env['DEBUG']
-
-    config_dict['PARALLELISM'] = ctx.env['PARALLELISM']
-    config_dict['FORTRAN'] = ctx.env['FORTRAN']
-    config_dict['F2PY'] = ctx.env['F2PY']
-    with open('.config', 'w') as outfile:
-        json.dump(config_dict, outfile)
-
-    if not ctx.env['FORTRAN']:
-        return
-
-    # Enable static libraries
+    # Specify search path for static libraries
     ctx.env.append_unique('STLIBPATH', ['../.bld/fortran'])
     ctx.env.append_unique('STLIB', ['resfort'])
 
-    # Enable shared libraries
+    # Specify search path for shared libraries
     ctx.env.append_unique('LIB', ['lapack'])
 
-    # Set of compiler options.
-    flags_production = ['-O3', '-ffree-line-length-0', '-cpp']
-
-    flags_debug = []
-    flags_debug += ['-O', '-Wall', '-Wline-truncation']
-    flags_debug += ['-Wsurprising', '-Waliasing', '-Wimplicit-interface']
-    flags_debug += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
-    flags_debug += ['-fbacktrace', '-g', '-fmax-errors=1']
-    flags_debug += ['-ffree-line-length-0', '-cpp', '-Wcharacter-truncation']
-    flags_debug += ['-ffpe-trap=zero,overflow,invalid']
-
-    # The build is currently only tested for GFORTRAN.
+    # Specify compiler flags
     if ctx.env['DEBUG']:
-        ctx.env.append_unique('FCFLAGS', flags_debug)
+        ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_DEBUG)
     else:
-        ctx.env.append_unique('FCFLAGS', flags_production)
+        ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_PRODUCTION)
 
 
 def build(ctx):
 
-    ctx.add_pre_fun(pre)
-
     if ctx.env['FORTRAN']:
-
         ctx.recurse('fortran')
-
-        ctx.add_group()
-
-        ctx.add_post_fun(post)
-
-        # Even when the F2PY interface is not build, we still compile the
-        # DP3ASIM executable from the original paper.
         ctx.recurse('tests/resources')
-
-        ctx.add_group()
-
-
-def post(ctx):
-    """ This function performs some housekeeping tasks. We keep all the
-    executables in a single directory.
-    """
-    subdir = 'fortran/bin'
-
-    # Copy the RESFORT executable back to package directory
-    os.mkdir(subdir)
-    shutil.copy('.bld/fortran/resfort', subdir)
-
-    if ctx.env['PARALLELISM']:
-        shutil.copy('.bld/fortran/resfort_slave', subdir)
-
-    # Copy the KW executable.
-    for fname in ['kw_dp3asim', 'kw_dpml4a']:
-        src = '.bld/tests/resources/' + fname
-        shutil.copy(src, 'tests/resources')
-
-
-def pre(ctx):
-    """ Clean up some directories.
-    """
-
-    if os.path.exists('fortran/bin'):
-        shutil.rmtree('fortran/bin')
-
-    for fname in ['kw_dp3asim', 'kw_dpml4a']:
-        if os.path.exists('tests/resources/' + fname):
-            os.unlink('tests/resources/' + fname)
-
-
-def _get_mpif90_details(ctx):
-
-    output, _ = Popen(['mpif90', '-v'], stdout=PIPE, stderr=PIPE).communicate()
-
-    # In PYTHON 2, output is already a string, but in PYTHON 3 we need to decode it first.
-    try:
-        output = output.decode()
-    except AttributeError:
+    else:
         pass
 
-    # Now we can process the information independent of PYTHON 2 or PYTHON 3.
-    try:
-        implementation, version = np.array(shlex.split(output))[[2, 4]]
-    except:
+
+def check_mpi_implementation(ctx):
+    """This function o"""
+    output = Popen(['mpif90', '-v'], stdout=PIPE, stderr=PIPE).communicate()[0].decode()
+    implementation, version = np.array(shlex.split(output))[[2, 4]]
+
+    # The build process is only tested for MPICH at this point.
+    if implementation not in ['MPICH']:
         raise ctx.errors.ConfigurationError
 
-    return implementation, version
+    # We need at least version 3 to implement the master-slave paradigm.
+    if int(version.split('.')[0]) < 3:
+        raise ctx.errors.ConfigurationError
+
+
+def write_configuration(ctx):
+    """This function records the package specification in a simple file."""
+    config_dict = dict()
+    for label in ['DEBUG', 'PARALLELISM', 'FORTRAN', 'F2PY']:
+        config_dict[label] = ctx.env[label]
+
+    with open('.config', 'w') as outfile:
+        json.dump(config_dict, outfile)

@@ -1437,7 +1437,7 @@ PROGRAM dpml4a
          PROB = A2/SUMV
 !C        IF(NP.EQ.NPARM+1)
 !C    *     write(11,1061) I,T,STATE(I,T),J,PROB,V1,V2,V3,V4
-         DENW = 0.3989423*EXP(-0.5*RNNJ2**2)/A(2,2)  
+         DENW = 0.3989423*EXP(-0.5*RNNJ2**2)/A(2,2)
          PROB = PROB*DENW
          PROBI = PROBI + PROB
 !C        write(11,1061) I,T,STATE(I,T),J,PROB,V1,V2,V3,V4
