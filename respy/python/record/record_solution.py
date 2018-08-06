@@ -1,7 +1,8 @@
 import os
 
 
-def record_solution_progress(indicator, file_sim, period=None, num_states=None):
+def record_solution_progress(indicator, file_sim, period=None,
+                             num_states=None):
 
     if indicator == 1:
         if os.path.exists(file_sim + '.respy.sol'):
@@ -14,7 +15,8 @@ def record_solution_progress(indicator, file_sim, period=None, num_states=None):
         line = 'Starting backward induction procedure'
     elif indicator == 4:
         string = '''{:>18}{:>3}{:>5} {:>7} {:>7}'''
-        line = string.format(*['... solving period', period, 'with', num_states, 'states'])
+        line = string.format(
+            *['... solving period', period, 'with', num_states, 'states'])
     elif indicator == -1:
         line = '... finished\n'
     elif indicator == -2:
@@ -27,9 +29,7 @@ def record_solution_progress(indicator, file_sim, period=None, num_states=None):
 
 
 def record_solution_prediction(results, file_sim):
-    """ Write out some basic information to the solutions log file.
-    """
-
+    """Write out basic information to the solutions log file."""
     with open(file_sim + '.respy.sol', 'a') as outfile:
         outfile.write('    Information about Prediction Model\n\n')
 

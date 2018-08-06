@@ -80,6 +80,12 @@ read_python
 
 - The dict that comes out here should be already the attr dict, so we can just write self.attr.update(dict_) in clsRespy; Even better: maybe the whole function can be replaced by a call to json.load or yaml.load.
 
+record_warning
+==============
+
+Many of those warnings could be made obsolete if we just print the approximate order of magnitude when we encounter numbers that are too large for pretty printing.
+
+
 
 Control flow of the estimation
 ==============================
