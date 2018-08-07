@@ -1,10 +1,13 @@
-#!/usr/bin/env python
-
 from subprocess import Popen
 from subprocess import PIPE
+from numpy import f2py
 import numpy as np
 import shlex
 import json
+import os
+
+from waflib.Task import Task
+
 
 top = '.'
 out = '.bld'
@@ -41,10 +44,65 @@ def options(ctx):
                    help='no support for F2PY')
 
 
-def configure_debug(ctx):
-    """ This function determines whether F2PY is supported or not.
-    """
+def configure(ctx):
 
+    # Configuration
+    ctx.env['DEBUG'] = configure_debug(ctx)
+
+    ctx.env['PARALLELISM'] = check_support_parallelism(ctx)
+    ctx.env['FORTRAN'] = check_support_fortran(ctx)
+    ctx.env['F2PY'] = check_support_f2py(ctx)
+
+    write_configuration(ctx)
+
+    # We need more details for the case of parallelism.
+    if ctx.env['PARALLELISM']:
+        ctx.env['FC'] = 'mpif90'
+        ctx.env['COMPILER_FORTRAN'] = 'mpif90'
+
+    # Specify search path for static libraries
+    ctx.env.append_unique('STLIBPATH', ['../.bld/fortran'])
+    ctx.env.append_unique('STLIB', ['resfort'])
+
+    # Specify search path for shared libraries
+    ctx.env.append_unique('LIB', ['lapack'])
+
+    # Specify compiler flags
+    if ctx.env['DEBUG']:
+        ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_DEBUG)
+    else:
+        ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_PRODUCTION)
+
+    # We can only compile parts of the code if MPI is in fact available.
+    if ctx.env['PARALLELISM']:
+        ctx.env.append_unique('FCFLAGS', ['-DMPI_AVAILABLE'])
+
+
+def build(ctx):
+
+    if ctx.env['FORTRAN']:
+
+        # We compile the FORTRAN code of the respy package.
+        ctx.recurse('fortran')
+
+        # We compile the code of the original Keane & Wolpin (1994)
+        # TODO: I need to understand how to build in parallel, cleanup throughout ctx.add_group()
+        # TODO: update wscript version
+        # TODO: test setup in development/respy/driver.py
+        ctx.add_group()
+
+        ctx.recurse('tests/resources')
+
+        ctx.add_group()
+
+    if ctx.env['F2PY']:
+
+        # We compile an interface to access core respy routines in our testing framework.
+        ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
+
+
+def configure_debug(ctx):
+    """This function determines whether F2PY is supported or not."""
     ctx.start_msg('Configuration DEBUG')
 
     if ctx.options.is_debug:
@@ -59,10 +117,8 @@ def configure_debug(ctx):
     return is_debug
 
 
-def support_f2py(ctx):
-    """ This function determines whether F2PY is supported or not.
-    """
-
+def check_support_f2py(ctx):
+    """This function determines whether F2PY is supported or not."""
     ctx.start_msg('Support F2PY ')
 
     if ctx.options.no_f2py:
@@ -79,11 +135,8 @@ def support_f2py(ctx):
     return is_support
 
 
-def support_fortran(ctx):
-    """ This function determines whether FORTRAN is supported or not.
-    Some tests are duplicated.
-    """
-
+def check_support_fortran(ctx):
+    """This function determines whether FORTRAN is supported or not."""
     ctx.start_msg('Support FORTRAN ')
 
     if ctx.options.no_fortran:
@@ -115,11 +168,8 @@ def support_fortran(ctx):
     return is_support
 
 
-def support_parallelism(ctx):
-    """ This function determines whether parallelism is supported or not.
-    Some tests are duplicated.
-    """
-
+def check_support_parallelism(ctx):
+    """This function determines whether parallelism is supported or not."""
     ctx.start_msg('Support PARALLELISM ')
 
     if ctx.options.no_parallelism or ctx.options.no_fortran:
@@ -143,46 +193,8 @@ def support_parallelism(ctx):
     return is_support
 
 
-def configure(ctx):
-
-    # Configuration
-    ctx.env['PARALLELISM'] = support_parallelism(ctx)
-    ctx.env['FORTRAN'] = support_fortran(ctx)
-    ctx.env['DEBUG'] = configure_debug(ctx)
-    ctx.env['F2PY'] = support_f2py(ctx)
-
-    write_configuration(ctx)
-
-    # We need more details for the case of parallelism.
-    if ctx.env['PARALLELISM']:
-        ctx.env['FC'] = 'mpif90'
-        ctx.env['COMPILER_FORTRAN'] = 'mpif90'
-
-    # Specify search path for static libraries
-    ctx.env.append_unique('STLIBPATH', ['../.bld/fortran'])
-    ctx.env.append_unique('STLIB', ['resfort'])
-
-    # Specify search path for shared libraries
-    ctx.env.append_unique('LIB', ['lapack'])
-
-    # Specify compiler flags
-    if ctx.env['DEBUG']:
-        ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_DEBUG)
-    else:
-        ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_PRODUCTION)
-
-
-def build(ctx):
-
-    if ctx.env['FORTRAN']:
-        ctx.recurse('fortran')
-        ctx.recurse('tests/resources')
-    else:
-        pass
-
-
 def check_mpi_implementation(ctx):
-    """This function o"""
+    """This function checks for the version of the MPICH implementation."""
     output = Popen(['mpif90', '-v'], stdout=PIPE, stderr=PIPE).communicate()[0].decode()
     implementation, version = np.array(shlex.split(output))[[2, 4]]
 
@@ -200,6 +212,21 @@ def write_configuration(ctx):
     config_dict = dict()
     for label in ['DEBUG', 'PARALLELISM', 'FORTRAN', 'F2PY']:
         config_dict[label] = ctx.env[label]
+    json.dump(config_dict, open('.config', 'w'))
 
-    with open('.config', 'w') as outfile:
-        json.dump(config_dict, outfile)
+
+class CreateF2pyInterfaces(Task):
+
+    @staticmethod
+    def run():
+
+        os.chdir('tests/resources')
+
+        args = ''
+        args += '--f90flags="-ffree-line-length-0" -I../../.bld -L../../.bld/fortran -lresfort '
+        args += '-llapack'
+
+        src = open('f2py_interface.f90', 'rb').read()
+        f2py.compile(src, 'f2py_interface', args, extension='.f90')
+
+        os.chdir('../../')

@@ -1,39 +1,11 @@
-import os
-
-from waflib.Task import Task
-
-
-
-
-class CreateF2pyInterfaces(Task):
-
-    def run(self):
-
-        os.chdir('tests/resources')
-
-        from numpy import f2py
-        extra_args = '--f90flags="-ffree-line-length-0" -I../../.bld ' \
-                     '-L../../.bld/fortran -lresfort ' \
-                     '-llapack'
-
-        with open('f2py_interface.f90', 'rb') as sourcefile:
-            sourcecode = sourcefile.read()
-        f2py.compile(sourcecode, 'f2py_interface', extra_args,
-            extension='.f90')
-
-        os.chdir('../../')
-
-
 def build(ctx):
 
-    # Build F2PY interface
-    if ctx.env['F2PY']:
-        ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
-
-    # We need to be a little more relaxed with the floating point traps when compiling the old code.
+    # We need to be a little more relaxed with the floating point traps when compiling the code
+    # from the original paper.
+    flags = ctx.env['FCFLAGS'][:]
     if ctx.env['DEBUG']:
-        ctx.env['FCFLAGS'].remove('-ffpe-trap=zero,overflow,invalid')
+        flags.remove('-ffpe-trap=zero,overflow,invalid')
 
-    base_src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90']
+    src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90']
     for fname in ['kw_dpml4a', 'kw_dp3asim']:
-        ctx(features=['fc', 'fcprogram'], source=base_src + [fname + '.f90'], target=fname)
+        ctx(features=['fc', 'fcprogram'], source=src + [fname + '.f90'], target=fname, flags=flags)
