@@ -66,6 +66,7 @@ shared_auxiliary.py
 
 
 - dist_econ_paras and dist_optim_paras shares most of the logic and just has different return types. It is not clear from the names what the difference is. I would suggest one public function with a switch (target='dict'; target='tuple') and potentially two private functions for the implementation.
+- get_optim_paras should be closer to the previous two functions and not hardcode the parsing information.
 
 
 evaluate_python
@@ -86,6 +87,12 @@ record_warning
 Many of those warnings could be made obsolete if we just print the approximate order of magnitude when we encounter numbers that are too large for pretty printing.
 
 
+shared_auxiliary.py
+===================
+
+- where do we use the results of print_init_dict? Are they used for fortran? If not, the function can again be replaced by a simple call to json.dump or yaml.dump if we change from .ini files to dictionaries.
+
+
 
 Control flow of the estimation
 ==============================
@@ -102,6 +109,42 @@ interface calls OptimizationClass
 OptimizationClass calls pyth_criterion
 
 we should look for a better version.
+
+
+Fine grained unit tests
+=======================
+
+Ideally we would have more fine grained unit tests for several functions. Since they only test small parts of code they will run quickly. For the same reason we can use higher precision. I propose tests for the following functions:
+
+- pyth_contributions
+- get_smoothed_probabilities
+- all functions in solve
+
+
+Reduce Fortran Code
+===================
+
+There are already some parts that are only implemented in Python and not Fortran or that are implemented very differently in Python. I think we should carve out everything that is not very speed relevant and only implement it in Python. Then we can use much more idiomatic Python in that case.
+
+We should put all of this code into one folder called model_processing. Then we could write about the reasons for this directory structure in the documentation. This would make it much easier for new developers!
+
+Already Python only
+-------------------
+
+- clsRespy
+- estimate
+- simulate
+- process
+- read
+
+
+Proposed Python only
+--------------------
+
+- create_state_space -> save it to something that can be read by Fortran
+- create_draws -> save it to something that can be read by Fortran
+- ?
+
 
 
 
