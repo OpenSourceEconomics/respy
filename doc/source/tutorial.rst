@@ -6,7 +6,7 @@ We now illustrate the basic capabilities of the ``respy`` package. We start with
 Model Specification
 -------------------
 
-The model is specified in an initialization file. For an example, check out the first parameterization analyzed in Keane and Wolpin (1994) `here <../../../respy/tests/resources/kw_data_one.ini>`__. Let us discuss each of its elements in more detail.
+The model is specified in an initialization file. For an example, check out the first parameterization analyzed in Keane and Wolpin (1994) `here <https://github.com/OpenSourceEconomics/respy/tree/master/doc/kw_data_one.ini>`__. Let us discuss each of its elements in more detail.
 
 **BASICS**
 
@@ -255,7 +255,7 @@ If you specify bounds for any free parameter, you have to choose a constraint op
 Examples
 --------
 
-Let us explore the basic capabilities of the ``respy`` package with a couple of examples. All the material is available `online <https://github.com/restudToolbox/package/tree/master/example>`_.
+Let us explore the basic capabilities of the ``respy`` package with a couple of examples. All the material is available `online <https://github.com/OpenSourceEconomics/respy/tree/master/doc/examples>`__.
 
 **Simulation and Estimation**
 
