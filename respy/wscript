@@ -25,19 +25,17 @@ def options(ctx):
 
     ctx.load('compiler_fc')
 
-    ctx.add_option('--debug', action='store_true', dest='is_debug', default=False,
-                   help='use debug compiler flags')
+    ctx.add_option('--debug', action='store_true', dest='is_debug', help='use debug compiler flags')
 
-    ctx.add_option('--no_parallelism', action='store_true', dest='no_parallelism', default=False,
-                   help='no support for parallelism')
+    ctx.add_option('--no_parallelism', action='store_true', dest='no_parallelism',
+        help='no support for parallelism')
 
-    ctx.add_option('--no_fortran', action='store_true', dest='no_fortran', default=False,
-                   help='no support for FORTRAN')
+    ctx.add_option('--no_fortran', action='store_true', dest='no_fortran',
+        help='no support for FORTRAN')
 
     # This option is convenient in the development process as it allows to later analyze the F2PY
     # testing battery.
-    ctx.add_option('--no_f2py', action='store_true', dest='no_f2py', default=False,
-                   help='no support for F2PY')
+    ctx.add_option('--no_f2py', action='store_true', dest='no_f2py', help='no support for F2PY')
 
 
 def configure(ctx):

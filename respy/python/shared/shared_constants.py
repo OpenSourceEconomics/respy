@@ -12,7 +12,7 @@ ROOT_DIR = ROOT_DIR.replace('/python/shared', '')
 # Directory with additional resources for the testing harness
 TEST_DIR = ROOT_DIR + '/tests'
 TEST_RESOURCES_DIR = ROOT_DIR + '/tests/resources'
-TEST_KW_EXECUTABLE = ROOT_DIR + '/.bld/tests/resources'
+TEST_RESOURCES_BUILD = ROOT_DIR + '/.bld/tests/resources'
 
 # Directory with the FORTRAN resources
 EXEC_DIR = ROOT_DIR + '/.bld/fortran'
