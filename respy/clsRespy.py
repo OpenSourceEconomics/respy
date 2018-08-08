@@ -10,11 +10,11 @@ from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import ROOT_DIR
-from respy.python.read.read_python import read
+from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.read.read_python import read_and_process_ini_file
 from respy.custom_exceptions import UserError
 
 
@@ -23,9 +23,7 @@ class RespyCls(object):
 
     def __init__(self, fname):
         self._set_hardcoded_attributes()
-        self.attr = {}
-        self.attr['init_dict'] = read(fname)
-        self._update_core_attributes()
+        self.attr = read_and_process_ini_file(fname)
         self._update_derived_attributes()
         self._initialize_solution_attributes()
 
@@ -40,14 +38,7 @@ class RespyCls(object):
         self.solution_attributes = [
             'periods_rewards_systematic', 'states_number_period',
             'mapping_state_idx', 'periods_emax', 'states_all']
-        self.optimizers = OPT_EST_FORT + OPT_EST_PYTH
-        # We need to do some reorganization as the parameters from the
-        # initialization that describe the covariance of the shocks need to be
-        # mapped to the Cholesky factors which are the parameters the optimizer
-        # actually iterates on.
-        self.paras_mapping = [
-            (43, 43), (44, 44), (45, 46), (46, 49), (47, 45), (48, 47),
-            (49, 50), (50, 48), (51, 51), (52, 52)]
+        self.paras_mapping = [(43, 43), (44, 44), (45, 46), (46, 49), (47, 45), (48, 47), (49, 50), (50, 48), (51, 51), (52, 52)]
 
     def _initialize_solution_attributes(self):
         for attribute in self.solution_attributes:
@@ -333,168 +324,6 @@ class RespyCls(object):
 
         return True
 
-    def _update_core_attributes(self):
-        """Only called when the class is initialized."""
-        # Distribute class attributes
-        init_dict = self.attr['init_dict']
-
-        # Extract information from initialization dictionary and construct
-        # auxiliary objects.
-        self.attr['num_points_interp'] = init_dict['INTERPOLATION']['points']
-
-        self.attr['optimizer_used'] = init_dict['ESTIMATION']['optimizer']
-
-        self.attr['is_interpolated'] = init_dict['INTERPOLATION']['flag']
-
-        self.attr['num_agents_sim'] = init_dict['SIMULATION']['agents']
-
-        self.attr['num_agents_est'] = init_dict['ESTIMATION']['agents']
-
-        self.attr['derivatives'] = init_dict['DERIVATIVES']['version']
-
-        self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
-
-        self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
-
-        self.attr['num_periods'] = init_dict['BASICS']['periods']
-
-        self.attr['seed_prob'] = init_dict['ESTIMATION']['seed']
-
-        self.attr['maxfun'] = init_dict['ESTIMATION']['maxfun']
-
-        self.attr['seed_sim'] = init_dict['SIMULATION']['seed']
-
-        self.attr['file_sim'] = init_dict['SIMULATION']['file']
-
-        self.attr['file_est'] = init_dict['ESTIMATION']['file']
-
-        self.attr['is_store'] = init_dict['SOLUTION']['store']
-
-        self.attr['seed_emax'] = init_dict['SOLUTION']['seed']
-
-        self.attr['version'] = init_dict['PROGRAM']['version']
-
-        self.attr['num_procs'] = init_dict['PROGRAM']['procs']
-
-        self.attr['is_debug'] = init_dict['PROGRAM']['debug']
-
-        self.attr['edu_max'] = init_dict['EDUCATION']['max']
-
-        self.attr['tau'] = init_dict['ESTIMATION']['tau']
-
-        self.attr['precond_spec'] = dict()
-        self.attr['precond_spec']['minimum'] = \
-            init_dict['PRECONDITIONING']['minimum']
-        self.attr['precond_spec']['type'] = \
-            init_dict['PRECONDITIONING']['type']
-        self.attr['precond_spec']['eps'] = init_dict['PRECONDITIONING']['eps']
-
-        self.attr['edu_spec'] = dict()
-        self.attr['edu_spec']['lagged'] = init_dict['EDUCATION']['lagged']
-        self.attr['edu_spec']['start'] = init_dict['EDUCATION']['start']
-        self.attr['edu_spec']['share'] = init_dict['EDUCATION']['share']
-        self.attr['edu_spec']['max'] = init_dict['EDUCATION']['max']
-
-        self.attr['num_types'] = \
-            int(len(init_dict['TYPE SHARES']['coeffs']) / 2) + 1
-
-        # Initialize model parameters
-        self.attr['optim_paras'] = dict()
-
-        # Constructing the covariance matrix of the shocks
-        shocks_coeffs = init_dict['SHOCKS']['coeffs']
-        for i in [0, 4, 7, 9]:
-            shocks_coeffs[i] **= 2
-
-        shocks = np.zeros((4, 4))
-        shocks[0, :] = shocks_coeffs[0:4]
-        shocks[1, 1:] = shocks_coeffs[4:7]
-        shocks[2, 2:] = shocks_coeffs[7:9]
-        shocks[3, 3:] = shocks_coeffs[9:10]
-
-        shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
-
-        # As we call the Cholesky decomposition, we need to handle the
-        # special case of a deterministic model.
-        if np.count_nonzero(shocks_cov) == 0:
-            self.attr['optim_paras']['shocks_cholesky'] = np.zeros((4, 4))
-        else:
-            shocks_cholesky = np.linalg.cholesky(shocks_cov)
-            self.attr['optim_paras']['shocks_cholesky'] = shocks_cholesky
-
-        # Constructing the shifts for each type.
-        type_shifts = init_dict['TYPE SHIFTS']['coeffs']
-        type_shares = init_dict['TYPE SHARES']['coeffs']
-
-        if self.attr['num_types'] == 1:
-            type_shares = np.tile(0.0, 2)
-            type_shifts = np.tile(0.0, (1, 4))
-        else:
-            type_shares = np.concatenate(
-                (np.tile(0.0, 2), type_shares), axis=0)
-            type_shifts = np.reshape(
-                type_shifts, (self.attr['num_types'] - 1, 4))
-            type_shifts = np.concatenate(
-                (np.tile(0.0, (1, 4)), type_shifts), axis=0)
-
-        self.attr['optim_paras']['type_shifts'] = type_shifts
-        self.attr['optim_paras']['type_shares'] = type_shares
-
-        self.attr['optim_paras']['coeffs_a'] = \
-            init_dict['OCCUPATION A']['coeffs']
-        self.attr['optim_paras']['coeffs_b'] = \
-            init_dict['OCCUPATION B']['coeffs']
-        self.attr['optim_paras']['coeffs_common'] = \
-            init_dict['COMMON']['coeffs']
-        self.attr['optim_paras']['coeffs_edu'] = \
-            init_dict['EDUCATION']['coeffs']
-        self.attr['optim_paras']['coeffs_home'] = init_dict['HOME']['coeffs']
-        self.attr['optim_paras']['delta'] = init_dict['BASICS']['coeffs']
-
-        # Initialize information about optimization parameters
-        keys = ['BASICS', 'COMMON', 'OCCUPATION A', 'OCCUPATION B',
-                'EDUCATION', 'HOME', 'SHOCKS', 'TYPE SHARES', 'TYPE SHIFTS']
-
-        for which in ['fixed', 'bounds']:
-            self.attr['optim_paras']['paras_' + which] = []
-            for key_ in keys:
-                self.attr['optim_paras']['paras_' + which] += \
-                    init_dict[key_][which][:]
-
-        # Ensure that all elements in the dictionary are of the same type.
-        keys = []
-        keys += ['coeffs_a', 'coeffs_b', 'coeffs_edu', 'coeffs_home']
-        keys += ['shocks_cholesky', 'delta', 'type_shares']
-        keys += ['type_shifts', 'coeffs_common']
-        for key_ in keys:
-            self.attr['optim_paras'][key_] = \
-                np.array(self.attr['optim_paras'][key_])
-
-        # Aggregate all the information provided about optimizer options in
-        # one class attribute for easier access later.
-        self.attr['optimizer_options'] = dict()
-        for optimizer in self.optimizers:
-            is_defined = (optimizer in init_dict.keys())
-            if is_defined:
-                self.attr['optimizer_options'][optimizer] = \
-                    init_dict[optimizer]
-
-        # We need to align the indicator for the fixed parameters.
-        # In the initialization file, these refer to the upper triangular
-        # matrix of the covariances. Inside the  program, we use the lower
-        # triangular Cholesky decomposition.
-        paras_fixed = self.attr['optim_paras']['paras_fixed'][:]
-
-        paras_fixed_reordered = paras_fixed[:]
-        for old, new in self.paras_mapping:
-            paras_fixed_reordered[new] = paras_fixed[old]
-
-        self.attr['optim_paras']['paras_fixed'] = paras_fixed_reordered
-
-        # Delete the duplicated information from the initialization dictionary.
-        # Special treatment of EDUCATION is required as it contains other
-        # information about education than just the rewards parametrization.
-        del self.attr['init_dict']
 
     def _update_derived_attributes(self):
         """Update derived attributes."""

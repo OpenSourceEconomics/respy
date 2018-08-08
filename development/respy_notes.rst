@@ -6,20 +6,14 @@ Notes, todos and questions about respy
 clsRespy
 ========
 
-- should we delete the init_dict at the end of __init__? It might become outdated. -> do it
 
 - Even though the PARAS_MAPPING does have a pretty long comment I don't understand it well enough to judge whether it is correct. -> Philipp checks that
 
 - update_optim paras could be made a lot shorter after my proposed changes to dist_econ_paras and dist_optim_paras; In any case it has an unnecessary assignment (self.attr['optim_paras'] = optim_paras) -> do it
 
 
-- _initialize_attributes and update_core_attributes should probably be just one step. It could be a trivial one after settle on one dictionary representation. -> do it
-
 - the distinction between update core_attributes and update_derived_attributes is no longer clear cut since num_paras is now a derived attribute! -> put num_paras in derived attributes
 
-- in check_integrity_attributes we could save the unpacking step and instead write a = self.attr for shortcut access to the attributes. -> do it
-
-- maybe replace attr by __dict__ -> do it
 
 
 estimate.py and simulate.py
