@@ -277,9 +277,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         file_.write(line + '\n')
 
         # Directory for executables
-        exec_dir = os.path.dirname(os.path.realpath(__file__)) + '/bin'
-
-        line = '"{0}"'.format(exec_dir)
+        line = '"{0}"'.format(EXEC_DIR)
         file_.write(line + '\n')
 
         # Optimizers

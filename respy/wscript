@@ -1,12 +1,8 @@
 from subprocess import Popen
 from subprocess import PIPE
-from numpy import f2py
 import numpy as np
 import shlex
 import json
-import os
-
-from waflib.Task import Task
 
 
 top = '.'
@@ -61,8 +57,8 @@ def configure(ctx):
         ctx.env['COMPILER_FORTRAN'] = 'mpif90'
 
     # Specify search path for static libraries
-    ctx.env.append_unique('STLIBPATH', ['../.bld/fortran'])
-    ctx.env.append_unique('STLIB', ['resfort'])
+    ctx.env.append_unique('STLIBPATH', ['../.bld/fortran', '../.bld/tests/resources'])
+    ctx.env.append_unique('STLIB', ['resfort', 'kw'])
 
     # Specify search path for shared libraries
     ctx.env.append_unique('LIB', ['lapack'])
@@ -82,23 +78,9 @@ def build(ctx):
 
     if ctx.env['FORTRAN']:
 
-        # We compile the FORTRAN code of the respy package.
         ctx.recurse('fortran')
 
-        # We compile the code of the original Keane & Wolpin (1994)
-        # TODO: I need to understand how to build in parallel, cleanup throughout ctx.add_group()
-        # TODO: update wscript version
-        # TODO: test setup in development/respy/driver.py
-        ctx.add_group()
-
         ctx.recurse('tests/resources')
-
-        ctx.add_group()
-
-    if ctx.env['F2PY']:
-
-        # We compile an interface to access core respy routines in our testing framework.
-        ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
 
 
 def configure_debug(ctx):
@@ -213,20 +195,3 @@ def write_configuration(ctx):
     for label in ['DEBUG', 'PARALLELISM', 'FORTRAN', 'F2PY']:
         config_dict[label] = ctx.env[label]
     json.dump(config_dict, open('.config', 'w'))
-
-
-class CreateF2pyInterfaces(Task):
-
-    @staticmethod
-    def run():
-
-        os.chdir('tests/resources')
-
-        args = ''
-        args += '--f90flags="-ffree-line-length-0" -I../../.bld -L../../.bld/fortran -lresfort '
-        args += '-llapack'
-
-        src = open('f2py_interface.f90', 'rb').read()
-        f2py.compile(src, 'f2py_interface', args, extension='.f90')
-
-        os.chdir('../../')

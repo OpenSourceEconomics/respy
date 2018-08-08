@@ -3,10 +3,7 @@
 PROGRAM dpml4a
 
   ! PEI: Interface to added functions
-  USE PEI_ADDITIONS
-
-  ! PEI: Interface to IMSL replacements
-  USE IMSL_REPLACEMENTS
+  USE KW_LIBRARY
 
 !**************************************************
 !*  PROGRAM TO ESTIMATE DP MODEL BY SIMULATED ML  *

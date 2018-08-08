@@ -1,11 +1,34 @@
+from numpy import f2py
+
+from waflib.Task import Task
+
+
+class CreateF2pyInterfaces(Task):
+    """This is an explicit task generator for the creation of the F2PY interfaces."""
+    def run(self):
+        src = open('tests/resources/f2py_interface.f90', 'rb').read()
+        args = '--f90flags="-ffree-line-length-0" -I.bld -L.bld/fortran -lresfort -llapack'
+        f2py.compile(src, 'f2py_interface', args, extension='.f90')
+
+
 def build(ctx):
 
-    # We need to be a little more relaxed with the floating point traps when compiling the code
-    # from the original paper.
+    # We compile the code of the original Keane & Wolpin (1994). We need to be a little more
+    # relaxed with the floating point traps when compiling the code from the original paper.
     flags = ctx.env['FCFLAGS'][:]
     if ctx.env['DEBUG']:
         flags.remove('-ffpe-trap=zero,overflow,invalid')
 
-    src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90']
+    ctx.add_group()
+    src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90', 'kw_library.f90']
+    ctx(features=['fc', 'fcstlib'], source=src, target='kw', fcflags=flags)
+
+    ctx.add_group()
     for fname in ['kw_dpml4a', 'kw_dp3asim']:
-        ctx(features=['fc', 'fcprogram'], source=src + [fname + '.f90'], target=fname, flags=flags)
+        ctx(features=['fc', 'fcprogram'], source=fname + '.f90', target=fname, flags=flags)
+
+    if ctx.env['F2PY']:
+        # We compile an interface to access core respy routines in our testing framework.
+        ctx.add_group()
+        ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
+

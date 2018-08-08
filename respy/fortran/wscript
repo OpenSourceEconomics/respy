@@ -29,18 +29,17 @@ def build(ctx):
            'parallelism/parallelism_auxiliary.f90',
            'resfort_library.f90']
 
+    ctx.add_group()
     flags = ctx.env.FCFLAGS + ['-fPIC']
     ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)
 
-    ctx.add_group()
-
     # Compile the required executables.
-    ctx(features=['fc', 'fcprogram'], source='resfort.f90', target='resfort',)
+    ctx.add_group()
+    ctx(features=['fc', 'fcprogram'], source='resfort.f90', target='resfort')
 
     # If parallel computing is available, we also create the executable for the slave processes.
     if ctx.env['PARALLELISM']:
 
         ctx.add_group()
-
         slave = ['parallelism/parallelism_slave.f90']
         ctx(features=['fc', 'fcprogram'], source=slave, target='resfort_slave')
