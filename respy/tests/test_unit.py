@@ -8,7 +8,7 @@ from respy.python.solve.solve_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.process_model import print_init_dict
 
 from codes.random_init import generate_init
 from respy import simulate

@@ -6,7 +6,7 @@ import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.process_model import print_init_dict
 from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict

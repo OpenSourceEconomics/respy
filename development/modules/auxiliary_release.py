@@ -70,8 +70,8 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
 
 
 def prepare_release_tests_1(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     # This script is also imported (but not used) for the creation of the virtual environments.
@@ -162,8 +162,8 @@ def prepare_release_tests_1(constr):
 
 
 def prepare_release_tests_2(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
@@ -190,8 +190,8 @@ def prepare_release_tests_2(constr):
 
 
 def prepare_release_tests_3(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     import numpy as np
@@ -213,8 +213,8 @@ def prepare_release_tests_3(constr):
 
 
 def prepare_release_tests_4(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
@@ -251,8 +251,8 @@ def prepare_release_tests_4(constr):
 
 
 def prepare_release_tests_5(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
@@ -286,8 +286,8 @@ def prepare_release_tests_5(constr):
 
 
 def prepare_release_tests_6(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     # This script is also imported (but not used) for the creation of the virtual environments.
@@ -544,8 +544,8 @@ def prepare_release_tests_10(constr):
 
 
 def no_preparations_required(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
@@ -573,7 +573,7 @@ def run_estimation(which):
     from respy import estimate
     from respy import RespyCls
 
-    from respy.python.shared.shared_auxiliary import print_init_dict
+    from respy.pre_processing.process_model import print_init_dict
 
     # We need to make sure that the function simulate_observed() is imported from the original
     # package. Otherwise dependencies might not work properly.

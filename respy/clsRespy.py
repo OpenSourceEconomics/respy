@@ -6,14 +6,14 @@ import copy
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import check_model_parameters
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.process_model import print_init_dict
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.pre_processing.process_model import read_and_process_ini_file, \
+from respy.pre_processing.process_model import read, convert_init_dict_to_attr_dict, \
     convert_attr_dict_to_init_dict
 from respy.custom_exceptions import UserError
 
@@ -23,7 +23,8 @@ class RespyCls(object):
 
     def __init__(self, fname):
         self._set_hardcoded_attributes()
-        self.attr = read_and_process_ini_file(fname)
+        ini = read(fname)
+        self.attr = convert_init_dict_to_attr_dict(ini)
         self._update_derived_attributes()
         self._initialize_solution_attributes()
 

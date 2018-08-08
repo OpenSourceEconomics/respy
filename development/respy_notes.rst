@@ -61,11 +61,6 @@ read_python
 - The dict that comes out here should be already the attr dict, so we can just write self.attr.update(dict_) in clsRespy; Even better: maybe the whole function can be replaced by a call to json.load or yaml.load. -> make proposal
 
 
-shared_auxiliary.py
-===================
-
-- where do we use the results of print_init_dict? Are they used for fortran? If not, the function can again be replaced by a simple call to json.dump or yaml.dump if we change from .ini files to dictionaries. -> do it
-
 
 ========
 Results:

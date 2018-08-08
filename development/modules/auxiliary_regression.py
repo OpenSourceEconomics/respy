@@ -3,7 +3,7 @@ import shutil
 import socket
 import os
 
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.process_model import print_init_dict
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TOL

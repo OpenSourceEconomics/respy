@@ -10,7 +10,7 @@ import os
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.process_model import print_init_dict
 from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.random_init import generate_random_dict
 from codes.auxiliary import simulate_observed

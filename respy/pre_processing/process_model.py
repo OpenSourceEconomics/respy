@@ -8,23 +8,7 @@ import shlex
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
-
-
-OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
-
-# We need to do some reorganization as the parameters from the
-# initialization that describe the covariance of the shocks need to be
-# mapped to the Cholesky factors which are the parameters the optimizer
-# actually iterates on.
-PARAS_MAPPING = [
-    (43, 43), (44, 44), (45, 46), (46, 49), (47, 45), (48, 47),
-    (49, 50), (50, 48), (51, 51), (52, 52)]
-
-
-def read_and_process_ini_file(fname):
-    ini = read(fname)
-    attr = convert_init_dict_to_attr_dict(ini)
-    return attr
+from respy.python.shared.shared_auxiliary import format_opt_parameters
 
 
 def read(fname):
@@ -71,6 +55,162 @@ def read(fname):
     init_dict.update(dict_)
 
     return init_dict
+
+
+def print_init_dict(dict_, file_name='test.respy.ini'):
+    """Write initialization dictionary to file.
+
+    The different formatting makes the file rather involved.
+    The resulting initialization files are rad by PYTHON and FORTRAN routines.
+    Thus, the formatting with respect to the number of decimal places is rather
+    small.
+    """
+    assert (isinstance(dict_, dict))
+
+    opt_labels = ['BASICS', 'COMMON', 'OCCUPATION A', 'OCCUPATION B',
+                  'EDUCATION', 'HOME', 'SHOCKS', 'TYPE SHARES', 'TYPE SHIFTS']
+
+    str_optim = '{0:<10} {1:25.15f} {2:>5} {3:>15}\n'
+
+    # Construct labels to ensure that the ini files always look identical.
+    labels = opt_labels
+    labels += ['SOLUTION', 'SIMULATION', 'ESTIMATION', 'DERIVATIVES',
+               'PRECONDITIONING', 'PROGRAM', 'INTERPOLATION']
+    labels += OPT_EST_FORT + OPT_EST_PYTH
+
+    num_types = int(len(dict_['TYPE SHARES']['coeffs']) / 2) + 1
+
+    # Create initialization.
+    with open(file_name, 'w') as file_:
+
+        for flag in labels:
+            if flag in ['BASICS']:
+
+                file_.write('BASICS\n\n')
+
+                str_ = '{0:<10} {1:>25}\n'
+                file_.write(str_.format('periods', dict_[flag]['periods']))
+
+                line = format_opt_parameters(dict_['BASICS'], 0)
+                file_.write(str_optim.format(*line))
+
+                file_.write('\n')
+
+            if flag in ['TYPE SHARES'] and num_types > 1:
+                file_.write(flag.upper() + '\n\n')
+
+                for i in range(num_types - 1):
+                    for j in range(2):
+                        pos = (i * 2) + j
+                        line = format_opt_parameters(dict_['TYPE SHARES'], pos)
+                        file_.write(str_optim.format(*line))
+                    file_.write('\n')
+
+            if flag in ['TYPE SHIFTS'] and num_types > 1:
+                file_.write(flag.upper() + '\n\n')
+
+                for i in range(num_types - 1):
+                    for j in range(4):
+                        pos = (i * 4) + j
+                        line = format_opt_parameters(dict_['TYPE SHIFTS'], pos)
+                        file_.write(str_optim.format(*line))
+                    file_.write('\n')
+
+            if flag in ['HOME']:
+
+                file_.write(flag.upper() + '\n\n')
+                for i in range(3):
+                    line = format_opt_parameters(dict_['HOME'], i)
+                    file_.write(str_optim.format(*line))
+
+                file_.write('\n')
+
+            if flag in ['SOLUTION', 'SIMULATION', 'PROGRAM', 'INTERPOLATION',
+                        'ESTIMATION', 'PRECONDITIONING', 'DERIVATIVES']:
+
+                file_.write(flag.upper() + '\n\n')
+                keys = list(dict_[flag].keys())
+                keys.sort()
+                for key_ in keys:
+
+                    if key_ in ['tau']:
+                        str_ = '{0:<10} {1:25.15f}\n'
+                        file_.write(str_.format(key_, dict_[flag][key_]))
+                    else:
+                        str_ = '{0:<10} {1:>25}\n'
+                        file_.write(str_.format(key_, str(dict_[flag][key_])))
+
+                file_.write('\n')
+
+            if flag in ['SHOCKS']:
+
+                # Type conversion
+                file_.write(flag.upper() + '\n\n')
+                for i in range(10):
+                    line = format_opt_parameters(dict_['SHOCKS'], i)
+                    file_.write(str_optim.format(*line))
+                file_.write('\n')
+
+            if flag in ['EDUCATION']:
+
+                file_.write(flag.upper() + '\n\n')
+
+                for i in range(7):
+                    line = format_opt_parameters(dict_['EDUCATION'], i)
+                    file_.write(str_optim.format(*line))
+
+                file_.write('\n')
+                str_ = '{0:<10} {1:>25}\n'
+                for i, start in enumerate(dict_[flag]['start']):
+                    file_.write(str_.format('start', start))
+                    file_.write(str_.format('share', dict_[flag]['share'][i]))
+                    file_.write(
+                        str_.format('lagged', dict_[flag]['lagged'][i]))
+
+                    file_.write('\n')
+
+                file_.write(str_.format('max', dict_[flag]['max']))
+
+                file_.write('\n')
+
+            if flag in ['COMMON']:
+                file_.write(flag + '\n\n')
+                for j in range(2):
+                    line = format_opt_parameters(dict_[flag], j)
+                    file_.write(str_optim.format(*line))
+                file_.write('\n')
+
+            if flag in ['OCCUPATION A', 'OCCUPATION B']:
+                file_.write(flag + '\n\n')
+                for j in range(15):
+                    line = format_opt_parameters(dict_[flag], j)
+                    file_.write(str_optim.format(*line))
+                    # Visual separation of parameters from skill function.
+                    if j == 11:
+                        file_.write('\n')
+
+                file_.write('\n')
+
+            if flag in OPT_EST_FORT + OPT_EST_PYTH:
+
+                # This function can also be used to print out initialization
+                # files without optimization options (enough for simulation).
+                if flag not in dict_.keys():
+                    continue
+
+                file_.write(flag.upper() + '\n\n')
+                keys = list(dict_[flag].keys())
+                keys.sort()
+                for key_ in keys:
+
+                    if key_ in ['maxfun', 'npt', 'maxiter', 'm', 'maxls']:
+                        str_ = '{0:<10} {1:>25}\n'
+                        file_.write(str_.format(key_, dict_[flag][key_]))
+                    else:
+                        str_ = '{0:<10} {1:25.15f}\n'
+                        file_.write(str_.format(key_, dict_[flag][key_]))
+
+                file_.write('\n')
 
 
 def convert_init_dict_to_attr_dict(init_dict):
@@ -176,7 +316,7 @@ def convert_init_dict_to_attr_dict(init_dict):
     # Aggregate all the information provided about optimizer options in
     # one class attribute for easier access later.
     attr['optimizer_options'] = dict()
-    for optimizer in OPTIMIZERS:
+    for optimizer in OPT_EST_FORT + OPT_EST_PYTH:
         is_defined = (optimizer in ini.keys())
         if is_defined:
             attr['optimizer_options'][optimizer] = ini[optimizer]
@@ -189,7 +329,7 @@ def convert_init_dict_to_attr_dict(init_dict):
 
     paras_fixed_reordered = paras_fixed[:]
 
-    for old, new in PARAS_MAPPING:
+    for old, new in _paras_mapping():
         paras_fixed_reordered[new] = paras_fixed[old]
 
     attr['optim_paras']['paras_fixed'] = paras_fixed_reordered
@@ -268,7 +408,7 @@ def convert_attr_dict_to_init_dict(attr_dict):
     paras_fixed_reordered = attr['optim_paras']['paras_fixed'][:]
 
     paras_fixed = paras_fixed_reordered[:]
-    for old, new in PARAS_MAPPING:
+    for old, new in _paras_mapping():
         paras_fixed[old] = paras_fixed_reordered[new]
 
     ini['SHOCKS']['fixed'] = paras_fixed[43:53]
@@ -454,3 +594,18 @@ def _determine_case(list_):
 
     # Finishing
     return is_empty, is_group, is_comment
+
+
+def _paras_mapping():
+    """Mapping to re-sort parameters.
+
+    We need to do some reorganization as the parameters from the
+    initialization that describe the covariance of the shocks need to be
+    mapped to the Cholesky factors which are the parameters the optimizer
+    actually iterates on.
+
+    """
+    mapping = [
+        (43, 43), (44, 44), (45, 46), (46, 49), (47, 45), (48, 47),
+        (49, 50), (50, 48), (51, 51), (52, 52)]
+    return mapping
