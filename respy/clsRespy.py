@@ -18,32 +18,11 @@ from respy.python.read.read_python import read
 from respy.custom_exceptions import UserError
 
 
-# Define classes of attributes that need special treatment
-
-# Derived attributes cannot be set by the user
-DERIVED_ATTR = ['is_myopic']
-
-# Solution attributes are only defined if the class instance was solved.
-SOLUTION_ATTR = ['periods_rewards_systematic', 'states_number_period',
-                 'mapping_state_idx', 'periods_emax', 'states_all']
-
-# Define list of admissible optimizers
-OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
-
-# We need to do some reorganization as the parameters from the initialization
-# that describe the covariance of the shocks need to be mapped to the
-# Cholesky factors which are the parameters the optimizer actually iterates on.
-PARAS_MAPPING = [(43, 43), (44, 44), (45, 46), (46, 49), (47, 45), (48, 47),
-                 (49, 50), (50, 48), (51, 51), (52, 52)]
-
-
 class RespyCls(object):
     """Class that defines a model in respy.  """
 
     def __init__(self, fname):
-        """ Initialization of hand-crafted class for package management.
-        """
-        # Distribute class attributes
+        self._set_hardcoded_attributes()
         self.attr = {}
         self.attr['init_dict'] = read(fname)
         self._initialize_attributes()
@@ -54,6 +33,21 @@ class RespyCls(object):
         self.attr['is_locked'] = False
         self.attr['is_solved'] = False
         self.lock()
+
+    def _set_hardcoded_attributes(self):
+        """Set attributes that can't be changed by the model specification."""
+        self.derived_attributes = ['is_myopic']
+        self.solution_attributes = [
+            'periods_rewards_systematic', 'states_number_period',
+            'mapping_state_idx', 'periods_emax', 'states_all']
+        self.optimizers = OPT_EST_FORT + OPT_EST_PYTH
+        # We need to do some reorganization as the parameters from the
+        # initialization that describe the covariance of the shocks need to be
+        # mapped to the Cholesky factors which are the parameters the optimizer
+        # actually iterates on.
+        self.paras_mapping = [
+            (43, 43), (44, 44), (45, 46), (46, 49), (47, 45), (48, 47),
+            (49, 50), (50, 48), (51, 51), (52, 52)]
 
     def _initialize_attributes(self):
         """Initialize self.attr.
@@ -145,7 +139,7 @@ class RespyCls(object):
         assert self.attr['is_locked']
         self._check_key(key)
 
-        if key in SOLUTION_ATTR:
+        if key in self.solution_attributes:
             assert self.get_attr('is_solved'), 'invalid request'
 
         return self.attr[key]
@@ -155,12 +149,12 @@ class RespyCls(object):
         assert (not self.attr['is_locked'])
         self._check_key(key)
 
-        invalid_attr = DERIVED_ATTR + ['optim_paras', 'init_dict']
+        invalid_attr = self.derived_attributes + ['optim_paras', 'init_dict']
         if key in invalid_attr:
             raise AssertionError(
                 '{} must not be modified by users!'.format(key))
 
-        if key in SOLUTION_ATTR:
+        if key in self.solution_attributes:
             assert not self.attr['is_solved'], \
                 'Solution attributes can only be set if model is not solved.'
 
@@ -265,7 +259,7 @@ class RespyCls(object):
         paras_fixed_reordered = self.attr['optim_paras']['paras_fixed'][:]
 
         paras_fixed = paras_fixed_reordered[:]
-        for old, new in PARAS_MAPPING:
+        for old, new in self.paras_mapping:
             paras_fixed[old] = paras_fixed_reordered[new]
 
         init_dict['SHOCKS']['fixed'] = paras_fixed[43:53]
@@ -344,7 +338,7 @@ class RespyCls(object):
     def reset(self):
         """ Remove solution attributes from class instance.
         """
-        for label in SOLUTION_ATTR:
+        for label in self.solution_attributes:
             self.attr[label] = None
 
         self.attr['is_solved'] = False
@@ -353,7 +347,7 @@ class RespyCls(object):
         """ Compare two class instances for equality of solution attributes."""
         assert (isinstance(other, RespyCls))
 
-        for key_ in SOLUTION_ATTR:
+        for key_ in self.solution_attributes:
             try:
                 np.testing.assert_almost_equal(
                     self.attr[key_], other.attr[key_])
@@ -502,7 +496,7 @@ class RespyCls(object):
         # Aggregate all the information provided about optimizer options in
         # one class attribute for easier access later.
         self.attr['optimizer_options'] = dict()
-        for optimizer in OPTIMIZERS:
+        for optimizer in self.optimizers:
             is_defined = (optimizer in init_dict.keys())
             if is_defined:
                 self.attr['optimizer_options'][optimizer] = \
@@ -515,7 +509,7 @@ class RespyCls(object):
         paras_fixed = self.attr['optim_paras']['paras_fixed'][:]
 
         paras_fixed_reordered = paras_fixed[:]
-        for old, new in PARAS_MAPPING:
+        for old, new in self.paras_mapping:
             paras_fixed_reordered[new] = paras_fixed[old]
 
         self.attr['optim_paras']['paras_fixed'] = paras_fixed_reordered
@@ -731,7 +725,7 @@ class RespyCls(object):
     def _check_integrity_results(self):
         """Check the integrity of the results."""
         # Check if solution attributes well maintained.
-        for label in SOLUTION_ATTR:
+        for label in self.solution_attributes:
             if self.attr['is_solved']:
                 assert (self.attr[label] is not None)
             else:

@@ -6,9 +6,6 @@ Notes, todos and questions about respy
 clsRespy
 ========
 
-
-- Having global variables with capital letters is un-pythonic. Can we just make DERIVED_ATTR, SOLUTION_ATTR class attributes of clsRespy or are they used somewhere else? If so, shouldn't they have the same treatment as shared_constants? -> do it
-
 - should we delete the init_dict at the end of __init__? It might become outdated. -> do it
 
 - Even though the PARAS_MAPPING does have a pretty long comment I don't understand it well enough to judge whether it is correct. -> Philipp checks that
