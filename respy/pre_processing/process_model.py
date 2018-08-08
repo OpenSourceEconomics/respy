@@ -31,8 +31,10 @@ def read(fname):
     """Read and aRESPY initialization file into a Python dictionary.
 
     The design of the initialization files is optimized for readability and user
-    friendliness, not developer friendliness. Here it is converted into a
-    a dictionary representation that is then used throughout the package.
+    friendliness, not developer friendliness.
+
+    The resulting dictionary is still very close to the structure of the ini
+    file and will be processed later.
 
     """
     dict_ = {}

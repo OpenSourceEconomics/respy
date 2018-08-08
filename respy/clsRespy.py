@@ -13,7 +13,7 @@ from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.read.read_python import read_and_process_ini_file, \
+from respy.pre_processing.process_model import read_and_process_ini_file, \
     convert_attr_dict_to_init_dict
 from respy.custom_exceptions import UserError
 
