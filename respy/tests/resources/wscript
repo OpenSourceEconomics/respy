@@ -13,20 +13,13 @@ class CreateF2pyInterfaces(Task):
 
 def build(ctx):
 
-    # We compile the code of the original Keane & Wolpin (1994). We need to be a little more
-    # relaxed with the floating point traps when compiling the code from the original paper.
-    flags = ctx.env['FCFLAGS'][:]
-    if ctx.env['DEBUG']:
-        flags.remove('-ffpe-trap=zero,overflow,invalid')
-
     ctx.add_group()
     src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90', 'kw_library.f90']
-    ctx(features=['fc', 'fcstlib'], source=src, target='kw_library', fcflags=flags)
+    ctx(features=['fc', 'fcstlib'], source=src, target='kw_library')
 
     ctx.add_group()
     for fname in ['kw_dpml4a', 'kw_dp3asim']:
-        ctx(features=['fc', 'fcprogram'], source=fname + '.f90', target=fname, flags=flags,
-            use='kw_library')
+        ctx(features=['fc', 'fcprogram'], source=fname + '.f90', target=fname, use='kw_library')
 
     if ctx.env['F2PY']:
         # We compile an interface to access core respy routines in our testing framework.

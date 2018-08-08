@@ -8,13 +8,14 @@ import json
 top = '.'
 out = '.bld'
 
-# GFORTRAN FLAGS
+# GFORTRAN FLAGS, it would nice to add  '-ffpe-trap=zero,overflow,invalid' back to the debug
+# flags, however this results in a failure of the KW1994 codes and we cannot just turn it off
+# for their files.
 GFORTRAN_FLAGS_DEBUG = []
 GFORTRAN_FLAGS_DEBUG += ['-O', '-Wall', '-Wline-truncation', '-Wsurprising', '-Waliasing']
 GFORTRAN_FLAGS_DEBUG += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
 GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffree-line-length-0']
-GFORTRAN_FLAGS_DEBUG += ['-cpp', '-Wcharacter-truncation', '-ffpe-trap=zero,overflow,invalid']
-GFORTRAN_FLAGS_DEBUG += ['-Wimplicit-interface']
+GFORTRAN_FLAGS_DEBUG += ['-cpp', '-Wcharacter-truncation', '-Wimplicit-interface']
 
 GFORTRAN_FLAGS_PRODUCTION = ['-O3', '-ffree-line-length-0', '-cpp']
 
