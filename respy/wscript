@@ -58,9 +58,8 @@ def configure(ctx):
 
     # Specify search path for static libraries
     ctx.env.append_unique('STLIBPATH', ['../.bld/fortran', '../.bld/tests/resources'])
-    ctx.env.append_unique('STLIB', ['resfort', 'kw'])
 
-    # Specify search path for shared libraries
+    # Specify use of system libraries.
     ctx.env.append_unique('LIB', ['lapack'])
 
     # Specify compiler flags

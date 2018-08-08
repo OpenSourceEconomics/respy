@@ -7,7 +7,7 @@ class CreateF2pyInterfaces(Task):
     """This is an explicit task generator for the creation of the F2PY interfaces."""
     def run(self):
         src = open('tests/resources/f2py_interface.f90', 'rb').read()
-        args = '--f90flags="-ffree-line-length-0" -I.bld -L.bld/fortran -lresfort -llapack'
+        args = '--f90flags="-ffree-line-length-0" -I.bld -L.bld/fortran -lresfort_library -llapack'
         f2py.compile(src, 'f2py_interface', args, extension='.f90')
 
 
@@ -21,11 +21,12 @@ def build(ctx):
 
     ctx.add_group()
     src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90', 'kw_library.f90']
-    ctx(features=['fc', 'fcstlib'], source=src, target='kw', fcflags=flags)
+    ctx(features=['fc', 'fcstlib'], source=src, target='kw_library', fcflags=flags)
 
     ctx.add_group()
     for fname in ['kw_dpml4a', 'kw_dp3asim']:
-        ctx(features=['fc', 'fcprogram'], source=fname + '.f90', target=fname, flags=flags)
+        ctx(features=['fc', 'fcprogram'], source=fname + '.f90', target=fname, flags=flags,
+            use='kw_library')
 
     if ctx.env['F2PY']:
         # We compile an interface to access core respy routines in our testing framework.
