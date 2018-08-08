@@ -6,7 +6,6 @@ import copy
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import check_model_parameters
-from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
@@ -14,7 +13,8 @@ from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.read.read_python import read_and_process_ini_file
+from respy.python.read.read_python import read_and_process_ini_file, \
+    convert_attr_dict_to_init_dict
 from respy.custom_exceptions import UserError
 
 
@@ -38,7 +38,6 @@ class RespyCls(object):
         self.solution_attributes = [
             'periods_rewards_systematic', 'states_number_period',
             'mapping_state_idx', 'periods_emax', 'states_all']
-        self.paras_mapping = [(43, 43), (44, 44), (45, 46), (46, 49), (47, 45), (48, 47), (49, 50), (50, 48), (51, 51), (52, 52)]
 
     def _initialize_solution_attributes(self):
         for attribute in self.solution_attributes:
@@ -137,170 +136,7 @@ class RespyCls(object):
 
     def write_out(self, fname='model.respy.ini'):
         """Write out the implied initialization file of the class instance."""
-        # Distribute class attributes
-        num_paras = self.attr['num_paras']
-
-        num_types = self.attr['num_types']
-
-        # We reconstruct the initialization dictionary as otherwise we need
-        # to constantly update the original one.
-        init_dict = dict()
-
-        # Basics
-        init_dict['BASICS'] = dict()
-        init_dict['BASICS']['periods'] = self.attr['num_periods']
-        init_dict['BASICS']['coeffs'] = self.attr['optim_paras']['delta']
-        init_dict['BASICS']['bounds'] = \
-            self.attr['optim_paras']['paras_bounds'][0:1]
-        init_dict['BASICS']['fixed'] = \
-            self.attr['optim_paras']['paras_fixed'][0:1]
-
-        # Common Returns
-        lower, upper = 1, 3
-        init_dict['COMMON'] = dict()
-        init_dict['COMMON']['coeffs'] = \
-            self.attr['optim_paras']['coeffs_common']
-        init_dict['COMMON']['bounds'] = \
-            self.attr['optim_paras']['paras_bounds'][lower:upper]
-        init_dict['COMMON']['fixed'] = \
-            self.attr['optim_paras']['paras_fixed'][lower:upper]
-
-        # Occupation A
-        lower, upper = 3, 18
-        init_dict['OCCUPATION A'] = dict()
-        init_dict['OCCUPATION A']['coeffs'] = \
-            self.attr['optim_paras']['coeffs_a']
-
-        init_dict['OCCUPATION A']['bounds'] = \
-            self.attr['optim_paras']['paras_bounds'][lower:upper]
-        init_dict['OCCUPATION A']['fixed'] = \
-            self.attr['optim_paras']['paras_fixed'][lower:upper]
-
-        # Occupation B
-        lower, upper = 18, 33
-        init_dict['OCCUPATION B'] = dict()
-        init_dict['OCCUPATION B']['coeffs'] = \
-            self.attr['optim_paras']['coeffs_b']
-
-        init_dict['OCCUPATION B']['bounds'] = \
-            self.attr['optim_paras']['paras_bounds'][lower:upper]
-        init_dict['OCCUPATION B']['fixed'] = \
-            self.attr['optim_paras']['paras_fixed'][lower:upper]
-
-        # Education
-        lower, upper = 33, 40
-        init_dict['EDUCATION'] = dict()
-        init_dict['EDUCATION']['coeffs'] = \
-            self.attr['optim_paras']['coeffs_edu']
-
-        init_dict['EDUCATION']['bounds'] = \
-            self.attr['optim_paras']['paras_bounds'][lower:upper]
-        init_dict['EDUCATION']['fixed'] = \
-            self.attr['optim_paras']['paras_fixed'][lower:upper]
-
-        init_dict['EDUCATION']['lagged'] = self.attr['edu_spec']['lagged']
-        init_dict['EDUCATION']['start'] = self.attr['edu_spec']['start']
-        init_dict['EDUCATION']['share'] = self.attr['edu_spec']['share']
-        init_dict['EDUCATION']['max'] = self.attr['edu_spec']['max']
-
-        # Home
-        lower, upper = 40, 43
-        init_dict['HOME'] = dict()
-        init_dict['HOME']['coeffs'] = self.attr['optim_paras']['coeffs_home']
-
-        init_dict['HOME']['bounds'] = \
-            self.attr['optim_paras']['paras_bounds'][lower:upper]
-        init_dict['HOME']['fixed'] = \
-            self.attr['optim_paras']['paras_fixed'][lower:upper]
-
-        # Shocks
-        lower, upper = 43, 53
-        init_dict['SHOCKS'] = dict()
-        shocks_cholesky = self.attr['optim_paras']['shocks_cholesky']
-        shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
-        init_dict['SHOCKS']['coeffs'] = shocks_coeffs
-
-        init_dict['SHOCKS']['bounds'] = \
-            self.attr['optim_paras']['paras_bounds'][lower:upper]
-
-        # Again we need to reorganize the order of the coefficients
-        paras_fixed_reordered = self.attr['optim_paras']['paras_fixed'][:]
-
-        paras_fixed = paras_fixed_reordered[:]
-        for old, new in self.paras_mapping:
-            paras_fixed[old] = paras_fixed_reordered[new]
-
-        init_dict['SHOCKS']['fixed'] = paras_fixed[43:53]
-
-        # Solution
-        init_dict['SOLUTION'] = dict()
-        init_dict['SOLUTION']['draws'] = self.attr['num_draws_emax']
-        init_dict['SOLUTION']['seed'] = self.attr['seed_emax']
-        init_dict['SOLUTION']['store'] = self.attr['is_store']
-
-        # Type Shares
-        lower, upper = 53, 53 + (num_types - 1) * 2
-        init_dict['TYPE SHARES'] = dict()
-        init_dict['TYPE SHARES']['coeffs'] = \
-            self.attr['optim_paras']['type_shares'][2:]
-        init_dict['TYPE SHARES']['bounds'] = \
-            self.attr['optim_paras']['paras_bounds'][lower:upper]
-        init_dict['TYPE SHARES']['fixed'] = \
-            self.attr['optim_paras']['paras_fixed'][lower:upper]
-
-        # Type Shifts
-        lower, upper = 53 + (num_types - 1) * 2, num_paras
-        init_dict['TYPE SHIFTS'] = dict()
-        init_dict['TYPE SHIFTS']['coeffs'] = \
-            self.attr['optim_paras']['type_shifts'].flatten()[4:]
-        init_dict['TYPE SHIFTS']['bounds'] = \
-            self.attr['optim_paras']['paras_bounds'][lower:upper]
-        init_dict['TYPE SHIFTS']['fixed'] = \
-            self.attr['optim_paras']['paras_fixed'][lower:upper]
-
-        # Simulation
-        init_dict['SIMULATION'] = dict()
-        init_dict['SIMULATION']['agents'] = self.attr['num_agents_sim']
-        init_dict['SIMULATION']['file'] = self.attr['file_sim']
-        init_dict['SIMULATION']['seed'] = self.attr['seed_sim']
-
-        # Estimation
-        init_dict['ESTIMATION'] = dict()
-        init_dict['ESTIMATION']['optimizer'] = self.attr['optimizer_used']
-        init_dict['ESTIMATION']['agents'] = self.attr['num_agents_est']
-        init_dict['ESTIMATION']['draws'] = self.attr['num_draws_prob']
-        init_dict['ESTIMATION']['seed'] = self.attr['seed_prob']
-        init_dict['ESTIMATION']['file'] = self.attr['file_est']
-        init_dict['ESTIMATION']['maxfun'] = self.attr['maxfun']
-        init_dict['ESTIMATION']['tau'] = self.attr['tau']
-
-        # Derivatives
-        init_dict['DERIVATIVES'] = dict()
-        init_dict['DERIVATIVES']['version'] = self.attr['derivatives']
-
-        # Scaling
-        init_dict['PRECONDITIONING'] = dict()
-        init_dict['PRECONDITIONING']['minimum'] = \
-            self.attr['precond_spec']['minimum']
-        init_dict['PRECONDITIONING']['type'] = \
-            self.attr['precond_spec']['type']
-        init_dict['PRECONDITIONING']['eps'] = self.attr['precond_spec']['eps']
-
-        # Program
-        init_dict['PROGRAM'] = dict()
-        init_dict['PROGRAM']['version'] = self.attr['version']
-        init_dict['PROGRAM']['procs'] = self.attr['num_procs']
-        init_dict['PROGRAM']['debug'] = self.attr['is_debug']
-
-        # Interpolation
-        init_dict['INTERPOLATION'] = dict()
-        init_dict['INTERPOLATION']['points'] = self.attr['num_points_interp']
-        init_dict['INTERPOLATION']['flag'] = self.attr['is_interpolated']
-
-        # Optimizers
-        for optimizer in self.attr['optimizer_options'].keys():
-            init_dict[optimizer] = self.attr['optimizer_options'][optimizer]
-
+        init_dict = convert_attr_dict_to_init_dict(self.attr)
         print_init_dict(init_dict, fname)
 
     def reset(self):
@@ -323,7 +159,6 @@ class RespyCls(object):
                 return False
 
         return True
-
 
     def _update_derived_attributes(self):
         """Update derived attributes."""
