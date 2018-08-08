@@ -25,9 +25,9 @@ class RespyCls(object):
         self._set_hardcoded_attributes()
         self.attr = {}
         self.attr['init_dict'] = read(fname)
-        self._initialize_attributes()
         self._update_core_attributes()
         self._update_derived_attributes()
+        self._initialize_solution_attributes()
 
         # Status indicators
         self.attr['is_locked'] = False
@@ -49,32 +49,9 @@ class RespyCls(object):
             (43, 43), (44, 44), (45, 46), (46, 49), (47, 45), (48, 47),
             (49, 50), (50, 48), (51, 51), (52, 52)]
 
-    def _initialize_attributes(self):
-        """Initialize self.attr.
-
-        self.attr contains the constitutive attribute that define a model in
-        respy. Here most of them are initialized to None, later they will be
-        updated from the initialization file.
-
-        """
-        initialize_to_none = [
-            'num_points_interp', 'optimizer_options', 'is_interpolated',
-            'num_draws_emax', 'num_draws_prob', 'optimizer_used',
-            'num_agents_sim', 'num_agents_est', 'num_periods', 'optim_paras',
-            'derivatives', 'num_procs', 'seed_prob', 'num_types', 'seed_emax',
-            'is_locked', 'is_solved', 'seed_sim', 'is_debug', 'file_sim',
-            'file_est', 'is_store', 'version', 'maxfun', 'tau', 'is_myopic',
-            'periods_rewards_systematic', 'states_number_period',
-            'mapping_state_idx', 'periods_emax', 'states_all']
-
-        for attribute in initialize_to_none:
+    def _initialize_solution_attributes(self):
+        for attribute in self.solution_attributes:
             self.attr[attribute] = None
-
-        precond_spec = {'minimum': None, 'type': None, 'eps': None}
-        self.attr['precond_spec'] = precond_spec
-
-        edu_spec = {'lagged': None, 'start': None, 'share': None, 'max': None}
-        self.attr['educ_spec'] = edu_spec
 
     def update_optim_paras(self, x_econ):
         """ Update model parameters.

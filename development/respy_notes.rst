@@ -10,8 +10,6 @@ clsRespy
 
 - Even though the PARAS_MAPPING does have a pretty long comment I don't understand it well enough to judge whether it is correct. -> Philipp checks that
 
-- What is tau? t> smoothing parameter
-
 - update_optim paras could be made a lot shorter after my proposed changes to dist_econ_paras and dist_optim_paras; In any case it has an unnecessary assignment (self.attr['optim_paras'] = optim_paras) -> do it
 
 

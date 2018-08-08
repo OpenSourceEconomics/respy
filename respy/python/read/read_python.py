@@ -28,18 +28,16 @@ def read(fname):
             if flag in ['coeff']:
                 is_fixed, bounds = process_coefficient_line(line)
 
-            # Type conversions
             value = _type_conversions(flag, value)
 
             _add_to_dictionary(group, flag, value, is_fixed, bounds, dict_)
 
-    # Type conversion for SHOCKS
     dict_['SHOCKS']['coeffs'] = np.array(dict_['SHOCKS']['coeffs'])
 
-    model_dict = default_model_dict()
-    model_dict.update(dict_)
+    ini_dict = default_model_dict()
+    ini_dict.update(dict_)
 
-    return model_dict
+    return ini_dict
 
 
 def default_model_dict():
