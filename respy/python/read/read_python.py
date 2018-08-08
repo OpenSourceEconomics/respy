@@ -1,42 +1,28 @@
 import numpy as np
 import shlex
-import os
 
 
 def read(fname):
     """Read and process a RESPY initialization file."""
-    # Check input
-    assert os.path.exists(fname)
-
-    # Initialization
-    dict_, group = {}, None
+    dict_ = {}
 
     with open(fname) as in_file:
-
         for line in in_file.readlines():
+            line_entries = shlex.split(line)
+            is_empty, is_group, is_comment = _determine_case(line_entries)
 
-            # Split line
-            list_ = shlex.split(line)
-
-            # Determine special cases
-            is_empty, is_group, is_comment = _process_cases(list_)
-
-            # Applicability
             if is_empty or is_comment:
                 continue
 
-            # Prepare dictionary
             if is_group:
-                group = list_[0]
-                # Special treatment for OCCUPATION or TYPES, which consists of
-                # two entries.
+                group = line_entries[0]
                 if group in ['OCCUPATION', 'TYPE']:
-                    group = list_[0] + ' ' + list_[1]
+                    group = line_entries[0] + ' ' + line_entries[1]
                 dict_[group] = {}
                 continue
 
             # is the block for the optimization coefficients.
-            flag, value = list_[:2]
+            flag, value = line_entries[:2]
             is_fixed, bounds = None, None
 
             if flag in ['coeff']:
@@ -45,25 +31,25 @@ def read(fname):
             # Type conversions
             value = _type_conversions(flag, value)
 
-            # Process blocks of information
-            dict_ = _process_line(group, flag, value, is_fixed, bounds, dict_)
-
-    # For ease of usability, we allow to skip the TYPE SHARES and TYPE SHIFTS
-    # blocks. If they are not present, then this implies that there is only a
-    # single type.
-    for group in ['TYPE SHARES', 'TYPE SHIFTS']:
-        if group in dict_.keys():
-            continue
-
-        dict_[group] = dict()
-        for flag in ['coeffs', 'fixed', 'bounds']:
-            dict_[group][flag] = []
+            _add_to_dictionary(group, flag, value, is_fixed, bounds, dict_)
 
     # Type conversion for SHOCKS
     dict_['SHOCKS']['coeffs'] = np.array(dict_['SHOCKS']['coeffs'])
 
-    # Finishing
-    return dict_
+    model_dict = default_model_dict()
+    model_dict.update(dict_)
+
+    return model_dict
+
+
+def default_model_dict():
+
+    default = {
+        'TYPE SHARES': {'coeffs': [], 'fixed': [], 'bounds': []},
+        'TYPE SHIFTS': {'coeffs': [], 'fixed': [], 'bounds': []}
+    }
+
+    return default
 
 
 def process_coefficient_line(line):
@@ -120,7 +106,7 @@ def _type_conversions(flag, value):
     return value
 
 
-def _process_line(group, flag, value, is_fixed, bounds, dict_):
+def _add_to_dictionary(group, flag, value, is_fixed, bounds, dict_):
     """Process most parts of the initialization file."""
     # This aligns the label from the initialization file with the label inside
     # the RESPY logic.
@@ -149,9 +135,8 @@ def _process_line(group, flag, value, is_fixed, bounds, dict_):
     return dict_
 
 
-def _process_cases(list_):
-    """ Process cases and determine whether group flag or empty line.
-    """
+def _determine_case(list_):
+    """Process cases and determine whether group flag or empty line."""
     # Antibugging
     assert (isinstance(list_, list))
 

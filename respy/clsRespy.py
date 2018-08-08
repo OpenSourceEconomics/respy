@@ -532,157 +532,114 @@ class RespyCls(object):
         the package is running in debug mode.
 
         """
-        # Distribute class attributes
-        num_points_interp = self.attr['num_points_interp']
-
-        is_interpolated = self.attr['is_interpolated']
-
-        optimizer_used = self.attr['optimizer_used']
-
-        num_draws_emax = self.attr['num_draws_emax']
-
-        num_draws_prob = self.attr['num_draws_prob']
-
-        num_agents_sim = self.attr['num_agents_sim']
-
-        num_agents_est = self.attr['num_agents_est']
-
-        precond_spec = self.attr['precond_spec']
-
-        derivatives = self.attr['derivatives']
-
-        num_periods = self.attr['num_periods']
-
-        optim_paras = self.attr['optim_paras']
-
-        edu_spec = self.attr['edu_spec']
-
-        is_myopic = self.attr['is_myopic']
-
-        seed_prob = self.attr['seed_prob']
-
-        seed_emax = self.attr['seed_emax']
-
-        num_procs = self.attr['num_procs']
-
-        num_paras = self.attr['num_paras']
-
-        is_debug = self.attr['is_debug']
-
-        seed_sim = self.attr['seed_sim']
-
-        version = self.attr['version']
-
-        maxfun = self.attr['maxfun']
-
-        tau = self.attr['tau']
+        a = self.attr
 
         # We also load the full configuration.
         with open(ROOT_DIR + '/.config', 'r') as infile:
             config_dict = json.load(infile)
 
         # Number of parameters
-        assert isinstance(num_paras, int)
-        assert num_paras >= 53
+        assert isinstance(a['num_paras'], int)
+        assert a['num_paras'] >= 53
 
         # Parallelism
-        assert isinstance(num_procs, int)
-        assert (num_procs > 0)
-        if num_procs > 1:
-            assert (version == 'FORTRAN')
+        assert isinstance(a['num_procs'], int)
+        assert (a['num_procs'] > 0)
+        if a['num_procs'] > 1:
+            assert (a['version'] == 'FORTRAN')
             assert config_dict['PARALLELISM']
 
         # Version version of package
-        assert (version in ['FORTRAN', 'PYTHON'])
-        if version == 'FORTRAN':
+        assert (a['version'] in ['FORTRAN', 'PYTHON'])
+        if a['version'] == 'FORTRAN':
             assert config_dict['FORTRAN']
 
         # Debug status
-        assert (is_debug in [True, False])
+        assert (a['is_debug'] in [True, False])
 
         # Forward-looking agents
-        assert (is_myopic in [True, False])
+        assert (a['is_myopic'] in [True, False])
 
         # Seeds
-        for seed in [seed_emax, seed_sim, seed_prob]:
+        for seed in [a['seed_emax'], a['seed_sim'], a['seed_prob']]:
             assert (np.isfinite(seed))
             assert (isinstance(seed, int))
             assert (seed > 0)
 
         # Number of agents
-        for num_agents in [num_agents_sim, num_agents_est]:
+        for num_agents in [a['num_agents_sim'], a['num_agents_est']]:
             assert (np.isfinite(num_agents))
             assert (isinstance(num_agents, int))
             assert (num_agents > 0)
 
         # Number of periods
-        assert (np.isfinite(num_periods))
-        assert (isinstance(num_periods, int))
-        assert (num_periods > 0)
+        assert (np.isfinite(a['num_periods']))
+        assert (isinstance(a['num_periods'], int))
+        assert (a['num_periods'] > 0)
 
         # Number of draws for Monte Carlo integration
-        assert (np.isfinite(num_draws_emax))
-        assert (isinstance(num_draws_emax, int))
-        assert (num_draws_emax >= 0)
+        assert (np.isfinite(a['num_draws_emax']))
+        assert (isinstance(a['num_draws_emax'], int))
+        assert (a['num_draws_emax'] >= 0)
 
         # Debugging mode
-        assert (is_debug in [True, False])
+        assert (a['is_debug'] in [True, False])
 
         # Window for smoothing parameter
-        assert (isinstance(tau, float))
-        assert (tau > 0)
+        assert (isinstance(a['tau'], float))
+        assert (a['tau'] > 0)
 
         # Interpolation
-        assert (is_interpolated in [True, False])
-        assert (isinstance(num_points_interp, int))
-        assert (num_points_interp > 0)
+        assert (a['is_interpolated'] in [True, False])
+        assert (isinstance(a['num_points_interp'], int))
+        assert (a['num_points_interp'] > 0)
 
         # Simulation of S-ML
-        assert (isinstance(num_draws_prob, int))
-        assert (num_draws_prob > 0)
+        assert (isinstance(a['num_draws_prob'], int))
+        assert (a['num_draws_prob'] > 0)
 
         # Maximum number of iterations
-        assert (isinstance(maxfun, int))
-        assert (maxfun >= 0)
+        assert (isinstance(a['maxfun'], int))
+        assert (a['maxfun'] >= 0)
 
         # Optimizers
-        assert (optimizer_used in OPT_EST_FORT + OPT_EST_PYTH)
+        assert (a['optimizer_used'] in OPT_EST_FORT + OPT_EST_PYTH)
 
         # Scaling
-        assert (precond_spec['type'] in ['identity', 'gradient', 'magnitudes'])
+        assert (a['precond_spec']['type'] in ['identity', 'gradient', 'magnitudes'])
         for key_ in ['minimum', 'eps']:
-            assert (isinstance(precond_spec[key_], float))
-            assert (precond_spec[key_] > 0.0)
+            assert (isinstance(a['precond_spec'][key_], float))
+            assert (a['precond_spec'][key_] > 0.0)
 
         # Education
-        assert isinstance(edu_spec['max'], int)
-        assert edu_spec['max'] > 0
-        assert isinstance(edu_spec['start'], list)
-        assert len(edu_spec['start']) == len(set(edu_spec['start']))
-        assert all(isinstance(item, int) for item in edu_spec['start'])
-        assert all(item > 0 for item in edu_spec['start'])
-        assert all(item <= edu_spec['max'] for item in edu_spec['start'])
-        assert all(isinstance(item, float) for item in edu_spec['share'])
-        assert all(0 <= item <= 1 for item in edu_spec['lagged'])
-        assert all(0 <= item <= 1 for item in edu_spec['share'])
+        assert isinstance(a['edu_spec']['max'], int)
+        assert a['edu_spec']['max'] > 0
+        assert isinstance(a['edu_spec']['start'], list)
+        assert len(a['edu_spec']['start']) == len(set(a['edu_spec']['start']))
+        assert all(isinstance(item, int) for item in a['edu_spec']['start'])
+        assert all(item > 0 for item in a['edu_spec']['start'])
+        assert all(item <= a['edu_spec']['max'] for item in a['edu_spec']['start'])
+        assert all(isinstance(item, float) for item in a['edu_spec']['share'])
+        assert all(0 <= item <= 1 for item in a['edu_spec']['lagged'])
+        assert all(0 <= item <= 1 for item in a['edu_spec']['share'])
         np.testing.assert_almost_equal(
-            np.sum(edu_spec['share']), 1.0, decimal=4)
+            np.sum(a['edu_spec']['share']), 1.0, decimal=4)
 
         # Derivatives
-        assert (derivatives in ['FORWARD-DIFFERENCES'])
+        assert (a['derivatives'] in ['FORWARD-DIFFERENCES'])
 
         # Check model parameters
-        check_model_parameters(optim_paras)
+        check_model_parameters(a['optim_paras'])
 
         # Check that all parameter values are within the bounds.
-        x = get_optim_paras(optim_paras, num_paras, 'all', True)
+        x = get_optim_paras(a['optim_paras'], a['num_paras'], 'all', True)
 
         # It is not clear at this point how to impose parameter constraints on
         # the covariance matrix in a flexible manner. So, either all fixed or
         # none. As a special case, we also allow for all off-diagonal elements
         # to be fixed to zero.
-        shocks_coeffs = optim_paras['shocks_cholesky'][np.tril_indices(4)]
-        shocks_fixed = optim_paras['paras_fixed'][43:53]
+        shocks_coeffs = a['optim_paras']['shocks_cholesky'][np.tril_indices(4)]
+        shocks_fixed = a['optim_paras']['paras_fixed'][43:53]
 
         all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
         all_free = all(is_free is True for is_free in shocks_fixed)
@@ -699,14 +656,14 @@ class RespyCls(object):
 
         # Discount rate and type shares need to be larger than on at all times.
         for label in ['paras_fixed', 'paras_bounds']:
-            assert isinstance(optim_paras[label], list)
-            assert (len(optim_paras[label]) == num_paras)
+            assert isinstance(a['optim_paras'][label], list)
+            assert (len(a['optim_paras'][label]) == a['num_paras'])
 
         for i in range(1):
-            assert optim_paras['paras_bounds'][i][0] >= 0.00
+            assert a['optim_paras']['paras_bounds'][i][0] >= 0.00
 
-        for i in range(num_paras):
-            lower, upper = optim_paras['paras_bounds'][i]
+        for i in range(a['num_paras']):
+            lower, upper = a['optim_paras']['paras_bounds'][i]
             if lower is not None:
                 assert isinstance(lower, float)
                 assert lower <= x[i]
@@ -720,7 +677,7 @@ class RespyCls(object):
             # At this point no bounds for the elements of the covariance matrix
             # are allowed.
             if i in range(43, 53):
-                assert optim_paras['paras_bounds'][i] == [None, None]
+                assert a['optim_paras']['paras_bounds'][i] == [None, None]
 
     def _check_integrity_results(self):
         """Check the integrity of the results."""
