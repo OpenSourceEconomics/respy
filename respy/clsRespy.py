@@ -2,15 +2,20 @@ import pickle as pkl
 import numpy as np
 import json
 import copy
+import os
 
 from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.shared.shared_constants import ROOT_DIR
+from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.pre_processing.model_processing import read_init_file, convert_init_dict_to_attr_dict, \
     convert_attr_dict_to_init_dict
 from respy.pre_processing.model_checking import check_model_attributes, \
     check_model_solution
+from respy.custom_exceptions import UserError
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 
 
 class RespyCls(object):
@@ -161,3 +166,38 @@ class RespyCls(object):
         """Check that key is present."""
         assert (key in self.attr.keys()), \
             'Invalid key requested: {}'.format(key)
+
+    def check_estimation(self):
+        """Check model attributes that are only relevant for estimation tasks."""
+        # Check that class instance is locked.
+        assert self.get_attr('is_locked')
+
+        # Check that no other estimations are currently running in this directory.
+        assert not os.path.exists('.estimation.respy.scratch')
+
+        # Distribute class attributes
+        optimizer_options, optimizer_used, optim_paras, version, maxfun, \
+            num_paras, file_est = dist_class_attributes(
+                self, 'optimizer_options', 'optimizer_used', 'optim_paras',
+                'version', 'maxfun', 'num_paras', 'file_est')
+
+        # Ensure that at least one parameter is free.
+        if sum(optim_paras['paras_fixed']) == num_paras:
+            raise UserError('Estimation requires at least one free parameter')
+
+        # Make sure the estimation dataset exists
+        if not os.path.exists(file_est):
+            raise UserError('Estimation dataset does not exist')
+
+        if maxfun > 0:
+            assert optimizer_used in optimizer_options.keys()
+
+            # Make sure the requested optimizer is valid
+            if version == 'PYTHON':
+                assert optimizer_used in OPT_EST_PYTH
+            elif version == 'FORTRAN':
+                assert optimizer_used in OPT_EST_FORT
+            else:
+                raise AssertionError
+
+        return self

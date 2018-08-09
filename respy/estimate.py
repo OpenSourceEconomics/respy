@@ -2,15 +2,12 @@ import atexit
 import os
 
 from respy.python.record.record_estimation import record_estimation_sample
-from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import remove_scratch
 from respy.python.shared.shared_auxiliary import get_est_info
-from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_EST_PYTH
+
 from respy.pre_processing.data_processing import process_dataset
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
-from respy.custom_exceptions import UserError
 
 
 def estimate(respy_obj):
@@ -23,7 +20,7 @@ def estimate(respy_obj):
     if respy_obj.get_attr('is_solved'):
         respy_obj.reset()
 
-    assert check_estimation(respy_obj)
+    respy_obj.check_estimation()
 
     # This locks the estimation directory for additional estimation requests.
     atexit.register(remove_scratch, '.estimation.respy.scratch')
@@ -55,42 +52,4 @@ def estimate(respy_obj):
 
     # Finishing
     return x, val
-
-
-def check_estimation(respy_obj):
-    """ Check input arguments.
-    """
-    # Check that class instance is locked.
-    assert respy_obj.get_attr('is_locked')
-
-    # Check that no other estimations are currently running in this directory.
-    assert not os.path.exists('.estimation.respy.scratch')
-
-    # Distribute class attributes
-    optimizer_options, optimizer_used, optim_paras, version, maxfun, \
-        num_paras, file_est = dist_class_attributes(
-            respy_obj, 'optimizer_options', 'optimizer_used', 'optim_paras',
-            'version', 'maxfun', 'num_paras', 'file_est')
-
-    # Ensure that at least one parameter is free.
-    if sum(optim_paras['paras_fixed']) == num_paras:
-        raise UserError('Estimation requires at least one free parameter')
-
-    # Make sure the estimation dataset exists
-    if not os.path.exists(file_est):
-        raise UserError('Estimation dataset does not exist')
-
-    if maxfun > 0:
-        assert optimizer_used in optimizer_options.keys()
-
-        # Make sure the requested optimizer is valid
-        if version == 'PYTHON':
-            assert optimizer_used in OPT_EST_PYTH
-        elif version == 'FORTRAN':
-            assert optimizer_used in OPT_EST_FORT
-        else:
-            raise AssertionError
-
-    return respy_obj
-
 
