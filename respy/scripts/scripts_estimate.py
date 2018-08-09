@@ -46,7 +46,7 @@ def scripts_estimate(single, init_file):
         respy_obj.lock()
 
     # Optimize the criterion function.
-    respy_obj.estimate()
+    respy_obj.fit()
 
 
 if __name__ == '__main__':

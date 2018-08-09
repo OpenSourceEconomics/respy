@@ -55,7 +55,7 @@ def run_robustness_test(seed, is_investigation):
 
     try:
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj.estimate()
+        respy_obj.fit()
     except:
         tb = traceback.format_exc()
         passed = False

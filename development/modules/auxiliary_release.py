@@ -615,7 +615,7 @@ def run_estimation(which):
             shutil.copy(file, '../new')
         os.chdir('../new')
 
-    _, crit_val = respy_obj.estimate()
+    _, crit_val = respy_obj.fit()
 
     # There was a bug in version 1.0 which might lead to crit_val not to actually take the lowest
     # value that was visited by the optimizer. So, we reprocess the log file again to be sure.

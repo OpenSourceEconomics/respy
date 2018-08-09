@@ -43,7 +43,7 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate_observed(respy_obj)
-            _, crit_val = respy_obj.estimate()
+            _, crit_val = respy_obj.fit()
 
             if base is None:
                 base = crit_val
@@ -80,7 +80,7 @@ class TestClass(object):
 
             simulate_observed(respy_obj)
 
-            respy_obj.estimate()
+            respy_obj.fit()
 
             # Check for identical records
             fname = file_sim + '.respy.sol'

@@ -134,7 +134,7 @@ def run_single(spec_dict, fname):
         respy_obj.write_out()
 
         simulate_specification(respy_obj, 'start', False)
-        x, _ = respy_obj.estimate()
+        x, _ = respy_obj.fit()
         simulate_specification(respy_obj, 'stop', True, x)
 
         maxfun = respy_obj.get_attr('maxfun')

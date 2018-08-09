@@ -210,7 +210,7 @@ class RespyCls(object):
 
         return self
 
-    def estimate(self):
+    def fit(self):
         """Estimate the model."""
         # Cleanup
         for fname in ['est.respy.log', 'est.respy.info']:

@@ -137,7 +137,7 @@ class TestClass(object):
             assert_frame_equal(base_data, data_frame)
 
             # This part checks the equality of an evaluation of the criterion function.
-            _, crit_val = respy_obj.estimate()
+            _, crit_val = respy_obj.fit()
 
             if base_val is None:
                 base_val = crit_val
@@ -165,7 +165,7 @@ class TestClass(object):
         generate_init(constr)
 
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj.estimate()
+        respy_obj.fit()
 
     def test_5(self):
         """ Test the scripts.
@@ -189,7 +189,7 @@ class TestClass(object):
             respy_obj.set_attr('maxfun', 0)
             respy_obj.lock()
 
-            respy_obj.estimate()
+            respy_obj.fit()
 
             # Potentially evaluate at different points.
             generate_init(constr)
@@ -256,14 +256,14 @@ class TestClass(object):
         # Run estimation task.
         respy_obj = RespyCls('test.respy.ini')
         simulate_observed(respy_obj)
-        base_x, base_val = respy_obj.estimate()
+        base_x, base_val = respy_obj.fit()
 
         # We also check whether updating the class instance and a single evaluation of the
         # criterion function give the same result.
         respy_obj.update_optim_paras(base_x)
         respy_obj.attr['maxfun'] = 0
 
-        alt_x, alt_val = respy_obj.estimate()
+        alt_x, alt_val = respy_obj.fit()
 
         for arg in [(alt_val, base_val), (alt_x, base_x)]:
             np.testing.assert_almost_equal(arg[0], arg[1])
@@ -278,7 +278,7 @@ class TestClass(object):
 
         respy_obj = RespyCls('test.respy.ini')
         respy_obj = simulate_observed(respy_obj)
-        _, base_val = respy_obj.estimate()
+        _, base_val = respy_obj.fit()
 
         scripts_update('test.respy.ini')
         respy_obj = RespyCls('test.respy.ini')
@@ -292,7 +292,7 @@ class TestClass(object):
         identifiers = np.random.choice(range(18), num_draws, replace=False)
         scripts_modify(identifiers, action, 'test.respy.ini')
 
-        _, update_val = respy_obj.estimate()
+        _, update_val = respy_obj.fit()
 
         np.testing.assert_almost_equal(update_val, base_val)
 
@@ -370,7 +370,7 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
-            _, val = respy_obj.estimate()
+            _, val = respy_obj.fit()
             if base_val is None:
                 base_val = val
 
@@ -424,7 +424,7 @@ class TestClass(object):
 
         simulate_observed(respy_obj, is_missings=False)
 
-        _, val = respy_obj.estimate()
+        _, val = respy_obj.fit()
         np.testing.assert_allclose(val, rslt)
 
     def test_13(self):
@@ -462,7 +462,7 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
-            _, val = respy_obj.estimate()
+            _, val = respy_obj.fit()
             if base_val is None:
                 base_val = val
 
@@ -581,7 +581,7 @@ class TestClass(object):
                 assert_frame_equal(base_data, data_frame)
 
                 # This part checks the equality of a single function evaluation.
-                _, val = respy_obj.estimate()
+                _, val = respy_obj.fit()
                 if base_val is None:
                     base_val = val
                 np.testing.assert_almost_equal(base_val, val)

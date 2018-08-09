@@ -75,7 +75,7 @@ def run_single(spec_dict, fname, grid_slaves):
 
         respy_obj.write_out()
 
-        respy_obj.estimate()
+        respy_obj.fit()
 
         # Get results from the special output file that is integrated in the RESPY package just
         # for the purpose of scalability exercises.

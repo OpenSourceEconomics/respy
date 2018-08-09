@@ -107,7 +107,7 @@ class TestClass(object):
             assert_frame_equal(base_data, data_frame)
 
             # This part checks the equality of an evaluation of the criterion function.
-            _, crit_val = respy_obj.estimate()
+            _, crit_val = respy_obj.fit()
 
             if base_val is None:
                 base_val = crit_val
@@ -162,7 +162,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            x, val = respy_obj.estimate()
+            x, val = respy_obj.fit()
 
             # Check for the returned parameters.
             if base_x is None:
@@ -237,7 +237,7 @@ class TestClass(object):
                 base_sim_log = open(fname, 'r').read()
             assert open(fname, 'r').read() == base_sim_log
 
-            respy_obj.estimate()
+            respy_obj.fit()
 
             if base_est_info is None:
                 base_est_info = open('est.respy.info', 'r').read()
@@ -294,7 +294,7 @@ class TestClass(object):
             respy_obj.set_attr('maxfun', 1)
             respy_obj.lock()
 
-            respy_obj.estimate()
+            respy_obj.fit()
 
             if base_scaling_matrix is None:
                 base_scaling_matrix = np.genfromtxt('scaling.respy.out')

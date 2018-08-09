@@ -69,7 +69,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
 
         simulate_observed(respy_obj)
 
-        result = respy_obj.estimate()[1]
+        result = respy_obj.fit()[1]
         np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
 
     if is_creation:
