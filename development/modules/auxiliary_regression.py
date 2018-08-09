@@ -30,7 +30,6 @@ def create_single(idx):
     # recognized. This is important for the creation of the regression vault as we want to
     # include FORTRAN use cases.
     from respy import RespyCls
-    from respy import estimate
 
     # We impose a couple of constraints that make the requests manageable.
     np.random.seed(idx)
@@ -41,7 +40,7 @@ def create_single(idx):
     init_dict = generate_init(constr)
     respy_obj = RespyCls('test.respy.ini')
     simulate_observed(respy_obj)
-    crit_val = estimate(respy_obj)[1]
+    crit_val = respy_obj.estimate()[1]
 
     # In rare instances, the value of the criterion function might be too large and thus
     # printed as a string. This occurred in the past, when the gradient preconditioning
@@ -105,13 +104,12 @@ def check_single(tests, idx):
     # recognized. This is important for the creation of the regression vault as we want to
     # include FORTRAN use cases.
     from respy import RespyCls
-    from respy import estimate
 
     write_init_file(init_dict)
     respy_obj = RespyCls('test.respy.ini')
     simulate_observed(respy_obj)
 
-    est_val = estimate(respy_obj)[1]
+    est_val = respy_obj.estimate()[1]
 
     is_success = np.isclose(est_val, crit_val, rtol=TOL, atol=TOL)
 

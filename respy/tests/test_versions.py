@@ -17,7 +17,6 @@ from respy.tests.codes.random_init import generate_init
 from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_draws
 from respy.tests.codes.auxiliary import write_types
-from respy import estimate
 from respy import RespyCls
 from functools import partial
 from respy.python.shared.shared_constants import DECIMALS
@@ -108,7 +107,7 @@ class TestClass(object):
             assert_frame_equal(base_data, data_frame)
 
             # This part checks the equality of an evaluation of the criterion function.
-            _, crit_val = estimate(respy_obj)
+            _, crit_val = respy_obj.estimate()
 
             if base_val is None:
                 base_val = crit_val
@@ -163,7 +162,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            x, val = estimate(respy_obj)
+            x, val = respy_obj.estimate()
 
             # Check for the returned parameters.
             if base_x is None:
@@ -238,7 +237,7 @@ class TestClass(object):
                 base_sim_log = open(fname, 'r').read()
             assert open(fname, 'r').read() == base_sim_log
 
-            estimate(respy_obj)
+            respy_obj.estimate()
 
             if base_est_info is None:
                 base_est_info = open('est.respy.info', 'r').read()
@@ -295,7 +294,7 @@ class TestClass(object):
             respy_obj.set_attr('maxfun', 1)
             respy_obj.lock()
 
-            estimate(respy_obj)
+            respy_obj.estimate()
 
             if base_scaling_matrix is None:
                 base_scaling_matrix = np.genfromtxt('scaling.respy.out')

@@ -301,7 +301,7 @@ During the simulation, several files will appear in the current working director
 Now that we simulated some data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values.
 ::
 
-    x, crit_val = respy.estimate(respy_obj)
+    x, crit_val = respy_obj.estimate()
 
 This directly returns the value of the coefficients at the final step of the optimizer as well as the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using ``est.respy.info`` and more details about each evaluation of the criterion function are available in ``est.respy.log``.
 
@@ -339,6 +339,6 @@ Just using the capabilities outlined so far, it is straightforward to recompute 
         respy_obj.set_attr('maxfun', 0)
         respy_obj.lock()
 
-        respy.estimate(respy_obj)
+        respy_obj.estimate()
 
 In an earlier `working paper  <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_, Keane and Wolpin (1994b) provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.

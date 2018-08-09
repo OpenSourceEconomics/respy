@@ -352,7 +352,7 @@ class TestClass(object):
         respy_obj.attr['file_est'] = 'ftest.respy.dat'
 
         open('.restud.respy.scratch', 'a').close()
-        _, val = respy.estimate(respy_obj)
+        _, val = respy_obj.estimate()
         os.remove('.restud.respy.scratch')
 
         # This ensure that the two values are within 1% of the RESPY value.

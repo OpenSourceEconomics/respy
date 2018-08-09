@@ -14,7 +14,7 @@ import respy
 
 
 def run(spec_dict):
-    """ Details of the scalability exercise can be specified in the code block below. Note that 
+    """ Details of the scalability exercise can be specified in the code block below. Note that
     only deviations from the benchmark initialization files need to be addressed.
     """
 
@@ -75,7 +75,7 @@ def run_single(spec_dict, fname, grid_slaves):
 
         respy_obj.write_out()
 
-        respy.estimate(respy_obj)
+        respy_obj.estimate()
 
         # Get results from the special output file that is integrated in the RESPY package just
         # for the purpose of scalability exercises.

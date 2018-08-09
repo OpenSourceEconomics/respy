@@ -40,7 +40,6 @@ def run(request, is_compile, is_background, is_strict, num_procs):
     # recognized. This is important for the creation of the regression vault as we want to
     # include FORTRAN use cases.
     from respy import RespyCls
-    from respy import estimate
 
     # Process command line arguments
     is_creation = False
@@ -70,7 +69,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
 
         simulate_observed(respy_obj)
 
-        result = estimate(respy_obj)[1]
+        result = respy_obj.estimate()[1]
         np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
 
     if is_creation:

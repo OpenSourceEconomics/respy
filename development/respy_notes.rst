@@ -2,6 +2,9 @@
 TO-DO
 =====
 
+- update tutorial notebook
+
+
 Interface
 ---------
 

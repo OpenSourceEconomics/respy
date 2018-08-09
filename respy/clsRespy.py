@@ -3,10 +3,14 @@ import numpy as np
 import json
 import copy
 import os
+import atexit
 
 from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_auxiliary import check_model_parameters
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import remove_scratch
+
 from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
@@ -15,7 +19,11 @@ from respy.pre_processing.model_processing import read_init_file, convert_init_d
 from respy.pre_processing.model_checking import check_model_attributes, \
     check_model_solution
 from respy.custom_exceptions import UserError
-from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.interface import respy_interface
+from respy.fortran.interface import resfort_interface
+from respy.python.record.record_estimation import record_estimation_sample
+from respy.python.shared.shared_auxiliary import get_est_info
+from respy.pre_processing.data_processing import process_dataset
 
 
 class RespyCls(object):
@@ -201,3 +209,46 @@ class RespyCls(object):
                 raise AssertionError
 
         return self
+
+    def estimate(self):
+        """Estimate the model."""
+        # Cleanup
+        for fname in ['est.respy.log', 'est.respy.info']:
+            if os.path.exists(fname):
+                os.unlink(fname)
+
+        if self.get_attr('is_solved'):
+            self.reset()
+
+        self.check_estimation()
+
+        # This locks the estimation directory for additional estimation requests.
+        atexit.register(remove_scratch, '.estimation.respy.scratch')
+        open('.estimation.respy.scratch', 'w').close()
+
+        # Read in estimation dataset. It only reads in the number of agents
+        # requested for the estimation (or all available, depending on which is
+        # less). It allows to read in only a subset of the initial conditions.
+        data_frame = process_dataset(self)
+        record_estimation_sample(data_frame)
+        data_array = data_frame.as_matrix()
+
+        # Distribute class attributes
+        version = self.get_attr('version')
+
+        # Select appropriate interface
+        if version in ['PYTHON']:
+            respy_interface(self, 'estimate', data_array)
+        elif version in ['FORTRAN']:
+            resfort_interface(self, 'estimate', data_array)
+        else:
+            raise NotImplementedError
+
+        rslt = get_est_info()
+        x, val = rslt['paras_step'], rslt['value_step']
+
+        for fname in ['.estimation.respy.scratch', '.stop.respy.scratch']:
+            remove_scratch(fname)
+
+        # Finishing
+        return x, val

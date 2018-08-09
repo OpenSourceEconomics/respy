@@ -86,7 +86,7 @@ functions. It should be helpful if you plan to extend ``respy`` with custom comp
     :param obj respy_obj: Instance of RespyCls class
     :return: Instance of RespyCls
 
-.. function:: respy.estimate(respy_obj)
+.. function:: respy_obj.estimate()
 
     Estimate a model based on a provided dataset and the model specified in the initialization file.
 
