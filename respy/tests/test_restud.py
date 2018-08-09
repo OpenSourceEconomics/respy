@@ -10,7 +10,7 @@ import os
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.random_init import generate_random_dict
 from codes.auxiliary import simulate_observed
@@ -223,7 +223,7 @@ class TestClass(object):
         constr = generate_constraints_dict()
         init_dict = generate_random_dict(constr)
 
-        print_init_dict(adjust_initialization_dict(init_dict))
+        write_init_file(adjust_initialization_dict(init_dict))
 
         # Indicate RESTUD code the special case of zero disturbance.
         open('.restud.testing.scratch', 'a').close()
@@ -291,7 +291,7 @@ class TestClass(object):
         coeffs = cov_sampled[np.triu_indices(4)]
         init_dict['SHOCKS']['coeffs'] = coeffs
 
-        print_init_dict(init_dict)
+        write_init_file(init_dict)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')

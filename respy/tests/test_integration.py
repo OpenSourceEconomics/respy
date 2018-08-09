@@ -12,7 +12,7 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.python.shared.shared_auxiliary import extract_cholesky
-from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.scripts.scripts_simulate import scripts_simulate
@@ -316,7 +316,7 @@ class TestClass(object):
         # We draw a random update and print it out to the initialization file.
         label = np.random.choice(list(updates.keys()))
         init_dict['SHOCKS']['fixed'] = updates[label]
-        print_init_dict(init_dict)
+        write_init_file(init_dict)
 
         if 'invalid' in label:
             # This exception block makes sure that the UserError is in fact raised.
@@ -367,7 +367,7 @@ class TestClass(object):
 
             init_dict['EDUCATION']['start'] = edu_start
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
@@ -459,7 +459,7 @@ class TestClass(object):
             init_dict['TYPE SHARES']['fixed'] = [True, True] * (num_types - 1)
             init_dict['TYPE SHARES']['bounds'] = [[None, None], [None, None]]* (num_types - 1)
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)

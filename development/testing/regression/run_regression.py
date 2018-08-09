@@ -21,7 +21,7 @@ from auxiliary_regression import get_chunks
 
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import DECIMALS
-from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from codes.auxiliary import simulate_observed
 
 HOSTNAME = socket.gethostname()
@@ -65,7 +65,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         tests = json.load(open(fname, 'r'))
 
         init_dict, crit_val = tests[idx]
-        print_init_dict(init_dict)
+        write_init_file(init_dict)
         respy_obj = RespyCls('test.respy.ini')
 
         simulate_observed(respy_obj)

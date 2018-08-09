@@ -6,14 +6,14 @@ import copy
 
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import check_model_parameters
-from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.pre_processing.model_processing import read, convert_init_dict_to_attr_dict, \
+from respy.pre_processing.model_processing import read_init_file, convert_init_dict_to_attr_dict, \
     convert_attr_dict_to_init_dict
 from respy.custom_exceptions import UserError
 
@@ -23,7 +23,7 @@ class RespyCls(object):
 
     def __init__(self, fname):
         self._set_hardcoded_attributes()
-        ini = read(fname)
+        ini = read_init_file(fname)
         self.attr = convert_init_dict_to_attr_dict(ini)
         self._update_derived_attributes()
         self._initialize_solution_attributes()
@@ -138,7 +138,7 @@ class RespyCls(object):
     def write_out(self, fname='model.respy.ini'):
         """Write out the implied initialization file of the class instance."""
         init_dict = convert_attr_dict_to_init_dict(self.attr)
-        print_init_dict(init_dict, fname)
+        write_init_file(init_dict, fname)
 
     def reset(self):
         """ Remove solution attributes from class instance.

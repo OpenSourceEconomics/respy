@@ -6,7 +6,7 @@ import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
-from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_FORTRAN
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
@@ -72,7 +72,7 @@ class TestClass(object):
             init_dict['INTERPOLATION']['points'] = np.random.randint(10, max_states_period)
 
         # Print out the relevant initialization file.
-        print_init_dict(init_dict)
+        write_init_file(init_dict)
 
         # Write out random components and interpolation grid to align the three implementations.
         num_agents_sim = init_dict['SIMULATION']['agents']

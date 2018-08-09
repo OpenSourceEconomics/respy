@@ -4,7 +4,7 @@ import numpy as np
 
 from respy.python.shared.shared_auxiliary import generate_optimizer_options
 from respy.python.shared.shared_auxiliary import get_valid_bounds
-from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import IS_PARALLEL
@@ -41,7 +41,7 @@ def generate_init(constr=None):
 
     dict_ = generate_random_dict(constr)
 
-    print_init_dict(dict_)
+    write_init_file(dict_)
 
     # Finishing.
     return dict_

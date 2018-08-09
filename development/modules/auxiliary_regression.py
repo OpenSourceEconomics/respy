@@ -3,7 +3,7 @@ import shutil
 import socket
 import os
 
-from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TOL
@@ -107,7 +107,7 @@ def check_single(tests, idx):
     from respy import RespyCls
     from respy import estimate
 
-    print_init_dict(init_dict)
+    write_init_file(init_dict)
     respy_obj = RespyCls('test.respy.ini')
     simulate_observed(respy_obj)
 

@@ -8,7 +8,7 @@ from respy.python.solve.solve_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import dist_optim_paras
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 
 from codes.random_init import generate_init
 from respy import simulate
@@ -179,7 +179,7 @@ class TestClass(object):
 
         # The equality below does not hold if schooling is an inadmissible state.
         init_dict['EDUCATION']['max'] = 99
-        print_init_dict(init_dict)
+        write_init_file(init_dict)
 
         respy_obj = RespyCls('test.respy.ini')
         respy_obj, _ = simulate(respy_obj)

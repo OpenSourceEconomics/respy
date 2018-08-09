@@ -6,8 +6,6 @@ Notes, todos and questions about respy
 TO-DO
 =====
 
-- generate model_processing_auxiliary.py
-- rename read and print_init_dict; add docstrings
 - make estimator options optional and check them in __init__
     - I don't understand this comment in estimate.py or simulate.py:
         # Make sure all optimizers are fully defined for the FORTRAN interface.

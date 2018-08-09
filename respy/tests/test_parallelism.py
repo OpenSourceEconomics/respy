@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_PARALLEL
 
 from codes.random_init import generate_random_dict
@@ -40,7 +40,7 @@ class TestClass(object):
             if is_parallel:
                 init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate_observed(respy_obj)
@@ -72,7 +72,7 @@ class TestClass(object):
             if is_parallel:
                 init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
 

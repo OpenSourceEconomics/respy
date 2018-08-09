@@ -573,7 +573,7 @@ def run_estimation(which):
     from respy import estimate
     from respy import RespyCls
 
-    from respy.pre_processing.model_processing import print_init_dict
+    from respy.pre_processing.model_processing import write_init_file
 
     # We need to make sure that the function simulate_observed() is imported from the original
     # package. Otherwise dependencies might not work properly.
@@ -588,7 +588,7 @@ def run_estimation(which):
     if '1.0.0' in sys.executable:
         init_dict['SHOCKS']['fixed'] = np.array(init_dict['SHOCKS']['fixed'])
 
-    print_init_dict(init_dict)
+    write_init_file(init_dict)
 
     respy_obj = RespyCls('test.respy.ini')
 

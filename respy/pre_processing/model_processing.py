@@ -22,8 +22,8 @@ from respy.pre_processing.model_processing_auxiliary import \
     _determine_case, _paras_mapping
 
 
-def read(fname):
-    """Read and aRESPY initialization file into a Python dictionary.
+def read_init_file(fname):
+    """Read a RESPY initialization file into a Python dictionary.
 
     The design of the initialization files is optimized for readability and user
     friendliness, not developer friendliness.
@@ -68,15 +68,16 @@ def read(fname):
     return init_dict
 
 
-def print_init_dict(dict_, file_name='test.respy.ini'):
-    """Write initialization dictionary to file.
+def write_init_file(init_dict, file_name='test.respy.ini'):
+    """Write initialization file with information from init_dict.
 
     The different formatting makes the file rather involved.
     The resulting initialization files are rad by PYTHON and FORTRAN routines.
     Thus, the formatting with respect to the number of decimal places is rather
     small.
+
     """
-    assert (isinstance(dict_, dict))
+    assert (isinstance(init_dict, dict))
 
     opt_labels = ['BASICS', 'COMMON', 'OCCUPATION A', 'OCCUPATION B',
                   'EDUCATION', 'HOME', 'SHOCKS', 'TYPE SHARES', 'TYPE SHIFTS']
@@ -89,7 +90,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                'PRECONDITIONING', 'PROGRAM', 'INTERPOLATION']
     labels += OPT_EST_FORT + OPT_EST_PYTH
 
-    num_types = int(len(dict_['TYPE SHARES']['coeffs']) / 2) + 1
+    num_types = int(len(init_dict['TYPE SHARES']['coeffs']) / 2) + 1
 
     # Create initialization.
     with open(file_name, 'w') as file_:
@@ -100,9 +101,9 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write('BASICS\n\n')
 
                 str_ = '{0:<10} {1:>25}\n'
-                file_.write(str_.format('periods', dict_[flag]['periods']))
+                file_.write(str_.format('periods', init_dict[flag]['periods']))
 
-                line = format_opt_parameters(dict_['BASICS'], 0)
+                line = format_opt_parameters(init_dict['BASICS'], 0)
                 file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -113,7 +114,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for i in range(num_types - 1):
                     for j in range(2):
                         pos = (i * 2) + j
-                        line = format_opt_parameters(dict_['TYPE SHARES'], pos)
+                        line = format_opt_parameters(init_dict['TYPE SHARES'], pos)
                         file_.write(str_optim.format(*line))
                     file_.write('\n')
 
@@ -123,7 +124,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 for i in range(num_types - 1):
                     for j in range(4):
                         pos = (i * 4) + j
-                        line = format_opt_parameters(dict_['TYPE SHIFTS'], pos)
+                        line = format_opt_parameters(init_dict['TYPE SHIFTS'], pos)
                         file_.write(str_optim.format(*line))
                     file_.write('\n')
 
@@ -131,7 +132,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 file_.write(flag.upper() + '\n\n')
                 for i in range(3):
-                    line = format_opt_parameters(dict_['HOME'], i)
+                    line = format_opt_parameters(init_dict['HOME'], i)
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
@@ -140,16 +141,16 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                         'ESTIMATION', 'PRECONDITIONING', 'DERIVATIVES']:
 
                 file_.write(flag.upper() + '\n\n')
-                keys = list(dict_[flag].keys())
+                keys = list(init_dict[flag].keys())
                 keys.sort()
                 for key_ in keys:
 
                     if key_ in ['tau']:
                         str_ = '{0:<10} {1:25.15f}\n'
-                        file_.write(str_.format(key_, dict_[flag][key_]))
+                        file_.write(str_.format(key_, init_dict[flag][key_]))
                     else:
                         str_ = '{0:<10} {1:>25}\n'
-                        file_.write(str_.format(key_, str(dict_[flag][key_])))
+                        file_.write(str_.format(key_, str(init_dict[flag][key_])))
 
                 file_.write('\n')
 
@@ -158,7 +159,7 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 # Type conversion
                 file_.write(flag.upper() + '\n\n')
                 for i in range(10):
-                    line = format_opt_parameters(dict_['SHOCKS'], i)
+                    line = format_opt_parameters(init_dict['SHOCKS'], i)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
 
@@ -167,34 +168,34 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
                 file_.write(flag.upper() + '\n\n')
 
                 for i in range(7):
-                    line = format_opt_parameters(dict_['EDUCATION'], i)
+                    line = format_opt_parameters(init_dict['EDUCATION'], i)
                     file_.write(str_optim.format(*line))
 
                 file_.write('\n')
                 str_ = '{0:<10} {1:>25}\n'
-                for i, start in enumerate(dict_[flag]['start']):
+                for i, start in enumerate(init_dict[flag]['start']):
                     file_.write(str_.format('start', start))
-                    file_.write(str_.format('share', dict_[flag]['share'][i]))
+                    file_.write(str_.format('share', init_dict[flag]['share'][i]))
                     file_.write(
-                        str_.format('lagged', dict_[flag]['lagged'][i]))
+                        str_.format('lagged', init_dict[flag]['lagged'][i]))
 
                     file_.write('\n')
 
-                file_.write(str_.format('max', dict_[flag]['max']))
+                file_.write(str_.format('max', init_dict[flag]['max']))
 
                 file_.write('\n')
 
             if flag in ['COMMON']:
                 file_.write(flag + '\n\n')
                 for j in range(2):
-                    line = format_opt_parameters(dict_[flag], j)
+                    line = format_opt_parameters(init_dict[flag], j)
                     file_.write(str_optim.format(*line))
                 file_.write('\n')
 
             if flag in ['OCCUPATION A', 'OCCUPATION B']:
                 file_.write(flag + '\n\n')
                 for j in range(15):
-                    line = format_opt_parameters(dict_[flag], j)
+                    line = format_opt_parameters(init_dict[flag], j)
                     file_.write(str_optim.format(*line))
                     # Visual separation of parameters from skill function.
                     if j == 11:
@@ -206,26 +207,26 @@ def print_init_dict(dict_, file_name='test.respy.ini'):
 
                 # This function can also be used to print out initialization
                 # files without optimization options (enough for simulation).
-                if flag not in dict_.keys():
+                if flag not in init_dict.keys():
                     continue
 
                 file_.write(flag.upper() + '\n\n')
-                keys = list(dict_[flag].keys())
+                keys = list(init_dict[flag].keys())
                 keys.sort()
                 for key_ in keys:
 
                     if key_ in ['maxfun', 'npt', 'maxiter', 'm', 'maxls']:
                         str_ = '{0:<10} {1:>25}\n'
-                        file_.write(str_.format(key_, dict_[flag][key_]))
+                        file_.write(str_.format(key_, init_dict[flag][key_]))
                     else:
                         str_ = '{0:<10} {1:25.15f}\n'
-                        file_.write(str_.format(key_, dict_[flag][key_]))
+                        file_.write(str_.format(key_, init_dict[flag][key_]))
 
                 file_.write('\n')
 
 
 def convert_init_dict_to_attr_dict(init_dict):
-    """Convert init_dict to an attribute dictionary of RespyCls."""
+    """Convert an init_dict to attr_dict."""
     attr = {}
     ini = init_dict
     attr['num_points_interp'] = ini['INTERPOLATION']['points']
@@ -349,6 +350,7 @@ def convert_init_dict_to_attr_dict(init_dict):
 
 
 def convert_attr_dict_to_init_dict(attr_dict):
+    """Convert an attr_dict to init_dict."""
     # TO-DO: remove hard coded parameter positions
     ini = {}
     attr = attr_dict
@@ -491,7 +493,12 @@ def convert_attr_dict_to_init_dict(attr_dict):
 
 
 def default_model_dict():
+    """Return a partial init_dict with default values.
 
+    This is not a complete init_dict. It only contains the parts
+    for which default values make sense.
+
+    """
     default = {
         'TYPE SHARES': {'coeffs': [], 'fixed': [], 'bounds': []},
         'TYPE SHIFTS': {'coeffs': [], 'fixed': [], 'bounds': []}
