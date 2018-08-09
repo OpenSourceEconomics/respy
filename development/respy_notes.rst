@@ -6,12 +6,6 @@ Notes, todos and questions about respy
 TO-DO
 =====
 
-- make estimator options optional and check them in __init__
-    - I don't understand this comment in estimate.py or simulate.py:
-        # Make sure all optimizers are fully defined for the FORTRAN interface.
-        # At the same time, we do not want to require the user to specify only
-        # the optimizers that are used. So, we sample a full set and replace the
-        # optimizers that are used with the user specification.
 - put check_integrity_attributes to pre_processing
 - move process_python into pre_processing and call it data_processing.py.
 
