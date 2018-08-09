@@ -37,13 +37,13 @@ from respy.python.interface import get_scales_magnitudes
 from respy.pre_processing.data_processing import process_dataset
 from respy.python.solve.solve_python import pyth_solve
 from respy.fortran.interface import resfort_interface
-from codes.auxiliary import write_interpolation_grid
-from codes.auxiliary import write_lagged_start
-from codes.auxiliary import simulate_observed
-from codes.random_init import generate_init
-from codes.auxiliary import write_edu_start
-from codes.auxiliary import write_draws
-from codes.auxiliary import write_types
+from respy.tests.codes.auxiliary import write_interpolation_grid
+from respy.tests.codes.auxiliary import write_lagged_start
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.auxiliary import write_edu_start
+from respy.tests.codes.auxiliary import write_draws
+from respy.tests.codes.auxiliary import write_types
 from functools import partial
 from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
 from respy import RespyCls

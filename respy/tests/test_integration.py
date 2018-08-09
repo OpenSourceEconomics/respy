@@ -21,16 +21,16 @@ from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
 from respy.pre_processing.data_processing import process_dataset
 from respy.scripts.scripts_check import scripts_check
-from codes.auxiliary import write_interpolation_grid
-from codes.random_init import generate_random_dict
-from codes.auxiliary import transform_to_logit
-from codes.auxiliary import write_lagged_start
+from respy.tests.codes.auxiliary import write_interpolation_grid
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.auxiliary import transform_to_logit
+from respy.tests.codes.auxiliary import write_lagged_start
 from respy.custom_exceptions import UserError
-from codes.auxiliary import simulate_observed
-from codes.random_init import generate_init
-from codes.auxiliary import write_edu_start
-from codes.auxiliary import compare_init
-from codes.auxiliary import write_types
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.auxiliary import write_edu_start
+from respy.tests.codes.auxiliary import compare_init
+from respy.tests.codes.auxiliary import write_types
 
 from respy import estimate
 from respy import RespyCls

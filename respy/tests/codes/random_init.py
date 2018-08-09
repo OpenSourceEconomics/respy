@@ -10,10 +10,10 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 
-from codes.process_constraints import process_constraints
-from codes.auxiliary import get_valid_shares
-from codes.auxiliary import get_valid_values
-from codes.auxiliary import OPTIMIZERS_EST
+from respy.tests.codes.process_constraints import process_constraints
+from respy.tests.codes.auxiliary import get_valid_shares
+from respy.tests.codes.auxiliary import get_valid_values
+from respy.tests.codes.auxiliary import OPTIMIZERS_EST
 
 # We need to impose some version-dependent constraints. Otherwise the execution times for some
 # tasks just takes too long.

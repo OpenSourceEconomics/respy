@@ -10,7 +10,7 @@ from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.pre_processing.model_processing import write_init_file
 
-from codes.random_init import generate_init
+from respy.tests.codes.random_init import generate_init
 from respy import simulate
 from respy import RespyCls
 

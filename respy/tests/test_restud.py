@@ -12,8 +12,8 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_FORTRAN
-from codes.random_init import generate_random_dict
-from codes.auxiliary import simulate_observed
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.auxiliary import simulate_observed
 from respy import RespyCls
 import respy
 
