@@ -13,6 +13,8 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
+from respy.python.shared.shared_constants import IS_PARALLEL
+from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.read.read_python import read
 from respy.custom_exceptions import UserError
@@ -583,10 +585,6 @@ class RespyCls(object):
 
         tau = self.attr['tau']
 
-        # We also load the full configuration.
-        with open(ROOT_DIR + '/.config', 'r') as infile:
-            config_dict = json.load(infile)
-
         # Number of parameters
         assert isinstance(num_paras, int)
         assert num_paras >= 53
@@ -596,12 +594,12 @@ class RespyCls(object):
         assert (num_procs > 0)
         if num_procs > 1:
             assert (version == 'FORTRAN')
-            assert config_dict['PARALLELISM']
+            assert IS_PARALLEL
 
         # Version version of package
         assert (version in ['FORTRAN', 'PYTHON'])
         if version == 'FORTRAN':
-            assert config_dict['FORTRAN']
+            assert IS_FORTRAN
 
         # Debug status
         assert (is_debug in [True, False])

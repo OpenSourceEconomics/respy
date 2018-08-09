@@ -2,7 +2,7 @@
 ! This module provides additional functions that allow to test this program
 ! against the RESPY package.
 !******************************************************************************
-MODULE PEI_ADDITIONS
+MODULE TEST_ADDITIONS
 
   IMPLICIT NONE
 

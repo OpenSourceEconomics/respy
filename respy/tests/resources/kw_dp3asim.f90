@@ -24,10 +24,7 @@ PROGRAM dp3asim
   !****************************************************************************
 
   ! PEI: Interface to added functions
-  USE PEI_ADDITIONS
-
-  ! PEI: Interface to IMSL replacements
-  USE IMSL_REPLACEMENTS
+  USE KW_LIBRARY
 
 !********************************************************
 !*  PROGRAM TO CONSTRUCT MONTE CARLO DATA FOR DP MODEL  *

@@ -1,11 +1,7 @@
-import shutil
-
-
 def build(ctx):
 
-    # Create the RESFORT library. This is build in addition to the RESFORT
-    # executable to allow for the use of an F2PY interface to the core
-    # functions as well.
+    # Create the RESFORT library. This is build in addition to the RESFORT executable to allow
+    # for the use of an F2PY interface to the core functions as well.
     src = ['shared/shared_constants.f90',
            'shared/shared_types.f90',
            'parallelism/parallelism_constants.f90',
@@ -33,29 +29,18 @@ def build(ctx):
            'parallelism/parallelism_auxiliary.f90',
            'resfort_library.f90']
 
-    flags = ctx.env.FCFLAGS + ['-fPIC']
-    ctx(features=['fc', 'fcstlib'], source=src, target='resfort', fcflags=flags)
-
     ctx.add_group()
+    flags = ctx.env.FCFLAGS + ['-fPIC']
+    ctx(features=['fc', 'fcstlib'], source=src, target='resfort_library', fcflags=flags)
 
     # Compile the required executables.
-    src = ['resfort.f90']
-    flags = ctx.env.FCFLAGS
-    if ctx.env['PARALLELISM']:
-        flags += ['-DMPI_AVAILABLE']
+    ctx.add_group()
+    ctx(features=['fc', 'fcprogram'], source='resfort.f90', target='resfort', use='resfort_library')
 
-    flags = ctx.env.FCFLAGS
-
-    ctx(features=['fc', 'fcprogram'], source=src, target='resfort',
-        fcflags=flags)
-
-    # If parallel computing is available, we also create the executable for
-    # the slave processes.
+    # If parallel computing is available, we also create the executable for the slave processes.
     if ctx.env['PARALLELISM']:
 
         ctx.add_group()
-
         slave = ['parallelism/parallelism_slave.f90']
-
         ctx(features=['fc', 'fcprogram'], source=slave, target='resfort_slave',
-            fcflags=flags)
+            use='resfort_library')
