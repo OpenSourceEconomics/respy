@@ -294,7 +294,7 @@ We always first initialize an instance of the ``RespyCls`` by passing in the pat
 Now we can simulate a sample from the specified model.
 ::
 
-    respy.simulate(respy_obj)
+    respy_obj.simulate()
 
 During the simulation, several files will appear in the current working directory. ``sol.respy.log`` allows to monitor the progress of the solution algorithm, while ``sim.respy.log`` records the progress of the simulation. The simulated dataset with the agents' choices and state experiences is stored in ``data.respy.dat``, ``data.respy.info`` provides some basic descriptives about the simulated dataset. See our section on :ref:`Additional Details <additional-details>` for more information regarding the output files.
 
@@ -309,7 +309,7 @@ We can now simulate a sample using the estimated parameters by updating the inst
 ::
     respy_obj.update_model_paras(x)
 
-    respy.simulate(respy_obj)
+    respy_obj.simulate()
 
 **Recomputing Keane and Wolpin (1994)**
 
@@ -330,7 +330,7 @@ Just using the capabilities outlined so far, it is straightforward to recompute 
         respy_obj = respy.RespyCls(spec)
 
         # Let us simulate the datasets discussed on the page 658.
-        respy.simulate(respy_obj)
+        respy_obj.simulate()
 
         # To start estimations for the Monte Carlo exercises. For now, we just
         # evaluate the model at the starting values, i.e. maxfun set to zero in

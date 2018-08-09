@@ -594,7 +594,7 @@ def run_estimation(which):
     # This flag ensures a clean switch to the synthetic simulation for cases where the
     # simulate_observed() was changed in between releases.
     if os.path.exists('../.simulate_observed.cfg'):
-        respy.simulate(respy_obj)
+        respy_obj.simulate()
     else:
         simulate_observed(respy_obj)
 

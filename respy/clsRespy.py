@@ -1,5 +1,6 @@
 import pickle as pkl
 import numpy as np
+import pandas as pd
 import json
 import copy
 import os
@@ -24,6 +25,13 @@ from respy.fortran.interface import resfort_interface
 from respy.python.record.record_estimation import record_estimation_sample
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.pre_processing.data_processing import process_dataset
+from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.simulate.simulate_auxiliary import check_dataset_sim
+from respy.python.shared.shared_constants import DATA_FORMATS_SIM
+from respy.python.shared.shared_constants import DATA_LABELS_SIM
+from respy.python.simulate.simulate_auxiliary import write_info
+from respy.python.simulate.simulate_auxiliary import write_out
+from respy.python.shared.shared_auxiliary import add_solution
 
 
 class RespyCls(object):
@@ -252,3 +260,49 @@ class RespyCls(object):
 
         # Finishing
         return x, val
+
+    def simulate(self):
+        """Simulate dataset of synthetic agents following the model."""
+        # Distribute class attributes
+        is_debug, version, is_store, file_sim = dist_class_attributes(
+            self, 'is_debug', 'version', 'is_store', 'file_sim')
+
+        # Cleanup
+        for ext in ['sim', 'sol', 'dat', 'info']:
+            fname = file_sim + '.respy.' + ext
+            if os.path.exists(fname):
+                os.unlink(fname)
+
+        # Select appropriate interface
+        if version in ['PYTHON']:
+            solution, data_array = respy_interface(self, 'simulate')
+        elif version in ['FORTRAN']:
+            solution, data_array = resfort_interface(self, 'simulate')
+        else:
+            raise NotImplementedError
+
+        # Attach solution to class instance
+        self = add_solution(self, *solution)
+
+        self.unlock()
+        self.set_attr('is_solved', True)
+        self.lock()
+
+        # Store object to file
+        if is_store:
+            self.store('solution.respy.pkl')
+
+        # Create pandas data frame with missing values.
+        data_frame = pd.DataFrame(data=replace_missing_values(data_array),
+                                  columns=DATA_LABELS_SIM)
+        data_frame = data_frame.astype(DATA_FORMATS_SIM)
+        data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
+
+        # Checks
+        if is_debug:
+            check_dataset_sim(data_frame, self)
+
+        write_out(self, data_frame)
+        write_info(self, data_frame)
+
+        return self, data_frame

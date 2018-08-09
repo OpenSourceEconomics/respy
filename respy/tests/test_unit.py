@@ -11,7 +11,6 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.pre_processing.model_processing import write_init_file
 
 from respy.tests.codes.random_init import generate_init
-from respy import simulate
 from respy import RespyCls
 
 
@@ -69,7 +68,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        _, df = simulate(respy_obj)
+        _, df = respy_obj.simulate()
 
         # Check special case
         optim_paras, num_types, edu_spec, num_periods = dist_class_attributes(respy_obj,
@@ -147,7 +146,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj, _ = simulate(respy_obj)
+        respy_obj, _ = respy_obj.simulate()
 
         periods_rewards_systematic, states_number_period, states_all, num_periods, optim_paras = \
         dist_class_attributes(respy_obj, 'periods_rewards_systematic', 'states_number_period',
@@ -182,7 +181,7 @@ class TestClass(object):
         write_init_file(init_dict)
 
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj, _ = simulate(respy_obj)
+        respy_obj, _ = respy_obj.simulate()
 
         num_periods, optim_paras, edu_spec, mapping_state_idx, periods_emax, states_all, \
             periods_rewards_systematic, states_number_period = dist_class_attributes(respy_obj,

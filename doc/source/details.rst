@@ -78,22 +78,3 @@ functions. It should be helpful if you plan to extend ``respy`` with custom comp
 
         :param numpy.ndarray x: Model parameterization
 
-.. function:: respy.simulate(respy_obj)
-
-    Simulate dataset of synthetic agents following the model specified in the
-    initialization file.
-
-    :param obj respy_obj: Instance of RespyCls class
-    :return: Instance of RespyCls
-
-.. function:: respy_obj.estimate()
-
-    Estimate a model based on a provided dataset and the model specified in the initialization file.
-
-    :param obj respy_obj: Instance of RespyCls class
-
-    :return: Model parameterization at final step
-    :rtype: numpy.ndarray
-
-    :return: Value of criterion function at final step
-    :rtype: float

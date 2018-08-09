@@ -2,13 +2,9 @@
 TO-DO
 =====
 
-- update tutorial notebook
+- get rid of pytest.ini (see respy slack for how-to)
+- check documentation for new interface
 
-
-Interface
----------
-
-- Change the user interface: estimate and simulate become methods of clsRespy. Estimate is called fit.
 
 - shared_auxiliary.py
 ---------------------

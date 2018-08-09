@@ -60,7 +60,7 @@ def run_single(spec_dict, fname, grid_slaves):
     respy_obj.lock()
 
     respy_obj.write_out()
-    respy.simulate(respy_obj)
+    respy_obj.simulate()
 
     # Iterate over the grid of requested slaves.
     for num_slaves in grid_slaves:
