@@ -35,7 +35,7 @@ class RespyCls(object):
 
     def _set_hardcoded_attributes(self):
         """Set attributes that can't be changed by the model specification."""
-        self.derived_attributes = ['is_myopic']
+        self.derived_attributes = ['is_myopic', 'num_paras']
         self.solution_attributes = [
             'periods_rewards_systematic', 'states_number_period',
             'mapping_state_idx', 'periods_emax', 'states_all']

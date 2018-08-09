@@ -3,6 +3,21 @@ Notes, todos and questions about respy
 ======================================
 
 
+TO-DO
+=====
+
+- rename process_model to model_processing
+- generate model_processing_auxiliary.py
+- make estimator options optional and check them in __init__
+    - I don't understand this comment in estimate.py or simulate.py:
+        # Make sure all optimizers are fully defined for the FORTRAN interface.
+        # At the same time, we do not want to require the user to specify only
+        # the optimizers that are used. So, we sample a full set and replace the
+        # optimizers that are used with the user specification.
+- put check_integrity_attributes to pre_processing
+- move process_python into pre_processing and call it data_processing.py.
+
+
 clsRespy
 ========
 
@@ -10,30 +25,6 @@ clsRespy
 - Even though the PARAS_MAPPING does have a pretty long comment I don't understand it well enough to judge whether it is correct. -> Philipp checks that
 
 - update_optim paras could be made a lot shorter after my proposed changes to dist_econ_paras and dist_optim_paras; In any case it has an unnecessary assignment (self.attr['optim_paras'] = optim_paras) -> do it
-
-
-- the distinction between update core_attributes and update_derived_attributes is no longer clear cut since num_paras is now a derived attribute! -> put num_paras in derived attributes
-
-
-
-estimate.py and simulate.py
-===========================
-
-- I don't understand this comment:
-    # Make sure all optimizers are fully defined for the FORTRAN interface.
-    # At the same time, we do not want to require the user to specify only
-    # the optimizers that are used. So, we sample a full set and replace the
-    # optimizers that are used with the user specification.
-
-
-- I think check_optimizer_options should be part of clsRespy. It might even be good to call that in the __init__ method. Moreover, I would make it optional to specify any optimizer options, so people who only simulate are not bothered by this check.
-    - do it.
-
-
-process_python.py
-=================
-
-- Process is not a very good name for the main function in this module. I would call the module data_processing, and the main function process_data. -> do it
 
 
 estimate_python.py
