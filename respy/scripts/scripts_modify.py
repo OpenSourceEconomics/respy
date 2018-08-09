@@ -14,8 +14,8 @@ import os
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.pre_processing.process_model import print_init_dict
-from respy.pre_processing.process_model import read
+from respy.pre_processing.model_processing import print_init_dict
+from respy.pre_processing.model_processing import read
 from respy import RespyCls
 
 

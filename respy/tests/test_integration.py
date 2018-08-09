@@ -12,7 +12,7 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.python.shared.shared_auxiliary import extract_cholesky
-from respy.pre_processing.process_model import print_init_dict
+from respy.pre_processing.model_processing import print_init_dict
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.scripts.scripts_simulate import scripts_simulate

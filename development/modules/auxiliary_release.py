@@ -573,7 +573,7 @@ def run_estimation(which):
     from respy import estimate
     from respy import RespyCls
 
-    from respy.pre_processing.process_model import print_init_dict
+    from respy.pre_processing.model_processing import print_init_dict
 
     # We need to make sure that the function simulate_observed() is imported from the original
     # package. Otherwise dependencies might not work properly.

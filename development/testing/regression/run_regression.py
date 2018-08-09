@@ -21,7 +21,7 @@ from auxiliary_regression import get_chunks
 
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import DECIMALS
-from respy.pre_processing.process_model import print_init_dict
+from respy.pre_processing.model_processing import print_init_dict
 from codes.auxiliary import simulate_observed
 
 HOSTNAME = socket.gethostname()

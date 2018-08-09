@@ -1,7 +1,7 @@
 import numpy as np
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.pre_processing.process_model import print_init_dict
+from respy.pre_processing.model_processing import print_init_dict
 from codes.random_init import generate_random_dict
 from codes.auxiliary import simulate_observed
 from respy import RespyCls
