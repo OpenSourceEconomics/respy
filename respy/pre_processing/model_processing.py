@@ -501,7 +501,14 @@ def default_model_dict():
     """
     default = {
         'TYPE SHARES': {'coeffs': [], 'fixed': [], 'bounds': []},
-        'TYPE SHIFTS': {'coeffs': [], 'fixed': [], 'bounds': []}
+        'TYPE SHIFTS': {'coeffs': [], 'fixed': [], 'bounds': []},
+        'FORT_NEWUOA': {'maxfun': 1000000, 'npt': 1, 'rhobeg': 1.0, 'rhoend': 0.000001},
+        'FORT-BFGS': {'eps': 0.0001, 'gtol': 0.00001, 'maxiter': 10, 'stpmx': 100.0},
+        'FORT-BOBYQA': {'maxfun': 1000000, 'npt': 1, 'rhobeg': 1.0, 'rhoend': 0.000001},
+        'SCIPY-BFGS': {'eps': 0.0001, 'gtol': 0.0001, 'maxiter': 1},
+        'SCIPY-POWELL': {'ftol': 0.0001, 'maxfun': 1000000, 'maxiter': 1, 'xtol': 0.0001},
+        'SCIPY-LBFGSB': {'eps': 0.000000441037423, 'factr': 30.401091854739622, 'm': 5,
+                         'maxiter': 2, 'maxls': 2, 'pgtol': 0.000086554171164}
     }
 
     return default

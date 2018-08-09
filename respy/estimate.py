@@ -1,7 +1,6 @@
 import atexit
 import os
 
-from respy.python.shared.shared_auxiliary import generate_optimizer_options
 from respy.python.record.record_estimation import record_estimation_sample
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import remove_scratch
@@ -94,24 +93,7 @@ def check_estimation(respy_obj):
         else:
             raise AssertionError
 
-    # Make sure all optimizers are fully defined for the FORTRAN interface.
-    # At the same time, we do not want to require the user to specify only
-    # the optimizers that are used. So, we sample a full set and replace the
-    # optimizers that are used with the user specification.
-    full_options = dict()
-    for optimizer in OPTIMIZERS:
-        full_options[optimizer] = \
-            generate_optimizer_options(optimizer, optim_paras, num_paras)
-
-    for optimizer in optimizer_options.keys():
-        full_options[optimizer] = optimizer_options[optimizer]
-
-    # Update the enlarged set of optimizer options.
-    check_optimizer_options(full_options)
-
-    respy_obj.unlock()
-    respy_obj.set_attr('optimizer_options', full_options)
-    respy_obj.lock()
+    check_optimizer_options(optimizer_options)
 
     # Finishing
     return respy_obj
