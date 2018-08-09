@@ -1,12 +1,12 @@
 import pandas as pd
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.process.process_auxiliary import check_dataset_est
+from respy.pre_processing.data_checking import check_estimation_dataset
 from respy.python.shared.shared_constants import DATA_FORMATS_EST
 from respy.python.shared.shared_constants import DATA_LABELS_EST
 
 
-def process(respy_obj):
+def process_dataset(respy_obj):
     """Process the dataset from disk."""
     # Distribute class attributes
     num_agents_est, file_est, edu_spec, num_periods = dist_class_attributes(
@@ -48,7 +48,7 @@ def process(respy_obj):
     respy_obj.lock()
 
     # Check the dataset against the initialization files.
-    check_dataset_est(data_frame, respy_obj)
+    check_estimation_dataset(data_frame, respy_obj)
 
     # Finishing
     return data_frame

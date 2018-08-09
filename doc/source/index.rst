@@ -29,6 +29,7 @@ Welcome to respy's documentation!
    software_engineering
    contributing
    details
+   developer_doc
    credits
    changes
    bibliography

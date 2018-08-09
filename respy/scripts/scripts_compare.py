@@ -8,7 +8,7 @@ import os
 from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.simulate.simulate_auxiliary import format_float
-from respy.python.process.process_python import process
+from respy.pre_processing.data_processing import process_dataset
 from respy.scripts.scripts_update import scripts_update
 from respy.custom_exceptions import UserError
 from respy import RespyCls
@@ -142,7 +142,7 @@ def scripts_compare(base_init, is_update):
     fname_sim = respy_obj.attr['file_sim'].split('.')[0]
     if fname_est == fname_sim:
         raise UserError(' Simulation would overwrite estimation dataset')
-    data_obs = process(respy_obj)
+    data_obs = process_dataset(respy_obj)
     data_sim = simulate(respy_obj)[1]
 
     if num_periods > 1:

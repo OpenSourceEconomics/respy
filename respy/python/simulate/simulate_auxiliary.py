@@ -5,7 +5,7 @@ import os
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.process.process_auxiliary import check_dataset_est
+from respy.pre_processing.data_checking import check_estimation_dataset
 
 
 def construct_transition_matrix(base_df):
@@ -295,7 +295,7 @@ def check_dataset_sim(data_frame, respy_obj):
         np.testing.assert_equal(group['Period'].count(), num_periods)
 
     # So, we run all checks on the observed dataset.
-    check_dataset_est(data_frame, respy_obj)
+    check_estimation_dataset(data_frame, respy_obj)
 
     # Checks for PERIODS
     dat = data_frame['Period']

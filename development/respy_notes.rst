@@ -1,22 +1,36 @@
-======================================
-Notes, todos and questions about respy
-======================================
-
-
+=====
 TO-DO
 =====
 
-- move process_python into pre_processing and call it data_processing.py.
+- start a developer documentation
 
+Interface
+---------
+
+- Change the user interface: estimate and simulate become methods of clsRespy. Estimate is called fit.
+
+- shared_auxiliary.py
+---------------------
+
+- dist_econ_paras and dist_optim_paras shares most of the logic and just has different return types. It is not clear from the names what the difference is. I would suggest one public function with a switch (target='dict'; target='tuple') and potentially two private functions for the implementation.
+- get_optim_paras should be closer to the previous two functions and not hardcode the parsing information.
+    -> do both; why do we have the cholesky of covs at one place and not the other?
+
+
+===============================
+Notes and questions about respy
+===============================
 
 clsRespy
 ========
 
 
-- Even though the PARAS_MAPPING does have a pretty long comment I don't understand it well enough to judge whether it is correct. -> Philipp checks that
-
 - update_optim paras could be made a lot shorter after my proposed changes to dist_econ_paras and dist_optim_paras; In any case it has an unnecessary assignment (self.attr['optim_paras'] = optim_paras) -> do it
 
+model_processing_auxiliary.py
+=============================
+
+- Even though the _paras_mapping does have a pretty long docstring I don't understand it well enough to judge whether it is correct. -> Philipp checks that
 
 estimate_python.py
 ==================
@@ -35,26 +49,6 @@ evaluate_python
 
 - The dimensions and meaning of some arguments is still unclear
 - Why is the covariance matrix never used. Is the use of the cholesky factors correct?
-
-
-read_python
-===========
-
-- The dict that comes out here should be already the attr dict, so we can just write self.attr.update(dict_) in clsRespy; Even better: maybe the whole function can be replaced by a call to json.load or yaml.load. -> make proposal
-
-
-
-========
-Results:
-========
-
-Interface
-=========
-
-- We should change the user interface in one of the following directions.
-    1) estimate and simulate become methods of clsRespy. Estimate is called fit. This would be conceptually compatible with statsmodels and sklearn.
-
-- Make a proposal for a yaml file that specifies the keane Wolpin model
 
 
 Reduce Fortran Code
@@ -89,7 +83,6 @@ I would summarize 'evaluate' and 'estimate' to 'likelihood'
 I would summarize 'read' and 'process' to 'model_processing'
 
 
-
 Control flow of the estimation
 ==============================
 
@@ -105,19 +98,6 @@ interface calls OptimizationClass
 OptimizationClass calls pyth_criterion
 
 we should look for a better version.
-
-
-
-
-shared_auxiliary.py
-===================
-
-
-- dist_econ_paras and dist_optim_paras shares most of the logic and just has different return types. It is not clear from the names what the difference is. I would suggest one public function with a switch (target='dict'; target='tuple') and potentially two private functions for the implementation.
-- get_optim_paras should be closer to the previous two functions and not hardcode the parsing information.
-    -> do both; why do we have the cholesky of covs at one place and not the other?
-
-
 
 
 

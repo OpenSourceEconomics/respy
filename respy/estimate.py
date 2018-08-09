@@ -7,7 +7,7 @@ from respy.python.shared.shared_auxiliary import remove_scratch
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.process.process_python import process
+from respy.pre_processing.data_processing import process_dataset
 from respy.fortran.interface import resfort_interface
 from respy.python.interface import respy_interface
 from respy.custom_exceptions import UserError
@@ -34,7 +34,7 @@ def estimate(respy_obj):
     # Read in estimation dataset. It only reads in the number of agents
     # requested for the estimation (or all available, depending on which is
     # less). It allows to read in only a subset of the initial conditions.
-    data_frame = process(respy_obj)
+    data_frame = process_dataset(respy_obj)
     record_estimation_sample(data_frame)
     data_array = data_frame.as_matrix()
 

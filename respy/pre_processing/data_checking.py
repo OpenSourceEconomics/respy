@@ -4,7 +4,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import DATA_LABELS_EST
 
 
-def check_dataset_est(data_frame, respy_obj):
+def check_estimation_dataset(data_frame, respy_obj):
     """Run consistency checks on data_frame."""
     # Distribute class attributes
     num_periods, edu_spec, num_agents_est = dist_class_attributes(

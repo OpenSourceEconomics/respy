@@ -19,7 +19,7 @@ from respy.scripts.scripts_simulate import scripts_simulate
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
-from respy.python.process.process_python import process
+from respy.pre_processing.data_processing import process_dataset
 from respy.scripts.scripts_check import scripts_check
 from codes.auxiliary import write_interpolation_grid
 from codes.random_init import generate_random_dict
@@ -49,7 +49,7 @@ class TestClass(object):
 
         simulate_observed(respy_obj)
 
-        process(respy_obj)
+        process_dataset(respy_obj)
 
     def test_2(self):
         """ If there is no random variation in rewards then the number of draws to simulate the
