@@ -39,7 +39,7 @@ MISSING_INT = -99
 MISSING_FLOAT = -99.00
 
 # Flags that provide additional information about the exact configuration
-with open(ROOT_DIR + '/.config', 'r') as infile:
+with open(ROOT_DIR + '/.bld/.config', 'r') as infile:
     config_dict = json.load(infile)
 
 IS_DEBUG = config_dict['DEBUG']

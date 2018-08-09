@@ -19,6 +19,7 @@ from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
+from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.simulate.simulate_auxiliary import sort_type_info
 from respy.python.simulate.simulate_auxiliary import sort_edu_spec
@@ -52,7 +53,8 @@ assert_allclose = partial(np.testing.assert_allclose, rtol=TOL, atol=TOL)
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
 if IS_F2PY:
-    import respy.f2py_interface as fort_debug
+    sys.path.insert(0, TEST_RESOURCES_BUILD)
+    import f2py_interface as fort_debug
 
 
 @pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')

@@ -1,3 +1,6 @@
+import shutil
+import glob
+
 from numpy import f2py
 
 from waflib.Task import Task
@@ -6,9 +9,10 @@ from waflib.Task import Task
 class CreateF2pyInterfaces(Task):
     """This is an explicit task generator for the creation of the F2PY interfaces."""
     def run(self):
-        src = open('tests/resources/f2py_interface.f90', 'rb').read()
+        src = open(self.inputs[0].abspath(), 'rb').read()
         args = '--f90flags="-ffree-line-length-0" -I.bld -L.bld/fortran -lresfort_library -llapack'
         f2py.compile(src, 'f2py_interface', args, extension='.f90')
+        shutil.move(glob.glob('f2py_interface.*.so')[0], self.outputs[0].abspath())
 
 
 def build(ctx):
@@ -22,7 +26,15 @@ def build(ctx):
         ctx(features=['fc', 'fcprogram'], source=fname + '.f90', target=fname, use='kw_library')
 
     if ctx.env['F2PY']:
-        # We compile an interface to access core respy routines in our testing framework.
+        # We compile an interface to access core respy routines in our testing harness using an
+        # F2PY interface. It depends on the resfort_library, which is declared manually.
         ctx.add_group()
-        ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
+        task_f = CreateF2pyInterfaces(env=ctx.env)
+        task_f.set_inputs(ctx.path.find_resource('f2py_interface.f90'))
+        task_f.set_outputs(ctx.path.find_or_declare('f2py_interface.so'))
+
+        dep = ctx.path.find_or_declare('../../fortran/libresfort_library.a')
+        ctx.add_manual_dependency(ctx.path.find_node('f2py_interface.f90'), dep)
+
+        ctx.add_to_group(task_f)
 
