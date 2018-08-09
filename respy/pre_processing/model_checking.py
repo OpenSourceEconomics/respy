@@ -158,6 +158,8 @@ def check_model_attributes(attr_dict, config_dict):
         if i in range(43, 53):
             assert a['optim_paras']['paras_bounds'][i] == [None, None]
 
+    _check_optimizer_options(a['optimizer_options'])
+
 
 def check_model_solution(attr_dict):
     solution_attributes = [
@@ -282,3 +284,70 @@ def check_model_solution(attr_dict):
             else:
                 assert (np.all(np.isfinite(
                         periods_emax[is_infinite == False])) == False)
+
+
+def _check_optimizer_options(optimizer_options):
+    """Make sure that all optimizer options are valid."""
+    # POWELL's algorithms
+    for optimizer in ['FORT-NEWUOA', 'FORT-BOBYQA']:
+        maxfun = optimizer_options[optimizer]['maxfun']
+        rhobeg = optimizer_options[optimizer]['rhobeg']
+        rhoend = optimizer_options[optimizer]['rhoend']
+        npt = optimizer_options[optimizer]['npt']
+
+        for var in [maxfun, npt]:
+            assert isinstance(var, int)
+            assert (var > 0)
+        for var in [rhobeg, rhoend]:
+            assert (rhobeg > rhoend)
+            assert isinstance(var, float)
+            assert (var > 0)
+
+    # FORT-BFGS
+    maxiter = optimizer_options['FORT-BFGS']['maxiter']
+    stpmx = optimizer_options['FORT-BFGS']['stpmx']
+    gtol = optimizer_options['FORT-BFGS']['gtol']
+    assert isinstance(maxiter, int)
+    assert (maxiter > 0)
+    for var in [stpmx, gtol]:
+        assert isinstance(var, float)
+        assert (var > 0)
+
+    # SCIPY-BFGS
+    maxiter = optimizer_options['SCIPY-BFGS']['maxiter']
+    gtol = optimizer_options['SCIPY-BFGS']['gtol']
+    eps = optimizer_options['SCIPY-BFGS']['eps']
+    assert isinstance(maxiter, int)
+    assert (maxiter > 0)
+    for var in [eps, gtol]:
+        assert isinstance(var, float)
+        assert (var > 0)
+
+    # SCIPY-LBFGSB
+    maxiter = optimizer_options['SCIPY-LBFGSB']['maxiter']
+    pgtol = optimizer_options['SCIPY-LBFGSB']['pgtol']
+    factr = optimizer_options['SCIPY-LBFGSB']['factr']
+    maxls = optimizer_options['SCIPY-LBFGSB']['maxls']
+    eps = optimizer_options['SCIPY-LBFGSB']['eps']
+    m = optimizer_options['SCIPY-LBFGSB']['m']
+
+    for var in [pgtol, factr, eps]:
+        assert isinstance(var, float)
+        assert var > 0
+    for var in [m, maxiter, maxls]:
+        assert isinstance(var, int)
+        assert (var >= 0)
+
+    # SCIPY-POWELL
+    maxiter = optimizer_options['SCIPY-POWELL']['maxiter']
+    maxfun = optimizer_options['SCIPY-POWELL']['maxfun']
+    xtol = optimizer_options['SCIPY-POWELL']['xtol']
+    ftol = optimizer_options['SCIPY-POWELL']['ftol']
+    assert isinstance(maxiter, int)
+    assert (maxiter > 0)
+    assert isinstance(maxfun, int)
+    assert (maxfun > 0)
+    assert isinstance(xtol, float)
+    assert (xtol > 0)
+    assert isinstance(ftol, float)
+    assert (ftol > 0)

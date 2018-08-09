@@ -2,8 +2,6 @@
 TO-DO
 =====
 
-- start a developer documentation
-
 Interface
 ---------
 
