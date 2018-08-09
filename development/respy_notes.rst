@@ -6,7 +6,6 @@ Notes, todos and questions about respy
 TO-DO
 =====
 
-- put check_integrity_attributes to pre_processing
 - move process_python into pre_processing and call it data_processing.py.
 
 

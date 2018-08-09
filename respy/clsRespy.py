@@ -22,8 +22,6 @@ class RespyCls(object):
         self.attr = convert_init_dict_to_attr_dict(ini)
         self._update_derived_attributes()
         self._initialize_solution_attributes()
-
-        # Status indicators
         self.attr['is_locked'] = False
         self.attr['is_solved'] = False
         self.lock()
@@ -36,52 +34,35 @@ class RespyCls(object):
             'mapping_state_idx', 'periods_emax', 'states_all']
 
     def _initialize_solution_attributes(self):
+        """Initialize solution attributes to None."""
         for attribute in self.solution_attributes:
             self.attr[attribute] = None
 
     def update_optim_paras(self, x_econ):
-        """ Update model parameters.
-        """
+        """Update model parameters."""
         x_econ = copy.deepcopy(x_econ)
 
         self.reset()
 
-        # Determine use of interface
         delta, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, \
             shocks_cov, type_shares, type_shifts = dist_econ_paras(x_econ)
 
         shocks_cholesky = np.linalg.cholesky(shocks_cov)
-
-        # Distribute class attributes
         optim_paras = self.attr['optim_paras']
-
         # Update model parametrization
         optim_paras['shocks_cholesky'] = shocks_cholesky
-
         optim_paras['coeffs_common'] = coeffs_common
-
         optim_paras['coeffs_home'] = coeffs_home
-
         optim_paras['coeffs_edu'] = coeffs_edu
-
         optim_paras['coeffs_a'] = coeffs_a
-
         optim_paras['coeffs_b'] = coeffs_b
-
         optim_paras['delta'] = delta
-
         optim_paras['type_shares'] = type_shares
-
         optim_paras['type_shifts'] = type_shifts
-
-        # Check integrity
         check_model_parameters(optim_paras)
 
-        # Update class attributes
-        self.attr['optim_paras'] = optim_paras
-
     def lock(self):
-        """ Lock class instance."""
+        """Lock class instance."""
         assert (not self.attr['is_locked']), \
             'Only unlocked instances of clsRespy can be locked.'
 
@@ -91,7 +72,7 @@ class RespyCls(object):
         self.attr['is_locked'] = True
 
     def unlock(self):
-        """ Unlock class instance."""
+        """Unlock class instance."""
         assert self.attr['is_locked'], \
             'Only locked instances of clsRespy can be unlocked.'
 
@@ -136,15 +117,13 @@ class RespyCls(object):
         write_init_file(init_dict, fname)
 
     def reset(self):
-        """ Remove solution attributes from class instance.
-        """
+        """Remove solution attributes from class instance."""
         for label in self.solution_attributes:
             self.attr[label] = None
-
         self.attr['is_solved'] = False
 
     def check_equal_solution(self, other):
-        """ Compare two class instances for equality of solution attributes."""
+        """Compare two class instances for equality of solution attributes."""
         assert (isinstance(other, RespyCls))
 
         for key_ in self.solution_attributes:

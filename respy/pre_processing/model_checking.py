@@ -9,7 +9,6 @@ from respy.custom_exceptions import UserError
 from respy.python.shared.shared_auxiliary import replace_missing_values
 
 
-
 def check_model_attributes(attr_dict, config_dict):
     a = attr_dict
 
