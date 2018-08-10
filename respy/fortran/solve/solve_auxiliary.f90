@@ -10,6 +10,8 @@ MODULE solve_auxiliary
 
     USE solve_risk
 
+    USE omp_lib
+
     !/*	setup	*/
 
     IMPLICIT NONE
@@ -298,6 +300,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
     LOGICAL, INTENT(IN)                 :: is_write
 
     CHARACTER(225), INTENT(IN)          :: file_sim
+    CHARACTER(225)        :: enviromnent
 
     !/* internals objects       */
 
@@ -307,7 +310,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
-    INTEGER(our_int)                    :: i
+    INTEGER(our_int)                    :: i, tid
 
     REAL(our_dble)                      :: draws_emax_standard(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax_risk(num_draws_emax, 4)
@@ -315,7 +318,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
     REAL(our_dble)                      :: rewards_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
     REAL(our_dble)                      :: shifts(4)
-    REAL(our_dble)                      :: emax
+    REAL(our_dble)                      :: emax, start, finish
 
     REAL(our_dble), ALLOCATABLE         :: exogenous(:, :)
     REAL(our_dble), ALLOCATABLE         :: predictions(:)
@@ -387,16 +390,22 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
 
         ELSE
 
-            DO k = 0, (states_number_period(period + 1) - 1)
-
+!$omp parallel
+start = omp_get_wtime()
+!$omp do
+DO k = 0, (states_number_period(period + 1) - 1)
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
                 periods_emax(period + 1, k + 1) = emax
 
-            END DO
+END DO
+!$omp end do
+finish =  omp_get_wtime()
+!$omp end parallel
 
+print '("Time = ",f6.3," seconds.")',finish-start
         END IF
 
     END DO

@@ -17,9 +17,9 @@ GFORTRAN_FLAGS_DEBUG = []
 GFORTRAN_FLAGS_DEBUG += ['-O', '-Wall', '-Wline-truncation', '-Wsurprising', '-Waliasing']
 GFORTRAN_FLAGS_DEBUG += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
 GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffree-line-length-0']
-GFORTRAN_FLAGS_DEBUG += ['-cpp', '-Wcharacter-truncation', '-Wimplicit-interface']
+GFORTRAN_FLAGS_DEBUG += ['-cpp', '-Wcharacter-truncation', '-Wimplicit-interface',  '-fopenmp']
 
-GFORTRAN_FLAGS_PRODUCTION = ['-O3', '-ffree-line-length-0', '-cpp']
+GFORTRAN_FLAGS_PRODUCTION = ['-O3', '-ffree-line-length-0', '-cpp',  '-fopenmp']
 
 
 def options(ctx):
@@ -55,7 +55,6 @@ def configure(ctx):
     # We need more details for the case of parallelism.
     if ctx.env['PARALLELISM']:
         ctx.env['FC'] = 'mpif90'
-        ctx.env['COMPILER_FORTRAN'] = 'mpif90'
 
     # Specify search path for static libraries
     ctx.env.append_unique('STLIBPATH', ['../.bld/fortran', '../.bld/tests/resources'])

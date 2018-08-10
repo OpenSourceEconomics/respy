@@ -46,10 +46,8 @@ def resfort_interface(respy_obj, request, data_array=None):
 
     # Call executable
     if num_procs == 1:
-        cmd = [EXEC_DIR + '/resfort']
-        subprocess.check_call(cmd)
-    elif num_procs > 1:
-        cmd = ['mpiexec', '-n', '1', EXEC_DIR + '/resfort']
+        print("I am calling")
+        cmd = ['mpiexec', '-n', '1', '-genv', 'OMP_NUM_THREADS', '8',  EXEC_DIR + '/resfort']
         subprocess.check_call(cmd)
     else:
         raise AssertionError
