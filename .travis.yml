@@ -20,10 +20,6 @@ env:
     TRAVIS_CI_F2Py=False
     TRAVIS_CI_F2Py=True
 
- matrix:
-     exclude:
-         - env: TRAVIS_CI_FORTRAN=False TRAVIS_CI_F2Py=True
-
 bundler_args: --retry 3
 
 install:
