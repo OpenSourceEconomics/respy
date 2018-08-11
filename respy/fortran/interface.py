@@ -44,7 +44,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     write_resfort_initialization(*args)
 
     # Construct the appropriate call to the executable.
-    num_threads = ''.format(num_threads)
+    num_threads = '{}'.format(num_threads)
     env = os.environ.copy()
     cmd = []
 

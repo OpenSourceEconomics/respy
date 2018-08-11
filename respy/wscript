@@ -16,10 +16,10 @@ out = '.bld'
 GFORTRAN_FLAGS_DEBUG = []
 GFORTRAN_FLAGS_DEBUG += ['-O', '-Wall', '-Wline-truncation', '-Wsurprising', '-Waliasing']
 GFORTRAN_FLAGS_DEBUG += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
-GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffree-line-length-0']
-GFORTRAN_FLAGS_DEBUG += ['-cpp', '-Wcharacter-truncation', '-Wimplicit-interface']
+GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1']
+GFORTRAN_FLAGS_DEBUG += ['-Wcharacter-truncation', '-Wimplicit-interface']
 
-GFORTRAN_FLAGS_PRODUCTION = ['-O3', '-ffree-line-length-0', '-cpp']
+GFORTRAN_FLAGS_PRODUCTION = ['-O3']
 
 
 def options(ctx):
@@ -59,6 +59,8 @@ def configure(ctx):
     if ctx.env['FORTRAN']:
         ctx.env.append_unique('STLIBPATH', ['../.bld/fortran', '../.bld/tests/resources'])
         ctx.env.append_unique('LIB', ['lapack'])
+
+        ctx.env.append_unique('FCFLAGS', ['-ffree-line-length-0', '-cpp', '-fopenmp'])
         if ctx.env['DEBUG']:
             ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_DEBUG)
         else:

@@ -395,15 +395,17 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
 
 !$omp parallel
 !$omp do
-DO k = 0, (states_number_period(period + 1) - 1)
+            DO k = 0, (states_number_period(period + 1) - 1)
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
                 CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
                 periods_emax(period + 1, k + 1) = emax
 
-END DO
+            END DO
 !$omp end do
+!$omp end parallel
+
         END IF
 
     END DO
