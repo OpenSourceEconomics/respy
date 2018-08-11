@@ -9,12 +9,12 @@ addons:
       - libatlas-dev
       - libatlas-base-dev
 
-
 matrix:
 
     include:
-        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_F2PY=True
-        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_F2PY=False
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=True
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=False TRAVIS_CI_OMP=True
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=False 
 
 bundler_args: --retry 3
 

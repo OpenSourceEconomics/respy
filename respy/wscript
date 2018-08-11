@@ -49,26 +49,20 @@ def options(ctx):
 
 def configure(ctx):
 
-    # We distinguish the regular case from the TRAVIS build. This allows to set up a build matrix.
-    if 'TRAVIS_CI_DEBUG' not in os.environ:
+    ctx.env['DEBUG'] = ctx.configure_debug()
+    ctx.env['FORTRAN'] = ctx.check_support_fortran()
+    ctx.env['F2PY'] = ctx.check_support_f2py()
 
-        ctx.env['DEBUG'] = ctx.configure_debug()
-        ctx.env['FORTRAN'] = ctx.check_support_fortran()
-        ctx.env['F2PY'] = ctx.check_support_f2py()
+    # This needs to be checked after FORTRAN is checked, only then the required tools are
+    # available.
+    ctx.env['PARALLELISM_MPI'] = ctx.check_support_parallelism_mpi()
+    ctx.env['PARALLELISM_OMP'] = ctx.check_support_parallelism_omp()
 
-        # This needs to be checked after FORTRAN is checked, only then the required tools are
-        # available.
-        ctx.env['PARALLELISM_MPI'] = ctx.check_support_parallelism_mpi()
-        ctx.env['PARALLELISM_OMP'] = ctx.check_support_parallelism_omp()
-
-    else:
-
+    # We set up a build matrix in TRAVIS and int this case overwrite the specification.
+    if 'TRAVIS' in os.environ:
         ctx.env['FORTRAN'] = os.environ['TRAVIS_CI_FORTRAN']
-        ctx.env['DEBUG'] = os.environ['TRAVIS_CI_DEBUG']
-        ctx.env['F2PY'] = os.environ['TRAVIS_CI_F2PY']
-
-        ctx.env['PARALLELISM_MPI'] = False
-        ctx.env['PARALLELISM_OMP'] = False
+        ctx.env['PARALLELISM_MPI'] = os.environ['TRAVIS_CI_MPI']
+        ctx.env['PARALLELISM_OMP'] = os.environ['TRAVIS_CI_OMP']
 
     ctx.write_configuration()
 
