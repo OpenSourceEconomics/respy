@@ -13,10 +13,12 @@ out = '.bld'
 # flags, however this results in a failure of the KW1994 codes and we cannot just turn it off
 # for their files. This does not seem straightforward as the all the flags are set in the
 # configure phase.
+GFORTRAN_FLAGS = ['-ffree-line-length-0', '-cpp', '-fopenmp']
+
 GFORTRAN_FLAGS_DEBUG = []
 GFORTRAN_FLAGS_DEBUG += ['-O', '-Wall', '-Wline-truncation', '-Wsurprising', '-Waliasing']
 GFORTRAN_FLAGS_DEBUG += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
-GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1']
+GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1', '-fopt-info-all=fopt.log']
 GFORTRAN_FLAGS_DEBUG += ['-Wcharacter-truncation', '-Wimplicit-interface']
 
 GFORTRAN_FLAGS_PRODUCTION = ['-O3']
@@ -60,7 +62,7 @@ def configure(ctx):
         ctx.env.append_unique('STLIBPATH', ['../.bld/fortran', '../.bld/tests/resources'])
         ctx.env.append_unique('LIB', ['lapack'])
 
-        ctx.env.append_unique('FCFLAGS', ['-ffree-line-length-0', '-cpp', '-fopenmp'])
+        ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS)
         if ctx.env['DEBUG']:
             ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_DEBUG)
         else:
