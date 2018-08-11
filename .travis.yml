@@ -8,6 +8,9 @@ addons:
       - gfortran
       - libatlas-dev
       - libatlas-base-dev
+      - libomp-dev
+
+
 
 bundler_args: --retry 3
 
