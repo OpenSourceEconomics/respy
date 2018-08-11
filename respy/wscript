@@ -1,7 +1,3 @@
-from subprocess import Popen
-from subprocess import PIPE
-import numpy as np
-import shlex
 import json
 import os
 
@@ -57,12 +53,6 @@ def configure(ctx):
     # available.
     ctx.env['PARALLELISM_MPI'] = ctx.check_support_parallelism_mpi()
     ctx.env['PARALLELISM_OMP'] = ctx.check_support_parallelism_omp()
-
-    # We set up a build matrix in TRAVIS and int this case overwrite the specification.
-    if 'TRAVIS' in os.environ.keys():
-        ctx.env['FORTRAN'] = os.environ['TRAVIS_CI_FORTRAN']
-        ctx.env['PARALLELISM_MPI'] = os.environ['TRAVIS_CI_MPI']
-        ctx.env['PARALLELISM_OMP'] = os.environ['TRAVIS_CI_OMP']
 
     ctx.write_configuration()
 
@@ -151,6 +141,10 @@ def check_support_fortran(self):
         else:
             is_support = True
 
+    if 'TRAVIS' in os.environ.keys():
+        message = os.environ['TRAVIS_CI_FORTRAN']
+        is_support = message.upper() == 'TRUE'
+
     self.end_msg(is_support)
 
     return is_support
@@ -171,6 +165,10 @@ def check_support_parallelism_mpi(self):
         else:
             is_support = True
 
+    if 'TRAVIS' in os.environ.keys():
+        message = os.environ['TRAVIS_CI_MPI']
+        is_support = message.upper() == 'TRUE'
+
     self.end_msg(is_support)
 
     return is_support
@@ -190,6 +188,10 @@ def check_support_parallelism_omp(self):
             is_support = False
         else:
             is_support = True
+
+    if 'TRAVIS' in os.environ.keys():
+        message = os.environ['TRAVIS_CI_OMP']
+        is_support = message.upper() == 'TRUE'
 
     self.end_msg(is_support)
 
