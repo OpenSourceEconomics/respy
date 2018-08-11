@@ -9,21 +9,14 @@ addons:
       - libatlas-dev
       - libatlas-base-dev
 
-env:
 
-    - TRAVIS_CI_FORTRAN=False
-    - TRAVIS_CI_FORTRAN=True
-
-    - TRAVIS_CI_DEBUG=False
-    - TRAVIS_CI_DEBUG=True
-
-    - TRAVIS_CI_F2PY=False
-    - TRAVIS_CI_F2PY=True
-
-    matrix:
-
-        exclude:
-            - env: TRAVIS_CI_FORTRAN=False TRAVIS_CI_F2PY=True
+matrix:
+    - env: TRAVIS_CI_FORTRAN=False
+    - env: TRAVIS_CI_FORTRAN=True
+    - env: TRAVIS_CI_F2PY=False
+    - env: TRAVIS_CI_F2PY=True
+    exclude:
+        - env: TRAVIS_CI_FORTRAN=False TRAVIS_CI_F2PY=True
 
 bundler_args: --retry 3
 
