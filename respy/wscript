@@ -182,6 +182,7 @@ def check_support_parallelism_omp(self):
 
     self.end_msg(is_support)
 
+    return is_support
 
 @conf
 def check_mpi_implementation(self):
@@ -202,6 +203,6 @@ def check_mpi_implementation(self):
 def write_configuration(self):
     """This function records the package specification in a simple file."""
     config_dict = dict()
-    for label in config_dict.keys():
+    for label in ['DEBUG', 'FORTRAN', 'F2PY', 'PARALLELISM_MPI', 'PARALLELISM_OMP']:
         config_dict[label] = self.env[label]
     json.dump(config_dict, open('.bld/.config', 'w'))

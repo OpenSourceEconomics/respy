@@ -8,10 +8,10 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 # We maintain a list of all valid constraints and check all specified keys
 # against it.
 VALID_KEYS = []
-VALID_KEYS += ['flag_estimation', 'agents']
-VALID_KEYS += ['flag_parallelism', 'version', 'file_est', 'flag_interpolation']
+VALID_KEYS += ['flag_estimation', 'agents', 'flag_parallelism_omp']
+VALID_KEYS += ['flag_parallelism_mpi', 'version', 'file_est', 'flag_interpolation']
 VALID_KEYS += ['points', 'maxfun', 'flag_deterministic', 'edu']
-VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
+VALID_KEYS += ['max_draws', 'flag_precond', 'periods', 'flag_parallelism']
 VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta', 'precond_type']
 
 # This constraint is already enforced in the head module as it affects all other components of
@@ -110,19 +110,39 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
         dict_['ESTIMATION']['draws'] = np.random.randint(1, max_draws)
         dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
 
-    # Replace parallelism ...
-    if 'flag_parallelism' in constr.keys():
+    # Impose constraints on requested parallelism. It is useful to turn off all parallelism at
+    # once.
+    if 'flag_paralleism' in constr.keys():
+        if constr['flag_parallelism']:
+            constr['flag_parallelism_mpi'] = False
+            constr['flag_parallelism_omp'] = False
+
+    if 'flag_parallelism_mpi' in constr.keys():
         # Extract objects
-        flag_parallelism = constr['flag_parallelism']
+        flag_parallelism_mpi = constr['flag_parallelism_mpi']
         # Checks
-        assert (flag_parallelism in [True, False])
+        assert (flag_parallelism_mpi in [True, False])
         # Replace in initialization file
-        if flag_parallelism:
+        if flag_parallelism_mpi:
             dict_['PROGRAM']['procs'] = np.random.randint(2, 5)
         else:
             dict_['PROGRAM']['procs'] = 1
         # Ensure that the constraints are met
         if dict_['PROGRAM']['procs'] > 1:
+            dict_['PROGRAM']['version'] = 'FORTRAN'
+
+    if 'flag_parallelism_omp' in constr.keys():
+        # Extract objects
+        flag_parallelism_omp = constr['flag_parallelism_omp']
+        # Checks
+        assert (flag_parallelism_omp in [True, False])
+        # Replace in initialization file
+        if flag_parallelism_omp:
+            dict_['PROGRAM']['threads'] = np.random.randint(2, 5)
+        else:
+            dict_['PROGRAM']['threads'] = 1
+        # Ensure that the constraints are met
+        if dict_['PROGRAM']['threads'] > 1:
             dict_['PROGRAM']['version'] = 'FORTRAN'
 
     # Replace store attribute
@@ -252,7 +272,12 @@ def _check_constraints(constr):
     if 'flag_precond' in keys:
         assert 'precond_type' not in keys
 
-    cond = ('flag_parallelism' in keys) and ('version' in keys)
-    cond = cond and constr['flag_parallelism']
+    cond = ('flag_parallelism_mpi' in keys) and ('version' in keys)
+    cond = cond and constr['flag_parallelism_mpi']
+    if cond:
+        assert constr['version'] == 'FORTRAN'
+
+    cond = ('flag_parallelism_omp' in keys) and ('version' in keys)
+    cond = cond and constr['flag_parallelism_omp']
     if cond:
         assert constr['version'] == 'FORTRAN'

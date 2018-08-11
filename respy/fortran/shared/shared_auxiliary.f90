@@ -14,6 +14,12 @@ MODULE shared_auxiliary
 
     USE shared_types
 
+#if OMP_AVAILABLE
+
+    USE omp_lib
+
+#endif
+
     !/* setup   */
 
     IMPLICIT NONE
@@ -1537,7 +1543,6 @@ FUNCTION sort_edu_spec(edu_spec) RESULT(edu_spec_sorted)
 
     END DO
 
-
 END FUNCTION
 !******************************************************************************
 !******************************************************************************
@@ -1552,11 +1557,11 @@ FUNCTION get_wtime() RESULT(wtime)
 !-------------------------------------------------------------------------------
 #if OMP_AVAILABLE
 
-  wtime = omp_get_wtime()
+    wtime = omp_get_wtime()
 
 #else
 
-  CALL CPU_TIME(wtime)
+    CALL CPU_TIME(wtime)
 
 #endif
 

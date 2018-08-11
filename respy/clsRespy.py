@@ -8,13 +8,14 @@ import copy
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
+from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.python.shared.shared_auxiliary import dist_econ_paras
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
-from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.read.read_python import read
@@ -74,6 +75,8 @@ class RespyCls(object):
         self.attr['optim_paras'] = None
 
         self.attr['derivatives'] = None
+
+        self.attr['num_threads'] = None
 
         self.attr['num_procs'] = None
 
@@ -386,6 +389,7 @@ class RespyCls(object):
 
         # Program
         init_dict['PROGRAM'] = dict()
+        init_dict['PROGRAM']['threads'] = self.attr['num_threads']
         init_dict['PROGRAM']['version'] = self.attr['version']
         init_dict['PROGRAM']['procs'] = self.attr['num_procs']
         init_dict['PROGRAM']['debug'] = self.attr['is_debug']
@@ -447,6 +451,8 @@ class RespyCls(object):
         self.attr['num_draws_prob'] = init_dict['ESTIMATION']['draws']
 
         self.attr['num_draws_emax'] = init_dict['SOLUTION']['draws']
+
+        self.attr['num_threads'] = init_dict['PROGRAM']['threads']
 
         self.attr['num_periods'] = init_dict['BASICS']['periods']
 
@@ -614,6 +620,8 @@ class RespyCls(object):
 
         optim_paras = self.attr['optim_paras']
 
+        num_threads = self.attr['num_threads']
+
         edu_spec = self.attr['edu_spec']
 
         is_myopic = self.attr['is_myopic']
@@ -645,7 +653,13 @@ class RespyCls(object):
         assert (num_procs > 0)
         if num_procs > 1:
             assert (version == 'FORTRAN')
-            assert IS_PARALLEL
+            assert IS_PARALLELISM_MPI
+
+        assert isinstance(num_threads, int)
+        assert num_threads > 0
+        if num_threads > 1:
+            assert (version == 'FORTRAN')
+            assert IS_PARALLELISM_OMP
 
         # Version version of package
         assert (version in ['FORTRAN', 'PYTHON'])

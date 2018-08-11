@@ -44,7 +44,8 @@ with open(ROOT_DIR + '/.bld/.config', 'r') as infile:
 
 IS_DEBUG = config_dict['DEBUG']
 
-IS_PARALLEL = config_dict['PARALLELISM']
+IS_PARALLELISM_MPI = config_dict['PARALLELISM_MPI']
+IS_PARALLELISM_OMP = config_dict['PARALLELISM_OMP']
 IS_FORTRAN = config_dict['FORTRAN']
 IS_F2PY = config_dict['F2PY']
 

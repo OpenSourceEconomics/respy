@@ -219,7 +219,7 @@ FUNCTION fort_criterion_parallel(x)
 
     ! We intent to monitor the execution time of every evaluation of the criterion function.
     start = get_wtime()
-    
+
     ! We allow for early termination due to maximum number of iterations or user request.
     IF (check_early_termination(maxfun, num_eval, crit_estimation)) THEN
         fort_criterion_parallel = HUGE_FLOAT

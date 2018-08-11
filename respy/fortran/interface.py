@@ -18,11 +18,11 @@ def resfort_interface(respy_obj, request, data_array=None):
     """
     # Distribute class attributes
     optim_paras, num_periods, edu_spec, is_debug, num_draws_emax, seed_emax, is_interpolated, \
-    num_points_interp, is_myopic, tau, num_procs, num_agents_sim, num_draws_prob, \
+    num_points_interp, is_myopic, tau, num_procs, num_threads, num_agents_sim, num_draws_prob, \
     seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, precond_spec, \
     file_sim, num_paras, num_types, num_agents_est = dist_class_attributes(respy_obj, 'optim_paras',
         'num_periods', 'edu_spec', 'is_debug', 'num_draws_emax', 'seed_emax', 'is_interpolated',
-        'num_points_interp', 'is_myopic', 'tau', 'num_procs', 'num_agents_sim',
+        'num_points_interp', 'is_myopic', 'tau', 'num_procs', 'num_threads', 'num_agents_sim',
         'num_draws_prob', 'seed_prob', 'seed_sim', 'optimizer_options', 'optimizer_used',
         'maxfun', 'precond_spec', 'file_sim', 'num_paras', 'num_types', 'num_agents_est')
 
@@ -37,22 +37,24 @@ def resfort_interface(respy_obj, request, data_array=None):
         write_dataset(data_array)
 
     args = (optim_paras, is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim,
-            seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-            optimizer_used, maxfun, num_paras, precond_spec, file_sim, data_array,
-            num_types, num_agents_est)
+            is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim, seed_prob, seed_emax,
+            tau, num_procs, request, seed_sim, optimizer_options, optimizer_used, maxfun,
+            num_paras, precond_spec, file_sim, data_array, num_types, num_agents_est)
 
     write_resfort_initialization(*args)
 
-    # Call executable
+    # Construct the appropriate call to the executable.
+    num_threads = ''.format(num_threads)
+    env = os.environ.copy()
+    cmd = []
+
     if num_procs == 1:
-        cmd = [EXEC_DIR + '/resfort']
-        subprocess.check_call(cmd)
+        env['OMP_NUM_THREADS'] = num_threads
     elif num_procs > 1:
-        cmd = ['mpiexec', '-n', '1', EXEC_DIR + '/resfort']
-        subprocess.check_call(cmd)
+        cmd += ['mpiexec', '-n', '1', '-genv', 'OMP_NUM_THREADS', num_threads]
     else:
         raise AssertionError
+    subprocess.check_call(cmd + [EXEC_DIR + '/resfort'], env=env)
 
     # Return arguments depends on the request.
     if request == 'simulate':
