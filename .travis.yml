@@ -12,15 +12,17 @@ addons:
 matrix:
 
     include:
+        - env: TRAVIS_CI_FORTRAN=False TRAVIS_CI_MPI=False  TRAVIS_CI_OMP=False
         - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=True
         - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=False TRAVIS_CI_OMP=True
-        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=False 
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=False
 
 bundler_args: --retry 3
 
 install:
     - sudo apt-get install -y -q mpich libmpich-dev
     - sudo apt-get install -y -q openmpi-bin libopenmpi-dev
+    - mpif90 -v
     - travis_retry travis_wait pip install -r requirements.txt
     - pip install -e . -vv
     - pip install pytest-cov
