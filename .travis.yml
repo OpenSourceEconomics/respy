@@ -10,7 +10,6 @@ before_install:
 addons:
     apt:
         packages:
-            - common_packages
             - gfortran
             - libatlas-dev
             - libatlas-base-dev
