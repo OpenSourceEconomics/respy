@@ -49,13 +49,26 @@ def options(ctx):
 
 def configure(ctx):
 
-    ctx.env['DEBUG'] = ctx.configure_debug()
-    ctx.env['FORTRAN'] = ctx.check_support_fortran()
-    ctx.env['F2PY'] = ctx.check_support_f2py()
+    # We distinguish the regular case from the TRAVIS build. This allows to set up a build matrix.
+    if 'TRAVIS_CI_DEBUG' not in os.environ:
 
-    # This needs to be checked after FORTRAN is checked, only then the required tools are available.
-    ctx.env['PARALLELISM_MPI'] = ctx.check_support_parallelism_mpi()
-    ctx.env['PARALLELISM_OMP'] = ctx.check_support_parallelism_omp()
+        ctx.env['DEBUG'] = ctx.configure_debug()
+        ctx.env['FORTRAN'] = ctx.check_support_fortran()
+        ctx.env['F2PY'] = ctx.check_support_f2py()
+
+        # This needs to be checked after FORTRAN is checked, only then the required tools are
+        # available.
+        ctx.env['PARALLELISM_MPI'] = ctx.check_support_parallelism_mpi()
+        ctx.env['PARALLELISM_OMP'] = ctx.check_support_parallelism_omp()
+
+    else:
+
+        ctx.env['DEBUG'] = os.environ['TRAVIS_CI_DEBUG']
+        ctx.env['FORTRAN'] = ctx.check_support_fortran()
+        ctx.env['F2PY'] = ctx.check_support_f2py()
+
+        ctx.env['PARALLELISM_MPI'] = ctx.check_support_parallelism_mpi()
+        ctx.env['PARALLELISM_OMP'] = ctx.check_support_parallelism_omp()
 
     ctx.write_configuration()
 
@@ -92,8 +105,6 @@ def configure_debug(self):
     """This function determines whether F2PY is supported or not."""
     self.start_msg('Configuration DEBUG')
 
-    if 'TRAVIS_CI_DEBUG' in os.environ:
-        return os.environ['TRAVIS_CI_DEBUG']
 
     if self.options.is_debug:
         is_debug = True
