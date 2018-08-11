@@ -3,6 +3,7 @@ from subprocess import PIPE
 import numpy as np
 import shlex
 import json
+import os
 
 from waflib.Configure import conf
 
@@ -90,6 +91,9 @@ def build(ctx):
 def configure_debug(self):
     """This function determines whether F2PY is supported or not."""
     self.start_msg('Configuration DEBUG')
+
+    if 'TRAVIS_CI_DEBUG' in os.environ:
+        return os.environ['TRAVIS_CI_DEBUG']
 
     if self.options.is_debug:
         is_debug = True

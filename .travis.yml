@@ -8,13 +8,13 @@ addons:
       - gfortran
       - libatlas-dev
       - libatlas-base-dev
-      - libomp-dev
-
 
 env:
 
   - TRAVIS_CI_DEBUG=True
   - TRAVIS_CI_DEBUG=False
+
+
 
 bundler_args: --retry 3
 
