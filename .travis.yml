@@ -1,16 +1,21 @@
-language: python
+language:
+    - python
+
 python:
-  - 3.6
+    - 3.6
+
+before_install:
+    - sudo apt-get update
 
 addons:
-  apt:
-    packages: &common_packages
-      - gfortran
-      - libatlas-dev
-      - libatlas-base-dev
+    apt:
+        packages:
+            - common_packages
+            - gfortran
+            - libatlas-dev
+            - libatlas-base-dev
 
 matrix:
-
     include:
         - env: TRAVIS_CI_FORTRAN=False TRAVIS_CI_MPI=False  TRAVIS_CI_OMP=False
         - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=True
@@ -29,11 +34,11 @@ install:
     - pip install codecov
 
 script:
-  - travis_wait 30 pytest --cov=respy
+    - travis_wait 30 pytest --cov=respy
 
 after_success:
-  - codecov
+    - codecov
 
 notifications:
-  slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
-  email: false
+    slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
+    email: false
