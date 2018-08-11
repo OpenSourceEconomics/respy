@@ -17,8 +17,13 @@ env:
     TRAVIS_CI_DEBUG=False
     TRAVIS_CI_DEBUG=True
 
-    TRAVIS_CI_F2Py=False
-    TRAVIS_CI_F2Py=True
+    TRAVIS_CI_F2PY=False
+    TRAVIS_CI_F2PY=True
+
+matrix:
+
+    include:
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_DEBUG=True TRAVIS_CI_F2PY=False
 
 bundler_args: --retry 3
 
