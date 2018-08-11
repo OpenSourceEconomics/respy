@@ -22,7 +22,7 @@ env:
 
 matrix:
 
-    include:
+    exclude:
         - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_DEBUG=True TRAVIS_CI_F2PY=False
 
 bundler_args: --retry 3
