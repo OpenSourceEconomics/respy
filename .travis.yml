@@ -13,7 +13,8 @@ addons:
 matrix:
 
     include:
-        - env: TRAVIS_CI_FORTRAN=False TRAVIS_CI_F2PY=True
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_F2PY=True
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_F2PY=False
 
 bundler_args: --retry 3
 
