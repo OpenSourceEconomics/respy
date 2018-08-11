@@ -62,13 +62,13 @@ def configure(ctx):
         ctx.env['PARALLELISM_OMP'] = ctx.check_support_parallelism_omp()
 
     else:
-
+        
+        ctx.env['FORTRAN'] = os.environ['TRAVIS_CI_FORTRAN']
         ctx.env['DEBUG'] = os.environ['TRAVIS_CI_DEBUG']
-        ctx.env['FORTRAN'] = ctx.check_support_fortran()
-        ctx.env['F2PY'] = ctx.check_support_f2py()
+        ctx.env['F2PY'] = os.environ['TRAVIS_CI_F2PY']
 
-        ctx.env['PARALLELISM_MPI'] = ctx.check_support_parallelism_mpi()
-        ctx.env['PARALLELISM_OMP'] = ctx.check_support_parallelism_omp()
+        ctx.env['PARALLELISM_MPI'] = False
+        ctx.env['PARALLELISM_OMP'] = False
 
     ctx.write_configuration()
 
