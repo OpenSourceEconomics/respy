@@ -17,9 +17,9 @@ GFORTRAN_FLAGS_DEBUG = []
 GFORTRAN_FLAGS_DEBUG += ['-O', '-Wall', '-Wline-truncation', '-Wsurprising', '-Waliasing']
 GFORTRAN_FLAGS_DEBUG += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
 GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1', '-ffree-line-length-0']
-GFORTRAN_FLAGS_DEBUG += ['-cpp', '-Wcharacter-truncation', '-Wimplicit-interface',  '-fopenmp']
+GFORTRAN_FLAGS_DEBUG += ['-cpp', '-Wcharacter-truncation', '-Wimplicit-interface']
 
-GFORTRAN_FLAGS_PRODUCTION = ['-O3', '-ffree-line-length-0', '-cpp',  '-fopenmp']
+GFORTRAN_FLAGS_PRODUCTION = ['-O3', '-ffree-line-length-0', '-cpp']
 
 
 def options(ctx):
@@ -61,6 +61,8 @@ def configure(ctx):
 
     # Specify use of system libraries.
     ctx.env.append_unique('LIB', ['lapack'])
+
+    ctx.env.append_unique('LINKFLAGS', ['-fopenmp'])
 
     # Specify compiler flags
     if ctx.env['DEBUG']:
