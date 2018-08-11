@@ -246,7 +246,8 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     END DO
 
     CALL get_time(today_char, now_char)
-    CALL CPU_TIME(finish)
+
+    finish = get_wtime()
 
     100 FORMAT(1x,A4,i13,10x,A4,i10)
     110 FORMAT(3x,A4,25X,A10)

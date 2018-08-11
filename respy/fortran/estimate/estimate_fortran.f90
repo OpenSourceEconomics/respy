@@ -155,7 +155,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 !------------------------------------------------------------------------------
 
     ! We intent to monitor the execution time of every evaluation of the criterion function.
-    CALL CPU_TIME(start)
+    start = get_wtime()
 
     ! We allow for early termination due to maximum number of iterations or user request.
     IF (check_early_termination(maxfun, num_eval, crit_estimation)) THEN
@@ -218,8 +218,8 @@ FUNCTION fort_criterion_parallel(x)
 #if MPI_AVAILABLE
 
     ! We intent to monitor the execution time of every evaluation of the criterion function.
-    CALL CPU_TIME(start)
-
+    start = get_wtime()
+    
     ! We allow for early termination due to maximum number of iterations or user request.
     IF (check_early_termination(maxfun, num_eval, crit_estimation)) THEN
         fort_criterion_parallel = HUGE_FLOAT

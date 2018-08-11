@@ -38,7 +38,7 @@ def build(ctx):
     ctx(features=['fc', 'fcprogram'], source='resfort.f90', target='resfort', use='resfort_library')
 
     # If parallel computing is available, we also create the executable for the slave processes.
-    if ctx.env['PARALLELISM']:
+    if ctx.env['PARALLELISM_MPI']:
 
         ctx.add_group()
         slave = ['parallelism/parallelism_slave.f90']
