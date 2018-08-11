@@ -26,7 +26,6 @@ bundler_args: --retry 3
 install:
     - sudo apt-get install -y -q mpich libmpich-dev
     - sudo apt-get install -y -q openmpi-bin libopenmpi-dev
-    - mpif90 -v
     - travis_retry travis_wait pip install -r requirements.txt
     - pip install -e . -vv
     - pip install pytest-cov

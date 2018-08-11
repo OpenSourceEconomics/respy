@@ -14,7 +14,7 @@ out = '.bld'
 # flags, however this results in a failure of the KW1994 codes and we cannot just turn it off
 # for their files. This does not seem straightforward as the all the flags are set in the
 # configure phase.
-GFORTRAN_FLAGS = ['-ffree-line-length-0', '-cpp', '-fopenmp']
+GFORTRAN_FLAGS = ['-ffree-line-length-0', '-cpp']
 
 GFORTRAN_FLAGS_DEBUG = []
 GFORTRAN_FLAGS_DEBUG += ['-O', '-Wall', '-Wline-truncation', '-Wsurprising', '-Waliasing']
@@ -82,7 +82,7 @@ def configure(ctx):
 
     if ctx.env['PARALLELISM_OMP']:
         ctx.env.append_unique('LINKFLAGS', ['-fopenmp'])
-        ctx.env.append_unique('FCFLAGS', ['-DOMP_AVAILABLE'])
+        ctx.env.append_unique('FCFLAGS', ['-fopenmp', '-DOMP_AVAILABLE'])
 
 
 def build(ctx):
