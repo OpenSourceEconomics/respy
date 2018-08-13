@@ -36,7 +36,7 @@ def options(ctx):
                    help='no support for OMP parallelism')
 
     ctx.add_option('--no_fortran', action='store_true', dest='no_fortran',
-        help='no support for FORTRAN')
+                   help='no support for FORTRAN')
 
     # This option is convenient in the development process as it allows to later analyze the F2PY
     # testing battery.
@@ -96,7 +96,7 @@ def configure_debug(self):
 
     is_debug = travis_build_matrix('DEBUG', is_debug)
 
-    self.end_msg(is_debug)
+    self.construct_end_message(is_debug)
 
     return is_debug
 
@@ -114,7 +114,7 @@ def check_support_f2py(self):
         else:
             is_support = False
 
-    self.end_msg(is_support)
+    self.construct_end_message(is_support)
 
     return is_support
 
@@ -146,7 +146,7 @@ def check_support_fortran(self):
 
     is_support = travis_build_matrix('FORTRAN', is_support)
 
-    self.end_msg(is_support)
+    self.construct_end_message(is_support)
 
     return is_support
 
@@ -168,7 +168,7 @@ def check_support_parallelism_mpi(self):
 
     is_support = travis_build_matrix('MPI', is_support)
 
-    self.end_msg(is_support)
+    self.construct_end_message(is_support)
 
     return is_support
 
@@ -190,7 +190,7 @@ def check_support_parallelism_omp(self):
 
     is_support = travis_build_matrix('OMP', is_support)
 
-    self.end_msg(is_support)
+    self.construct_end_message(is_support)
 
     return is_support
 
@@ -215,3 +215,12 @@ def travis_build_matrix(label, is_support):
             is_support = os.environ['TRAVIS_CI_' + label]
 
     return is_support
+
+
+@conf
+def construct_end_message(self, is_support):
+    """This function constructs the end messages for the configuration step."""
+    if is_support:
+        self.end_msg('yes', color='GREEN')
+    else:
+        self.end_msg('no', color='RED')
