@@ -11,7 +11,7 @@ class CreateF2pyInterfaces(Task):
     def run(self):
         src = open(self.inputs[0].abspath(), 'rb').read()
 
-        args = '--f90flags="{}" -I.bld -L.bld/fortran -lresfort_library -llapack'
+        args = '--f90flags="{}" -I.bld -L.bld/fortran -lresfort_library -llapack -lgomp'
         f90_flags = '-ffree-line-length-0'
         if self.env['PARALLELISM_OMP']:
             f90_flags += ' -fopenmp'
