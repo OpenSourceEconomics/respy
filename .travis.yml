@@ -21,8 +21,6 @@ matrix:
         - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=False TRAVIS_CI_OMP=True
         - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=False
 
-bundler_args: --retry 3
-
 install:
     - sudo apt-get install -y -q mpich libmpich-dev
     - sudo apt-get install -y -q openmpi-bin libopenmpi-dev
@@ -35,7 +33,13 @@ script:
     - travis_wait 30 pytest --cov=respy -vvv -s
 
 after_success:
-    - codecov
+-   if  [ $TRAVIS_CI_FORTRAN ] || \
+        [ $TRAVIS_CI_MPI ] || \
+        [ $TRAVIS_CI_OMP ] ||
+    then
+        codecov
+        echo 'send coverage statistic'
+    fi
 
 notifications:
     email: false
