@@ -10,8 +10,13 @@ class CreateF2pyInterfaces(Task):
     """This is an explicit task generator for the creation of the F2PY interfaces."""
     def run(self):
         src = open(self.inputs[0].abspath(), 'rb').read()
-        args = '--f90flags="-ffree-line-length-0" -I.bld -L.bld/fortran -lresfort_library -llapack'
-        f2py.compile(src, 'f2py_interface', args, extension='.f90')
+
+        args = '--f90flags="{}" -I.bld -L.bld/fortran -lresfort_library -llapack'
+        f90_flags = '-ffree-line-length-0'
+        if self.env['PARALLELISM_OMP']:
+            f90_flags += ' -fopenmp'
+
+        f2py.compile(src, 'f2py_interface', args.format(f90_flags), extension='.f90')
         shutil.move(glob.glob('f2py_interface.*.so')[0], self.outputs[0].abspath())
 
 

@@ -207,9 +207,11 @@ def write_configuration(self):
 @conf
 def travis_build_matrix(label, is_support):
     """This function enforces the TRAVIS build matrix."""
-    if label in ['DEBUG']:
-        return True
-
     if 'TRAVIS' in os.environ.keys():
-        is_support = os.environ['TRAVIS_CI_' + label]
+
+        if label in ['DEBUG']:
+            is_support = True
+        else:
+            is_support = os.environ['TRAVIS_CI_' + label]
+
     return is_support
