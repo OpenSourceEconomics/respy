@@ -91,12 +91,12 @@ def configure_debug(self):
 
     if self.options.is_debug:
         is_debug = True
-        message = 'True'
     else:
         is_debug = False
-        message = 'False'
 
-    self.end_msg(message)
+    is_debug = travis_build_matrix('DEBUG', is_debug)
+
+    self.end_msg(is_debug)
 
     return is_debug
 
@@ -122,6 +122,9 @@ def check_support_f2py(self):
 @conf
 def check_support_fortran(self):
     """This function determines whether FORTRAN is supported or not."""
+    # At this point we only test for the GFORTRAN compiler.
+    self.options.check_fortran_compiler = 'gfortran'
+
     self.start_msg('Support FORTRAN ')
 
     if self.options.no_fortran:
@@ -141,9 +144,7 @@ def check_support_fortran(self):
         else:
             is_support = True
 
-    if 'TRAVIS' in os.environ.keys():
-        message = os.environ['TRAVIS_CI_FORTRAN']
-        is_support = message.upper() == 'TRUE'
+    is_support = travis_build_matrix('FORTRAN', is_support)
 
     self.end_msg(is_support)
 
@@ -165,9 +166,7 @@ def check_support_parallelism_mpi(self):
         else:
             is_support = True
 
-    if 'TRAVIS' in os.environ.keys():
-        message = os.environ['TRAVIS_CI_MPI']
-        is_support = message.upper() == 'TRUE'
+    is_support = travis_build_matrix('MPI', is_support)
 
     self.end_msg(is_support)
 
@@ -189,9 +188,7 @@ def check_support_parallelism_omp(self):
         else:
             is_support = True
 
-    if 'TRAVIS' in os.environ.keys():
-        message = os.environ['TRAVIS_CI_OMP']
-        is_support = message.upper() == 'TRUE'
+    is_support = travis_build_matrix('OMP', is_support)
 
     self.end_msg(is_support)
 
@@ -205,3 +202,14 @@ def write_configuration(self):
     for label in ['DEBUG', 'FORTRAN', 'F2PY', 'PARALLELISM_MPI', 'PARALLELISM_OMP']:
         config_dict[label] = self.env[label]
     json.dump(config_dict, open('.bld/.config', 'w'))
+
+
+@conf
+def travis_build_matrix(label, is_support):
+    """This function enforces the TRAVIS build matrix."""
+    if label in ['DEBUG']:
+        return True
+
+    if 'TRAVIS' in os.environ.keys():
+        is_support = os.environ['TRAVIS_CI_' + label]
+    return is_support

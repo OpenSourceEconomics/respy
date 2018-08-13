@@ -32,11 +32,10 @@ install:
     - pip install codecov
 
 script:
-    - travis_wait 30 pytest --cov=respy
+    - travis_wait 30 pytest --cov=respy --vvv -s
 
 after_success:
     - codecov
 
 notifications:
-    slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
     email: false
