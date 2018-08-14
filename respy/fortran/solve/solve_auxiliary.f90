@@ -593,7 +593,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
     ! Construct dependent variables for the subset of interpolation
     ! points.
 
-!$OMP PARALLEL DO DEFAULT(PRIVATE) SHARED(num_states, is_simulated, periods_rewards_systematic, period, draws_emax_risk, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(rewards_systematic)
     DO k = 0, (num_states - 1)
 
         ! Skip over points that will be predicted
@@ -609,7 +609,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
         endogenous(k + 1) = emax - maxe(k + 1)
 
     END DO
-!OMP END PARALLEL DO
+!$OMP END PARALLEL DO
 
 END SUBROUTINE
 !******************************************************************************
