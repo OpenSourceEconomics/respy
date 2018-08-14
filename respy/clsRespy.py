@@ -7,8 +7,7 @@ import os
 import atexit
 
 from respy.pre_processing.model_processing import write_init_file
-from respy.python.shared.shared_auxiliary import dist_econ_paras
-from respy.python.shared.shared_auxiliary import check_model_parameters
+from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import remove_scratch
 
@@ -65,22 +64,9 @@ class RespyCls(object):
 
         self.reset()
 
-        delta, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home, \
-            shocks_cov, type_shares, type_shifts = dist_econ_paras(x_econ)
-
-        shocks_cholesky = np.linalg.cholesky(shocks_cov)
-        optim_paras = self.attr['optim_paras']
-        # Update model parametrization
-        optim_paras['shocks_cholesky'] = shocks_cholesky
-        optim_paras['coeffs_common'] = coeffs_common
-        optim_paras['coeffs_home'] = coeffs_home
-        optim_paras['coeffs_edu'] = coeffs_edu
-        optim_paras['coeffs_a'] = coeffs_a
-        optim_paras['coeffs_b'] = coeffs_b
-        optim_paras['delta'] = delta
-        optim_paras['type_shares'] = type_shares
-        optim_paras['type_shifts'] = type_shifts
-        check_model_parameters(optim_paras)
+        new_paras_dict = distribute_parameters(
+            paras_vec=x_econ, paras_type='econ', is_debug=True)
+        self.attr['optim_paras'].update(new_paras_dict)
 
     def lock(self):
         """Lock class instance."""

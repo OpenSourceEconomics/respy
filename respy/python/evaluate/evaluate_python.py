@@ -72,14 +72,17 @@ def pyth_contributions(
         num_obs = num_obs_agent[j]
         edu_start = data_array[row_start + 0, 6].astype(int)
 
+        # updated type probabilities, conditional on edu_start >= 9 or <= 9
         type_shares = get_conditional_probabilities(
             optim_paras['type_shares'], edu_start)
 
         # Container for the likelihood of the observed choice for each type.
+        # likelihood contribution for each type
         prob_type = np.tile(1.0, num_types)
 
         for type_ in range(num_types):
 
+            # prob_obs has length p
             prob_obs[:] = 0.00
             for p in range(num_obs):
 
@@ -176,10 +179,12 @@ def pyth_contributions(
 
                     # Extract deviates from (un-)conditional normal
                     # distributions and transform labor market shocks.
+                    # this makes a copy
                     draws = draws_cond[:]
                     draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
 
                     # Calculate total values.
+                    # immediate rewards, including shock + expected future value!
                     total_values, _ = get_total_values(
                         period, num_periods, optim_paras, rewards_systematic,
                         draws, edu_spec, mapping_state_idx, periods_emax, k,

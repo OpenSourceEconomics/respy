@@ -14,6 +14,7 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
+from numpy.linalg import cholesky
 
 OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
 
@@ -36,57 +37,81 @@ def check_optimization_parameters(x):
     return True
 
 
-def dist_econ_paras(x_all_curre):
-    """Update parameter values. The np.array type is maintained."""
-    # Auxiliary objects
-    num_paras = len(x_all_curre)
-    num_types = int(len(x_all_curre[53:]) / 6) + 1
+def distribute_parameters(paras_vec, paras_type, is_debug=False, info=None):
+    """Parse the parameter vector into a dictionary of model quantities.
 
-    # Discount rates
-    delta = x_all_curre[0:1]
+    Args:
+        paras_vec (np.ndarray): 1d numpy array with the parameters
+        paras_type (str): one of ['econ', 'optim']. A paras_vec of type 'econ' contains the
+            the standard deviations and covariances of the shock distribution. This is how
+            parameters are represented in the .ini file and the output of .fit().
+            A paras_vec of type 'optim' contains the elements of the cholesky factors of the
+            covariance matrix of the shock distribution. This type is used internally during
+            the likelihood estimation.
+        target (str): one of ['tuple', 'dict']; determines the return type
+        is_debug (bool): If true, the parameters are checked for validity
+        info: ????
 
-    # Common Returns
-    coeffs_common = x_all_curre[1:3]
+    """
+    paras_vec = paras_vec.copy()
+    assert paras_type in ['econ', 'optim'], 'paras_type must be econ or optim.'
 
-    # Occupation A
-    coeffs_a = x_all_curre[3:18]
+    if is_debug and paras_type == 'optim':
+        check_optimization_parameters(paras_vec)
 
-    # Occupation B
-    coeffs_b = x_all_curre[18:33]
+    pinfo = paras_parsing_information(paras_vec)
+    paras_dict = {}
 
-    # Education
-    coeffs_edu = x_all_curre[33:40]
+    # basic extraction
+    for quantity in pinfo:
+        start = pinfo[quantity]['start']
+        stop = pinfo[quantity]['stop']
+        paras_dict[quantity] = paras_vec[start: stop]
 
-    # Home
-    coeffs_home = x_all_curre[40:43]
+    # modify the shock_coeffs
+    shocks_coeffs = paras_dict['shocks_coeffs']
+    if paras_type == 'econ':
+        for i in [0, 4, 7, 9]:
+            shocks_coeffs[i] **= 2
 
-    shocks_coeffs = x_all_curre[43:53]
-    for i in [0, 4, 7, 9]:
-        shocks_coeffs[i] **= 2
+        shocks = np.zeros((4, 4))
+        shocks[np.triu_indices(4)] = shocks_coeffs
+        shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
+        shocks_cholesky = cholesky(shocks_cov)
+    else:
+        shocks_cholesky = extract_cholesky(paras_vec, info)
+    paras_dict['shocks_cholesky'] = shocks_cholesky
+    del paras_dict['shocks_coeffs']
 
-    shocks = np.zeros((4, 4))
-    shocks[0, :] = shocks_coeffs[0:4]
-    shocks[1, 1:] = shocks_coeffs[4:7]
-    shocks[2, 2:] = shocks_coeffs[7:9]
-    shocks[3, 3:] = shocks_coeffs[9:10]
+    # overwrite the type information
+    type_shares, type_shifts = extract_type_information(paras_vec)
+    paras_dict['type_shares'] = type_shares
+    paras_dict['type_shifts'] = type_shifts
 
-    shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
+    # checks
+    if is_debug:
+        assert check_model_parameters(paras_dict)
 
-    # Type Shares
-    type_shares = x_all_curre[53:53 + (num_types - 1) * 2]
-    type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
+    return paras_dict
 
-    type_shifts = np.reshape(
-        x_all_curre[53 + (num_types - 1) * 2:num_paras], (num_types - 1, 4))
 
-    type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
-
-    # Collect arguments
-    args = (delta, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, type_shares, type_shifts)
-
-    # Finishing
-    return args
+def paras_parsing_information(paras_vec):
+    """Dictionary with the start and stop indices of each quantity."""
+    num_paras = len(paras_vec)
+    num_types = int(len(paras_vec[53:]) / 6) + 1
+    num_shares = (num_types - 1) * 2
+    pinfo = {
+        'delta': {'start': 0, 'stop': 1},
+        'coeffs_common': {'start': 1, 'stop': 3},
+        'coeffs_a': {'start': 3, 'stop': 18},
+        'coeffs_b': {'start': 18, 'stop': 33},
+        'coeffs_edu': {'start': 33, 'stop': 40},
+        'coeffs_home': {'start': 40, 'stop': 43},
+        'shocks_coeffs': {'start': 43, 'stop': 53},
+        'type_shares': {'start': 53, 'stop': 53 + num_shares},
+        'type_shifts': {'start': 53 + num_shares, 'stop': num_paras}
+    }
+    return pinfo
 
 
 def dist_optim_paras(x_all_curre, is_debug, info=None):
@@ -154,14 +179,17 @@ def get_conditional_probabilities(type_shares, edu_start):
 
 def extract_type_information(x):
     """Extract the information about types from the estimation vector."""
-    num_types = int(len(x[53:]) / 6) + 1
+    pinfo = paras_parsing_information(x)
 
     # Type shares
-    type_shares = x[53:53 + (num_types - 1) * 2]
+    start, stop = pinfo['type_shares']['start'], pinfo['type_shares']['stop']
+    num_types = int(len(x[start:]) / 6) + 1
+    type_shares = x[start: stop]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
 
     # Type shifts
-    type_shifts = x[53 + (num_types - 1) * 2:]
+    start, stop = pinfo['type_shifts']['start'], pinfo['type_shifts']['stop']
+    type_shifts = x[start: stop]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
@@ -170,11 +198,12 @@ def extract_type_information(x):
 
 def extract_cholesky(x, info=None):
     """Construct the Cholesky matrix."""
-    shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x[43:44]
-    shocks_cholesky[1, :2] = x[44:46]
-    shocks_cholesky[2, :3] = x[46:49]
-    shocks_cholesky[3, :4] = x[49:53]
+    pinfo = paras_parsing_information(x)
+    start, stop = pinfo['shocks_coeffs']['start'], pinfo['shocks_coeffs']['stop']
+    shocks_coeffs = x[start: stop]
+    dim = int(np.sqrt(8 * len(shocks_coeffs) + 1) / 2 - 0.5)
+    shocks_cholesky = np.zeros((dim, dim))
+    shocks_cholesky[np.tril_indices(dim)] = shocks_coeffs
 
     # Stabilization
     if info is not None:
