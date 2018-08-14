@@ -287,9 +287,9 @@ Let us explore the basic capabilities of the ``respy`` package with a couple of 
 We always first initialize an instance of the ``RespyCls`` by passing in the path to the initialization file.
 ::
 
-    import respy
+    from respy import RespyCls
 
-    respy_obj = respy.RespyCls('example.ini')
+    respy_obj = RespyCls('example.ini')
 
 Now we can simulate a sample from the specified model.
 ::
@@ -301,7 +301,7 @@ During the simulation, several files will appear in the current working director
 Now that we simulated some data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values.
 ::
 
-    x, crit_val = respy_obj.estimate()
+    x, crit_val = respy_obj.fit()
 
 This directly returns the value of the coefficients at the final step of the optimizer as well as the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using ``est.respy.info`` and more details about each evaluation of the criterion function are available in ``est.respy.log``.
 
@@ -320,14 +320,14 @@ Just using the capabilities outlined so far, it is straightforward to recompute 
     """ This module recomputes some of the key results of Keane and Wolpin (1994).
     """
 
-    import respy
+    from respy import RespyCls
 
     # We can simply iterate over the different model specifications outlined in
     # Table 1 of their paper.
     for spec in ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']:
 
         # Process relevant model initialization file
-        respy_obj = respy.RespyCls(spec)
+        respy_obj = RespyCls(spec)
 
         # Let us simulate the datasets discussed on the page 658.
         respy_obj.simulate()
@@ -339,6 +339,6 @@ Just using the capabilities outlined so far, it is straightforward to recompute 
         respy_obj.set_attr('maxfun', 0)
         respy_obj.lock()
 
-        respy_obj.estimate()
+        respy_obj.fit()
 
 In an earlier `working paper  <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_, Keane and Wolpin (1994b) provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.
