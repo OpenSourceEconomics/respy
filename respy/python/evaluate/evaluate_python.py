@@ -35,10 +35,9 @@ def pyth_contributions(
         data_array: 2d numpy array with the empirical dataset
 
         periods_draws_prob: 3d numpy array of dimension [nperiods, ndraws_prob,
-            nchoices]. Contains iid draws from a multivariate normal
-            distribution.
+            nchoices]. Contains iid draws from standard normal distributions.
 
-        tau:
+        tau: Smoothing parameter for choice probabilities.
 
         num_periods: Number of periods of the model
 
@@ -47,7 +46,8 @@ def pyth_contributions(
 
         num_agents_est (int): Number of observations used for estimation.
 
-        num_obs_agent :
+        num_obs_agent: 1d numpy array with length num_agents_est that contains
+            the number of observed observations for each individual in the sample.
 
         num_types (int): Number of types that govern unobserved heterogeneity.
 

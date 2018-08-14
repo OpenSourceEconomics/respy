@@ -2,9 +2,6 @@
 TO-DO
 =====
 
-- get rid of pytest.ini (see respy slack for how-to)
-- check documentation for new interface
-
 
 - shared_auxiliary.py
 ---------------------
@@ -43,6 +40,22 @@ _construct_all_current_values needs a longer docstring. What is the purpose of t
 
 evaluate_python
 ===============
+
+- why set prob_obs[:] = 0 (line 83)
+- why is choice == 1 and choice == 2 not handeled symetrically? Is this because of the cholesky transformation?
+- Why draws = draws_cond[:]; is this making a copy?
+- What are total_values?
+
+
+
+
+
+
+
+
+
+
+
 
 - The dimensions and meaning of some arguments is still unclear
 - Why is the covariance matrix never used. Is the use of the cholesky factors correct?
