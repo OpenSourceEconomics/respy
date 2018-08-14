@@ -16,7 +16,7 @@ MODULE estimate_fortran
 
     USE solve_fortran
 
-#if MPI_AVAILABLE
+#IF MPI_AVAILABLE
 
     USE parallelism_constants
 
@@ -24,7 +24,7 @@ MODULE estimate_fortran
 
     USE mpi
 
-#endif
+#ENDIF
 
     !/* setup   */
 

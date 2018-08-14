@@ -1,6 +1,6 @@
 MODULE parallelism_constants
 
-#if MPI_AVAILABLE
+#IF MPI_AVAILABLE
 
     !/* external modules    */
 
@@ -24,6 +24,6 @@ MODULE parallelism_constants
 
 !******************************************************************************
 !******************************************************************************
-#endif
+#ENDIF
 
 END MODULE

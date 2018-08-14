@@ -14,19 +14,19 @@ MODULE parallelism_auxiliary
 
     USE solve_fortran
 
-#if OMP_AVAILABLE
+#IFDEF _OPENMP
 
     USE omp_lib
 
-#endif
+#ENDIF
 
-#if MPI_AVAILABLE
+#IF MPI_AVAILABLE
 
     USE parallelism_constants
 
     USE mpi
 
-#endif
+#ENDIF
 
     !/* setup                   */
 
@@ -180,7 +180,7 @@ SUBROUTINE distribute_information_slaves(num_states_slaves, period, send_slave, 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-#if MPI_AVAILABLE
+#IF MPI_AVAILABLE
 
     ! Parameterize the communication.
     scounts = num_states_slaves(period + 1, :)
@@ -191,7 +191,7 @@ SUBROUTINE distribute_information_slaves(num_states_slaves, period, send_slave, 
 
     CALL MPI_ALLGATHERV(send_slave, scounts(rank + 1), MPI_DOUBLE, recieve_slaves, rcounts, displs, MPI_DOUBLE, MPI_COMM_WORLD, ierr)
 
-#endif
+#ENDIF
 
 END SUBROUTINE
 !******************************************************************************
@@ -258,7 +258,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-#if MPI_AVAILABLE
+#IF MPI_AVAILABLE
 
     IF (.NOT. ALLOCATED(periods_emax)) ALLOCATE(periods_emax(num_periods, max_states_period))
 
@@ -396,7 +396,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
 
     END DO
 
-#endif
+#ENDIF
 
 END SUBROUTINE
 !******************************************************************************

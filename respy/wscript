@@ -69,7 +69,7 @@ def configure(ctx):
 
     if ctx.env['PARALLELISM_OMP']:
         ctx.env.append_unique('LINKFLAGS', ['-fopenmp'])
-        ctx.env.append_unique('FCFLAGS', ['-fopenmp', '-DOMP_AVAILABLE'])
+        ctx.env.append_unique('FCFLAGS', ['-fopenmp'])
 
 
 def build(ctx):
