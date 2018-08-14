@@ -65,7 +65,7 @@ class RespyCls(object):
         self.reset()
 
         new_paras_dict = distribute_parameters(
-            paras_vec=x_econ, paras_type='econ', is_debug=True)
+            paras_vec=x_econ, is_debug=True, paras_type='econ',)
         self.attr['optim_paras'].update(new_paras_dict)
 
     def lock(self):

@@ -37,7 +37,7 @@ def check_optimization_parameters(x):
     return True
 
 
-def distribute_parameters(paras_vec, paras_type, is_debug=False, info=None):
+def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type='optim'):
     """Parse the parameter vector into a dictionary of model quantities.
 
     Args:
