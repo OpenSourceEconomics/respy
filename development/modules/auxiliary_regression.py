@@ -74,7 +74,7 @@ def check_single(tests, idx):
             init_dict['EDUCATION']['lagged'] += [0.0]
 
     init_dict['PROGRAM']['threads'] = 1
-    if IS_PARALLELISM_OMP:
+    if IS_PARALLELISM_OMP and init_dict['PROGRAM']['version'] == 'FORTRAN':
         init_dict['PROGRAM']['threads'] = np.random.randint(1, 5)
 
     # During development it is useful that we can only run the PYTHON versions of the
