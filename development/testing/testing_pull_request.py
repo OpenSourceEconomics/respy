@@ -59,3 +59,5 @@ if request_dict['ROBUSTNESS']:
     os.chdir('robustness')
     run_robustness(**test_spec['ROBUSTNESS'])
     os.chdir(CURRENT_DIR)
+
+# TODO: We want to add parallelism test

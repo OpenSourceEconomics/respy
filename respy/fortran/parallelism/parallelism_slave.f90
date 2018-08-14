@@ -38,7 +38,6 @@ PROGRAM resfort_parallel_slave
     INTEGER(our_int)                :: seed_sim
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: task
-    INTEGER(our_int)                :: k
 
     REAL(our_dble), ALLOCATABLE     :: x_optim_all_unscaled(:)
     REAL(our_dble), ALLOCATABLE     :: data_slave(:, :)

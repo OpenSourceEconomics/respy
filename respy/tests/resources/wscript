@@ -10,14 +10,34 @@ class CreateF2pyInterfaces(Task):
     """This is an explicit task generator for the creation of the F2PY interfaces."""
     def run(self):
         src = open(self.inputs[0].abspath(), 'rb').read()
-
-        args = '--f90flags="{}" -I.bld -L.bld/fortran -lresfort_library -llapack -lgomp'
+        args = '--f90flags="{0:}" -I{1:} -L{1:}/fortran -lresfort_library -llapack -lgomp'
         f90_flags = '-ffree-line-length-0'
         if self.env['PARALLELISM_OMP']:
             f90_flags += ' -fopenmp'
 
-        f2py.compile(src, 'f2py_interface', args.format(f90_flags), extension='.f90')
+        args = args.format(f90_flags, self.bld.out_dir)
+        f2py.compile(src, 'f2py_interface', args.format(args), extension='.f90')
         shutil.move(glob.glob('f2py_interface.*.so')[0], self.outputs[0].abspath())
+
+
+class CreateOriginalExecutables(Task):
+
+    def run(self):
+
+        cmd = self.env['FC'] + ' -o  ' + self.outputs[0].abspath() + ' ' + self.inputs[
+            0].abspath() + ' '
+        cmd += ' '.join(self.env['FCFLAGS'])
+
+        # We need to be a little loose with the original codes.
+        cmd = cmd.replace('-ffpe-trap=zero,overflow,invalid', '')
+
+        # For some reason including this flag results in a segmentation fault in the code. We
+        # suspect a clash in namespace as no IMPLICIT NONE is declared in the code.
+        if self.env['PARALLELISM_OMP']:
+            cmd = cmd.replace('-fopenmp', '')
+
+        cmd += ' -Ltests/resources -lkw_library -llapack'
+        self.exec_command(cmd)
 
 
 def build(ctx):
@@ -27,8 +47,15 @@ def build(ctx):
     ctx(features=['fc', 'fcstlib'], source=src, target='kw_library')
 
     ctx.add_group()
+
+    # We need to create this manually as otherwise the -fopenmp results in a segmentation fault.
     for fname in ['kw_dpml4a', 'kw_dp3asim']:
-        ctx(features=['fc', 'fcprogram'], source=fname + '.f90', target=fname, use='kw_library')
+        task_o = CreateOriginalExecutables(env=ctx.env)
+        task_o.set_inputs(ctx.path.find_resource(fname + '.f90'))
+        task_o.set_outputs(ctx.path.find_or_declare(fname))
+        dep = ctx.path.find_or_declare('../../tests/resources/libkw_library.a')
+        ctx.add_manual_dependency(ctx.path.find_node(fname + '.f90'), dep)
+        ctx.add_to_group(task_o)
 
     if ctx.env['F2PY']:
         # We compile an interface to access core respy routines in our testing harness using an

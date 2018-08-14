@@ -253,11 +253,9 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     120 FORMAT(3x,A4,27X,A8)
     125 FORMAT(3x,A8,23X,i8)
     130 FORMAT(3x,A9,5X,A25)
-    135 FORMAT(3x,A9,5X,A25)
     140 FORMAT(3x,A10,3(4x,A25))
     150 FORMAT(3x,i10,3(4x,A25))
     155 FORMAT(3x,A9,1x,3(4x,f25.15))
-    157 FORMAT(3x,A9,1x,4x,f24.2,A1)
 
     OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
 
