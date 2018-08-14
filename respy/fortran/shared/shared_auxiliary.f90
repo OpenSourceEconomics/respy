@@ -14,11 +14,11 @@ MODULE shared_auxiliary
 
     USE shared_types
 
-#IFDEF _OPENMP
+#ifdef _OPENMP
 
     USE omp_lib
 
-#ENDIF
+#endif
 
     !/* setup   */
 
@@ -1555,15 +1555,15 @@ FUNCTION get_wtime() RESULT(wtime)
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-#IFDEF _OPENMP
+#ifdef _OPENMP
 
     wtime = omp_get_wtime()
 
-#ELSE
+#else
 
     CALL CPU_TIME(wtime)
 
-#ENDIF
+#endif
 
 END FUNCTION
 !******************************************************************************

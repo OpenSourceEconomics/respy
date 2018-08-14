@@ -6,7 +6,7 @@ PROGRAM resfort_scalar
 
     USE resfort_library
 
-#IF MPI_AVAILABLE
+#if MPI_AVAILABLE
 
     USE parallelism_constants
 
@@ -14,7 +14,7 @@ PROGRAM resfort_scalar
 
     USE mpi
 
-#ENDIF
+#endif
 
     !/* setup                   */
 
@@ -83,7 +83,7 @@ PROGRAM resfort_scalar
 
     ELSE
 
-#IF MPI_AVAILABLE
+#if MPI_AVAILABLE
 
         CALL MPI_INIT(ierr)
 
@@ -106,7 +106,7 @@ PROGRAM resfort_scalar
         CALL MPI_Bcast(1, 1, MPI_INT, MPI_ROOT, SLAVECOMM, ierr)
         CALL MPI_FINALIZE(ierr)
 
-#ENDIF
+#endif
 
     END IF
 
