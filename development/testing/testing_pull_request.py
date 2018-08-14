@@ -5,12 +5,13 @@ import sys
 import os
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
-for dirname in ['regression', 'property', 'release', 'robustness']:
+for dirname in ['regression', 'property', 'release', 'robustness', 'parallelism']:
     sys.path.insert(0, CURRENT_DIR + '/' + dirname)
 
 from run_regression import run as run_regression
 from run_property import run as run_property
 from run_robustness import run as run_robustness
+from run_parallelism import run as run_parallelism
 
 # Here we specify the group of tests to run. Later we also pin down the details.
 request_dict = dict()
@@ -18,6 +19,7 @@ request_dict['REGRESSION'] = True
 request_dict['PROPERTY'] = True
 request_dict['PYTEST'] = True
 request_dict['ROBUSTNESS'] = True
+request_dict['PARALLELISM'] = True
 
 # We need to specify the arguments for each of the tests.
 test_spec = dict()
@@ -42,6 +44,10 @@ test_spec['ROBUSTNESS']['is_background'] = False
 test_spec['ROBUSTNESS']['keep_dataset'] = False
 test_spec['ROBUSTNESS']['num_procs'] = 3
 
+test_spec['PARALLELISM'] = dict()
+test_spec['PARALLELISM']['hours'] = 12
+
+
 if request_dict['PYTEST']:
     respy.test()
 
@@ -60,4 +66,7 @@ if request_dict['ROBUSTNESS']:
     run_robustness(**test_spec['ROBUSTNESS'])
     os.chdir(CURRENT_DIR)
 
-# TODO: We want to add parallelism test
+if request_dict['PARALLELISM']:
+    os.chdir('robustness')
+    run_parallelism(**test_spec['PARALLELISM'])
+    os.chdir(CURRENT_DIR)

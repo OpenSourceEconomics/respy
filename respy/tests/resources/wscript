@@ -23,15 +23,12 @@ class CreateF2pyInterfaces(Task):
 class CreateOriginalExecutables(Task):
 
     def run(self):
-
-        print(self.env['FC'], self.outputs[0].abspath(), self.inputs[
-            0].abspath())
-
-        cmd = self.env['FC'] + ' -o  ' + self.outputs[0].abspath() + ' ' + self.inputs[
-            0].abspath() + ' '
+        # Set up the compilation command, while we need to be a little loose with the original
+        # codes with respect to the floating point errors.
+        cmd = ''
+        cmd += self.env['FC'] + ' -o  ' + self.outputs[0].abspath()
+        cmd += ' ' + self.inputs[0].abspath() + ' '
         cmd += ' '.join(self.env['FCFLAGS'])
-
-        # We need to be a little loose with the original codes.
         cmd = cmd.replace('-ffpe-trap=zero,overflow,invalid', '')
 
         # For some reason including this flag results in a segmentation fault in the code. We

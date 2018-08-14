@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-
+"""Module to test the parallel implementations of the model."""
+import argparse
+from datetime import timedelta
+from datetime import datetime
 import numpy as np
 
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
@@ -13,8 +16,12 @@ from respy import estimate
 from respy import RespyCls
 
 
-count = 0
-while True:
+def run(hours):
+
+    start, timeout = datetime.now(), timedelta(hours=hours)
+
+    count = 0
+    while True:
         print('COUNT', count)
         count += 1
         # Generate random initialization file
@@ -47,3 +54,20 @@ while True:
             if base is None:
                 base = crit_val
             np.testing.assert_equal(base, crit_val)
+
+        #  Timeout.
+        if timeout < datetime.now() - start:
+            break
+
+
+if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser(description='Run parallelism test.')
+
+    parser.add_argument('--hours', action='store', dest='hours', help='hours to run',
+                        required=True, type=float)
+
+    args = parser.parse_args()
+    hours = args.hours
+
+    run(hours)
