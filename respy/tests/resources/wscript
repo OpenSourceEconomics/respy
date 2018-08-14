@@ -24,6 +24,9 @@ class CreateOriginalExecutables(Task):
 
     def run(self):
 
+        print(self.env['FC'], self.outputs[0].abspath(), self.inputs[
+            0].abspath())
+
         cmd = self.env['FC'] + ' -o  ' + self.outputs[0].abspath() + ' ' + self.inputs[
             0].abspath() + ' '
         cmd += ' '.join(self.env['FCFLAGS'])
