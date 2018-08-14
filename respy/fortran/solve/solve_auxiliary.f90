@@ -218,8 +218,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     DO period = num_periods, 1, -1
 
         ! Loop over all possible states
-!$omp parallel
-!$omp do
+!$OMP PARALLEL DO DEFAULT(PRIVATE) SHARED(periods_rewards_systematic, states_all, period, states_number_period, optim_paras)
         DO k = 1, states_number_period(period)
 
             ! Distribute state space
@@ -274,8 +273,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             periods_rewards_systematic(period, k, :) = rewards
 
         END DO
-!$omp end do
-!$omp end parallel
+!$OMP END PARALLEL DO
 
     END DO
 
@@ -397,8 +395,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
 
         ELSE
 
-!$omp parallel
-!$omp do
+!$OMP PARALLEL DO DEFAULT(PRIVATE) SHARED(states_number_period, period, periods_rewards_systematic, draws_emax_risk, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
             DO k = 0, (states_number_period(period + 1) - 1)
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
@@ -407,8 +404,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
                 periods_emax(period + 1, k + 1) = emax
 
             END DO
-!$omp end do
-!$omp end parallel
+!$OMP END PARALLEL DO
 
         END IF
 
@@ -597,8 +593,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
     ! Construct dependent variables for the subset of interpolation
     ! points.
 
-!$omp parallel
-!$omp do
+!$OMP PARALLEL DO DEFAULT(PRIVATE) SHARED(num_states, is_simulated, periods_rewards_systematic, period, draws_emax_risk, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
     DO k = 0, (num_states - 1)
 
         ! Skip over points that will be predicted
@@ -614,8 +609,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
         endogenous(k + 1) = emax - maxe(k + 1)
 
     END DO
-!$omp end do
-!$omp end parallel
+!OMP END PARALLEL DO
 
 END SUBROUTINE
 !******************************************************************************

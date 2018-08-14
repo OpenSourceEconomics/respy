@@ -384,8 +384,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
 
             count =  1
 
-!$omp parallel
-!$omp do
+!TODO:$OMP PARALLEL DO DEFAULT(PRIVATE), SHARED(lower_bound, upper_bound, periods_rewards_systematic, draws_emax_risk, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
             DO k = lower_bound, upper_bound - 1
 
                 ! Extract rewards
@@ -399,8 +398,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
                 count = count + 1
 
             END DO
-!$omp end do
-!$omp end parallel
+!TODO:$OMP END PARALLEL DO
 
             CALL distribute_information_slaves(num_states_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
 
