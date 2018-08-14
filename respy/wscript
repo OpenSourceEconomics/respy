@@ -209,7 +209,7 @@ def _travis_build_matrix(label, is_support):
         if label in ['DEBUG']:
             is_support = True
         else:
-            is_support = os.environ['TRAVIS_CI_' + label]
+            is_support = os.environ['TRAVIS_CI_' + label] == 'True'
 
     return is_support
 
