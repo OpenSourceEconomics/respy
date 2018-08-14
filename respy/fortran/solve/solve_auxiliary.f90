@@ -315,7 +315,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
-    INTEGER(our_int)                    :: i
 
     REAL(our_dble)                      :: draws_emax_standard(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax_risk(num_draws_emax, 4)
@@ -593,7 +592,7 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
     ! Construct dependent variables for the subset of interpolation
     ! points.
 
-!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(rewards_systematic)
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(rewards_systematic, emax)
     DO k = 0, (num_states - 1)
 
         ! Skip over points that will be predicted

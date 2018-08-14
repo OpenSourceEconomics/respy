@@ -37,7 +37,7 @@ MODULE parallelism_auxiliary
 CONTAINS
 !******************************************************************************
 !******************************************************************************
-SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras, num_paras, file_sim)
+SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras, num_paras)
 
     !/* external objects        */
 
@@ -54,19 +54,11 @@ SUBROUTINE fort_solve_parallel(periods_rewards_systematic, states_number_period,
 
     INTEGER(our_int), INTENT(IN)                    :: num_paras
 
-    CHARACTER(225), INTENT(IN)                      :: file_sim
-
     !/* internal objects        */
     REAL(our_dble)                                  :: x_all_current(num_paras)
 
-    INTEGER(our_int), ALLOCATABLE                   :: num_states_slaves(:, :)
-    INTEGER(our_int), ALLOCATABLE                   :: num_rows_slaves(:)
-
-    INTEGER(our_int)                                :: displs(num_slaves)
     INTEGER(our_int)                                :: num_states
     INTEGER(our_int)                                :: period
-    INTEGER(our_int)                                :: i
-    INTEGER(our_int)                                :: k
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -238,10 +230,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     INTEGER(our_int)                    :: num_states
     INTEGER(our_int)                    :: seed_size
     INTEGER(our_int)                    :: period
-    INTEGER(our_int)                    :: count
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
-    INTEGER(our_int)                    :: i
 
     REAL(our_dble)                      :: rewards_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
@@ -345,12 +335,11 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
             endogenous_slaves = MISSING_FLOAT
 
             ! Construct dependent variables for the subset of interpolation points.
-            count = 1
+!$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(rewards_systematic, emax)
             DO k = lower_bound, upper_bound - 1
 
                 ! Skip over points that will be predicted
                 IF (.NOT. is_simulated(k + 1)) THEN
-                    count = count + 1
                     CYCLE
                 END IF
 
@@ -360,10 +349,10 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
                 CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
                 ! Construct dependent variable
-                endogenous_slaves(count) = emax - maxe(k + 1)
-                count = count + 1
+                endogenous_slaves(k - lower_bound + 1) = emax - maxe(k + 1)
 
             END DO
+!$OMP END PARALLEL DO
 
             ! Distribute exogenous information
             CALL distribute_information_slaves(num_states_slaves, period, endogenous_slaves, endogenous)
@@ -382,9 +371,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
 
         ELSE
 
-            count =  1
-
-!TODO:$OMP PARALLEL DO DEFAULT(PRIVATE), SHARED(lower_bound, upper_bound, periods_rewards_systematic, draws_emax_risk, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
+!$OMP PARALLEL DO DEFAULT(SHARED), PRIVATE(rewards_systematic, emax)
             DO k = lower_bound, upper_bound - 1
 
                 ! Extract rewards
@@ -393,12 +380,10 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
                 CALL construct_emax_risk(emax, period, k, draws_emax_risk, rewards_systematic, periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
 
                 ! Collect information
-                periods_emax_slaves(count) = emax
-
-                count = count + 1
+                periods_emax_slaves(k - lower_bound + 1) = emax
 
             END DO
-!TODO:$OMP END PARALLEL DO
+!$OMP END PARALLEL DO
 
             CALL distribute_information_slaves(num_states_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
 
