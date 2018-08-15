@@ -12,7 +12,6 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
-from numpy.linalg import cholesky
 
 
 def get_log_likl(contribs):
@@ -57,15 +56,8 @@ def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type='opti
         paras_dict[quantity] = paras_vec[start: stop]
 
     # modify the shock_coeffs
-    shocks_coeffs = paras_dict['shocks_coeffs']
     if paras_type == 'econ':
-        for i in [0, 4, 7, 9]:
-            shocks_coeffs[i] **= 2
-
-        shocks = np.zeros((4, 4))
-        shocks[np.triu_indices(4)] = shocks_coeffs
-        shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
-        shocks_cholesky = cholesky(shocks_cov)
+        shocks_cholesky = cholcov_from_econ_coeffs(paras_dict['shocks_coeffs'])
     else:
         shocks_cholesky, info = extract_cholesky(paras_vec, info)
     paras_dict['shocks_cholesky'] = shocks_cholesky
@@ -233,6 +225,30 @@ def extract_cholesky(x, info=None):
         return shocks_cholesky, info
     else:
         return shocks_cholesky, None
+
+
+def cholcov_from_econ_coeffs(coeffs):
+    """Return the cholesky factor of a covariance matrix described by coeffs.
+
+    The function can handle the case of a deterministic model (i.e. where all coeffs = 0)
+
+    Args:
+        coeffs (np.ndarray): 1d numpy array that contains the upper triangular elements of a
+        covariance matrix whose diagonal elements have been replaced by their square roots.
+
+
+    """
+    dim = int(np.sqrt(8 * len(coeffs) + 1) / 2 - 0.5)
+    shocks = np.zeros((dim, dim))
+    shocks[np.triu_indices(dim)] = coeffs
+    shocks[np.diag_indices(dim)] **= 2
+
+    shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
+
+    if np.count_nonzero(shocks_cov) == 0:
+        return np.zeros((dim, dim))
+    else:
+        return np.linalg.cholesky(shocks_cov)
 
 
 def get_total_values(period, num_periods, optim_paras, rewards_systematic,

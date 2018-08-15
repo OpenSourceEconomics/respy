@@ -17,6 +17,7 @@ from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import format_opt_parameters
+from respy.python.shared.shared_auxiliary import cholcov_from_econ_coeffs
 from respy.pre_processing.model_processing_auxiliary import \
     _process_coefficient_line, _type_conversions, _add_to_dictionary, \
     _determine_case, _paras_mapping
@@ -264,24 +265,7 @@ def convert_init_dict_to_attr_dict(init_dict):
 
     # Constructing the covariance matrix of the shocks
     shocks_coeffs = ini['SHOCKS']['coeffs']
-    for i in [0, 4, 7, 9]:
-        shocks_coeffs[i] **= 2
-
-    shocks = np.zeros((4, 4))
-    shocks[0, :] = shocks_coeffs[0:4]
-    shocks[1, 1:] = shocks_coeffs[4:7]
-    shocks[2, 2:] = shocks_coeffs[7:9]
-    shocks[3, 3:] = shocks_coeffs[9:10]
-
-    shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
-
-    # As we call the Cholesky decomposition, we need to handle the
-    # special case of a deterministic model.
-    if np.count_nonzero(shocks_cov) == 0:
-        attr['optim_paras']['shocks_cholesky'] = np.zeros((4, 4))
-    else:
-        shocks_cholesky = np.linalg.cholesky(shocks_cov)
-        attr['optim_paras']['shocks_cholesky'] = shocks_cholesky
+    attr['optim_paras']['shocks_cholesky'] = cholcov_from_econ_coeffs(shocks_coeffs)
 
     # Constructing the shifts for each type.
     type_shifts = ini['TYPE SHIFTS']['coeffs']
