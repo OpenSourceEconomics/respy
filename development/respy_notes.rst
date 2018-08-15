@@ -5,8 +5,7 @@ TO-DO
 shared_auxiliary.py
 ===================
 
-- get_optim_paras should be closer to the previous two functions and not hardcode the parsing information.
-    -> do both; why do we have the cholesky of covs at one place and not the other?
+rewrite get_optim_paras to reduce hardcoding!
 
 
 
@@ -45,27 +44,6 @@ estimate_wrapper.py
 _construct_all_current_values needs a longer docstring. What is the purpose of this function?
     -> I understand now; put a section in the developer documentation.
 
-evaluate_python
-===============
-
-- why set prob_obs[:] = 0 (line 83)
-- why is choice == 1 and choice == 2 not handeled symetrically? Is this because of the cholesky transformation?
-- Why draws = draws_cond[:]; is this making a copy?
-- What are total_values?
-
-
-
-
-
-
-
-
-
-
-
-
-- The dimensions and meaning of some arguments is still unclear
-- Why is the covariance matrix never used. Is the use of the cholesky factors correct?
 
 
 Reduce Fortran Code
@@ -115,16 +93,6 @@ interface calls OptimizationClass
 OptimizationClass calls pyth_criterion
 
 we should look for a better version.
-
-
-
-document the different types of the parameter vector and write one module where all transformatinos happen.
-
-- x: array of model parameters
-- x_all: including the fixed ones
-- x_optim: only free parameters
-
-    -> try to reduce number of representations of parameter vector
 
 
 
