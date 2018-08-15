@@ -153,7 +153,7 @@ def _check_support_parallelism_mpi(self):
     """This function determines whether MPI parallelism is supported or not."""
     self.start_msg('Support MPI PARALLELISM ')
 
-    if self.options.no_mpi or self.options.no_fortran:
+    if self.options.no_mpi or self.env['FORTRAN'] is False:
         is_support = False
     else:
         try:
@@ -175,7 +175,7 @@ def _check_support_parallelism_omp(self):
     """This function determines whether OMP parallelism is supported or not."""
     self.start_msg('Support OMP PARALLELISM ')
 
-    if self.options.no_omp or self.options.no_fortran:
+    if self.options.no_omp or self.env['FORTRAN'] is False:
         is_support = False
     else:
         try:
