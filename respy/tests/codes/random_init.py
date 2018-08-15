@@ -2,7 +2,6 @@
 """
 import numpy as np
 
-from respy.python.shared.shared_auxiliary import generate_optimizer_options
 from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import OPT_EST_FORT
@@ -262,4 +261,55 @@ def generate_random_dict(constr=None):
     dict_ = process_constraints(dict_, constr, paras_fixed, paras_bounds)
 
     # Finishing
+    return dict_
+
+
+def generate_optimizer_options(which, optim_paras, num_paras):
+
+    dict_ = dict()
+
+    if which == 'SCIPY-BFGS':
+        dict_['gtol'] = np.random.uniform(0.0000001, 0.1)
+        dict_['maxiter'] = np.random.randint(1, 10)
+        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
+
+    elif which == 'SCIPY-LBFGSB':
+        dict_['factr'] = np.random.uniform(10, 100)
+        dict_['pgtol'] = np.random.uniform(1e-6, 1e-4)
+        dict_['maxiter'] = np.random.randint(1, 10)
+        dict_['maxls'] = np.random.randint(1, 10)
+        dict_['m'] = np.random.randint(1, 10)
+        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
+
+    elif which == 'SCIPY-POWELL':
+        dict_['xtol'] = np.random.uniform(0.0000001, 0.1)
+        dict_['ftol'] = np.random.uniform(0.0000001, 0.1)
+        dict_['maxfun'] = np.random.randint(1, 100)
+        dict_['maxiter'] = np.random.randint(1, 100)
+
+    elif which in ['FORT-NEWUOA', 'FORT-BOBYQA']:
+        rhobeg = np.random.uniform(0.0000001, 0.001)
+        dict_['maxfun'] = np.random.randint(1, 100)
+        dict_['rhobeg'] = rhobeg
+        dict_['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
+
+        # It is not recommended that N is larger than upper as the code might
+        # break down due to a segmentation fault. See the source files for the
+        # absolute upper bounds.
+        assert sum(optim_paras['paras_fixed']) != num_paras
+        lower = (num_paras - sum(optim_paras['paras_fixed'])) + 2
+        upper = (2 * (num_paras - sum(optim_paras['paras_fixed'])) + 1)
+        dict_['npt'] = np.random.randint(lower, upper + 1)
+
+    elif which == 'FORT-BFGS':
+        dict_['maxiter'] = np.random.randint(1, 100)
+        dict_['stpmx'] = np.random.uniform(75, 125)
+        dict_['gtol'] = np.random.uniform(0.0001, 0.1)
+        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
+
+    else:
+        raise NotImplementedError(
+            'The optimizer you requested is not implemented.'
+        )
+
     return dict_
