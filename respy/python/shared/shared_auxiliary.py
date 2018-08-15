@@ -215,7 +215,7 @@ def extract_cholesky(x, info=None):
     # absence of randomness for testing with simulated datasets.
     if not (np.count_nonzero(shocks_cholesky) == 0):
         shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-        for i in range(4):
+        for i in range(len(shocks_cov)):
             if np.abs(shocks_cov[i, i]) < TINY_FLOAT:
                 shocks_cholesky[i, i] = np.sqrt(TINY_FLOAT)
                 if info is not None:
@@ -752,4 +752,3 @@ def number_of_triangular_elements_to_dimensio(num):
 
     """
     return int(np.sqrt(8 * num + 1) / 2 - 0.5)
-
