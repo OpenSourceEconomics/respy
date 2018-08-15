@@ -236,7 +236,6 @@ def coeffs_to_cholesky(coeffs):
         coeffs (np.ndarray): 1d numpy array that contains the upper triangular elements of a
         covariance matrix whose diagonal elements have been replaced by their square roots.
 
-
     """
     dim = dim = number_of_triangular_elements_to_dimensio(len(coeffs))
     shocks = np.zeros((dim, dim))
@@ -254,11 +253,8 @@ def coeffs_to_cholesky(coeffs):
 def cholesky_to_coeffs(shocks_cholesky):
     """ Map the Cholesky factor into the coefficients from the .ini file."""
     shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-    for i in range(len(shocks_cov)):
-        shocks_cov[i, i] = np.sqrt(shocks_cov[i, i])
-
+    shocks_cov[np.diag_indices(len(shocks_cov))] **= 0.5
     shocks_coeffs = shocks_cov[np.triu_indices(len(shocks_cov))].tolist()
-
     return shocks_coeffs
 
 
