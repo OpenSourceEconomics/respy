@@ -6,7 +6,7 @@ import argparse
 import shutil
 import os
 
-from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.pre_processing.model_processing import read_init_file
@@ -52,7 +52,7 @@ def scripts_update(init_file):
     if num_paras != 53 + (num_types - 1) * 6:
         raise UserError('Info does not fit the current model specification')
 
-    optim_paras = dist_optim_paras(paras_steps, True)
+    optim_paras = distribute_parameters(paras_steps, True)
     shocks_coeffs = paras_steps[43:53]
 
     # Update initialization dictionary

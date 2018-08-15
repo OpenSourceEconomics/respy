@@ -5,7 +5,6 @@ TO-DO
 shared_auxiliary.py
 ===================
 
-- dist_econ_paras and dist_optim_paras shares most of the logic and just has different return types. It is not clear from the names what the difference is. I would suggest one public function with a switch (target='dict'; target='tuple') and potentially two private functions for the implementation.
 - get_optim_paras should be closer to the previous two functions and not hardcode the parsing information.
     -> do both; why do we have the cholesky of covs at one place and not the other?
 

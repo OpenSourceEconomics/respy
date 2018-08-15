@@ -5,7 +5,7 @@ from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.solve.solve_auxiliary import calculate_wages_systematic
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import construct_covariates
-from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.pre_processing.model_processing import write_init_file
@@ -31,7 +31,7 @@ class TestClass(object):
 
             # Apply numerous transformations
             for j in range(10):
-                optim_paras = dist_optim_paras(x, is_debug=True)
+                optim_paras = distribute_parameters(x, is_debug=True)
                 args = (optim_paras, num_paras, 'all', True)
                 x = get_optim_paras(*args)
 

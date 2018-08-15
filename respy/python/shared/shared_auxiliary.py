@@ -79,7 +79,7 @@ def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type='opti
         shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
         shocks_cholesky = cholesky(shocks_cov)
     else:
-        shocks_cholesky = extract_cholesky(paras_vec, info)
+        shocks_cholesky, info = extract_cholesky(paras_vec, info)
     paras_dict['shocks_cholesky'] = shocks_cholesky
     del paras_dict['shocks_coeffs']
 
@@ -112,48 +112,6 @@ def paras_parsing_information(paras_vec):
         'type_shifts': {'start': 53 + num_shares, 'stop': num_paras}
     }
     return pinfo
-
-
-def dist_optim_paras(x_all_curre, is_debug, info=None):
-    """ Update parameter values. The np.array type is maintained.
-    """
-    # Checks
-    if is_debug:
-        check_optimization_parameters(x_all_curre)
-
-    optim_paras = dict()
-
-    # Discount rate
-    optim_paras['delta'] = max(x_all_curre[0:1], 0.00)
-
-    # Common Rewards
-    optim_paras['coeffs_common'] = x_all_curre[1:3]
-
-    # Occupation A
-    optim_paras['coeffs_a'] = x_all_curre[3:18]
-
-    # Occupation B
-    optim_paras['coeffs_b'] = x_all_curre[18:33]
-
-    # Education
-    optim_paras['coeffs_edu'] = x_all_curre[33:40]
-
-    # Home
-    optim_paras['coeffs_home'] = x_all_curre[40:43]
-
-    # Cholesky
-    optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
-
-    type_shares, type_shifts = extract_type_information(x_all_curre)
-    optim_paras['type_shares'] = type_shares
-    optim_paras['type_shifts'] = type_shifts
-
-    # Checks
-    if is_debug:
-        assert check_model_parameters(optim_paras)
-
-    # Finishing
-    return optim_paras
 
 
 def get_conditional_probabilities(type_shares, edu_start):
@@ -409,7 +367,7 @@ def check_model_parameters(optim_paras):
             'coeffs_common']
 
     for key in keys:
-        assert (isinstance(optim_paras[key], np.ndarray))
+        assert (isinstance(optim_paras[key], np.ndarray)), key
         assert (np.all(np.isfinite(optim_paras[key])))
         assert (optim_paras[key].dtype == 'float')
         assert (np.all(abs(optim_paras[key]) < PRINT_FLOAT))
