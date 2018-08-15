@@ -47,7 +47,7 @@ def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type='opti
     if is_debug and paras_type == 'optim':
         _check_optimization_parameters(paras_vec)
 
-    pinfo = paras_parsing_information(paras_vec)
+    pinfo = paras_parsing_information(len(paras_vec))
     paras_dict = {}
 
     # basic extraction
@@ -83,67 +83,65 @@ def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type='opti
     return paras_dict
 
 
-def get_optim_paras(optim_paras, num_paras, which, is_debug):
-    """ Get optimization parameters.
+def get_optim_paras(paras_dict, num_paras, which, is_debug):
+    """Stack optimization parameters from a dictionary into a vector of type 'optim'.
+
+    Args:
+        paras_dict (dict): dictionary with quantities from which the parameters can be extracted
+        num_paras (int): number of parameters in the model (not only free parameters)
+        which (str): one of ['free', 'all'], determines whether the resulting parameter vetcor
+            contains only free parameters or all parameters.
+        is_debug (bool): If True, inputs and outputs are checked for consistency.
+
+
     """
-    # Checks
     if is_debug:
-        assert check_model_parameters(optim_paras)
+        assert which in ['free', 'all'], 'which must be in ["free", "all"]'
+        assert check_model_parameters(paras_dict)
 
-    # Auxiliary objects
-    num_types = len(optim_paras['type_shifts'])
-
-    # Initialize container
+    pinfo = paras_parsing_information(num_paras)
     x = np.tile(np.nan, num_paras)
 
-    # Discount rate
-    x[0:1] = optim_paras['delta']
+    start, stop = pinfo['delta']['start'], pinfo['delta']['stop']
+    x[start: stop] = paras_dict['delta']
 
-    # Occupation A
-    x[1:3] = optim_paras['coeffs_common']
+    start, stop = pinfo['coeffs_common']['start'], pinfo['coeffs_common']['stop']
+    x[start: stop] = paras_dict['coeffs_common']
 
-    # Occupation A
-    x[3:18] = optim_paras['coeffs_a']
+    start, stop = pinfo['coeffs_a']['start'], pinfo['coeffs_a']['stop']
+    x[start: stop] = paras_dict['coeffs_a']
 
-    # Occupation B
-    x[18:33] = optim_paras['coeffs_b']
+    start, stop = pinfo['coeffs_b']['start'], pinfo['coeffs_b']['stop']
+    x[start: stop] = paras_dict['coeffs_b']
 
-    # Education
-    x[33:40] = optim_paras['coeffs_edu']
+    start, stop = pinfo['coeffs_edu']['start'], pinfo['coeffs_edu']['stop']
+    x[start: stop] = paras_dict['coeffs_edu']
 
-    # Home
-    x[40:43] = optim_paras['coeffs_home']
+    start, stop = pinfo['coeffs_home']['start'], pinfo['coeffs_home']['stop']
+    x[start: stop] = paras_dict['coeffs_home']
 
-    # Shocks
-    x[43:53] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
+    start, stop = pinfo['shocks_coeffs']['start'], pinfo['shocks_coeffs']['stop']
+    x[start: stop] = paras_dict['shocks_cholesky'][np.tril_indices(4)]
 
-    # Shares
-    x[53:53 + (num_types - 1) * 2] = optim_paras['type_shares'][2:]
+    start, stop = pinfo['type_shares']['start'], pinfo['type_shares']['stop']
+    x[start: stop] = paras_dict['type_shares'][2:]
 
-    x[53 + (num_types - 1) * 2:num_paras] = \
-        optim_paras['type_shifts'].flatten()[4:]
+    start, stop = pinfo['type_shifts']['start'], pinfo['type_shifts']['stop']
+    x[start: stop] = paras_dict['type_shifts'].flatten()[4:]
 
-    # Checks
     if is_debug:
         _check_optimization_parameters(x)
 
-    # Select subset
     if which == 'free':
-        x_free_curre = []
-        for i in range(num_paras):
-            if not optim_paras['paras_fixed'][i]:
-                x_free_curre += [x[i]]
+        x = [x[i] for i in range(num_paras) if not paras_dict['paras_fixed'][i]]
+        x = np.array(x)
 
-        x = np.array(x_free_curre)
-
-    # Finishing
     return x
 
 
-def paras_parsing_information(paras_vec):
+def paras_parsing_information(num_paras):
     """Dictionary with the start and stop indices of each quantity."""
-    num_paras = len(paras_vec)
-    num_types = int(len(paras_vec[53:]) / 6) + 1
+    num_types = int((num_paras - 53) / 6) + 1
     num_shares = (num_types - 1) * 2
     pinfo = {
         'delta': {'start': 0, 'stop': 1},
@@ -190,7 +188,7 @@ def get_conditional_probabilities(type_shares, edu_start):
 
 def extract_type_information(x):
     """Extract the information about types from a parameter vector of type 'optim'."""
-    pinfo = paras_parsing_information(x)
+    pinfo = paras_parsing_information(len(x))
 
     # Type shares
     start, stop = pinfo['type_shares']['start'], pinfo['type_shares']['stop']
@@ -209,7 +207,7 @@ def extract_type_information(x):
 
 def extract_cholesky(x, info=None):
     """Extract the cholesky factor of the shock covariance from parameters of type 'optim."""
-    pinfo = paras_parsing_information(x)
+    pinfo = paras_parsing_information(len(x))
     start, stop = pinfo['shocks_coeffs']['start'], pinfo['shocks_coeffs']['stop']
     shocks_coeffs = x[start: stop]
     dim = int(np.sqrt(8 * len(shocks_coeffs) + 1) / 2 - 0.5)
@@ -357,7 +355,7 @@ def add_solution(respy_obj, periods_rewards_systematic, states_number_period,
                  mapping_state_idx, periods_emax, states_all):
     """Add solution to class instance."""
     respy_obj.unlock()
-    respy_obj.set_attr('periods_rewards_systematic',  periods_rewards_systematic)
+    respy_obj.set_attr('periods_rewards_systematic', periods_rewards_systematic)
     respy_obj.set_attr('states_number_period', states_number_period)
     respy_obj.set_attr('mapping_state_idx', mapping_state_idx)
     respy_obj.set_attr('periods_emax', periods_emax)
