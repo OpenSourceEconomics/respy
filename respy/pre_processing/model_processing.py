@@ -17,10 +17,14 @@ from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import format_opt_parameters
-from respy.python.shared.shared_auxiliary import cholcov_from_econ_coeffs
-from respy.pre_processing.model_processing_auxiliary import \
-    _process_coefficient_line, _type_conversions, _add_to_dictionary, \
-    _determine_case, _paras_mapping, _num_types_from_len_type_share_coeffs
+from respy.python.shared.shared_auxiliary import coeffs_to_cholesky
+from respy.python.shared.shared_auxiliary import paras_parsing_information
+from respy.pre_processing.model_processing_auxiliary import _process_coefficient_line
+from respy.pre_processing.model_processing_auxiliary import _type_conversions
+from respy.pre_processing.model_processing_auxiliary import _add_to_dictionary
+from respy.pre_processing.model_processing_auxiliary import _determine_case
+from respy.pre_processing.model_processing_auxiliary import _paras_mapping
+from respy.pre_processing.model_processing_auxiliary import _num_types_from_len_type_share_coeffs
 
 
 def read_init_file(fname):
@@ -265,7 +269,7 @@ def convert_init_dict_to_attr_dict(init_dict):
 
     # Constructing the covariance matrix of the shocks
     shocks_coeffs = ini['SHOCKS']['coeffs']
-    attr['optim_paras']['shocks_cholesky'] = cholcov_from_econ_coeffs(shocks_coeffs)
+    attr['optim_paras']['shocks_cholesky'] = coeffs_to_cholesky(shocks_coeffs)
 
     # Constructing the shifts for each type.
     type_shifts = ini['TYPE SHIFTS']['coeffs']

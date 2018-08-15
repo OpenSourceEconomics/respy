@@ -57,7 +57,7 @@ def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type='opti
 
     # modify the shock_coeffs
     if paras_type == 'econ':
-        shocks_cholesky = cholcov_from_econ_coeffs(paras_dict['shocks_coeffs'])
+        shocks_cholesky = coeffs_to_cholesky(paras_dict['shocks_coeffs'])
     else:
         shocks_cholesky, info = extract_cholesky(paras_vec, info)
     paras_dict['shocks_cholesky'] = shocks_cholesky
@@ -227,7 +227,7 @@ def extract_cholesky(x, info=None):
         return shocks_cholesky, None
 
 
-def cholcov_from_econ_coeffs(coeffs):
+def coeffs_to_cholesky(coeffs):
     """Return the cholesky factor of a covariance matrix described by coeffs.
 
     The function can handle the case of a deterministic model (i.e. where all coeffs = 0)
@@ -249,6 +249,17 @@ def cholcov_from_econ_coeffs(coeffs):
         return np.zeros((dim, dim))
     else:
         return np.linalg.cholesky(shocks_cov)
+
+
+def cholesky_to_coeffs(shocks_cholesky):
+    """ Map the Cholesky factor into the coefficients from the .ini file."""
+    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+    for i in range(len(shocks_cov)):
+        shocks_cov[i, i] = np.sqrt(shocks_cov[i, i])
+
+    shocks_coeffs = shocks_cov[np.triu_indices(len(shocks_cov))].tolist()
+
+    return shocks_coeffs
 
 
 def get_total_values(period, num_periods, optim_paras, rewards_systematic,
@@ -354,17 +365,6 @@ def create_draws(num_periods, num_draws, seed, is_debug):
 
     # Finishing
     return draws
-
-
-def cholesky_to_coeffs(shocks_cholesky):
-    """ Map the Cholesky factor into the coefficients from the .ini file."""
-    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-    for i in range(4):
-        shocks_cov[i, i] = np.sqrt(shocks_cov[i, i])
-
-    shocks_coeffs = shocks_cov[np.triu_indices(4)].tolist()
-
-    return shocks_coeffs
 
 
 def add_solution(respy_obj, periods_rewards_systematic, states_number_period,
