@@ -202,7 +202,7 @@ def extract_cholesky(x, info=None):
     pinfo = paras_parsing_information(len(x))
     start, stop = pinfo['shocks_coeffs']['start'], pinfo['shocks_coeffs']['stop']
     shocks_coeffs = x[start: stop]
-    dim = int(np.sqrt(8 * len(shocks_coeffs) + 1) / 2 - 0.5)
+    dim = number_of_triangular_elements_to_dimensio(len(shocks_coeffs))
     shocks_cholesky = np.zeros((dim, dim))
     shocks_cholesky[np.tril_indices(dim)] = shocks_coeffs
 
@@ -238,7 +238,7 @@ def cholcov_from_econ_coeffs(coeffs):
 
 
     """
-    dim = int(np.sqrt(8 * len(coeffs) + 1) / 2 - 0.5)
+    dim = dim = number_of_triangular_elements_to_dimensio(len(coeffs))
     shocks = np.zeros((dim, dim))
     shocks[np.triu_indices(dim)] = coeffs
     shocks[np.diag_indices(dim)] **= 2
@@ -745,3 +745,15 @@ def get_valid_bounds(which, value):
     elif which in ['share']:
         bounds = [0.0, None]
     return bounds
+
+
+def number_of_triangular_elements_to_dimensio(num):
+    """Calculate the dimension of a square matrix from number of triangular elements.
+
+    Args:
+        num (int): The number of upper or lower triangular elements in the matrix
+
+
+    """
+    return int(np.sqrt(8 * num + 1) / 2 - 0.5)
+
