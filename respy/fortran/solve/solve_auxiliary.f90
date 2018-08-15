@@ -45,7 +45,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
     INTEGER(our_int)                    :: num_edu_start
     INTEGER(our_int)                    :: edu_start
     INTEGER(our_int)                    :: edu_add
-    INTEGER(our_int)                    :: min_idx
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: type_
     INTEGER(our_int)                    :: exp_a
@@ -59,7 +58,6 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
 
     ! Auxiliary variables
     num_edu_start = SIZE(edu_spec%start)
-    min_idx = edu_spec%max + 1
 
     ! Allocate containers that contain information about the model structure
     ALLOCATE(mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4    , num_types))

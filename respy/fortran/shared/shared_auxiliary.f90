@@ -711,7 +711,6 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 
     !/* internal objects        */
 
-    INTEGER(our_int)                :: min_idx
     INTEGER(our_int)                :: period
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
@@ -721,9 +720,6 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-
-    ! Auxiliary variables
-    min_idx = SIZE(mapping_state_idx, 4)
 
     IF (request == 'simulate') THEN
 
