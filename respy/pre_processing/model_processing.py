@@ -20,7 +20,7 @@ from respy.python.shared.shared_auxiliary import format_opt_parameters
 from respy.python.shared.shared_auxiliary import cholcov_from_econ_coeffs
 from respy.pre_processing.model_processing_auxiliary import \
     _process_coefficient_line, _type_conversions, _add_to_dictionary, \
-    _determine_case, _paras_mapping
+    _determine_case, _paras_mapping, _num_types_from_len_type_share_coeffs
 
 
 def read_init_file(fname):
@@ -91,7 +91,7 @@ def write_init_file(init_dict, file_name='test.respy.ini'):
                'PRECONDITIONING', 'PROGRAM', 'INTERPOLATION']
     labels += OPT_EST_FORT + OPT_EST_PYTH
 
-    num_types = int(len(init_dict['TYPE SHARES']['coeffs']) / 2) + 1
+    num_types = _num_types_from_len_type_share_coeffs(len(init_dict['TYPE SHARES']['coeffs']))
 
     # Create initialization.
     with open(file_name, 'w') as file_:
@@ -272,7 +272,7 @@ def convert_init_dict_to_attr_dict(init_dict):
     type_shares = ini['TYPE SHARES']['coeffs']
 
     # TO-DO: num_types is a derived attribute
-    attr['num_types'] = int(len(ini['TYPE SHARES']['coeffs']) / 2) + 1
+    attr['num_types'] = _num_types_from_len_type_share_coeffs(len(ini['TYPE SHARES']['coeffs']))
 
     if attr['num_types'] == 1:
         type_shares = np.tile(0.0, 2)
