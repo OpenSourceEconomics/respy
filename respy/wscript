@@ -64,7 +64,7 @@ def configure(ctx):
             ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_PRODUCTION)
 
     if ctx.env['PARALLELISM_MPI']:
-        ctx.env['FC'] = 'mpif90'
+        ctx.env['FC'] = ['mpif90']
         ctx.env.append_unique('FCFLAGS', ['-DMPI_AVAILABLE'])
 
     if ctx.env['PARALLELISM_OMP']:
