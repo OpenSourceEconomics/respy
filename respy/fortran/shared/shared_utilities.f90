@@ -229,7 +229,12 @@ PURE SUBROUTINE spectral_condition_number(rslt, A)
 
     CALL svd(U, S, VT, A, SIZE(A, 1))
 
-    rslt = MAXVAL(ABS(S)) / MINVAL(ABS(S))
+    ! We allow for a deterministic model where all entries in the covariance matrix zero for testing purposes. This needs to be handled explicitly to avoid any failures due to floating point errors in debug mode. The transformation ensures that it is printed as MISSING_FLOAT when the logarithm is reported.
+    IF(ALL(A == zero_dble)) THEN
+        rslt = EXP(MISSING_FLOAT)
+    ELSE
+        rslt = MAXVAL(ABS(S)) / MINVAL(ABS(S))
+    END IF
 
 END SUBROUTINE
 !******************************************************************************
