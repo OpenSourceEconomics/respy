@@ -44,16 +44,12 @@ def resfort_interface(respy_obj, request, data_array=None):
     write_resfort_initialization(*args)
 
     # Construct the appropriate call to the executable.
-    num_threads = '{}'.format(num_threads)
     env = os.environ.copy()
-    cmd = []
+    env['OMP_NUM_THREADS'] = '{}'.format(num_threads)
 
-    if num_procs == 1:
-        env['OMP_NUM_THREADS'] = num_threads
-    elif num_procs > 1:
-        cmd += ['mpiexec', '-n', '1', '-genv', 'OMP_NUM_THREADS', num_threads]
-    else:
-        raise AssertionError
+    cmd = []
+    if num_procs > 1:
+        cmd += ['mpiexec', '-n', '1']
     subprocess.check_call(cmd + [EXEC_DIR + '/resfort'], env=env)
 
     # Return arguments depends on the request.
