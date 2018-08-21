@@ -259,7 +259,7 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
         IF (PRESENT(info)) info = 0
         shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
-        DO i = 1, 4
+        DO i = 1, dim
             IF (ABS(shocks_cov(i, i)) .LT. TINY_FLOAT) THEN
                 shocks_cholesky(i, i) = SQRT(TINY_FLOAT)
                 IF (PRESENT(info)) info = 1
@@ -276,8 +276,8 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
 
     REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
 
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)      :: shocks_mean(4)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
     REAL(our_dble), INTENT(IN)      :: draws(:, :)
 
     !/* internal objects        */
@@ -286,6 +286,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
 
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: dim
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -298,7 +299,9 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
         draws_transformed(i:i, :) = TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
     END DO
 
-    DO i = 1, 4
+    dim = size(shocks_mean, 1)
+
+    DO i = 1, dim
         draws_transformed(:, i) = draws_transformed(:, i) + shocks_mean(i)
     END DO
 
