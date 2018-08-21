@@ -352,7 +352,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
                 endogenous_slaves(k - lower_bound + 1) = emax - maxe(k + 1)
 
             END DO
-!$OMP END PARALLEL DO
 
             ! Distribute exogenous information
             CALL distribute_information_slaves(num_states_slaves, period, endogenous_slaves, endogenous)
@@ -383,7 +382,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
                 periods_emax_slaves(k - lower_bound + 1) = emax
 
             END DO
-!$OMP END PARALLEL DO
 
             CALL distribute_information_slaves(num_states_slaves, period, periods_emax_slaves, periods_emax(period + 1, :))
 

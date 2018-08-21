@@ -271,7 +271,6 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
             periods_rewards_systematic(period, k, :) = rewards
 
         END DO
-!$OMP END PARALLEL DO
 
     END DO
 
@@ -401,7 +400,6 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
                 periods_emax(period + 1, k + 1) = emax
 
             END DO
-!$OMP END PARALLEL DO
 
         END IF
 
@@ -606,7 +604,6 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
         endogenous(k + 1) = emax - maxe(k + 1)
 
     END DO
-!$OMP END PARALLEL DO
 
 END SUBROUTINE
 !******************************************************************************
