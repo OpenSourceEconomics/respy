@@ -21,8 +21,8 @@ from auxiliary_regression import get_chunks
 
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import DECIMALS
-from respy.python.shared.shared_auxiliary import print_init_dict
-from codes.auxiliary import simulate_observed
+from respy.pre_processing.model_processing import write_init_file
+from respy.tests.codes.auxiliary import simulate_observed
 
 HOSTNAME = socket.gethostname()
 
@@ -40,7 +40,6 @@ def run(request, is_compile, is_background, is_strict, num_procs):
     # recognized. This is important for the creation of the regression vault as we want to
     # include FORTRAN use cases.
     from respy import RespyCls
-    from respy import estimate
 
     # Process command line arguments
     is_creation = False
@@ -65,12 +64,12 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         tests = json.load(open(fname, 'r'))
 
         init_dict, crit_val = tests[idx]
-        print_init_dict(init_dict)
+        write_init_file(init_dict)
         respy_obj = RespyCls('test.respy.ini')
 
         simulate_observed(respy_obj)
 
-        result = estimate(respy_obj)[1]
+        result = respy_obj.fit()[1]
         np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
 
     if is_creation:
@@ -112,7 +111,8 @@ def run(request, is_compile, is_background, is_strict, num_procs):
                     break
 
         # This allows to call this test from another script, that runs other tests as well.
-        is_failure, idx_failures = False, [i for i, x in enumerate(ret) if x is False]
+        idx_failures = [i for i, x in enumerate(ret) if not x]
+        is_failure = False in ret
 
         if len(idx_failures) > 0:
             is_failure = True

@@ -182,6 +182,9 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         fmt_ = ' {:25.15f}' * num_edu_start + '\n'
         file_.write(fmt_.format(*edu_spec['share']))
 
+        fmt_ = ' {:25.15f}' * num_edu_start + '\n'
+        file_.write(fmt_.format(*edu_spec['lagged']))
+
         line = ' {0:10d}\n'.format(edu_spec['max'])
         file_.write(line)
 

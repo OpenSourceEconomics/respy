@@ -14,7 +14,6 @@ import random
 import os
 
 from respy import RespyCls
-from respy import simulate
 
 from auxiliary_release import prepare_release_tests
 from auxiliary_shared import send_notification
@@ -95,7 +94,7 @@ def run(request, is_create, is_background, old_release, new_release):
 
         # We use the current release for the simulation of the underlying dataset.
         respy_obj = RespyCls('test.respy.ini')
-        simulate(respy_obj)
+        respy_obj.simulate()
 
         for which in ['old', 'new']:
 

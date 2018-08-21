@@ -25,4 +25,6 @@ after_success:
 
 notifications:
   slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
+    on_success: change
+
   email: false

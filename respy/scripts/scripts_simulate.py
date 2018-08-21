@@ -3,7 +3,6 @@ import argparse
 import os
 
 from respy.custom_exceptions import UserError
-from respy import simulate
 from respy import RespyCls
 
 
@@ -37,7 +36,7 @@ def scripts_simulate(init_file, file_sim):
         respy_obj.lock()
 
     # Optimize the criterion function.
-    simulate(respy_obj)
+    respy_obj.simulate()
 
 
 if __name__ == '__main__':

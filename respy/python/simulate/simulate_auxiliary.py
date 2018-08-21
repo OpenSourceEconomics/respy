@@ -5,7 +5,7 @@ import os
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.process.process_auxiliary import check_dataset_est
+from respy.pre_processing.data_checking import check_estimation_dataset
 
 
 def construct_transition_matrix(base_df):
@@ -155,7 +155,7 @@ def write_info(respy_obj, data_frame):
         file_.write(fmt_.format(*['Average Home', stat]))
         file_.write('\n')
 
-        file_.write('\n\n   Initial Conditions\n\n')
+        file_.write('\n\n   Schooling by Type\n\n')
 
         cat_schl = pd.Categorical(data_frame['Years_Schooling'][:, 0], categories=edu_spec['start'])
         cat_type = pd.Categorical(data_frame['Type'][:, 0], categories=range(num_types))
@@ -176,7 +176,7 @@ def write_info(respy_obj, data_frame):
                 cat_schl, cat_type, normalize=normalize, dropna=False,
                 margins=True).values
 
-            fmt_ = '    {:>10}    ' + '{:>25}' * num_columns + '\n\n'
+            fmt_ = '   {:>10}    ' + '{:>25}' * num_columns + '\n\n'
             line = ['Schooling']
             for i in range(num_types):
                 line += ['Type ' + str(i)]
@@ -184,15 +184,28 @@ def write_info(respy_obj, data_frame):
                 line += ['All']
             file_.write(fmt_.format(*line))
 
-            fmt_ = '    {:>10}    ' + '{:25.5f}' * num_columns + '\n'
+            fmt_ = '   {:>10}    ' + '{:25.5f}' * num_columns + '\n'
             for i, start in enumerate(edu_spec['start']):
                 line = [start] + info[i, :].tolist()
                 file_.write(fmt_.format(*line))
 
             if normalize == 'index':
-                fmt_ = '    {:>10}    ' + '{:25.5f}' * num_columns + '\n'
+                fmt_ = '   {:>10}    ' + '{:25.5f}' * num_columns + '\n'
                 line = ['All'] + info[-1, :].tolist()
                 file_.write(fmt_.format(*line))
+
+        # We want to provide information on the value of the lagged activity when entering the
+        # model based on the level of initial education.
+        cat_1 = pd.Categorical(data_frame['Years_Schooling'][:, 0], categories=edu_spec['start'])
+        cat_2 = pd.Categorical(data_frame['Lagged_Choice'][:, 0], categories=[3, 4])
+        info = pd.crosstab(cat_1, cat_2, normalize=normalize, dropna=False).values
+
+        file_.write('\n\n   Initial Lagged Activity by Schooling\n\n')
+        fmt_ = '\n   {:>10}' + '    {:>25}' + '{:>25}\n\n'
+        file_.write(fmt_.format(*['Schooling', 'Lagged Schooling', 'Lagged Home']))
+        for i, edu_start in enumerate(edu_spec['start']):
+            fmt_ = '   {:>10}' + '    {:25.5f}' + '{:25.5f}\n'
+            file_.write(fmt_.format(*[edu_start] + info[i].tolist()))
 
         file_.write('\n\n   Economic Parameters\n\n')
         fmt_ = '\n   {0:>10}' + '    {1:>25}\n\n'
@@ -282,7 +295,7 @@ def check_dataset_sim(data_frame, respy_obj):
         np.testing.assert_equal(group['Period'].count(), num_periods)
 
     # So, we run all checks on the observed dataset.
-    check_dataset_est(data_frame, respy_obj)
+    check_estimation_dataset(data_frame, respy_obj)
 
     # Checks for PERIODS
     dat = data_frame['Period']
@@ -378,8 +391,8 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     # function.
     edu_spec_ordered = sort_edu_spec(edu_spec)
 
-    if is_debug and os.path.exists('.initial.respy.test'):
-        edu_start = np.genfromtxt('.initial.respy.test')
+    if is_debug and os.path.exists('.initial_schooling.respy.test'):
+        edu_start = np.genfromtxt('.initial_schooling.respy.test')
     else:
         # As we do not want to be too strict at the user-level the sum of edu_spec might be
         # slightly larger than one. This needs to be corrected here.
@@ -390,3 +403,22 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     edu_start = np.array(edu_start, ndmin=1)
 
     return edu_start
+
+
+def get_random_lagged_start(edu_spec, num_agents_sim, edu_start, is_debug):
+    """ This function provides random draws for the initial lagged activity or reads them in
+    from a file.
+    """
+    if is_debug and os.path.exists('.initial_lagged.respy.test'):
+        lagged_start = np.genfromtxt('.initial_lagged.respy.test')
+    else:
+        lagged_start = []
+        for i in range(num_agents_sim):
+            idx = (edu_spec['start'].index(edu_start[i]))
+            probs = edu_spec['lagged'][idx], 1 - edu_spec['lagged'][idx]
+            lagged_start += np.random.choice([3, 4], p=probs, size=1).tolist()
+
+    # If we only have one individual, we need to ensure that activities are a vector.
+    lagged_start = np.array(lagged_start, ndmin=1)
+
+    return lagged_start

@@ -1,0 +1,9 @@
+[0] Config.pm:340> INFO - This is Biber 2.4
+[0] Config.pm:343> INFO - Logfile is 'respy_presentation.blg'
+[39] biber:287> INFO - === Wed Jul 25, 2018, 16:02:59
+[136] Biber.pm:348> INFO - Reading 'respy_presentation.bcf'
+[282] Biber.pm:742> INFO - Found 0 citekeys in bib section 0
+[283] Utils.pm:147> WARN - The file 'respy_presentation.bcf' does not contain any citations!
+[291] bbl.pm:519> INFO - Writing 'respy_presentation.bbl' with encoding 'UTF-8'
+[293] bbl.pm:615> INFO - Output to respy_presentation.bbl
+[293] Biber.pm:109> INFO - WARNINGS: 1

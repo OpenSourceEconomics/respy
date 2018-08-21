@@ -70,8 +70,8 @@ def prepare_release_tests(constr, OLD_RELEASE, NEW_RELEASE):
 
 
 def prepare_release_tests_1(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     # This script is also imported (but not used) for the creation of the virtual environments.
@@ -79,7 +79,7 @@ def prepare_release_tests_1(constr):
     import numpy as np
 
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -162,12 +162,12 @@ def prepare_release_tests_1(constr):
 
 
 def prepare_release_tests_2(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -190,14 +190,14 @@ def prepare_release_tests_2(constr):
 
 
 def prepare_release_tests_3(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     import numpy as np
 
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -213,12 +213,12 @@ def prepare_release_tests_3(constr):
 
 
 def prepare_release_tests_4(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -251,12 +251,12 @@ def prepare_release_tests_4(constr):
 
 
 def prepare_release_tests_5(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -286,8 +286,8 @@ def prepare_release_tests_5(constr):
 
 
 def prepare_release_tests_6(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     # This script is also imported (but not used) for the creation of the virtual environments.
@@ -295,7 +295,7 @@ def prepare_release_tests_6(constr):
     import numpy as np
 
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -345,7 +345,7 @@ def prepare_release_tests_7(constr):
     import numpy as np
 
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -392,7 +392,7 @@ def prepare_release_tests_8(constr):
     import numpy as np
 
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -443,8 +443,8 @@ def prepare_release_tests_9(constr):
     import numpy as np
 
     sys.path.insert(0, '../../../respy/tests')
-    from codes.auxiliary import get_valid_shares
-    from codes.random_init import generate_init
+    from respy.tests.codes.auxiliary import get_valid_shares
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -498,7 +498,7 @@ def prepare_release_tests_10(constr):
     import numpy as np
 
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -544,12 +544,12 @@ def prepare_release_tests_10(constr):
 
 
 def no_preparations_required(constr):
-    """ This function prepares the initialization files so that they can be processed by both 
-    releases under investigation. The idea is to have all hand-crafted modifications grouped in 
+    """ This function prepares the initialization files so that they can be processed by both
+    releases under investigation. The idea is to have all hand-crafted modifications grouped in
     this function only.
     """
     sys.path.insert(0, '../../../respy/tests')
-    from codes.random_init import generate_init
+    from respy.tests.codes.random_init import generate_init
 
     # Prepare fresh subdirectories
     for which in ['old', 'new']:
@@ -570,16 +570,15 @@ def run_estimation(which):
 
     import numpy as np
 
-    from respy import estimate
     from respy import RespyCls
 
-    from respy.python.shared.shared_auxiliary import print_init_dict
+    from respy.pre_processing.model_processing import write_init_file
 
     # We need to make sure that the function simulate_observed() is imported from the original
     # package. Otherwise dependencies might not work properly.
     import respy
     sys.path.insert(0, os.path.dirname(respy.__file__) + '/tests')
-    from codes.auxiliary import simulate_observed
+    from respy.tests.codes.auxiliary import simulate_observed
 
     init_dict = json.load(open('init_dict.respy.json', 'r'))
 
@@ -588,14 +587,14 @@ def run_estimation(which):
     if '1.0.0' in sys.executable:
         init_dict['SHOCKS']['fixed'] = np.array(init_dict['SHOCKS']['fixed'])
 
-    print_init_dict(init_dict)
+    write_init_file(init_dict)
 
     respy_obj = RespyCls('test.respy.ini')
 
     # This flag ensures a clean switch to the synthetic simulation for cases where the
     # simulate_observed() was changed in between releases.
     if os.path.exists('../.simulate_observed.cfg'):
-        respy.simulate(respy_obj)
+        respy_obj.simulate()
     else:
         simulate_observed(respy_obj)
 
@@ -616,7 +615,7 @@ def run_estimation(which):
             shutil.copy(file, '../new')
         os.chdir('../new')
 
-    _, crit_val = estimate(respy_obj)
+    _, crit_val = respy_obj.fit()
 
     # There was a bug in version 1.0 which might lead to crit_val not to actually take the lowest
     # value that was visited by the optimizer. So, we reprocess the log file again to be sure.

@@ -89,7 +89,8 @@ SUBROUTINE wrapper_criterion(crit_val, x, is_interpolated_int, num_draws_emax_in
     edu_spec%start = edu_start
     edu_spec%max = edu_max
 
-    !# Distribute model parameters
+    CALL extract_parsing_info(num_paras, num_types, pinfo)
+
     CALL dist_optim_paras(optim_paras, x, dist_optim_paras_info)
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, max_states_period_int, optim_paras)
@@ -268,7 +269,7 @@ SUBROUTINE wrapper_solve(periods_rewards_systematic_int, states_number_period_in
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_periods_int, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim, edu_start, edu_max, edu_share, coeffs_common, coeffs_a, coeffs_b, shocks_cholesky, delta, num_types_int, type_spec_shares, type_spec_shifts, is_debug_int)
+SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, num_periods_int, num_agents_sim_int, periods_draws_sims, seed_sim, file_sim, edu_start, edu_max, edu_share, edu_lagged, coeffs_common, coeffs_a, coeffs_b, shocks_cholesky, delta, num_types_int, type_spec_shares, type_spec_shifts, is_debug_int)
 
     !/* external libraries      */
 
@@ -289,6 +290,7 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
     DOUBLE PRECISION, INTENT(IN)    :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)    :: type_spec_shares(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_common(2)
+    DOUBLE PRECISION, INTENT(IN)    :: edu_lagged(:)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_a(15)
     DOUBLE PRECISION, INTENT(IN)    :: coeffs_b(15)
     DOUBLE PRECISION, INTENT(IN)    :: edu_share(:)
@@ -327,6 +329,7 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
     is_debug = is_debug_int
 
     ! Ensure that not already allocated
+    IF(ALLOCATED(edu_spec%lagged)) DEALLOCATE(edu_spec%lagged)
     IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)
     IF(ALLOCATED(edu_spec%share)) DEALLOCATE(edu_spec%share)
 
@@ -340,6 +343,7 @@ SUBROUTINE wrapper_simulate(data_sim_int, periods_rewards_systematic_int, mappin
     optim_paras%type_shares = type_spec_shares
     optim_paras%type_shifts = type_spec_shifts
 
+    edu_spec%lagged = edu_lagged
     edu_spec%start = edu_start
     edu_spec%share = edu_share
     edu_spec%max = edu_max

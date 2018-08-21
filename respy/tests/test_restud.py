@@ -10,10 +10,10 @@ import os
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_FORTRAN
-from codes.random_init import generate_random_dict
-from codes.auxiliary import simulate_observed
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.auxiliary import simulate_observed
 from respy import RespyCls
 import respy
 
@@ -223,7 +223,7 @@ class TestClass(object):
         constr = generate_constraints_dict()
         init_dict = generate_random_dict(constr)
 
-        print_init_dict(adjust_initialization_dict(init_dict))
+        write_init_file(adjust_initialization_dict(init_dict))
 
         # Indicate RESTUD code the special case of zero disturbance.
         open('.restud.testing.scratch', 'a').close()
@@ -250,6 +250,11 @@ class TestClass(object):
         # Solve model using RESTUD code.
         cmd = TEST_RESOURCES_DIR + '/kw_dp3asim'
         subprocess.check_call(cmd, shell=True)
+
+        # We need to ensure for RESPY that the lagged activity variable indicates that the
+        # individuals were in school the period before entering the model.
+        types = np.random.choice([3], size=num_agents_sim)
+        np.savetxt('.initial_lagged.respy.test', types, fmt='%i')
 
         # Solve model using RESPY package.
         simulate_observed(respy_obj, is_missings=False)
@@ -286,7 +291,7 @@ class TestClass(object):
         coeffs = cov_sampled[np.triu_indices(4)]
         init_dict['SHOCKS']['coeffs'] = coeffs
 
-        print_init_dict(init_dict)
+        write_init_file(init_dict)
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
@@ -347,7 +352,7 @@ class TestClass(object):
         respy_obj.attr['file_est'] = 'ftest.respy.dat'
 
         open('.restud.respy.scratch', 'a').close()
-        _, val = respy.estimate(respy_obj)
+        _, val = respy_obj.fit()
         os.remove('.restud.respy.scratch')
 
         # This ensure that the two values are within 1% of the RESPY value.

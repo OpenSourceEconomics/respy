@@ -6,10 +6,10 @@ import argparse
 import shutil
 import os
 
-from respy.python.shared.shared_auxiliary import dist_optim_paras
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.python.shared.shared_auxiliary import distribute_parameters
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import get_est_info
-from respy.python.read.read_python import read
+from respy.pre_processing.model_processing import read_init_file
 from respy.custom_exceptions import UserError
 
 
@@ -36,7 +36,7 @@ def scripts_update(init_file):
     """ Update model parametrization in initialization file.
     """
     # Collect baseline update
-    init_dict = read(init_file)
+    init_dict = read_init_file(init_file)
 
     paras_steps = get_est_info()['paras_step']
 
@@ -52,7 +52,7 @@ def scripts_update(init_file):
     if num_paras != 53 + (num_types - 1) * 6:
         raise UserError('Info does not fit the current model specification')
 
-    optim_paras = dist_optim_paras(paras_steps, True)
+    optim_paras = distribute_parameters(paras_steps, True)
     shocks_coeffs = paras_steps[43:53]
 
     # Update initialization dictionary
@@ -68,7 +68,7 @@ def scripts_update(init_file):
 
     # We first print to an intermediate file as otherwise the original file is lost in case a
     # problem during printing occurs.
-    print_init_dict(init_dict, '.model.respy.ini')
+    write_init_file(init_dict, '.model.respy.ini')
     shutil.move('.model.respy.ini', init_file)
 
 if __name__ == '__main__':

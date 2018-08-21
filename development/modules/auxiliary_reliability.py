@@ -17,7 +17,7 @@ import respy
 
 
 def run(spec_dict):
-    """ Details of the Monte Carlo exercise can be specified in the code block below. Note that  
+    """ Details of the Monte Carlo exercise can be specified in the code block below. Note that
     only deviations from the benchmark initialization files need to be addressed.
     """
 
@@ -134,7 +134,7 @@ def run_single(spec_dict, fname):
         respy_obj.write_out()
 
         simulate_specification(respy_obj, 'start', False)
-        x, _ = respy.estimate(respy_obj)
+        x, _ = respy_obj.fit()
         simulate_specification(respy_obj, 'stop', True, x)
 
         maxfun = respy_obj.get_attr('maxfun')
@@ -250,7 +250,7 @@ def get_rmse():
 
 
 def simulate_specification(respy_obj, subdir, update, paras=None):
-    """ Simulate results to assess the estimation performance. Note that we do not update the 
+    """ Simulate results to assess the estimation performance. Note that we do not update the
     object that is passed in.
     """
     os.mkdir(subdir)

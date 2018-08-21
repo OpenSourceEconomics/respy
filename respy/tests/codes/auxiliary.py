@@ -17,10 +17,10 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 from respy import RespyCls
-from respy import simulate
 
 # module-wide variables
 OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
+
 
 def simulate_observed(respy_obj, is_missings=True):
     """ This function adds two important features of observed datasests: (1) missing
@@ -36,7 +36,7 @@ def simulate_observed(respy_obj, is_missings=True):
 
     seed_sim = dist_class_attributes(respy_obj, 'seed_sim')
 
-    simulate(respy_obj)
+    respy_obj.simulate()
 
     # It is important to set the seed after the simulation call. Otherwise, the value of the
     # seed differs due to the different implementations of the PYTHON and FORTRAN programs.
@@ -214,7 +214,15 @@ def write_edu_start(edu_spec, num_agents_sim):
     between PYTHON and FORTRAN simulations.
     """
     types = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
-    np.savetxt('.initial.respy.test', types, fmt='%i')
+    np.savetxt('.initial_schooling.respy.test', types, fmt='%i')
+
+
+def write_lagged_start(num_agents_sim):
+    """ We also need to fully control the random initial lagged activity to ensure the
+    comparability between PYTHON and FORTRAN simulations.
+    """
+    types = np.random.choice([3, 4], size=num_agents_sim)
+    np.savetxt('.initial_lagged.respy.test', types, fmt='%i')
 
 
 def get_valid_values(which):

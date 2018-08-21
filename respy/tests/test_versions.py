@@ -6,17 +6,17 @@ import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_FORTRAN
-from codes.auxiliary import write_interpolation_grid
-from codes.random_init import generate_random_dict
-from codes.auxiliary import simulate_observed
-from codes.auxiliary import compare_est_log
-from codes.random_init import generate_init
-from codes.auxiliary import write_edu_start
-from codes.auxiliary import write_draws
-from codes.auxiliary import write_types
-from respy import estimate
+from respy.tests.codes.auxiliary import write_interpolation_grid
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.auxiliary import write_lagged_start
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.auxiliary import compare_est_log
+from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.auxiliary import write_edu_start
+from respy.tests.codes.auxiliary import write_draws
+from respy.tests.codes.auxiliary import write_types
 from respy import RespyCls
 from functools import partial
 from respy.python.shared.shared_constants import DECIMALS
@@ -71,7 +71,7 @@ class TestClass(object):
             init_dict['INTERPOLATION']['points'] = np.random.randint(10, max_states_period)
 
         # Print out the relevant initialization file.
-        print_init_dict(init_dict)
+        write_init_file(init_dict)
 
         # Write out random components and interpolation grid to align the three implementations.
         num_agents_sim = init_dict['SIMULATION']['agents']
@@ -81,6 +81,7 @@ class TestClass(object):
         type_shares = np.array([0.0, 0.0] + init_dict['TYPE SHARES']['coeffs'])
         write_types(type_shares, num_agents_sim)
         write_edu_start(edu_spec, num_agents_sim)
+        write_lagged_start(num_agents_sim)
 
         # Clean evaluations based on interpolation grid,
         base_val, base_data = None, None
@@ -106,7 +107,7 @@ class TestClass(object):
             assert_frame_equal(base_data, data_frame)
 
             # This part checks the equality of an evaluation of the criterion function.
-            _, crit_val = estimate(respy_obj)
+            _, crit_val = respy_obj.fit()
 
             if base_val is None:
                 base_val = crit_val
@@ -161,7 +162,7 @@ class TestClass(object):
 
             respy_obj.lock()
 
-            x, val = estimate(respy_obj)
+            x, val = respy_obj.fit()
 
             # Check for the returned parameters.
             if base_x is None:
@@ -212,6 +213,7 @@ class TestClass(object):
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
         write_edu_start(edu_spec, num_agents_sim)
+        write_lagged_start(num_agents_sim)
 
         for version in ['FORTRAN', 'PYTHON']:
 
@@ -235,7 +237,7 @@ class TestClass(object):
                 base_sim_log = open(fname, 'r').read()
             assert open(fname, 'r').read() == base_sim_log
 
-            estimate(respy_obj)
+            respy_obj.fit()
 
             if base_est_info is None:
                 base_est_info = open('est.respy.info', 'r').read()
@@ -244,7 +246,6 @@ class TestClass(object):
             if base_est_log is None:
                 base_est_log = open('est.respy.log', 'r').readlines()
             compare_est_log(base_est_log)
-
 
     def test_4(self):
         """ This test ensures that the scaling matrix is identical between the alternative versions.
@@ -293,7 +294,7 @@ class TestClass(object):
             respy_obj.set_attr('maxfun', 1)
             respy_obj.lock()
 
-            estimate(respy_obj)
+            respy_obj.fit()
 
             if base_scaling_matrix is None:
                 base_scaling_matrix = np.genfromtxt('scaling.respy.out')

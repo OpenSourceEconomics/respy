@@ -56,6 +56,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     REAL(our_dble)                  :: total_values(4)
     REAL(our_dble)                  :: draws(4)
 
+    INTEGER(our_int)                :: lagged_start(num_agents_sim)
     INTEGER(our_int)                :: edu_start(num_agents_sim)
     INTEGER(our_int)                :: types(num_agents_sim)
     INTEGER(our_int)                :: current_state(5)
@@ -92,6 +93,7 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
     ! We also need to sample the set of initial conditions.
     edu_start = get_random_edu_start(edu_spec, is_debug)
     types = get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug)
+    lagged_start = get_random_lagged_start(edu_spec, edu_start, is_debug)
 
     ! Iterate over agents and periods
     count = 0
@@ -102,14 +104,9 @@ SUBROUTINE fort_simulate(data_sim, periods_rewards_systematic, mapping_state_idx
         current_state = states_all(1, 1, :)
 
         ! We need to modify the initial conditions.
+        current_state(4) = lagged_start(i + 1)
         current_state(3) = edu_start(i + 1)
         current_state(5) = types(i + 1)
-
-        IF (edu_start(i + 1) < 10) THEN
-            current_state(4) = 4
-        ELSE
-            current_state(4) = 3
-        END IF
 
         CALL record_simulation(i, file_sim)
 

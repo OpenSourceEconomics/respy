@@ -1,14 +1,13 @@
 import numpy as np
 import pytest
 
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_PARALLEL
 
-from codes.random_init import generate_random_dict
-from codes.auxiliary import simulate_observed
-from codes.auxiliary import compare_est_log
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.auxiliary import compare_est_log
 
-from respy import estimate
 from respy import RespyCls
 
 
@@ -40,11 +39,11 @@ class TestClass(object):
             if is_parallel:
                 init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate_observed(respy_obj)
-            _, crit_val = estimate(respy_obj)
+            _, crit_val = respy_obj.fit()
 
             if base is None:
                 base = crit_val
@@ -72,7 +71,7 @@ class TestClass(object):
             if is_parallel:
                 init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
 
@@ -81,7 +80,7 @@ class TestClass(object):
 
             simulate_observed(respy_obj)
 
-            estimate(respy_obj)
+            respy_obj.fit()
 
             # Check for identical records
             fname = file_sim + '.respy.sol'
