@@ -89,7 +89,8 @@ SUBROUTINE wrapper_criterion(crit_val, x, is_interpolated_int, num_draws_emax_in
     edu_spec%start = edu_start
     edu_spec%max = edu_max
 
-    !# Distribute model parameters
+    CALL extract_parsing_info(num_paras, num_types, pinfo)
+
     CALL dist_optim_paras(optim_paras, x, dist_optim_paras_info)
 
     CALL fort_calculate_rewards_systematic(periods_rewards_systematic, num_periods, states_number_period_int, states_all_int, max_states_period_int, optim_paras)
