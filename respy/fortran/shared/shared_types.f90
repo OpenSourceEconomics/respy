@@ -107,4 +107,29 @@ MODULE shared_types
 
 !******************************************************************************
 !******************************************************************************
+    !Emulate the dictionary that holds the information to parse the parameter vector
+    TYPE START_STOP
+
+        INTEGER(our_int)    :: start
+        INTEGER(our_int)    :: stop
+
+    END TYPE
+
+    TYPE PARSING_INFO
+
+        TYPE(START_STOP)    :: delta
+        TYPE(START_STOP)    :: coeffs_common
+        TYPE(START_STOP)    :: coeffs_a
+        TYPE(START_STOP)    :: coeffs_b
+        TYPE(START_STOP)    :: coeffs_military
+        TYPE(START_STOP)    :: coeffs_edu
+        TYPE(START_STOP)    :: coeffs_home
+        TYPE(START_STOP)    :: shocks_coeffs
+        TYPE(START_STOP)    :: type_shares
+        TYPE(START_STOP)    :: type_shifts
+
+    END TYPE
+
+!******************************************************************************
+!******************************************************************************
 END MODULE
