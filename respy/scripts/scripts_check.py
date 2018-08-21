@@ -49,7 +49,7 @@ def scripts_check(request, init_file):
         mapping_state_idx = pyth_create_state_space(*args)[2]
 
         # We also check the structure of the dataset.
-        data_array = process_dataset(respy_obj).as_matrix()
+        data_array = process_dataset(respy_obj).values
         num_rows = data_array.shape[0]
 
         for j in range(num_rows):
