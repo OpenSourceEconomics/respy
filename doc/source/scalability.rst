@@ -17,4 +17,4 @@ During an estimation, thousands of different candidate parameterizations of the 
 
 Adding even more processors, however, does not lead to any further improvements, it even increases the computational time. The main reason is the time spend on the synchronization of :math:`E\max` across all processes each period. Even though each slave is only working on a subset of states each period, they need access all previous :math:`E\max` results during the backward induction procedure.
 
-For more details, see the script `online <https://github.com/OpenSourceEconomics/respy/blob/master/development/documentation/scalability/run_scalability.py>`_ and the `logfile <https://github.com/OpenSourceEconomics/respy/blob/master/doc/results/scalability.respy.info>`_.
+For more details, see the script `online <https://github.com/OpenSourceEconomics/respy/blob/janosg/development/documentation/scalability/run_scalability.py>`_ and the `logfile <https://github.com/OpenSourceEconomics/respy/blob/janosg/doc/results/scalability.respy.info>`_.

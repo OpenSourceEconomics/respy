@@ -35,4 +35,4 @@ We then set up the estimation of the dynamic model. Initially, the RMSE is about
 
 Overall the results are encouraging. However, doubts about the correctness of our implementation always remain. So, if you are struggling with a particularly poor performance in your application, please do not hesitate to let us know so we can help with the investigation.
 
-For more details, see the script `online <https://github.com/OpenSourceEconomics/respy/tree/master/development/documentation/reliability>`_. The results for all the parameterizations analyzed in Keane and Wolpin (1994) are available `here <https://github.com/OpenSourceEconomics/respy/blob/master/doc/results/reliability.respy.info>`_.
+For more details, see the script `online <https://github.com/OpenSourceEconomics/respy/tree/janosg/development/documentation/reliability>`_. The results for all the parameterizations analyzed in Keane and Wolpin (1994) are available `here <https://github.com/OpenSourceEconomics/respy/blob/janosg/doc/results/reliability.respy.info>`_.

@@ -6,12 +6,12 @@ We now briefly discuss our software engineering practices that help us to ensure
 Development Infrastructure
 --------------------------
 
-We maintain a dedicated development and testing server on the `Amazon Elastic Compute Cloud <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code thus making it versionable, testable, and repeatable. We create our machine images using `Packer <https://www.packer.io/>`_ and `Chef <https://www.chef.io/>`_ and manage our compute resources with `Terraform <https://www.terraform.io/>`_. Our definition files are available `here <https://github.com/restudToolbox/package/tree/master/tools>`_.
+We maintain a dedicated development and testing server on the `Amazon Elastic Compute Cloud <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code thus making it versionable, testable, and repeatable. We create our machine images using `Packer <https://www.packer.io/>`_ and `Chef <https://www.chef.io/>`_ and manage our compute resources with `Terraform <https://www.terraform.io/>`_. Our definition files are available `here <https://github.com/OpenSourceEconomics/respy/tree/janosg/tools>`_.
 
 Program Design
 --------------
 
-We build on the design of the original authors (`codes <https://github.com/restudToolbox/package/tree/master/forensics>`_). We maintain a pure Python implementation with a focus on readability and a scalar and parallel Fortran implementation to address any performance constraints. We keep the structure of the Python and Fortran implementation aligned as much as possible. For example, we standardize the naming and interface design of the routines across versions.
+We build on the design of the original authors (`codes <https://github.com/OpenSourceEconomics/respy/tree/janosg/development/documentation/forensics>`_). We maintain a pure Python implementation with a focus on readability and a scalar and parallel Fortran implementation to address any performance constraints. We keep the structure of the Python and Fortran implementation aligned as much as possible. For example, we standardize the naming and interface design of the routines across versions.
 
 Test Battery
 ------------
@@ -45,7 +45,7 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
     Numerical instabilities often only become apparent on real world data that is less well behaved than simulated data. To test the stability of our package we start thousands of estimation tasks on the NLSY dataset used by Keane and Wolpin. We use random start values for the parameter vector that can be far from the true values and make sure that the code can handle those cases.
 
-Our `tests <https://github.com/restudToolbox/package/tree/master/respy/tests>`_ and the `testing infrastructure <https://github.com/restudToolbox/package/tree/master/development/testing>`_ are available online. As new features are added and the code matures, we constantly expand our testing harness. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`__  for an example output.
+Our `tests <https://github.com/OpenSourceEconomics/respy/tree/janosg/respy/tests>`_ and the `testing infrastructure <https://github.com/OpenSourceEconomics/respy/tree/janosg/development/testing>`_ are available online. As new features are added and the code matures, we constantly expand our testing harness. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`__  for an example output.
 
 Documentation
 -------------
