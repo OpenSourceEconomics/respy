@@ -329,9 +329,9 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
             endogenous_slaves = MISSING_FLOAT
 
             ! Construct dependent variables for the subset of interpolation points.
-!$OMP PARALLEL DO
-!$OMP+ DEFAULT(SHARED)
-!$OMP+ PRIVATE(rewards_systematic, emax)
+!$OMP PARALLEL DO &
+!$OMP& DEFAULT(SHARED) &
+!$OMP& PRIVATE(rewards_systematic, emax)
             DO k = lower_bound, upper_bound - 1
 
                 ! Skip over points that will be predicted
@@ -366,9 +366,9 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
 
         ELSE
 
-!$OMP PARALLEL DO
-!$OMP+ DEFAULT(SHARED)
-!$OMP+ PRIVATE(rewards_systematic, emax)
+!$OMP PARALLEL DO &
+!$OMP& DEFAULT(SHARED) &
+!$OMP& PRIVATE(rewards_systematic, emax)
             DO k = lower_bound, upper_bound - 1
 
                 ! Extract rewards

@@ -210,9 +210,10 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
     DO period = num_periods, 1, -1
 
         ! Loop over all possible states
-!$OMP PARALLEL DO
-!$OMP+ DEFAULT(PRIVATE)
-!$OMP+ SHARED(periods_rewards_systematic, states_all, period, states_number_period, optim_paras)
+!$OMP PARALLEL DO &
+!$OMP& DEFAULT(PRIVATE) &
+!$OMP& SHARED(periods_rewards_systematic, states_all, period, states_number_period, optim_paras) &
+!$OMP& IF(states_number_period(period) > 5000)
         DO k = 1, states_number_period(period)
 
             ! Distribute state space
@@ -387,10 +388,11 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
 
         ELSE
 
-!$OMP PARALLEL DO
-!$OMP+ DEFAULT(PRIVATE)
-!$OMP+ SHARED(states_number_period, period, periods_rewards_systematic, draws_emax_risk)
-!$OMP+ SHARED(periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras)
+!$OMP PARALLEL DO &
+!$OMP& DEFAULT(PRIVATE) &
+!$OMP& SHARED(states_number_period, period, periods_rewards_systematic, draws_emax_risk) &
+!$OMP& SHARED(periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras) &
+!$OMP& IF(states_number_period(period + 1) > 5000)
             DO k = 0, (states_number_period(period + 1) - 1)
                 rewards_systematic = periods_rewards_systematic(period + 1, k + 1, :)
 
@@ -587,9 +589,9 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
     ! Construct dependent variables for the subset of interpolation
     ! points.
 
-!$OMP PARALLEL DO
-!$OMP+ DEFAULT(SHARED)
-!$OMP+ PRIVATE(rewards_systematic, emax)
+!$OMP PARALLEL DO &
+!$OMP& DEFAULT(SHARED) &
+!$OMP& PRIVATE(rewards_systematic, emax)
     DO k = 0, (num_states - 1)
 
         ! Skip over points that will be predicted
