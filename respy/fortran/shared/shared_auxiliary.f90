@@ -224,7 +224,7 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(:, :)
 
     REAL(our_dble), INTENT(IN)      :: x(:)
 
@@ -234,7 +234,11 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     INTEGER(our_int)                :: i
 
-    REAL(our_dble)                  :: shocks_cov(4, 4)
+    REAL(our_dble)                  :: shocks_cov(size(shocks_cholesky, 1), size(shocks_cholesky, 2))
+
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: dim
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -242,13 +246,14 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky = zero_dble
 
-    shocks_cholesky(1, :1) = x(44:44)
-
-    shocks_cholesky(2, :2) = x(45:46)
-
-    shocks_cholesky(3, :3) = x(47:49)
-
-    shocks_cholesky(4, :4) = x(50:53)
+    dim = size(shocks_cholesky, 1)
+    k = 0
+    DO i = 1, dim
+        DO j = 1, i
+            shocks_cholesky(i, j) = x(pinfo%shocks_coeffs%start + k)
+            k = k + 1
+        END DO
+    END DO
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
@@ -1286,6 +1291,7 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
     x_internal(pinfo%coeffs_home%start: pinfo%coeffs_home%stop) = optim_paras%coeffs_home(:)
 
     dim = size(optim_paras%shocks_cholesky, 1)
+
     k = 0
     DO i = 1, dim
         DO j = 1, i
@@ -1293,13 +1299,6 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
             k = k + 1
         END DO
     END DO
-
-
-    ! x_internal(44:44) = optim_paras%shocks_cholesky(1, :1)
-    ! x_internal(45:46) = optim_paras%shocks_cholesky(2, :2)
-    ! x_internal(47:49) = optim_paras%shocks_cholesky(3, :3)
-    ! x_internal(50:53) = optim_paras%shocks_cholesky(4, :4)
-
 
     x_internal(pinfo%type_shares%start: pinfo%type_shares%stop) = optim_paras%type_shares(3:)
 
