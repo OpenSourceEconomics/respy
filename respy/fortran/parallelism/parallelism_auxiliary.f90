@@ -14,8 +14,6 @@ MODULE parallelism_auxiliary
 
     USE solve_fortran
 
-!$  USE omp_lib
-
 #if MPI_AVAILABLE
 
     USE parallelism_constants

@@ -10,8 +10,6 @@ MODULE solve_auxiliary
 
     USE solve_risk
 
-!$  USE omp_lib
-
     !/*	setup	*/
 
     IMPLICIT NONE
