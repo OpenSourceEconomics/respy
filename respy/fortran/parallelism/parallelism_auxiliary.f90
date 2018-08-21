@@ -14,11 +14,7 @@ MODULE parallelism_auxiliary
 
     USE solve_fortran
 
-#ifdef _OPENMP
-
-    USE omp_lib
-
-#endif
+!$  USE omp_lib
 
 #if MPI_AVAILABLE
 

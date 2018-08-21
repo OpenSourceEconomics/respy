@@ -10,11 +10,7 @@ MODULE solve_auxiliary
 
     USE solve_risk
 
-#ifdef _OPENMP
-
-    USE omp_lib
-
-#endif
+!$  USE omp_lib
 
     !/*	setup	*/
 

@@ -14,11 +14,7 @@ MODULE shared_auxiliary
 
     USE shared_types
 
-#ifdef _OPENMP
-
-    USE omp_lib
-
-#endif
+!$  USE omp_lib
 
     !/* setup   */
 
