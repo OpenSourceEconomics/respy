@@ -1266,35 +1266,45 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: dim
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    x_internal(1:1) = optim_paras%delta
+    x_internal(pinfo%delta%start: pinfo%delta%stop) = optim_paras%delta
 
-    x_internal(2:3) = optim_paras%coeffs_common(:)
+    x_internal(pinfo%coeffs_common%start: pinfo%coeffs_common%stop) = optim_paras%coeffs_common(:)
 
-    x_internal(4:18) = optim_paras%coeffs_a(:)
+    x_internal(pinfo%coeffs_a%start: pinfo%coeffs_a%stop) = optim_paras%coeffs_a(:)
 
-    x_internal(19:33) = optim_paras%coeffs_b(:)
+    x_internal(pinfo%coeffs_b%start: pinfo%coeffs_b%stop) = optim_paras%coeffs_b(:)
 
-    x_internal(34:40) = optim_paras%coeffs_edu(:)
+    x_internal(pinfo%coeffs_edu%start: pinfo%coeffs_edu%stop) = optim_paras%coeffs_edu(:)
 
-    x_internal(41:43) = optim_paras%coeffs_home(:)
+    x_internal(pinfo%coeffs_home%start: pinfo%coeffs_home%stop) = optim_paras%coeffs_home(:)
 
-    x_internal(44:44) = optim_paras%shocks_cholesky(1, :1)
+    dim = size(optim_paras%shocks_cholesky, 1)
+    k = 0
+    DO i = 1, dim
+        DO j = 1, i
+            x_internal(pinfo%shocks_coeffs%start + k) = optim_paras%shocks_cholesky(i, j)
+            k = k + 1
+        END DO
+    END DO
 
-    x_internal(45:46) = optim_paras%shocks_cholesky(2, :2)
 
-    x_internal(47:49) = optim_paras%shocks_cholesky(3, :3)
+    ! x_internal(44:44) = optim_paras%shocks_cholesky(1, :1)
+    ! x_internal(45:46) = optim_paras%shocks_cholesky(2, :2)
+    ! x_internal(47:49) = optim_paras%shocks_cholesky(3, :3)
+    ! x_internal(50:53) = optim_paras%shocks_cholesky(4, :4)
 
-    x_internal(50:53) = optim_paras%shocks_cholesky(4, :4)
 
-    x_internal(54:(54 + (num_types - 1) * 2) - 1) = optim_paras%type_shares(3:)
+    x_internal(pinfo%type_shares%start: pinfo%type_shares%stop) = optim_paras%type_shares(3:)
 
     shifts = PACK(TRANSPOSE(optim_paras%type_shifts), .TRUE.)
-    x_internal(54 + (num_types - 1) * 2:num_paras) = shifts(5:)
+    x_internal(pinfo%type_shifts%start: pinfo%type_shifts%stop) = shifts(5:)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN
