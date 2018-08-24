@@ -122,7 +122,6 @@ PROGRAM resfort_parallel_slave
 
             IF (.NOT. ALLOCATED(data_est)) THEN
 
-
                 CALL read_dataset(data_est, num_rows)
 
                 CALL create_draws(periods_draws_prob, num_draws_prob, seed_prob, is_debug)
@@ -139,6 +138,9 @@ PROGRAM resfort_parallel_slave
                 ALLOCATE(data_slave(upper_bound_obs - lower_bound_obs + 1, 8))
 
                 data_slave = data_est(lower_bound_obs:upper_bound_obs, :)
+
+                ! This synchronization barrier is needed as otherwise it might happen that a slave has no assignment and the .data.resfort.dat is already deleted by the master.
+                CALL MPI_Barrier(MPI_COMM_WORLD, ierr)
 
             END IF
 

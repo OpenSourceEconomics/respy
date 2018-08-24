@@ -338,8 +338,3 @@ def write_dataset(data_array):
     data_frame = pd.DataFrame(data_array)
     with open('.data.resfort.dat', 'w') as file_:
         data_frame.to_string(file_, index=False, header=None, na_rep=str(HUGE_FLOAT))
-
-    # An empty line is added as otherwise this might lead to problems on the TRAVIS servers. The
-    # FORTRAN routine read_dataset() raises an error.
-    with open('.data.resfort.dat', 'a') as file_:
-        file_.write('\n')
