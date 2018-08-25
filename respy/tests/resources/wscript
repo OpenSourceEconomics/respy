@@ -30,6 +30,7 @@ class CreateOriginalExecutables(Task):
         cmd += ' ' + self.inputs[0].abspath() + ' '
         cmd += ' '.join(self.env['FCFLAGS'])
         cmd = cmd.replace('-ffpe-trap=zero,overflow,invalid', '')
+        cmd = cmd.replace('-std=f2008', '')
 
         # For some reason including this flag results in a segmentation fault in the code. We
         # suspect a clash in namespace as no IMPLICIT NONE is declared in the code.
@@ -69,4 +70,3 @@ def build(ctx):
         ctx.add_manual_dependency(ctx.path.find_node('f2py_interface.f90'), dep)
 
         ctx.add_to_group(task_f)
-

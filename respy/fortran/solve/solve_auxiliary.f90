@@ -170,10 +170,10 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)               :: optim_paras
 
-    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
-    INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
     INTEGER(our_int), INTENT(IN)        :: max_states_period
     INTEGER(our_int), INTENT(IN)        :: num_periods
+    INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
+    INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
 
     !/* internals objects       */
 
@@ -283,16 +283,17 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
     TYPE(OPTIMPARAS_DICT), INTENT(IN)           :: optim_paras
     TYPE(EDU_DICT), INTENT(IN)                  :: edu_spec
 
+    INTEGER(our_int), INTENT(IN)        :: max_states_period
+    INTEGER(our_int), INTENT(IN)        :: num_points_interp
+    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
+    INTEGER(our_int), INTENT(IN)        :: num_periods
+
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
-    INTEGER(our_int), INTENT(IN)        :: max_states_period
-    INTEGER(our_int), INTENT(IN)        :: num_points_interp
-    INTEGER(our_int), INTENT(IN)        :: num_draws_emax
-    INTEGER(our_int), INTENT(IN)        :: num_periods
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
     LOGICAL, INTENT(IN)                 :: is_myopic
@@ -499,6 +500,9 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 
     !/* external objects        */
 
+    INTEGER(our_int), INTENT(IN)        :: num_states
+    INTEGER(our_int), INTENT(IN)        :: period
+
     REAL(our_dble), INTENT(OUT)         :: independent_variables(num_states, 9)
     REAL(our_dble), INTENT(OUT)         :: maxe(num_states)
 
@@ -511,8 +515,6 @@ SUBROUTINE get_exogenous_variables(independent_variables, maxe, period, num_stat
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
-    INTEGER(our_int), INTENT(IN)        :: num_states
-    INTEGER(our_int), INTENT(IN)        :: period
 
     !/* internal objects        */
 
@@ -555,6 +557,9 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
 
     !/* external objects        */
 
+    INTEGER(our_int), INTENT(IN)        :: num_states
+    INTEGER(our_int), INTENT(IN)        :: period
+
     REAL(our_dble), INTENT(OUT)         :: endogenous(num_states)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
@@ -567,8 +572,6 @@ SUBROUTINE get_endogenous_variable(endogenous, period, num_states, periods_rewar
 
     INTEGER(our_int), INTENT(IN)        :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
-    INTEGER(our_int), INTENT(IN)        :: num_states
-    INTEGER(our_int), INTENT(IN)        :: period
 
     LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
 
@@ -621,13 +624,13 @@ SUBROUTINE get_predictions(predictions, endogenous, exogenous, maxe, is_simulate
 
     !/* external objects        */
 
+    INTEGER, INTENT(IN)                 :: num_states
+
     REAL(our_dble), INTENT(OUT)         :: predictions(num_states)
 
     REAL(our_dble), INTENT(IN)          :: exogenous(:, :)
     REAL(our_dble), INTENT(IN)          :: endogenous(num_states)
     REAL(our_dble), INTENT(IN)          :: maxe(num_states)
-
-    INTEGER, INTENT(IN)                 :: num_states
 
     LOGICAL, INTENT(IN)                 :: is_simulated(num_states)
     LOGICAL, INTENT(IN)                 :: is_write
@@ -782,15 +785,15 @@ SUBROUTINE get_pred_info(r_squared, bse, observed, predicted, exogenous, num_sta
 
     !/* external objects        */
 
+    INTEGER(our_int), INTENT(IN)    :: num_states
+    INTEGER(our_int), INTENT(IN)    :: num_covars
+
     REAL(our_dble), INTENT(OUT)     :: r_squared
     REAL(our_dble), INTENT(OUT)     :: bse(num_covars)
 
     REAL(our_dble), INTENT(IN)      :: predicted(:)
     REAL(our_dble), INTENT(IN)      :: observed(:)
     REAL(our_dble), INTENT(IN)      :: exogenous(:, :)
-
-    INTEGER(our_int), INTENT(IN)    :: num_states
-    INTEGER(our_int), INTENT(IN)    :: num_covars
 
     !/* internal objects        */
 

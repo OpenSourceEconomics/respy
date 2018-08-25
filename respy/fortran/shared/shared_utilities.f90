@@ -130,12 +130,11 @@ FUNCTION pinv(A, m)
 
     !/* external objects        */
 
+    INTEGER(our_int), INTENT(IN)    :: m
+
     REAL(our_dble)                  :: pinv(m, m)
 
     REAL(our_dble), INTENT(IN)      :: A(:, :)
-
-    INTEGER(our_int), INTENT(IN)    :: m
-
 
     !/* internal objects        */
 
@@ -238,11 +237,11 @@ FUNCTION sorted(input_array, num_elements) RESULT(sorted_array)
 
     !/* external objects        */
 
+    INTEGER(our_int), INTENT(IN)        :: num_elements
+
     REAL(our_dble)                      :: sorted_array(num_elements)
 
     REAL(our_dble), INTENT(IN)          :: input_array(num_elements)
-
-    INTEGER(our_int), INTENT(IN)        :: num_elements
 
     !/* internal objects        */
 

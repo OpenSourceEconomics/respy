@@ -64,7 +64,7 @@ END SUBROUTINE
 !******************************************************************************
 SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUCCESS, MESSAGE, NF, W)
 
-    IMPLICIT REAL*8 (A-H,O-Z)
+    IMPLICIT REAL(our_dble) (A-H,O-Z)
     DIMENSION W(*)
 
     REAL(our_dble)                  :: X(:)
@@ -151,10 +151,10 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
 !******************************************************************************
 !******************************************************************************
     SUBROUTINE NEWUOB (NF,FUNC,N,NPT,X,RHOBEG,RHOEND,IPRINT,MAXFUN,XBASE,XOPT,XNEW,XPT,FVAL,GQ,HQ,PQ,BMAT,ZMAT,NDIM,D,VLAG,W,SUCCESS,MESSAGE)
-      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT REAL(our_dble) (A-H,O-Z)
       DIMENSION XBASE(*),XOPT(*),XNEW(*),XPT(NPT,*),FVAL(*),GQ(*),HQ(*),PQ(*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),VLAG(*),W(*)
 
-      REAL*8, INTENT(INOUT):: X(N)
+      REAL(our_dble), INTENT(INOUT):: X(N)
 
       CHARACTER(150)    :: MESSAGE
       LOGICAL           :: SUCCESS
@@ -712,7 +712,7 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
 !******************************************************************************
 !******************************************************************************
       SUBROUTINE UPDATE (N,NPT,BMAT,ZMAT,IDZ,NDIM,VLAG,BETA,KNEW,W)
-      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT REAL(our_dble) (A-H,O-Z)
       DIMENSION BMAT(NDIM,*),ZMAT(NPT,*),VLAG(*),W(*)
 
 !------------------------------------------------------------------------------
@@ -827,7 +827,7 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
 !******************************************************************************
 !******************************************************************************
       SUBROUTINE TRSAPP (N,NPT,XOPT,XPT,GQ,HQ,PQ,DELTA,STEP, D,G,HD,HS,CRVMIN)
-      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT REAL(our_dble) (A-H,O-Z)
       DIMENSION XOPT(*),XPT(NPT,*),GQ(*),HQ(*),PQ(*),STEP(*), D(*),G(*),HD(*),HS(*)
 
 !------------------------------------------------------------------------------
@@ -970,9 +970,9 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
       QMIN=QBEG
       ISAVE=0
       IU=49
-      TEMP=TWOPI/DFLOAT(IU+1)
+      TEMP=TWOPI/DBLE(IU+1)
       DO 140 I=1,IU
-      ANGLE=DFLOAT(I)*TEMP
+      ANGLE=DBLE(I)*TEMP
       CTH=DCOS(ANGLE)
       STH=DSIN(ANGLE)
       QNEW=(SG+CF*CTH)*CTH+(DG+DHS*CTH)*STH
@@ -992,7 +992,7 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
           TEMPB=TEMPB-QMIN
           ANGLE=HALF*(TEMPA-TEMPB)/(TEMPA+TEMPB)
       END IF
-      ANGLE=TEMP*(DFLOAT(ISAVE)+ANGLE)
+      ANGLE=TEMP*(DBLE(ISAVE)+ANGLE)
 !C
 !C     Calculate the new STEP and HS. Then test for convergence.
 !C
@@ -1036,7 +1036,7 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
 !******************************************************************************
 !******************************************************************************
       SUBROUTINE BIGLAG (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KNEW,DELTA,D,ALPHA,HCOL,GC,GD,S,W)
-      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT REAL(our_dble) (A-H,O-Z)
       DIMENSION XOPT(*),XPT(NPT,*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),HCOL(*),GC(*),GD(*),S(*),W(*)
 
 !------------------------------------------------------------------------------
@@ -1174,9 +1174,9 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
       TAUOLD=TAUBEG
       ISAVE=0
       IU=49
-      TEMP=TWOPI/DFLOAT(IU+1)
+      TEMP=TWOPI/DBLE(IU+1)
       DO 140 I=1,IU
-      ANGLE=DFLOAT(I)*TEMP
+      ANGLE=DBLE(I)*TEMP
       CTH=DCOS(ANGLE)
       STH=DSIN(ANGLE)
       TAU=CF1+(CF2+CF4*CTH)*CTH+(CF3+CF5*CTH)*STH
@@ -1196,7 +1196,7 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
           TEMPB=TEMPB-TAUMAX
           STEP=HALF*(TEMPA-TEMPB)/(TEMPA+TEMPB)
       END IF
-      ANGLE=TEMP*(DFLOAT(ISAVE)+STEP)
+      ANGLE=TEMP*(DBLE(ISAVE)+STEP)
 !C
 !C     Calculate the new D and GD. Then test for convergence.
 !C
@@ -1214,7 +1214,7 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
 !******************************************************************************
 !******************************************************************************
       SUBROUTINE BIGDEN (N,NPT,XOPT,XPT,BMAT,ZMAT,IDZ,NDIM,KOPT,KNEW,D,W,VLAG,BETA,S,WVEC,PROD)
-      IMPLICIT REAL*8 (A-H,O-Z)
+      IMPLICIT REAL(our_dble) (A-H,O-Z)
       DIMENSION XOPT(*),XPT(NPT,*),BMAT(NDIM,*),ZMAT(NPT,*),D(*),W(*),VLAG(*),S(*),WVEC(NDIM,*),PROD(NDIM,*)
       DIMENSION DEN(9),DENEX(9),PAR(9)
 
@@ -1440,10 +1440,10 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
       DENMAX=SUM
       ISAVE=0
       IU=49
-      TEMP=TWOPI/DFLOAT(IU+1)
+      TEMP=TWOPI/DBLE(IU+1)
       PAR(1)=ONE
       DO 250 I=1,IU
-      ANGLE=DFLOAT(I)*TEMP
+      ANGLE=DBLE(I)*TEMP
       PAR(2)=DCOS(ANGLE)
       PAR(3)=DSIN(ANGLE)
       DO 230 J=4,8,2
@@ -1469,7 +1469,7 @@ SUBROUTINE NEWUOA_ORIGINAL (FUNC, X, N, NPT, RHOBEG, RHOEND, IPRINT, MAXFUN, SUC
           TEMPB=TEMPB-DENMAX
           STEP=HALF*(TEMPA-TEMPB)/(TEMPA+TEMPB)
       END IF
-      ANGLE=TEMP*(DFLOAT(ISAVE)+STEP)
+      ANGLE=TEMP*(DBLE(ISAVE)+STEP)
 !C
 !C     Calculate the new parameters of the denominator, the new VLAG vector
 !C     and the new D. Then test for convergence.

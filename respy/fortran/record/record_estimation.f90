@@ -47,7 +47,7 @@ SUBROUTINE record_estimation_auto_rhobeg(algorithm, rhobeg, rhoend)
     WRITE(rho_char(1), '(f25.15)') rhobeg
     WRITE(rho_char(2), '(f25.15)') rhoend
 
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE='est.respy.log', POSITION='APPEND', ACTION='WRITE')
         WRITE(99, *) 'Warning: Automatic adjustment of rhobeg/rhoend for ' // algorithm // ' required. Both are set to their recommended values of (rhobeg/rhoend): (' // TRIM(ADJUSTL(rho_char(1))) // ',' // TRIM(ADJUSTL(rho_char(2))) // ')'
         WRITE(99, *)
     CLOSE(99)
@@ -72,7 +72,7 @@ SUBROUTINE record_estimation_auto_npt(algorithm, npt)
 
     WRITE(npt_char, '(i10)') npt
 
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE='est.respy.log', POSITION='APPEND', ACTION='WRITE')
         WRITE(99, *) 'Warning: Automatic adjustment of NPT for ' // algorithm // ' required. NPT set to its recommended value of ' // TRIM(ADJUSTL(npt_char)) // '.'
         WRITE(99, *)
     CLOSE(99)
@@ -104,7 +104,7 @@ SUBROUTINE record_estimation_scalability(which)
     OPEN(UNIT=99, FILE='.scalability.respy.log', ACTION='WRITE')
         WRITE(99, 115) which, today, now
   ELSE
-    OPEN(UNIT=99, FILE='.scalability.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE='.scalability.respy.log', POSITION='APPEND', ACTION='WRITE')
         WRITE(99, 125) which, today, now
   END IF
 
@@ -119,7 +119,7 @@ SUBROUTINE record_estimation_stop()
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE='est.respy.info', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE='est.respy.info', POSITION='APPEND', ACTION='WRITE')
 
         WRITE(99, *)
         WRITE(99, *) 'TERMINATED'
@@ -137,14 +137,14 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
+    INTEGER(our_int), INTENT(IN)    :: num_paras
+    INTEGER(our_int), INTENT(IN)    :: num_types
+    INTEGER(our_int), INTENT(IN)    :: num_eval
+
     REAL(our_dble), INTENT(IN)      :: x_optim_free_scaled(num_free)
     REAL(our_dble), INTENT(IN)      :: x_optim_all_unscaled(num_paras)
     REAL(our_dble), INTENT(IN)      :: val_current
     REAL(our_dble), INTENT(IN)      :: start
-
-    INTEGER(our_int), INTENT(IN)    :: num_types
-    INTEGER(our_int), INTENT(IN)    :: num_paras
-    INTEGER(our_int), INTENT(IN)    :: num_eval
 
     !/* internal objects        */
 
@@ -257,7 +257,7 @@ SUBROUTINE record_estimation_eval(x_optim_free_scaled, x_optim_all_unscaled, val
     150 FORMAT(3x,i10,3(4x,A25))
     155 FORMAT(3x,A9,1x,3(4x,f25.15))
 
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE='est.respy.log', POSITION='APPEND', ACTION='WRITE')
 
         WRITE(99, 100) 'EVAL', num_eval, 'STEP', num_step
         WRITE(99, *)
@@ -352,7 +352,7 @@ SUBROUTINE record_estimation_final(success, message)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE='est.respy.log', POSITION='APPEND', ACTION='WRITE')
 
         WRITE(99, *) 'ESTIMATION REPORT'
         WRITE(99, *)
@@ -404,7 +404,7 @@ SUBROUTINE record_scaling(precond_matrix, x_free_start, optim_paras, is_setup)
     120 FORMAT(3x,A10,5(4x,A25))
     135 FORMAT(3x,i10,3(4x,A25),A58)
 
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE='est.respy.log', POSITION='APPEND', ACTION='WRITE')
 
         ! The initial setup serves to remind users that scaling is going on in the background. Otherwise, they remain puzzled as there is no output for quite some time if the gradient evaluations are time consuming.
         IF (is_setup) THEN
@@ -460,21 +460,19 @@ SUBROUTINE get_time(today_char, now_char)
 
     !/* internal objects        */
 
-    INTEGER(our_int)                :: today(3)
-    INTEGER(our_int)                :: now(3)
+    INTEGER(our_int)                :: values(8)
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    CALL IDATE(today)
-    CALL ITIME(now)
+    CALL DATE_AND_TIME(VALUES=values)
 
     5503 FORMAT(i0.2,'/',i0.2,'/',i0.4)
     5504 FORMAT(i0.2,':',i0.2,':',i0.2)
 
-    WRITE(today_char, 5503) today
-    WRITE(now_char, 5504) now
+    WRITE(today_char, 5503) values(3), values(2), values(1)
+    WRITE(now_char, 5504) values(5:7)
 
 END SUBROUTINE
 !******************************************************************************

@@ -121,13 +121,12 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_
 
     !/* external objects    */
 
+    INTEGER(our_int), INTENT(IN)        :: num_agents_sim
+    INTEGER(our_int), INTENT(IN)        :: num_types
+    INTEGER(our_int), INTENT(IN)        :: edu_start(num_agents_sim)
     INTEGER(our_int)                    :: types(num_agents_sim)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
-
-    INTEGER(our_int), INTENT(IN)        :: edu_start(num_agents_sim)
-    INTEGER(our_int), INTENT(IN)        :: num_agents_sim
-    INTEGER(our_int), INTENT(IN)        :: num_types
 
     LOGICAL, INTENT(IN)                 :: is_debug
 

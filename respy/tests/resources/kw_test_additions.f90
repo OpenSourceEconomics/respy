@@ -45,14 +45,14 @@ SUBROUTINE READ_IN_DISTURBANCES_ESTIMATION(RNN, RNNL, NPER, DRAW, DRAW1)
 
             REWIND(UNIT=99)
             DO T = 1, NPER
-                DO J = 1, DRAW
+                DO J = 1, INT(DRAW)
                     READ(99, 2001) RNN(J, T, :)
                 END DO
             END DO
 
             REWIND(UNIT=99)
             DO T = 1, NPER
-                DO J = 1, DRAW1
+                DO J = 1, INT(DRAW1)
                     READ(99, 2001) RNNL(J, T, :)
                 END DO
             END DO
