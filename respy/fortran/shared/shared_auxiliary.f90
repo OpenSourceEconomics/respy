@@ -450,7 +450,7 @@ SUBROUTINE create_draws(draws, num_draws, seed, is_debug)
 
     !/* internal objects        */
 
-    INTEGER(our_int)                            :: seed_inflated(15)
+    INTEGER(our_int), ALLOCATABLE               :: seed_inflated(:)
     INTEGER(our_int)                            :: seed_size
     INTEGER(our_int)                            :: period
     INTEGER(our_int)                            :: j
@@ -468,10 +468,11 @@ SUBROUTINE create_draws(draws, num_draws, seed, is_debug)
     ! Allocate containers
     ALLOCATE(draws(num_periods, num_draws, 4))
 
-    ! Set random seed
-    seed_inflated(:) = seed
-
     CALL RANDOM_SEED(size=seed_size)
+
+    ! Set random seed
+    ALLOCATE(seed_inflated(seed_size))
+    seed_inflated(:) = seed
 
     CALL RANDOM_SEED(put=seed_inflated)
 
