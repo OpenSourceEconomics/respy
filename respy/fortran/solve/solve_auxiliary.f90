@@ -425,6 +425,7 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
     INTEGER(our_int)                  :: candidates(num_states)
     INTEGER(our_int)                  :: sample(num_points)
     INTEGER(our_int)                  :: i
+    INTEGER(our_int)                  :: u
 
     LOGICAL                           :: is_simulated_container(num_states, num_periods)
     LOGICAL                           :: get_simulated_indicator(num_states)
@@ -445,15 +446,15 @@ FUNCTION get_simulated_indicator(num_points, num_states, period, is_debug)
 
         IF (READ_IN) THEN
 
-            OPEN(UNIT=99, FILE='.interpolation.respy.test', ACTION='READ')
+            OPEN(NEWUNIT=u, FILE='.interpolation.respy.test', ACTION='READ')
 
                DO i = 1, num_states
 
-                    READ(99, *)  is_simulated_container(i, :)
+                    READ(u, *)  is_simulated_container(i, :)
 
                 END DO
 
-            CLOSE(99)
+            CLOSE(u)
 
             get_simulated_indicator = is_simulated_container(:, period + 1)
 

@@ -364,6 +364,7 @@ SUBROUTINE get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim
     !/* internal objects    */
 
     INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: u
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -388,13 +389,13 @@ SUBROUTINE get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim
     ! Write out scaling matrix to allow for restart.
     5000 FORMAT(100000(1x,f45.15))
 
-    OPEN(UNIT=99, FILE='scaling.respy.out', ACTION='WRITE')
+    OPEN(NEWUNIT=u, FILE='scaling.respy.out', ACTION='WRITE')
 
     DO i = 1, num_free
-        WRITE(99, 5000) precond_matrix(i, :)
+        WRITE(u, 5000) precond_matrix(i, :)
     END DO
 
-    CLOSE(99)
+    CLOSE(u)
 
     crit_estimation = .False.
 
