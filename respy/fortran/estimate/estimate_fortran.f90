@@ -316,13 +316,13 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     !/* external objects        */
 
+    INTEGER(our_int), INTENT(IN)        :: num_paras
+
     REAL(our_dble), INTENT(OUT)         :: x_optim_all_unscaled(num_paras)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
-
-    INTEGER(our_int), INTENT(IN)        :: num_paras
 
     !/* internal objects        */
 

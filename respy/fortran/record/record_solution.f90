@@ -40,7 +40,7 @@ SUBROUTINE record_solution_progress(indicator, file_sim, period, num_states)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', POSITION='APPEND', ACTION='WRITE')
 
     IF (indicator == 1) THEN
 
@@ -103,7 +103,7 @@ SUBROUTINE record_solution_prediction(coeffs, r_squared, bse, file_sim)
     110 FORMAT(8x,A15,4x,9(f15.4))
     120 FORMAT(8x,A9,10x,f15.4)
 
-    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', POSITION='APPEND', ACTION='WRITE')
 
         WRITE(99, *) '     Information about Prediction Model '
         WRITE(99, *)

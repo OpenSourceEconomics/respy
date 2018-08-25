@@ -316,9 +316,9 @@ SUBROUTINE get_total_values(total_values, rewards_ex_post, period, num_periods, 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
     TYPE(EDU_DICT), INTENT(IN)          :: edu_spec
 
+    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
-    INTEGER(our_int), INTENT(IN)    :: num_periods
     INTEGER(our_int), INTENT(IN)    :: period
     INTEGER(our_int), INTENT(IN)    :: k
 

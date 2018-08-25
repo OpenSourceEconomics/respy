@@ -199,6 +199,9 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     TYPE(OPTIMPARAS_DICT), INTENT(IN)       :: optim_paras
     TYPE(EDU_DICT), INTENT(IN)              :: edu_spec
 
+    INTEGER(our_int), INTENT(IN)        :: num_points_interp
+    INTEGER(our_int), INTENT(IN)        :: num_periods
+
     REAL(our_dble), INTENT(IN)          :: periods_rewards_systematic(num_periods, max_states_period, 4)
     REAL(our_dble), INTENT(IN)          :: periods_draws_emax(num_periods, num_draws_emax, 4)
 
@@ -206,8 +209,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     INTEGER(our_int), INTENT(IN)        :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)        :: num_states_slaves(num_periods, num_slaves)
     INTEGER(our_int), INTENT(IN)        :: states_number_period(num_periods)
-    INTEGER(our_int), INTENT(IN)        :: num_points_interp
-    INTEGER(our_int), INTENT(IN)        :: num_periods
 
     LOGICAL, INTENT(IN)                 :: is_interpolated
     LOGICAL, INTENT(IN)                 :: update_master

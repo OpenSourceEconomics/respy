@@ -12,7 +12,7 @@ GFORTRAN_FLAGS_DEBUG = []
 GFORTRAN_FLAGS_DEBUG += ['-O', '-Wall', '-Wline-truncation', '-Wsurprising', '-Waliasing']
 GFORTRAN_FLAGS_DEBUG += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
 GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1', '-fopt-info-all=fopt.log']
-GFORTRAN_FLAGS_DEBUG += ['-Wcharacter-truncation', '-Wimplicit-interface']
+GFORTRAN_FLAGS_DEBUG += ['-Wcharacter-truncation', '-Wimplicit-interface', '-std=f2008']
 
 GFORTRAN_FLAGS_PRODUCTION = ['-O3']
 

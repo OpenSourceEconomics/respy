@@ -22,11 +22,11 @@ SUBROUTINE LFCDS(N, A, LDA, FACT, LDFACT, RCOND)
 
     !/* external objects    */
 
-    REAL, INTENT(OUT)       :: FACT(N, N)
+	INTEGER, INTENT(IN)     :: LDFACT
+	INTEGER, INTENT(IN)     :: LDA
+	INTEGER, INTENT(IN)     :: N
 
-    INTEGER, INTENT(IN)     :: LDFACT
-    INTEGER, INTENT(IN)     :: LDA
-    INTEGER, INTENT(IN)     :: N
+    REAL, INTENT(OUT)       :: FACT(N, N)
 
     REAL, INTENT(IN)        :: A(N, N)
     REAL, INTENT(IN)        :: RCOND
@@ -99,11 +99,11 @@ SUBROUTINE LINDS(N, A, LDA, AINV, LDAINV)
 
     !/* external objects    */
 
-    REAL, INTENT(OUT)       :: AINV(N, N)
+	INTEGER, INTENT(IN)     :: LDAINV
+	INTEGER, INTENT(IN)     :: LDA
+	INTEGER, INTENT(IN)     :: N
 
-    INTEGER, INTENT(IN)     :: LDAINV
-    INTEGER, INTENT(IN)     :: LDA
-    INTEGER, INTENT(IN)     :: N
+    REAL, INTENT(OUT)       :: AINV(N, N)
 
     REAL, INTENT(IN)        :: A(N, N)
 

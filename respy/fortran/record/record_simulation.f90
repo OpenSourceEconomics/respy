@@ -60,7 +60,7 @@ SUBROUTINE record_simulation_stop(file_sim)
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sim', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sim', POSITION='APPEND', ACTION='WRITE')
 
         WRITE(99, *) ' ... finished'
         WRITE(99, *)
@@ -86,7 +86,7 @@ SUBROUTINE record_simulation_progress(i, file_sim)
 
         100 FORMAT(A16,i10,A7)
 
-        OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sim', ACCESS='APPEND', ACTION='WRITE')
+        OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sim', POSITION='APPEND', ACTION='WRITE')
 
             WRITE(99, 100) ' ... simulated ', i, ' agents'
             WRITE(99, *)
