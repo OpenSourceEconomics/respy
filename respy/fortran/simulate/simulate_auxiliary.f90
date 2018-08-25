@@ -29,7 +29,8 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 
     TYPE(EDU_DICT)                  :: edu_spec_sorted
 
-    INTEGER                         :: i
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: u
 
     LOGICAL                         :: READ_IN
 
@@ -45,13 +46,13 @@ FUNCTION get_random_edu_start(edu_spec, is_debug) RESULT(edu_start)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        OPEN(UNIT=99, FILE='.initial_schooling.respy.test', ACTION='READ')
+        OPEN(NEWUNIT=u, FILE='.initial_schooling.respy.test', ACTION='READ')
         DO i = 1, num_agents_sim
             88 FORMAT(i10)
-            READ(99, 88) edu_start(i)
+            READ(u, 88) edu_start(i)
         END DO
 
-        CLOSE(99)
+        CLOSE(u)
 
     ELSE
         DO i = 1, num_agents_sim
@@ -77,9 +78,9 @@ FUNCTION get_random_lagged_start(edu_spec, edu_start, is_debug) RESULT(lagged_st
 
     !/* internal objects    */
 
-    INTEGER                         :: i
-    INTEGER                         :: j
-
+    INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: u
     LOGICAL                         :: READ_IN
 
     REAL(our_dble)                  :: probs(2)
@@ -91,13 +92,13 @@ FUNCTION get_random_lagged_start(edu_spec, edu_start, is_debug) RESULT(lagged_st
     INQUIRE(FILE='.initial_lagged.respy.test', EXIST=READ_IN)
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
-        OPEN(UNIT=99, FILE='.initial_lagged.respy.test', ACTION='READ')
+        OPEN(NEWUNIT=u, FILE='.initial_lagged.respy.test', ACTION='READ')
         DO i = 1, num_agents_sim
             88 FORMAT(i10)
-            READ(99, 88) lagged_start(i)
+            READ(u, 88) lagged_start(i)
         END DO
 
-        CLOSE(99)
+        CLOSE(u)
 
     ELSE
         DO i = 1, num_agents_sim
@@ -134,6 +135,7 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_
 
     INTEGER(our_int)                    :: type_info_order(num_types)
     INTEGER(our_int)                    :: i
+    INTEGER(our_int)                    :: u
 
     REAL(our_dble)                      :: type_info_shares(num_types * 2)
     REAL(our_dble)                      :: probs(num_types)
@@ -150,13 +152,13 @@ FUNCTION get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_
 
     IF ((READ_IN .EQV. .True.)  .AND. (is_debug .EQV. .True.)) THEN
 
-        OPEN(UNIT=99, FILE='.types.respy.test', ACTION='READ')
+        OPEN(NEWUNIT=u, FILE='.types.respy.test', ACTION='READ')
         DO i = 1, num_agents_sim
             87 FORMAT(i10)
-            READ(99, 87) types(i)
+            READ(u, 87) types(i)
         END DO
 
-        CLOSE(99)
+        CLOSE(u)
 
     ELSE
         DO i = 1, num_agents_sim
