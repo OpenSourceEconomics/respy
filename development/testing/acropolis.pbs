@@ -1,8 +1,7 @@
 #!/bin/bash
 #PBS -N mpi
 #PBS -j oe
-#PBS -l walltime=99:00:00
-#PBS -l nodes=1:ppn=20
+#PBS -l nodes=1:ppn=20,mem=50GB 
 #PBS -V
 #PBS -m ae
 #PBS -M eisenhauer@policy-lab.org
