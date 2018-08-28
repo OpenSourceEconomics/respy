@@ -67,6 +67,6 @@ if request_dict['ROBUSTNESS']:
     os.chdir(CURRENT_DIR)
 
 if request_dict['PARALLELISM']:
-    os.chdir('robustness')
+    os.chdir('parallelism')
     run_parallelism(**test_spec['PARALLELISM'])
     os.chdir(CURRENT_DIR)
