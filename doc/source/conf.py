@@ -18,6 +18,9 @@ import socket
 import sys
 import os
 
+# Set variable so that todos are shown in local build
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -113,7 +116,10 @@ pygments_style = 'sphinx'
 # keep_warnings = False
 
 # If true, `todo` and `todoList` produce output, else they produce nothing. T
-todo_include_todos = False
+if on_rtd:
+    todo_include_todos = False
+else:
+    todo_include_todos = True
 
 # -- Options for HTML output ----------------------------------------------
 

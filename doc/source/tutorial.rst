@@ -279,6 +279,7 @@ Datasets for respy are stored in simple text files, where columns are separated 
 
 Examples
 --------
+.. todo:: The following link refers to the test/resources dir since there is no longer any special directory for the tutorial files. Would it be better to separate this files in a specific example directory? Additionally there is no longer an example.ini initalization file.
 
 Let us explore the basic capabilities of the ``respy`` package with a couple of examples. All the material is available `online <https://github.com/OpenSourceEconomics/respy/tree/janosg/respy/tests/resources>`__.
 

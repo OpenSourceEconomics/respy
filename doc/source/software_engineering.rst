@@ -5,6 +5,7 @@ We now briefly discuss our software engineering practices that help us to ensure
 
 Development Infrastructure
 --------------------------
+.. todo:: Do you still use Chef? I am confused since there is no definition file availabe in the `tools_dir <https://github.com/OpenSourceEconomics/respy/tree/janosg/tools>`_.
 
 We maintain a dedicated development and testing server on the `Amazon Elastic Compute Cloud <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code thus making it versionable, testable, and repeatable. We create our machine images using `Packer <https://www.packer.io/>`_ and `Chef <https://www.chef.io/>`_ and manage our compute resources with `Terraform <https://www.terraform.io/>`_. Our definition files are available `here <https://github.com/OpenSourceEconomics/respy/tree/janosg/tools>`_.
 
@@ -49,6 +50,7 @@ Our `tests <https://github.com/OpenSourceEconomics/respy/tree/janosg/respy/tests
 
 Documentation
 -------------
+.. todo:: All batches reefer to the no longer existing restudtoolbox repository. 
 
 .. image:: https://readthedocs.org/projects/respy/badge/?version=latest
    :target: http://respy.readthedocs.io/en/latest/?badge=latest
