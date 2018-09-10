@@ -121,3 +121,7 @@ def _paras_mapping():
         (43, 43), (44, 44), (45, 46), (46, 49), (47, 45), (48, 47),
         (49, 50), (50, 48), (51, 51), (52, 52)]
     return mapping
+
+
+def _num_types_from_len_type_share_coeffs(num):
+    return int(num / 2) + 1

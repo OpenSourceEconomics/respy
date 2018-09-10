@@ -2,7 +2,7 @@ from respy.python.solve.solve_auxiliary import \
     pyth_calculate_rewards_systematic
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.evaluate.evaluate_python import pyth_contributions
-from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_log_likl
 
 
@@ -13,7 +13,7 @@ def pyth_criterion(x, is_interpolated, num_draws_emax, num_periods,
                    max_states_period, num_agents_est, num_obs_agent, num_types,
                    edu_spec):
     """Criterion function for the likelihood maximization."""
-    optim_paras = dist_optim_paras(x, is_debug)
+    optim_paras = distribute_parameters(x, is_debug)
 
     # Calculate all systematic rewards
     periods_rewards_systematic = pyth_calculate_rewards_systematic(

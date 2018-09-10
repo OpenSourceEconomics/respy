@@ -2,19 +2,19 @@
 TO-DO
 =====
 
-- start a developer documentation
+shared_auxiliary.py
+===================
 
-Interface
----------
+rewrite get_optim_paras to reduce hardcoding!
 
-- Change the user interface: estimate and simulate become methods of clsRespy. Estimate is called fit.
 
-- shared_auxiliary.py
----------------------
 
-- dist_econ_paras and dist_optim_paras shares most of the logic and just has different return types. It is not clear from the names what the difference is. I would suggest one public function with a switch (target='dict'; target='tuple') and potentially two private functions for the implementation.
-- get_optim_paras should be closer to the previous two functions and not hardcode the parsing information.
-    -> do both; why do we have the cholesky of covs at one place and not the other?
+Questions:
+----------
+
+are dist_econ_paras and dist_optim_paras usually called with different types of parameter vectors? I think the difference is in the shock elements.
+
+
 
 
 ===============================
@@ -44,11 +44,6 @@ estimate_wrapper.py
 _construct_all_current_values needs a longer docstring. What is the purpose of this function?
     -> I understand now; put a section in the developer documentation.
 
-evaluate_python
-===============
-
-- The dimensions and meaning of some arguments is still unclear
-- Why is the covariance matrix never used. Is the use of the cholesky factors correct?
 
 
 Reduce Fortran Code
@@ -98,16 +93,6 @@ interface calls OptimizationClass
 OptimizationClass calls pyth_criterion
 
 we should look for a better version.
-
-
-
-document the different types of the parameter vector and write one module where all transformatinos happen.
-
-- x: array of model parameters
-- x_all: including the fixed ones
-- x_optim: only free parameters
-
-    -> try to reduce number of representations of parameter vector
 
 
 

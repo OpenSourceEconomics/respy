@@ -570,7 +570,6 @@ def run_estimation(which):
 
     import numpy as np
 
-    from respy import estimate
     from respy import RespyCls
 
     from respy.pre_processing.model_processing import write_init_file
@@ -595,7 +594,7 @@ def run_estimation(which):
     # This flag ensures a clean switch to the synthetic simulation for cases where the
     # simulate_observed() was changed in between releases.
     if os.path.exists('../.simulate_observed.cfg'):
-        respy.simulate(respy_obj)
+        respy_obj.simulate()
     else:
         simulate_observed(respy_obj)
 
@@ -616,7 +615,7 @@ def run_estimation(which):
             shutil.copy(file, '../new')
         os.chdir('../new')
 
-    _, crit_val = estimate(respy_obj)
+    _, crit_val = respy_obj.fit()
 
     # There was a bug in version 1.0 which might lead to crit_val not to actually take the lowest
     # value that was visited by the optimizer. So, we reprocess the log file again to be sure.

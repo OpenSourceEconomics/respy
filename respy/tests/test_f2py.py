@@ -9,7 +9,7 @@ import scipy
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
-from respy.python.shared.shared_utilities import spectral_condition_number
+from respy.python.record.record_estimation import _spectral_condition_number
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
@@ -246,7 +246,7 @@ class TestClass(object):
             assert_almost_equal(py, f90)
 
             # Spectral condition number
-            py = spectral_condition_number(cov)
+            py = _spectral_condition_number(cov)
             fort = fort_debug.wrapper_spectral_condition_number(cov)
             assert_almost_equal(py, fort)
 

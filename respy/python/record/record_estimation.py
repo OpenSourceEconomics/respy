@@ -1,11 +1,11 @@
 from datetime import datetime
 import numpy as np
+import scipy
 import time
 
-from respy.python.shared.shared_utilities import spectral_condition_number
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import extract_cholesky
-from respy.python.shared.shared_auxiliary import dist_econ_paras
+from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
@@ -169,8 +169,11 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
         # matrix of the shock distribution.
         cond = []
         for i in range(3):
-            shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-3]
-            cond += [np.log(spectral_condition_number(shocks_cov))]
+            # shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-3]
+            shocks_cholesky = distribute_parameters(
+                x_econ_container[:, i], paras_type='econ')['shocks_cholesky']
+            shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
+            cond += [np.log(_spectral_condition_number(shocks_cov))]
         fmt_ = '   {:>9} ' + '    {:25.15f}' * 3 + '\n'
         out_file.write(fmt_.format(*['Condition'] + cond))
 
@@ -255,3 +258,11 @@ def record_estimation_final(success, message):
         out_file.write(' ESTIMATION REPORT\n\n')
         out_file.write('   Success ' + str(success) + '\n')
         out_file.write('   Message ' + str(message) + '\n')
+
+
+def _spectral_condition_number(mat):
+
+    svs = scipy.linalg.svd(mat)[1]
+    cond = np.amax(abs(svs)) / np.amin(abs(svs))
+
+    return cond

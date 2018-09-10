@@ -7,15 +7,11 @@ import os
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
-from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
-
-OPTIMIZERS = OPT_EST_FORT + OPT_EST_PYTH
 
 
 def get_log_likl(contribs):
@@ -28,107 +24,137 @@ def get_log_likl(contribs):
     return crit_val
 
 
-def check_optimization_parameters(x):
+def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type='optim'):
+    """Parse the parameter vector into a dictionary of model quantities.
+
+    Args:
+        paras_vec (np.ndarray): 1d numpy array with the parameters
+        is_debug (bool): If true, the parameters are checked for validity
+        info: ????
+        paras_type (str): one of ['econ', 'optim']. A paras_vec of type 'econ' contains the
+            the standard deviations and covariances of the shock distribution. This is how
+            parameters are represented in the .ini file and the output of .fit().
+            A paras_vec of type 'optim' contains the elements of the cholesky factors of the
+            covariance matrix of the shock distribution. This type is used internally during
+            the likelihood estimation. The default value is 'optim' in order to make the function
+            more aligned with Fortran, where we never have to parse 'econ' parameters.
+
+    """
+    paras_vec = paras_vec.copy()
+    assert paras_type in ['econ', 'optim'], 'paras_type must be econ or optim.'
+
+    if is_debug and paras_type == 'optim':
+        _check_optimization_parameters(paras_vec)
+
+    pinfo = paras_parsing_information(len(paras_vec))
+    paras_dict = {}
+
+    # basic extraction
+    for quantity in pinfo:
+        start = pinfo[quantity]['start']
+        stop = pinfo[quantity]['stop']
+        paras_dict[quantity] = paras_vec[start: stop]
+
+    # modify the shock_coeffs
+    if paras_type == 'econ':
+        shocks_cholesky = coeffs_to_cholesky(paras_dict['shocks_coeffs'])
+    else:
+        shocks_cholesky, info = extract_cholesky(paras_vec, info)
+    paras_dict['shocks_cholesky'] = shocks_cholesky
+    del paras_dict['shocks_coeffs']
+
+    # overwrite the type information
+    type_shares, type_shifts = extract_type_information(paras_vec)
+    paras_dict['type_shares'] = type_shares
+    paras_dict['type_shifts'] = type_shifts
+
+    # checks
+    if is_debug:
+        assert check_model_parameters(paras_dict)
+
+    return paras_dict
+
+
+def get_optim_paras(paras_dict, num_paras, which, is_debug):
+    """Stack optimization parameters from a dictionary into a vector of type 'optim'.
+
+    Args:
+        paras_dict (dict): dictionary with quantities from which the parameters can be extracted
+        num_paras (int): number of parameters in the model (not only free parameters)
+        which (str): one of ['free', 'all'], determines whether the resulting parameter vetcor
+            contains only free parameters or all parameters.
+        is_debug (bool): If True, inputs and outputs are checked for consistency.
+
+
+    """
+    if is_debug:
+        assert which in ['free', 'all'], 'which must be in ["free", "all"]'
+        assert check_model_parameters(paras_dict)
+
+    pinfo = paras_parsing_information(num_paras)
+    x = np.tile(np.nan, num_paras)
+
+    start, stop = pinfo['delta']['start'], pinfo['delta']['stop']
+    x[start: stop] = paras_dict['delta']
+
+    start, stop = pinfo['coeffs_common']['start'], pinfo['coeffs_common']['stop']
+    x[start: stop] = paras_dict['coeffs_common']
+
+    start, stop = pinfo['coeffs_a']['start'], pinfo['coeffs_a']['stop']
+    x[start: stop] = paras_dict['coeffs_a']
+
+    start, stop = pinfo['coeffs_b']['start'], pinfo['coeffs_b']['stop']
+    x[start: stop] = paras_dict['coeffs_b']
+
+    start, stop = pinfo['coeffs_edu']['start'], pinfo['coeffs_edu']['stop']
+    x[start: stop] = paras_dict['coeffs_edu']
+
+    start, stop = pinfo['coeffs_home']['start'], pinfo['coeffs_home']['stop']
+    x[start: stop] = paras_dict['coeffs_home']
+
+    start, stop = pinfo['shocks_coeffs']['start'], pinfo['shocks_coeffs']['stop']
+    x[start: stop] = paras_dict['shocks_cholesky'][np.tril_indices(4)]
+
+    start, stop = pinfo['type_shares']['start'], pinfo['type_shares']['stop']
+    x[start: stop] = paras_dict['type_shares'][2:]
+
+    start, stop = pinfo['type_shifts']['start'], pinfo['type_shifts']['stop']
+    x[start: stop] = paras_dict['type_shifts'].flatten()[4:]
+
+    if is_debug:
+        _check_optimization_parameters(x)
+
+    if which == 'free':
+        x = [x[i] for i in range(num_paras) if not paras_dict['paras_fixed'][i]]
+        x = np.array(x)
+
+    return x
+
+
+def paras_parsing_information(num_paras):
+    """Dictionary with the start and stop indices of each quantity."""
+    num_types = int((num_paras - 53) / 6) + 1
+    num_shares = (num_types - 1) * 2
+    pinfo = {
+        'delta': {'start': 0, 'stop': 1},
+        'coeffs_common': {'start': 1, 'stop': 3},
+        'coeffs_a': {'start': 3, 'stop': 18},
+        'coeffs_b': {'start': 18, 'stop': 33},
+        'coeffs_edu': {'start': 33, 'stop': 40},
+        'coeffs_home': {'start': 40, 'stop': 43},
+        'shocks_coeffs': {'start': 43, 'stop': 53},
+        'type_shares': {'start': 53, 'stop': 53 + num_shares},
+        'type_shifts': {'start': 53 + num_shares, 'stop': num_paras}
+    }
+    return pinfo
+
+
+def _check_optimization_parameters(x):
     """Check optimization parameters."""
     assert (isinstance(x, np.ndarray))
     assert (x.dtype == np.float)
     assert (np.all(np.isfinite(x)))
     return True
-
-
-def dist_econ_paras(x_all_curre):
-    """Update parameter values. The np.array type is maintained."""
-    # Auxiliary objects
-    num_paras = len(x_all_curre)
-    num_types = int(len(x_all_curre[53:]) / 6) + 1
-
-    # Discount rates
-    delta = x_all_curre[0:1]
-
-    # Common Returns
-    coeffs_common = x_all_curre[1:3]
-
-    # Occupation A
-    coeffs_a = x_all_curre[3:18]
-
-    # Occupation B
-    coeffs_b = x_all_curre[18:33]
-
-    # Education
-    coeffs_edu = x_all_curre[33:40]
-
-    # Home
-    coeffs_home = x_all_curre[40:43]
-
-    shocks_coeffs = x_all_curre[43:53]
-    for i in [0, 4, 7, 9]:
-        shocks_coeffs[i] **= 2
-
-    shocks = np.zeros((4, 4))
-    shocks[0, :] = shocks_coeffs[0:4]
-    shocks[1, 1:] = shocks_coeffs[4:7]
-    shocks[2, 2:] = shocks_coeffs[7:9]
-    shocks[3, 3:] = shocks_coeffs[9:10]
-
-    shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
-
-    # Type Shares
-    type_shares = x_all_curre[53:53 + (num_types - 1) * 2]
-    type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
-
-    type_shifts = np.reshape(
-        x_all_curre[53 + (num_types - 1) * 2:num_paras], (num_types - 1, 4))
-
-    type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
-
-    # Collect arguments
-    args = (delta, coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home,
-            shocks_cov, type_shares, type_shifts)
-
-    # Finishing
-    return args
-
-
-def dist_optim_paras(x_all_curre, is_debug, info=None):
-    """ Update parameter values. The np.array type is maintained.
-    """
-    # Checks
-    if is_debug:
-        check_optimization_parameters(x_all_curre)
-
-    optim_paras = dict()
-
-    # Discount rate
-    optim_paras['delta'] = max(x_all_curre[0:1], 0.00)
-
-    # Common Rewards
-    optim_paras['coeffs_common'] = x_all_curre[1:3]
-
-    # Occupation A
-    optim_paras['coeffs_a'] = x_all_curre[3:18]
-
-    # Occupation B
-    optim_paras['coeffs_b'] = x_all_curre[18:33]
-
-    # Education
-    optim_paras['coeffs_edu'] = x_all_curre[33:40]
-
-    # Home
-    optim_paras['coeffs_home'] = x_all_curre[40:43]
-
-    # Cholesky
-    optim_paras['shocks_cholesky'], info = extract_cholesky(x_all_curre, info)
-
-    type_shares, type_shifts = extract_type_information(x_all_curre)
-    optim_paras['type_shares'] = type_shares
-    optim_paras['type_shifts'] = type_shifts
-
-    # Checks
-    if is_debug:
-        assert check_model_parameters(optim_paras)
-
-    # Finishing
-    return optim_paras
 
 
 def get_conditional_probabilities(type_shares, edu_start):
@@ -153,15 +179,18 @@ def get_conditional_probabilities(type_shares, edu_start):
 
 
 def extract_type_information(x):
-    """Extract the information about types from the estimation vector."""
-    num_types = int(len(x[53:]) / 6) + 1
+    """Extract the information about types from a parameter vector of type 'optim'."""
+    pinfo = paras_parsing_information(len(x))
 
     # Type shares
-    type_shares = x[53:53 + (num_types - 1) * 2]
+    start, stop = pinfo['type_shares']['start'], pinfo['type_shares']['stop']
+    num_types = int(len(x[start:]) / 6) + 1
+    type_shares = x[start: stop]
     type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
 
     # Type shifts
-    type_shifts = x[53 + (num_types - 1) * 2:]
+    start, stop = pinfo['type_shifts']['start'], pinfo['type_shifts']['stop']
+    type_shifts = x[start: stop]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
     type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
 
@@ -169,12 +198,13 @@ def extract_type_information(x):
 
 
 def extract_cholesky(x, info=None):
-    """Construct the Cholesky matrix."""
-    shocks_cholesky = np.tile(0.0, (4, 4))
-    shocks_cholesky[0, :1] = x[43:44]
-    shocks_cholesky[1, :2] = x[44:46]
-    shocks_cholesky[2, :3] = x[46:49]
-    shocks_cholesky[3, :4] = x[49:53]
+    """Extract the cholesky factor of the shock covariance from parameters of type 'optim."""
+    pinfo = paras_parsing_information(len(x))
+    start, stop = pinfo['shocks_coeffs']['start'], pinfo['shocks_coeffs']['stop']
+    shocks_coeffs = x[start: stop]
+    dim = number_of_triangular_elements_to_dimensio(len(shocks_coeffs))
+    shocks_cholesky = np.zeros((dim, dim))
+    shocks_cholesky[np.tril_indices(dim)] = shocks_coeffs
 
     # Stabilization
     if info is not None:
@@ -185,7 +215,7 @@ def extract_cholesky(x, info=None):
     # absence of randomness for testing with simulated datasets.
     if not (np.count_nonzero(shocks_cholesky) == 0):
         shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-        for i in range(4):
+        for i in range(len(shocks_cov)):
             if np.abs(shocks_cov[i, i]) < TINY_FLOAT:
                 shocks_cholesky[i, i] = np.sqrt(TINY_FLOAT)
                 if info is not None:
@@ -197,10 +227,46 @@ def extract_cholesky(x, info=None):
         return shocks_cholesky, None
 
 
+def coeffs_to_cholesky(coeffs):
+    """Return the cholesky factor of a covariance matrix described by coeffs.
+
+    The function can handle the case of a deterministic model (i.e. where all coeffs = 0)
+
+    Args:
+        coeffs (np.ndarray): 1d numpy array that contains the upper triangular elements of a
+        covariance matrix whose diagonal elements have been replaced by their square roots.
+
+    """
+    dim = dim = number_of_triangular_elements_to_dimensio(len(coeffs))
+    shocks = np.zeros((dim, dim))
+    shocks[np.triu_indices(dim)] = coeffs
+    shocks[np.diag_indices(dim)] **= 2
+
+    shocks_cov = shocks + shocks.T - np.diag(shocks.diagonal())
+
+    if np.count_nonzero(shocks_cov) == 0:
+        return np.zeros((dim, dim))
+    else:
+        return np.linalg.cholesky(shocks_cov)
+
+
+def cholesky_to_coeffs(shocks_cholesky):
+    """ Map the Cholesky factor into the coefficients from the .ini file."""
+    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
+    shocks_cov[np.diag_indices(len(shocks_cov))] **= 0.5
+    shocks_coeffs = shocks_cov[np.triu_indices(len(shocks_cov))].tolist()
+    return shocks_coeffs
+
+
 def get_total_values(period, num_periods, optim_paras, rewards_systematic,
                      draws, edu_spec, mapping_state_idx, periods_emax,
                      k, states_all):
-    """ Get total value of all possible states."""
+    """Get value function of all possible states.
+
+    This is called total value because it is the sum of immediate rewards, including realized
+    shocks, and expected future rewards.
+
+    """
     # We need to back out the wages from the total systematic rewards to
     # working in the labor market to add the shock properly.
     exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
@@ -297,39 +363,17 @@ def create_draws(num_periods, num_draws, seed, is_debug):
     return draws
 
 
-def cholesky_to_coeffs(shocks_cholesky):
-    """ Map the Cholesky factor into the coefficients from the .ini file."""
-    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-    for i in range(4):
-        shocks_cov[i, i] = np.sqrt(shocks_cov[i, i])
-
-    shocks_coeffs = shocks_cov[np.triu_indices(4)].tolist()
-
-    return shocks_coeffs
-
-
 def add_solution(respy_obj, periods_rewards_systematic, states_number_period,
                  mapping_state_idx, periods_emax, states_all):
-    """ Add solution to class instance.
-    """
+    """Add solution to class instance."""
     respy_obj.unlock()
-
-    respy_obj.set_attr('periods_rewards_systematic',
-                       periods_rewards_systematic)
-
+    respy_obj.set_attr('periods_rewards_systematic', periods_rewards_systematic)
     respy_obj.set_attr('states_number_period', states_number_period)
-
     respy_obj.set_attr('mapping_state_idx', mapping_state_idx)
-
     respy_obj.set_attr('periods_emax', periods_emax)
-
     respy_obj.set_attr('states_all', states_all)
-
     respy_obj.set_attr('is_solved', True)
-
     respy_obj.lock()
-
-    # Finishing
     return respy_obj
 
 
@@ -380,7 +424,7 @@ def check_model_parameters(optim_paras):
             'coeffs_common']
 
     for key in keys:
-        assert (isinstance(optim_paras[key], np.ndarray))
+        assert (isinstance(optim_paras[key], np.ndarray)), key
         assert (np.all(np.isfinite(optim_paras[key])))
         assert (optim_paras[key].dtype == 'float')
         assert (np.all(abs(optim_paras[key]) < PRINT_FLOAT))
@@ -423,16 +467,10 @@ def dist_class_attributes(respy_obj, *args):
         list of values from clsRespy.attr or single value from clsRespy.attr
 
     """
-    ret = []
-
-    # Process requests
-    for arg in args:
-        ret.append(respy_obj.get_attr(arg))
-
+    ret = [respy_obj.get_attr(arg) for arg in args]
     if len(ret) == 1:
         ret = ret[0]
 
-    # Finishing
     return ret
 
 
@@ -468,57 +506,6 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
             np.clip(np.exp(draws_transformed[:, j]), 0.0, HUGE_FLOAT)
 
     return draws_transformed
-
-
-def generate_optimizer_options(which, optim_paras, num_paras):
-
-    dict_ = dict()
-
-    if which == 'SCIPY-BFGS':
-        dict_['gtol'] = np.random.uniform(0.0000001, 0.1)
-        dict_['maxiter'] = np.random.randint(1, 10)
-        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
-
-    elif which == 'SCIPY-LBFGSB':
-        dict_['factr'] = np.random.uniform(10, 100)
-        dict_['pgtol'] = np.random.uniform(1e-6, 1e-4)
-        dict_['maxiter'] = np.random.randint(1, 10)
-        dict_['maxls'] = np.random.randint(1, 10)
-        dict_['m'] = np.random.randint(1, 10)
-        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
-
-    elif which == 'SCIPY-POWELL':
-        dict_['xtol'] = np.random.uniform(0.0000001, 0.1)
-        dict_['ftol'] = np.random.uniform(0.0000001, 0.1)
-        dict_['maxfun'] = np.random.randint(1, 100)
-        dict_['maxiter'] = np.random.randint(1, 100)
-
-    elif which in ['FORT-NEWUOA', 'FORT-BOBYQA']:
-        rhobeg = np.random.uniform(0.0000001, 0.001)
-        dict_['maxfun'] = np.random.randint(1, 100)
-        dict_['rhobeg'] = rhobeg
-        dict_['rhoend'] = np.random.uniform(0.01, 0.99) * rhobeg
-
-        # It is not recommended that N is larger than upper as the code might
-        # break down due to a segmentation fault. See the source files for the
-        # absolute upper bounds.
-        assert sum(optim_paras['paras_fixed']) != num_paras
-        lower = (num_paras - sum(optim_paras['paras_fixed'])) + 2
-        upper = (2 * (num_paras - sum(optim_paras['paras_fixed'])) + 1)
-        dict_['npt'] = np.random.randint(lower, upper + 1)
-
-    elif which == 'FORT-BFGS':
-        dict_['maxiter'] = np.random.randint(1, 100)
-        dict_['stpmx'] = np.random.uniform(75, 125)
-        dict_['gtol'] = np.random.uniform(0.0001, 0.1)
-        dict_['eps'] = np.random.uniform(1e-9, 1e-6)
-
-    else:
-        raise NotImplementedError(
-            'The optimizer you requested is not implemented.'
-        )
-
-    return dict_
 
 
 def format_opt_parameters(dict_, pos):
@@ -604,63 +591,6 @@ def remove_scratch(fname):
     """Remove scratch files."""
     if os.path.exists(fname):
         os.unlink(fname)
-
-
-def get_optim_paras(optim_paras, num_paras, which, is_debug):
-    """ Get optimization parameters.
-    """
-    # Checks
-    if is_debug:
-        assert check_model_parameters(optim_paras)
-
-    # Auxiliary objects
-    num_types = len(optim_paras['type_shifts'])
-
-    # Initialize container
-    x = np.tile(np.nan, num_paras)
-
-    # Discount rate
-    x[0:1] = optim_paras['delta']
-
-    # Occupation A
-    x[1:3] = optim_paras['coeffs_common']
-
-    # Occupation A
-    x[3:18] = optim_paras['coeffs_a']
-
-    # Occupation B
-    x[18:33] = optim_paras['coeffs_b']
-
-    # Education
-    x[33:40] = optim_paras['coeffs_edu']
-
-    # Home
-    x[40:43] = optim_paras['coeffs_home']
-
-    # Shocks
-    x[43:53] = optim_paras['shocks_cholesky'][np.tril_indices(4)]
-
-    # Shares
-    x[53:53 + (num_types - 1) * 2] = optim_paras['type_shares'][2:]
-
-    x[53 + (num_types - 1) * 2:num_paras] = \
-        optim_paras['type_shifts'].flatten()[4:]
-
-    # Checks
-    if is_debug:
-        check_optimization_parameters(x)
-
-    # Select subset
-    if which == 'free':
-        x_free_curre = []
-        for i in range(num_paras):
-            if not optim_paras['paras_fixed'][i]:
-                x_free_curre += [x[i]]
-
-        x = np.array(x_free_curre)
-
-    # Finishing
-    return x
 
 
 def check_early_termination(maxfun, num_eval):
@@ -811,3 +741,14 @@ def get_valid_bounds(which, value):
     elif which in ['share']:
         bounds = [0.0, None]
     return bounds
+
+
+def number_of_triangular_elements_to_dimensio(num):
+    """Calculate the dimension of a square matrix from number of triangular elements.
+
+    Args:
+        num (int): The number of upper or lower triangular elements in the matrix
+
+
+    """
+    return int(np.sqrt(8 * num + 1) / 2 - 0.5)

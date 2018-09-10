@@ -12,7 +12,6 @@ from respy.pre_processing.data_processing import process_dataset
 from respy.scripts.scripts_update import scripts_update
 from respy.custom_exceptions import UserError
 from respy import RespyCls
-from respy import simulate
 
 
 def dist_input_arguments(parser):
@@ -143,7 +142,7 @@ def scripts_compare(base_init, is_update):
     if fname_est == fname_sim:
         raise UserError(' Simulation would overwrite estimation dataset')
     data_obs = process_dataset(respy_obj)
-    data_sim = simulate(respy_obj)[1]
+    data_sim = respy_obj.simulate()[1]
 
     if num_periods > 1:
         tf = []

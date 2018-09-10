@@ -8,7 +8,6 @@ from respy.tests.codes.random_init import generate_random_dict
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.auxiliary import compare_est_log
 
-from respy import estimate
 from respy import RespyCls
 
 
@@ -44,7 +43,7 @@ class TestClass(object):
 
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate_observed(respy_obj)
-            _, crit_val = estimate(respy_obj)
+            _, crit_val = respy_obj.fit()
 
             if base is None:
                 base = crit_val
@@ -81,7 +80,7 @@ class TestClass(object):
 
             simulate_observed(respy_obj)
 
-            estimate(respy_obj)
+            respy_obj.fit()
 
             # Check for identical records
             fname = file_sim + '.respy.sol'

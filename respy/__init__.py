@@ -19,8 +19,6 @@ major, minor = sys.version_info[:2]
 np.testing.assert_equal(major == 3, True)
 np.testing.assert_equal(minor >= 6, True)
 
-from respy.estimate import estimate
-from respy.simulate import simulate
 from respy.clsRespy import RespyCls
 
 __version__ = '2.0.0.dev20'

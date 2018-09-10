@@ -5,13 +5,12 @@ from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.solve.solve_auxiliary import calculate_wages_systematic
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import construct_covariates
-from respy.python.shared.shared_auxiliary import dist_optim_paras
+from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.pre_processing.model_processing import write_init_file
 
 from respy.tests.codes.random_init import generate_init
-from respy import simulate
 from respy import RespyCls
 
 
@@ -32,7 +31,7 @@ class TestClass(object):
 
             # Apply numerous transformations
             for j in range(10):
-                optim_paras = dist_optim_paras(x, is_debug=True)
+                optim_paras = distribute_parameters(x, is_debug=True)
                 args = (optim_paras, num_paras, 'all', True)
                 x = get_optim_paras(*args)
 
@@ -69,7 +68,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        _, df = simulate(respy_obj)
+        _, df = respy_obj.simulate()
 
         # Check special case
         optim_paras, num_types, edu_spec, num_periods = dist_class_attributes(respy_obj,
@@ -147,7 +146,7 @@ class TestClass(object):
 
         # Perform toolbox actions
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj, _ = simulate(respy_obj)
+        respy_obj, _ = respy_obj.simulate()
 
         periods_rewards_systematic, states_number_period, states_all, num_periods, optim_paras = \
         dist_class_attributes(respy_obj, 'periods_rewards_systematic', 'states_number_period',
@@ -182,7 +181,7 @@ class TestClass(object):
         write_init_file(init_dict)
 
         respy_obj = RespyCls('test.respy.ini')
-        respy_obj, _ = simulate(respy_obj)
+        respy_obj, _ = respy_obj.simulate()
 
         num_periods, optim_paras, edu_spec, mapping_state_idx, periods_emax, states_all, \
             periods_rewards_systematic, states_number_period = dist_class_attributes(respy_obj,

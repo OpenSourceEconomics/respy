@@ -18,10 +18,13 @@ import socket
 import sys
 import os
 
+# Set variable so that todos are shown in local build
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../respy'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 # -- General configuration ------------------------------------------------
 
@@ -113,7 +116,10 @@ pygments_style = 'sphinx'
 # keep_warnings = False
 
 # If true, `todo` and `todoList` produce output, else they produce nothing. T
-todo_include_todos = False
+if on_rtd:
+    todo_include_todos = False
+else:
+    todo_include_todos = True
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -148,7 +154,7 @@ html_theme_options = {}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = [    ]
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied

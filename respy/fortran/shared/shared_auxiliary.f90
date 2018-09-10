@@ -817,6 +817,43 @@ SUBROUTINE store_results(request, mapping_state_idx, states_all, periods_rewards
 END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
+SUBROUTINE extract_parsing_info(num_paras, num_types, pinfo)
+    !/* external objects        */
+    INTEGER(our_int), INTENT(IN)    :: num_paras
+    INTEGER(our_int), INTENT(IN)    :: num_types
+    TYPE(PARSING_INFO), INTENT(OUT) :: pinfo
+
+    pinfo%delta%start = 1
+    pinfo%delta%stop = 1
+
+    pinfo%coeffs_common%start = 2
+    pinfo%coeffs_common%stop = 3
+
+    pinfo%coeffs_a%start = 4
+    pinfo%coeffs_a%stop = 18
+
+    pinfo%coeffs_b%start = 19
+    pinfo%coeffs_b%stop = 33
+
+    pinfo%coeffs_edu%start = 34
+    pinfo%coeffs_edu%stop = 40
+
+    pinfo%coeffs_home%start = 41
+    pinfo%coeffs_home%stop = 43
+
+    pinfo%shocks_coeffs%start = 44
+    pinfo%shocks_coeffs%stop = 53
+
+    pinfo%type_shares%start = 54
+    pinfo%type_shares%stop = 54 + (num_types - 1) * 2 - 1
+
+    pinfo%type_shifts%start = 54 + (num_types - 1) * 2
+    pinfo%type_shifts%stop = num_paras
+
+END SUBROUTINE
+
+!******************************************************************************
+!******************************************************************************
 SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, num_procs, num_slaves, is_debug, is_interpolated, num_points_interp, is_myopic, request, exec_dir, maxfun, num_free, edu_spec, precond_spec, optimizer_used, optimizer_options, file_sim, num_rows, num_paras)
 
     !
@@ -977,6 +1014,8 @@ SUBROUTINE read_specification(optim_paras, tau, seed_sim, seed_emax, seed_prob, 
         READ(99, 1510) optim_paras%paras_bounds(2, :)
 
     CLOSE(99)
+
+    CALL extract_parsing_info(num_paras, num_types, pinfo)
 
     DO i = 1, num_paras
         IF(optim_paras%paras_bounds(1, i) == -MISSING_FLOAT) optim_paras%paras_bounds(1, i) = - HUGE_FLOAT
@@ -1143,17 +1182,17 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
 !------------------------------------------------------------------------------
 
     ! Extract model ingredients
-    optim_paras%delta = MAX(x(1:1), zero_dble)
+    optim_paras%delta = MAX(x(pinfo%delta%start: pinfo%delta%stop), zero_dble)
 
-    optim_paras%coeffs_common = x(2:3)
+    optim_paras%coeffs_common = x(pinfo%coeffs_common%start: pinfo%coeffs_common%stop)
 
-    optim_paras%coeffs_a = x(4:18)
+    optim_paras%coeffs_a = x(pinfo%coeffs_a%start: pinfo%coeffs_a%stop)
 
-    optim_paras%coeffs_b = x(19:33)
+    optim_paras%coeffs_b = x(pinfo%coeffs_b%start: pinfo%coeffs_b%stop)
 
-    optim_paras%coeffs_edu = x(34:40)
+    optim_paras%coeffs_edu = x(pinfo%coeffs_edu%start: pinfo%coeffs_edu%stop)
 
-    optim_paras%coeffs_home = x(41:43)
+    optim_paras%coeffs_home = x(pinfo%coeffs_home%start: pinfo%coeffs_home%stop)
 
     ! The information pertains to the stabilization of an otherwise zero variance.
     IF (PRESENT(info)) THEN
@@ -1163,10 +1202,10 @@ SUBROUTINE dist_optim_paras(optim_paras, x, info)
     END IF
 
     optim_paras%type_shares = zero_dble
-    optim_paras%type_shares(3:) = x(54:54 + (num_types - 1) * 2 - 1)
+    optim_paras%type_shares(3:) = x(pinfo%type_shares%start: pinfo%type_shares%stop)
 
     optim_paras%type_shifts = zero_dble
-    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(54 + (num_types - 1) * 2:num_paras), (/4, num_types  - 1/)))
+    optim_paras%type_shifts(2:, :) =  TRANSPOSE(RESHAPE(x(pinfo%type_shifts%start: pinfo%type_shifts%stop), (/4, num_types  - 1/)))
 
 END SUBROUTINE
 !******************************************************************************
