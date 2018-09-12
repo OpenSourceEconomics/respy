@@ -364,7 +364,7 @@ class TestClass(object):
             'num_agents_sim', 'num_draws_prob', 'tau', 'seed_sim', 'num_agents_est',
             'states_number_period', 'optimizer_options', 'file_sim', 'num_types', 'num_paras')
 
-        data_array = process_dataset(respy_obj).as_matrix()
+        data_array = process_dataset(respy_obj).values
         num_obs_agent = get_num_obs_agent(data_array, num_agents_est)
         min_idx = edu_spec['max'] + 1
 
@@ -659,7 +659,7 @@ class TestClass(object):
 
             num_agents_est = respy_obj.get_attr('num_agents_est')
 
-            data_array = process_dataset(respy_obj).as_matrix()
+            data_array = process_dataset(respy_obj).values
 
             py = get_num_obs_agent(data_array, num_agents_est)
             f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)

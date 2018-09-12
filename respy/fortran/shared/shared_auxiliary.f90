@@ -224,7 +224,7 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     !/* external objects        */
 
-    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(4, 4)
+    REAL(our_dble), INTENT(OUT)     :: shocks_cholesky(:, :)
 
     REAL(our_dble), INTENT(IN)      :: x(:)
 
@@ -234,7 +234,11 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     INTEGER(our_int)                :: i
 
-    REAL(our_dble)                  :: shocks_cov(4, 4)
+    REAL(our_dble)                  :: shocks_cov(size(shocks_cholesky, 1), size(shocks_cholesky, 2))
+
+    INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: dim
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -242,19 +246,20 @@ SUBROUTINE extract_cholesky(shocks_cholesky, x, info)
 
     shocks_cholesky = zero_dble
 
-    shocks_cholesky(1, :1) = x(44:44)
-
-    shocks_cholesky(2, :2) = x(45:46)
-
-    shocks_cholesky(3, :3) = x(47:49)
-
-    shocks_cholesky(4, :4) = x(50:53)
+    dim = size(shocks_cholesky, 1)
+    k = 0
+    DO i = 1, dim
+        DO j = 1, i
+            shocks_cholesky(i, j) = x(pinfo%shocks_coeffs%start + k)
+            k = k + 1
+        END DO
+    END DO
 
     ! We need to ensure that the diagonal elements are larger than zero during an estimation. However, we want to allow for the special case of total absence of randomness for testing purposes of simulated datasets.
     IF (.NOT. ALL(shocks_cholesky .EQ. zero_dble)) THEN
         IF (PRESENT(info)) info = 0
         shocks_cov = MATMUL(shocks_cholesky, TRANSPOSE(shocks_cholesky))
-        DO i = 1, 4
+        DO i = 1, dim
             IF (ABS(shocks_cov(i, i)) .LT. TINY_FLOAT) THEN
                 shocks_cholesky(i, i) = SQRT(TINY_FLOAT)
                 IF (PRESENT(info)) info = 1
@@ -271,8 +276,8 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
 
     REAL(our_dble), INTENT(OUT)     :: draws_transformed(:, :)
 
-    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(4, 4)
-    REAL(our_dble), INTENT(IN)      :: shocks_mean(4)
+    REAL(our_dble), INTENT(IN)      :: shocks_cholesky(:, :)
+    REAL(our_dble), INTENT(IN)      :: shocks_mean(:)
     REAL(our_dble), INTENT(IN)      :: draws(:, :)
 
     !/* internal objects        */
@@ -281,6 +286,7 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
 
     INTEGER(our_int)                :: num_draws
     INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: dim
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -293,7 +299,9 @@ SUBROUTINE transform_disturbances(draws_transformed, draws, shocks_mean, shocks_
         draws_transformed(i:i, :) = TRANSPOSE(MATMUL(shocks_cholesky, TRANSPOSE(draws(i:i, :))))
     END DO
 
-    DO i = 1, 4
+    dim = size(shocks_mean, 1)
+
+    DO i = 1, dim
         draws_transformed(:, i) = draws_transformed(:, i) + shocks_mean(i)
     END DO
 
@@ -1266,35 +1274,39 @@ SUBROUTINE get_optim_paras(x, optim_paras, is_all)
 
     INTEGER(our_int)                :: i
     INTEGER(our_int)                :: j
+    INTEGER(our_int)                :: k
+    INTEGER(our_int)                :: dim
 
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    x_internal(1:1) = optim_paras%delta
+    x_internal(pinfo%delta%start: pinfo%delta%stop) = optim_paras%delta
 
-    x_internal(2:3) = optim_paras%coeffs_common(:)
+    x_internal(pinfo%coeffs_common%start: pinfo%coeffs_common%stop) = optim_paras%coeffs_common(:)
 
-    x_internal(4:18) = optim_paras%coeffs_a(:)
+    x_internal(pinfo%coeffs_a%start: pinfo%coeffs_a%stop) = optim_paras%coeffs_a(:)
 
-    x_internal(19:33) = optim_paras%coeffs_b(:)
+    x_internal(pinfo%coeffs_b%start: pinfo%coeffs_b%stop) = optim_paras%coeffs_b(:)
 
-    x_internal(34:40) = optim_paras%coeffs_edu(:)
+    x_internal(pinfo%coeffs_edu%start: pinfo%coeffs_edu%stop) = optim_paras%coeffs_edu(:)
 
-    x_internal(41:43) = optim_paras%coeffs_home(:)
+    x_internal(pinfo%coeffs_home%start: pinfo%coeffs_home%stop) = optim_paras%coeffs_home(:)
 
-    x_internal(44:44) = optim_paras%shocks_cholesky(1, :1)
+    dim = size(optim_paras%shocks_cholesky, 1)
 
-    x_internal(45:46) = optim_paras%shocks_cholesky(2, :2)
+    k = 0
+    DO i = 1, dim
+        DO j = 1, i
+            x_internal(pinfo%shocks_coeffs%start + k) = optim_paras%shocks_cholesky(i, j)
+            k = k + 1
+        END DO
+    END DO
 
-    x_internal(47:49) = optim_paras%shocks_cholesky(3, :3)
-
-    x_internal(50:53) = optim_paras%shocks_cholesky(4, :4)
-
-    x_internal(54:(54 + (num_types - 1) * 2) - 1) = optim_paras%type_shares(3:)
+    x_internal(pinfo%type_shares%start: pinfo%type_shares%stop) = optim_paras%type_shares(3:)
 
     shifts = PACK(TRANSPOSE(optim_paras%type_shifts), .TRUE.)
-    x_internal(54 + (num_types - 1) * 2:num_paras) = shifts(5:)
+    x_internal(pinfo%type_shifts%start: pinfo%type_shifts%stop) = shifts(5:)
 
     ! Sometimes it is useful to return all parameters instead of just those freed for the estimation.
     IF(is_all) THEN

@@ -1199,7 +1199,7 @@ SUBROUTINE wrapper_extract_cholesky(shocks_cholesky, info, x)
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-
+    CALL extract_parsing_info(num_paras, num_types, pinfo)
     CALL extract_cholesky(shocks_cholesky, x, info)
 
 END SUBROUTINE
