@@ -3,7 +3,6 @@
 import pandas as pd
 import numpy as np
 import shlex
-from os import getcwd
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
@@ -78,8 +77,6 @@ def compare_init(fname_base, fname_alt):
     alt_lines = [line.rstrip('\n') for line in open(fname_alt, 'r')]
 
     for i, base_line in enumerate(base_lines):
-        print(base_line)
-        print(alt_lines[i], '\n')
         if alt_lines[i].replace(' ', '') != base_line.replace(' ', ''):
             return False
     return True

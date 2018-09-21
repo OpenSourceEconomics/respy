@@ -7,12 +7,11 @@ import numpy as np
 
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 
 from codes.random_init import generate_random_dict
 from codes.auxiliary import simulate_observed
 
-from respy import estimate
 from respy import RespyCls
 
 
@@ -45,11 +44,11 @@ def run(hours):
                 if IS_PARALLELISM_MPI:
                     init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate_observed(respy_obj)
-            _, crit_val = estimate(respy_obj)
+            _, crit_val = respy_obj.fit()
 
             if base is None:
                 base = crit_val
