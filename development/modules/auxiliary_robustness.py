@@ -3,16 +3,14 @@ import os
 from os.path import join, exists
 from shutil import rmtree, copy
 from time import time
-from respy.python.shared.shared_auxiliary import print_init_dict
 from respy.tests.codes.random_init import VERSION_CONSTRAINTS
-from codes.random_init import generate_init
-from respy import RespyCls, estimate
+from respy.tests.codes.random_init import generate_init
+from respy import RespyCls
 from datetime import timedelta, datetime
 import traceback
 from functools import partial
 from multiprocessing import Pool
 # import random_init
-# import estimate
 
 
 def run_robustness_test(seed, is_investigation):
@@ -57,7 +55,7 @@ def run_robustness_test(seed, is_investigation):
 
     try:
         respy_obj = RespyCls('test.respy.ini')
-        estimate(respy_obj)
+        respy_obj.fit()
     except:
         tb = traceback.format_exc()
         passed = False

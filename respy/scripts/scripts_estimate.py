@@ -3,7 +3,6 @@ import argparse
 import os
 
 from respy.custom_exceptions import UserError
-from respy import estimate
 from respy import RespyCls
 
 
@@ -47,7 +46,7 @@ def scripts_estimate(single, init_file):
         respy_obj.lock()
 
     # Optimize the criterion function.
-    estimate(respy_obj)
+    respy_obj.fit()
 
 
 if __name__ == '__main__':

@@ -17,7 +17,6 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 from respy import RespyCls
-from respy import simulate
 
 # module-wide variables
 OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
@@ -37,7 +36,7 @@ def simulate_observed(respy_obj, is_missings=True):
 
     seed_sim = dist_class_attributes(respy_obj, 'seed_sim')
 
-    simulate(respy_obj)
+    respy_obj.simulate()
 
     # It is important to set the seed after the simulation call. Otherwise, the value of the
     # seed differs due to the different implementations of the PYTHON and FORTRAN programs.
@@ -79,6 +78,8 @@ def compare_init(fname_base, fname_alt):
     alt_lines = [line.rstrip('\n') for line in open(fname_alt, 'r')]
 
     for i, base_line in enumerate(base_lines):
+        print(base_line)
+        print(alt_lines[i], '\n')
         if alt_lines[i].replace(' ', '') != base_line.replace(' ', ''):
             return False
     return True

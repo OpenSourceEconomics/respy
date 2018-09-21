@@ -44,6 +44,32 @@ MODULE shared_constants
     INTEGER(our_int)            :: min_idx
     INTEGER(our_int)            :: num_rows
 
+    !Define a type to emulate the dictionary that holds the information to parse the parameter vector
+    TYPE START_STOP
+
+        INTEGER(our_int)    :: start
+        INTEGER(our_int)    :: stop
+
+    END TYPE
+
+    TYPE PARSING_INFO
+
+        TYPE(START_STOP)    :: delta
+        TYPE(START_STOP)    :: coeffs_common
+        TYPE(START_STOP)    :: coeffs_a
+        TYPE(START_STOP)    :: coeffs_b
+        TYPE(START_STOP)    :: coeffs_military
+        TYPE(START_STOP)    :: coeffs_edu
+        TYPE(START_STOP)    :: coeffs_home
+        TYPE(START_STOP)    :: shocks_coeffs
+        TYPE(START_STOP)    :: type_shares
+        TYPE(START_STOP)    :: type_shifts
+
+    END TYPE
+
+    !Make an instance of PARSING_INFO
+    TYPE(PARSING_INFO)      :: pinfo
+
     ! This variable needs to be accessible during optimization. It is defined here as it is required by the optimizers as well.
     INTEGER(our_int)            :: num_eval = zero_int
 

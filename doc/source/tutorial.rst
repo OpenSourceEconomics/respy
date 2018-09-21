@@ -6,7 +6,7 @@ We now illustrate the basic capabilities of the ``respy`` package. We start with
 Model Specification
 -------------------
 
-The model is specified in an initialization file. For an example, check out the first parameterization analyzed in Keane and Wolpin (1994) `here <https://github.com/restudToolbox/package/blob/master/respy/tests/resources/kw_data_one.ini>`_. Let us discuss each of its elements in more detail.
+The model is specified in an initialization file. For an example, check out the first parameterization analyzed in Keane and Wolpin (1994) `here <https://github.com/OpenSourceEconomics/respy/blob/janosg/respy/tests/resources/kw_data_one.ini>`__. Let us discuss each of its elements in more detail.
 
 **BASICS**
 
@@ -167,7 +167,7 @@ flag        bool        apply scaling to parameters
 minimum     float       minimum value for gradient approximation
 =======     ======      ==========================
 
-The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS  (Norcedal and Wright, 2006) and POWELL (Powell, 1964) algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`_. For Fortran, we implemented the BFGS and NEWUOA (Powell, 2004) algorithms.
+The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS  (Norcedal and Wright, 2006) and POWELL (Powell, 1964) algorithm. Their implementation details are available `here <http://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`__. For Fortran, we implemented the BFGS and NEWUOA (Powell, 2004) algorithms.
 
 **SCIPY-BFGS**
 
@@ -251,40 +251,67 @@ In this example, the first coefficient is free. The second one is fixed at 0.2. 
 
 If you specify bounds for any free parameter, you have to choose a constraint optimizer such as SCIPY-LBFGSB or FORT-BOBYQA.
 
+Dataset
+-------
+
+To use respy, you need a dataset with the following columns:
+
+- Identifier: identifies the different individuals in the sample
+- Period: identifies the different rounds of observation for each individual
+- Choice: an integer variable that indicates the labor market choice
+    - 1 = Occupation A
+    - 2 = Occupation B
+    - 3 = Education
+    - 4 = Home
+- Earnings: a float variable that indicates how much people are earning. This variable is missing (indicated by a dot) if individuals don't work.
+- Experience_A: labor market experience in sector A
+- Experience_B: labor market experience in sector B
+- Years_Schooling: years of schooling
+- Lagged_Choice: choice in the period before the model starts. Codes are the same as in Choice.
+
+Datasets for respy are stored in simple text files, where columns are separated by spaces. The easiest way to write such a text file in Python is to create a pandas DataFrame with all relevant columns and then storing it in the following way:
+
+.. code::
+
+    with open('my_data.respy.dat', 'w') as file:
+        df.to_string(file, index=False, header=True, na_rep='.')
+
 
 Examples
 --------
+.. todo:: The following link refers to the test/resources dir since there is no longer any special directory for the tutorial files. Would it be better to separate this files in a specific example directory? Additionally there is no longer an example.ini initalization file.
 
-Let us explore the basic capabilities of the ``respy`` package with a couple of examples. All the material is available `online <https://github.com/restudToolbox/package/tree/master/example>`_.
+Let us explore the basic capabilities of the ``respy`` package with a couple of examples. All the material is available `online <https://github.com/OpenSourceEconomics/respy/tree/janosg/respy/tests/resources>`__.
 
 **Simulation and Estimation**
 
 We always first initialize an instance of the ``RespyCls`` by passing in the path to the initialization file.
 ::
 
-    import respy
+    from respy import RespyCls
 
-    respy_obj = respy.RespyCls('example.ini')
+    respy_obj = RespyCls('example.ini')
 
 Now we can simulate a sample from the specified model.
 ::
 
-    respy.simulate(respy_obj)
+    respy_obj.simulate()
 
 During the simulation, several files will appear in the current working directory. ``sol.respy.log`` allows to monitor the progress of the solution algorithm, while ``sim.respy.log`` records the progress of the simulation. The simulated dataset with the agents' choices and state experiences is stored in ``data.respy.dat``, ``data.respy.info`` provides some basic descriptives about the simulated dataset. See our section on :ref:`Additional Details <additional-details>` for more information regarding the output files.
 
 Now that we simulated some data, we can start an estimation. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample. The coefficient values in the initialization file serve as the starting values.
 ::
 
-    x, crit_val = respy.estimate(respy_obj)
+    x, crit_val = respy_obj.fit()
 
 This directly returns the value of the coefficients at the final step of the optimizer as well as the value of the criterion function. However, some additional files appear in the meantime. Monitoring the estimation is best done using ``est.respy.info`` and more details about each evaluation of the criterion function are available in ``est.respy.log``.
 
 We can now simulate a sample using the estimated parameters by updating the instance of the ``RespyCls``.
 ::
+
     respy_obj.update_model_paras(x)
 
-    respy.simulate(respy_obj)
+    respy_obj.simulate()
 
 **Recomputing Keane and Wolpin (1994)**
 
@@ -295,17 +322,17 @@ Just using the capabilities outlined so far, it is straightforward to recompute 
     """ This module recomputes some of the key results of Keane and Wolpin (1994).
     """
 
-    import respy
+    from respy import RespyCls
 
     # We can simply iterate over the different model specifications outlined in
     # Table 1 of their paper.
     for spec in ['kw_data_one.ini', 'kw_data_two.ini', 'kw_data_three.ini']:
 
         # Process relevant model initialization file
-        respy_obj = respy.RespyCls(spec)
+        respy_obj = RespyCls(spec)
 
         # Let us simulate the datasets discussed on the page 658.
-        respy.simulate(respy_obj)
+        respy_obj.simulate()
 
         # To start estimations for the Monte Carlo exercises. For now, we just
         # evaluate the model at the starting values, i.e. maxfun set to zero in
@@ -314,6 +341,6 @@ Just using the capabilities outlined so far, it is straightforward to recompute 
         respy_obj.set_attr('maxfun', 0)
         respy_obj.lock()
 
-        respy.estimate(respy_obj)
+        respy_obj.fit()
 
 In an earlier `working paper  <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`_, Keane and Wolpin (1994b) provide a full account of the choice distributions for all three specifications. The results from the recomputation line up well with their reports.

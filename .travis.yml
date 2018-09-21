@@ -41,4 +41,7 @@ after_success:
     fi
 
 notifications:
-    email: false
+  slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
+    on_success: change
+
+  email: false

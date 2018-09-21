@@ -6,9 +6,8 @@ import os
 
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.process.process_python import process
+from respy.pre_processing.data_processing import process_dataset
 from respy.custom_exceptions import UserError
-from respy.estimate import check_estimation
 from respy import RespyCls
 
 # module-wide variables
@@ -40,8 +39,8 @@ def scripts_check(request, init_file):
     respy_obj = RespyCls(init_file)
 
     # Distribute model parameters
-    num_periods, edu_spec, num_types = dist_class_attributes(respy_obj, 'num_periods',
-        'edu_spec', 'num_types')
+    num_periods, edu_spec, num_types = dist_class_attributes(
+        respy_obj, 'num_periods', 'edu_spec', 'num_types')
 
     # We need to run additional checks if an estimation is requested.
     if request == 'estimate':
@@ -50,7 +49,7 @@ def scripts_check(request, init_file):
         mapping_state_idx = pyth_create_state_space(*args)[2]
 
         # We also check the structure of the dataset.
-        data_array = process(respy_obj).as_matrix()
+        data_array = process_dataset(respy_obj).values
         num_rows = data_array.shape[0]
 
         for j in range(num_rows):
@@ -75,7 +74,7 @@ def scripts_check(request, init_file):
                 raise UserError(ERR_MSG)
 
         # We also take a special look at the optimizer options.
-        check_estimation(respy_obj)
+        respy_obj.check_estimation()
 
 if __name__ == '__main__':
 

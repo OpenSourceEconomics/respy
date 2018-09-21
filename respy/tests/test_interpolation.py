@@ -1,9 +1,9 @@
 import numpy as np
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_auxiliary import print_init_dict
-from codes.random_init import generate_random_dict
-from codes.auxiliary import simulate_observed
+from respy.pre_processing.model_processing import write_init_file
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.auxiliary import simulate_observed
 from respy import RespyCls
 
 
@@ -27,7 +27,7 @@ class TestClass(object):
         for _ in range(2):
 
             # Write out request
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             # Process and solve
             respy_obj = RespyCls('test.respy.ini')
@@ -67,7 +67,7 @@ class TestClass(object):
         for _ in range(2):
 
             # Write out request
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             # Process and solve
             respy_obj = RespyCls('test.respy.ini')

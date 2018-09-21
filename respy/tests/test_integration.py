@@ -12,27 +12,26 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.python.shared.shared_auxiliary import extract_cholesky
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.scripts.scripts_simulate import scripts_simulate
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.scripts.scripts_update import scripts_update
 from respy.scripts.scripts_modify import scripts_modify
-from respy.python.process.process_python import process
+from respy.pre_processing.data_processing import process_dataset
 from respy.scripts.scripts_check import scripts_check
-from codes.auxiliary import write_interpolation_grid
-from codes.random_init import generate_random_dict
-from codes.auxiliary import transform_to_logit
-from codes.auxiliary import write_lagged_start
+from respy.tests.codes.auxiliary import write_interpolation_grid
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.auxiliary import transform_to_logit
+from respy.tests.codes.auxiliary import write_lagged_start
 from respy.custom_exceptions import UserError
-from codes.auxiliary import simulate_observed
-from codes.random_init import generate_init
-from codes.auxiliary import write_edu_start
-from codes.auxiliary import compare_init
-from codes.auxiliary import write_types
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.auxiliary import write_edu_start
+from respy.tests.codes.auxiliary import compare_init
+from respy.tests.codes.auxiliary import write_types
 
-from respy import estimate
 from respy import RespyCls
 
 
@@ -49,7 +48,7 @@ class TestClass(object):
 
         simulate_observed(respy_obj)
 
-        process(respy_obj)
+        process_dataset(respy_obj)
 
     def test_2(self):
         """ If there is no random variation in rewards then the number of draws to simulate the
@@ -138,7 +137,7 @@ class TestClass(object):
             assert_frame_equal(base_data, data_frame)
 
             # This part checks the equality of an evaluation of the criterion function.
-            _, crit_val = estimate(respy_obj)
+            _, crit_val = respy_obj.fit()
 
             if base_val is None:
                 base_val = crit_val
@@ -166,7 +165,7 @@ class TestClass(object):
         generate_init(constr)
 
         respy_obj = RespyCls('test.respy.ini')
-        estimate(respy_obj)
+        respy_obj.fit()
 
     def test_5(self):
         """ Test the scripts.
@@ -190,7 +189,7 @@ class TestClass(object):
             respy_obj.set_attr('maxfun', 0)
             respy_obj.lock()
 
-            estimate(respy_obj)
+            respy_obj.fit()
 
             # Potentially evaluate at different points.
             generate_init(constr)
@@ -257,14 +256,14 @@ class TestClass(object):
         # Run estimation task.
         respy_obj = RespyCls('test.respy.ini')
         simulate_observed(respy_obj)
-        base_x, base_val = estimate(respy_obj)
+        base_x, base_val = respy_obj.fit()
 
         # We also check whether updating the class instance and a single evaluation of the
         # criterion function give the same result.
         respy_obj.update_optim_paras(base_x)
         respy_obj.attr['maxfun'] = 0
 
-        alt_x, alt_val = estimate(respy_obj)
+        alt_x, alt_val = respy_obj.fit()
 
         for arg in [(alt_val, base_val), (alt_x, base_x)]:
             np.testing.assert_almost_equal(arg[0], arg[1])
@@ -279,7 +278,7 @@ class TestClass(object):
 
         respy_obj = RespyCls('test.respy.ini')
         respy_obj = simulate_observed(respy_obj)
-        _, base_val = estimate(respy_obj)
+        _, base_val = respy_obj.fit()
 
         scripts_update('test.respy.ini')
         respy_obj = RespyCls('test.respy.ini')
@@ -293,7 +292,7 @@ class TestClass(object):
         identifiers = np.random.choice(range(18), num_draws, replace=False)
         scripts_modify(identifiers, action, 'test.respy.ini')
 
-        _, update_val = estimate(respy_obj)
+        _, update_val = respy_obj.fit()
 
         np.testing.assert_almost_equal(update_val, base_val)
 
@@ -316,7 +315,7 @@ class TestClass(object):
         # We draw a random update and print it out to the initialization file.
         label = np.random.choice(list(updates.keys()))
         init_dict['SHOCKS']['fixed'] = updates[label]
-        print_init_dict(init_dict)
+        write_init_file(init_dict)
 
         if 'invalid' in label:
             # This exception block makes sure that the UserError is in fact raised.
@@ -367,11 +366,11 @@ class TestClass(object):
 
             init_dict['EDUCATION']['start'] = edu_start
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
-            _, val = estimate(respy_obj)
+            _, val = respy_obj.fit()
             if base_val is None:
                 base_val = val
 
@@ -425,7 +424,7 @@ class TestClass(object):
 
         simulate_observed(respy_obj, is_missings=False)
 
-        _, val = estimate(respy_obj)
+        _, val = respy_obj.fit()
         np.testing.assert_allclose(val, rslt)
 
     def test_13(self):
@@ -459,11 +458,11 @@ class TestClass(object):
             init_dict['TYPE SHARES']['fixed'] = [True, True] * (num_types - 1)
             init_dict['TYPE SHARES']['bounds'] = [[None, None], [None, None]]* (num_types - 1)
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
             simulate_observed(respy_obj)
-            _, val = estimate(respy_obj)
+            _, val = respy_obj.fit()
             if base_val is None:
                 base_val = val
 
@@ -582,7 +581,7 @@ class TestClass(object):
                 assert_frame_equal(base_data, data_frame)
 
                 # This part checks the equality of a single function evaluation.
-                _, val = estimate(respy_obj)
+                _, val = respy_obj.fit()
                 if base_val is None:
                     base_val = val
                 np.testing.assert_almost_equal(base_val, val)

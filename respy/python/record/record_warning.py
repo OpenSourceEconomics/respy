@@ -1,9 +1,12 @@
 def record_warning(count):
-    """ Sometimes the value of the criterion function is too extreme for
+    """Warning for different events that can occur during estimation.
+
+    Sometimes the value of the criterion function is too extreme for
     pretty printing in the output files. This warning indicates that this is
-    in fact the case. Internally, the original values are all used. The
-    numbering of warning messages is aligned with FORTRAN and thus starts at
-    one and not zero.
+    in fact the case. Internally, the original values are all used.
+
+    The numbering of warning messages is aligned with FORTRAN and thus starts
+    at one and not zero.
     """
     with open('est.respy.log', 'a') as out_file:
 
@@ -26,4 +29,3 @@ def record_warning(count):
             raise AssertionError
 
         out_file.write('   Warning: ' + msg + '\n')
-

@@ -9,7 +9,7 @@ import scipy
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
-from respy.python.shared.shared_utilities import spectral_condition_number
+from respy.python.record.record_estimation import _spectral_condition_number
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
@@ -34,16 +34,16 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.shared.shared_constants import IS_F2PY
 from respy.python.interface import get_scales_magnitudes
-from respy.python.process.process_python import process
+from respy.pre_processing.data_processing import process_dataset
 from respy.python.solve.solve_python import pyth_solve
 from respy.fortran.interface import resfort_interface
-from codes.auxiliary import write_interpolation_grid
-from codes.auxiliary import write_lagged_start
-from codes.auxiliary import simulate_observed
-from codes.random_init import generate_init
-from codes.auxiliary import write_edu_start
-from codes.auxiliary import write_draws
-from codes.auxiliary import write_types
+from respy.tests.codes.auxiliary import write_interpolation_grid
+from respy.tests.codes.auxiliary import write_lagged_start
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.auxiliary import write_edu_start
+from respy.tests.codes.auxiliary import write_draws
+from respy.tests.codes.auxiliary import write_types
 from functools import partial
 from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
 from respy import RespyCls
@@ -243,7 +243,7 @@ class TestClass(object):
             assert_almost_equal(py, f90)
 
             # Spectral condition number
-            py = spectral_condition_number(cov)
+            py = _spectral_condition_number(cov)
             fort = fort_debug.wrapper_spectral_condition_number(cov)
             assert_almost_equal(py, fort)
 
@@ -361,7 +361,7 @@ class TestClass(object):
             'num_agents_sim', 'num_draws_prob', 'tau', 'seed_sim', 'num_agents_est',
             'states_number_period', 'optimizer_options', 'file_sim', 'num_types', 'num_paras')
 
-        data_array = process(respy_obj).as_matrix()
+        data_array = process_dataset(respy_obj).values
         num_obs_agent = get_num_obs_agent(data_array, num_agents_est)
         min_idx = edu_spec['max'] + 1
 
@@ -656,7 +656,7 @@ class TestClass(object):
 
             num_agents_est = respy_obj.get_attr('num_agents_est')
 
-            data_array = process(respy_obj).as_matrix()
+            data_array = process_dataset(respy_obj).values
 
             py = get_num_obs_agent(data_array, num_agents_est)
             f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)

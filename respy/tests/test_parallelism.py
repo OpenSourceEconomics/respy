@@ -3,23 +3,22 @@ import pytest
 
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_auxiliary import print_init_dict
+from respy.pre_processing.model_processing import write_init_file
 
-from codes.random_init import generate_random_dict
-from codes.auxiliary import simulate_observed
-from codes.auxiliary import compare_est_log
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.auxiliary import compare_est_log
 
-from respy import estimate
 from respy import RespyCls
 
 
 @pytest.mark.skipif(not IS_PARALLELISM_MPI and not IS_PARALLELISM_OMP,
                     reason='No PARALLELISM available')
 class TestClass(object):
-    """ This class groups together some tests.
-    """
+    """This class groups together some tests."""
+
     def test_1(self):
-        """ This test ensures that it makes no difference whether the
+        """Ensure that it makes no difference whether the
         criterion function is evaluated in parallel or not.
         """
         # Generate random initialization file
@@ -47,11 +46,11 @@ class TestClass(object):
                 if IS_PARALLELISM_MPI:
                     init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
             respy_obj = simulate_observed(respy_obj)
-            _, crit_val = estimate(respy_obj)
+            _, crit_val = respy_obj.fit()
 
             if base is None:
                 base = crit_val
@@ -71,7 +70,7 @@ class TestClass(object):
         init_dict = generate_random_dict(constr)
 
         base_sol_log, base_est_info_log = None, None
-        base_est_log, base_amb_log = None, None
+        base_est_log = None
 
         for is_parallel in [False, True]:
 
@@ -84,7 +83,7 @@ class TestClass(object):
                 if IS_PARALLELISM_MPI:
                     init_dict['PROGRAM']['procs'] = np.random.randint(2, 5)
 
-            print_init_dict(init_dict)
+            write_init_file(init_dict)
 
             respy_obj = RespyCls('test.respy.ini')
 
@@ -92,7 +91,7 @@ class TestClass(object):
 
             simulate_observed(respy_obj)
 
-            estimate(respy_obj)
+            respy_obj.fit()
 
             # Check for identical records
             fname = file_sim + '.respy.sol'
