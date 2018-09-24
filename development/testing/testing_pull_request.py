@@ -4,16 +4,15 @@ import respy
 import sys
 import os
 from socket import gethostname
-from run_regression import run as run_regression
-from run_property import run as run_property
-from run_robustness import run as run_robustness
-from run_parallelism import run as run_parallelism
-
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 for dirname in ['regression', 'property', 'release', 'robustness', 'parallelism']:
     sys.path.insert(0, CURRENT_DIR + '/' + dirname)
 
+from run_regression import run as run_regression
+from run_property import run as run_property
+from run_robustness import run as run_robustness
+from run_parallelism import run as run_parallelism
 
 # Here we specify the group of tests to run. Later we also pin down the details.
 request_dict = dict()
