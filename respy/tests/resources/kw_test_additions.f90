@@ -2,7 +2,7 @@
 ! This module provides additional functions that allow to test this program
 ! against the RESPY package.
 !******************************************************************************
-MODULE PEI_ADDITIONS
+MODULE TEST_ADDITIONS
 
   IMPLICIT NONE
 
@@ -29,6 +29,7 @@ SUBROUTINE READ_IN_DISTURBANCES_ESTIMATION(RNN, RNNL, NPER, DRAW, DRAW1)
 
     INTEGER                   :: T
     INTEGER                   :: J
+    INTEGER                   :: U
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -41,23 +42,23 @@ SUBROUTINE READ_IN_DISTURBANCES_ESTIMATION(RNN, RNNL, NPER, DRAW, DRAW1)
 
     IF (READ_IN) THEN
 
-        OPEN(UNIT=99, FILE='.draws.respy.test', ACTION='READ')
+        OPEN(NEWUNIT=U, FILE='.draws.respy.test', ACTION='READ')
 
-            REWIND(UNIT=99)
+            REWIND(UNIT=U)
             DO T = 1, NPER
-                DO J = 1, DRAW
-                    READ(99, 2001) RNN(J, T, :)
+                DO J = 1, INT(DRAW)
+                    READ(U, 2001) RNN(J, T, :)
                 END DO
             END DO
 
-            REWIND(UNIT=99)
+            REWIND(UNIT=U)
             DO T = 1, NPER
-                DO J = 1, DRAW1
-                    READ(99, 2001) RNNL(J, T, :)
+                DO J = 1, INT(DRAW1)
+                    READ(U, 2001) RNNL(J, T, :)
                 END DO
             END DO
 
-        CLOSE(99)
+        CLOSE(U)
 
     END IF
 

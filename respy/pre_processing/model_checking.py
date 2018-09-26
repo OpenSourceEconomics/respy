@@ -7,9 +7,12 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import PRINT_FLOAT
 from respy.custom_exceptions import UserError
 from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
+from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
+from respy.python.shared.shared_constants import IS_FORTRAN
 
 
-def check_model_attributes(attr_dict, config_dict):
+def check_model_attributes(attr_dict):
     a = attr_dict
 
     # Number of parameters
@@ -26,12 +29,18 @@ def check_model_attributes(attr_dict, config_dict):
     assert (a['num_procs'] > 0)
     if a['num_procs'] > 1:
         assert (a['version'] == 'FORTRAN')
-        assert config_dict['PARALLELISM']
+        assert IS_PARALLELISM_MPI
 
     # Version version of package
     assert (a['version'] in ['FORTRAN', 'PYTHON'])
     if a['version'] == 'FORTRAN':
-        assert config_dict['FORTRAN']
+        assert IS_FORTRAN
+
+    assert isinstance(a['num_threads'], int)
+    assert a['num_threads'] >= 1
+    if a['num_threads'] >= 2:
+        assert a['version'] == 'FORTRAN'
+        assert IS_PARALLELISM_OMP
 
     # Debug status
     assert (a['is_debug'] in [True, False])

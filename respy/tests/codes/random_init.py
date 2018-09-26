@@ -2,11 +2,12 @@
 """
 import numpy as np
 
+from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
+from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
 from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 
 from respy.tests.codes.process_constraints import process_constraints
@@ -207,13 +208,16 @@ def generate_random_dict(constr=None):
 
     # PROGRAM
     dict_['PROGRAM'] = dict()
-    if IS_PARALLEL and version == 'FORTRAN':
-        dict_['PROGRAM']['procs'] = np.random.randint(1, 5)
-    else:
-        dict_['PROGRAM']['procs'] = 1
-
-    dict_['PROGRAM']['debug'] = True
     dict_['PROGRAM']['version'] = version
+    dict_['PROGRAM']['debug'] = True
+    dict_['PROGRAM']['threads'] = 1
+    dict_['PROGRAM']['procs'] = 1
+
+    if version == 'FORTRAN':
+        if IS_PARALLELISM_MPI:
+            dict_['PROGRAM']['procs'] = np.random.randint(1, 5)
+        if IS_PARALLELISM_OMP:
+             dict_['PROGRAM']['threads'] = np.random.randint(1, 5)
 
     # The optimizer has to align with the Program version.
     if dict_['PROGRAM']['version'] == 'FORTRAN':

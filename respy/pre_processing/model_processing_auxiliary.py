@@ -39,7 +39,7 @@ def _type_conversions(flag, value):
     """Convert the type of a value according to its flag."""
     # Type conversion
     if flag in ['agents', 'periods', 'start', 'max', 'draws', 'seed', 'points',
-                'maxiter', 'maxfun', 'procs', 'npt', 'maxiter', 'm', 'maxls']:
+                'maxiter', 'maxfun', 'procs', 'npt', 'maxiter', 'm', 'maxls', 'threads']:
         value = int(value)
     elif flag in ['file', 'options', 'type']:
         value = str(value)

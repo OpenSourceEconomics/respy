@@ -1,39 +1,72 @@
-import os
+import shutil
+import glob
+
+from numpy import f2py
 
 from waflib.Task import Task
 
 
-
-
 class CreateF2pyInterfaces(Task):
+    """This is an explicit task generator for the creation of the F2PY interfaces."""
+    def run(self):
+        src = open(self.inputs[0].abspath(), 'rb').read()
+        args = '--f90flags="{0:}" -I{1:} -L{1:}/fortran -lresfort_library -llapack -lgomp'
+        f90_flags = '-ffree-line-length-0'
+        if self.env['PARALLELISM_OMP']:
+            f90_flags += ' -fopenmp'
+
+        args = args.format(f90_flags, self.bld.out_dir)
+        f2py.compile(src, 'f2py_interface', args.format(args), extension='.f90')
+        shutil.move(glob.glob('f2py_interface.*.so')[0], self.outputs[0].abspath())
+
+
+class CreateOriginalExecutables(Task):
 
     def run(self):
+        # Set up the compilation command, while we need to be a little loose with the original
+        # codes with respect to the floating point errors.
+        cmd = ''
+        cmd += self.env['FC'][0] + ' -o  ' + self.outputs[0].abspath()
+        cmd += ' ' + self.inputs[0].abspath() + ' '
+        cmd += ' '.join(self.env['FCFLAGS'])
+        cmd = cmd.replace('-ffpe-trap=zero,overflow,invalid', '')
+        cmd = cmd.replace('-std=f2008', '')
 
-        os.chdir('tests/resources')
+        # For some reason including this flag results in a segmentation fault in the code. We
+        # suspect a clash in namespace as no IMPLICIT NONE is declared in the code.
+        if self.env['PARALLELISM_OMP']:
+            cmd = cmd.replace('-fopenmp', '')
 
-        from numpy import f2py
-        extra_args = '--f90flags="-ffree-line-length-0" -I../../.bld ' \
-                     '-L../../.bld/fortran -lresfort ' \
-                     '-llapack'
-
-        with open('f2py_interface.f90', 'rb') as sourcefile:
-            sourcecode = sourcefile.read()
-        f2py.compile(sourcecode, 'f2py_interface', extra_args,
-            extension='.f90')
-
-        os.chdir('../../')
+        cmd += ' -Ltests/resources -lkw_library -llapack'
+        self.exec_command(cmd)
 
 
 def build(ctx):
 
-    # Build F2PY interface
-    if ctx.env['F2PY']:
-        ctx.add_to_group(CreateF2pyInterfaces(env=ctx.env))
+    ctx.add_group()
+    src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90', 'kw_library.f90']
+    ctx(features=['fc', 'fcstlib'], source=src, target='kw_library')
 
-    # We need to be a little more relaxed with the floating point traps when compiling the old code.
-    if ctx.env['DEBUG']:
-        ctx.env['FCFLAGS'].remove('-ffpe-trap=zero,overflow,invalid')
+    ctx.add_group()
 
-    base_src = ['kw_imsl_replacements.f90', 'kw_test_additions.f90']
+    # We need to create this manually as otherwise the -fopenmp results in a segmentation fault.
     for fname in ['kw_dpml4a', 'kw_dp3asim']:
-        ctx(features=['fc', 'fcprogram'], source=base_src + [fname + '.f90'], target=fname)
+        task_o = CreateOriginalExecutables(env=ctx.env)
+        task_o.set_inputs(ctx.path.find_resource(fname + '.f90'))
+        task_o.set_outputs(ctx.path.find_or_declare(fname))
+        dep = ctx.path.find_or_declare('../../tests/resources/libkw_library.a')
+        ctx.add_manual_dependency(ctx.path.find_node(fname + '.f90'), dep)
+        ctx.add_to_group(task_o)
+
+    if ctx.env['F2PY']:
+        # We compile an interface to access core respy routines in our testing harness using an
+        # F2PY interface. It depends on the resfort_library, which is declared manually.
+        ctx.add_group()
+        task_f = CreateF2pyInterfaces(env=ctx.env)
+        task_f.set_inputs(ctx.path.find_resource('f2py_interface.f90'))
+        task_f.set_outputs(ctx.path.find_or_declare('f2py_interface.so'))
+
+        dep = ctx.path.find_or_declare('../../fortran/libresfort_library.a')
+        ctx.add_manual_dependency(ctx.path.find_node('f2py_interface.f90'), dep)
+
+        ctx.add_to_group(task_f)

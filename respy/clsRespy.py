@@ -1,7 +1,6 @@
 import pickle as pkl
 import numpy as np
 import pandas as pd
-import json
 import copy
 import os
 import atexit
@@ -11,7 +10,6 @@ from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import remove_scratch
 
-from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.pre_processing.model_processing import read_init_file, convert_init_dict_to_attr_dict, \
@@ -155,10 +153,7 @@ class RespyCls(object):
         the package is running in debug mode.
 
         """
-        with open(ROOT_DIR + '/.config', 'r') as infile:
-            config_dict = json.load(infile)
-
-        check_model_attributes(self.attr, config_dict)
+        check_model_attributes(self.attr)
 
     def _check_model_solution(self):
         """Check the integrity of the results."""

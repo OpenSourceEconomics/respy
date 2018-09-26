@@ -40,8 +40,8 @@ class TestClass(object):
         # Generate random initialization file
         constr = dict()
         constr['flag_deterministic'] = flag_deterministic
-        constr['flag_parallelism'] = False
         constr['flag_myopic'] = flag_myopic
+        constr['flag_parallelism'] = False
         constr['max_draws'] = max_draws
         constr['version'] = 'PYTHON'
         constr['maxfun'] = 0

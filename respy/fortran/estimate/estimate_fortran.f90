@@ -155,7 +155,7 @@ FUNCTION fort_criterion_scalar(x_optim_free_scaled)
 !------------------------------------------------------------------------------
 
     ! We intent to monitor the execution time of every evaluation of the criterion function.
-    CALL CPU_TIME(start)
+    start = get_wtime()
 
     ! We allow for early termination due to maximum number of iterations or user request.
     IF (check_early_termination(maxfun, num_eval, crit_estimation)) THEN
@@ -218,7 +218,7 @@ FUNCTION fort_criterion_parallel(x)
 #if MPI_AVAILABLE
 
     ! We intent to monitor the execution time of every evaluation of the criterion function.
-    CALL CPU_TIME(start)
+    start = get_wtime()
 
     ! We allow for early termination due to maximum number of iterations or user request.
     IF (check_early_termination(maxfun, num_eval, crit_estimation)) THEN
@@ -316,13 +316,13 @@ SUBROUTINE construct_all_current_values(x_optim_all_unscaled, x_optim_free_unsca
 
     !/* external objects        */
 
+    INTEGER(our_int), INTENT(IN)        :: num_paras
+
     REAL(our_dble), INTENT(OUT)         :: x_optim_all_unscaled(num_paras)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
 
     REAL(our_dble), INTENT(IN)          :: x_optim_free_unscaled(COUNT(.not. optim_paras%paras_fixed))
-
-    INTEGER(our_int), INTENT(IN)        :: num_paras
 
     !/* internal objects        */
 
@@ -364,6 +364,7 @@ SUBROUTINE get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim
     !/* internal objects    */
 
     INTEGER(our_int)                :: i
+    INTEGER(our_int)                :: u
 
 !------------------------------------------------------------------------------
 ! Algorithm
@@ -388,13 +389,13 @@ SUBROUTINE get_precondition_matrix(precond_matrix, precond_spec, maxfun, x_optim
     ! Write out scaling matrix to allow for restart.
     5000 FORMAT(100000(1x,f45.15))
 
-    OPEN(UNIT=99, FILE='scaling.respy.out', ACTION='WRITE')
+    OPEN(NEWUNIT=u, FILE='scaling.respy.out', ACTION='WRITE')
 
     DO i = 1, num_free
-        WRITE(99, 5000) precond_matrix(i, :)
+        WRITE(u, 5000) precond_matrix(i, :)
     END DO
 
-    CLOSE(99)
+    CLOSE(u)
 
     crit_estimation = .False.
 

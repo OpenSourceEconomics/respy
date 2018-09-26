@@ -3,7 +3,6 @@
 import pandas as pd
 import numpy as np
 import shlex
-from os import getcwd
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes

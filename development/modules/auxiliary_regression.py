@@ -3,8 +3,9 @@ import shutil
 import socket
 import os
 
+from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
+from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.pre_processing.model_processing import write_init_file
-from respy.python.shared.shared_constants import IS_PARALLEL
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TOL
 from auxiliary_shared import get_random_dirname
@@ -71,13 +72,20 @@ def check_single(tests, idx):
         else:
             init_dict['EDUCATION']['lagged'] += [0.0]
 
+    init_dict['PROGRAM']['threads'] = 1
+    if IS_PARALLELISM_OMP and init_dict['PROGRAM']['version'] == 'FORTRAN':
+        init_dict['PROGRAM']['threads'] = np.random.randint(1, 5)
+
     # During development it is useful that we can only run the PYTHON versions of the
     # program.
     msg = ' ... skipped as required version of package not available'
     if init_dict['PROGRAM']['version'] == 'FORTRAN' and not IS_FORTRAN:
         print(msg)
         return None
-    if init_dict['PROGRAM']['procs'] > 1 and not IS_PARALLEL:
+    if init_dict['PROGRAM']['procs'] > 1 and not IS_PARALLELISM_MPI:
+        print(msg)
+        return None
+    if init_dict['PROGRAM']['threads'] > 1 and not IS_PARALLELISM_OMP:
         print(msg)
         return None
 

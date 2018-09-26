@@ -18,11 +18,11 @@ def resfort_interface(respy_obj, request, data_array=None):
     """
     # Distribute class attributes
     optim_paras, num_periods, edu_spec, is_debug, num_draws_emax, seed_emax, is_interpolated, \
-    num_points_interp, is_myopic, tau, num_procs, num_agents_sim, num_draws_prob, \
+    num_points_interp, is_myopic, tau, num_procs, num_threads, num_agents_sim, num_draws_prob, \
     seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, precond_spec, \
     file_sim, num_paras, num_types, num_agents_est = dist_class_attributes(respy_obj, 'optim_paras',
         'num_periods', 'edu_spec', 'is_debug', 'num_draws_emax', 'seed_emax', 'is_interpolated',
-        'num_points_interp', 'is_myopic', 'tau', 'num_procs', 'num_agents_sim',
+        'num_points_interp', 'is_myopic', 'tau', 'num_procs', 'num_threads', 'num_agents_sim',
         'num_draws_prob', 'seed_prob', 'seed_sim', 'optimizer_options', 'optimizer_used',
         'maxfun', 'precond_spec', 'file_sim', 'num_paras', 'num_types', 'num_agents_est')
 
@@ -37,22 +37,20 @@ def resfort_interface(respy_obj, request, data_array=None):
         write_dataset(data_array)
 
     args = (optim_paras, is_interpolated, num_draws_emax, num_periods, num_points_interp,
-            is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim,
-            seed_prob, seed_emax, tau, num_procs, request, seed_sim, optimizer_options,
-            optimizer_used, maxfun, num_paras, precond_spec, file_sim, data_array,
-            num_types, num_agents_est)
+            is_myopic, edu_spec, is_debug, num_draws_prob, num_agents_sim, seed_prob, seed_emax,
+            tau, num_procs, request, seed_sim, optimizer_options, optimizer_used, maxfun,
+            num_paras, precond_spec, file_sim, data_array, num_types, num_agents_est)
 
     write_resfort_initialization(*args)
 
-    # Call executable
-    if num_procs == 1:
-        cmd = [EXEC_DIR + '/resfort']
-        subprocess.check_call(cmd)
-    elif num_procs > 1:
-        cmd = ['mpiexec', '-n', '1', EXEC_DIR + '/resfort']
-        subprocess.check_call(cmd)
-    else:
-        raise AssertionError
+    # Construct the appropriate call to the executable.
+    env = os.environ.copy()
+    env['OMP_NUM_THREADS'] = '{}'.format(num_threads)
+
+    cmd = []
+    if num_procs > 1:
+        cmd += ['mpiexec', '-n', '1']
+    subprocess.check_call(cmd + [EXEC_DIR + '/resfort'], env=env)
 
     # Return arguments depends on the request.
     if request == 'simulate':
@@ -277,9 +275,7 @@ def write_resfort_initialization(optim_paras, is_interpolated, num_draws_emax, n
         file_.write(line + '\n')
 
         # Directory for executables
-        exec_dir = os.path.dirname(os.path.realpath(__file__)) + '/bin'
-
-        line = '"{0}"'.format(exec_dir)
+        line = '"{0}"'.format(EXEC_DIR)
         file_.write(line + '\n')
 
         # Optimizers
@@ -342,8 +338,3 @@ def write_dataset(data_array):
     data_frame = pd.DataFrame(data_array)
     with open('.data.resfort.dat', 'w') as file_:
         data_frame.to_string(file_, index=False, header=None, na_rep=str(HUGE_FLOAT))
-
-    # An empty line is added as otherwise this might lead to problems on the TRAVIS servers. The
-    # FORTRAN routine read_dataset() raises an error.
-    with open('.data.resfort.dat', 'a') as file_:
-        file_.write('\n')

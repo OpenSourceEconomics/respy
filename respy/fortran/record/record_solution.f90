@@ -36,51 +36,55 @@ SUBROUTINE record_solution_progress(indicator, file_sim, period, num_states)
 
     CHARACTER(225), INTENT(IN)              :: file_sim
 
+    !/* internal objects        */
+
+    INTEGER(our_int)                        :: u
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(NEWUNIT=u, FILE=TRIM(file_sim)//'.respy.sol', POSITION='APPEND', ACTION='WRITE')
 
     IF (indicator == 1) THEN
 
-        CLOSE(99, STATUS ='DELETE')
-        OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', ACTION='WRITE')
+        CLOSE(u, STATUS ='DELETE')
+        OPEN(NEWUNIT=u, FILE=TRIM(file_sim)//'.respy.sol', ACTION='WRITE')
 
-        WRITE(99, *) ' Starting state space creation'
-        WRITE(99, *)
+        WRITE(u, *) ' Starting state space creation'
+        WRITE(u, *)
 
     ELSEIF (indicator == 2) THEN
 
-        WRITE(99, *) ' Starting calculation of systematic rewards'
-        WRITE(99, *)
+        WRITE(u, *) ' Starting calculation of systematic rewards'
+        WRITE(u, *)
 
     ELSEIF (indicator == 3) THEN
 
-        WRITE(99, *) ' Starting backward induction procedure'
-        WRITE(99, *)
+        WRITE(u, *) ' Starting backward induction procedure'
+        WRITE(u, *)
 
     ELSEIF (indicator == 4) THEN
 
         1900 FORMAT(2x,A18,1x,i2,1x,A4,1x,i7,1x,A7)
 
-        WRITE(99, 1900) '... solving period', period, 'with', num_states, 'states'
-        WRITE(99, *)
+        WRITE(u, 1900) '... solving period', period, 'with', num_states, 'states'
+        WRITE(u, *)
 
     ELSEIF (indicator == -1) THEN
 
-        WRITE(99, *) ' ... finished'
-        WRITE(99, *)
-        WRITE(99, *)
+        WRITE(u, *) ' ... finished'
+        WRITE(u, *)
+        WRITE(u, *)
 
     ELSEIF (indicator == -2) THEN
 
-        WRITE(99, *) ' ... not required due to myopic agents'
-        WRITE(99, *)
+        WRITE(u, *) ' ... not required due to myopic agents'
+        WRITE(u, *)
 
     END IF
 
-  CLOSE(99)
+  CLOSE(u)
 
 END SUBROUTINE
 !******************************************************************************
@@ -95,6 +99,10 @@ SUBROUTINE record_solution_prediction(coeffs, r_squared, bse, file_sim)
 
     CHARACTER(225), INTENT(IN)      :: file_sim
 
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: u
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
@@ -103,22 +111,22 @@ SUBROUTINE record_solution_prediction(coeffs, r_squared, bse, file_sim)
     110 FORMAT(8x,A15,4x,9(f15.4))
     120 FORMAT(8x,A9,10x,f15.4)
 
-    OPEN(UNIT=99, FILE=TRIM(file_sim)//'.respy.sol', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(NEWUNIT=u, FILE=TRIM(file_sim)//'.respy.sol', POSITION='APPEND', ACTION='WRITE')
 
-        WRITE(99, *) '     Information about Prediction Model '
-        WRITE(99, *)
+        WRITE(u, *) '     Information about Prediction Model '
+        WRITE(u, *)
 
-        WRITE(99, 100) 'Coefficients', coeffs
-        WRITE(99, *)
+        WRITE(u, 100) 'Coefficients', coeffs
+        WRITE(u, *)
 
-        WRITE(99, 110) 'Standard Errors', bse
-        WRITE(99, *)
+        WRITE(u, 110) 'Standard Errors', bse
+        WRITE(u, *)
 
-        WRITE(99, 120) 'R-squared', r_squared
-        WRITE(99, *) ''
-        WRITE(99, *)
+        WRITE(u, 120) 'R-squared', r_squared
+        WRITE(u, *) ''
+        WRITE(u, *)
 
-    CLOSE(99)
+    CLOSE(u)
 
 END SUBROUTINE
 !******************************************************************************

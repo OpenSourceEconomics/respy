@@ -95,7 +95,7 @@ PROGRAM resfort_scalar
 
         ELSE IF (request == 'simulate') THEN
 
-            CALL fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras, num_paras, file_sim)
+            CALL fort_solve_parallel(periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, states_all, edu_spec, optim_paras, num_paras)
 
             CALL create_draws(periods_draws_sims, num_agents_sim, seed_sim, is_debug)
 

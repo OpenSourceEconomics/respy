@@ -1,27 +1,44 @@
-language: python
+language:
+    - python
+
 python:
-  - 3.6
+    - 3.6
+
+before_install:
+    - sudo apt-get update
 
 addons:
-  apt:
-    packages: &common_packages
-      - gfortran
-      - libatlas-dev
-      - libatlas-base-dev
+    apt:
+        packages:
+            - gfortran
+            - libatlas-dev
+            - libatlas-base-dev
 
-bundler_args: --retry 3
+matrix:
+    include:
+        - env: TRAVIS_CI_FORTRAN=False TRAVIS_CI_MPI=False  TRAVIS_CI_OMP=False
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=True
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=False TRAVIS_CI_OMP=True
+        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=False
 
 install:
-  - travis_retry travis_wait pip install -r requirements.txt
-  - pip install -e .
-  - pip install pytest-cov
-  - pip install codecov
+    - sudo apt-get install -y -q mpich libmpich-dev
+    - travis_retry travis_wait pip install -r requirements.txt
+    - pip install -e . -vv
+    - pip install pytest-cov
+    - pip install codecov
 
 script:
-  - travis_wait 30 pytest --cov=respy
+    - travis_wait 45 pytest --cov=respy -vvv -s
 
 after_success:
-  - codecov
+-   if  [ $TRAVIS_CI_FORTRAN ] || \
+        [ $TRAVIS_CI_MPI ] || \
+        [ $TRAVIS_CI_OMP ] ||
+    then
+        codecov
+        echo 'send coverage statistic'
+    fi
 
 notifications:
   slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6

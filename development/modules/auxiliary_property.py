@@ -17,7 +17,8 @@ RESPY_DIR = RESPY_DIR.replace('development/testing/property/modules',
 
 PYTHON_EXEC = sys.executable
 
-from respy.python.shared.shared_constants import IS_PARALLEL
+from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
+from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import IS_F2PY
 
@@ -161,7 +162,7 @@ def get_test_dict(test_dir):
                 test_dict[test_module].append(candidate_method)
 
     # If the PARALLELISM or FORTRAN is not available, we remove the parallel tests.
-    if not IS_PARALLEL:
+    if not IS_PARALLELISM_MPI and not IS_PARALLELISM_OMP:
         del test_dict['test_parallelism']
 
     if not IS_FORTRAN:

@@ -253,6 +253,7 @@ def convert_init_dict_to_attr_dict(init_dict):
     attr['version'] = ini['PROGRAM']['version']
     attr['num_procs'] = ini['PROGRAM']['procs']
     attr['is_debug'] = ini['PROGRAM']['debug']
+    attr['num_threads'] = ini['PROGRAM']['threads']
     attr['edu_max'] = ini['EDUCATION']['max']
     attr['tau'] = ini['ESTIMATION']['tau']
     attr['precond_spec'] = {}
@@ -463,6 +464,7 @@ def convert_attr_dict_to_init_dict(attr_dict):
     ini['PROGRAM']['version'] = attr['version']
     ini['PROGRAM']['procs'] = attr['num_procs']
     ini['PROGRAM']['debug'] = attr['is_debug']
+    ini['PROGRAM']['threads'] = attr['num_threads']
 
     # Interpolation
     ini['INTERPOLATION'] = {}

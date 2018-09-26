@@ -8,3 +8,4 @@ dependencies:
   - pytest
   - pytest-xdist
   - scipy
+  - flake8
