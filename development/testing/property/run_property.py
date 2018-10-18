@@ -14,12 +14,12 @@ import os
 # RESPY testing codes. The import of the PYTEST configuration file ensures that the PYTHONPATH is
 #  modified to allow for the use of the tests..
 PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-PACKAGE_DIR = PACKAGE_DIR.replace('development/testing/property', '')
+PACKAGE_DIR = PACKAGE_DIR.replace("development/testing/property", "")
 
 # PYTEST ensures the path is set up correctly.
-sys.path.insert(0, PACKAGE_DIR + 'respy/tests')
+sys.path.insert(0, PACKAGE_DIR + "respy/tests")
 sys.path.insert(0, PACKAGE_DIR)
-sys.path.insert(0, '../modules')
+sys.path.insert(0, "../modules")
 
 from auxiliary_property import cleanup_testing_infrastructure
 from auxiliary_property import initialize_record_canvas
@@ -38,12 +38,12 @@ def run(request, is_compile, is_background):
     """
 
     # Processing of command line arguments.
-    if request[0] == 'investigate':
+    if request[0] == "investigate":
         is_investigation, is_run = True, False
-    elif request[0] == 'run':
+    elif request[0] == "run":
         is_investigation, is_run = False, True
     else:
-        raise AssertionError('request in [run, investigate]')
+        raise AssertionError("request in [run, investigate]")
 
     seed_investigation, hours = None, 0.0
     if is_investigation:
@@ -51,7 +51,7 @@ def run(request, is_compile, is_background):
         assert isinstance(seed_investigation, int)
     elif is_run:
         hours = float(request[1])
-        assert (hours > 0.0)
+        assert hours > 0.0
 
     if not is_investigation:
         cleanup()
@@ -60,7 +60,7 @@ def run(request, is_compile, is_background):
         compile_package(True)
 
     # Get a dictionary with all candidate test cases.
-    test_dict = get_test_dict(PACKAGE_DIR + 'respy/tests')
+    test_dict = get_test_dict(PACKAGE_DIR + "respy/tests")
 
     # We initialize a dictionary that allows to keep track of each test's success or failure.
     full_test_record = dict()
@@ -93,7 +93,7 @@ def run(request, is_compile, is_background):
         test = getattr(mod.TestClass(), method)
 
         if seed_investigation:
-            print('... running ', module, method)
+            print("... running ", module, method)
 
         # Run random test
         is_success, msg = None, None
@@ -118,11 +118,13 @@ def run(request, is_compile, is_background):
             test()
 
         if not is_investigation:
-            os.chdir('../')
+            os.chdir("../")
 
         # Record iteration
         if not is_investigation:
-            update_testing_record(module, method, seed, is_success, msg, full_test_record)
+            update_testing_record(
+                module, method, seed, is_success, msg, full_test_record
+            )
             cleanup_testing_infrastructure(True)
 
         #  Timeout.
@@ -134,21 +136,39 @@ def run(request, is_compile, is_background):
 
     # This allows to call this test from another script, that runs other tests as well.
     if not is_background and not is_investigation:
-        send_notification('property', hours=hours)
+        send_notification("property", hours=hours)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Run development test battery of RESPY package.')
+    parser = argparse.ArgumentParser(
+        description="Run development test battery of RESPY package."
+    )
 
-    parser.add_argument('--request', action='store', dest='request', help='task to perform',
-                        nargs=2, required=True)
+    parser.add_argument(
+        "--request",
+        action="store",
+        dest="request",
+        help="task to perform",
+        nargs=2,
+        required=True,
+    )
 
-    parser.add_argument('--compile', action='store_true', dest='is_compile', default=False,
-                        help='compile RESPY package')
+    parser.add_argument(
+        "--compile",
+        action="store_true",
+        dest="is_compile",
+        default=False,
+        help="compile RESPY package",
+    )
 
-    parser.add_argument('--background', action='store_true', dest='is_background', default=False,
-                        help='background process')
+    parser.add_argument(
+        "--background",
+        action="store_true",
+        dest="is_background",
+        default=False,
+        help="background process",
+    )
 
     args = parser.parse_args()
 

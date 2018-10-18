@@ -12,8 +12,7 @@ import shutil
 # RESPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.
 RESPY_DIR = os.path.dirname(os.path.realpath(__file__))
-RESPY_DIR = RESPY_DIR.replace('development/testing/property/modules',
-                              '') + 'respy'
+RESPY_DIR = RESPY_DIR.replace("development/testing/property/modules", "") + "respy"
 
 PYTHON_EXEC = sys.executable
 
@@ -28,7 +27,9 @@ def compile_package():
     """
     current_directory = os.getcwd()
     os.chdir(RESPY_DIR)
-    os.system(PYTHON_EXEC + ' waf distclean; ' + PYTHON_EXEC + ' waf configure build --debug')
+    os.system(
+        PYTHON_EXEC + " waf distclean; " + PYTHON_EXEC + " waf configure build --debug"
+    )
     os.chdir(current_directory)
 
 
@@ -45,11 +46,11 @@ def finalize_testing_record(full_test_record):
             failed_tests += full_test_record[module][method][1]
 
     # Indicate that test run is finished
-    with open('property.respy.info', 'a') as log_file:
-        log_file.write('\n\tRUN COMPLETED\n\n')
-        fmt_ = '\t\t{0[0]:<15}{0[1]:>9}\n\n'
-        log_file.write(fmt_.format(['TOTAL TESTS', total_tests]))
-        log_file.write(fmt_.format(['FAILED TESTS', failed_tests]))
+    with open("property.respy.info", "a") as log_file:
+        log_file.write("\n\tRUN COMPLETED\n\n")
+        fmt_ = "\t\t{0[0]:<15}{0[1]:>9}\n\n"
+        log_file.write(fmt_.format(["TOTAL TESTS", total_tests]))
+        log_file.write(fmt_.format(["FAILED TESTS", failed_tests]))
 
 
 def initialize_record_canvas(full_test_record, start, timeout):
@@ -59,49 +60,48 @@ def initialize_record_canvas(full_test_record, start, timeout):
     end_time = (start + timeout).strftime("%Y-%m-%d %H:%M:%S")
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    with open('property.respy.info', 'w') as log_file:
+    with open("property.respy.info", "w") as log_file:
         # Write out some header information.
-        log_file.write('\n\n')
-        str_ = '\t{0[0]:<15}{0[1]:<20}\n\n'
-        log_file.write(str_.format(['START', start_time]))
-        log_file.write(str_.format(['FINISH', end_time]))
-        log_file.write(str_.format(['UPDATE', current_time]))
+        log_file.write("\n\n")
+        str_ = "\t{0[0]:<15}{0[1]:<20}\n\n"
+        log_file.write(str_.format(["START", start_time]))
+        log_file.write(str_.format(["FINISH", end_time]))
+        log_file.write(str_.format(["UPDATE", current_time]))
 
         # Note the Python version used during execution.
-        str_ = '\t{0[0]:<15}{0[1]}.{0[2]}.{0[3]}\n\n'
-        log_file.write(str_.format(['PYTHON'] + list(sys.version_info[:3])))
+        str_ = "\t{0[0]:<15}{0[1]}.{0[2]}.{0[3]}\n\n"
+        log_file.write(str_.format(["PYTHON"] + list(sys.version_info[:3])))
 
-        log_file.write('\n\n')
+        log_file.write("\n\n")
         # Iterate over all modules. There is a potential conflict in the
         # namespace.
         for module_ in full_test_record.keys():
-            str_ = '\t{0[0]:<27}{0[1]:<20}{0[2]:<20} \n\n'
-            log_file.write(str_.format([module_, 'Success', 'Failure']))
+            str_ = "\t{0[0]:<27}{0[1]:<20}{0[2]:<20} \n\n"
+            log_file.write(str_.format([module_, "Success", "Failure"]))
             # Iterate over all methods in the particular module.
             for method_ in sorted(full_test_record[module_]):
-                str_ = '\t\t{0[0]:<25}{0[1]:<20}{0[2]:<20} \n'
+                str_ = "\t\t{0[0]:<25}{0[1]:<20}{0[2]:<20} \n"
                 success, failure = full_test_record[module_][method_]
                 log_file.write(str_.format([method_, success, failure]))
 
-            log_file.write('\n\n')
+            log_file.write("\n\n")
 
-        log_file.write('-' * 79)
-        log_file.write('\n' + '-' * 79)
+        log_file.write("-" * 79)
+        log_file.write("\n" + "-" * 79)
 
 
-def update_testing_record(module, method, seed_test, is_success, msg,
-        full_test_record):
+def update_testing_record(module, method, seed_test, is_success, msg, full_test_record):
     """ Maintain a record about the outcomes of the testing efforts.
     """
     # Formatting of time objects.
 
-    str_ = '\t\t{0[0]:<25}{0[1]:<20}{0[2]:<20} \n'
+    str_ = "\t\t{0[0]:<25}{0[1]:<20}{0[2]:<20} \n"
     success, failure = full_test_record[module][method]
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    update_line = '\t{0[0]:<15}{0[1]:<20}\n\n'.format(['UPDATE', current_time])
+    update_line = "\t{0[0]:<15}{0[1]:<20}\n\n".format(["UPDATE", current_time])
     is_module, is_method, is_update = False, False, False
 
-    for line in fileinput.input('property.respy.info', inplace=True):
+    for line in fileinput.input("property.respy.info", inplace=True):
 
         list_ = shlex.split(line)
         # Skip empty lines
@@ -113,7 +113,7 @@ def update_testing_record(module, method, seed_test, is_success, msg,
             if list_[0] == method:
                 is_method = True
 
-            is_update = (list_[0] == 'UPDATE')
+            is_update = list_[0] == "UPDATE"
 
         if is_method and is_module or is_update:
             if is_update:
@@ -129,12 +129,11 @@ def update_testing_record(module, method, seed_test, is_success, msg,
     # Append Error message
     if not is_success:
         # Write out the traceback message to file for future inspection.
-        with open('property.respy.info', 'a') as log_file:
-            str_ = '\nMODULE {0[0]:<25} METHOD {0[1]:<25} SEED: {0[' \
-                     '2]:<10} \n\n'
+        with open("property.respy.info", "a") as log_file:
+            str_ = "\nMODULE {0[0]:<25} METHOD {0[1]:<25} SEED: {0[" "2]:<10} \n\n"
             log_file.write(str_.format([module, method, seed_test]))
             log_file.write(msg)
-            log_file.write('\n' + '-' * 79 + '\n\n')
+            log_file.write("\n" + "-" * 79 + "\n\n")
 
 
 def get_test_dict(test_dir):
@@ -146,8 +145,8 @@ def get_test_dict(test_dir):
     current_directory = os.getcwd()
     os.chdir(test_dir)
     test_modules = []
-    for test_file in glob.glob('test_*.py'):
-        test_module = test_file.replace('.py', '')
+    for test_file in glob.glob("test_*.py"):
+        test_module = test_file.replace(".py", "")
         test_modules.append(test_module)
     os.chdir(current_directory)
 
@@ -155,24 +154,24 @@ def get_test_dict(test_dir):
     test_dict = dict()
     for test_module in test_modules:
         test_dict[test_module] = []
-        mod = importlib.import_module(test_module.replace('.py', ''))
+        mod = importlib.import_module(test_module.replace(".py", ""))
         candidate_methods = dir(mod.TestClass)
         for candidate_method in candidate_methods:
-            if 'test_' in candidate_method:
+            if "test_" in candidate_method:
                 test_dict[test_module].append(candidate_method)
 
     # If the PARALLELISM or FORTRAN is not available, we remove the parallel tests.
     if not IS_PARALLELISM_MPI and not IS_PARALLELISM_OMP:
-        del test_dict['test_parallelism']
+        del test_dict["test_parallelism"]
 
     if not IS_FORTRAN:
-        del test_dict['test_versions']
-        del test_dict['test_restud']
-        test_dict['test_integration'].remove('test_11')
-        test_dict['test_integration'].remove('test_12')
+        del test_dict["test_versions"]
+        del test_dict["test_restud"]
+        test_dict["test_integration"].remove("test_11")
+        test_dict["test_integration"].remove("test_12")
 
     if not IS_F2PY:
-        del test_dict['test_f2py']
+        del test_dict["test_f2py"]
 
     # Finishing
     return test_dict
@@ -199,14 +198,14 @@ def cleanup_testing_infrastructure(keep_results, keep_dataset=False):
     """ This function cleans up before and after a testing run. If requested,
     the log file is retained.
     """
-    for fname in glob.glob('*'):
-        if '.py' in fname or '.pbs' in fname:
+    for fname in glob.glob("*"):
+        if ".py" in fname or ".pbs" in fname:
             continue
         if keep_results:
-            if 'property.respy.info' in fname:
+            if "property.respy.info" in fname:
                 continue
         if keep_dataset:
-            if 'career_data.respy' in fname:
+            if "career_data.respy" in fname:
                 continue
         if os.path.isdir(fname):
             shutil.rmtree(fname)

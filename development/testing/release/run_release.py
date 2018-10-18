@@ -19,7 +19,7 @@ from auxiliary_release import prepare_release_tests
 from auxiliary_shared import send_notification
 from auxiliary_shared import cleanup
 
-SCRIPT_FNAME = '../../modules/auxiliary_release.py'
+SCRIPT_FNAME = "../../modules/auxiliary_release.py"
 
 
 def run(request, is_create, is_background, old_release, new_release):
@@ -28,12 +28,12 @@ def run(request, is_create, is_background, old_release, new_release):
     cleanup()
 
     # Processing of command line arguments.
-    if request[0] == 'investigate':
+    if request[0] == "investigate":
         is_investigation, is_run = True, False
-    elif request[0] == 'run':
+    elif request[0] == "run":
         is_investigation, is_run = False, True
     else:
-        raise AssertionError('request in [run, investigate]')
+        raise AssertionError("request in [run, investigate]")
 
     seed_investigation, hours = None, 0.0
     if is_investigation:
@@ -41,33 +41,33 @@ def run(request, is_create, is_background, old_release, new_release):
         assert isinstance(seed_investigation, int)
     elif is_run:
         hours = float(request[1])
-        assert (hours > 0.0)
+        assert hours > 0.0
 
     # Set up auxiliary information to construct commands.
-    env_dir = os.environ['HOME'] + '/.envs'
-    old_exec = env_dir + '/' + old_release + '/bin/python'
-    new_exec = env_dir + '/' + new_release + '/bin/python'
+    env_dir = os.environ["HOME"] + "/.envs"
+    old_exec = env_dir + "/" + old_release + "/bin/python"
+    new_exec = env_dir + "/" + new_release + "/bin/python"
 
     # Create fresh virtual environments if requested.
     if is_create:
         for release in [old_release, new_release]:
-            cmd = ['virtualenv', env_dir + '/' + release, '--clear']
+            cmd = ["virtualenv", env_dir + "/" + release, "--clear"]
             subprocess.check_call(cmd)
 
         # Set up the virtual environments with the two releases under
         # investigation.
-        for which in ['old', 'new']:
-            if which == 'old':
+        for which in ["old", "new"]:
+            if which == "old":
                 release, python_exec = old_release, old_exec
-            elif which == 'new':
+            elif which == "new":
                 release, python_exec = new_release, new_exec
             else:
                 raise AssertionError
 
-            cmd = [python_exec, SCRIPT_FNAME, 'upgrade']
+            cmd = [python_exec, SCRIPT_FNAME, "upgrade"]
             subprocess.check_call(cmd)
 
-            cmd = [python_exec, SCRIPT_FNAME, 'prepare', release]
+            cmd = [python_exec, SCRIPT_FNAME, "prepare", release]
             subprocess.check_call(cmd)
 
     # Evaluation loop.
@@ -88,29 +88,29 @@ def run(request, is_create, is_background, old_release, new_release):
         # The idea is to have all elements that are hand-crafted for the release comparison in
         # the function below.
         constr = dict()
-        constr['flag_estimation'] = True
+        constr["flag_estimation"] = True
 
         prepare_release_tests(constr, old_release, new_release)
 
         # We use the current release for the simulation of the underlying dataset.
-        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = RespyCls("test.respy.ini")
         respy_obj.simulate()
 
-        for which in ['old', 'new']:
+        for which in ["old", "new"]:
 
-            if which == 'old':
+            if which == "old":
                 release, python_exec = old_release, old_exec
-            elif which == 'new':
+            elif which == "new":
                 release, python_exec = old_release, new_exec
             else:
                 raise AssertionError
 
-            cmd = [python_exec, SCRIPT_FNAME, 'estimate', which]
+            cmd = [python_exec, SCRIPT_FNAME, "estimate", which]
             subprocess.check_call(cmd)
 
         # Compare the resulting values of the criterion function.
-        crit_val_old = pkl.load(open('old/crit_val.respy.pkl', 'rb'))
-        crit_val_new = pkl.load(open('new/crit_val.respy.pkl', 'rb'))
+        crit_val_old = pkl.load(open("old/crit_val.respy.pkl", "rb"))
+        crit_val_new = pkl.load(open("new/crit_val.respy.pkl", "rb"))
 
         if not is_investigation:
             try:
@@ -126,10 +126,18 @@ def run(request, is_create, is_background, old_release, new_release):
             break
 
     if not is_background and not is_investigation:
-        send_notification('release', hours=hours, is_failed=is_failure, seed=seed,
-            num_tests=num_tests, old_release=old_release, new_release=new_release)
+        send_notification(
+            "release",
+            hours=hours,
+            is_failed=is_failure,
+            seed=seed,
+            num_tests=num_tests,
+            old_release=old_release,
+            new_release=new_release,
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 
     # NOTES:
     #
@@ -178,18 +186,34 @@ if __name__ == '__main__':
     #
     # The two releases that are tested against each other. These are downloaded from PYPI in
     # their own virtual environments.
-    old_release, new_release = '2.0.0.dev19', '2.0.0.dev20'
+    old_release, new_release = "2.0.0.dev19", "2.0.0.dev20"
 
-    parser = argparse.ArgumentParser(description='Run release testing.')
+    parser = argparse.ArgumentParser(description="Run release testing.")
 
-    parser.add_argument('--request', action='store', dest='request', help='task to perform',
-        nargs=2, required=True)
+    parser.add_argument(
+        "--request",
+        action="store",
+        dest="request",
+        help="task to perform",
+        nargs=2,
+        required=True,
+    )
 
-    parser.add_argument('--create', action='store_true', dest='is_create', default=False,
-        help='create new virtual environments')
+    parser.add_argument(
+        "--create",
+        action="store_true",
+        dest="is_create",
+        default=False,
+        help="create new virtual environments",
+    )
 
-    parser.add_argument('--background', action='store_true', dest='is_background', default=False,
-        help='background process')
+    parser.add_argument(
+        "--background",
+        action="store_true",
+        dest="is_background",
+        default=False,
+        help="background process",
+    )
 
     # Distribute arguments
     args = parser.parse_args()

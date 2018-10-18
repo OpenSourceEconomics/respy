@@ -10,14 +10,15 @@ from respy import RespyCls
 class TestClass(object):
     """ This class groups together some tests.
     """
+
     def test_1(self):
         """ This is the special case where the EMAX better be equal to the MAXE.
         """
         # Set initial constraints
         constr = dict()
-        constr['flag_interpolation'] = False
-        constr['periods'] = np.random.randint(3, 6)
-        constr['flag_deterministic'] = True
+        constr["flag_interpolation"] = False
+        constr["periods"] = np.random.randint(3, 6)
+        constr["flag_deterministic"] = True
 
         # Initialize request
         init_dict = generate_random_dict(constr)
@@ -30,12 +31,13 @@ class TestClass(object):
             write_init_file(init_dict)
 
             # Process and solve
-            respy_obj = RespyCls('test.respy.ini')
+            respy_obj = RespyCls("test.respy.ini")
             respy_obj = simulate_observed(respy_obj)
 
             # Extract class attributes
-            states_number_period, periods_emax = dist_class_attributes(respy_obj,
-                    'states_number_period', 'periods_emax')
+            states_number_period, periods_emax = dist_class_attributes(
+                respy_obj, "states_number_period", "periods_emax"
+            )
 
             # Store and check results
             if baseline is None:
@@ -45,8 +47,8 @@ class TestClass(object):
 
             # Updates for second iteration. This ensures that there is at least one interpolation
             #  taking place.
-            init_dict['INTERPOLATION']['points'] = max(states_number_period) - 1
-            init_dict['INTERPOLATION']['flag'] = True
+            init_dict["INTERPOLATION"]["points"] = max(states_number_period) - 1
+            init_dict["INTERPOLATION"]["flag"] = True
 
     def test_2(self):
         """ This test compares the results from a solution using the interpolation code for the
@@ -56,8 +58,8 @@ class TestClass(object):
         """
         # Set initial constraints
         constr = dict()
-        constr['flag_interpolation'] = False
-        constr['periods'] = np.random.randint(3, 6)
+        constr["flag_interpolation"] = False
+        constr["periods"] = np.random.randint(3, 6)
 
         # Initialize request
         init_dict = generate_random_dict(constr)
@@ -70,13 +72,13 @@ class TestClass(object):
             write_init_file(init_dict)
 
             # Process and solve
-            respy_obj = RespyCls('test.respy.ini')
+            respy_obj = RespyCls("test.respy.ini")
             respy_obj = simulate_observed(respy_obj)
 
             # Extract class attributes
-            states_number_period, periods_emax = \
-                dist_class_attributes(respy_obj,
-                    'states_number_period', 'periods_emax')
+            states_number_period, periods_emax = dist_class_attributes(
+                respy_obj, "states_number_period", "periods_emax"
+            )
 
             # Store and check results
             if baseline is None:
@@ -85,6 +87,5 @@ class TestClass(object):
                 np.testing.assert_array_almost_equal(baseline, periods_emax)
 
             # Updates for second iteration
-            init_dict['INTERPOLATION']['points'] = max(states_number_period)
-            init_dict['INTERPOLATION']['flag'] = True
-
+            init_dict["INTERPOLATION"]["points"] = max(states_number_period)
+            init_dict["INTERPOLATION"]["flag"] = True
