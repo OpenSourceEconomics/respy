@@ -22,7 +22,8 @@ Welcome to respy's documentation!
    background
    installation
    setup
-   tutorial
+   basics
+   specification
    numerical_methods
    reliability
    scalability
@@ -33,5 +34,3 @@ Welcome to respy's documentation!
    credits
    changes
    bibliography
-
-
