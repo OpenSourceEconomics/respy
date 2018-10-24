@@ -11,7 +11,7 @@ from respy.custom_exceptions import UserError
 from respy import RespyCls
 
 # module-wide variables
-ERR_MSG = ' Observations not meeting model requirements.'
+ERR_MSG = " Observations not meeting model requirements."
 
 
 def dist_input_arguments(parser):
@@ -25,8 +25,8 @@ def dist_input_arguments(parser):
     request = args.request
 
     # Check attributes
-    assert (os.path.exists(init_file))
-    assert (request in ['estimate', 'simulate'])
+    assert os.path.exists(init_file)
+    assert request in ["estimate", "simulate"]
 
     # Finishing
     return request, init_file
@@ -40,10 +40,11 @@ def scripts_check(request, init_file):
 
     # Distribute model parameters
     num_periods, edu_spec, num_types = dist_class_attributes(
-        respy_obj, 'num_periods', 'edu_spec', 'num_types')
+        respy_obj, "num_periods", "edu_spec", "num_types"
+    )
 
     # We need to run additional checks if an estimation is requested.
-    if request == 'estimate':
+    if request == "estimate":
         # Create the grid of the admissible states.
         args = (num_periods, num_types, edu_spec)
         mapping_state_idx = pyth_create_state_space(*args)[2]
@@ -76,15 +77,26 @@ def scripts_check(request, init_file):
         # We also take a special look at the optimizer options.
         respy_obj.check_estimation()
 
-if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Check request for the RESPY package.')
+if __name__ == "__main__":
 
-    parser.add_argument('--request', action='store', dest='request', help='task to perform',
-                        required=True)
+    parser = argparse.ArgumentParser(description="Check request for the RESPY package.")
 
-    parser.add_argument('--init', action='store', dest='init_file', default='model.respy.ini',
-                        help='initialization file')
+    parser.add_argument(
+        "--request",
+        action="store",
+        dest="request",
+        help="task to perform",
+        required=True,
+    )
+
+    parser.add_argument(
+        "--init",
+        action="store",
+        dest="init_file",
+        default="model.respy.ini",
+        help="initialization file",
+    )
 
     # Process command line arguments
     args = dist_input_arguments(parser)

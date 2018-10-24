@@ -10,6 +10,7 @@ from datetime import timedelta, datetime
 import traceback
 from functools import partial
 from multiprocessing import Pool
+
 # import random_init
 
 
@@ -26,9 +27,9 @@ def run_robustness_test(seed, is_investigation):
             rmtree(new_dir)
         os.mkdir(new_dir)
     else:
-        new_dir = join(old_dir, str(seed) + '_' + t)
+        new_dir = join(old_dir, str(seed) + "_" + t)
         os.mkdir(new_dir)
-    for file in ['career_data.respy.dat', 'career_data.respy.pkl']:
+    for file in ["career_data.respy.dat", "career_data.respy.pkl"]:
         copy(join(old_dir, file), join(new_dir, file))
     os.chdir(new_dir)
 
@@ -36,25 +37,25 @@ def run_robustness_test(seed, is_investigation):
     # structure of the empirical dataset. We need to be particularly careful with the
     # construction of the maximum level of schooling as we need to rule out that anyone in the
     # estimation sample has a value larger then the specified maximum value.
-    version = np.random.choice(['PYTHON', 'FORTRAN'])
-    max_periods = VERSION_CONSTRAINTS['max_periods'][version]
+    version = np.random.choice(["PYTHON", "FORTRAN"])
+    max_periods = VERSION_CONSTRAINTS["max_periods"][version]
     num_periods = np.random.randint(1, max_periods)
 
     edu_start = np.random.choice(range(7, 12))
     edu_max = np.random.randint(edu_start + num_periods, 30)
 
     constr = dict()
-    constr['file_est'] = join(new_dir, 'career_data.respy.dat')
-    constr['agents'] = np.random.randint(500, 1372 + 1)
-    constr['edu'] = (edu_start, edu_max)
-    constr['flag_estimation'] = True
-    constr['periods'] = num_periods
-    constr['version'] = version
+    constr["file_est"] = join(new_dir, "career_data.respy.dat")
+    constr["agents"] = np.random.randint(500, 1372 + 1)
+    constr["edu"] = (edu_start, edu_max)
+    constr["flag_estimation"] = True
+    constr["periods"] = num_periods
+    constr["version"] = version
 
     generate_init(constr)
 
     try:
-        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = RespyCls("test.respy.ini")
         respy_obj.fit()
     except:
         tb = traceback.format_exc()

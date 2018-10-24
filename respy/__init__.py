@@ -17,9 +17,9 @@ np.testing.assert_equal(minor >= 6, True)
 
 # We want to turn off the nuisance warnings while in production.
 if not IS_DEBUG:
-    warnings.simplefilter(action='ignore', category=FutureWarning)
+    warnings.simplefilter(action="ignore", category=FutureWarning)
 
-__version__ = '2.0.0.dev20'
+__version__ = "2.0.0.dev20"
 
 
 def test(opt=None):

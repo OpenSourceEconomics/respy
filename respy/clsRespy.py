@@ -12,10 +12,15 @@ from respy.python.shared.shared_auxiliary import remove_scratch
 
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.pre_processing.model_processing import read_init_file, convert_init_dict_to_attr_dict, \
-    convert_attr_dict_to_init_dict
-from respy.pre_processing.model_checking import check_model_attributes, \
-    check_model_solution
+from respy.pre_processing.model_processing import (
+    read_init_file,
+    convert_init_dict_to_attr_dict,
+    convert_attr_dict_to_init_dict,
+)
+from respy.pre_processing.model_checking import (
+    check_model_attributes,
+    check_model_solution,
+)
 from respy.custom_exceptions import UserError
 from respy.python.interface import respy_interface
 from respy.fortran.interface import resfort_interface
@@ -40,16 +45,20 @@ class RespyCls(object):
         self.attr = convert_init_dict_to_attr_dict(ini)
         self._update_derived_attributes()
         self._initialize_solution_attributes()
-        self.attr['is_locked'] = False
-        self.attr['is_solved'] = False
+        self.attr["is_locked"] = False
+        self.attr["is_solved"] = False
         self.lock()
 
     def _set_hardcoded_attributes(self):
         """Set attributes that can't be changed by the model specification."""
-        self.derived_attributes = ['is_myopic', 'num_paras']
+        self.derived_attributes = ["is_myopic", "num_paras"]
         self.solution_attributes = [
-            'periods_rewards_systematic', 'states_number_period',
-            'mapping_state_idx', 'periods_emax', 'states_all']
+            "periods_rewards_systematic",
+            "states_number_period",
+            "mapping_state_idx",
+            "periods_emax",
+            "states_all",
+        ]
 
     def _initialize_solution_attributes(self):
         """Initialize solution attributes to None."""
@@ -63,60 +72,63 @@ class RespyCls(object):
         self.reset()
 
         new_paras_dict = distribute_parameters(
-            paras_vec=x_econ, is_debug=True, paras_type='econ',)
-        self.attr['optim_paras'].update(new_paras_dict)
+            paras_vec=x_econ, is_debug=True, paras_type="econ"
+        )
+        self.attr["optim_paras"].update(new_paras_dict)
 
     def lock(self):
         """Lock class instance."""
-        assert (not self.attr['is_locked']), \
-            'Only unlocked instances of clsRespy can be locked.'
+        assert not self.attr[
+            "is_locked"
+        ], "Only unlocked instances of clsRespy can be locked."
 
         self._update_derived_attributes()
         self._check_model_attributes()
         self._check_model_solution()
-        self.attr['is_locked'] = True
+        self.attr["is_locked"] = True
 
     def unlock(self):
         """Unlock class instance."""
-        assert self.attr['is_locked'], \
-            'Only locked instances of clsRespy can be unlocked.'
+        assert self.attr[
+            "is_locked"
+        ], "Only locked instances of clsRespy can be unlocked."
 
-        self.attr['is_locked'] = False
+        self.attr["is_locked"] = False
 
     def get_attr(self, key):
         """Get attributes."""
-        assert self.attr['is_locked']
+        assert self.attr["is_locked"]
         self._check_key(key)
 
         if key in self.solution_attributes:
-            assert self.get_attr('is_solved'), 'invalid request'
+            assert self.get_attr("is_solved"), "invalid request"
 
         return self.attr[key]
 
     def set_attr(self, key, value):
         """Set attributes."""
-        assert (not self.attr['is_locked'])
+        assert not self.attr["is_locked"]
         self._check_key(key)
 
-        invalid_attr = self.derived_attributes + ['optim_paras', 'init_dict']
+        invalid_attr = self.derived_attributes + ["optim_paras", "init_dict"]
         if key in invalid_attr:
-            raise AssertionError(
-                '{} must not be modified by users!'.format(key))
+            raise AssertionError("{} must not be modified by users!".format(key))
 
         if key in self.solution_attributes:
-            assert not self.attr['is_solved'], \
-                'Solution attributes can only be set if model is not solved.'
+            assert not self.attr[
+                "is_solved"
+            ], "Solution attributes can only be set if model is not solved."
 
         self.attr[key] = value
         self._update_derived_attributes()
 
     def store(self, file_name):
         """Store class instance."""
-        assert self.attr['is_locked']
+        assert self.attr["is_locked"]
         assert isinstance(file_name, str)
-        pkl.dump(self, open(file_name, 'wb'))
+        pkl.dump(self, open(file_name, "wb"))
 
-    def write_out(self, fname='model.respy.ini'):
+    def write_out(self, fname="model.respy.ini"):
         """Write out the implied initialization file of the class instance."""
         init_dict = convert_attr_dict_to_init_dict(self.attr)
         write_init_file(init_dict, fname)
@@ -125,16 +137,15 @@ class RespyCls(object):
         """Remove solution attributes from class instance."""
         for label in self.solution_attributes:
             self.attr[label] = None
-        self.attr['is_solved'] = False
+        self.attr["is_solved"] = False
 
     def check_equal_solution(self, other):
         """Compare two class instances for equality of solution attributes."""
-        assert (isinstance(other, RespyCls))
+        assert isinstance(other, RespyCls)
 
         for key_ in self.solution_attributes:
             try:
-                np.testing.assert_almost_equal(
-                    self.attr[key_], other.attr[key_])
+                np.testing.assert_almost_equal(self.attr[key_], other.attr[key_])
             except AssertionError:
                 return False
 
@@ -142,9 +153,9 @@ class RespyCls(object):
 
     def _update_derived_attributes(self):
         """Update derived attributes."""
-        num_types = self.attr['num_types']
-        self.attr['is_myopic'] = (self.attr['optim_paras']['delta'] == 0.00)[0]
-        self.attr['num_paras'] = 53 + (num_types - 1) * 6
+        num_types = self.attr["num_types"]
+        self.attr["is_myopic"] = (self.attr["optim_paras"]["delta"] == 0.00)[0]
+        self.attr["num_paras"] = 53 + (num_types - 1) * 6
 
     def _check_model_attributes(self):
         """Check integrity of class instance.
@@ -161,38 +172,43 @@ class RespyCls(object):
 
     def _check_key(self, key):
         """Check that key is present."""
-        assert (key in self.attr.keys()), \
-            'Invalid key requested: {}'.format(key)
+        assert key in self.attr.keys(), "Invalid key requested: {}".format(key)
 
     def check_estimation(self):
         """Check model attributes that are only relevant for estimation tasks."""
         # Check that class instance is locked.
-        assert self.get_attr('is_locked')
+        assert self.get_attr("is_locked")
 
         # Check that no other estimations are currently running in this directory.
-        assert not os.path.exists('.estimation.respy.scratch')
+        assert not os.path.exists(".estimation.respy.scratch")
 
         # Distribute class attributes
-        optimizer_options, optimizer_used, optim_paras, version, maxfun, \
-            num_paras, file_est = dist_class_attributes(
-                self, 'optimizer_options', 'optimizer_used', 'optim_paras',
-                'version', 'maxfun', 'num_paras', 'file_est')
+        optimizer_options, optimizer_used, optim_paras, version, maxfun, num_paras, file_est = dist_class_attributes(
+            self,
+            "optimizer_options",
+            "optimizer_used",
+            "optim_paras",
+            "version",
+            "maxfun",
+            "num_paras",
+            "file_est",
+        )
 
         # Ensure that at least one parameter is free.
-        if sum(optim_paras['paras_fixed']) == num_paras:
-            raise UserError('Estimation requires at least one free parameter')
+        if sum(optim_paras["paras_fixed"]) == num_paras:
+            raise UserError("Estimation requires at least one free parameter")
 
         # Make sure the estimation dataset exists
         if not os.path.exists(file_est):
-            raise UserError('Estimation dataset does not exist')
+            raise UserError("Estimation dataset does not exist")
 
         if maxfun > 0:
             assert optimizer_used in optimizer_options.keys()
 
             # Make sure the requested optimizer is valid
-            if version == 'PYTHON':
+            if version == "PYTHON":
                 assert optimizer_used in OPT_EST_PYTH
-            elif version == 'FORTRAN':
+            elif version == "FORTRAN":
                 assert optimizer_used in OPT_EST_FORT
             else:
                 raise AssertionError
@@ -202,18 +218,18 @@ class RespyCls(object):
     def fit(self):
         """Estimate the model."""
         # Cleanup
-        for fname in ['est.respy.log', 'est.respy.info']:
+        for fname in ["est.respy.log", "est.respy.info"]:
             if os.path.exists(fname):
                 os.unlink(fname)
 
-        if self.get_attr('is_solved'):
+        if self.get_attr("is_solved"):
             self.reset()
 
         self.check_estimation()
 
         # This locks the estimation directory for additional estimation requests.
-        atexit.register(remove_scratch, '.estimation.respy.scratch')
-        open('.estimation.respy.scratch', 'w').close()
+        atexit.register(remove_scratch, ".estimation.respy.scratch")
+        open(".estimation.respy.scratch", "w").close()
 
         # Read in estimation dataset. It only reads in the number of agents
         # requested for the estimation (or all available, depending on which is
@@ -223,20 +239,20 @@ class RespyCls(object):
         data_array = data_frame.values
 
         # Distribute class attributes
-        version = self.get_attr('version')
+        version = self.get_attr("version")
 
         # Select appropriate interface
-        if version in ['PYTHON']:
-            respy_interface(self, 'estimate', data_array)
-        elif version in ['FORTRAN']:
-            resfort_interface(self, 'estimate', data_array)
+        if version in ["PYTHON"]:
+            respy_interface(self, "estimate", data_array)
+        elif version in ["FORTRAN"]:
+            resfort_interface(self, "estimate", data_array)
         else:
             raise NotImplementedError
 
         rslt = get_est_info()
-        x, val = rslt['paras_step'], rslt['value_step']
+        x, val = rslt["paras_step"], rslt["value_step"]
 
-        for fname in ['.estimation.respy.scratch', '.stop.respy.scratch']:
+        for fname in [".estimation.respy.scratch", ".stop.respy.scratch"]:
             remove_scratch(fname)
 
         # Finishing
@@ -246,19 +262,20 @@ class RespyCls(object):
         """Simulate dataset of synthetic agents following the model."""
         # Distribute class attributes
         is_debug, version, is_store, file_sim = dist_class_attributes(
-            self, 'is_debug', 'version', 'is_store', 'file_sim')
+            self, "is_debug", "version", "is_store", "file_sim"
+        )
 
         # Cleanup
-        for ext in ['sim', 'sol', 'dat', 'info']:
-            fname = file_sim + '.respy.' + ext
+        for ext in ["sim", "sol", "dat", "info"]:
+            fname = file_sim + ".respy." + ext
             if os.path.exists(fname):
                 os.unlink(fname)
 
         # Select appropriate interface
-        if version in ['PYTHON']:
-            solution, data_array = respy_interface(self, 'simulate')
-        elif version in ['FORTRAN']:
-            solution, data_array = resfort_interface(self, 'simulate')
+        if version in ["PYTHON"]:
+            solution, data_array = respy_interface(self, "simulate")
+        elif version in ["FORTRAN"]:
+            solution, data_array = resfort_interface(self, "simulate")
         else:
             raise NotImplementedError
 
@@ -266,18 +283,19 @@ class RespyCls(object):
         self = add_solution(self, *solution)
 
         self.unlock()
-        self.set_attr('is_solved', True)
+        self.set_attr("is_solved", True)
         self.lock()
 
         # Store object to file
         if is_store:
-            self.store('solution.respy.pkl')
+            self.store("solution.respy.pkl")
 
         # Create pandas data frame with missing values.
-        data_frame = pd.DataFrame(data=replace_missing_values(data_array),
-                                  columns=DATA_LABELS_SIM)
+        data_frame = pd.DataFrame(
+            data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
+        )
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
-        data_frame.set_index(['Identifier', 'Period'], drop=False, inplace=True)
+        data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
 
         # Checks
         if is_debug:

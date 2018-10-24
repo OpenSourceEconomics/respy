@@ -39,24 +39,24 @@ class MailCls(object):
         self.attr = dict()
 
         # Constitutive attributes
-        self.attr['subject'] = None
+        self.attr["subject"] = None
 
-        self.attr['message'] = None
+        self.attr["message"] = None
 
-        self.attr['attachment'] = None
+        self.attr["attachment"] = None
 
         # Setup
-        self.attr['sender'] = socket.gethostname()
+        self.attr["sender"] = socket.gethostname()
 
-        if gethostname() == 'socrates':
-            self.attr['recipient'] = 'janos.gabler@gmail.com'
+        if gethostname() == "socrates":
+            self.attr["recipient"] = "janos.gabler@gmail.com"
         else:
-            self.attr['recipient'] = 'eisenhauer@policy-lab.org'
+            self.attr["recipient"] = "eisenhauer@policy-lab.org"
 
         # Derived attributes
-        self.attr['username'] = None
+        self.attr["username"] = None
 
-        self.attr['password'] = None
+        self.attr["password"] = None
 
         # Status indicator
         self.is_locked = False
@@ -65,47 +65,49 @@ class MailCls(object):
         """ Send message.
         """
         # Antibugging
-        assert (self.get_status() is True)
+        assert self.get_status() is True
 
         # Distribute class attributes
-        subject = self.attr['subject']
+        subject = self.attr["subject"]
 
-        message = self.attr['message']
+        message = self.attr["message"]
 
-        sender = self.attr['sender']
+        sender = self.attr["sender"]
 
-        recipient = self.attr['recipient']
+        recipient = self.attr["recipient"]
 
-        username = self.attr['username']
+        username = self.attr["username"]
 
-        password = self.attr['password']
+        password = self.attr["password"]
 
-        attachment = self.attr['attachment']
+        attachment = self.attr["attachment"]
 
         # Connect to gmail
-        server = smtplib.SMTP('smtp.gmail.com:587')
+        server = smtplib.SMTP("smtp.gmail.com:587")
 
         server.starttls()
 
         server.login(username, password)
 
         # Formatting
-        msg = MIMEMultipart('alternative')
+        msg = MIMEMultipart("alternative")
 
-        msg['Subject'], msg['From'] = subject, sender
+        msg["Subject"], msg["From"] = subject, sender
 
         # Attachment
         if attachment is not None:
-            with open(attachment, 'r') as f:
+            with open(attachment, "r") as f:
 
                 attached = MIMEText(f.read())
 
-                attached.add_header('Content-Disposition', 'attachment', filename=attachment)
+                attached.add_header(
+                    "Content-Disposition", "attachment", filename=attachment
+                )
 
                 msg.attach(attached)
 
         # Message
-        message = MIMEText(message, 'plain')
+        message = MIMEText(message, "plain")
 
         msg.attach(message)
 
@@ -119,17 +121,17 @@ class MailCls(object):
         """ Construct derived attributes.
         """
         # Antibugging
-        assert (self.get_status() is True)
+        assert self.get_status() is True
 
         # Check availability
-        assert (self.attr['message'] is not None)
+        assert self.attr["message"] is not None
 
         # Process credentials
-        dict_ = json.load(open(os.environ['HOME'] + '/.credentials'))
+        dict_ = json.load(open(os.environ["HOME"] + "/.credentials"))
 
-        self.attr['username'] = dict_['username']
+        self.attr["username"] = dict_["username"]
 
-        self.attr['password'] = dict_['password']
+        self.attr["password"] = dict_["password"]
 
     def get_status(self):
         """ Get status of class instance.
@@ -141,7 +143,7 @@ class MailCls(object):
         """ Lock class instance.
         """
         # Antibugging
-        assert (self.get_status() is False)
+        assert self.get_status() is False
 
         # Update class attributes
         self.is_locked = True
@@ -155,7 +157,7 @@ class MailCls(object):
         """ Unlock class instance.
         """
         # Antibugging
-        assert (self.get_status() is True)
+        assert self.get_status() is True
 
         # Update class attributes
         self.is_locked = False
@@ -164,8 +166,8 @@ class MailCls(object):
         """ Get attributes.
         """
         # Antibugging
-        assert (self.get_status() is True)
-        assert (deep in [True, False])
+        assert self.get_status() is True
+        assert deep in [True, False]
 
         # Copy requested object
         if deep:
@@ -180,8 +182,8 @@ class MailCls(object):
         """ Get attributes.
         """
         # Antibugging
-        assert (self.get_status() is False)
-        assert (key in self.attr.keys())
+        assert self.get_status() is False
+        assert key in self.attr.keys()
 
         # Copy requested object
         if deep:
@@ -201,8 +203,8 @@ class MailCls(object):
         """ Store class instance.
         """
         # Antibugging
-        assert (self.get_status() is True)
-        assert (isinstance(file_name, str))
+        assert self.get_status() is True
+        assert isinstance(file_name, str)
 
         # Store
-        pkl.dump(self, open(file_name, 'wb'))
+        pkl.dump(self, open(file_name, "wb"))

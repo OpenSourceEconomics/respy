@@ -17,8 +17,9 @@ class OptimizationClass(object):
 
     """
 
-    def __init__(self, x_optim_all_unscaled_start, paras_fixed, precond_matrix,
-                 num_types):
+    def __init__(
+        self, x_optim_all_unscaled_start, paras_fixed, precond_matrix, num_types
+    ):
 
         self.attr = dict()
 
@@ -43,12 +44,13 @@ class OptimizationClass(object):
         start = datetime.now()
         precond_matrix = self.precond_matrix
         x_optim_all_unscaled = self._construct_all_current_values(
-            apply_scaling(x_optim_free_scaled, precond_matrix, 'undo'))
+            apply_scaling(x_optim_free_scaled, precond_matrix, "undo")
+        )
         fval = pyth_criterion(x_optim_all_unscaled, *args)
 
         # Don't record anything if evaluating the criterion function simply to
         # get the precondition matrix.
-        if not hasattr(self, 'is_scaling'):
+        if not hasattr(self, "is_scaling"):
 
             # Record the progress of the estimation.
             record_estimation_eval(self, fval, x_optim_all_unscaled, start)
@@ -81,4 +83,3 @@ class OptimizationClass(object):
                 j += 1
 
         return x_optim_all_unscaled
-
