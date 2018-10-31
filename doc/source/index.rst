@@ -19,9 +19,10 @@ Welcome to respy's documentation!
 .. toctree::
    :maxdepth: 1
 
-   background
+   introduction
    installation
-   setup
+   economic_model
+   solution_and_estimation
    basics
    specification
    numerical_methods

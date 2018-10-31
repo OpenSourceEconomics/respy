@@ -21,12 +21,13 @@ delta        float      discount factor
 
 **COMMON**
 
-=======     ======      ==================
-Key         Value       Interpretation
-=======     ======      ==================
-coeff       float       return to hight school degree
-coeff       float       return to college education
-=======     ======      ==================
+=======     ================    ======      ===============================
+Key         Notation            Value       Interpretation
+=======     ================    ======      ===============================
+coeff       :math:`\beta_1`     float       return to hight school degree
+coeff       :math:`\beta_2`     float       return to college education
+coeff       :math:`\beta_3`     float       **cost of leaving the military prematurely**
+=======     ================    ======      ===============================
 
 .. Warning::
 
@@ -34,74 +35,38 @@ coeff       float       return to college education
 
 **OCCUPATION A**
 
-=======     ======    ==============
-Key         Value     Interpretation
-=======     ======    ==============
-coeff       float     intercept
-coeff       float     return to schooling
-coeff       float     experience Occupation A, linear
-coeff       float     experience Occupation A, squared
-coeff       float     experience Occupation B, linear
-coeff       float     experience Occupation B, squared
-coeff       float     return to high school degree
-coeff       float     return to college degree
-coeff       float     linear return from growing older
-coeff       float     effect of being a minor
-coeff       float     gain from having worked in the occupation at least once before
-coeff       float     gain from remaining in the same occupation as in previous period
-
-coeff       float     constant
-coeff       float     effect of experience in occupation A, but not from last period
-coeff       float     effect of never before having worked in occupation A
-=======     ======    ==============
+.. include:: occ_a_params.rst
 
 **OCCUPATION B**
 
-=======     ======    ================
-Key         Value     Interpretation
-=======     ======    ================
-coeff       float     intercept
-coeff       float     return to schooling
-coeff       float     return to experience Occupation A, linear
-coeff       float     return to experience Occupation A, squared
-coeff       float     return to experience Occupation B, linear
-coeff       float     return to experience Occupation B, squared
-coeff       float     return to high school degree
-coeff       float     return to college degree
-coeff       float     linear return from growing older
-coeff       float     effect of being a minor
-coeff       float     gain from having worked in the occupation at least once before
-coeff       float     gain from remaining in the same occupation as in previous period
+.. include:: occ_b_params.rst
 
-coeff       float     constant
-coeff       float     effect of experience in occupation B, but not from last period
-coeff       float     effect of never before having worked in occupation B
-=======     ======    ================
+**OCCUPATION C**
+
+.. warning::
+    This is not implemented yet!
+
+.. include:: occ_c_params.rst
 
 **EDUCATION**
 
-======= ======    ==========================
-Key     Value       Interpretation
-======= ======    ==========================
-coeff    float    constant, consumption value of school attendance
-coeff    float    return to high school degree
-coeff    float    return to college degree
-coeff    float    cost of is_return_not_highschool
-coeff    float    cost of is_return_high_school
-coeff    float    linear return from growing older
-coeff    float    effect of being a minor
+.. include:: occ_edu_params.rst
 
+In addition to the parameters of the reward function, the following attributes of the model have to be specified for education:
 
-start    int      initial level of schooling
-share    int      share of agents with respective initial level of schoolong
-lagged   int      was in education last year
+=======     ===================     ======    ==========================
+Key         Notation                Value     Interpretation
+=======     ===================     ======    ==========================
+start       not present in KW       int       initial level of schooling
+share       not present in KW       int       share of agents with respective initial level of schooling
+lagged      :math:`d_4(15)`         int       was in education last year
 
-start    int      initial level of schooling
-share    int      share of agents with respective initial level of schoolong
-lagged   int      was in education last year
+start       not present in KW       int       initial level of schooling
+share       not present in KW       int       share of agents with respective initial level of schooling
+lagged      :math:`d_4(15)`         int       was in education last year
 
-max      int      maximum level of schooling
-======= ======    ==========================
+max         not present in KW       int       maximum level of schooling
+=======     ===================     ======    ==========================
 
 .. Warning::
 
@@ -111,13 +76,7 @@ Note that in order to implement the model based on agents with different initial
 
 **HOME**
 
-======= ======      ==========================
-Key     Value       Interpretation
-======= ======      ==========================
-coeff    float      mean value of non-market alternative
-coeff    float      value if aged 18-20
-coeff    float      value if 21 or older
-======= ======      ==========================
+.. include:: occ_home_params.rst
 
 **SHOCKS**
 
@@ -144,7 +103,7 @@ In alignment to Keane and Wolpin (1994), the error terms of the model are set to
 Key         Value       Interpretation
 =======     ======      ==========================
 coeff       float       share of agents of type 2
-coeff       float       effect of having aquired >10 years of schooling 
+coeff       float       effect of having aquired >10 years of schooling
 
 coeff       float       share of agents of type 3
 coeff       float       effect of having aquired >10 years of schooling
@@ -296,7 +255,7 @@ Key         Value       Interpretation
 eps                     value to use for step size if fprime is approximated
 gtol        float       gradient norm must be less than gtol before successful termination
 maxiter     int         maximum number of iterations
-stpmx       int         maximum step size   
+stpmx       int         maximum step size
 =======     ======      ==========================
 
 **SCIPY-POWELL**
@@ -367,15 +326,15 @@ The information in the data file should be first sorted by individual and then b
 ===     ======    ======      =========      ======    ======    =====    ===========
 ID.     Priod     Choice      Earnings       Exp_A     Exp_B     sch_y    choice_lag
 ===     ======    ======      =========      ======    ======    =====    ===========
-0       0         4           0              0         0         10       1          
-0       1         4           0              0         0         10       0          
-0       2         4           0              0         0         10       0          
-1       0         4           0              0         0         10       1          
-1       1         4           0              0         0         10       0          
-1       2         4           0              0         0         10       0          
-2       0         4           0              0         0         10       1          
-2       1         4           0              0         0         10       0          
-2       1         4           0              0         0         10       0          
+0       0         4           0              0         0         10       1
+0       1         4           0              0         0         10       0
+0       2         4           0              0         0         10       0
+1       0         4           0              0         0         10       1
+1       1         4           0              0         0         10       0
+1       2         4           0              0         0         10       0
+2       0         4           0              0         0         10       1
+2       1         4           0              0         0         10       0
+2       1         4           0              0         0         10       0
 ===     ======    ======      =========      ======    ======    =====    ===========
 
 
