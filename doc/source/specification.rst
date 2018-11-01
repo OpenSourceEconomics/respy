@@ -26,7 +26,6 @@ Key         Notation            Value       Interpretation
 =======     ================    ======      ===============================
 coeff       :math:`\beta_1`     float       return to hight school degree
 coeff       :math:`\beta_2`     float       return to college education
-coeff       :math:`\beta_3`     float       **cost of leaving the military prematurely**
 =======     ================    ======      ===============================
 
 .. Warning::

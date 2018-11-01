@@ -49,14 +49,17 @@ Each of the five sectors is associated with a reward. The rewards depend on the 
 
 **State-Space Variables**
 
-=================       =====================                   ==========================
-Notation                Interpretation                             Additional Information
-=================       =====================                   ==========================
-g                       schooling                               years of schooling
-x                       work experience                         vector: one value for white-collar, blue-collar and military
-e                       skill                                   vector: one value for white-collar, blue-collar and military that evolve over time and endowments for education and home production that are determined exclusively by the individual's type
-a                       age                                     from 16 to 65 in the extended KW model
-=================       =====================                   ==========================
+=================       ===========================================    ==========================================
+Notation                Interpretation                                 Additional Information
+=================       ===========================================    ==========================================
+:math:`S_0`             state space at model start                     :math:`S(16)` in the paper, contains the type of the individual
+a                       age                                            from 16 to 65 in the extended KW model
+g                       schooling                                      years of schooling
+x                       work experience                                vector: one value for white-collar, blue-collar and military
+:math:`d_1(a-1)`        whether occ. A was chosen last period
+:math:`d_2(a-1)`        whether occ. B was chosen last period
+:math:`d_4(a-1)`        whether education was chosen last period
+=================       ===========================================    ==========================================
 
 
 **Other Notation**
@@ -119,6 +122,11 @@ where :math:`e_{3k}(a)` are the current skills of the individual in military wor
     e_{3k}(a) = ...
 
 .. include:: occ_c_params.rst
+
+Note that the coefficients of the skill technology function are identified by the wage data separately from the other coefficients. Thus, both a constant factor (:math:`r_3 \cdot exp(e_3(16))`) in the wage part and a constant factor (:math:`\alpha_{3,c`) in the non-pecuniary part can be identified. However, :math:`r_3 \cdot exp(e_3(16))` can only be estimated jointly.
+
+.. Note::
+    In the text of the paper it appears that there is a cost of leaving the military sector prematurely that is effective in all sectors but the military. The result table  (Table 7), however, suggests that a similar channel was captured by a benefit of not leaving the military sector prematurely that is only effective in the military sector. We implement this second version.
 
 Schooling
 ***********
