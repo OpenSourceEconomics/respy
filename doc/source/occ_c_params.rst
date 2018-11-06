@@ -13,7 +13,7 @@ Notation                                Interpretation
 :math:`e_{36}`                          **effect of being a minor**
 
 .                                       **other coefficients of the reward function**
-:math:`\alpha_{3,c}`                    **constant in the non-pecuniary reward **
+:math:`\alpha_{3,c}`                    **constant in the non-pecuniary reward**
 :math:`\alpha_{3, l}`                   **linear age trend in the non-pecuniary reward**
 :math:`c_{32}`                            **non-pecuniary reward of working in the military for the first time**
 :math:`\tilde{\beta}_3`                 **benefit of not leaving the military prematurely**
