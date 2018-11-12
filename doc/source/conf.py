@@ -61,7 +61,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'respy'
-copyright = u'2016, Philipp Eisenhauer'
+copyright = u'2016, respy-dev team'
 author = u'Philipp Eisenhauer'
 
 # The version info for the project you're documenting, acts as replacement for
