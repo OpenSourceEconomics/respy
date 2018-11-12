@@ -3,7 +3,6 @@
 import pandas as pd
 import numpy as np
 import shlex
-from os import getcwd
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
@@ -26,15 +25,16 @@ def simulate_observed(respy_obj, is_missings=True):
     """ This function adds two important features of observed datasests: (1) missing
     observations and missing wage information.
     """
+
     def drop_agents_obs(agent):
         """ We now determine the exact period from which onward the history is truncated and
         cut the simulated dataset down to size.
         """
-        start_truncation = np.random.choice(range(1, agent['Period'].max() + 2))
-        agent = agent[agent['Period'] < start_truncation]
+        start_truncation = np.random.choice(range(1, agent["Period"].max() + 2))
+        agent = agent[agent["Period"] < start_truncation]
         return agent
 
-    seed_sim = dist_class_attributes(respy_obj, 'seed_sim')
+    seed_sim = dist_class_attributes(respy_obj, "seed_sim")
 
     respy_obj.simulate()
 
@@ -43,22 +43,28 @@ def simulate_observed(respy_obj, is_missings=True):
     np.random.seed(seed_sim)
 
     # We read in the baseline simulated dataset.
-    data_frame = pd.read_csv('data.respy.dat', delim_whitespace=True, header=0, na_values='.',
-        dtype=DATA_FORMATS_SIM, names=DATA_LABELS_SIM)
+    data_frame = pd.read_csv(
+        "data.respy.dat",
+        delim_whitespace=True,
+        header=0,
+        na_values=".",
+        dtype=DATA_FORMATS_SIM,
+        names=DATA_LABELS_SIM,
+    )
 
     if is_missings:
         # We truncate the histories of agents. This mimics the frequent empirical fact that we loose
         # track of more and more agents over time.
-        data_subset = data_frame.groupby('Identifier').apply(drop_agents_obs)
+        data_subset = data_frame.groupby("Identifier").apply(drop_agents_obs)
 
         # We also want to drop the some wage observations. Note that we might be dealing with a
         # dataset where nobody is working anyway.
-        is_working = data_subset['Choice'].isin([1, 2])
+        is_working = data_subset["Choice"].isin([1, 2])
         num_drop_wages = int(np.sum(is_working) * np.random.uniform(high=0.5, size=1))
         if num_drop_wages > 0:
-            indices = data_subset['Wage'][is_working].index
+            indices = data_subset["Wage"][is_working].index
             index_missing = np.random.choice(indices, num_drop_wages, False)
-            data_subset.loc[index_missing, 'Wage'] = None
+            data_subset.loc[index_missing, "Wage"] = None
         else:
             pass
     else:
@@ -74,11 +80,11 @@ def simulate_observed(respy_obj, is_missings=True):
 def compare_init(fname_base, fname_alt):
     """ This function compares the content of each line of a file without any regards for spaces.
     """
-    base_lines = [line.rstrip('\n') for line in open(fname_base, 'r')]
-    alt_lines = [line.rstrip('\n') for line in open(fname_alt, 'r')]
+    base_lines = [line.rstrip("\n") for line in open(fname_base, "r")]
+    alt_lines = [line.rstrip("\n") for line in open(fname_alt, "r")]
 
     for i, base_line in enumerate(base_lines):
-        if alt_lines[i].replace(' ', '') != base_line.replace(' ', ''):
+        if alt_lines[i].replace(" ", "") != base_line.replace(" ", ""):
             return False
     return True
 
@@ -86,7 +92,7 @@ def compare_init(fname_base, fname_alt):
 def compare_est_log(base_est_log):
     """ This function is required as the log files can be slightly different for good reasons.
     """
-    with open('est.respy.log') as in_file:
+    with open("est.respy.log") as in_file:
         alt_est_log = in_file.readlines()
 
     for j, _ in enumerate(alt_est_log):
@@ -97,11 +103,11 @@ def compare_est_log(base_est_log):
         if not list_:
             continue
 
-        if list_[0] in ['Criterion']:
+        if list_[0] in ["Criterion"]:
             alt_val = float(shlex.split(alt_line)[1])
             base_val = float(shlex.split(base_line)[1])
             np.testing.assert_almost_equal(alt_val, base_val)
-        elif list_[0] in ['Time', 'Duration', 'Identifier']:
+        elif list_[0] in ["Time", "Duration", "Identifier"]:
             pass
         else:
 
@@ -127,7 +133,7 @@ def get_floats(line):
     list_ = shlex.split(line)[1:]
     rslt = []
     for val in list_:
-        if val == '---':
+        if val == "---":
             val = HUGE_FLOAT
         else:
             val = float(val)
@@ -143,12 +149,14 @@ def write_interpolation_grid(file_name):
     respy_obj = RespyCls(file_name)
 
     # Distribute class attribute
-    num_periods, num_points_interp, edu_spec, num_types = dist_class_attributes(respy_obj,
-        'num_periods', 'num_points_interp', 'edu_spec', 'num_types')
+    num_periods, num_points_interp, edu_spec, num_types = dist_class_attributes(
+        respy_obj, "num_periods", "num_points_interp", "edu_spec", "num_types"
+    )
 
     # Determine maximum number of states
-    _, states_number_period, _, max_states_period = pyth_create_state_space(num_periods, num_types,
-        edu_spec)
+    _, states_number_period, _, max_states_period = pyth_create_state_space(
+        num_periods, num_types, edu_spec
+    )
 
     # Initialize container
     booleans = np.tile(True, (max_states_period, num_periods))
@@ -165,8 +173,9 @@ def write_interpolation_grid(file_name):
             continue
 
         # Draw points for interpolation
-        indicators = np.random.choice(range(num_states), size=(num_states - num_points_interp),
-            replace=False)
+        indicators = np.random.choice(
+            range(num_states), size=(num_states - num_points_interp), replace=False
+        )
 
         # Replace indicators
         for i in range(num_states):
@@ -174,7 +183,7 @@ def write_interpolation_grid(file_name):
                 booleans[i, period] = False
 
     # Write out to file
-    np.savetxt('.interpolation.respy.test', booleans, fmt='%s')
+    np.savetxt(".interpolation.respy.test", booleans, fmt="%s")
 
     # Some information that is useful elsewhere.
     return max_states_period
@@ -186,14 +195,15 @@ def write_draws(num_periods, max_draws):
     number of requested random deviates.
     """
     # Draw standard deviates
-    draws_standard = np.random.multivariate_normal(np.zeros(4),
-        np.identity(4), (num_periods, max_draws))
+    draws_standard = np.random.multivariate_normal(
+        np.zeros(4), np.identity(4), (num_periods, max_draws)
+    )
 
     # Write to file to they can be read in by the different implementations.
-    with open('.draws.respy.test', 'w') as file_:
+    with open(".draws.respy.test", "w") as file_:
         for period in range(num_periods):
             for i in range(max_draws):
-                fmt = ' {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n'
+                fmt = " {0:15.10f} {1:15.10f} {2:15.10f} {3:15.10f}\n"
                 line = fmt.format(*draws_standard[period, i, :])
                 file_.write(line)
 
@@ -204,17 +214,21 @@ def write_types(type_shares, num_agents_sim):
     """
     # Note that the we simply set the relevant initial condition to a random value. This seems to
     # be sufficient for the testing purposes.
-    type_probs = get_conditional_probabilities(type_shares, np.random.choice([10, 12, 15]))
+    type_probs = get_conditional_probabilities(
+        type_shares, np.random.choice([10, 12, 15])
+    )
     types = np.random.choice(len(type_probs), p=type_probs, size=num_agents_sim)
-    np.savetxt('.types.respy.test', types, fmt='%i')
+    np.savetxt(".types.respy.test", types, fmt="%i")
 
 
 def write_edu_start(edu_spec, num_agents_sim):
     """ We also need to fully control the random initial schooling to ensure the comparability
     between PYTHON and FORTRAN simulations.
     """
-    types = np.random.choice(edu_spec['start'], p=edu_spec['share'], size=num_agents_sim)
-    np.savetxt('.initial_schooling.respy.test', types, fmt='%i')
+    types = np.random.choice(
+        edu_spec["start"], p=edu_spec["share"], size=num_agents_sim
+    )
+    np.savetxt(".initial_schooling.respy.test", types, fmt="%i")
 
 
 def write_lagged_start(num_agents_sim):
@@ -222,19 +236,19 @@ def write_lagged_start(num_agents_sim):
     comparability between PYTHON and FORTRAN simulations.
     """
     types = np.random.choice([3, 4], size=num_agents_sim)
-    np.savetxt('.initial_lagged.respy.test', types, fmt='%i')
+    np.savetxt(".initial_lagged.respy.test", types, fmt="%i")
 
 
 def get_valid_values(which):
     """ Simply get a valid value.
     """
-    assert which in ['amb', 'cov', 'coeff', 'delta']
+    assert which in ["amb", "cov", "coeff", "delta"]
 
-    if which in ['amb', 'delta']:
+    if which in ["amb", "delta"]:
         value = np.random.choice([0.0, np.random.uniform()])
-    elif which in ['coeff']:
+    elif which in ["coeff"]:
         value = np.random.uniform(-0.05, 0.05)
-    elif which in ['cov']:
+    elif which in ["cov"]:
         value = np.random.uniform(0.05, 1)
 
     return value
@@ -252,7 +266,7 @@ def get_valid_shares(num_groups):
 def transform_to_logit(shares):
     """ This function transform
     """
-    denominator = (1.0 / shares[0])
+    denominator = 1.0 / shares[0]
     coeffs = []
     for i in range(len(shares)):
         coeffs += [np.log(shares[i] * denominator)]

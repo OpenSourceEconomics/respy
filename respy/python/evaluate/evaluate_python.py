@@ -10,10 +10,21 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
 def pyth_contributions(
-        periods_rewards_systematic, mapping_state_idx, periods_emax,
-        states_all, data_array, periods_draws_prob, tau, num_periods,
-        num_draws_prob, num_agents_est, num_obs_agent, num_types, edu_spec,
-        optim_paras):
+    periods_rewards_systematic,
+    mapping_state_idx,
+    periods_emax,
+    states_all,
+    data_array,
+    periods_draws_prob,
+    tau,
+    num_periods,
+    num_draws_prob,
+    num_agents_est,
+    num_obs_agent,
+    num_types,
+    edu_spec,
+    optim_paras,
+):
     """Likelihood contribution of each individual in the sample.
 
     The code allows for a deterministic model (i.e. without randomness in the
@@ -58,8 +69,8 @@ def pyth_contributions(
     """
     # define a shortcut to the cholesky factors of the shocks, because they
     # are so frequently used inside deeply nested loops
-    sc = optim_paras['shocks_cholesky']
-    is_deterministic = (np.count_nonzero(sc) == 0)
+    sc = optim_paras["shocks_cholesky"]
+    is_deterministic = np.count_nonzero(sc) == 0
 
     # Initialize auxiliary objects
     contribs = np.tile(-HUGE_FLOAT, num_agents_est)
@@ -74,7 +85,8 @@ def pyth_contributions(
 
         # updated type probabilities, conditional on edu_start >= 9 or <= 9
         type_shares = get_conditional_probabilities(
-            optim_paras['type_shares'], edu_start)
+            optim_paras["type_shares"], edu_start
+        )
 
         # Container for the likelihood of the observed choice for each type.
         # likelihood contribution for each type
@@ -89,8 +101,9 @@ def pyth_contributions(
                 period = int(data_array[row_start + p, 1])
                 # Extract observable components of state space as well as
                 # agent decision.
-                exp_a, exp_b, edu, choice_lagged = \
-                    data_array[row_start + p, 4:8].astype(int)
+                exp_a, exp_b, edu, choice_lagged = data_array[
+                    row_start + p, 4:8
+                ].astype(int)
                 choice = data_array[row_start + p, 2].astype(int)
                 wage_observed = data_array[row_start + p, 3]
 
@@ -110,7 +123,8 @@ def pyth_contributions(
                 # agents rewards. These feed into the simulation of choice
                 # probabilities.
                 k = mapping_state_idx[
-                    period, exp_a, exp_b, edu, choice_lagged - 1, type_]
+                    period, exp_a, exp_b, edu, choice_lagged - 1, type_
+                ]
                 rewards_systematic = periods_rewards_systematic[period, k, :]
 
                 # If an agent is observed working, then the the labor market
@@ -119,14 +133,18 @@ def pyth_contributions(
                 # is available as well.
                 if is_working and (not is_wage_missing):
                     wages_systematic = back_out_systematic_wages(
-                        rewards_systematic, exp_a, exp_b,
-                        edu, choice_lagged, optim_paras)
+                        rewards_systematic,
+                        exp_a,
+                        exp_b,
+                        edu,
+                        choice_lagged,
+                        optim_paras,
+                    )
                     # Calculate the disturbance which are implied by the model
                     # and the observed wages.
                     dist = np.clip(
-                        np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT) - \
-                        np.clip(np.log(wages_systematic[idx]),
-                                -HUGE_FLOAT, HUGE_FLOAT)
+                        np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT
+                    ) - np.clip(np.log(wages_systematic[idx]), -HUGE_FLOAT, HUGE_FLOAT)
 
                     # If there is no random variation in rewards, then the
                     # observed wages need to be identical to their systematic
@@ -161,9 +179,9 @@ def pyth_contributions(
                                 mean = 0.00
                                 sd = abs(sc[idx, idx])
                             else:
-                                draws_stan[idx] = \
-                                    ((dist - sc[idx, 0] * draws_stan[0]) /
-                                     sc[idx, idx])
+                                draws_stan[idx] = (
+                                    dist - sc[idx, 0] * draws_stan[0]
+                                ) / sc[idx, idx]
                                 mean = sc[idx, 0] * draws_stan[0]
                                 sd = abs(sc[idx, idx])
 
@@ -186,16 +204,23 @@ def pyth_contributions(
                     # Calculate total values.
                     # immediate rewards, including shock + expected future value!
                     total_values, _ = get_total_values(
-                        period, num_periods, optim_paras, rewards_systematic,
-                        draws, edu_spec, mapping_state_idx, periods_emax, k,
-                        states_all)
+                        period,
+                        num_periods,
+                        optim_paras,
+                        rewards_systematic,
+                        draws,
+                        edu_spec,
+                        mapping_state_idx,
+                        periods_emax,
+                        k,
+                        states_all,
+                    )
 
                     # Record optimal choices
                     counts[np.argmax(total_values)] += 1
 
                     # Get the smoothed choice probability.
-                    prob_choice = get_smoothed_probability(
-                        total_values, idx, tau)
+                    prob_choice = get_smoothed_probability(total_values, idx, tau)
                     prob_obs[p] += prob_choice * prob_wage
 
                 # Determine relative shares

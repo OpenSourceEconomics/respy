@@ -19,8 +19,8 @@ from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
+from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
 from respy.python.evaluate.evaluate_python import pyth_contributions
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.simulate.simulate_auxiliary import sort_type_info
 from respy.python.simulate.simulate_auxiliary import sort_edu_spec
 from respy.python.shared.shared_auxiliary import get_num_obs_agent
@@ -49,21 +49,20 @@ from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_
 from respy import RespyCls
 
 from respy.python.shared.shared_constants import DECIMALS, TOL
+
 assert_allclose = partial(np.testing.assert_allclose, rtol=TOL, atol=TOL)
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
-
-# Edit of PYTHONPATH required for PYTHON 2 as no __init__.py in tests subdirectory. If __init__.py
-# is added, the path resolution for PYTEST breaks down.
 if IS_F2PY:
-    sys.path.insert(0, TEST_RESOURCES_DIR)
+    sys.path.insert(0, TEST_RESOURCES_BUILD)
     import f2py_interface as fort_debug
 
 
-@pytest.mark.skipif(not IS_F2PY, reason='No F2PY available')
+@pytest.mark.skipif(not IS_F2PY, reason="No F2PY available")
 class TestClass(object):
     """ This class groups together some tests.
     """
+
     def test_1(self):
         """ Compare the evaluation of the criterion function for the ambiguity optimization and
         the simulated expected future value between the FORTRAN and PYTHON implementations. These
@@ -72,28 +71,40 @@ class TestClass(object):
         """
         # Generate constraint periods
         constr = dict()
-        constr['version'] = 'PYTHON'
+        constr["version"] = "PYTHON"
 
         # Generate random initialization file
         generate_init(constr)
 
         # Perform toolbox actions
-        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = RespyCls("test.respy.ini")
 
         respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
-        periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, \
-        num_periods, states_all, num_draws_emax, edu_spec, optim_paras, num_types = \
-            dist_class_attributes(respy_obj, 'periods_rewards_systematic', 'states_number_period',
-                'mapping_state_idx', 'periods_emax', 'num_periods', 'states_all', 'num_draws_emax',
-                'edu_spec', 'optim_paras', 'num_types')
+        periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, num_periods, states_all, num_draws_emax, edu_spec, optim_paras, num_types = dist_class_attributes(
+            respy_obj,
+            "periods_rewards_systematic",
+            "states_number_period",
+            "mapping_state_idx",
+            "periods_emax",
+            "num_periods",
+            "states_all",
+            "num_draws_emax",
+            "edu_spec",
+            "optim_paras",
+            "num_types",
+        )
 
         # Sample draws
-        draws_emax_standard = np.random.multivariate_normal(np.zeros(4), np.identity(4),
-                                                            (num_draws_emax, ))
-        draws_emax_risk = transform_disturbances(draws_emax_standard,
-            np.array([0.0, 0.0, 0.0, 0.0]), optim_paras['shocks_cholesky'])
+        draws_emax_standard = np.random.multivariate_normal(
+            np.zeros(4), np.identity(4), (num_draws_emax,)
+        )
+        draws_emax_risk = transform_disturbances(
+            draws_emax_standard,
+            np.array([0.0, 0.0, 0.0, 0.0]),
+            optim_paras["shocks_cholesky"],
+        )
 
         # Sampling of random period and admissible state index
         period = np.random.choice(range(num_periods))
@@ -103,17 +114,30 @@ class TestClass(object):
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Evaluation of simulated expected future values
-        base_args = (num_periods, num_draws_emax, period, k, draws_emax_risk, rewards_systematic,
-            periods_emax, states_all, mapping_state_idx)
+        base_args = (
+            num_periods,
+            num_draws_emax,
+            period,
+            k,
+            draws_emax_risk,
+            rewards_systematic,
+            periods_emax,
+            states_all,
+            mapping_state_idx,
+        )
 
         args = ()
         args += base_args + (edu_spec, optim_paras)
         py = construct_emax_risk(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], optim_paras['delta'])
-        args += (optim_paras['coeffs_common'], optim_paras['coeffs_a'], optim_paras['coeffs_b'])
-        args += (num_types, )
+        args += base_args + (edu_spec["start"], edu_spec["max"], optim_paras["delta"])
+        args += (
+            optim_paras["coeffs_common"],
+            optim_paras["coeffs_a"],
+            optim_paras["coeffs_b"],
+        )
+        args += (num_types,)
         f90 = fort_debug.wrapper_construct_emax_risk(*args)
         assert_allclose(py, f90)
 
@@ -129,18 +153,21 @@ class TestClass(object):
             num_types = np.random.randint(1, 3)
 
             edu_spec = dict()
-            edu_spec['start'] = np.random.choice(range(1, 10), size=num_edu_start,
-                replace=False).tolist()
-            edu_spec['max'] = max(edu_spec['start']) + np.random.randint(1, 5)
-            min_idx = edu_spec['max'] + 1
+            edu_spec["start"] = np.random.choice(
+                range(1, 10), size=num_edu_start, replace=False
+            ).tolist()
+            edu_spec["max"] = max(edu_spec["start"]) + np.random.randint(1, 5)
+            min_idx = edu_spec["max"] + 1
 
             # FORTRAN
             base_args = (num_periods, num_types)
 
-            args = base_args + (edu_spec, )
+            args = base_args + (edu_spec,)
             py_a, py_b, py_c, py_d = pyth_create_state_space(*args)
-            args = base_args + (edu_spec['start'], edu_spec['max'], min_idx)
-            fort_a, fort_b, fort_c, fort_d = fort_debug.wrapper_create_state_space(*args)
+            args = base_args + (edu_spec["start"], edu_spec["max"], min_idx)
+            fort_a, fort_b, fort_c, fort_d = fort_debug.wrapper_create_state_space(
+                *args
+            )
 
             # Ensure equivalence
             rslts = [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]
@@ -165,7 +192,9 @@ class TestClass(object):
 
             # Check parameters
             py = results.params
-            f90 = fort_debug.wrapper_get_coefficients(endog, exog, num_covars, num_agents)
+            f90 = fort_debug.wrapper_get_coefficients(
+                endog, exog, num_covars, num_agents
+            )
             assert_almost_equal(py, f90)
 
             # Check prediction
@@ -175,7 +204,9 @@ class TestClass(object):
 
             # Check coefficient of determination and the standard errors.
             py = [results.rsquared, results.bse]
-            f90 = fort_debug.wrapper_get_pred_info(endog, f90, exog, num_agents, num_covars)
+            f90 = fort_debug.wrapper_get_pred_info(
+                endog, f90, exog, num_agents, num_covars
+            )
             for i in range(2):
                 assert_almost_equal(py[i], f90[i])
 
@@ -240,7 +271,9 @@ class TestClass(object):
             upper_bound = lower_bound + np.random.ranf()
             values = np.random.normal(size=num_values)
 
-            f90 = fort_debug.wrapper_clip_value(values, lower_bound, upper_bound, num_values)
+            f90 = fort_debug.wrapper_clip_value(
+                values, lower_bound, upper_bound, num_values
+            )
             py = np.clip(values, lower_bound, upper_bound)
 
             assert_almost_equal(py, f90)
@@ -262,30 +295,39 @@ class TestClass(object):
         generate_init(constr)
 
         # Perform toolbox actions
-        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = RespyCls("test.respy.ini")
 
         # Ensure that backward induction routines use the same grid for the interpolation.
-        write_interpolation_grid('test.respy.ini')
+        write_interpolation_grid("test.respy.ini")
 
         # Extract class attributes
-        num_periods, edu_spec, optim_paras, num_draws_emax, seed_emax, is_debug, is_interpolated, \
-        num_points_interp, optimizer_options, file_sim, num_types =  \
-            dist_class_attributes(respy_obj, 'num_periods', 'edu_spec', 'optim_paras',
-                'num_draws_emax', 'seed_emax', 'is_debug', 'is_interpolated',
-                'num_points_interp', 'optimizer_options', 'file_sim', 'num_types')
+        num_periods, edu_spec, optim_paras, num_draws_emax, seed_emax, is_debug, is_interpolated, num_points_interp, optimizer_options, file_sim, num_types = dist_class_attributes(
+            respy_obj,
+            "num_periods",
+            "edu_spec",
+            "optim_paras",
+            "num_draws_emax",
+            "seed_emax",
+            "is_debug",
+            "is_interpolated",
+            "num_points_interp",
+            "optimizer_options",
+            "file_sim",
+            "num_types",
+        )
 
-        shocks_cholesky = optim_paras['shocks_cholesky']
-        coeffs_common = optim_paras['coeffs_common']
-        coeffs_home = optim_paras['coeffs_home']
-        coeffs_edu = optim_paras['coeffs_edu']
-        coeffs_a = optim_paras['coeffs_a']
-        coeffs_b = optim_paras['coeffs_b']
-        delta = optim_paras['delta']
+        shocks_cholesky = optim_paras["shocks_cholesky"]
+        coeffs_common = optim_paras["coeffs_common"]
+        coeffs_home = optim_paras["coeffs_home"]
+        coeffs_edu = optim_paras["coeffs_edu"]
+        coeffs_a = optim_paras["coeffs_a"]
+        coeffs_b = optim_paras["coeffs_b"]
+        delta = optim_paras["delta"]
 
-        type_spec_shifts = optim_paras['type_shifts']
-        type_spec_shares = optim_paras['type_shares']
+        type_spec_shifts = optim_paras["type_shifts"]
+        type_spec_shares = optim_paras["type_shares"]
 
-        min_idx = edu_spec['max'] + 1
+        min_idx = edu_spec["max"] + 1
 
         # Check the state space creation.
         base_args = (num_periods, num_types)
@@ -293,7 +335,7 @@ class TestClass(object):
         args = base_args + (edu_spec,)
         pyth = pyth_create_state_space(*args)
 
-        args = base_args + (edu_spec['start'], edu_spec['max'], min_idx)
+        args = base_args + (edu_spec["start"], edu_spec["max"], min_idx)
         f2py = fort_debug.wrapper_create_state_space(*args)
         for i in range(4):
             assert_allclose(pyth[i], f2py[i])
@@ -303,7 +345,7 @@ class TestClass(object):
         mapping_state_idx, max_states_period = pyth[2:]
 
         # Cutting to size
-        states_all = states_all[:, :max(states_number_period), :]
+        states_all = states_all[:, : max(states_number_period), :]
 
         # Check calculation of systematic components of rewards.
         args = ()
@@ -317,14 +359,27 @@ class TestClass(object):
 
         # Carry some results from the systematic rewards calculation for future use and create
         # the required set of disturbances.
-        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax, is_debug)
+        periods_draws_emax = create_draws(
+            num_periods, num_draws_emax, seed_emax, is_debug
+        )
 
         periods_rewards_systematic = pyth
 
         # Check backward induction procedure.
-        base_args = (num_periods, False, max_states_period, periods_draws_emax, num_draws_emax,
-            states_number_period, periods_rewards_systematic, mapping_state_idx, states_all,
-            is_debug, is_interpolated, num_points_interp)
+        base_args = (
+            num_periods,
+            False,
+            max_states_period,
+            periods_draws_emax,
+            num_draws_emax,
+            states_number_period,
+            periods_rewards_systematic,
+            mapping_state_idx,
+            states_all,
+            is_debug,
+            is_interpolated,
+            num_points_interp,
+        )
 
         args = ()
         args += base_args + (edu_spec, optim_paras)
@@ -332,7 +387,7 @@ class TestClass(object):
         pyth = pyth_backward_induction(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'])
+        args += base_args + (edu_spec["start"], edu_spec["max"])
         args += (shocks_cholesky, delta, coeffs_common, coeffs_a, coeffs_b)
         args += (file_sim, False)
         f2py = fort_debug.wrapper_backward_induction(*args)
@@ -348,36 +403,50 @@ class TestClass(object):
         generate_init(constr)
 
         # Perform toolbox actions
-        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = RespyCls("test.respy.ini")
         respy_obj = simulate_observed(respy_obj)
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
-        max_states_period = write_interpolation_grid('test.respy.ini')
+        max_states_period = write_interpolation_grid("test.respy.ini")
 
         # Extract class attributes
-        num_periods, edu_spec, optim_paras, num_draws_emax, is_debug, is_interpolated, \
-        num_points_interp, is_myopic, num_agents_sim, num_draws_prob, tau, seed_sim, \
-        num_agents_est, states_number_period, optimizer_options,  file_sim, num_types, num_paras \
-            = dist_class_attributes(respy_obj, 'num_periods', 'edu_spec', 'optim_paras',
-            'num_draws_emax', 'is_debug', 'is_interpolated', 'num_points_interp', 'is_myopic',
-            'num_agents_sim', 'num_draws_prob', 'tau', 'seed_sim', 'num_agents_est',
-            'states_number_period', 'optimizer_options', 'file_sim', 'num_types', 'num_paras')
+        num_periods, edu_spec, optim_paras, num_draws_emax, is_debug, is_interpolated, num_points_interp, is_myopic, num_agents_sim, num_draws_prob, tau, seed_sim, num_agents_est, states_number_period, optimizer_options, file_sim, num_types, num_paras = dist_class_attributes(
+            respy_obj,
+            "num_periods",
+            "edu_spec",
+            "optim_paras",
+            "num_draws_emax",
+            "is_debug",
+            "is_interpolated",
+            "num_points_interp",
+            "is_myopic",
+            "num_agents_sim",
+            "num_draws_prob",
+            "tau",
+            "seed_sim",
+            "num_agents_est",
+            "states_number_period",
+            "optimizer_options",
+            "file_sim",
+            "num_types",
+            "num_paras",
+        )
 
         data_array = process_dataset(respy_obj).values
         num_obs_agent = get_num_obs_agent(data_array, num_agents_est)
-        min_idx = edu_spec['max'] + 1
+        min_idx = edu_spec["max"] + 1
 
-        shocks_cholesky = optim_paras['shocks_cholesky']
-        coeffs_common = optim_paras['coeffs_common']
-        coeffs_home = optim_paras['coeffs_home']
-        coeffs_edu = optim_paras['coeffs_edu']
-        coeffs_a = optim_paras['coeffs_a']
-        coeffs_b = optim_paras['coeffs_b']
-        delta = optim_paras['delta']
+        shocks_cholesky = optim_paras["shocks_cholesky"]
+        coeffs_common = optim_paras["coeffs_common"]
+        coeffs_home = optim_paras["coeffs_home"]
+        coeffs_edu = optim_paras["coeffs_edu"]
+        coeffs_a = optim_paras["coeffs_a"]
+        coeffs_b = optim_paras["coeffs_b"]
+        delta = optim_paras["delta"]
 
-        type_spec_shares = optim_paras['type_shares']
-        type_spec_shifts = optim_paras['type_shifts']
+        type_spec_shares = optim_paras["type_shares"]
+        type_spec_shifts = optim_paras["type_shifts"]
 
         # Write out random components and interpolation grid to align the three implementations.
         max_draws = max(num_agents_sim, num_draws_emax, num_draws_prob)
@@ -391,10 +460,17 @@ class TestClass(object):
         periods_draws_sims = read_draws(num_periods, num_agents_sim)
 
         # Check the full solution procedure
-        base_args = (is_interpolated, num_points_interp, num_draws_emax, num_periods, is_myopic,
-            is_debug, periods_draws_emax)
+        base_args = (
+            is_interpolated,
+            num_points_interp,
+            num_draws_emax,
+            num_periods,
+            is_myopic,
+            is_debug,
+            periods_draws_emax,
+        )
 
-        fort, _ = resfort_interface(respy_obj, 'simulate')
+        fort, _ = resfort_interface(respy_obj, "simulate")
 
         args = ()
         args += base_args + (edu_spec, optim_paras, file_sim)
@@ -402,7 +478,7 @@ class TestClass(object):
         py = pyth_solve(*args)
 
         args = ()
-        args += base_args + (min_idx, edu_spec['start'], edu_spec['max'])
+        args += base_args + (min_idx, edu_spec["start"], edu_spec["max"])
         args += (coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
         args += (shocks_cholesky, delta, file_sim)
         args += (max_states_period, num_types)
@@ -416,51 +492,97 @@ class TestClass(object):
         # Distribute solution arguments for further use in simulation test.
         periods_rewards_systematic, _, mapping_state_idx, periods_emax, states_all = py
 
-        base_args = (periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
-            num_periods, num_agents_sim, periods_draws_sims, seed_sim, file_sim)
+        base_args = (
+            periods_rewards_systematic,
+            mapping_state_idx,
+            periods_emax,
+            states_all,
+            num_periods,
+            num_agents_sim,
+            periods_draws_sims,
+            seed_sim,
+            file_sim,
+        )
 
         args = ()
         args += base_args + (edu_spec, optim_paras, num_types, is_debug)
         py = pyth_simulate(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
-        args += (edu_spec['lagged'], optim_paras['coeffs_common'], optim_paras['coeffs_a'])
-        args += (optim_paras['coeffs_b'], shocks_cholesky, delta, num_types, type_spec_shares)
+        args += base_args + (edu_spec["start"], edu_spec["max"], edu_spec["share"])
+        args += (
+            edu_spec["lagged"],
+            optim_paras["coeffs_common"],
+            optim_paras["coeffs_a"],
+        )
+        args += (
+            optim_paras["coeffs_b"],
+            shocks_cholesky,
+            delta,
+            num_types,
+            type_spec_shares,
+        )
         args += (type_spec_shifts, is_debug)
         f2py = fort_debug.wrapper_simulate(*args)
         assert_allclose(py, f2py)
 
         # Is is very important to cut the data array down to the size of the estimation sample.
-        data_array = py[:num_agents_est * num_periods, :]
+        data_array = py[: num_agents_est * num_periods, :]
 
-        base_args = (periods_rewards_systematic, mapping_state_idx, periods_emax, states_all,
-            data_array, periods_draws_prob, tau, num_periods, num_draws_prob, num_agents_est,
-            num_obs_agent, num_types)
+        base_args = (
+            periods_rewards_systematic,
+            mapping_state_idx,
+            periods_emax,
+            states_all,
+            data_array,
+            periods_draws_prob,
+            tau,
+            num_periods,
+            num_draws_prob,
+            num_agents_est,
+            num_obs_agent,
+            num_types,
+        )
 
         args = ()
         args += base_args + (edu_spec, optim_paras)
         py = pyth_contributions(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'])
+        args += base_args + (edu_spec["start"], edu_spec["max"])
         args += (shocks_cholesky, delta, type_spec_shares, type_spec_shifts)
         f2py = fort_debug.wrapper_contributions(*args)
 
         assert_allclose(py, f2py)
 
         # Evaluation of criterion function
-        x0 = get_optim_paras(optim_paras, num_paras, 'all', is_debug)
+        x0 = get_optim_paras(optim_paras, num_paras, "all", is_debug)
 
-        base_args = (is_interpolated, num_draws_emax, num_periods, num_points_interp, is_myopic,
-            is_debug, data_array, num_draws_prob, tau, periods_draws_emax, periods_draws_prob,
-            states_all, states_number_period, mapping_state_idx, max_states_period,
-            num_agents_est, num_obs_agent, num_types)
+        base_args = (
+            is_interpolated,
+            num_draws_emax,
+            num_periods,
+            num_points_interp,
+            is_myopic,
+            is_debug,
+            data_array,
+            num_draws_prob,
+            tau,
+            periods_draws_emax,
+            periods_draws_prob,
+            states_all,
+            states_number_period,
+            mapping_state_idx,
+            max_states_period,
+            num_agents_est,
+            num_obs_agent,
+            num_types,
+        )
 
-        args = base_args + (edu_spec, )
+        args = base_args + (edu_spec,)
         py = pyth_criterion(x0, *args)
 
-        args = base_args + (edu_spec['start'], edu_spec['max'], edu_spec['share'])
+        args = base_args + (edu_spec["start"], edu_spec["max"], edu_spec["share"])
         args += (type_spec_shares, type_spec_shifts, num_paras)
         f2py = fort_debug.wrapper_criterion(x0, *args)
 
@@ -474,39 +596,54 @@ class TestClass(object):
         generate_init(constr)
 
         # Perform toolbox actions
-        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = RespyCls("test.respy.ini")
         respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
-        periods_rewards_systematic, states_number_period, mapping_state_idx, seed_prob, \
-        periods_emax, num_periods, states_all, num_points_interp, edu_spec, num_draws_emax, \
-        is_debug, optim_paras, optimizer_options, file_sim, num_types = \
-            dist_class_attributes(respy_obj, 'periods_rewards_systematic',
-                'states_number_period', 'mapping_state_idx', 'seed_prob', 'periods_emax',
-                'num_periods', 'states_all', 'num_points_interp', 'edu_spec', 'num_draws_emax',
-                'is_debug', 'optim_paras', 'optimizer_options', 'file_sim',
-                'num_types')
+        periods_rewards_systematic, states_number_period, mapping_state_idx, seed_prob, periods_emax, num_periods, states_all, num_points_interp, edu_spec, num_draws_emax, is_debug, optim_paras, optimizer_options, file_sim, num_types = dist_class_attributes(
+            respy_obj,
+            "periods_rewards_systematic",
+            "states_number_period",
+            "mapping_state_idx",
+            "seed_prob",
+            "periods_emax",
+            "num_periods",
+            "states_all",
+            "num_points_interp",
+            "edu_spec",
+            "num_draws_emax",
+            "is_debug",
+            "optim_paras",
+            "optimizer_options",
+            "file_sim",
+            "num_types",
+        )
 
         # Initialize containers
         i, j = num_periods, max(states_number_period)
 
-        shocks_cov = np.matmul(optim_paras['shocks_cholesky'], optim_paras['shocks_cholesky'].T)
+        shocks_cov = np.matmul(
+            optim_paras["shocks_cholesky"], optim_paras["shocks_cholesky"].T
+        )
 
-        shocks_cholesky = optim_paras['shocks_cholesky']
-        coeffs_common = optim_paras['coeffs_common']
-        coeffs_a = optim_paras['coeffs_a']
-        coeffs_b = optim_paras['coeffs_b']
-        delta = optim_paras['delta']
+        shocks_cholesky = optim_paras["shocks_cholesky"]
+        coeffs_common = optim_paras["coeffs_common"]
+        coeffs_a = optim_paras["coeffs_a"]
+        coeffs_b = optim_paras["coeffs_b"]
+        delta = optim_paras["delta"]
 
         # Add some additional objects required for the interfaces to the functions.
         period = np.random.choice(range(num_periods))
 
-        periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_prob, is_debug)
+        periods_draws_emax = create_draws(
+            num_periods, num_draws_emax, seed_prob, is_debug
+        )
 
         draws_emax_standard = periods_draws_emax[period, :, :]
 
-        draws_emax_risk = transform_disturbances(draws_emax_standard, np.tile(0, 4),
-            shocks_cholesky)
+        draws_emax_risk = transform_disturbances(
+            draws_emax_standard, np.tile(0, 4), shocks_cholesky
+        )
 
         num_states = states_number_period[period]
 
@@ -521,15 +658,23 @@ class TestClass(object):
         is_simulated = get_simulated_indicator(*args)
 
         # Construct the exogenous variables for all points of the state space.
-        base_args = (period, num_periods, num_states, periods_rewards_systematic, shifts,
-                     mapping_state_idx, periods_emax, states_all)
+        base_args = (
+            period,
+            num_periods,
+            num_states,
+            periods_rewards_systematic,
+            shifts,
+            mapping_state_idx,
+            periods_emax,
+            states_all,
+        )
 
         args = ()
         args += base_args + (edu_spec, optim_paras)
         py = get_exogenous_variables(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], delta)
+        args += base_args + (edu_spec["start"], edu_spec["max"], delta)
         args += (coeffs_common, coeffs_a, coeffs_b, num_types)
         f90 = fort_debug.wrapper_get_exogenous_variables(*args)
 
@@ -539,16 +684,26 @@ class TestClass(object):
         exogenous, maxe = py
 
         # Construct endogenous variable so that the prediction model can be fitted.
-        base_args = (period, num_periods, num_states, periods_rewards_systematic,
-                     mapping_state_idx, periods_emax, states_all, is_simulated, num_draws_emax,
-                     maxe, draws_emax_risk)
+        base_args = (
+            period,
+            num_periods,
+            num_states,
+            periods_rewards_systematic,
+            mapping_state_idx,
+            periods_emax,
+            states_all,
+            is_simulated,
+            num_draws_emax,
+            maxe,
+            draws_emax_risk,
+        )
 
         args = ()
         args += base_args + (edu_spec, optim_paras)
         py = get_endogenous_variable(*args)
 
         args = ()
-        args += base_args + (edu_spec['start'], edu_spec['max'], shocks_cov)
+        args += base_args + (edu_spec["start"], edu_spec["max"], shocks_cov)
         args += (delta, coeffs_common, coeffs_a, coeffs_b)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
         assert_almost_equal(py, replace_missing_values(f90))
@@ -573,19 +728,21 @@ class TestClass(object):
         """
         # Impose constraints
         constr = dict()
-        constr['periods'] = np.random.randint(2, 5)
+        constr["periods"] = np.random.randint(2, 5)
 
         # Construct a random initialization file
         generate_init(constr)
 
         # Extract required information
-        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = RespyCls("test.respy.ini")
 
         # Extract class attributes
-        is_debug, num_periods = dist_class_attributes(respy_obj, 'is_debug', 'num_periods')
+        is_debug, num_periods = dist_class_attributes(
+            respy_obj, "is_debug", "num_periods"
+        )
 
         # Write out a grid for the interpolation
-        max_states_period = write_interpolation_grid('test.respy.ini')
+        max_states_period = write_interpolation_grid("test.respy.ini")
 
         # Draw random request for testing
         num_states = np.random.randint(1, max_states_period)
@@ -612,10 +769,10 @@ class TestClass(object):
         base_args = (num_points_interp, num_states, period, is_debug)
         args = base_args
         py = get_simulated_indicator(*args)
-        args = base_args + (num_periods, )
+        args = base_args + (num_periods,)
         f90 = fort_debug.wrapper_get_simulated_indicator(*args)
-        assert_array_equal(f90, 1*py)
-        os.unlink('.interpolation.respy.test')
+        assert_array_equal(f90, 1 * py)
+        os.unlink(".interpolation.respy.test")
 
         # Special case where number of interpolation points are same as the number of candidates.
         # In that case the returned indicator should be all TRUE.
@@ -653,11 +810,11 @@ class TestClass(object):
 
             generate_init()
 
-            respy_obj = RespyCls('test.respy.ini')
+            respy_obj = RespyCls("test.respy.ini")
 
             simulate_observed(respy_obj)
 
-            num_agents_est = respy_obj.get_attr('num_agents_est')
+            num_agents_est = respy_obj.get_attr("num_agents_est")
 
             data_array = process_dataset(respy_obj).values
 
@@ -699,14 +856,16 @@ class TestClass(object):
             coeffs_b = np.random.normal(0, 1, size=15)
 
             optim_paras = dict()
-            optim_paras['coeffs_common'] = coeffs_common
-            optim_paras['coeffs_a'] = coeffs_a
-            optim_paras['coeffs_b'] = coeffs_b
+            optim_paras["coeffs_common"] = coeffs_common
+            optim_paras["coeffs_a"] = coeffs_a
+            optim_paras["coeffs_b"] = coeffs_b
 
             args = [rewards_systematic, exp_a, exp_b, edu, choice_lagged]
 
             py = back_out_systematic_wages(*args + [optim_paras])
-            fort = fort_debug.wrapper_back_out_systematic_wages(*args + [coeffs_a, coeffs_b])
+            fort = fort_debug.wrapper_back_out_systematic_wages(
+                *args + [coeffs_a, coeffs_b]
+            )
 
             assert_almost_equal(py, fort)
 
@@ -726,18 +885,19 @@ class TestClass(object):
 
         # We now turn to the more complicated testing of hand-crafted functions for this purpose.
         generate_init()
-        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = RespyCls("test.respy.ini")
 
-        edu_spec, optim_paras, num_types = dist_class_attributes(respy_obj, 'edu_spec',
-            'optim_paras', 'num_types')
+        edu_spec, optim_paras, num_types = dist_class_attributes(
+            respy_obj, "edu_spec", "optim_paras", "num_types"
+        )
 
-        args = (edu_spec['start'], edu_spec['share'], edu_spec['max'])
+        args = (edu_spec["start"], edu_spec["share"], edu_spec["max"])
         f90 = fort_debug.wrapper_sort_edu_spec(*args)
         py = sort_edu_spec(edu_spec)
-        for i, label in enumerate(['start', 'share', 'max']):
+        for i, label in enumerate(["start", "share", "max"]):
             assert_equal(py[label], f90[i])
 
         py = sort_type_info(optim_paras, num_types)
-        f90 = fort_debug.wrapper_sort_type_info(optim_paras['type_shares'], num_types)
-        for i, label in enumerate(['order', 'shares']):
+        f90 = fort_debug.wrapper_sort_type_info(optim_paras["type_shares"], num_types)
+        for i, label in enumerate(["order", "shares"]):
             assert_equal(py[label], f90[i])

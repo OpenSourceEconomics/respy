@@ -46,26 +46,26 @@ def run(request, is_compile, is_background, is_strict, num_procs):
     is_investigation, is_check = False, False
     num_tests, idx = None, None
 
-    if request[0] == 'create':
+    if request[0] == "create":
         is_creation, num_tests = True, int(request[1])
-    elif request[0] == 'check':
+    elif request[0] == "check":
         is_check, num_tests = True, int(request[1])
-    elif request[0] == 'investigate':
+    elif request[0] == "investigate":
         is_investigation, idx = True, int(request[1])
     else:
-        raise AssertionError('request in [create, check. investigate]')
+        raise AssertionError("request in [create, check. investigate]")
     if num_tests is not None:
         assert num_tests > 0
     if idx is not None:
         assert idx > 0
 
     if is_investigation:
-        fname = TEST_RESOURCES_DIR + '/regression_vault.respy.json'
-        tests = json.load(open(fname, 'r'))
+        fname = TEST_RESOURCES_DIR + "/regression_vault.respy.json"
+        tests = json.load(open(fname, "r"))
 
         init_dict, crit_val = tests[idx]
         write_init_file(init_dict)
-        respy_obj = RespyCls('test.respy.ini')
+        respy_obj = RespyCls("test.respy.ini")
 
         simulate_observed(respy_obj)
 
@@ -82,12 +82,12 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         else:
             tests = mp_pool.map(create_single, range(num_tests))
 
-        json.dump(tests, open('regression_vault.respy.json', 'w'))
+        json.dump(tests, open("regression_vault.respy.json", "w"))
         return
 
     if is_check:
-        fname = TEST_RESOURCES_DIR + '/regression_vault.respy.json'
-        tests = json.load(open(fname, 'r'))
+        fname = TEST_RESOURCES_DIR + "/regression_vault.respy.json"
+        tests = json.load(open(fname, "r"))
 
         run_single = partial(check_single, tests)
         indices = list(range(num_tests))
@@ -118,35 +118,66 @@ def run(request, is_compile, is_background, is_strict, num_procs):
             is_failure = True
 
         if not is_background:
-            send_notification('regression', is_failed=is_failure, idx_failures=idx_failures)
+            send_notification(
+                "regression", is_failed=is_failure, idx_failures=idx_failures
+            )
 
         return not is_failure
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Create or check regression vault')
+    parser = argparse.ArgumentParser(description="Create or check regression vault")
 
-    parser.add_argument('--request', action='store', dest='request', help='task to perform',
-                        required=True, nargs=2)
+    parser.add_argument(
+        "--request",
+        action="store",
+        dest="request",
+        help="task to perform",
+        required=True,
+        nargs=2,
+    )
 
-    parser.add_argument('--background', action='store_true', dest='is_background', default=False,
-                        help='background process')
+    parser.add_argument(
+        "--background",
+        action="store_true",
+        dest="is_background",
+        default=False,
+        help="background process",
+    )
 
-    parser.add_argument('--compile', action='store_true', dest='is_compile', default=False,
-                        help='compile RESPY package')
+    parser.add_argument(
+        "--compile",
+        action="store_true",
+        dest="is_compile",
+        default=False,
+        help="compile RESPY package",
+    )
 
-    parser.add_argument('--strict', action='store_true', dest='is_strict', default=False,
-                        help='immediate termination if failure')
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        dest="is_strict",
+        default=False,
+        help="immediate termination if failure",
+    )
 
-    parser.add_argument('--procs', action='store', dest='num_procs', default=1, type=int,
-                        help='number of processors')
+    parser.add_argument(
+        "--procs",
+        action="store",
+        dest="num_procs",
+        default=1,
+        type=int,
+        help="number of processors",
+    )
 
     args = parser.parse_args()
-    request, is_compile = args.request, args.is_compile,
+    request, is_compile = args.request, args.is_compile
 
     if is_compile:
-        raise AssertionError('... probably not working at this point due to reload issues.')
+        raise AssertionError(
+            "... probably not working at this point due to reload issues."
+        )
 
     is_background = args.is_background
     is_strict = args.is_strict

@@ -32,6 +32,11 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
 
     REAL(our_dble), INTENT(IN)      :: data_evaluate(:, :)
 
+    INTEGER(our_int), INTENT(IN)    :: num_agents_contrib
+    INTEGER(our_int), INTENT(IN)    :: num_draws_prob
+    INTEGER(our_int), INTENT(IN)    :: num_periods
+    INTEGER(our_int), INTENT(IN)    :: num_types
+
     REAL(our_dble), INTENT(OUT)     :: contribs(num_agents_contrib)
 
     TYPE(OPTIMPARAS_DICT), INTENT(IN)   :: optim_paras
@@ -45,10 +50,6 @@ SUBROUTINE fort_contributions(contribs, periods_rewards_systematic, mapping_stat
     INTEGER(our_int), INTENT(IN)    :: mapping_state_idx(num_periods, num_periods, num_periods, min_idx, 4, num_types)
     INTEGER(our_int), INTENT(IN)    :: states_all(num_periods, max_states_period, 5)
     INTEGER(our_int), INTENT(IN)    :: num_obs_agent(num_agents_contrib)
-    INTEGER(our_int), INTENT(IN)    :: num_agents_contrib
-    INTEGER(our_int), INTENT(IN)    :: num_draws_prob
-    INTEGER(our_int), INTENT(IN)    :: num_periods
-    INTEGER(our_int), INTENT(IN)    :: num_types
 
     !/* internal objects        */
 

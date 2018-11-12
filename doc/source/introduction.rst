@@ -1,5 +1,9 @@
-Background
-==========
+Introduction
+==============
+
+.. only non technical aspects
+.. for what can respy be used? -> teaching, research, start for extension
+.. for what has respy been used?
 
 ``respy`` is a research tool. It provides the computational support for several research projects that analyze the economics driving agents' educational and occupational choices over their life cycle within the framework of a finite-horizon discrete choice dynamic programming model.
 

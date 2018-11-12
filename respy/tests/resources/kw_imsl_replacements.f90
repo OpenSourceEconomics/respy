@@ -6,7 +6,7 @@ MODULE IMSL_REPLACEMENTS
 
 	IMPLICIT NONE
 
-  	REAL, PARAMETER :: SMALL_FLOAT = 1.0e-5 
+  	REAL, PARAMETER :: SMALL_FLOAT = 1.0e-5
 
 	! External procedures defined in LAPACK
 	EXTERNAL DGETRF
@@ -22,22 +22,22 @@ SUBROUTINE LFCDS(N, A, LDA, FACT, LDFACT, RCOND)
 
     !/* external objects    */
 
+	INTEGER, INTENT(IN)     :: LDFACT
+	INTEGER, INTENT(IN)     :: LDA
+	INTEGER, INTENT(IN)     :: N
+
     REAL, INTENT(OUT)       :: FACT(N, N)
 
-    INTEGER, INTENT(IN)     :: LDFACT
-    INTEGER, INTENT(IN)     :: LDA 
-    INTEGER, INTENT(IN)     :: N
-    
-    REAL, INTENT(IN)        :: A(N, N)  
+    REAL, INTENT(IN)        :: A(N, N)
     REAL, INTENT(IN)        :: RCOND
 
     !/* internal objects    */
 
     INTEGER                 :: INFO
 
-!----------------------------------------------------------------------------- 
+!-----------------------------------------------------------------------------
 ! Algorithm
-!----------------------------------------------------------------------------- 
+!-----------------------------------------------------------------------------
 
     ! Initialize matrix for replacement.
     FACT = A
@@ -45,9 +45,9 @@ SUBROUTINE LFCDS(N, A, LDA, FACT, LDFACT, RCOND)
     ! Compute the Cholesky factorization of a real symmetric positive definite matrix A (single precision).
     CALL SPOTRF('U', N, FACT, N, INFO)
 
-END SUBROUTINE 
-!***************************************************************************** 
-!***************************************************************************** 
+END SUBROUTINE
+!*****************************************************************************
+!*****************************************************************************
 SUBROUTINE RNNOR(dim, draw)
 
     !
@@ -59,17 +59,17 @@ SUBROUTINE RNNOR(dim, draw)
     INTEGER, INTENT(IN)     :: dim
 
     REAL, INTENT(OUT)       :: draw(dim)
-        
+
     !/* internal objects    */
 
-    INTEGER                 :: g 
+    INTEGER                 :: g
 
     REAL, PARAMETER         :: pi = 3.141592653589793238462643383279502884197
     REAL, ALLOCATABLE       :: u(:), r(:)
 
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 
     ! Allocate containers
     ALLOCATE(u(2*dim)); ALLOCATE(r(2*dim))
@@ -79,41 +79,41 @@ SUBROUTINE RNNOR(dim, draw)
 
     ! Apply Box-Muller transform
     DO g = 1, 2*dim, 2
-    
-            r(g)   = SQRT(-2*LOG(u(g)))*COS(2*pi*u(g+1)) 
-            r(g+1) = SQRT(-2*LOG(u(g)))*SIN(2*pi*u(g+1)) 
-    
+
+            r(g)   = SQRT(-2*LOG(u(g)))*COS(2*pi*u(g+1))
+            r(g+1) = SQRT(-2*LOG(u(g)))*SIN(2*pi*u(g+1))
+
     END DO
 
     ! Extract relevant floats
-    DO g = 1, dim 
+    DO g = 1, dim
 
-            draw(g) = r(g)     
-    
+            draw(g) = r(g)
+
     END DO
 
-END SUBROUTINE 
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE LINDS(N, A, LDA, AINV, LDAINV)
 
     !/* external objects    */
 
+	INTEGER, INTENT(IN)     :: LDAINV
+	INTEGER, INTENT(IN)     :: LDA
+	INTEGER, INTENT(IN)     :: N
+
     REAL, INTENT(OUT)       :: AINV(N, N)
 
-    INTEGER, INTENT(IN)     :: LDAINV
-    INTEGER, INTENT(IN)     :: LDA
-    INTEGER, INTENT(IN)     :: N
-    
     REAL, INTENT(IN)        :: A(N, N)
 
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------ 
-    
+!------------------------------------------------------------------------------
+
     AINV = inverse(A, N)
 
-END SUBROUTINE 
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 FUNCTION inverse(A, n)
@@ -131,14 +131,14 @@ FUNCTION inverse(A, n)
 
     REAL                    :: inverse(n, n)
     REAL                    :: work(n)
-        
+
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
-        
+
     ! Initialize matrix for replacement
     inverse = A
-    
+
     ! SGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.
     CALL SGETRF(n, n, inverse, n, ipiv, info)
 
@@ -154,11 +154,11 @@ SUBROUTINE RNOPT(seed)
 
     INTEGER, INTENT(IN)     :: seed
 
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 
-END SUBROUTINE 
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE RNGET(seed)
@@ -173,9 +173,9 @@ SUBROUTINE RNGET(seed)
 
     INTEGER                 :: auxiliary(55)
 
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 
     CALL RANDOM_SEED(size=size)
 
@@ -183,7 +183,7 @@ SUBROUTINE RNGET(seed)
 
     CALL RANDOM_SEED(get=auxiliary)
 
-END SUBROUTINE 
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE RNSET(seed)
@@ -197,9 +197,9 @@ SUBROUTINE RNSET(seed)
     INTEGER                 :: auxiliary(55)
     INTEGER                 :: size
 
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 
     CALL RANDOM_SEED(size=size)
 
@@ -207,7 +207,7 @@ SUBROUTINE RNSET(seed)
 
     CALL RANDOM_SEED(put=auxiliary)
 
-END SUBROUTINE 
+END SUBROUTINE
 !******************************************************************************
 !******************************************************************************
 SUBROUTINE RNSRI(NSAMP, NPOP, INDEX)
@@ -225,9 +225,9 @@ SUBROUTINE RNSRI(NSAMP, NPOP, INDEX)
     INTEGER                     :: initial(NPOP)
     INTEGER                     :: i
 
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 
     DO i = 1, NPOP
         initial(i) = i
@@ -246,31 +246,31 @@ SUBROUTINE shuffle(a)
     !/* external objects    */
 
     INTEGER, INTENT(INOUT)  :: a(:)
-    
+
     !/* internal objects    */
-    
+
     INTEGER                 :: randpos
     INTEGER                 :: temp
     INTEGER                 :: i
 
     REAL                    :: r
 
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 ! Algorithm
-!------------------------------------------------------------------------------ 
+!------------------------------------------------------------------------------
 
     DO i = SIZE(a), 2, -1
-        
+
         CALL RANDOM_NUMBER(r)
 
         randpos = int(r * i) + 1
-        
+
         temp = a(randpos)
-        
+
         a(randpos) = a(i)
-        
+
         a(i) = temp
-    
+
     END DO
 
 END SUBROUTINE
@@ -279,8 +279,8 @@ END SUBROUTINE
 FUNCTION PEI_SQRT(ARG)
 
 	!
-	! This function is used as a replacement for the plain application of the 
-	! SQRT intrinsic function. Otherwise negative values are passed in as 
+	! This function is used as a replacement for the plain application of the
+	! SQRT intrinsic function. Otherwise negative values are passed in as
 	! arguments due to numerical error.
 	!
 
@@ -288,11 +288,11 @@ FUNCTION PEI_SQRT(ARG)
 
 	REAL, INTENT(IN)    :: ARG
 	REAL 				:: PEI_SQRT
-	
+
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
-	
+
 	IF(ARG < SMALL_FLOAT) THEN
 		PEI_SQRT = SQRT(SMALL_FLOAT)
 	ELSE

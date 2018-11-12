@@ -3,8 +3,19 @@ import numpy as np
 from respy.python.shared.shared_auxiliary import get_total_values
 
 
-def construct_emax_risk(num_periods, num_draws_emax, period, k, draws_emax_risk, rewards_systematic,
-        periods_emax, states_all, mapping_state_idx, edu_spec, optim_paras):
+def construct_emax_risk(
+    num_periods,
+    num_draws_emax,
+    period,
+    k,
+    draws_emax_risk,
+    rewards_systematic,
+    periods_emax,
+    states_all,
+    mapping_state_idx,
+    edu_spec,
+    optim_paras,
+):
     """ Simulate expected future value for a given distribution of the unobservables.
     """
     # Antibugging
@@ -18,8 +29,18 @@ def construct_emax_risk(num_periods, num_draws_emax, period, k, draws_emax_risk,
         draws = draws_emax_risk[i, :]
 
         # Get total value of admissible states
-        total_values, _ = get_total_values(period, num_periods, optim_paras, rewards_systematic,
-            draws, edu_spec, mapping_state_idx, periods_emax, k, states_all)
+        total_values, _ = get_total_values(
+            period,
+            num_periods,
+            optim_paras,
+            rewards_systematic,
+            draws,
+            edu_spec,
+            mapping_state_idx,
+            periods_emax,
+            k,
+            states_all,
+        )
 
         # Determine optimal choice
         maximum = max(total_values)

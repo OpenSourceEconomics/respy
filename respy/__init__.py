@@ -1,32 +1,30 @@
 import warnings
-import json
 import sys
 import os
 
-# We want to set up some module-wide variables.
-PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-
-# We want to turn off the nuisance warnings while in production.
-config = json.load(open(PACKAGE_DIR + '/.config'))
-if not config['DEBUG']:
-    warnings.simplefilter(action='ignore', category=FutureWarning)
-
 import numpy as np
 import pytest
+
+from respy.python.shared.shared_constants import ROOT_DIR
+from respy.python.shared.shared_constants import IS_DEBUG
+from respy.clsRespy import RespyCls  # noqa: F401
 
 # We only maintain the code base for modern Python.
 major, minor = sys.version_info[:2]
 np.testing.assert_equal(major == 3, True)
 np.testing.assert_equal(minor >= 6, True)
 
-from respy.clsRespy import RespyCls
 
-__version__ = '2.0.0.dev20'
+# We want to turn off the nuisance warnings while in production.
+if not IS_DEBUG:
+    warnings.simplefilter(action="ignore", category=FutureWarning)
+
+__version__ = "2.0.0.dev20"
 
 
 def test(opt=None):
-    """Run PYTEST for the package."""
+    """Run basic tests of the package."""
     current_directory = os.getcwd()
-    os.chdir(PACKAGE_DIR)
+    os.chdir(ROOT_DIR)
     pytest.main(opt)
     os.chdir(current_directory)

@@ -17,17 +17,16 @@ from auxiliary_property import cleanup_testing_infrastructure
 
 
 def run(request, is_compile, is_background, num_procs, keep_dataset):
-    cleanup_testing_infrastructure(
-        keep_results=False, keep_dataset=keep_dataset)
-    data_path = join(os.getcwd(), 'career_data.respy.dat')
+    cleanup_testing_infrastructure(keep_results=False, keep_dataset=keep_dataset)
+    data_path = join(os.getcwd(), "career_data.respy.dat")
     if not exists(data_path):
         prepare_dataset()
-    if request[0] == 'investigate':
+    if request[0] == "investigate":
         is_investigation, is_run = True, False
-    elif request[0] == 'run':
+    elif request[0] == "run":
         is_investigation, is_run = False, True
     else:
-        raise AssertionError('request in [run, investigate]')
+        raise AssertionError("request in [run, investigate]")
 
     seed_investigation, hours = None, 0.0
     if is_investigation:
@@ -35,12 +34,13 @@ def run(request, is_compile, is_background, num_procs, keep_dataset):
         assert isinstance(seed_investigation, int)
     elif is_run:
         hours = float(request[1])
-        assert (hours > 0.0)
+        assert hours > 0.0
 
     if is_investigation is True:
         # run a single test with args['seed']
         passed, error_message = run_robustness_test(
-            seed_investigation, is_investigation)
+            seed_investigation, is_investigation
+        )
         if passed is True:
             failed_dict = {}
         else:
@@ -50,65 +50,95 @@ def run(request, is_compile, is_background, num_procs, keep_dataset):
         if num_procs == 1:
             initial_seed = np.random.randint(1, 100000)
             failed_dict, num_tests = run_for_hours_sequential(
-                initial_seed=initial_seed, hours=hours)
+                initial_seed=initial_seed, hours=hours
+            )
             failed_seeds = list(failed_dict.keys())
         else:
             initial_seeds = np.random.randint(1, 100000, size=num_procs)
             failed_dict, num_tests = run_for_hours_parallel(
-                initial_seeds=initial_seeds, hours=hours)
+                initial_seeds=initial_seeds, hours=hours
+            )
 
     failed_seeds = list(failed_dict.keys())
 
     failed = bool(failed_seeds)
-    filepath = 'robustness.respy.info'
-    with open(filepath, 'w') as file:
-        file.write('Summary of Failed Robustness Tests')
-        file.write('\n\n')
+    filepath = "robustness.respy.info"
+    with open(filepath, "w") as file:
+        file.write("Summary of Failed Robustness Tests")
+        file.write("\n\n")
         if failed is True:
             for seed, message in failed_dict.items():
                 file.write(str(seed))
-                file.write('\n\n')
+                file.write("\n\n")
                 file.write(message)
-                file.write('\n\n\n\n\n')
+                file.write("\n\n\n\n\n")
         else:
-            file.write('All tests passed.')
+            file.write("All tests passed.")
 
     if is_investigation is False:
-        send_notification('robustness', is_failed=failed,
-                          failed_seeds=failed_seeds, hours=hours,
-                          procs=num_procs, num_tests=num_tests)
-        cleanup_testing_infrastructure(
-            keep_results=False, keep_dataset=keep_dataset)
+        send_notification(
+            "robustness",
+            is_failed=failed,
+            failed_seeds=failed_seeds,
+            hours=hours,
+            procs=num_procs,
+            num_tests=num_tests,
+        )
+        cleanup_testing_infrastructure(keep_results=False, keep_dataset=keep_dataset)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # args = process_command_line_arguments('robustness')
     # run(args)
-    parser = argparse.ArgumentParser(
-        description='Run or investigate robustness tests.')
+    parser = argparse.ArgumentParser(description="Run or investigate robustness tests.")
 
-    parser.add_argument('--request', action='store', dest='request',
-                        help='task to perform', required=True, nargs=2)
+    parser.add_argument(
+        "--request",
+        action="store",
+        dest="request",
+        help="task to perform",
+        required=True,
+        nargs=2,
+    )
 
-    parser.add_argument('--background', action='store_true',
-                        dest='is_background', default=False,
-                        help='background process')
+    parser.add_argument(
+        "--background",
+        action="store_true",
+        dest="is_background",
+        default=False,
+        help="background process",
+    )
 
-    parser.add_argument('--compile', action='store_true', dest='is_compile',
-                        default=False, help='compile RESPY package')
+    parser.add_argument(
+        "--compile",
+        action="store_true",
+        dest="is_compile",
+        default=False,
+        help="compile RESPY package",
+    )
 
-    parser.add_argument('--procs', action='store', dest='num_procs', default=1,
-                        type=int, help='number of processors')
+    parser.add_argument(
+        "--procs",
+        action="store",
+        dest="num_procs",
+        default=1,
+        type=int,
+        help="number of processors",
+    )
 
-    parser.add_argument('--keep_dataset', action='store_true',
-                        dest='keep_dataset', default=False,
-                        help='Do not generate dataset if it already exists.')
+    parser.add_argument(
+        "--keep_dataset",
+        action="store_true",
+        dest="keep_dataset",
+        default=False,
+        help="Do not generate dataset if it already exists.",
+    )
 
     args = parser.parse_args()
-    request, is_compile = args.request, args.is_compile,
+    request, is_compile = args.request, args.is_compile
 
     if is_compile:
-        raise AssertionError('... probably not working due to reload issues.')
+        raise AssertionError("... probably not working due to reload issues.")
 
     is_background = args.is_background
     num_procs = args.num_procs

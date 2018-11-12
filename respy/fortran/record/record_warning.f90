@@ -21,25 +21,29 @@ SUBROUTINE record_warning(count)
 
     INTEGER(our_int), INTENT(IN)    :: count
 
+    !/* internal objects        */
+
+    INTEGER(our_int)                :: u
+    
 !------------------------------------------------------------------------------
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    OPEN(UNIT=99, FILE='est.respy.log', ACCESS='APPEND', ACTION='WRITE')
+    OPEN(NEWUNIT=u, FILE='est.respy.log', POSITION='APPEND', ACTION='WRITE')
 
-        IF (count == 1) WRITE(99, *) '  Warning: Starting value of criterion function too large to write to file, internals unaffected.'
+        IF (count == 1) WRITE(u, *) '  Warning: Starting value of criterion function too large to write to file, internals unaffected.'
 
-        IF (count == 2) WRITE(99, *) '  Warning: Step value of criterion function too large to write to file, internals unaffected.'
+        IF (count == 2) WRITE(u, *) '  Warning: Step value of criterion function too large to write to file, internals unaffected.'
 
-        IF (count == 3) WRITE(99, *) '  Warning: Current value of criterion function too large to write to file, internals unaffected.'
+        IF (count == 3) WRITE(u, *) '  Warning: Current value of criterion function too large to write to file, internals unaffected.'
 
-        IF (count == 4) WRITE(99, *) '  Warning: Stabilization of otherwise zero element on diagonal of Cholesky decomposition.'
+        IF (count == 4) WRITE(u, *) '  Warning: Stabilization of otherwise zero element on diagonal of Cholesky decomposition.'
 
-        IF (count == 5) WRITE(99, *) '  Warning: Some agents have a numerically zero probability, stabilization of logarithm required.'
+        IF (count == 5) WRITE(u, *) '  Warning: Some agents have a numerically zero probability, stabilization of logarithm required.'
 
-        WRITE(99, *)
+        WRITE(u, *)
 
-    CLOSE(99)
+    CLOSE(u)
 
 END SUBROUTINE
 !******************************************************************************

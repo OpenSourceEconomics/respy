@@ -8,15 +8,15 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 # We maintain a list of all valid constraints and check all specified keys
 # against it.
 VALID_KEYS = []
-VALID_KEYS += ['flag_estimation', 'agents']
-VALID_KEYS += ['flag_parallelism', 'version', 'file_est', 'flag_interpolation']
-VALID_KEYS += ['points', 'maxfun', 'flag_deterministic', 'edu']
-VALID_KEYS += ['max_draws', 'flag_precond', 'periods']
-VALID_KEYS += ['flag_store', 'flag_myopic', 'fixed_delta', 'precond_type']
+VALID_KEYS += ["flag_estimation", "agents", "flag_parallelism_omp"]
+VALID_KEYS += ["flag_parallelism_mpi", "version", "file_est", "flag_interpolation"]
+VALID_KEYS += ["points", "maxfun", "flag_deterministic", "edu"]
+VALID_KEYS += ["max_draws", "flag_precond", "periods", "flag_parallelism"]
+VALID_KEYS += ["flag_store", "flag_myopic", "fixed_delta", "precond_type"]
 
 # This constraint is already enforced in the head module as it affects all other components of
 # a valid initialization file.
-VALID_KEYS += ['types']
+VALID_KEYS += ["types"]
 
 
 def process_constraints(dict_, constr, paras_fixed, paras_bounds):
@@ -26,175 +26,196 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
     _check_constraints(constr)
 
     # Replace path to dataset used for estimation
-    if 'file_est' in constr.keys():
+    if "file_est" in constr.keys():
         # Checks
-        assert isinstance(constr['file_est'], str)
+        assert isinstance(constr["file_est"], str)
         # Replace in initialization files
-        dict_['ESTIMATION']['file'] = constr['file_est']
+        dict_["ESTIMATION"]["file"] = constr["file_est"]
 
     # Replace interpolation
-    if 'flag_interpolation' in constr.keys():
+    if "flag_interpolation" in constr.keys():
         # Checks
-        assert (constr['flag_interpolation'] in [True, False])
+        assert constr["flag_interpolation"] in [True, False]
         # Replace in initialization files
-        dict_['INTERPOLATION']['flag'] = constr['flag_interpolation']
+        dict_["INTERPOLATION"]["flag"] = constr["flag_interpolation"]
 
     # Replace number of periods
-    if 'points' in constr.keys():
+    if "points" in constr.keys():
         # Extract objects
-        points = constr['points']
+        points = constr["points"]
         # Checks
-        assert (isinstance(points, int))
-        assert (points > 0)
+        assert isinstance(points, int)
+        assert points > 0
         # Replace in initialization files
-        dict_['INTERPOLATION']['points'] = points
+        dict_["INTERPOLATION"]["points"] = points
 
     # Replace number of iterations
-    if 'maxfun' in constr.keys():
+    if "maxfun" in constr.keys():
         # Extract objects
-        maxfun = constr['maxfun']
+        maxfun = constr["maxfun"]
         # Checks
-        assert (isinstance(maxfun, int))
-        assert (maxfun >= 0)
+        assert isinstance(maxfun, int)
+        assert maxfun >= 0
         # Replace in initialization files
-        dict_['ESTIMATION']['maxfun'] = maxfun
+        dict_["ESTIMATION"]["maxfun"] = maxfun
 
     # Replace education
-    if 'edu' in constr.keys():
+    if "edu" in constr.keys():
         # Extract objects
-        start, max_ = constr['edu']
+        start, max_ = constr["edu"]
         # Checks
         assert isinstance(start, (int, np.integer))
         assert isinstance(max_, (int, np.integer))
         assert (start > 0) and (max_ > start)
         # Replace in initialization file
-        dict_['EDUCATION']['start'] = [start]
-        dict_['EDUCATION']['share'] = [1.0]
-        dict_['EDUCATION']['max'] = max_
+        dict_["EDUCATION"]["start"] = [start]
+        dict_["EDUCATION"]["share"] = [1.0]
+        dict_["EDUCATION"]["max"] = max_
 
     # Treat the discount rate as fixed in an estimation.
-    if 'fixed_delta' in constr.keys():
+    if "fixed_delta" in constr.keys():
         # Checks
-        assert (constr['fixed_delta'] in [True, False])
+        assert constr["fixed_delta"] in [True, False]
         # Replace in initialization files
-        dict_['BASICS']['fixed'] = [constr['fixed_delta']]
+        dict_["BASICS"]["fixed"] = [constr["fixed_delta"]]
 
     # Replace version
-    if 'version' in constr.keys():
+    if "version" in constr.keys():
         # Extract objects
-        version = constr['version']
+        version = constr["version"]
         # Checks
-        assert (version in ['PYTHON', 'FORTRAN'])
+        assert version in ["PYTHON", "FORTRAN"]
         # Replace in initialization file
-        dict_['PROGRAM']['version'] = version
+        dict_["PROGRAM"]["version"] = version
         # Ensure that the constraints are met
-        if version != 'FORTRAN':
-            dict_['PROGRAM']['procs'] = 1
-        if version == 'FORTRAN':
-            dict_['ESTIMATION']['optimizer'] = np.random.choice(OPT_EST_FORT)
+        if version != "FORTRAN":
+            dict_["PROGRAM"]["procs"] = 1
+        if version == "FORTRAN":
+            dict_["ESTIMATION"]["optimizer"] = np.random.choice(OPT_EST_FORT)
         else:
-            dict_['ESTIMATION']['optimizer'] = np.random.choice(OPT_EST_PYTH)
+            dict_["ESTIMATION"]["optimizer"] = np.random.choice(OPT_EST_PYTH)
 
     # Ensure that random deviates do not exceed a certain number. This is
     # useful when aligning the randomness across implementations.
-    if 'max_draws' in constr.keys():
+    if "max_draws" in constr.keys():
         # Extract objects
-        max_draws = constr['max_draws']
+        max_draws = constr["max_draws"]
         # Checks
-        assert (isinstance(max_draws, int))
-        assert (max_draws > 2)
+        assert isinstance(max_draws, int)
+        assert max_draws > 2
         # Replace in initialization file
         num_agents_sim = np.random.randint(2, max_draws)
-        dict_['SIMULATION']['agents'] = num_agents_sim
-        dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents_sim)
-        dict_['ESTIMATION']['draws'] = np.random.randint(1, max_draws)
-        dict_['SOLUTION']['draws'] = np.random.randint(1, max_draws)
+        dict_["SIMULATION"]["agents"] = num_agents_sim
+        dict_["ESTIMATION"]["agents"] = np.random.randint(1, num_agents_sim)
+        dict_["ESTIMATION"]["draws"] = np.random.randint(1, max_draws)
+        dict_["SOLUTION"]["draws"] = np.random.randint(1, max_draws)
 
-    # Replace parallelism ...
-    if 'flag_parallelism' in constr.keys():
+    # Impose constraints on requested parallelism. It is useful to turn off all parallelism at
+    # once.
+    if "flag_paralleism" in constr.keys():
+        if constr["flag_parallelism"]:
+            constr["flag_parallelism_mpi"] = False
+            constr["flag_parallelism_omp"] = False
+
+    if "flag_parallelism_mpi" in constr.keys():
         # Extract objects
-        flag_parallelism = constr['flag_parallelism']
+        flag_parallelism_mpi = constr["flag_parallelism_mpi"]
         # Checks
-        assert (flag_parallelism in [True, False])
+        assert flag_parallelism_mpi in [True, False]
         # Replace in initialization file
-        if flag_parallelism:
-            dict_['PROGRAM']['procs'] = np.random.randint(2, 5)
+        if flag_parallelism_mpi:
+            dict_["PROGRAM"]["procs"] = np.random.randint(2, 5)
         else:
-            dict_['PROGRAM']['procs'] = 1
+            dict_["PROGRAM"]["procs"] = 1
         # Ensure that the constraints are met
-        if dict_['PROGRAM']['procs'] > 1:
-            dict_['PROGRAM']['version'] = 'FORTRAN'
+        if dict_["PROGRAM"]["procs"] > 1:
+            dict_["PROGRAM"]["version"] = "FORTRAN"
+
+    if "flag_parallelism_omp" in constr.keys():
+        # Extract objects
+        flag_parallelism_omp = constr["flag_parallelism_omp"]
+        # Checks
+        assert flag_parallelism_omp in [True, False]
+        # Replace in initialization file
+        if flag_parallelism_omp:
+            dict_["PROGRAM"]["threads"] = np.random.randint(2, 5)
+        else:
+            dict_["PROGRAM"]["threads"] = 1
+        # Ensure that the constraints are met
+        if dict_["PROGRAM"]["threads"] > 1:
+            dict_["PROGRAM"]["version"] = "FORTRAN"
 
     # Replace store attribute
-    if 'flag_store' in constr.keys():
+    if "flag_store" in constr.keys():
         # Extract objects
-        flag_store = constr['flag_store']
+        flag_store = constr["flag_store"]
         # Checks
-        assert (flag_store in [True, False])
+        assert flag_store in [True, False]
         # Replace in initialization file
-        dict_['SOLUTION']['store'] = str(flag_store)
+        dict_["SOLUTION"]["store"] = str(flag_store)
 
     # Replace number of periods
-    if 'periods' in constr.keys():
+    if "periods" in constr.keys():
         # Extract objects
-        periods = constr['periods']
+        periods = constr["periods"]
         # Checks
-        assert (isinstance(periods, int))
-        assert (periods > 0)
+        assert isinstance(periods, int)
+        assert periods > 0
         # Replace in initialization files
-        dict_['BASICS']['periods'] = periods
+        dict_["BASICS"]["periods"] = periods
 
     # Replace discount factor
-    if 'flag_myopic' in constr.keys():
+    if "flag_myopic" in constr.keys():
         # Extract object
-        assert (constr['flag_myopic'] in [True, False])
+        assert constr["flag_myopic"] in [True, False]
         # Replace in initialization files
-        if constr['flag_myopic']:
-            dict_['BASICS']['coeffs'] = [0.0]
-            dict_['BASICS']['bounds'] = [get_valid_bounds('delta', 0.00)]
+        if constr["flag_myopic"]:
+            dict_["BASICS"]["coeffs"] = [0.0]
+            dict_["BASICS"]["bounds"] = [get_valid_bounds("delta", 0.00)]
         else:
             value = np.random.uniform(0.01, 1.0)
-            dict_['BASICS']['coeffs'] = [value]
-            dict_['BASICS']['bounds'] = [get_valid_bounds('delta', value)]
+            dict_["BASICS"]["coeffs"] = [value]
+            dict_["BASICS"]["bounds"] = [get_valid_bounds("delta", value)]
 
     # No random component to rewards
-    if 'flag_deterministic' in constr.keys():
+    if "flag_deterministic" in constr.keys():
         # Checks
-        assert (constr['flag_deterministic'] in [True, False])
+        assert constr["flag_deterministic"] in [True, False]
         # Replace in initialization files
-        if constr['flag_deterministic']:
-            dict_['SHOCKS']['coeffs'] = [0.0] * 10
+        if constr["flag_deterministic"]:
+            dict_["SHOCKS"]["coeffs"] = [0.0] * 10
 
     # Number of agents
-    if 'agents' in constr.keys():
+    if "agents" in constr.keys():
         # Extract object
-        num_agents = constr['agents']
+        num_agents = constr["agents"]
         # Checks
-        assert (num_agents > 0)
-        assert (isinstance(num_agents, int))
-        assert (np.isfinite(num_agents))
+        assert num_agents > 0
+        assert isinstance(num_agents, int)
+        assert np.isfinite(num_agents)
         # Replace in initialization files
-        dict_['SIMULATION']['agents'] = num_agents
+        dict_["SIMULATION"]["agents"] = num_agents
         if num_agents == 1:
-            dict_['ESTIMATION']['agents'] = 1
+            dict_["ESTIMATION"]["agents"] = 1
         else:
-            dict_['ESTIMATION']['agents'] = np.random.randint(1, num_agents)
+            dict_["ESTIMATION"]["agents"] = np.random.randint(1, num_agents)
 
     # If flage_estimation is true, we ensure that the resulting init dict
     # is suitable for estimation tasks. This means that maxfun is relatively
     # small (otherwise the tests would run forever) and that the optimizer
     # options are compatible with constraints on the parameters.
-    if 'flag_estimation' in constr.keys():
+    if "flag_estimation" in constr.keys():
         # Checks
-        assert (constr['flag_estimation'] in [True, False])
+        assert constr["flag_estimation"] in [True, False]
         # Replace in initialization files
-        if constr['flag_estimation']:
-            dict_['flag_store'] = False
-            dict_['ESTIMATION']['maxfun'] = int(np.random.choice(range(6),
-                p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1]))
-            dict_['PRECONDITIONING']['type'] = \
-                np.random.choice(['gradient', 'identity', 'magnitudes'],
-                    p=[0.1, 0.4, 0.5])
+        if constr["flag_estimation"]:
+            dict_["flag_store"] = False
+            dict_["ESTIMATION"]["maxfun"] = int(
+                np.random.choice(range(6), p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1])
+            )
+            dict_["PRECONDITIONING"]["type"] = np.random.choice(
+                ["gradient", "identity", "magnitudes"], p=[0.1, 0.4, 0.5]
+            )
 
             # Ensure that a valid estimator is selected in the case that a
             # free parameter has bounds.
@@ -202,32 +223,32 @@ def process_constraints(dict_, constr, paras_fixed, paras_bounds):
                 if para_fixed:
                     continue
                 if any(item is not None for item in paras_bounds[i]):
-                    if dict_['PROGRAM']['version'] == 'FORTRAN':
-                        dict_['ESTIMATION']['optimizer'] = 'FORT-BOBYQA'
+                    if dict_["PROGRAM"]["version"] == "FORTRAN":
+                        dict_["ESTIMATION"]["optimizer"] = "FORT-BOBYQA"
                     else:
-                        dict_['ESTIMATION']['optimizer'] = 'SCIPY-LBFGSB'
+                        dict_["ESTIMATION"]["optimizer"] = "SCIPY-LBFGSB"
                     break
 
     # It is important that these two constraints are imposed after
     # flag_estimation. Otherwise, they might be overwritten.
-    if 'flag_precond' in constr.keys():
+    if "flag_precond" in constr.keys():
         # Extract objects
-        flag_precond = constr['flag_precond']
+        flag_precond = constr["flag_precond"]
         # Checks
-        assert (flag_precond in [True, False])
+        assert flag_precond in [True, False]
         # Replace in initialization file
         if flag_precond:
-            dict_['PRECONDITIONING']['type'] = 'gradient'
+            dict_["PRECONDITIONING"]["type"] = "gradient"
         else:
-            dict_['PRECONDITIONING']['type'] = 'identity'
+            dict_["PRECONDITIONING"]["type"] = "identity"
 
-    if 'precond_type' in constr.keys():
+    if "precond_type" in constr.keys():
         # Extract objects
-        precond_type = constr['precond_type']
+        precond_type = constr["precond_type"]
         # Checks
-        assert (precond_type in ['identity', 'gradient', 'magnitudes'])
+        assert precond_type in ["identity", "gradient", "magnitudes"]
         # Replace in initialization file
-        dict_['PRECONDITIONING']['type'] = precond_type
+        dict_["PRECONDITIONING"]["type"] = precond_type
 
     return dict_
 
@@ -242,17 +263,22 @@ def _check_constraints(constr):
     # Address incompatibility issues
     keys = constr.keys()
 
-    if 'flag_estimation' in keys:
-        assert 'maxfun' not in keys
-        assert 'flag_precond' not in keys
+    if "flag_estimation" in keys:
+        assert "maxfun" not in keys
+        assert "flag_precond" not in keys
 
-    if 'agents' in keys:
-        assert 'max_draws' not in keys
+    if "agents" in keys:
+        assert "max_draws" not in keys
 
-    if 'flag_precond' in keys:
-        assert 'precond_type' not in keys
+    if "flag_precond" in keys:
+        assert "precond_type" not in keys
 
-    cond = ('flag_parallelism' in keys) and ('version' in keys)
-    cond = cond and constr['flag_parallelism']
+    cond = ("flag_parallelism_mpi" in keys) and ("version" in keys)
+    cond = cond and constr["flag_parallelism_mpi"]
     if cond:
-        assert constr['version'] == 'FORTRAN'
+        assert constr["version"] == "FORTRAN"
+
+    cond = ("flag_parallelism_omp" in keys) and ("version" in keys)
+    cond = cond and constr["flag_parallelism_omp"]
+    if cond:
+        assert constr["version"] == "FORTRAN"
