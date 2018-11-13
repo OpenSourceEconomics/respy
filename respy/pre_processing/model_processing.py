@@ -12,6 +12,7 @@ usage in RespyCLS.
 
 """
 import numpy as np
+import pandas as pd
 import shlex
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
@@ -27,6 +28,12 @@ from respy.pre_processing.model_processing_auxiliary import _paras_mapping
 from respy.pre_processing.model_processing_auxiliary import (
     _num_types_from_len_type_share_coeffs,
 )
+
+
+def read_csv_spec(file_path):
+    spec = pd.read_csv(file_path)
+    spec.replace("None", None)
+    return spec
 
 
 def read_init_file(fname):

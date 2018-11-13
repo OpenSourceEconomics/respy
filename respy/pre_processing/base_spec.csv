@@ -1,0 +1,54 @@
+category,name,para,fixed,lower,upper,comment
+delta,delta,0.9363,FALSE,0,1,discount factor
+coeffs_common,return_hs_degree,804,FALSE,None,None,return to high school degree (non pecuniary)
+coeffs_common,return_col_degree,2005,FALSE,None,None,return to college degree (non pecuniary)
+coeffs_a,skill_price,8.937,FALSE,None,None,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+coeffs_a,return_schooling,0.07,FALSE,None,None,linear return to an additional year of schooling (wage)
+coeffs_a,exp_a,0.027,FALSE,None,None,"return to experience, same sector, linear (wage)"
+coeffs_a,exp_a_square,-0.0429,FALSE,None,None,"return to experience, same sector, quadratic (divided by 100) (wage)"
+coeffs_a,exp_b,0.0225,FALSE,None,None,"return to experience, other civilian sector, linear (wage)"
+coeffs_a,exb_b_square,0,TRUE,None,None,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
+coeffs_a,premium_hs,-0.0036,FALSE,None,None,skill premium of having finished high school (wage)
+coeffs_a,premium_col,0.0023,FALSE,None,None,skill premium of having finished college (wage)
+coeffs_a,age,0.0102,FALSE,None,None,linear age effect (wage)
+coeffs_a,minor,-0.15,FALSE,None,None,effect of being a minor (wage)
+coeffs_a,not_first,0.1885,FALSE,None,None,gain of having worked in the same occupation at least once before (wage)
+coeffs_a,no_switch,0.3054,FALSE,None,None,gain of remaining in the same occupation as previous period (wage)
+coeffs_a,constant,-2543,FALSE,None,None,constant (non pecuniary)
+coeffs_a,first,-1182,FALSE,None,None,reward of switching to a from other occupation (non pecuniary)
+coeffs_a,switch,-2759,FALSE,None,None,reward of working in a for the first time (non pecuniary)
+coeffs_b,skill_price,8.8811,FALSE,None,None,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+coeffs_b,return_schooling,0.024,FALSE,None,None,linear return to an additional year of schooling (wage)
+coeffs_b,exp_a,0.0191,FALSE,None,None,"return to experience, other civilian sector, linear (wage)"
+coeffs_b,exp_a_square,0,TRUE,None,None,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
+coeffs_b,exp_b,0.0464,FALSE,None,None,"return to experience, same sector, linear (wage)"
+coeffs_b,exb_b_square,-0.0759,FALSE,None,None,"return to experience, same sector, quadratic (divided by 100) (wage)"
+coeffs_b,premium_hs,0.0058,FALSE,None,None,skill premium of having finished high school (wage)
+coeffs_b,premium_col,0.0058,FALSE,None,None,skill premium of having finished college (wage)
+coeffs_b,age,0.0114,FALSE,None,None,linear age effect (wage)
+coeffs_b,minor,0.1433,FALSE,None,None,effect of being a minor (wage)
+coeffs_b,not_first,0.202,FALSE,None,None,gain of having worked in the same occupation at least once before (wage)
+coeffs_b,no_switch,0.0964,FALSE,None,None,gain of remaining in the same occupation as previous period (wage)
+coeffs_b,constant,-3157,FALSE,None,None,constant (non pecuniary)
+coeffs_b,first,-1647,FALSE,None,None,reward of switching to a from other occupation (non pecuniary)
+coeffs_b,switch,-494,FALSE,None,None,reward of working in a for the first time (non pecuniary)
+coeffs_edu,constant,11031,FALSE,None,None,consumption value of school attendance for type 1
+coeffs_edu,value_col,804,FALSE,None,None,consumption value of college
+coeffs_edu,value_grad,2005,FALSE,None,None,consumption value of graduate school
+coeffs_edu,reenroll_col,-10700,FALSE,None,None,reward for going back to college
+coeffs_edu,reenroll_hs,-23283,FALSE,None,None,reward for going back to high school
+coeffs_edu,age,-1502,FALSE,None,None,linear age effect
+coeffs_edu,minor,3632,FALSE,None,None,effect of being a minor
+coeffs_home,constant,20242,FALSE,None,None,mean value of non-market alternative for type 1
+coeffs_home,18_to_20,-1027,FALSE,None,None,additional value of staying home if aged 18-20
+coeffs_home,21_plus,-1805,FALSE,None,None,additional value of staying home if 21 or older
+shocks,sigma_1,0.1226,FALSE,0,None,shock standard deviation in occuptation a
+shocks,sigma_12,0,FALSE,None,None,shock covariance between occupation a and b
+shocks,sigma_13,0,FALSE,None,None,shock covariance between occupation a and education
+shocks,sigma_14,0,FALSE,None,None,shock covariance between occupation a and home
+shocks,sigma_2,0,FALSE,0,None,shock standard deviation in occupation b
+shocks,sigma_23,0,FALSE,None,None,shock covariance between occupation b and education
+shocks,sigma_24,0,FALSE,None,None,shock covariance between occupation b and home
+shocks,sigma_3,12821,FALSE,0,None,shock standard deviation in education
+shocks,sigma_34,0,FALSE,None,None,shock covariance between education and home
+shocks,sigma_4,9350,FALSE,0,None,shock standard deviation in home
