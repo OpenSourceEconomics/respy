@@ -14,12 +14,15 @@ usage in RespyCLS.
 import numpy as np
 import pandas as pd
 import shlex
+import json
+import yaml
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import format_opt_parameters
 from respy.python.shared.shared_auxiliary import coeffs_to_cholesky
 from respy.python.shared.shared_auxiliary import paras_parsing_information
+from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.pre_processing.model_processing_auxiliary import _process_coefficient_line
 from respy.pre_processing.model_processing_auxiliary import _type_conversions
 from respy.pre_processing.model_processing_auxiliary import _add_to_dictionary
@@ -30,10 +33,91 @@ from respy.pre_processing.model_processing_auxiliary import (
 )
 
 
-def read_csv_spec(file_path):
-    spec = pd.read_csv(file_path)
-    spec.replace("None", None)
-    return spec
+def process_model_spec(params_spec, options_spec):
+    if not isinstance(params_spec, pd.DataFrame):
+        assert isinstance(
+            params_spec, str
+        ), "params_spec has to be a DataFrame or file path."
+        params_spec = _read_params_spec(params_spec)
+    if not isinstance(options_spec, dict):
+        assert isinstance(
+            options_spec, str
+        ), "options_spec has to be a dictionary or file path."
+        options_spec = _read_options_spec(options_spec)
+    attr = _create_attribute_dictionary(params_spec, options_spec)
+    return attr
+
+
+def _create_attribute_dictionary(params_spec, options_spec):
+    attr = {
+        "edu_max": options_spec["edu_spec"]["max"],
+        "file_est": options_spec["estimation"]["file"],
+        "file_sim": options_spec["simulation"]["file"],
+        "is_debug": options_spec["program"]["debug"],
+        "is_interpolated": options_spec["interpolation"]["flag"],
+        "is_store": options_spec["solution"]["store"],
+        "maxfun": options_spec["estimation"]["maxfun"],
+        "num_agents_est": options_spec["estimation"]["agents"],
+        "num_agents_sim": options_spec["simulation"]["agents"],
+        "num_draws_emax": options_spec["solution"]["draws"],
+        "num_draws_prob": options_spec["estimation"]["draws"],
+        "num_points_interp": options_spec["interpolation"]["points"],
+        "num_procs": options_spec["program"]["procs"],
+        "num_threads": options_spec["program"]["threads"],
+        "num_types": _get_num_types(params_spec),
+        "optim_paras": distribute_parameters(params_spec["para"].values, is_debug=True),
+        "optimizer_used": options_spec["estimation"]["optimizer"],
+        "precond_spec": options_spec["preconditioning"],
+        "seed_emax": options_spec["solution"]["seed"],
+        "seed_prob": options_spec["estimation"]["seed"],
+        "seed_sim": options_spec["simulation"]["seed"],
+        "tau": options_spec["estimation"]["tau"],
+        "version": options_spec["program"]["version"],
+    }
+
+    attr["optim_paras"]["paras_bounds"] = params_spec[["lower", "upper"]].values
+    attr["optim_paras"]["paras_fixed"] = params_spec["fixed"].values
+
+    optimizers = [
+        "fort-newuoa",
+        "fort-bfgs",
+        "fort-bobyqa",
+        "scipy-bfgs",
+        "scipy-powell",
+        "scipy-lbfgsb",
+    ]
+    attr["optimizer_options"] = {}
+    for opt in optimizers:
+        if opt in options_spec:
+            attr["optimizers_options"][opt] = options_spec[opt]
+
+    copy_from_options = ["derivatives", "edu_spec", "num_periods"]
+    for key in copy_from_options:
+        attr[key] = options_spec[key]
+    return attr
+
+
+def _get_num_types(params_spec):
+    len_type_shares = len(params_spec.loc["type_shares"])
+    return len_type_shares / 2 + 1
+
+
+def _read_params_spec(file_path):
+    assert file_path.endswith(".csv"), "file_path has to be a .csv file"
+    params_spec = pd.read_csv(file_path)
+    params_spec["para"] = params_spec["para"].astype(float)
+    params_spec.replace({"None": None}, inplace=True)
+    return params_spec
+
+
+def _read_options_spec(file_path):
+    if file_path.endswith(".json"):
+        with open(file_path, "r") as j:
+            options_spec = json.load(j)
+    elif file_path.endswith(".yaml"):
+        with open(file_path, "r") as y:
+            options_spec = yaml.load(y)
+    return options_spec
 
 
 def read_init_file(fname):

@@ -15,7 +15,7 @@ def csv_template(num_types, save_path=None, initialize_coeffs=True):
     if initialize_coeffs is False:
         template["para"] = np.nan
     if save_path is not None:
-        template.replace({"None": None}, inplace=True)
+        template.replace({None: "None"}, inplace=True)
         template.to_csv(save_path)
     return template
 
