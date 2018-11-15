@@ -249,7 +249,7 @@ The implemented optimization algorithms vary with the program's version. If you 
 =======     ======      ==========================
 Key         Value       Interpretation
 =======     ======      ==========================
-maxfun      float       maximum number of function evaluations
+maxfun      int         maximum number of function evaluations
 npt         int         number of points for approximation model
 rhobeg      float       starting value for size of trust region
 rhoend      float       minimum value of size for trust region
@@ -260,10 +260,10 @@ rhoend      float       minimum value of size for trust region
 =======     ======      ==========================
 Key         Value       Interpretation
 =======     ======      ==========================
-eps         int         value to use for step size if fprime is approximated
+eps         float       value to use for step size if fprime is approximated
 gtol        float       gradient norm must be less than gtol before successful termination
 maxiter     int         maximum number of iterations
-stpmx       int         maximum step size
+stpmx       float       maximum step size
 =======     ======      ==========================
 
 
@@ -283,7 +283,7 @@ rhoend      float       minimum value of size for trust region
 =======     ======      ==========================
 Key         Value       Interpretation
 =======     ======      ==========================
-eps                     value to use for step size if fprime is approximated
+eps         float       value to use for step size if fprime is approximated
 gtol        float       gradient norm must be less than gtol before successful termination
 maxiter     int         maximum number of iterations
 stpmx       int         maximum step size   
