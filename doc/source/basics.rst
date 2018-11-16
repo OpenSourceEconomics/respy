@@ -66,15 +66,15 @@ The simulation and estimation functionalities of the ``respy`` package can also 
 During the script execution, several files will appear in the current working directory.
 First, we outline the files generated during the initial simulation.
 
-* **sol.respy.log**
+* **data.respy.sol**
 
 Records the progress of the backward induction procedure. If the interpolation method is used during the backward induction procedure, the coefficient estimates and goodness of fit statistics are provided.
 
-* **solution.respy.pkl**
+* **data.respy.pkl**
 
 This file is an instance of the ``RespyCls`` and contains detailed information about the solution of model such as the :math:`E\max` of each state for example. For details, please consult the `source code <https://github.com/restudToolbox/package/blob/master/respy/clsRespy.py>`_ directly. It is created if persistent storage of results is requested in the *SOLUTION* section of the initialization file.
 
-* **sim.respy.log**
+* **data.respy.sim**
 
 Allows to monitor the progress of the simulation. It provides information about the seed used to sample the random components of the agents' state experience and the total number of simulated agents.
 
@@ -82,9 +82,9 @@ Allows to monitor the progress of the simulation. It provides information about 
 
 Contains the simulated data on agents' choices and state experiences. It has the following structure:
 
-    ======      ========================
+    =======     ========================
     Column      Information
-    ======      ========================
+    =======     ========================
     1           agent identifier
     2           time period
     3           choice (1 = Occupation A, 2 = Occupation B, 3 = education, 4 = home)
@@ -92,12 +92,20 @@ Contains the simulated data on agents' choices and state experiences. It has the
     5           work experience in Occupation A
     6           work experience in Occupation B
     7           years of schooling
-    8           lagged schooling
-    ======      ========================
+    8           lagged choice
+    9           type number (0 for the whole column, if homogenous agents)
+    10 - 13     total rewads - all components
+    14 - 17     systematic reward - no shock
+    18 - 21     shock reward - shock component
+    22          discount rate
+    23 - 24     general reward - non-monetary rewards and non- common rewards, example cm1 cm2 and alpha for occupation A
+    25          common reward - indicators assoc with beta 1 and beta 2
+    26 - 29     immediate reward - period reward
+    =======     ========================
 
 * **data.respy.info**
 
-Provides descriptive statistics such as the choice probabilities and the wage distributions. It also prints out the underlying parameterization of the model.
+Provides descriptive statistics such as the choice probabilities, the transition matrix, number of agents per period and occupation, and the rspctive wage distributions. It also prints out the underlying parameterization of the model.
 
 Second, we turn to the estimation output. The fit procedure directly returns the value of the coefficients at the final step of the optimizer, as well as the value of the criterion function. However, some additional files appear in the meantime. 
 
@@ -107,7 +115,13 @@ Allows to monitor the estimation as it progresses. It provides information about
 
 * **est.respy.log**
 
-Documents details about each of the evaluations of the criterion function. Most importantly, once an estimation is completed, it provides the return message from the optimizer.
+Documents details about the estimation procedure. Provides informaton on the precondigitoning of the parameters including the original parameter value, the scailing factor and the rescaled parameter. Further, details about each of the evaluations of the criterion function are included. Most importantly, once an estimation is completed, it provides the return message from the optimizer.
+
+Third, additional information is provided in two further generated files:
+
+* **scaling.respy.out**
+
+* **solution.respy.pkl**
 
 Finally, when a second simulation is performed, now based on the parameter estimates, the existing simulation output files are replaced by new ones referring to the current simulation run.
 
