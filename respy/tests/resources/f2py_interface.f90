@@ -444,7 +444,7 @@ SUBROUTINE wrapper_create_state_space(states_all_int, states_number_period_int, 
     !/* external objects        */
 
     INTEGER, INTENT(OUT)            :: mapping_state_idx_int(num_periods_int, num_periods_int, num_periods_int, min_idx_int, 4, num_types_int)
-    INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, 100000, 5)
+    INTEGER, INTENT(OUT)            :: states_all_int(num_periods_int, 150000, 5)
     INTEGER, INTENT(OUT)            :: states_number_period_int(num_periods_int)
     INTEGER, INTENT(OUT)            :: max_states_period_int
 
