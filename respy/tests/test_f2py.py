@@ -40,7 +40,7 @@ from respy.fortran.interface import resfort_interface
 from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.tests.codes.auxiliary import write_lagged_start
 from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.random_init import generate_random_model
 from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_draws
 from respy.tests.codes.auxiliary import write_types
@@ -71,14 +71,10 @@ class TestClass(object):
         """
         # Generate constraint periods
         constr = dict()
-        constr["version"] = "PYTHON"
-
+        constr["version"] = "python"
         # Generate random initialization file
-        generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
-
+        params_spec, options_spec = generate_random_model(point_constr=constr)
+        respy_obj = RespyCls(params_spec, options_spec)
         respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
@@ -287,18 +283,11 @@ class TestClass(object):
         """ Testing the core functions of the solution step for the equality of results
         between the PYTHON and FORTRAN implementations.
         """
-
-        # Generate random initialization file
-
-        constr = dict()
-
-        generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model()
+        respy_obj = RespyCls(params_spec, options_spec)
 
         # Ensure that backward induction routines use the same grid for the interpolation.
-        write_interpolation_grid("test.respy.ini")
+        write_interpolation_grid(respy_obj)
 
         # Extract class attributes
         num_periods, edu_spec, optim_paras, num_draws_emax, seed_emax, is_debug, is_interpolated, num_points_interp, optimizer_options, file_sim, num_types = dist_class_attributes(
@@ -393,22 +382,18 @@ class TestClass(object):
         f2py = fort_debug.wrapper_backward_induction(*args)
         assert_allclose(pyth, f2py)
 
+
     def test_5(self):
         """ This methods ensures that the core functions yield the same results across
         implementations.
         """
-        # Generate random initialization file
-
-        constr = dict()
-        generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model()
+        respy_obj = RespyCls(params_spec, options_spec)
         respy_obj = simulate_observed(respy_obj)
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
-        max_states_period = write_interpolation_grid("test.respy.ini")
+        max_states_period = write_interpolation_grid(respy_obj)
 
         # Extract class attributes
         num_periods, edu_spec, optim_paras, num_draws_emax, is_debug, is_interpolated, num_points_interp, is_myopic, num_agents_sim, num_draws_prob, tau, seed_sim, num_agents_est, states_number_period, optimizer_options, file_sim, num_types, num_paras = dist_class_attributes(
@@ -591,12 +576,8 @@ class TestClass(object):
     def test_6(self):
         """ Further tests for the interpolation routines.
         """
-        # Generate random initialization file
-        constr = dict()
-        generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model()
+        respy_obj = RespyCls(params_spec, options_spec)
         respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
@@ -727,14 +708,10 @@ class TestClass(object):
         """ This is a special test for shared functions related to the interpolation setup.
         """
         # Impose constraints
-        constr = dict()
-        constr["periods"] = np.random.randint(2, 5)
+        point_constr = {"num_periods": np.random.randint(2, 5)}
 
-        # Construct a random initialization file
-        generate_init(constr)
-
-        # Extract required information
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model(point_constr=point_constr)
+        respy_obj = RespyCls(params_spec, options_spec)
 
         # Extract class attributes
         is_debug, num_periods = dist_class_attributes(
@@ -742,7 +719,7 @@ class TestClass(object):
         )
 
         # Write out a grid for the interpolation
-        max_states_period = write_interpolation_grid("test.respy.ini")
+        max_states_period = write_interpolation_grid(respy_obj)
 
         # Draw random request for testing
         num_states = np.random.randint(1, max_states_period)
@@ -807,12 +784,9 @@ class TestClass(object):
         """ Function that calculates the number of observations by individual.
         """
         for _ in range(2):
-
-            generate_init()
-
-            respy_obj = RespyCls("test.respy.ini")
-
-            simulate_observed(respy_obj)
+            params_spec, options_spec = generate_random_model()
+            respy_obj = RespyCls(params_spec, options_spec)
+            respy_obj = simulate_observed(respy_obj)
 
             num_agents_est = respy_obj.get_attr("num_agents_est")
 
@@ -827,7 +801,6 @@ class TestClass(object):
         """ Function that calculates the conditional type probabilites.
         """
         for _ in range(1000):
-
             num_types = np.random.randint(1, 10)
             edu_start = np.random.randint(10, 100)
             type_shares = np.random.normal(0, 1, size=num_types * 2)
@@ -844,7 +817,6 @@ class TestClass(object):
         """ Function that backs out the systematic wages from the systematic rewards
         """
         for _ in range(1000):
-
             rewards_systematic = np.random.normal(0, 1, size=4)
             choice_lagged = np.random.randint(1, 4)
             exp_a = np.random.randint(1, 10)
@@ -883,9 +855,8 @@ class TestClass(object):
         f90 = fort_debug.wrapper_sorted(input_array, num_elements)
         assert_equal(py, f90)
 
-        # We now turn to the more complicated testing of hand-crafted functions for this purpose.
-        generate_init()
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model()
+        respy_obj = RespyCls(params_spec, options_spec)
 
         edu_spec, optim_paras, num_types = dist_class_attributes(
             respy_obj, "edu_spec", "optim_paras", "num_types"
@@ -901,3 +872,4 @@ class TestClass(object):
         f90 = fort_debug.wrapper_sort_type_info(optim_paras["type_shares"], num_types)
         for i, label in enumerate(["order", "shares"]):
             assert_equal(py[label], f90[i])
+

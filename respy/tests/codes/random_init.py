@@ -1,19 +1,23 @@
 """ This module contains the functions for the generation of random requests.
 """
 import numpy as np
+import json
 
+from respy.pre_processing.model_processing import _create_attribute_dictionary
+from respy.pre_processing.model_checking import check_model_attributes
+from respy.pre_processing.specification_helpers import csv_template
+from respy.python.shared.shared_auxiliary import get_valid_bounds
+from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_auxiliary import get_valid_bounds
-from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.shared.shared_constants import IS_FORTRAN
-
-from respy.tests.codes.process_constraints import process_constraints
+from respy.tests.codes.auxiliary import OPTIMIZERS_EST
 from respy.tests.codes.auxiliary import get_valid_shares
 from respy.tests.codes.auxiliary import get_valid_values
-from respy.tests.codes.auxiliary import OPTIMIZERS_EST
+from respy.tests.codes.process_constraints import process_constraints
+from numpy.random import randint, uniform, choice
+import pickle
 
 # We need to impose some version-dependent constraints. Otherwise the execution times for some
 # tasks just takes too long.
@@ -32,288 +36,208 @@ VERSION_CONSTRAINTS["max_edu_start"]["FORTRAN"] = 4
 VERSION_CONSTRAINTS["max_edu_start"]["PYTHON"] = 3
 
 
-def generate_init(constr=None):
-    """ Get a random initialization file.
+def generate_random_model(
+    point_constr={}, bound_constr={}, num_types=None, file_path=None
+):
+    """Generate a random model specification.
+
+    Args:
+        point_constr (dict): A full or partial options specification. Elements that
+            are specified here are not drawn randomly.
+        bound_constr (dict): Upper bounds for some options to keep computation time
+            reasonable. Can have the keys ["max_types", "max_periods",
+            "max_edu_start", "max_agents", "max_draws"]
+        num_types (int, optional): fix number of unobserved types.
+        file_path (str, optional): save path for the output. The extensions .csv and
+        .json are appended automatically.
+
     """
-    # Antibugging. This interface is using a sentinel value.
-    if constr is not None:
+    for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
 
-    dict_ = generate_random_dict(constr)
-
-    write_init_file(dict_)
-
-    # Finishing.
-    return dict_
-
-
-def generate_random_dict(constr=None):
-    """ Draw random dictionary instance that can be processed into an
-        initialization file.
-    """
-    # Antibugging. This interface is using a sentinal value.
-    if constr is not None:
-        assert isinstance(constr, dict)
+    if "program" in point_constr and "version" in point_constr["program"]:
+        version = point_constr["program"]["version"]
     else:
-        constr = dict()
+        version = choice(["python", "fortran"])
 
-    # Initialize container
-    dict_ = dict()
+    bound_constr = _consolidate_bound_constraints(bound_constr, version)
 
-    if "version" in constr.keys():
-        version = constr["version"]
-    elif not IS_FORTRAN:
-        version = "PYTHON"
-    else:
-        version = np.random.choice(["FORTRAN", "PYTHON"])
+    option_categories = [
+        "edu_spec",
+        "solution",
+        "simulation",
+        "estimation",
+        "preconditioning",
+        "program",
+        "interpolation",
+    ]
 
-    max_edu_start = VERSION_CONSTRAINTS["max_edu_start"][version]
-    max_periods = VERSION_CONSTRAINTS["max_periods"][version]
-    max_types = VERSION_CONSTRAINTS["max_types"][version]
-    max_agents = 1000
-    max_draws = 100
+    options = {cat: {} for cat in option_categories}
 
-    # We need to determine the final number of types right here, as it determines the number of
-    # parameters. This includes imposing constraints.
-    num_types = np.random.choice(range(1, max_types))
-    if "types" in constr.keys():
-        # Extract objects
-        num_types = constr["types"]
-        # Checks
-        assert isinstance(num_types, int)
-        assert num_types > 0
+    if num_types is None:
+        num_types = randint(1, bound_constr["max_types"] + 1)
 
-    num_paras = 54 + (num_types - 1) * 6
+    params = csv_template(num_types=num_types, initialize_coeffs=False)
+    params["para"] = uniform(low=-0.05, high=0.05, size=len(params))
+    params.loc["delta", "para"] = choice([0.0, uniform()])
 
-    # We now draw all parameter values. This is necessarily done here as we subsequently
-    # determine a set of valid bounds.
-    paras_values = []
-    for i in range(num_paras):
-        if i in [0]:
-            value = get_valid_values("delta")
-        elif i in range(1, 43):
-            value = get_valid_values("coeff")
-        elif i in [43, 47, 50, 52]:
-            value = get_valid_values("cov")
-        elif i in range(53, 53 + num_paras):
-            value = get_valid_values("coeff")
-        else:
-            value = 0.0
+    shock_coeffs = params.loc["shocks"].index
+    diagonal_shock_coeffs = [
+        coeff for coeff in shock_coeffs if len(coeff.rsplit("_", 1)[1]) == 1
+    ]
+    for coeff in diagonal_shock_coeffs:
+        params.loc[('shocks', coeff), "para"] = uniform(0.05, 1)
 
-        paras_values += [value]
+    gets_upper_bound = randint(0, 2, size=len(params)).astype(bool)
+    nr_upper = gets_upper_bound.sum()
+    params.loc[gets_upper_bound, "upper"] = params.loc[
+        gets_upper_bound, "para"
+    ] + uniform(0.1, 1, nr_upper)
 
-    # Construct a set of valid bounds. Note that there are now bounds for the coefficients of the
-    #  covariance matrix. It is not clear how to enforce these during an estimation on the
-    # Cholesky factors. Same problem occurs for the set of fixed parameters.
-    paras_bounds = []
-    for i, value in enumerate(paras_values):
-        if i in [0]:
-            bounds = get_valid_bounds("delta", value)
-        elif i in range(43, 53):
-            bounds = get_valid_bounds("cov", value)
-        else:
-            bounds = get_valid_bounds("coeff", value)
+    gets_lower_bound = randint(0, 2, size=len(params)).astype(bool)
+    # don't replace already existing bounds
+    gets_lower_bound = np.logical_and(gets_lower_bound, params["lower"] == None)
+    nr_lower = gets_lower_bound.sum()
+    params.loc[gets_lower_bound, "lower"] = params.loc[
+        gets_lower_bound, "para"
+    ] - uniform(0.1, 1, nr_lower)
 
-        paras_bounds += [bounds]
-
-    # The dictionary also contains the information whether parameters are fixed during an
-    # estimation. We need to ensure that at least one parameter is always free. At this point we
-    # also want to ensure that either all shock coefficients are fixed or none. It is not clear
-    # how to ensure other constraints on the Cholesky factors.
-    paras_fixed = np.random.choice([True, False], 43).tolist()
-    if sum(paras_fixed) == 43:
-        paras_fixed[np.random.randint(0, 43)] = True
-    paras_fixed += [np.random.choice([True, False]).tolist()] * 10
-    paras_fixed += np.random.choice([True, False], (num_types - 1) * 6).tolist()
-
-    # Sampling number of agents for the simulation. This is then used as the upper bound for the
-    # dataset used in the estimation.
-    num_agents_sim = np.random.randint(3, max_agents)
-
-    # Basics
-    dict_["BASICS"] = dict()
-    lower, upper = 0, 1
-    dict_["BASICS"]["periods"] = np.random.randint(1, max_periods)
-    dict_["BASICS"]["coeffs"] = paras_values[lower:upper]
-    dict_["BASICS"]["bounds"] = paras_bounds[lower:upper]
-    dict_["BASICS"]["fixed"] = paras_fixed[lower:upper]
-
-    # Common Returns
-    lower, upper = 1, 3
-    dict_["COMMON"] = dict()
-    dict_["COMMON"]["coeffs"] = paras_values[lower:upper]
-    dict_["COMMON"]["bounds"] = paras_bounds[lower:upper]
-    dict_["COMMON"]["fixed"] = paras_fixed[lower:upper]
-    # Occupation A
-    lower, upper = 3, 18
-    dict_["OCCUPATION A"] = dict()
-    dict_["OCCUPATION A"]["coeffs"] = paras_values[lower:upper]
-    dict_["OCCUPATION A"]["bounds"] = paras_bounds[lower:upper]
-    dict_["OCCUPATION A"]["fixed"] = paras_fixed[lower:upper]
-
-    # Occupation B
-    lower, upper = 18, 33
-    dict_["OCCUPATION B"] = dict()
-    dict_["OCCUPATION B"]["coeffs"] = paras_values[lower:upper]
-    dict_["OCCUPATION B"]["bounds"] = paras_bounds[lower:upper]
-    dict_["OCCUPATION B"]["fixed"] = paras_fixed[lower:upper]
-
-    # Education
-    lower, upper = 33, 40
-    dict_["EDUCATION"] = dict()
-    dict_["EDUCATION"]["coeffs"] = paras_values[lower:upper]
-    dict_["EDUCATION"]["bounds"] = paras_bounds[lower:upper]
-    dict_["EDUCATION"]["fixed"] = paras_fixed[lower:upper]
-
-    num_edu_start = np.random.choice(range(1, max_edu_start))
-    dict_["EDUCATION"]["start"] = np.random.choice(
-        range(1, 20), size=num_edu_start, replace=False
-    ).tolist()
-    dict_["EDUCATION"]["lagged"] = np.random.uniform(size=num_edu_start).tolist()
-    dict_["EDUCATION"]["share"] = get_valid_shares(num_edu_start)
-    dict_["EDUCATION"]["max"] = np.random.randint(
-        max(dict_["EDUCATION"]["start"]) + 1, 30
+    params["fixed"] = choice(
+        [True, False], size=len(params), p=[0.1, 0.9]
     )
+    params.loc['shocks', 'fixed'] = choice([True, False])
+    if params["fixed"].values.all():
+        params.loc['coeffs_a', 'fixed'] = False
+    if params.loc['shocks', 'fixed'].values.any():
+        params.loc['shocks', 'para'] = 0.0
 
-    # Home
-    lower, upper = 40, 43
-    dict_["HOME"] = dict()
-    dict_["HOME"]["coeffs"] = paras_values[lower:upper]
-    dict_["HOME"]["bounds"] = paras_bounds[lower:upper]
-    dict_["HOME"]["fixed"] = paras_fixed[lower:upper]
+    options["simulation"]["agents"] = randint(3, bound_constr["max_agents"] + 1)
+    options['simulation']['seed'] = randint(1, 1000)
+    options['simulation']['file'] = 'data'
 
-    # SOLUTION
-    dict_["SOLUTION"] = dict()
-    dict_["SOLUTION"]["draws"] = np.random.randint(1, max_draws)
-    dict_["SOLUTION"]["seed"] = np.random.randint(1, 10000)
-    dict_["SOLUTION"]["store"] = np.random.choice(["True", "False"])
+    options["num_periods"] = randint(1, bound_constr["max_periods"])
 
-    # ESTIMATION
-    dict_["ESTIMATION"] = dict()
-    dict_["ESTIMATION"]["agents"] = np.random.randint(1, num_agents_sim)
-    dict_["ESTIMATION"]["draws"] = np.random.randint(1, max_draws)
-    dict_["ESTIMATION"]["seed"] = np.random.randint(1, 10000)
-    dict_["ESTIMATION"]["file"] = "data.respy.dat"
-    dict_["ESTIMATION"]["optimizer"] = np.random.choice(OPTIMIZERS_EST)
-    dict_["ESTIMATION"]["maxfun"] = np.random.randint(1, 10000)
-    dict_["ESTIMATION"]["tau"] = np.random.uniform(100, 500)
+    num_edu_start = randint(1, bound_constr["max_edu_start"] + 1)
+    options['edu_spec']["start"] = randint(1, 20, size=num_edu_start).tolist()
+    options['edu_spec']["lagged"] = uniform(size=num_edu_start).tolist()
+    options['edu_spec']["share"] = get_valid_shares(num_edu_start)
+    options['edu_spec']["max"] = randint(max(options['edu_spec']["start"]) + 1, 30)
 
-    # DERIVATIVES
-    dict_["DERIVATIVES"] = dict()
-    dict_["DERIVATIVES"]["version"] = "FORWARD-DIFFERENCES"
 
-    # PRECONDITIONING
-    dict_["PRECONDITIONING"] = dict()
-    dict_["PRECONDITIONING"]["minimum"] = np.random.uniform(0.0000001, 0.001)
-    dict_["PRECONDITIONING"]["type"] = np.random.choice(
-        ["gradient", "identity", "magnitudes"]
-    )
-    dict_["PRECONDITIONING"]["eps"] = np.random.uniform(0.0000001, 0.1)
+    options['solution']['draws'] = randint(1, bound_constr['max_draws'])
+    options['solution']['seed'] = randint(1, 10000)
+    # don't remove the seemingly redundant conversion from numpy._bool to python bool!
+    options['solution']['store'] = bool(choice([True, False]))
 
-    # PROGRAM
-    dict_["PROGRAM"] = dict()
-    dict_["PROGRAM"]["version"] = version
-    dict_["PROGRAM"]["debug"] = True
-    dict_["PROGRAM"]["threads"] = 1
-    dict_["PROGRAM"]["procs"] = 1
-
-    if version == "FORTRAN":
-        if IS_PARALLELISM_MPI:
-            dict_["PROGRAM"]["procs"] = np.random.randint(1, 5)
-        if IS_PARALLELISM_OMP:
-            dict_["PROGRAM"]["threads"] = np.random.randint(1, 5)
-
-    # The optimizer has to align with the Program version.
-    if dict_["PROGRAM"]["version"] == "FORTRAN":
-        dict_["ESTIMATION"]["optimizer"] = np.random.choice(OPT_EST_FORT)
+    options['estimation']['agents'] = randint(1, options['simulation']['agents'])
+    options['estimation']['draws'] = randint(1, bound_constr['max_draws'])
+    options['estimation']['seed'] = randint(1, 10000)
+    options['estimation']['file'] = 'data.respy.dat'
+    if version == 'fortran':
+        options['estimation']['optimizer'] = choice(OPT_EST_FORT)
     else:
-        dict_["ESTIMATION"]["optimizer"] = np.random.choice(OPT_EST_PYTH)
+        options['estimation']['optimizer'] = choice(OPT_EST_PYTH)
+    options['estimation']['maxfun'] = randint(1, 1000)
+    options['estimation']['tau'] = uniform(100, 500)
 
-    # SIMULATION
-    dict_["SIMULATION"] = dict()
-    dict_["SIMULATION"]["seed"] = np.random.randint(1, 10000)
-    dict_["SIMULATION"]["agents"] = num_agents_sim
-    dict_["SIMULATION"]["file"] = "data"
+    options['derivatives'] = 'forward-differences'
 
-    # SHOCKS
-    lower, upper = 43, 53
-    dict_["SHOCKS"] = dict()
-    dict_["SHOCKS"]["coeffs"] = paras_values[lower:upper]
-    dict_["SHOCKS"]["bounds"] = paras_bounds[lower:upper]
-    dict_["SHOCKS"]["fixed"] = paras_fixed[lower:upper]
+    options['preconditioning']['minimum'] = uniform(0.0000001, 0.001)
+    options['preconditioning']['type'] = choice(['gradient', 'identity', 'magnitudes'])
+    options['preconditioning']['eps'] = uniform(0.0000001, 0.1)
 
-    lower, upper = 53, 53 + (num_types - 1) * 2
-    dict_["TYPE SHARES"] = dict()
-    dict_["TYPE SHARES"]["coeffs"] = paras_values[lower:upper]
-    dict_["TYPE SHARES"]["bounds"] = paras_bounds[lower:upper]
-    dict_["TYPE SHARES"]["fixed"] = paras_fixed[lower:upper]
+    options['program']['version'] = version
+    options['program']['debug'] = True
+    options['program']['threads'] = 1
+    options['program']['procs'] = 1
 
-    lower, upper = 53 + (num_types - 1) * 2, num_paras
-    dict_["TYPE SHIFTS"] = dict()
-    dict_["TYPE SHIFTS"]["coeffs"] = paras_values[lower:upper]
-    dict_["TYPE SHIFTS"]["bounds"] = paras_bounds[lower:upper]
-    dict_["TYPE SHIFTS"]["fixed"] = paras_fixed[lower:upper]
+    if version == 'fortran':
+        if IS_PARALLELISM_MPI is True:
+            options['program']['procs'] = randint(1, 5)
+        if IS_PARALLELISM_OMP is True:
+            options['program']['threads'] = randint(1, 5)
 
-    # INTERPOLATION
-    dict_["INTERPOLATION"] = dict()
-    dict_["INTERPOLATION"]["flag"] = np.random.choice(["True", "False"])
-    dict_["INTERPOLATION"]["points"] = np.random.randint(10, 100)
+    # don't remove the seemingly redundant conversion from numpy._bool to python bool!
+    options['interpolation']['flag'] = bool(choice([True, False]))
+    options['interpolation']['points'] = randint(10, 100)
 
-    mock = dict()
-    mock["paras_fixed"] = paras_fixed
     for optimizer in OPTIMIZERS_EST:
-        dict_[optimizer] = generate_optimizer_options(optimizer, mock, num_paras)
+        options[optimizer] = generate_optimizer_options(optimizer, params)
 
-    # We now impose selected constraints on the final model specification. These constraints can
-    # be very useful in the generation of test cases.
-    dict_ = process_constraints(dict_, constr, paras_fixed, paras_bounds)
+    # todo: better error catching here to locate the problems.
+    attr = _create_attribute_dictionary(params, options)
+    check_model_attributes(attr)
 
-    # Finishing
-    return dict_
+    for key, value in point_constr.items():
+        if isinstance(value, dict):
+            options[key].update(value)
+        else:
+            options[key] = value
+
+    attr = _create_attribute_dictionary(params, options)
+    check_model_attributes(attr)
+
+    if file_path is not None:
+        with open(file_path + ".json", "w") as j:
+            json.dump(options, j)
+        # todo: does this need index=False?
+        params.to_csv(file_path + ".csv")
+
+    return params, options
 
 
-def generate_optimizer_options(which, optim_paras, num_paras):
+def _consolidate_bound_constraints(bound_constr, version):
+    if version == "fortran":
+        constr = {"max_types": 4, "max_periods": 10, "max_edu_start": 4}
+    else:
+        constr = {"max_types": 3, "max_periods": 3, "max_edu_start": 3}
+    constr.update({"max_agents": 1000, "max_draws": 100})
+    constr.update(bound_constr)
+    return constr
 
+
+def generate_optimizer_options(which, params_spec):
+
+    free_params = len(params_spec) - params_spec['fixed'].sum()
     dict_ = dict()
 
     if which == "SCIPY-BFGS":
-        dict_["gtol"] = np.random.uniform(0.0000001, 0.1)
-        dict_["maxiter"] = np.random.randint(1, 10)
-        dict_["eps"] = np.random.uniform(1e-9, 1e-6)
+        dict_["gtol"] = uniform(0.0000001, 0.1)
+        dict_["maxiter"] = randint(1, 10)
+        dict_["eps"] = uniform(1e-9, 1e-6)
 
     elif which == "SCIPY-LBFGSB":
-        dict_["factr"] = np.random.uniform(10, 100)
-        dict_["pgtol"] = np.random.uniform(1e-6, 1e-4)
-        dict_["maxiter"] = np.random.randint(1, 10)
-        dict_["maxls"] = np.random.randint(1, 10)
-        dict_["m"] = np.random.randint(1, 10)
-        dict_["eps"] = np.random.uniform(1e-9, 1e-6)
+        dict_["factr"] = uniform(10, 100)
+        dict_["pgtol"] = uniform(1e-6, 1e-4)
+        dict_["maxiter"] = randint(1, 10)
+        dict_["maxls"] = randint(1, 10)
+        dict_["m"] = randint(1, 10)
+        dict_["eps"] = uniform(1e-9, 1e-6)
 
     elif which == "SCIPY-POWELL":
-        dict_["xtol"] = np.random.uniform(0.0000001, 0.1)
-        dict_["ftol"] = np.random.uniform(0.0000001, 0.1)
-        dict_["maxfun"] = np.random.randint(1, 100)
-        dict_["maxiter"] = np.random.randint(1, 100)
+        dict_["xtol"] = uniform(0.0000001, 0.1)
+        dict_["ftol"] = uniform(0.0000001, 0.1)
+        dict_["maxfun"] = randint(1, 100)
+        dict_["maxiter"] = randint(1, 100)
 
     elif which in ["FORT-NEWUOA", "FORT-BOBYQA"]:
-        rhobeg = np.random.uniform(0.0000001, 0.001)
-        dict_["maxfun"] = np.random.randint(1, 100)
+        rhobeg = uniform(0.0000001, 0.001)
+        dict_["maxfun"] = randint(1, 100)
         dict_["rhobeg"] = rhobeg
-        dict_["rhoend"] = np.random.uniform(0.01, 0.99) * rhobeg
+        dict_["rhoend"] = uniform(0.01, 0.99) * rhobeg
 
         # It is not recommended that N is larger than upper as the code might
         # break down due to a segmentation fault. See the source files for the
         # absolute upper bounds.
-        assert sum(optim_paras["paras_fixed"]) != num_paras
-        lower = (num_paras - sum(optim_paras["paras_fixed"])) + 2
-        upper = 2 * (num_paras - sum(optim_paras["paras_fixed"])) + 1
-        dict_["npt"] = np.random.randint(lower, upper + 1)
+        lower = (free_params) + 2
+        upper = 2 * (free_params) + 1
+        dict_["npt"] = randint(lower, upper + 1)
 
     elif which == "FORT-BFGS":
-        dict_["maxiter"] = np.random.randint(1, 100)
-        dict_["stpmx"] = np.random.uniform(75, 125)
-        dict_["gtol"] = np.random.uniform(0.0001, 0.1)
-        dict_["eps"] = np.random.uniform(1e-9, 1e-6)
+        dict_["maxiter"] = randint(1, 100)
+        dict_["stpmx"] = uniform(75, 125)
+        dict_["gtol"] = uniform(0.0001, 0.1)
+        dict_["eps"] = uniform(1e-9, 1e-6)
 
     else:
         raise NotImplementedError("The optimizer you requested is not implemented.")

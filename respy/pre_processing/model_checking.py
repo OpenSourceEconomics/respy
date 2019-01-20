@@ -23,23 +23,23 @@ def check_model_attributes(attr_dict):
     assert isinstance(a["num_procs"], int)
     assert a["num_procs"] > 0
     if a["num_procs"] > 1:
-        assert a["version"] == "FORTRAN"
+        assert a["version"] == "fortran"
 
     assert isinstance(a["num_procs"], int)
     assert a["num_procs"] > 0
     if a["num_procs"] > 1:
-        assert a["version"] == "FORTRAN"
+        assert a["version"] == "fortran"
         assert IS_PARALLELISM_MPI
 
     # Version version of package
-    assert a["version"] in ["FORTRAN", "PYTHON"]
-    if a["version"] == "FORTRAN":
+    assert a["version"] in ["fortran", "python"]
+    if a["version"] == "fortran":
         assert IS_FORTRAN
 
     assert isinstance(a["num_threads"], int)
     assert a["num_threads"] >= 1
     if a["num_threads"] >= 2:
-        assert a["version"] == "FORTRAN"
+        assert a["version"] == "fortran"
         assert IS_PARALLELISM_OMP
 
     # Debug status
@@ -113,7 +113,7 @@ def check_model_attributes(attr_dict):
     np.testing.assert_almost_equal(np.sum(a["edu_spec"]["share"]), 1.0, decimal=4)
 
     # Derivatives
-    assert a["derivatives"] in ["FORWARD-DIFFERENCES"]
+    assert a["derivatives"] in ["forward-differences"]
 
     # Check model parameters
     check_model_parameters(a["optim_paras"])
@@ -161,10 +161,13 @@ def check_model_attributes(attr_dict):
             assert abs(upper) < PRINT_FLOAT
         if (upper is not None) and (lower is not None):
             assert upper >= lower
+
+        # todo: add this condition again, when we introduce estimation of covariances
+        # todo: and not only their cholesky factors
         # At this point no bounds for the elements of the covariance matrix
         # are allowed.
-        if i in range(43, 53):
-            assert a["optim_paras"]["paras_bounds"][i] == [None, None]
+        # if i in range(43, 53):
+        #     assert a["optim_paras"]["paras_bounds"][i] == [None, None]
 
     _check_optimizer_options(a["optimizer_options"])
 

@@ -14,6 +14,7 @@ from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import HUGE_FLOAT
+from pandas.testing import assert_frame_equal
 
 from respy import RespyCls
 
@@ -77,18 +78,6 @@ def simulate_observed(respy_obj, is_missings=True):
     return respy_obj
 
 
-def compare_init(fname_base, fname_alt):
-    """ This function compares the content of each line of a file without any regards for spaces.
-    """
-    base_lines = [line.rstrip("\n") for line in open(fname_base, "r")]
-    alt_lines = [line.rstrip("\n") for line in open(fname_alt, "r")]
-
-    for i, base_line in enumerate(base_lines):
-        if alt_lines[i].replace(" ", "") != base_line.replace(" ", ""):
-            return False
-    return True
-
-
 def compare_est_log(base_est_log):
     """ This function is required as the log files can be slightly different for good reasons.
     """
@@ -141,12 +130,10 @@ def get_floats(line):
     return rslt
 
 
-def write_interpolation_grid(file_name):
+def write_interpolation_grid(respy_obj):
     """ Write out an interpolation grid that can be used across
     implementations.
     """
-    # Process relevant initialization file
-    respy_obj = RespyCls(file_name)
 
     # Distribute class attribute
     num_periods, num_points_interp, edu_spec, num_types = dist_class_attributes(
