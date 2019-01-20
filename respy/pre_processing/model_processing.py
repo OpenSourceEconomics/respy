@@ -167,8 +167,12 @@ def _create_attribute_dictionary(params_spec, options_spec):
 
 
 def _get_num_types(params_spec):
-    len_type_shares = len(params_spec.loc["type_shares"])
-    return len_type_shares / 2 + 1
+    if 'type_shares' in params_spec.index:
+        len_type_shares = len(params_spec.loc["type_shares"])
+        num_types = len_type_shares / 2 + 1
+    else:
+        num_types = 1
+    return num_types
 
 
 def _read_params_spec(file_path):

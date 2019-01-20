@@ -19,25 +19,10 @@ from respy.tests.codes.process_constraints import process_constraints
 from numpy.random import randint, uniform, choice
 import pickle
 
-# We need to impose some version-dependent constraints. Otherwise the execution times for some
-# tasks just takes too long.
-VERSION_CONSTRAINTS = dict()
-
-VERSION_CONSTRAINTS["max_types"] = dict()
-VERSION_CONSTRAINTS["max_types"]["FORTRAN"] = 4
-VERSION_CONSTRAINTS["max_types"]["PYTHON"] = 3
-
-VERSION_CONSTRAINTS["max_periods"] = dict()
-VERSION_CONSTRAINTS["max_periods"]["FORTRAN"] = 10
-VERSION_CONSTRAINTS["max_periods"]["PYTHON"] = 3
-
-VERSION_CONSTRAINTS["max_edu_start"] = dict()
-VERSION_CONSTRAINTS["max_edu_start"]["FORTRAN"] = 4
-VERSION_CONSTRAINTS["max_edu_start"]["PYTHON"] = 3
-
 
 def generate_random_model(
-    point_constr={}, bound_constr={}, num_types=None, file_path=None
+    point_constr={}, bound_constr={}, num_types=None, file_path=None,
+    deterministic=False, myopic=False
 ):
     """Generate a random model specification.
 
@@ -79,7 +64,10 @@ def generate_random_model(
 
     params = csv_template(num_types=num_types, initialize_coeffs=False)
     params["para"] = uniform(low=-0.05, high=0.05, size=len(params))
-    params.loc["delta", "para"] = choice([0.0, uniform()])
+    if myopic is False:
+        params.loc["delta", "para"] = choice([0.0, uniform()])
+    else:
+        params.loc["delta", "para"] = 0.0
 
     shock_coeffs = params.loc["shocks"].index
     diagonal_shock_coeffs = [
@@ -108,7 +96,7 @@ def generate_random_model(
     params.loc['shocks', 'fixed'] = choice([True, False])
     if params["fixed"].values.all():
         params.loc['coeffs_a', 'fixed'] = False
-    if params.loc['shocks', 'fixed'].values.any():
+    if params.loc['shocks', 'fixed'].values.any() or deterministic is True:
         params.loc['shocks', 'para'] = 0.0
 
     options["simulation"]["agents"] = randint(3, bound_constr["max_agents"] + 1)
@@ -118,7 +106,7 @@ def generate_random_model(
     options["num_periods"] = randint(1, bound_constr["max_periods"])
 
     num_edu_start = randint(1, bound_constr["max_edu_start"] + 1)
-    options['edu_spec']["start"] = randint(1, 20, size=num_edu_start).tolist()
+    options['edu_spec']["start"] = choice(np.arange(1, 15), size=num_edu_start, replace=False).tolist()
     options['edu_spec']["lagged"] = uniform(size=num_edu_start).tolist()
     options['edu_spec']["share"] = get_valid_shares(num_edu_start)
     options['edu_spec']["max"] = randint(max(options['edu_spec']["start"]) + 1, 30)

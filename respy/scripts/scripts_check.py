@@ -32,11 +32,9 @@ def dist_input_arguments(parser):
     return request, init_file
 
 
-def scripts_check(request, init_file):
+def scripts_check(request, respy_obj):
     """ Wrapper for the estimation.
     """
-    # Read in baseline model specification
-    respy_obj = RespyCls(init_file)
 
     # Distribute model parameters
     num_periods, edu_spec, num_types = dist_class_attributes(
