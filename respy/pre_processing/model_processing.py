@@ -2,11 +2,11 @@
 
 """
 import pandas as pd
+import numpy as np
 import json
 import yaml
 from respy.python.shared.shared_auxiliary import distribute_parameters, get_optim_paras
 from respy.pre_processing.specification_helpers import csv_template
-from os.path import join
 
 
 def process_model_spec(params_spec, options_spec):
@@ -47,7 +47,6 @@ def _options_spec_from_attributes(attr):
     simulation = {
         'file': attr['file_sim'],
         'agents': attr['num_agents_sim'],
-        'draws': attr['num_draws_emax'],
         'seed': attr['seed_sim']
 
     }
@@ -66,7 +65,8 @@ def _options_spec_from_attributes(attr):
 
     solution = {
         'store': attr['is_store'],
-        'seed': attr['seed_emax']
+        'seed': attr['seed_emax'],
+        'draws': attr['num_draws_emax']
     }
 
     options_spec = {
@@ -82,15 +82,16 @@ def _options_spec_from_attributes(attr):
     }
 
     for optimizer, option in attr['optimizer_options'].items():
-        options_spec['optimizer'] = option
+        options_spec[optimizer] = option
 
     return options_spec
 
 
 def _params_spec_from_attributes(attr):
     csv = csv_template(attr['num_types'])
-    csv['lower'] = attr['optim_paras']['paras_bounds'][:, 0]
-    csv['upper'] = attr['optim_paras']['paras_bounds'][:, 1]
+    bounds = np.array(attr['optim_paras']['paras_bounds'])
+    csv['lower'] = bounds[:, 0]
+    csv['upper'] = bounds[:, 1]
     csv['fixed'] = attr['optim_paras']['paras_fixed']
     csv['para'] = get_optim_paras(
         paras_dict=attr['optim_paras'],
@@ -133,15 +134,15 @@ def _create_attribute_dictionary(params_spec, options_spec):
         'num_paras': len(params_spec),
     }
 
-    # to-do: add assert statements for bounds
+    # todo: add assert statements for bounds
     bounds = []
     for coeff in params_spec.index:
         bound = []
-        for which in ['lower', 'upper']:
-            if params_spec.loc[coeff, which] in ["None", None]:
+        for bounds_type in ['lower', 'upper']:
+            if pd.isnull(params_spec.loc[coeff, bounds_type]):
                 bound.append(None)
             else:
-                bound.append(float(params_spec.loc[coeff, which]))
+                bound.append(float(params_spec.loc[coeff, bounds_type]))
         bounds.append(bound)
 
     attr["optim_paras"]["paras_bounds"] = bounds
@@ -179,6 +180,7 @@ def _read_params_spec(file_path):
     assert file_path.endswith(".csv"), "file_path has to be a .csv file"
     params_spec = pd.read_csv(file_path)
     params_spec["para"] = params_spec["para"].astype(float)
+    params_spec.set_index(['category', 'name'], inplace=True)
     return params_spec
 
 
@@ -204,19 +206,17 @@ def default_model_dict():
 
     """
     default = {
-        "type shares": {"coeffs": [], "fixed": [], "bounds": []},
-        "type shifts": {"coeffs": [], "fixed": [], "bounds": []},
-        "fort_newuoa": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 0.000001},
-        "fort-bfgs": {"eps": 0.0001, "gtol": 0.00001, "maxiter": 10, "stpmx": 100.0},
-        "fort-bobyqa": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 0.000001},
-        "scipy-bfgs": {"eps": 0.0001, "gtol": 0.0001, "maxiter": 1},
-        "scipy-powell": {
+        "FORT-NEWUOA": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 0.000001},
+        "FORT-BFGS": {"eps": 0.0001, "gtol": 0.00001, "maxiter": 10, "stpmx": 100.0},
+        "FORT-BOBYQA": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 0.000001},
+        "SCIPY-BFGS": {"eps": 0.0001, "gtol": 0.0001, "maxiter": 1},
+        "SCIPY-POWELL": {
             "ftol": 0.0001,
             "maxfun": 1000000,
             "maxiter": 1,
             "xtol": 0.0001,
         },
-        "scipy-lbfgsb": {
+        "SCIPY-LBFGSB": {
             "eps": 0.000000441037423,
             "factr": 30.401091854739622,
             "m": 5,

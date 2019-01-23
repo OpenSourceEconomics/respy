@@ -63,6 +63,7 @@ def generate_random_model(
         num_types = randint(1, bound_constr["max_types"] + 1)
 
     params = csv_template(num_types=num_types, initialize_coeffs=False)
+    print(params.head())
     params["para"] = uniform(low=-0.05, high=0.05, size=len(params))
     if myopic is False:
         params.loc["delta", "para"] = choice([0.0, uniform()])
@@ -84,7 +85,7 @@ def generate_random_model(
 
     gets_lower_bound = randint(0, 2, size=len(params)).astype(bool)
     # don't replace already existing bounds
-    gets_lower_bound = np.logical_and(gets_lower_bound, params["lower"] == None)
+    gets_lower_bound = np.logical_and(gets_lower_bound, params["lower"].isnull())
     nr_lower = gets_lower_bound.sum()
     params.loc[gets_lower_bound, "lower"] = params.loc[
         gets_lower_bound, "para"

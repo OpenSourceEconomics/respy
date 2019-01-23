@@ -15,7 +15,6 @@ def csv_template(num_types, save_path=None, initialize_coeffs=True):
     if initialize_coeffs is False:
         template["para"] = np.nan
     if save_path is not None:
-        template.replace({None: "None"}, inplace=True)
         template.to_csv(save_path)
     return template
 
@@ -35,14 +34,14 @@ def _type_share_template(num_types):
         # add the type share coefficients
         ind = ("type_shares", "base_share_{}".format(typ))
         comment = "share_of_agents_of_type_{}".format(typ)
-        dat = [1 / num_types, False, None, None, comment]
+        dat = [1 / num_types, False, np.nan, np.nan, comment]
         to_concat.append(_base_row(index_tuple=ind, data=dat))
         ind = ("type_shares", "ten_years_{}".format(typ))
         comment = (
             "effect of more than ten years of schooling on "
             "probability of being type {}".format(typ)
         )
-        dat = [0, False, None, None, comment]
+        dat = [0, False, np.nan, np.nan, comment]
         to_concat.append(_base_row(index_tuple=ind, data=dat))
 
     return pd.concat(to_concat, axis=0, sort=False)
@@ -56,7 +55,7 @@ def _type_shift_template(num_types):
         for sector in ["occ_a", "occ_b", "edu", "home"]:
             ind = ("type_shift", "type_{}_in_{}".format(typ, sector))
             comment = "deviation for type {} from type 1 in {}".format(typ, sector)
-            dat = [0, False, "None", "None", comment]
+            dat = [0, False, np.nan, np.nan, comment]
             to_concat.append(_base_row(index_tuple=ind, data=dat))
     return pd.concat(to_concat, axis=0, sort=False)
 
