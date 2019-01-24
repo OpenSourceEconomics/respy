@@ -63,7 +63,6 @@ def generate_random_model(
         num_types = randint(1, bound_constr["max_types"] + 1)
 
     params = csv_template(num_types=num_types, initialize_coeffs=False)
-    print(params.head())
     params["para"] = uniform(low=-0.05, high=0.05, size=len(params))
     if myopic is False:
         params.loc["delta", "para"] = choice([0.0, uniform()])
