@@ -226,21 +226,6 @@ def write_lagged_start(num_agents_sim):
     np.savetxt(".initial_lagged.respy.test", types, fmt="%i")
 
 
-def get_valid_values(which):
-    """ Simply get a valid value.
-    """
-    assert which in ["amb", "cov", "coeff", "delta"]
-
-    if which in ["amb", "delta"]:
-        value = np.random.choice([0.0, np.random.uniform()])
-    elif which in ["coeff"]:
-        value = np.random.uniform(-0.05, 0.05)
-    elif which in ["cov"]:
-        value = np.random.uniform(0.05, 1)
-
-    return value
-
-
 def get_valid_shares(num_groups):
     """ We simply need a valid request for the shares of types summing to one.
     """

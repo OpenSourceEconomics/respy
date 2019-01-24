@@ -10,14 +10,11 @@ import glob
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
-from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.scripts.scripts_simulate import scripts_simulate
 from respy.python.shared.shared_constants import IS_FORTRAN
-# from respy.scripts.scripts_update import scripts_update
-# from respy.scripts.scripts_modify import scripts_modify
 from respy.pre_processing.data_processing import process_dataset
 from respy.scripts.scripts_check import scripts_check
 from respy.tests.codes.auxiliary import write_interpolation_grid
@@ -25,9 +22,8 @@ from respy.tests.codes.auxiliary import transform_to_logit
 from respy.tests.codes.auxiliary import write_lagged_start
 from respy.custom_exceptions import UserError
 from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.random_init import generate_random_model
+from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import write_edu_start
-# from respy.tests.codes.auxiliary import compare_init
 from respy.tests.codes.auxiliary import write_types
 
 from respy import RespyCls

@@ -8,7 +8,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.tests.codes.auxiliary import write_interpolation_grid
-from respy.tests.codes.random_init import generate_random_model
+from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import write_lagged_start
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.auxiliary import compare_est_log

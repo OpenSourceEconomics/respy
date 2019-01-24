@@ -79,7 +79,7 @@ def prepare_release_tests_1(constr):
     import numpy as np
 
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -167,7 +167,7 @@ def prepare_release_tests_2(constr):
     this function only.
     """
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -197,7 +197,7 @@ def prepare_release_tests_3(constr):
     import numpy as np
 
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -218,7 +218,7 @@ def prepare_release_tests_4(constr):
     this function only.
     """
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -256,7 +256,7 @@ def prepare_release_tests_5(constr):
     this function only.
     """
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -295,7 +295,7 @@ def prepare_release_tests_6(constr):
     import numpy as np
 
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -350,7 +350,7 @@ def prepare_release_tests_7(constr):
     import numpy as np
 
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -397,7 +397,7 @@ def prepare_release_tests_8(constr):
     import numpy as np
 
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -450,7 +450,7 @@ def prepare_release_tests_9(constr):
 
     sys.path.insert(0, "../../../respy/tests")
     from respy.tests.codes.auxiliary import get_valid_shares
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -504,7 +504,7 @@ def prepare_release_tests_10(constr):
     import numpy as np
 
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:
@@ -559,7 +559,7 @@ def no_preparations_required(constr):
     this function only.
     """
     sys.path.insert(0, "../../../respy/tests")
-    from respy.tests.codes.random_init import generate_init
+    from respy.tests.codes.random_model import generate_init
 
     # Prepare fresh subdirectories
     for which in ["old", "new"]:

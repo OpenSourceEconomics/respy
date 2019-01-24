@@ -12,7 +12,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.tests.codes.random_init import generate_random_model
+from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.pre_processing.model_processing import _create_attribute_dictionary, _options_spec_from_attributes, _params_spec_from_attributes
 from respy import RespyCls

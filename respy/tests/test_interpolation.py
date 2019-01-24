@@ -1,7 +1,7 @@
 import numpy as np
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.tests.codes.random_init import generate_random_model
+from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import simulate_observed
 from respy import RespyCls
 

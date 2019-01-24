@@ -4,7 +4,7 @@ import pytest
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
 
-from respy.tests.codes.random_init import generate_random_model
+from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.auxiliary import compare_est_log
 

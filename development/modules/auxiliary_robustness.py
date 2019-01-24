@@ -3,8 +3,8 @@ import os
 from os.path import join, exists
 from shutil import rmtree, copy
 from time import time
-from respy.tests.codes.random_init import VERSION_CONSTRAINTS
-from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.random_model import VERSION_CONSTRAINTS
+from respy.tests.codes.random_model import generate_init
 from respy import RespyCls
 from datetime import timedelta, datetime
 import traceback

@@ -40,7 +40,7 @@ from respy.fortran.interface import resfort_interface
 from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.tests.codes.auxiliary import write_lagged_start
 from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.random_init import generate_random_model
+from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_draws
 from respy.tests.codes.auxiliary import write_types
