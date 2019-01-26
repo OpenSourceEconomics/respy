@@ -3,9 +3,8 @@ from pandas.util.testing import assert_frame_equal
 import numpy as np
 import pandas as pd
 import pytest
-import shutil
 import copy
-import glob
+from os.path import join
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
@@ -13,7 +12,6 @@ from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.scripts.scripts_estimate import scripts_estimate
-from respy.scripts.scripts_simulate import scripts_simulate
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.pre_processing.data_processing import process_dataset
 from respy.scripts.scripts_check import scripts_check
@@ -326,4 +324,142 @@ class TestClass(object):
                 base_val = val
 
             np.testing.assert_almost_equal(base_val, val)
+
+
+    @pytest.mark.skipif(not IS_FORTRAN, reason="No FORTRAN available")
+    @pytest.mark.slow
+    def test_12(self):
+        """ This test just locks in the evaluation of the criterion function for the original
+        Keane & Wolpin data. We create an additional initialization files that include numerous
+        types and initial conditions.
+        """
+        # Sample one task
+        results = {
+            "kw_data_one": 10.45950941513551,
+            "kw_data_two": 45.04552402391903,
+            "kw_data_three": 74.28253652773714,
+            "kw_data_one_types": 9.098738585839529,
+            "kw_data_one_initial": 7.965979149372883,
+        }
+
+        resources = list(results.keys())
+
+        fname = np.random.choice(resources)
+
+        # This ensures that the experience effect is taken care of properly.
+        open(".restud.respy.scratch", "w").close()
+
+        base_path = join(TEST_RESOURCES_DIR, fname)
+
+        # Evaluate criterion function at true values.
+        respy_obj = RespyCls(base_path + '.csv', base_path + '.json')
+
+        respy_obj.unlock()
+        respy_obj.set_attr("maxfun", 0)
+        respy_obj.lock()
+
+        simulate_observed(respy_obj, is_missings=False)
+
+        _, val = respy_obj.fit()
+        np.testing.assert_allclose(val, results[fname])
+
+    def test_15(self):
+        """ This test ensures that the order of the initial schooling level specified in the
+        initialization files does not matter for the simulation of a dataset and subsequent
+        evaluation of the criterion function.
+
+        WARNING: This test fails if types have the identical intercept as no unique ordering is
+        determined than.
+        """
+
+        constr = {
+            "estimation": {"maxfun": 0},
+            # We cannot allow for interpolation as the order of states within each period changes and
+            # thus the prediction model is altered even if the same state identifier is used.
+            "interpolation": {"flag": False}
+        }
+
+        params_spec, options_spec = generate_random_model(point_constr=constr)
+
+        respy_obj = RespyCls(params_spec, options_spec)
+
+        edu_baseline_spec, num_types, num_paras, optim_paras = dist_class_attributes(
+            respy_obj, "edu_spec", "num_types", "num_paras", "optim_paras"
+        )
+
+        # We want to randomly shuffle the list of initial schooling but need to maintain the
+        # order of the shares.
+        edu_shuffled_start = np.random.permutation(edu_baseline_spec["start"]).tolist()
+
+        edu_shuffled_share, edu_shuffled_lagged = [], []
+        for start in edu_shuffled_start:
+            idx = edu_baseline_spec["start"].index(start)
+            edu_shuffled_lagged += [edu_baseline_spec["lagged"][idx]]
+            edu_shuffled_share += [edu_baseline_spec["share"][idx]]
+
+        edu_shuffled_spec = copy.deepcopy(edu_baseline_spec)
+        edu_shuffled_spec["lagged"] = edu_shuffled_lagged
+        edu_shuffled_spec["start"] = edu_shuffled_start
+        edu_shuffled_spec["share"] = edu_shuffled_share
+
+        # We are only looking at a single evaluation as otherwise the reordering affects the
+        # optimizer that is trying better parameter values one-by-one. The reordering might also
+        # violate the bounds.
+        for i in range(53, num_paras):
+            optim_paras["paras_bounds"][i] = [None, None]
+            optim_paras["paras_fixed"][i] = False
+
+        # We need to ensure that the baseline type is still in the first position.
+        types_order = [0] + np.random.permutation(range(1, num_types)).tolist()
+
+        type_shares = []
+        for i in range(num_types):
+            lower, upper = i * 2, (i + 1) * 2
+            type_shares += [optim_paras["type_shares"][lower:upper].tolist()]
+
+        optim_paras_baseline = copy.deepcopy(optim_paras)
+        optim_paras_shuffled = copy.deepcopy(optim_paras)
+
+        list_ = list(optim_paras["type_shifts"][i, :].tolist() for i in types_order)
+        optim_paras_shuffled["type_shifts"] = np.array(list_)
+
+        list_ = list(type_shares[i] for i in types_order)
+        optim_paras_shuffled["type_shares"] = np.array(list_).flatten()
+
+        base_data, base_val = None, None
+
+        for optim_paras in [optim_paras_baseline, optim_paras_shuffled]:
+            for edu_spec in [edu_baseline_spec, edu_shuffled_spec]:
+
+                respy_obj.unlock()
+                respy_obj.set_attr("edu_spec", edu_spec)
+                respy_obj.lock()
+
+                # There is some more work to do to update the coefficients as we distinguish
+                # between the economic and optimization version of the parameters.
+                x = get_optim_paras(optim_paras, num_paras, "all", True)
+                shocks_cholesky, _ = extract_cholesky(x)
+                shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
+                x[43:53] = shocks_coeffs
+                respy_obj.update_optim_paras(x)
+
+                respy_obj.reset()
+                simulate_observed(respy_obj)
+
+                # This part checks the equality of simulated dataset.
+                data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
+
+                if base_data is None:
+                    base_data = data_frame.copy()
+                assert_frame_equal(base_data, data_frame)
+
+                # This part checks the equality of a single function evaluation.
+                _, val = respy_obj.fit()
+                if base_val is None:
+                    base_val = val
+                np.testing.assert_almost_equal(base_val, val)
+
+                respy_obj.reset()
+
+
 
