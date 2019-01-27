@@ -52,13 +52,10 @@ class TestClass(object):
             new_params_spec = _read_params_spec('alt.respy.csv')
             new_options_spec = _read_options_spec('alt.respy.json')
 
-
             assert options_spec == new_options_spec
 
             for col in params_spec.columns:
                 assert_series_equal(params_spec[col], new_params_spec[col])
-
-
 
     def test_3(self):
         """ Testing some of the relationships in the simulated dataset.
@@ -66,8 +63,14 @@ class TestClass(object):
         is_deterministic = np.random.choice([True, False])
         is_myopic = np.random.choice([True, False])
 
+        max_draws = np.random.randint(5, 200)
+        bound_constr = {"max_draws": max_draws, "max_agents": max_draws}
+
         params_spec, options_spec = generate_random_model(
+            bound_constr=bound_constr,
             deterministic=is_deterministic, myopic=is_myopic)
+
+        print(options_spec)
 
         # Perform toolbox actions
         respy_obj = RespyCls(params_spec, options_spec)
@@ -77,8 +80,6 @@ class TestClass(object):
         optim_paras, num_types, edu_spec, num_periods = dist_class_attributes(
             respy_obj, "optim_paras", "num_types", "edu_spec", "num_periods"
         )
-
-        shocks_cholesky = optim_paras["shocks_cholesky"]
 
         # We can back out the wage information from other information provided in the simulated
         # dataset.

@@ -37,7 +37,6 @@ class TestClass(object):
         max_draws = np.random.randint(10, 100)
         num_agents = np.random.randint(10, 100)
 
-
         bound_constr = {'max_draws': max_draws}
         point_constr = {
             'interpolation': {'flag': is_interpolated},
@@ -51,7 +50,6 @@ class TestClass(object):
 
         if is_interpolated:
             point_constr['num_periods'] = np.random.randint(3, 5)
-
 
         params_spec, options_spec = generate_random_model(
             bound_constr=bound_constr, point_constr=point_constr,
@@ -77,13 +75,13 @@ class TestClass(object):
                 10, max_states_period
             )
 
-
         # Write out random components and interpolation grid to align the three implementations.
         write_draws(num_periods, max_draws)
         respy_obj = RespyCls(params_spec, options_spec)
         write_interpolation_grid(respy_obj)
 
-        type_shares = np.array([0.0, 0.0] + params_spec.loc['type_shares', 'para'].values.tolist())
+        type_shares = respy_obj.attr['optim_paras']['type_shares']
+
         write_types(type_shares, num_agents)
         write_edu_start(edu_spec, num_agents)
         write_lagged_start(num_agents)
@@ -124,13 +122,13 @@ class TestClass(object):
                 assert crit_val in [-1.0, 0.0]
 
     def test_2(self):
-        """ This test ensures that the evaluation of the criterion function at the starting value
-        is identical between the different versions.
-        """
-
+        """Ensure that the evaluation of the criterion is equal across versions."""
         max_draws = np.random.randint(10, 100)
 
-        bound_constr = {'max_draws': max_draws}
+        # It seems to be important that max_draws and max_agents is the same
+        # number because otherwise some functions that read draws from a file
+        # to ensure compatibility of fortran and python versions won't work.
+        bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
 
         point_constr = {
             'interpolation': {'flag': False},
@@ -142,7 +140,10 @@ class TestClass(object):
             point_constr=point_constr, bound_constr=bound_constr)
         respy_obj = RespyCls(params_spec, options_spec)
 
-        num_agents_sim = dist_class_attributes(respy_obj, "num_agents_sim")
+        num_agents_sim, optim_paras = dist_class_attributes(
+            respy_obj, "num_agents_sim", "optim_paras")
+
+        type_shares = optim_paras['type_shares']
 
         # Simulate a dataset
         simulate_observed(respy_obj)
@@ -151,8 +152,6 @@ class TestClass(object):
         base_x, base_val = None, None
 
         num_periods = options_spec['num_periods']
-        type_shares = np.array(
-            [0.0, 0.0] + params_spec.loc['type_shares', 'para'].values.tolist())
 
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
@@ -177,15 +176,11 @@ class TestClass(object):
                 base_val = val
             np.testing.assert_allclose(base_val, val)
 
-    @pytest.mark.xfail
     def test_3(self):
-        """ This test ensures that the logging looks exactly the same for the
-        different versions.
-        """
-        np.random.seed(1234)
-        max_draws = 50 # np.random.randint(10, 100)
+        """Ensure that the log looks exactly the same for different versions."""
+        max_draws = np.random.randint(10, 100)
 
-        bound_constr = {'max_draws': max_draws}
+        bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
 
         point_constr = {
             'interpolation': {'flag': False},
@@ -203,10 +198,9 @@ class TestClass(object):
 
         # Iterate over alternative implementations
         base_sol_log, base_est_info, base_est_log = None, None, None
-        base_sim_log, base_amb_log = None, None
+        base_sim_log = None
 
-        type_shares = np.array(
-            [0.0, 0.0] + params_spec.loc['type_shares', 'para'].values.tolist())
+        type_shares = respy_obj.attr['optim_paras']['type_shares']
         num_periods = options_spec['num_periods']
 
         edu_spec = options_spec['edu_spec']
@@ -253,7 +247,7 @@ class TestClass(object):
         """
         max_draws = np.random.randint(10, 300)
 
-        bound_constr = {'max_draws': max_draws}
+        bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
         num_agents = np.random.randint(10, 100)
 
         point_constr = {
@@ -266,11 +260,10 @@ class TestClass(object):
             point_constr=point_constr, bound_constr=bound_constr)
         respy_base = RespyCls(params_spec, options_spec)
 
+        num_agents_sim, optim_paras = dist_class_attributes(
+            respy_base, "num_agents_sim", "optim_paras")
 
-        num_agents_sim = dist_class_attributes(respy_base, "num_agents_sim")
-
-        type_shares = np.array(
-            [0.0, 0.0] + params_spec.loc['type_shares', 'para'].values.tolist())
+        type_shares = optim_paras['type_shares']
         num_periods = options_spec['num_periods']
 
         write_draws(num_periods, max_draws)

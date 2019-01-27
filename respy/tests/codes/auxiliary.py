@@ -101,14 +101,22 @@ def compare_est_log(base_est_log):
         else:
 
             is_floats = False
-            try:
-                int(shlex.split(alt_line)[0])
-                is_floats = True
-            except ValueError:
-                pass
-            # We need to cut the floats some slack. It might very well happen that in the
-            # very last digits they are in fact different across the versions.
+            entries = shlex.split(alt_line)
+            if len(entries) >= 2:
+                try:
+                    int(entries[1])
+                except ValueError:
+                    is_floats = True
+
+            else:
+                try:
+                    int(entries[0])
+                except ValueError:
+                    is_floats = True
+
             if not is_floats:
+                print(alt_line)
+                print(base_line)
                 assert alt_line == base_line
             else:
                 base_floats = get_floats(base_line)
@@ -119,15 +127,12 @@ def compare_est_log(base_est_log):
 def get_floats(line):
     """ This extracts the floats from the line
     """
-    list_ = shlex.split(line)[1:]
-    rslt = []
+    list_ = shlex.split(line)
+    result = []
     for val in list_:
-        if val == "---":
-            val = HUGE_FLOAT
-        else:
-            val = float(val)
-        rslt += [val]
-    return rslt
+        if not isinstance(val, str):
+            result.append(float(val))
+    return result
 
 
 def write_interpolation_grid(respy_obj):
