@@ -44,7 +44,7 @@ notifications:
   
   slack:
     rooms:
-      - policy-lab:LkWqVb15dNvdLjMQOyacTXy6
+      - oseconomics:NwY0nlxNsQh1WTEs7Y1acukS
     on_success: change # default: always
     on_failure: always # default: always
 
