@@ -117,7 +117,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
                     break
 
         # This allows to call this test from another script, that runs other tests as well.
-        idx_failures = [i for i, x in enumerate(ret) if not x]
+        idx_failures = [i for i, x in enumerate(ret) if x not in [True, None]]
         is_failure = False in ret
 
         if len(idx_failures) > 0:
