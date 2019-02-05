@@ -70,13 +70,9 @@ class TestClass(object):
             bound_constr=bound_constr,
             deterministic=is_deterministic, myopic=is_myopic)
 
-        print(options_spec)
-
-        # Perform toolbox actions
         respy_obj = RespyCls(params_spec, options_spec)
         _, df = respy_obj.simulate()
 
-        # Check special case
         optim_paras, num_types, edu_spec, num_periods = dist_class_attributes(
             respy_obj, "optim_paras", "num_types", "edu_spec", "num_periods"
         )

@@ -24,7 +24,7 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     min_idx = edu_spec["max"] + 1
 
     # Array for possible realization of state space by period
-    states_all = np.tile(MISSING_INT, (num_periods, 100000, 5))
+    states_all = np.tile(MISSING_INT, (num_periods, 150000, 5))
 
     # Array for the mapping of state space values to indices in variety of matrices.
     shape = (num_periods, num_periods, num_periods, min_idx, 4, num_types)
