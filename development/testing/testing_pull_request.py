@@ -66,24 +66,34 @@ else:
 
 
 if request_dict["PYTEST"]:
+    print('\n\n', 'starting pytest', '\n\n')
     respy.test()
+    print('\n\n', 'stopping pytest', '\n\n')
 
 if request_dict["REGRESSION"]:
+    print('\n\n', 'starting regression test', '\n\n')
     os.chdir("regression")
     run_regression(**test_spec["REGRESSION"])
     os.chdir(CURRENT_DIR)
+    print('\n\n', 'stopping regression test', '\n\n')
 
 if request_dict["PROPERTY"]:
+    print('\n\n', 'starting property test', '\n\n')
     os.chdir("property")
     run_property(**test_spec["PROPERTY"])
     os.chdir(CURRENT_DIR)
+    print('\n\n', 'stopping property test', '\n\n')
 
 if request_dict["ROBUSTNESS"]:
+    print('\n\n', 'starting robustness test', '\n\n')
     os.chdir("robustness")
     run_robustness(**test_spec["ROBUSTNESS"])
     os.chdir(CURRENT_DIR)
+    print('\n\n', 'stopping robustness test', '\n\n')
 
 if request_dict["PARALLELISM"]:
+    print('\n\n', 'starting parallelism test', '\n\n')
     os.chdir("parallelism")
     run_parallelism(**test_spec["PARALLELISM"])
     os.chdir(CURRENT_DIR)
+    print('\n\n', 'stopping parallelism test', '\n\n')

@@ -53,9 +53,13 @@ def run_robustness_test(seed, is_investigation):
             "max": np.random.randint(edu_start + num_periods, 30)},
         "estimation": {"file": "career_data.respy.dat",
                        "agents": agents,
-                       "maxfun": np.random.randint(1, 5)},
+                       "maxfun": np.random.randint(1, 5)
+                       },
         "program": {"version": version}
     }
+
+    if version == 'fortran':
+        constr['estimation']['optimizer'] = 'FORT-BOBYQA'
 
     params_spec, options_spec = generate_random_model(point_constr=constr)
 
