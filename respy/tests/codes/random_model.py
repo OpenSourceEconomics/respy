@@ -14,7 +14,6 @@ from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.tests.codes.auxiliary import OPTIMIZERS_EST
 from respy.tests.codes.auxiliary import get_valid_shares
 from numpy.random import randint, uniform, choice
-import pickle
 
 
 def generate_random_model(
@@ -39,8 +38,12 @@ def generate_random_model(
 
     if "program" in point_constr and "version" in point_constr["program"]:
         version = point_constr["program"]["version"]
-    else:
+        if version == 'fortran':
+            assert IS_FORTRAN
+    elif IS_FORTRAN is True:
         version = choice(["python", "fortran"])
+    else:
+        version = "python"
 
     bound_constr = _consolidate_bound_constraints(bound_constr, version)
 
