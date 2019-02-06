@@ -9,9 +9,17 @@ repos:
     hooks:
     -   id: check-yaml
         name: check-yaml - Validating .yaml Files
+    -   id: flake8
+        name: Flake8
+        description: This hook requirements.txtuns flake8.
+        entry: flake8
+        language: python
+        types: [python]
+        additional_dependencies: [flake8-alfred]
 -   repo: local
     hooks:
     - id: black
       name: Black - The Uncompromising Code Formatter
       language: system
       entry: black
+      types: [python]
