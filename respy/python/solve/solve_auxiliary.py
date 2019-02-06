@@ -19,19 +19,51 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 def pyth_create_state_space(num_periods, num_types, edu_spec):
     """ Create grid for state space.
+
+    Parameters
+    ----------
+    num_periods : int
+    num_types
+    edu_spec : namedtuple
+        Contains educational specification with keys lagged, start, share and max.
+
+    Returns
+    -------
+    states_all : np.array
+        Array with shape (num_periods, 100000, 5)
+    states_number_period
+    mapping_state_idx
+    max_states_period
+
+    # TODO: Deprecate return argument max_states_period as it can be derived from
+    # states_number_period.
+
+    Examples
+    --------
+    >>> num_periods = 40
+    >>> num_types = 1
+    >>> edu_spec = {
+    ...     "lagged": [1.0], "start": [10], "share": [1.0], "max": 20
+    ... }
+    >>> res = pyth_create_state_space(num_periods, num_types, edu_spec)
+    >>> assert res[0].shape == (40, 100000, 5)
+    >>> assert res[1].shape == (40,)
+    >>> assert res[2].shape == (40, 40, 40, 21, 4, 1)
+    >>> assert res[3] == 26348
+
     """
     # Auxiliary information
     min_idx = edu_spec["max"] + 1
 
     # Array for possible realization of state space by period
-    states_all = np.tile(MISSING_INT, (num_periods, 100000, 5))
+    states_all = np.full((num_periods, 100000, 5), MISSING_INT)
 
     # Array for the mapping of state space values to indices in variety of matrices.
     shape = (num_periods, num_periods, num_periods, min_idx, 4, num_types)
-    mapping_state_idx = np.tile(MISSING_INT, shape)
+    mapping_state_idx = np.full(shape, MISSING_INT)
 
     # Array for maximum number of realizations of state space by period
-    states_number_period = np.tile(MISSING_INT, num_periods)
+    states_number_period = np.full(num_periods, MISSING_INT)
 
     # Construct state space by periods
     for period in range(num_periods):
@@ -54,66 +86,71 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                         # Loop over all admissible additional education levels
                         for edu_add in range(num_periods + 1):
 
-                            # Check if admissible for time constraints. Note that the total
-                            # number of activities does not have is less or equal to the total
-                            # possible number of activities as the rest is implicitly filled
-                            # with leisure.
+                            # Check if admissible for time constraints. Note that the
+                            # total number of activities does not have is less or equal
+                            # to the total possible number of activities as the rest is
+                            # implicitly filled with leisure.
                             if edu_add + exp_a + exp_b > period:
                                 continue
 
-                            # Agent cannot attain more additional education than (EDU_MAX -
-                            # EDU_START).
+                            # Agent cannot attain more additional education than
+                            # (EDU_MAX - EDU_START).
                             if edu_add > (edu_spec["max"] - edu_start):
                                 continue
 
-                            # Loop over all admissible values for the lagged activity: (1)
-                            # Occupation A, (2) Occupation B, (3) Education, and (4) Home.
+                            # Loop over all admissible values for the lagged activity:
+                            # (1) Occupation A, (2) Occupation B, (3) Education, and (4)
+                            # Home.
                             for choice_lagged in [1, 2, 3, 4]:
 
                                 if period > 0:
 
-                                    # (0, 1) Whenever an agent has only worked in Occupation A,
-                                    # then the lagged choice cannot be  anything other than one.
+                                    # (0, 1) Whenever an agent has only worked in
+                                    # Occupation A, then the lagged choice cannot be
+                                    # anything other than one.
                                     if (choice_lagged != 1) and (exp_a == period):
                                         continue
 
-                                    # (0, 2) Whenever an agent has only worked in Occupation B,
-                                    # then the lagged choice cannot be  anything other than two
+                                    # (0, 2) Whenever an agent has only worked in
+                                    # Occupation B, then the lagged choice cannot be
+                                    # anything other than two
                                     if (choice_lagged != 2) and (exp_b == period):
                                         continue
 
-                                    # (0, 3) Whenever an agent has only acquired additional
-                                    # education, then the lagged choice cannot be anything other
-                                    # than three..
+                                    # (0, 3) Whenever an agent has only acquired
+                                    # additional education, then the lagged choice
+                                    # cannot be anything other than three..
                                     if (choice_lagged != 3) and (edu_add == period):
                                         continue
 
-                                    # (0, 4) Whenever an agent has not acquired any additional
-                                    # education and we are not in the first period, then lagged
-                                    # activity cannot take a value of three.
+                                    # (0, 4) Whenever an agent has not acquired any
+                                    # additional education and we are not in the first
+                                    # period, then lagged activity cannot take a value
+                                    # of three.
                                     if (choice_lagged == 3) and (edu_add == 0):
                                         continue
 
-                                # (1, 1) In the first period individual either were in school the
-                                # previous period as well or at home. The cannot have any work
-                                # experience.
+                                # (1, 1) In the first period individual either were in
+                                # school the previous period as well or at home. The
+                                # cannot have any work experience.
                                 if period == 0:
                                     if choice_lagged in [1, 2]:
                                         continue
 
-                                # (2, 1) An individual that has never worked in Occupation A
-                                # cannot have that lagged activity.
+                                # (2, 1) An individual that has never worked in
+                                # Occupation A cannot have that lagged activity.
                                 if (choice_lagged == 1) and (exp_a == 0):
                                     continue
 
-                                # (3, 1) An individual that has never worked in Occupation B
-                                # cannot have a that lagged activity.
+                                # (3, 1) An individual that has never worked in
+                                # Occupation B cannot have a that lagged activity.
                                 if (choice_lagged == 2) and (exp_b == 0):
                                     continue
 
-                                # If we have multiple initial conditions it might well be the
-                                # case that we have a duplicate state, i.e. the same state is
-                                # possible with other initial condition that period.
+                                # If we have multiple initial conditions it might well
+                                # be the case that we have a duplicate state, i.e. the
+                                # same state is possible with other initial condition
+                                # that period.
                                 if (
                                     mapping_state_idx[
                                         period,
@@ -158,7 +195,6 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     # Collect arguments
     args = (states_all, states_number_period, mapping_state_idx, max_states_period)
 
-    # Finishing
     return args
 
 
