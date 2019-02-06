@@ -41,7 +41,11 @@ after_success:
     fi
 
 notifications:
-  slack: policy-lab:LkWqVb15dNvdLjMQOyacTXy6
-    on_success: change
 
-  email: false
+  slack:
+    rooms:
+      - oseconomics:NwY0nlxNsQh1WTEs7Y1acukS
+    on_success: change # default: always
+    on_failure: always # default: always
+
+ email: false
