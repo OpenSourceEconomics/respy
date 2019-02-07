@@ -111,7 +111,6 @@ def generate_random_model(
     options['edu_spec']["share"] = get_valid_shares(num_edu_start)
     options['edu_spec']["max"] = randint(max(options['edu_spec']["start"]) + 1, 30)
 
-
     options['solution']['draws'] = randint(1, bound_constr['max_draws'])
     options['solution']['seed'] = randint(1, 10000)
     # don't remove the seemingly redundant conversion from numpy._bool to python bool!
@@ -122,9 +121,9 @@ def generate_random_model(
     options['estimation']['seed'] = randint(1, 10000)
     options['estimation']['file'] = 'data.respy.dat'
     if version == 'fortran':
-        options['estimation']['optimizer'] = choice(OPT_EST_FORT)
+        options['estimation']['optimizer'] = 'FORT-BOBYQA'
     else:
-        options['estimation']['optimizer'] = choice(OPT_EST_PYTH)
+        options['estimation']['optimizer'] = 'SCIPY-LBFGSB'
     options['estimation']['maxfun'] = randint(1, 1000)
     options['estimation']['tau'] = uniform(100, 500)
 

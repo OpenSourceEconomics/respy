@@ -600,13 +600,6 @@ class TestClass(object):
             "num_types",
         )
 
-        # Initialize containers
-        i, j = num_periods, max(states_number_period)
-
-        shocks_cov = np.matmul(
-            optim_paras["shocks_cholesky"], optim_paras["shocks_cholesky"].T
-        )
-
         shocks_cholesky = optim_paras["shocks_cholesky"]
         coeffs_common = optim_paras["coeffs_common"]
         coeffs_a = optim_paras["coeffs_a"]
@@ -684,7 +677,7 @@ class TestClass(object):
         py = get_endogenous_variable(*args)
 
         args = ()
-        args += base_args + (edu_spec["start"], edu_spec["max"], shocks_cov)
+        args += base_args + (edu_spec["start"], edu_spec["max"], shocks_cholesky)
         args += (delta, coeffs_common, coeffs_a, coeffs_b)
         f90 = fort_debug.wrapper_get_endogenous_variable(*args)
         assert_almost_equal(py, replace_missing_values(f90))
