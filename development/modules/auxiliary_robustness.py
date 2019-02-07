@@ -4,6 +4,7 @@ from os.path import join, exists
 from shutil import rmtree, copy
 from time import time
 from respy.tests.codes.random_model import generate_random_model
+from respy.pre_processing.model_processing import write_out_model_spec
 from respy import RespyCls
 from datetime import timedelta, datetime
 import traceback
@@ -60,11 +61,15 @@ def run_robustness_test(seed, is_investigation):
 
     if version == 'fortran':
         constr['estimation']['optimizer'] = 'FORT-BOBYQA'
+    if version == 'python':
+        constr['estimation']['optimizer'] = "SCIPY-LBFGSB"
 
     params_spec, options_spec = generate_random_model(point_constr=constr)
 
     try:
         respy_obj = RespyCls(params_spec, options_spec)
+        if is_investigation:
+            write_out_model_spec(respy_obj.attr, str(seed))
         respy_obj.fit()
     except:
         tb = traceback.format_exc()
