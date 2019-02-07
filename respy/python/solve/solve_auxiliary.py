@@ -15,10 +15,16 @@ from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
+import pandas as pd
 
 
 def pyth_create_state_space(num_periods, num_types, edu_spec):
     """ Create grid for state space.
+
+    The state space is combination of the following elements:
+
+    - period
+    -
 
     Parameters
     ----------
@@ -31,12 +37,13 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     -------
     states_all : np.array
         Array with shape (num_periods, 100000, 5)
-    states_number_period
-    mapping_state_idx
-    max_states_period
-
-    # TODO: Deprecate return argument max_states_period as it can be derived from
-    # states_number_period.
+    states_number_period : np.array
+        Contains number of states in each period.
+    mapping_state_idx : np.array
+        Maps from period, experiences, education, lagged choice and type to state index
+        k.
+    max_states_period : int
+        Maximum number of states in period or max(states_number_period).
 
     Examples
     --------
@@ -51,10 +58,13 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     >>> assert res[2].shape == (40, 40, 40, 21, 4, 1)
     >>> assert res[3] == 26348
 
+    TODO: Deprecate max_states_period as it can be recovered easily.
+
     """
     # Auxiliary information
     min_idx = edu_spec["max"] + 1
 
+    # TODO: Do not hardcode maximum number of states with 100000.
     # Array for possible realization of state space by period
     states_all = np.full((num_periods, 100000, 5), MISSING_INT)
 
@@ -64,6 +74,10 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
 
     # Array for maximum number of realizations of state space by period
     states_number_period = np.full(num_periods, MISSING_INT)
+
+    # Create list to store state information. Taken from
+    # https://stackoverflow.com/a/17496530/7523785.
+    data = []
 
     # Construct state space by periods
     for period in range(num_periods):
@@ -108,19 +122,25 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                     # (0, 1) Whenever an agent has only worked in
                                     # Occupation A, then the lagged choice cannot be
                                     # anything other than one.
-                                    if (choice_lagged != 1) and (exp_a == period):
+                                    if (choice_lagged != 1) and (
+                                        exp_a == period
+                                    ):
                                         continue
 
                                     # (0, 2) Whenever an agent has only worked in
                                     # Occupation B, then the lagged choice cannot be
                                     # anything other than two
-                                    if (choice_lagged != 2) and (exp_b == period):
+                                    if (choice_lagged != 2) and (
+                                        exp_b == period
+                                    ):
                                         continue
 
                                     # (0, 3) Whenever an agent has only acquired
                                     # additional education, then the lagged choice
                                     # cannot be anything other than three..
-                                    if (choice_lagged != 3) and (edu_add == period):
+                                    if (choice_lagged != 3) and (
+                                        edu_add == period
+                                    ):
                                         continue
 
                                     # (0, 4) Whenever an agent has not acquired any
@@ -183,23 +203,44 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                     type_,
                                 ]
 
+                                # Store information in a dict and append to data.
+                                row = {
+                                    "period": period,
+                                    "k": k,
+                                    "exp_a": exp_a,
+                                    "exp_b": exp_b,
+                                    "edu": edu_start + edu_add,
+                                    "choice_lagged": choice_lagged,
+                                    "type": type_,
+                                }
+                                data.append(row)
+
                                 # Update count
                                 k += 1
 
         # Record maximum number of state space realizations by time period
         states_number_period[period] = k
 
-    # Auxiliary objects
+    # Create a dataframe from data
+    state_characteristics = pd.DataFrame.from_records(data)
+
     max_states_period = max(states_number_period)
 
-    # Collect arguments
-    args = (states_all, states_number_period, mapping_state_idx, max_states_period)
-
-    return args
+    return (
+        states_all,
+        states_number_period,
+        mapping_state_idx,
+        max_states_period,
+        state_characteristics,
+    )
 
 
 def pyth_calculate_rewards_systematic(
-    num_periods, states_number_period, states_all, max_states_period, optim_paras
+    num_periods,
+    states_number_period,
+    states_all,
+    max_states_period,
+    optim_paras,
 ):
     """ Calculate ex systematic rewards.
     """
@@ -225,11 +266,13 @@ def pyth_calculate_rewards_systematic(
             )
 
             # Calculate common and general rewards component.
-            rewards_general = calculate_rewards_general(covariates, optim_paras)
+            rewards_general = calculate_rewards_general(
+                covariates, optim_paras
+            )
             rewards_common = calculate_rewards_common(covariates, optim_paras)
 
-            # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards. These are
-            # defined in a general sense, where not only wages matter.
+            # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards.
+            # These are defined in a general sense, where not only wages matter.
             wages = calculate_wages_systematic(covariates, optim_paras)
 
             for j in [0, 1]:
@@ -265,7 +308,6 @@ def pyth_calculate_rewards_systematic(
 
             periods_rewards_systematic[period, k, :] = rewards
 
-    # Finishing
     return periods_rewards_systematic
 
 
@@ -328,7 +370,9 @@ def pyth_backward_induction(
         # Treatment of the disturbances for the risk-only case is straightforward. Their
         # distribution is fixed once and for all.
         draws_emax_risk = transform_disturbances(
-            draws_emax_standard, np.tile(0.0, 4), optim_paras["shocks_cholesky"]
+            draws_emax_standard,
+            np.tile(0.0, 4),
+            optim_paras["shocks_cholesky"],
         )
 
         if is_write:
@@ -337,7 +381,9 @@ def pyth_backward_induction(
         # The number of interpolation points is the same for all periods. Thus, for some periods
         # the number of interpolation points is larger than the actual number of states. In that
         # case no interpolation is needed.
-        any_interpolated = (num_points_interp <= num_states) and is_interpolated
+        any_interpolated = (
+            num_points_interp <= num_states
+        ) and is_interpolated
 
         # Case distinction
         if any_interpolated:
@@ -418,7 +464,9 @@ def pyth_backward_induction(
     return periods_emax
 
 
-def get_simulated_indicator(num_points_interp, num_candidates, period, is_debug):
+def get_simulated_indicator(
+    num_points_interp, num_candidates, period, is_debug
+):
     """ Get the indicator for points of interpolation and simulation.
     """
     # Drawing random interpolation points
@@ -550,7 +598,9 @@ def get_endogenous_variable(
     return endogenous_variable
 
 
-def get_predictions(endogenous, exogenous, maxe, is_simulated, file_sim, is_write):
+def get_predictions(
+    endogenous, exogenous, maxe, is_simulated, file_sim, is_write
+):
     """ Fit an OLS regression of the exogenous variables on the endogenous variables and use the
     results to predict the endogenous variables for all points in the state space.
     """
@@ -642,6 +692,8 @@ def calculate_wages_systematic(covariates, optim_paras):
     # We need to add the type-specific deviations here as these are part of
     # skill-function component.
     for j in [0, 1]:
-        wages[j] = wages[j] * np.exp(optim_paras["type_shifts"][covariates["type"], j])
+        wages[j] = wages[j] * np.exp(
+            optim_paras["type_shifts"][covariates["type"], j]
+        )
 
     return wages

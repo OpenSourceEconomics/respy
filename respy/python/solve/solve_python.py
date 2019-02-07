@@ -1,7 +1,10 @@
-from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
+from respy.python.solve.solve_auxiliary import (
+    pyth_calculate_rewards_systematic
+)
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
+from respy.python.shared.shared_auxiliary import create_covariates
 
 
 def pyth_solve(
@@ -25,9 +28,16 @@ def pyth_solve(
     record_solution_progress(1, file_sim)
 
     # Create state space
-    states_all, states_number_period, mapping_state_idx, max_states_period = pyth_create_state_space(
-        num_periods, num_types, edu_spec
-    )
+    (
+        states_all,
+        states_number_period,
+        mapping_state_idx,
+        max_states_period,
+        state_characteristics,
+    ) = pyth_create_state_space(num_periods, num_types, edu_spec)
+
+    # Create covariates
+    covariates = create_covariates(state_characteristics)
 
     # Cutting to size
     states_all = states_all[:, : max(states_number_period), :]
@@ -41,7 +51,11 @@ def pyth_solve(
 
     # Calculate all systematic rewards
     periods_rewards_systematic = pyth_calculate_rewards_systematic(
-        num_periods, states_number_period, states_all, max_states_period, optim_paras
+        num_periods,
+        states_number_period,
+        states_all,
+        max_states_period,
+        optim_paras,
     )
 
     record_solution_progress(-1, file_sim)

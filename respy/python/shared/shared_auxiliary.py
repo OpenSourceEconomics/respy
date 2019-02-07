@@ -717,6 +717,50 @@ def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
     return covariates
 
 
+def create_covariates(df):
+    """Creates covariates for each state in each period.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame contains period, exp_a, exp_b, edu, choice_lagged and type.
+
+
+    Returns
+    -------
+    df : pd.DataFrame
+        DataFrame including covariates.
+
+    """
+
+    df["not_exp_a_lagged"] = np.where(df.exp_a.gt(0) & ~df.choice_lagged.eq(1), 1, 0)
+    df["not_exp_b_lagged"] = np.where(df.exp_b.gt(0) & ~df.choice_lagged.eq(2), 1, 0)
+    df["work_a_lagged"] = np.where(df.choice_lagged.eq(1), 1, 0)
+    df["work_b_lagged"] = np.where(df.choice_lagged.eq(2), 1, 0)
+    df["edu_lagged"] = np.where(df.choice_lagged.eq(3), 1, 0)
+    df["not_any_exp_a"] = np.where(df.exp_a.eq(0), 1, 0)
+    df["not_any_exp_b"] = np.where(df.exp_b.eq(0), 1, 0)
+    df["any_exp_a"] = np.where(df.exp_a.gt(0), 1, 0)
+    df["any_exp_b"] = np.where(df.exp_b.gt(0), 1, 0)
+    df["hs_graduate"] = np.where(df.edu.ge(12), 1, 0)
+    df["co_graduate"] = np.where(df.edu.ge(16), 1, 0)
+    df["is_return_not_high_school"] = np.where(~df.edu_lagged & ~df.hs_graduate, 1, 0)
+    df["is_return_high_school"] = np.where(~df.edu_lagged & df.hs_graduate, 1, 0)
+
+    df["is_minor"] = np.where(df.period.lt(2), 1, 0)
+    df.is_minor.loc[df.period.isna()] = np.nan
+
+    df["is_young_adult"] = np.where(df.period.isin([2, 3, 4]), 1, 0)
+    df.is_young_adult.loc[df.period.isna()] = np.nan
+
+    df["is_adult"] = np.where(df.period.ge(5), 1, 0)
+    df.is_adult.loc[df.period.isna()] = np.nan
+
+    df.set_index(["period", "k"], inplace=True)
+
+    return df
+
+
 def calculate_rewards_common(covariates, optim_paras):
     """ Calculate the reward component that is common to all alternatives.
     """
