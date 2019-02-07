@@ -52,11 +52,12 @@ install:
 
 build: false
 
-- sh: |
-    if  [ $TRAVIS_CI_FORTRAN ] || \
-        [ $TRAVIS_CI_MPI ] || \
-        [ $TRAVIS_CI_OMP ] ||
-    then
-        codecov
-        echo 'send coverage statistic'
-    fi
+on_success:
+  - sh: |
+      if  [ $TRAVIS_CI_FORTRAN ] || \
+          [ $TRAVIS_CI_MPI ] || \
+          [ $TRAVIS_CI_OMP ] ||
+      then
+          codecov
+          echo 'send coverage statistic'
+      fi
