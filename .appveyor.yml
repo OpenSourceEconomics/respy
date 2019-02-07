@@ -10,9 +10,8 @@ notifications:
     on_build_failure: false
     on_build_status_changed: false
 
-branches:
-  only:
-    - master
+# Do not build feature branch with open Pull Requests
+skip_branch_with_pr: true
 
 environment:
   PYTHON: "C:\\Python36"
