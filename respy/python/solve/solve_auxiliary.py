@@ -9,7 +9,6 @@ from respy.python.shared.shared_auxiliary import calculate_rewards_general
 from respy.python.shared.shared_auxiliary import calculate_rewards_common
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import transform_disturbances
-from respy.python.shared.shared_auxiliary import create_covariates
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
@@ -235,6 +234,7 @@ def pyth_backward_induction(
     is_myopic,
     periods_draws_emax,
     num_draws_emax,
+    states,
     is_debug,
     is_interpolated,
     num_points_interp,
@@ -246,6 +246,10 @@ def pyth_backward_induction(
     """ Backward induction procedure. There are two main threads to this function
     depending on whether interpolation is requested or not.
     """
+    # Create auxiliary objects for compatibility
+    max_states_period = states.loc[states.period.eq(num_periods - 1)].shape[0]
+    states_number_period = states.groupby("period").count().iloc[:, 0].values
+
     # Initialize containers, which contain a lot of missing values as we capture the
     # tree structure in arrays of fixed dimension.
     i, j = num_periods, max_states_period
@@ -418,8 +422,8 @@ def get_exogenous_variables(
     edu_spec,
     optim_paras,
 ):
-    """ Get exogenous variables for interpolation scheme. The unused argument is present to align
-    the interface between the PYTHON and FORTRAN implementations.
+    """ Get exogenous variables for interpolation scheme. The unused argument is present
+    to align the interface between the PYTHON and FORTRAN implementations.
     """
     # Construct auxiliary objects
     exogenous = np.tile(np.nan, (num_states, 9))

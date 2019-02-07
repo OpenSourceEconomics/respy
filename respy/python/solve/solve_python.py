@@ -58,6 +58,7 @@ def pyth_solve(
         is_myopic,
         periods_draws_emax,
         num_draws_emax,
+        states,
         is_debug,
         is_interpolated,
         num_points_interp,
