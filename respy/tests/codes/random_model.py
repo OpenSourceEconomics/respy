@@ -33,6 +33,10 @@ def generate_random_model(
         .json are appended automatically.
 
     """
+    # potential conversions from numpy._bool to python bool. Don't remove!
+    deterministic = bool(deterministic)
+    myopic = bool(myopic)
+
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
 

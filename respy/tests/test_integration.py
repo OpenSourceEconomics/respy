@@ -23,8 +23,11 @@ from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_types
+from respy.pre_processing.model_processing import write_out_model_spec
 
 from respy import RespyCls
+
+import pickle
 
 
 class TestClass(object):
@@ -372,14 +375,14 @@ class TestClass(object):
         determined than.
         """
 
-        constr = {
+        point_constr = {
             "estimation": {"maxfun": 0},
             # We cannot allow for interpolation as the order of states within each period changes and
             # thus the prediction model is altered even if the same state identifier is used.
             "interpolation": {"flag": False}
         }
 
-        params_spec, options_spec = generate_random_model(point_constr=constr)
+        params_spec, options_spec = generate_random_model(point_constr=point_constr)
 
         respy_obj = RespyCls(params_spec, options_spec)
 
@@ -428,6 +431,8 @@ class TestClass(object):
 
         base_data, base_val = None, None
 
+        k = 0
+
         for optim_paras in [optim_paras_baseline, optim_paras_shuffled]:
             for edu_spec in [edu_baseline_spec, edu_shuffled_spec]:
 
@@ -444,6 +449,9 @@ class TestClass(object):
                 respy_obj.update_optim_paras(x)
 
                 respy_obj.reset()
+
+                write_out_model_spec(respy_obj.attr, 'bla')
+
                 simulate_observed(respy_obj)
 
                 # This part checks the equality of simulated dataset.
@@ -451,6 +459,7 @@ class TestClass(object):
 
                 if base_data is None:
                     base_data = data_frame.copy()
+
                 assert_frame_equal(base_data, data_frame)
 
                 # This part checks the equality of a single function evaluation.
@@ -460,6 +469,7 @@ class TestClass(object):
                 np.testing.assert_almost_equal(base_val, val)
 
                 respy_obj.reset()
+                k += 1
 
 
 

@@ -32,7 +32,7 @@ class TestClass(object):
         """
         # Run evaluation for multiple random requests.
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
-        is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])
+        is_interpolated = bool(np.random.choice([True, False], p=[0.10, 0.9]))
         is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
         max_draws = np.random.randint(10, 100)
         num_agents = np.random.randint(10, max_draws)
@@ -248,7 +248,7 @@ class TestClass(object):
         max_draws = np.random.randint(10, 300)
 
         bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
-        num_agents = np.random.randint(10, 100)
+        num_agents = np.random.randint(10, max_draws)
 
         point_constr = {
             'program': {'version': 'python'},
