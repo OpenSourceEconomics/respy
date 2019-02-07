@@ -16,7 +16,7 @@ branches:
     - master
 
 environment:
-  - PYTHON: "C:\\Python36"
+  PYTHON: "C:\\Python36"
   matrix:
       - TRAVIS_CI_FORTRAN: false
         TRAVIS_CI_MPI: false
