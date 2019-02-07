@@ -11,9 +11,9 @@ notifications:
     on_build_status_changed: false
 
 
-# branches:
-#   only:
-#     - master
+branches:
+  only:
+    - master
 
 environment:
   - PYTHON: "C:\\Python36"
