@@ -29,7 +29,7 @@ def pyth_solve(
 
     states = pyth_create_state_space(num_periods, num_types, edu_spec)
 
-    covariates = create_covariates(states)
+    states = create_covariates(states)
 
     record_solution_progress(-1, file_sim)
 
@@ -39,11 +39,8 @@ def pyth_solve(
     record_solution_progress(2, file_sim)
 
     # Calculate all systematic rewards
-    periods_rewards_systematic = pyth_calculate_rewards_systematic(
-        num_periods,
-        states_number_period,
-        states_all,
-        max_states_period,
+    states = pyth_calculate_rewards_systematic(
+        states,
         optim_paras,
     )
 
@@ -54,16 +51,13 @@ def pyth_solve(
     # procedure is not called upon.
     record_solution_progress(3, file_sim)
 
+    breakpoint()
+
     periods_emax = pyth_backward_induction(
         num_periods,
         is_myopic,
-        max_states_period,
         periods_draws_emax,
         num_draws_emax,
-        states_number_period,
-        periods_rewards_systematic,
-        mapping_state_idx,
-        states_all,
         is_debug,
         is_interpolated,
         num_points_interp,

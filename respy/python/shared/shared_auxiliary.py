@@ -24,7 +24,9 @@ def get_log_likl(contribs):
     return crit_val
 
 
-def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type="optim"):
+def distribute_parameters(
+    paras_vec, is_debug=False, info=None, paras_type="optim"
+):
     """Parse the parameter vector into a dictionary of model quantities.
 
     Args:
@@ -97,7 +99,10 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     start, stop = pinfo["delta"]["start"], pinfo["delta"]["stop"]
     x[start:stop] = paras_dict["delta"]
 
-    start, stop = pinfo["coeffs_common"]["start"], pinfo["coeffs_common"]["stop"]
+    start, stop = (
+        pinfo["coeffs_common"]["start"],
+        pinfo["coeffs_common"]["stop"],
+    )
     x[start:stop] = paras_dict["coeffs_common"]
 
     start, stop = pinfo["coeffs_a"]["start"], pinfo["coeffs_a"]["stop"]
@@ -112,7 +117,10 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     start, stop = pinfo["coeffs_home"]["start"], pinfo["coeffs_home"]["stop"]
     x[start:stop] = paras_dict["coeffs_home"]
 
-    start, stop = pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"]
+    start, stop = (
+        pinfo["shocks_coeffs"]["start"],
+        pinfo["shocks_coeffs"]["stop"],
+    )
     x[start:stop] = paras_dict["shocks_cholesky"][np.tril_indices(4)]
 
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
@@ -125,7 +133,9 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
         _check_optimization_parameters(x)
 
     if which == "free":
-        x = [x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]]
+        x = [
+            x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]
+        ]
         x = np.array(x)
 
     return x
@@ -200,7 +210,10 @@ def extract_type_information(x):
 def extract_cholesky(x, info=None):
     """Extract the cholesky factor of the shock covariance from parameters of type 'optim."""
     pinfo = paras_parsing_information(len(x))
-    start, stop = pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"]
+    start, stop = (
+        pinfo["shocks_coeffs"]["start"],
+        pinfo["shocks_coeffs"]["stop"],
+    )
     shocks_coeffs = x[start:stop]
     dim = number_of_triangular_elements_to_dimensio(len(shocks_coeffs))
     shocks_cholesky = np.zeros((dim, dim))
@@ -314,7 +327,9 @@ def get_total_values(
     return total_values, rewards_ex_post
 
 
-def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
+def get_emaxs(
+    edu_spec, mapping_state_idx, period, periods_emax, k, states_all
+):
     """Get emaxs for additional choices."""
     # Distribute state space
     exp_a, exp_b, edu, _, type_ = states_all[period, k, :]
@@ -323,11 +338,15 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     emaxs = np.tile(np.nan, 4)
 
     # Working in Occupation A
-    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 1 - 1, type_]
+    future_idx = mapping_state_idx[
+        period + 1, exp_a + 1, exp_b, edu, 1 - 1, type_
+    ]
     emaxs[0] = periods_emax[period + 1, future_idx]
 
     # Working in Occupation B
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 2 - 1, type_]
+    future_idx = mapping_state_idx[
+        period + 1, exp_a, exp_b + 1, edu, 2 - 1, type_
+    ]
     emaxs[1] = periods_emax[period + 1, future_idx]
 
     # Increasing schooling. Note that adding an additional year of schooling
@@ -337,7 +356,9 @@ def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
     if is_inadmissible:
         emaxs[2] = 0.00
     else:
-        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 3 - 1, type_]
+        future_idx = mapping_state_idx[
+            period + 1, exp_a, exp_b, edu + 1, 3 - 1, type_
+        ]
         emaxs[2] = periods_emax[period + 1, future_idx]
 
     # Staying at home
@@ -381,7 +402,9 @@ def add_solution(
 ):
     """Add solution to class instance."""
     respy_obj.unlock()
-    respy_obj.set_attr("periods_rewards_systematic", periods_rewards_systematic)
+    respy_obj.set_attr(
+        "periods_rewards_systematic", periods_rewards_systematic
+    )
     respy_obj.set_attr("states_number_period", states_number_period)
     respy_obj.set_attr("mapping_state_idx", mapping_state_idx)
     respy_obj.set_attr("periods_emax", periods_emax)
@@ -465,7 +488,9 @@ def check_model_parameters(optim_paras):
 
     # Checks shock matrix
     assert optim_paras["shocks_cholesky"].shape == (4, 4)
-    np.allclose(optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"]))
+    np.allclose(
+        optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"])
+    )
 
     # Checks for type shares
     assert optim_paras["type_shares"].size == num_types * 2
@@ -656,15 +681,25 @@ def back_out_systematic_wages(
 ):
     """Construct the wage component for the labor market rewards."""
     # Construct covariates needed for the general part of labor market rewards.
-    covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, None, None)
+    covariates = construct_covariates(
+        exp_a, exp_b, edu, choice_lagged, None, None
+    )
 
     # First we calculate the general component.
     general, wages_systematic = np.tile(np.nan, 2), np.tile(np.nan, 2)
 
-    covars_general = [1.0, covariates["not_exp_a_lagged"], covariates["not_any_exp_a"]]
+    covars_general = [
+        1.0,
+        covariates["not_exp_a_lagged"],
+        covariates["not_any_exp_a"],
+    ]
     general[0] = np.dot(optim_paras["coeffs_a"][12:], covars_general)
 
-    covars_general = [1.0, covariates["not_exp_b_lagged"], covariates["not_any_exp_b"]]
+    covars_general = [
+        1.0,
+        covariates["not_exp_b_lagged"],
+        covariates["not_any_exp_b"],
+    ]
     general[1] = np.dot(optim_paras["coeffs_b"][12:], covars_general)
 
     # Second we do the same with the common component.
@@ -672,7 +707,9 @@ def back_out_systematic_wages(
     rewards_common = np.dot(optim_paras["coeffs_common"], covars_common)
 
     for j in [0, 1]:
-        wages_systematic[j] = rewards_systematic[j] - general[j] - rewards_common
+        wages_systematic[j] = (
+            rewards_systematic[j] - general[j] - rewards_common
+        )
 
     return wages_systematic
 
@@ -703,7 +740,9 @@ def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
         covariates["hs_graduate"] = int(edu >= 12)
         covariates["co_graduate"] = int(edu >= 16)
 
-        cond = (not covariates["edu_lagged"]) and (not covariates["hs_graduate"])
+        cond = (not covariates["edu_lagged"]) and (
+            not covariates["hs_graduate"]
+        )
         covariates["is_return_not_high_school"] = int(cond)
 
         cond = (not covariates["edu_lagged"]) and covariates["hs_graduate"]
@@ -717,68 +756,77 @@ def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
     return covariates
 
 
-def create_covariates(df):
+def create_covariates(states):
     """Creates covariates for each state in each period.
 
     Parameters
     ----------
-    df : pd.DataFrame
+    states : pd.DataFrame
         DataFrame contains period, exp_a, exp_b, edu, choice_lagged and type.
 
 
     Returns
     -------
-    df : pd.DataFrame
+    states : pd.DataFrame
         DataFrame including covariates.
 
     """
 
-    df["not_exp_a_lagged"] = np.where(df.exp_a.gt(0) & ~df.choice_lagged.eq(1), 1, 0)
-    df["not_exp_b_lagged"] = np.where(df.exp_b.gt(0) & ~df.choice_lagged.eq(2), 1, 0)
-    df["work_a_lagged"] = np.where(df.choice_lagged.eq(1), 1, 0)
-    df["work_b_lagged"] = np.where(df.choice_lagged.eq(2), 1, 0)
-    df["edu_lagged"] = np.where(df.choice_lagged.eq(3), 1, 0)
-    df["not_any_exp_a"] = np.where(df.exp_a.eq(0), 1, 0)
-    df["not_any_exp_b"] = np.where(df.exp_b.eq(0), 1, 0)
-    df["any_exp_a"] = np.where(df.exp_a.gt(0), 1, 0)
-    df["any_exp_b"] = np.where(df.exp_b.gt(0), 1, 0)
-    df["hs_graduate"] = np.where(df.edu.ge(12), 1, 0)
-    df["co_graduate"] = np.where(df.edu.ge(16), 1, 0)
-    df["is_return_not_high_school"] = np.where(~df.edu_lagged & ~df.hs_graduate, 1, 0)
-    df["is_return_high_school"] = np.where(~df.edu_lagged & df.hs_graduate, 1, 0)
+    states["not_exp_a_lagged"] = np.where(
+        states.exp_a.gt(0) & ~states.choice_lagged.eq(1), 1, 0
+    )
+    states["not_exp_b_lagged"] = np.where(
+        states.exp_b.gt(0) & ~states.choice_lagged.eq(2), 1, 0
+    )
+    states["work_a_lagged"] = np.where(states.choice_lagged.eq(1), 1, 0)
+    states["work_b_lagged"] = np.where(states.choice_lagged.eq(2), 1, 0)
+    states["edu_lagged"] = np.where(states.choice_lagged.eq(3), 1, 0)
+    states["not_any_exp_a"] = np.where(states.exp_a.eq(0), 1, 0)
+    states["not_any_exp_b"] = np.where(states.exp_b.eq(0), 1, 0)
+    states["any_exp_a"] = np.where(states.exp_a.gt(0), 1, 0)
+    states["any_exp_b"] = np.where(states.exp_b.gt(0), 1, 0)
+    states["hs_graduate"] = np.where(states.edu.ge(12), 1, 0)
+    states["co_graduate"] = np.where(states.edu.ge(16), 1, 0)
+    states["is_return_not_high_school"] = np.where(
+        ~states.edu_lagged & ~states.hs_graduate, 1, 0
+    )
+    states["is_return_high_school"] = np.where(
+        ~states.edu_lagged & states.hs_graduate, 1, 0
+    )
 
-    df["is_minor"] = np.where(df.period.lt(2), 1, 0)
-    df.is_minor.loc[df.period.isna()] = np.nan
+    states["is_minor"] = np.where(states.period.lt(2), 1, 0)
+    states.loc[states.period.isna(), "is_minor"] = np.nan
 
-    df["is_young_adult"] = np.where(df.period.isin([2, 3, 4]), 1, 0)
-    df.is_young_adult.loc[df.period.isna()] = np.nan
+    states["is_young_adult"] = np.where(states.period.isin([2, 3, 4]), 1, 0)
+    states.loc[states.period.isna(), "is_young_adult"] = np.nan
 
-    df["is_adult"] = np.where(df.period.ge(5), 1, 0)
-    df.is_adult.loc[df.period.isna()] = np.nan
+    states["is_adult"] = np.where(states.period.ge(5), 1, 0)
+    states.loc[states.period.isna(), "is_adult"] = np.nan
 
-    return df
+    # Reduce memory usage
+    if states.notna().all().all():
+        states.astype(np.int8, copy=False)
 
-
-def calculate_rewards_common(covariates, optim_paras):
-    """ Calculate the reward component that is common to all alternatives.
-    """
-    covars_common = [covariates["hs_graduate"], covariates["co_graduate"]]
-    rewards_common = np.dot(optim_paras["coeffs_common"], covars_common)
-
-    return rewards_common
+    return states
 
 
-def calculate_rewards_general(covariates, optim_paras):
-    """ Calculate the non-skill related reward components.
-    """
-    rewards_general = np.tile(np.nan, 2)
-    covars_general = [1.0, covariates["not_exp_a_lagged"], covariates["not_any_exp_a"]]
-    rewards_general[0] = np.dot(optim_paras["coeffs_a"][12:], covars_general)
+def calculate_rewards_common(states, optim_paras):
+    states["rewards_common"] = states[["hs_graduate", "co_graduate"]].dot(
+        optim_paras["coeffs_common"]
+    )
 
-    covars_general = [1.0, covariates["not_exp_b_lagged"], covariates["not_any_exp_b"]]
-    rewards_general[1] = np.dot(optim_paras["coeffs_b"][12:], covars_general)
+    return states
 
-    return rewards_general
+
+def calculate_rewards_general(states, optim_paras):
+    states["rewards_general_a"] = states[
+        ["intercept", "not_exp_a_lagged", "not_any_exp_a"]
+    ].dot(optim_paras["coeffs_a"][12:])
+    states["rewards_general_b"] = states[
+        ["intercept", "not_exp_b_lagged", "not_any_exp_b"]
+    ].dot(optim_paras["coeffs_b"][12:])
+
+    return states
 
 
 def get_valid_bounds(which, value):

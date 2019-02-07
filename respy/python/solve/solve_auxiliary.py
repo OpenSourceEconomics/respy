@@ -9,7 +9,7 @@ from respy.python.shared.shared_auxiliary import calculate_rewards_general
 from respy.python.shared.shared_auxiliary import calculate_rewards_common
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import transform_disturbances
-from respy.python.shared.shared_auxiliary import construct_covariates
+from respy.python.shared.shared_auxiliary import create_covariates
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
@@ -59,6 +59,8 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
             4340,  4958,  5619,  6323,  7070,  7860,  8693,  9569, 10488,
            11450, 12455, 13503, 14594, 15728, 16905, 18125, 19388, 20694,
            22043, 23435, 24870, 26348], dtype=int64)
+
+    TODO: Check if range(period + 1) is really necessary.
 
     """
     # Create list to store state information. Taken from
@@ -177,91 +179,62 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
 
 
 def pyth_calculate_rewards_systematic(
-    num_periods,
-    states_number_period,
-    states_all,
-    max_states_period,
+    states,
     optim_paras,
 ):
     """ Calculate ex systematic rewards.
     """
-    # Initialize
-    shape = (num_periods, max_states_period, 4)
-    periods_rewards_systematic = np.tile(MISSING_FLOAT, shape)
+    states["intercept"] = 1.0
 
-    # Calculate systematic instantaneous rewards
-    for period in range(num_periods - 1, -1, -1):
+    # Calculate common and general rewards component.
+    states = calculate_rewards_general(
+        states, optim_paras
+    )
+    states = calculate_rewards_common(states, optim_paras)
 
-        # Loop over all possible states
-        for k in range(states_number_period[period]):
+    # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards.
+    # These are defined in a general sense, where not only wages matter.
+    states = calculate_wages_systematic(states, optim_paras)
 
-            # Distribute state space
-            exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
+    states["rewards_a"] = states.wage_a + states.rewards_general_a
+    states["rewards_b"] = states.wage_b + states.rewards_general_b
 
-            # Initialize container
-            rewards = np.tile(np.nan, 4)
+    # Calculate systematic part of SCHOOL rewards
+    covariates_education = [
+        "intercept", "hs_graduate", "co_graduate", "is_return_not_high_school",
+        "is_return_high_school", "period", "is_minor"
+    ]
 
-            # Construct auxiliary information
-            covariates = construct_covariates(
-                exp_a, exp_b, edu, choice_lagged, type_, period
-            )
+    states["rewards_edu"] = states[covariates_education].dot(optim_paras["coeffs_edu"])
 
-            # Calculate common and general rewards component.
-            rewards_general = calculate_rewards_general(
-                covariates, optim_paras
-            )
-            rewards_common = calculate_rewards_common(covariates, optim_paras)
+    # Calculate systematic part of HOME
+    covariates_home = ["intercept", "is_young_adult", "is_adult"]
 
-            # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards.
-            # These are defined in a general sense, where not only wages matter.
-            wages = calculate_wages_systematic(covariates, optim_paras)
+    states["rewards_home"] = states[covariates_home].dot(optim_paras["coeffs_home"])
 
-            for j in [0, 1]:
-                rewards[j] = wages[j] + rewards_general[j]
+    # Now we add the type-specific deviation for SCHOOL and HOME.
+    types_dummy = pd.get_dummies(states.type, prefix="type")
+    type_deviations = types_dummy.dot(optim_paras["type_shifts"][:, 2:])
 
-            # Calculate systematic part of SCHOOL rewards
-            covars_edu = []
-            covars_edu += [1]
-            covars_edu += [covariates["hs_graduate"]]
-            covars_edu += [covariates["co_graduate"]]
-            covars_edu += [covariates["is_return_not_high_school"]]
-            covars_edu += [covariates["is_return_high_school"]]
-            covars_edu += [covariates["period"]]
-            covars_edu += [covariates["is_minor"]]
+    states.rewards_edu += type_deviations.iloc[:, 0]
+    states.rewards_home += type_deviations.iloc[:, 1]
 
-            rewards[2] = np.dot(optim_paras["coeffs_edu"], covars_edu)
+    # We can now also added the common component of rewards.
+    states.rewards_a += states.rewards_common
+    states.rewards_b += states.rewards_common
+    states.rewards_edu += states.rewards_common
+    states.rewards_home += states.rewards_common
 
-            # Calculate systematic part of HOME
-            covars_home = []
-            covars_home += [1]
-            covars_home += [covariates["is_young_adult"]]  # Age 18 - 20
-            covars_home += [covariates["is_adult"]]  # Age 21 and over
+    states.drop(columns=["intercept"], inplace=True)
 
-            rewards[3] = np.dot(optim_paras["coeffs_home"], covars_home)
-
-            # Now we add the type-specific deviation for SCHOOL and HOME.
-            for j in [2, 3]:
-                rewards[j] = rewards[j] + optim_paras["type_shifts"][type_, j]
-
-            # We can now also added the common component of rewards.
-            for j in range(4):
-                rewards[j] = rewards[j] + rewards_common
-
-            periods_rewards_systematic[period, k, :] = rewards
-
-    return periods_rewards_systematic
+    return states
 
 
 def pyth_backward_induction(
     num_periods,
     is_myopic,
-    max_states_period,
     periods_draws_emax,
     num_draws_emax,
-    states_number_period,
-    periods_rewards_systematic,
-    mapping_state_idx,
-    states_all,
     is_debug,
     is_interpolated,
     num_points_interp,
@@ -270,11 +243,11 @@ def pyth_backward_induction(
     file_sim,
     is_write,
 ):
-    """ Backward induction procedure. There are two main threads to this function depending on
-    whether interpolation is requested or not.
+    """ Backward induction procedure. There are two main threads to this function
+    depending on whether interpolation is requested or not.
     """
-    # Initialize containers, which contain a lot of missing values as we capture the tree
-    # structure in arrays of fixed dimension.
+    # Initialize containers, which contain a lot of missing values as we capture the
+    # tree structure in arrays of fixed dimension.
     i, j = num_periods, max_states_period
     periods_emax = np.tile(MISSING_FLOAT, (i, j))
 
@@ -287,13 +260,11 @@ def pyth_backward_induction(
         return periods_emax
 
     # Construct auxiliary objects
-    shocks_cov = np.matmul(
-        optim_paras["shocks_cholesky"], optim_paras["shocks_cholesky"].T
-    )
+    shocks_cov = optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T)
 
-    # Auxiliary objects. These shifts are used to determine the expected values of the two labor
-    # market alternatives. These are log normal distributed and thus the draws cannot simply set
-    # to zero.
+    # Auxiliary objects. These shifts are used to determine the expected values of the
+    # two labor market alternatives. These are log normal distributed and thus the draws
+    # cannot simply set to zero.
     shifts = [0.00, 0.00, 0.00, 0.00]
     shifts[0] = np.clip(np.exp(shocks_cov[0, 0] / 2.0), 0.0, HUGE_FLOAT)
     shifts[1] = np.clip(np.exp(shocks_cov[1, 1] / 2.0), 0.0, HUGE_FLOAT)
@@ -319,9 +290,9 @@ def pyth_backward_induction(
         if is_write:
             record_solution_progress(4, file_sim, period, num_states)
 
-        # The number of interpolation points is the same for all periods. Thus, for some periods
-        # the number of interpolation points is larger than the actual number of states. In that
-        # case no interpolation is needed.
+        # The number of interpolation points is the same for all periods. Thus, for some
+        # periods the number of interpolation points is larger than the actual number of
+        # states. In that case no interpolation is needed.
         any_interpolated = (
             num_points_interp <= num_states
         ) and is_interpolated
@@ -333,9 +304,9 @@ def pyth_backward_induction(
                 num_points_interp, num_states, period, is_debug
             )
 
-            # Constructing the exogenous variable for all states, including the ones where
-            # simulation will take place. All information will be used in either the construction
-            #  of the prediction model or the prediction step.
+            # Constructing the exogenous variable for all states, including the ones
+            # where simulation will take place. All information will be used in either
+            # the construction of the prediction model or the prediction step.
             exogenous, maxe = get_exogenous_variables(
                 period,
                 num_periods,
@@ -349,8 +320,8 @@ def pyth_backward_induction(
                 optim_paras,
             )
 
-            # Constructing the dependent variables for at the random subset of points where the
-            # EMAX is actually calculated.
+            # Constructing the dependent variables for at the random subset of points
+            # where the EMAX is actually calculated.
             endogenous = get_endogenous_variable(
                 period,
                 num_periods,
@@ -367,9 +338,9 @@ def pyth_backward_induction(
                 optim_paras,
             )
 
-            # Create prediction model based on the random subset of points where the EMAX is
-            # actually simulated and thus dependent and independent variables are available. For
-            # the interpolation points, the actual values are used.
+            # Create prediction model based on the random subset of points where the
+            # EMAX is actually simulated and thus dependent and independent variables
+            # are available. For the interpolation points, the actual values are used.
             predictions = get_predictions(
                 endogenous, exogenous, maxe, is_simulated, file_sim, is_write
             )
@@ -595,46 +566,49 @@ def check_input(respy_obj):
     return True
 
 
-def calculate_wages_systematic(covariates, optim_paras):
-    """ Calculate the systematic component of wages.
-    """
-    # Collect all relevant covariates
-    covars_wages = []
-    covars_wages += [1.0]
-    covars_wages += [covariates["edu"]]
-    covars_wages += [covariates["exp_a"]]
-    covars_wages += [(covariates["exp_a"] ** 2) / 100.00]
-    covars_wages += [covariates["exp_b"]]
-    covars_wages += [(covariates["exp_b"] ** 2) / 100.00]
-    covars_wages += [covariates["hs_graduate"]]
-    covars_wages += [covariates["co_graduate"]]
-    covars_wages += [covariates["period"]]
-    covars_wages += [covariates["is_minor"]]
-    covars_wages += [None]
-    covars_wages += [None]
+def calculate_wages_systematic(df, optim_paras):
+    """Calculate systematic wages.
 
-    # This used for testing purposes, where we compare the results from the RESPY package
-    # to the original RESTUD program.
-    if os.path.exists(".restud.respy.scratch"):
-        covars_wages[3] *= 100.00
-        covars_wages[5] *= 100.00
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing covariates and rewards.
+    optim_paras : dict
+        ???
+
+    Returns
+    -------
+    df : pd.DataFrame
+        DataFrame with calculated systematic wages.
+
+    TODO: Currently, the function is not variable in occupations.
+
+    """
+    df["exp_a_sq"] = df.exp_a ** 2 / 100
+    df["exp_b_sq"] = df.exp_b ** 2 / 100
+
+    relevant_covariates = [
+        "intercept", "edu", "exp_a", "exp_a_sq", "exp_b", "exp_b_sq",
+        "hs_graduate", "co_graduate", "period", "is_minor",
+    ]
 
     # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
-    wages = np.tile(np.nan, 2)
+    df["wage_a"] = df[relevant_covariates + ["any_exp_a", "work_a_lagged"]].dot(
+        optim_paras["coeffs_a"][:12]
+    )
+    df.wage_a = np.clip(np.exp(df.wage_a), 0., HUGE_FLOAT)
 
-    covars_wages[-2:] = [covariates["any_exp_a"], covariates["work_a_lagged"]]
-    wage = np.exp(np.dot(optim_paras["coeffs_a"][:12], covars_wages))
-    wages[0] = np.clip(wage, 0.0, HUGE_FLOAT)
-
-    covars_wages[-2:] = [covariates["any_exp_b"], covariates["work_b_lagged"]]
-    wage = np.exp(np.dot(optim_paras["coeffs_b"][:12], covars_wages))
-    wages[1] = np.clip(wage, 0.0, HUGE_FLOAT)
+    df["wage_b"] = df[relevant_covariates + ["any_exp_b", "work_b_lagged"]].dot(
+        optim_paras["coeffs_b"][:12]
+    )
+    df.wage_b = np.clip(np.exp(df.wage_b), 0., HUGE_FLOAT)
 
     # We need to add the type-specific deviations here as these are part of
     # skill-function component.
-    for j in [0, 1]:
-        wages[j] = wages[j] * np.exp(
-            optim_paras["type_shifts"][covariates["type"], j]
-        )
+    types_dummy = pd.get_dummies(df.type, prefix="type")
+    type_deviations = types_dummy.dot(optim_paras["type_shifts"][:, :2])
 
-    return wages
+    df.wage_a = df.wage_a * np.exp(type_deviations.iloc[:, 0])
+    df.wage_b = df.wage_b * np.exp(type_deviations.iloc[:, 1])
+
+    return df
