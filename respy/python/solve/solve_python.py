@@ -27,20 +27,9 @@ def pyth_solve(
     # package class.
     record_solution_progress(1, file_sim)
 
-    # Create state space
-    (
-        states_all,
-        states_number_period,
-        mapping_state_idx,
-        max_states_period,
-        state_characteristics,
-    ) = pyth_create_state_space(num_periods, num_types, edu_spec)
+    states = pyth_create_state_space(num_periods, num_types, edu_spec)
 
-    # Create covariates
-    covariates = create_covariates(state_characteristics)
-
-    # Cutting to size
-    states_all = states_all[:, : max(states_number_period), :]
+    covariates = create_covariates(states)
 
     record_solution_progress(-1, file_sim)
 

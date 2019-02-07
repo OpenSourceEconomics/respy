@@ -756,8 +756,6 @@ def create_covariates(df):
     df["is_adult"] = np.where(df.period.ge(5), 1, 0)
     df.is_adult.loc[df.period.isna()] = np.nan
 
-    df.set_index(["period", "k"], inplace=True)
-
     return df
 
 

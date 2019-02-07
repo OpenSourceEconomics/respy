@@ -13,37 +13,35 @@ from respy.python.shared.shared_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.solve.solve_risk import construct_emax_risk
-from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 import pandas as pd
 
 
 def pyth_create_state_space(num_periods, num_types, edu_spec):
-    """ Create grid for state space.
+    """ Create state space.
 
-    The state space is combination of the following elements:
+    The state space consists of all admissible combinations of the following elements:
 
     - period
-    -
+    - type
+    - exp_a
+    - exp_b
+    - edu
+    - choice_lagged
 
     Parameters
     ----------
     num_periods : int
-    num_types
-    edu_spec : namedtuple
+        Number of periods. ???
+    num_types : int
+        Number of types. ???
+    edu_spec : dict
         Contains educational specification with keys lagged, start, share and max.
 
     Returns
     -------
-    states_all : np.array
-        Array with shape (num_periods, 100000, 5)
-    states_number_period : np.array
-        Contains number of states in each period.
-    mapping_state_idx : np.array
-        Maps from period, experiences, education, lagged choice and type to state index
-        k.
-    max_states_period : int
-        Maximum number of states in period or max(states_number_period).
+    states : pd.DataFrame
+        DataFrame containing state space.
 
     Examples
     --------
@@ -52,38 +50,23 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     >>> edu_spec = {
     ...     "lagged": [1.0], "start": [10], "share": [1.0], "max": 20
     ... }
-    >>> res = pyth_create_state_space(num_periods, num_types, edu_spec)
-    >>> assert res[0].shape == (40, 100000, 5)
-    >>> assert res[1].shape == (40,)
-    >>> assert res[2].shape == (40, 40, 40, 21, 4, 1)
-    >>> assert res[3] == 26348
-
-    TODO: Deprecate max_states_period as it can be recovered easily.
+    >>> df = pyth_create_state_space(num_periods, num_types, edu_spec)
+    >>> df.shape
+    (324263, 6)
+    >>> df.groupby("period").count().iloc[:, 0].values
+    array([    2,     4,    19,    47,    92,   158,   249,   369,   522,
+             712,   943,  1218,  1535,  1895,  2298,  2744,  3233,  3765,
+            4340,  4958,  5619,  6323,  7070,  7860,  8693,  9569, 10488,
+           11450, 12455, 13503, 14594, 15728, 16905, 18125, 19388, 20694,
+           22043, 23435, 24870, 26348], dtype=int64)
 
     """
-    # Auxiliary information
-    min_idx = edu_spec["max"] + 1
-
-    # TODO: Do not hardcode maximum number of states with 100000.
-    # Array for possible realization of state space by period
-    states_all = np.full((num_periods, 100000, 5), MISSING_INT)
-
-    # Array for the mapping of state space values to indices in variety of matrices.
-    shape = (num_periods, num_periods, num_periods, min_idx, 4, num_types)
-    mapping_state_idx = np.full(shape, MISSING_INT)
-
-    # Array for maximum number of realizations of state space by period
-    states_number_period = np.full(num_periods, MISSING_INT)
-
     # Create list to store state information. Taken from
     # https://stackoverflow.com/a/17496530/7523785.
     data = []
 
     # Construct state space by periods
     for period in range(num_periods):
-
-        # Count admissible realizations of state space by period
-        k = 0
 
         # Loop over all unobserved types
         for type_ in range(num_types):
@@ -167,46 +150,9 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                 if (choice_lagged == 2) and (exp_b == 0):
                                     continue
 
-                                # If we have multiple initial conditions it might well
-                                # be the case that we have a duplicate state, i.e. the
-                                # same state is possible with other initial condition
-                                # that period.
-                                if (
-                                    mapping_state_idx[
-                                        period,
-                                        exp_a,
-                                        exp_b,
-                                        edu_start + edu_add,
-                                        choice_lagged - 1,
-                                        type_,
-                                    ]
-                                    != MISSING_INT
-                                ):
-                                    continue
-
-                                # Collect mapping of state space to array index.
-                                mapping_state_idx[
-                                    period,
-                                    exp_a,
-                                    exp_b,
-                                    edu_start + edu_add,
-                                    choice_lagged - 1,
-                                    type_,
-                                ] = k
-
-                                # Collect all possible realizations of state space
-                                states_all[period, k, :] = [
-                                    exp_a,
-                                    exp_b,
-                                    edu_start + edu_add,
-                                    choice_lagged,
-                                    type_,
-                                ]
-
                                 # Store information in a dict and append to data.
                                 row = {
                                     "period": period,
-                                    "k": k,
                                     "exp_a": exp_a,
                                     "exp_b": exp_b,
                                     "edu": edu_start + edu_add,
@@ -215,24 +161,19 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                 }
                                 data.append(row)
 
-                                # Update count
-                                k += 1
+    states = pd.DataFrame.from_records(data)
 
-        # Record maximum number of state space realizations by time period
-        states_number_period[period] = k
-
-    # Create a dataframe from data
-    state_characteristics = pd.DataFrame.from_records(data)
-
-    max_states_period = max(states_number_period)
-
-    return (
-        states_all,
-        states_number_period,
-        mapping_state_idx,
-        max_states_period,
-        state_characteristics,
+    # If we have multiple initial conditions it might well be the case that we have a
+    # duplicate state, i.e. the same state is possible with other initial condition that
+    # period.
+    states.drop_duplicates(
+        subset=["period", "exp_a", "exp_b", "edu", "choice_lagged", "type"],
+        keep="first",
+        inplace=True,
     )
+    states.reset_index(drop=True, inplace=True)
+
+    return states
 
 
 def pyth_calculate_rewards_systematic(
