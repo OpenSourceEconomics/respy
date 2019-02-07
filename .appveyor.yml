@@ -10,7 +10,6 @@ notifications:
     on_build_failure: false
     on_build_status_changed: false
 
-
 branches:
   only:
     - master
@@ -30,7 +29,6 @@ environment:
       - TRAVIS_CI_FORTRAN: true
         TRAVIS_CI_MPI: true
         TRAVIS_CI_OMP: false
-
 
 install:
   # If there is a newer build queued for the same PR, cancel this one.
@@ -52,11 +50,9 @@ install:
   - pip install codecov
   - pytest --cov=respy -vvv -s
 
-
 build: false
 
-
-- bash: |
+- sh: |
     if  [ $TRAVIS_CI_FORTRAN ] || \
         [ $TRAVIS_CI_MPI ] || \
         [ $TRAVIS_CI_OMP ] ||
