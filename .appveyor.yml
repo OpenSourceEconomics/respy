@@ -43,6 +43,9 @@ install:
   - ps: $env:PATH = "$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin;$env:PATH"
   # Add MPI to path
   - set PATH=C:\Program Files\Microsoft MPI\Bin;%PATH%
+  # Set conda to always yes and print info
+  - conda config --set always_yes yes --set changeps1 no
+  - conda info -a
   - conda install numpy=1.13.0 scipy=0.19 pandas=0.20 statsmodels=0.8 pytest pytest-cov
   - pip install codecov
   - pip install -e . -vv
