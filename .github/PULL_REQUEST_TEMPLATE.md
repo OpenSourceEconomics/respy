@@ -3,10 +3,14 @@
 * Python version, if any:
 * Operating System:
 
-### Problem
+### Current Behavior
 
-What problem do you want to solve?
+What is the current state?
 
-### Solution
+### Desired Bahavior
+
+What do you want to achieve?
+
+### Solution / Implementation
 
 What is your solution?
