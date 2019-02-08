@@ -14,7 +14,7 @@ notifications:
 skip_branch_with_pr: true
 
 environment:
-  PYTHON: "C:\\Python36"
+  PYTHON: "C:\\Miniconda36-x64"
   matrix:
       - TRAVIS_CI_FORTRAN: false
         TRAVIS_CI_MPI: false
@@ -39,16 +39,12 @@ install:
       https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
       Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
         throw "There are newer queued builds for this pull request, failing early." }
-  # Add Python to path
-  - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+  # Add miniconda to PATH
+  - ps: $env:PATH = "$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin;$env:PATH"
   # Add MPI to path
   - set PATH=C:\Program Files\Microsoft MPI\Bin;%PATH%
-  # Statsmodels needs Numpy and Scipy as build dependency
-  - pip install numpy==1.13.0 scipy==0.19
-  - pip install -r requirements.txt
+  - conda install numpy=1.13.0 scipy=0.19 pandas=0.20 statsmodels=0.8 pytest pytest-cov codecov
   - pip install -e . -vv
-  - pip install pytest-cov
-  - pip install codecov
   - pytest --cov=respy -vvv -s
 
 build: false
