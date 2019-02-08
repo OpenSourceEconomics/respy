@@ -43,6 +43,8 @@ install:
   - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
   # Add MPI to path
   - set PATH=C:\Program Files\Microsoft MPI\Bin;%PATH%
+  # Statsmodels needs Numpy and Scipy as build dependency
+  - pip install numpy==1.13.0 scipy==0.19
   - pip install -r requirements.txt
   - pip install -e . -vv
   - pip install pytest-cov
