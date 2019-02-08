@@ -14,7 +14,7 @@ notifications:
 skip_branch_with_pr: true
 
 environment:
-  PYTHON: "C:\\Miniconda36-x64"
+  MINICONDA: "C:\\Miniconda36-x64"
   matrix:
       - TRAVIS_CI_FORTRAN: false
         TRAVIS_CI_MPI: false
