@@ -12,6 +12,7 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
+from numba import njit
 
 
 def get_log_likl(contribs):
@@ -271,102 +272,100 @@ def cholesky_to_coeffs(shocks_cholesky):
     return shocks_coeffs
 
 
-def get_total_values(
-    period,
-    num_periods,
-    optim_paras,
-    rewards_systematic,
-    draws,
-    edu_spec,
-    mapping_state_idx,
-    periods_emax,
-    k,
-    states_all,
+@njit
+def get_emaxs_of_subsequent_period(
+    edu_spec_max,
+    states_subset,
+    row_idx,
+    column_indices,
+    exp_a,
+    exp_b,
+    edu,
+    type_,
 ):
-    """Get value function of all possible states.
+    """Get emaxs for additional choices.
 
-    This is called total value because it is the sum of immediate rewards, including realized
-    shocks, and expected future rewards.
+    Parameters
+    ----------
+    edu_spec : dict
+    states_subset : np.array
+        Identical to states restricted to one period and np.array to reduce lookup
+        times.
+    row_idx : int
+        Index of state for which we need to collect values from subsequent periods.
+    column_indices : List[int]
+        Column index of variables.
+
+    Returns
+    -------
+    emaxs_* : float
+        emaxs_* values from subsequent period.
+
+    Notes
+    -----
+    - This function might be extremely costly as every conditional lookup is performed
+      four times over 300k - 26k (last period) states_subset. Is it possible to
+      implement a data structure which is more graph like and provides easier lookups?
+    - TODO(janosg): At the end of emaxs_*, there is [0] get the one value from the
+      array. Interestingly, if you use normal Python not Numba, the result is a matrix
+      and you have to index with [0, 0].
 
     """
-    # We need to back out the wages from the total systematic rewards to
-    # working in the labor market to add the shock properly.
-    exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
-    wages_systematic = back_out_systematic_wages(
-        rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras
-    )
-
-    # Initialize containers
-    rewards_ex_post = np.tile(np.nan, 4)
-
-    # Calculate ex post rewards
-    for j in [0, 1]:
-        total_increment = rewards_systematic[j] - wages_systematic[j]
-        rewards_ex_post[j] = wages_systematic[j] * draws[j] + total_increment
-
-    for j in [2, 3]:
-        rewards_ex_post[j] = rewards_systematic[j] + draws[j]
-
-    # Get future values
-    if period != (num_periods - 1):
-        emaxs = get_emaxs(
-            edu_spec, mapping_state_idx, period, periods_emax, k, states_all
-        )
-    else:
-        emaxs = np.tile(0.0, 4)
-
-    # Calculate total utilities
-    total_values = rewards_ex_post + optim_paras["delta"] * emaxs
-
-    # This is required to ensure that the agent does not choose any
-    # inadmissible states. If the state is inadmissible emaxs takes value zero.
-    if states_all[period, k, 2] >= edu_spec["max"]:
-        total_values[2] += INADMISSIBILITY_PENALTY
-
-    # Finishing
-    return total_values, rewards_ex_post
-
-
-def get_emaxs(
-    edu_spec, mapping_state_idx, period, periods_emax, k, states_all
-):
-    """Get emaxs for additional choices."""
-    # Distribute state space
-    exp_a, exp_b, edu, _, type_ = states_all[period, k, :]
-
-    # Future utilities
-    emaxs = np.tile(np.nan, 4)
-
-    # Working in Occupation A
-    future_idx = mapping_state_idx[
-        period + 1, exp_a + 1, exp_b, edu, 1 - 1, type_
+    exp_a_idx, exp_b_idx, edu_idx, type_idx, cl_idx = column_indices[:5]
+    emaxs_a_idx, emaxs_b_idx, emaxs_edu_idx, emaxs_home_idx = column_indices[
+        5:
     ]
-    emaxs[0] = periods_emax[period + 1, future_idx]
 
-    # Working in Occupation B
-    future_idx = mapping_state_idx[
-        period + 1, exp_a, exp_b + 1, edu, 2 - 1, type_
-    ]
-    emaxs[1] = periods_emax[period + 1, future_idx]
+    # Working in Occupation A in period + 1
+    emaxs_a = states_subset[
+        np.where(
+            (states_subset[:, exp_a_idx] == exp_a + 1)
+            & (states_subset[:, exp_b_idx] == exp_b)
+            & (states_subset[:, edu_idx] == edu)
+            & (states_subset[:, type_idx] == type_)
+            & (states_subset[:, cl_idx] == 1)
+        )[0], emaxs_a_idx
+    ][0]
 
-    # Increasing schooling. Note that adding an additional year of schooling
-    # is only possible for those that have strictly less than the maximum level
-    # of additional education allowed.
-    is_inadmissible = edu >= edu_spec["max"]
-    if is_inadmissible:
-        emaxs[2] = 0.00
+    # Working in Occupation B in period +1
+    emaxs_b = states_subset[
+        np.where(
+            (states_subset[:, exp_a_idx] == exp_a)
+            & (states_subset[:, exp_b_idx] == exp_b + 1)
+            & (states_subset[:, edu_idx] == edu)
+            & (states_subset[:, type_idx] == type_)
+            & (states_subset[:, cl_idx] == 2)
+        )[0], emaxs_b_idx
+    ][0]
+
+    # Schooling in period + 1. Note that adding an additional year of schooling is only
+    # possible for those that have strictly less than the maximum level of additional
+    # education allowed.
+    if edu >= edu_spec_max:
+        emaxs_edu = 0.00
     else:
-        future_idx = mapping_state_idx[
-            period + 1, exp_a, exp_b, edu + 1, 3 - 1, type_
-        ]
-        emaxs[2] = periods_emax[period + 1, future_idx]
+        emaxs_edu = states_subset[
+            np.where(
+                (states_subset[:, exp_a_idx] == exp_a)
+                & (states_subset[:, exp_b_idx] == exp_b)
+                & (states_subset[:, edu_idx] == edu + 1)
+                & (states_subset[:, type_idx] == type_)
+                & (states_subset[:, cl_idx] == 2)
+            )[0], emaxs_edu_idx
+        ][0]
 
-    # Staying at home
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 4 - 1, type_]
-    emaxs[3] = periods_emax[period + 1, future_idx]
+    # Staying at home in period + 1
+    emaxs_home = states_subset[
+        np.where(
+            (states_subset[:, exp_a_idx] == exp_a)
+            & (states_subset[:, exp_b_idx] == exp_b)
+            & (states_subset[:, edu_idx] == edu)
+            & (states_subset[:, type_idx] == type_)
+            & (states_subset[:, cl_idx] == 3)
+        )[0], emaxs_home_idx
+    ][0]
 
-    # Finishing
-    return emaxs
+    return emaxs_a, emaxs_b, emaxs_edu, emaxs_home
 
 
 def create_draws(num_periods, num_draws, seed, is_debug):

@@ -1,6 +1,4 @@
-from respy.python.solve.solve_auxiliary import (
-    pyth_calculate_rewards_systematic
-)
+from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
@@ -39,10 +37,7 @@ def pyth_solve(
     record_solution_progress(2, file_sim)
 
     # Calculate all systematic rewards
-    states = pyth_calculate_rewards_systematic(
-        states,
-        optim_paras,
-    )
+    states = pyth_calculate_rewards_systematic(states, optim_paras)
 
     record_solution_progress(-1, file_sim)
 
@@ -51,9 +46,7 @@ def pyth_solve(
     # procedure is not called upon.
     record_solution_progress(3, file_sim)
 
-    breakpoint()
-
-    periods_emax = pyth_backward_induction(
+    states = pyth_backward_induction(
         num_periods,
         is_myopic,
         periods_draws_emax,
@@ -71,14 +64,4 @@ def pyth_solve(
     if not is_myopic:
         record_solution_progress(-1, file_sim)
 
-    # Collect return arguments in tuple
-    args = (
-        periods_rewards_systematic,
-        states_number_period,
-        mapping_state_idx,
-        periods_emax,
-        states_all,
-    )
-
-    # Finishing
-    return args
+    return states

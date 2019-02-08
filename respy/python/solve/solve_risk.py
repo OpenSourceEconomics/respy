@@ -1,55 +1,60 @@
 import numpy as np
 
-from respy.python.shared.shared_auxiliary import get_total_values
-
 
 def construct_emax_risk(
-    num_periods,
-    num_draws_emax,
-    period,
-    k,
-    draws_emax_risk,
-    rewards_systematic,
-    periods_emax,
-    states_all,
-    mapping_state_idx,
-    edu_spec,
-    optim_paras,
+    states, num_draws_emax, period, draws_emax_risk, edu_spec, optim_paras
 ):
     """ Simulate expected future value for a given distribution of the unobservables.
+
+    Parameters
+    ----------
+    states : pd.DataFrame
+    num_draws_emax : int
+    period : int
+    draws_emax_risk : np.array
+    edu_spec : dict
+    optim_paras : dict
+
+    Returns
+    -------
+    total_values : np.array
+        One-dimensional array containing ??? for each state in a given period.
+
+    TODO: Refactor by extracting pandas and dictionaries. Then, jit.
+
     """
+    # TODO: This should be solved differently. Not with assert.
     # Antibugging
     assert np.all(draws_emax_risk[:, :2] >= 0)
 
-    # Calculate maximum value
-    emax = 0.0
-    for i in range(num_draws_emax):
+    # Create auxiliary objects
+    states["constant"] = 1.0
+    states["zero"] = 0.0
 
-        # Select draws for this draw
-        draws = draws_emax_risk[i, :]
+    # Construct matrix with dimension (num_states, choices, 1). As edu and home have no
+    # wage, initialize positions with zeros.
+    wages = states.loc[
+        states.period.eq(period), ["wage_a", "wage_b", "constant", "constant"]
+    ].values
+    wages = wages[:, :, np.newaxis]
 
-        # Get total value of admissible states
-        total_values, _ = get_total_values(
-            period,
-            num_periods,
-            optim_paras,
-            rewards_systematic,
-            draws,
-            edu_spec,
-            mapping_state_idx,
-            periods_emax,
-            k,
-            states_all,
-        )
+    # Combine each states-choices combination with num_draws different draws
+    rewards_ex_post = np.multiply(wages, draws_emax_risk.T) - wages
 
-        # Determine optimal choice
-        maximum = max(total_values)
+    # Calculate total values
+    emaxs = states.loc[
+        states.period.eq(period), ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
+    ].values
+    emaxs = emaxs[:, :, np.newaxis]
 
-        # Recording expected future value
-        emax += maximum
+    total_values = rewards_ex_post + optim_paras["delta"] * emaxs
 
-    # Scaling
-    emax = emax / num_draws_emax
+    # TODO: By taking the maximum for each state-draw combination, the maximum might
+    # relate to different choice (a, b, edu, home). Thus, averaging is an average over
+    # all choices yielding maximum values. Is this a problem?
 
-    # Finishing
-    return emax
+    # Choose maximum value in states and average over draws. Shapes change from
+    # (num_states, choices, num_draws) to (num_states, num_draws) to (num_states).
+    total_values = total_values.max(axis=1).mean(axis=1)
+
+    return total_values

@@ -4,7 +4,6 @@ import numpy as np
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
-from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 

@@ -316,13 +316,7 @@ def respy_interface(respy_obj, request, data_array=None):
         )
 
         # Collect arguments for different implementations of the simulation.
-        (
-            periods_rewards_systematic,
-            states_number_period,
-            mapping_state_idx,
-            periods_emax,
-            states_all,
-        ) = pyth_solve(
+        states = pyth_solve(
             is_interpolated,
             num_points_interp,
             num_draws_emax,
@@ -337,34 +331,37 @@ def respy_interface(respy_obj, request, data_array=None):
             num_types,
         )
 
-        solution = (
-            periods_rewards_systematic,
-            states_number_period,
-            mapping_state_idx,
-            periods_emax,
-            states_all,
-        )
+        states.to_pickle("save_state_space.pkl")
+        import sys; sys.exit(0)
 
-        data_array = pyth_simulate(
-            periods_rewards_systematic,
-            mapping_state_idx,
-            periods_emax,
-            states_all,
-            num_periods,
-            num_agents_sim,
-            periods_draws_sims,
-            seed_sim,
-            file_sim,
-            edu_spec,
-            optim_paras,
-            num_types,
-            is_debug,
-        )
+    #     solution = (
+    #         periods_rewards_systematic,
+    #         states_number_period,
+    #         mapping_state_idx,
+    #         periods_emax,
+    #         states_all,
+    #     )
 
-        args = (solution, data_array)
+    #     data_array = pyth_simulate(
+    #         periods_rewards_systematic,
+    #         mapping_state_idx,
+    #         periods_emax,
+    #         states_all,
+    #         num_periods,
+    #         num_agents_sim,
+    #         periods_draws_sims,
+    #         seed_sim,
+    #         file_sim,
+    #         edu_spec,
+    #         optim_paras,
+    #         num_types,
+    #         is_debug,
+    #     )
 
-    else:
-        raise AssertionError
+    #     args = (solution, data_array)
+
+    # else:
+    #     raise AssertionError
 
     return args
 
