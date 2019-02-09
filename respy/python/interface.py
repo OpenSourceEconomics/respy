@@ -22,6 +22,7 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 from respy.custom_exceptions import MaxfunError
+import pandas as pd
 
 
 def respy_interface(respy_obj, request, data_array=None):
@@ -331,37 +332,23 @@ def respy_interface(respy_obj, request, data_array=None):
             num_types,
         )
 
-        states.to_pickle("save_state_space.pkl")
-        import sys; sys.exit(0)
+        simulated_dataset = pyth_simulate(
+            num_periods,
+            num_agents_sim,
+            states,
+            periods_draws_sims,
+            seed_sim,
+            file_sim,
+            edu_spec,
+            optim_paras,
+            num_types,
+            is_debug,
+        )
 
-    #     solution = (
-    #         periods_rewards_systematic,
-    #         states_number_period,
-    #         mapping_state_idx,
-    #         periods_emax,
-    #         states_all,
-    #     )
+        args = (states, simulated_dataset)
 
-    #     data_array = pyth_simulate(
-    #         periods_rewards_systematic,
-    #         mapping_state_idx,
-    #         periods_emax,
-    #         states_all,
-    #         num_periods,
-    #         num_agents_sim,
-    #         periods_draws_sims,
-    #         seed_sim,
-    #         file_sim,
-    #         edu_spec,
-    #         optim_paras,
-    #         num_types,
-    #         is_debug,
-    #     )
-
-    #     args = (solution, data_array)
-
-    # else:
-    #     raise AssertionError
+    else:
+        raise NotImplementedError("This request is not implemented.")
 
     return args
 

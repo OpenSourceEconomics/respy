@@ -317,9 +317,17 @@ def pyth_backward_induction(
             )
 
             # Pass states_subset to function as it reduces lookup-time.
-            states_subset = states.loc[states.period.eq(period + 1)].values
+            max_col_idx = max(column_indices)
+            breakpoint()
+            states_subset = (
+                states.loc[states.period.eq(period + 1)]
+                .iloc[:, : max_col_idx + 1]
+                .values
+            )
 
             row_indices = states.loc[states.period.eq(period)].index
+
+            # TODO: Embarrassingly parallel.
             for row_idx in row_indices:
 
                 # Unpack characteristics of current state

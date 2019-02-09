@@ -4,7 +4,6 @@ import linecache
 import shlex
 import os
 
-from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import PRINT_FLOAT
@@ -13,6 +12,7 @@ from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
 from numba import njit
+import respy.python.shared.fast_routines as fr
 
 
 def get_log_likl(contribs):
@@ -25,22 +25,24 @@ def get_log_likl(contribs):
     return crit_val
 
 
-def distribute_parameters(
-    paras_vec, is_debug=False, info=None, paras_type="optim"
-):
+def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type="optim"):
     """Parse the parameter vector into a dictionary of model quantities.
 
-    Args:
-        paras_vec (np.ndarray): 1d numpy array with the parameters
-        is_debug (bool): If true, the parameters are checked for validity
-        info: ????
-        paras_type (str): one of ['econ', 'optim']. A paras_vec of type 'econ' contains the
-            the standard deviations and covariances of the shock distribution. This is how
-            parameters are represented in the .ini file and the output of .fit().
-            A paras_vec of type 'optim' contains the elements of the cholesky factors of the
-            covariance matrix of the shock distribution. This type is used internally during
-            the likelihood estimation. The default value is 'optim' in order to make the function
-            more aligned with Fortran, where we never have to parse 'econ' parameters.
+    Parameters
+    ----------
+    paras_vec : np.ndarray)
+        1d numpy array with the parameters
+    is_debug : bool
+        If true, the parameters are checked for validity
+    info : ????
+    paras_type : str
+        one of ['econ', 'optim']. A paras_vec of type 'econ' contains the the standard
+        deviations and covariances of the shock distribution. This is how parameters are
+        represented in the .ini file and the output of .fit(). A paras_vec of type
+        'optim' contains the elements of the cholesky factors of the covariance matrix
+        of the shock distribution. This type is used internally during the likelihood
+        estimation. The default value is 'optim' in order to make the function more
+        aligned with Fortran, where we never have to parse 'econ' parameters.
 
     """
     paras_vec = paras_vec.copy()
@@ -100,10 +102,7 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     start, stop = pinfo["delta"]["start"], pinfo["delta"]["stop"]
     x[start:stop] = paras_dict["delta"]
 
-    start, stop = (
-        pinfo["coeffs_common"]["start"],
-        pinfo["coeffs_common"]["stop"],
-    )
+    start, stop = (pinfo["coeffs_common"]["start"], pinfo["coeffs_common"]["stop"])
     x[start:stop] = paras_dict["coeffs_common"]
 
     start, stop = pinfo["coeffs_a"]["start"], pinfo["coeffs_a"]["stop"]
@@ -118,10 +117,7 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     start, stop = pinfo["coeffs_home"]["start"], pinfo["coeffs_home"]["stop"]
     x[start:stop] = paras_dict["coeffs_home"]
 
-    start, stop = (
-        pinfo["shocks_coeffs"]["start"],
-        pinfo["shocks_coeffs"]["stop"],
-    )
+    start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
     x[start:stop] = paras_dict["shocks_cholesky"][np.tril_indices(4)]
 
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
@@ -134,9 +130,7 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
         _check_optimization_parameters(x)
 
     if which == "free":
-        x = [
-            x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]
-        ]
+        x = [x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]]
         x = np.array(x)
 
     return x
@@ -211,10 +205,7 @@ def extract_type_information(x):
 def extract_cholesky(x, info=None):
     """Extract the cholesky factor of the shock covariance from parameters of type 'optim."""
     pinfo = paras_parsing_information(len(x))
-    start, stop = (
-        pinfo["shocks_coeffs"]["start"],
-        pinfo["shocks_coeffs"]["stop"],
-    )
+    start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
     shocks_coeffs = x[start:stop]
     dim = number_of_triangular_elements_to_dimensio(len(shocks_coeffs))
     shocks_cholesky = np.zeros((dim, dim))
@@ -272,16 +263,27 @@ def cholesky_to_coeffs(shocks_cholesky):
     return shocks_coeffs
 
 
+def get_total_values(agent, draws, optim_paras):
+    """ Calculates ???."""
+    rewards_ex_post = np.array(
+        [
+            agent.wage_a * draws[0] + agent.rewards_systematic_a - agent.wage_a,
+            agent.wage_b * draws[1] + agent.rewards_systematic_b - agent.wage_b,
+            agent.rewards_systematic_edu + draws[2],
+            agent.rewards_systematic_home + draws[3],
+        ]
+    )
+
+    emaxs = np.array([agent.emaxs_a, agent.emaxs_b, agent.emaxs_edu, agent.emaxs_home])
+
+    total_values = rewards_ex_post + optim_paras["delta"] * emaxs
+
+    return total_values, rewards_ex_post
+
+
 @njit
 def get_emaxs_of_subsequent_period(
-    edu_spec_max,
-    states_subset,
-    row_idx,
-    column_indices,
-    exp_a,
-    exp_b,
-    edu,
-    type_,
+    edu_spec_max, states_subset, row_idx, column_indices, exp_a, exp_b, edu, type_
 ):
     """Get emaxs for additional choices.
 
@@ -306,15 +308,14 @@ def get_emaxs_of_subsequent_period(
     - This function might be extremely costly as every conditional lookup is performed
       four times over 300k - 26k (last period) states_subset. Is it possible to
       implement a data structure which is more graph like and provides easier lookups?
-    - TODO(janosg): At the end of emaxs_*, there is [0] get the one value from the
-      array. Interestingly, if you use normal Python not Numba, the result is a matrix
-      and you have to index with [0, 0].
+
+    TODO(janosg): At the end of emaxs_*, there is [0] get the one value from the array.
+    Interestingly, if you use normal Python not Numba, the result is a matrix and you
+    have to index with [0, 0]. Do you know why?
 
     """
     exp_a_idx, exp_b_idx, edu_idx, type_idx, cl_idx = column_indices[:5]
-    emaxs_a_idx, emaxs_b_idx, emaxs_edu_idx, emaxs_home_idx = column_indices[
-        5:
-    ]
+    emaxs_a_idx, emaxs_b_idx, emaxs_edu_idx, emaxs_home_idx = column_indices[5:]
 
     # Working in Occupation A in period + 1
     emaxs_a = states_subset[
@@ -324,7 +325,8 @@ def get_emaxs_of_subsequent_period(
             & (states_subset[:, edu_idx] == edu)
             & (states_subset[:, type_idx] == type_)
             & (states_subset[:, cl_idx] == 1)
-        )[0], emaxs_a_idx
+        )[0],
+        emaxs_a_idx,
     ][0]
 
     # Working in Occupation B in period +1
@@ -335,7 +337,8 @@ def get_emaxs_of_subsequent_period(
             & (states_subset[:, edu_idx] == edu)
             & (states_subset[:, type_idx] == type_)
             & (states_subset[:, cl_idx] == 2)
-        )[0], emaxs_b_idx
+        )[0],
+        emaxs_b_idx,
     ][0]
 
     # Schooling in period + 1. Note that adding an additional year of schooling is only
@@ -351,7 +354,8 @@ def get_emaxs_of_subsequent_period(
                 & (states_subset[:, edu_idx] == edu + 1)
                 & (states_subset[:, type_idx] == type_)
                 & (states_subset[:, cl_idx] == 2)
-            )[0], emaxs_edu_idx
+            )[0],
+            emaxs_edu_idx,
         ][0]
 
     # Staying at home in period + 1
@@ -362,7 +366,8 @@ def get_emaxs_of_subsequent_period(
             & (states_subset[:, edu_idx] == edu)
             & (states_subset[:, type_idx] == type_)
             & (states_subset[:, cl_idx] == 3)
-        )[0], emaxs_home_idx
+        )[0],
+        emaxs_home_idx,
     ][0]
 
     return emaxs_a, emaxs_b, emaxs_edu, emaxs_home
@@ -374,6 +379,19 @@ def create_draws(num_periods, num_draws, seed, is_debug):
     Handle special case of zero variances as this case is useful for testing.
     The draws are from a standard normal distribution and transformed later in
     the code.
+
+    Parameters
+    ----------
+    num_periods : int
+    num_draws : int
+    seed : int
+    is_debug : bool
+
+    Returns
+    -------
+    draws : np.array
+        Draws with shape (num_periods, num_draws)
+
     """
     # Control randomness by setting seed value
     np.random.seed(seed)
@@ -387,7 +405,6 @@ def create_draws(num_periods, num_draws, seed, is_debug):
             np.zeros(4), np.identity(4), (num_periods, num_draws)
         )
 
-    # Finishing
     return draws
 
 
@@ -401,9 +418,7 @@ def add_solution(
 ):
     """Add solution to class instance."""
     respy_obj.unlock()
-    respy_obj.set_attr(
-        "periods_rewards_systematic", periods_rewards_systematic
-    )
+    respy_obj.set_attr("periods_rewards_systematic", periods_rewards_systematic)
     respy_obj.set_attr("states_number_period", states_number_period)
     respy_obj.set_attr("mapping_state_idx", mapping_state_idx)
     respy_obj.set_attr("periods_emax", periods_emax)
@@ -487,9 +502,7 @@ def check_model_parameters(optim_paras):
 
     # Checks shock matrix
     assert optim_paras["shocks_cholesky"].shape == (4, 4)
-    np.allclose(
-        optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"])
-    )
+    np.allclose(optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"]))
 
     # Checks for type shares
     assert optim_paras["type_shares"].size == num_types * 2
@@ -538,18 +551,16 @@ def read_draws(num_periods, num_draws):
     return periods_draws
 
 
+@njit
 def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     """Transform the standard normal deviates to the relevant distribution."""
-    draws_transformed = draws.copy()
-    draws_transformed = np.dot(shocks_cholesky, draws_transformed.T).T
+    draws_transformed = shocks_cholesky.dot(draws.T).T
 
-    for j in range(4):
-        draws_transformed[:, j] = draws_transformed[:, j] + shocks_mean[j]
+    draws_transformed = draws_transformed + shocks_mean
 
-    for j in range(2):
-        draws_transformed[:, j] = np.clip(
-            np.exp(draws_transformed[:, j]), 0.0, HUGE_FLOAT
-        )
+    draws_transformed[:, :2] = fr.clip(
+        np.exp(draws_transformed[:, :2]), 0.0, HUGE_FLOAT
+    )
 
     return draws_transformed
 
@@ -680,25 +691,15 @@ def back_out_systematic_wages(
 ):
     """Construct the wage component for the labor market rewards."""
     # Construct covariates needed for the general part of labor market rewards.
-    covariates = construct_covariates(
-        exp_a, exp_b, edu, choice_lagged, None, None
-    )
+    covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, None, None)
 
     # First we calculate the general component.
     general, wages_systematic = np.tile(np.nan, 2), np.tile(np.nan, 2)
 
-    covars_general = [
-        1.0,
-        covariates["not_exp_a_lagged"],
-        covariates["not_any_exp_a"],
-    ]
+    covars_general = [1.0, covariates["not_exp_a_lagged"], covariates["not_any_exp_a"]]
     general[0] = np.dot(optim_paras["coeffs_a"][12:], covars_general)
 
-    covars_general = [
-        1.0,
-        covariates["not_exp_b_lagged"],
-        covariates["not_any_exp_b"],
-    ]
+    covars_general = [1.0, covariates["not_exp_b_lagged"], covariates["not_any_exp_b"]]
     general[1] = np.dot(optim_paras["coeffs_b"][12:], covars_general)
 
     # Second we do the same with the common component.
@@ -706,9 +707,7 @@ def back_out_systematic_wages(
     rewards_common = np.dot(optim_paras["coeffs_common"], covars_common)
 
     for j in [0, 1]:
-        wages_systematic[j] = (
-            rewards_systematic[j] - general[j] - rewards_common
-        )
+        wages_systematic[j] = rewards_systematic[j] - general[j] - rewards_common
 
     return wages_systematic
 
@@ -739,9 +738,7 @@ def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
         covariates["hs_graduate"] = int(edu >= 12)
         covariates["co_graduate"] = int(edu >= 16)
 
-        cond = (not covariates["edu_lagged"]) and (
-            not covariates["hs_graduate"]
-        )
+        cond = (not covariates["edu_lagged"]) and (not covariates["hs_graduate"])
         covariates["is_return_not_high_school"] = int(cond)
 
         cond = (not covariates["edu_lagged"]) and covariates["hs_graduate"]
