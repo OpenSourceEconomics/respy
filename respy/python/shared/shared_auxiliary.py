@@ -707,7 +707,11 @@ def get_num_obs_agent(data_array, num_agents_est):
 def back_out_systematic_wages(
     rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras
 ):
-    """Construct the wage component for the labor market rewards."""
+    """Construct the wage component for the labor market rewards.
+
+    TODO: Delete it.
+
+    """
     # Construct covariates needed for the general part of labor market rewards.
     covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, None, None)
 
@@ -732,6 +736,9 @@ def back_out_systematic_wages(
 
 def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
     """ Construction of some additional covariates for the reward calculations.
+
+    TODO: Delete it.
+
     """
     covariates = dict()
 
