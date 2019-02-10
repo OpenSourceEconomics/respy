@@ -22,7 +22,6 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 from respy.custom_exceptions import MaxfunError
-import pandas as pd
 
 
 def respy_interface(respy_obj, request, data_array=None):
@@ -96,15 +95,7 @@ def respy_interface(respy_obj, request, data_array=None):
         )
 
         # Construct the state space
-        (
-            states_all,
-            states_number_period,
-            mapping_state_idx,
-            max_states_period,
-        ) = pyth_create_state_space(num_periods, num_types, edu_spec)
-
-        # Cutting to size
-        states_all = states_all[:, : max(states_number_period), :]
+        states = pyth_create_state_space(num_periods, num_types, edu_spec)
 
         # Collect arguments that are required for the criterion function.
         # These must be in the correct order already.
@@ -120,10 +111,7 @@ def respy_interface(respy_obj, request, data_array=None):
             tau,
             periods_draws_emax,
             periods_draws_prob,
-            states_all,
-            states_number_period,
-            mapping_state_idx,
-            max_states_period,
+            states,
             num_agents_est,
             num_obs,
             num_types,
@@ -316,23 +304,27 @@ def respy_interface(respy_obj, request, data_array=None):
             num_periods, num_draws_emax, seed_emax, is_debug
         )
 
-        # Collect arguments for different implementations of the simulation.
-        states = pyth_solve(
-            is_interpolated,
-            num_points_interp,
-            num_draws_emax,
-            num_periods,
-            is_myopic,
-            is_debug,
-            periods_draws_emax,
-            edu_spec,
-            optim_paras,
-            file_sim,
-            optimizer_options,
-            num_types,
-        )
+        # # Collect arguments for different implementations of the simulation.
+        # states = pyth_solve(
+        #     is_interpolated,
+        #     num_points_interp,
+        #     num_draws_emax,
+        #     num_periods,
+        #     is_myopic,
+        #     is_debug,
+        #     periods_draws_emax,
+        #     edu_spec,
+        #     optim_paras,
+        #     file_sim,
+        #     optimizer_options,
+        #     num_types,
+        # )
 
-        simulated_dataset = pyth_simulate(
+        import pandas as pd
+
+        states = pd.read_pickle("save_state_space.pkl")
+
+        simulated_data = pyth_simulate(
             num_periods,
             num_agents_sim,
             states,
@@ -345,7 +337,9 @@ def respy_interface(respy_obj, request, data_array=None):
             is_debug,
         )
 
-        args = (states, simulated_dataset)
+        simulated_data.to_pickle("simulated_data.pkl")
+
+        args = (states, simulated_data)
 
     else:
         raise NotImplementedError("This request is not implemented.")

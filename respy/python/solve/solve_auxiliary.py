@@ -107,25 +107,19 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                     # (0, 1) Whenever an agent has only worked in
                                     # Occupation A, then the lagged choice cannot be
                                     # anything other than one.
-                                    if (choice_lagged != 1) and (
-                                        exp_a == period
-                                    ):
+                                    if (choice_lagged != 1) and (exp_a == period):
                                         continue
 
                                     # (0, 2) Whenever an agent has only worked in
                                     # Occupation B, then the lagged choice cannot be
                                     # anything other than two
-                                    if (choice_lagged != 2) and (
-                                        exp_b == period
-                                    ):
+                                    if (choice_lagged != 2) and (exp_b == period):
                                         continue
 
                                     # (0, 3) Whenever an agent has only acquired
                                     # additional education, then the lagged choice
                                     # cannot be anything other than three.
-                                    if (choice_lagged != 3) and (
-                                        edu_add == period
-                                    ):
+                                    if (choice_lagged != 3) and (edu_add == period):
                                         continue
 
                                     # (0, 4) Whenever an agent has not acquired any
@@ -205,16 +199,12 @@ def pyth_calculate_rewards_systematic(states, optim_paras):
         "is_minor",
     ]
 
-    states["rewards_edu"] = states[covariates_education].dot(
-        optim_paras["coeffs_edu"]
-    )
+    states["rewards_edu"] = states[covariates_education].dot(optim_paras["coeffs_edu"])
 
     # Calculate systematic part of HOME
     covariates_home = ["intercept", "is_young_adult", "is_adult"]
 
-    states["rewards_home"] = states[covariates_home].dot(
-        optim_paras["coeffs_home"]
-    )
+    states["rewards_home"] = states[covariates_home].dot(optim_paras["coeffs_home"])
 
     # Now we add the type-specific deviation for SCHOOL and HOME.
     types_dummy = pd.get_dummies(states.type, prefix="type")
@@ -226,12 +216,8 @@ def pyth_calculate_rewards_systematic(states, optim_paras):
     # We can now also added the common component of rewards.
     states["rewards_systematic_a"] = states.rewards_a + states.rewards_common
     states["rewards_systematic_b"] = states.rewards_b + states.rewards_common
-    states["rewards_systematic_edu"] = (
-        states.rewards_edu + states.rewards_common
-    )
-    states["rewards_systematic_home"] = (
-        states.rewards_home + states.rewards_common
-    )
+    states["rewards_systematic_edu"] = states.rewards_edu + states.rewards_common
+    states["rewards_systematic_home"] = states.rewards_home + states.rewards_common
 
     states.drop(columns=["intercept"], inplace=True)
 
@@ -285,9 +271,7 @@ def pyth_backward_induction(
         return states
 
     # Construct auxiliary objects
-    shocks_cov = optim_paras["shocks_cholesky"].dot(
-        optim_paras["shocks_cholesky"].T
-    )
+    shocks_cov = optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T)
 
     # Auxiliary objects. These shifts are used to determine the expected values of the
     # two labor market alternatives. These are log normal distributed and thus the draws
@@ -318,6 +302,7 @@ def pyth_backward_induction(
 
             # Pass states_subset to function as it reduces lookup-time.
             max_col_idx = max(column_indices)
+            # Check whether the subset can be furthermore improved by reducing columns.
             breakpoint()
             states_subset = (
                 states.loc[states.period.eq(period + 1)]
@@ -354,9 +339,7 @@ def pyth_backward_induction(
         # Treatment of the disturbances for the risk-only case is straightforward. Their
         # distribution is fixed once and for all.
         draws_emax_risk = transform_disturbances(
-            draws_emax_standard,
-            np.tile(0.0, 4),
-            optim_paras["shocks_cholesky"],
+            draws_emax_standard, np.tile(0.0, 4), optim_paras["shocks_cholesky"]
         )
 
         if is_write:
@@ -365,9 +348,7 @@ def pyth_backward_induction(
         # The number of interpolation points is the same for all periods. Thus, for some
         # periods the number of interpolation points is larger than the actual number of
         # states. In that case no interpolation is needed.
-        any_interpolated = (
-            num_points_interp <= num_states
-        ) and is_interpolated
+        any_interpolated = (num_points_interp <= num_states) and is_interpolated
 
         if any_interpolated:
             # Get indicator for interpolation and simulation of states
@@ -404,12 +385,7 @@ def pyth_backward_induction(
         else:
 
             states.loc[states.period.eq(period), "emax"] = construct_emax_risk(
-                states,
-                num_draws_emax,
-                period,
-                draws_emax_risk,
-                edu_spec,
-                optim_paras,
+                states, num_draws_emax, period, draws_emax_risk, edu_spec, optim_paras
             )
 
     return states
@@ -460,6 +436,9 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
     -------
     states : pd.DataFrame
 
+    TODO: Resembles construct_emax_risk (3d numpy) and get_total_values (1d numpy).
+    Refactor.
+
     """
     # Calculate ex-post rewards
     states.loc[states.period.eq(period), "rewards_ex_post_a"] = (
@@ -491,12 +470,7 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
 
     # Implement level shifts
     states.loc[states.period.eq(period), "maxe"] = states[
-        [
-            "total_values_a",
-            "total_values_b",
-            "total_values_edu",
-            "total_values_home",
-        ]
+        ["total_values_a", "total_values_b", "total_values_edu", "total_values_home"]
     ].max(axis=1)
 
     states.loc[states.period.eq(period), "exogenous_a"] = (
@@ -516,13 +490,7 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
 
 
 def get_endogenous_variable(
-    period,
-    states,
-    is_simulated,
-    num_draws_emax,
-    draws_emax_risk,
-    edu_spec,
-    optim_paras,
+    period, states, is_simulated, num_draws_emax, draws_emax_risk, edu_spec, optim_paras
 ):
     """ Construct endogenous variable for the subset of interpolation points.
 
@@ -539,9 +507,7 @@ def get_endogenous_variable(
     )
 
     # Construct dependent variable
-    states.loc[states.period.eq(period), "endog_variable"] = (
-        states.emax - states.maxe
-    )
+    states.loc[states.period.eq(period), "endog_variable"] = states.emax - states.maxe
 
     return states
 
@@ -578,8 +544,7 @@ def get_predictions(period, states, is_simulated, file_sim, is_write):
     # Construct predicted EMAX for all states and the replace interpolation points with
     # simulated values.
     predictions = (
-        endogenous_predicted
-        + states.loc[states.period.eq(period), "maxe"].values
+        endogenous_predicted + states.loc[states.period.eq(period), "maxe"].values
     )
     predictions[is_simulated] = (
         endogenous[is_simulated]
@@ -652,14 +617,14 @@ def calculate_wages_systematic(states, optim_paras):
     ]
 
     # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
-    states["wage_a"] = states[
-        relevant_covariates + ["any_exp_a", "work_a_lagged"]
-    ].dot(optim_paras["coeffs_a"][:12])
+    states["wage_a"] = states[relevant_covariates + ["any_exp_a", "work_a_lagged"]].dot(
+        optim_paras["coeffs_a"][:12]
+    )
     states.wage_a = np.clip(np.exp(states.wage_a), 0.0, HUGE_FLOAT)
 
-    states["wage_b"] = states[
-        relevant_covariates + ["any_exp_b", "work_b_lagged"]
-    ].dot(optim_paras["coeffs_b"][:12])
+    states["wage_b"] = states[relevant_covariates + ["any_exp_b", "work_b_lagged"]].dot(
+        optim_paras["coeffs_b"][:12]
+    )
     states.wage_b = np.clip(np.exp(states.wage_b), 0.0, HUGE_FLOAT)
 
     # We need to add the type-specific deviations here as these are part of

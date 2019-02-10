@@ -18,10 +18,7 @@ def pyth_criterion(
     tau,
     periods_draws_emax,
     periods_draws_prob,
-    states_all,
-    states_number_period,
-    mapping_state_idx,
-    max_states_period,
+    states,
     num_agents_est,
     num_obs_agent,
     num_types,
@@ -31,20 +28,14 @@ def pyth_criterion(
     optim_paras = distribute_parameters(x, is_debug)
 
     # Calculate all systematic rewards
-    periods_rewards_systematic = pyth_calculate_rewards_systematic(
-        num_periods, states_number_period, states_all, max_states_period, optim_paras
-    )
+    states = pyth_calculate_rewards_systematic(states, optim_paras)
 
-    periods_emax = pyth_backward_induction(
+    states = pyth_backward_induction(
         num_periods,
         is_myopic,
-        max_states_period,
         periods_draws_emax,
         num_draws_emax,
-        states_number_period,
-        periods_rewards_systematic,
-        mapping_state_idx,
-        states_all,
+        states,
         is_debug,
         is_interpolated,
         num_points_interp,
@@ -55,10 +46,7 @@ def pyth_criterion(
     )
 
     contribs = pyth_contributions(
-        periods_rewards_systematic,
-        mapping_state_idx,
-        periods_emax,
-        states_all,
+        states,
         data_array,
         periods_draws_prob,
         tau,

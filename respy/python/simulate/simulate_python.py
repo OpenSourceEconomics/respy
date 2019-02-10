@@ -53,13 +53,15 @@ def pyth_simulate(
     )
 
     # Get indices for faster lookup
-    column_indices = np.array([
-        states.columns.tolist().index("exp_a"),
-        states.columns.tolist().index("exp_b"),
-        states.columns.tolist().index("edu"),
-        states.columns.tolist().index("type"),
-        states.columns.tolist().index("choice_lagged"),
-    ])
+    column_indices = np.array(
+        [
+            states.columns.tolist().index("exp_a"),
+            states.columns.tolist().index("exp_b"),
+            states.columns.tolist().index("edu"),
+            states.columns.tolist().index("type"),
+            states.columns.tolist().index("choice_lagged"),
+        ]
+    )
 
     data = []
 
@@ -68,13 +70,9 @@ def pyth_simulate(
         # We need to modify the initial conditions: (1) Schooling when entering the
         # model and (2) individual type. We need to determine the initial value for the
         # lagged variable.
-        current_state = np.array([
-            0,
-            0,
-            initial_education[i],
-            initial_choice_lagged[i],
-            initial_types[i],
-        ])
+        current_state = np.array(
+            [0, 0, initial_education[i], initial_choice_lagged[i], initial_types[i]]
+        )
 
         record_simulation_progress(i, file_sim)
 
@@ -150,11 +148,14 @@ def pyth_simulate(
                 "rewards_ex_post_b": rewards_ex_post[1],
                 "rewards_ex_post_edu": rewards_ex_post[2],
                 "rewards_ex_post_home": rewards_ex_post[3],
+                # Save index of corresponding state in states which reduces lookup time
+                # in estimation.
+                "states_index": agent.name,
             }
             data.append(row)
 
     record_simulation_stop(file_sim)
 
-    simulated_dataset = pd.DataFrame.from_records(data)
+    simulated_data = pd.DataFrame.from_records(data)
 
-    return simulated_dataset
+    return simulated_data

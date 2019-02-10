@@ -263,18 +263,36 @@ def cholesky_to_coeffs(shocks_cholesky):
     return shocks_coeffs
 
 
-def get_total_values(agent, draws, optim_paras):
-    """ Calculates ???."""
+def get_total_values(state, draws, optim_paras):
+    """ Calculates ???.
+
+    Parameters
+    ----------
+    state : pd.Series
+        State holding necessary information.
+    draws : np.array
+        Added uncertainty to rewards.
+    optim_paras : dict
+
+    Returns
+    -------
+    total_values : np,array
+    rewards_ex_post : np.array
+
+    TODO: This function resembles construct_emax_risk and get_exogenous_variables.
+    Refactor!
+
+    """
     rewards_ex_post = np.array(
         [
-            agent.wage_a * draws[0] + agent.rewards_systematic_a - agent.wage_a,
-            agent.wage_b * draws[1] + agent.rewards_systematic_b - agent.wage_b,
-            agent.rewards_systematic_edu + draws[2],
-            agent.rewards_systematic_home + draws[3],
+            state.wage_a * draws[0] + state.rewards_systematic_a - state.wage_a,
+            state.wage_b * draws[1] + state.rewards_systematic_b - state.wage_b,
+            state.rewards_systematic_edu + draws[2],
+            state.rewards_systematic_home + draws[3],
         ]
     )
 
-    emaxs = np.array([agent.emaxs_a, agent.emaxs_b, agent.emaxs_edu, agent.emaxs_home])
+    emaxs = np.array([state.emaxs_a, state.emaxs_b, state.emaxs_edu, state.emaxs_home])
 
     total_values = rewards_ex_post + optim_paras["delta"] * emaxs
 

@@ -20,7 +20,8 @@ def construct_emax_risk(
     total_values : np.array
         One-dimensional array containing ??? for each state in a given period.
 
-    TODO: Refactor by extracting pandas and dictionaries. Then, jit.
+    TODO: This function resembles get_total_values and get_exogenous_variables.
+    Refactor!
 
     """
     # TODO: This should be solved differently. Not with assert.
