@@ -304,25 +304,21 @@ def respy_interface(respy_obj, request, data_array=None):
             num_periods, num_draws_emax, seed_emax, is_debug
         )
 
-        # # Collect arguments for different implementations of the simulation.
-        # states = pyth_solve(
-        #     is_interpolated,
-        #     num_points_interp,
-        #     num_draws_emax,
-        #     num_periods,
-        #     is_myopic,
-        #     is_debug,
-        #     periods_draws_emax,
-        #     edu_spec,
-        #     optim_paras,
-        #     file_sim,
-        #     optimizer_options,
-        #     num_types,
-        # )
-
-        import pandas as pd
-
-        states = pd.read_pickle("save_state_space.pkl")
+        # Collect arguments for different implementations of the simulation.
+        states = pyth_solve(
+            is_interpolated,
+            num_points_interp,
+            num_draws_emax,
+            num_periods,
+            is_myopic,
+            is_debug,
+            periods_draws_emax,
+            edu_spec,
+            optim_paras,
+            file_sim,
+            optimizer_options,
+            num_types,
+        )
 
         simulated_data = pyth_simulate(
             num_periods,
@@ -336,8 +332,6 @@ def respy_interface(respy_obj, request, data_array=None):
             num_types,
             is_debug,
         )
-
-        simulated_data.to_pickle("simulated_data.pkl")
 
         args = (states, simulated_data)
 

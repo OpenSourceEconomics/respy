@@ -300,13 +300,12 @@ def pyth_backward_induction(
                 states.columns.tolist().index("emaxs_home"),
             )
 
-            # Pass states_subset to function as it reduces lookup-time.
-            max_col_idx = max(column_indices)
-            # Check whether the subset can be furthermore improved by reducing columns.
-            breakpoint()
+            # Reduce number of columns to reduce lookup times. + 1 for inclusion.
+            max_col_idx = max(column_indices) + 1
+            # Pass subset of states to reduce lookup times.
             states_subset = (
                 states.loc[states.period.eq(period + 1)]
-                .iloc[:, : max_col_idx + 1]
+                .iloc[:, : max_col_idx]
                 .values
             )
 
