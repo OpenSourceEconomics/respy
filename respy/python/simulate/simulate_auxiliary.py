@@ -357,13 +357,16 @@ def sort_edu_spec(edu_spec):
     edu_start_ordered = sorted(edu_spec["start"])
 
     edu_share_ordered = []
+    edu_lag_ordered = []
     for start in edu_start_ordered:
         idx = edu_spec["start"].index(start)
         edu_share_ordered += [edu_spec["share"][idx]]
+        edu_lag_ordered += [edu_spec["lagged"][idx]]
 
     edu_spec_ordered = copy.deepcopy(edu_spec)
     edu_spec_ordered["start"] = edu_start_ordered
     edu_spec_ordered["share"] = edu_share_ordered
+    edu_spec_ordered["lagged"] = edu_lag_ordered
 
     return edu_spec_ordered
 

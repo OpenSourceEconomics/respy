@@ -460,6 +460,12 @@ class TestClass(object):
                 if base_data is None:
                     base_data = data_frame.copy()
 
+                with open('base_{}.pickle'.format(k), 'wb') as p:
+                    pickle.dump(base_data, p)
+
+                with open('data_{}.pickle'.format(k), 'wb') as p:
+                    pickle.dump(data_frame, p)
+
                 assert_frame_equal(base_data, data_frame)
 
                 # This part checks the equality of a single function evaluation.
