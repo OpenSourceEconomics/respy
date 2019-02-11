@@ -28,8 +28,25 @@ def pyth_simulate(
     is_debug,
 ):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
-    """
 
+    Parameters
+    ----------
+    num_periods : int
+    num_agents_sim : int
+    states : pd.DataFrame
+    periods_draws_sims : ???
+    seed_sim : ???
+    file_sim : ???
+    edu_spec : dict
+    optim_paras : dict
+    num_types : int
+    is_debug : bool
+
+    Returns
+    -------
+    simulated_data : pd.DataFrame
+
+    """
     record_simulation_start(num_agents_sim, seed_sim, file_sim)
 
     # Standard deviates transformed to the distributions relevant for the agents actual

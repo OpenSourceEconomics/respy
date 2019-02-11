@@ -338,7 +338,7 @@ def pyth_backward_induction(
         # Treatment of the disturbances for the risk-only case is straightforward. Their
         # distribution is fixed once and for all.
         draws_emax_risk = transform_disturbances(
-            draws_emax_standard, np.tile(0.0, 4), optim_paras["shocks_cholesky"]
+            draws_emax_standard, np.full(4, 0.0), optim_paras["shocks_cholesky"]
         )
 
         if is_write:
@@ -392,6 +392,23 @@ def pyth_backward_induction(
 
 def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
     """ Get the indicator for points of interpolation and simulation.
+
+    Parameters
+    ----------
+    num_points_interp : int
+        Number of states which will be interpolated.
+    num_states : int
+        Number of states.
+    period : int
+        Number of period.
+    is_debug : bool
+        Flag for debugging. If true, interpolation points are taken from file.
+
+    Returns
+    -------
+    is_simulated : np.array
+        Array of shape (num_states) indicating states which will be interpolated.
+
     """
     # Drawing random interpolation points
     interpolation_points = np.random.choice(
@@ -399,7 +416,7 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
     )
 
     # Constructing an indicator whether a state will be simulated or interpolated.
-    is_simulated = np.tile(False, num_states)
+    is_simulated = np.full(num_states, False)
     is_simulated[interpolation_points] = True
 
     # Check for debugging cases.
