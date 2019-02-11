@@ -433,6 +433,7 @@ def add_solution(
     mapping_state_idx,
     periods_emax,
     states_all,
+    *args,
 ):
     """Add solution to class instance."""
     respy_obj.unlock()
