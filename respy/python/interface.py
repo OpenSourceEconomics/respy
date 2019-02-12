@@ -19,6 +19,7 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import create_covariates
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 from respy.custom_exceptions import MaxfunError
@@ -78,7 +79,8 @@ def respy_interface(respy_obj, request, data_array=None):
 
     if request == "estimate":
 
-        num_obs = get_num_obs_agent(data_array, num_agents_est)
+        # todo: rename data_array here
+        num_obs = get_num_obs_agent(data_array.values, num_agents_est)
         periods_draws_prob = create_draws(
             num_periods, num_draws_prob, seed_prob, is_debug
         )
@@ -95,7 +97,11 @@ def respy_interface(respy_obj, request, data_array=None):
         )
 
         # Construct the state space
-        states = pyth_create_state_space(num_periods, num_types, edu_spec)
+        # todo: do we have to pass the states_indexer through to crit_func?
+        states, states_indexer = pyth_create_state_space(
+            num_periods, num_types, edu_spec
+        )
+        states = create_covariates(states)
 
         # Collect arguments that are required for the criterion function.
         # These must be in the correct order already.
@@ -112,6 +118,7 @@ def respy_interface(respy_obj, request, data_array=None):
             periods_draws_emax,
             periods_draws_prob,
             states,
+            states_indexer,
             num_agents_est,
             num_obs,
             num_types,
@@ -165,7 +172,7 @@ def respy_interface(respy_obj, request, data_array=None):
             x_optim_free_unscaled_start, precond_matrix, "do"
         )
 
-        paras_bounds_free_scaled = np.tile(np.nan, (num_free, 2))
+        paras_bounds_free_scaled = np.full((num_free, 2), np.nan)
         for i in range(2):
             paras_bounds_free_scaled[:, i] = apply_scaling(
                 paras_bounds_free_unscaled[:, i], precond_matrix, "do"
@@ -195,7 +202,10 @@ def respy_interface(respy_obj, request, data_array=None):
             record_estimation_scalability("Finish")
 
             success = True
-            message = "Single evaluation of criterion function at starting " "values."
+            message = (
+                "Single evaluation of criterion function at starting "
+                "values."
+            )
 
         elif optimizer_used == "SCIPY-BFGS":
 
@@ -319,6 +329,10 @@ def respy_interface(respy_obj, request, data_array=None):
             optimizer_options,
             num_types,
         )
+
+        states.to_pickle("save_state_space.pkl")
+        np.save("save_state_indexer.npy", states_indexer)
+        import sys; sys.exit(0)
 
         simulated_data = pyth_simulate(
             num_periods,

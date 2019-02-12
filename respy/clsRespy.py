@@ -84,7 +84,12 @@ class RespyCls(object):
 
         self._update_derived_attributes()
         self._check_model_attributes()
-        self._check_model_solution()
+        # ====================================================================
+        # todo: reimplement checks for python solution
+        # ====================================================================
+        if self.attr['version'] == 'fortran':
+            self._check_model_solution()
+        # ====================================================================
         self.attr["is_locked"] = True
 
     def unlock(self):
@@ -236,14 +241,15 @@ class RespyCls(object):
         # less). It allows to read in only a subset of the initial conditions.
         data_frame = process_dataset(self)
         record_estimation_sample(data_frame)
-        data_array = data_frame.values
 
         # Distribute class attributes
         version = self.get_attr("version")
 
+        data_array = data_frame.values
+
         # Select appropriate interface
         if version in ["PYTHON"]:
-            respy_interface(self, "estimate", data_array)
+            respy_interface(self, "estimate", data_frame)
         elif version in ["FORTRAN"]:
             resfort_interface(self, "estimate", data_array)
         else:
@@ -280,7 +286,17 @@ class RespyCls(object):
             raise NotImplementedError
 
         # Attach solution to class instance
-        self = add_solution(self, *solution)
+
+        # ====================================================================
+        # todo: harmonize python and fortran
+        # ====================================================================
+        if self.attr['version'] == 'FORTRAN':
+            self = add_solution(self, *solution)
+        else:
+            self.unlock()
+            self.solution = solution
+            self.lock()
+        # ====================================================================
 
         self.unlock()
         self.set_attr("is_solved", True)
@@ -290,11 +306,20 @@ class RespyCls(object):
         if is_store:
             self.store("solution.respy.pkl")
 
-        # Create pandas data frame with missing values.
-        data_frame = pd.DataFrame(
-            data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
-        )
+        # ====================================================================
+        # todo: harmonize python and fortran
+        # ====================================================================
+        if self.attr['version'] == 'PYTHON':
+            data_frame = data_array[DATA_LABELS_SIM]
+
+        else:
+            data_frame = pd.DataFrame(
+                data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
+            )
+
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
+
+        # ====================================================================
         data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
 
         # Checks

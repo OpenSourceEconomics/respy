@@ -19,6 +19,7 @@ def pyth_criterion(
     periods_draws_emax,
     periods_draws_prob,
     states,
+    states_indexer,
     num_agents_est,
     num_obs_agent,
     num_types,
@@ -36,6 +37,7 @@ def pyth_criterion(
         periods_draws_emax,
         num_draws_emax,
         states,
+        states_indexer,
         is_debug,
         is_interpolated,
         num_points_interp,
@@ -47,6 +49,7 @@ def pyth_criterion(
 
     contribs = pyth_contributions(
         states,
+        states_indexer,
         data_array,
         periods_draws_prob,
         tau,

@@ -10,7 +10,8 @@ from respy.python.shared.shared_auxiliary import get_total_values
 
 def pyth_contributions(
     states,
-    simulated_data,
+    states_indexer,
+    data,
     periods_draws_prob,
     tau,
     num_periods,
@@ -30,8 +31,8 @@ def pyth_contributions(
     Parameters
     ----------
     states : pd.DataFrame
-    simulated_data : np.array
-        2d numpy array with the empirical dataset
+    states_indexer : np.array
+    data : pd.DataFrame with the empirical dataset
     periods_draws_prob : np.array
         3d numpy array of dimension [nperiods, ndraws_prob, nchoices]. Contains iid
         draws from standard normal distributions.
@@ -63,15 +64,15 @@ def pyth_contributions(
     is_deterministic = np.count_nonzero(sc) == 0
 
     # Initialize auxiliary objects
-    contribs = np.tile(-HUGE_FLOAT, num_agents_est)
-    prob_obs = np.tile(-HUGE_FLOAT, num_periods)
+    contribs = np.full(num_agents_est, -HUGE_FLOAT)
+    prob_obs = np.full(num_periods, -HUGE_FLOAT)
 
     # Calculate the probability over agents and time.
     for j in range(num_agents_est):
 
         row_start = sum(num_obs_agent[:j])
         num_obs = num_obs_agent[j]
-        edu_start = simulated_data[row_start + 0, 6].astype(int)
+        edu_start = data.iloc[row_start]["Years_Schooling"].astype(int)
 
         # updated type probabilities, conditional on edu_start >= 9 or <= 9
         type_shares = get_conditional_probabilities(
@@ -80,7 +81,7 @@ def pyth_contributions(
 
         # Container for the likelihood of the observed choice for each type. Likelihood
         # contribution for each type
-        prob_type = np.tile(1.0, num_types)
+        prob_type = np.ones(num_types)
 
         for type_ in range(num_types):
 
@@ -88,13 +89,20 @@ def pyth_contributions(
             prob_obs[:] = 0.00
             for p in range(num_obs):
 
-                agent = simulated_data.iloc[row_start + p]
+                agent = data.iloc[row_start + p]
 
-                period = agent["period"]
+                period = int(agent["Period"])
                 # Extract observable components of state space as well as agent
                 # decision.
                 exp_a, exp_b, edu, choice_lagged, choice, wage_observed = agent[
-                    "exp_a", "exp_b", "edu", "choice_lagged", "choice", "wage"
+                    [
+                        "Experience_A",
+                        "Experience_B",
+                        "Years_Schooling",
+                        "Lagged_Choice",
+                        "Choice",
+                        "Wage",
+                    ]
                 ]
 
                 # Determine whether the agent's wage is known
@@ -110,21 +118,10 @@ def pyth_contributions(
 
                 # Get state index to access the systematic component of the agents
                 # rewards. These feed into the simulation of choice probabilities.
-
-                # # TODO: Is it correct to use the systematic rewards from the step
-                # # pyth_calculate_rewards_systematic in pyth_solve? If so, we only need
-                # # the systematic wages which can also be accessed in states. Even
-                # # better, we pass the whole state to get_total_values.
-                # rewards_systematic = states.loc[
-                #     agent.states_index,
-                #     [
-                #         "rewards_systematic_a",
-                #         "rewards_systematic_b",
-                #         "rewards_systematic_edu",
-                #         "rewards_systematic_home",
-                #     ],
-                # ].values
-                state = states.loc[agent.states_index]
+                state_idx = states_indexer[
+                    period, exp_a, exp_b, edu, choice_lagged - 1, type_
+                ]
+                state = states.iloc[state_idx]
 
                 # If an agent is observed working, then the the labor market shocks are
                 # observed and the conditional distribution is used to determine the
@@ -132,9 +129,7 @@ def pyth_contributions(
 
                 # TODO: Simplify? Can a wage be non-missing and choice not in [1, 2]?
                 if is_working and (not is_wage_missing):
-                    wages_systematic = states.loc[
-                        agent.states_index, ["wage_a", "wage_b"]
-                    ].values
+                    wages_systematic = state["wage_a", "wage_b"].values
 
                     # Calculate the disturbance which are implied by the model and the
                     # observed wages.
@@ -155,7 +150,7 @@ def pyth_contributions(
 
                 # Simulate the conditional distribution of alternative-specific value
                 # functions and determine the choice probabilities.
-                counts = np.tile(0, 4)
+                counts = np.full(4, 0)
 
                 for s in range(num_draws_prob):
 
@@ -189,7 +184,7 @@ def pyth_contributions(
                     # conditional draws. Note, that the realization of the random
                     # component of wages align with their observed counterpart in the
                     # data.
-                    draws_cond = np.dot(sc, draws_stan.T).T
+                    draws_cond = sc.dot(draws_stan.T).T
 
                     # Extract deviates from (un-)conditional normal distributions and
                     # transform labor market shocks. This makes a copy.
@@ -199,9 +194,7 @@ def pyth_contributions(
                     # Calculate total values. immediate rewards, including shock +
                     # expected future value!
                     total_values, _ = get_total_values(
-                        state,
-                        optim_paras,
-                        draws,
+                        state, optim_paras, draws
                     )
 
                     # Record optimal choices

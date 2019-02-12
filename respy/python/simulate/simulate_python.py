@@ -1,7 +1,9 @@
 import numpy as np
 
 from respy.python.record.record_simulation import record_simulation_progress
-from respy.python.simulate.simulate_auxiliary import get_random_choice_lagged_start
+from respy.python.simulate.simulate_auxiliary import (
+    get_random_choice_lagged_start,
+)
 from respy.python.record.record_simulation import record_simulation_start
 from respy.python.simulate.simulate_auxiliary import get_random_edu_start
 from respy.python.record.record_simulation import record_simulation_stop
@@ -50,7 +52,9 @@ def pyth_simulate(
 
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
-    periods_draws_sims_transformed = np.tile(np.nan, (num_periods, num_agents_sim, 4))
+    periods_draws_sims_transformed = np.tile(
+        np.nan, (num_periods, num_agents_sim, 4)
+    )
 
     for period in range(num_periods):
         periods_draws_sims_transformed[period, :, :] = transform_disturbances(
@@ -60,7 +64,9 @@ def pyth_simulate(
         )
 
     # We also need to sample the set of initial conditions.
-    initial_education = get_random_edu_start(edu_spec, num_agents_sim, is_debug)
+    initial_education = get_random_edu_start(
+        edu_spec, num_agents_sim, is_debug
+    )
     initial_types = get_random_types(
         num_types, optim_paras, num_agents_sim, initial_education, is_debug
     )
@@ -76,25 +82,33 @@ def pyth_simulate(
         # model and (2) individual type. We need to determine the initial value for the
         # lagged variable.
         current_state = np.array(
-            [0, 0, initial_education[i], initial_choice_lagged[i], initial_types[i]]
+            [
+                0,
+                0,
+                initial_education[i],
+                initial_choice_lagged[i],
+                initial_types[i],
+            ]
         )
 
         record_simulation_progress(i, file_sim)
 
         for period in range(num_periods):
 
-            # Distribute state space
             exp_a, exp_b, edu, choice_lagged, type_ = current_state
 
-            state_idx = states_indexer[period, exp_a, exp_b, edu, choice_lagged, type_]
-
+            state_idx = states_indexer[
+                period, exp_a, exp_b, edu, choice_lagged - 1, type_
+            ]
             state = states.iloc[state_idx]
 
             # Select relevant subset
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
-            total_values, rewards_ex_post = get_total_values(state, draws, optim_paras)
+            total_values, rewards_ex_post = get_total_values(
+                state, draws, optim_paras
+            )
 
             # We need to ensure that no individual chooses an inadmissible state. This
             # cannot be done directly in the get_total_values function as the penalty
@@ -109,7 +123,11 @@ def pyth_simulate(
 
             # Record wages
             wages = np.array([state.wage_a, state.wage_b])
-            wage = wages[max_idx] * draws[max_idx] if max_idx in [0, 1] else np.nan
+            wage = (
+                wages[max_idx] * draws[max_idx]
+                if max_idx in [0, 1]
+                else np.nan
+            )
 
             # Update work experiences or education
             if max_idx in [0, 1, 2]:
