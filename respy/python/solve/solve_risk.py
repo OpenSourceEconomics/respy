@@ -24,10 +24,6 @@ def construct_emax_risk(
     Refactor!
 
     """
-    # TODO: This should be solved differently. Not with assert.
-    # Antibugging
-    assert np.all(draws_emax_risk[:, :2] >= 0)
-
     states["constant"] = 1.0
 
     # Construct matrix with dimension (num_states, choices, 1). As edu and home have no
@@ -61,10 +57,6 @@ def construct_emax_risk(
     emaxs = emaxs[:, :, np.newaxis]
 
     total_values = rewards_ex_post + optim_paras["delta"] * emaxs
-
-    # TODO: By taking the maximum for each state-draw combination, the maximum might
-    # relate to different choice (a, b, edu, home). Thus, averaging is an average over
-    # all choices yielding maximum values. Is this a problem?
 
     # Choose maximum value in states and average over draws. Shapes change from
     # (num_states, choices, num_draws) to (num_states, num_draws) to (num_states).

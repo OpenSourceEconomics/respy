@@ -13,6 +13,7 @@ from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import HUGE_FLOAT
 import pandas as pd
+from itertools import count
 
 
 def pyth_create_state_space(num_periods, num_types, edu_spec):
@@ -62,6 +63,15 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     # Create list to store state information. Taken from
     # https://stackoverflow.com/a/17496530/7523785.
     data = []
+
+    # Initialize the state indexer object which enables faster lookup of states in the
+    # pandas DataFrame. The dimensions of the matrix are the characteristics of the
+    # agents and the value is the index in the DataFrame.
+    shape = (num_periods, num_periods, num_periods, edu_spec["max"], 4, num_types)
+    states_indexer = np.full(shape, -1, dtype=np.int32)
+
+    # Initialize counter
+    counter = count()
 
     # Construct state space by periods
     for period in range(num_periods):
@@ -146,6 +156,33 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                 if (choice_lagged == 2) and (exp_b == 0):
                                     continue
 
+                                # If we have multiple initial conditions it might well
+                                # be the case that we have a duplicate state, i.e. the
+                                # same state is possible with other initial condition
+                                # that period.
+                                if (
+                                    states_indexer[
+                                        period,
+                                        exp_a,
+                                        exp_b,
+                                        edu_start + edu_add,
+                                        choice_lagged - 1,
+                                        type_,
+                                    ]
+                                    != -1
+                                ):
+                                    continue
+
+                                # Collect mapping of state space to array index.
+                                states_indexer[
+                                    period,
+                                    exp_a,
+                                    exp_b,
+                                    edu_start + edu_add,
+                                    choice_lagged - 1,
+                                    type_,
+                                ] = next(counter)
+
                                 # Store information in a dictionary and append to data.
                                 row = {
                                     "period": period,
@@ -159,17 +196,7 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
 
     states = pd.DataFrame.from_records(data)
 
-    # If we have multiple initial conditions it might well be the case that we have a
-    # duplicate state, i.e. the same state is possible with other initial condition that
-    # period.
-    states.drop_duplicates(
-        subset=["period", "exp_a", "exp_b", "edu", "choice_lagged", "type"],
-        keep="first",
-        inplace=True,
-    )
-    states.reset_index(drop=True, inplace=True)
-
-    return states
+    return states, states_indexer
 
 
 def pyth_calculate_rewards_systematic(states, optim_paras):

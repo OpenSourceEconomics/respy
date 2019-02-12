@@ -126,7 +126,7 @@ def pyth_simulate(
 
             # Record wages
             wages = np.array([agent.wage_a, agent.wage_b])
-            wage = wages[max_idx] * draws[max_idx] if max_idx in [1, 2] else np.nan
+            wage = wages[max_idx] * draws[max_idx] if max_idx in [0, 1] else np.nan
 
             # Update work experiences or education
             if max_idx in [0, 1, 2]:
@@ -136,8 +136,9 @@ def pyth_simulate(
             current_state[3] = max_idx + 1
 
             row = {
-                "id": i,
-                "period": period,
+                # RENAME CONVENTION
+                "ID": i,
+                "Period": period,
                 "choice": max_idx + 1,
                 "wage": wage,
                 # Write relevant state space for period to data frame. However, the
