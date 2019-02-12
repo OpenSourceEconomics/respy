@@ -322,8 +322,7 @@ def get_total_values(state, draws, optim_paras):
 
 def get_emaxs_of_subsequent_period(
     edu_spec_max,
-    states,
-    states_indexer,
+    state_space,
     row_idx,
     period,
     exp_a,
@@ -336,8 +335,7 @@ def get_emaxs_of_subsequent_period(
     Parameters
     ----------
     edu_spec : dict
-    states : pd.DataFrame
-    states_indexer : np.array
+    state_space
     row_idx : int
         Index of state for which we need to collect values from subsequent periods.
     period : int
@@ -360,26 +358,22 @@ def get_emaxs_of_subsequent_period(
     """
 
     # Working in Occupation A in period + 1
-    emaxs_idx = states_indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
-    emaxs_a = states.loc[emaxs_idx, "emaxs_a"]
+    emaxs_a = state_space[period + 1, exp_a + 1, exp_b, edu, 0, type_]["emaxs_a"]
 
     # Working in Occupation B in period +1
-    emaxs_idx = states_indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
-    emaxs_b = states.loc[emaxs_idx, "emaxs_b"]
+    emaxs_b = state_space[period + 1, exp_a, exp_b + 1, edu, 1, type_]["emaxs_b"]
 
     # Schooling in period + 1. Note that adding an additional year of schooling is only
     # possible for those that have strictly less than the maximum level of additional
     # education allowed. This condition is necessary as the state is undefined and would
-    # return indexer -1 which is not available in the dataframe.
+    # return indexer -1 which is not available in the DataFrame.
     if edu >= edu_spec_max:
         emaxs_edu = 0.00
     else:
-        emaxs_idx = states_indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
-        emaxs_edu = states.loc[emaxs_idx, "emaxs_edu"]
+        emaxs_edu = state_space[period + 1, exp_a, exp_b, edu + 1, 2, type_]["emaxs_edu"]
 
     # Staying at home in period + 1
-    emaxs_idx = states_indexer[period + 1, exp_a, exp_b, edu, 3, type_]
-    emaxs_home = states.loc[emaxs_idx, "emaxs_home"]
+    emaxs_home = state_space[period + 1, exp_a, exp_b, edu, 3, type_]["emaxs_home"]
 
     return emaxs_a, emaxs_b, emaxs_edu, emaxs_home
 

@@ -6,7 +6,7 @@ import shlex
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import StateSpace
 from respy.python.shared.shared_constants import DATA_FORMATS_SIM
 from respy.python.shared.shared_constants import DATA_LABELS_EST
 from respy.python.shared.shared_constants import DATA_LABELS_SIM
@@ -154,9 +154,11 @@ def write_interpolation_grid(file_name):
     )
 
     # Determine maximum number of states
-    _, states_number_period, _, max_states_period = pyth_create_state_space(
-        num_periods, num_types, edu_spec
-    )
+    state_space = StateSpace()
+    state_space.create_state_space(num_periods, num_types, edu_spec)
+
+    states_number_period = state_space.states_per_period
+    max_states_period = max(states_number_period)
 
     # Initialize container
     booleans = np.tile(True, (max_states_period, num_periods))

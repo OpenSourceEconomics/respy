@@ -9,8 +9,7 @@ from respy.python.shared.shared_auxiliary import get_total_values
 
 
 def pyth_contributions(
-    states,
-    states_indexer,
+    state_space,
     data,
     periods_draws_prob,
     tau,
@@ -30,8 +29,7 @@ def pyth_contributions(
 
     Parameters
     ----------
-    states : pd.DataFrame
-    states_indexer : np.array
+    state_space
     data : pd.DataFrame with the empirical dataset
     periods_draws_prob : np.array
         3d numpy array of dimension [nperiods, ndraws_prob, nchoices]. Contains iid
@@ -118,10 +116,7 @@ def pyth_contributions(
 
                 # Get state index to access the systematic component of the agents
                 # rewards. These feed into the simulation of choice probabilities.
-                state_idx = states_indexer[
-                    period, exp_a, exp_b, edu, choice_lagged - 1, type_
-                ]
-                state = states.iloc[state_idx]
+                state = state_space[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
 
                 # If an agent is observed working, then the the labor market shocks are
                 # observed and the conditional distribution is used to determine the

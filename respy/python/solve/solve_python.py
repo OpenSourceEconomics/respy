@@ -1,8 +1,9 @@
-from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.record.record_solution import record_solution_progress
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
-from respy.python.shared.shared_auxiliary import create_covariates
+from respy.python.solve.solve_auxiliary import StateSpace
+from respy.python.solve.solve_auxiliary import (
+    pyth_calculate_rewards_systematic,
+)
 
 
 def pyth_solve(
@@ -21,23 +22,14 @@ def pyth_solve(
 ):
     """ Solving the model using pure PYTHON code.
     """
-    # Creating the state space of the model and collect the results in the
-    # package class.
-    record_solution_progress(1, file_sim)
+    # Create the state space
+    state_space = StateSpace()
+    state_space.create_state_space(num_periods, num_types, edu_spec)
+    state_space.create_covariates()
 
-    states, states_indexer = pyth_create_state_space(num_periods, num_types, edu_spec)
-
-    states = create_covariates(states)
-
-    record_solution_progress(-1, file_sim)
-
-    # Calculate systematic rewards which are later used in the backward
-    # induction procedure. These are calculated without any reference
-    # to the alternative shock distributions.
-    record_solution_progress(2, file_sim)
-
-    # Calculate all systematic rewards
-    states = pyth_calculate_rewards_systematic(states, optim_paras)
+    state_space.states = pyth_calculate_rewards_systematic(
+        state_space.states, optim_paras
+    )
 
     record_solution_progress(-1, file_sim)
 
@@ -46,13 +38,12 @@ def pyth_solve(
     # procedure is not called upon.
     record_solution_progress(3, file_sim)
 
-    states = pyth_backward_induction(
+    state_space = pyth_backward_induction(
         num_periods,
         is_myopic,
         periods_draws_emax,
         num_draws_emax,
-        states,
-        states_indexer,
+        state_space,
         is_debug,
         is_interpolated,
         num_points_interp,
@@ -65,4 +56,4 @@ def pyth_solve(
     if not is_myopic:
         record_solution_progress(-1, file_sim)
 
-    return states, states_indexer
+    return state_space

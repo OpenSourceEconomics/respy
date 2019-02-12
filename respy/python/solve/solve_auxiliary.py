@@ -14,6 +14,8 @@ from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import HUGE_FLOAT
 import pandas as pd
 from itertools import count
+from respy.custom_exceptions import InadmissibleStateError
+from respy.python.shared.shared_auxiliary import create_covariates
 
 
 def pyth_create_state_space(num_periods, num_types, edu_spec):
@@ -79,7 +81,14 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     # Initialize the state indexer object which enables faster lookup of states in the
     # pandas DataFrame. The dimensions of the matrix are the characteristics of the
     # agents and the value is the index in the DataFrame.
-    shape = (num_periods, num_periods, num_periods, edu_spec["max"] + 1, 4, num_types)
+    shape = (
+        num_periods,
+        num_periods,
+        num_periods,
+        edu_spec["max"] + 1,
+        4,
+        num_types,
+    )
     states_indexer = np.full(shape, -1, dtype=np.int32)
 
     # Initialize counter
@@ -129,19 +138,25 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                     # (0, 1) Whenever an agent has only worked in
                                     # Occupation A, then the lagged choice cannot be
                                     # anything other than one.
-                                    if (choice_lagged != 1) and (exp_a == period):
+                                    if (choice_lagged != 1) and (
+                                        exp_a == period
+                                    ):
                                         continue
 
                                     # (0, 2) Whenever an agent has only worked in
                                     # Occupation B, then the lagged choice cannot be
                                     # anything other than two
-                                    if (choice_lagged != 2) and (exp_b == period):
+                                    if (choice_lagged != 2) and (
+                                        exp_b == period
+                                    ):
                                         continue
 
                                     # (0, 3) Whenever an agent has only acquired
                                     # additional education, then the lagged choice
                                     # cannot be anything other than three.
-                                    if (choice_lagged != 3) and (edu_add == period):
+                                    if (choice_lagged != 3) and (
+                                        edu_add == period
+                                    ):
                                         continue
 
                                     # (0, 4) Whenever an agent has not acquired any
@@ -238,12 +253,16 @@ def pyth_calculate_rewards_systematic(states, optim_paras):
         "is_minor",
     ]
 
-    states["rewards_edu"] = states[covariates_education].dot(optim_paras["coeffs_edu"])
+    states["rewards_edu"] = states[covariates_education].dot(
+        optim_paras["coeffs_edu"]
+    )
 
     # Calculate systematic part of HOME
     covariates_home = ["intercept", "is_young_adult", "is_adult"]
 
-    states["rewards_home"] = states[covariates_home].dot(optim_paras["coeffs_home"])
+    states["rewards_home"] = states[covariates_home].dot(
+        optim_paras["coeffs_home"]
+    )
 
     # Now we add the type-specific deviation for SCHOOL and HOME.
     types_dummy = pd.get_dummies(states.type, prefix="type")
@@ -255,8 +274,12 @@ def pyth_calculate_rewards_systematic(states, optim_paras):
     # We can now also added the common component of rewards.
     states["rewards_systematic_a"] = states.rewards_a + states.rewards_common
     states["rewards_systematic_b"] = states.rewards_b + states.rewards_common
-    states["rewards_systematic_edu"] = states.rewards_edu + states.rewards_common
-    states["rewards_systematic_home"] = states.rewards_home + states.rewards_common
+    states["rewards_systematic_edu"] = (
+        states.rewards_edu + states.rewards_common
+    )
+    states["rewards_systematic_home"] = (
+        states.rewards_home + states.rewards_common
+    )
 
     states.drop(columns=["intercept"], inplace=True)
 
@@ -268,8 +291,7 @@ def pyth_backward_induction(
     is_myopic,
     periods_draws_emax,
     num_draws_emax,
-    states,
-    states_indexer,
+    state_space,
     is_debug,
     is_interpolated,
     num_points_interp,
@@ -286,8 +308,7 @@ def pyth_backward_induction(
     is_myopic : bool
     periods_draws_emax : ???
     num_draws_emax : int
-    states : pd.DataFrame
-    states_indexer : np.array
+    state_space
     is_debug : bool
     is_interpolated : np.array
     num_points_interp : int
@@ -302,17 +323,19 @@ def pyth_backward_induction(
 
     """
     # Create auxiliary objects for compatibility
-    states_number_period = states.groupby("period").count().iloc[:, 0].values
+    states_per_period = state_space.states_per_period
 
     if is_myopic:
         record_solution_progress(-2, file_sim)
 
-        states["emax"] = 0.0
+        state_space.states["emax"] = 0.0
 
-        return states
+        return state_space
 
     # Construct auxiliary objects
-    shocks_cov = optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T)
+    shocks_cov = optim_paras["shocks_cholesky"].dot(
+        optim_paras["shocks_cholesky"].T
+    )
 
     # Auxiliary objects. These shifts are used to determine the expected values of the
     # two labor market alternatives. These are log normal distributed and thus the draws
@@ -324,26 +347,30 @@ def pyth_backward_induction(
     for period in reversed(range(num_periods)):
 
         # Get future utility values. Set them to zero for the last period.
-        if period == states.period.max():
+        if period == num_periods - 1:
+            # Has to be a loop because columns are not initialized.
             for col in ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]:
-                states.loc[states.period.eq(period), col] = 0.0
+                state_space.states.loc[
+                    state_space.states.period.eq(period), col
+                ] = 0.0
         else:
-            row_indices = states.loc[states.period.eq(period)].index
+            row_indices = state_space.states.loc[
+                state_space.states.period.eq(period)
+            ].index
 
             # TODO: Embarrassingly parallel.
             for row_idx in row_indices:
 
                 # Unpack characteristics of current state
-                exp_a, exp_b, edu, type_ = states.loc[
+                exp_a, exp_b, edu, type_ = state_space.states.loc[
                     row_idx, ["exp_a", "exp_b", "edu", "type"]
                 ]
 
-                states.loc[
+                state_space.states.loc[
                     row_idx, ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
                 ] = get_emaxs_of_subsequent_period(
                     edu_spec["max"],
-                    states,
-                    states_indexer,
+                    state_space,
                     row_idx,
                     period,
                     int(exp_a),
@@ -354,12 +381,14 @@ def pyth_backward_induction(
 
         # Extract auxiliary objects
         draws_emax_standard = periods_draws_emax[period, :, :]
-        num_states = states_number_period[period]
+        num_states = states_per_period[period]
 
         # Treatment of the disturbances for the risk-only case is straightforward. Their
         # distribution is fixed once and for all.
         draws_emax_risk = transform_disturbances(
-            draws_emax_standard, np.full(4, 0.0), optim_paras["shocks_cholesky"]
+            draws_emax_standard,
+            np.full(4, 0.0),
+            optim_paras["shocks_cholesky"],
         )
 
         if is_write:
@@ -368,7 +397,9 @@ def pyth_backward_induction(
         # The number of interpolation points is the same for all periods. Thus, for some
         # periods the number of interpolation points is larger than the actual number of
         # states. In that case no interpolation is needed.
-        any_interpolated = (num_points_interp <= num_states) and is_interpolated
+        any_interpolated = (
+            num_points_interp <= num_states
+        ) and is_interpolated
 
         if any_interpolated:
             # Get indicator for interpolation and simulation of states
@@ -379,15 +410,15 @@ def pyth_backward_induction(
             # Constructing the exogenous variable for all states, including the ones
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
-            states = get_exogenous_variables(
-                period, states, shifts, edu_spec, optim_paras
+            state_space.states = get_exogenous_variables(
+                period, state_space.states, shifts, edu_spec, optim_paras
             )
 
             # Constructing the dependent variables for all states at the random subset
             # of points where the EMAX is actually calculated.
-            states = get_endogenous_variable(
+            state_space.states = get_endogenous_variable(
                 period,
-                states,
+                state_space.states,
                 is_simulated,
                 num_draws_emax,
                 draws_emax_risk,
@@ -398,17 +429,26 @@ def pyth_backward_induction(
             # Create prediction model based on the random subset of points where the
             # EMAX is actually simulated and thus dependent and independent variables
             # are available. For the interpolation points, the actual values are used.
-            states.loc[states.period.eq(period), "emax"] = get_predictions(
-                period, states, is_simulated, file_sim, is_write
+            state_space.states.loc[
+                state_space.states.period.eq(period), "emax"
+            ] = get_predictions(
+                period, state_space.states, is_simulated, file_sim, is_write
             )
 
         else:
 
-            states.loc[states.period.eq(period), "emax"] = construct_emax_risk(
-                states, num_draws_emax, period, draws_emax_risk, edu_spec, optim_paras
+            state_space.states.loc[
+                state_space.states.period.eq(period), "emax"
+            ] = construct_emax_risk(
+                state_space.states,
+                num_draws_emax,
+                period,
+                draws_emax_risk,
+                edu_spec,
+                optim_paras,
             )
 
-    return states
+    return state_space
 
 
 def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
@@ -507,7 +547,12 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
 
     # Implement level shifts
     states.loc[states.period.eq(period), "maxe"] = states[
-        ["total_values_a", "total_values_b", "total_values_edu", "total_values_home"]
+        [
+            "total_values_a",
+            "total_values_b",
+            "total_values_edu",
+            "total_values_home",
+        ]
     ].max(axis=1)
 
     states.loc[states.period.eq(period), "exogenous_a"] = (
@@ -527,7 +572,13 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
 
 
 def get_endogenous_variable(
-    period, states, is_simulated, num_draws_emax, draws_emax_risk, edu_spec, optim_paras
+    period,
+    states,
+    is_simulated,
+    num_draws_emax,
+    draws_emax_risk,
+    edu_spec,
+    optim_paras,
 ):
     """ Construct endogenous variable for the subset of interpolation points.
 
@@ -544,7 +595,9 @@ def get_endogenous_variable(
     )
 
     # Construct dependent variable
-    states.loc[states.period.eq(period), "endog_variable"] = states.emax - states.maxe
+    states.loc[states.period.eq(period), "endog_variable"] = (
+        states.emax - states.maxe
+    )
 
     return states
 
@@ -581,7 +634,8 @@ def get_predictions(period, states, is_simulated, file_sim, is_write):
     # Construct predicted EMAX for all states and the replace interpolation points with
     # simulated values.
     predictions = (
-        endogenous_predicted + states.loc[states.period.eq(period), "maxe"].values
+        endogenous_predicted
+        + states.loc[states.period.eq(period), "maxe"].values
     )
     predictions[is_simulated] = (
         endogenous[is_simulated]
@@ -654,14 +708,14 @@ def calculate_wages_systematic(states, optim_paras):
     ]
 
     # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
-    states["wage_a"] = states[relevant_covariates + ["any_exp_a", "work_a_lagged"]].dot(
-        optim_paras["coeffs_a"][:12]
-    )
+    states["wage_a"] = states[
+        relevant_covariates + ["any_exp_a", "work_a_lagged"]
+    ].dot(optim_paras["coeffs_a"][:12])
     states.wage_a = np.clip(np.exp(states.wage_a), 0.0, HUGE_FLOAT)
 
-    states["wage_b"] = states[relevant_covariates + ["any_exp_b", "work_b_lagged"]].dot(
-        optim_paras["coeffs_b"][:12]
-    )
+    states["wage_b"] = states[
+        relevant_covariates + ["any_exp_b", "work_b_lagged"]
+    ].dot(optim_paras["coeffs_b"][:12])
     states.wage_b = np.clip(np.exp(states.wage_b), 0.0, HUGE_FLOAT)
 
     # We need to add the type-specific deviations here as these are part of
@@ -673,3 +727,53 @@ def calculate_wages_systematic(states, optim_paras):
     states.wage_b = states.wage_b * np.exp(type_deviations.iloc[:, 1])
 
     return states
+
+
+class StateSpace:
+
+    def create_state_space(self, *args):
+        """This function creates the state space.
+
+        It should return two objects. First, a DataFrame where each row represents one
+        state. This object captures characteristics of states in a dense format. The
+        second object is a Numpy matrix where each dimension represents one
+        characteristic of the state and the values contain the indices of the state in
+        the DataFrame.
+
+        """
+        self.states, self.indexer = pyth_create_state_space(*args)
+
+    def create_covariates(self):
+        self.states = create_covariates(self.states)
+
+    @property
+    def states_per_period(self):
+        return self.states.groupby("period").count().iloc[:, 0].values
+
+    def __len__(self):
+        return len(self.states)
+
+    def __getitem__(self, key):
+        """
+
+        Raises
+        ------
+        InadmissibleStateError
+            The error is raised if a non-valid indexer is used. The simplest way to
+            raise this error is to assign -1 to every inadmissible state. This value is
+            still an integer to keep memory costs down.
+
+        """
+        position = self.indexer[key]
+
+        try:
+            return self.states.loc[position]
+        except InadmissibleStateError as e:
+            raise InadmissibleStateError(
+                ", ".join(
+                    [
+                        "{}: {}".format(k, v)
+                        for k, v in zip(self.indexer_dim_names, key)
+                    ]
+                )
+            ) from e

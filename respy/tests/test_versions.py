@@ -5,7 +5,7 @@ import pytest
 import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import StateSpace
 from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.tests.codes.auxiliary import write_interpolation_grid
@@ -64,9 +64,11 @@ class TestClass(object):
             # enough state points.
             num_periods = np.random.randint(3, 6)
             num_types = int(len(init_dict["TYPE SHARES"]["coeffs"]) / 2) + 1
-            max_states_period = pyth_create_state_space(
-                num_periods, num_types, edu_spec
-            )[3]
+
+            state_space = StateSpace()
+            state_space.create_state_space(num_periods, num_types, edu_spec)
+
+            max_states_period = state_space.maximum_number_of_states
 
             # Updates to initialization dictionary that trigger a use of the interpolation code.
             init_dict["BASICS"]["periods"] = num_periods

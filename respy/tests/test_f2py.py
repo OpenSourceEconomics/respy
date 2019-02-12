@@ -8,12 +8,14 @@ import pytest
 import scipy
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
-from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
+from respy.python.solve.solve_auxiliary import (
+    pyth_calculate_rewards_systematic,
+)
 from respy.python.record.record_estimation import _spectral_condition_number
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import StateSpace
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
@@ -45,7 +47,11 @@ from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_draws
 from respy.tests.codes.auxiliary import write_types
 from functools import partial
-from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
+from numpy.testing import (
+    assert_equal,
+    assert_array_equal,
+    assert_array_almost_equal,
+)
 from respy import RespyCls
 
 from respy.python.shared.shared_constants import DECIMALS, TOL
@@ -131,7 +137,11 @@ class TestClass(object):
         py = construct_emax_risk(*args)
 
         args = ()
-        args += base_args + (edu_spec["start"], edu_spec["max"], optim_paras["delta"])
+        args += base_args + (
+            edu_spec["start"],
+            edu_spec["max"],
+            optim_paras["delta"],
+        )
         args += (
             optim_paras["coeffs_common"],
             optim_paras["coeffs_a"],
@@ -142,8 +152,9 @@ class TestClass(object):
         assert_allclose(py, f90)
 
     def test_2(self):
-        """ Compare results between FORTRAN and PYTHON of selected hand-crafted functions. In
-        test_97() we test FORTRAN implementations against PYTHON intrinsic routines.
+        """ Compare results between FORTRAN and PYTHON of selected hand-crafted
+        functions. In test_97() we test FORTRAN implementations against PYTHON intrinsic
+        routines.
         """
         for _ in range(33):
 
@@ -163,14 +174,26 @@ class TestClass(object):
             base_args = (num_periods, num_types)
 
             args = base_args + (edu_spec,)
-            py_a, py_b, py_c, py_d = pyth_create_state_space(*args)
+            state_space = StateSpace()
+            state_space.create_state_space(*args)
+
+            py_a = state_space.states.values
+            py_b = state_space.states_per_period
+            py_c = state_space.indexer
+            py_d = py_b.max()
+
             args = base_args + (edu_spec["start"], edu_spec["max"], min_idx)
             fort_a, fort_b, fort_c, fort_d = fort_debug.wrapper_create_state_space(
                 *args
             )
 
             # Ensure equivalence
-            rslts = [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]
+            rslts = [
+                [fort_a, py_a],
+                [fort_b, py_b],
+                [fort_c, py_c],
+                [fort_d, py_d],
+            ]
             for obj in rslts:
                 assert_allclose(obj[0], obj[1])
 
@@ -301,7 +324,19 @@ class TestClass(object):
         write_interpolation_grid("test.respy.ini")
 
         # Extract class attributes
-        num_periods, edu_spec, optim_paras, num_draws_emax, seed_emax, is_debug, is_interpolated, num_points_interp, optimizer_options, file_sim, num_types = dist_class_attributes(
+        (
+            num_periods,
+            edu_spec,
+            optim_paras,
+            num_draws_emax,
+            seed_emax,
+            is_debug,
+            is_interpolated,
+            num_points_interp,
+            optimizer_options,
+            file_sim,
+            num_types,
+        ) = dist_class_attributes(
             respy_obj,
             "num_periods",
             "edu_spec",
@@ -331,9 +366,17 @@ class TestClass(object):
 
         # Check the state space creation.
         base_args = (num_periods, num_types)
-
         args = base_args + (edu_spec,)
-        pyth = pyth_create_state_space(*args)
+
+        state_space = StateSpace()
+        state_space.create_state_space(*args)
+
+        pyth = [
+            state_space.states.values,
+            state_space.states_per_period,
+            state_space.indexer,
+            state_space.maximum_number_of_states,
+        ]
 
         args = base_args + (edu_spec["start"], edu_spec["max"], min_idx)
         f2py = fort_debug.wrapper_create_state_space(*args)
@@ -349,7 +392,12 @@ class TestClass(object):
 
         # Check calculation of systematic components of rewards.
         args = ()
-        args += (num_periods, states_number_period, states_all, max_states_period)
+        args += (
+            num_periods,
+            states_number_period,
+            states_all,
+            max_states_period,
+        )
         pyth = pyth_calculate_rewards_systematic(*args + (optim_paras,))
 
         args += (coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
@@ -357,8 +405,8 @@ class TestClass(object):
         f2py = fort_debug.wrapper_calculate_rewards_systematic(*args)
         assert_allclose(pyth, f2py)
 
-        # Carry some results from the systematic rewards calculation for future use and create
-        # the required set of disturbances.
+        # Carry some results from the systematic rewards calculation for future use and
+        # create the required set of disturbances.
         periods_draws_emax = create_draws(
             num_periods, num_draws_emax, seed_emax, is_debug
         )
@@ -490,7 +538,9 @@ class TestClass(object):
                 assert_allclose(py[i], alt[i])
 
         # Distribute solution arguments for further use in simulation test.
-        periods_rewards_systematic, _, mapping_state_idx, periods_emax, states_all = py
+        periods_rewards_systematic, _, mapping_state_idx, periods_emax, states_all = (
+            py
+        )
 
         base_args = (
             periods_rewards_systematic,
@@ -509,7 +559,11 @@ class TestClass(object):
         py = pyth_simulate(*args)
 
         args = ()
-        args += base_args + (edu_spec["start"], edu_spec["max"], edu_spec["share"])
+        args += base_args + (
+            edu_spec["start"],
+            edu_spec["max"],
+            edu_spec["share"],
+        )
         args += (
             edu_spec["lagged"],
             optim_paras["coeffs_common"],
@@ -582,7 +636,11 @@ class TestClass(object):
         args = base_args + (edu_spec,)
         py = pyth_criterion(x0, *args)
 
-        args = base_args + (edu_spec["start"], edu_spec["max"], edu_spec["share"])
+        args = base_args + (
+            edu_spec["start"],
+            edu_spec["max"],
+            edu_spec["share"],
+        )
         args += (type_spec_shares, type_spec_shifts, num_paras)
         f2py = fort_debug.wrapper_criterion(x0, *args)
 
@@ -819,7 +877,9 @@ class TestClass(object):
             data_array = process_dataset(respy_obj).values
 
             py = get_num_obs_agent(data_array, num_agents_est)
-            f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)
+            f90 = fort_debug.wrapper_get_num_obs_agent(
+                data_array, num_agents_est
+            )
 
             assert_almost_equal(py, f90)
 
@@ -835,7 +895,9 @@ class TestClass(object):
             args = [type_shares, edu_start]
 
             py = get_conditional_probabilities(*args)
-            fort = fort_debug.wrapper_get_conditional_probabilities(*args + [num_types])
+            fort = fort_debug.wrapper_get_conditional_probabilities(
+                *args + [num_types]
+            )
 
             assert_almost_equal(np.sum(py), 1.0)
             assert_almost_equal(py, fort)
@@ -898,6 +960,8 @@ class TestClass(object):
             assert_equal(py[label], f90[i])
 
         py = sort_type_info(optim_paras, num_types)
-        f90 = fort_debug.wrapper_sort_type_info(optim_paras["type_shares"], num_types)
+        f90 = fort_debug.wrapper_sort_type_info(
+            optim_paras["type_shares"], num_types
+        )
         for i, label in enumerate(["order", "shares"]):
             assert_equal(py[label], f90[i])

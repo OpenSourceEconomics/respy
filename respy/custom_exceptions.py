@@ -16,3 +16,8 @@ class UserError(Exception):
 
     def __str__(self):
         return "\n\n         {}\n\n".format(self.msg)
+
+
+class InadmissibleStateError(KeyError):
+    """Exception raised when an inadmissible state is indexed."""
+    pass

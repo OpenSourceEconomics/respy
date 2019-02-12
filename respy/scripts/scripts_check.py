@@ -4,7 +4,7 @@ import numpy as np
 import argparse
 import os
 
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import StateSpace
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.pre_processing.data_processing import process_dataset
 from respy.custom_exceptions import UserError
@@ -46,8 +46,8 @@ def scripts_check(request, init_file):
     # We need to run additional checks if an estimation is requested.
     if request == "estimate":
         # Create the grid of the admissible states.
-        args = (num_periods, num_types, edu_spec)
-        mapping_state_idx = pyth_create_state_space(*args)[2]
+        state_space = StateSpace()
+        state_space.create_state_space(num_periods, num_types, edu_spec)
 
         # We also check the structure of the dataset.
         data_array = process_dataset(respy_obj).values
@@ -69,7 +69,7 @@ def scripts_check(request, init_file):
             # might fail either because the state is simply infeasible at any period or just not
             # defined for the particular period requested.
             try:
-                k = mapping_state_idx[period, exp_a, exp_b, edu, choice_lagged - 1]
+                k = state_space[period, exp_a, exp_b, edu, choice_lagged - 1]
                 np.testing.assert_equal(k >= 0, True)
             except (IndexError, AssertionError):
                 raise UserError(ERR_MSG)

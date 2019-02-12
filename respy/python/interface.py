@@ -11,7 +11,6 @@ from respy.python.record.record_estimation import record_estimation_scalability
 from respy.python.record.record_estimation import record_estimation_scaling
 from respy.python.record.record_estimation import record_estimation_final
 from respy.python.record.record_estimation import record_estimation_stop
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.python.shared.shared_auxiliary import get_num_obs_agent
@@ -23,9 +22,10 @@ from respy.python.shared.shared_auxiliary import create_covariates
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 from respy.custom_exceptions import MaxfunError
+from respy.python.solve.solve_auxiliary import StateSpace
 
 
-def respy_interface(respy_obj, request, data_array=None):
+def respy_interface(respy_obj, request, data=None):
     """Provide the interface to the PYTHON functionality."""
     # Distribute class attributes
     (
@@ -79,8 +79,7 @@ def respy_interface(respy_obj, request, data_array=None):
 
     if request == "estimate":
 
-        # todo: rename data_array here
-        num_obs = get_num_obs_agent(data_array.values, num_agents_est)
+        num_obs = get_num_obs_agent(data.values, num_agents_est)
         periods_draws_prob = create_draws(
             num_periods, num_draws_prob, seed_prob, is_debug
         )
@@ -97,11 +96,9 @@ def respy_interface(respy_obj, request, data_array=None):
         )
 
         # Construct the state space
-        # todo: do we have to pass the states_indexer through to crit_func?
-        states, states_indexer = pyth_create_state_space(
-            num_periods, num_types, edu_spec
-        )
-        states = create_covariates(states)
+        state_space = StateSpace()
+        state_space.create_state_space(num_periods, num_types, edu_spec)
+        state_space.create_covariates()
 
         # Collect arguments that are required for the criterion function.
         # These must be in the correct order already.
@@ -112,13 +109,12 @@ def respy_interface(respy_obj, request, data_array=None):
             num_points_interp,
             is_myopic,
             is_debug,
-            data_array,
+            data,
             num_draws_prob,
             tau,
             periods_draws_emax,
             periods_draws_prob,
-            states,
-            states_indexer,
+            state_space,
             num_agents_est,
             num_obs,
             num_types,
