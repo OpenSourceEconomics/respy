@@ -1,11 +1,13 @@
 name: respy
-
 dependencies:
   - python=3.6
   - numpy
   - pandas
   - statsmodels
-  - pytest
-  - pytest-xdist
   - scipy
-  - flake8
+  - pip:
+    - black
+    - flake8
+    - flake8-alfred
+    - pytest
+    - pytest-xdist
