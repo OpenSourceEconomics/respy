@@ -309,13 +309,13 @@ class RespyCls(object):
         # todo: harmonize python and fortran
         # ====================================================================
         if self.attr['version'] == 'PYTHON':
-            data_frame = pd.DataFrame(
-                data=data_array, columns=DATA_LABELS_SIM)
+            data_frame = data_array
         else:
             data_frame = pd.DataFrame(
                 data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
             )
-            data_frame = data_frame.astype(DATA_FORMATS_SIM)
+
+        data_frame = data_frame.astype(DATA_FORMATS_SIM)
         # ====================================================================
         data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
 
