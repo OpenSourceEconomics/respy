@@ -52,6 +52,7 @@ def pyth_solve(
         periods_draws_emax,
         num_draws_emax,
         states,
+        states_indexer,
         is_debug,
         is_interpolated,
         num_points_interp,
@@ -64,4 +65,4 @@ def pyth_solve(
     if not is_myopic:
         record_solution_progress(-1, file_sim)
 
-    return states
+    return states, states_indexer

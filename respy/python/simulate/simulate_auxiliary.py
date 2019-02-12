@@ -6,7 +6,6 @@ import os
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.pre_processing.data_checking import check_estimation_dataset
-from numba import njit
 
 
 def construct_transition_matrix(base_df):
@@ -27,8 +26,8 @@ def get_final_education(agent):
     """
     edu_final = agent["Years_Schooling"].iloc[0] + (agent["Choice"] == 3).sum()
 
-    # As a little test, we just ensure that the final level of education is equal or less the
-    # level the agent entered the final period.
+    # As a little test, we just ensure that the final level of education is equal or
+    # less the level the agent entered the final period.
     valid = [agent["Years_Schooling"].iloc[-1], agent["Years_Schooling"].iloc[-1] + 1]
     np.testing.assert_equal(edu_final in valid, True)
 
@@ -434,35 +433,3 @@ def get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start, is_debug
     lagged_start = np.array(lagged_start, ndmin=1)
 
     return lagged_start
-
-
-@njit
-def get_corresponding_state_index_from_states(
-    states_subset, current_state, column_indices
-):
-    """Returns index of :data:`states_subset` which maps to :data:`current_state` by
-    characteristics.
-
-    Parameters
-    ----------
-    states_subset : np.array
-        :data:`states` restricted to one period for faster lookup.
-    current_state : List[int]
-        Characteristics of current state.
-    column_indices : List[int]
-        Column indices of characteristics in states.
-
-    """
-
-    exp_a_idx, exp_b_idx, edu_idx, type_idx, cl_idx = column_indices
-    exp_a, exp_b, edu, choice_lagged, type_ = current_state
-
-    idx = np.where(
-        (states_subset[:, exp_a_idx] == exp_a)
-        & (states_subset[:, exp_b_idx] == exp_b)
-        & (states_subset[:, edu_idx] == edu)
-        & (states_subset[:, type_idx] == type_)
-        & (states_subset[:, cl_idx] == choice_lagged)
-    )[0][0]
-
-    return idx

@@ -27,9 +27,9 @@ def create_single(idx):
     os.mkdir(dirname)
     os.chdir(dirname)
 
-    # The late import is required so a potentially just compiled FORTRAN implementation is
-    # recognized. This is important for the creation of the regression vault as we want to
-    # include FORTRAN use cases.
+    # The late import is required so a potentially just compiled FORTRAN implementation
+    # is recognized. This is important for the creation of the regression vault as we
+    # want to include FORTRAN use cases.
     from respy import RespyCls
 
     # We impose a couple of constraints that make the requests manageable.
@@ -45,8 +45,8 @@ def create_single(idx):
 
     # In rare instances, the value of the criterion function might be too large and thus
     # printed as a string. This occurred in the past, when the gradient preconditioning
-    # had zero probability observations. We now generate random initialization files with
-    # smaller gradient step sizes.
+    # had zero probability observations. We now generate random initialization files
+    # with smaller gradient step sizes.
     if not isinstance(crit_val, float):
         raise AssertionError(" ... value of criterion function too large.")
 
@@ -63,8 +63,8 @@ def check_single(tests, idx):
     # Distribute test information.
     init_dict, crit_val = tests[idx]
 
-    # TODO: These are temporary modifications that ensure compatibility over time and will be
-    # removed once we update the regression test battery.
+    # TODO: These are temporary modifications that ensure compatibility over time and
+    # will be removed once we update the regression test battery.
     init_dict["EDUCATION"]["lagged"] = []
     for edu_start in init_dict["EDUCATION"]["start"]:
         if edu_start >= 10:
@@ -89,8 +89,8 @@ def check_single(tests, idx):
         print(msg)
         return None
 
-    # In the past we also had the problem that some of the testing machines report selective
-    # failures when the regression vault was created on another machine.
+    # In the past we also had the problem that some of the testing machines report
+    # selective failures when the regression vault was created on another machine.
     msg = " ... test is known to fail on this machine"
     if "zeus" in socket.gethostname() and idx in []:
         print(msg)
@@ -102,15 +102,16 @@ def check_single(tests, idx):
         print(msg)
         return None
 
-    # We need to create an temporary directory, so the multiprocessing does not interfere with
-    # any of the files that are printed and used during the small estimation request.
+    # We need to create an temporary directory, so the multiprocessing does not
+    # interfere with any of the files that are printed and used during the small
+    # estimation request.
     dirname = get_random_dirname(5)
     os.mkdir(dirname)
     os.chdir(dirname)
 
-    # The late import is required so a potentially just compiled FORTRAN implementation is
-    # recognized. This is important for the creation of the regression vault as we want to
-    # include FORTRAN use cases.
+    # The late import is required so a potentially just compiled FORTRAN implementation
+    # is recognized. This is important for the creation of the regression vault as we
+    # want to include FORTRAN use cases.
     from respy import RespyCls
 
     write_init_file(init_dict)

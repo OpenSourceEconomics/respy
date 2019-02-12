@@ -10,15 +10,13 @@ from respy.python.simulate.simulate_auxiliary import get_random_types
 from respy.python.shared.shared_constants import HUGE_FLOAT
 import pandas as pd
 from respy.python.shared.shared_auxiliary import get_total_values
-from respy.python.simulate.simulate_auxiliary import (
-    get_corresponding_state_index_from_states,
-)
 
 
 def pyth_simulate(
     num_periods,
     num_agents_sim,
     states,
+    states_indexer,
     periods_draws_sims,
     seed_sim,
     file_sim,
@@ -34,6 +32,7 @@ def pyth_simulate(
     num_periods : int
     num_agents_sim : int
     states : pd.DataFrame
+    states_indexer : np.array
     periods_draws_sims : ???
     seed_sim : ???
     file_sim : ???
@@ -69,17 +68,6 @@ def pyth_simulate(
         edu_spec, num_agents_sim, initial_education, is_debug
     )
 
-    # Get indices for faster lookup
-    column_indices = np.array(
-        [
-            states.columns.tolist().index("exp_a"),
-            states.columns.tolist().index("exp_b"),
-            states.columns.tolist().index("edu"),
-            states.columns.tolist().index("type"),
-            states.columns.tolist().index("choice_lagged"),
-        ]
-    )
-
     data = []
 
     for i in range(num_agents_sim):
@@ -98,20 +86,15 @@ def pyth_simulate(
             # Distribute state space
             exp_a, exp_b, edu, choice_lagged, type_ = current_state
 
-            # Generate states subset for faster lookup
-            states_subset = states.loc[states.period.eq(period)].values
+            state_idx = states_indexer[period, exp_a, exp_b, edu, choice_lagged, type_]
 
-            row = get_corresponding_state_index_from_states(
-                states_subset, current_state, column_indices
-            )
-
-            agent = states.loc[states.period.eq(period)].iloc[row]
+            state = states.iloc[state_idx]
 
             # Select relevant subset
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
-            total_values, rewards_ex_post = get_total_values(agent, draws, optim_paras)
+            total_values, rewards_ex_post = get_total_values(state, draws, optim_paras)
 
             # We need to ensure that no individual chooses an inadmissible state. This
             # cannot be done directly in the get_total_values function as the penalty
@@ -125,7 +108,7 @@ def pyth_simulate(
             max_idx = np.argmax(total_values)
 
             # Record wages
-            wages = np.array([agent.wage_a, agent.wage_b])
+            wages = np.array([state.wage_a, state.wage_b])
             wage = wages[max_idx] * draws[max_idx] if max_idx in [0, 1] else np.nan
 
             # Update work experiences or education
@@ -136,39 +119,44 @@ def pyth_simulate(
             current_state[3] = max_idx + 1
 
             row = {
-                # RENAME CONVENTION
-                "ID": i,
+                "Identifier": i,
                 "Period": period,
-                "choice": max_idx + 1,
-                "wage": wage,
+                "Choice": max_idx + 1,
+                "Wage": wage,
                 # Write relevant state space for period to data frame. However, the
                 # individual's type is not part of the observed dataset. This is
                 # included in the simulated dataset.
-                "exp_a": exp_a,
-                "exp_b": exp_b,
-                "edu": edu,
-                "choice_lagged": choice_lagged,
+                "Experience_A": exp_a,
+                "Experience_B": exp_b,
+                "Years_Schooling": edu,
+                "Lagged_Choice": choice_lagged,
                 # As we are working with a simulated dataset, we can also output
                 # additional information that is not available in an observed dataset.
                 # The discount rate is included as this allows to construct the EMAX
                 # with the information provided in the simulation output.
-                "type": type_,
-                "total_values_a": total_values[0],
-                "total_values_b": total_values[1],
-                "total_values_edu": total_values[2],
-                "total_values_home": total_values[3],
+                "Type": type_,
+                "Total_Reward_1": total_values[0],
+                "Total_Reward_2": total_values[1],
+                "Total_Reward_3": total_values[2],
+                "Total_Reward_4": total_values[3],
+                "Systematic_Reward_1": state.rewards_systematic_a,
+                "Systematic_Reward_2": state.rewards_systematic_b,
+                "Systematic_Reward_3": state.rewards_systematic_edu,
+                "Systematic_Reward_4": state.rewards_systematic_home,
+                "Shock_Reward_1": draws[0],
+                "Shock_Reward_2": draws[1],
+                "Shock_Reward_3": draws[2],
+                "Shock_Reward_4": draws[3],
+                "Discount_Rate": optim_paras["delta"],
                 # For testing purposes, we also explicitly include the general reward
                 # component, the common component, and the immediate ex post rewards.
-                "rewards_general_a": agent.rewards_general_a,
-                "rewards_general_b": agent.rewards_general_b,
-                "rewards_common": agent.rewards_common,
-                "rewards_ex_post_a": rewards_ex_post[0],
-                "rewards_ex_post_b": rewards_ex_post[1],
-                "rewards_ex_post_edu": rewards_ex_post[2],
-                "rewards_ex_post_home": rewards_ex_post[3],
-                # Save index of corresponding state in states which reduces lookup time
-                # in estimation.
-                "states_index": agent.name,
+                "General_Reward_1": state.rewards_general_a,
+                "General_Reward_2": state.rewards_general_b,
+                "Common_Reward": state.rewards_common,
+                "Immediate_Reward_1": rewards_ex_post[0],
+                "Immediate_Reward_2": rewards_ex_post[1],
+                "Immediate_Reward_3": rewards_ex_post[2],
+                "Immediate_Reward_4": rewards_ex_post[3],
             }
             data.append(row)
 

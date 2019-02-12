@@ -17,16 +17,25 @@ from itertools import count
 
 
 def pyth_create_state_space(num_periods, num_types, edu_spec):
-    """ Create state space.
+    """ Create the state space.
 
     The state space consists of all admissible combinations of the following elements:
+    period, experience in occupation A, experience in occupation B, years of schooling,
+    the lagged choice and the type of the agent.
 
-    - period
-    - type
-    - exp_a
-    - exp_b
-    - edu
-    - choice_lagged
+    The major problem which is solved here is that the natural representation of the
+    state space is a graph where each parent node is connected with its child nodes.
+    This structure makes it easy to traverse the graph. In contrast to that, for many
+    subsequent calculations, e.g. generating the covariates for each state, a denser
+    data format has better performance, but looses the information on the connections.
+
+    The current implementation of :data:`states` and :data:`states_indexer` allows to
+    have both advantages at the cost of an additional object. :data:`states` stores the
+    information on states in a relational format. :data:`states_indexer` is a matrix
+    where each characteristic of the state space represents one dimension. The values of
+    the matrix are the indices of states in :data:`states`. Traversing the state space
+    is as easy as incrementing the right indices of :data:`states_indexer` by 1 and use
+    the resulting index in :data:`states`.
 
     Parameters
     ----------
@@ -40,7 +49,10 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     Returns
     -------
     states : pd.DataFrame
-        DataFrame containing state space.
+        This DataFrame contains all admissible states.
+    states_indexer : np.array
+        A matrix where each dimension represents a characteristic of the state space.
+        Switching from one state is possible via incrementing appropriate indices by 1.
 
     Examples
     --------
@@ -67,7 +79,7 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     # Initialize the state indexer object which enables faster lookup of states in the
     # pandas DataFrame. The dimensions of the matrix are the characteristics of the
     # agents and the value is the index in the DataFrame.
-    shape = (num_periods, num_periods, num_periods, edu_spec["max"], 4, num_types)
+    shape = (num_periods, num_periods, num_periods, edu_spec["max"] + 1, 4, num_types)
     states_indexer = np.full(shape, -1, dtype=np.int32)
 
     # Initialize counter
@@ -257,6 +269,7 @@ def pyth_backward_induction(
     periods_draws_emax,
     num_draws_emax,
     states,
+    states_indexer,
     is_debug,
     is_interpolated,
     num_points_interp,
@@ -274,6 +287,7 @@ def pyth_backward_induction(
     periods_draws_emax : ???
     num_draws_emax : int
     states : pd.DataFrame
+    states_indexer : np.array
     is_debug : bool
     is_interpolated : np.array
     num_points_interp : int
@@ -314,28 +328,6 @@ def pyth_backward_induction(
             for col in ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]:
                 states.loc[states.period.eq(period), col] = 0.0
         else:
-            # Get index of columns
-            column_indices = (
-                states.columns.tolist().index("exp_a"),
-                states.columns.tolist().index("exp_b"),
-                states.columns.tolist().index("edu"),
-                states.columns.tolist().index("type"),
-                states.columns.tolist().index("choice_lagged"),
-                states.columns.tolist().index("emaxs_a"),
-                states.columns.tolist().index("emaxs_b"),
-                states.columns.tolist().index("emaxs_edu"),
-                states.columns.tolist().index("emaxs_home"),
-            )
-
-            # Reduce number of columns to reduce lookup times. + 1 for inclusion.
-            max_col_idx = max(column_indices) + 1
-            # Pass subset of states to reduce lookup times.
-            states_subset = (
-                states.loc[states.period.eq(period + 1)]
-                .iloc[:, : max_col_idx]
-                .values
-            )
-
             row_indices = states.loc[states.period.eq(period)].index
 
             # TODO: Embarrassingly parallel.
@@ -345,17 +337,19 @@ def pyth_backward_induction(
                 exp_a, exp_b, edu, type_ = states.loc[
                     row_idx, ["exp_a", "exp_b", "edu", "type"]
                 ]
+
                 states.loc[
                     row_idx, ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
                 ] = get_emaxs_of_subsequent_period(
                     edu_spec["max"],
-                    states_subset,
+                    states,
+                    states_indexer,
                     row_idx,
-                    column_indices,
-                    exp_a,
-                    exp_b,
-                    edu,
-                    type_,
+                    period,
+                    int(exp_a),
+                    int(exp_b),
+                    int(edu),
+                    int(type_),
                 )
 
         # Extract auxiliary objects

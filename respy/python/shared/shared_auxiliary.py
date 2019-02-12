@@ -25,7 +25,9 @@ def get_log_likl(contribs):
     return crit_val
 
 
-def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type="optim"):
+def distribute_parameters(
+    paras_vec, is_debug=False, info=None, paras_type="optim"
+):
     """Parse the parameter vector into a dictionary of model quantities.
 
     Parameters
@@ -102,7 +104,10 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     start, stop = pinfo["delta"]["start"], pinfo["delta"]["stop"]
     x[start:stop] = paras_dict["delta"]
 
-    start, stop = (pinfo["coeffs_common"]["start"], pinfo["coeffs_common"]["stop"])
+    start, stop = (
+        pinfo["coeffs_common"]["start"],
+        pinfo["coeffs_common"]["stop"],
+    )
     x[start:stop] = paras_dict["coeffs_common"]
 
     start, stop = pinfo["coeffs_a"]["start"], pinfo["coeffs_a"]["stop"]
@@ -117,7 +122,10 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     start, stop = pinfo["coeffs_home"]["start"], pinfo["coeffs_home"]["stop"]
     x[start:stop] = paras_dict["coeffs_home"]
 
-    start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
+    start, stop = (
+        pinfo["shocks_coeffs"]["start"],
+        pinfo["shocks_coeffs"]["stop"],
+    )
     x[start:stop] = paras_dict["shocks_cholesky"][np.tril_indices(4)]
 
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
@@ -130,7 +138,9 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
         _check_optimization_parameters(x)
 
     if which == "free":
-        x = [x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]]
+        x = [
+            x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]
+        ]
         x = np.array(x)
 
     return x
@@ -205,7 +215,10 @@ def extract_type_information(x):
 def extract_cholesky(x, info=None):
     """Extract the cholesky factor of the shock covariance from parameters of type 'optim."""
     pinfo = paras_parsing_information(len(x))
-    start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
+    start, stop = (
+        pinfo["shocks_coeffs"]["start"],
+        pinfo["shocks_coeffs"]["stop"],
+    )
     shocks_coeffs = x[start:stop]
     dim = number_of_triangular_elements_to_dimensio(len(shocks_coeffs))
     shocks_cholesky = np.zeros((dim, dim))
@@ -287,36 +300,51 @@ def get_total_values(state, draws, optim_paras):
     """
     rewards_ex_post = np.array(
         [
-            state.wage_a * draws[0] + state.rewards_systematic_a - state.wage_a,
-            state.wage_b * draws[1] + state.rewards_systematic_b - state.wage_b,
+            state.wage_a * draws[0]
+            + state.rewards_systematic_a
+            - state.wage_a,
+            state.wage_b * draws[1]
+            + state.rewards_systematic_b
+            - state.wage_b,
             state.rewards_systematic_edu + draws[2],
             state.rewards_systematic_home + draws[3],
         ]
     )
 
-    emaxs = np.array([state.emaxs_a, state.emaxs_b, state.emaxs_edu, state.emaxs_home])
+    emaxs = np.array(
+        [state.emaxs_a, state.emaxs_b, state.emaxs_edu, state.emaxs_home]
+    )
 
     total_values = rewards_ex_post + optim_paras["delta"] * emaxs
 
     return total_values, rewards_ex_post
 
 
-@njit
 def get_emaxs_of_subsequent_period(
-    edu_spec_max, states_subset, row_idx, column_indices, exp_a, exp_b, edu, type_
+    edu_spec_max,
+    states,
+    states_indexer,
+    row_idx,
+    period,
+    exp_a,
+    exp_b,
+    edu,
+    type_,
 ):
     """Get emaxs for additional choices.
 
     Parameters
     ----------
     edu_spec : dict
-    states_subset : np.array
-        Identical to states restricted to one period and np.array to reduce lookup
-        times.
+    states : pd.DataFrame
+    states_indexer : np.array
     row_idx : int
         Index of state for which we need to collect values from subsequent periods.
-    column_indices : List[int]
-        Column index of variables.
+    period : int
+    exp_a : int
+    exp_b : int
+    edu : int
+    type_ : int
 
     Returns
     -------
@@ -329,66 +357,29 @@ def get_emaxs_of_subsequent_period(
       four times over 300k - 26k (last period) states_subset. Is it possible to
       implement a data structure which is more graph like and provides easier lookups?
 
-    TODO(janosg): At the end of emaxs_*, there is [0] get the one value from the array.
-    Interestingly, if you use normal Python not Numba, the result is a matrix and you
-    have to index with [0, 0]. Do you know why?
-
     """
-    exp_a_idx, exp_b_idx, edu_idx, type_idx, cl_idx = column_indices[:5]
-    emaxs_a_idx, emaxs_b_idx, emaxs_edu_idx, emaxs_home_idx = column_indices[5:]
 
     # Working in Occupation A in period + 1
-    emaxs_a = states_subset[
-        np.where(
-            (states_subset[:, exp_a_idx] == exp_a + 1)
-            & (states_subset[:, exp_b_idx] == exp_b)
-            & (states_subset[:, edu_idx] == edu)
-            & (states_subset[:, type_idx] == type_)
-            & (states_subset[:, cl_idx] == 1)
-        )[0],
-        emaxs_a_idx,
-    ][0]
+    emaxs_idx = states_indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
+    emaxs_a = states.loc[emaxs_idx, "emaxs_a"]
 
     # Working in Occupation B in period +1
-    emaxs_b = states_subset[
-        np.where(
-            (states_subset[:, exp_a_idx] == exp_a)
-            & (states_subset[:, exp_b_idx] == exp_b + 1)
-            & (states_subset[:, edu_idx] == edu)
-            & (states_subset[:, type_idx] == type_)
-            & (states_subset[:, cl_idx] == 2)
-        )[0],
-        emaxs_b_idx,
-    ][0]
+    emaxs_idx = states_indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
+    emaxs_b = states.loc[emaxs_idx, "emaxs_b"]
 
     # Schooling in period + 1. Note that adding an additional year of schooling is only
     # possible for those that have strictly less than the maximum level of additional
-    # education allowed.
+    # education allowed. This condition is necessary as the state is undefined and would
+    # return indexer -1 which is not available in the dataframe.
     if edu >= edu_spec_max:
         emaxs_edu = 0.00
     else:
-        emaxs_edu = states_subset[
-            np.where(
-                (states_subset[:, exp_a_idx] == exp_a)
-                & (states_subset[:, exp_b_idx] == exp_b)
-                & (states_subset[:, edu_idx] == edu + 1)
-                & (states_subset[:, type_idx] == type_)
-                & (states_subset[:, cl_idx] == 2)
-            )[0],
-            emaxs_edu_idx,
-        ][0]
+        emaxs_idx = states_indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
+        emaxs_edu = states.loc[emaxs_idx, "emaxs_edu"]
 
     # Staying at home in period + 1
-    emaxs_home = states_subset[
-        np.where(
-            (states_subset[:, exp_a_idx] == exp_a)
-            & (states_subset[:, exp_b_idx] == exp_b)
-            & (states_subset[:, edu_idx] == edu)
-            & (states_subset[:, type_idx] == type_)
-            & (states_subset[:, cl_idx] == 3)
-        )[0],
-        emaxs_home_idx,
-    ][0]
+    emaxs_idx = states_indexer[period + 1, exp_a, exp_b, edu, 3, type_]
+    emaxs_home = states.loc[emaxs_idx, "emaxs_home"]
 
     return emaxs_a, emaxs_b, emaxs_edu, emaxs_home
 
@@ -438,7 +429,9 @@ def add_solution(
 ):
     """Add solution to class instance."""
     respy_obj.unlock()
-    respy_obj.set_attr("periods_rewards_systematic", periods_rewards_systematic)
+    respy_obj.set_attr(
+        "periods_rewards_systematic", periods_rewards_systematic
+    )
     respy_obj.set_attr("states_number_period", states_number_period)
     respy_obj.set_attr("mapping_state_idx", mapping_state_idx)
     respy_obj.set_attr("periods_emax", periods_emax)
@@ -522,7 +515,9 @@ def check_model_parameters(optim_paras):
 
     # Checks shock matrix
     assert optim_paras["shocks_cholesky"].shape == (4, 4)
-    np.allclose(optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"]))
+    np.allclose(
+        optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"])
+    )
 
     # Checks for type shares
     assert optim_paras["type_shares"].size == num_types * 2
@@ -715,15 +710,25 @@ def back_out_systematic_wages(
 
     """
     # Construct covariates needed for the general part of labor market rewards.
-    covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, None, None)
+    covariates = construct_covariates(
+        exp_a, exp_b, edu, choice_lagged, None, None
+    )
 
     # First we calculate the general component.
     general, wages_systematic = np.tile(np.nan, 2), np.tile(np.nan, 2)
 
-    covars_general = [1.0, covariates["not_exp_a_lagged"], covariates["not_any_exp_a"]]
+    covars_general = [
+        1.0,
+        covariates["not_exp_a_lagged"],
+        covariates["not_any_exp_a"],
+    ]
     general[0] = np.dot(optim_paras["coeffs_a"][12:], covars_general)
 
-    covars_general = [1.0, covariates["not_exp_b_lagged"], covariates["not_any_exp_b"]]
+    covars_general = [
+        1.0,
+        covariates["not_exp_b_lagged"],
+        covariates["not_any_exp_b"],
+    ]
     general[1] = np.dot(optim_paras["coeffs_b"][12:], covars_general)
 
     # Second we do the same with the common component.
@@ -731,7 +736,9 @@ def back_out_systematic_wages(
     rewards_common = np.dot(optim_paras["coeffs_common"], covars_common)
 
     for j in [0, 1]:
-        wages_systematic[j] = rewards_systematic[j] - general[j] - rewards_common
+        wages_systematic[j] = (
+            rewards_systematic[j] - general[j] - rewards_common
+        )
 
     return wages_systematic
 
@@ -765,7 +772,9 @@ def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
         covariates["hs_graduate"] = int(edu >= 12)
         covariates["co_graduate"] = int(edu >= 16)
 
-        cond = (not covariates["edu_lagged"]) and (not covariates["hs_graduate"])
+        cond = (not covariates["edu_lagged"]) and (
+            not covariates["hs_graduate"]
+        )
         covariates["is_return_not_high_school"] = int(cond)
 
         cond = (not covariates["edu_lagged"]) and covariates["hs_graduate"]

@@ -52,6 +52,8 @@ class MailCls(object):
             self.attr["recipient"] = "janos.gabler@gmail.com"
         elif gethostname() in ["Boryanas-MacBook-Pro.local", "crunch"]:
             self.attr["recipient"] = "bilieva@diw.de"
+        elif gethostname() == "abacus":
+            self.attr["recipient"] = "tobiasraabe@uni-bonn.de"
         else:
             self.attr["recipient"] = "eisenhauer@policy-lab.org"
 
