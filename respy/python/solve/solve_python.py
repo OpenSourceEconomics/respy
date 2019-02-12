@@ -25,7 +25,7 @@ def pyth_solve(
     # package class.
     record_solution_progress(1, file_sim)
 
-    states = pyth_create_state_space(num_periods, num_types, edu_spec)
+    states, states_indexer = pyth_create_state_space(num_periods, num_types, edu_spec)
 
     states = create_covariates(states)
 

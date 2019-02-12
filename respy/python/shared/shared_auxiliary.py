@@ -264,7 +264,7 @@ def cholesky_to_coeffs(shocks_cholesky):
 
 
 def get_total_values(state, draws, optim_paras):
-    """ Calculates ???.
+    """ Calculates the maximum utility for each choice.
 
     Parameters
     ----------
@@ -277,7 +277,9 @@ def get_total_values(state, draws, optim_paras):
     Returns
     -------
     total_values : np,array
+        Array with shape (num_choices) containing discounted expected utility.
     rewards_ex_post : np.array
+        Array with shape (num_choices) containing utility of present choice.
 
     TODO: This function resembles construct_emax_risk and get_exogenous_variables.
     Refactor!
@@ -557,7 +559,7 @@ def read_draws(num_periods, num_draws):
     This is only used in the development process.
     """
     # Initialize containers
-    periods_draws = np.tile(np.nan, (num_periods, num_draws, 4))
+    periods_draws = np.full((num_periods, num_draws, 4), np.nan)
 
     # Read and distribute draws
     draws = np.array(np.genfromtxt(".draws.respy.test"), ndmin=2)
@@ -575,7 +577,7 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     """Transform the standard normal deviates to the relevant distribution."""
     draws_transformed = shocks_cholesky.dot(draws.T).T
 
-    draws_transformed = draws_transformed + shocks_mean
+    draws_transformed += shocks_mean
 
     draws_transformed[:, :2] = fr.clip(
         np.exp(draws_transformed[:, :2]), 0.0, HUGE_FLOAT

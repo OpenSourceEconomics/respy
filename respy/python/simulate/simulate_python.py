@@ -28,8 +28,25 @@ def pyth_simulate(
     is_debug,
 ):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
-    """
 
+    Parameters
+    ----------
+    num_periods : int
+    num_agents_sim : int
+    states : pd.DataFrame
+    periods_draws_sims : ???
+    seed_sim : ???
+    file_sim : ???
+    edu_spec : dict
+    optim_paras : dict
+    num_types : int
+    is_debug : bool
+
+    Returns
+    -------
+    simulated_data : pd.DataFrame
+
+    """
     record_simulation_start(num_agents_sim, seed_sim, file_sim)
 
     # Standard deviates transformed to the distributions relevant for the agents actual
@@ -109,7 +126,7 @@ def pyth_simulate(
 
             # Record wages
             wages = np.array([agent.wage_a, agent.wage_b])
-            wage = wages[max_idx] * draws[max_idx] if max_idx in [1, 2] else np.nan
+            wage = wages[max_idx] * draws[max_idx] if max_idx in [0, 1] else np.nan
 
             # Update work experiences or education
             if max_idx in [0, 1, 2]:
@@ -119,8 +136,9 @@ def pyth_simulate(
             current_state[3] = max_idx + 1
 
             row = {
-                "id": i,
-                "period": period,
+                # RENAME CONVENTION
+                "ID": i,
+                "Period": period,
                 "choice": max_idx + 1,
                 "wage": wage,
                 # Write relevant state space for period to data frame. However, the
