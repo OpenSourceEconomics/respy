@@ -10,7 +10,7 @@ from respy.python.shared.shared_auxiliary import get_total_values
 
 def pyth_contributions(
     states,
-    simulated_data,
+    data,
     periods_draws_prob,
     tau,
     num_periods,
@@ -30,8 +30,7 @@ def pyth_contributions(
     Parameters
     ----------
     states : pd.DataFrame
-    simulated_data : np.array
-        2d numpy array with the empirical dataset
+    data : pd.DataFrame with the empirical dataset
     periods_draws_prob : np.array
         3d numpy array of dimension [nperiods, ndraws_prob, nchoices]. Contains iid
         draws from standard normal distributions.
@@ -71,7 +70,7 @@ def pyth_contributions(
 
         row_start = sum(num_obs_agent[:j])
         num_obs = num_obs_agent[j]
-        edu_start = simulated_data[row_start + 0, 6].astype(int)
+        edu_start = data.iloc[row_start]['Years_Schooling'].astype(int)
 
         # updated type probabilities, conditional on edu_start >= 9 or <= 9
         type_shares = get_conditional_probabilities(
@@ -88,14 +87,14 @@ def pyth_contributions(
             prob_obs[:] = 0.00
             for p in range(num_obs):
 
-                agent = simulated_data.iloc[row_start + p]
+                agent = data.iloc[row_start + p]
 
-                period = agent["period"]
+                period = int(agent["Period"])
                 # Extract observable components of state space as well as agent
                 # decision.
-                exp_a, exp_b, edu, choice_lagged, choice, wage_observed = agent[
-                    "exp_a", "exp_b", "edu", "choice_lagged", "choice", "wage"
-                ]
+                exp_a, exp_b, edu, choice_lagged, choice, wage_observed = agent[[
+                    "Experience_A", "Experience_B", "Years_Schooling", "Lagged_Choice", "Choice", "Wage"
+                ]]
 
                 # Determine whether the agent's wage is known
                 is_wage_missing = np.isnan(wage_observed)

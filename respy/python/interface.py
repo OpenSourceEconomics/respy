@@ -19,6 +19,7 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import create_covariates
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 from respy.custom_exceptions import MaxfunError
@@ -78,7 +79,8 @@ def respy_interface(respy_obj, request, data_array=None):
 
     if request == "estimate":
 
-        num_obs = get_num_obs_agent(data_array, num_agents_est)
+        # todo: rename data_array here
+        num_obs = get_num_obs_agent(data_array.values, num_agents_est)
         periods_draws_prob = create_draws(
             num_periods, num_draws_prob, seed_prob, is_debug
         )
@@ -95,7 +97,9 @@ def respy_interface(respy_obj, request, data_array=None):
         )
 
         # Construct the state space
-        states = pyth_create_state_space(num_periods, num_types, edu_spec)
+        # todo: do we have to pass the states_indexer through to crit_func?
+        states, states_indexer = pyth_create_state_space(num_periods, num_types, edu_spec)
+        states = create_covariates(states)
 
         # Collect arguments that are required for the criterion function.
         # These must be in the correct order already.

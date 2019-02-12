@@ -241,14 +241,15 @@ class RespyCls(object):
         # less). It allows to read in only a subset of the initial conditions.
         data_frame = process_dataset(self)
         record_estimation_sample(data_frame)
-        data_array = data_frame.values
 
         # Distribute class attributes
         version = self.get_attr("version")
 
+        data_array = data_frame.values
+
         # Select appropriate interface
         if version in ["PYTHON"]:
-            respy_interface(self, "estimate", data_array)
+            respy_interface(self, "estimate", data_frame)
         elif version in ["FORTRAN"]:
             resfort_interface(self, "estimate", data_array)
         else:
@@ -309,21 +310,21 @@ class RespyCls(object):
         # todo: harmonize python and fortran
         # ====================================================================
         if self.attr['version'] == 'PYTHON':
-            data_frame = data_array
+            data_frame = data_array[DATA_LABELS_SIM]
+
         else:
             data_frame = pd.DataFrame(
                 data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
             )
 
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
+
         # ====================================================================
         data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
 
         # Checks
         if is_debug:
-            pass
-            # todo: put check back in
-            # check_dataset_sim(data_frame, self)
+            check_dataset_sim(data_frame, self)
 
         write_out(self, data_frame)
         write_info(self, data_frame)

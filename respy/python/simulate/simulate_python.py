@@ -69,6 +69,9 @@ def pyth_simulate(
         edu_spec, num_agents_sim, initial_education, is_debug
     )
 
+    # TODO: This is a micro optimization that we should probably not do unless
+    # we get a real bottleneck here (janosg)
+
     # Get indices for faster lookup
     column_indices = np.array(
         [
@@ -137,38 +140,49 @@ def pyth_simulate(
 
             row = {
                 # RENAME CONVENTION
-                "ID": i,
+                "Identifier": i,
                 "Period": period,
-                "choice": max_idx + 1,
-                "wage": wage,
+                "Choice": max_idx + 1,
+                "Wage": wage,
                 # Write relevant state space for period to data frame. However, the
                 # individual's type is not part of the observed dataset. This is
                 # included in the simulated dataset.
-                "exp_a": exp_a,
-                "exp_b": exp_b,
-                "edu": edu,
-                "choice_lagged": choice_lagged,
+                "Experience_A": exp_a,
+                "Experience_B": exp_b,
+                "Years_Schooling": edu,
+                "Lagged_Choice": choice_lagged,
                 # As we are working with a simulated dataset, we can also output
                 # additional information that is not available in an observed dataset.
                 # The discount rate is included as this allows to construct the EMAX
                 # with the information provided in the simulation output.
-                "type": type_,
-                "total_values_a": total_values[0],
-                "total_values_b": total_values[1],
-                "total_values_edu": total_values[2],
-                "total_values_home": total_values[3],
+                "Type": type_,
+                "Total_Reward_1": total_values[0],
+                "Total_Reward_2": total_values[1],
+                "Total_Reward_3": total_values[2],
+                "Total_Reward_4": total_values[3],
                 # For testing purposes, we also explicitly include the general reward
                 # component, the common component, and the immediate ex post rewards.
-                "rewards_general_a": agent.rewards_general_a,
-                "rewards_general_b": agent.rewards_general_b,
-                "rewards_common": agent.rewards_common,
-                "rewards_ex_post_a": rewards_ex_post[0],
-                "rewards_ex_post_b": rewards_ex_post[1],
-                "rewards_ex_post_edu": rewards_ex_post[2],
-                "rewards_ex_post_home": rewards_ex_post[3],
+                "General_Reward_1": agent.rewards_general_a,
+                "General_Reward_2": agent.rewards_general_b,
+                "Common_Reward": agent.rewards_common,
+                "Immediate_Reward_1": rewards_ex_post[0],
+                "Immediate_Reward_2": rewards_ex_post[1],
+                "Immediate_Reward_3": rewards_ex_post[2],
+                "Immediate_Reward_4": rewards_ex_post[3],
+                "Shock_Reward_1": draws[0],
+                "Shock_Reward_2": draws[1],
+                "Shock_Reward_3": draws[2],
+                "Shock_Reward_4": draws[3],
+
                 # Save index of corresponding state in states which reduces lookup time
                 # in estimation.
                 "states_index": agent.name,
+                "Discount_Rate": optim_paras['delta'][0],
+
+                "Systematic_Reward_1": agent.rewards_systematic_a,
+                "Systematic_Reward_2": agent.rewards_systematic_b,
+                "Systematic_Reward_3": agent.rewards_systematic_home,
+                "Systematic_Reward_4": agent.rewards_systematic_edu,
             }
             data.append(row)
 
