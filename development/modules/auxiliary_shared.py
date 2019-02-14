@@ -78,8 +78,8 @@ def send_notification(which, **kwargs):
     """ Finishing up a run of the testing battery.
     """
     # This allows to run the scripts even when no notification can be send.
-    if not os.path.exists(os.environ["HOME"] + "/.credentials"):
-        return
+    # if not os.path.exists(os.environ["HOME"] + "/.credentials"):
+    #     return
 
     hours, is_failed, num_tests, seed = None, None, None, None
 
@@ -267,7 +267,12 @@ def process_command_line_arguments(description):
 
 
 def get_random_dirname(length):
-    """ This function creates a random string that is used as the testing
-    subdirectory.
+    """ This function creates a random directory name.
+
+    The random name is used for a temporary testing directory. It starts with two
+    underscores so that it does not clutter the root directory.
+
+    TODO: Sensible length default.
+
     """
-    return "".join(random.choice(string.ascii_lowercase) for _ in range(length))
+    return "__" + "".join(random.choice(string.ascii_lowercase) for _ in range(length))

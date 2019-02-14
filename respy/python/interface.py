@@ -311,7 +311,7 @@ def respy_interface(respy_obj, request, data=None):
         )
 
         # Collect arguments for different implementations of the simulation.
-        states, states_indexer = pyth_solve(
+        state_space = pyth_solve(
             is_interpolated,
             num_points_interp,
             num_draws_emax,
@@ -326,15 +326,10 @@ def respy_interface(respy_obj, request, data=None):
             num_types,
         )
 
-        states.to_pickle("save_state_space.pkl")
-        np.save("save_state_indexer.npy", states_indexer)
-        import sys; sys.exit(0)
-
         simulated_data = pyth_simulate(
+            state_space,
             num_periods,
             num_agents_sim,
-            states,
-            states_indexer,
             periods_draws_sims,
             seed_sim,
             file_sim,
@@ -344,7 +339,7 @@ def respy_interface(respy_obj, request, data=None):
             is_debug,
         )
 
-        args = (states, states_indexer, simulated_data)
+        args = (state_space, simulated_data)
 
     else:
         raise NotImplementedError("This request is not implemented.")

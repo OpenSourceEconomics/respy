@@ -87,7 +87,7 @@ class RespyCls(object):
         # ====================================================================
         # todo: reimplement checks for python solution
         # ====================================================================
-        if self.attr['version'] == 'fortran':
+        if self.attr["version"] == "fortran":
             self._check_model_solution()
         # ====================================================================
         self.attr["is_locked"] = True
@@ -117,7 +117,9 @@ class RespyCls(object):
 
         invalid_attr = self.derived_attributes + ["optim_paras", "init_dict"]
         if key in invalid_attr:
-            raise AssertionError("{} must not be modified by users!".format(key))
+            raise AssertionError(
+                "{} must not be modified by users!".format(key)
+            )
 
         if key in self.solution_attributes:
             assert not self.attr[
@@ -150,7 +152,9 @@ class RespyCls(object):
 
         for key_ in self.solution_attributes:
             try:
-                np.testing.assert_almost_equal(self.attr[key_], other.attr[key_])
+                np.testing.assert_almost_equal(
+                    self.attr[key_], other.attr[key_]
+                )
             except AssertionError:
                 return False
 
@@ -279,7 +283,10 @@ class RespyCls(object):
 
         # Select appropriate interface
         if version in ["PYTHON"]:
-            solution, data_array = respy_interface(self, "simulate")
+            state_space, data_array = respy_interface(self, "simulate")
+
+            solution = state_space._get_fortran_counterparts()
+
         elif version in ["FORTRAN"]:
             solution, data_array = resfort_interface(self, "simulate")
         else:
@@ -290,7 +297,7 @@ class RespyCls(object):
         # ====================================================================
         # todo: harmonize python and fortran
         # ====================================================================
-        if self.attr['version'] == 'FORTRAN':
+        if self.attr["version"] == "FORTRAN":
             self = add_solution(self, *solution)
         else:
             self.unlock()
@@ -309,18 +316,21 @@ class RespyCls(object):
         # ====================================================================
         # todo: harmonize python and fortran
         # ====================================================================
-        if self.attr['version'] == 'PYTHON':
+        if self.attr["version"] == "PYTHON":
             data_frame = data_array[DATA_LABELS_SIM]
 
         else:
             data_frame = pd.DataFrame(
-                data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
+                data=replace_missing_values(data_array),
+                columns=DATA_LABELS_SIM,
             )
 
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
 
         # ====================================================================
-        data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
+        data_frame.set_index(
+            ["Identifier", "Period"], drop=False, inplace=True
+        )
 
         # Checks
         if is_debug:

@@ -131,7 +131,10 @@ class MailCls(object):
         assert self.attr["message"] is not None
 
         # Process credentials
-        dict_ = json.load(open(os.environ["HOME"] + "/.credentials"))
+        dict_ = {
+            "username": "respy.notifications",
+            "password": "baKermiga600g",
+        }
 
         self.attr["username"] = dict_["username"]
 

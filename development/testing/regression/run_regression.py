@@ -4,6 +4,9 @@ development and refactoring efforts.
 """
 from __future__ import print_function
 
+import sys
+sys.path.append("development/modules")
+
 from functools import partial
 
 import multiprocessing as mp
@@ -36,9 +39,9 @@ def run(request, is_compile, is_background, is_strict, num_procs):
     # We can set up a multiprocessing pool right away.
     mp_pool = mp.Pool(num_procs)
 
-    # The late import is required so a potentially just compiled FORTRAN implementation is
-    # recognized. This is important for the creation of the regression vault as we want to
-    # include FORTRAN use cases.
+    # The late import is required so a potentially just compiled FORTRAN implementation
+    # is recognized. This is important for the creation of the regression vault as we
+    # want to include FORTRAN use cases.
     from respy import RespyCls
 
     # Process command line arguments
@@ -64,6 +67,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         tests = json.load(open(fname, "r"))
 
         init_dict, crit_val = tests[idx]
+
         write_init_file(init_dict)
         respy_obj = RespyCls("test.respy.ini")
 
@@ -73,8 +77,8 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
 
     if is_creation:
-        # We maintain the separate execution in the case of a single processor for debugging
-        # purposes. The error messages are generally much more informative.
+        # We maintain the separate execution in the case of a single processor for
+        # debugging purposes. The error messages are generally much more informative.
         if num_procs == 1:
             tests = []
             for idx in range(num_tests):
@@ -92,8 +96,8 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         run_single = partial(check_single, tests)
         indices = list(range(num_tests))
 
-        # We maintain the separate execution in the case of a single processor for debugging
-        # purposes. The error messages are generally much more informative.
+        # We maintain the separate execution in the case of a single processor for
+        # debugging purposes. The error messages are generally much more informative.
         if num_procs == 1:
             ret = []
             for index in indices:
@@ -105,14 +109,17 @@ def run(request, is_compile, is_background, is_strict, num_procs):
             ret = []
             for chunk in get_chunks(indices, num_procs):
                 ret += mp_pool.map(run_single, chunk)
-                # We need an early termination if a strict test run is requested. So we check
-                # whether there are any failures in the last batch.
+                # We need an early termination if a strict test run is requested. So we
+                # check whether there are any failures in the last batch.
                 if is_strict and (False in ret):
                     break
 
-        # This allows to call this test from another script, that runs other tests as well.
+        # This allows to call this test from another script, that runs other tests as
+        # well.
         idx_failures = [i for i, x in enumerate(ret) if x not in [True, None]]
         is_failure = False in ret
+
+        print(idx_failures)
 
         if len(idx_failures) > 0:
             is_failure = True

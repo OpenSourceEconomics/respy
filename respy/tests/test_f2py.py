@@ -70,10 +70,10 @@ class TestClass(object):
     """
 
     def test_1(self):
-        """ Compare the evaluation of the criterion function for the ambiguity optimization and
-        the simulated expected future value between the FORTRAN and PYTHON implementations. These
-        tests are set up a separate test case due to the large setup cost to construct the
-        ingredients for the interface.
+        """ Compare the evaluation of the criterion function for the ambiguity
+        optimization and the simulated expected future value between the FORTRAN and
+        PYTHON implementations. These tests are set up a separate test case due to the
+        large setup cost to construct the ingredients for the interface.
         """
         # Generate constraint periods
         constr = dict()
@@ -88,7 +88,18 @@ class TestClass(object):
         respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
-        periods_rewards_systematic, states_number_period, mapping_state_idx, periods_emax, num_periods, states_all, num_draws_emax, edu_spec, optim_paras, num_types = dist_class_attributes(
+        (
+            periods_rewards_systematic,
+            states_number_period,
+            mapping_state_idx,
+            periods_emax,
+            num_periods,
+            states_all,
+            num_draws_emax,
+            edu_spec,
+            optim_paras,
+            num_types,
+        ) = dist_class_attributes(
             respy_obj,
             "periods_rewards_systematic",
             "states_number_period",
@@ -108,7 +119,7 @@ class TestClass(object):
         )
         draws_emax_risk = transform_disturbances(
             draws_emax_standard,
-            np.array([0.0, 0.0, 0.0, 0.0]),
+            np.zeros(4),
             optim_paras["shocks_cholesky"],
         )
 
@@ -133,7 +144,7 @@ class TestClass(object):
         )
 
         args = ()
-        args += base_args + (edu_spec, optim_paras)
+        args += base_args + (optim_paras)
         py = construct_emax_risk(*args)
 
         args = ()
@@ -459,7 +470,26 @@ class TestClass(object):
         max_states_period = write_interpolation_grid("test.respy.ini")
 
         # Extract class attributes
-        num_periods, edu_spec, optim_paras, num_draws_emax, is_debug, is_interpolated, num_points_interp, is_myopic, num_agents_sim, num_draws_prob, tau, seed_sim, num_agents_est, states_number_period, optimizer_options, file_sim, num_types, num_paras = dist_class_attributes(
+        (
+            num_periods,
+            edu_spec,
+            optim_paras,
+            num_draws_emax,
+            is_debug,
+            is_interpolated,
+            num_points_interp,
+            is_myopic,
+            num_agents_sim,
+            num_draws_prob,
+            tau,
+            seed_sim,
+            num_agents_est,
+            states_number_period,
+            optimizer_options,
+            file_sim,
+            num_types,
+            num_paras,
+        ) = dist_class_attributes(
             respy_obj,
             "num_periods",
             "edu_spec",
@@ -523,7 +553,7 @@ class TestClass(object):
         args = ()
         args += base_args + (edu_spec, optim_paras, file_sim)
         args += (optimizer_options, num_types)
-        py = pyth_solve(*args)
+        state_space = pyth_solve(*args)
 
         args = ()
         args += base_args + (min_idx, edu_spec["start"], edu_spec["max"])
@@ -537,16 +567,7 @@ class TestClass(object):
             for i in range(5):
                 assert_allclose(py[i], alt[i])
 
-        # Distribute solution arguments for further use in simulation test.
-        periods_rewards_systematic, _, mapping_state_idx, periods_emax, states_all = (
-            py
-        )
-
         base_args = (
-            periods_rewards_systematic,
-            mapping_state_idx,
-            periods_emax,
-            states_all,
             num_periods,
             num_agents_sim,
             periods_draws_sims,
@@ -554,7 +575,7 @@ class TestClass(object):
             file_sim,
         )
 
-        args = ()
+        args = (state_space)
         args += base_args + (edu_spec, optim_paras, num_types, is_debug)
         py = pyth_simulate(*args)
 
@@ -580,7 +601,8 @@ class TestClass(object):
         f2py = fort_debug.wrapper_simulate(*args)
         assert_allclose(py, f2py)
 
-        # Is is very important to cut the data array down to the size of the estimation sample.
+        # Is is very important to cut the data array down to the size of the estimation
+        # sample.
         data_array = py[: num_agents_est * num_periods, :]
 
         base_args = (

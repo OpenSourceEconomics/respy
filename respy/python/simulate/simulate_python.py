@@ -15,10 +15,9 @@ from respy.python.shared.shared_auxiliary import get_total_values
 
 
 def pyth_simulate(
+    state_space,
     num_periods,
     num_agents_sim,
-    states,
-    states_indexer,
     periods_draws_sims,
     seed_sim,
     file_sim,
@@ -97,10 +96,7 @@ def pyth_simulate(
 
             exp_a, exp_b, edu, choice_lagged, type_ = current_state
 
-            state_idx = states_indexer[
-                period, exp_a, exp_b, edu, choice_lagged - 1, type_
-            ]
-            state = states.iloc[state_idx]
+            state = state_space[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
 
             # Select relevant subset
             draws = periods_draws_sims_transformed[period, i, :]

@@ -1,18 +1,13 @@
 import numpy as np
 
 
-def construct_emax_risk(
-    states, num_draws_emax, period, draws_emax_risk, edu_spec, optim_paras
-):
+def construct_emax_risk(states, draws_emax_risk, optim_paras):
     """ Simulate expected future value for a given distribution of the unobservables.
 
     Parameters
     ----------
     states : pd.DataFrame
-    num_draws_emax : int
-    period : int
     draws_emax_risk : np.array
-    edu_spec : dict
     optim_paras : dict
 
     Returns
@@ -25,35 +20,35 @@ def construct_emax_risk(
 
     """
     states["constant"] = 1.0
+    states["zero"] = 0.0
 
     # Construct matrix with dimension (num_states, choices, 1). As edu and home have no
     # wage, initialize positions with ones so that shocks are added.
-    wages = states.loc[
-        states.period.eq(period), ["wage_a", "wage_b", "constant", "constant"]
-    ].values
-    wages = wages[:, :, np.newaxis]
+    wages_cons = states[["wage_a", "wage_b", "constant", "constant"]].values
+    wages_cons = wages_cons[:, :, np.newaxis]
 
-    rewards_systematic = states.loc[
-        states.period.eq(period),
+    wages_zero = states[["wage_a", "wage_b", "zero", "zero"]].values
+    wages_zero = wages_zero[:, :, np.newaxis]
+
+    rewards_systematic = states[
         [
             "rewards_systematic_a",
             "rewards_systematic_b",
             "rewards_systematic_edu",
             "rewards_systematic_home",
-        ],
+        ]
     ].values
     rewards_systematic = rewards_systematic[:, :, np.newaxis]
 
     # Combine each states-choices combination with num_draws different draws
     rewards_ex_post = (
-        np.multiply(wages, draws_emax_risk.T) + rewards_systematic - wages
+        np.multiply(wages_cons, draws_emax_risk.T)
+        + rewards_systematic
+        - wages_zero
     )
 
     # Calculate total values
-    emaxs = states.loc[
-        states.period.eq(period),
-        ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"],
-    ].values
+    emaxs = states[["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]].values
     emaxs = emaxs[:, :, np.newaxis]
 
     total_values = rewards_ex_post + optim_paras["delta"] * emaxs

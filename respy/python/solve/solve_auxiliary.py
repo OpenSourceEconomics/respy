@@ -3,7 +3,7 @@ import shlex
 
 import statsmodels.api as sm
 import numpy as np
-
+import pickle
 from respy.python.record.record_solution import record_solution_prediction
 from respy.python.shared.shared_auxiliary import calculate_rewards_general
 from respy.python.shared.shared_auxiliary import calculate_rewards_common
@@ -329,6 +329,10 @@ def pyth_backward_induction(
         record_solution_progress(-2, file_sim)
 
         state_space.states["emax"] = 0.0
+        state_space.states["emaxs_a"] = 0.0
+        state_space.states["emaxs_b"] = 0.0
+        state_space.states["emaxs_edu"] = 0.0
+        state_space.states["emaxs_home"] = 0.0
 
         return state_space
 
@@ -440,11 +444,10 @@ def pyth_backward_induction(
             state_space.states.loc[
                 state_space.states.period.eq(period), "emax"
             ] = construct_emax_risk(
-                state_space.states,
-                num_draws_emax,
-                period,
+                state_space.states.loc[
+                    state_space.states.period.eq(period)
+                ].copy(),
                 draws_emax_risk,
-                edu_spec,
                 optim_paras,
             )
 
@@ -591,7 +594,7 @@ def get_endogenous_variable(
 
     # Simulate the expected future value.
     states.loc[states.period.eq(period), "emax"] = construct_emax_risk(
-        states, num_draws_emax, period, draws_emax_risk, edu_spec, optim_paras
+        states.loc[states.period.eq(period)], draws_emax_risk, optim_paras
     )
 
     # Construct dependent variable
@@ -730,6 +733,14 @@ def calculate_wages_systematic(states, optim_paras):
 
 
 class StateSpace:
+    """This class represents a state space.
+
+    Attributes
+    ----------
+    states : pd.DataFrame
+    indexer : np.array
+
+    """
 
     def create_state_space(self, *args):
         """This function creates the state space.
@@ -750,6 +761,53 @@ class StateSpace:
     def states_per_period(self):
         return self.states.groupby("period").count().iloc[:, 0].values
 
+    def _get_fortran_counterparts(self):
+        periods_rewards_systematic = np.full(
+            (
+                self.states_per_period.shape[0],
+                self.states_per_period.max(),
+                4,
+            ),
+            np.nan,
+        )
+        for period, group in self.states.groupby("period"):
+            sub = group[
+                [
+                    "rewards_systematic_a",
+                    "rewards_systematic_b",
+                    "rewards_systematic_edu",
+                    "rewards_systematic_home",
+                ]
+            ].values
+
+            periods_rewards_systematic[period, : sub.shape[0]] = sub
+
+        periods_emax = np.full(
+            (
+                self.states_per_period.shape[0],
+                self.states_per_period.max(),
+                4,
+            ),
+            np.nan,
+        )
+        for period, group in self.states.groupby("period"):
+            sub = group[
+                ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
+            ].values
+
+            periods_emax[period, : sub.shape[0], :] = sub
+
+        mapping_state_idx = self.indexer
+        states_all = None
+
+        return (
+            periods_rewards_systematic,
+            self.states_per_period,
+            mapping_state_idx,
+            periods_emax,
+            states_all,
+        )
+
     def __len__(self):
         return len(self.states)
 
@@ -764,6 +822,7 @@ class StateSpace:
             still an integer to keep memory costs down.
 
         """
+        key = tuple(int(i) for i in key)
         position = self.indexer[key]
 
         try:

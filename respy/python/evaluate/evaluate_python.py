@@ -108,7 +108,7 @@ def pyth_contributions(
                 is_working = choice in [1, 2]
 
                 # Create an index for the choice.
-                idx = choice - 1
+                idx = int(choice - 1)
 
                 # Extract relevant deviates from standard normal distribution. The same
                 # set of baseline draws are used for each agent and period.
@@ -124,7 +124,7 @@ def pyth_contributions(
 
                 # TODO: Simplify? Can a wage be non-missing and choice not in [1, 2]?
                 if is_working and (not is_wage_missing):
-                    wages_systematic = state["wage_a", "wage_b"].values
+                    wages_systematic = state[["wage_a", "wage_b"]].values
 
                     # Calculate the disturbance which are implied by the model and the
                     # observed wages.
@@ -189,7 +189,7 @@ def pyth_contributions(
                     # Calculate total values. immediate rewards, including shock +
                     # expected future value!
                     total_values, _ = get_total_values(
-                        state, optim_paras, draws
+                        state, draws, optim_paras
                     )
 
                     # Record optimal choices

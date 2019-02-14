@@ -78,10 +78,9 @@ def read_init_file(fname):
 def write_init_file(init_dict, file_name="test.respy.ini"):
     """Write initialization file with information from init_dict.
 
-    The different formatting makes the file rather involved.
-    The resulting initialization files are rad by PYTHON and FORTRAN routines.
-    Thus, the formatting with respect to the number of decimal places is rather
-    small.
+    The different formatting makes the file rather involved. The resulting
+    initialization files are rad by PYTHON and FORTRAN routines. Thus, the formatting
+    with respect to the number of decimal places is rather small.
 
     """
     assert isinstance(init_dict, dict)
