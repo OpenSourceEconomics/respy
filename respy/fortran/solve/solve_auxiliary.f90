@@ -305,11 +305,12 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
     !/* internals objects       */
 
     INTEGER(our_int)                    :: num_states
-    INTEGER(our_int)                    :: seed_inflated(15)
     INTEGER(our_int)                    :: seed_size
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
+
+    INTEGER(our_int), ALLOCATABLE       :: seed_inflated(:)
 
     REAL(our_dble)                      :: draws_emax_standard(num_draws_emax, 4)
     REAL(our_dble)                      :: draws_emax_risk(num_draws_emax, 4)
@@ -345,10 +346,11 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
         RETURN
     END IF
 
-    seed_inflated(:) = 123
-
     CALL RANDOM_SEED(size=seed_size)
 
+    ALLOCATE(seed_inflated(seed_size))
+    seed_inflated(:) = 123
+    
     CALL RANDOM_SEED(put=seed_inflated)
 
     shocks_cov = MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(optim_paras%shocks_cholesky))

@@ -219,7 +219,6 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
 
     !/* internal objects        */
 
-    INTEGER(our_int)                    :: seed_inflated(15)
     INTEGER(our_int)                    :: lower_bound
     INTEGER(our_int)                    :: upper_bound
     INTEGER(our_int)                    :: num_states
@@ -227,6 +226,8 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     INTEGER(our_int)                    :: period
     INTEGER(our_int)                    :: info
     INTEGER(our_int)                    :: k
+
+    INTEGER(our_int), ALLOCATABLE       :: seed_inflated(:)
 
     REAL(our_dble)                      :: rewards_systematic(4)
     REAL(our_dble)                      :: shocks_cov(4, 4)
@@ -275,9 +276,10 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     END IF
 
     ! Set random seed for interpolation grid.
-    seed_inflated(:) = 123
-
     CALL RANDOM_SEED(size=seed_size)
+
+    ALLOCATE(seed_inflated(seed_size))
+    seed_inflated(:) = 123
 
     CALL RANDOM_SEED(put=seed_inflated)
 
