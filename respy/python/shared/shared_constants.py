@@ -4,18 +4,19 @@ aligned with the constants from the FORTRAN implementation.
 import numpy as np
 import json
 import os
+import respy
+from pathlib import Path
 
 # Obtain the root directory of the package
-ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-ROOT_DIR = ROOT_DIR.replace("/python/shared", "")
+ROOT_DIR = Path(respy.__path__[0])
 
 # Directory with additional resources for the testing harness
-TEST_DIR = ROOT_DIR + "/tests"
-TEST_RESOURCES_DIR = ROOT_DIR + "/tests/resources"
-TEST_RESOURCES_BUILD = ROOT_DIR + "/.bld/tests/resources"
+TEST_DIR = ROOT_DIR / "tests"
+TEST_RESOURCES_DIR = ROOT_DIR / "tests" / "resources"
+TEST_RESOURCES_BUILD = ROOT_DIR / ".bld" / "tests" / "resources"
 
 # Directory with the FORTRAN resources
-EXEC_DIR = ROOT_DIR + "/.bld/fortran"
+EXEC_DIR = ROOT_DIR / ".bld" / "fortran"
 
 MINISCULE_FLOAT = 1.0e-100
 LARGE_FLOAT = 1.0e8
@@ -39,7 +40,7 @@ MISSING_INT = -99
 MISSING_FLOAT = -99.00
 
 # Flags that provide additional information about the exact configuration
-with open(ROOT_DIR + "/.bld/.config", "r") as infile:
+with open(ROOT_DIR / ".bld" / ".config", "r") as infile:
     config_dict = json.load(infile)
 
 IS_DEBUG = config_dict["DEBUG"]
