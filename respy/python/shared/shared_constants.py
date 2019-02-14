@@ -7,11 +7,11 @@ import os
 
 # Obtain the root directory of the package
 ROOT_DIR = os.path.dirname(os.path.realpath(__file__))
-# ROOT_DIR = ROOT_DIR.replace("/python/shared", "")
+ROOT_DIR = ROOT_DIR.replace("/python/shared", "")
 
 # Directory with additional resources for the testing harness
 # TEST_DIR = ROOT_DIR + "/tests"
-TEST_RESOURCES_DIR = os.getcwd() + "/respy/tests/resources"
+TEST_RESOURCES_DIR = ROOT_DIR + "/tests/resources"
 TEST_RESOURCES_BUILD = ROOT_DIR + "/.bld/tests/resources"
 
 # Directory with the FORTRAN resources

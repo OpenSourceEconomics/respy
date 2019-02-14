@@ -29,6 +29,10 @@ from respy.tests.codes.auxiliary import simulate_observed
 
 HOSTNAME = socket.gethostname()
 
+from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
+from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
+from respy.python.shared.shared_constants import IS_FORTRAN
+
 
 def run(request, is_compile, is_background, is_strict, num_procs):
     """ Run the regression tests.
@@ -66,7 +70,36 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         fname = TEST_RESOURCES_DIR + "/regression_vault.respy.json"
         tests = json.load(open(fname, "r"))
 
+        # TODO: The code that follows has a large overlap with check_single() function. However,
+        #  to get a clear failure in the assertion statements. This should be streamlined in the
+        #  revised regression test setup.
         init_dict, crit_val = tests[idx]
+
+        # TODO: These are temporary modifications that ensure compatibility over time and
+        # will be removed once we update the regression test battery.
+        init_dict["EDUCATION"]["lagged"] = []
+        for edu_start in init_dict["EDUCATION"]["start"]:
+            if edu_start >= 10:
+                init_dict["EDUCATION"]["lagged"] += [1.0]
+            else:
+                init_dict["EDUCATION"]["lagged"] += [0.0]
+
+        init_dict["PROGRAM"]["threads"] = 1
+        if IS_PARALLELISM_OMP and init_dict["PROGRAM"]["version"] == "FORTRAN":
+            init_dict["PROGRAM"]["threads"] = np.random.randint(1, 5)
+
+        # During development it is useful that we can only run the PYTHON versions of the
+        # program.
+        msg = " ... skipped as required version of package not available"
+        if init_dict["PROGRAM"]["version"] == "FORTRAN" and not IS_FORTRAN:
+            print(msg)
+            return None
+        if init_dict["PROGRAM"]["procs"] > 1 and not IS_PARALLELISM_MPI:
+            print(msg)
+            return None
+        if init_dict["PROGRAM"]["threads"] > 1 and not IS_PARALLELISM_OMP:
+            print(msg)
+            return None
 
         write_init_file(init_dict)
         respy_obj = RespyCls("test.respy.ini")
