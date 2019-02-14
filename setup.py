@@ -3,6 +3,7 @@ from setuptools.command.develop import develop
 from setuptools import find_packages
 from setuptools import setup
 import os
+import subprocess
 
 
 class CustomDevelopCommand(develop):
@@ -14,7 +15,8 @@ class CustomDevelopCommand(develop):
         """
         os.chdir("respy")
 
-        os.system("./waf distclean; ./waf configure build -j 1")
+        subprocess.run(["python", "waf", "distclean"])
+        subprocess.run(["python", "waf", "configure", "build",  "-j", "1"])
 
         os.chdir("../")
 
@@ -30,7 +32,8 @@ class CustomBuildCommand(build_py):
         """
         os.chdir("respy")
 
-        os.system("./waf distclean; ./waf configure build -j 1")
+        subprocess.run(["python", "waf", "distclean"])
+        subprocess.run(["python", "waf", "configure", "build",  "-j", "1"])
 
         os.chdir("../")
 
@@ -54,7 +57,10 @@ def setup_package():
             ]
         },
         version="2.0.0.dev20",
-        description="respy is a Python package for the simulation and estimation of a prototypical finite-horizon dynamic discrete choice model.",
+        description=(
+            "respy is a Python package for the simulation and estimation of a "
+            "prototypical finite-horizon dynamic discrete choice model."
+        ),
         author="Philipp Eisenhauer",
         author_email="eisenhauer@policy-lab.org",
         url="http://respy.readthedocs.io",
