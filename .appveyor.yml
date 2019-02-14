@@ -1,7 +1,7 @@
 notifications:
   - provider: Slack
     incoming_webhook: https://hooks.slack.com/services/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
-    on_build_success: true
+    on_build_success: false
     on_build_failure: false
     on_build_status_changed: true
   - provider: Email
