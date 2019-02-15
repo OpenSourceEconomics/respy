@@ -1,0 +1,62 @@
+notifications:
+  - provider: Slack
+    incoming_webhook: https://hooks.slack.com/services/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
+    on_build_success: false
+    on_build_failure: false
+    on_build_status_changed: true
+  - provider: Email
+    on_build_success: false
+    on_build_failure: false
+    on_build_status_changed: false
+
+# Do not start two builds, one for the branch and one for the PR.
+skip_branch_with_pr: true
+
+environment:
+  MINICONDA: "C:\\Miniconda36-x64"
+  matrix:
+      - TRAVIS_CI_FORTRAN: false
+        TRAVIS_CI_MPI: false
+        TRAVIS_CI_OMP: false
+      - TRAVIS_CI_FORTRAN: true
+        TRAVIS_CI_MPI: true
+        TRAVIS_CI_OMP: true
+      - TRAVIS_CI_FORTRAN: true
+        TRAVIS_CI_MPI: false
+        TRAVIS_CI_OMP: true
+      - TRAVIS_CI_FORTRAN: true
+        TRAVIS_CI_MPI: true
+        TRAVIS_CI_OMP: false
+
+install:
+  # If there is a newer build queued for the same PR, cancel this one. The AppVeyor
+  # 'roll-out builds' option is supposed to serve the same purpose but it is problematic
+  # because it tends to cancel builds pushed directly to master instead of just PR
+  # builds (or the converse). Credits: JuliaLang developers.
+  - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
+      https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
+      Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
+        throw "There are newer queued builds for this pull request, failing early." }
+  # Add miniconda to PATH
+  - ps: $env:PATH = "$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin;$env:PATH"
+  # Add MPI to path
+  - set PATH=C:\Program Files\Microsoft MPI\Bin;%PATH%
+  # Set conda to always yes and print info
+  - conda config --set always_yes yes --set changeps1 no
+  - conda info -a
+  - conda install numpy scipy=0.19 pandas=0.20 statsmodels=0.8 pytest pytest-cov
+  - pip install codecov
+  - pip install -e . -vv
+  - pytest --cov=respy -vvv -s
+
+build: false
+
+on_success:
+  - sh: |
+      if  [ $TRAVIS_CI_FORTRAN ] || \
+          [ $TRAVIS_CI_MPI ] || \
+          [ $TRAVIS_CI_OMP ] ||
+      then
+          codecov
+          echo 'send coverage statistic'
+      fi
