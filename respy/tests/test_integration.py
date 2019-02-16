@@ -214,22 +214,23 @@ class TestClass(object):
         """ This test ensures that the constraints for the covariance matrix are properly handled.
         """
 
-        params_spec, options_spec = generate_random_model()
+        params_spec, options_spec = generate_random_model(deterministic=True)
 
         # Manual specification of update patterns.
         updates = dict()
 
+        # off-diagonals fixed
         updates["valid_1"] = [
             False,
             True,
-            True,
-            True,
             False,
             True,
             True,
             False,
             True,
-            False,
+            True,
+            True,
+            False
         ]
         updates["valid_2"] = [False] * 10
         updates["valid_3"] = [True] * 10
@@ -286,9 +287,6 @@ class TestClass(object):
             "interpolation": {"flag": False}
         }
 
-        bound_constr = {}
-
-        # Simulate a dataset
 
         params_spec, options_spec = generate_random_model(point_constr=constr)
         respy_obj = RespyCls(params_spec, options_spec)

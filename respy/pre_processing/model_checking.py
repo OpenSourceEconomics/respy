@@ -126,19 +126,22 @@ def check_model_attributes(attr_dict):
     # none. As a special case, we also allow for all off-diagonal elements
     # to be fixed to zero.
     shocks_coeffs = a["optim_paras"]["shocks_cholesky"][np.tril_indices(4)]
-    shocks_fixed = a["optim_paras"]["paras_fixed"][43:53]
+    shocks_fixed = np.array(a["optim_paras"]["paras_fixed"][43:53])
 
-    all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
-    all_free = all(is_free is True for is_free in shocks_fixed)
+    all_free = not shocks_fixed.any()
 
-    subset_fixed = [shocks_fixed[i] for i in [1, 3, 4, 6, 7, 8]]
-    subset_value = [shocks_coeffs[i] for i in [1, 3, 4, 6, 7, 8]]
+    dim = len(a['optim_paras']['shocks_cholesky'])
+    helper = np.zeros((dim, dim))
+    helper[np.tril_indices(dim)] = shocks_coeffs
+    off_diagonals_zero = (helper[np.tril_indices(dim, k=-1)] == 0).all()
 
-    off_diagonal_fixed = all(is_free is True for is_free in subset_fixed)
-    off_diagonal_value = all(value == 0.0 for value in subset_value)
-    off_diagonal = off_diagonal_fixed and off_diagonal_value
+    helper = np.zeros((dim, dim), dtype=bool)
+    helper[np.tril_indices(dim)] = shocks_fixed
+    off_diagonals_fixed = (helper[np.tril_indices(dim, k=-1)]).all()
 
-    if not (all_free or all_fixed or off_diagonal):
+    diagonal_matrix = off_diagonals_zero & off_diagonals_fixed
+
+    if not (all_free or shocks_fixed.all() or diagonal_matrix):
         raise UserError(" Misspecified constraints for covariance matrix")
 
     # Discount rate and type shares need to be larger than on at all times.

@@ -100,6 +100,7 @@ def generate_random_model(
     params.loc['shocks', 'fixed'] = choice([True, False])
     if params["fixed"].values.all():
         params.loc['coeffs_a', 'fixed'] = False
+
     if params.loc['shocks', 'fixed'].values.any() or deterministic is True:
         params.loc['shocks', 'para'] = 0.0
 
