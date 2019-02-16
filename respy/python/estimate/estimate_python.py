@@ -1,6 +1,4 @@
-from respy.python.solve.solve_auxiliary import (
-    pyth_calculate_rewards_systematic,
-)
+from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.shared.shared_auxiliary import distribute_parameters

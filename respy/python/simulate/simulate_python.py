@@ -11,7 +11,7 @@ from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.simulate.simulate_auxiliary import get_random_types
 from respy.python.shared.shared_constants import HUGE_FLOAT
 import pandas as pd
-from respy.python.shared.shared_auxiliary import get_total_values
+from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
 def pyth_simulate(
@@ -96,19 +96,36 @@ def pyth_simulate(
 
             exp_a, exp_b, edu, choice_lagged, type_ = current_state
 
-            state = state_space[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
+            state = state_space[
+                period, exp_a, exp_b, edu, choice_lagged - 1, type_
+            ]
 
             # Select relevant subset
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
-            total_values, rewards_ex_post = get_total_values(
-                state, draws, optim_paras
+            total_values, rewards_ex_post = get_continuation_value(
+                state[["wage_a", "wage_b"]].values,
+                state[
+                    [
+                        "rewards_systematic_a",
+                        "rewards_systematic_b",
+                        "rewards_systematic_edu",
+                        "rewards_systematic_home",
+                    ]
+                ].values,
+                draws.reshape(1, -1),
+                state[
+                    ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
+                ].values,
+                optim_paras["delta"],
             )
+            total_values = total_values.ravel()
+            rewards_ex_post = rewards_ex_post.ravel()
 
             # We need to ensure that no individual chooses an inadmissible state. This
-            # cannot be done directly in the get_total_values function as the penalty
-            # otherwise dominates the interpolation equation. The parameter
+            # cannot be done directly in the get_continuation_value function as the
+            # penalty otherwise dominates the interpolation equation. The parameter
             # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
             # constructed cases.
             if edu >= edu_spec["max"]:
@@ -176,6 +193,6 @@ def pyth_simulate(
 
     record_simulation_stop(file_sim)
 
-    simulated_data = pd.DataFrame.from_records(data)
+    simulated_data = pd.DataFrame.from_records(data, columns=data[0].keys())
 
     return simulated_data

@@ -38,8 +38,9 @@ def simulate_observed(respy_obj, is_missings=True):
 
     respy_obj.simulate()
 
-    # It is important to set the seed after the simulation call. Otherwise, the value of the
-    # seed differs due to the different implementations of the PYTHON and FORTRAN programs.
+    # It is important to set the seed after the simulation call. Otherwise, the value of
+    # the seed differs due to the different implementations of the PYTHON and FORTRAN
+    # programs.
     np.random.seed(seed_sim)
 
     # We read in the baseline simulated dataset.
@@ -53,12 +54,12 @@ def simulate_observed(respy_obj, is_missings=True):
     )
 
     if is_missings:
-        # We truncate the histories of agents. This mimics the frequent empirical fact that we loose
-        # track of more and more agents over time.
+        # We truncate the histories of agents. This mimics the frequent empirical fact
+        # that we loose track of more and more agents over time.
         data_subset = data_frame.groupby("Identifier").apply(drop_agents_obs)
 
-        # We also want to drop the some wage observations. Note that we might be dealing with a
-        # dataset where nobody is working anyway.
+        # We also want to drop the some wage observations. Note that we might be dealing
+        # with a dataset where nobody is working anyway.
         is_working = data_subset["Choice"].isin([1, 2])
         num_drop_wages = int(np.sum(is_working) * np.random.uniform(high=0.5, size=1))
         if num_drop_wages > 0:

@@ -1,12 +1,11 @@
 import numpy as np
 import pytest
-
 from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.solve.solve_auxiliary import calculate_wages_systematic
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import construct_covariates
+from respy.python.solve.solve_auxiliary import create_covariates
 from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import get_total_values
+from respy.python.shared.shared_auxiliary import get_continuation_value
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.pre_processing.model_processing import write_init_file
 
@@ -36,7 +35,6 @@ class TestClass(object):
                 args = (optim_paras, num_paras, "all", True)
                 x = get_optim_paras(*args)
 
-            # Checks
             np.testing.assert_allclose(base, x)
 
     def test_2(self):
@@ -80,17 +78,17 @@ class TestClass(object):
 
         is_deterministic = np.count_nonzero(shocks_cholesky) == 0
 
-        # We can back out the wage information from other information provided in the simulated
-        # dataset.
+        # We can back out the wage information from other information provided in the
+        # simulated dataset.
         for choice in [1, 2]:
             cond = df["Choice"] == choice
             label_sys = "Systematic_Reward_{}".format(choice)
             label_sho = "Shock_Reward_{}".format(choice)
             label_gen = "General_Reward_{}".format(choice)
             label_com = "Common_Reward"
-            df["Ex_Post_Reward"] = (df[label_sys] - df[label_gen] - df[label_com]) * df[
-                label_sho
-            ]
+            df["Ex_Post_Reward"] = (
+                df[label_sys] - df[label_gen] - df[label_com]
+            ) * df[label_sho]
 
             col_1 = df["Ex_Post_Reward"].loc[:, cond]
             col_2 = df["Wage"].loc[:, cond]
@@ -98,8 +96,8 @@ class TestClass(object):
 
         # In the myopic case, the total reward should the equal to the ex post rewards.
         if respy_obj.get_attr("is_myopic"):
-            # The shock only affects the skill-function and not the other components determining
-            # the overall reward.
+            # The shock only affects the skill-function and not the other components
+            # determining the overall reward.
             for choice in [1, 2]:
                 cond = df["Choice"] == choice
 
@@ -142,6 +140,7 @@ class TestClass(object):
                     cond = df[label] == 0
                 assert np.all(cond)
 
+    @pytest.mark.skip(reason="back_out_systematic_wages does not exist anymore.")
     def test_4(self):
         """ Testing whether back and forth transformations for the wage does work.
         """
@@ -152,7 +151,13 @@ class TestClass(object):
         respy_obj = RespyCls("test.respy.ini")
         respy_obj, _ = respy_obj.simulate()
 
-        periods_rewards_systematic, states_number_period, states_all, num_periods, optim_paras = dist_class_attributes(
+        (
+            periods_rewards_systematic,
+            states_number_period,
+            states_all,
+            num_periods,
+            optim_paras,
+        ) = dist_class_attributes(
             respy_obj,
             "periods_rewards_systematic",
             "states_number_period",
@@ -169,12 +174,19 @@ class TestClass(object):
             rewards_systematic = periods_rewards_systematic[period, k, :]
             exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
 
-            covariates = construct_covariates(
+            covariates = create_covariates(
                 exp_a, exp_b, edu, choice_lagged, type_, period
             )
             wages = calculate_wages_systematic(covariates, optim_paras)
 
-            args = (rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras)
+            args = (
+                rewards_systematic,
+                exp_a,
+                exp_b,
+                edu,
+                choice_lagged,
+                optim_paras,
+            )
             rslt = back_out_systematic_wages(*args)
 
             np.testing.assert_almost_equal(rslt, wages)
@@ -194,35 +206,40 @@ class TestClass(object):
         respy_obj = RespyCls("test.respy.ini")
         respy_obj, _ = respy_obj.simulate()
 
-        num_periods, optim_paras, edu_spec, mapping_state_idx, periods_emax, states_all, periods_rewards_systematic, states_number_period = dist_class_attributes(
+        (
+            num_periods,
+            optim_paras,
+            edu_spec,
+            state_space,
+        ) = dist_class_attributes(
             respy_obj,
             "num_periods",
             "optim_paras",
             "edu_spec",
-            "mapping_state_idx",
-            "periods_emax",
-            "states_all",
-            "periods_rewards_systematic",
-            "states_number_period",
+            "state_space",
         )
 
         period = np.random.choice(range(num_periods))
-        k = np.random.choice(range(states_number_period[period]))
+        k = np.random.choice(range(state_space.states_per_period[period]))
 
-        rewards_systematic = periods_rewards_systematic[period, k, :]
+        state = state_space.states.loc[state_space.states.period.eq(period)].iloc[k]
         draws = np.random.normal(size=4)
 
-        total_values, rewards_ex_post = get_total_values(
-            period,
-            num_periods,
-            optim_paras,
-            rewards_systematic,
-            draws,
-            edu_spec,
-            mapping_state_idx,
-            periods_emax,
-            k,
-            states_all,
+        total_values, rewards_ex_post = get_continuation_value(
+            state[["wage_a", "wage_b"]].values,
+            state[
+                [
+                    "rewards_systematic_a",
+                    "rewards_systematic_b",
+                    "rewards_systematic_edu",
+                    "rewards_systematic_home",
+                ]
+            ].values,
+            draws.reshape(1, -1),
+            state[
+                ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
+            ].values,
+            optim_paras["delta"],
         )
 
         np.testing.assert_almost_equal(total_values, rewards_ex_post)

@@ -8,11 +8,8 @@ import pytest
 import scipy
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
-from respy.python.solve.solve_auxiliary import (
-    pyth_calculate_rewards_systematic,
-)
+from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.record.record_estimation import _spectral_condition_number
-from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.solve.solve_auxiliary import StateSpace
@@ -47,11 +44,7 @@ from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_draws
 from respy.tests.codes.auxiliary import write_types
 from functools import partial
-from numpy.testing import (
-    assert_equal,
-    assert_array_equal,
-    assert_array_almost_equal,
-)
+from numpy.testing import assert_equal, assert_array_equal, assert_array_almost_equal
 from respy import RespyCls
 
 from respy.python.shared.shared_constants import DECIMALS, TOL
@@ -118,9 +111,7 @@ class TestClass(object):
             np.zeros(4), np.identity(4), (num_draws_emax,)
         )
         draws_emax_risk = transform_disturbances(
-            draws_emax_standard,
-            np.zeros(4),
-            optim_paras["shocks_cholesky"],
+            draws_emax_standard, np.zeros(4), optim_paras["shocks_cholesky"]
         )
 
         # Sampling of random period and admissible state index
@@ -148,11 +139,7 @@ class TestClass(object):
         py = construct_emax_risk(*args)
 
         args = ()
-        args += base_args + (
-            edu_spec["start"],
-            edu_spec["max"],
-            optim_paras["delta"],
-        )
+        args += base_args + (edu_spec["start"], edu_spec["max"], optim_paras["delta"])
         args += (
             optim_paras["coeffs_common"],
             optim_paras["coeffs_a"],
@@ -199,12 +186,7 @@ class TestClass(object):
             )
 
             # Ensure equivalence
-            rslts = [
-                [fort_a, py_a],
-                [fort_b, py_b],
-                [fort_c, py_c],
-                [fort_d, py_d],
-            ]
+            rslts = [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]
             for obj in rslts:
                 assert_allclose(obj[0], obj[1])
 
@@ -403,12 +385,7 @@ class TestClass(object):
 
         # Check calculation of systematic components of rewards.
         args = ()
-        args += (
-            num_periods,
-            states_number_period,
-            states_all,
-            max_states_period,
-        )
+        args += (num_periods, states_number_period, states_all, max_states_period)
         pyth = pyth_calculate_rewards_systematic(*args + (optim_paras,))
 
         args += (coeffs_common, coeffs_a, coeffs_b, coeffs_edu, coeffs_home)
@@ -575,16 +552,12 @@ class TestClass(object):
             file_sim,
         )
 
-        args = (state_space)
+        args = state_space
         args += base_args + (edu_spec, optim_paras, num_types, is_debug)
         py = pyth_simulate(*args)
 
         args = ()
-        args += base_args + (
-            edu_spec["start"],
-            edu_spec["max"],
-            edu_spec["share"],
-        )
+        args += base_args + (edu_spec["start"], edu_spec["max"], edu_spec["share"])
         args += (
             edu_spec["lagged"],
             optim_paras["coeffs_common"],
@@ -658,11 +631,7 @@ class TestClass(object):
         args = base_args + (edu_spec,)
         py = pyth_criterion(x0, *args)
 
-        args = base_args + (
-            edu_spec["start"],
-            edu_spec["max"],
-            edu_spec["share"],
-        )
+        args = base_args + (edu_spec["start"], edu_spec["max"], edu_spec["share"])
         args += (type_spec_shares, type_spec_shifts, num_paras)
         f2py = fort_debug.wrapper_criterion(x0, *args)
 
@@ -899,9 +868,7 @@ class TestClass(object):
             data_array = process_dataset(respy_obj).values
 
             py = get_num_obs_agent(data_array, num_agents_est)
-            f90 = fort_debug.wrapper_get_num_obs_agent(
-                data_array, num_agents_est
-            )
+            f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)
 
             assert_almost_equal(py, f90)
 
@@ -917,13 +884,12 @@ class TestClass(object):
             args = [type_shares, edu_start]
 
             py = get_conditional_probabilities(*args)
-            fort = fort_debug.wrapper_get_conditional_probabilities(
-                *args + [num_types]
-            )
+            fort = fort_debug.wrapper_get_conditional_probabilities(*args + [num_types])
 
             assert_almost_equal(np.sum(py), 1.0)
             assert_almost_equal(py, fort)
 
+    @pytest.mark.skip(reason="back_out_systematic_wages does not exist anymore.")
     def test_12(self):
         """ Function that backs out the systematic wages from the systematic rewards
         """
@@ -946,7 +912,7 @@ class TestClass(object):
 
             args = [rewards_systematic, exp_a, exp_b, edu, choice_lagged]
 
-            py = back_out_systematic_wages(*args + [optim_paras])
+            # py = back_out_systematic_wages(*args + [optim_paras])
             fort = fort_debug.wrapper_back_out_systematic_wages(
                 *args + [coeffs_a, coeffs_b]
             )
@@ -982,8 +948,6 @@ class TestClass(object):
             assert_equal(py[label], f90[i])
 
         py = sort_type_info(optim_paras, num_types)
-        f90 = fort_debug.wrapper_sort_type_info(
-            optim_paras["type_shares"], num_types
-        )
+        f90 = fort_debug.wrapper_sort_type_info(optim_paras["type_shares"], num_types)
         for i, label in enumerate(["order", "shares"]):
             assert_equal(py[label], f90[i])

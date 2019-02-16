@@ -3,7 +3,6 @@ import shlex
 
 import statsmodels.api as sm
 import numpy as np
-import pickle
 from respy.python.record.record_solution import record_solution_prediction
 from respy.python.shared.shared_auxiliary import calculate_rewards_general
 from respy.python.shared.shared_auxiliary import calculate_rewards_common
@@ -12,6 +11,7 @@ from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_auxiliary import get_continuation_value
 import pandas as pd
 from itertools import count
 from respy.custom_exceptions import InadmissibleStateError
@@ -520,36 +520,40 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
     Refactor.
 
     """
-    # Calculate ex-post rewards
-    states.loc[states.period.eq(period), "rewards_ex_post_a"] = (
-        states.wage_a * draws[0] + states.rewards_systematic_a - states.wage_a
-    )
-    states.loc[states.period.eq(period), "rewards_ex_post_b"] = (
-        states.wage_b * draws[1] + states.rewards_systematic_b - states.wage_b
-    )
-    states.loc[states.period.eq(period), "rewards_ex_post_edu"] = (
-        states.rewards_systematic_edu + draws[2]
-    )
-    states.loc[states.period.eq(period), "rewards_ex_post_home"] = (
-        states.rewards_systematic_home + draws[3]
+    total_values, rewards_ex_post = get_continuation_value(
+        states[["wage_a", "wage_b"]].values,
+        states[
+            [
+                "rewards_systematic_a",
+                "rewards_systematic_b",
+                "rewards_systematic_edu",
+                "rewards_systematic_home",
+            ]
+        ].values,
+        draws.reshape(1, -1),
+        states[["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]].values,
+        optim_paras["delta"],
     )
 
-    # Calculate total utilities
-    states.loc[states.period.eq(period), "total_values_a"] = (
-        states.rewards_ex_post_a + optim_paras["delta"] * states.emaxs_a
-    )
-    states.loc[states.period.eq(period), "total_values_b"] = (
-        states.rewards_ex_post_b + optim_paras["delta"] * states.emaxs_b
-    )
-    states.loc[states.period.eq(period), "total_values_edu"] = (
-        states.rewards_ex_post_edu + optim_paras["delta"] * states.emaxs_edu
-    )
-    states.loc[states.period.eq(period), "total_values_home"] = (
-        states.rewards_ex_post_home + optim_paras["delta"] * states.emaxs_home
-    )
+    states[
+        [
+            "rewards_ex_post_a",
+            "rewards_ex_post_b",
+            "rewards_ex_post_edu",
+            "rewards_ex_post_home",
+        ]
+    ] = rewards_ex_post
+    states[
+        [
+            "total_values_a",
+            "total_values_b",
+            "total_values_edu",
+            "total_values_home",
+        ]
+    ] = total_values
 
     # Implement level shifts
-    states.loc[states.period.eq(period), "maxe"] = states[
+    states.loc[states.period.eq(period), "max_emax"] = states[
         [
             "total_values_a",
             "total_values_b",
@@ -559,16 +563,16 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
     ].max(axis=1)
 
     states.loc[states.period.eq(period), "exogenous_a"] = (
-        states.maxe - states.total_values_a
+        states.max_emax - states.total_values_a
     )
     states.loc[states.period.eq(period), "exogenous_b"] = (
-        states.maxe - states.total_values_b
+        states.max_emax - states.total_values_b
     )
     states.loc[states.period.eq(period), "exogenous_edu"] = (
-        states.maxe - states.total_values_edu
+        states.max_emax - states.total_values_edu
     )
     states.loc[states.period.eq(period), "exogenous_home"] = (
-        states.maxe - states.total_values_home
+        states.max_emax - states.total_values_home
     )
 
     return states
@@ -763,11 +767,7 @@ class StateSpace:
 
     def _get_fortran_counterparts(self):
         periods_rewards_systematic = np.full(
-            (
-                self.states_per_period.shape[0],
-                self.states_per_period.max(),
-                4,
-            ),
+            (self.states_per_period.shape[0], self.states_per_period.max(), 4),
             np.nan,
         )
         for period, group in self.states.groupby("period"):
@@ -783,11 +783,7 @@ class StateSpace:
             periods_rewards_systematic[period, : sub.shape[0]] = sub
 
         periods_emax = np.full(
-            (
-                self.states_per_period.shape[0],
-                self.states_per_period.max(),
-                4,
-            ),
+            (self.states_per_period.shape[0], self.states_per_period.max(), 4),
             np.nan,
         )
         for period, group in self.states.groupby("period"):

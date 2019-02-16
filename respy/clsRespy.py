@@ -117,9 +117,7 @@ class RespyCls(object):
 
         invalid_attr = self.derived_attributes + ["optim_paras", "init_dict"]
         if key in invalid_attr:
-            raise AssertionError(
-                "{} must not be modified by users!".format(key)
-            )
+            raise AssertionError("{} must not be modified by users!".format(key))
 
         if key in self.solution_attributes:
             assert not self.attr[
@@ -152,9 +150,7 @@ class RespyCls(object):
 
         for key_ in self.solution_attributes:
             try:
-                np.testing.assert_almost_equal(
-                    self.attr[key_], other.attr[key_]
-                )
+                np.testing.assert_almost_equal(self.attr[key_], other.attr[key_])
             except AssertionError:
                 return False
 
@@ -321,16 +317,13 @@ class RespyCls(object):
 
         else:
             data_frame = pd.DataFrame(
-                data=replace_missing_values(data_array),
-                columns=DATA_LABELS_SIM,
+                data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
             )
 
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
 
         # ====================================================================
-        data_frame.set_index(
-            ["Identifier", "Period"], drop=False, inplace=True
-        )
+        data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
 
         # Checks
         if is_debug:

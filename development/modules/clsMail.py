@@ -131,10 +131,7 @@ class MailCls(object):
         assert self.attr["message"] is not None
 
         # Process credentials
-        dict_ = {
-            "username": "respy.notifications",
-            "password": "baKermiga600g",
-        }
+        dict_ = {"username": "respy.notifications", "password": "baKermiga600g"}
 
         self.attr["username"] = dict_["username"]
 

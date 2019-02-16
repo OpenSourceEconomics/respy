@@ -1,9 +1,7 @@
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import StateSpace
-from respy.python.solve.solve_auxiliary import (
-    pyth_calculate_rewards_systematic,
-)
+from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 
 
 def pyth_solve(

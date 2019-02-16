@@ -10,9 +10,9 @@ import os
 import numpy as np
 import random
 
-from config import PACKAGE_DIR
+from development.modules.config import PACKAGE_DIR
 
-from clsMail import MailCls
+from development.modules.clsMail import MailCls
 
 
 def update_class_instance(respy_obj, spec_dict):

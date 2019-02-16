@@ -20,4 +20,5 @@ class UserError(Exception):
 
 class InadmissibleStateError(KeyError):
     """Exception raised when an inadmissible state is indexed."""
+
     pass

@@ -14,6 +14,7 @@ from respy.custom_exceptions import UserError
 from numba import njit
 import respy.python.shared.fast_routines as fr
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
+from numba import guvectorize
 
 
 def get_log_likl(contribs):
@@ -277,48 +278,55 @@ def cholesky_to_coeffs(shocks_cholesky):
     return shocks_coeffs
 
 
-def get_total_values(state, draws, optim_paras):
-    """ Calculates the maximum utility for each choice.
+@guvectorize(
+    [
+        "void(float32[:], float32[:], float32[:, :], float32[:], float32, float32[:, :], float32[:, :])",
+        "void(float64[:], float64[:], float64[:, :], float64[:], float64, float64[:, :], float64[:, :])",
+    ],
+    "(m), (n), (p, n), (n), () -> (n, p), (n, p)",
+    nopython=True,
+    target="cpu",
+)
+def get_continuation_value(
+    wages, rewards_systematic, draws, emaxs_sub_period, delta, cont_value, rew_ex_post
+):
+    """Calculate the continuation value and ex-post rewards.
+
+    This function is a generalized ufunc which is flexible in the number of individuals
+    and draws.
 
     Parameters
     ----------
-    state : pd.Series
-        State holding necessary information.
+    wages : np.array
+        Array with shape (num_obs, 2).
+    rewards_systematic : np.array
+        Array with shape (num_obs, 4).
     draws : np.array
-        Added uncertainty to rewards.
-    optim_paras : dict
+        Array with shape (num_draws, 4)
+    emaxs_sub_period : np.array
+        Array with shape (num_obs, 4)
+    delta : float
+        Discount rate.
 
     Returns
     -------
-    total_values : np,array
-        Array with shape (num_choices) containing discounted expected utility.
-    rewards_ex_post : np.array
-        Array with shape (num_choices) containing utility of present choice.
-
-    TODO: This function resembles construct_emax_risk and get_exogenous_variables.
-    Refactor!
+    cont_value : np.array
+        Array with shape (num_obs, 4, num_draws).
+    rew_ex_post : np.array
+        Array with shape (num_obs, 4, num_draws)
 
     """
-    rewards_ex_post = np.array(
-        [
-            state.wage_a * draws[0]
-            + state.rewards_systematic_a
-            - state.wage_a,
-            state.wage_b * draws[1]
-            + state.rewards_systematic_b
-            - state.wage_b,
-            state.rewards_systematic_edu + draws[2],
-            state.rewards_systematic_home + draws[3],
-        ]
-    )
+    for i in range(draws.shape[0]):
+        for j in range(rewards_systematic.shape[0]):
+            if j < wages.shape[0]:
+                rew_ex = (
+                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                )
+            else:
+                rew_ex = rewards_systematic[j] + draws[i, j]
 
-    emaxs = np.array(
-        [state.emaxs_a, state.emaxs_b, state.emaxs_edu, state.emaxs_home]
-    )
-
-    total_values = rewards_ex_post + optim_paras["delta"] * emaxs
-
-    return total_values, rewards_ex_post
+            cont_value[j, i] = rew_ex + delta * emaxs_sub_period[j]
+            rew_ex_post[j, i] = rew_ex
 
 
 def get_emaxs_of_subsequent_period(
@@ -692,93 +700,6 @@ def get_num_obs_agent(data_array, num_agents_est):
     return num_obs_agent
 
 
-def back_out_systematic_wages(
-    rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras
-):
-    """Construct the wage component for the labor market rewards.
-
-    TODO: Delete it.
-
-    """
-    # Construct covariates needed for the general part of labor market rewards.
-    covariates = construct_covariates(
-        exp_a, exp_b, edu, choice_lagged, None, None
-    )
-
-    # First we calculate the general component.
-    general, wages_systematic = np.tile(np.nan, 2), np.tile(np.nan, 2)
-
-    covars_general = [
-        1.0,
-        covariates["not_exp_a_lagged"],
-        covariates["not_any_exp_a"],
-    ]
-    general[0] = np.dot(optim_paras["coeffs_a"][12:], covars_general)
-
-    covars_general = [
-        1.0,
-        covariates["not_exp_b_lagged"],
-        covariates["not_any_exp_b"],
-    ]
-    general[1] = np.dot(optim_paras["coeffs_b"][12:], covars_general)
-
-    # Second we do the same with the common component.
-    covars_common = [covariates["hs_graduate"], covariates["co_graduate"]]
-    rewards_common = np.dot(optim_paras["coeffs_common"], covars_common)
-
-    for j in [0, 1]:
-        wages_systematic[j] = (
-            rewards_systematic[j] - general[j] - rewards_common
-        )
-
-    return wages_systematic
-
-
-def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
-    """ Construction of some additional covariates for the reward calculations.
-
-    TODO: Delete it.
-
-    """
-    covariates = dict()
-
-    # These are covariates that are supposed to capture the entry costs.
-    covariates["not_exp_a_lagged"] = int((exp_a > 0) and (choice_lagged != 1))
-    covariates["not_exp_b_lagged"] = int((exp_b > 0) and (choice_lagged != 2))
-    covariates["work_a_lagged"] = int(choice_lagged == 1)
-    covariates["work_b_lagged"] = int(choice_lagged == 2)
-    covariates["edu_lagged"] = int(choice_lagged == 3)
-    covariates["choice_lagged"] = choice_lagged
-    covariates["not_any_exp_a"] = int(exp_a == 0)
-    covariates["not_any_exp_b"] = int(exp_b == 0)
-    covariates["any_exp_a"] = int(exp_a > 0)
-    covariates["any_exp_b"] = int(exp_b > 0)
-    covariates["period"] = period
-    covariates["exp_a"] = exp_a
-    covariates["exp_b"] = exp_b
-    covariates["type"] = type_
-    covariates["edu"] = edu
-
-    if edu is not None:
-        covariates["hs_graduate"] = int(edu >= 12)
-        covariates["co_graduate"] = int(edu >= 16)
-
-        cond = (not covariates["edu_lagged"]) and (
-            not covariates["hs_graduate"]
-        )
-        covariates["is_return_not_high_school"] = int(cond)
-
-        cond = (not covariates["edu_lagged"]) and covariates["hs_graduate"]
-        covariates["is_return_high_school"] = int(cond)
-
-    if period is not None:
-        covariates["is_minor"] = int(period < 2)
-        covariates["is_young_adult"] = int(period in [2, 3, 4])
-        covariates["is_adult"] = int(period >= 5)
-
-    return covariates
-
-
 def create_covariates(states):
     """Creates covariates for each state in each period.
 
@@ -811,10 +732,10 @@ def create_covariates(states):
     states["hs_graduate"] = np.where(states.edu.ge(12), 1, 0)
     states["co_graduate"] = np.where(states.edu.ge(16), 1, 0)
     states["is_return_not_high_school"] = np.where(
-        ~states.edu_lagged & ~states.hs_graduate, 1, 0
+        (states.edu_lagged == 0) & (states.hs_graduate == 0), 1, 0
     )
     states["is_return_high_school"] = np.where(
-        ~states.edu_lagged & states.hs_graduate, 1, 0
+        (states.edu_lagged == 0) & (states.hs_graduate == 1), 1, 0
     )
 
     states["is_minor"] = np.where(states.period.lt(2), 1, 0)

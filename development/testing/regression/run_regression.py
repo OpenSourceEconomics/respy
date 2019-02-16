@@ -4,9 +4,6 @@ development and refactoring efforts.
 """
 from __future__ import print_function
 
-import sys
-sys.path.append("development/modules")
-
 from functools import partial
 
 import multiprocessing as mp
@@ -15,12 +12,12 @@ import argparse
 import socket
 import json
 
-from auxiliary_shared import send_notification
-from auxiliary_shared import compile_package
+from development.modules.auxiliary_shared import send_notification
+from development.modules.auxiliary_shared import compile_package
 
-from auxiliary_regression import create_single
-from auxiliary_regression import check_single
-from auxiliary_regression import get_chunks
+from development.modules.auxiliary_regression import create_single
+from development.modules.auxiliary_regression import check_single
+from development.modules.auxiliary_regression import get_chunks
 
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import DECIMALS
@@ -67,16 +64,16 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         assert idx > 0
 
     if is_investigation:
-        fname = TEST_RESOURCES_DIR + "/regression_vault.respy.json"
+        fname = TEST_RESOURCES_DIR / "regression_vault.respy.json"
         tests = json.load(open(fname, "r"))
 
-        # TODO: The code that follows has a large overlap with check_single() function. However,
-        #  to get a clear failure in the assertion statements. This should be streamlined in the
-        #  revised regression test setup.
+        # TODO: The code that follows has a large overlap with check_single() function.
+        #  However, to get a clear failure in the assertion statements. This should be
+        #  streamlined in the revised regression test setup.
         init_dict, crit_val = tests[idx]
 
-        # TODO: These are temporary modifications that ensure compatibility over time and
-        # will be removed once we update the regression test battery.
+        # TODO: These are temporary modifications that ensure compatibility over time
+        # and will be removed once we update the regression test battery.
         init_dict["EDUCATION"]["lagged"] = []
         for edu_start in init_dict["EDUCATION"]["start"]:
             if edu_start >= 10:
@@ -88,8 +85,8 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         if IS_PARALLELISM_OMP and init_dict["PROGRAM"]["version"] == "FORTRAN":
             init_dict["PROGRAM"]["threads"] = np.random.randint(1, 5)
 
-        # During development it is useful that we can only run the PYTHON versions of the
-        # program.
+        # During development it is useful that we can only run the PYTHON versions of
+        # the program.
         msg = " ... skipped as required version of package not available"
         if init_dict["PROGRAM"]["version"] == "FORTRAN" and not IS_FORTRAN:
             print(msg)
@@ -123,7 +120,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         return
 
     if is_check:
-        fname = TEST_RESOURCES_DIR + "/regression_vault.respy.json"
+        fname = TEST_RESOURCES_DIR / "regression_vault.respy.json"
         tests = json.load(open(fname, "r"))
 
         run_single = partial(check_single, tests)

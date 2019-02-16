@@ -8,7 +8,7 @@ from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TOL
-from auxiliary_shared import get_random_dirname
+from development.modules.auxiliary_shared import get_random_dirname
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.random_init import generate_init
 

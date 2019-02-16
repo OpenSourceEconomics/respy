@@ -5,7 +5,7 @@ from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
 from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_auxiliary import get_total_values
+from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
 def pyth_contributions(
@@ -111,12 +111,15 @@ def pyth_contributions(
                 idx = int(choice - 1)
 
                 # Extract relevant deviates from standard normal distribution. The same
-                # set of baseline draws are used for each agent and period.
-                draws_prob_raw = periods_draws_prob[period, :, :]
+                # set of baseline draws are used for each agent and period. The copy is
+                # needed as the object is otherwise changed inplace.
+                draws_prob_raw = periods_draws_prob[period, :, :].copy()
 
                 # Get state index to access the systematic component of the agents
                 # rewards. These feed into the simulation of choice probabilities.
-                state = state_space[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
+                state = state_space[
+                    period, exp_a, exp_b, edu, choice_lagged - 1, type_
+                ]
 
                 # If an agent is observed working, then the the labor market shocks are
                 # observed and the conditional distribution is used to determine the
@@ -188,9 +191,23 @@ def pyth_contributions(
 
                     # Calculate total values. immediate rewards, including shock +
                     # expected future value!
-                    total_values, _ = get_total_values(
-                        state, draws, optim_paras
+                    total_values, _ = get_continuation_value(
+                        state[["wage_a", "wage_b"]].values,
+                        state[
+                            [
+                                "rewards_systematic_a",
+                                "rewards_systematic_b",
+                                "rewards_systematic_edu",
+                                "rewards_systematic_home",
+                            ]
+                        ].values,
+                        draws.reshape(1, -1),
+                        state[
+                            ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
+                        ].values,
+                        optim_paras["delta"],
                     )
+                    total_values = total_values.ravel()
 
                     # Record optimal choices
                     counts[np.argmax(total_values)] += 1
