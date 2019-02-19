@@ -26,6 +26,7 @@ import copy
 import json
 import os
 from socket import gethostname
+from pathlib import Path
 
 
 class MailCls(object):
@@ -131,7 +132,7 @@ class MailCls(object):
         assert self.attr["message"] is not None
 
         # Process credentials
-        dict_ = {"username": "respy.notifications", "password": "baKermiga600g"}
+        dict_ = json.load(open(Path(os.environ["HOME"], ".credentials")))
 
         self.attr["username"] = dict_["username"]
 

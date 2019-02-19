@@ -149,8 +149,6 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         idx_failures = [i for i, x in enumerate(ret) if x not in [True, None]]
         is_failure = False in ret
 
-        print(idx_failures)
-
         if len(idx_failures) > 0:
             is_failure = True
 
