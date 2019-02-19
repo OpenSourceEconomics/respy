@@ -124,8 +124,6 @@ def pyth_contributions(
                 # If an agent is observed working, then the the labor market shocks are
                 # observed and the conditional distribution is used to determine the
                 # choice probabilities if the wage information is available as well.
-
-                # TODO: Simplify? Can a wage be non-missing and choice not in [1, 2]?
                 if is_working and (not is_wage_missing):
                     wages_systematic = state[["wage_a", "wage_b"]].values
 

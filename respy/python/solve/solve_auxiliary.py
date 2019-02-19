@@ -618,10 +618,7 @@ def get_predictions(period, states, is_simulated, file_sim, is_write):
         states.period.eq(period),
         ["exogenous_a", "exogenous_b", "exogenous_edu", "exogenous_home"],
     ].values
-    # TODO: In https://github.com/OpenSourceEconomics/respy/blob/
-    # ed6361d4aed5da6beb7109424c7c506805b97512/respy/python/solve/
-    # solve_auxiliary.py#L459, it is stated that infinite values should be replaced, but
-    # it was never implemented.
+
     exogenous = np.hstack(
         (np.ones((exogenous.shape[0], 1)), exogenous, np.sqrt(exogenous))
     )
