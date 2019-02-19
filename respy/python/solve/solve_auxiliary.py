@@ -516,9 +516,6 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
     -------
     states : pd.DataFrame
 
-    TODO: Resembles construct_emax_risk (3d numpy) and get_total_values (1d numpy).
-    Refactor.
-
     """
     total_values, rewards_ex_post = get_continuation_value(
         states[["wage_a", "wage_b"]].values,

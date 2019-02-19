@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from respy.python.shared.shared_auxiliary import back_out_systematic_wages
 from respy.python.solve.solve_auxiliary import calculate_wages_systematic
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import create_covariates
@@ -187,7 +186,7 @@ class TestClass(object):
                 choice_lagged,
                 optim_paras,
             )
-            rslt = back_out_systematic_wages(*args)
+            # rslt = back_out_systematic_wages(*args)
 
             np.testing.assert_almost_equal(rslt, wages)
 

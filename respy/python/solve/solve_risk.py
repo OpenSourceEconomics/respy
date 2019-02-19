@@ -15,10 +15,8 @@ def construct_emax_risk(states, draws_emax_risk, optim_paras):
     total_values : np.array
         One-dimensional array containing ??? for each state in a given period.
 
-    TODO: This function resembles get_total_values and get_exogenous_variables.
-    Refactor!
-
     """
+
     total_values, _ = get_continuation_value(
         states[["wage_a", "wage_b"]].values,
         states[

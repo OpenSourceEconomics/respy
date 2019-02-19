@@ -355,12 +355,12 @@ def get_emaxs_of_subsequent_period(
 
     # Working in Occupation A in period + 1
     emaxs_a = state_space[period + 1, exp_a + 1, exp_b, edu, 0, type_][
-        "emaxs_a"
+        "emax"
     ]
 
     # Working in Occupation B in period +1
     emaxs_b = state_space[period + 1, exp_a, exp_b + 1, edu, 1, type_][
-        "emaxs_b"
+        "emax"
     ]
 
     # Schooling in period + 1. Note that adding an additional year of schooling is only
@@ -371,12 +371,12 @@ def get_emaxs_of_subsequent_period(
         emaxs_edu = INADMISSIBILITY_PENALTY
     else:
         emaxs_edu = state_space[period + 1, exp_a, exp_b, edu + 1, 2, type_][
-            "emaxs_edu"
+            "emax"
         ]
 
     # Staying at home in period + 1
     emaxs_home = state_space[period + 1, exp_a, exp_b, edu, 3, type_][
-        "emaxs_home"
+        "emax"
     ]
 
     return emaxs_a, emaxs_b, emaxs_edu, emaxs_home
