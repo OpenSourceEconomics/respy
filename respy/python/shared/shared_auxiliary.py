@@ -11,8 +11,6 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
-from numba import njit
-import respy.python.shared.fast_routines as fr
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from numba import guvectorize
 
@@ -565,14 +563,13 @@ def read_draws(num_periods, num_draws):
     return periods_draws
 
 
-@njit
 def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     """Transform the standard normal deviates to the relevant distribution."""
     draws_transformed = shocks_cholesky.dot(draws.T).T
 
     draws_transformed += shocks_mean
 
-    draws_transformed[:, :2] = fr.clip(
+    draws_transformed[:, :2] = np.clip(
         np.exp(draws_transformed[:, :2]), 0.0, HUGE_FLOAT
     )
 

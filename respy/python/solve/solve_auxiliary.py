@@ -815,9 +815,7 @@ class StateSpace:
         key = tuple(int(i) for i in key)
         position = self.indexer[key]
 
-        try:
-            return self.states.loc[position]
-        except InadmissibleStateError as e:
+        if position == -1:
             raise InadmissibleStateError(
                 ", ".join(
                     [
@@ -825,4 +823,6 @@ class StateSpace:
                         for k, v in zip(self.indexer_dim_names, key)
                     ]
                 )
-            ) from e
+            )
+        else:
+            return self.states.iloc[position]
