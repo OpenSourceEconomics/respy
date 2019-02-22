@@ -60,13 +60,11 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     --------
     >>> num_periods = 40
     >>> num_types = 1
-    >>> edu_spec = {
-    ...     "lagged": [1.0], "start": [10], "share": [1.0], "max": 20
-    ... }
-    >>> df = pyth_create_state_space(num_periods, num_types, edu_spec)
-    >>> df.shape
+    >>> edu_spec = {"start": [10], "max": 20}
+    >>> states, indexer = pyth_create_state_space(num_periods, num_types, edu_spec)
+    >>> states.shape
     (324263, 6)
-    >>> df.groupby("period").count().iloc[:, 0].values
+    >>> states.groupby("period").count().iloc[:, 0].values
     array([    2,     4,    19,    47,    92,   158,   249,   369,   522,
              712,   943,  1218,  1535,  1895,  2298,  2744,  3233,  3765,
             4340,  4958,  5619,  6323,  7070,  7860,  8693,  9569, 10488,
@@ -694,6 +692,11 @@ def calculate_wages_systematic(states, optim_paras):
     """
     states["exp_a_sq"] = states.exp_a ** 2 / 100
     states["exp_b_sq"] = states.exp_b ** 2 / 100
+
+    # TODO: Is this still necessary?
+    if os.path.exists(".restud.respy.scratch"):
+        states["exp_a_sq"] *= 100.00
+        states["exp_b_sq"] *= 100.00
 
     relevant_covariates = [
         "intercept",
