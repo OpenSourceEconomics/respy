@@ -13,7 +13,6 @@ from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
 import pandas as pd
-from itertools import count
 from respy.custom_exceptions import InadmissibleStateError
 from respy.python.shared.shared_auxiliary import create_covariates
 
@@ -72,8 +71,6 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
            22043, 23435, 24870, 26348], dtype=int64)
 
     """
-    # Create list to store state information. Taken from
-    # https://stackoverflow.com/a/17496530/7523785.
     data = []
 
     # Initialize the state indexer object which enables faster lookup of states in the
@@ -90,7 +87,7 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     states_indexer = np.full(shape, -1, dtype=np.int32)
 
     # Initialize counter
-    counter = count()
+    i = 0
 
     # Construct state space by periods
     for period in range(num_periods):
@@ -105,26 +102,24 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                 # + 1 as zero has to be included if it is never this choice and period
                 # + 1 if it is always the same choice.
 
+                # Furthermore, the time constraint of agents is always fulfilled as
+                # previous choices limit the space for subsequent choices.
+
                 # Loop over all admissible work experiences for Occupation A
-                for exp_a in range(num_periods + 1):
+                for exp_a in range(period + 1):
 
                     # Loop over all admissible work experience for Occupation B
-                    for exp_b in range(num_periods + 1):
+                    for exp_b in range(period + 1 - exp_a):
 
                         # Loop over all admissible additional education levels
-                        for edu_add in range(num_periods + 1):
-
-                            # Check if admissible for time constraints. Note that the
-                            # total number of activities does not have is less or equal
-                            # to the total possible number of activities as the rest is
-                            # implicitly filled with leisure.
-                            if edu_add + exp_a + exp_b > period:
-                                continue
-
-                            # Agent cannot attain more additional education than
-                            # (EDU_MAX - EDU_START).
-                            if edu_add > (edu_spec["max"] - edu_start):
-                                continue
+                        for edu_add in range(
+                            min(
+                                [
+                                    period + 1 - exp_a - exp_b,
+                                    edu_spec["max"] + 1 - edu_start,
+                                ]
+                            )
+                        ):
 
                             # Loop over all admissible values for the lagged activity:
                             # (1) Occupation A, (2) Occupation B, (3) Education, and (4)
@@ -164,13 +159,6 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                     if (choice_lagged == 3) and (edu_add == 0):
                                         continue
 
-                                # (1, 1) In the first period individual either were in
-                                # school the previous period as well or at home. They
-                                # cannot have any work experience.
-                                if period == 0:
-                                    if choice_lagged in [1, 2]:
-                                        continue
-
                                 # (2, 1) An individual that has never worked in
                                 # Occupation A cannot have that lagged activity.
                                 if (choice_lagged == 1) and (exp_a == 0):
@@ -181,22 +169,12 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                 if (choice_lagged == 2) and (exp_b == 0):
                                     continue
 
-                                # If we have multiple initial conditions it might well
-                                # be the case that we have a duplicate state, i.e. the
-                                # same state is possible with other initial condition
-                                # that period.
-                                if (
-                                    states_indexer[
-                                        period,
-                                        exp_a,
-                                        exp_b,
-                                        edu_start + edu_add,
-                                        choice_lagged - 1,
-                                        type_,
-                                    ]
-                                    != -1
-                                ):
-                                    continue
+                                # (1, 1) In the first period individual either were in
+                                # school the previous period as well or at home. They
+                                # cannot have any work experience.
+                                if period == 0:
+                                    if choice_lagged in [1, 2]:
+                                        continue
 
                                 # Collect mapping of state space to array index.
                                 states_indexer[
@@ -206,7 +184,9 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                     edu_start + edu_add,
                                     choice_lagged - 1,
                                     type_,
-                                ] = next(counter)
+                                ] = i
+
+                                i += 1
 
                                 # Store information in a dictionary and append to data.
                                 row = {
