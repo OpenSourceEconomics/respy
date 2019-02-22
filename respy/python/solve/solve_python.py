@@ -1,7 +1,9 @@
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import StateSpace
-from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
+from respy.python.solve.solve_auxiliary import (
+    pyth_calculate_rewards_systematic,
+)
 
 
 def pyth_solve(
@@ -22,7 +24,9 @@ def pyth_solve(
     """
     # Create the state space
     state_space = StateSpace()
-    state_space.create_state_space(num_periods, num_types, edu_spec)
+    state_space.create_state_space(
+        num_periods, num_types, edu_spec["start"], edu_spec["max"]
+    )
     state_space.create_covariates()
 
     state_space.states = pyth_calculate_rewards_systematic(

@@ -15,9 +15,11 @@ from respy.python.shared.shared_auxiliary import get_continuation_value
 import pandas as pd
 from respy.custom_exceptions import InadmissibleStateError
 from respy.python.shared.shared_auxiliary import create_covariates
+from numba import njit
 
 
-def pyth_create_state_space(num_periods, num_types, edu_spec):
+@njit
+def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
     """ Create the state space.
 
     The state space consists of all admissible combinations of the following elements:
@@ -44,8 +46,10 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
         Number of periods. ???
     num_types : int
         Number of types. ???
-    edu_spec : dict
-        Contains educational specification with keys lagged, start, share and max.
+    edu_starts : List[int]
+        Contains values of initial education.
+    edu_max : int
+        Maximum of achievable education.
 
     Returns
     -------
@@ -59,16 +63,14 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     --------
     >>> num_periods = 40
     >>> num_types = 1
-    >>> edu_spec = {"start": [10], "max": 20}
-    >>> states, indexer = pyth_create_state_space(num_periods, num_types, edu_spec)
+    >>> edu_starts, edu_max = [10], 20
+    >>> states, indexer = pyth_create_state_space(
+    ...     num_periods, num_types, edu_starts, edu_max
+    ... )
     >>> states.shape
     (324263, 6)
-    >>> states.groupby("period").count().iloc[:, 0].values
-    array([    2,     4,    19,    47,    92,   158,   249,   369,   522,
-             712,   943,  1218,  1535,  1895,  2298,  2744,  3233,  3765,
-            4340,  4958,  5619,  6323,  7070,  7860,  8693,  9569, 10488,
-           11450, 12455, 13503, 14594, 15728, 16905, 18125, 19388, 20694,
-           22043, 23435, 24870, 26348], dtype=int64)
+    >>> indexer.shape
+    (40, 40, 40, 21, 4, 1)
 
     """
     data = []
@@ -76,14 +78,7 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
     # Initialize the state indexer object which enables faster lookup of states in the
     # pandas DataFrame. The dimensions of the matrix are the characteristics of the
     # agents and the value is the index in the DataFrame.
-    shape = (
-        num_periods,
-        num_periods,
-        num_periods,
-        edu_spec["max"] + 1,
-        4,
-        num_types,
-    )
+    shape = (num_periods, num_periods, num_periods, edu_max + 1, 4, num_types)
     states_indexer = np.full(shape, -1, dtype=np.int32)
 
     # Initialize counter
@@ -96,7 +91,7 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
         for type_ in range(num_types):
 
             # Loop overall all initial levels of schooling
-            for edu_start in edu_spec["start"]:
+            for edu_start in edu_starts:
 
                 # For occupations and education it is necessary to loop over period
                 # + 1 as zero has to be included if it is never this choice and period
@@ -114,10 +109,8 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                         # Loop over all admissible additional education levels
                         for edu_add in range(
                             min(
-                                [
-                                    period + 1 - exp_a - exp_b,
-                                    edu_spec["max"] + 1 - edu_start,
-                                ]
+                                period + 1 - exp_a - exp_b,
+                                edu_max + 1 - edu_start,
                             )
                         ):
 
@@ -189,17 +182,17 @@ def pyth_create_state_space(num_periods, num_types, edu_spec):
                                 i += 1
 
                                 # Store information in a dictionary and append to data.
-                                row = {
-                                    "period": period,
-                                    "exp_a": exp_a,
-                                    "exp_b": exp_b,
-                                    "edu": edu_start + edu_add,
-                                    "choice_lagged": choice_lagged,
-                                    "type": type_,
-                                }
+                                row = (
+                                    period,
+                                    exp_a,
+                                    exp_b,
+                                    edu_start + edu_add,
+                                    choice_lagged,
+                                    type_,
+                                )
                                 data.append(row)
 
-    states = pd.DataFrame.from_records(data)
+    states = np.array(data)
 
     return states, states_indexer
 
@@ -733,7 +726,18 @@ class StateSpace:
         the DataFrame.
 
         """
-        self.states, self.indexer = pyth_create_state_space(*args)
+        data, self.indexer = pyth_create_state_space(*args)
+        self.states = pd.DataFrame(
+            data,
+            columns=[
+                "period",
+                "exp_a",
+                "exp_b",
+                "edu",
+                "choice_lagged",
+                "type",
+            ],
+        )
 
     def create_covariates(self):
         self.states = create_covariates(self.states)
