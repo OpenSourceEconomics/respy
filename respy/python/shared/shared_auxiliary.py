@@ -363,8 +363,9 @@ def get_emaxs_of_subsequent_period(
 
     # Schooling in period + 1. Note that adding an additional year of schooling is only
     # possible for those that have strictly less than the maximum level of additional
-    # education allowed. This condition is necessary as the state is undefined and would
-    # return indexer -1 which is not available in the DataFrame.
+    # education allowed. This condition is necessary as there are states which have
+    # reached maximum education. Incrementing education by one would target an
+    # inadmissible state.
     if edu >= edu_spec_max:
         emaxs_edu = INADMISSIBILITY_PENALTY
     else:
