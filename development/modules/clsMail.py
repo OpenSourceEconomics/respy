@@ -132,7 +132,8 @@ class MailCls(object):
         assert self.attr["message"] is not None
 
         # Process credentials
-        dict_ = json.load(open(Path(os.environ["HOME"], ".credentials")))
+        home_path = Path(os.environ.get("HOME") or os.environ.get("HOMEPATH"))
+        dict_ = json.load(open(home_path / ".credentials"))
 
         self.attr["username"] = dict_["username"]
 

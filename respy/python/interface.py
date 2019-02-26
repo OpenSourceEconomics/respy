@@ -96,9 +96,7 @@ def respy_interface(respy_obj, request, data=None):
         )
 
         # Construct the state space
-        state_space = StateSpace()
-        state_space.create_state_space(num_periods, num_types, edu_spec)
-        state_space.create_covariates()
+        state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
 
         # Collect arguments that are required for the criterion function.
         # These must be in the correct order already.

@@ -699,57 +699,64 @@ def get_num_obs_agent(data_array, num_agents_est):
 
 
 def create_covariates(states):
-    """Creates covariates for each state in each period.
+    """Creates set of covariates for each state.
 
     Parameters
     ----------
-    states : pd.DataFrame
-        DataFrame contains period, exp_a, exp_b, edu, choice_lagged and type.
-
+    states : np.ndarray
+        Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
+        choice_lagged and type of each state.
 
     Returns
     -------
-    states : pd.DataFrame
-        DataFrame including covariates.
+    covariates : np.ndarray
+        Array with shape (num_states, 16) containing covariates of each state.
 
     """
+    covariates = np.full((states.shape[0], 16), np.nan)
 
-    states["not_exp_a_lagged"] = np.where(
-        states.exp_a.gt(0) & ~states.choice_lagged.eq(1), 1, 0
-    )
-    states["not_exp_b_lagged"] = np.where(
-        states.exp_b.gt(0) & ~states.choice_lagged.eq(2), 1, 0
-    )
-    states["work_a_lagged"] = np.where(states.choice_lagged.eq(1), 1, 0)
-    states["work_b_lagged"] = np.where(states.choice_lagged.eq(2), 1, 0)
-    states["edu_lagged"] = np.where(states.choice_lagged.eq(3), 1, 0)
-    states["not_any_exp_a"] = np.where(states.exp_a.eq(0), 1, 0)
-    states["not_any_exp_b"] = np.where(states.exp_b.eq(0), 1, 0)
-    states["any_exp_a"] = np.where(states.exp_a.gt(0), 1, 0)
-    states["any_exp_b"] = np.where(states.exp_b.gt(0), 1, 0)
-    states["hs_graduate"] = np.where(states.edu.ge(12), 1, 0)
-    states["co_graduate"] = np.where(states.edu.ge(16), 1, 0)
-    states["is_return_not_high_school"] = np.where(
-        (states.edu_lagged == 0) & (states.hs_graduate == 0), 1, 0
-    )
-    states["is_return_high_school"] = np.where(
-        (states.edu_lagged == 0) & (states.hs_graduate == 1), 1, 0
-    )
+    # Experience in A or B, but not in the last period.
+    covariates[:, 0] = np.where((states[:, 1] > 0) & (states[:, 4] != 1), 1, 0)
+    covariates[:, 1] = np.where((states[:, 2] > 0) & (states[:, 4] != 2), 1, 0)
 
-    states["is_minor"] = np.where(states.period.lt(2), 1, 0)
-    states.loc[states.period.isna(), "is_minor"] = np.nan
+    # Last occupation was A, B, or education.
+    covariates[:, 2] = np.where(states[:, 4] == 1, 1, 0)
+    covariates[:, 3] = np.where(states[:, 4] == 2, 1, 0)
+    covariates[:, 4] = np.where(states[:, 4] == 3, 1, 0)
 
-    states["is_young_adult"] = np.where(states.period.isin([2, 3, 4]), 1, 0)
-    states.loc[states.period.isna(), "is_young_adult"] = np.nan
+    # No experience in A or B.
+    covariates[:, 5] = np.where(states[:, 1] == 0, 1, 0)
+    covariates[:, 6] = np.where(states[:, 2] == 0, 1, 0)
 
-    states["is_adult"] = np.where(states.period.ge(5), 1, 0)
-    states.loc[states.period.isna(), "is_adult"] = np.nan
+    # Any experience in A or B.
+    covariates[:, 7] = np.where(states[:, 1] > 0, 1, 0)
+    covariates[:, 8] = np.where(states[:, 2] > 0, 1, 0)
 
-    # Reduce memory usage
-    if states.notna().all().all():
-        states.astype(np.int8, copy=False)
+    # High school or college graduate
+    covariates[:, 9] = np.where(states[:, 3] >= 12, 1, 0)
+    covariates[:, 10] = np.where(states[:, 3] >= 16, 1, 0)
 
-    return states
+    # Was not in school last period and is/is not high school graduate
+    covariates[:, 11] = np.where((states[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0)
+    covariates[:, 12] = np.where((states[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0)
+
+    # Define age groups minor (period < 2), young adult (2 <= period <= 4) and
+    # adult (5 <= period).
+
+    # TODO: Is this really necessary as covariates depend on the state space which
+    #       is always defined without NaNs.
+    nan_mask = np.isnan(states[:, 0])
+    # Ignore errors if ``np.nan`` is encountered in period. It evaluates as ``False``,
+    # but it is changed to ``np.nan`` by mask-indexing.
+    with np.errstate(invalid="ignore"):
+        covariates[:, 13] = np.where(states[:, 0] < 2, 1, 0)
+        covariates[nan_mask, 13] = np.nan
+        covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
+        covariates[nan_mask, 14] = np.nan
+        covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
+        covariates[nan_mask, 15] = np.nan
+
+    return covariates
 
 
 def calculate_rewards_common(states, optim_paras):

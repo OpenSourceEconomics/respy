@@ -155,8 +155,7 @@ def write_interpolation_grid(file_name):
     )
 
     # Determine maximum number of states
-    state_space = StateSpace()
-    state_space.create_state_space(num_periods, num_types, edu_spec)
+    state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
 
     states_number_period = state_space.states_per_period
     max_states_period = max(states_number_period)

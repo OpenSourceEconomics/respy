@@ -46,8 +46,7 @@ def scripts_check(request, init_file):
     # We need to run additional checks if an estimation is requested.
     if request == "estimate":
         # Create the grid of the admissible states.
-        state_space = StateSpace()
-        state_space.create_state_space(num_periods, num_types, edu_spec)
+        state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
 
         # We also check the structure of the dataset.
         data_array = process_dataset(respy_obj).values
@@ -58,16 +57,16 @@ def scripts_check(request, init_file):
             # Extract observable components of state space as well as agent decision.
             exp_a, exp_b, edu, choice_lagged = data_array[j, 4:].astype(int)
 
-            # First of all, we need to ensure that all observed years of schooling are larger
-            # than the initial condition of the model.
+            # First of all, we need to ensure that all observed years of schooling are
+            # larger than the initial condition of the model.
             try:
                 np.testing.assert_equal(edu >= 0, True)
             except AssertionError:
                 raise UserError(ERR_MSG)
 
-            # Get state indicator to obtain the systematic component of the agents rewards. This
-            # might fail either because the state is simply infeasible at any period or just not
-            # defined for the particular period requested.
+            # Get state indicator to obtain the systematic component of the agents
+            # rewards. This might fail either because the state is simply infeasible at
+            # any period or just not defined for the particular period requested.
             try:
                 k = state_space[period, exp_a, exp_b, edu, choice_lagged - 1]
                 np.testing.assert_equal(k >= 0, True)

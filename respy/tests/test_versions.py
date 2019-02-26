@@ -30,7 +30,8 @@ class TestClass(object):
     """
 
     def test_1(self):
-        """ Testing the equality of an evaluation of the criterion function for a random request.
+        """ Testing the equality of an evaluation of the criterion function for a random
+        request.
         """
         # Run evaluation for multiple random requests.
         flag_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
@@ -54,23 +55,24 @@ class TestClass(object):
         edu_spec["share"] = init_dict["EDUCATION"]["share"]
         edu_spec["max"] = init_dict["EDUCATION"]["max"]
 
-        # The use of the interpolation routines is a another special case. Constructing a request
-        #  that actually involves the use of the interpolation routine is a little involved as
-        # the number of interpolation points needs to be lower than the actual number of states.
-        # And to know the number of states each period, I need to construct the whole state space.
+        # The use of the interpolation routines is a another special case. Constructing
+        #  a request that actually involves the use of the interpolation routine is a
+        #  little involved as the number of interpolation points needs to be lower than
+        #  the actual number of states. And to know the number of states each period, I
+        #  need to construct the whole state space.
         if is_interpolated:
-            # Extract from future initialization file the information required to construct the
-            # state space. The number of periods needs to be at least three in order to provide
-            # enough state points.
+            # Extract from future initialization file the information required to
+            # construct the state space. The number of periods needs to be at least
+            # three in order to provide enough state points.
             num_periods = np.random.randint(3, 6)
             num_types = int(len(init_dict["TYPE SHARES"]["coeffs"]) / 2) + 1
 
-            state_space = StateSpace()
-            state_space.create_state_space(num_periods, num_types, edu_spec)
+            state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
 
             max_states_period = state_space.maximum_number_of_states
 
-            # Updates to initialization dictionary that trigger a use of the interpolation code.
+            # Updates to initialization dictionary that trigger a use of the
+            # interpolation code.
             init_dict["BASICS"]["periods"] = num_periods
             init_dict["INTERPOLATION"]["flag"] = True
             init_dict["INTERPOLATION"]["points"] = np.random.randint(
@@ -80,7 +82,8 @@ class TestClass(object):
         # Print out the relevant initialization file.
         write_init_file(init_dict)
 
-        # Write out random components and interpolation grid to align the three implementations.
+        # Write out random components and interpolation grid to align the three
+        # implementations.
         num_agents_sim = init_dict["SIMULATION"]["agents"]
         num_periods = init_dict["BASICS"]["periods"]
         write_draws(num_periods, max_draws)

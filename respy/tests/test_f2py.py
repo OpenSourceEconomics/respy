@@ -171,9 +171,8 @@ class TestClass(object):
             # FORTRAN
             base_args = (num_periods, num_types)
 
-            args = base_args + (edu_spec,)
-            state_space = StateSpace()
-            state_space.create_state_space(*args)
+            args = base_args + (edu_spec["start"], edu_spec["max"])
+            state_space = StateSpace(*args)
 
             py_a = state_space.states.values
             py_b = state_space.states_per_period
@@ -359,10 +358,9 @@ class TestClass(object):
 
         # Check the state space creation.
         base_args = (num_periods, num_types)
-        args = base_args + (edu_spec,)
+        args = base_args + (edu_spec["start"], edu_spec["max"])
 
-        state_space = StateSpace()
-        state_space.create_state_space(*args)
+        state_space = StateSpace(*args)
 
         pyth = [
             state_space.states.values,

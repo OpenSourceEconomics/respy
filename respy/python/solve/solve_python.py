@@ -23,11 +23,7 @@ def pyth_solve(
     """ Solving the model using pure PYTHON code.
     """
     # Create the state space
-    state_space = StateSpace()
-    state_space.create_state_space(
-        num_periods, num_types, edu_spec["start"], edu_spec["max"]
-    )
-    state_space.create_covariates()
+    state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
 
     state_space.states = pyth_calculate_rewards_systematic(
         state_space.states, optim_paras

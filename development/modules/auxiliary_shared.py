@@ -6,6 +6,7 @@ import argparse
 import socket
 import sys
 import os
+from pathlib import Path
 
 import numpy as np
 import random
@@ -21,8 +22,8 @@ def update_class_instance(respy_obj, spec_dict):
 
     respy_obj.unlock()
 
-    # Varying the baseline level of ambiguity requires special case. The same is true for the
-    # discount rate.
+    # Varying the baseline level of ambiguity requires special case. The same is true
+    # for the discount rate.
     if "level" in spec_dict["update"].keys():
         respy_obj.attr["optim_paras"]["level"] = np.array(
             [spec_dict["update"]["level"]]
@@ -69,7 +70,9 @@ def compile_package(is_debug=False):
     if not is_debug:
         subprocess.check_call(python_exec + " waf configure build", shell=True)
     else:
-        subprocess.check_call(python_exec + " waf configure build --debug ", shell=True)
+        subprocess.check_call(
+            python_exec + " waf configure build --debug ", shell=True
+        )
 
     os.chdir(cwd)
 
@@ -78,7 +81,8 @@ def send_notification(which, **kwargs):
     """ Finishing up a run of the testing battery.
     """
     # This allows to run the scripts even when no notification can be send.
-    if not os.path.exists(os.environ["HOME"] + "/.credentials"):
+    home = Path(os.environ.get("HOME") or os.environ.get("HOMEPATH"))
+    if not os.path.exists(str(home / ".credentials")):
         return
 
     hours, is_failed, num_tests, seed = None, None, None, None
@@ -275,4 +279,6 @@ def get_random_dirname(length):
     TODO: Sensible length default.
 
     """
-    return "__" + "".join(random.choice(string.ascii_lowercase) for _ in range(length))
+    return "__" + "".join(
+        random.choice(string.ascii_lowercase) for _ in range(length)
+    )

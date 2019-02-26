@@ -716,19 +716,13 @@ class StateSpace:
 
     """
 
-    def create_state_space(self, *args):
-        """This function creates the state space.
+    def __init__(self, *args):
+        states, self.indexer = pyth_create_state_space(*args)
 
-        It should return two objects. First, a DataFrame where each row represents one
-        state. This object captures characteristics of states in a dense format. The
-        second object is a Numpy matrix where each dimension represents one
-        characteristic of the state and the values contain the indices of the state in
-        the DataFrame.
+        covariates = create_covariates(states)
 
-        """
-        data, self.indexer = pyth_create_state_space(*args)
-        self.states = pd.DataFrame(
-            data,
+        states = pd.DataFrame(
+            states,
             columns=[
                 "period",
                 "exp_a",
@@ -737,10 +731,32 @@ class StateSpace:
                 "choice_lagged",
                 "type",
             ],
+            dtype=np.int8,
         )
 
-    def create_covariates(self):
-        self.states = create_covariates(self.states)
+        covariates = pd.DataFrame(
+            covariates,
+            columns=[
+                "not_exp_a_lagged",
+                "not_exp_b_lagged",
+                "work_a_lagged",
+                "work_b_lagged",
+                "edu_lagged",
+                "not_any_exp_a",
+                "not_any_exp_b",
+                "any_exp_a",
+                "any_exp_b",
+                "hs_graduate",
+                "co_graduate",
+                "is_return_not_high_school",
+                "is_return_high_school",
+                "is_minor",
+                "is_young_adult",
+                "is_adult",
+            ],
+        )
+
+        self.states = pd.concat([states, covariates], axis=1)
 
     @property
     def states_per_period(self):
