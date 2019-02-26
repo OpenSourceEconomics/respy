@@ -737,8 +737,8 @@ def create_covariates(states):
     covariates[:, 10] = np.where(states[:, 3] >= 16, 1, 0)
 
     # Was not in school last period and is/is not high school graduate
-    covariates[:, 11] = np.where((states[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0)
-    covariates[:, 12] = np.where((states[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0)
+    covariates[:, 11] = np.where((covariates[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0)
+    covariates[:, 12] = np.where((covariates[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0)
 
     # Define age groups minor (period < 2), young adult (2 <= period <= 4) and
     # adult (5 <= period).
