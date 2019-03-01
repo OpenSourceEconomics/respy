@@ -13,7 +13,7 @@ ROOT_DIR = Path(respy.__path__[0])
 # Directory with additional resources for the testing harness
 TEST_DIR = ROOT_DIR / "tests"
 TEST_RESOURCES_DIR = ROOT_DIR / "tests" / "resources"
-TEST_RESOURCES_BUILD = ROOT_DIR / ".bld" / "tests" / "resources"
+TEST_RESOURCES_BUILD = str(ROOT_DIR / ".bld" / "tests" / "resources")
 
 # Directory with the FORTRAN resources
 EXEC_DIR = ROOT_DIR / ".bld" / "fortran"
