@@ -46,7 +46,9 @@ def scripts_check(request, init_file):
     # We need to run additional checks if an estimation is requested.
     if request == "estimate":
         # Create the grid of the admissible states.
-        state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
+        state_space = StateSpace(
+            num_periods, num_types, edu_spec["start"], edu_spec["max"]
+        )
 
         # We also check the structure of the dataset.
         data_array = process_dataset(respy_obj).values
@@ -68,7 +70,9 @@ def scripts_check(request, init_file):
             # rewards. This might fail either because the state is simply infeasible at
             # any period or just not defined for the particular period requested.
             try:
-                k = state_space[period, exp_a, exp_b, edu, choice_lagged - 1]
+                k = state_space.indexer[
+                    period, exp_a, exp_b, edu, choice_lagged - 1
+                ]
                 np.testing.assert_equal(k >= 0, True)
             except (IndexError, AssertionError):
                 raise UserError(ERR_MSG)
@@ -79,7 +83,9 @@ def scripts_check(request, init_file):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Check request for the RESPY package.")
+    parser = argparse.ArgumentParser(
+        description="Check request for the RESPY package."
+    )
 
     parser.add_argument(
         "--request",

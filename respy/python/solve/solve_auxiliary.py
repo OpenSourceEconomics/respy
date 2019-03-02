@@ -488,6 +488,9 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
     states : pd.DataFrame
 
     """
+    # TODO: Delete fix for test_integration::test_5
+    draws = np.array(draws)
+
     total_values, rewards_ex_post = get_continuation_value(
         states[["wage_a", "wage_b"]].values,
         states[
@@ -510,7 +513,7 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
             "rewards_ex_post_edu",
             "rewards_ex_post_home",
         ]
-    ] = rewards_ex_post
+    ] = pd.DataFrame(rewards_ex_post.reshape(-1, 4), index=states.index)
     states[
         [
             "total_values_a",
@@ -518,7 +521,7 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
             "total_values_edu",
             "total_values_home",
         ]
-    ] = total_values
+    ] = pd.DataFrame(total_values.reshape(-1, 4), index=states.index)
 
     # Implement level shifts
     states.loc[states.period.eq(period), "max_emax"] = states[
@@ -571,7 +574,7 @@ def get_endogenous_variable(
 
     # Construct dependent variable
     states.loc[states.period.eq(period), "endog_variable"] = (
-        states.emax - states.maxe
+        states.emax - states.max_emax
     )
 
     return states
@@ -607,11 +610,11 @@ def get_predictions(period, states, is_simulated, file_sim, is_write):
     # simulated values.
     predictions = (
         endogenous_predicted
-        + states.loc[states.period.eq(period), "maxe"].values
+        + states.loc[states.period.eq(period), "max_emax"].values
     )
     predictions[is_simulated] = (
         endogenous[is_simulated]
-        + states.loc[states.period.eq(period), "maxe"].values[is_simulated]
+        + states.loc[states.period.eq(period), "max_emax"].values[is_simulated]
     )
 
     check_prediction_model(endogenous_predicted, model)
@@ -644,7 +647,6 @@ def check_input(respy_obj):
     if respy_obj.get_attr("is_solved"):
         respy_obj.reset()
 
-    # Finishing
     return True
 
 
@@ -790,15 +792,32 @@ class StateSpace:
 
             periods_emax[period, : sub.shape[0], :] = sub
 
+        states_all = np.full(
+            (self.states_per_period.shape[0], self.states_per_period[-1], 5),
+            np.nan,
+        )
+        for period, group in self.states.groupby("period"):
+            sub = group[
+                ["exp_a", "exp_b", "edu", "choice_lagged", "type"]
+            ].values
+
+            states_all[period, : sub.shape[0], :] = sub
+
+        # The indexer has to be modified because ``mapping_state_idx`` resets the
+        # counter to zero for each period and ``self.indexer`` not. For every period,
+        # subtract the minimum index.
         mapping_state_idx = self.indexer
-        states_all = None
+        for period in range(self.states_per_period.shape[0]):
+            mask = mapping_state_idx[period] != -1
+            minimum_index = mapping_state_idx[period].min()
+
+            mapping_state_idx[period][mask] -= minimum_index
 
         return (
-            periods_rewards_systematic,
-            self.states_per_period,
-            mapping_state_idx,
-            periods_emax,
             states_all,
+            mapping_state_idx,
+            periods_rewards_systematic,
+            periods_emax,
         )
 
     def __len__(self):

@@ -18,7 +18,6 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
-from respy.python.shared.shared_auxiliary import create_covariates
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 from respy.custom_exceptions import MaxfunError
@@ -96,7 +95,9 @@ def respy_interface(respy_obj, request, data=None):
         )
 
         # Construct the state space
-        state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
+        state_space = StateSpace(
+            num_periods, num_types, edu_spec["start"], edu_spec["max"]
+        )
 
         # Collect arguments that are required for the criterion function.
         # These must be in the correct order already.
@@ -196,7 +197,10 @@ def respy_interface(respy_obj, request, data=None):
             record_estimation_scalability("Finish")
 
             success = True
-            message = "Single evaluation of criterion function at starting " "values."
+            message = (
+                "Single evaluation of criterion function at starting "
+                "values."
+            )
 
         elif optimizer_used == "SCIPY-BFGS":
 

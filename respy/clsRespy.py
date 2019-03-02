@@ -58,6 +58,7 @@ class RespyCls(object):
             "mapping_state_idx",
             "periods_emax",
             "states_all",
+            "state_space",
         ]
 
     def _initialize_solution_attributes(self):
@@ -117,7 +118,9 @@ class RespyCls(object):
 
         invalid_attr = self.derived_attributes + ["optim_paras", "init_dict"]
         if key in invalid_attr:
-            raise AssertionError("{} must not be modified by users!".format(key))
+            raise AssertionError(
+                "{} must not be modified by users!".format(key)
+            )
 
         if key in self.solution_attributes:
             assert not self.attr[
@@ -150,7 +153,9 @@ class RespyCls(object):
 
         for key_ in self.solution_attributes:
             try:
-                np.testing.assert_almost_equal(self.attr[key_], other.attr[key_])
+                np.testing.assert_almost_equal(
+                    self.attr[key_], other.attr[key_]
+                )
             except AssertionError:
                 return False
 
@@ -188,7 +193,15 @@ class RespyCls(object):
         assert not os.path.exists(".estimation.respy.scratch")
 
         # Distribute class attributes
-        optimizer_options, optimizer_used, optim_paras, version, maxfun, num_paras, file_est = dist_class_attributes(
+        (
+            optimizer_options,
+            optimizer_used,
+            optim_paras,
+            version,
+            maxfun,
+            num_paras,
+            file_est,
+        ) = dist_class_attributes(
             self,
             "optimizer_options",
             "optimizer_used",
@@ -281,25 +294,32 @@ class RespyCls(object):
         if version in ["PYTHON"]:
             state_space, data_array = respy_interface(self, "simulate")
 
-            solution = state_space._get_fortran_counterparts()
-
         elif version in ["FORTRAN"]:
             solution, data_array = resfort_interface(self, "simulate")
         else:
             raise NotImplementedError
 
         # Attach solution to class instance
-
-        # ====================================================================
-        # todo: harmonize python and fortran
-        # ====================================================================
         if self.attr["version"] == "FORTRAN":
             self = add_solution(self, *solution)
         else:
             self.unlock()
-            self.solution = solution
+            self.set_attr("state_space", state_space)
             self.lock()
-        # ====================================================================
+            (
+                states_all,
+                mapping_state_idx,
+                periods_rewards_systematic,
+                periods_emax,
+            ) = state_space._get_fortran_counterparts()
+            self = add_solution(
+                self,
+                periods_rewards_systematic,
+                state_space.states_per_period,
+                mapping_state_idx,
+                periods_emax,
+                states_all,
+            )
 
         self.unlock()
         self.set_attr("is_solved", True)
@@ -317,13 +337,16 @@ class RespyCls(object):
 
         else:
             data_frame = pd.DataFrame(
-                data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
+                data=replace_missing_values(data_array),
+                columns=DATA_LABELS_SIM,
             )
 
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
 
         # ====================================================================
-        data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
+        data_frame.set_index(
+            ["Identifier", "Period"], drop=False, inplace=True
+        )
 
         # Checks
         if is_debug:

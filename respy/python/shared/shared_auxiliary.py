@@ -286,7 +286,13 @@ def cholesky_to_coeffs(shocks_cholesky):
     target="cpu",
 )
 def get_continuation_value(
-    wages, rewards_systematic, draws, emaxs_sub_period, delta, cont_value, rew_ex_post
+    wages,
+    rewards_systematic,
+    draws,
+    emaxs_sub_period,
+    delta,
+    cont_value,
+    rew_ex_post,
 ):
     """Calculate the continuation value and ex-post rewards.
 
@@ -352,14 +358,10 @@ def get_emaxs_of_subsequent_period(
     """
 
     # Working in Occupation A in period + 1
-    emaxs_a = state_space[period + 1, exp_a + 1, exp_b, edu, 0, type_][
-        "emax"
-    ]
+    emaxs_a = state_space[period + 1, exp_a + 1, exp_b, edu, 0, type_]["emax"]
 
     # Working in Occupation B in period +1
-    emaxs_b = state_space[period + 1, exp_a, exp_b + 1, edu, 1, type_][
-        "emax"
-    ]
+    emaxs_b = state_space[period + 1, exp_a, exp_b + 1, edu, 1, type_]["emax"]
 
     # Schooling in period + 1. Note that adding an additional year of schooling is only
     # possible for those that have strictly less than the maximum level of additional
@@ -374,9 +376,7 @@ def get_emaxs_of_subsequent_period(
         ]
 
     # Staying at home in period + 1
-    emaxs_home = state_space[period + 1, exp_a, exp_b, edu, 3, type_][
-        "emax"
-    ]
+    emaxs_home = state_space[period + 1, exp_a, exp_b, edu, 3, type_]["emax"]
 
     return emaxs_a, emaxs_b, emaxs_edu, emaxs_home
 
@@ -737,8 +737,12 @@ def create_covariates(states):
     covariates[:, 10] = np.where(states[:, 3] >= 16, 1, 0)
 
     # Was not in school last period and is/is not high school graduate
-    covariates[:, 11] = np.where((covariates[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0)
-    covariates[:, 12] = np.where((covariates[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0)
+    covariates[:, 11] = np.where(
+        (covariates[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0
+    )
+    covariates[:, 12] = np.where(
+        (covariates[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0
+    )
 
     # Define age groups minor (period < 2), young adult (2 <= period <= 4) and
     # adult (5 <= period).

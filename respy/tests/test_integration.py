@@ -131,8 +131,8 @@ class TestClass(object):
 
             simulate_observed(respy_obj)
 
-            # This parts checks the equality of simulated dataset for the different versions of
-            # the code.
+            # This parts checks the equality of simulated dataset for the different
+            # versions of the code.
             data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
 
             if base_data is None:
@@ -149,11 +149,11 @@ class TestClass(object):
             np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
     def test_4(self):
-        """ Test the evaluation of the criterion function for random requests, not just at the
-        true values.
+        """ Test the evaluation of the criterion function for random requests, not just
+        at the true values.
         """
-        # Constraints that ensure that two alternative initialization files can be used for the
-        # same simulated data.
+        # Constraints that ensure that two alternative initialization files can be used
+        # for the same simulated data.
         constr = dict()
         constr["agents"] = np.random.randint(1, 100)
         constr["periods"] = np.random.randint(1, 4)
@@ -174,8 +174,8 @@ class TestClass(object):
     def test_5(self):
         """ Test the scripts.
         """
-        # Constraints that ensure that two alternative initialization files can be used for the
-        # same simulated data.
+        # Constraints that ensure that two alternative initialization files can be used
+        # for the same simulated data.
         for _ in range(10):
             constr = dict()
             constr["periods"] = np.random.randint(1, 4)
@@ -209,9 +209,10 @@ class TestClass(object):
 
             action = np.random.choice(["fix", "free", "bounds", "values"])
 
-            # The set of identifiers is a little complicated as we only allow sampling of the
-            # diagonal terms of the covariance matrix. Otherwise, we sometimes run into the
-            # problem of very ill conditioned matrices resulting in a failed Cholesky decomposition.
+            # The set of identifiers is a little complicated as we only allow sampling
+            # of the diagonal terms of the covariance matrix. Otherwise, we sometimes
+            # run into the problem of very ill conditioned matrices resulting in a
+            # failed Cholesky decomposition.
             valid_identifiers = list(range(43))
 
             respy_obj = RespyCls("test.respy.ini")
@@ -241,9 +242,9 @@ class TestClass(object):
                 )
                 bounds, values = None, None
             else:
-                # This is restrictive in the sense that the original value will be used for the
-                # replacement. However, otherwise the handling of the bounds requires too much
-                # effort at this point.
+                # This is restrictive in the sense that the original value will be used
+                # for the replacement. However, otherwise the handling of the bounds
+                # requires too much effort at this point.
                 num_draws = np.random.randint(1, 43)
                 identifiers = np.random.choice(
                     valid_identifiers, num_draws, replace=False
@@ -272,8 +273,8 @@ class TestClass(object):
         simulate_observed(respy_obj)
         base_x, base_val = respy_obj.fit()
 
-        # We also check whether updating the class instance and a single evaluation of the
-        # criterion function give the same result.
+        # We also check whether updating the class instance and a single evaluation of
+        # the criterion function give the same result.
         respy_obj.update_optim_paras(base_x)
         respy_obj.attr["maxfun"] = 0
 
@@ -283,8 +284,8 @@ class TestClass(object):
             np.testing.assert_almost_equal(arg[0], arg[1])
 
     def test_7(self):
-        """ We test whether a restart does result in the exact function evaluation. Additionally,
-        we change the status of parameters at random.
+        """ We test whether a restart does result in the exact function evaluation.
+        Additionally, we change the status of parameters at random.
         """
         constr = dict()
         constr["flag_estimation"] = True
@@ -438,9 +439,9 @@ class TestClass(object):
     @pytest.mark.skipif(not IS_FORTRAN, reason="No FORTRAN available")
     @pytest.mark.slow
     def test_12(self):
-        """ This test just locks in the evaluation of the criterion function for the original
-        Keane & Wolpin data. We create an additional initialization files that include numerous
-        types and initial conditions.
+        """ This test just locks in the evaluation of the criterion function for the
+        original Keane & Wolpin data. We create an additional initialization files that
+        include numerous types and initial conditions.
         """
         # Sample one task
         resources = []
@@ -477,14 +478,15 @@ class TestClass(object):
         np.testing.assert_allclose(val, rslt)
 
     def test_13(self):
-        """ We ensure that the number of types does not matter for the evaluation of the criterion
-        function if a weight of one is put on the first group.
+        """ We ensure that the number of types does not matter for the evaluation of the
+        criterion function if a weight of one is put on the first group.
         """
 
         constr = dict()
         constr["flag_estimation"] = True
 
-        # The interpolation equation is affected by the number of types regardless of the weights.
+        # The interpolation equation is affected by the number of types regardless of
+        # the weights.
         constr["flag_interpolation"] = False
 
         init_dict = generate_init(constr)
@@ -496,8 +498,9 @@ class TestClass(object):
             # We construct a set of coefficients that matches the type shares.
             coeffs = transform_to_logit([1.0] + [0.00000001] * (num_types - 1))
 
-            # We always need to ensure that a weight of one is on the first type. We need to fix
-            # the weight in this case to not change during an estimation as well.
+            # We always need to ensure that a weight of one is on the first type. We
+            # need to fix the weight in this case to not change during an estimation as
+            # well.
             shifts = np.random.uniform(-0.05, 0.05, size=(num_types - 1) * 4)
             init_dict["TYPE SHIFTS"]["coeffs"] = shifts
             init_dict["TYPE SHIFTS"]["fixed"] = [False] * (num_types * 4)
@@ -530,16 +533,17 @@ class TestClass(object):
             respy_obj, "num_paras", "optim_paras"
         )
 
-        # We need to switch perspective where the initialization file is the flattened covariance
-        # matrix.
+        # We need to switch perspective where the initialization file is the flattened
+        # covariance matrix.
         x_econ = get_optim_paras(optim_paras, num_paras, "all", True)
         x_econ[43:53] = cholesky_to_coeffs(optim_paras["shocks_cholesky"])
 
-        # We now draw a random set of points where we replace the value with their actual value.
-        # Thus, there should be no differences in the initialization files afterwards.
+        # We now draw a random set of points where we replace the value with their
+        # actual value. Thus, there should be no differences in the initialization files
+        # afterwards.
         shutil.copy("test.respy.ini", "baseline.respy.ini")
 
-        num_subset = np.random.random_integers(low=0, high=num_paras)
+        num_subset = np.random.randint(low=0, high=num_paras)
         identifiers = np.random.choice(range(num_paras), size=num_subset, replace=False)
 
         scripts_modify(
@@ -550,19 +554,20 @@ class TestClass(object):
         )
 
     def test_15(self):
-        """ This test ensures that the order of the initial schooling level specified in the
-        initialization files does not matter for the simulation of a dataset and subsequent
-        evaluation of the criterion function.
+        """ This test ensures that the order of the initial schooling level specified in
+        the initialization files does not matter for the simulation of a dataset and
+        subsequent evaluation of the criterion function.
 
-        WARNING: This test fails if types have the identical intercept as no unique ordering is
-        determined than.
+        WARNING: This test fails if types have the identical intercept as no unique
+        ordering is determined than.
         """
 
         constr = dict()
         constr["maxfun"] = 0
 
-        # We cannot allow for interpolation as the order of states within each period changes and
-        # thus the prediction model is altered even if the same state identifier is used.
+        # We cannot allow for interpolation as the order of states within each period
+        # changes and thus the prediction model is altered even if the same state
+        # identifier is used.
         constr["flag_interpolation"] = False
         generate_init(constr)
 
@@ -572,8 +577,8 @@ class TestClass(object):
             respy_obj, "edu_spec", "num_types", "num_paras", "optim_paras"
         )
 
-        # We want to randomly shuffle the list of initial schooling but need to maintain the
-        # order of the shares.
+        # We want to randomly shuffle the list of initial schooling but need to maintain
+        # the order of the shares.
         edu_shuffled_start = np.random.permutation(edu_baseline_spec["start"]).tolist()
 
         edu_shuffled_share, edu_shuffled_lagged = [], []
@@ -587,9 +592,9 @@ class TestClass(object):
         edu_shuffled_spec["start"] = edu_shuffled_start
         edu_shuffled_spec["share"] = edu_shuffled_share
 
-        # We are only looking at a single evaluation as otherwise the reordering affects the
-        # optimizer that is trying better parameter values one-by-one. The reordering might also
-        # violate the bounds.
+        # We are only looking at a single evaluation as otherwise the reordering affects
+        # the optimizer that is trying better parameter values one-by-one. The
+        # reordering might also violate the bounds.
         for i in range(53, num_paras):
             optim_paras["paras_bounds"][i] = [None, None]
             optim_paras["paras_fixed"][i] = False
@@ -620,8 +625,9 @@ class TestClass(object):
                 respy_obj.set_attr("edu_spec", edu_spec)
                 respy_obj.lock()
 
-                # There is some more work to do to update the coefficients as we distinguish
-                # between the economic and optimization version of the parameters.
+                # There is some more work to do to update the coefficients as we
+                # distinguish between the economic and optimization version of the
+                # parameters.
                 x = get_optim_paras(optim_paras, num_paras, "all", True)
                 shocks_cholesky, _ = extract_cholesky(x)
                 shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)

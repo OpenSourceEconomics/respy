@@ -264,8 +264,8 @@ def generate_random_dict(constr=None):
     for optimizer in OPTIMIZERS_EST:
         dict_[optimizer] = generate_optimizer_options(optimizer, mock, num_paras)
 
-    # We now impose selected constraints on the final model specification. These constraints can
-    # be very useful in the generation of test cases.
+    # We now impose selected constraints on the final model specification. These
+    # constraints can be very useful in the generation of test cases.
     dict_ = process_constraints(dict_, constr, paras_fixed, paras_bounds)
 
     # Finishing
