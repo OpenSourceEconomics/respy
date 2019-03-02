@@ -744,21 +744,11 @@ def create_covariates(states):
         (covariates[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0
     )
 
-    # Define age groups minor (period < 2), young adult (2 <= period <= 4) and
-    # adult (5 <= period).
-
-    # TODO: Is this really necessary as covariates depend on the state space which
-    #       is always defined without NaNs.
-    nan_mask = np.isnan(states[:, 0])
-    # Ignore errors if ``np.nan`` is encountered in period. It evaluates as ``False``,
-    # but it is changed to ``np.nan`` by mask-indexing.
-    with np.errstate(invalid="ignore"):
-        covariates[:, 13] = np.where(states[:, 0] < 2, 1, 0)
-        covariates[nan_mask, 13] = np.nan
-        covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
-        covariates[nan_mask, 14] = np.nan
-        covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
-        covariates[nan_mask, 15] = np.nan
+    # Define age groups minor (period < 2), young adult (2 <= period <= 4) and adult (5
+    # <= period).
+    covariates[:, 13] = np.where(states[:, 0] < 2, 1, 0)
+    covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
+    covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
 
     return covariates
 
