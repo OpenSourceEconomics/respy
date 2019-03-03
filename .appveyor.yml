@@ -12,21 +12,23 @@ notifications:
 # Do not start two builds, one for the branch and one for the PR.
 skip_branch_with_pr: true
 
+image: Visual Studio 2015
+
 environment:
   MINICONDA: "C:\\Miniconda36-x64"
   matrix:
-      - TRAVIS_CI_FORTRAN: false
-        TRAVIS_CI_MPI: false
-        TRAVIS_CI_OMP: false
-      - TRAVIS_CI_FORTRAN: true
-        TRAVIS_CI_MPI: true
-        TRAVIS_CI_OMP: true
-      - TRAVIS_CI_FORTRAN: true
-        TRAVIS_CI_MPI: false
-        TRAVIS_CI_OMP: true
-      - TRAVIS_CI_FORTRAN: true
-        TRAVIS_CI_MPI: true
-        TRAVIS_CI_OMP: false
+      - FORTRAN: false
+        MPI: false
+        OMP: false
+      - FORTRAN: true
+        MPI: true
+        OMP: true
+      - FORTRAN: true
+        MPI: false
+        OMP: true
+      - FORTRAN: true
+        MPI: true
+        OMP: false
 
 install:
   # If there is a newer build queued for the same PR, cancel this one. The AppVeyor
@@ -39,8 +41,9 @@ install:
         throw "There are newer queued builds for this pull request, failing early." }
   # Add miniconda to PATH
   - ps: $env:PATH = "$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin;$env:PATH"
+  - ps: if($FORTRAN){$env:PATH = "$env:MinGW;$env:MinGW\bin"}
   # Add MPI to path
-  - set PATH=C:\Program Files\Microsoft MPI\Bin;%PATH%
+  - ps: if($FORTRAN){$env:PATH = "$env:MinGW;$env:MinGW\bin"}
   # Set conda to always yes and print info
   - conda config --set always_yes yes --set changeps1 no
   - conda info -a
@@ -53,9 +56,9 @@ build: false
 
 on_success:
   - sh: |
-      if  [ $TRAVIS_CI_FORTRAN ] || \
-          [ $TRAVIS_CI_MPI ] || \
-          [ $TRAVIS_CI_OMP ] ||
+      if  [ $FORTRAN ] || \
+          [ $MPI ] || \
+          [ $OMP ] ||
       then
           codecov
           echo 'send coverage statistic'
