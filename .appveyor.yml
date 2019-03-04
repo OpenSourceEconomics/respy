@@ -20,9 +20,9 @@ environment:
       # - CI_FORTRAN: false
       #   CI_MPI: false
       #   CI_OPENMP: false
-      # - CI_FORTRAN: true
-      #   CI_MPI: true
-      #   CI_OPENMP: true
+      - CI_FORTRAN: true
+        CI_MPI: true
+        CI_OPENMP: true
       # - CI_FORTRAN: true
       #   CI_MPI: false
       #   CI_OPENMP: true
