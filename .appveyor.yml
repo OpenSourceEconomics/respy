@@ -46,13 +46,14 @@ install:
   # Add Fortran to PATH
   - ps: ls C:\
   - ps: ls C:\msys64\
+  - ps: ls C:\msys64\mingw64
   - ps: ls C:\MinGW
   - ps: ls C:\MinGW\bin
-  - if ($FORTRAN -eq $true) {$env:PATH += ";C:\msys64\mingw64\bin"}
+  - ps: if ($env:FORTRAN -eq $true) {$env:PATH += ";C:\msys64\mingw64\bin"}
 
   # Install MS-MPI
   - ps: >-
-      if ($MPI -eq $true) {
+      if ($env:MPI -eq $true) {
         Start-FileDownload 'https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisetup.exe'
         msmpisetup.exe -unattend
         $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
