@@ -45,6 +45,8 @@ install:
 
   # Add Fortran to PATH
   - ps: if ($env:FORTRAN -eq $true) {$env:PATH += ";C:\msys64\mingw64\bin"}
+  - ps: $env:PATH
+  - ps: ls C:\msys64\mingw64\bin
 
   # Install MS-MPI
   - ps: >-

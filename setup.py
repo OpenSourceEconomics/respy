@@ -16,7 +16,7 @@ class CustomDevelopCommand(develop):
         os.chdir("respy")
 
         subprocess.run(["python", "waf", "distclean"])
-        subprocess.run(["python", "waf", "configure", "build", "-j", "1"])
+        subprocess.run(["python", "waf", "configure", "build", "-j", "1", "-vvv"])
 
         os.chdir("../")
 
@@ -33,7 +33,7 @@ class CustomBuildCommand(build_py):
         os.chdir("respy")
 
         subprocess.run(["python", "waf", "distclean"])
-        subprocess.run(["python", "waf", "configure", "build", "-j", "1"])
+        subprocess.run(["python", "waf", "configure", "build", "-j", "1", "-vvv"])
 
         os.chdir("../")
 
