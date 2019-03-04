@@ -59,7 +59,8 @@ install:
   # Configure conda and install packages
   - conda config --set always_yes yes --set changeps1 no
   - conda info -a
-  - conda install --file environment.yml
+  - conda env create -n respy -f environment.yml
+  - activate respy
 
   # Install respy
   - pip install -e . -vv
