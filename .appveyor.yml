@@ -44,18 +44,12 @@ install:
   - ps: $env:PATH += ";$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin"
 
   # Add Fortran to PATH
-  - ps: ls C:\
-  - ps: ls C:\msys64\
-  - ps: ls C:\msys64\mingw64
-  - ps: ls C:\msys64\mingw64\bin
-  - ps: ls C:\MinGW
-  - ps: ls C:\MinGW\bin
   - ps: if ($env:FORTRAN -eq $true) {$env:PATH += ";C:\msys64\mingw64\bin"}
 
   # Install MS-MPI
   - ps: >-
       if ($env:MPI -eq $true) {
-        Start-FileDownload 'https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisetup.exe' -OutFile msmpisetup.exe
+        Invoke-WebRequest https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisetup.exe -OutFile msmpisetup.exe
         Start-Process msmpisetup.exe -unattend
         $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
       }
