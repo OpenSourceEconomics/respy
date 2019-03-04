@@ -25,7 +25,15 @@ install:
     - sudo apt-get install -y -q mpich libmpich-dev
 
     # Install, configure conda and install packages
-    - bash install_miniconda.sh
+    - wget https://repo.continuum.io/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O miniconda.sh
+    - bash miniconda.sh -b -p /home/travis/miniconda
+    - ls /home/travis
+    - ls /home/travis/miniconda
+    - ls /home/travis/miniconda/bin
+    - export PATH=/home/travis/miniconda/bin:$PATH
+    - conda config --set always_yes yes --set changeps1 no
+    - conda info -a
+
     - conda env create -n respy -f environment.yml
     - source activate respy
 
@@ -36,13 +44,13 @@ script:
     - travis_wait 45 pytest --cov=respy -vvv -s
 
 after_success:
--   if  [ $CI_FORTRAN ] || \
-        [ $CI_MPI ] || \
-        [ $CI_OMP ] ||
-    then
-        codecov
-        echo 'send coverage statistic'
-    fi
+    - if  [ $CI_FORTRAN ] || \
+          [ $CI_MPI ] || \
+          [ $CI_OMP ] ||
+      then
+          codecov
+          echo 'send coverage statistic'
+      fi
 
 notifications:
 
