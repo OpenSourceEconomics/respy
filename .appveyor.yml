@@ -52,11 +52,11 @@ install:
 
   # Install MS-MPI
   - ps: >-
-    if ($MPI -eq $true) {
-      Start-FileDownload 'https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisetup.exe'
-      msmpisetup.exe -unattend
-      $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
-    }
+      if ($MPI -eq $true) {
+        Start-FileDownload 'https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisetup.exe'
+        msmpisetup.exe -unattend
+        $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
+      }
 
   # Set conda to always yes and print info
   - conda config --set always_yes yes --set changeps1 no
