@@ -49,8 +49,8 @@ install:
   # Install MS-MPI
   - ps: >-
       if ($env:MPI -eq $true) {
-        Invoke-WebRequest https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisetup.exe -OutFile msmpisetup.exe
-        Start-Process msmpisetup.exe -unattend
+        Start-FileDownload https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisdk.msi -FileName msmpisdk.msi
+        msiexec msmpisdk.msi /quiet /norestart
         $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
       }
 
