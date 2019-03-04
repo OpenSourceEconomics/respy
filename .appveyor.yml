@@ -51,11 +51,12 @@ install:
   - if ($FORTRAN -eq $true) {$env:PATH += ";C:\msys64\mingw64\bin"}
 
   # Install MS-MPI
-  - ps: if ($MPI -eq $true) {
+  - ps: >-
+    if ($MPI -eq $true) {
       Start-FileDownload 'https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisetup.exe'
       msmpisetup.exe -unattend
       $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
-  }
+    }
 
   # Set conda to always yes and print info
   - conda config --set always_yes yes --set changeps1 no
