@@ -59,10 +59,9 @@ install:
   # Configure conda and install packages
   - conda config --set always_yes yes --set changeps1 no
   - conda info -a
-  - conda install numpy scipy=0.19 pandas=0.21 statsmodels=0.8 numba
+  - conda env update -f environment.yml
 
-  # Install pip packages and respy
-  - pip install pytest pytest-cov codecov
+  # Install respy
   - pip install -e . -vv
 
   # Run tests

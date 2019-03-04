@@ -3,10 +3,10 @@ dependencies:
   - python=3.6
   - numba
   - numpy
-  - pandas
-  - scipy
-  - statsmodels
+  - scipy=0.19
+  - statsmodels=0.8
   - pip:
+    - pandas=0.21
     - pytest
-    - pytest-xdist
-    - flake8
+    - pytest-cov
+    - codecov
