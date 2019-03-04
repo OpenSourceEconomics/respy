@@ -23,11 +23,9 @@ matrix:
 
 install:
     - sudo apt-get install -y -q mpich libmpich-dev
-    - bash install_miniconda.sh
 
-    # Configure conda and install packages
-    - conda config --set always_yes yes --set changeps1 no
-    - conda info -a
+    # Install, configure conda and install packages
+    - bash install_miniconda.sh
     - conda install --file environment.yml
 
     # Install respy
