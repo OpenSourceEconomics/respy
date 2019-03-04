@@ -17,18 +17,18 @@ image: Visual Studio 2015
 environment:
   MINICONDA: "C:\\Miniconda36-x64"
   matrix:
-      # - FORTRAN: false
-      #   MPI: false
-      #   OMP: false
-      # - FORTRAN: true
-      #   MPI: true
-      #   OMP: true
-      # - FORTRAN: true
-      #   MPI: false
-      #   OMP: true
-      - FORTRAN: true
-        MPI: true
-        OMP: false
+      # - CI_FORTRAN: false
+      #   CI_MPI: false
+      #   CI_OPENMP: false
+      # - CI_FORTRAN: true
+      #   CI_MPI: true
+      #   CI_OPENMP: true
+      # - CI_FORTRAN: true
+      #   CI_MPI: false
+      #   CI_OPENMP: true
+      # - CI_FORTRAN: true
+      #   CI_MPI: true
+      #   CI_OPENMP: false
 
 install:
   # If there is a newer build queued for the same PR, cancel this one. The AppVeyor
@@ -44,13 +44,13 @@ install:
   - ps: $env:PATH = "$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin;$env:PATH"
 
   # Add Fortran to PATH
-  - ps: if ($env:FORTRAN -eq $true) {$env:PATH += ";C:\msys64\mingw64\bin"}
+  - ps: if ($env:CI_FORTRAN -eq $true) {$env:PATH += ";C:\msys64\mingw64\bin"}
   - ps: $env:PATH
   - ps: ls C:\msys64\mingw64\bin
 
   # Install MS-MPI
   - ps: >-
-      if ($env:MPI -eq $true) {
+      if ($env:CI_MPI -eq $true) {
         Start-FileDownload https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisdk.msi -FileName msmpisdk.msi
         msiexec msmpisdk.msi /quiet /norestart
         $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
@@ -72,9 +72,9 @@ build: false
 
 on_success:
   - sh: |
-      if  [ $FORTRAN ] || \
-          [ $MPI ] || \
-          [ $OMP ] ||
+      if  [ $CI_FORTRAN ] || \
+          [ $CI_MPI ] || \
+          [ $CI_OMP ] ||
       then
           codecov
           echo 'send coverage statistic'

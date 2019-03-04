@@ -16,10 +16,10 @@ addons:
 
 matrix:
     include:
-        - env: TRAVIS_CI_FORTRAN=False TRAVIS_CI_MPI=False  TRAVIS_CI_OMP=False
-        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=True
-        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=False TRAVIS_CI_OMP=True
-        - env: TRAVIS_CI_FORTRAN=True TRAVIS_CI_MPI=True  TRAVIS_CI_OMP=False
+        - env: CI_FORTRAN=False CI_MPI=False  CI_OMP=False
+        - env: CI_FORTRAN=True CI_MPI=True  CI_OMP=True
+        - env: CI_FORTRAN=True CI_MPI=False CI_OMP=True
+        - env: CI_FORTRAN=True CI_MPI=True  CI_OMP=False
 
 install:
     - sudo apt-get install -y -q mpich libmpich-dev
@@ -32,9 +32,9 @@ script:
     - travis_wait 45 pytest --cov=respy -vvv -s
 
 after_success:
--   if  [ $TRAVIS_CI_FORTRAN ] || \
-        [ $TRAVIS_CI_MPI ] || \
-        [ $TRAVIS_CI_OMP ] ||
+-   if  [ $CI_FORTRAN ] || \
+        [ $CI_MPI ] || \
+        [ $CI_OMP ] ||
     then
         codecov
         echo 'send coverage statistic'
