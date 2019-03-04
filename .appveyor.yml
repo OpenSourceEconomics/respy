@@ -41,7 +41,7 @@ install:
         throw "There are newer queued builds for this pull request, failing early." }
 
   # Add miniconda to PATH
-  - ps: $env:PATH += ";$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin"
+  - ps: $env:PATH = "$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin;$env:PATH"
 
   # Add Fortran to PATH
   - ps: if ($env:FORTRAN -eq $true) {$env:PATH += ";C:\msys64\mingw64\bin"}
@@ -54,12 +54,16 @@ install:
         $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
       }
 
-  # Set conda to always yes and print info
+  # Configure conda and install packages
   - conda config --set always_yes yes --set changeps1 no
   - conda info -a
   - conda install numpy scipy=0.19 pandas=0.21 statsmodels=0.8 numba
+
+  # Install pip packages and respy
   - pip install pytest pytest-cov codecov
   - pip install -e . -vv
+
+  # Run tests
   - pytest --cov=respy -vvv -s
 
 build: false
