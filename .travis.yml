@@ -27,6 +27,7 @@ install:
     # Install, configure conda and install packages
     - bash install_miniconda.sh
     - conda env create -n respy -f environment.yml
+    - source activate respy
 
     # Install respy
     - pip install -e . -vv
