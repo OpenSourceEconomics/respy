@@ -23,10 +23,15 @@ matrix:
 
 install:
     - sudo apt-get install -y -q mpich libmpich-dev
-    - travis_retry travis_wait pip install -r requirements.txt
+    - bash install_miniconda.sh
+
+    # Configure conda and install packages
+    - conda config --set always_yes yes --set changeps1 no
+    - conda info -a
+    - conda install numpy scipy=0.19 pandas=0.21 statsmodels=0.8 numba
+
     - pip install -e . -vv
-    - pip install pytest-cov
-    - pip install codecov
+    - pip install pytest pytest-cov codecov
 
 script:
     - travis_wait 45 pytest --cov=respy -vvv -s
@@ -49,3 +54,10 @@ notifications:
     on_failure: always # default: always
 
   email: false
+
+# We only want to build with Travis when pushing to master or PR:
+# https://stackoverflow.com/questions/31882306/how-to-configure-travis-ci-to-
+# build-pull-requests-merges-to-master-w-o-redunda/31882307#31882307
+branches:
+  only:
+    - master
