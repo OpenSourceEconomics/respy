@@ -178,7 +178,7 @@ def pyth_simulate(
                 "Shock_Reward_2": draws[1],
                 "Shock_Reward_3": draws[2],
                 "Shock_Reward_4": draws[3],
-                "Discount_Rate": optim_paras["delta"],
+                "Discount_Rate": optim_paras["delta"][0],
                 # For testing purposes, we also explicitly include the general reward
                 # component, the common component, and the immediate ex post rewards.
                 "General_Reward_1": state.rewards_general_a,

@@ -17,6 +17,7 @@ from respy.custom_exceptions import InadmissibleStateError
 from respy.python.shared.shared_auxiliary import create_covariates
 from numba import njit
 from respy.python.shared.shared_constants import MISSING_FLOAT, MISSING_INT
+import pytest
 
 
 @njit
@@ -170,6 +171,21 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
                                     if choice_lagged in [1, 2]:
                                         continue
 
+                                # Continue if state still exist. This is only caused by
+                                # multiple starting values of education.
+                                if (
+                                    states_indexer[
+                                        period,
+                                        exp_a,
+                                        exp_b,
+                                        edu_start + edu_add,
+                                        choice_lagged - 1,
+                                        type_,
+                                    ]
+                                    != -1
+                                ):
+                                    continue
+
                                 # Collect mapping of state space to array index.
                                 states_indexer[
                                     period,
@@ -294,9 +310,6 @@ def pyth_backward_induction(
     states : pd.DataFrame
 
     """
-    # Create auxiliary objects for compatibility
-    states_per_period = state_space.states_per_period
-
     if is_myopic:
         record_solution_progress(-2, file_sim)
 
@@ -358,14 +371,12 @@ def pyth_backward_induction(
 
         # Extract auxiliary objects
         draws_emax_standard = periods_draws_emax[period, :, :]
-        num_states = states_per_period[period]
+        num_states = state_space.states_per_period[period]
 
         # Treatment of the disturbances for the risk-only case is straightforward. Their
         # distribution is fixed once and for all.
         draws_emax_risk = transform_disturbances(
-            draws_emax_standard,
-            np.full(4, 0.0),
-            optim_paras["shocks_cholesky"],
+            draws_emax_standard, np.zeros(4), optim_paras["shocks_cholesky"]
         )
 
         if is_write:
@@ -417,9 +428,7 @@ def pyth_backward_induction(
             state_space.states.loc[
                 state_space.states.period.eq(period), "emax"
             ] = construct_emax_risk(
-                state_space.states.loc[
-                    state_space.states.period.eq(period)
-                ].copy(),
+                state_space.states.loc[state_space.states.period.eq(period)],
                 draws_emax_risk,
                 optim_paras,
             )
@@ -719,8 +728,10 @@ class StateSpace:
 
     """
 
-    def __init__(self, *args):
-        states, self.indexer = pyth_create_state_space(*args)
+    def __init__(self, num_periods, num_types, edu_starts, edu_max):
+        states, self.indexer = pyth_create_state_space(
+            num_periods, num_types, edu_starts, edu_max
+        )
 
         covariates = create_covariates(states)
 
@@ -768,7 +779,11 @@ class StateSpace:
     def _get_fortran_counterparts(self):
         try:
             periods_rewards_systematic = np.full(
-                (self.states_per_period.shape[0], self.states_per_period.max(), 4),
+                (
+                    self.states_per_period.shape[0],
+                    self.states_per_period.max(),
+                    4,
+                ),
                 MISSING_FLOAT,
             )
             for period, group in self.states.groupby("period"):
@@ -787,21 +802,22 @@ class StateSpace:
 
         try:
             periods_emax = np.full(
-                (self.states_per_period.shape[0], self.states_per_period.max(), 4),
+                (
+                    self.states_per_period.shape[0],
+                    self.states_per_period.max(),
+                ),
                 MISSING_FLOAT,
             )
             for period, group in self.states.groupby("period"):
-                sub = group[
-                    ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
-                ].values
+                sub = group["emax"].values
 
-                periods_emax[period, : sub.shape[0], :] = sub
+                periods_emax[period, : sub.shape[0]] = sub
         except KeyError:
             periods_emax = None
 
         states_all = np.full(
             (self.states_per_period.shape[0], self.states_per_period[-1], 5),
-            MISSING_FLOAT,
+            MISSING_INT,
         )
         for period, group in self.states.groupby("period"):
             sub = group[
@@ -813,10 +829,10 @@ class StateSpace:
         # The indexer has to be modified because ``mapping_state_idx`` resets the
         # counter to zero for each period and ``self.indexer`` not. For every period,
         # subtract the minimum index.
-        mapping_state_idx = self.indexer
+        mapping_state_idx = self.indexer.copy()
         for period in range(self.states_per_period.shape[0]):
             mask = mapping_state_idx[period] != -1
-            minimum_index = mapping_state_idx[period].min()
+            minimum_index = mapping_state_idx[period][mask].min()
 
             mapping_state_idx[period][mask] -= minimum_index
 
@@ -852,7 +868,7 @@ class StateSpace:
                 ", ".join(
                     [
                         "{}: {}".format(k, v)
-                        for k, v in zip(self.indexer_dim_names, key)
+                        for k, v in zip(self.states.columns.tolist()[:6], key)
                     ]
                 )
             )
