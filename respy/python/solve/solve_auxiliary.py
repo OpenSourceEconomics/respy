@@ -765,32 +765,38 @@ class StateSpace:
         return self.states.groupby("period").count().iloc[:, 0].values
 
     def _get_fortran_counterparts(self):
-        periods_rewards_systematic = np.full(
-            (self.states_per_period.shape[0], self.states_per_period.max(), 4),
-            np.nan,
-        )
-        for period, group in self.states.groupby("period"):
-            sub = group[
-                [
-                    "rewards_systematic_a",
-                    "rewards_systematic_b",
-                    "rewards_systematic_edu",
-                    "rewards_systematic_home",
-                ]
-            ].values
+        try:
+            periods_rewards_systematic = np.full(
+                (self.states_per_period.shape[0], self.states_per_period.max(), 4),
+                np.nan,
+            )
+            for period, group in self.states.groupby("period"):
+                sub = group[
+                    [
+                        "rewards_systematic_a",
+                        "rewards_systematic_b",
+                        "rewards_systematic_edu",
+                        "rewards_systematic_home",
+                    ]
+                ].values
 
-            periods_rewards_systematic[period, : sub.shape[0]] = sub
+                periods_rewards_systematic[period, : sub.shape[0]] = sub
+        except KeyError:
+            periods_rewards_systematic = None
 
-        periods_emax = np.full(
-            (self.states_per_period.shape[0], self.states_per_period.max(), 4),
-            np.nan,
-        )
-        for period, group in self.states.groupby("period"):
-            sub = group[
-                ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
-            ].values
+        try:
+            periods_emax = np.full(
+                (self.states_per_period.shape[0], self.states_per_period.max(), 4),
+                np.nan,
+            )
+            for period, group in self.states.groupby("period"):
+                sub = group[
+                    ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
+                ].values
 
-            periods_emax[period, : sub.shape[0], :] = sub
+                periods_emax[period, : sub.shape[0], :] = sub
+        except KeyError:
+            periods_emax = None
 
         states_all = np.full(
             (self.states_per_period.shape[0], self.states_per_period[-1], 5),

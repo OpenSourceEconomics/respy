@@ -128,7 +128,13 @@ class TestClass(object):
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Evaluation of simulated expected future values
-        base_args = (
+        py = construct_emax_risk(
+            state_space.states.loc[state_space.states.period.eq(period)],
+            draws_emax_risk,
+            optim_paras,
+        )
+
+        f90 = fort_debug.wrapper_construct_emax_risk(
             num_periods,
             num_draws_emax,
             period,
@@ -138,25 +144,15 @@ class TestClass(object):
             periods_emax,
             states_all,
             mapping_state_idx,
-        )
-
-        args = ()
-        args += base_args + (optim_paras)
-        py = construct_emax_risk(*args)
-
-        args = ()
-        args += base_args + (
             edu_spec["start"],
             edu_spec["max"],
             optim_paras["delta"],
-        )
-        args += (
             optim_paras["coeffs_common"],
             optim_paras["coeffs_a"],
             optim_paras["coeffs_b"],
+            num_types,
         )
-        args += (num_types,)
-        f90 = fort_debug.wrapper_construct_emax_risk(*args)
+
         assert_allclose(py, f90)
 
     def test_2(self):
@@ -181,16 +177,16 @@ class TestClass(object):
             # FORTRAN
             base_args = (num_periods, num_types)
 
-            args = base_args + (edu_spec["start"], edu_spec["max"])
-            state_space = StateSpace(*args)
+            state_space = StateSpace(
+                *base_args, edu_spec["start"], edu_spec["max"]
+            )
 
             py_a, py_c, _, _ = state_space._get_fortran_counterparts()
             py_b = state_space.states_per_period
             py_d = py_b.max()
 
-            args = base_args + (edu_spec["start"], edu_spec["max"], min_idx)
             fort_a, fort_b, fort_c, fort_d = fort_debug.wrapper_create_state_space(
-                *args
+                *base_args, edu_spec["start"], edu_spec["max"], min_idx
             )
 
             # Ensure equivalence
@@ -593,9 +589,17 @@ class TestClass(object):
         )
         f2py = fort_debug.wrapper_solve(*args)
 
-        for alt in [fort, f2py]:
-            for i in range(5):
-                assert_allclose(py[i], alt[i])
+        assert_allclose(py[0], fort[0])
+        assert_allclose(py[1], fort[1])
+        assert_allclose(py[2], fort[2])
+        assert_allclose(py[3], fort[3])
+        assert_allclose(py[4], fort[4])
+
+        assert_allclose(py[0], f2py[0])
+        assert_allclose(py[1], f2py[1])
+        assert_allclose(py[2], f2py[2])
+        assert_allclose(py[3], f2py[3])
+        assert_allclose(py[4], f2py[4])
 
         base_args = (
             num_periods,
@@ -605,33 +609,26 @@ class TestClass(object):
             file_sim,
         )
 
-        args = (
-            (state_space,)
-            + base_args
-            + (edu_spec, optim_paras, num_types, is_debug)
+        py = pyth_simulate(
+            state_space, *base_args, edu_spec, optim_paras, num_types, is_debug
         )
-        py = pyth_simulate(*args)
 
-        args = ()
-        args += base_args + (
+        f2py = fort_debug.wrapper_simulate(
+            *base_args,
             edu_spec["start"],
             edu_spec["max"],
             edu_spec["share"],
-        )
-        args += (
             edu_spec["lagged"],
             optim_paras["coeffs_common"],
             optim_paras["coeffs_a"],
-        )
-        args += (
             optim_paras["coeffs_b"],
             shocks_cholesky,
             delta,
             num_types,
             type_spec_shares,
+            type_spec_shifts,
+            is_debug
         )
-        args += (type_spec_shifts, is_debug)
-        f2py = fort_debug.wrapper_simulate(*args)
         assert_allclose(py, f2py)
 
         base_args = (

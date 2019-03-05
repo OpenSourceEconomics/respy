@@ -4,9 +4,12 @@ from respy.python.shared.shared_auxiliary import get_continuation_value
 def construct_emax_risk(states, draws_emax_risk, optim_paras):
     """ Simulate expected future value for a given distribution of the unobservables.
 
+    Note that, this function works on all states for a given period.
+
     Parameters
     ----------
     states : pd.DataFrame
+        Contains all states in one period.
     draws_emax_risk : np.array
     optim_paras : dict
 
