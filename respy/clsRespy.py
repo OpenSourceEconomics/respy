@@ -274,7 +274,6 @@ class RespyCls(object):
         for fname in [".estimation.respy.scratch", ".stop.respy.scratch"]:
             remove_scratch(fname)
 
-        # Finishing
         return x, val
 
     def simulate(self):

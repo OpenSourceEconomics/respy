@@ -59,7 +59,7 @@ assert_allclose = partial(np.testing.assert_allclose, rtol=TOL, atol=TOL)
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
 if IS_F2PY:
-    sys.path.insert(0, TEST_RESOURCES_BUILD)
+    sys.path.insert(0, str(TEST_RESOURCES_BUILD))
     import f2py_interface as fort_debug
 
 
@@ -153,7 +153,10 @@ class TestClass(object):
             num_types,
         )
 
-        assert_allclose(py, f90)
+        # The old FORTRAN version of ``construct_emax_risk`` calculates the emax for one
+        # state whereas the new Python implementation calculates the emax for all states
+        # in a given period. Thus, index the Python output with ``k``.
+        assert_allclose(py[k], f90)
 
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected hand-crafted
@@ -197,6 +200,9 @@ class TestClass(object):
                 [fort_d, py_d],
             ]
             for obj in rslts:
+                # Slice Fortran output to shape of Python output.
+                obj[0] = obj[0][tuple(map(slice, obj[1].shape))]
+
                 assert_allclose(obj[0], obj[1])
 
         for _ in range(100):
@@ -390,6 +396,9 @@ class TestClass(object):
         args = base_args + (edu_spec["start"], edu_spec["max"], min_idx)
         f2py = fort_debug.wrapper_create_state_space(*args)
         for i in range(4):
+            # Slice Fortran output to Python output.
+            f2py[i] = f2py[i][tuple(map(slice, pyth[i].shape))]
+
             assert_allclose(pyth[i], f2py[i])
 
         # Check calculation of systematic components of rewards.
@@ -547,14 +556,15 @@ class TestClass(object):
 
         fort, _ = resfort_interface(respy_obj, "simulate")
 
-        args = base_args + (
+        state_space = pyth_solve(
+            *base_args,
             edu_spec,
             optim_paras,
             file_sim,
             optimizer_options,
             num_types,
         )
-        state_space = pyth_solve(*args)
+
         (
             states_all,
             mapping_state_idx,
@@ -570,7 +580,8 @@ class TestClass(object):
             states_all,
         )
 
-        args = base_args + (
+        f2py = fort_debug.wrapper_solve(
+            *base_args,
             min_idx,
             edu_spec["start"],
             edu_spec["max"],
@@ -587,7 +598,6 @@ class TestClass(object):
             type_spec_shares,
             type_spec_shifts,
         )
-        f2py = fort_debug.wrapper_solve(*args)
 
         assert_allclose(py[0], fort[0])
         assert_allclose(py[1], fort[1])
@@ -627,7 +637,7 @@ class TestClass(object):
             num_types,
             type_spec_shares,
             type_spec_shifts,
-            is_debug
+            is_debug,
         )
         assert_allclose(py, f2py)
 
@@ -771,6 +781,9 @@ class TestClass(object):
         draws_emax_risk = transform_disturbances(
             draws_emax_standard, np.tile(0, 4), shocks_cholesky
         )
+
+        # TODO: DELETE
+        print(dir(respy_obj))
 
         num_states = state_space.states_per_period[period]
 
@@ -1008,44 +1021,13 @@ class TestClass(object):
             assert_almost_equal(np.sum(py), 1.0)
             assert_almost_equal(py, fort)
 
-    @pytest.mark.skip(
-        reason="back_out_systematic_wages does not exist anymore."
-    )
     def test_12(self):
-        """ Function that backs out the systematic wages from the systematic rewards
+        """ Testing the functionality introduced to ensure that the simulation is
+        independent of the order of initial conditions and types in the initialization
+        file.
+
         """
-        for _ in range(1000):
-
-            rewards_systematic = np.random.normal(0, 1, size=4)
-            choice_lagged = np.random.randint(1, 4)
-            exp_a = np.random.randint(1, 10)
-            exp_b = np.random.randint(1, 10)
-            edu = np.random.randint(1, 10)
-
-            coeffs_common = np.random.normal(0, 1, size=2)
-            coeffs_a = np.random.normal(0, 1, size=15)
-            coeffs_b = np.random.normal(0, 1, size=15)
-
-            optim_paras = dict()
-            optim_paras["coeffs_common"] = coeffs_common
-            optim_paras["coeffs_a"] = coeffs_a
-            optim_paras["coeffs_b"] = coeffs_b
-
-            args = [rewards_systematic, exp_a, exp_b, edu, choice_lagged]
-
-            # py = back_out_systematic_wages(*args + [optim_paras])
-            fort = fort_debug.wrapper_back_out_systematic_wages(
-                *args + [coeffs_a, coeffs_b]
-            )
-
-            assert_almost_equal(py, fort)
-
-    def test_13(self):
-        """ Testing the functionality introduced to ensure that the simulation is independent of
-        the order of initial conditions and types in the initialization file.
-        """
-
-        num_elements = np.random.random_integers(1, 10)
+        num_elements = np.random.randint(1, 11)
 
         input_array = np.random.normal(size=num_elements)
 
@@ -1054,7 +1036,8 @@ class TestClass(object):
         f90 = fort_debug.wrapper_sorted(input_array, num_elements)
         assert_equal(py, f90)
 
-        # We now turn to the more complicated testing of hand-crafted functions for this purpose.
+        # We now turn to the more complicated testing of hand-crafted functions for this
+        # purpose.
         generate_init()
         respy_obj = RespyCls("test.respy.ini")
 

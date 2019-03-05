@@ -79,7 +79,8 @@ def simulate_observed(respy_obj, is_missings=True):
 
 
 def compare_init(fname_base, fname_alt):
-    """ This function compares the content of each line of a file without any regards for spaces.
+    """ This function compares the content of each line of a file without any regards
+    for spaces.
     """
     base_lines = [line.rstrip("\n") for line in open(fname_base, "r")]
     alt_lines = [line.rstrip("\n") for line in open(fname_alt, "r")]

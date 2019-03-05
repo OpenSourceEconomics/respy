@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 import shutil
 import copy
-import glob
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
@@ -393,18 +392,19 @@ class TestClass(object):
         # iterations, but also larger than any of the initial starting levels.
         init_dict["EDUCATION"]["max"] = np.random.randint(15, 25, size=1).tolist()[0]
 
-        # We need to ensure that the initial lagged activity always has the same distribution.
+        # We need to ensure that the initial lagged activity always has the same
+        # distribution.
         edu_lagged_base = np.random.uniform(size=5).tolist()
 
         for num_edu_start in [1, np.random.choice([2, 3, 4]).tolist()]:
 
-            # We always need to ensure that a weight of one is on the first level of initial
-            # schooling.
+            # We always need to ensure that a weight of one is on the first level of
+            # initial schooling.
             init_dict["EDUCATION"]["share"] = [1.0] + [0.0] * (num_edu_start - 1)
             init_dict["EDUCATION"]["lagged"] = edu_lagged_base[:num_edu_start]
 
-            # We need to make sure that the baseline level of initial schooling is always
-            # included. At the same time we cannot have any duplicates.
+            # We need to make sure that the baseline level of initial schooling is
+            # always included. At the same time we cannot have any duplicates.
             edu_start = np.random.choice(
                 range(1, 10), size=num_edu_start, replace=False
             ).tolist()
@@ -431,7 +431,7 @@ class TestClass(object):
         """ This step ensures that the printing of the initialization file is done properly. We
         compare the content of the files line by line, but drop any spaces.
         """
-        for fname in glob.glob(TEST_RESOURCES_DIR + "/*.ini"):
+        for fname in TEST_RESOURCES_DIR.glob("*.ini"):
             respy_obj = RespyCls(fname)
             respy_obj.write_out("test.respy.ini")
             np.testing.assert_equal(compare_init(fname, "test.respy.ini"), True)
@@ -466,7 +466,7 @@ class TestClass(object):
         open(".restud.respy.scratch", "w").close()
 
         # Evaluate criterion function at true values.
-        respy_obj = RespyCls(TEST_RESOURCES_DIR + "/" + fname)
+        respy_obj = RespyCls(TEST_RESOURCES_DIR / fname)
 
         respy_obj.unlock()
         respy_obj.set_attr("maxfun", 0)

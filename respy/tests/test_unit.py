@@ -139,59 +139,9 @@ class TestClass(object):
                     cond = df[label] == 0
                 assert np.all(cond)
 
-    @pytest.mark.skip(reason="back_out_systematic_wages does not exist anymore.")
     def test_4(self):
-        """ Testing whether back and forth transformations for the wage does work.
-        """
-        # Generate random initialization file
-        generate_init()
-
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
-        respy_obj, _ = respy_obj.simulate()
-
-        (
-            periods_rewards_systematic,
-            states_number_period,
-            states_all,
-            num_periods,
-            optim_paras,
-        ) = dist_class_attributes(
-            respy_obj,
-            "periods_rewards_systematic",
-            "states_number_period",
-            "states_all",
-            "num_periods",
-            "optim_paras",
-        )
-
-        for _ in range(10):
-            # Construct a random state for the calculations.
-            period = np.random.choice(range(num_periods))
-            k = np.random.choice(range(states_number_period[period]))
-
-            rewards_systematic = periods_rewards_systematic[period, k, :]
-            exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
-
-            covariates = create_covariates(
-                exp_a, exp_b, edu, choice_lagged, type_, period
-            )
-            wages = calculate_wages_systematic(covariates, optim_paras)
-
-            args = (
-                rewards_systematic,
-                exp_a,
-                exp_b,
-                edu,
-                choice_lagged,
-                optim_paras,
-            )
-            # rslt = back_out_systematic_wages(*args)
-
-            np.testing.assert_almost_equal(rslt, wages)
-
-    def test_5(self):
-        """ Testing the return values for the total values in case of myopic individuals.
+        """ Testing the return values for the total values in case of myopic
+        individuals.
         """
         constr = dict()
         constr["flag_myopic"] = True
@@ -217,6 +167,9 @@ class TestClass(object):
             "edu_spec",
             "state_space",
         )
+
+        # TODO: DELETE
+        print(dir(respy_obj))
 
         period = np.random.choice(range(num_periods))
         k = np.random.choice(range(state_space.states_per_period[period]))

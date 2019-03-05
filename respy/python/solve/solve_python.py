@@ -22,8 +22,14 @@ def pyth_solve(
 ):
     """ Solving the model using pure PYTHON code.
     """
+    record_solution_progress(1, file_sim)
+
     # Create the state space
     state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
+
+    record_solution_progress(-1, file_sim)
+
+    record_solution_progress(2, file_sim)
 
     state_space.states = pyth_calculate_rewards_systematic(
         state_space.states, optim_paras

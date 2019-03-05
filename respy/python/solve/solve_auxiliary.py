@@ -16,6 +16,7 @@ import pandas as pd
 from respy.custom_exceptions import InadmissibleStateError
 from respy.python.shared.shared_auxiliary import create_covariates
 from numba import njit
+from respy.python.shared.shared_constants import MISSING_FLOAT
 
 
 @njit
@@ -768,7 +769,7 @@ class StateSpace:
         try:
             periods_rewards_systematic = np.full(
                 (self.states_per_period.shape[0], self.states_per_period.max(), 4),
-                np.nan,
+                MISSING_FLOAT,
             )
             for period, group in self.states.groupby("period"):
                 sub = group[
@@ -787,7 +788,7 @@ class StateSpace:
         try:
             periods_emax = np.full(
                 (self.states_per_period.shape[0], self.states_per_period.max(), 4),
-                np.nan,
+                MISSING_FLOAT,
             )
             for period, group in self.states.groupby("period"):
                 sub = group[
@@ -800,7 +801,7 @@ class StateSpace:
 
         states_all = np.full(
             (self.states_per_period.shape[0], self.states_per_period[-1], 5),
-            np.nan,
+            MISSING_FLOAT,
         )
         for period, group in self.states.groupby("period"):
             sub = group[

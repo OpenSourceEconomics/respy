@@ -67,9 +67,11 @@ class TestClass(object):
             num_periods = np.random.randint(3, 6)
             num_types = int(len(init_dict["TYPE SHARES"]["coeffs"]) / 2) + 1
 
-            state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
+            state_space = StateSpace(
+                num_periods, num_types, edu_spec["start"], edu_spec["max"]
+            )
 
-            max_states_period = state_space.maximum_number_of_states
+            max_states_period = state_space.states_per_period.max()
 
             # Updates to initialization dictionary that trigger a use of the
             # interpolation code.
@@ -107,8 +109,8 @@ class TestClass(object):
             # Solve the model
             respy_obj = simulate_observed(respy_obj)
 
-            # This parts checks the equality of simulated dataset for the different versions of
-            # the code.
+            # This parts checks the equality of simulated dataset for the different
+            # versions of the code.
             data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
 
             if base_data is None:
@@ -122,15 +124,17 @@ class TestClass(object):
             if base_val is None:
                 base_val = crit_val
 
-            np.testing.assert_allclose(base_val, crit_val, rtol=1e-05, atol=1e-06)
+            np.testing.assert_allclose(
+                base_val, crit_val, rtol=1e-05, atol=1e-06
+            )
 
             # We know even more for the deterministic case.
             if constr["flag_deterministic"]:
                 assert crit_val in [-1.0, 0.0]
 
     def test_2(self):
-        """ This test ensures that the evaluation of the criterion function at the starting value
-        is identical between the different versions.
+        """ This test ensures that the evaluation of the criterion function at the
+        starting value is identical between the different versions.
         """
 
         max_draws = np.random.randint(10, 100)
@@ -208,18 +212,21 @@ class TestClass(object):
             respy_obj, "num_agents_sim", "optim_paras", "file_sim"
         )
 
-        delta = optim_paras["delta"]
-
         # Iterate over alternative implementations
-        base_sol_log, base_est_info, base_est_log = None, None, None
-        base_sim_log, base_amb_log = None, None
+        base_sol_log, base_est_info, base_est_log, base_sim_log = (
+            None,
+            None,
+            None,
+            None,
+        )
 
         type_shares = np.array([0.0, 0.0] + init_dict["TYPE SHARES"]["coeffs"])
         num_periods = init_dict["BASICS"]["periods"]
 
-        edu_spec = dict()
-        edu_spec["start"] = init_dict["EDUCATION"]["start"]
-        edu_spec["share"] = init_dict["EDUCATION"]["share"]
+        edu_spec = {
+            "start": init_dict["EDUCATION"]["start"],
+            "share": init_dict["EDUCATION"]["share"],
+        }
 
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
@@ -259,7 +266,8 @@ class TestClass(object):
             compare_est_log(base_est_log)
 
     def test_4(self):
-        """ This test ensures that the scaling matrix is identical between the alternative versions.
+        """ This test ensures that the scaling matrix is identical between the
+        alternative versions.
         """
         max_draws = np.random.randint(10, 300)
 
@@ -288,8 +296,8 @@ class TestClass(object):
         for version in ["FORTRAN", "PYTHON"]:
             respy_obj = copy.deepcopy(respy_base)
 
-            # The actual optimizer does not matter for the scaling matrix. We also need to make
-            # sure that PYTHON is only called with a single processor.
+            # The actual optimizer does not matter for the scaling matrix. We also need
+            # to make sure that PYTHON is only called with a single processor.
             if version in ["PYTHON"]:
                 optimizer_used = "SCIPY-LBFGSB"
                 num_procs = 1
