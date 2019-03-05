@@ -107,6 +107,7 @@ def pyth_contributions(
                 is_wage_missing = np.isnan(wage_observed)
                 is_working = choice in [1, 2]
 
+                # TODO: Type conversion for tests.
                 # Create an index for the choice.
                 idx = int(choice - 1)
 

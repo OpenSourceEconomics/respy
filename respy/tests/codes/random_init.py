@@ -15,8 +15,8 @@ from respy.tests.codes.auxiliary import get_valid_shares
 from respy.tests.codes.auxiliary import get_valid_values
 from respy.tests.codes.auxiliary import OPTIMIZERS_EST
 
-# We need to impose some version-dependent constraints. Otherwise the execution times for some
-# tasks just takes too long.
+# We need to impose some version-dependent constraints. Otherwise the execution times
+# for some tasks just takes too long.
 VERSION_CONSTRAINTS = dict()
 
 VERSION_CONSTRAINTS["max_types"] = dict()

@@ -397,9 +397,9 @@ class TestClass(object):
         f2py = fort_debug.wrapper_create_state_space(*args)
         for i in range(4):
             # Slice Fortran output to Python output.
-            f2py[i] = f2py[i][tuple(map(slice, pyth[i].shape))]
+            f2py_reduced = f2py[i][tuple(map(slice, pyth[i].shape))]
 
-            assert_allclose(pyth[i], f2py[i])
+            assert_allclose(pyth[i], f2py_reduced)
 
         # Check calculation of systematic components of rewards.
         state_space.states = pyth_calculate_rewards_systematic()
@@ -724,6 +724,8 @@ class TestClass(object):
         respy_obj = RespyCls("test.respy.ini")
         respy_obj = simulate_observed(respy_obj)
 
+        print(vars(respy_obj))
+
         # Extract class attributes
         (
             state_space,
@@ -770,7 +772,7 @@ class TestClass(object):
         delta = optim_paras["delta"]
 
         # Add some additional objects required for the interfaces to the functions.
-        period = np.random.choice(range(num_periods))
+        period = np.random.choice(num_periods)
 
         periods_draws_emax = create_draws(
             num_periods, num_draws_emax, seed_prob, is_debug
@@ -781,9 +783,6 @@ class TestClass(object):
         draws_emax_risk = transform_disturbances(
             draws_emax_standard, np.tile(0, 4), shocks_cholesky
         )
-
-        # TODO: DELETE
-        print(dir(respy_obj))
 
         num_states = state_space.states_per_period[period]
 

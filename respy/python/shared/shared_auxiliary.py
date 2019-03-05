@@ -356,7 +356,6 @@ def get_emaxs_of_subsequent_period(
         emaxs_* values from subsequent period.
 
     """
-
     # Working in Occupation A in period + 1
     emaxs_a = state_space[period + 1, exp_a + 1, exp_b, edu, 0, type_]["emax"]
 
@@ -436,6 +435,7 @@ def add_solution(
     respy_obj.set_attr("states_all", states_all)
     respy_obj.set_attr("is_solved", True)
     respy_obj.lock()
+
     return respy_obj
 
 
@@ -523,7 +523,6 @@ def check_model_parameters(optim_paras):
     # Checks for type shifts
     assert optim_paras["type_shifts"].shape == (num_types, 4)
 
-    # Finishing
     return True
 
 

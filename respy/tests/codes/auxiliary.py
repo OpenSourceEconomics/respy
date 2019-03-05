@@ -92,7 +92,8 @@ def compare_init(fname_base, fname_alt):
 
 
 def compare_est_log(base_est_log):
-    """ This function is required as the log files can be slightly different for good reasons.
+    """ This function is required as the log files can be slightly different for good
+    reasons.
     """
     with open("est.respy.log") as in_file:
         alt_est_log = in_file.readlines()
@@ -119,8 +120,8 @@ def compare_est_log(base_est_log):
                 is_floats = True
             except ValueError:
                 pass
-            # We need to cut the floats some slack. It might very well happen that in the
-            # very last digits they are in fact different across the versions.
+            # We need to cut the floats some slack. It might very well happen that in
+            # the very last digits they are in fact different across the versions.
             if not is_floats:
                 assert alt_line == base_line
             else:

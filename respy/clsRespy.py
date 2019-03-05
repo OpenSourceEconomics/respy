@@ -301,7 +301,7 @@ class RespyCls(object):
         # Attach solution to class instance
         if self.attr["version"] == "FORTRAN":
             self = add_solution(self, *solution)
-        else:
+        elif self.attr["version"] == "PYTHON":
             self.unlock()
             self.set_attr("state_space", state_space)
             self.lock()
@@ -319,6 +319,8 @@ class RespyCls(object):
                 periods_emax,
                 states_all,
             )
+        else:
+            raise NotImplementedError
 
         self.unlock()
         self.set_attr("is_solved", True)
@@ -333,12 +335,13 @@ class RespyCls(object):
         # ====================================================================
         if self.attr["version"] == "PYTHON":
             data_frame = data_array[DATA_LABELS_SIM]
-
-        else:
+        elif self.attr["version"] == "FORTRAN":
             data_frame = pd.DataFrame(
                 data=replace_missing_values(data_array),
                 columns=DATA_LABELS_SIM,
             )
+        else:
+            raise NotImplementedError
 
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
 

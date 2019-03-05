@@ -16,7 +16,7 @@ import pandas as pd
 from respy.custom_exceptions import InadmissibleStateError
 from respy.python.shared.shared_auxiliary import create_covariates
 from numba import njit
-from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import MISSING_FLOAT, MISSING_INT
 
 
 @njit
@@ -334,7 +334,8 @@ def pyth_backward_induction(
                 state_space.states.period.eq(period)
             ].index
 
-            # TODO: Embarrassingly parallel.
+            # TODO: Embarrassingly parallel. Will be addressed when StateSpace is
+            # completely numpyrized.
             for row_idx in row_indices:
 
                 # Unpack characteristics of current state
@@ -489,7 +490,7 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
     states : pd.DataFrame
 
     """
-    # TODO: Delete fix for test_integration::test_5
+    # TODO: Type conversion for test_integration::test_5.
     draws = np.array(draws)
 
     total_values, rewards_ex_post = get_continuation_value(
@@ -669,7 +670,6 @@ def calculate_wages_systematic(states, optim_paras):
     states["exp_a_sq"] = states.exp_a ** 2 / 100
     states["exp_b_sq"] = states.exp_b ** 2 / 100
 
-    # TODO: Is this still necessary?
     if os.path.exists(".restud.respy.scratch"):
         states["exp_a_sq"] *= 100.00
         states["exp_b_sq"] *= 100.00
@@ -820,6 +820,8 @@ class StateSpace:
 
             mapping_state_idx[period][mask] -= minimum_index
 
+        mapping_state_idx[mapping_state_idx == -1] = MISSING_INT
+
         return (
             states_all,
             mapping_state_idx,
@@ -841,6 +843,7 @@ class StateSpace:
             still an integer to keep memory costs down.
 
         """
+        # TODO: Type conversion for tests.
         key = tuple(int(i) for i in key)
         position = self.indexer[key]
 

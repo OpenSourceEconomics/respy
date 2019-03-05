@@ -168,9 +168,6 @@ class TestClass(object):
             "state_space",
         )
 
-        # TODO: DELETE
-        print(dir(respy_obj))
-
         period = np.random.choice(range(num_periods))
         k = np.random.choice(range(state_space.states_per_period[period]))
 
