@@ -3,7 +3,7 @@ repos:
     rev: v1.3.4
     hooks:
     -   id: reorder-python-imports
-        files: '(\.py|wscript)$'
+        types: [python]
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.0.0
     hooks:
@@ -22,4 +22,4 @@ repos:
       name: Black - The Uncompromising Code Formatter
       language: system
       entry: black
-      types: [python]
+      types: [python, pyi]
