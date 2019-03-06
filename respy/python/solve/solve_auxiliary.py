@@ -17,7 +17,6 @@ from respy.custom_exceptions import InadmissibleStateError
 from respy.python.shared.shared_auxiliary import create_covariates
 from numba import njit
 from respy.python.shared.shared_constants import MISSING_FLOAT, MISSING_INT
-import pytest
 
 
 @njit
@@ -269,7 +268,7 @@ def pyth_calculate_rewards_systematic(states, optim_paras):
         states.rewards_home + states.rewards_common
     )
 
-    states.drop(columns=["intercept"], inplace=True)
+    states.drop(["intercept"], axis="columns", inplace=True)
 
     return states
 

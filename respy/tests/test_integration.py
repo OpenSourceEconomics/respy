@@ -89,7 +89,10 @@ class TestClass(object):
 
             # Statistic
             diff = np.max(
-                abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(periods_emax))
+                abs(
+                    np.ma.masked_invalid(base)
+                    - np.ma.masked_invalid(periods_emax)
+                )
             )
 
             # Checks
@@ -145,7 +148,9 @@ class TestClass(object):
             if base_val is None:
                 base_val = crit_val
 
-            np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
+            np.testing.assert_allclose(
+                base_val, crit_val, rtol=1e-03, atol=1e-03
+            )
 
     def test_4(self):
         """ Test the evaluation of the criterion function for random requests, not just
@@ -311,7 +316,8 @@ class TestClass(object):
         np.testing.assert_almost_equal(update_val, base_val)
 
     def test_8(self):
-        """ This test ensures that the constraints for the covariance matrix are properly handled.
+        """ This test ensures that the constraints for the covariance matrix are
+        properly handled.
         """
 
         init_dict = generate_random_dict()
@@ -375,22 +381,29 @@ class TestClass(object):
             RespyCls("test.respy.ini")
 
     def test_9(self):
-        """ We ensure that the number of initial conditions does not matter for the evaluation of
-        the criterion function if a weight of one is put on the first group.
+        """ We ensure that the number of initial conditions does not matter for the
+        evaluation of the criterion function if a weight of one is put on the first
+        group.
         """
         constr = dict()
         constr["flag_estimation"] = True
 
-        # The interpolation equation is affected by the number of types regardless of the weights.
+        # The interpolation equation is affected by the number of types regardless of
+        # the weights.
         constr["flag_interpolation"] = False
 
         init_dict = generate_init(constr)
 
-        base_val, edu_start_base = None, np.random.randint(1, 5, size=1).tolist()[0]
+        base_val, edu_start_base = (
+            None,
+            np.random.randint(1, 5, size=1).tolist()[0],
+        )
 
         # We need to make sure that the maximum level of education is the same across
         # iterations, but also larger than any of the initial starting levels.
-        init_dict["EDUCATION"]["max"] = np.random.randint(15, 25, size=1).tolist()[0]
+        init_dict["EDUCATION"]["max"] = np.random.randint(
+            15, 25, size=1
+        ).tolist()[0]
 
         # We need to ensure that the initial lagged activity always has the same
         # distribution.
@@ -400,7 +413,9 @@ class TestClass(object):
 
             # We always need to ensure that a weight of one is on the first level of
             # initial schooling.
-            init_dict["EDUCATION"]["share"] = [1.0] + [0.0] * (num_edu_start - 1)
+            init_dict["EDUCATION"]["share"] = [1.0] + [0.0] * (
+                num_edu_start - 1
+            )
             init_dict["EDUCATION"]["lagged"] = edu_lagged_base[:num_edu_start]
 
             # We need to make sure that the baseline level of initial schooling is
@@ -434,7 +449,9 @@ class TestClass(object):
         for fname in TEST_RESOURCES_DIR.glob("*.ini"):
             respy_obj = RespyCls(fname)
             respy_obj.write_out("test.respy.ini")
-            np.testing.assert_equal(compare_init(fname, "test.respy.ini"), True)
+            np.testing.assert_equal(
+                compare_init(fname, "test.respy.ini"), True
+            )
 
     @pytest.mark.skipif(not IS_FORTRAN, reason="No FORTRAN available")
     @pytest.mark.slow
@@ -442,11 +459,16 @@ class TestClass(object):
         """ This test just locks in the evaluation of the criterion function for the
         original Keane & Wolpin data. We create an additional initialization files that
         include numerous types and initial conditions.
+
         """
         # Sample one task
-        resources = []
-        resources += ["kw_data_one.ini", "kw_data_two.ini", "kw_data_three.ini"]
-        resources += ["kw_data_one_types.ini", "kw_data_one_initial.ini"]
+        resources = [
+            "kw_data_one.ini",
+            "kw_data_two.ini",
+            "kw_data_three.ini",
+            "kw_data_one_types.ini",
+            "kw_data_one_initial.ini",
+        ]
 
         fname = np.random.choice(resources)
 
@@ -504,13 +526,16 @@ class TestClass(object):
             shifts = np.random.uniform(-0.05, 0.05, size=(num_types - 1) * 4)
             init_dict["TYPE SHIFTS"]["coeffs"] = shifts
             init_dict["TYPE SHIFTS"]["fixed"] = [False] * (num_types * 4)
-            init_dict["TYPE SHIFTS"]["bounds"] = [[None, None]] * (num_types * 4)
+            init_dict["TYPE SHIFTS"]["bounds"] = [[None, None]] * (
+                num_types * 4
+            )
 
             init_dict["TYPE SHARES"]["coeffs"] = coeffs[2:]
             init_dict["TYPE SHARES"]["fixed"] = [True, True] * (num_types - 1)
-            init_dict["TYPE SHARES"]["bounds"] = [[None, None], [None, None]] * (
-                num_types - 1
-            )
+            init_dict["TYPE SHARES"]["bounds"] = [
+                [None, None],
+                [None, None],
+            ] * (num_types - 1)
 
             write_init_file(init_dict)
 
@@ -544,7 +569,9 @@ class TestClass(object):
         shutil.copy("test.respy.ini", "baseline.respy.ini")
 
         num_subset = np.random.randint(low=0, high=num_paras)
-        identifiers = np.random.choice(range(num_paras), size=num_subset, replace=False)
+        identifiers = np.random.choice(
+            range(num_paras), size=num_subset, replace=False
+        )
 
         scripts_modify(
             identifiers, "values", "test.respy.ini", values=x_econ[identifiers]
@@ -579,7 +606,9 @@ class TestClass(object):
 
         # We want to randomly shuffle the list of initial schooling but need to maintain
         # the order of the shares.
-        edu_shuffled_start = np.random.permutation(edu_baseline_spec["start"]).tolist()
+        edu_shuffled_start = np.random.permutation(
+            edu_baseline_spec["start"]
+        ).tolist()
 
         edu_shuffled_share, edu_shuffled_lagged = [], []
         for start in edu_shuffled_start:
@@ -610,7 +639,9 @@ class TestClass(object):
         optim_paras_baseline = copy.deepcopy(optim_paras)
         optim_paras_shuffled = copy.deepcopy(optim_paras)
 
-        list_ = list(optim_paras["type_shifts"][i, :].tolist() for i in types_order)
+        list_ = list(
+            optim_paras["type_shifts"][i, :].tolist() for i in types_order
+        )
         optim_paras_shuffled["type_shifts"] = np.array(list_)
 
         list_ = list(type_shares[i] for i in types_order)
@@ -638,7 +669,9 @@ class TestClass(object):
                 simulate_observed(respy_obj)
 
                 # This part checks the equality of simulated dataset.
-                data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
+                data_frame = pd.read_csv(
+                    "data.respy.dat", delim_whitespace=True
+                )
 
                 if base_data is None:
                     base_data = data_frame.copy()

@@ -647,7 +647,11 @@ class TestClass(object):
             num_types,
             is_debug,
         )
-        py = simulated_data.copy().fillna(MISSING_FLOAT)
+        py = simulated_data.copy().fillna(MISSING_FLOAT).values
+
+        # Is is very important to cut the data array down to the size of the estimation
+        # sample for the calculation of contributions.
+        data_array = py[: num_agents_est * num_periods, :]
 
         f2py = fort_debug.wrapper_simulate(
             periods_rewards_systematic,
@@ -690,7 +694,7 @@ class TestClass(object):
             mapping_state_idx,
             periods_emax,
             states_all,
-            py,
+            data_array,
             *shared_args,
             edu_spec["start"],
             edu_spec["max"],
@@ -712,26 +716,36 @@ class TestClass(object):
             num_points_interp,
             is_myopic,
             is_debug,
-            data_array,
+        )
+
+        base_args_2 = (
             num_draws_prob,
             tau,
             periods_draws_emax,
             periods_draws_prob,
         )
-        base_args_2 = (num_agents_est, num_obs_agent, num_types)
+        base_args_3 = (num_agents_est, num_obs_agent, num_types)
 
         py = pyth_criterion(
-            x0, *base_args_1, state_space, *base_args_2, edu_spec
+            x0,
+            *base_args_1,
+            simulated_data,
+            *base_args_2,
+            state_space,
+            *base_args_3,
+            edu_spec,
         )
 
         f2py = fort_debug.wrapper_criterion(
             x0,
             *base_args_1,
+            data_array,
+            *base_args_2,
             states_all,
             state_space.states_per_period,
             mapping_state_idx,
             max_states_period,
-            *base_args_2,
+            *base_args_3,
             edu_spec["start"],
             edu_spec["max"],
             edu_spec["share"],
