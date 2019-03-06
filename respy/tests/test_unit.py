@@ -1,12 +1,10 @@
 import numpy as np
-import pytest
-from respy.python.solve.solve_auxiliary import calculate_wages_systematic
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import create_covariates
 from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_continuation_value
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.pre_processing.model_processing import write_init_file
+from respy.python.solve.solve_auxiliary import StateSpace
 
 from respy.tests.codes.random_init import generate_init
 from respy import RespyCls
@@ -155,23 +153,22 @@ class TestClass(object):
         respy_obj = RespyCls("test.respy.ini")
         respy_obj, _ = respy_obj.simulate()
 
-        (
-            num_periods,
-            optim_paras,
-            edu_spec,
-            state_space,
-        ) = dist_class_attributes(
-            respy_obj,
-            "num_periods",
-            "optim_paras",
-            "edu_spec",
-            "state_space",
+        (num_periods, num_types, optim_paras, edu_spec) = dist_class_attributes(
+            respy_obj, "num_periods", "num_types", "optim_paras", "edu_spec"
+        )
+
+        # TODO: Why can I not get the state_space from ``dist_class_attributes``?
+        # Apparently, the state_space is never saved to self.attr?
+        state_space = StateSpace(
+            num_periods, num_types, edu_spec["start"], edu_spec["max"]
         )
 
         period = np.random.choice(range(num_periods))
         k = np.random.choice(range(state_space.states_per_period[period]))
 
-        state = state_space.states.loc[state_space.states.period.eq(period)].iloc[k]
+        state = state_space.states.loc[
+            state_space.states.period.eq(period)
+        ].iloc[k]
         draws = np.random.normal(size=4)
 
         total_values, rewards_ex_post = get_continuation_value(
@@ -185,9 +182,7 @@ class TestClass(object):
                 ]
             ].values,
             draws.reshape(1, -1),
-            state[
-                ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
-            ].values,
+            state[["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]].values,
             optim_paras["delta"],
         )
 

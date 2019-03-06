@@ -43,8 +43,13 @@ install:
   # Add miniconda to PATH
   - ps: $env:PATH = "$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin;$env:PATH"
 
-  # Add Fortran to PATH
-  - ps: if ($env:CI_FORTRAN -eq $true) {$env:PATH += ";C:\msys64\mingw64\bin"}
+  # Add Fortran to PATH and install dependencies.
+  - ps: >-
+      if ($env:CI_FORTRAN -eq $true) {
+        $env:PATH += ";C:\msys64\mingw64\bin;C:\msys64\usr\bin"
+        pacman -S mingw64/mingw-w64-x86_64-liblas mingw64/mingw-w64-x86_64-lapack --no-confirm
+        echo "[build]`ncompiler=mingw32" > C:\Miniconda36-x64\Lib\distutils\distutils.cfg
+      }
 
   # Install MS-MPI
   - ps: >-
