@@ -47,7 +47,7 @@ install:
   - ps: >-
       if ($env:CI_FORTRAN -eq $true) {
         $env:PATH += ";C:\msys64\mingw64\bin;C:\msys64\usr\bin"
-        pacman -S mingw64/mingw-w64-x86_64-liblas mingw64/mingw-w64-x86_64-lapack --no-confirm
+        pacman -S mingw64/mingw-w64-x86_64-liblas mingw64/mingw-w64-x86_64-lapack --noconfirm
         echo "[build]`ncompiler=mingw32" > C:\Miniconda36-x64\Lib\distutils\distutils.cfg
       }
 

@@ -4,7 +4,10 @@ from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_continuation_value
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.pre_processing.model_processing import write_init_file
-from respy.python.solve.solve_auxiliary import StateSpace
+from respy.python.solve.solve_auxiliary import (
+    StateSpace,
+    pyth_calculate_rewards_systematic,
+)
 
 from respy.tests.codes.random_init import generate_init
 from respy import RespyCls
@@ -153,7 +156,12 @@ class TestClass(object):
         respy_obj = RespyCls("test.respy.ini")
         respy_obj, _ = respy_obj.simulate()
 
-        (num_periods, num_types, optim_paras, edu_spec) = dist_class_attributes(
+        (
+            num_periods,
+            num_types,
+            optim_paras,
+            edu_spec,
+        ) = dist_class_attributes(
             respy_obj, "num_periods", "num_types", "optim_paras", "edu_spec"
         )
 
@@ -161,6 +169,10 @@ class TestClass(object):
         # Apparently, the state_space is never saved to self.attr?
         state_space = StateSpace(
             num_periods, num_types, edu_spec["start"], edu_spec["max"]
+        )
+
+        state_space.sates = pyth_calculate_rewards_systematic(
+            state_space.states, optim_paras
         )
 
         period = np.random.choice(range(num_periods))
