@@ -1,13 +1,9 @@
 import numpy as np
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import get_continuation_value
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.pre_processing.model_processing import write_init_file
-from respy.python.solve.solve_auxiliary import (
-    StateSpace,
-    pyth_calculate_rewards_systematic,
-)
+import pytest
 
 from respy.tests.codes.random_init import generate_init
 from respy import RespyCls
@@ -140,6 +136,7 @@ class TestClass(object):
                     cond = df[label] == 0
                 assert np.all(cond)
 
+    @pytest.mark.skip(reason="get_total_values is removed.")
     def test_4(self):
         """ Testing the return values for the total values in case of myopic
         individuals.
@@ -154,48 +151,47 @@ class TestClass(object):
         write_init_file(init_dict)
 
         respy_obj = RespyCls("test.respy.ini")
+
         respy_obj, _ = respy_obj.simulate()
 
         (
             num_periods,
-            num_types,
             optim_paras,
             edu_spec,
+            mapping_state_idx,
+            periods_emax,
+            states_all,
+            periods_rewards_systematic,
+            states_number_period,
         ) = dist_class_attributes(
-            respy_obj, "num_periods", "num_types", "optim_paras", "edu_spec"
-        )
-
-        # TODO: Why can I not get the state_space from ``dist_class_attributes``?
-        # Apparently, the state_space is never saved to self.attr?
-        state_space = StateSpace(
-            num_periods, num_types, edu_spec["start"], edu_spec["max"]
-        )
-
-        state_space.sates = pyth_calculate_rewards_systematic(
-            state_space.states, optim_paras
+            respy_obj,
+            "num_periods",
+            "optim_paras",
+            "edu_spec",
+            "mapping_state_idx",
+            "periods_emax",
+            "states_all",
+            "periods_rewards_systematic",
+            "states_number_period",
         )
 
         period = np.random.choice(range(num_periods))
-        k = np.random.choice(range(state_space.states_per_period[period]))
+        k = np.random.choice(range(states_number_period[period]))
 
-        state = state_space.states.loc[
-            state_space.states.period.eq(period)
-        ].iloc[k]
+        rewards_systematic = periods_rewards_systematic[period, k, :]
         draws = np.random.normal(size=4)
 
-        total_values, rewards_ex_post = get_continuation_value(
-            state[["wage_a", "wage_b"]].values,
-            state[
-                [
-                    "rewards_systematic_a",
-                    "rewards_systematic_b",
-                    "rewards_systematic_edu",
-                    "rewards_systematic_home",
-                ]
-            ].values,
-            draws.reshape(1, -1),
-            state[["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]].values,
-            optim_paras["delta"],
+        total_values, rewards_ex_post = get_total_values(
+            period,
+            num_periods,
+            optim_paras,
+            rewards_systematic,
+            draws,
+            edu_spec,
+            mapping_state_idx,
+            periods_emax,
+            k,
+            states_all,
         )
 
         np.testing.assert_almost_equal(total_values, rewards_ex_post)
