@@ -136,7 +136,12 @@ class TestClass(object):
                     cond = df[label] == 0
                 assert np.all(cond)
 
-    @pytest.mark.skip(reason="get_total_values is removed.")
+    @pytest.mark.skip(
+        "get_total_values was removed. We can rewrite the test with the similar"
+        "get_continuation_value function. For that, we need to be able to inject "
+        "Fortran outputs into the python function. As a new PR will redefine the state"
+        "space object, we will tackle the test afterwards."
+    )
     def test_4(self):
         """ Testing the return values for the total values in case of myopic
         individuals.
