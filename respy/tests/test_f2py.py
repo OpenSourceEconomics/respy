@@ -8,9 +8,6 @@ import pytest
 import scipy
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
-from respy.python.solve.solve_auxiliary import (
-    pyth_calculate_rewards_systematic,
-)
 from respy.python.record.record_estimation import _spectral_condition_number
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
@@ -403,10 +400,6 @@ class TestClass(object):
 
             assert_allclose(pyth[i], f2py_reduced)
 
-        # Check calculation of systematic components of rewards.
-        state_space.states = pyth_calculate_rewards_systematic(
-            state_space.states, optim_paras
-        )
         _, _, pyth, _ = state_space._get_fortran_counterparts()
 
         args = (
