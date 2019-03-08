@@ -96,7 +96,11 @@ def respy_interface(respy_obj, request, data=None):
 
         # Construct the state space
         state_space = StateSpace(
-            num_periods, num_types, edu_spec["start"], edu_spec["max"]
+            num_periods,
+            num_types,
+            edu_spec["start"],
+            edu_spec["max"],
+            optim_paras,
         )
 
         # Collect arguments that are required for the criterion function.
@@ -197,10 +201,7 @@ def respy_interface(respy_obj, request, data=None):
             record_estimation_scalability("Finish")
 
             success = True
-            message = (
-                "Single evaluation of criterion function at starting "
-                "values."
-            )
+            message = "Single evaluation of criterion function at starting values."
 
         elif optimizer_used == "SCIPY-BFGS":
 

@@ -213,64 +213,63 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
     return states, states_indexer
 
 
-def pyth_calculate_rewards_systematic(states, optim_paras):
-    """ Calculate ex systematic rewards.
-    """
-    states["intercept"] = 1.0
+def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
+    """ Calculate systematic rewards.
 
+    Parameters
+    ----------
+    states : np.ndarray
+    covariates : np.ndarray
+    optim_paras : dict
+
+    """
     # Calculate common and general rewards component.
-    states = calculate_rewards_general(states, optim_paras)
-    states = calculate_rewards_common(states, optim_paras)
+    rewards_general = calculate_rewards_general(
+        covariates, optim_paras["coeffs_a"][12:], optim_paras["coeffs_b"][12:]
+    )
+    rewards_common = calculate_rewards_common(
+        covariates, optim_paras["coeffs_common"]
+    )
 
     # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards.
     # These are defined in a general sense, where not only wages matter.
-    states = calculate_wages_systematic(states, optim_paras)
+    wages = calculate_wages_systematic(
+        states,
+        covariates,
+        optim_paras["coeffs_a"][:12],
+        optim_paras["coeffs_b"][:12],
+        optim_paras["type_shifts"][:, :2],
+    )
 
-    states["rewards_a"] = states.wage_a + states.rewards_general_a
-    states["rewards_b"] = states.wage_b + states.rewards_general_b
+    rewards = np.full((states.shape[0], 4), np.nan)
+
+    rewards[:, :2] = wages + rewards_general
 
     # Calculate systematic part of SCHOOL rewards
-    covariates_education = [
-        "intercept",
-        "hs_graduate",
-        "co_graduate",
-        "is_return_not_high_school",
-        "is_return_high_school",
-        "period",
-        "is_minor",
+    covariates_education = np.c_[
+        np.ones(states.shape[0]),
+        covariates[:, 9:13],
+        states[:, 0],
+        covariates[:, 13],
     ]
 
-    states["rewards_edu"] = states[covariates_education].dot(
-        optim_paras["coeffs_edu"]
-    )
+    rewards[:, 2] = covariates_education.dot(optim_paras["coeffs_edu"])
 
     # Calculate systematic part of HOME
-    covariates_home = ["intercept", "is_young_adult", "is_adult"]
+    covariates_home = np.c_[np.ones(states.shape[0]), covariates[:, 14:]]
 
-    states["rewards_home"] = states[covariates_home].dot(
-        optim_paras["coeffs_home"]
-    )
+    rewards[:, 3] = covariates_home.dot(optim_paras["coeffs_home"])
 
     # Now we add the type-specific deviation for SCHOOL and HOME.
-    types_dummy = pd.get_dummies(states.type, prefix="type")
-    type_deviations = types_dummy.dot(optim_paras["type_shifts"][:, 2:])
+    type_dummies = get_dummies(states[:, 5])
+    type_deviations = type_dummies.dot(optim_paras["type_shifts"][:, 2:])
 
-    states.rewards_edu += type_deviations.iloc[:, 0]
-    states.rewards_home += type_deviations.iloc[:, 1]
+    rewards[:, 2:] = rewards[:, 2:] + type_deviations
 
     # We can now also added the common component of rewards.
-    states["rewards_systematic_a"] = states.rewards_a + states.rewards_common
-    states["rewards_systematic_b"] = states.rewards_b + states.rewards_common
-    states["rewards_systematic_edu"] = (
-        states.rewards_edu + states.rewards_common
-    )
-    states["rewards_systematic_home"] = (
-        states.rewards_home + states.rewards_common
-    )
+    rewards_systematic = rewards + rewards_common
 
-    states.drop(["intercept"], axis="columns", inplace=True)
-
-    return states
+    return rewards_systematic, rewards_general, rewards_common, wages
 
 
 def pyth_backward_induction(
@@ -660,61 +659,99 @@ def check_input(respy_obj):
     return True
 
 
-def calculate_wages_systematic(states, optim_paras):
+def calculate_wages_systematic(
+    states, covariates, coeffs_a, coeffs_b, type_shifts
+):
     """Calculate systematic wages.
 
     Parameters
     ----------
-    states : pd.DataFrame
-        DataFrame containing covariates and rewards.
-    optim_paras : dict
+    states : np.ndarray
+        Array with shape (num_states, 5).
+    covariates : np.ndarray
+        Array with shape (num_states, 16).
+    coeffs_a : np.ndarray
+        Array with shape (12).
+    coeffs_b : np.ndarray
+        Array with shape (12).
+    type_shifts : np.ndarray
+        Array with shape (2, 2).
 
     Returns
     -------
-    states : pd.DataFrame
-        DataFrame with calculated systematic wages.
+    wages : np.ndarray
+        Array with shape (num_states, 2) containing systematic wages.
 
     """
-    states["exp_a_sq"] = states.exp_a ** 2 / 100
-    states["exp_b_sq"] = states.exp_b ** 2 / 100
+    exp_a_sq = states[:, 1] ** 2 / 100
+    exp_b_sq = states[:, 2] ** 2 / 100
 
     if os.path.exists(".restud.respy.scratch"):
-        states["exp_a_sq"] *= 100.00
-        states["exp_b_sq"] *= 100.00
+        exp_a_sq *= 100.00
+        exp_b_sq *= 100.00
 
-    relevant_covariates = [
-        "intercept",
-        "edu",
-        "exp_a",
-        "exp_a_sq",
-        "exp_b",
-        "exp_b_sq",
-        "hs_graduate",
-        "co_graduate",
-        "period",
-        "is_minor",
+    relevant_covariates = np.c_[
+        np.ones(states.shape[0]),
+        states[:, [3, 1]],
+        exp_a_sq,
+        states[:, 2],
+        exp_b_sq,
+        covariates[:, 9:11],
+        states[:, 0],
+        covariates[:, 13],
     ]
 
     # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
-    states["wage_a"] = states[
-        relevant_covariates + ["any_exp_a", "work_a_lagged"]
-    ].dot(optim_paras["coeffs_a"][:12])
-    states.wage_a = np.clip(np.exp(states.wage_a), 0.0, HUGE_FLOAT)
+    wages = np.full((states.shape[0], 2), np.nan)
 
-    states["wage_b"] = states[
-        relevant_covariates + ["any_exp_b", "work_b_lagged"]
-    ].dot(optim_paras["coeffs_b"][:12])
-    states.wage_b = np.clip(np.exp(states.wage_b), 0.0, HUGE_FLOAT)
+    wages[:, 0] = np.c_[relevant_covariates, covariates[:, [7, 2]]].dot(
+        coeffs_a
+    )
+
+    wages[:, 1] = np.c_[relevant_covariates, covariates[:, [8, 3]]].dot(
+        coeffs_b
+    )
+
+    wages = np.clip(np.exp(wages), 0.0, HUGE_FLOAT)
 
     # We need to add the type-specific deviations here as these are part of
     # skill-function component.
-    types_dummy = pd.get_dummies(states.type, prefix="type")
-    type_deviations = types_dummy.dot(optim_paras["type_shifts"][:, :2])
+    type_dummies = get_dummies(states[:, 5])
+    type_deviations = type_dummies.dot(type_shifts[:, :2])
 
-    states.wage_a = states.wage_a * np.exp(type_deviations.iloc[:, 0])
-    states.wage_b = states.wage_b * np.exp(type_deviations.iloc[:, 1])
+    wages = wages * np.exp(type_deviations)
 
-    return states
+    return wages
+
+
+@njit
+def get_dummies(a):
+    """Create dummy matrix from array with indicators.
+
+    Note that, the indicators need to be counting from zero onwards.
+
+    Paramters
+    ---------
+    a : np.array
+        Array with shape (n) containing k different indicators from 0 to k-1.
+
+    Returns
+    -------
+    b : np.ndarray
+        Matrix with shape (n, k) where each column is a dummy vector for type i = 0,
+        ..., k-1.
+
+    Example
+    -------
+    >>> a = np.random.randint(0, 6, 100)
+    >>> res = get_dummies(a)
+    >>> import pandas as pd
+    >>> res_pandas = pd.get_dummies(a).values
+    >>> assert np.allclose(res, res_pandas)
+
+    """
+    n_values = np.max(a) + 1
+    return np.eye(n_values)[a]
 
 
 class StateSpace:
@@ -722,20 +759,25 @@ class StateSpace:
 
     Attributes
     ----------
-    states : pd.DataFrame
+    states : np.ndarray
+        Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
+        choice_lagged and type information.
     indexer : np.array
+        Array with shape (num_periods, num_periods, num_periods, edu_max, 4, num_types).
 
     """
 
-    def __init__(self, num_periods, num_types, edu_starts, edu_max):
-        states, self.indexer = pyth_create_state_space(
+    def __init__(
+        self, num_periods, num_types, edu_starts, edu_max, optim_paras=None
+    ):
+        self.states_arr, self.indexer = pyth_create_state_space(
             num_periods, num_types, edu_starts, edu_max
         )
 
-        covariates = create_covariates(states)
+        self.covariates = create_covariates(self.states_arr)
 
         states = pd.DataFrame(
-            states,
+            self.states_arr,
             columns=[
                 "period",
                 "exp_a",
@@ -748,7 +790,7 @@ class StateSpace:
         )
 
         covariates = pd.DataFrame(
-            covariates,
+            self.covariates,
             columns=[
                 "not_exp_a_lagged",
                 "not_exp_b_lagged",
@@ -769,11 +811,58 @@ class StateSpace:
             ],
         )
 
-        self.states = pd.concat([states, covariates], axis=1)
+        frame = [states, covariates]
+
+        # This measure is related to test_f2py::test_2.
+        if optim_paras:
+
+            all_rewards = pyth_calculate_rewards_systematic(
+                self.states_arr, self.covariates, optim_paras
+            )
+
+            rewards_frame = pd.DataFrame(
+                np.c_[all_rewards],
+                columns=[
+                    "rewards_systematic_a",
+                    "rewards_systematic_b",
+                    "rewards_systematic_edu",
+                    "rewards_systematic_home",
+                    "rewards_general_a",
+                    "rewards_general_b",
+                    "rewards_common",
+                    "wage_a",
+                    "wage_b",
+                ],
+            )
+
+            frame += [rewards_frame]
+
+        self.states = pd.concat(frame, axis=1)
 
     @property
     def states_per_period(self):
         return self.states.groupby("period").count().iloc[:, 0].values
+
+    def update_systematic_rewards(self, optim_paras):
+        all_rewards = np.c_[
+            pyth_calculate_rewards_systematic(
+                self.states_arr, self.covariates, optim_paras
+            )
+        ]
+
+        self.states[
+            [
+                "rewards_systematic_a",
+                "rewards_systematic_b",
+                "rewards_systematic_edu",
+                "rewards_systematic_home",
+                "rewards_general_a",
+                "rewards_general_b",
+                "rewards_common",
+                "wage_a",
+                "wage_b",
+            ]
+        ] = all_rewards
 
     def _get_fortran_counterparts(self):
         try:

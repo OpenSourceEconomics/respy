@@ -181,10 +181,8 @@ class TestClass(object):
             base_args = (num_periods, num_types)
 
             state_space = StateSpace(
-                *base_args, edu_spec["start"], edu_spec["max"]
+                *base_args, edu_spec["start"], edu_spec["max"],
             )
-
-            assert not state_space.states.duplicated().any()
 
             py_a, py_c, _, _ = state_space._get_fortran_counterparts()
             py_b = state_space.states_per_period
@@ -378,8 +376,8 @@ class TestClass(object):
         min_idx = edu_spec["max"] + 1
 
         # Check the state space creation.
-        base_args = (num_periods, num_types)
-        args = base_args + (edu_spec["start"], edu_spec["max"])
+        base_args = (num_periods, num_types, edu_spec["start"], edu_spec["max"])
+        args = base_args + (optim_paras,)
 
         state_space = StateSpace(*args)
 
@@ -394,7 +392,7 @@ class TestClass(object):
             state_space.states_per_period.max(),
         ]
 
-        args = base_args + (edu_spec["start"], edu_spec["max"], min_idx)
+        args = base_args + (min_idx,)
         f2py = fort_debug.wrapper_create_state_space(*args)
         for i in range(4):
             # Slice Fortran output to shape of Python output.
@@ -831,10 +829,7 @@ class TestClass(object):
 
         # Initialize Python version
         state_space = StateSpace(
-            num_periods, num_types, edu_spec["start"], edu_spec["max"]
-        )
-        state_space.states = pyth_calculate_rewards_systematic(
-            state_space.states, optim_paras
+            num_periods, num_types, edu_spec["start"], edu_spec["max"], optim_paras
         )
 
         num_states = state_space.states_per_period[period]

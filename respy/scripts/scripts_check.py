@@ -39,15 +39,15 @@ def scripts_check(request, init_file):
     respy_obj = RespyCls(init_file)
 
     # Distribute model parameters
-    num_periods, edu_spec, num_types = dist_class_attributes(
-        respy_obj, "num_periods", "edu_spec", "num_types"
+    num_periods, edu_spec, num_types, optim_paras = dist_class_attributes(
+        respy_obj, "num_periods", "edu_spec", "num_types", "optim_paras",
     )
 
     # We need to run additional checks if an estimation is requested.
     if request == "estimate":
         # Create the grid of the admissible states.
         state_space = StateSpace(
-            num_periods, num_types, edu_spec["start"], edu_spec["max"]
+            num_periods, num_types, edu_spec["start"], edu_spec["max"], optim_paras
         )
 
         # We also check the structure of the dataset.

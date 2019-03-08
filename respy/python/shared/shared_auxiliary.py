@@ -711,6 +711,8 @@ def create_covariates(states):
     covariates : np.ndarray
         Array with shape (num_states, 16) containing covariates of each state.
 
+    TODO: JIT if https://github.com/numba/numba/issues/3650 is fixed.
+
     """
     covariates = np.full((states.shape[0], 16), np.nan)
 
@@ -752,23 +754,41 @@ def create_covariates(states):
     return covariates
 
 
-def calculate_rewards_common(states, optim_paras):
-    states["rewards_common"] = states[["hs_graduate", "co_graduate"]].dot(
-        optim_paras["coeffs_common"]
-    )
+def calculate_rewards_common(covariates, coeffs_common):
+    """Calculate common rewards.
 
-    return states
+    Covariates 9 and 10 are indicators for high school and college graduates.
+
+    Parameters
+    ----------
+    covariates : np.ndarray
+        Array with shape (num_states, 16) containing covariates.
+    coeffs_common : np.ndarray
+        Array with shape (2,) containing coefficients for high school and college
+        graduates.
+
+    Returns
+    -------
+    np.ndarray
+        Array with shape (num_states, 1) containing common rewards. Reshaping is
+        necessary to broadcast the array over rewards with shape (num_states, 4).
+
+    """
+    return covariates[:, 9:11].dot(coeffs_common).reshape(-1, 1)
 
 
-def calculate_rewards_general(states, optim_paras):
-    states["rewards_general_a"] = states[
-        ["intercept", "not_exp_a_lagged", "not_any_exp_a"]
-    ].dot(optim_paras["coeffs_a"][12:])
-    states["rewards_general_b"] = states[
-        ["intercept", "not_exp_b_lagged", "not_any_exp_b"]
-    ].dot(optim_paras["coeffs_b"][12:])
+def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
 
-    return states
+    rewards_general = np.full((covariates.shape[0], 2), np.nan)
+
+    rewards_general[:, 0] = np.c_[
+        np.ones(covariates.shape[0]), covariates[:, [0, 5]]
+    ].dot(coeffs_a)
+    rewards_general[:, 1] = np.c_[
+        np.ones(covariates.shape[0]), covariates[:, [1, 6]]
+    ].dot(coeffs_b)
+
+    return rewards_general
 
 
 def get_valid_bounds(which, value):
