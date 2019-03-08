@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-from auxiliary_shared import process_command_line_arguments
-from auxiliary_scalability import run
+from development.modules.auxiliary_shared import process_command_line_arguments
+from development.modules.auxiliary_scalability import run
 
 if __name__ == "__main__":
 

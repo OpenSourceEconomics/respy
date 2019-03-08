@@ -9,8 +9,8 @@ from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
 from respy.pre_processing.model_processing import write_init_file
 
-from codes.random_init import generate_random_dict
-from codes.auxiliary import simulate_observed
+from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.auxiliary import simulate_observed
 
 from respy import RespyCls
 

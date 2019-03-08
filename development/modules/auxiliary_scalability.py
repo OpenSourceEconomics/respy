@@ -14,8 +14,9 @@ import respy
 
 
 def run(spec_dict):
-    """ Details of the scalability exercise can be specified in the code block below. Note that
-    only deviations from the benchmark initialization files need to be addressed.
+    """ Details of the scalability exercise can be specified in the code block below.
+    Note that only deviations from the benchmark initialization files need to be
+    addressed.
     """
 
     cleanup()
@@ -34,7 +35,8 @@ def run(spec_dict):
 
 
 def run_single(spec_dict, fname, grid_slaves):
-    """ Run an estimation task that allows to get a sense of the scalability of the code.
+    """ Run an estimation task that allows to get a sense of the scalability of the
+    code.
     """
     os.mkdir(fname.replace(".ini", ""))
     os.chdir(fname.replace(".ini", ""))
@@ -42,9 +44,9 @@ def run_single(spec_dict, fname, grid_slaves):
     # Read in the baseline specification.
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
 
-    # We remove all bounds as this makes it easier to request static models for example with an
-    # initialization file for a risk model. Usually, there are bounds on the discount rate that
-    # will raise an error otherwise.
+    # We remove all bounds as this makes it easier to request static models for example
+    # with an initialization file for a risk model. Usually, there are bounds on the
+    # discount rate that will raise an error otherwise.
     optim_paras = respy_obj.get_attr("optim_paras")
     optim_paras["paras_bounds"][0] = [0.00, None]
     optim_paras["paras_bounds"][1] = [0.00, None]
@@ -53,8 +55,8 @@ def run_single(spec_dict, fname, grid_slaves):
     update_class_instance(respy_obj, spec_dict)
     min_slave = min(grid_slaves)
 
-    # Simulate the baseline dataset, which is used regardless of the number of slaves. We will
-    # use the largest processor count for this step.
+    # Simulate the baseline dataset, which is used regardless of the number of slaves.
+    # We will use the largest processor count for this step.
     respy_obj.unlock()
     respy_obj.set_attr("num_procs", max(grid_slaves))
     respy_obj.lock()
@@ -77,8 +79,8 @@ def run_single(spec_dict, fname, grid_slaves):
 
         respy_obj.fit()
 
-        # Get results from the special output file that is integrated in the RESPY package just
-        # for the purpose of scalability exercises.
+        # Get results from the special output file that is integrated in the RESPY
+        # package just for the purpose of scalability exercises.
         with open(".scalability.respy.log") as in_file:
             rslt = []
             for line in in_file.readlines():
@@ -105,7 +107,8 @@ def run_single(spec_dict, fname, grid_slaves):
 def record_information(
     start_time, finish_time, num_slaves, duration_baseline, min_slave
 ):
-    """ Record the information on execution time, which involves a lot of formatting of different data types.
+    """ Record the information on execution time, which involves a lot of formatting of
+    different data types.
     """
     fmt = "{:>15} {:>25} {:>25} {:>15} {:>15}\n"
     if not os.path.exists("scalability.respy.info"):

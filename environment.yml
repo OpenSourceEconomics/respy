@@ -11,4 +11,5 @@ dependencies:
   - pip:
     - pytest
     - pytest-cov
+    - pytest-pythonpath
     - codecov

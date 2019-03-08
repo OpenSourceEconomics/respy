@@ -1,9 +1,8 @@
-#!/usr/bin/env python
-from auxiliary_shared import process_command_line_arguments
-from auxiliary_reliability import run
+from development.modules.auxiliary_shared import process_command_line_arguments
+from development.modules.auxiliary_reliability import run
 
-if __name__ == "__main__":
 
+def main():
     is_debug = process_command_line_arguments(
         "Run reliability exercise for the package"
     )
@@ -12,8 +11,8 @@ if __name__ == "__main__":
     spec_dict = dict()
     spec_dict["fnames"] = ["reliability_short.ini"]
 
-    # The following key-value pairs are the requested updates from the baseline initialization
-    # file.
+    # The following key-value pairs are the requested updates from the baseline
+    # initialization file.
     spec_dict["update"] = dict()
 
     spec_dict["update"]["is_store"] = True
@@ -24,10 +23,10 @@ if __name__ == "__main__":
     spec_dict["update"]["maxfun"] = 1500
     spec_dict["update"]["level"] = 0.05
 
-    # The following key-value pair sets the number of processors for each of the estimations.
-    # This is required as the maximum number of useful cores varies drastically depending on the
-    # model. The requested number of processors is never larger than the one specified as part of
-    # the update dictionary.
+    # The following key-value pair sets the number of processors for each of the
+    # estimations. This is required as the maximum number of useful cores varies
+    # drastically depending on the model. The requested number of processors is never
+    # larger than the one specified as part of the update dictionary.
     spec_dict["procs"] = dict()
     spec_dict["procs"]["ambiguity"] = 1
     spec_dict["procs"]["static"] = 1
@@ -42,3 +41,7 @@ if __name__ == "__main__":
         spec_dict["update"]["maxfun"] = 0
 
     run(spec_dict)
+
+
+if __name__ == '__main__':
+    main()
