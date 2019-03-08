@@ -773,12 +773,49 @@ def calculate_rewards_common(covariates, coeffs_common):
         Array with shape (num_states, 1) containing common rewards. Reshaping is
         necessary to broadcast the array over rewards with shape (num_states, 4).
 
+    Example
+    -------
+    >>> from respy.python.solve.solve_auxiliary import StateSpace
+    >>> state_space = StateSpace(2, 1, [12, 16], 20)
+    >>> coeffs_common = np.array([0.05, 0.6])
+    >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
+    array([0.05, 0.05, 0.65, 0.65, 0.05, 0.05, 0.05, 0.05, 0.65, 0.65, 0.65,
+           0.65])
+
     """
     return covariates[:, 9:11].dot(coeffs_common).reshape(-1, 1)
 
 
 def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
+    """Calculate general rewards.
 
+    Parameters
+    ----------
+    covariates : np.ndarray
+        Array with shape (num_states, 16) containing covariates.
+    coeffs_a : np.ndarray
+        Array with shape (3,) containing coefficients.
+    coeffs_b : np.ndarray
+        Array with shape (3,) containing coefficients.
+
+    Returns
+    -------
+    rewards_general : np.ndarray
+        Array with shape (num_states, 2) containing general rewards of occupation.
+
+    Example
+    -------
+    >>> from respy.python.solve.solve_auxiliary import StateSpace
+    >>> state_space = StateSpace(2, 1, [12, 16], 20)
+    >>> coeffs_a, coeffs_b = np.array([0.05, 0.6, 0.4]), np.array([0.36, 0.7, 1])
+    >>> calculate_rewards_general(
+    ...     state_space.covariates, coeffs_a, coeffs_b
+    ... ).reshape(-1)
+    array([0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45,
+           1.36, 0.45, 0.36, 0.05, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 0.36,
+           0.05, 1.36])
+
+    """
     rewards_general = np.full((covariates.shape[0], 2), np.nan)
 
     rewards_general[:, 0] = np.c_[

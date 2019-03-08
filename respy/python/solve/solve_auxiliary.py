@@ -667,13 +667,13 @@ def calculate_wages_systematic(
     Parameters
     ----------
     states : np.ndarray
-        Array with shape (num_states, 5).
+        Array with shape (num_states, 5) containing state information.
     covariates : np.ndarray
-        Array with shape (num_states, 16).
+        Array with shape (num_states, 16) containing covariates.
     coeffs_a : np.ndarray
-        Array with shape (12).
+        Array with shape (12) containing coefficients of occupation A.
     coeffs_b : np.ndarray
-        Array with shape (12).
+        Array with shape (12) containing coefficients of occupation B.
     type_shifts : np.ndarray
         Array with shape (2, 2).
 
@@ -681,6 +681,31 @@ def calculate_wages_systematic(
     -------
     wages : np.ndarray
         Array with shape (num_states, 2) containing systematic wages.
+
+    Example
+    -------
+    >>> np.random.seed(42)
+    >>> from respy.python.solve.solve_auxiliary import StateSpace
+    >>> num_types = 2
+    >>> state_space = StateSpace(1, num_types, [12, 16], 20)
+    >>> coeffs_a = np.random.randint(0, 101, 12) / 100
+    >>> coeffs_b = np.random.randint(0, 101, 12) / 100
+    >>> type_shifts = np.random.randn(num_types, 4)
+    >>> calculate_wages_systematic(
+    ...     state_space.states_arr,
+    ...     state_space.covariates,
+    ...     coeffs_a,
+    ...     coeffs_b,
+    ...     type_shifts,
+    ... )
+    array([[2.13158868e+06, 1.87035803e+01],
+           [2.13158868e+06, 1.87035803e+01],
+           [1.99710249e+08, 2.93330530e+01],
+           [1.99710249e+08, 2.93330530e+01],
+           [3.84214409e+05, 3.40802479e+00],
+           [3.84214409e+05, 3.40802479e+00],
+           [3.59973554e+07, 5.34484681e+00],
+           [3.59973554e+07, 5.34484681e+00]])
 
     """
     exp_a_sq = states[:, 1] ** 2 / 100
