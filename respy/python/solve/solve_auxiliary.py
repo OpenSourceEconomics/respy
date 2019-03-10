@@ -13,7 +13,7 @@ from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
 import pandas as pd
-from respy.custom_exceptions import InadmissibleStateError
+from respy.custom_exceptions import StateSpaceError
 from respy.python.shared.shared_auxiliary import create_covariates
 from numba import njit
 from respy.python.shared.shared_constants import MISSING_FLOAT, MISSING_INT
@@ -273,7 +273,6 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
 
 
 def pyth_backward_induction(
-    num_periods,
     is_myopic,
     periods_draws_emax,
     num_draws_emax,
@@ -290,7 +289,6 @@ def pyth_backward_induction(
 
     Parameters
     ----------
-    num_periods : int
     is_myopic : bool
     periods_draws_emax : ???
     num_draws_emax : int
@@ -308,14 +306,10 @@ def pyth_backward_induction(
     states : pd.DataFrame
 
     """
+    state_space.emaxs = np.zeros((state_space.states.shape[0], 5))
+
     if is_myopic:
         record_solution_progress(-2, file_sim)
-
-        state_space.states["emax"] = 0.0
-        state_space.states["emaxs_a"] = 0.0
-        state_space.states["emaxs_b"] = 0.0
-        state_space.states["emaxs_edu"] = 0.0
-        state_space.states["emaxs_home"] = 0.0
 
         return state_space
 
@@ -327,45 +321,22 @@ def pyth_backward_induction(
     # Auxiliary objects. These shifts are used to determine the expected values of the
     # two labor market alternatives. These are log normal distributed and thus the draws
     # cannot simply set to zero.
-    shifts = [0.00, 0.00, 0.00, 0.00]
-    shifts[0] = np.clip(np.exp(shocks_cov[0, 0] / 2.0), 0.0, HUGE_FLOAT)
-    shifts[1] = np.clip(np.exp(shocks_cov[1, 1] / 2.0), 0.0, HUGE_FLOAT)
+    shifts = np.zeros(4)
+    shifts[:2] = np.clip(np.diag(shocks_cov)[:2] / 2.0, 0.0, HUGE_FLOAT)
 
-    for period in reversed(range(num_periods)):
+    # We start the loop from the second last period as the utility from the period after
+    # the last period is set to zero.
+    for period in reversed(range(state_space.num_periods - 1)):
 
-        # Get future utility values. Set them to zero for the last period.
-        if period == num_periods - 1:
-            # Has to be a loop because columns are not initialized.
-            for col in ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]:
-                state_space.states.loc[
-                    state_space.states.period.eq(period), col
-                ] = 0.0
-        else:
-            row_indices = state_space.states.loc[
-                state_space.states.period.eq(period)
-            ].index
+        period_indices = state_space.get_indices_from_period(period)
 
-            # TODO: Embarrassingly parallel. Will be addressed when StateSpace is
-            # completely numpyrized.
-            for row_idx in row_indices:
-
-                # Unpack characteristics of current state
-                exp_a, exp_b, edu, type_ = state_space.states.loc[
-                    row_idx, ["exp_a", "exp_b", "edu", "type"]
-                ]
-
-                state_space.states.loc[
-                    row_idx, ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
-                ] = get_emaxs_of_subsequent_period(
-                    edu_spec["max"],
-                    state_space,
-                    row_idx,
-                    period,
-                    int(exp_a),
-                    int(exp_b),
-                    int(edu),
-                    int(type_),
-                )
+        state_space.emaxs = get_emaxs_of_subsequent_period(
+            state_space.states,
+            state_space.indexer,
+            state_space.emaxs,
+            period_indices,
+            edu_spec["max"],
+        )
 
         # Extract auxiliary objects
         draws_emax_standard = periods_draws_emax[period, :, :]
@@ -387,6 +358,14 @@ def pyth_backward_induction(
             num_points_interp <= num_states
         ) and is_interpolated
 
+        # Unpack necessary attributes
+        rewards_period = state_space.get_attribute_from_period(
+            "rewards", period
+        )
+        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
+            :, :4
+        ]
+
         if any_interpolated:
             # Get indicator for interpolation and simulation of states
             is_simulated = get_simulated_indicator(
@@ -396,15 +375,16 @@ def pyth_backward_induction(
             # Constructing the exogenous variable for all states, including the ones
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
-            state_space.states = get_exogenous_variables(
-                period, state_space.states, shifts, edu_spec, optim_paras
+            max_emax, exogenous = get_exogenous_variables(
+                rewards_period, emaxs_period, shifts, edu_spec, optim_paras
             )
 
             # Constructing the dependent variables for all states at the random subset
             # of points where the EMAX is actually calculated.
-            state_space.states = get_endogenous_variable(
-                period,
-                state_space.states,
+            endogenous = get_endogenous_variable(
+                rewards_period,
+                emaxs_period,
+                max_emax,
                 is_simulated,
                 num_draws_emax,
                 draws_emax_risk,
@@ -415,21 +395,22 @@ def pyth_backward_induction(
             # Create prediction model based on the random subset of points where the
             # EMAX is actually simulated and thus dependent and independent variables
             # are available. For the interpolation points, the actual values are used.
-            state_space.states.loc[
-                state_space.states.period.eq(period), "emax"
-            ] = get_predictions(
-                period, state_space.states, is_simulated, file_sim, is_write
+            emax = get_predictions(
+                endogenous,
+                exogenous,
+                max_emax,
+                is_simulated,
+                file_sim,
+                is_write,
             )
 
         else:
 
-            state_space.states.loc[
-                state_space.states.period.eq(period), "emax"
-            ] = construct_emax_risk(
-                state_space.states.loc[state_space.states.period.eq(period)],
-                draws_emax_risk,
-                optim_paras,
+            emax = construct_emax_risk(
+                rewards_period, emaxs_period, draws_emax_risk, optim_paras
             )
+
+        state_space.get_attribute_from_period("emaxs", period)[:, 4] = emax
 
     return state_space
 
@@ -477,7 +458,7 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
     return is_simulated
 
 
-def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
+def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
     """ Get exogenous variables for interpolation scheme.
 
     The unused argument is present to align the interface between the PYTHON and FORTRAN
@@ -485,10 +466,10 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
 
     Parameters
     ----------
-    period : int
-        Number of period.
-    states : pd.DataFrame
-    draws : np.array
+    rewards : np.ndarray
+    emaxs : np.ndarray
+        Array with shape (num_states_in_period, 4)
+    draws : np.ndarray
     edu_spec : dict
     optim_paras : dict
 
@@ -497,70 +478,28 @@ def get_exogenous_variables(period, states, draws, edu_spec, optim_paras):
     states : pd.DataFrame
 
     """
-    # TODO: Type conversion for test_integration::test_5.
+    # TODO: Type conversion for at least test_integration::test_5.
     draws = np.array(draws)
 
-    total_values, rewards_ex_post = get_continuation_value(
-        states[["wage_a", "wage_b"]].values,
-        states[
-            [
-                "rewards_systematic_a",
-                "rewards_systematic_b",
-                "rewards_systematic_edu",
-                "rewards_systematic_home",
-            ]
-        ].values,
+    total_values, _ = get_continuation_value(
+        rewards[:, -2:],
+        rewards[:, :4],
         draws.reshape(1, -1),
-        states[["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]].values,
+        emaxs,
         optim_paras["delta"],
     )
 
-    states[
-        [
-            "rewards_ex_post_a",
-            "rewards_ex_post_b",
-            "rewards_ex_post_edu",
-            "rewards_ex_post_home",
-        ]
-    ] = pd.DataFrame(rewards_ex_post.reshape(-1, 4), index=states.index)
-    states[
-        [
-            "total_values_a",
-            "total_values_b",
-            "total_values_edu",
-            "total_values_home",
-        ]
-    ] = pd.DataFrame(total_values.reshape(-1, 4), index=states.index)
+    max_emax = total_values.max(axis=1)
 
-    # Implement level shifts
-    states.loc[states.period.eq(period), "max_emax"] = states[
-        [
-            "total_values_a",
-            "total_values_b",
-            "total_values_edu",
-            "total_values_home",
-        ]
-    ].max(axis=1)
+    exogenous = total_values - max_emax.reshape(-1, 1)
 
-    states.loc[states.period.eq(period), "exogenous_a"] = (
-        states.max_emax - states.total_values_a
-    )
-    states.loc[states.period.eq(period), "exogenous_b"] = (
-        states.max_emax - states.total_values_b
-    )
-    states.loc[states.period.eq(period), "exogenous_edu"] = (
-        states.max_emax - states.total_values_edu
-    )
-    states.loc[states.period.eq(period), "exogenous_home"] = (
-        states.max_emax - states.total_values_home
-    )
-
-    return states
+    return max_emax, exogenous
 
 
 def get_endogenous_variable(
-    period,
-    states,
+    rewards,
+    emaxs,
+    max_emax,
     is_simulated,
     num_draws_emax,
     draws_emax_risk,
@@ -569,42 +508,34 @@ def get_endogenous_variable(
 ):
     """ Construct endogenous variable for the subset of interpolation points.
 
-    TODO: There are a number of states randomly chosen for interpolation which do not
-    need calculation. Maybe one can enhance performance by dropping the cases.
-    Currently, they are part of the calculation and are skipped in
-    :func:`get_predictions`.
+    Parameters
+    ----------
+    rewards : np.ndarray
+        Array with shape (num_states_in_period, 9)
+    emaxs : np.ndarray
+        Array with shape (num_states_in_period, 4).
+    max_emax : np.ndarray
+        Array with shape (num_states_in_period,) containing maximum of exogenous emax.
 
     """
+    emax = construct_emax_risk(rewards, emaxs, draws_emax_risk, optim_paras)
 
-    # Simulate the expected future value.
-    states.loc[states.period.eq(period), "emax"] = construct_emax_risk(
-        states.loc[states.period.eq(period)], draws_emax_risk, optim_paras
-    )
+    endogenous = emax - max_emax
 
-    # Construct dependent variable
-    states.loc[states.period.eq(period), "endog_variable"] = (
-        states.emax - states.max_emax
-    )
-
-    return states
+    return endogenous
 
 
-def get_predictions(period, states, is_simulated, file_sim, is_write):
+def get_predictions(
+    endogenous, exogenous, max_emax, is_simulated, file_sim, is_write
+):
     """ Fit an OLS regression of the exogenous variables on the endogenous variables and
     use the results to predict the endogenous variables for all points in the state
     space.
 
     """
-    endogenous = states.loc[states.period.eq(period), "endog_variable"].values
-
-    exogenous = states.loc[
-        states.period.eq(period),
-        ["exogenous_a", "exogenous_b", "exogenous_edu", "exogenous_home"],
-    ].values
-
-    exogenous = np.hstack(
-        (np.ones((exogenous.shape[0], 1)), exogenous, np.sqrt(exogenous))
-    )
+    exogenous = np.c_[
+        np.ones(exogenous.shape[0]), exogenous, np.sqrt(exogenous)
+    ]
 
     # Define ordinary least squares model and fit to the data.
     model = sm.OLS(endogenous[is_simulated], exogenous[is_simulated])
@@ -617,18 +548,13 @@ def get_predictions(period, states, is_simulated, file_sim, is_write):
 
     # Construct predicted EMAX for all states and the replace interpolation points with
     # simulated values.
-    predictions = (
-        endogenous_predicted
-        + states.loc[states.period.eq(period), "max_emax"].values
-    )
+    predictions = endogenous_predicted + max_emax
     predictions[is_simulated] = (
-        endogenous[is_simulated]
-        + states.loc[states.period.eq(period), "max_emax"].values[is_simulated]
+        endogenous[is_simulated] + max_emax[is_simulated]
     )
 
     check_prediction_model(endogenous_predicted, model)
 
-    # Write out some basic information to spot problems easily.
     if is_write:
         record_solution_prediction(results, file_sim)
 
@@ -692,7 +618,7 @@ def calculate_wages_systematic(
     >>> coeffs_b = np.random.randint(0, 101, 12) / 100
     >>> type_shifts = np.random.randn(num_types, 4)
     >>> calculate_wages_systematic(
-    ...     state_space.states_arr,
+    ...     state_space.states,
     ...     state_space.covariates,
     ...     coeffs_a,
     ...     coeffs_b,
@@ -792,158 +718,122 @@ class StateSpace:
 
     """
 
+    states_columns = [
+        "period",
+        "exp_a",
+        "exp_b",
+        "edu",
+        "choice_lagged",
+        "type",
+    ]
+
+    covariates_columns = [
+        "not_exp_a_lagged",
+        "not_exp_b_lagged",
+        "work_a_lagged",
+        "work_b_lagged",
+        "edu_lagged",
+        "not_any_exp_a",
+        "not_any_exp_b",
+        "any_exp_a",
+        "any_exp_b",
+        "hs_graduate",
+        "co_graduate",
+        "is_return_not_high_school",
+        "is_return_high_school",
+        "is_minor",
+        "is_young_adult",
+        "is_adult",
+    ]
+
+    rewards_columns = [
+        "rewards_systematic_a",
+        "rewards_systematic_b",
+        "rewards_systematic_edu",
+        "rewards_systematic_home",
+        "rewards_general_a",
+        "rewards_general_b",
+        "rewards_common",
+        "wage_a",
+        "wage_b",
+    ]
+
     def __init__(
         self, num_periods, num_types, edu_starts, edu_max, optim_paras=None
     ):
-        self.states_arr, self.indexer = pyth_create_state_space(
+        self.num_periods = num_periods
+
+        self.states, self.indexer = pyth_create_state_space(
             num_periods, num_types, edu_starts, edu_max
         )
 
-        self.covariates = create_covariates(self.states_arr)
-
-        states = pd.DataFrame(
-            self.states_arr,
-            columns=[
-                "period",
-                "exp_a",
-                "exp_b",
-                "edu",
-                "choice_lagged",
-                "type",
-            ],
-            dtype=np.int8,
-        )
-
-        covariates = pd.DataFrame(
-            self.covariates,
-            columns=[
-                "not_exp_a_lagged",
-                "not_exp_b_lagged",
-                "work_a_lagged",
-                "work_b_lagged",
-                "edu_lagged",
-                "not_any_exp_a",
-                "not_any_exp_b",
-                "any_exp_a",
-                "any_exp_b",
-                "hs_graduate",
-                "co_graduate",
-                "is_return_not_high_school",
-                "is_return_high_school",
-                "is_minor",
-                "is_young_adult",
-                "is_adult",
-            ],
-        )
-
-        frame = [states, covariates]
+        self.covariates = create_covariates(self.states)
 
         # This measure is related to test_f2py::test_2.
         if optim_paras:
 
-            all_rewards = pyth_calculate_rewards_systematic(
-                self.states_arr, self.covariates, optim_paras
-            )
+            self.rewards = np.c_[
+                pyth_calculate_rewards_systematic(
+                    self.states, self.covariates, optim_paras
+                )
+            ]
 
-            rewards_frame = pd.DataFrame(
-                np.c_[all_rewards],
-                columns=[
-                    "rewards_systematic_a",
-                    "rewards_systematic_b",
-                    "rewards_systematic_edu",
-                    "rewards_systematic_home",
-                    "rewards_general_a",
-                    "rewards_general_b",
-                    "rewards_common",
-                    "wage_a",
-                    "wage_b",
-                ],
-            )
-
-            frame += [rewards_frame]
-
-        self.states = pd.concat(frame, axis=1)
+        self._create_slices_by_periods(num_periods)
 
     @property
     def states_per_period(self):
-        return self.states.groupby("period").count().iloc[:, 0].values
+        return np.array(
+            [len(range(i.start, i.stop)) for i in self.slices_by_periods]
+        )
 
     def update_systematic_rewards(self, optim_paras):
-        all_rewards = np.c_[
+        self.rewards = np.c_[
             pyth_calculate_rewards_systematic(
-                self.states_arr, self.covariates, optim_paras
+                self.states, self.covariates, optim_paras
             )
         ]
-
-        self.states[
-            [
-                "rewards_systematic_a",
-                "rewards_systematic_b",
-                "rewards_systematic_edu",
-                "rewards_systematic_home",
-                "rewards_general_a",
-                "rewards_general_b",
-                "rewards_common",
-                "wage_a",
-                "wage_b",
-            ]
-        ] = all_rewards
 
     def _get_fortran_counterparts(self):
         try:
             periods_rewards_systematic = np.full(
-                (
-                    self.states_per_period.shape[0],
-                    self.states_per_period.max(),
-                    4,
-                ),
+                (self.num_periods, self.states_per_period.max(), 4),
                 MISSING_FLOAT,
             )
-            for period, group in self.states.groupby("period"):
-                sub = group[
-                    [
-                        "rewards_systematic_a",
-                        "rewards_systematic_b",
-                        "rewards_systematic_edu",
-                        "rewards_systematic_home",
-                    ]
-                ].values
+            for period in range(self.num_periods):
+                rewards = self.get_attribute_from_period("rewards", period)[
+                    :, :4
+                ]
 
-                periods_rewards_systematic[period, : sub.shape[0]] = sub
+                periods_rewards_systematic[
+                    period, : rewards.shape[0]
+                ] = rewards
         except KeyError:
             periods_rewards_systematic = None
 
         try:
             periods_emax = np.full(
-                (
-                    self.states_per_period.shape[0],
-                    self.states_per_period.max(),
-                ),
-                MISSING_FLOAT,
+                (self.num_periods, self.states_per_period.max()), MISSING_FLOAT
             )
-            for period, group in self.states.groupby("period"):
-                sub = group["emax"].values
+            for period in range(self.num_periods):
+                emax = self.get_attribute_from_period("emaxs", period)[:, 4]
 
-                periods_emax[period, : sub.shape[0]] = sub
+                periods_emax[period, : emax.shape[0]] = emax
         except KeyError:
             periods_emax = None
 
         states_all = np.full(
-            (self.states_per_period.shape[0], self.states_per_period[-1], 5),
-            MISSING_INT,
+            (self.num_periods, self.states_per_period[-1], 5), MISSING_INT
         )
-        for period, group in self.states.groupby("period"):
-            sub = group[
-                ["exp_a", "exp_b", "edu", "choice_lagged", "type"]
-            ].values
+        for period in range(self.num_periods):
+            states = self.get_attribute_from_period("states", period)[:, 1:]
 
-            states_all[period, : sub.shape[0], :] = sub
+            states_all[period, : states.shape[0], :] = states
 
         # The indexer has to be modified because ``mapping_state_idx`` resets the
         # counter to zero for each period and ``self.indexer`` not. For every period,
         # subtract the minimum index.
         mapping_state_idx = self.indexer.copy()
-        for period in range(self.states_per_period.shape[0]):
+        for period in range(self.num_periods):
             mask = mapping_state_idx[period] != -1
             minimum_index = mapping_state_idx[period][mask].min()
 
@@ -957,6 +847,34 @@ class StateSpace:
             periods_rewards_systematic,
             periods_emax,
         )
+
+    def get_attribute_from_period(self, attr, period):
+        try:
+            attribute = getattr(self, attr)
+        except AttributeError:
+            raise StateSpaceError("Inadmissible attribute.")
+
+        try:
+            indices = self.slices_by_periods[period]
+        except IndexError:
+            raise StateSpaceError("Inadmissible period.")
+
+        return attribute[indices]
+
+    def get_indices_from_period(self, period):
+        try:
+            slice_ = self.slices_by_periods[period]
+            indices = list(range(slice_.start, slice_.stop))
+        except IndexError:
+            raise StateSpaceError("Inadmissible period.")
+
+        return indices
+
+    def _create_slices_by_periods(self, num_periods):
+        self.slices_by_periods = []
+        for i in range(num_periods):
+            idx_start, idx_end = np.where(self.states[:, 0] == i)[0][[0, -1]]
+            self.slices_by_periods.append(slice(idx_start, idx_end + 1))
 
     def __len__(self):
         return len(self.states)
@@ -972,18 +890,17 @@ class StateSpace:
             still an integer to keep memory costs down.
 
         """
-        # TODO: Type conversion for tests.
-        key = tuple(int(i) for i in key)
         position = self.indexer[key]
 
         if position == -1:
-            raise InadmissibleStateError(
-                ", ".join(
+            raise StateSpaceError(
+                "Inadmissible state with "
+                + ", ".join(
                     [
                         "{}: {}".format(k, v)
-                        for k, v in zip(self.states.columns.tolist()[:6], key)
+                        for k, v in zip(self.states_columns, key)
                     ]
                 )
             )
         else:
-            return self.states.iloc[position]
+            return self.states[position]

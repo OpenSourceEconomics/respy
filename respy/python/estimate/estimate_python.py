@@ -30,7 +30,6 @@ def pyth_criterion(
     state_space.update_systematic_rewards(optim_paras)
 
     state_space = pyth_backward_induction(
-        num_periods,
         is_myopic,
         periods_draws_emax,
         num_draws_emax,

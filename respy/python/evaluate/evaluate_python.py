@@ -92,24 +92,23 @@ def pyth_contributions(
                 period = int(agent["Period"])
                 # Extract observable components of state space as well as agent
                 # decision.
-                exp_a, exp_b, edu, choice_lagged, choice, wage_observed = agent[
+                exp_a, exp_b, edu, choice_lagged, choice = agent[
                     [
                         "Experience_A",
                         "Experience_B",
                         "Years_Schooling",
                         "Lagged_Choice",
                         "Choice",
-                        "Wage",
                     ]
-                ]
+                ].astype(int)
+                wage_observed = agent.Wage
 
                 # Determine whether the agent's wage is known
                 is_wage_missing = np.isnan(wage_observed)
                 is_working = choice in [1, 2]
 
-                # TODO: Type conversion for tests.
                 # Create an index for the choice.
-                idx = int(choice - 1)
+                idx = choice - 1
 
                 # Extract relevant deviates from standard normal distribution. The same
                 # set of baseline draws are used for each agent and period. The copy is
@@ -118,7 +117,7 @@ def pyth_contributions(
 
                 # Get state index to access the systematic component of the agents
                 # rewards. These feed into the simulation of choice probabilities.
-                state = state_space[
+                k = state_space.indexer[
                     period, exp_a, exp_b, edu, choice_lagged - 1, type_
                 ]
 
@@ -126,7 +125,7 @@ def pyth_contributions(
                 # observed and the conditional distribution is used to determine the
                 # choice probabilities if the wage information is available as well.
                 if is_working and (not is_wage_missing):
-                    wages_systematic = state[["wage_a", "wage_b"]].values
+                    wages_systematic = state_space.rewards[k, -2:]
 
                     # Calculate the disturbance which are implied by the model and the
                     # observed wages.
@@ -191,19 +190,10 @@ def pyth_contributions(
                     # Calculate total values. immediate rewards, including shock +
                     # expected future value!
                     total_values, _ = get_continuation_value(
-                        state[["wage_a", "wage_b"]].values,
-                        state[
-                            [
-                                "rewards_systematic_a",
-                                "rewards_systematic_b",
-                                "rewards_systematic_edu",
-                                "rewards_systematic_home",
-                            ]
-                        ].values,
+                        state_space.rewards[k, -2:],
+                        state_space.rewards[k, :4],
                         draws.reshape(1, -1),
-                        state[
-                            ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
-                        ].values,
+                        state_space.emaxs[k, :4],
                         optim_paras["delta"],
                     )
                     total_values = total_values.ravel()

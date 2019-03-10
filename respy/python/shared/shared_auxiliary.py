@@ -12,7 +12,7 @@ from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
-from numba import guvectorize
+from numba import guvectorize, njit
 
 
 def get_log_likl(contribs):
@@ -86,10 +86,11 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     """Stack optimization parameters from a dictionary into a vector of type 'optim'.
 
     Args:
-        paras_dict (dict): dictionary with quantities from which the parameters can be extracted
+        paras_dict (dict): dictionary with quantities from which the parameters can be
+            extracted.
         num_paras (int): number of parameters in the model (not only free parameters)
-        which (str): one of ['free', 'all'], determines whether the resulting parameter vetcor
-            contains only free parameters or all parameters.
+        which (str): one of ['free', 'all'], determines whether the resulting parameter
+            vector contains only free parameters or all parameters.
         is_debug (bool): If True, inputs and outputs are checked for consistency.
 
 
@@ -213,7 +214,8 @@ def extract_type_information(x):
 
 
 def extract_cholesky(x, info=None):
-    """Extract the cholesky factor of the shock covariance from parameters of type 'optim."""
+    """Extract the cholesky factor of the shock covariance from parameters of type
+    'optim."""
     pinfo = paras_parsing_information(len(x))
     start, stop = (
         pinfo["shocks_coeffs"]["start"],
@@ -248,11 +250,13 @@ def extract_cholesky(x, info=None):
 def coeffs_to_cholesky(coeffs):
     """Return the cholesky factor of a covariance matrix described by coeffs.
 
-    The function can handle the case of a deterministic model (i.e. where all coeffs = 0)
+    The function can handle the case of a deterministic model (i.e. where all coeffs =
+    0)
 
     Args:
-        coeffs (np.ndarray): 1d numpy array that contains the upper triangular elements of a
-        covariance matrix whose diagonal elements have been replaced by their square roots.
+        coeffs (np.ndarray): 1d numpy array that contains the upper triangular elements
+            of a covariance matrix whose diagonal elements have been replaced by their
+            square roots.
 
     """
     dim = dim = number_of_triangular_elements_to_dimensio(len(coeffs))
@@ -333,51 +337,37 @@ def get_continuation_value(
             rew_ex_post[j, i] = rew_ex
 
 
+@njit
 def get_emaxs_of_subsequent_period(
-    edu_spec_max, state_space, row_idx, period, exp_a, exp_b, edu, type_
+    states, indexer, emaxs, periods_indices, edu_max
 ):
-    """Get emaxs for additional choices.
+    for i in periods_indices:
+        period, exp_a, exp_b, edu, _, type_ = states[i]
 
-    Parameters
-    ----------
-    edu_spec : dict
-    state_space
-    row_idx : int
-        Index of state for which we need to collect values from subsequent periods.
-    period : int
-    exp_a : int
-    exp_b : int
-    edu : int
-    type_ : int
+        # Working in Occupation A in period + 1
+        k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
+        emaxs[i, 0] = emaxs[k, 4]
 
-    Returns
-    -------
-    emaxs_* : float
-        emaxs_* values from subsequent period.
+        # Working in Occupation B in period +1
+        k = indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
+        emaxs[i, 1] = emaxs[k, 4]
 
-    """
-    # Working in Occupation A in period + 1
-    emaxs_a = state_space[period + 1, exp_a + 1, exp_b, edu, 0, type_]["emax"]
+        # Schooling in period + 1. Note that adding an additional year of schooling is
+        # only possible for those that have strictly less than the maximum level of
+        # additional education allowed. This condition is necessary as there are states
+        # which have reached maximum education. Incrementing education by one would
+        # target an inadmissible state.
+        if edu >= edu_max:
+            emaxs[i, 2] = INADMISSIBILITY_PENALTY
+        else:
+            k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
+            emaxs[i, 2] = emaxs[k, 4]
 
-    # Working in Occupation B in period +1
-    emaxs_b = state_space[period + 1, exp_a, exp_b + 1, edu, 1, type_]["emax"]
+        # Staying at home in period + 1
+        k = indexer[period + 1, exp_a, exp_b, edu, 3, type_]
+        emaxs[i, 3] = emaxs[k, 4]
 
-    # Schooling in period + 1. Note that adding an additional year of schooling is only
-    # possible for those that have strictly less than the maximum level of additional
-    # education allowed. This condition is necessary as there are states which have
-    # reached maximum education. Incrementing education by one would target an
-    # inadmissible state.
-    if edu >= edu_spec_max:
-        emaxs_edu = INADMISSIBILITY_PENALTY
-    else:
-        emaxs_edu = state_space[period + 1, exp_a, exp_b, edu + 1, 2, type_][
-            "emax"
-        ]
-
-    # Staying at home in period + 1
-    emaxs_home = state_space[period + 1, exp_a, exp_b, edu, 3, type_]["emax"]
-
-    return emaxs_a, emaxs_b, emaxs_edu, emaxs_home
+    return emaxs
 
 
 def create_draws(num_periods, num_draws, seed, is_debug):

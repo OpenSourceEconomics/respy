@@ -429,7 +429,6 @@ class TestClass(object):
 
         # Check backward induction procedure.
         state_space = pyth_backward_induction(
-            num_periods,
             False,
             periods_draws_emax,
             num_draws_emax,
@@ -623,7 +622,6 @@ class TestClass(object):
         ) = state_space._get_fortran_counterparts()
 
         shared_args = (
-            num_periods,
             num_agents_sim,
             periods_draws_sims,
             seed_sim,
@@ -649,6 +647,7 @@ class TestClass(object):
             mapping_state_idx,
             periods_emax,
             states_all,
+            num_periods,
             *shared_args,
             edu_spec["start"],
             edu_spec["max"],

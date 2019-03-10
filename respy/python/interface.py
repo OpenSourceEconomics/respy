@@ -328,7 +328,6 @@ def respy_interface(respy_obj, request, data=None):
 
         simulated_data = pyth_simulate(
             state_space,
-            num_periods,
             num_agents_sim,
             periods_draws_sims,
             seed_sim,
