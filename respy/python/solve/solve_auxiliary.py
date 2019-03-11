@@ -322,7 +322,7 @@ def pyth_backward_induction(
     # two labor market alternatives. These are log normal distributed and thus the draws
     # cannot simply set to zero.
     shifts = np.zeros(4)
-    shifts[:2] = np.clip(np.diag(shocks_cov)[:2] / 2.0, 0.0, HUGE_FLOAT)
+    shifts[:2] = np.clip(np.exp(np.diag(shocks_cov)[:2] / 2.0), 0.0, HUGE_FLOAT)
 
     for period in reversed(range(state_space.num_periods)):
 
@@ -492,6 +492,8 @@ def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
     max_emax = total_values.max(axis=1)
 
     exogenous = max_emax - total_values.reshape(-1, 4)
+
+    import pytest; pytest.set_trace()
 
     return exogenous, max_emax.reshape(-1)
 

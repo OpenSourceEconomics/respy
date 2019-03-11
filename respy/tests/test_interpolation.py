@@ -24,6 +24,8 @@ class TestClass(object):
         init_dict = generate_random_dict(constr)
         baseline = None
 
+        a = []
+
         # Solve with and without interpolation code
         for _ in range(2):
 
@@ -35,13 +37,15 @@ class TestClass(object):
             respy_obj = simulate_observed(respy_obj)
 
             # Extract class attributes
-            states_number_period, periods_emax = dist_class_attributes(
-                respy_obj, "states_number_period", "periods_emax"
+            states_number_period, periods_emax, state_space = dist_class_attributes(
+                respy_obj, "states_number_period", "periods_emax", "state_space"
             )
+
+            a.append(state_space)
 
             # Store and check results
             if baseline is None:
-                baseline = periods_emax
+                baseline = periods_emax.copy()
             else:
                 np.testing.assert_array_almost_equal(baseline, periods_emax)
 
