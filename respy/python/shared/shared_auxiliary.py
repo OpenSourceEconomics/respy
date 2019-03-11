@@ -354,17 +354,26 @@ def get_emaxs_of_subsequent_period(
 
     Example
     -------
-    This example is first and foremost for benchmarking different implementations.
+    This example is first and foremost for benchmarking different implementations, not
+    for validation.
 
     >>> from respy.python.solve.solve_auxiliary import StateSpace
-    >>> num_periods, num_types = 50, 1
-    >>> edu_start = [10, 15], edu_max = 20
-    >>> optim_paras = {
-    ...
-    ... }
+    >>> num_periods, num_types = 50, 3
+    >>> edu_start, edu_max = [10, 15], 20
     >>> state_space = StateSpace(
     ...     num_periods, num_types, edu_start, edu_max, optim_paras
     ... )
+    >>> state_space.emaxs = np.r_[
+    ...     np.zeros((state_space.states_per_period[:-1].sum(), 5)),
+    ...     np.full((state_space.states_per_period[-1], 5), 10)
+    ... ]
+    >>> for period in reversed(range(state_space.num_periods - 1)):
+    ...     states = state_space.get_attribute_from_period("states", period)
+    ...     state_space.emaxs = get_emaxs_of_subsequent_period(
+    ...         states, state_space.indexer, state_space.emaxs, edu_max
+    ...     )
+    ...     state_space.emaxs[:, 4] = state_space.emaxs[:, :4].max()
+    >>> assert (state_space.emaxs == 10).mean() >= 0.95
 
     """
     for i in range(states.shape[0]):
