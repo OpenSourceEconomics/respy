@@ -6,7 +6,8 @@ import pandas as pd
 import pytest
 import random
 import shutil
-
+import copy
+import random
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
@@ -466,7 +467,7 @@ class TestClass(object):
                 ("kw_data_one_types.ini", 9.098738585839529),
                 ("kw_data_one_initial.ini", 7.965979149372883),
             ],
-            k=5,
+            k=1,
         ),
     )
     def test_12(self, fname, result):
