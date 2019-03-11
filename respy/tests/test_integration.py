@@ -465,7 +465,7 @@ class TestClass(object):
                 ("kw_data_one_types.ini", 9.098738585839529),
                 ("kw_data_one_initial.ini", 7.965979149372883),
             ],
-            5,
+            1,
         ),
     )
     def test_12(self, fname, result):
