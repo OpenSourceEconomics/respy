@@ -1,10 +1,11 @@
 from pandas.util.testing import assert_frame_equal
 
+import copy
 import numpy as np
 import pandas as pd
 import pytest
+import random
 import shutil
-import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
@@ -455,35 +456,25 @@ class TestClass(object):
 
     @pytest.mark.skipif(not IS_FORTRAN, reason="No FORTRAN available")
     @pytest.mark.slow
-    def test_12(self):
+    @pytest.mark.parametrize(
+        "fname, result",
+        random.sample(
+            [
+                ("kw_data_one.ini", 10.45950941513551),
+                ("kw_data_two.ini", 45.04552402391903),
+                ("kw_data_three.ini", 74.28253652773714),
+                ("kw_data_one_types.ini", 9.098738585839529),
+                ("kw_data_one_initial.ini", 7.965979149372883),
+            ],
+            k=5,
+        ),
+    )
+    def test_12(self, fname, result):
         """ This test just locks in the evaluation of the criterion function for the
         original Keane & Wolpin data. We create an additional initialization files that
         include numerous types and initial conditions.
 
         """
-        # Sample one task
-        resources = [
-            "kw_data_one.ini",
-            "kw_data_two.ini",
-            "kw_data_three.ini",
-            "kw_data_one_types.ini",
-            "kw_data_one_initial.ini",
-        ]
-
-        fname = np.random.choice(resources)
-
-        rslt = None
-        if "one.ini" in fname:
-            rslt = 10.45950941513551
-        elif "two.ini" in fname:
-            rslt = 45.04552402391903
-        elif "three.ini" in fname:
-            rslt = 74.28253652773714
-        elif "one_types.ini" in fname:
-            rslt = 9.098738585839529
-        elif "one_initial.ini" in fname:
-            rslt = 7.965979149372883
-
         # This ensures that the experience effect is taken care of properly.
         open(".restud.respy.scratch", "w").close()
 
@@ -497,7 +488,7 @@ class TestClass(object):
         simulate_observed(respy_obj, is_missings=False)
 
         _, val = respy_obj.fit()
-        np.testing.assert_allclose(val, rslt)
+        np.testing.assert_allclose(val, result)
 
     def test_13(self):
         """ We ensure that the number of types does not matter for the evaluation of the

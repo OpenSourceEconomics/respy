@@ -125,10 +125,15 @@ class TestClass(object):
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
         # Evaluation of simulated expected future values
+        rewards_period = state_space.get_attribute_from_period(
+            "rewards", period
+        )
+        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
+            :, :4
+        ]
+
         py = construct_emax_risk(
-            state_space.states.loc[state_space.states.period.eq(period)],
-            draws_emax_risk,
-            optim_paras,
+            rewards_period, emaxs_period, draws_emax_risk, optim_paras
         )
 
         f90 = fort_debug.wrapper_construct_emax_risk(
@@ -178,7 +183,7 @@ class TestClass(object):
             base_args = (num_periods, num_types)
 
             state_space = StateSpace(
-                *base_args, edu_spec["start"], edu_spec["max"],
+                *base_args, edu_spec["start"], edu_spec["max"]
             )
 
             py_a, py_c, _, _ = state_space._get_fortran_counterparts()
@@ -373,7 +378,12 @@ class TestClass(object):
         min_idx = edu_spec["max"] + 1
 
         # Check the state space creation.
-        base_args = (num_periods, num_types, edu_spec["start"], edu_spec["max"])
+        base_args = (
+            num_periods,
+            num_types,
+            edu_spec["start"],
+            edu_spec["max"],
+        )
         args = base_args + (optim_paras,)
 
         state_space = StateSpace(*args)
@@ -425,7 +435,8 @@ class TestClass(object):
             num_periods, num_draws_emax, seed_emax, is_debug
         )
 
-        periods_rewards_systematic = pyth
+        # Save result for next test.
+        periods_rewards_systematic = pyth.copy()
 
         # Check backward induction procedure.
         state_space = pyth_backward_induction(
@@ -621,12 +632,7 @@ class TestClass(object):
             periods_emax,
         ) = state_space._get_fortran_counterparts()
 
-        shared_args = (
-            num_agents_sim,
-            periods_draws_sims,
-            seed_sim,
-            file_sim,
-        )
+        shared_args = (num_agents_sim, periods_draws_sims, seed_sim, file_sim)
 
         simulated_data = pyth_simulate(
             state_space,
@@ -746,12 +752,6 @@ class TestClass(object):
 
         assert_allclose(py, f2py)
 
-    @pytest.mark.skip(
-        "As the structure of the Python version has changed by #139, it is difficult "
-        "to implement a step-by-step version of the backward induction and it will "
-        "probably break again with the next change. Also the interpolation is part of "
-        "some regression tests so that the case is still covered. Reimplement later."
-    )
     def test_6(self):
         """ Further tests for the interpolation routines.
         """
@@ -796,8 +796,8 @@ class TestClass(object):
             "file_sim",
             "num_types",
         )
-        shocks_cov = np.matmul(
-            optim_paras["shocks_cholesky"], optim_paras["shocks_cholesky"].T
+        shocks_cov = optim_paras["shocks_cholesky"].dot(
+            optim_paras["shocks_cholesky"].T
         )
 
         shocks_cholesky = optim_paras["shocks_cholesky"]
@@ -816,12 +816,16 @@ class TestClass(object):
         draws_emax_standard = periods_draws_emax[period, :, :]
 
         draws_emax_risk = transform_disturbances(
-            draws_emax_standard, np.tile(0, 4), shocks_cholesky
+            draws_emax_standard, np.zeros(4), shocks_cholesky
         )
 
         # Initialize Python version
         state_space = StateSpace(
-            num_periods, num_types, edu_spec["start"], edu_spec["max"], optim_paras
+            num_periods,
+            num_types,
+            edu_spec["start"],
+            edu_spec["max"],
+            optim_paras,
         )
 
         num_states = state_space.states_per_period[period]
@@ -834,30 +838,37 @@ class TestClass(object):
 
         # Get the IS_SIMULATED indicator for the subset of points which are used for the
         # predication model.
-        args = (num_points_interp, num_states, period, is_debug)
-        is_simulated = get_simulated_indicator(*args)
+        is_simulated = get_simulated_indicator(
+            num_points_interp, num_states, period, is_debug
+        )
+
+        # Convert Fortran outputs to valid Python inputs
+        state_space._create_attributes_from_fortran_counterparts(periods_emax)
+
+        # Unpack necessary attributes
+        rewards_period = state_space.get_attribute_from_period(
+            "rewards", period
+        )
+        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
+            :, :4
+        ]
 
         # Construct the exogenous variables for all points of the state space.
-        args = (period, state_space.states, shifts, edu_spec, optim_paras)
-        state_space.states = get_exogenous_variables(*args)
+        exogenous, max_emax = get_exogenous_variables(
+            rewards_period, emaxs_period, shifts, edu_spec, optim_paras
+        )
 
         # Align output between Python and Fortran version.
-        num_states_in_period = state_space.states.period.eq(period).sum()
-        exogenous = state_space.states.loc[
-            state_space.states.period.eq(period),
-            ["exogenous_a", "exogenous_b", "exogenous_edu", "exogenous_home"],
-        ].values
-        exogenous = np.hstack(
-            (exogenous, np.sqrt(exogenous), np.ones(num_states_in_period))
-        )
         py = (
-            exogenous,
-            state_space.states.loc[
-                state_space.states.period.eq(period), "max_emax"
-            ].values,
+            np.c_[
+                exogenous,
+                np.sqrt(exogenous),
+                np.ones(state_space.states_per_period[period]),
+            ],
+            max_emax,
         )
 
-        args = (
+        f90 = fort_debug.wrapper_get_exogenous_variables(
             period,
             num_periods,
             num_states,
@@ -874,29 +885,23 @@ class TestClass(object):
             coeffs_b,
             num_types,
         )
-        f90 = fort_debug.wrapper_get_exogenous_variables(*args)
 
-        assert_equal(py, f90)
-
-        # Distribute validated results for further functions.
-        exogenous, maxe = py
+        np.testing.assert_almost_equal(py[0], f90[0], decimal=15)
+        np.testing.assert_almost_equal(py[1], f90[1], decimal=15)
 
         # Construct endogenous variable so that the prediction model can be fitted.
-        args = (
-            period,
-            state_space.states,
+        endogenous = get_endogenous_variable(
+            rewards_period,
+            emaxs_period,
+            max_emax,
             is_simulated,
             num_draws_emax,
             draws_emax_risk,
             edu_spec,
             optim_paras,
         )
-        state_space.states = get_endogenous_variable(*args)
-        endog_variable = state_space.states.loc[
-            state_space.states.period.eq(period), "endog_variable"
-        ].values
 
-        args = (
+        f90 = fort_debug.wrapper_get_endogenous_variable(
             period,
             num_periods,
             num_states,
@@ -906,7 +911,7 @@ class TestClass(object):
             states_all,
             is_simulated,
             num_draws_emax,
-            maxe,
+            max_emax,
             draws_emax_risk,
             edu_spec["start"],
             edu_spec["max"],
@@ -916,23 +921,22 @@ class TestClass(object):
             coeffs_a,
             coeffs_b,
         )
-        f90 = fort_debug.wrapper_get_endogenous_variable(*args)
-        assert_almost_equal(endog_variable, replace_missing_values(f90))
+        assert_almost_equal(endogenous, replace_missing_values(f90))
 
-        args = (period, state_space.states, is_simulated, file_sim, False)
-        py = get_predictions(*args)
+        py = get_predictions(
+            endogenous, exogenous, max_emax, is_simulated, file_sim, False
+        )
 
-        args = (
-            endog_variable,
+        f90 = fort_debug.wrapper_get_predictions(
+            endogenous,
             exogenous,
-            maxe,
+            max_emax,
             is_simulated,
             num_points_interp,
             num_states,
             file_sim,
             False,
         )
-        f90 = fort_debug.wrapper_get_predictions(*args)
 
         # This assertion fails if a column is all zeros.
         if not exogenous.any(axis=0).any():

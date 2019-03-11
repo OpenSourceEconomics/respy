@@ -339,18 +339,46 @@ def get_continuation_value(
 
 @njit
 def get_emaxs_of_subsequent_period(
-    states, indexer, emaxs, periods_indices, edu_max
+    states, indexer, emaxs, edu_max
 ):
-    for i in periods_indices:
-        period, exp_a, exp_b, edu, _, type_ = states[i]
+    """Get the maxmium utility from the subsequent period.
+
+    This function takes a parent node and looks up the utility from each of the four
+    choices in the subsequent period.
+
+    Warning
+    -------
+    This function must be extremely performant as the lookup is done for each state in a
+    state space (except for states in the last period) for each evaluation of the
+    optimization of parameters.
+
+    Example
+    -------
+    This example is first and foremost for benchmarking different implementations.
+
+    >>> from respy.python.solve.solve_auxiliary import StateSpace
+    >>> num_periods, num_types = 50, 1
+    >>> edu_start = [10, 15], edu_max = 20
+    >>> optim_paras = {
+    ...
+    ... }
+    >>> state_space = StateSpace(
+    ...     num_periods, num_types, edu_start, edu_max, optim_paras
+    ... )
+
+    """
+    for i in range(states.shape[0]):
+        # Unpack parent state and get index.
+        period, exp_a, exp_b, edu, choice_lagged, type_ = states[i]
+        k_parent = indexer[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
 
         # Working in Occupation A in period + 1
         k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
-        emaxs[i, 0] = emaxs[k, 4]
+        emaxs[k_parent, 0] = emaxs[k, 4]
 
         # Working in Occupation B in period +1
         k = indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
-        emaxs[i, 1] = emaxs[k, 4]
+        emaxs[k_parent, 1] = emaxs[k, 4]
 
         # Schooling in period + 1. Note that adding an additional year of schooling is
         # only possible for those that have strictly less than the maximum level of
@@ -358,14 +386,14 @@ def get_emaxs_of_subsequent_period(
         # which have reached maximum education. Incrementing education by one would
         # target an inadmissible state.
         if edu >= edu_max:
-            emaxs[i, 2] = INADMISSIBILITY_PENALTY
+            emaxs[k_parent, 2] = INADMISSIBILITY_PENALTY
         else:
             k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
-            emaxs[i, 2] = emaxs[k, 4]
+            emaxs[k_parent, 2] = emaxs[k, 4]
 
         # Staying at home in period + 1
         k = indexer[period + 1, exp_a, exp_b, edu, 3, type_]
-        emaxs[i, 3] = emaxs[k, 4]
+        emaxs[k_parent, 3] = emaxs[k, 4]
 
     return emaxs
 

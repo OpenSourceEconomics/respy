@@ -324,19 +324,22 @@ def pyth_backward_induction(
     shifts = np.zeros(4)
     shifts[:2] = np.clip(np.diag(shocks_cov)[:2] / 2.0, 0.0, HUGE_FLOAT)
 
-    # We start the loop from the second last period as the utility from the period after
-    # the last period is set to zero.
-    for period in reversed(range(state_space.num_periods - 1)):
+    for period in reversed(range(state_space.num_periods)):
 
-        period_indices = state_space.get_indices_from_period(period)
+        if period == state_space.num_periods - 1:
+            pass
 
-        state_space.emaxs = get_emaxs_of_subsequent_period(
-            state_space.states,
-            state_space.indexer,
-            state_space.emaxs,
-            period_indices,
-            edu_spec["max"],
-        )
+        else:
+            states_period = state_space.get_attribute_from_period(
+                "states", period
+            )
+
+            state_space.emaxs = get_emaxs_of_subsequent_period(
+                states_period,
+                state_space.indexer,
+                state_space.emaxs,
+                edu_spec["max"],
+            )
 
         # Extract auxiliary objects
         draws_emax_standard = periods_draws_emax[period, :, :]
@@ -375,7 +378,7 @@ def pyth_backward_induction(
             # Constructing the exogenous variable for all states, including the ones
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
-            max_emax, exogenous = get_exogenous_variables(
+            exogenous, max_emax = get_exogenous_variables(
                 rewards_period, emaxs_period, shifts, edu_spec, optim_paras
             )
 
@@ -491,9 +494,9 @@ def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
 
     max_emax = total_values.max(axis=1)
 
-    exogenous = total_values - max_emax.reshape(-1, 1)
+    exogenous = max_emax - total_values.reshape(-1, 4)
 
-    return max_emax, exogenous
+    return exogenous, max_emax.reshape(-1)
 
 
 def get_endogenous_variable(
@@ -521,6 +524,8 @@ def get_endogenous_variable(
     emax = construct_emax_risk(rewards, emaxs, draws_emax_risk, optim_paras)
 
     endogenous = emax - max_emax
+
+    endogenous[~is_simulated] = np.nan
 
     return endogenous
 
@@ -793,6 +798,15 @@ class StateSpace:
             )
         ]
 
+    def _create_attributes_from_fortran_counterparts(
+        self, periods_emax=None
+    ):
+        if periods_emax is not None:
+            self.emaxs = np.c_[
+                np.zeros((self.states_per_period.sum(), 4)),
+                periods_emax[periods_emax != -99],
+            ]
+
     def _get_fortran_counterparts(self):
         try:
             periods_rewards_systematic = np.full(
@@ -860,15 +874,6 @@ class StateSpace:
             raise StateSpaceError("Inadmissible period.")
 
         return attribute[indices]
-
-    def get_indices_from_period(self, period):
-        try:
-            slice_ = self.slices_by_periods[period]
-            indices = list(range(slice_.start, slice_.stop))
-        except IndexError:
-            raise StateSpaceError("Inadmissible period.")
-
-        return indices
 
     def _create_slices_by_periods(self, num_periods):
         self.slices_by_periods = []
