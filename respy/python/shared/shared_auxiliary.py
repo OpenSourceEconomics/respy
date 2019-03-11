@@ -360,9 +360,7 @@ def get_emaxs_of_subsequent_period(
     >>> from respy.python.solve.solve_auxiliary import StateSpace
     >>> num_periods, num_types = 50, 3
     >>> edu_start, edu_max = [10, 15], 20
-    >>> state_space = StateSpace(
-    ...     num_periods, num_types, edu_start, edu_max, optim_paras
-    ... )
+    >>> state_space = StateSpace(num_periods, num_types, edu_start, edu_max)
     >>> state_space.emaxs = np.r_[
     ...     np.zeros((state_space.states_per_period[:-1].sum(), 5)),
     ...     np.full((state_space.states_per_period[-1], 5), 10)

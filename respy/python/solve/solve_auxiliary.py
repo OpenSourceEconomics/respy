@@ -481,9 +481,6 @@ def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
     states : pd.DataFrame
 
     """
-    # TODO: Type conversion for at least test_integration::test_5.
-    draws = np.array(draws)
-
     total_values, _ = get_continuation_value(
         rewards[:, -2:],
         rewards[:, :4],
@@ -799,13 +796,12 @@ class StateSpace:
         ]
 
     def _create_attributes_from_fortran_counterparts(
-        self, periods_emax=None
+        self, periods_emax
     ):
-        if periods_emax is not None:
-            self.emaxs = np.c_[
-                np.zeros((self.states_per_period.sum(), 4)),
-                periods_emax[periods_emax != -99],
-            ]
+        self.emaxs = np.c_[
+            np.zeros((self.states_per_period.sum(), 4)),
+            periods_emax[periods_emax != -99],
+        ]
 
     def _get_fortran_counterparts(self):
         try:
