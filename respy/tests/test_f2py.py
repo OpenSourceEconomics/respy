@@ -859,14 +859,12 @@ class TestClass(object):
         )
 
         # Align output between Python and Fortran version.
-        py = (
-            np.c_[
-                exogenous,
-                np.sqrt(exogenous),
-                np.ones(state_space.states_per_period[period]),
-            ],
-            max_emax,
-        )
+        exogenous_9 = np.c_[
+            exogenous,
+            np.sqrt(exogenous),
+            np.ones(state_space.states_per_period[period]),
+        ]
+        py = (exogenous_9, max_emax)
 
         f90 = fort_debug.wrapper_get_exogenous_variables(
             period,
@@ -929,7 +927,7 @@ class TestClass(object):
 
         f90 = fort_debug.wrapper_get_predictions(
             endogenous,
-            exogenous,
+            exogenous_9,
             max_emax,
             is_simulated,
             num_points_interp,

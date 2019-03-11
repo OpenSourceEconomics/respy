@@ -536,7 +536,7 @@ def get_predictions(
 
     """
     exogenous = np.c_[
-        np.ones(exogenous.shape[0]), exogenous, np.sqrt(exogenous)
+        exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0])
     ]
 
     # Define ordinary least squares model and fit to the data.
