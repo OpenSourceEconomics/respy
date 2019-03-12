@@ -584,7 +584,6 @@ def read_draws(num_periods, num_draws):
         upper = lower + num_draws
         periods_draws[period, :, :] = draws[lower:upper, :]
 
-    # Finishing
     return periods_draws
 
 

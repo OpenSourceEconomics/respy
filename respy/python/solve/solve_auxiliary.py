@@ -493,8 +493,6 @@ def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
 
     exogenous = max_emax - total_values.reshape(-1, 4)
 
-    import pytest; pytest.set_trace()
-
     return exogenous, max_emax.reshape(-1)
 
 
