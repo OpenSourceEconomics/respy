@@ -41,7 +41,7 @@ def pyth_contributions(
     num_agents_est : int
         Number of observations used for estimation.
     num_obs_agent : np.array
-        1d numpy array with length num_agents_est that contains the number of observed
+        Array with shape (num_agents_est,) that contains the number of observed
         observations for each individual in the sample.
     edu_spec : dict
     optim_paras : dict
@@ -86,11 +86,11 @@ def pyth_contributions(
 
                 agent = data.iloc[row_start + p]
 
-                period = int(agent["Period"])
                 # Extract observable components of state space as well as agent
                 # decision.
-                exp_a, exp_b, edu, choice_lagged, choice = agent[
+                period, exp_a, exp_b, edu, choice_lagged, choice = agent[
                     [
+                        "Period",
                         "Experience_A",
                         "Experience_B",
                         "Years_Schooling",
@@ -143,7 +143,7 @@ def pyth_contributions(
 
                 # Simulate the conditional distribution of alternative-specific value
                 # functions and determine the choice probabilities.
-                counts = np.full(4, 0)
+                counts = np.zeros(4)
 
                 for s in range(num_draws_prob):
 
@@ -177,11 +177,10 @@ def pyth_contributions(
                     # conditional draws. Note, that the realization of the random
                     # component of wages align with their observed counterpart in the
                     # data.
-                    draws_cond = sc.dot(draws_stan.T).T
+                    draws = draws_stan.dot(sc.T)
 
                     # Extract deviates from (un-)conditional normal distributions and
-                    # transform labor market shocks. This makes a copy.
-                    draws = draws_cond[:]
+                    # transform labor market shocks.
                     draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
 
                     # Calculate total values. immediate rewards, including shock +

@@ -888,12 +888,8 @@ class StateSpace:
         Example
         -------
         >>> state_space = StateSpace(1, 1, [10], 11)
-        >>> state_space.to_frame()
-           period  exp_a  exp_b  ...  is_minor  is_young_adult  is_adult
-        0     0.0    0.0    0.0  ...       1.0             0.0       0.0
-        1     0.0    0.0    0.0  ...       1.0             0.0       0.0
-        <BLANKLINE>
-        [2 rows x 22 columns]
+        >>> state_space.to_frame().shape
+        (2, 22)
 
         """
         attributes = [

@@ -605,7 +605,7 @@ def read_draws(num_periods, num_draws):
 
 def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     """Transform the standard normal deviates to the relevant distribution."""
-    draws_transformed = shocks_cholesky.dot(draws.T).T
+    draws_transformed = draws.dot(shocks_cholesky.T)
 
     draws_transformed += shocks_mean
 
@@ -750,7 +750,15 @@ def create_covariates(states):
     covariates : np.ndarray
         Array with shape (num_states, 16) containing covariates of each state.
 
-    TODO: JIT if https://github.com/numba/numba/issues/3650 is fixed.
+    Example
+    -------
+    This example is to benchmark alternative implementations, but even this version does
+    not benefit from Numba anymore.
+
+    >>> from respy.python.solve.solve_auxiliary import pyth_create_state_space
+    >>> states, _ = pyth_create_state_space(40, 5, [10], 20)
+    >>> covariates = create_covariates(states)
+    >>> assert covariates.shape == (states.shape[0], 16)
 
     """
     covariates = np.full((states.shape[0], 16), np.nan)
@@ -853,13 +861,14 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
            0.05, 1.36])
 
     """
-    rewards_general = np.full((covariates.shape[0], 2), np.nan)
+    num_states = covariates.shape[0]
+    rewards_general = np.full((num_states, 2), np.nan)
 
     rewards_general[:, 0] = np.c_[
-        np.ones(covariates.shape[0]), covariates[:, [0, 5]]
+        np.ones(num_states), covariates[:, [0, 5]]
     ].dot(coeffs_a)
     rewards_general[:, 1] = np.c_[
-        np.ones(covariates.shape[0]), covariates[:, [1, 6]]
+        np.ones(num_states), covariates[:, [1, 6]]
     ].dot(coeffs_b)
 
     return rewards_general
@@ -894,6 +903,8 @@ def number_of_triangular_elements_to_dimensio(num):
     Example:
         >>> number_of_triangular_elements_to_dimensio(6)
         3
+        >>> number_of_triangular_elements_to_dimensio(10)
+        4
 
     """
     return int(np.sqrt(8 * num + 1) / 2 - 0.5)
