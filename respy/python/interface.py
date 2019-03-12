@@ -334,7 +334,6 @@ def respy_interface(respy_obj, request, data=None):
             file_sim,
             edu_spec,
             optim_paras,
-            num_types,
             is_debug,
         )
 

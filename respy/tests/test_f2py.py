@@ -639,7 +639,6 @@ class TestClass(object):
             *shared_args,
             edu_spec,
             optim_paras,
-            num_types,
             is_debug,
         )
         py = simulated_data.copy().fillna(MISSING_FLOAT).values

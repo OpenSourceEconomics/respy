@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from respy.python.record.record_simulation import record_simulation_progress
 from respy.python.simulate.simulate_auxiliary import (
@@ -10,7 +11,6 @@ from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.simulate.simulate_auxiliary import get_random_types
 from respy.python.shared.shared_constants import HUGE_FLOAT
-import pandas as pd
 from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
@@ -22,27 +22,30 @@ def pyth_simulate(
     file_sim,
     edu_spec,
     optim_paras,
-    num_types,
     is_debug,
 ):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
 
     Parameters
     ----------
+    state_space : class
+        Class of state space.
     num_agents_sim : int
-    states : pd.DataFrame
-    states_indexer : np.array
-    periods_draws_sims : ???
-    seed_sim : ???
+        Number of simulated agents.
+    periods_draws_sims : np.ndarray
+        Array with shape (num_periods, num_agents_sim, num_choices)
+    seed_sim : int
+        Seed for the simulation.
     file_sim : ???
     edu_spec : dict
     optim_paras : dict
-    num_types : int
     is_debug : bool
+        Flag for debugging modus.
 
     Returns
     -------
     simulated_data : pd.DataFrame
+        Dataset of simulated agents.
 
     """
     record_simulation_start(num_agents_sim, seed_sim, file_sim)
@@ -65,7 +68,11 @@ def pyth_simulate(
         edu_spec, num_agents_sim, is_debug
     )
     initial_types = get_random_types(
-        num_types, optim_paras, num_agents_sim, initial_education, is_debug
+        state_space.num_types,
+        optim_paras,
+        num_agents_sim,
+        initial_education,
+        is_debug,
     )
     initial_choice_lagged = get_random_choice_lagged_start(
         edu_spec, num_agents_sim, initial_education, is_debug
