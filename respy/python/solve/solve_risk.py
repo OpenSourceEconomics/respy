@@ -1,7 +1,7 @@
 from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
-def construct_emax_risk(rewards, emaxs, draws_emax_risk, optim_paras):
+def construct_emax_risk(rewards, emaxs, draws_emax_risk, delta):
     """ Simulate expected future value for a given distribution of the unobservables.
 
     Note that, this function works on all states for a given period.
@@ -12,13 +12,16 @@ def construct_emax_risk(rewards, emaxs, draws_emax_risk, optim_paras):
         Array with shape (num_states_in_period, 9).
     emaxs : np.ndarray
         Array with shape (num_states_in_period, 4).
-    draws_emax_risk : np.array
-    optim_paras : dict
+    draws_emax_risk : np.ndarray
+        Array with shape (num_draws, 4).
+    delta : np.array
+        Scalar value representing the discount factor.
 
     Returns
     -------
-    total_values : np.array
-        One-dimensional array containing ??? for each state in a given period.
+    total_values : np.ndarray
+        Array with shape (num_states_in_period,) containing emax for each agent in a
+        period.
 
     """
     total_values, _ = get_continuation_value(
@@ -26,7 +29,7 @@ def construct_emax_risk(rewards, emaxs, draws_emax_risk, optim_paras):
         rewards[:, :4],
         draws_emax_risk,
         emaxs,
-        optim_paras["delta"],
+        delta,
     )
 
     # Choose maximum value in states and average over draws. Shape changes from

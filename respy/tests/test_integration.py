@@ -6,8 +6,7 @@ import pandas as pd
 import pytest
 import random
 import shutil
-import copy
-import random
+
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs

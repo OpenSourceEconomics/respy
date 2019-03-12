@@ -48,11 +48,9 @@ def pyth_criterion(
         data,
         periods_draws_prob,
         tau,
-        num_periods,
         num_draws_prob,
         num_agents_est,
         num_obs_agent,
-        num_types,
         edu_spec,
         optim_paras,
     )

@@ -32,7 +32,7 @@ def distribute_parameters(
 
     Parameters
     ----------
-    paras_vec : np.ndarray)
+    paras_vec : np.ndarray
         1d numpy array with the parameters
     is_debug : bool
         If true, the parameters are checked for validity
@@ -259,7 +259,7 @@ def coeffs_to_cholesky(coeffs):
             square roots.
 
     """
-    dim = dim = number_of_triangular_elements_to_dimensio(len(coeffs))
+    dim = number_of_triangular_elements_to_dimensio(coeffs.shape[0])
     shocks = np.zeros((dim, dim))
     shocks[np.triu_indices(dim)] = coeffs
     shocks[np.diag_indices(dim)] **= 2
@@ -274,9 +274,10 @@ def coeffs_to_cholesky(coeffs):
 
 def cholesky_to_coeffs(shocks_cholesky):
     """ Map the Cholesky factor into the coefficients from the .ini file."""
-    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-    shocks_cov[np.diag_indices(len(shocks_cov))] **= 0.5
-    shocks_coeffs = shocks_cov[np.triu_indices(len(shocks_cov))].tolist()
+    shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
+    shocks_cov[np.diag_indices(shocks_cov.shape[0])] **= 0.5
+    shocks_coeffs = shocks_cov[np.triu_indices(shocks_cov.shape[0])].tolist()
+
     return shocks_coeffs
 
 
@@ -305,23 +306,40 @@ def get_continuation_value(
 
     Parameters
     ----------
-    wages : np.array
-        Array with shape (num_obs, 2).
-    rewards_systematic : np.array
-        Array with shape (num_obs, 4).
-    draws : np.array
+    wages : np.ndarray
+        Array with shape (num_states_in_period, 2).
+    rewards_systematic : np.ndarray
+        Array with shape (num_states_in_period, 4).
+    draws : np.ndarray
         Array with shape (num_draws, 4)
-    emaxs_sub_period : np.array
-        Array with shape (num_obs, 4)
+    emaxs_sub_period : np.ndarray
+        Array with shape (num_states_in_period, 4)
     delta : float
         Discount rate.
 
     Returns
     -------
-    cont_value : np.array
-        Array with shape (num_obs, 4, num_draws).
-    rew_ex_post : np.array
-        Array with shape (num_obs, 4, num_draws)
+    cont_value : np.ndarray
+        Array with shape (num_states_in_period, 4, num_draws).
+    rew_ex_post : np.ndarray
+        Array with shape (num_states_in_period, 4, num_draws)
+
+    Examples
+    --------
+    This example is only valid to benchmark different implementations, but does not
+    represent a use case.
+
+    >>> num_states_in_period = 10000
+    >>> num_draws = 500
+
+    >>> delta = np.array(0.9)
+    >>> wages = np.random.randn(num_states_in_period, 2)
+    >>> rewards = np.random.randn(num_states_in_period, 4)
+    >>> draws = np.random.randn(num_draws, 4)
+    >>> emaxs = np.random.randn(num_states_in_period, 4)
+
+    >>> get_continuation_value(wages, rewards, draws, emaxs, delta).shape
+    (10000, 4, 500)
 
     """
     for i in range(draws.shape[0]):
@@ -357,7 +375,6 @@ def get_emaxs_of_subsequent_period(
     This example is first and foremost for benchmarking different implementations, not
     for validation.
 
-    >>> from respy.python.solve.solve_auxiliary import StateSpace
     >>> num_periods, num_types = 50, 3
     >>> edu_start, edu_max = [10, 15], 20
     >>> state_space = StateSpace(num_periods, num_types, edu_start, edu_max)
@@ -471,7 +488,6 @@ def replace_missing_values(arguments):
     are found.
 
     """
-    # Antibugging
     assert isinstance(arguments, tuple) or isinstance(arguments, np.ndarray)
 
     if isinstance(arguments, np.ndarray):
@@ -496,7 +512,6 @@ def replace_missing_values(arguments):
     if len(rslt) == 1:
         rslt = rslt[0]
 
-    # Finishing
     return rslt
 
 
@@ -573,6 +588,7 @@ def read_draws(num_periods, num_draws):
     """Read the draws from disk.
 
     This is only used in the development process.
+
     """
     # Initialize containers
     periods_draws = np.full((num_periods, num_draws, 4), np.nan)
@@ -615,7 +631,6 @@ def format_opt_parameters(dict_, pos):
     if any(x is not None for x in bounds):
         line[-1] = "(" + str(bounds[0]) + "," + str(bounds[1]) + ")"
 
-    # Finishing
     return line
 
 
@@ -722,7 +737,7 @@ def get_num_obs_agent(data_array, num_agents_est):
 
 
 def create_covariates(states):
-    """Creates set of covariates for each state.
+    """Create set of covariates for each state.
 
     Parameters
     ----------
@@ -799,7 +814,6 @@ def calculate_rewards_common(covariates, coeffs_common):
 
     Example
     -------
-    >>> from respy.python.solve.solve_auxiliary import StateSpace
     >>> state_space = StateSpace(2, 1, [12, 16], 20)
     >>> coeffs_common = np.array([0.05, 0.6])
     >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
@@ -829,7 +843,6 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
 
     Example
     -------
-    >>> from respy.python.solve.solve_auxiliary import StateSpace
     >>> state_space = StateSpace(2, 1, [12, 16], 20)
     >>> coeffs_a, coeffs_b = np.array([0.05, 0.6, 0.4]), np.array([0.36, 0.7, 1])
     >>> calculate_rewards_general(
@@ -853,8 +866,7 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
 
 
 def get_valid_bounds(which, value):
-    """ Simply get a valid set of bounds.
-    """
+    """ Simply get a valid set of bounds."""
     assert which in ["cov", "coeff", "delta", "share"]
 
     # The bounds cannot be too tight as otherwise the BOBYQA might not start
@@ -879,6 +891,9 @@ def number_of_triangular_elements_to_dimensio(num):
     Args:
         num (int): The number of upper or lower triangular elements in the matrix
 
+    Example:
+        >>> number_of_triangular_elements_to_dimensio(6)
+        3
 
     """
     return int(np.sqrt(8 * num + 1) / 2 - 0.5)

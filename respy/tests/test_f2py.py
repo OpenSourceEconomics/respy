@@ -133,7 +133,7 @@ class TestClass(object):
         ]
 
         py = construct_emax_risk(
-            rewards_period, emaxs_period, draws_emax_risk, optim_paras
+            rewards_period, emaxs_period, draws_emax_risk, optim_paras["delta"]
         )
 
         f90 = fort_debug.wrapper_construct_emax_risk(
@@ -671,18 +671,16 @@ class TestClass(object):
         )
         assert_allclose(py, f2py)
 
-        shared_args = (
+        py = pyth_contributions(
+            state_space,
+            simulated_data,
             periods_draws_prob,
             tau,
-            num_periods,
             num_draws_prob,
             num_agents_est,
             num_obs_agent,
-            num_types,
-        )
-
-        py = pyth_contributions(
-            state_space, simulated_data, *shared_args, edu_spec, optim_paras
+            edu_spec,
+            optim_paras,
         )
 
         f2py = fort_debug.wrapper_contributions(
@@ -691,7 +689,13 @@ class TestClass(object):
             periods_emax,
             states_all,
             data_array,
-            *shared_args,
+            periods_draws_prob,
+            tau,
+            num_periods,
+            num_draws_prob,
+            num_agents_est,
+            num_obs_agent,
+            num_types,
             edu_spec["start"],
             edu_spec["max"],
             shocks_cholesky,

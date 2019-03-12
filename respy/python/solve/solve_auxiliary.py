@@ -3,6 +3,7 @@ import shlex
 
 import statsmodels.api as sm
 import numpy as np
+import pandas as pd
 from respy.python.record.record_solution import record_solution_prediction
 from respy.python.shared.shared_auxiliary import calculate_rewards_general
 from respy.python.shared.shared_auxiliary import calculate_rewards_common
@@ -12,51 +13,53 @@ from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
 from respy.python.solve.solve_risk import construct_emax_risk
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
-import pandas as pd
 from respy.custom_exceptions import StateSpaceError
 from respy.python.shared.shared_auxiliary import create_covariates
-from numba import njit
 from respy.python.shared.shared_constants import MISSING_FLOAT, MISSING_INT
+from numba import njit
 
 
 @njit
 def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
-    """ Create the state space.
+    """Create the state space.
 
     The state space consists of all admissible combinations of the following elements:
-    period, experience in occupation A, experience in occupation B, years of schooling,
+    period, experience in OCCUPATION A, experience in OCCUPATION B, years of schooling,
     the lagged choice and the type of the agent.
 
     The major problem which is solved here is that the natural representation of the
-    state space is a graph where each parent node is connected with its child nodes.
-    This structure makes it easy to traverse the graph. In contrast to that, for many
-    subsequent calculations, e.g. generating the covariates for each state, a denser
-    data format has better performance, but looses the information on the connections.
+    state space is a graph where each parent node is connected with its children's
+    nodes. This structure makes it easy to traverse the graph. In contrast to that, for
+    many subsequent calculations, e.g. generating the covariates for each state, a
+    tabular format has better performance, but looses the information on the
+    connections.
 
-    The current implementation of :data:`states` and :data:`states_indexer` allows to
-    have both advantages at the cost of an additional object. :data:`states` stores the
-    information on states in a relational format. :data:`states_indexer` is a matrix
-    where each characteristic of the state space represents one dimension. The values of
-    the matrix are the indices of states in :data:`states`. Traversing the state space
-    is as easy as incrementing the right indices of :data:`states_indexer` by 1 and use
-    the resulting index in :data:`states`.
+    The current implementation of :data:`states` and :data:`indexer` allows to have both
+    advantages at the cost of an additional object. :data:`states` stores the
+    information on states in a tabular format. :data:`indexer` is a matrix where each
+    characteristic of the state space represents one dimension. The values of the matrix
+    are the indices of states in :data:`states`. Traversing the state space is as easy
+    as incrementing the right indices of :data:`indexer` by 1 and use the resulting
+    index in :data:`states`.
 
     Parameters
     ----------
     num_periods : int
-        Number of periods. ???
+        Number of periods in the state space.
     num_types : int
-        Number of types. ???
-    edu_starts : List[int]
-        Contains values of initial education.
+        Number of types of agents.
+    edu_starts : :obj:`list` of :obj:`int`
+        Contains levels of initial education.
     edu_max : int
-        Maximum of achievable education.
+        Maximum level of education which can be obtained by an agent.
 
     Returns
     -------
-    states : pd.DataFrame
-        This DataFrame contains all admissible states.
-    states_indexer : np.array
+    states : np.ndarray
+        Array with shape (num_states, 6) containing period, experience in OCCUPATION A,
+        experience in OCCUPATION B, years of schooling, the lagged choice and the type
+        of the agent.
+    indexer : np.array
         A matrix where each dimension represents a characteristic of the state space.
         Switching from one state is possible via incrementing appropriate indices by 1.
 
@@ -76,11 +79,8 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
     """
     data = []
 
-    # Initialize the state indexer object which enables faster lookup of states in the
-    # pandas DataFrame. The dimensions of the matrix are the characteristics of the
-    # agents and the value is the index in the DataFrame.
     shape = (num_periods, num_periods, num_periods, edu_max + 1, 4, num_types)
-    states_indexer = np.full(shape, -1, dtype=np.int32)
+    indexer = np.full(shape, -1, dtype=np.int32)
 
     # Initialize counter
     i = 0
@@ -170,10 +170,10 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
                                     if choice_lagged in [1, 2]:
                                         continue
 
-                                # Continue if state still exist. This is only caused by
-                                # multiple starting values of education.
+                                # Continue if state still exist. This condition is only
+                                # triggered by multiple initial levels of education.
                                 if (
-                                    states_indexer[
+                                    indexer[
                                         period,
                                         exp_a,
                                         exp_b,
@@ -186,7 +186,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
                                     continue
 
                                 # Collect mapping of state space to array index.
-                                states_indexer[
+                                indexer[
                                     period,
                                     exp_a,
                                     exp_b,
@@ -210,16 +210,18 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
 
     states = np.array(data)
 
-    return states, states_indexer
+    return states, indexer
 
 
 def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
-    """ Calculate systematic rewards.
+    """Calculate systematic rewards for each state.
 
     Parameters
     ----------
     states : np.ndarray
+        Array with shape (num_states, 6).
     covariates : np.ndarray
+        Array with shape (num_states, 16).
     optim_paras : dict
 
     """
@@ -260,13 +262,13 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
 
     rewards[:, 3] = covariates_home.dot(optim_paras["coeffs_home"])
 
-    # Now we add the type-specific deviation for SCHOOL and HOME.
+    # Add the type-specific deviation for SCHOOL and HOME.
     type_dummies = get_dummies(states[:, 5])
     type_deviations = type_dummies.dot(optim_paras["type_shifts"][:, 2:])
 
     rewards[:, 2:] = rewards[:, 2:] + type_deviations
 
-    # We can now also added the common component of rewards.
+    # Add the common component to rewards.
     rewards_systematic = rewards + rewards_common
 
     return rewards_systematic, rewards_general, rewards_common, wages
@@ -290,39 +292,51 @@ def pyth_backward_induction(
     Parameters
     ----------
     is_myopic : bool
-    periods_draws_emax : ???
+        Flag indicating myopic agents for which the discount factor is set to zero.
+    periods_draws_emax : np.ndarray
+        Array with shape (num_periods, num_draws_emax, num_choices) containing the
+        random draws used to simulate the emax.
     num_draws_emax : int
-    state_space
+        Number of random draws to simulate the emax in each period.
+    state_space : class
+        State space object.
     is_debug : bool
+        Flag for debug modus.
     is_interpolated : np.array
+        Flag indicating whether interpolation is used to construct the emax in a period.
     num_points_interp : int
+        Number of states for which the emax will be interpolated.
     edu_spec : dict
     optim_paras : dict
     file_sim : ???
-    is_write : ???
+    is_write : bool
 
     Returns
     -------
-    states : pd.DataFrame
+    state_space : class
+        State space containing the emax of the subsequent period of each choice, columns
+        0-3, as well as the maximum emax of the current period for each state, column 4,
+        in ``.emaxs``.
 
     """
-    state_space.emaxs = np.zeros((state_space.states.shape[0], 5))
+    state_space.emaxs = np.zeros((state_space.num_states, 5))
 
     if is_myopic:
         record_solution_progress(-2, file_sim)
 
         return state_space
 
-    # Construct auxiliary objects
     shocks_cov = optim_paras["shocks_cholesky"].dot(
         optim_paras["shocks_cholesky"].T
     )
 
-    # Auxiliary objects. These shifts are used to determine the expected values of the
-    # two labor market alternatives. These are log normal distributed and thus the draws
-    # cannot simply set to zero.
+    # These shifts are used to determine the expected values of the two labor market
+    # alternatives. These are log normal distributed and thus the draws cannot simply
+    # set to zero.
     shifts = np.zeros(4)
-    shifts[:2] = np.clip(np.exp(np.diag(shocks_cov)[:2] / 2.0), 0.0, HUGE_FLOAT)
+    shifts[:2] = np.clip(
+        np.exp(np.diag(shocks_cov)[:2] / 2.0), 0.0, HUGE_FLOAT
+    )
 
     for period in reversed(range(state_space.num_periods)):
 
@@ -341,12 +355,11 @@ def pyth_backward_induction(
                 edu_spec["max"],
             )
 
-        # Extract auxiliary objects
-        draws_emax_standard = periods_draws_emax[period, :, :]
         num_states = state_space.states_per_period[period]
 
         # Treatment of the disturbances for the risk-only case is straightforward. Their
         # distribution is fixed once and for all.
+        draws_emax_standard = periods_draws_emax[period, :, :]
         draws_emax_risk = transform_disturbances(
             draws_emax_standard, np.zeros(4), optim_paras["shocks_cholesky"]
         )
@@ -361,7 +374,7 @@ def pyth_backward_induction(
             num_points_interp <= num_states
         ) and is_interpolated
 
-        # Unpack necessary attributes
+        # Unpack necessary attributes of the specific period.
         rewards_period = state_space.get_attribute_from_period(
             "rewards", period
         )
@@ -410,7 +423,10 @@ def pyth_backward_induction(
         else:
 
             emax = construct_emax_risk(
-                rewards_period, emaxs_period, draws_emax_risk, optim_paras
+                rewards_period,
+                emaxs_period,
+                draws_emax_risk,
+                optim_paras["delta"],
             )
 
         state_space.get_attribute_from_period("emaxs", period)[:, 4] = emax
@@ -419,7 +435,7 @@ def pyth_backward_induction(
 
 
 def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
-    """ Get the indicator for points of interpolation and simulation.
+    """Get the indicator for points of interpolation and simulation.
 
     Parameters
     ----------
@@ -435,7 +451,7 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
     Returns
     -------
     is_simulated : np.array
-        Array of shape (num_states) indicating states which will be interpolated.
+        Array of shape (num_states,) indicating states which will be interpolated.
 
     """
     # Drawing random interpolation points
@@ -462,23 +478,29 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
 
 
 def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
-    """ Get exogenous variables for interpolation scheme.
+    """Get exogenous variables for interpolation scheme.
 
     The unused argument is present to align the interface between the PYTHON and FORTRAN
     implementations.
 
+    Note that, unlike the Fortran implementation this function does not return 9
+    exogenous variables, but only 4. This step is done in :func:``get_predictions``.
+
     Parameters
     ----------
     rewards : np.ndarray
+        Array with shape (num_states_in_period, 9).
     emaxs : np.ndarray
-        Array with shape (num_states_in_period, 4)
+        Array with shape (num_states_in_period, 4).
     draws : np.ndarray
+        Array with shape (num_draws, 4).
     edu_spec : dict
     optim_paras : dict
 
     Returns
     -------
-    states : pd.DataFrame
+    exogenous : np.ndarray
+        Array with shape (num_states_in_period, 4).
 
     """
     total_values, _ = get_continuation_value(
@@ -488,9 +510,7 @@ def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
         emaxs,
         optim_paras["delta"],
     )
-
     max_emax = total_values.max(axis=1)
-
     exogenous = max_emax - total_values.reshape(-1, 4)
 
     return exogenous, max_emax.reshape(-1)
@@ -506,7 +526,7 @@ def get_endogenous_variable(
     edu_spec,
     optim_paras,
 ):
-    """ Construct endogenous variable for the subset of interpolation points.
+    """Construct endogenous variable for the subset of interpolation points.
 
     Parameters
     ----------
@@ -518,10 +538,10 @@ def get_endogenous_variable(
         Array with shape (num_states_in_period,) containing maximum of exogenous emax.
 
     """
-    emax = construct_emax_risk(rewards, emaxs, draws_emax_risk, optim_paras)
-
+    emax = construct_emax_risk(
+        rewards, emaxs, draws_emax_risk, optim_paras["delta"]
+    )
     endogenous = emax - max_emax
-
     endogenous[~is_simulated] = np.nan
 
     return endogenous
@@ -683,9 +703,9 @@ def get_dummies(a):
 
     Note that, the indicators need to be counting from zero onwards.
 
-    Paramters
-    ---------
-    a : np.array
+    Parameters
+    ----------
+    a : np.ndarray
         Array with shape (n) containing k different indicators from 0 to k-1.
 
     Returns
@@ -698,7 +718,6 @@ def get_dummies(a):
     -------
     >>> a = np.random.randint(0, 6, 100)
     >>> res = get_dummies(a)
-    >>> import pandas as pd
     >>> res_pandas = pd.get_dummies(a).values
     >>> assert np.allclose(res, res_pandas)
 
@@ -708,15 +727,47 @@ def get_dummies(a):
 
 
 class StateSpace:
-    """This class represents a state space.
+    """Class containing all objects related to the state space of a discrete choice
+    dynamic programming model.
+
+    Parameters
+    ----------
+    num_periods : int
+        Number of periods.
+    num_types : int
+        Number of types.
+    edu_starts : list
+        Contains different initial levels of education for agents.
+    edu_max : int
+        Maximum level of education for an agent.
+    optim_paras : dict
+        Contains various information necessary for the calculation of rewards for each
+        agent.
 
     Attributes
     ----------
     states : np.ndarray
         Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
         choice_lagged and type information.
-    indexer : np.array
+    indexer : np.ndarray
         Array with shape (num_periods, num_periods, num_periods, edu_max, 4, num_types).
+    covariates : np.ndarray
+        Array with shape (num_periods, 16) containing covariates of each state necessary
+        to calculate rewards.
+    rewards : np.ndarray
+        Array with shape (num_states, 9) containing rewards of each state.
+    emaxs : np.ndarray
+        Array with shape (num_states, 5) containing containing the emax of each choice
+        (OCCUPATION A, OCCUPATION B, SCHOOL, HOME) of the subsequent period and the
+        simulated or interpolated maximum of the current period.
+    states_columns : list
+        List of column names in ``self.states``.
+    covariates_columns : list
+        List of column names in ``self.covariates``.
+    rewards_columns : list
+        List of column names in ``self.rewards``.
+    emaxs_columns : list
+        List of column names in ``self.emaxs``.
 
     """
 
@@ -760,20 +811,21 @@ class StateSpace:
         "wage_b",
     ]
 
+    emaxs_columns = ["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
+
     def __init__(
         self, num_periods, num_types, edu_starts, edu_max, optim_paras=None
     ):
         self.num_periods = num_periods
+        self.num_types = num_types
 
         self.states, self.indexer = pyth_create_state_space(
             num_periods, num_types, edu_starts, edu_max
         )
-
         self.covariates = create_covariates(self.states)
 
-        # This measure is related to test_f2py::test_2.
+        # Passing :data:`optim_paras` is optional.
         if optim_paras:
-
             self.rewards = np.c_[
                 pyth_calculate_rewards_systematic(
                     self.states, self.covariates, optim_paras
@@ -784,9 +836,15 @@ class StateSpace:
 
     @property
     def states_per_period(self):
+        """Get a list of states per period starting from the first period."""
         return np.array(
             [len(range(i.start, i.stop)) for i in self.slices_by_periods]
         )
+
+    @property
+    def num_states(self):
+        """Get the total number states in the state space."""
+        return self.states.shape[0]
 
     def update_systematic_rewards(self, optim_paras):
         self.rewards = np.c_[
@@ -795,15 +853,89 @@ class StateSpace:
             )
         ]
 
-    def _create_attributes_from_fortran_counterparts(
-        self, periods_emax
-    ):
+    def get_attribute_from_period(self, attr, period):
+        """Get an attribute of the state space sliced to a given period.
+
+        Parameters
+        ----------
+        attr : str
+            String of attribute name (e.g. ``"covariates"``).
+        period : int
+            Attribute is retrieved from this period.
+
+        Raises
+        ------
+        StateSpaceError
+            An error is raised if the attribute or the period is not part of the state
+            space.
+
+        """
+        try:
+            attribute = getattr(self, attr)
+        except AttributeError:
+            raise StateSpaceError("Inadmissible attribute.")
+
+        try:
+            indices = self.slices_by_periods[period]
+        except IndexError:
+            raise StateSpaceError("Inadmissible period.")
+
+        return attribute[indices]
+
+    def to_frame(self):
+        """Get pandas DataFrame of state space.
+
+        Example
+        -------
+        >>> state_space = StateSpace(1, 1, [10], 11)
+        >>> state_space.to_frame()
+           period  exp_a  exp_b  ...  is_minor  is_young_adult  is_adult
+        0     0.0    0.0    0.0  ...       1.0             0.0       0.0
+        1     0.0    0.0    0.0  ...       1.0             0.0       0.0
+        <BLANKLINE>
+        [2 rows x 22 columns]
+
+        """
+        attributes = [
+            getattr(self, i, None)
+            for i in ["states", "covariates", "rewards", "emaxs"]
+            if getattr(self, i, None) is not None
+        ]
+        columns = [
+            item
+            for i in ["states", "covariates", "rewards", "emaxs"]
+            for item in getattr(self, i + "_columns")
+            if getattr(self, i, None) is not None
+        ]
+
+        return pd.DataFrame(np.concatenate(attributes, axis=1), columns=columns)
+
+    def _create_slices_by_periods(self, num_periods):
+        """Create slices to index all attributes in a given period.
+
+        It is important that the returned objects are not fancy indices. Fancy indexing
+        results in copies of array which decrease performance and raise memory usage.
+
+        """
+        self.slices_by_periods = []
+        for i in range(num_periods):
+            idx_start, idx_end = np.where(self.states[:, 0] == i)[0][[0, -1]]
+            self.slices_by_periods.append(slice(idx_start, idx_end + 1))
+
+    def _create_attributes_from_fortran_counterparts(self, periods_emax):
+        """Create state space attributes from FORTRAN outputs.
+
+        This function is only used once in ``test_unit.py`` and could be deleted if not
+        used elsewhere.
+
+        """
         self.emaxs = np.c_[
             np.zeros((self.states_per_period.sum(), 4)),
             periods_emax[periods_emax != -99],
         ]
 
     def _get_fortran_counterparts(self):
+        """Convert own results to the format of FORTRAN results."""
         try:
             periods_rewards_systematic = np.full(
                 (self.num_periods, self.states_per_period.max(), 4),
@@ -857,51 +989,3 @@ class StateSpace:
             periods_rewards_systematic,
             periods_emax,
         )
-
-    def get_attribute_from_period(self, attr, period):
-        try:
-            attribute = getattr(self, attr)
-        except AttributeError:
-            raise StateSpaceError("Inadmissible attribute.")
-
-        try:
-            indices = self.slices_by_periods[period]
-        except IndexError:
-            raise StateSpaceError("Inadmissible period.")
-
-        return attribute[indices]
-
-    def _create_slices_by_periods(self, num_periods):
-        self.slices_by_periods = []
-        for i in range(num_periods):
-            idx_start, idx_end = np.where(self.states[:, 0] == i)[0][[0, -1]]
-            self.slices_by_periods.append(slice(idx_start, idx_end + 1))
-
-    def __len__(self):
-        return len(self.states)
-
-    def __getitem__(self, key):
-        """
-
-        Raises
-        ------
-        InadmissibleStateError
-            The error is raised if a non-valid indexer is used. The simplest way to
-            raise this error is to assign -1 to every inadmissible state. This value is
-            still an integer to keep memory costs down.
-
-        """
-        position = self.indexer[key]
-
-        if position == -1:
-            raise StateSpaceError(
-                "Inadmissible state with "
-                + ", ".join(
-                    [
-                        "{}: {}".format(k, v)
-                        for k, v in zip(self.states_columns, key)
-                    ]
-                )
-            )
-        else:
-            return self.states[position]
