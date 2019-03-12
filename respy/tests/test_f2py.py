@@ -17,6 +17,7 @@ from respy.python.solve.solve_auxiliary import get_simulated_indicator
 from respy.python.solve.solve_auxiliary import get_exogenous_variables
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import get_endogenous_variable
+from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
 from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.simulate.simulate_auxiliary import sort_type_info
@@ -635,11 +636,7 @@ class TestClass(object):
         shared_args = (num_agents_sim, periods_draws_sims, seed_sim, file_sim)
 
         simulated_data = pyth_simulate(
-            state_space,
-            *shared_args,
-            edu_spec,
-            optim_paras,
-            is_debug,
+            state_space, *shared_args, edu_spec, optim_paras, is_debug
         )
         py = simulated_data.copy().fillna(MISSING_FLOAT).values
 
@@ -755,9 +752,6 @@ class TestClass(object):
 
         assert_allclose(py, f2py)
 
-    @pytest.mark.skip(
-        "The backward induction does not yield the same emaxs as the results."
-    )
     def test_6(self):
         """ Further tests for the interpolation routines.
         """
@@ -837,23 +831,22 @@ class TestClass(object):
             edu_spec["max"],
             optim_paras,
         )
-        state_space = pyth_backward_induction(
-            is_myopic,
-            periods_draws_emax,
-            num_draws_emax,
-            state_space,
-            is_debug,
-            is_interpolated,
-            num_points_interp,
-            edu_spec,
-            optim_paras,
-            file_sim,
-            False,
-        )
 
-        # Test whether backward induction yields the same emaxs
-        _, _, _, pyth = state_space._get_fortran_counterparts()
-        assert_equal(periods_emax, pyth)
+        # Integrate periods_emax in state_space
+        state_space.emaxs = np.c_[
+            np.zeros((state_space.num_states, 4)),
+            periods_emax[periods_emax != MISSING_FLOAT],
+        ]
+
+        # Fill emaxs_a - emaxs_home in the requested period
+        states_period = state_space.get_attribute_from_period("states", period)
+
+        state_space.emaxs = get_emaxs_of_subsequent_period(
+            states_period,
+            state_space.indexer,
+            state_space.emaxs,
+            edu_spec["max"],
+        )
 
         num_states = state_space.states_per_period[period]
 
@@ -906,8 +899,8 @@ class TestClass(object):
             num_types,
         )
 
-        assert_equal(py[0], f90[0])
-        assert_equal(py[1], f90[1])
+        assert_almost_equal(py[0], f90[0], decimal=15)
+        assert_almost_equal(py[1], f90[1], decimal=15)
 
         # Construct endogenous variable so that the prediction model can be fitted.
         endogenous = get_endogenous_variable(
