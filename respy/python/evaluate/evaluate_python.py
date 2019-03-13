@@ -110,7 +110,7 @@ def pyth_contributions(
                 # Extract relevant deviates from standard normal distribution. The same
                 # set of baseline draws are used for each agent and period. The copy is
                 # needed as the object is otherwise changed inplace.
-                draws_prob_raw = periods_draws_prob[period, :, :].copy()
+                draws_prob_raw = periods_draws_prob[period].copy()
 
                 # Get state index to access the systematic component of the agents
                 # rewards. These feed into the simulation of choice probabilities.
@@ -145,39 +145,49 @@ def pyth_contributions(
                 # functions and determine the choice probabilities.
                 counts = np.zeros(4)
 
+                # Extract the standard normal deviates for the iteration.
+                draws_stan = draws_prob_raw.copy()
+
+                # Construct independent normal draws implied by the agents state
+                # experience. This is needed to maintain the correlation structure of
+                # the disturbances. Special care is needed in case of a deterministic
+                # model, as otherwise a zero division error occurs.
+                if is_working and (not is_wage_missing):
+                    if is_deterministic:
+                        prob_wages = np.full(num_draws_prob, HUGE_FLOAT)
+                    else:
+                        if choice == 1:
+                            draws_stan[:, choice - 1] = (
+                                dist / sc[choice - 1, choice - 1]
+                            )
+                            means = np.zeros(num_draws_prob)
+                        elif choice == 2:
+                            draws_stan[:, choice - 1] = (
+                                dist
+                                - sc[choice - 1, choice - 2]
+                                * draws_stan[:, choice - 2]
+                            ) / sc[choice - 1, choice - 1]
+                            means = (
+                                sc[choice - 1, choice - 2]
+                                * draws_stan[:, choice - 2]
+                            )
+
+                        sd = abs(sc[choice - 1, choice - 1])
+
+                    prob_wages = norm.pdf(dist, means, sd)
+
+                else:
+                    prob_wages = np.ones(num_draws_prob)
+
                 for s in range(num_draws_prob):
 
-                    # Extract the standard normal deviates for the iteration.
-                    draws_stan = draws_prob_raw[s, :]
-
-                    # Construct independent normal draws implied by the agents state
-                    # experience. This is needed to maintain the correlation structure
-                    # of the disturbances. Special care is needed in case of a
-                    # deterministic model, as otherwise a zero division error occurs.
-                    if is_working and (not is_wage_missing):
-                        if is_deterministic:
-                            prob_wage = HUGE_FLOAT
-                        else:
-                            if choice == 1:
-                                draws_stan[0] = dist / sc[idx, idx]
-                                mean = 0.00
-                                sd = abs(sc[idx, idx])
-                            else:
-                                draws_stan[idx] = (
-                                    dist - sc[idx, 0] * draws_stan[0]
-                                ) / sc[idx, idx]
-                                mean = sc[idx, 0] * draws_stan[0]
-                                sd = abs(sc[idx, idx])
-
-                            prob_wage = norm.pdf(dist, mean, sd)
-                    else:
-                        prob_wage = 1.0
+                    prob_wage = prob_wages[s]
 
                     # As deviates are aligned with the state experiences, create the
                     # conditional draws. Note, that the realization of the random
                     # component of wages align with their observed counterpart in the
                     # data.
-                    draws = draws_stan.dot(sc.T)
+                    draws = draws_stan[s].dot(sc.T)
 
                     # Extract deviates from (un-)conditional normal distributions and
                     # transform labor market shocks.
