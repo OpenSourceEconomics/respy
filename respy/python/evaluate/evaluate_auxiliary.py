@@ -6,10 +6,10 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 def get_smoothed_probability(total_values, idx, tau):
     """Construct the smoothed choice probabilities."""
-    maxim_values = max(total_values)
+    max_total = total_values.max(axis=1, keepdims=True)
 
-    smoot_values = np.clip(np.exp((total_values - maxim_values) / tau), 0.0, HUGE_FLOAT)
+    smoot_values = np.clip(np.exp((total_values - max_total) / tau), 0.0, HUGE_FLOAT)
 
-    prob_choice = smoot_values[idx] / sum(smoot_values)
+    prob_choices = smoot_values[:, idx] / smoot_values.sum(axis=1)
 
-    return prob_choice
+    return prob_choices

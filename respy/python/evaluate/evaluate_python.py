@@ -141,10 +141,6 @@ def pyth_contributions(
                         contribs[:] = 1
                         return contribs
 
-                # Simulate the conditional distribution of alternative-specific value
-                # functions and determine the choice probabilities.
-                counts = np.zeros(4)
-
                 # Extract the standard normal deviates for the iteration.
                 draws_stan = draws_prob_raw.copy()
 
@@ -179,42 +175,30 @@ def pyth_contributions(
                 else:
                     prob_wages = np.ones(num_draws_prob)
 
-                for s in range(num_draws_prob):
+                draws = draws_stan.dot(sc.T)
 
-                    prob_wage = prob_wages[s]
+                draws[:, :2] = np.clip(np.exp(draws[:, :2]), 0.0, HUGE_FLOAT)
 
-                    # As deviates are aligned with the state experiences, create the
-                    # conditional draws. Note, that the realization of the random
-                    # component of wages align with their observed counterpart in the
-                    # data.
-                    draws = draws_stan[s].dot(sc.T)
+                total_values, _ = get_continuation_value(
+                    state_space.rewards[k, -2:],
+                    state_space.rewards[k, :4],
+                    draws,
+                    state_space.emaxs[k, :4],
+                    optim_paras["delta"],
+                )
 
-                    # Extract deviates from (un-)conditional normal distributions and
-                    # transform labor market shocks.
-                    draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
+                total_values = total_values.reshape(-1, 4)
 
-                    # Calculate total values. immediate rewards, including shock +
-                    # expected future value!
-                    total_values, _ = get_continuation_value(
-                        state_space.rewards[k, -2:],
-                        state_space.rewards[k, :4],
-                        draws.reshape(1, -1),
-                        state_space.emaxs[k, :4],
-                        optim_paras["delta"],
-                    )
-                    total_values = total_values.ravel()
+                # Simulate the conditional distribution of alternative-specific value
+                # functions and determine the choice probabilities.
 
-                    # Record optimal choices
-                    counts[np.argmax(total_values)] += 1
+                # Record choices.
+                counts = np.bincount(np.argmax(total_values, axis=1))
 
-                    # Get the smoothed choice probability.
-                    prob_choice = get_smoothed_probability(
-                        total_values, idx, tau
-                    )
-                    prob_obs[p] += prob_choice * prob_wage
+                prob_choices = get_smoothed_probability(total_values, idx, tau)
 
                 # Determine relative shares
-                prob_obs[p] = prob_obs[p] / num_draws_prob
+                prob_obs[p] = prob_choices.dot(prob_wages) / num_draws_prob
 
                 # If there is no random variation in rewards, then this implies that the
                 # observed choice in the dataset is the only choice.
@@ -224,8 +208,8 @@ def pyth_contributions(
 
             prob_type[type_] = np.prod(prob_obs[:num_obs])
 
-        # Adjust  and record likelihood contribution
-        contribs[j] = np.sum(prob_type * type_shares)
+        # Adjust and record likelihood contribution
+        contribs[j] = prob_type.dot(type_shares)
 
     # If there is no random variation in rewards and no agent violated the implications
     # of observed wages and choices, then the evaluation return value of one.
