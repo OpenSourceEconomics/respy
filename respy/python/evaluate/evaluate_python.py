@@ -53,6 +53,20 @@ def pyth_contributions(
         Array with shape (num_agents_est,) containing contributions of estimated agents.
 
     """
+    # Convert data to np.ndarray which is faster in every aspect. Separate wages from
+    # other characteristics as they need to be integers.
+    agents = data[
+        [
+            "Period",
+            "Experience_A",
+            "Experience_B",
+            "Years_Schooling",
+            "Lagged_Choice",
+            "Choice",
+        ]
+    ].values.astype(int)
+    wages = data["Wage"].values
+
     # Define a shortcut to the Cholesky factors of the shocks, because they are so
     # frequently used inside deeply nested loops
     sc = optim_paras["shocks_cholesky"]
@@ -66,7 +80,7 @@ def pyth_contributions(
 
         row_start = sum(num_obs_agent[:j])
         num_obs = num_obs_agent[j]
-        edu_start = data.iloc[row_start]["Years_Schooling"].astype(int)
+        edu_start = agents[row_start, 4].astype(int)
 
         # updated type probabilities, conditional on edu_start >= 9 or <= 9
         type_shares = get_conditional_probabilities(
@@ -82,29 +96,16 @@ def pyth_contributions(
             prob_obs = np.zeros(num_obs)
 
             for p in range(num_obs):
-
-                agent = data.iloc[row_start + p]
-
                 # Extract observable components of the state space as well as agent's
                 # decision.
-                period, exp_a, exp_b, edu, choice_lagged, choice = agent[
-                    [
-                        "Period",
-                        "Experience_A",
-                        "Experience_B",
-                        "Years_Schooling",
-                        "Lagged_Choice",
-                        "Choice",
-                    ]
-                ].astype(int)
-                wage_observed = agent.Wage
+                period, exp_a, exp_b, edu, choice_lagged, choice = agents[
+                    row_start + p
+                ]
+                wage_observed = wages[row_start + p]
 
                 # Determine whether the agent's wage is known.
-                is_wage_missing = np.isnan(wage_observed)
                 is_working = choice in [1, 2]
-
-                # Create an index for the choice.
-                idx = choice - 1
+                has_wage = not np.isnan(wage_observed)
 
                 # Extract relevant deviates from standard normal distribution. The same
                 # set of baseline draws are used for each agent and period. The copy is
@@ -120,7 +121,7 @@ def pyth_contributions(
                 # If an agent is observed working, then the the labor market shocks are
                 # observed and the conditional distribution is used to determine the
                 # choice probabilities if the wage information is available as well.
-                if is_working and (not is_wage_missing):
+                if is_working and has_wage:
                     wages_systematic = state_space.rewards[k, -2:]
 
                     # Calculate the disturbance which are implied by the model and the
@@ -128,7 +129,9 @@ def pyth_contributions(
                     dist = np.clip(
                         np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT
                     ) - np.clip(
-                        np.log(wages_systematic[idx]), -HUGE_FLOAT, HUGE_FLOAT
+                        np.log(wages_systematic[choice - 1]),
+                        -HUGE_FLOAT,
+                        HUGE_FLOAT,
                     )
 
                     # If there is no random variation in rewards, then the observed
@@ -140,12 +143,11 @@ def pyth_contributions(
                         contribs[:] = 1
                         return contribs
 
-                # Construct independent normal draws implied by the agents state
-                # experience. This is needed to maintain the correlation structure of
-                # the disturbances. Special care is needed in case of a deterministic
-                # model, as otherwise a zero division error occurs.
-                if is_working and (not is_wage_missing):
-                    if is_deterministic:
+                    # Construct independent normal draws implied by the agents state
+                    # experience. This is needed to maintain the correlation structure
+                    # of the disturbances. Special care is needed in case of a
+                    # deterministic model, as otherwise a zero division error occurs.
+                    elif is_deterministic:
                         prob_wages = np.full(num_draws_prob, HUGE_FLOAT)
                     else:
                         if choice == 1:
@@ -166,7 +168,7 @@ def pyth_contributions(
 
                         sd = abs(sc[choice - 1, choice - 1])
 
-                    prob_wages = norm.pdf(dist, means, sd)
+                        prob_wages = norm.pdf(dist, means, sd)
 
                 else:
                     prob_wages = np.ones(num_draws_prob)
@@ -191,16 +193,19 @@ def pyth_contributions(
                 # Record choices.
                 counts = np.bincount(np.argmax(total_values, axis=1))
 
-                prob_choices = get_smoothed_probability(total_values, idx, tau)
+                prob_choices = get_smoothed_probability(
+                    total_values, choice - 1, tau
+                )
 
                 # Determine relative shares
                 prob_obs[p] = prob_choices.dot(prob_wages) / num_draws_prob
 
                 # If there is no random variation in rewards, then this implies that the
                 # observed choice in the dataset is the only choice.
-                if is_deterministic and (not (counts[idx] == num_draws_prob)):
-                    contribs[:] = 1
-                    return contribs
+                if is_deterministic and (
+                    not (counts[choice - 1] == num_draws_prob)
+                ):
+                    return np.ones(num_agents_est)
 
             prob_type[type_] = np.prod(prob_obs[:num_obs])
 
