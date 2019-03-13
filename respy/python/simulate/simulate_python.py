@@ -30,6 +30,13 @@ def pyth_simulate(
 ):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
 
+    At the beginning, agents are initialized with zero experience in occupations and
+    random values for years of education, lagged choices and types. Then, each simulated
+    agent in each period is paired with its corresponding state in the state space. We
+    recalculate utilities for each choice as the agents experience different shocks in
+    the simulation. In the end, observed and unobserved information is recorded in the
+    simulated dataset.
+
     Parameters
     ----------
     state_space : class
@@ -67,9 +74,12 @@ def pyth_simulate(
             optim_paras["shocks_cholesky"],
         )
 
-    # We also need to sample the set of initial conditions.
+    # Get initial values of SCHOOLING, lagged choices and types for simulated agents.
     initial_education = get_random_edu_start(
         edu_spec, num_agents_sim, is_debug
+    )
+    initial_choice_lagged = get_random_choice_lagged_start(
+        edu_spec, num_agents_sim, initial_education, is_debug
     )
     initial_types = get_random_types(
         state_space.num_types,
@@ -78,13 +88,9 @@ def pyth_simulate(
         initial_education,
         is_debug,
     )
-    initial_choice_lagged = get_random_choice_lagged_start(
-        edu_spec, num_agents_sim, initial_education, is_debug
-    )
 
-    # We need to modify the initial conditions: (1) Schooling when entering the model
-    # and (2) individual type. We need to determine the initial value for the lagged
-    # variable.
+    # Create a matrix of initial states of simulated agents. OCCUPATION A and OCCUPATION
+    # B are set to zero.
     current_states = np.c_[
         np.zeros((num_agents_sim, 2)),
         initial_education,
@@ -96,6 +102,7 @@ def pyth_simulate(
 
     for period in range(state_space.num_periods):
 
+        # Get indices which connect states in the state space and simulated agents.
         ks = state_space.indexer[
             np.full(num_agents_sim, period),
             current_states[:, 0],
@@ -105,10 +112,10 @@ def pyth_simulate(
             current_states[:, 4],
         ]
 
-        # Select relevant subset
+        # Select relevant subset of random draws.
         draws = periods_draws_sims_transformed[period]
 
-        # Get total value of admissible states
+        # Get total values and ex post rewards.
         total_values, rewards_ex_post = get_continuation_value(
             state_space.rewards[ks, -2:],
             state_space.rewards[ks, :4],
@@ -116,7 +123,6 @@ def pyth_simulate(
             state_space.emaxs[ks, :4],
             optim_paras["delta"],
         )
-
         total_values = total_values.reshape(-1, 4)
         rewards_ex_post = rewards_ex_post.reshape(-1, 4)
 
@@ -131,7 +137,7 @@ def pyth_simulate(
             total_values[:, 2],
         )
 
-        # Determine optimal choice
+        # Determine optimal choice.
         max_idx = np.argmax(total_values, axis=1)
 
         # Record wages. Expand matrix with NaNs for choice 2 and 3 for easier indexing.
@@ -145,6 +151,7 @@ def pyth_simulate(
         # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
         wage = wages[np.arange(num_agents_sim), max_idx]
 
+        # Record data of all agents in one period.
         rows = np.c_[
             np.arange(num_agents_sim),
             np.full(num_agents_sim, period),
@@ -167,21 +174,18 @@ def pyth_simulate(
             state_space.rewards[ks, 4:7],
             rewards_ex_post,
         ]
-
         data.append(rows)
 
-        # Update work experiences or education
+        # Update work experiences or education and lagged choice for the next period.
         current_states[np.arange(num_agents_sim), max_idx] = np.where(
             max_idx <= 2,
             current_states[np.arange(num_agents_sim), max_idx] + 1,
             current_states[np.arange(num_agents_sim), max_idx],
         )
-
-        # Update lagged activity variable.
         current_states[:, 3] = max_idx + 1
 
     simulated_data = (
-        pd.DataFrame.from_records(np.vstack(data), columns=DATA_LABELS_SIM)
+        pd.DataFrame(data=np.vstack(data), columns=DATA_LABELS_SIM)
         .astype(DATA_FORMATS_SIM)
         .sort_values(["Identifier", "Period"])
     )

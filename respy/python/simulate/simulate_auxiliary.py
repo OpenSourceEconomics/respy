@@ -389,19 +389,19 @@ def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug
 
 
 def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
-    """ This function provides random draws for the initial schooling level, or reads them in
-    from a file.
+    """ This function provides random draws for the initial schooling level, or reads
+    them in from a file.
     """
-    # We want to ensure that the order of initial schooling levels in the initialization files
-    # does not matter for the simulated sample. That is why we create an ordered version for this
-    # function.
+    # We want to ensure that the order of initial schooling levels in the initialization
+    # files does not matter for the simulated sample. That is why we create an ordered
+    # version for this function.
     edu_spec_ordered = sort_edu_spec(edu_spec)
 
     if is_debug and os.path.exists(".initial_schooling.respy.test"):
         edu_start = np.genfromtxt(".initial_schooling.respy.test")
     else:
-        # As we do not want to be too strict at the user-level the sum of edu_spec might be
-        # slightly larger than one. This needs to be corrected here.
+        # As we do not want to be too strict at the user-level the sum of edu_spec might
+        # be slightly larger than one. This needs to be corrected here.
         probs = edu_spec_ordered["share"] / np.sum(edu_spec_ordered["share"])
         edu_start = np.random.choice(
             edu_spec_ordered["start"], p=probs, size=num_agents_sim
