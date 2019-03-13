@@ -2,7 +2,7 @@ from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
 def construct_emax_risk(rewards, emaxs, draws_emax_risk, delta):
-    """ Simulate expected future value for a given distribution of the unobservables.
+    """Simulate expected future value for a given distribution of the unobservables.
 
     Note that, this function works on all states for a given period.
 
@@ -14,7 +14,7 @@ def construct_emax_risk(rewards, emaxs, draws_emax_risk, delta):
         Array with shape (num_states_in_period, 4).
     draws_emax_risk : np.ndarray
         Array with shape (num_draws, 4).
-    delta : np.array
+    delta : np.ndarray
         Scalar value representing the discount factor.
 
     Returns

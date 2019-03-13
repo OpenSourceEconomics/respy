@@ -59,8 +59,7 @@ def pyth_contributions(
     is_deterministic = np.count_nonzero(sc) == 0
 
     # Initialize auxiliary objects
-    contribs = np.full(num_agents_est, -HUGE_FLOAT)
-    prob_obs = np.full(state_space.num_periods, -HUGE_FLOAT)
+    contribs = np.full(num_agents_est, np.nan)
 
     # Calculate the probability over agents and time.
     for j in range(num_agents_est):
@@ -80,13 +79,13 @@ def pyth_contributions(
 
         for type_ in range(state_space.num_types):
 
-            # prob_obs has length p
-            prob_obs[:] = 0.00
+            prob_obs = np.zeros(num_obs)
+
             for p in range(num_obs):
 
                 agent = data.iloc[row_start + p]
 
-                # Extract observable components of state space as well as agent
+                # Extract observable components of the state space as well as agent's
                 # decision.
                 period, exp_a, exp_b, edu, choice_lagged, choice = agent[
                     [
@@ -100,7 +99,7 @@ def pyth_contributions(
                 ].astype(int)
                 wage_observed = agent.Wage
 
-                # Determine whether the agent's wage is known
+                # Determine whether the agent's wage is known.
                 is_wage_missing = np.isnan(wage_observed)
                 is_working = choice in [1, 2]
 
@@ -110,7 +109,7 @@ def pyth_contributions(
                 # Extract relevant deviates from standard normal distribution. The same
                 # set of baseline draws are used for each agent and period. The copy is
                 # needed as the object is otherwise changed inplace.
-                draws_prob_raw = periods_draws_prob[period].copy()
+                draws_stan = periods_draws_prob[period].copy()
 
                 # Get state index to access the systematic component of the agents
                 # rewards. These feed into the simulation of choice probabilities.
@@ -140,9 +139,6 @@ def pyth_contributions(
                     if is_deterministic and (dist > SMALL_FLOAT):
                         contribs[:] = 1
                         return contribs
-
-                # Extract the standard normal deviates for the iteration.
-                draws_stan = draws_prob_raw.copy()
 
                 # Construct independent normal draws implied by the agents state
                 # experience. This is needed to maintain the correlation structure of
