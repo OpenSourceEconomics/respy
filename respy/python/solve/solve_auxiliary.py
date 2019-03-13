@@ -316,7 +316,7 @@ def pyth_backward_induction(
     state_space : class
         State space containing the emax of the subsequent period of each choice, columns
         0-3, as well as the maximum emax of the current period for each state, column 4,
-        in ``.emaxs``.
+        of ``self.emaxs``.
 
     """
     state_space.emaxs = np.zeros((state_space.num_states, 5))
@@ -697,7 +697,6 @@ def calculate_wages_systematic(
     return wages
 
 
-@njit
 def get_dummies(a):
     """Create dummy matrix from array with indicators.
 
@@ -722,7 +721,7 @@ def get_dummies(a):
     >>> assert np.allclose(res, res_pandas)
 
     """
-    n_values = np.max(a) + 1
+    n_values = a.max() + 1
     return np.eye(n_values)[a]
 
 
@@ -904,7 +903,9 @@ class StateSpace:
             if getattr(self, i, None) is not None
         ]
 
-        return pd.DataFrame(np.concatenate(attributes, axis=1), columns=columns)
+        return pd.DataFrame(
+            np.concatenate(attributes, axis=1), columns=columns
+        )
 
     def _create_slices_by_periods(self, num_periods):
         """Create slices to index all attributes in a given period.

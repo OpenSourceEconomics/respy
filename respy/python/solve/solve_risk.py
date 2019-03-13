@@ -25,11 +25,7 @@ def construct_emax_risk(rewards, emaxs, draws_emax_risk, delta):
 
     """
     total_values, _ = get_continuation_value(
-        rewards[:, -2:],
-        rewards[:, :4],
-        draws_emax_risk,
-        emaxs,
-        delta,
+        rewards[:, -2:], rewards[:, :4], draws_emax_risk, emaxs, delta
     )
 
     # Choose maximum value in states and average over draws. Shape changes from
