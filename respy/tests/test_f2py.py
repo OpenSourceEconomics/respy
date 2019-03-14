@@ -800,6 +800,7 @@ class TestClass(object):
             "file_sim",
             "num_types",
         )
+
         shocks_cov = optim_paras["shocks_cholesky"].dot(
             optim_paras["shocks_cholesky"].T
         )
@@ -841,12 +842,14 @@ class TestClass(object):
         # Fill emaxs_a - emaxs_home in the requested period
         states_period = state_space.get_attribute_from_period("states", period)
 
-        state_space.emaxs = get_emaxs_of_subsequent_period(
-            states_period,
-            state_space.indexer,
-            state_space.emaxs,
-            edu_spec["max"],
-        )
+        # Do not get the emaxs from the previous period if we are in the last one.
+        if period != state_space.num_periods - 1:
+            state_space.emaxs = get_emaxs_of_subsequent_period(
+                states_period,
+                state_space.indexer,
+                state_space.emaxs,
+                edu_spec["max"],
+            )
 
         num_states = state_space.states_per_period[period]
 
