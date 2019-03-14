@@ -4,7 +4,7 @@ channels:
 dependencies:
   - python=3.6
   - pandas=0.20
-  - numba=0.42
+  - numba=0.43
   - numpy
   - scipy=0.19
   - statsmodels=0.8.0

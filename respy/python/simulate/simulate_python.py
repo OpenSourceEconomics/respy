@@ -119,8 +119,8 @@ def pyth_simulate(
         total_values, rewards_ex_post = get_continuation_value(
             state_space.rewards[ks, -2:],
             state_space.rewards[ks, :4],
-            draws.reshape(-1, 1, 4),
             state_space.emaxs[ks, :4],
+            draws.reshape(-1, 1, 4),
             optim_paras["delta"],
         )
         total_values = total_values.reshape(-1, 4)

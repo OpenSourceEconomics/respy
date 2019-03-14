@@ -217,8 +217,8 @@ class TestClass(object):
         total_values, rewards_ex_post = get_continuation_value(
             rewards_period[:, -2:],
             rewards_period[:, :4],
-            draws.reshape(1, -1),
             emaxs_period,
+            draws.reshape(1, -1),
             optim_paras["delta"],
         )
 

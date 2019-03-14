@@ -180,8 +180,8 @@ def pyth_contributions(
                 total_values, _ = get_continuation_value(
                     state_space.rewards[k, -2:],
                     state_space.rewards[k, :4],
-                    draws,
                     state_space.emaxs[k, :4],
+                    draws,
                     optim_paras["delta"],
                 )
 

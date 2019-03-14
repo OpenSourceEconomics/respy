@@ -283,18 +283,18 @@ def cholesky_to_coeffs(shocks_cholesky):
 
 @guvectorize(
     [
-        "void(float32[:], float32[:], float32[:, :], float32[:], float32, float32[:, :], float32[:, :])",
-        "void(float64[:], float64[:], float64[:, :], float64[:], float64, float64[:, :], float64[:, :])",
+        "void(float32[:], float32[:], float32[:], float32[:, :], float32, float32[:, :], float32[:, :])",
+        "void(float64[:], float64[:], float64[:], float64[:, :], float64, float64[:, :], float64[:, :])",
     ],
-    "(m), (n), (p, n), (n), () -> (n, p), (n, p)",
+    "(m), (n), (n), (p, n), () -> (n, p), (n, p)",
     nopython=True,
     target="cpu",
 )
 def get_continuation_value(
     wages,
     rewards_systematic,
-    draws,
     emaxs_sub_period,
+    draws,
     delta,
     cont_value,
     rew_ex_post,
@@ -310,10 +310,10 @@ def get_continuation_value(
         Array with shape (num_states_in_period, 2).
     rewards_systematic : np.ndarray
         Array with shape (num_states_in_period, 4).
-    draws : np.ndarray
-        Array with shape (num_draws, 4)
     emaxs_sub_period : np.ndarray
         Array with shape (num_states_in_period, 4)
+    draws : np.ndarray
+        Array with shape (num_draws, 4)
     delta : float
         Discount rate.
 
@@ -750,18 +750,17 @@ def create_covariates(states):
     covariates : np.ndarray
         Array with shape (num_states, 16) containing covariates of each state.
 
-    Example
-    -------
+    Examples
+    --------
     This example is to benchmark alternative implementations, but even this version does
     not benefit from Numba anymore.
 
-    >>> from respy.python.solve.solve_auxiliary import pyth_create_state_space
     >>> states, _ = pyth_create_state_space(40, 5, [10], 20)
     >>> covariates = create_covariates(states)
     >>> assert covariates.shape == (states.shape[0], 16)
 
     """
-    covariates = np.full((states.shape[0], 16), np.nan)
+    covariates = np.zeros((states.shape[0], 16), dtype=np.int8)
 
     # Experience in A or B, but not in the last period.
     covariates[:, 0] = np.where((states[:, 1] > 0) & (states[:, 4] != 1), 1, 0)
