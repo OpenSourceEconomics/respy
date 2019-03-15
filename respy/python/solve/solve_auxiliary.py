@@ -423,7 +423,8 @@ def pyth_backward_induction(
         else:
 
             emax = construct_emax_risk(
-                rewards_period,
+                rewards_period[:, -2:],
+                rewards_period[:, :4],
                 emaxs_period,
                 draws_emax_risk,
                 optim_paras["delta"],
@@ -539,7 +540,11 @@ def get_endogenous_variable(
 
     """
     emax = construct_emax_risk(
-        rewards, emaxs, draws_emax_risk, optim_paras["delta"]
+        rewards[:, -2:],
+        rewards[:, :4],
+        emaxs,
+        draws_emax_risk,
+        optim_paras["delta"],
     )
     endogenous = emax - max_emax
     endogenous[~is_simulated] = np.nan
@@ -904,7 +909,9 @@ class StateSpace:
             if getattr(self, i, None) is not None
         ]
 
-        return pd.DataFrame(np.concatenate(attributes, axis=1), columns=columns)
+        return pd.DataFrame(
+            np.concatenate(attributes, axis=1), columns=columns
+        )
 
     def _create_slices_by_periods(self, num_periods):
         """Create slices to index all attributes in a given period.
