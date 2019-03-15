@@ -128,14 +128,14 @@ class TestClass(object):
         # Evaluation of simulated expected future values
         rewards_period = state_space.get_attribute_from_period(
             "rewards", period
-        )
+        )[k]
         emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
-            :, :4
+            k, :4
         ]
 
         py = construct_emax_risk(
-            rewards_period[:, -2:],
-            rewards_period[:, :4],
+            rewards_period[-2:],
+            rewards_period[:4],
             emaxs_period,
             draws_emax_risk,
             optim_paras["delta"],
@@ -160,10 +160,7 @@ class TestClass(object):
             num_types,
         )
 
-        # The old FORTRAN version of ``construct_emax_risk`` calculates the emax for one
-        # state whereas the new Python implementation calculates the emax for all states
-        # in a given period. Thus, index the Python output with ``k``.
-        assert_allclose(py[k], f90)
+        assert_allclose(py, f90)
 
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected hand-crafted

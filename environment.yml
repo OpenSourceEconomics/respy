@@ -1,6 +1,7 @@
 name: respy
 channels:
   - defaults
+  - numba
 dependencies:
   - python=3.6
   - pandas=0.20
