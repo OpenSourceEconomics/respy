@@ -134,7 +134,11 @@ class TestClass(object):
         ]
 
         py = construct_emax_risk(
-            rewards_period, emaxs_period, draws_emax_risk, optim_paras["delta"]
+            rewards_period[:, -2:],
+            rewards_period[:, :4],
+            emaxs_period,
+            draws_emax_risk,
+            optim_paras["delta"],
         )
 
         f90 = fort_debug.wrapper_construct_emax_risk(
