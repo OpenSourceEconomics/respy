@@ -80,7 +80,7 @@ def pyth_contributions(
 
         row_start = sum(num_obs_agent[:j])
         num_obs = num_obs_agent[j]
-        edu_start = agents[row_start, 4].astype(int)
+        edu_start = agents[row_start, 3]
 
         # Update type probabilities conditional on edu_start >= 9 or <= 9.
         type_shares = get_conditional_probabilities(
@@ -177,13 +177,13 @@ def pyth_contributions(
                     optim_paras["delta"],
                 )
 
-                total_values = total_values.reshape(-1, 4)
+                total_values = total_values.reshape(4, -1).T
 
                 # Simulate the conditional distribution of alternative-specific value
                 # functions and determine the choice probabilities.
 
                 # Record choices.
-                counts = np.bincount(np.argmax(total_values, axis=1))
+                counts = np.bincount(np.argmax(total_values, axis=1), minlength=4)
 
                 prob_choices = get_smoothed_probability(
                     total_values, choice - 1, tau
