@@ -68,11 +68,11 @@ def pyth_contributions(
     wages = data["Wage"].values
 
     # Define a shortcut to the Cholesky factors of the shocks, because they are so
-    # frequently used inside deeply nested loops
+    # frequently used inside deeply nested loops.
     sc = optim_paras["shocks_cholesky"]
     is_deterministic = np.count_nonzero(sc) == 0
 
-    # Initialize auxiliary objects
+    # Initialize auxiliary objects.
     contribs = np.full(num_agents_est, np.nan)
 
     # Calculate the probability over agents and time.
@@ -82,7 +82,7 @@ def pyth_contributions(
         num_obs = num_obs_agent[j]
         edu_start = agents[row_start, 4].astype(int)
 
-        # updated type probabilities, conditional on edu_start >= 9 or <= 9
+        # Update type probabilities conditional on edu_start >= 9 or <= 9.
         type_shares = get_conditional_probabilities(
             optim_paras["type_shares"], edu_start
         )
@@ -140,8 +140,7 @@ def pyth_contributions(
                     # components might be nonzero (but small) due to the reading in of
                     # the dataset (FORTRAN only).
                     if is_deterministic and (dist > SMALL_FLOAT):
-                        contribs[:] = 1
-                        return contribs
+                        return np.ones(num_agents_est)
 
                     # Construct independent normal draws implied by the agents state
                     # experience. This is needed to maintain the correlation structure
@@ -151,20 +150,13 @@ def pyth_contributions(
                         prob_wages = np.full(num_draws_prob, HUGE_FLOAT)
                     else:
                         if choice == 1:
-                            draws_stan[:, choice - 1] = (
-                                dist / sc[choice - 1, choice - 1]
-                            )
+                            draws_stan[:, 0] = dist / sc[0, 0]
                             means = np.zeros(num_draws_prob)
                         elif choice == 2:
-                            draws_stan[:, choice - 1] = (
-                                dist
-                                - sc[choice - 1, choice - 2]
-                                * draws_stan[:, choice - 2]
-                            ) / sc[choice - 1, choice - 1]
-                            means = (
-                                sc[choice - 1, choice - 2]
-                                * draws_stan[:, choice - 2]
-                            )
+                            draws_stan[:, 1] = (
+                                dist - sc[1, 0] * draws_stan[:, 0]
+                            ) / sc[1, 1]
+                            means = sc[1, 0] * draws_stan[:, 0]
 
                         sd = abs(sc[choice - 1, choice - 1])
 
@@ -202,9 +194,8 @@ def pyth_contributions(
 
                 # If there is no random variation in rewards, then this implies that the
                 # observed choice in the dataset is the only choice.
-                if is_deterministic and (
-                    not (counts[choice - 1] == num_draws_prob)
-                ):
+                always_same_choice = counts[choice - 1] == num_draws_prob
+                if is_deterministic and not always_same_choice:
                     return np.ones(num_agents_est)
 
             prob_type[type_] = np.prod(prob_obs[:num_obs])
@@ -215,6 +206,6 @@ def pyth_contributions(
     # If there is no random variation in rewards and no agent violated the implications
     # of observed wages and choices, then the evaluation return value of one.
     if is_deterministic:
-        contribs[:] = np.exp(1.0)
+        contribs = np.exp(np.ones(num_agents_est))
 
     return contribs

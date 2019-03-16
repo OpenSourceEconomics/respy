@@ -1,10 +1,16 @@
 """Auxiliary functions for the evaluation of the likelihood."""
 import numpy as np
 
+from numba import guvectorize
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
-def get_smoothed_probability(total_values, idx, tau):
+@guvectorize(
+    ["float64[:], int64, float64, float64[:]"],
+    "(n), (), () -> ()",
+    nopython=True,
+)
+def get_smoothed_probability(total_values, idx, tau, prob_choice):
     """Construct smoothed choice probabilities.
 
     Parameters
@@ -21,11 +27,34 @@ def get_smoothed_probability(total_values, idx, tau):
     prob_choices : np.ndarray
         Array with shape (num_draws,) containing smoothed probabilities for choice.
 
+    Example
+    -------
+    >>> get_smoothed_probability(np.zeros(4), 3, 0.5)
+    0.25
+
+    >>> total_values = np.arange(1, 9).reshape(2, 4)
+    >>> get_smoothed_probability(total_values, 3, 0.5)
+    array([0.86495488, 0.86495488])
+
     """
-    max_total = total_values.max(axis=1, keepdims=True)
+    prob_choice[0] = 0.0
+    num_choices = total_values.shape[0]
 
-    smoot_values = np.clip(np.exp((total_values - max_total) / tau), 0.0, HUGE_FLOAT)
+    max_total_values = -HUGE_FLOAT
+    for i in range(num_choices):
+        if total_values[i] > max_total_values:
+            max_total_values = total_values[i]
 
-    prob_choices = smoot_values[:, idx] / smoot_values.sum(axis=1)
+    sum_smooth_values = 0.0
 
-    return prob_choices
+    for i in range(num_choices):
+        temp = np.exp((total_values[i] - max_total_values) / tau)
+        if temp > HUGE_FLOAT:
+            temp = HUGE_FLOAT
+        elif temp < 0.0:
+            temp = 0.0
+
+        total_values[i] = temp
+        sum_smooth_values += temp
+
+    prob_choice[0] = total_values[idx] / sum_smooth_values

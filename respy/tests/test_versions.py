@@ -56,10 +56,10 @@ class TestClass(object):
         edu_spec["max"] = init_dict["EDUCATION"]["max"]
 
         # The use of the interpolation routines is a another special case. Constructing
-        #  a request that actually involves the use of the interpolation routine is a
-        #  little involved as the number of interpolation points needs to be lower than
-        #  the actual number of states. And to know the number of states each period, I
-        #  need to construct the whole state space.
+        # a request that actually involves the use of the interpolation routine is a
+        # little involved as the number of interpolation points needs to be lower than
+        # the actual number of states. And to know the number of states each period, I
+        # need to construct the whole state space.
         if is_interpolated:
             # Extract from future initialization file the information required to
             # construct the state space. The number of periods needs to be at least
