@@ -32,7 +32,6 @@ def pyth_criterion(
     state_space = pyth_backward_induction(
         is_myopic,
         periods_draws_emax,
-        num_draws_emax,
         state_space,
         is_debug,
         is_interpolated,
