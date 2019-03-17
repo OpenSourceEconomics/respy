@@ -1,4 +1,3 @@
-from scipy.stats import norm
 import numpy as np
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
@@ -16,10 +15,7 @@ def pyth_contributions(
     data,
     periods_draws_prob,
     tau,
-    num_draws_prob,
     num_agents_est,
-    num_obs_agent,
-    edu_spec,
     optim_paras,
 ):
     """Likelihood contribution of each individual in the sample.
@@ -39,14 +35,8 @@ def pyth_contributions(
         draws from standard normal distributions.
     tau : float
         Smoothing parameter for choice probabilities.
-    num_draws_prob : int
-        Number of draws in the Monte Carlo integration of the choice probabilities.
     num_agents_est : int
         Number of observations used for estimation.
-    num_obs_agent : np.ndarray
-        Array with shape (num_agents_est,) that contains the number of observed
-        observations for each individual in the sample.
-    edu_spec : dict
     optim_paras : dict
         Dictionary with quantities that were extracted from the parameter vector.
 
@@ -56,7 +46,9 @@ def pyth_contributions(
         Array with shape (num_agents_est,) containing contributions of estimated agents.
 
     """
-    num_obs_agent = num_obs_agent.astype(int)
+    num_obs_agent = np.bincount(data["Identifier"])
+    num_draws_prob = periods_draws_prob.shape[1]
+
     # Convert data to np.ndarray which is faster in every aspect. Separate wages from
     # other characteristics as they need to be integers.
     agents = data[
@@ -86,7 +78,7 @@ def pyth_contributions(
         num_obs = num_obs_agent[j]
         edu_start = agents[row_start, 3]
 
-        # Update type probabilities conditional on edu_start >= 9 or <= 9.
+        # Update type probabilities conditional on edu_start > 9.
         type_shares = get_conditional_probabilities(
             optim_paras["type_shares"], edu_start
         )
@@ -107,10 +99,6 @@ def pyth_contributions(
                 ]
                 wage_observed = wages[row_start + p]
 
-                # Determine whether the agent's wage is known.
-                is_working = choice in [1, 2]
-                has_wage = not np.isnan(wage_observed)
-
                 # Extract relevant deviates from standard normal distribution. The same
                 # set of baseline draws are used for each agent and period. The copy is
                 # needed as the object is otherwise changed in-place.
@@ -125,6 +113,9 @@ def pyth_contributions(
                 # If an agent is observed working, then the the labor market shocks are
                 # observed and the conditional distribution is used to determine the
                 # choice probabilities if the wage information is available as well.
+                is_working = choice in [1, 2]
+                has_wage = not np.isnan(wage_observed)
+
                 if is_working and has_wage:
                     wage_systematic = state_space.rewards[k, -2:][choice - 1]
 
@@ -206,7 +197,7 @@ def pyth_contributions(
 
             prob_type[type_] = np.prod(prob_obs)
 
-        # Adjust and record likelihood contribution
+        # Adjust and record likelihood contribution.
         contribs[j] = prob_type.dot(type_shares)
 
     # If there is no random variation in rewards and no agent violated the implications

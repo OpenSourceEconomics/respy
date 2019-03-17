@@ -59,7 +59,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
         Array with shape (num_states, 6) containing period, experience in OCCUPATION A,
         experience in OCCUPATION B, years of schooling, the lagged choice and the type
         of the agent.
-    indexer : np.array
+    indexer : np.ndarray
         A matrix where each dimension represents a characteristic of the state space.
         Switching from one state is possible via incrementing appropriate indices by 1.
 
@@ -452,7 +452,7 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
     """
     # Drawing random interpolation points
     interpolation_points = np.random.choice(
-        range(num_states), size=num_points_interp, replace=False
+        num_states, size=num_points_interp, replace=False
     )
 
     # Constructing an indicator whether a state will be simulated or interpolated.
@@ -502,7 +502,7 @@ def get_exogenous_variables(rewards, emaxs, draws, delta):
 
     """
     total_values, _ = get_continuation_value(
-        rewards[:, -2:], rewards[:, :4], draws.reshape(1, -1), emaxs, delta
+        rewards[:, -2:], rewards[:, :4], emaxs, draws.reshape(1, -1), delta
     )
     max_emax = total_values.max(axis=1)
     exogenous = max_emax - total_values.reshape(-1, 4)
@@ -595,19 +595,6 @@ def check_prediction_model(predictions_diff, model):
     assert np.all(predictions_diff >= 0.00)
     assert results.params.shape == (9,)
     assert np.all(np.isfinite(results.params))
-
-
-def check_input(respy_obj):
-    """ Check input arguments.
-    """
-    # Check that class instance is locked.
-    assert respy_obj.get_attr("is_locked")
-
-    # Check for previous solution attempt.
-    if respy_obj.get_attr("is_solved"):
-        respy_obj.reset()
-
-    return True
 
 
 def calculate_wages_systematic(

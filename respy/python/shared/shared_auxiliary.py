@@ -16,8 +16,19 @@ from numba import guvectorize, njit
 
 
 def get_log_likl(contribs):
-    """Aggregate contributions to the likelihood value."""
-    if sum(np.abs(contribs) > HUGE_FLOAT) > 0:
+    """Aggregate contributions to the likelihood value.
+
+    Parameters
+    ----------
+    contribs : np.ndarray
+        Array with shape (num_agents_est,).
+
+    Returns
+    -------
+    crit_val : float
+
+    """
+    if np.sum(np.abs(contribs) > HUGE_FLOAT) > 0:
         record_warning(5)
 
     crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
@@ -180,16 +191,10 @@ def get_conditional_probabilities(type_shares, edu_start):
     initial condition.
 
     """
-    # Auxiliary objects
-    num_types = int(len(type_shares) / 2)
-    probs = np.full(num_types, np.nan)
-    for i in range(num_types):
-        lower, upper = i * 2, (i + 1) * 2
-        covariate = edu_start > 9
-        probs[i] = np.exp(np.sum(type_shares[lower:upper] * [1.0, covariate]))
-
-    # Scaling
-    probs = probs / sum(probs)
+    type_shares = type_shares.reshape(-1, 2)
+    covariate = np.array([1, edu_start > 9])
+    probs = np.exp(type_shares.dot(covariate))
+    probs /= probs.sum()
 
     return probs
 

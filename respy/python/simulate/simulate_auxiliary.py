@@ -350,8 +350,8 @@ def sort_type_info(optim_paras, num_types):
 
 
 def sort_edu_spec(edu_spec):
-    """ This function sorts the dictionary that provides the information about initial education.
-    It adjusts the order of the shares accordingly.
+    """ This function sorts the dictionary that provides the information about initial
+    education. It adjusts the order of the shares accordingly.
     """
     edu_start_ordered = sorted(edu_spec["start"])
 
@@ -370,8 +370,8 @@ def sort_edu_spec(edu_spec):
 def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug):
     """ This function provides random draws for the types, or reads them in from a file.
     """
-    # We want to ensure that the order of types in the initialization file does not matter for
-    # the simulated sample.
+    # We want to ensure that the order of types in the initialization file does not
+    # matter for the simulated sample.
     type_info = sort_type_info(optim_paras, num_types)
 
     if is_debug and os.path.exists(".types.respy.test"):
