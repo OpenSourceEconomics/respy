@@ -277,7 +277,6 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
 def pyth_backward_induction(
     is_myopic,
     periods_draws_emax,
-    num_draws_emax,
     state_space,
     is_debug,
     is_interpolated,
@@ -294,10 +293,8 @@ def pyth_backward_induction(
     is_myopic : bool
         Flag indicating myopic agents for which the discount factor is set to zero.
     periods_draws_emax : np.ndarray
-        Array with shape (num_periods, num_draws_emax, num_choices) containing the
+        Array with shape (num_periods, num_draws, num_choices) containing the
         random draws used to simulate the emax.
-    num_draws_emax : int
-        Number of random draws to simulate the emax in each period.
     state_space : class
         State space object.
     is_debug : bool
@@ -325,9 +322,11 @@ def pyth_backward_induction(
         record_solution_progress(-2, file_sim)
         return state_space
 
-    shocks_cov = optim_paras["shocks_cholesky"].dot(
-        optim_paras["shocks_cholesky"].T
-    )
+    # Unpack arguments.
+    delta = optim_paras["delta"]
+    shocks_cholesky = optim_paras["shocks_cholesky"]
+
+    shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
 
     # These shifts are used to determine the expected values of the two labor market
     # alternatives. These are log normal distributed and thus the draws cannot simply
@@ -360,7 +359,7 @@ def pyth_backward_induction(
         # distribution is fixed once and for all.
         draws_emax_standard = periods_draws_emax[period]
         draws_emax_risk = transform_disturbances(
-            draws_emax_standard, np.zeros(4), optim_paras["shocks_cholesky"]
+            draws_emax_standard, np.zeros(4), shocks_cholesky
         )
 
         if is_write:
@@ -391,7 +390,7 @@ def pyth_backward_induction(
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
             exogenous, max_emax = get_exogenous_variables(
-                rewards_period, emaxs_period, shifts, edu_spec, optim_paras
+                rewards_period, emaxs_period, shifts, delta
             )
 
             # Constructing the dependent variables for all states at the random subset
@@ -401,10 +400,8 @@ def pyth_backward_induction(
                 emaxs_period,
                 max_emax,
                 is_simulated,
-                num_draws_emax,
                 draws_emax_risk,
-                edu_spec,
-                optim_paras,
+                delta,
             )
 
             # Create prediction model based on the random subset of points where the
@@ -425,7 +422,7 @@ def pyth_backward_induction(
                 rewards_period[:, :4],
                 emaxs_period,
                 draws_emax_risk,
-                optim_paras["delta"],
+                delta,
             )
 
         state_space.get_attribute_from_period("emaxs", period)[:, 4] = emax
@@ -476,7 +473,7 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
     return is_simulated
 
 
-def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
+def get_exogenous_variables(rewards, emaxs, draws, delta):
     """Get exogenous variables for interpolation scheme.
 
     The unused argument is present to align the interface between the PYTHON and FORTRAN
@@ -493,21 +490,19 @@ def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
         Array with shape (num_states_in_period, 4).
     draws : np.ndarray
         Array with shape (num_draws, 4).
-    edu_spec : dict
-    optim_paras : dict
+    delta : float
+        Discount factor.
 
     Returns
     -------
     exogenous : np.ndarray
         Array with shape (num_states_in_period, 4).
+    max_emax : np.ndarray
+        Array with shape (num_states_in_period,) containing maximum emax.
 
     """
     total_values, _ = get_continuation_value(
-        rewards[:, -2:],
-        rewards[:, :4],
-        emaxs,
-        draws.reshape(1, -1),
-        optim_paras["delta"],
+        rewards[:, -2:], rewards[:, :4], draws.reshape(1, -1), emaxs, delta
     )
     max_emax = total_values.max(axis=1)
     exogenous = max_emax - total_values.reshape(-1, 4)
@@ -516,14 +511,7 @@ def get_exogenous_variables(rewards, emaxs, draws, edu_spec, optim_paras):
 
 
 def get_endogenous_variable(
-    rewards,
-    emaxs,
-    max_emax,
-    is_simulated,
-    num_draws_emax,
-    draws_emax_risk,
-    edu_spec,
-    optim_paras,
+    rewards, emaxs, max_emax, is_simulated, draws_emax_risk, delta
 ):
     """Construct endogenous variable for the subset of interpolation points.
 
@@ -535,14 +523,17 @@ def get_endogenous_variable(
         Array with shape (num_states_in_period, 4).
     max_emax : np.ndarray
         Array with shape (num_states_in_period,) containing maximum of exogenous emax.
+    is_simulated : np.ndarray
+        Array with shape (num_states_in_period,) containing indicators for simulated
+        emaxs.
+    draws_emax_risk : np.ndarray
+        Array with shape (num_draws, 4) containing draws.
+    delta : float
+        Discount factor.
 
     """
     emax = construct_emax_risk(
-        rewards[:, -2:],
-        rewards[:, :4],
-        emaxs,
-        draws_emax_risk,
-        optim_paras["delta"],
+        rewards[:, -2:], rewards[:, :4], emaxs, draws_emax_risk, delta
     )
     endogenous = emax - max_emax
     endogenous[~is_simulated] = np.nan
@@ -553,9 +544,18 @@ def get_endogenous_variable(
 def get_predictions(
     endogenous, exogenous, max_emax, is_simulated, file_sim, is_write
 ):
-    """ Fit an OLS regression of the exogenous variables on the endogenous variables and
+    """Fit an OLS regression of the exogenous variables on the endogenous variables and
     use the results to predict the endogenous variables for all points in the state
     space.
+
+    Parameters
+    ----------
+    endogenous : np.ndarray
+    exogenous : np.ndarray
+    max_emax : np.ndarray
+    is_simulated : np.ndarray
+    file_sim : ???
+    is_write : bool
 
     """
     exogenous = np.c_[

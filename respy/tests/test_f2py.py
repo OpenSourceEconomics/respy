@@ -444,7 +444,6 @@ class TestClass(object):
         state_space = pyth_backward_induction(
             False,
             periods_draws_emax,
-            num_draws_emax,
             state_space,
             is_debug,
             is_interpolated,
