@@ -100,7 +100,7 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
         assert check_model_parameters(paras_dict)
 
     pinfo = paras_parsing_information(num_paras)
-    x = np.tile(np.nan, num_paras)
+    x = np.full(num_paras, np.nan)
 
     start, stop = pinfo["delta"]["start"], pinfo["delta"]["stop"]
     x[start:stop] = paras_dict["delta"]
@@ -182,7 +182,7 @@ def get_conditional_probabilities(type_shares, edu_start):
     """
     # Auxiliary objects
     num_types = int(len(type_shares) / 2)
-    probs = np.tile(np.nan, num_types)
+    probs = np.full(num_types, np.nan)
     for i in range(num_types):
         lower, upper = i * 2, (i + 1) * 2
         covariate = edu_start > 9
@@ -202,13 +202,13 @@ def extract_type_information(x):
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
     num_types = int(len(x[start:]) / 6) + 1
     type_shares = x[start:stop]
-    type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
+    type_shares = np.concatenate((np.zeros(2), type_shares), axis=0)
 
     # Type shifts
     start, stop = pinfo["type_shifts"]["start"], pinfo["type_shifts"]["stop"]
     type_shifts = x[start:stop]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
-    type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
+    type_shifts = np.concatenate((np.zeros((1, 4)), type_shifts), axis=0)
 
     return type_shares, type_shifts
 
@@ -720,7 +720,7 @@ def check_early_termination(maxfun, num_eval):
 
 def get_num_obs_agent(data_array, num_agents_est):
     """Get a list with the number of observations for each agent."""
-    num_obs_agent = np.tile(0, num_agents_est)
+    num_obs_agent = np.zeros(num_agents_est)
     agent_number = data_array[0, 0]
     num_rows = data_array.shape[0]
 

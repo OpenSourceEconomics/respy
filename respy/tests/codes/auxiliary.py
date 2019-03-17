@@ -163,7 +163,7 @@ def write_interpolation_grid(file_name):
     max_states_period = max(states_number_period)
 
     # Initialize container
-    booleans = np.tile(True, (max_states_period, num_periods))
+    booleans = np.full((max_states_period, num_periods), True)
 
     # Iterate over all periods
     for period in range(num_periods):

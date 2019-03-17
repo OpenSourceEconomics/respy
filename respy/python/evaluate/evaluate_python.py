@@ -56,6 +56,7 @@ def pyth_contributions(
         Array with shape (num_agents_est,) containing contributions of estimated agents.
 
     """
+    num_obs_agent = num_obs_agent.astype(int)
     # Convert data to np.ndarray which is faster in every aspect. Separate wages from
     # other characteristics as they need to be integers.
     agents = data[
@@ -112,7 +113,7 @@ def pyth_contributions(
 
                 # Extract relevant deviates from standard normal distribution. The same
                 # set of baseline draws are used for each agent and period. The copy is
-                # needed as the object is otherwise changed inplace.
+                # needed as the object is otherwise changed in-place.
                 draws_stan = periods_draws_prob[period].copy()
 
                 # Get state index to access the systematic component of the agents
@@ -159,7 +160,7 @@ def pyth_contributions(
                             ) / sc[1, 1]
                             means = sc[1, 0] * draws_stan[:, 0]
 
-                        sd = abs(sc[choice - 1, choice - 1])
+                        sd = np.abs(sc[choice - 1, choice - 1])
 
                         prob_wages = get_pdf_of_normal_distribution(
                             dist, means, sd
@@ -203,7 +204,7 @@ def pyth_contributions(
                 if is_deterministic and not always_same_choice:
                     return np.ones(num_agents_est)
 
-            prob_type[type_] = np.prod(prob_obs[:num_obs])
+            prob_type[type_] = np.prod(prob_obs)
 
         # Adjust and record likelihood contribution
         contribs[j] = prob_type.dot(type_shares)

@@ -183,7 +183,7 @@ def get_choice_probabilities(fname, is_flatten=True):
     """
 
     # Initialize container.
-    stats = np.tile(np.nan, (0, 4))
+    stats = np.full((0, 4), np.nan)
 
     with open(fname) as in_file:
 

@@ -307,12 +307,12 @@ def convert_init_dict_to_attr_dict(init_dict):
     )
 
     if attr["num_types"] == 1:
-        type_shares = np.tile(0.0, 2)
-        type_shifts = np.tile(0.0, (1, 4))
+        type_shares = np.zeros(2)
+        type_shifts = np.zeros((1, 4))
     else:
-        type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
+        type_shares = np.concatenate((np.zeros(2), type_shares), axis=0)
         type_shifts = np.reshape(type_shifts, (attr["num_types"] - 1, 4))
-        type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
+        type_shifts = np.concatenate((np.zeros((1, 4)), type_shifts), axis=0)
 
     attr["optim_paras"]["type_shifts"] = type_shifts
     attr["optim_paras"]["type_shares"] = type_shares

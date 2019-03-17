@@ -323,7 +323,6 @@ def pyth_backward_induction(
 
     if is_myopic:
         record_solution_progress(-2, file_sim)
-
         return state_space
 
     shocks_cov = optim_paras["shocks_cholesky"].dot(
@@ -359,7 +358,7 @@ def pyth_backward_induction(
 
         # Treatment of the disturbances for the risk-only case is straightforward. Their
         # distribution is fixed once and for all.
-        draws_emax_standard = periods_draws_emax[period, :, :]
+        draws_emax_standard = periods_draws_emax[period]
         draws_emax_risk = transform_disturbances(
             draws_emax_standard, np.zeros(4), optim_paras["shocks_cholesky"]
         )

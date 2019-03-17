@@ -47,15 +47,18 @@ def construct_emax_risk(
     (https://github.com/numba/numba/issues/2935). This might change in the future.
 
     """
+    num_choices = rewards_systematic.shape[0]
     num_draws = draws.shape[0]
+    num_wages = wages.shape[0]
+
     cont_value[0] = 0.0
 
     for i in range(num_draws):
 
         current_max_emax = 0.0
 
-        for j in range(4):
-            if j < 2:
+        for j in range(num_choices):
+            if j < num_wages:
                 rew_ex = (
                     wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
                 )
