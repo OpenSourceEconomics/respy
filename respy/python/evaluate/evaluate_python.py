@@ -2,7 +2,10 @@ from scipy.stats import norm
 import numpy as np
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
-from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
+from respy.python.evaluate.evaluate_auxiliary import (
+    get_smoothed_probability,
+    get_pdf_of_normal_distribution,
+)
 from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
@@ -78,7 +81,7 @@ def pyth_contributions(
     # Calculate the probability over agents and time.
     for j in range(num_agents_est):
 
-        row_start = sum(num_obs_agent[:j])
+        row_start = num_obs_agent[:j].sum()
         num_obs = num_obs_agent[j]
         edu_start = agents[row_start, 3]
 
@@ -122,16 +125,14 @@ def pyth_contributions(
                 # observed and the conditional distribution is used to determine the
                 # choice probabilities if the wage information is available as well.
                 if is_working and has_wage:
-                    wages_systematic = state_space.rewards[k, -2:]
+                    wage_systematic = state_space.rewards[k, -2:][choice - 1]
 
                     # Calculate the disturbance which are implied by the model and the
                     # observed wages.
                     dist = np.clip(
                         np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT
                     ) - np.clip(
-                        np.log(wages_systematic[choice - 1]),
-                        -HUGE_FLOAT,
-                        HUGE_FLOAT,
+                        np.log(wage_systematic), -HUGE_FLOAT, HUGE_FLOAT
                     )
 
                     # If there is no random variation in rewards, then the observed
@@ -160,7 +161,9 @@ def pyth_contributions(
 
                         sd = abs(sc[choice - 1, choice - 1])
 
-                        prob_wages = norm.pdf(dist, means, sd)
+                        prob_wages = get_pdf_of_normal_distribution(
+                            dist, means, sd
+                        )
 
                 else:
                     prob_wages = np.ones(num_draws_prob)
@@ -183,7 +186,9 @@ def pyth_contributions(
                 # functions and determine the choice probabilities.
 
                 # Record choices.
-                counts = np.bincount(np.argmax(total_values, axis=1), minlength=4)
+                counts = np.bincount(
+                    np.argmax(total_values, axis=1), minlength=4
+                )
 
                 prob_choices = get_smoothed_probability(
                     total_values, choice - 1, tau
