@@ -878,7 +878,7 @@ class TestClass(object):
 
         # Construct the exogenous variables for all points of the state space.
         exogenous, max_emax = get_exogenous_variables(
-            rewards_period, emaxs_period, shifts, edu_spec, optim_paras
+            rewards_period, emaxs_period, shifts, optim_paras["delta"]
         )
 
         # Align output between Python and Fortran version.
