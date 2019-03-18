@@ -908,10 +908,8 @@ class TestClass(object):
             emaxs_period,
             max_emax,
             is_simulated,
-            num_draws_emax,
             draws_emax_risk,
-            edu_spec,
-            optim_paras,
+            optim_paras["delta"],
         )
 
         f90 = fort_debug.wrapper_get_endogenous_variable(
