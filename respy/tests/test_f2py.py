@@ -673,6 +673,7 @@ class TestClass(object):
             periods_draws_prob,
             tau,
             num_agents_est,
+            num_obs_agent,
             optim_paras,
         )
 
