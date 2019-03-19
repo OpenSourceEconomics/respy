@@ -5,7 +5,6 @@ from respy.python.evaluate.evaluate_auxiliary import (
     get_smoothed_probability,
     get_pdf_of_normal_distribution,
 )
-from respy.python.shared.shared_constants import SMALL_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
 
@@ -70,7 +69,6 @@ def pyth_contributions(
     # Define a shortcut to the Cholesky factors of the shocks, because they are so
     # frequently used inside deeply nested loops.
     sc = optim_paras["shocks_cholesky"]
-    is_deterministic = np.count_nonzero(sc) == 0
 
     # Initialize auxiliary objects.
     contribs = np.full(num_agents_est, np.nan)
@@ -131,35 +129,24 @@ def pyth_contributions(
                         np.log(wage_systematic), -HUGE_FLOAT, HUGE_FLOAT
                     )
 
-                    # If there is no random variation in rewards, then the observed
-                    # wages need to be identical to their systematic components. The
-                    # discrepancy between the observed wages and their systematic
-                    # components might be nonzero (but small) due to the reading in of
-                    # the dataset (FORTRAN only).
-                    if is_deterministic and (dist > SMALL_FLOAT):
-                        return np.ones(num_agents_est)
-
                     # Construct independent normal draws implied by the agents state
                     # experience. This is needed to maintain the correlation structure
                     # of the disturbances. Special care is needed in case of a
                     # deterministic model, as otherwise a zero division error occurs.
-                    elif is_deterministic:
-                        prob_wages = np.full(num_draws_prob, HUGE_FLOAT)
-                    else:
-                        if choice == 1:
-                            draws_stan[:, 0] = dist / sc[0, 0]
-                            means = np.zeros(num_draws_prob)
-                        elif choice == 2:
-                            draws_stan[:, 1] = (
-                                dist - sc[1, 0] * draws_stan[:, 0]
-                            ) / sc[1, 1]
-                            means = sc[1, 0] * draws_stan[:, 0]
+                    if choice == 1:
+                        draws_stan[:, 0] = dist / sc[0, 0]
+                        means = np.zeros(num_draws_prob)
+                    elif choice == 2:
+                        draws_stan[:, 1] = (
+                            dist - sc[1, 0] * draws_stan[:, 0]
+                        ) / sc[1, 1]
+                        means = sc[1, 0] * draws_stan[:, 0]
 
-                        sd = np.abs(sc[choice - 1, choice - 1])
+                    sd = np.abs(sc[choice - 1, choice - 1])
 
-                        prob_wages = get_pdf_of_normal_distribution(
-                            dist, means, sd
-                        )
+                    prob_wages = get_pdf_of_normal_distribution(
+                        dist, means, sd
+                    )
 
                 else:
                     prob_wages = np.ones(num_draws_prob)
@@ -178,14 +165,6 @@ def pyth_contributions(
 
                 total_values = total_values.reshape(4, -1).T
 
-                # Simulate the conditional distribution of alternative-specific value
-                # functions and determine the choice probabilities.
-
-                # Record choices.
-                counts = np.bincount(
-                    np.argmax(total_values, axis=1), minlength=4
-                )
-
                 prob_choices = get_smoothed_probability(
                     total_values, choice - 1, tau
                 )
@@ -193,20 +172,9 @@ def pyth_contributions(
                 # Determine relative shares
                 prob_obs[p] = prob_choices.dot(prob_wages) / num_draws_prob
 
-                # If there is no random variation in rewards, then this implies that the
-                # observed choice in the dataset is the only choice.
-                always_same_choice = counts[choice - 1] == num_draws_prob
-                if is_deterministic and not always_same_choice:
-                    return np.ones(num_agents_est)
-
             prob_type[type_] = np.prod(prob_obs)
 
         # Adjust and record likelihood contribution.
         contribs[j] = prob_type.dot(type_shares)
-
-    # If there is no random variation in rewards and no agent violated the implications
-    # of observed wages and choices, then the evaluation return value of one.
-    if is_deterministic:
-        contribs = np.exp(np.ones(num_agents_est))
 
     return contribs
