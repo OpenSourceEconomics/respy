@@ -7,6 +7,7 @@ from respy.python.evaluate.evaluate_auxiliary import (
 )
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
+from scipy.stats import norm
 
 
 def pyth_contributions(
@@ -66,6 +67,11 @@ def pyth_contributions(
     ].values.astype(int)
     wages = data["Wage"].values
 
+    # Extend systematic wages with zeros so that indexing does not fail later
+    wages_systematic_ext = np.c_[
+        state_space.rewards[:, -2:], np.zeros((state_space.num_states, 2))
+    ]
+
     # Define a shortcut to the Cholesky factors of the shocks, because they are so
     # frequently used inside deeply nested loops.
     sc = optim_paras["shocks_cholesky"]
@@ -101,10 +107,17 @@ def pyth_contributions(
                 ]
                 wage_observed = wages[row_start + p]
 
+                # TODO: Delete
+                choices = np.array([choice])
+
                 # Extract relevant deviates from standard normal distribution. The same
                 # set of baseline draws are used for each agent and period. The copy is
                 # needed as the object is otherwise changed in-place.
-                draws_stan = periods_draws_prob[period].copy()
+
+                # TODO: delete reshape
+                draws_stan = (
+                    periods_draws_prob[period].copy().reshape(1, -1, 4)
+                )
 
                 # Get state index to access the systematic component of the agents
                 # rewards. These feed into the simulation of choice probabilities.
@@ -112,44 +125,51 @@ def pyth_contributions(
                     period, exp_a, exp_b, edu, choice_lagged - 1, type_
                 ]
 
+                # NEW START
+
                 # If an agent is observed working, then the the labor market shocks are
                 # observed and the conditional distribution is used to determine the
                 # choice probabilities if the wage information is available as well.
-                is_working = choice in [1, 2]
-                has_wage = not np.isnan(wage_observed)
+                is_working = np.array([choice in [1, 2]])
+                has_wage = np.array([not np.isnan(wage_observed)])
 
-                if is_working and has_wage:
-                    wage_systematic = state_space.rewards[k, -2:][choice - 1]
+                wages_systematic = wages_systematic_ext[k, choice - 1]
+                # TODO: Delete
+                wages_systematic = wages_systematic.reshape(1, -1)
 
-                    # Calculate the disturbance which are implied by the model and the
-                    # observed wages.
-                    dist = np.clip(
-                        np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT
-                    ) - np.clip(
-                        np.log(wage_systematic), -HUGE_FLOAT, HUGE_FLOAT
+                # Calculate the disturbance which are implied by the model and the
+                # observed wages.
+                dist = np.clip(
+                    np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT
+                ) - np.clip(np.log(wages_systematic), -HUGE_FLOAT, HUGE_FLOAT)
+
+                idx_choice_1 = np.where((choices == 1) & is_working & has_wage)
+                idx_choice_2 = np.where((choices == 2) & is_working & has_wage)
+                # TODO: p to num_obs
+                prob_wages = np.ones((1, num_draws_prob))
+
+                if not idx_choice_1[0].shape[0] == 0:
+                    draws_stan[idx_choice_1, :, 0] = dist[idx_choice_1] / sc[0, 0]
+                    prob_wages[idx_choice_1] = norm.pdf(
+                        dist[idx_choice_1],
+                        np.zeros(idx_choice_1[0].shape[0]),
+                        sc[choices - 1, choices - 1][idx_choice_1],
                     )
 
-                    # Construct independent normal draws implied by the agents state
-                    # experience. This is needed to maintain the correlation structure
-                    # of the disturbances. Special care is needed in case of a
-                    # deterministic model, as otherwise a zero division error occurs.
-                    if choice == 1:
-                        draws_stan[:, 0] = dist / sc[0, 0]
-                        means = np.zeros(num_draws_prob)
-                    elif choice == 2:
-                        draws_stan[:, 1] = (
-                            dist - sc[1, 0] * draws_stan[:, 0]
-                        ) / sc[1, 1]
-                        means = sc[1, 0] * draws_stan[:, 0]
-
-                    sd = np.abs(sc[choice - 1, choice - 1])
-
-                    prob_wages = get_pdf_of_normal_distribution(
-                        dist, means, sd
+                if not idx_choice_2[0].shape[0] == 0:
+                    draws_stan[idx_choice_2, :, 1] = (
+                        dist[idx_choice_2]
+                        - sc[1, 0] * draws_stan[idx_choice_2, :, 0]
+                    ) / sc[1, 1]
+                    means = sc[1, 0] * draws_stan[idx_choice_2, :, 0]
+                    prob_wages[idx_choice_2] = norm.pdf(
+                        dist[idx_choice_2],
+                        means,
+                        sc[choices - 1, choices - 1][idx_choice_2],
                     )
 
-                else:
-                    prob_wages = np.ones(num_draws_prob)
+                draws_stan = draws_stan.reshape(-1, 4)
+                prob_wages = prob_wages.reshape(-1)
 
                 draws = draws_stan.dot(sc.T)
 
