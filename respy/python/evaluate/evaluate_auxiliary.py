@@ -16,25 +16,17 @@ def get_smoothed_probability(total_values, idx, tau, prob_choice):
     Parameters
     ----------
     total_values : np.ndarray
-        Array with shape (num_draws, 4).
+        Array with shape (num_types, num_draws, num_choices).
     idx : int
-        It is the choice of the agent (1-4) minus one.
+        It is the choice of the agent minus one to get an index.
     tau : float
         Smoothing parameter for choice probabilities.
 
     Returns
     -------
     prob_choices : np.ndarray
-        Array with shape (num_draws,) containing smoothed probabilities for choice.
-
-    Example
-    -------
-    >>> get_smoothed_probability(np.zeros(4), 3, 0.5)
-    0.25
-
-    >>> total_values = np.arange(1, 9).reshape(2, 4)
-    >>> get_smoothed_probability(total_values, 3, 0.5)
-    array([0.86495488, 0.86495488])
+        Array with shape (num_types, num_draws) containing smoothed probabilities for
+        choice.
 
     """
     num_types, num_draws, num_choices = total_values.shape

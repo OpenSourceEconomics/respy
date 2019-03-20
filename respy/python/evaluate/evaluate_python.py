@@ -7,7 +7,6 @@ from respy.python.evaluate.evaluate_auxiliary import (
 )
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
-from scipy.stats import norm
 
 
 def pyth_contributions(
@@ -79,7 +78,11 @@ def pyth_contributions(
     # Initialize auxiliary objects.
     contribs = np.full(num_agents_est, np.nan)
 
-    # Calculate the probability for each over all periods and types.
+    # Calculate the probability for each over all periods and types. The format of array
+    # is (num_obs, num_types, num_draws, num_choices) reduced to the minimum of
+    # dimensions. E.g. choices are determined for every agent thus the shape is
+    # (num_obs,), prob_wages are calculated for each draw thus the shape is (num_obs,
+    # num_types, num_draws).
     for j in range(num_agents_est):
 
         row_start = num_obs_agent[:j].sum()
@@ -158,6 +161,7 @@ def pyth_contributions(
                 dist[idx_choice_2], means, sc[1, 1]
             )
 
+        # This statement accounts for 40% of the time needed in the first KW example.
         draws = draws_stan.dot(sc.T)
 
         draws[:, :, :, :2] = np.clip(np.exp(draws[:, :, :, :2]), 0.0, HUGE_FLOAT)
