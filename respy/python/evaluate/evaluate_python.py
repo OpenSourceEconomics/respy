@@ -97,100 +97,84 @@ def pyth_contributions(
 
         for type_ in range(state_space.num_types):
 
-            prob_obs = np.zeros(num_obs)
+            # Extract observable components of the state space as well as agent's
+            # decision.
+            periods, exp_as, exp_bs, edus, choices_lagged, choices = (
+                agents[row_start : row_start + num_obs, i] for i in range(6)
+            )
+            wages_observed = wages[row_start : row_start + num_obs]
 
-            for p in range(num_obs):
-                # Extract observable components of the state space as well as agent's
-                # decision.
-                period, exp_a, exp_b, edu, choice_lagged, choice = agents[
-                    row_start + p
-                ]
-                wage_observed = wages[row_start + p]
+            # Extract relevant deviates from standard normal distribution. The same
+            # set of baseline draws are used for each agent and period. The copy is
+            # needed as the object is otherwise changed in-place.
 
-                # TODO: Delete
-                choices = np.array([choice])
+            draws_stan = periods_draws_prob[periods].copy()
 
-                # Extract relevant deviates from standard normal distribution. The same
-                # set of baseline draws are used for each agent and period. The copy is
-                # needed as the object is otherwise changed in-place.
+            # Get state index to access the systematic component of the agents
+            # rewards. These feed into the simulation of choice probabilities.
+            ks = state_space.indexer[
+                periods, exp_as, exp_bs, edus, choices_lagged - 1, type_
+            ]
 
-                # TODO: delete reshape
-                draws_stan = (
-                    periods_draws_prob[period].copy().reshape(1, -1, 4)
+            # If an agent is observed working, then the the labor market shocks are
+            # observed and the conditional distribution is used to determine the
+            # choice probabilities if the wage information is available as well.
+            is_working = np.isin(choices, [1, 2])
+            has_wage = ~np.isnan(wages_observed)
+
+            wages_systematic = wages_systematic_ext[ks, choices - 1]
+
+            # Calculate the disturbance which are implied by the model and the
+            # observed wages.
+            dist = np.clip(
+                np.log(wages_observed), -HUGE_FLOAT, HUGE_FLOAT
+            ) - np.clip(np.log(wages_systematic), -HUGE_FLOAT, HUGE_FLOAT)
+            dist = dist.reshape(-1, 1)
+
+            idx_choice_1 = np.where((choices == 1) & is_working & has_wage)
+            idx_choice_2 = np.where((choices == 2) & is_working & has_wage)
+
+            # We initialize with ones as it is the value for SCHOOLING and HOME.
+            prob_wages = np.ones((num_obs, num_draws_prob))
+
+            # Adjust draws and prob_wages in cases of OCCUPATION A.
+            if not idx_choice_1[0].shape[0] == 0:
+                draws_stan[idx_choice_1, :, 0] = dist[idx_choice_1] / sc[0, 0]
+                prob_wages[idx_choice_1] = norm.pdf(
+                    dist[idx_choice_1], 0, sc[0, 0]
                 )
 
-                # Get state index to access the systematic component of the agents
-                # rewards. These feed into the simulation of choice probabilities.
-                k = state_space.indexer[
-                    period, exp_a, exp_b, edu, choice_lagged - 1, type_
-                ]
-
-                # NEW START
-
-                # If an agent is observed working, then the the labor market shocks are
-                # observed and the conditional distribution is used to determine the
-                # choice probabilities if the wage information is available as well.
-                is_working = np.array([choice in [1, 2]])
-                has_wage = np.array([not np.isnan(wage_observed)])
-
-                wages_systematic = wages_systematic_ext[k, choice - 1]
-                # TODO: Delete
-                wages_systematic = wages_systematic.reshape(1, -1)
-
-                # Calculate the disturbance which are implied by the model and the
-                # observed wages.
-                dist = np.clip(
-                    np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT
-                ) - np.clip(np.log(wages_systematic), -HUGE_FLOAT, HUGE_FLOAT)
-
-                idx_choice_1 = np.where((choices == 1) & is_working & has_wage)
-                idx_choice_2 = np.where((choices == 2) & is_working & has_wage)
-                # TODO: p to num_obs
-                prob_wages = np.ones((1, num_draws_prob))
-
-                if not idx_choice_1[0].shape[0] == 0:
-                    draws_stan[idx_choice_1, :, 0] = dist[idx_choice_1] / sc[0, 0]
-                    prob_wages[idx_choice_1] = norm.pdf(
-                        dist[idx_choice_1],
-                        np.zeros(idx_choice_1[0].shape[0]),
-                        sc[choices - 1, choices - 1][idx_choice_1],
-                    )
-
-                if not idx_choice_2[0].shape[0] == 0:
-                    draws_stan[idx_choice_2, :, 1] = (
-                        dist[idx_choice_2]
-                        - sc[1, 0] * draws_stan[idx_choice_2, :, 0]
-                    ) / sc[1, 1]
-                    means = sc[1, 0] * draws_stan[idx_choice_2, :, 0]
-                    prob_wages[idx_choice_2] = norm.pdf(
-                        dist[idx_choice_2],
-                        means,
-                        sc[choices - 1, choices - 1][idx_choice_2],
-                    )
-
-                draws_stan = draws_stan.reshape(-1, 4)
-                prob_wages = prob_wages.reshape(-1)
-
-                draws = draws_stan.dot(sc.T)
-
-                draws[:, :2] = np.clip(np.exp(draws[:, :2]), 0.0, HUGE_FLOAT)
-
-                total_values, _ = get_continuation_value(
-                    state_space.rewards[k, -2:],
-                    state_space.rewards[k, :4],
-                    state_space.emaxs[k, :4],
-                    draws,
-                    optim_paras["delta"],
+            # Adjust draws and prob_wages in cases of OCCUPATION B.
+            if not idx_choice_2[0].shape[0] == 0:
+                draws_stan[idx_choice_2, :, 1] = (
+                    dist[idx_choice_2]
+                    - sc[1, 0] * draws_stan[idx_choice_2, :, 0]
+                ) / sc[1, 1]
+                means = sc[1, 0] * draws_stan[idx_choice_2, :, 0]
+                prob_wages[idx_choice_2] = norm.pdf(
+                    dist[idx_choice_2], means, sc[1, 1]
                 )
 
-                total_values = total_values.reshape(4, -1).T
+            draws = draws_stan.dot(sc.T)
 
-                prob_choices = get_smoothed_probability(
-                    total_values, choice - 1, tau
-                )
+            draws[:, :, :2] = np.clip(np.exp(draws[:, :, :2]), 0.0, HUGE_FLOAT)
 
-                # Determine relative shares
-                prob_obs[p] = prob_choices.dot(prob_wages) / num_draws_prob
+            total_values, _ = get_continuation_value(
+                state_space.rewards[ks, -2:],
+                state_space.rewards[ks, :4],
+                state_space.emaxs[ks, :4],
+                draws,
+                optim_paras["delta"],
+            )
+
+            total_values = total_values.transpose(0, 2, 1)
+
+            prob_choices = get_smoothed_probability(
+                total_values, choices - 1, tau
+            )
+
+            # Determine relative shares
+            prob_obs = (prob_choices * prob_wages).mean(axis=1)
 
             prob_type[type_] = np.prod(prob_obs)
 
