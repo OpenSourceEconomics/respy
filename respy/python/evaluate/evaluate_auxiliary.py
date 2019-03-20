@@ -6,8 +6,8 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
 @guvectorize(
-    ["float64[:, :], int64, float64, float64[:]"],
-    "(p, n), (), () -> (p)",
+    ["float64[:, :, :], int64, float64, float64[:, :]"],
+    "(m, p, n), (), () -> (m, p)",
     nopython=True,
 )
 def get_smoothed_probability(total_values, idx, tau, prob_choice):
@@ -37,28 +37,30 @@ def get_smoothed_probability(total_values, idx, tau, prob_choice):
     array([0.86495488, 0.86495488])
 
     """
-    num_draws, num_choices = total_values.shape
+    num_types, num_draws, num_choices = total_values.shape
 
-    for i in range(num_draws):
+    for t in range(num_types):
 
-        max_total_values = 0.0
-        for j in range(num_choices):
-            if total_values[i, j] > max_total_values or j == 0:
-                max_total_values = total_values[i, j]
+        for i in range(num_draws):
 
-        sum_smooth_values = 0.0
+            max_total_values = 0.0
+            for j in range(num_choices):
+                if total_values[t, i, j] > max_total_values or j == 0:
+                    max_total_values = total_values[t, i, j]
 
-        for j in range(num_choices):
-            temp = np.exp((total_values[i, j] - max_total_values) / tau)
-            if temp > HUGE_FLOAT:
-                temp = HUGE_FLOAT
-            elif temp < 0.0:
-                temp = 0.0
+            sum_smooth_values = 0.0
 
-            total_values[i, j] = temp
-            sum_smooth_values += temp
+            for j in range(num_choices):
+                temp = np.exp((total_values[t, i, j] - max_total_values) / tau)
+                if temp > HUGE_FLOAT:
+                    temp = HUGE_FLOAT
+                elif temp < 0.0:
+                    temp = 0.0
 
-        prob_choice[i] = total_values[i, idx] / sum_smooth_values
+                total_values[t, i, j] = temp
+                sum_smooth_values += temp
+
+            prob_choice[t, i] = total_values[t, i, idx] / sum_smooth_values
 
 
 @njit
