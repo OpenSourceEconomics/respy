@@ -248,17 +248,21 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
     rewards[:, :2] = wages + rewards_general
 
     # Calculate systematic part of SCHOOL rewards
-    covariates_education = np.c_[
-        np.ones(states.shape[0]),
-        covariates[:, 9:13],
-        states[:, 0],
-        covariates[:, 13],
-    ]
+    covariates_education = np.hstack(
+        (
+            np.ones((states.shape[0], 1)),
+            covariates[:, 9:13],
+            states[:, 0].reshape(-1, 1),
+            covariates[:, 13].reshape(-1, 1),
+        )
+    )
 
     rewards[:, 2] = covariates_education.dot(optim_paras["coeffs_edu"])
 
     # Calculate systematic part of HOME
-    covariates_home = np.c_[np.ones(states.shape[0]), covariates[:, 14:]]
+    covariates_home = np.hstack(
+        (np.ones((states.shape[0], 1)), covariates[:, 14:])
+    )
 
     rewards[:, 3] = covariates_home.dot(optim_paras["coeffs_home"])
 
@@ -558,9 +562,9 @@ def get_predictions(
     is_write : bool
 
     """
-    exogenous = np.c_[
-        exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0])
-    ]
+    exogenous = np.hstack(
+        (exogenous, np.sqrt(exogenous), np.ones((exogenous.shape[0], 1)))
+    )
 
     # Define ordinary least squares model and fit to the data.
     model = sm.OLS(endogenous[is_simulated], exogenous[is_simulated])
@@ -667,11 +671,11 @@ def calculate_wages_systematic(
     # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
     wages = np.full((states.shape[0], 2), np.nan)
 
-    wages[:, 0] = np.c_[relevant_covariates, covariates[:, [7, 2]]].dot(
+    wages[:, 0] = np.hstack((relevant_covariates, covariates[:, [7, 2]])).dot(
         coeffs_a
     )
 
-    wages[:, 1] = np.c_[relevant_covariates, covariates[:, [8, 3]]].dot(
+    wages[:, 1] = np.hstack((relevant_covariates, covariates[:, [8, 3]])).dot(
         coeffs_b
     )
 
@@ -893,9 +897,7 @@ class StateSpace:
             if getattr(self, i, None) is not None
         ]
 
-        return pd.DataFrame(
-            np.concatenate(attributes, axis=1), columns=columns
-        )
+        return pd.DataFrame(np.hstack(attributes), columns=columns)
 
     def _create_slices_by_periods(self, num_periods):
         """Create slices to index all attributes in a given period.

@@ -184,17 +184,24 @@ def _check_optimization_parameters(x):
     return True
 
 
-def get_conditional_probabilities(type_shares, edu_start):
+def get_conditional_probabilities(type_shares, edu_starts):
     """Calculate the conditional choice probabilities.
 
     The calculation is based on the mulitnomial logit model for one particular
     initial condition.
 
     """
+    if isinstance(edu_starts, np.number):
+        edu_starts = np.array([edu_starts])
+
     type_shares = type_shares.reshape(-1, 2)
-    covariate = np.array([1, edu_start > 9])
-    probs = np.exp(type_shares.dot(covariate))
-    probs /= probs.sum()
+    covariate = edu_starts > 9
+    covariates = np.hstack([np.ones((covariate.shape[0], 1)), covariate.reshape(-1, 1)])
+    probs = np.exp(covariates.dot(type_shares.T))
+    probs /= probs.sum(axis=1, keepdims=True)
+
+    if edu_starts.shape[0] == 1:
+        probs = probs.ravel()
 
     return probs
 
@@ -207,13 +214,13 @@ def extract_type_information(x):
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
     num_types = int(len(x[start:]) / 6) + 1
     type_shares = x[start:stop]
-    type_shares = np.concatenate((np.zeros(2), type_shares), axis=0)
+    type_shares = np.hstack((np.zeros(2), type_shares))
 
     # Type shifts
     start, stop = pinfo["type_shifts"]["start"], pinfo["type_shifts"]["stop"]
     type_shifts = x[start:stop]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
-    type_shifts = np.concatenate((np.zeros((1, 4)), type_shifts), axis=0)
+    type_shifts = np.vstack((np.zeros(4), type_shifts))
 
     return type_shares, type_shifts
 
@@ -360,10 +367,8 @@ def get_continuation_value(
             rew_ex_post[j, i] = rew_ex
 
 
-@njit
-def get_emaxs_of_subsequent_period(
-    states, indexer, emaxs, edu_max
-):
+@njit(nogil=True)
+def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
     """Get the maxmium utility from the subsequent period.
 
     This function takes a parent node and looks up the utility from each of the four
@@ -868,12 +873,12 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
     num_states = covariates.shape[0]
     rewards_general = np.full((num_states, 2), np.nan)
 
-    rewards_general[:, 0] = np.c_[
-        np.ones(num_states), covariates[:, [0, 5]]
-    ].dot(coeffs_a)
-    rewards_general[:, 1] = np.c_[
-        np.ones(num_states), covariates[:, [1, 6]]
-    ].dot(coeffs_b)
+    rewards_general[:, 0] = np.hstack(
+        (np.ones((num_states, 1)), covariates[:, [0, 5]])
+    ).dot(coeffs_a)
+    rewards_general[:, 1] = np.hstack(
+        (np.ones((num_states, 1)), covariates[:, [1, 6]])
+    ).dot(coeffs_b)
 
     return rewards_general
 

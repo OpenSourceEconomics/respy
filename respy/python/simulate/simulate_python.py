@@ -188,6 +188,7 @@ def pyth_simulate(
         pd.DataFrame(data=np.vstack(data), columns=DATA_LABELS_SIM)
         .astype(DATA_FORMATS_SIM)
         .sort_values(["Identifier", "Period"])
+        .reset_index(drop=True)
     )
 
     # TODO: Replace logging which is useless here and kept only for successful testing.

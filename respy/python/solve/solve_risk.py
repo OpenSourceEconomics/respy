@@ -8,7 +8,7 @@ from numba import guvectorize
     ],
     "(m), (n), (n), (p, n), () -> ()",
     nopython=True,
-    target="cpu",
+    target="parallel",
 )
 def construct_emax_risk(
     wages, rewards_systematic, emaxs_sub_period, draws, delta, cont_value

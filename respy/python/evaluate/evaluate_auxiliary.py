@@ -9,6 +9,7 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
     ["float64[:, :, :], int64, float64, float64[:, :]"],
     "(m, p, n), (), () -> (m, p)",
     nopython=True,
+    target="parallel",
 )
 def get_smoothed_probability(total_values, idx, tau, prob_choice):
     """Construct smoothed choice probabilities.
@@ -55,7 +56,7 @@ def get_smoothed_probability(total_values, idx, tau, prob_choice):
             prob_choice[t, i] = total_values[t, i, idx] / sum_smooth_values
 
 
-@njit
+@njit(nogil=True)
 def get_pdf_of_normal_distribution(x, mu=0, sigma=1):
     """Return the probability of :data:`x` assuming the normal distribution.
 
