@@ -219,7 +219,7 @@ def write_types(type_shares, num_agents_sim):
     # Note that the we simply set the relevant initial condition to a random value. This seems to
     # be sufficient for the testing purposes.
     type_probs = get_conditional_probabilities(
-        type_shares, np.random.choice([10, 12, 15])
+        type_shares, np.array([np.random.choice([10, 12, 15])])
     )
     types = np.random.choice(len(type_probs), p=type_probs, size=num_agents_sim)
     np.savetxt(".types.respy.test", types, fmt="%i")

@@ -191,9 +191,6 @@ def get_conditional_probabilities(type_shares, edu_starts):
     initial condition.
 
     """
-    if isinstance(edu_starts, np.number):
-        edu_starts = np.array([edu_starts])
-
     type_shares = type_shares.reshape(-1, 2)
     covariate = edu_starts > 9
     covariates = np.hstack([np.ones((covariate.shape[0], 1)), covariate.reshape(-1, 1)])

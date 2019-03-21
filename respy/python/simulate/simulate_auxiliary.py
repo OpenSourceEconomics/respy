@@ -28,7 +28,10 @@ def get_final_education(agent):
 
     # As a little test, we just ensure that the final level of education is equal or
     # less the level the agent entered the final period.
-    valid = [agent["Years_Schooling"].iloc[-1], agent["Years_Schooling"].iloc[-1] + 1]
+    valid = [
+        agent["Years_Schooling"].iloc[-1],
+        agent["Years_Schooling"].iloc[-1] + 1,
+    ]
     np.testing.assert_equal(edu_final in valid, True)
 
     return edu_final
@@ -39,7 +42,12 @@ def write_info(respy_obj, data_frame):
     """
     # Distribute class attributes
     optim_paras, num_types, file_sim, seed_sim, edu_spec = dist_class_attributes(
-        respy_obj, "optim_paras", "num_types", "file_sim", "seed_sim", "edu_spec"
+        respy_obj,
+        "optim_paras",
+        "num_types",
+        "file_sim",
+        "seed_sim",
+        "edu_spec",
     )
 
     # Get basic information
@@ -51,7 +59,9 @@ def write_info(respy_obj, data_frame):
 
         file_.write("\n Simulated Economy\n\n")
 
-        file_.write("   Number of Agents:       " + str(num_agents_sim) + "\n\n")
+        file_.write(
+            "   Number of Agents:       " + str(num_agents_sim) + "\n\n"
+        )
         file_.write("   Number of Periods:      " + str(num_periods) + "\n\n")
         file_.write("   Seed:                   " + str(seed_sim) + "\n\n\n")
         file_.write("   Choices\n\n")
@@ -149,7 +159,11 @@ def write_info(respy_obj, data_frame):
         # Years_Schooling only contains information on the level of schooling attainment going in
         # the period, thus is not identical to the final level of schooling for individuals that
         # enroll in school in the very last period.
-        stat = data_frame.groupby(level="Identifier").apply(get_final_education).mean()
+        stat = (
+            data_frame.groupby(level="Identifier")
+            .apply(get_final_education)
+            .mean()
+        )
         file_.write(fmt_.format(*["Average School", stat]))
 
         stat = (data_frame["Choice"] == 4).sum() / float(num_agents_sim)
@@ -161,7 +175,9 @@ def write_info(respy_obj, data_frame):
         cat_schl = pd.Categorical(
             data_frame["Years_Schooling"][:, 0], categories=edu_spec["start"]
         )
-        cat_type = pd.Categorical(data_frame["Type"][:, 0], categories=range(num_types))
+        cat_type = pd.Categorical(
+            data_frame["Type"][:, 0], categories=range(num_types)
+        )
 
         for normalize in ["all", "columns", "index"]:
 
@@ -176,7 +192,11 @@ def write_info(respy_obj, data_frame):
                 num_columns = num_types
 
             info = pd.crosstab(
-                cat_schl, cat_type, normalize=normalize, dropna=False, margins=True
+                cat_schl,
+                cat_type,
+                normalize=normalize,
+                dropna=False,
+                margins=True,
             ).values
 
             fmt_ = "   {:>10}    " + "{:>25}" * num_columns + "\n\n"
@@ -202,12 +222,18 @@ def write_info(respy_obj, data_frame):
         cat_1 = pd.Categorical(
             data_frame["Years_Schooling"][:, 0], categories=edu_spec["start"]
         )
-        cat_2 = pd.Categorical(data_frame["Lagged_Choice"][:, 0], categories=[3, 4])
-        info = pd.crosstab(cat_1, cat_2, normalize=normalize, dropna=False).values
+        cat_2 = pd.Categorical(
+            data_frame["Lagged_Choice"][:, 0], categories=[3, 4]
+        )
+        info = pd.crosstab(
+            cat_1, cat_2, normalize=normalize, dropna=False
+        ).values
 
         file_.write("\n\n   Initial Lagged Activity by Schooling\n\n")
         fmt_ = "\n   {:>10}" + "    {:>25}" + "{:>25}\n\n"
-        file_.write(fmt_.format(*["Schooling", "Lagged Schooling", "Lagged Home"]))
+        file_.write(
+            fmt_.format(*["Schooling", "Lagged Schooling", "Lagged Home"])
+        )
         for i, edu_start in enumerate(edu_spec["start"]):
             fmt_ = "   {:>10}" + "    {:25.5f}" + "{:25.5f}\n"
             file_.write(fmt_.format(*[edu_start] + info[i].tolist()))
@@ -367,7 +393,9 @@ def sort_edu_spec(edu_spec):
     return edu_spec_ordered
 
 
-def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug):
+def get_random_types(
+    num_types, optim_paras, num_agents_sim, edu_start, is_debug
+):
     """ This function provides random draws for the types, or reads them in from a file.
     """
     # We want to ensure that the order of types in the initialization file does not
@@ -379,8 +407,12 @@ def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug
     else:
         types = []
         for i in range(num_agents_sim):
-            probs = get_conditional_probabilities(type_info["shares"], edu_start[i])
-            types += np.random.choice(type_info["order"], p=probs, size=1).tolist()
+            probs = get_conditional_probabilities(
+                type_info["shares"], np.array([edu_start[i]])
+            )
+            types += np.random.choice(
+                type_info["order"], p=probs, size=1
+            ).tolist()
 
     # If we only have one individual, we need to ensure that types are a vector.
     types = np.array(types, ndmin=1)
@@ -413,7 +445,9 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     return edu_start
 
 
-def get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start, is_debug):
+def get_random_choice_lagged_start(
+    edu_spec, num_agents_sim, edu_start, is_debug
+):
     """ This function provides values for the initial lagged choice.
 
     The values are random draws or read in from a file.

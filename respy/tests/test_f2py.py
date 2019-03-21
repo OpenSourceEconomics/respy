@@ -1066,7 +1066,7 @@ class TestClass(object):
             edu_start = np.random.randint(10, 100)
             type_shares = np.random.normal(0, 1, size=num_types * 2)
 
-            args = [type_shares, edu_start]
+            args = [type_shares, np.array([edu_start])]
 
             py = get_conditional_probabilities(*args)
             fort = fort_debug.wrapper_get_conditional_probabilities(
