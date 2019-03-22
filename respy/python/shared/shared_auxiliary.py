@@ -302,7 +302,7 @@ def cholesky_to_coeffs(shocks_cholesky):
 def get_continuation_value(
     wages,
     rewards_systematic,
-    emaxs_sub_period,
+    emaxs,
     draws,
     delta,
     cont_value,
@@ -319,7 +319,7 @@ def get_continuation_value(
         Array with shape (num_states_in_period, 2).
     rewards_systematic : np.ndarray
         Array with shape (num_states_in_period, 4).
-    emaxs_sub_period : np.ndarray
+    emaxs : np.ndarray
         Array with shape (num_states_in_period, 4)
     draws : np.ndarray
         Array with shape (num_draws, 4)
@@ -360,7 +360,7 @@ def get_continuation_value(
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
-            cont_value[j, i] = rew_ex + delta * emaxs_sub_period[j]
+            cont_value[j, i] = rew_ex + delta * emaxs[j]
             rew_ex_post[j, i] = rew_ex
 
 

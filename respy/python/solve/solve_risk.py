@@ -11,7 +11,7 @@ from numba import guvectorize
     target="parallel",
 )
 def construct_emax_risk(
-    wages, rewards_systematic, emaxs_sub_period, draws, delta, cont_value
+    wages, rewards_systematic, emaxs, draws, delta, cont_value
 ):
     """Simulate expected future value for a given distribution of the unobservables.
 
@@ -24,18 +24,18 @@ def construct_emax_risk(
     ----------
     wages : np.ndarray
         Array with shape (num_states_in_period, 2).
-    rewards : np.ndarray
+    rewards_systematic : np.ndarray
         Array with shape (num_states_in_period, 4).
     emaxs : np.ndarray
         Array with shape (num_states_in_period, 4).
-    draws_emax_risk : np.ndarray
+    draws : np.ndarray
         Array with shape (num_draws, 4).
     delta : np.ndarray
         Scalar value representing the discount factor.
 
     Returns
     -------
-    total_values : np.ndarray
+    cont_value : np.ndarray
         Array with shape (num_states_in_period,) containing emax for each agent in a
         period.
 
@@ -63,7 +63,7 @@ def construct_emax_risk(
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
-            emax_choice = rew_ex + delta * emaxs_sub_period[j]
+            emax_choice = rew_ex + delta * emaxs[j]
 
             if emax_choice > current_max_emax:
                 current_max_emax = emax_choice
