@@ -109,12 +109,6 @@ def pyth_contributions(
 
     wages_observed = wages[:num_obs].reshape(-1, 1)
 
-    # If an agent is observed working, then the the labor market shocks are observed and
-    # the conditional distribution is used to determine the choice probabilities if the
-    # wage information is available as well.
-    is_working = np.isin(choices, [1, 2])
-    has_wage = ~np.isnan(wages_observed).ravel()
-
     wages_systematic = wages_systematic_ext[ks, choices.reshape(-1, 1) - 1]
 
     # Calculate the disturbance which are implied by the model and the observed wages.
@@ -131,22 +125,28 @@ def pyth_contributions(
     # object is otherwise changed in-place.
     draws_stan = periods_draws_prob[periods]
 
+    # We initialize with ones as it is the value for SCHOOLING and HOME and OCCUPATIONS
+    # without wages.
+    prob_wages = np.ones((num_obs, state_space.num_types, num_draws_prob))
+
+    # If an agent is observed working, then the the labor market shocks are observed and
+    # the conditional distribution is used to determine the choice probabilities if the
+    # wage information is available as well.
+    is_working = np.isin(choices, [1, 2])
+    has_wage = ~np.isnan(wages_observed).ravel()
     # These are the indices for observations where shocks and probabilities of wages
     # need to be adjusted.
     idx_choice_1 = np.where((choices == 1) & is_working & has_wage)
     idx_choice_2 = np.where((choices == 2) & is_working & has_wage)
 
-    # We initialize with ones as it is the value for SCHOOLING and HOME.
-    prob_wages = np.ones((num_obs, state_space.num_types, num_draws_prob))
-
-    # Adjust draws and prob_wages in cases of OCCUPATION A.
+    # Adjust draws and prob_wages in cases of OCCUPATION A with wages.
     if not idx_choice_1[0].shape[0] == 0:
         draws_stan[idx_choice_1, :, :, 0] = dist[idx_choice_1] / sc[0, 0]
         prob_wages[idx_choice_1] = get_pdf_of_normal_distribution(
             dist[idx_choice_1], 0, sc[0, 0]
         )
 
-    # Adjust draws and prob_wages in cases of OCCUPATION B.
+    # Adjust draws and prob_wages in cases of OCCUPATION B with wages.
     if not idx_choice_2[0].shape[0] == 0:
         draws_stan[idx_choice_2, :, :, 1] = (
             dist[idx_choice_2] - sc[1, 0] * draws_stan[idx_choice_2, :, :, 0]
@@ -158,7 +158,7 @@ def pyth_contributions(
 
     draws = np.tensordot(draws_stan, sc.T, axes=(3, 1))
 
-    draws[:, :, :, :2] = np.clip(np.exp(draws[:, :, :, :2]), 0.0, HUGE_FLOAT)
+    draws[:, :, :, :2] = np.exp(draws[:, :, :, :2]).clip(0.0, HUGE_FLOAT)
 
     total_values, _ = get_continuation_value(
         state_space.rewards[ks, -2:],
@@ -178,6 +178,7 @@ def pyth_contributions(
     prob_obs = prob_obs.reshape(num_obs, state_space.num_types)
 
     # Accumulate likelihood of the observe choice for each type across groups of agents.
+    # The groups are defined by num_obs_agent.
     prob_type = np.multiply.reduceat(prob_obs, rows_start)
 
     # Adjust and record likelihood contribution.
