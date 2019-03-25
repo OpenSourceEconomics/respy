@@ -1,8 +1,6 @@
 import numpy as np
 
-from respy.python.shared.shared_auxiliary import (
-    get_conditional_probabilities,
-)
+from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.evaluate.evaluate_auxiliary import (
     get_smoothed_probability,
     get_pdf_of_normal_distribution,
@@ -174,7 +172,9 @@ def pyth_contributions(
 
     total_values = total_values.transpose(0, 1, 3, 2)
 
-    prob_choices = get_smoothed_probability(total_values, choices - 1, tau)
+    prob_choices = get_smoothed_probability(
+        total_values, choices.reshape(-1, 1) - 1, tau
+    )
 
     # Determine relative shares
     prob_obs = (prob_choices * prob_wages).mean(axis=2)
@@ -193,10 +193,7 @@ def pyth_contributions(
 
 
 @guvectorize(
-    ["float64[:], float64[:]"],
-    "(n) -> (n)",
-    nopython=True,
-    target="parallel",
+    ["float64[:], float64[:]"], "(n) -> (n)", nopython=True, target="parallel"
 )
 def faster_exp_clip(x, y):
     for i in range(x.shape[0]):
