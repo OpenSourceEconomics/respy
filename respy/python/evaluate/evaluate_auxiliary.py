@@ -1,7 +1,7 @@
 """Auxiliary functions for the evaluation of the likelihood."""
 import numpy as np
 
-from numba import guvectorize, njit
+from numba import guvectorize
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
@@ -13,6 +13,10 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 )
 def get_smoothed_probability(total_values, idx, tau, prob_choice):
     """Construct smoothed choice probabilities.
+
+    It is possible to even remove the draws loop, but then one needs to repeat and
+    reshape values in :data:`choices` to a shape (num_agents * num_periods, num_types,
+    num_draws) and this takes too much time.
 
     Parameters
     ----------
@@ -55,8 +59,13 @@ def get_smoothed_probability(total_values, idx, tau, prob_choice):
         prob_choice[i] = total_values[i, idx] / sum_smooth_values
 
 
-@njit(nogil=True)
-def get_pdf_of_normal_distribution(x, mu=0, sigma=1):
+@guvectorize(
+    ["float64, float64, float64, float64[:]"],
+    "(), (), () -> ()",
+    nopython=True,
+    target="cpu",
+)
+def get_pdf_of_normal_distribution(x, mu, sigma, prob):
     """Return the probability of :data:`x` assuming the normal distribution.
 
     This implementation is faster than calling :func:`scipy.stats.norm.pdf`.
@@ -79,8 +88,7 @@ def get_pdf_of_normal_distribution(x, mu=0, sigma=1):
     >>> assert result == norm.pdf(0)
 
     """
-    return (
-        1
-        / (np.sqrt(2 * np.pi) * sigma)
-        * np.exp(-(x - mu) ** 2 / (2 * sigma ** 2))
-    )
+    a = np.sqrt(2 * np.pi) * sigma
+    b = np.exp(-(x - mu) ** 2 / (2 * sigma ** 2))
+
+    prob[0] = 1 / a * b
