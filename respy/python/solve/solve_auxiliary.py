@@ -505,7 +505,7 @@ def get_exogenous_variables(rewards, emaxs, draws, delta):
         Array with shape (num_states_in_period,) containing maximum emax.
 
     """
-    total_values, _ = get_continuation_value(
+    total_values = get_continuation_value(
         rewards[:, -2:], rewards[:, :4], emaxs, draws.reshape(1, -1), delta
     )
     max_emax = total_values.max(axis=1)

@@ -2,7 +2,9 @@ import numpy as np
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.shared.shared_auxiliary import get_continuation_value
+from respy.python.shared.shared_auxiliary import (
+    get_continuation_value_and_ex_post_rewards,
+)
 from respy.pre_processing.model_processing import write_init_file
 from respy.python.solve.solve_auxiliary import StateSpace
 from respy.tests.codes.random_init import generate_init
@@ -198,7 +200,9 @@ class TestClass(object):
 
         # Check that rewards match
         _, _, pyth, _ = state_space._get_fortran_counterparts()
-        np.testing.assert_almost_equal(pyth, periods_rewards_systematic, decimal=15)
+        np.testing.assert_almost_equal(
+            pyth, periods_rewards_systematic, decimal=15
+        )
 
         period = np.random.choice(num_periods)
         draws = np.random.normal(size=4)
@@ -214,7 +218,7 @@ class TestClass(object):
             :, :4
         ]
 
-        total_values, rewards_ex_post = get_continuation_value(
+        total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
             rewards_period[:, -2:],
             rewards_period[:, :4],
             emaxs_period,

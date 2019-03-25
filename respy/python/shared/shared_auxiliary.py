@@ -297,9 +297,9 @@ def cholesky_to_coeffs(shocks_cholesky):
     ],
     "(m), (n), (n), (p, n), () -> (n, p), (n, p)",
     nopython=True,
-    target="cpu",
+    target="parallel",
 )
-def get_continuation_value(
+def get_continuation_value_and_ex_post_rewards(
     wages,
     rewards_systematic,
     emaxs,
@@ -351,9 +351,13 @@ def get_continuation_value(
     (10000, 4, 500)
 
     """
-    for i in range(draws.shape[0]):
-        for j in range(rewards_systematic.shape[0]):
-            if j < wages.shape[0]:
+    num_draws = draws.shape[0]
+    num_choices = rewards_systematic.shape[0]
+    num_wages = wages.shape[0]
+
+    for i in range(num_draws):
+        for j in range(num_choices):
+            if j < num_wages:
                 rew_ex = (
                     wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
                 )
@@ -362,6 +366,47 @@ def get_continuation_value(
 
             cont_value[j, i] = rew_ex + delta * emaxs[j]
             rew_ex_post[j, i] = rew_ex
+
+
+@guvectorize(
+    [
+        "float32[:], float32[:], float32[:], float32[:, :], float32, float32[:, :]",
+        "float64[:], float64[:], float64[:], float64[:, :], float64, float64[:, :]",
+    ],
+    "(m), (n), (n), (p, n), () -> (n, p)",
+    nopython=True,
+    target="cpu",
+)
+def get_continuation_value(
+    wages,
+    rewards_systematic,
+    emaxs,
+    draws,
+    delta,
+    cont_value,
+):
+    """Calculate the continuation value.
+
+    This function is a reduced version of
+    :func:`get_continutation_value_and_ex_post_rewards` which does not return ex post
+    rewards. The reason is that a second return argument doubles runtime whereas it is
+    only needed during simulation.
+
+    """
+    num_draws = draws.shape[0]
+    num_choices = rewards_systematic.shape[0]
+    num_wages = wages.shape[0]
+
+    for i in range(num_draws):
+        for j in range(num_choices):
+            if j < num_wages:
+                rew_ex = (
+                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                )
+            else:
+                rew_ex = rewards_systematic[j] + draws[i, j]
+
+            cont_value[j, i] = rew_ex + delta * emaxs[j]
 
 
 @njit(nogil=True)

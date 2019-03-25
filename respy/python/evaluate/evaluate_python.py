@@ -9,6 +9,7 @@ from respy.python.evaluate.evaluate_auxiliary import (
 )
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
+from numba import guvectorize
 
 
 def pyth_contributions(
@@ -20,11 +21,13 @@ def pyth_contributions(
     num_obs_agent,
     optim_paras,
 ):
-    """Likelihood contribution of each individual in the sample.
+    """Calculate the likelihood contribution of each individual in the sample.
 
-    The code allows for a deterministic model (i.e. without randomness in the rewards).
-    If that is the case and all agents have corresponding experiences, then one is
-    returned. If a single agent violates the implications, then the zero is returned.
+    The function calculates all likelihood contributions for all observations in the
+    data which means all individual-period-type combinations. Then, likelihoods are
+    accumulated within each individual and type over all periods. After that, the result
+    is multiplied with the type-specific shares which yields the contribution to the
+    likelihood for each individual.
 
     Parameters
     ----------
@@ -54,8 +57,8 @@ def pyth_contributions(
     num_obs_agent = num_obs_agent.astype(int)
     num_draws_prob = periods_draws_prob.shape[1]
 
-    # Convert data to np.ndarray which is faster in every aspect. Separate wages from
-    # other characteristics as they need to be integers.
+    # Convert data to np.ndarray which is faster. Separate wages from other
+    # characteristics as they need to be integers.
     agents = data[
         [
             "Period",
@@ -68,7 +71,8 @@ def pyth_contributions(
     ].values.astype(int)
     wages = data["Wage"].values
 
-    # Extend systematic wages with zeros so that indexing does not fail later
+    # Extend systematic wages with zeros so that indexing with choice three and four
+    # does not fail.
     wages_systematic_ext = np.hstack(
         (state_space.rewards[:, -2:], np.zeros((state_space.num_states, 2)))
     )
@@ -117,16 +121,16 @@ def pyth_contributions(
     )
     dist = dist.reshape(num_obs, state_space.num_types, 1)
 
-    # Get new periods based on the format (num_obs, num_types).
+    # Get periods based on the shape (num_obs, num_types) of the indexer.
     periods = state_space.states[ks, 0]
 
     # Extract relevant deviates from standard normal distribution. The same set of
-    # baseline draws are used for each agent and period. The copy is needed as the
-    # object is otherwise changed in-place.
-    draws_stan = periods_draws_prob[periods]
+    # baseline draws are used for each agent and period. The resulting shape is
+    # (num_obs, num_types, num_draws, num_choices).
+    draws_stan = np.take(periods_draws_prob, periods, axis=0)
 
-    # We initialize with ones as it is the value for SCHOOLING and HOME and OCCUPATIONS
-    # without wages.
+    # Initialize prob_wages with ones as it is the value for SCHOOLING and HOME and
+    # OCCUPATIONS without wages.
     prob_wages = np.ones((num_obs, state_space.num_types, num_draws_prob))
 
     # If an agent is observed working, then the the labor market shocks are observed and
@@ -158,9 +162,9 @@ def pyth_contributions(
 
     draws = np.tensordot(draws_stan, sc.T, axes=(3, 1))
 
-    draws[:, :, :, :2] = np.exp(draws[:, :, :, :2]).clip(0.0, HUGE_FLOAT)
+    draws[:, :, :, :2] = faster_exp_clip(draws[:, :, :, :2])
 
-    total_values, _ = get_continuation_value(
+    total_values = get_continuation_value(
         state_space.rewards[ks, -2:],
         state_space.rewards[ks, :4],
         state_space.emaxs[ks, :4],
@@ -177,11 +181,29 @@ def pyth_contributions(
 
     prob_obs = prob_obs.reshape(num_obs, state_space.num_types)
 
-    # Accumulate likelihood of the observe choice for each type across groups of agents.
-    # The groups are defined by num_obs_agent.
+    # Accumulate likelihood of the observed choice for each individual-type combination
+    # across all periods.
     prob_type = np.multiply.reduceat(prob_obs, rows_start)
 
-    # Adjust and record likelihood contribution.
+    # Multiply each individual-type contribution with its type-specific shares and sum
+    # over types to get the likelihood contribution for each individual.
     contribs = (prob_type * type_shares).sum(axis=1)
 
     return contribs
+
+
+@guvectorize(
+    ["float64[:], float64[:]"],
+    "(n) -> (n)",
+    nopython=True,
+    target="parallel",
+)
+def faster_exp_clip(x, y):
+    for i in range(x.shape[0]):
+        temp = np.exp(x[i])
+        if temp < 0:
+            y[i] = 0
+        elif temp > HUGE_FLOAT:
+            y[i] = HUGE_FLOAT
+        else:
+            y[i] = temp

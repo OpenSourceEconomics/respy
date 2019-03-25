@@ -7,7 +7,7 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 @guvectorize(
     ["float64[:, :, :], int64, float64, float64[:, :]"],
-    "(m, p, n), (), () -> (m, p)",
+    "(t, p, n), (), () -> (t, p)",
     nopython=True,
     target="parallel",
 )
