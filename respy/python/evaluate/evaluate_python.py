@@ -16,7 +16,6 @@ def pyth_contributions(
     periods_draws_prob,
     tau,
     num_agents_est,
-    num_obs_agent,
     optim_paras,
 ):
     """Calculate the likelihood contribution of each individual in the sample.
@@ -40,9 +39,6 @@ def pyth_contributions(
         Smoothing parameter for choice probabilities.
     num_agents_est : int
         Number of observations used for estimation.
-    num_obs_agent : np.ndarray
-        Array with shape (num_agents_est,) that contains the number of observed
-        observations for each individual in the sample.
     optim_paras : dict
         Dictionary with quantities that were extracted from the parameter vector.
 
@@ -52,9 +48,6 @@ def pyth_contributions(
         Array with shape (num_agents_est,) containing contributions of estimated agents.
 
     """
-    num_obs_agent = num_obs_agent.astype(int)
-    num_draws_prob = periods_draws_prob.shape[1]
-
     # Convert data to np.ndarray which is faster. Separate wages from other
     # characteristics as they need to be integers.
     agents = data[
@@ -68,6 +61,9 @@ def pyth_contributions(
         ]
     ].values.astype(int)
     wages = data["Wage"].values
+
+    num_obs_agent = np.bincount(data.Identifier.values)
+    num_draws_prob = periods_draws_prob.shape[1]
 
     # Extend systematic wages with zeros so that indexing with choice three and four
     # does not fail.

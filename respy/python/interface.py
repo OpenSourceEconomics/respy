@@ -13,7 +13,6 @@ from respy.python.record.record_estimation import record_estimation_final
 from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_wrapper import OptimizationClass
-from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
@@ -78,7 +77,6 @@ def respy_interface(respy_obj, request, data=None):
 
     if request == "estimate":
 
-        num_obs = get_num_obs_agent(data.values, num_agents_est)
         periods_draws_prob = create_draws(
             num_periods, num_draws_prob, seed_prob, is_debug
         )
@@ -119,7 +117,6 @@ def respy_interface(respy_obj, request, data=None):
             periods_draws_prob,
             state_space,
             num_agents_est,
-            num_obs,
             num_types,
             edu_spec,
         )

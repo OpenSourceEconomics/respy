@@ -19,7 +19,6 @@ def pyth_criterion(
     periods_draws_prob,
     state_space,
     num_agents_est,
-    num_obs_agent,
     num_types,
     edu_spec,
 ):
@@ -48,7 +47,6 @@ def pyth_criterion(
         periods_draws_prob,
         tau,
         num_agents_est,
-        num_obs_agent,
         optim_paras,
     )
 

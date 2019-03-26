@@ -22,7 +22,6 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.simulate.simulate_auxiliary import sort_type_info
 from respy.python.simulate.simulate_auxiliary import sort_edu_spec
-from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
@@ -540,7 +539,6 @@ class TestClass(object):
         )
 
         data_array = process_dataset(respy_obj).values
-        num_obs_agent = get_num_obs_agent(data_array, num_agents_est)
         min_idx = edu_spec["max"] + 1
 
         shocks_cholesky = optim_paras["shocks_cholesky"]
@@ -673,9 +671,10 @@ class TestClass(object):
             periods_draws_prob,
             tau,
             num_agents_est,
-            num_obs_agent,
             optim_paras,
         )
+
+        num_obs_agent = np.bincount(simulated_data.Identifier.values)
 
         f2py = fort_debug.wrapper_contributions(
             periods_rewards_systematic,
@@ -1050,7 +1049,7 @@ class TestClass(object):
 
             data_array = process_dataset(respy_obj).values
 
-            py = get_num_obs_agent(data_array, num_agents_est)
+            py = np.bincount(data_array[:, 0].astype(int))
             f90 = fort_debug.wrapper_get_num_obs_agent(
                 data_array, num_agents_est
             )
