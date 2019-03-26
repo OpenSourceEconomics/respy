@@ -753,6 +753,10 @@ class StateSpace:
         Array with shape (num_states, 5) containing containing the emax of each choice
         (OCCUPATION A, OCCUPATION B, SCHOOL, HOME) of the subsequent period and the
         simulated or interpolated maximum of the current period.
+    num_periods : int
+        Number of periods.
+    num_types : int
+        Number of types.
     states_columns : list
         List of column names in ``self.states``.
     covariates_columns : list
@@ -809,8 +813,7 @@ class StateSpace:
     def __init__(
         self, num_periods, num_types, edu_starts, edu_max, optim_paras=None
     ):
-        self.num_periods = num_periods
-        self.num_types = num_types
+        self.num_periods, self.num_types = num_periods, num_types
 
         self.states, self.indexer = pyth_create_state_space(
             num_periods, num_types, edu_starts, edu_max

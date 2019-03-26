@@ -564,25 +564,18 @@ class TestClass(object):
         periods_draws_prob = read_draws(num_periods, num_draws_prob)
         periods_draws_sims = read_draws(num_periods, num_agents_sim)
 
-        # Check the full solution procedure
-        base_args = (
+        fort, _ = resfort_interface(respy_obj, "simulate")
+
+        state_space = pyth_solve(
             is_interpolated,
             num_points_interp,
-            num_draws_emax,
             num_periods,
             is_myopic,
             is_debug,
             periods_draws_emax,
-        )
-
-        fort, _ = resfort_interface(respy_obj, "simulate")
-
-        state_space = pyth_solve(
-            *base_args,
             edu_spec,
             optim_paras,
             file_sim,
-            optimizer_options,
             num_types,
         )
 
@@ -602,7 +595,13 @@ class TestClass(object):
         )
 
         f2py = fort_debug.wrapper_solve(
-            *base_args,
+            is_interpolated,
+            num_points_interp,
+            num_draws_emax,
+            num_periods,
+            is_myopic,
+            is_debug,
+            periods_draws_emax,
             min_idx,
             edu_spec["start"],
             edu_spec["max"],
@@ -665,13 +664,15 @@ class TestClass(object):
         )
         assert_allclose(py, f2py)
 
+        # We have to cut the simulated data to `num_agents_est` as the Python
+        # implementation calculates the likelihood contributions for all agents in the
+        # data.
+        simulated_data = simulated_data.loc[
+            simulated_data.Identifier.lt(num_agents_est)
+        ]
+
         py = pyth_contributions(
-            state_space,
-            simulated_data,
-            periods_draws_prob,
-            tau,
-            num_agents_est,
-            optim_paras,
+            state_space, simulated_data, periods_draws_prob, tau, optim_paras
         )
 
         num_obs_agent = np.bincount(simulated_data.Identifier.values)
@@ -702,43 +703,40 @@ class TestClass(object):
         # Evaluation of criterion function
         x0 = get_optim_paras(optim_paras, num_paras, "all", is_debug)
 
-        base_args_1 = (
+        py = pyth_criterion(
+            x0,
+            is_interpolated,
+            num_points_interp,
+            is_myopic,
+            is_debug,
+            simulated_data,
+            tau,
+            periods_draws_emax,
+            periods_draws_prob,
+            state_space,
+            edu_spec,
+        )
+
+        f2py = fort_debug.wrapper_criterion(
+            x0,
             is_interpolated,
             num_draws_emax,
             num_periods,
             num_points_interp,
             is_myopic,
             is_debug,
-        )
-
-        base_args_2 = (
+            data_array,
             num_draws_prob,
             tau,
             periods_draws_emax,
             periods_draws_prob,
-        )
-        base_args_3 = (num_agents_est, num_obs_agent, num_types)
-
-        py = pyth_criterion(
-            x0,
-            *base_args_1,
-            simulated_data,
-            *base_args_2,
-            state_space,
-            *base_args_3,
-            edu_spec,
-        )
-
-        f2py = fort_debug.wrapper_criterion(
-            x0,
-            *base_args_1,
-            data_array,
-            *base_args_2,
             states_all,
             state_space.states_per_period,
             mapping_state_idx,
             max_states_period,
-            *base_args_3,
+            num_agents_est,
+            num_obs_agent,
+            num_types,
             edu_spec["start"],
             edu_spec["max"],
             edu_spec["share"],

@@ -105,19 +105,14 @@ def respy_interface(respy_obj, request, data=None):
         # These must be in the correct order already.
         args = (
             is_interpolated,
-            num_draws_emax,
-            num_periods,
             num_points_interp,
             is_myopic,
             is_debug,
             data,
-            num_draws_prob,
             tau,
             periods_draws_emax,
             periods_draws_prob,
             state_space,
-            num_agents_est,
-            num_types,
             edu_spec,
         )
 
@@ -311,7 +306,6 @@ def respy_interface(respy_obj, request, data=None):
         state_space = pyth_solve(
             is_interpolated,
             num_points_interp,
-            num_draws_emax,
             num_periods,
             is_myopic,
             is_debug,
@@ -319,7 +313,6 @@ def respy_interface(respy_obj, request, data=None):
             edu_spec,
             optim_paras,
             file_sim,
-            optimizer_options,
             num_types,
         )
 

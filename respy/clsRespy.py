@@ -258,13 +258,11 @@ class RespyCls(object):
         # Distribute class attributes
         version = self.get_attr("version")
 
-        data_array = data_frame.values
-
         # Select appropriate interface
         if version in ["PYTHON"]:
             respy_interface(self, "estimate", data_frame)
         elif version in ["FORTRAN"]:
-            resfort_interface(self, "estimate", data_array)
+            resfort_interface(self, "estimate", data_frame.values)
         else:
             raise NotImplementedError
 

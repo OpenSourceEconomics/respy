@@ -11,12 +11,7 @@ from numba import guvectorize
 
 
 def pyth_contributions(
-    state_space,
-    data,
-    periods_draws_prob,
-    tau,
-    num_agents_est,
-    optim_paras,
+    state_space, data, periods_draws_prob, tau, optim_paras
 ):
     """Calculate the likelihood contribution of each individual in the sample.
 
@@ -37,15 +32,13 @@ def pyth_contributions(
         draws from standard normal distributions.
     tau : float
         Smoothing parameter for choice probabilities.
-    num_agents_est : int
-        Number of observations used for estimation.
     optim_paras : dict
         Dictionary with quantities that were extracted from the parameter vector.
 
     Returns
     -------
     contribs : np.ndarray
-        Array with shape (num_agents_est,) containing contributions of estimated agents.
+        Array with shape (num_agents,) containing contributions of estimated agents.
 
     """
     # Convert data to np.ndarray which is faster. Separate wages from other
@@ -60,10 +53,13 @@ def pyth_contributions(
             "Choice",
         ]
     ].values.astype(int)
-    wages = data["Wage"].values
+    wages_observed = data["Wage"].values.reshape(-1, 1)
 
-    num_obs_agent = np.bincount(data.Identifier.values)
+    # Get useful auxiliary objects.
+    num_obs_per_agent = np.bincount(data.Identifier.values)
     num_draws_prob = periods_draws_prob.shape[1]
+    num_obs = data.shape[0]
+    sc = optim_paras["shocks_cholesky"]
 
     # Extend systematic wages with zeros so that indexing with choice three and four
     # does not fail.
@@ -71,19 +67,12 @@ def pyth_contributions(
         (state_space.rewards[:, -2:], np.zeros((state_space.num_states, 2)))
     )
 
-    # Define a shortcut to the Cholesky factors of the shocks, because they are so
-    # frequently used inside deeply nested loops.
-    sc = optim_paras["shocks_cholesky"]
-
-    # Initialize auxiliary objects.
-    contribs = np.full(num_agents_est, np.nan)
-
     # Calculate the probability for all numbers of observations. The format of array is
     # (num_obs, num_types, num_draws, num_choices) reduced to the minimum of dimensions.
     # E.g. choices are determined for every agent thus the shape is (num_obs,),
     # prob_wages are calculated for each draw thus the shape is (num_obs, num_types,
     # num_draws).
-    rows_start = np.hstack((0, np.cumsum(num_obs_agent)[:-1]))
+    rows_start = np.hstack((0, np.cumsum(num_obs_per_agent)[:-1]))
     edu_starts = agents[rows_start, 3]
 
     # Update type probabilities conditional on edu_start > 9.
@@ -91,12 +80,10 @@ def pyth_contributions(
         optim_paras["type_shares"], edu_starts
     )
 
-    num_obs = num_obs_agent.sum()
-
     # Extract observable components of the state space as well as agent's
     # decision.
     periods, exp_as, exp_bs, edus, choices_lagged, choices = (
-        agents[:num_obs, i] for i in range(6)
+        agents[:, i] for i in range(6)
     )
 
     # Get state index to access the systematic component of the agents
@@ -104,8 +91,6 @@ def pyth_contributions(
     ks = state_space.indexer[
         periods, exp_as, exp_bs, edus, choices_lagged - 1, :
     ]
-
-    wages_observed = wages[:num_obs].reshape(-1, 1)
 
     wages_systematic = wages_systematic_ext[ks, choices.reshape(-1, 1) - 1]
 
@@ -168,9 +153,7 @@ def pyth_contributions(
 
     total_values = total_values.transpose(0, 1, 3, 2)
 
-    prob_choices = get_smoothed_probability(
-        total_values, choices.reshape(-1, 1) - 1, tau
-    )
+    prob_choices = get_smoothed_probability(total_values, choices - 1, tau)
 
     # Determine relative shares
     prob_obs = (prob_choices * prob_wages).mean(axis=2)

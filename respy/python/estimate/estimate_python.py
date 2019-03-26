@@ -7,19 +7,14 @@ from respy.python.shared.shared_auxiliary import get_log_likl
 def pyth_criterion(
     x,
     is_interpolated,
-    num_draws_emax,
-    num_periods,
     num_points_interp,
     is_myopic,
     is_debug,
     data,
-    num_draws_prob,
     tau,
     periods_draws_emax,
     periods_draws_prob,
     state_space,
-    num_agents_est,
-    num_types,
     edu_spec,
 ):
     """Criterion function for the likelihood maximization."""
@@ -46,7 +41,6 @@ def pyth_criterion(
         data,
         periods_draws_prob,
         tau,
-        num_agents_est,
         optim_paras,
     )
 

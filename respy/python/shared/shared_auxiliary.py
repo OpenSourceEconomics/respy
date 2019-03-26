@@ -297,7 +297,7 @@ def cholesky_to_coeffs(shocks_cholesky):
     ],
     "(m), (n), (n), (p, n), () -> (n, p), (n, p)",
     nopython=True,
-    target="parallel",
+    target="cpu",
 )
 def get_continuation_value_and_ex_post_rewards(
     wages,
