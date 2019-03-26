@@ -139,7 +139,7 @@ def pyth_contributions(
             dist[idx_choice_2], means, sc[1, 1]
         )
 
-    draws = np.tensordot(draws_stan, sc.T, axes=(3, 1))
+    draws = matrix_multiplication(draws_stan, sc.T)
 
     draws[:, :, :, :2] = faster_exp_clip(draws[:, :, :, :2])
 
@@ -183,3 +183,31 @@ def faster_exp_clip(x, y):
             y[i] = HUGE_FLOAT
         else:
             y[i] = temp
+
+
+@guvectorize(
+    ["float64[:, :], float64[:, :], float64[:, :]"],
+    "(k, l), (l, m) -> (k, m)",
+    nopython=True,
+    target="parallel",
+)
+def matrix_multiplication(a, b, out):
+    """Drop-in replacement for np.tensordot."""
+    diagonal = b[0, 1] == 0 and b[1, 0] == 0
+
+    if diagonal:
+        k_ = a.shape[0]
+        m_ = b.shape[1]
+
+        for k in range(k_):
+            for m in range(m_):
+                out[k, m] = a[k, m] * b[m, m]
+
+    else:
+        k_, l_ = a.shape
+        m_ = b.shape[1]
+
+        for k in range(k_):
+            for m in range(m_):
+                for l in range(l_):
+                    out[k, m] += a[k, l] * b[l, m]
