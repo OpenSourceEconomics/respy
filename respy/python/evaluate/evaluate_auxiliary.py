@@ -1,7 +1,7 @@
 """Auxiliary functions for the evaluation of the likelihood."""
 import numpy as np
 
-from numba import guvectorize
+from numba import guvectorize, vectorize
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
@@ -56,13 +56,12 @@ def get_smoothed_probability(total_values, idx, tau, prob_choice):
             prob_choice[t, i] = total_values[t, i, idx] / sum_smooth_values
 
 
-@guvectorize(
-    ["float64, float64, float64, float64[:]"],
-    "(), (), () -> ()",
+@vectorize(
+    ["float64(float64, float64, float64)"],
     nopython=True,
     target="cpu",
 )
-def get_pdf_of_normal_distribution(x, mu, sigma, prob):
+def get_pdf_of_normal_distribution(x, mu, sigma):
     """Return the probability of :data:`x` assuming the normal distribution.
 
     This implementation is faster than calling :func:`scipy.stats.norm.pdf`.
@@ -86,6 +85,10 @@ def get_pdf_of_normal_distribution(x, mu, sigma, prob):
 
     """
     a = np.sqrt(2 * np.pi) * sigma
-    b = np.exp(-(x - mu) ** 2 / (2 * sigma ** 2))
 
-    prob[0] = 1 / a * b
+    y = x - mu
+    b = np.exp(-y ** 2 / (2 * sigma ** 2))
+
+    c = 1 / a * b
+
+    return c
