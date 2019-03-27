@@ -93,6 +93,43 @@ def get_pdf_of_normal_distribution(x, mu, sigma):
 
 
 @guvectorize(
+    ["float64[:, :], int64, float64, float64[:, :], float64[:, :], float64[:]"],
+    "(p, n), (), (), (m, n) -> (p, n), (p)",
+    nopython=True,
+    target="parallel",
+)
+def adjust_draws_and_create_prob_wages(draws_stan, choice, dist, sc, draws, prob_wages):
+    has_wage = ~np.isnan(dist)
+
+    # If an agent is observed working, then the the labor market shocks are observed and
+    # the conditional distribution is used to determine the choice probabilities if the
+    # wage information is available as well.
+    if has_wage:
+        # Adjust draws and prob_wages in case of OCCUPATION A.
+        if choice == 1:
+            draws[:, 0] = dist / sc[0, 0]
+            draws[:, 1] = draws_stan[:, 1]
+
+            prob_wages[:] = get_pdf_of_normal_distribution(dist, 0., sc[0, 0])
+
+        # Adjust draws and prob_wages in case of OCCUPATION B.
+        elif choice == 2:
+            draws[:, 0] = draws_stan[:, 0]
+            draws[:, 1] = (dist - sc[1, 0] * draws_stan[:, 0]) / sc[1, 1]
+
+            means = sc[1, 0] * draws_stan[:, 0]
+            prob_wages[:] = get_pdf_of_normal_distribution(dist, means, sc[1, 1])
+
+        draws[:, 2:] = draws_stan[:, 2:]
+
+    # If the wage is missing or an agent is pursuing SCHOOLING or HOME, the draws are
+    # not adjusted and the probability for wages is one.
+    else:
+        draws[:, :] = draws_stan
+        prob_wages[:] = 1.
+
+
+@guvectorize(
     ["float64[:, :], float64[:, :], float64[:, :]"],
     "(k, l), (l, m) -> (k, m)",
     nopython=True,

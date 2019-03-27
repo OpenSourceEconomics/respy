@@ -3,8 +3,8 @@ import numpy as np
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.evaluate.evaluate_auxiliary import (
     get_smoothed_probability,
-    get_pdf_of_normal_distribution,
     create_draws_for_monte_carlo_simulation,
+    adjust_draws_and_create_prob_wages,
 )
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
@@ -57,7 +57,6 @@ def pyth_contributions(
 
     # Get useful auxiliary objects.
     num_obs_per_agent = np.bincount(data.Identifier.values)
-    num_draws_prob = periods_draws_prob.shape[1]
     num_obs = data.shape[0]
     sc = optim_paras["shocks_cholesky"]
 
@@ -108,35 +107,11 @@ def pyth_contributions(
     # (num_obs, num_types, num_draws, num_choices).
     draws_stan = np.take(periods_draws_prob, periods, axis=0)
 
-    # Initialize prob_wages with ones as it is the value for SCHOOLING and HOME and
-    # OCCUPATIONS without wages.
-    prob_wages = np.ones((num_obs, state_space.num_types, num_draws_prob))
+    c_ = choices.repeat(state_space.num_types).reshape(-1, state_space.num_types)
 
-    # If an agent is observed working, then the the labor market shocks are observed and
-    # the conditional distribution is used to determine the choice probabilities if the
-    # wage information is available as well.
-    has_wage = ~np.isnan(wages_observed).ravel()
-    # These are the indices for observations where shocks and probabilities of wages
-    # need to be adjusted.
-    idx_choice_1 = np.where((choices == 1) & has_wage)
-    idx_choice_2 = np.where((choices == 2) & has_wage)
-
-    # Adjust draws and prob_wages in cases of OCCUPATION A with wages.
-    if not idx_choice_1[0].shape[0] == 0:
-        draws_stan[idx_choice_1, :, :, 0] = dist[idx_choice_1] / sc[0, 0]
-        prob_wages[idx_choice_1] = get_pdf_of_normal_distribution(
-            dist[idx_choice_1], 0, sc[0, 0]
-        )
-
-    # Adjust draws and prob_wages in cases of OCCUPATION B with wages.
-    if not idx_choice_2[0].shape[0] == 0:
-        draws_stan[idx_choice_2, :, :, 1] = (
-            dist[idx_choice_2] - sc[1, 0] * draws_stan[idx_choice_2, :, :, 0]
-        ) / sc[1, 1]
-        means = sc[1, 0] * draws_stan[idx_choice_2, :, :, 0]
-        prob_wages[idx_choice_2] = get_pdf_of_normal_distribution(
-            dist[idx_choice_2], means, sc[1, 1]
-        )
+    draws_stan, prob_wages = adjust_draws_and_create_prob_wages(
+        draws_stan, c_, dist.reshape(-1, state_space.num_types), sc
+    )
 
     draws = create_draws_for_monte_carlo_simulation(draws_stan, sc.T)
 
