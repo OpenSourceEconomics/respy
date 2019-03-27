@@ -102,15 +102,16 @@ def pyth_contributions(
     # Get periods based on the shape (num_obs, num_types) of the indexer.
     periods = state_space.states[ks, 0]
 
-    # Extract relevant deviates from standard normal distribution. The same set of
-    # baseline draws are used for each agent and period. The resulting shape is
-    # (num_obs, num_types, num_draws, num_choices).
-    draws_stan = np.take(periods_draws_prob, periods, axis=0)
-
-    c_ = choices.repeat(state_space.num_types).reshape(-1, state_space.num_types)
+    c_ = choices.repeat(state_space.num_types).reshape(
+        -1, state_space.num_types
+    )
 
     draws_stan, prob_wages = adjust_draws_and_create_prob_wages(
-        draws_stan, c_, dist.reshape(-1, state_space.num_types), sc
+        periods,
+        periods_draws_prob,
+        c_,
+        dist.reshape(-1, state_space.num_types),
+        sc,
     )
 
     draws = create_draws_for_monte_carlo_simulation(draws_stan, sc.T)

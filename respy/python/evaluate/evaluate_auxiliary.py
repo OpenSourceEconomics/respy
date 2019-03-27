@@ -56,11 +56,7 @@ def get_smoothed_probability(total_values, idx, tau, prob_choice):
             prob_choice[t, i] = total_values[t, i, idx] / sum_smooth_values
 
 
-@vectorize(
-    ["float64(float64, float64, float64)"],
-    nopython=True,
-    target="cpu",
-)
+@vectorize(["float64(float64, float64, float64)"], nopython=True, target="cpu")
 def get_pdf_of_normal_distribution(x, mu, sigma):
     """Return the probability of :data:`x` assuming the normal distribution.
 
@@ -93,12 +89,18 @@ def get_pdf_of_normal_distribution(x, mu, sigma):
 
 
 @guvectorize(
-    ["float64[:, :], int64, float64, float64[:, :], float64[:, :], float64[:]"],
-    "(p, n), (), (), (m, n) -> (p, n), (p)",
+    ["i8, f8[:, :, :], i8, f8, f8[:, :], f8[:, :], f8[:]"],
+    "(), (i, p, n), (), (), (m, n) -> (p, n), (p)",
     nopython=True,
     target="parallel",
 )
-def adjust_draws_and_create_prob_wages(draws_stan, choice, dist, sc, draws, prob_wages):
+def adjust_draws_and_create_prob_wages(
+    period, periods_draws_prob, choice, dist, sc, draws, prob_wages
+):
+    # Extract relevant deviates from standard normal distribution. The same set of
+    # baseline draws are used for each agent and period.
+    draws_stan = periods_draws_prob[period]
+
     has_wage = ~np.isnan(dist)
 
     # If an agent is observed working, then the the labor market shocks are observed and
@@ -110,7 +112,7 @@ def adjust_draws_and_create_prob_wages(draws_stan, choice, dist, sc, draws, prob
             draws[:, 0] = dist / sc[0, 0]
             draws[:, 1] = draws_stan[:, 1]
 
-            prob_wages[:] = get_pdf_of_normal_distribution(dist, 0., sc[0, 0])
+            prob_wages[:] = get_pdf_of_normal_distribution(dist, 0.0, sc[0, 0])
 
         # Adjust draws and prob_wages in case of OCCUPATION B.
         elif choice == 2:
@@ -118,7 +120,9 @@ def adjust_draws_and_create_prob_wages(draws_stan, choice, dist, sc, draws, prob
             draws[:, 1] = (dist - sc[1, 0] * draws_stan[:, 0]) / sc[1, 1]
 
             means = sc[1, 0] * draws_stan[:, 0]
-            prob_wages[:] = get_pdf_of_normal_distribution(dist, means, sc[1, 1])
+            prob_wages[:] = get_pdf_of_normal_distribution(
+                dist, means, sc[1, 1]
+            )
 
         draws[:, 2:] = draws_stan[:, 2:]
 
@@ -126,7 +130,7 @@ def adjust_draws_and_create_prob_wages(draws_stan, choice, dist, sc, draws, prob
     # not adjusted and the probability for wages is one.
     else:
         draws[:, :] = draws_stan
-        prob_wages[:] = 1.
+        prob_wages[:] = 1.0
 
 
 @guvectorize(
