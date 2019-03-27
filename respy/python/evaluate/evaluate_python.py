@@ -4,10 +4,10 @@ from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.evaluate.evaluate_auxiliary import (
     get_smoothed_probability,
     get_pdf_of_normal_distribution,
+    create_draws_for_monte_carlo_simulation,
 )
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
-from numba import guvectorize
 
 
 def pyth_contributions(
@@ -115,12 +115,11 @@ def pyth_contributions(
     # If an agent is observed working, then the the labor market shocks are observed and
     # the conditional distribution is used to determine the choice probabilities if the
     # wage information is available as well.
-    is_working = np.isin(choices, [1, 2])
     has_wage = ~np.isnan(wages_observed).ravel()
     # These are the indices for observations where shocks and probabilities of wages
     # need to be adjusted.
-    idx_choice_1 = np.where((choices == 1) & is_working & has_wage)
-    idx_choice_2 = np.where((choices == 2) & is_working & has_wage)
+    idx_choice_1 = np.where((choices == 1) & has_wage)
+    idx_choice_2 = np.where((choices == 2) & has_wage)
 
     # Adjust draws and prob_wages in cases of OCCUPATION A with wages.
     if not idx_choice_1[0].shape[0] == 0:
@@ -139,9 +138,7 @@ def pyth_contributions(
             dist[idx_choice_2], means, sc[1, 1]
         )
 
-    draws = matrix_multiplication(draws_stan, sc.T)
-
-    draws[:, :, :, :2] = faster_exp_clip(draws[:, :, :, :2])
+    draws = create_draws_for_monte_carlo_simulation(draws_stan, sc.T)
 
     total_values = get_continuation_value(
         state_space.rewards[ks, -2:],
@@ -169,45 +166,3 @@ def pyth_contributions(
     contribs = (prob_type * type_shares).sum(axis=1)
 
     return contribs
-
-
-@guvectorize(
-    ["float64[:], float64[:]"], "(n) -> (n)", nopython=True, target="parallel"
-)
-def faster_exp_clip(x, y):
-    for i in range(x.shape[0]):
-        temp = np.exp(x[i])
-        if temp < 0:
-            y[i] = 0
-        elif temp > HUGE_FLOAT:
-            y[i] = HUGE_FLOAT
-        else:
-            y[i] = temp
-
-
-@guvectorize(
-    ["float64[:, :], float64[:, :], float64[:, :]"],
-    "(k, l), (l, m) -> (k, m)",
-    nopython=True,
-    target="parallel",
-)
-def matrix_multiplication(a, b, out):
-    """Drop-in replacement for np.tensordot."""
-    diagonal = b[0, 1] == 0 and b[1, 0] == 0
-
-    if diagonal:
-        k_ = a.shape[0]
-        m_ = b.shape[1]
-
-        for k in range(k_):
-            for m in range(m_):
-                out[k, m] = a[k, m] * b[m, m]
-
-    else:
-        k_, l_ = a.shape
-        m_ = b.shape[1]
-
-        for k in range(k_):
-            for m in range(m_):
-                for l in range(l_):
-                    out[k, m] += a[k, l] * b[l, m]

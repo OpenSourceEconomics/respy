@@ -85,10 +85,76 @@ def get_pdf_of_normal_distribution(x, mu, sigma):
 
     """
     a = np.sqrt(2 * np.pi) * sigma
+    b = np.exp(-(x - mu) ** 2 / (2 * sigma ** 2))
 
-    y = x - mu
-    b = np.exp(-y ** 2 / (2 * sigma ** 2))
+    probability = 1 / a * b
 
-    c = 1 / a * b
+    return probability
 
-    return c
+
+@guvectorize(
+    ["float64[:, :], float64[:, :], float64[:, :]"],
+    "(k, l), (l, m) -> (k, m)",
+    nopython=True,
+    target="parallel",
+)
+def create_draws_for_monte_carlo_simulation(a, b, out):
+    """Create draws .
+
+    This function exploits the fact that the second matrix can be a diagonal matrix
+    which cuts runtime roughly by half. In the other case, it is as fast as
+    ``np.tensordot``. The clip is also faster than ``np.clip`` and can be extracted as a
+    ``@vectorize`` function. Combining both operations is even faster.
+
+    This implementation can be replaced with::
+
+        draws = np.tensordot(draws_stan, sc, axes=(3, 0))
+        draws[: ,:, :, :2] = np.clip(draws[:, :, :, :2])
+
+    """
+    diag_sum = 0.0
+    mat_sum = 0.0
+    for i in range(b.shape[0]):
+        for j in range(b.shape[0]):
+            mat_sum += b[i, j]
+            if i == j:
+                diag_sum += b[i, j]
+
+    diagonal = diag_sum == mat_sum
+
+    if diagonal:
+        k_ = a.shape[0]
+        m_ = b.shape[1]
+
+        for k in range(k_):
+            for m in range(m_):
+                val = a[k, m] * b[m, m]
+                if m < 2:
+                    val_exp = np.exp(val)
+                    if val_exp < 0:
+                        val_exp = 0
+                    elif val_exp > HUGE_FLOAT:
+                        val_exp = HUGE_FLOAT
+                    out[k, m] = val_exp
+                else:
+                    out[k, m] = val
+
+    else:
+        k_, l_ = a.shape
+        m_ = b.shape[1]
+
+        for k in range(k_):
+            for m in range(m_):
+                temp = 0.0
+                for l in range(l_):
+                    temp += a[k, l] * b[l, m]
+                if m < 2:
+                    val_exp = np.exp(temp)
+                    if val_exp < 0:
+                        val_exp = 0
+                    elif val_exp > HUGE_FLOAT:
+                        val_exp = HUGE_FLOAT
+
+                    out[k, m] = val_exp
+                else:
+                    out[k, m] = temp
