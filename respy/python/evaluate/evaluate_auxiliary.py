@@ -17,7 +17,7 @@ def clip(x, min_=None, max_=None):
 
 @guvectorize(
     ["float64[:, :], int64, float64, float64[:]"],
-    "(p, n), (), () -> (p)",
+    "(n, p), (), () -> (p)",
     nopython=True,
     target="parallel",
 )
@@ -40,26 +40,26 @@ def get_smoothed_probability(total_values, idx, tau, prob_choice):
         choice.
 
     """
-    num_draws, num_choices = total_values.shape
+    num_choices, num_draws = total_values.shape
 
     for i in range(num_draws):
 
         max_total_values = 0.0
         for j in range(num_choices):
-            if total_values[i, j] > max_total_values or j == 0:
-                max_total_values = total_values[i, j]
+            if total_values[j, i] > max_total_values or j == 0:
+                max_total_values = total_values[j, i]
 
         sum_smooth_values = 0.0
 
         for j in range(num_choices):
-            val_exp = np.exp((total_values[i, j] - max_total_values) / tau)
+            val_exp = np.exp((total_values[j, i] - max_total_values) / tau)
 
             val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
 
-            total_values[i, j] = val_clipped
+            total_values[j, i] = val_clipped
             sum_smooth_values += val_clipped
 
-        prob_choice[i] = total_values[i, idx] / sum_smooth_values
+        prob_choice[i] = total_values[idx, i] / sum_smooth_values
 
 
 @vectorize(["float64(float64, float64, float64)"], nopython=True, target="cpu")

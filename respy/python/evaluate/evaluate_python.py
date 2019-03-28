@@ -111,8 +111,6 @@ def pyth_contributions(
         optim_paras["delta"],
     )
 
-    total_values = total_values.transpose(0, 1, 3, 2)
-
     prob_choices = get_smoothed_probability(total_values, choices - 1, tau)
 
     # Determine relative shares
