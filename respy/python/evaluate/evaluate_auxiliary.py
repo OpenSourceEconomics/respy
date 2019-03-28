@@ -5,6 +5,16 @@ from numba import guvectorize, vectorize
 from respy.python.shared.shared_constants import HUGE_FLOAT
 
 
+@vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
+def clip(x, min_=None, max_=None):
+    if min_ is not None and x < min_:
+        return min_
+    elif max_ is not None and x > max_:
+        return max_
+    else:
+        return x
+
+
 @guvectorize(
     ["float64[:, :], int64, float64, float64[:]"],
     "(p, n), (), () -> (p)",
@@ -42,14 +52,12 @@ def get_smoothed_probability(total_values, idx, tau, prob_choice):
         sum_smooth_values = 0.0
 
         for j in range(num_choices):
-            temp = np.exp((total_values[i, j] - max_total_values) / tau)
-            if temp > HUGE_FLOAT:
-                temp = HUGE_FLOAT
-            elif temp < 0.0:
-                temp = 0.0
+            val_exp = np.exp((total_values[i, j] - max_total_values) / tau)
 
-            total_values[i, j] = temp
-            sum_smooth_values += temp
+            val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
+
+            total_values[i, j] = val_clipped
+            sum_smooth_values += val_clipped
 
         prob_choice[i] = total_values[i, idx] / sum_smooth_values
 
@@ -124,20 +132,10 @@ def create_draws_and_prob_wages(
     # wage information is available as well.
     if has_wage:
         log_wo = np.log(wage_observed)
-        if log_wo > HUGE_FLOAT:
-            log_wage_observed = HUGE_FLOAT
-        elif log_wo < -HUGE_FLOAT:
-            log_wage_observed = -HUGE_FLOAT
-        else:
-            log_wage_observed = log_wo
+        log_wage_observed = clip(log_wo, -HUGE_FLOAT, HUGE_FLOAT)
 
         log_ws = np.log(wage_systematic[choice - 1])
-        if log_ws > HUGE_FLOAT:
-            log_wage_systematic = HUGE_FLOAT
-        elif log_ws < -HUGE_FLOAT:
-            log_wage_systematic = -HUGE_FLOAT
-        else:
-            log_wage_systematic = log_ws
+        log_wage_systematic = clip(log_ws, -HUGE_FLOAT, HUGE_FLOAT)
 
         dist = log_wage_observed - log_wage_systematic
 
@@ -192,11 +190,9 @@ def create_draws_and_prob_wages(
                 val = temp_draws[k, m] * sc[m, m]
                 if m < 2:
                     val_exp = np.exp(val)
-                    if val_exp < 0:
-                        val_exp = 0
-                    elif val_exp > HUGE_FLOAT:
-                        val_exp = HUGE_FLOAT
-                    draws[k, m] = val_exp
+                    val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
+
+                    draws[k, m] = val_clipped
                 else:
                     draws[k, m] = val
 
@@ -211,11 +207,8 @@ def create_draws_and_prob_wages(
                     val += temp_draws[k, l] * sc[m, l]
                 if m < 2:
                     val_exp = np.exp(val)
-                    if val_exp < 0:
-                        val_exp = 0
-                    elif val_exp > HUGE_FLOAT:
-                        val_exp = HUGE_FLOAT
+                    val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
 
-                    draws[k, m] = val_exp
+                    draws[k, m] = val_clipped
                 else:
                     draws[k, m] = val
