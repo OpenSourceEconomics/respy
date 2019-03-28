@@ -87,113 +87,135 @@ def get_pdf_of_normal_distribution(x, mu, sigma):
 
 
 @guvectorize(
-    ["i8, f8[:, :, :], i8, f8, f8[:, :], f8[:, :], f8[:]"],
-    "(), (i, p, n), (), (), (m, n) -> (p, n), (p)",
+    ["f8, f8[:], i8, f8[:, :, :], i8, f8[:, :], f8[:, :], f8[:]"],
+    "(), (w), (), (i, p, n), (), (m, n) -> (p, n), (p)",
     nopython=True,
     target="parallel",
 )
-def adjust_draws_and_create_prob_wages(
-    period, periods_draws_prob, choice, dist, sc, draws, prob_wages
+def create_draws_and_prob_wages(
+    wage_observed,
+    wage_systematic,
+    period,
+    periods_draws_prob,
+    choice,
+    sc,
+    draws,
+    prob_wages,
 ):
+    """Create draws to simulate continuation values and probabilities of wages.
+
+    Draws are taken from a general set of unique shocks for each period. The shocks are
+    adjusted in case the wage of an agent is available as well as the probability of the
+    wage.
+
+    """
+    # Create auxiliary objects
+    num_draws, num_choices = periods_draws_prob.shape[1:]
+    temp_draws = np.zeros((num_draws, num_choices))
+
     # Extract relevant deviates from standard normal distribution. The same set of
     # baseline draws are used for each agent and period.
     draws_stan = periods_draws_prob[period]
 
-    has_wage = ~np.isnan(dist)
+    has_wage = ~np.isnan(wage_observed)
 
     # If an agent is observed working, then the the labor market shocks are observed and
     # the conditional distribution is used to determine the choice probabilities if the
     # wage information is available as well.
     if has_wage:
+        log_wo = np.log(wage_observed)
+        if log_wo > HUGE_FLOAT:
+            log_wage_observed = HUGE_FLOAT
+        elif log_wo < -HUGE_FLOAT:
+            log_wage_observed = -HUGE_FLOAT
+        else:
+            log_wage_observed = log_wo
+
+        log_ws = np.log(wage_systematic[choice - 1])
+        if log_ws > HUGE_FLOAT:
+            log_wage_systematic = HUGE_FLOAT
+        elif log_ws < -HUGE_FLOAT:
+            log_wage_systematic = -HUGE_FLOAT
+        else:
+            log_wage_systematic = log_ws
+
+        dist = log_wage_observed - log_wage_systematic
+
         # Adjust draws and prob_wages in case of OCCUPATION A.
         if choice == 1:
-            draws[:, 0] = dist / sc[0, 0]
-            draws[:, 1] = draws_stan[:, 1]
+            temp_draws[:, 0] = dist / sc[0, 0]
+            temp_draws[:, 1] = draws_stan[:, 1]
 
             prob_wages[:] = get_pdf_of_normal_distribution(dist, 0.0, sc[0, 0])
 
         # Adjust draws and prob_wages in case of OCCUPATION B.
         elif choice == 2:
-            draws[:, 0] = draws_stan[:, 0]
-            draws[:, 1] = (dist - sc[1, 0] * draws_stan[:, 0]) / sc[1, 1]
+            temp_draws[:, 0] = draws_stan[:, 0]
+            temp_draws[:, 1] = (dist - sc[1, 0] * draws_stan[:, 0]) / sc[1, 1]
 
             means = sc[1, 0] * draws_stan[:, 0]
             prob_wages[:] = get_pdf_of_normal_distribution(
                 dist, means, sc[1, 1]
             )
 
-        draws[:, 2:] = draws_stan[:, 2:]
+        temp_draws[:, 2:] = draws_stan[:, 2:]
 
     # If the wage is missing or an agent is pursuing SCHOOLING or HOME, the draws are
     # not adjusted and the probability for wages is one.
     else:
-        draws[:, :] = draws_stan
+        temp_draws[:, :] = draws_stan
         prob_wages[:] = 1.0
 
+    # What follows is a matrix multiplication written out of the form ``a.dot(b.T). Note
+    # that the second argument corresponds to ``sc`` which is not transposed. This is
+    # done by adjusting the loops. The function achieves major speed performance due to
+    # the check for a diagonal matrix ``b``. Additionally, it incorporates the process
+    # of taking ``np.exp`` for the draws of the first two choices and clipping them.
 
-@guvectorize(
-    ["float64[:, :], float64[:, :], float64[:, :]"],
-    "(k, l), (l, m) -> (k, m)",
-    nopython=True,
-    target="parallel",
-)
-def create_draws_for_monte_carlo_simulation(a, b, out):
-    """Create draws .
-
-    This function exploits the fact that the second matrix can be a diagonal matrix
-    which cuts runtime roughly by half. In the other case, it is as fast as
-    ``np.tensordot``. The clip is also faster than ``np.clip`` and can be extracted as a
-    ``@vectorize`` function. Combining both operations is even faster.
-
-    This implementation can be replaced with::
-
-        draws = np.tensordot(draws_stan, sc, axes=(3, 0))
-        draws[: ,:, :, :2] = np.clip(draws[:, :, :, :2])
-
-    """
+    # Check if matrix ``b`` is diagonal.
     diag_sum = 0.0
     mat_sum = 0.0
-    for i in range(b.shape[0]):
-        for j in range(b.shape[0]):
-            mat_sum += b[i, j]
+    for i in range(sc.shape[0]):
+        for j in range(sc.shape[0]):
+            mat_sum += sc[i, j]
             if i == j:
-                diag_sum += b[i, j]
+                diag_sum += sc[i, j]
 
     diagonal = diag_sum == mat_sum
 
     if diagonal:
-        k_ = a.shape[0]
-        m_ = b.shape[1]
+        k_ = num_draws
+        m_ = sc.shape[0]
 
         for k in range(k_):
             for m in range(m_):
-                val = a[k, m] * b[m, m]
+                val = temp_draws[k, m] * sc[m, m]
                 if m < 2:
                     val_exp = np.exp(val)
                     if val_exp < 0:
                         val_exp = 0
                     elif val_exp > HUGE_FLOAT:
                         val_exp = HUGE_FLOAT
-                    out[k, m] = val_exp
+                    draws[k, m] = val_exp
                 else:
-                    out[k, m] = val
+                    draws[k, m] = val
 
     else:
-        k_, l_ = a.shape
-        m_ = b.shape[1]
+        k_, l_ = draws.shape
+        m_ = sc.shape[0]
 
         for k in range(k_):
             for m in range(m_):
-                temp = 0.0
+                val = 0.0
                 for l in range(l_):
-                    temp += a[k, l] * b[l, m]
+                    val += temp_draws[k, l] * sc[m, l]
                 if m < 2:
-                    val_exp = np.exp(temp)
+                    val_exp = np.exp(val)
                     if val_exp < 0:
                         val_exp = 0
                     elif val_exp > HUGE_FLOAT:
                         val_exp = HUGE_FLOAT
 
-                    out[k, m] = val_exp
+                    draws[k, m] = val_exp
                 else:
-                    out[k, m] = temp
+                    draws[k, m] = val

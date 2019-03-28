@@ -3,10 +3,8 @@ import numpy as np
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.evaluate.evaluate_auxiliary import (
     get_smoothed_probability,
-    create_draws_for_monte_carlo_simulation,
-    adjust_draws_and_create_prob_wages,
+    create_draws_and_prob_wages,
 )
-from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
@@ -53,18 +51,12 @@ def pyth_contributions(
             "Choice",
         ]
     ].values.astype(int)
-    wages_observed = data["Wage"].values.reshape(-1, 1)
+    wages_observed = data["Wage"].values
 
     # Get useful auxiliary objects.
     num_obs_per_agent = np.bincount(data.Identifier.values)
     num_obs = data.shape[0]
     sc = optim_paras["shocks_cholesky"]
-
-    # Extend systematic wages with zeros so that indexing with choice three and four
-    # does not fail.
-    wages_systematic_ext = np.hstack(
-        (state_space.rewards[:, -2:], np.zeros((state_space.num_states, 2)))
-    )
 
     # Calculate the probability for all numbers of observations. The format of array is
     # (num_obs, num_types, num_draws, num_choices) reduced to the minimum of dimensions.
@@ -91,24 +83,25 @@ def pyth_contributions(
         periods, exp_as, exp_bs, edus, choices_lagged - 1, :
     ]
 
-    # Reshape periods  and choices to the shape (num_obs, num_types) of the indexer.
+    # Reshape periods, choices and wages_observed to the shape (num_obs, num_types) of
+    # the indexer.
     periods = state_space.states[ks, 0]
     choices = choices.repeat(state_space.num_types).reshape(
         -1, state_space.num_types
     )
-
-    wages_systematic = wages_systematic_ext[ks, choices - 1]
-
-    # Calculate the disturbance which are implied by the model and the observed wages.
-    dist = np.clip(np.log(wages_observed), -HUGE_FLOAT, HUGE_FLOAT) - np.clip(
-        np.log(wages_systematic), -HUGE_FLOAT, HUGE_FLOAT
+    wages_observed = wages_observed.repeat(state_space.num_types).reshape(
+        -1, state_space.num_types
     )
+    wages_systematic = state_space.rewards[ks, -2:]
 
-    draws_stan, prob_wages = adjust_draws_and_create_prob_wages(
-        periods, periods_draws_prob, choices, dist, sc
+    draws, prob_wages = create_draws_and_prob_wages(
+        wages_observed,
+        wages_systematic,
+        periods,
+        periods_draws_prob,
+        choices,
+        sc,
     )
-
-    draws = create_draws_for_monte_carlo_simulation(draws_stan, sc.T)
 
     total_values = get_continuation_value(
         state_space.rewards[ks, -2:],
