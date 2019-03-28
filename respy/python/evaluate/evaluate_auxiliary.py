@@ -16,13 +16,21 @@ def clip(x, min_=None, max_=None):
 
 
 @guvectorize(
-    ["float64[:, :], int64, float64, float64[:]"],
-    "(n, p), (), () -> (p)",
+    [
+        "f8[:], f8[:], f8[:], f8[:, :], f8, i8, f8, f8[:]"
+    ],
+    "(m), (n), (n), (p, n), (), (), () -> (p)",
     nopython=True,
     target="parallel",
 )
-def get_smoothed_probability(total_values, idx, tau, prob_choice):
+def get_smoothed_probability(
+    wages, rewards_systematic, emaxs, draws, delta, idx, tau, prob_choice
+):
     """Construct smoothed choice probabilities.
+
+    This function incorporates parts of :func:`get_continuation_value` and it might be
+    possible to refactor this in the future if gufunc can include nested calls of other
+    gufuncs.
 
     Parameters
     ----------
@@ -40,12 +48,26 @@ def get_smoothed_probability(total_values, idx, tau, prob_choice):
         choice.
 
     """
-    num_choices, num_draws = total_values.shape
+    num_draws = draws.shape[0]
+    num_choices = rewards_systematic.shape[0]
+    num_wages = wages.shape[0]
+
+    total_values = np.zeros((num_choices, num_draws))
 
     for i in range(num_draws):
 
         max_total_values = 0.0
+
         for j in range(num_choices):
+            if j < num_wages:
+                rew_ex = (
+                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                )
+            else:
+                rew_ex = rewards_systematic[j] + draws[i, j]
+
+            total_values[j, i] = rew_ex + delta * emaxs[j]
+
             if total_values[j, i] > max_total_values or j == 0:
                 max_total_values = total_values[j, i]
 

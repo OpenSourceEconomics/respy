@@ -193,7 +193,9 @@ def get_conditional_probabilities(type_shares, edu_starts):
     """
     type_shares = type_shares.reshape(-1, 2)
     covariate = edu_starts > 9
-    covariates = np.hstack([np.ones((covariate.shape[0], 1)), covariate.reshape(-1, 1)])
+    covariates = np.hstack(
+        [np.ones((covariate.shape[0], 1)), covariate.reshape(-1, 1)]
+    )
     probs = np.exp(covariates.dot(type_shares.T))
     probs /= probs.sum(axis=1, keepdims=True)
 
@@ -300,13 +302,7 @@ def cholesky_to_coeffs(shocks_cholesky):
     target="cpu",
 )
 def get_continuation_value_and_ex_post_rewards(
-    wages,
-    rewards_systematic,
-    emaxs,
-    draws,
-    delta,
-    cont_value,
-    rew_ex_post,
+    wages, rewards_systematic, emaxs, draws, delta, cont_value, rew_ex_post
 ):
     """Calculate the continuation value and ex-post rewards.
 
@@ -378,12 +374,7 @@ def get_continuation_value_and_ex_post_rewards(
     target="cpu",
 )
 def get_continuation_value(
-    wages,
-    rewards_systematic,
-    emaxs,
-    draws,
-    delta,
-    cont_value,
+    wages, rewards_systematic, emaxs, draws, delta, cont_value
 ):
     """Calculate the continuation value.
 
@@ -393,8 +384,7 @@ def get_continuation_value(
     only needed during simulation.
 
     """
-    num_draws = draws.shape[0]
-    num_choices = rewards_systematic.shape[0]
+    num_draws, num_choices = draws.shape
     num_wages = wages.shape[0]
 
     for i in range(num_draws):

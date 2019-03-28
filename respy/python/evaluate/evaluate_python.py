@@ -103,15 +103,15 @@ def pyth_contributions(
         sc,
     )
 
-    total_values = get_continuation_value(
+    prob_choices = get_smoothed_probability(
         state_space.rewards[ks, -2:],
         state_space.rewards[ks, :4],
         state_space.emaxs[ks, :4],
         draws,
         optim_paras["delta"],
+        choices - 1,
+        tau,
     )
-
-    prob_choices = get_smoothed_probability(total_values, choices - 1, tau)
 
     # Determine relative shares
     prob_obs = (prob_choices * prob_wages).mean(axis=2)
