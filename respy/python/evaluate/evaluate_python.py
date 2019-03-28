@@ -5,7 +5,6 @@ from respy.python.evaluate.evaluate_auxiliary import (
     get_smoothed_probability,
     create_draws_and_prob_wages,
 )
-from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
 def pyth_contributions(
@@ -55,7 +54,6 @@ def pyth_contributions(
 
     # Get useful auxiliary objects.
     num_obs_per_agent = np.bincount(data.Identifier.values)
-    num_obs = data.shape[0]
     sc = optim_paras["shocks_cholesky"]
 
     # Calculate the probability for all numbers of observations. The format of array is
@@ -115,8 +113,6 @@ def pyth_contributions(
 
     # Determine relative shares
     prob_obs = (prob_choices * prob_wages).mean(axis=2)
-
-    prob_obs = prob_obs.reshape(num_obs, state_space.num_types)
 
     # Accumulate likelihood of the observed choice for each individual-type combination
     # across all periods.
