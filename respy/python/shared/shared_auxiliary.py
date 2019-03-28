@@ -294,8 +294,8 @@ def cholesky_to_coeffs(shocks_cholesky):
 
 @guvectorize(
     [
-        "void(float32[:], float32[:], float32[:], float32[:, :], float32, float32[:, :], float32[:, :])",
-        "void(float64[:], float64[:], float64[:], float64[:, :], float64, float64[:, :], float64[:, :])",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, f4[:, :], f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, f8[:, :], f8[:, :]",
     ],
     "(m), (n), (n), (p, n), () -> (n, p), (n, p)",
     nopython=True,
@@ -312,11 +312,11 @@ def get_continuation_value_and_ex_post_rewards(
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (num_states_in_period, 2).
+        Array with shape (2,).
     rewards_systematic : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (4,).
     emaxs : np.ndarray
-        Array with shape (num_states_in_period, 4)
+        Array with shape (4,)
     draws : np.ndarray
         Array with shape (num_draws, 4)
     delta : float
@@ -325,9 +325,9 @@ def get_continuation_value_and_ex_post_rewards(
     Returns
     -------
     cont_value : np.ndarray
-        Array with shape (num_states_in_period, 4, num_draws).
+        Array with shape (4, num_draws).
     rew_ex_post : np.ndarray
-        Array with shape (num_states_in_period, 4, num_draws)
+        Array with shape (4, num_draws)
 
     Examples
     --------
@@ -366,8 +366,8 @@ def get_continuation_value_and_ex_post_rewards(
 
 @guvectorize(
     [
-        "float32[:], float32[:], float32[:], float32[:, :], float32, float32[:, :]",
-        "float64[:], float64[:], float64[:], float64[:, :], float64, float64[:, :]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, f8[:, :]",
     ],
     "(m), (n), (n), (p, n), () -> (n, p)",
     nopython=True,

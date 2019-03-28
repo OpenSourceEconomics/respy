@@ -7,6 +7,23 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 
 @vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
 def clip(x, min_=None, max_=None):
+    """Clip (limit) input value.
+
+    Parameters
+    ----------
+    x : float
+        Value to be clipped.
+    min_ : float
+        Lower limit.
+    max_ : float
+        Upper limit.
+
+    Returns
+    -------
+    float
+        Clipped value.
+
+    """
     if min_ is not None and x < min_:
         return min_
     elif max_ is not None and x > max_:
@@ -16,40 +33,45 @@ def clip(x, min_=None, max_=None):
 
 
 @guvectorize(
-    [
-        "f8[:], f8[:], f8[:], f8[:, :], f8, i8, f8, f8[:]"
-    ],
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, i8, f8, f8[:]"],
     "(m), (n), (n), (p, n), (), (), () -> (p)",
     nopython=True,
     target="parallel",
 )
-def get_smoothed_probability(
+def simulate_probability_of_agents_observed_choice(
     wages, rewards_systematic, emaxs, draws, delta, idx, tau, prob_choice
 ):
-    """Construct smoothed choice probabilities.
+    """Simulate the probability of observing the agent's choice.
 
-    This function incorporates parts of :func:`get_continuation_value` and it might be
-    possible to refactor this in the future if gufunc can include nested calls of other
-    gufuncs.
+    The probability is simulated by iterating over a distribution of unobservables.
+    First, the utility of each choice is computed. Then, the probability of observing
+    the choice of the agent given the maximum utility from all choices is computed.
 
     Parameters
     ----------
-    total_values : np.ndarray
-        Array with shape (num_types, num_draws, num_choices).
+    wages : np.ndarray
+        Array with shape (2,).
+    rewards_systematic : np.ndarray
+        Array with shape (4,).
+    emaxs : np.ndarray
+        Array with shape (4,)
+    draws : np.ndarray
+        Array with shape (num_draws, 4)
+    delta : float
+        Discount rate.
     idx : int
-        It is the choice of the agent minus one to get an index.
+        Choice of the agent minus one to get an index.
     tau : float
         Smoothing parameter for choice probabilities.
 
     Returns
     -------
-    prob_choices : np.ndarray
-        Array with shape (num_types, num_draws) containing smoothed probabilities for
+    prob_choice : np.ndarray
+        Array with shape (num_draws) containing smoothed probabilities for
         choice.
 
     """
-    num_draws = draws.shape[0]
-    num_choices = rewards_systematic.shape[0]
+    num_draws, num_choices = draws.shape
     num_wages = wages.shape[0]
 
     total_values = np.zeros((num_choices, num_draws))
@@ -86,7 +108,7 @@ def get_smoothed_probability(
 
 @vectorize(["float64(float64, float64, float64)"], nopython=True, target="cpu")
 def get_pdf_of_normal_distribution(x, mu, sigma):
-    """Return the probability of :data:`x` assuming the normal distribution.
+    """Compute the probability of ``x`` under a normal distribution.
 
     This implementation is faster than calling :func:`scipy.stats.norm.pdf`.
 
@@ -98,6 +120,12 @@ def get_pdf_of_normal_distribution(x, mu, sigma):
         Mean of the normal distribution.
     sigma : float or np.ndarray
         Standard deviation of the normal distribution.
+
+    Returns
+    -------
+    probability : float
+        Probability of ``x`` under a normal distribution with mean ``mu`` and standard
+        deviation ``sigma``.
 
     Example
     -------
@@ -124,7 +152,7 @@ def get_pdf_of_normal_distribution(x, mu, sigma):
 )
 def create_draws_and_prob_wages(
     wage_observed,
-    wage_systematic,
+    wages_systematic,
     period,
     periods_draws_prob,
     choice,
@@ -132,11 +160,34 @@ def create_draws_and_prob_wages(
     draws,
     prob_wages,
 ):
-    """Create draws to simulate continuation values and probabilities of wages.
+    """Create draws to simulate maximum utilities and create probabilities of wages.
 
     Draws are taken from a general set of unique shocks for each period. The shocks are
     adjusted in case the wage of an agent is available as well as the probability of the
     wage.
+
+    Parameters
+    ----------
+    wage_observed : float
+        Agent's observed wage.
+    wages_systematic : np.ndarray
+        Array with shape (2,) containing systematic wages.
+    period : int
+        Number of period.
+    periods_draws_prob : np.ndarray
+        Array with shape (num_periods, num_draws, num_choices) containing sets of draws
+        for all periods.
+    choice : int
+        Choice between one and four.
+    sc : np.ndarray
+        Array with shape (num_choices, num_choices).
+
+    Returns
+    -------
+    draws : np.ndarray
+        Array with shape (num_draws, num_choices) containing adjusted draws.
+    prob_wages : np.ndarray
+        Array with shape (num_draws,) containing probabilities for the observed wage.
 
     """
     # Create auxiliary objects
@@ -156,7 +207,7 @@ def create_draws_and_prob_wages(
         log_wo = np.log(wage_observed)
         log_wage_observed = clip(log_wo, -HUGE_FLOAT, HUGE_FLOAT)
 
-        log_ws = np.log(wage_systematic[choice - 1])
+        log_ws = np.log(wages_systematic[choice - 1])
         log_wage_systematic = clip(log_ws, -HUGE_FLOAT, HUGE_FLOAT)
 
         dist = log_wage_observed - log_wage_systematic
@@ -188,49 +239,20 @@ def create_draws_and_prob_wages(
 
     # What follows is a matrix multiplication written out of the form ``a.dot(b.T). Note
     # that the second argument corresponds to ``sc`` which is not transposed. This is
-    # done by adjusting the loops. The function achieves major speed performance due to
-    # the check for a diagonal matrix ``b``. Additionally, it incorporates the process
-    # of taking ``np.exp`` for the draws of the first two choices and clipping them.
+    # done by adjusting the loops. Additionally, it incorporates the process of taking
+    # ``np.exp`` for the draws of the first two choices and clipping them.
+    k_, l_ = draws.shape
+    m_ = sc.shape[0]
 
-    # Check if matrix ``b`` is diagonal.
-    diag_sum = 0.0
-    mat_sum = 0.0
-    for i in range(sc.shape[0]):
-        for j in range(sc.shape[0]):
-            mat_sum += sc[i, j]
-            if i == j:
-                diag_sum += sc[i, j]
+    for k in range(k_):
+        for m in range(m_):
+            val = 0.0
+            for l in range(l_):
+                val += temp_draws[k, l] * sc[m, l]
+            if m < 2:
+                val_exp = np.exp(val)
+                val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
 
-    diagonal = diag_sum == mat_sum
-
-    if diagonal:
-        k_ = num_draws
-        m_ = sc.shape[0]
-
-        for k in range(k_):
-            for m in range(m_):
-                val = temp_draws[k, m] * sc[m, m]
-                if m < 2:
-                    val_exp = np.exp(val)
-                    val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
-
-                    draws[k, m] = val_clipped
-                else:
-                    draws[k, m] = val
-
-    else:
-        k_, l_ = draws.shape
-        m_ = sc.shape[0]
-
-        for k in range(k_):
-            for m in range(m_):
-                val = 0.0
-                for l in range(l_):
-                    val += temp_draws[k, l] * sc[m, l]
-                if m < 2:
-                    val_exp = np.exp(val)
-                    val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
-
-                    draws[k, m] = val_clipped
-                else:
-                    draws[k, m] = val
+                draws[k, m] = val_clipped
+            else:
+                draws[k, m] = val

@@ -2,7 +2,7 @@ import numpy as np
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.evaluate.evaluate_auxiliary import (
-    get_smoothed_probability,
+    simulate_probability_of_agents_observed_choice,
     create_draws_and_prob_wages,
 )
 
@@ -38,8 +38,8 @@ def pyth_contributions(
         Array with shape (num_agents,) containing contributions of estimated agents.
 
     """
-    # Convert data to np.ndarray which is faster. Separate wages from other
-    # characteristics as they need to be integers.
+    # Convert data to np.ndarray. Separate wages from other characteristics as they need
+    # to be integers.
     agents = data[
         [
             "Period",
@@ -52,37 +52,32 @@ def pyth_contributions(
     ].values.astype(int)
     wages_observed = data["Wage"].values
 
-    # Get useful auxiliary objects.
+    # Get the number of observations for each individual and an array with indices of
+    # each individual's first observation. After that, extract initial education levels
+    # per agent which are important for type-specific probabilities.
     num_obs_per_agent = np.bincount(data.Identifier.values)
-    sc = optim_paras["shocks_cholesky"]
+    idx_agents_first_observation = np.hstack((0, np.cumsum(num_obs_per_agent)[:-1]))
+    agents_initial_education_levels = agents[idx_agents_first_observation, 3]
 
-    # Calculate the probability for all numbers of observations. The format of array is
-    # (num_obs, num_types, num_draws, num_choices) reduced to the minimum of dimensions.
-    # E.g. choices are determined for every agent thus the shape is (num_obs,),
-    # prob_wages are calculated for each draw thus the shape is (num_obs, num_types,
-    # num_draws).
-    rows_start = np.hstack((0, np.cumsum(num_obs_per_agent)[:-1]))
-    edu_starts = agents[rows_start, 3]
-
-    # Update type probabilities conditional on edu_start > 9.
+    # Update type-specific probabilities conditional on whether the initial level of
+    # education is greater than nine.
     type_shares = get_conditional_probabilities(
-        optim_paras["type_shares"], edu_starts
+        optim_paras["type_shares"], agents_initial_education_levels
     )
 
-    # Extract observable components of the state space as well as agent's
-    # decision.
+    # Extract observable components of the state space and agent's decision.
     periods, exp_as, exp_bs, edus, choices_lagged, choices = (
         agents[:, i] for i in range(6)
     )
 
-    # Get state index to access the systematic component of the agents
-    # rewards. These feed into the simulation of choice probabilities.
+    # Get indices of states in the state space corresponding to all observations for all
+    # types. The indexer has the shape (num_obs, num_types).
     ks = state_space.indexer[
         periods, exp_as, exp_bs, edus, choices_lagged - 1, :
     ]
 
-    # Reshape periods, choices and wages_observed to the shape (num_obs, num_types) of
-    # the indexer.
+    # Reshape periods, choices and wages_observed so that they match the shape (num_obs,
+    # num_types) of the indexer.
     periods = state_space.states[ks, 0]
     choices = choices.repeat(state_space.num_types).reshape(
         -1, state_space.num_types
@@ -92,16 +87,19 @@ def pyth_contributions(
     )
     wages_systematic = state_space.rewards[ks, -2:]
 
+    # Adjust the draws to simulate the expected maximum utility and calculate the
+    # probability of observing the wage.
     draws, prob_wages = create_draws_and_prob_wages(
         wages_observed,
         wages_systematic,
         periods,
         periods_draws_prob,
         choices,
-        sc,
+        optim_paras["shocks_cholesky"],
     )
 
-    prob_choices = get_smoothed_probability(
+    # Simulate the probability of observing the choice of the individual.
+    prob_choices = simulate_probability_of_agents_observed_choice(
         state_space.rewards[ks, -2:],
         state_space.rewards[ks, :4],
         state_space.emaxs[ks, :4],
@@ -111,12 +109,13 @@ def pyth_contributions(
         tau,
     )
 
-    # Determine relative shares
+    # Multiply the probability of the agent's choice with the probability of wage and
+    # average over all draws to get the probability of the observation.
     prob_obs = (prob_choices * prob_wages).mean(axis=2)
 
-    # Accumulate likelihood of the observed choice for each individual-type combination
-    # across all periods.
-    prob_type = np.multiply.reduceat(prob_obs, rows_start)
+    # Accumulate the likelihood of observations for each individual-type combination
+    # over all periods.
+    prob_type = np.multiply.reduceat(prob_obs, idx_agents_first_observation)
 
     # Multiply each individual-type contribution with its type-specific shares and sum
     # over types to get the likelihood contribution for each individual.
