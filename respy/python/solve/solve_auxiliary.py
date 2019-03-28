@@ -72,7 +72,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
     ...     num_periods, num_types, edu_starts, edu_max
     ... )
     >>> states.shape
-    (324263, 6)
+    (317367, 6)
     >>> indexer.shape
     (40, 40, 40, 21, 4, 1)
 
@@ -125,7 +125,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
                                     # (0, 1) Whenever an agent has only worked in
                                     # Occupation A, then the lagged choice cannot be
                                     # anything other than one.
-                                    if (choice_lagged != 1) and (
+                                    if choice_lagged != 1 and (
                                         exp_a == period
                                     ):
                                         continue
@@ -133,7 +133,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
                                     # (0, 2) Whenever an agent has only worked in
                                     # Occupation B, then the lagged choice cannot be
                                     # anything other than two
-                                    if (choice_lagged != 2) and (
+                                    if choice_lagged != 2 and (
                                         exp_b == period
                                     ):
                                         continue
@@ -141,7 +141,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
                                     # (0, 3) Whenever an agent has only acquired
                                     # additional education, then the lagged choice
                                     # cannot be anything other than three.
-                                    if (choice_lagged != 3) and (
+                                    if choice_lagged != 3 and (
                                         edu_add == period
                                     ):
                                         continue
@@ -150,17 +150,26 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
                                     # additional education and we are not in the first
                                     # period, then lagged activity cannot take a value
                                     # of three.
-                                    if (choice_lagged == 3) and (edu_add == 0):
+                                    if choice_lagged == 3 and edu_add == 0:
+                                        continue
+
+                                    # (0, 5) Whenever an agent has always chosen
+                                    # Occupation A, Occupation B or education, then
+                                    # lagged activity cannot take a value of four.
+                                    if (
+                                        choice_lagged == 4
+                                        and exp_a + exp_b + edu_add == period
+                                    ):
                                         continue
 
                                 # (2, 1) An individual that has never worked in
                                 # Occupation A cannot have that lagged activity.
-                                if (choice_lagged == 1) and (exp_a == 0):
+                                if choice_lagged == 1 and exp_a == 0:
                                     continue
 
                                 # (3, 1) An individual that has never worked in
                                 # Occupation B cannot have a that lagged activity.
-                                if (choice_lagged == 2) and (exp_b == 0):
+                                if choice_lagged == 2 and exp_b == 0:
                                     continue
 
                                 # (1, 1) In the first period individual either were in
