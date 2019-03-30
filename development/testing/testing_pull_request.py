@@ -67,22 +67,22 @@ def main():
         respy.test()
 
     if request_dict["REGRESSION"]:
-        os.chdir("regression")
+        os.chdir(CURRENT_DIR / "regression")
         run_regression(**test_spec["REGRESSION"])
         os.chdir(CURRENT_DIR)
 
     if request_dict["PROPERTY"]:
-        os.chdir("property")
+        os.chdir(CURRENT_DIR / "property")
         run_property(**test_spec["PROPERTY"])
         os.chdir(CURRENT_DIR)
 
     if request_dict["ROBUSTNESS"]:
-        os.chdir("robustness")
+        os.chdir(CURRENT_DIR / "robustness")
         run_robustness(**test_spec["ROBUSTNESS"])
         os.chdir(CURRENT_DIR)
 
     if request_dict["PARALLELISM"]:
-        os.chdir("parallelism")
+        os.chdir(CURRENT_DIR / "parallelism")
         run_parallelism(**test_spec["PARALLELISM"])
         os.chdir(CURRENT_DIR)
 
