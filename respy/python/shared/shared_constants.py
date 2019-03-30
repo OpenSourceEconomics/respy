@@ -3,7 +3,6 @@ aligned with the constants from the FORTRAN implementation.
 """
 import numpy as np
 import json
-import os
 import respy
 from pathlib import Path
 
@@ -51,8 +50,8 @@ IS_FORTRAN = config_dict["FORTRAN"]
 IS_F2PY = config_dict["F2PY"]
 
 # Each implementation has its own set of optimizers available.
-OPT_EST_PYTH = ["SCIPY-BFGS", "SCIPY-POWELL", "SCIPY-LBFGSB"]
-OPT_EST_FORT = ["FORT-NEWUOA", "FORT-BFGS", "FORT-BOBYQA"]
+OPT_EST_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL', 'SCIPY-LBFGSB']
+OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS', 'FORT-BOBYQA']
 
 # Labels for columns in a dataset as well as the formatters.
 DATA_LABELS_EST = []

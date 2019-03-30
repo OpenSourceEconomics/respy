@@ -5,19 +5,20 @@ import os
 
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
-from respy.pre_processing.model_processing import write_init_file
+from respy.pre_processing.model_processing import _params_spec_from_attributes
+from respy.pre_processing.model_processing import _options_spec_from_attributes
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TOL
 from auxiliary_shared import get_random_dirname
 from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.random_model import generate_random_model
 
 
 def get_chunks(l, n):
     """ Yield successive n-sized chunks from l.
     """
     for i in range(0, len(l), n):
-        yield l[i : i + n]
+        yield l[i: i + n]
 
 
 def create_single(idx):
@@ -34,12 +35,25 @@ def create_single(idx):
 
     # We impose a couple of constraints that make the requests manageable.
     np.random.seed(idx)
-    constr = dict()
-    constr["precond_type"] = np.random.choice(["identity", "magnitudes"])
+
+    version = np.random.choice(["python", "fortran"])
+
+    # only choose from constraint optimizers because we always have some bounds
+    if version == 'python':
+        optimizer = "SCIPY-LBFGSB"
+    else:
+        optimizer = "FORTE-BOBYQA"
+
+    constr = {
+        "program": {"version": version},
+        "preconditioning": {"type": np.random.choice(["identity", "magnitudes"])},
+        "estimation": {"maxfun": int(np.random.choice(range(6), p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1])),
+                       "optimizer": optimizer},
+    }
     constr["flag_estimation"] = True
 
-    init_dict = generate_init(constr)
-    respy_obj = RespyCls("test.respy.ini")
+    param_spec, options_spec = generate_random_model(point_constr=constr)
+    respy_obj = RespyCls(param_spec, options_spec)
     simulate_observed(respy_obj)
     crit_val = respy_obj.fit()[1]
 
@@ -54,40 +68,23 @@ def create_single(idx):
     os.chdir("../")
     shutil.rmtree(dirname)
 
-    return init_dict, crit_val
+    return respy_obj.attr, crit_val
 
 
 def check_single(tests, idx):
     """ This function checks a single test from the dictionary.
     """
     # Distribute test information.
-    init_dict, crit_val = tests[idx]
+    attr, crit_val = tests[idx]
 
-    # TODO: These are temporary modifications that ensure compatibility over time and will be
-    # removed once we update the regression test battery.
-    init_dict["EDUCATION"]["lagged"] = []
-    for edu_start in init_dict["EDUCATION"]["start"]:
-        if edu_start >= 10:
-            init_dict["EDUCATION"]["lagged"] += [1.0]
-        else:
-            init_dict["EDUCATION"]["lagged"] += [0.0]
+    if not IS_PARALLELISM_OMP or not IS_FORTRAN:
+        attr["num_threads"] = 1
 
-    init_dict["PROGRAM"]["threads"] = 1
-    if IS_PARALLELISM_OMP and init_dict["PROGRAM"]["version"] == "FORTRAN":
-        init_dict["PROGRAM"]["threads"] = np.random.randint(1, 5)
+    if not IS_PARALLELISM_MPI or not IS_FORTRAN:
+        attr["num_procs"] = 1
 
-    # During development it is useful that we can only run the PYTHON versions of the
-    # program.
-    msg = " ... skipped as required version of package not available"
-    if init_dict["PROGRAM"]["version"] == "FORTRAN" and not IS_FORTRAN:
-        print(msg)
-        return None
-    if init_dict["PROGRAM"]["procs"] > 1 and not IS_PARALLELISM_MPI:
-        print(msg)
-        return None
-    if init_dict["PROGRAM"]["threads"] > 1 and not IS_PARALLELISM_OMP:
-        print(msg)
-        return None
+    if not IS_FORTRAN:
+        attr['version'] = 'python'
 
     # In the past we also had the problem that some of the testing machines report selective
     # failures when the regression vault was created on another machine.
@@ -113,8 +110,10 @@ def check_single(tests, idx):
     # include FORTRAN use cases.
     from respy import RespyCls
 
-    write_init_file(init_dict)
-    respy_obj = RespyCls("test.respy.ini")
+    params_spec = _params_spec_from_attributes(attr)
+    options_spec = _options_spec_from_attributes(attr)
+    respy_obj = RespyCls(params_spec, options_spec)
+
     simulate_observed(respy_obj)
 
     est_val = respy_obj.fit()[1]

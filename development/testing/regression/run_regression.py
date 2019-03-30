@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-""" This script checks the regression tests vault for any unintended changes during further
-development and refactoring efforts.
+""" This script checks the regression tests vault for any unintended changes during
+further development and refactoring efforts.
 """
 from __future__ import print_function
 
@@ -10,7 +9,7 @@ import multiprocessing as mp
 import numpy as np
 import argparse
 import socket
-import json
+import pickle
 
 from auxiliary_shared import send_notification
 from auxiliary_shared import compile_package
@@ -21,7 +20,7 @@ from auxiliary_regression import get_chunks
 
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import DECIMALS
-from respy.pre_processing.model_processing import write_init_file
+from respy.pre_processing.model_processing import _options_spec_from_attributes, _params_spec_from_attributes
 from respy.tests.codes.auxiliary import simulate_observed
 
 HOSTNAME = socket.gethostname()
@@ -36,9 +35,9 @@ def run(request, is_compile, is_background, is_strict, num_procs):
     # We can set up a multiprocessing pool right away.
     mp_pool = mp.Pool(num_procs)
 
-    # The late import is required so a potentially just compiled FORTRAN implementation is
-    # recognized. This is important for the creation of the regression vault as we want to
-    # include FORTRAN use cases.
+    # The late import is required so a potentially just compiled FORTRAN implementation
+    # is recognized. This is important for the creation of the regression vault as we
+    # want to include FORTRAN use cases.
     from respy import RespyCls
 
     # Process command line arguments
@@ -60,12 +59,15 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         assert idx > 0
 
     if is_investigation:
-        fname = TEST_RESOURCES_DIR + "/regression_vault.respy.json"
-        tests = json.load(open(fname, "r"))
+        fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
+        with open(fname, 'rb') as p:
+            tests = pickle.load(p)
 
-        init_dict, crit_val = tests[idx]
-        write_init_file(init_dict)
-        respy_obj = RespyCls("test.respy.ini")
+        attr, crit_val = tests[idx]
+        params_spec = _params_spec_from_attributes(attr)
+        options_spec = _options_spec_from_attributes(attr)
+
+        respy_obj = RespyCls(params_spec, options_spec)
 
         simulate_observed(respy_obj)
 
@@ -73,8 +75,8 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
 
     if is_creation:
-        # We maintain the separate execution in the case of a single processor for debugging
-        # purposes. The error messages are generally much more informative.
+        # We maintain the separate execution in the case of a single processor for
+        # debugging purposes. The error messages are generally much more informative.
         if num_procs == 1:
             tests = []
             for idx in range(num_tests):
@@ -82,18 +84,20 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         else:
             tests = mp_pool.map(create_single, range(num_tests))
 
-        json.dump(tests, open("regression_vault.respy.json", "w"))
+        with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "wb") as p:
+            pickle.dump(tests, p)
         return
 
     if is_check:
-        fname = TEST_RESOURCES_DIR + "/regression_vault.respy.json"
-        tests = json.load(open(fname, "r"))
+        fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
+        with open(fname, 'rb') as p:
+            tests = pickle.load(p)
 
         run_single = partial(check_single, tests)
         indices = list(range(num_tests))
 
-        # We maintain the separate execution in the case of a single processor for debugging
-        # purposes. The error messages are generally much more informative.
+        # We maintain the separate execution in the case of a single processor for
+        # debugging purposes. The error messages are generally much more informative.
         if num_procs == 1:
             ret = []
             for index in indices:
@@ -105,12 +109,13 @@ def run(request, is_compile, is_background, is_strict, num_procs):
             ret = []
             for chunk in get_chunks(indices, num_procs):
                 ret += mp_pool.map(run_single, chunk)
-                # We need an early termination if a strict test run is requested. So we check
-                # whether there are any failures in the last batch.
+                # We need an early termination if a strict test run is requested. So we
+                # check whether there are any failures in the last batch.
                 if is_strict and (False in ret):
                     break
 
-        # This allows to call this test from another script, that runs other tests as well.
+        # This allows to call this test from another script, that runs other tests as
+        # well.
         idx_failures = [i for i, x in enumerate(ret) if x not in [True, None]]
         is_failure = False in ret
 

@@ -739,27 +739,6 @@ def calculate_rewards_general(covariates, optim_paras):
     return rewards_general
 
 
-def get_valid_bounds(which, value):
-    """ Simply get a valid set of bounds.
-    """
-    assert which in ["cov", "coeff", "delta", "share"]
-
-    # The bounds cannot be too tight as otherwise the BOBYQA might not start
-    # properly.
-    if which in ["delta"]:
-        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
-        bounds = [max(0.0, value - np.random.uniform(low=0.1)), upper]
-    elif which in ["coeff"]:
-        upper = np.random.choice([None, value + np.random.uniform(low=0.1)])
-        lower = np.random.choice([None, value - np.random.uniform(low=0.1)])
-        bounds = [lower, upper]
-    elif which in ["cov"]:
-        bounds = [None, None]
-    elif which in ["share"]:
-        bounds = [0.0, None]
-    return bounds
-
-
 def number_of_triangular_elements_to_dimensio(num):
     """Calculate the dimension of a square matrix from number of triangular elements.
 

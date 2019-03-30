@@ -92,7 +92,7 @@ def resfort_interface(respy_obj, request, data_array=None):
     cmd = []
     if num_procs > 1:
         cmd += ["mpiexec", "-n", "1"]
-    subprocess.check_call(cmd + [EXEC_DIR + "/resfort"], env=env)
+    subprocess.check_call(cmd + [str(EXEC_DIR / "resfort")], env=env)
 
     # Return arguments depends on the request.
     if request == "simulate":

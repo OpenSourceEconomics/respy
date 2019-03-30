@@ -4,6 +4,7 @@ import respy
 import sys
 import os
 from socket import gethostname
+import numpy as np
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 for dirname in ["regression", "property", "release", "robustness", "parallelism"]:
@@ -31,7 +32,7 @@ test_spec["PYTEST"] = dict()
 
 test_spec["REGRESSION"] = dict()
 if short_run is True:
-    test_spec["REGRESSION"]["request"] = ("check", 200)
+    test_spec["REGRESSION"]["request"] = ("check", 50)
 else:
     test_spec["REGRESSION"]["request"] = ("check", 10000)
 test_spec["REGRESSION"]["is_background"] = False
@@ -41,7 +42,7 @@ test_spec["REGRESSION"]["num_procs"] = 3
 
 test_spec["PROPERTY"] = dict()
 if short_run is True:
-    test_spec["PROPERTY"]["request"] = ("run", 0.1)
+    test_spec["PROPERTY"]["request"] = ("run", 0.05)
 else:
     test_spec["PROPERTY"]["request"] = ("run", 12)
 test_spec["PROPERTY"]["is_background"] = False
@@ -49,7 +50,7 @@ test_spec["PROPERTY"]["is_compile"] = False
 
 test_spec["ROBUSTNESS"] = dict()
 if short_run is True:
-    test_spec["ROBUSTNESS"]["request"] = ("run", 0.1)
+    test_spec["ROBUSTNESS"]["request"] = ("run", 0.05)
 else:
     test_spec["ROBUSTNESS"]["request"] = ("run", 12)
 test_spec["ROBUSTNESS"]["is_compile"] = False
@@ -59,30 +60,40 @@ test_spec["ROBUSTNESS"]["num_procs"] = 3
 
 test_spec["PARALLELISM"] = dict()
 if short_run is True:
-    test_spec["PARALLELISM"]["hours"] = 0.1
+    test_spec["PARALLELISM"]["hours"] = 0.05
 else:
     test_spec["PARALLELISM"]["hours"] = 12
 
 
 if request_dict["PYTEST"]:
+    print('\n\n', 'starting pytest', '\n\n')
     respy.test()
+    print('\n\n', 'stopping pytest', '\n\n')
 
 if request_dict["REGRESSION"]:
+    print('\n\n', 'starting regression test', '\n\n')
     os.chdir("regression")
     run_regression(**test_spec["REGRESSION"])
     os.chdir(CURRENT_DIR)
+    print('\n\n', 'stopping regression test', '\n\n')
 
 if request_dict["PROPERTY"]:
+    print('\n\n', 'starting property test', '\n\n')
     os.chdir("property")
     run_property(**test_spec["PROPERTY"])
     os.chdir(CURRENT_DIR)
+    print('\n\n', 'stopping property test', '\n\n')
 
 if request_dict["ROBUSTNESS"]:
+    print('\n\n', 'starting robustness test', '\n\n')
     os.chdir("robustness")
     run_robustness(**test_spec["ROBUSTNESS"])
     os.chdir(CURRENT_DIR)
+    print('\n\n', 'stopping robustness test', '\n\n')
 
 if request_dict["PARALLELISM"]:
+    print('\n\n', 'starting parallelism test', '\n\n')
     os.chdir("parallelism")
     run_parallelism(**test_spec["PARALLELISM"])
     os.chdir(CURRENT_DIR)
+    print('\n\n', 'stopping parallelism test', '\n\n')

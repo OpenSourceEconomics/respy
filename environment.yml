@@ -1,11 +1,17 @@
 name: respy
-
+channels:
+  - defaults
+  - numba
 dependencies:
   - python=3.6
+  - pandas=0.24
+  - numba=0.43
   - numpy
-  - pandas
-  - statsmodels
-  - pytest
-  - pytest-xdist
-  - scipy
-  - flake8
+  - scipy=0.19
+  - statsmodels=0.9
+  - pip:
+    - pytest
+    - pytest-cov
+    - pytest-pythonpath
+    - codecov
+    - PyYAML
