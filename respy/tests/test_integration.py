@@ -16,18 +16,13 @@ from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.pre_processing.data_processing import process_dataset
 from respy.scripts.scripts_check import scripts_check
 from respy.tests.codes.auxiliary import write_interpolation_grid
-from respy.tests.codes.auxiliary import transform_to_logit
 from respy.tests.codes.auxiliary import write_lagged_start
 from respy.custom_exceptions import UserError
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_types
-from respy.pre_processing.model_processing import write_out_model_spec
-
 from respy import RespyCls
-
-import pickle
 
 
 class TestClass(object):
