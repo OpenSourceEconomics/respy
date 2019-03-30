@@ -837,10 +837,12 @@ class TestClass(object):
         )
 
         # Integrate periods_emax in state_space
-        state_space.emaxs = np.c_[
-            np.zeros((state_space.num_states, 4)),
-            periods_emax[periods_emax != MISSING_FLOAT],
-        ]
+        state_space.emaxs = np.column_stack(
+            (
+                np.zeros((state_space.num_states, 4)),
+                periods_emax[periods_emax != MISSING_FLOAT],
+            )
+        )
 
         # Fill emaxs_a - emaxs_home in the requested period
         states_period = state_space.get_attribute_from_period("states", period)
@@ -882,9 +884,9 @@ class TestClass(object):
         )
 
         # Align output between Python and Fortran version.
-        exogenous_9 = np.c_[
-            exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0])
-        ]
+        exogenous_9 = np.column_stack(
+            (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
+        )
         py = (exogenous_9, max_emax)
 
         f90 = fort_debug.wrapper_get_exogenous_variables(

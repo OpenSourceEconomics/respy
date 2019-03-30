@@ -356,9 +356,7 @@ def get_continuation_value(
 
 
 @njit
-def get_emaxs_of_subsequent_period(
-    states, indexer, emaxs, edu_max
-):
+def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
     """Get the maxmium utility from the subsequent period.
 
     This function takes a parent node and looks up the utility from each of the four
@@ -864,12 +862,12 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
     num_states = covariates.shape[0]
     rewards_general = np.full((num_states, 2), np.nan)
 
-    rewards_general[:, 0] = np.c_[
-        np.ones(num_states), covariates[:, [0, 5]]
-    ].dot(coeffs_a)
-    rewards_general[:, 1] = np.c_[
-        np.ones(num_states), covariates[:, [1, 6]]
-    ].dot(coeffs_b)
+    rewards_general[:, 0] = np.column_stack(
+        (np.ones(num_states), covariates[:, [0, 5]])
+    ).dot(coeffs_a)
+    rewards_general[:, 1] = np.column_stack(
+        (np.ones(num_states), covariates[:, [1, 6]])
+    ).dot(coeffs_b)
 
     return rewards_general
 
