@@ -133,7 +133,7 @@ def check_model_attributes(attr_dict):
     dim = len(a['optim_paras']['shocks_cholesky'])
     helper = np.zeros((dim, dim))
     helper[np.tril_indices(dim)] = shocks_coeffs
-    off_diagonals_zero = (helper[np.tril_indices(dim, k=-1)] == 0).all()
+    off_diagonals_zero = np.diag(helper).sum() == helper.sum()
 
     helper = np.zeros((dim, dim), dtype=bool)
     helper[np.tril_indices(dim)] = shocks_fixed

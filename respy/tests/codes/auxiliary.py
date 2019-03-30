@@ -115,9 +115,8 @@ def compare_est_log(base_est_log):
                     is_floats = True
 
             if not is_floats:
-                print(alt_line)
-                print(base_line)
                 assert alt_line == base_line
+
             else:
                 base_floats = get_floats(base_line)
                 alt_floats = get_floats(alt_line)
@@ -125,14 +124,9 @@ def compare_est_log(base_est_log):
 
 
 def get_floats(line):
-    """ This extracts the floats from the line
-    """
-    list_ = shlex.split(line)
-    result = []
-    for val in list_:
-        if not isinstance(val, str):
-            result.append(float(val))
-    return result
+    """ This extracts the floats from the line."""
+    line_entries = shlex.split(line)
+    return [float(val) for val in line_entries if not isinstance(val, str)]
 
 
 def write_interpolation_grid(respy_obj):
