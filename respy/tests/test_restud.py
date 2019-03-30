@@ -1,12 +1,11 @@
 from pandas.util.testing import assert_frame_equal
-from scipy.stats import wishart
 import pandas as pd
 import numpy as np
 import subprocess
 import pytest
 import shutil
 import shlex
-import os
+from pathlib import Path
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
@@ -14,7 +13,11 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import simulate_observed
-from respy.pre_processing.model_processing import _create_attribute_dictionary, _options_spec_from_attributes, _params_spec_from_attributes
+from respy.pre_processing.model_processing import (
+    _create_attribute_dictionary,
+    _options_spec_from_attributes,
+    _params_spec_from_attributes,
+)
 from respy import RespyCls
 import respy
 
@@ -82,7 +85,13 @@ def restud_sample_to_respy():
         return agent
 
     column_labels = []
-    column_labels += ["Identifier", "Total_Periods", "Choice", "Reward", "Experience_A"]
+    column_labels += [
+        "Identifier",
+        "Total_Periods",
+        "Choice",
+        "Reward",
+        "Experience_A",
+    ]
     column_labels += ["Experience_B", "Years_Schooling", "Lagged_Choice"]
 
     matrix = np.array(np.genfromtxt("ftest.txt", missing_values="."), ndmin=2)
@@ -114,7 +123,10 @@ def write_core_parameters(optim_paras):
 
         # Write out coefficients for education and home rewards as well as the discount factor.
         # The intercept is scaled. This is later undone again in the original FORTRAN code.
-        coeffs_edu, coeffs_home = optim_paras["coeffs_edu"], optim_paras["coeffs_home"]
+        coeffs_edu, coeffs_home = (
+            optim_paras["coeffs_edu"],
+            optim_paras["coeffs_home"],
+        )
 
         edu_int = coeffs_edu[0] / 1000
         edu_coeffs = [edu_int]
@@ -191,7 +203,9 @@ def write_covariance_parameters(cov):
                 for j in range(4):
                     if j >= i:
                         continue
-                    corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
+                    corr[i, j] = cov[i, j] / (
+                        np.sqrt(cov[i, i]) * np.sqrt(cov[j, j])
+                    )
 
         for j in range(4):
             fmt = " {0:10.5f} {1:10.5f} {2:10.5f} {3:10.5f}\n"
@@ -225,21 +239,19 @@ def transform_respy_to_restud_sim(
 def generate_constraints_dict():
     """Generate the arguments for generate_random_model."""
     point_constr = {
-        'program': {'version': 'fortran'},
-        'estimation': {'maxfun': 0},
-        'num_periods': int(np.random.choice(range(2, 10))),
-        'edu_spec': {'start': [10], 'max': 20, 'share': [1.]}
+        "program": {"version": "fortran"},
+        "estimation": {"maxfun": 0},
+        "num_periods": int(np.random.choice(range(2, 10))),
+        "edu_spec": {"start": [10], "max": 20, "share": [1.0]},
     }
 
-    bound_constr = {
-        'max_draws': np.random.randint(10, 100)
-    }
+    bound_constr = {"max_draws": np.random.randint(10, 100)}
 
     args = {
-        'point_constr': point_constr,
-        'bound_constr': bound_constr,
-        'num_types': 1,
-        'deterministic': True,
+        "point_constr": point_constr,
+        "bound_constr": bound_constr,
+        "num_types": 1,
+        "deterministic": True,
     }
 
     return args
@@ -249,16 +261,16 @@ def adjust_model_spec(params_spec, options_spec):
     """ This function adjusts the random initialization dictionary further so we can campare
     RESPY against RESTUD."""
     attr = _create_attribute_dictionary(params_spec, options_spec)
-    op = attr['optim_paras']
-    op['coeffs_a'][-9:] = [0.0] * 9
-    op['coeffs_b'][-9:] = [0.0] * 9
-    op['coeffs_edu'][-1] = op['coeffs_edu'][-2]
+    op = attr["optim_paras"]
+    op["coeffs_a"][-9:] = [0.0] * 9
+    op["coeffs_b"][-9:] = [0.0] * 9
+    op["coeffs_edu"][-1] = op["coeffs_edu"][-2]
 
-    op['coeffs_edu'][2] = 0.0
-    op['coeffs_edu'][3] = op['coeffs_edu'][4]
-    op['coeffs_edu'][5:] = [0.0] * 2
-    op['coeffs_common'] = np.array([0.0, 0.0])
-    op['coeffs_home'][1:] = [0.0] * 2
+    op["coeffs_edu"][2] = 0.0
+    op["coeffs_edu"][3] = op["coeffs_edu"][4]
+    op["coeffs_edu"][5:] = [0.0] * 2
+    op["coeffs_common"] = np.array([0.0, 0.0])
+    op["coeffs_home"][1:] = [0.0] * 2
 
     options_spec = _options_spec_from_attributes(attr)
     params_spec = _params_spec_from_attributes(attr)
@@ -274,7 +286,9 @@ class TestClass(object):
         """Compare simulation results from the RESTUD program and the RESPY package."""
         args = generate_constraints_dict()
         params_spec, options_spec = generate_random_model(**args)
-        params_spec, options_spec = adjust_model_spec(params_spec, options_spec)
+        params_spec, options_spec = adjust_model_spec(
+            params_spec, options_spec
+        )
 
         # Indicate RESTUD code the special case of zero disturbance.
         open(".restud.testing.scratch", "a").close()
@@ -301,11 +315,16 @@ class TestClass(object):
 
         # Simulate sample model using RESTUD code.
         transform_respy_to_restud_sim(
-            optim_paras, edu_spec, num_agents_sim, num_periods, num_draws_emax, cov
+            optim_paras,
+            edu_spec,
+            num_agents_sim,
+            num_periods,
+            num_draws_emax,
+            cov,
         )
 
         # Solve model using RESTUD code.
-        cmd = TEST_RESOURCES_BUILD + "/kw_dp3asim"
+        cmd = str(TEST_RESOURCES_BUILD / "kw_dp3asim")
         subprocess.check_call(cmd, shell=True)
 
         # We need to ensure for RESPY that the lagged activity variable indicates that the
@@ -330,12 +349,16 @@ class TestClass(object):
         ).astype(np.float)
 
         fort = pd.DataFrame(
-            np.array(np.genfromtxt("ftest.txt", missing_values="."), ndmin=2)[:, -4:],
+            np.array(np.genfromtxt("ftest.txt", missing_values="."), ndmin=2)[
+                :, -4:
+            ],
             columns=column_labels,
         ).astype(np.float)
 
         # The simulated dataset from FORTRAN includes an indicator for the lagged activities.
-        py["Lagged_Choice"] = py["Lagged_Choice"].map({1: 0.0, 2: 0.0, 3: 1.0, 4: 0.0})
+        py["Lagged_Choice"] = py["Lagged_Choice"].map(
+            {1: 0.0, 2: 0.0, 3: 1.0, 4: 0.0}
+        )
 
         assert_frame_equal(py, fort)
 
@@ -344,20 +367,23 @@ class TestClass(object):
         """
         args = generate_constraints_dict()
         params_spec, options_spec = generate_random_model(**args)
-        params_spec, options_spec = adjust_model_spec(params_spec, options_spec)
+        params_spec, options_spec = adjust_model_spec(
+            params_spec, options_spec
+        )
 
-        max_draws = args['bound_constr']["max_draws"]
+        max_draws = args["bound_constr"]["max_draws"]
 
         # At this point, the random initialization file does only provide diagonal covariances.
         cov_sampled = np.random.uniform(0, 0.01, size=(4, 4)) + np.diag(
-            np.random.uniform(1.0, 1.5, size=4))
+            np.random.uniform(1.0, 1.5, size=4)
+        )
         # cov_sampled = wishart.rvs(4, 0.2 * np.identity(4))
         # cov_sampled[np.diag_indices(4)] = np.sqrt(cov_sampled[np.diag_indices(4)])
         chol = np.linalg.cholesky(cov_sampled)
         coeffs = chol[np.tril_indices(4)]
-        params_spec.loc['shocks', 'para'] = coeffs
-        params_spec.loc['shocks', 'upper'] = np.nan
-        params_spec.loc['shocks', 'lower'] = np.nan
+        params_spec.loc["shocks", "para"] = coeffs
+        params_spec.loc["shocks", "upper"] = np.nan
+        params_spec.loc["shocks", "lower"] = np.nan
 
         respy_obj = RespyCls(params_spec, options_spec)
 
@@ -380,11 +406,16 @@ class TestClass(object):
 
         # Simulate sample model using RESTUD code.
         transform_respy_to_restud_sim(
-            optim_paras, edu_spec, num_agents_sim, num_periods, num_draws_emax, cov
+            optim_paras,
+            edu_spec,
+            num_agents_sim,
+            num_periods,
+            num_draws_emax,
+            cov,
         )
 
         open(".restud.testing.scratch", "a").close()
-        cmd = TEST_RESOURCES_BUILD + "/kw_dp3asim"
+        cmd = str(TEST_RESOURCES_BUILD / "kw_dp3asim")
         subprocess.check_call(cmd, shell=True)
 
         transform_respy_to_restud_est(
@@ -398,7 +429,7 @@ class TestClass(object):
             cov,
         )
 
-        filenames = ["in.txt", TEST_RESOURCES_DIR + "/in_bottom.txt"]
+        filenames = ["in.txt", TEST_RESOURCES_DIR / "in_bottom.txt"]
         with open("in1.txt", "w") as outfile:
             for fname in filenames:
                 with open(fname) as infile:
@@ -416,10 +447,10 @@ class TestClass(object):
                     file_.write(line)
 
         # We always need the seed.txt
-        shutil.copy(TEST_RESOURCES_DIR + "/seed.txt", "seed.txt")
-        cmd = TEST_RESOURCES_BUILD + "/kw_dpml4a"
+        shutil.copy(str(TEST_RESOURCES_DIR / "seed.txt"), "seed.txt")
+        cmd = str(TEST_RESOURCES_BUILD / "kw_dpml4a")
         subprocess.check_call(cmd, shell=True)
-        os.remove("seed.txt")
+        Path("seed.txt").unlink()
 
         with open("output1.txt", "r") as searchfile:
             # Search file for strings, trim lines and save as variables
@@ -435,7 +466,7 @@ class TestClass(object):
 
         open(".restud.respy.scratch", "a").close()
         _, val = respy_obj.fit()
-        os.remove(".restud.respy.scratch")
+        Path(".restud.respy.scratch").unlink()
 
         # This ensure that the two values are within 1% of the RESPY value.
         np.testing.assert_allclose(

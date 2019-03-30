@@ -17,12 +17,12 @@ image: Visual Studio 2015
 environment:
   MINICONDA: "C:\\Miniconda36-x64"
   matrix:
-      # - CI_FORTRAN: false
-      #   CI_MPI: false
-      #   CI_OMP: false
-      - CI_FORTRAN: true
-        CI_MPI: true
-        CI_OMP: true
+      - CI_FORTRAN: false
+        CI_MPI: false
+        CI_OMP: false
+      # - CI_FORTRAN: true
+      #   CI_MPI: true
+      #   CI_OMP: true
       # - CI_FORTRAN: true
       #   CI_MPI: false
       #   CI_OMP: true
