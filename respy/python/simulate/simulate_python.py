@@ -93,12 +93,14 @@ def pyth_simulate(
 
     # Create a matrix of initial states of simulated agents. OCCUPATION A and OCCUPATION
     # B are set to zero.
-    current_states = np.c_[
-        np.zeros((num_agents_sim, 2)),
-        initial_education,
-        initial_choice_lagged,
-        initial_types,
-    ].astype(np.uint8)
+    current_states = np.column_stack(
+        (
+            np.zeros((num_agents_sim, 2)),
+            initial_education,
+            initial_choice_lagged,
+            initial_types,
+        )
+    ).astype(np.uint8)
 
     data = []
 
@@ -144,38 +146,42 @@ def pyth_simulate(
 
         # Record wages. Expand matrix with NaNs for choice 2 and 3 for easier indexing.
         wages = (
-            np.c_[
-                state_space.rewards[ks, -2:],
-                np.full((num_agents_sim, 2), np.nan),
-            ]
+            np.column_stack(
+                (
+                    state_space.rewards[ks, -2:],
+                    np.full((num_agents_sim, 2), np.nan),
+                )
+            )
             * draws
         )
         # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
         wage = wages[np.arange(num_agents_sim), max_idx]
 
         # Record data of all agents in one period.
-        rows = np.c_[
-            np.arange(num_agents_sim),
-            np.full(num_agents_sim, period),
-            max_idx + 1,
-            wage,
-            # Write relevant state space for period to data frame. However, the
-            # individual's type is not part of the observed dataset. This is included in
-            # the simulated dataset.
-            current_states,
-            # As we are working with a simulated dataset, we can also output additional
-            # information that is not available in an observed dataset. The discount
-            # rate is included as this allows to construct the EMAX with the information
-            # provided in the simulation output.
-            total_values,
-            state_space.rewards[ks, :4],
-            draws,
-            np.full(num_agents_sim, optim_paras["delta"][0]),
-            # For testing purposes, we also explicitly include the general reward
-            # component, the common component, and the immediate ex post rewards.
-            state_space.rewards[ks, 4:7],
-            rewards_ex_post,
-        ]
+        rows = np.column_stack(
+            (
+                np.arange(num_agents_sim),
+                np.full(num_agents_sim, period),
+                max_idx + 1,
+                wage,
+                # Write relevant state space for period to data frame. However, the
+                # individual's type is not part of the observed dataset. This is
+                # included in the simulated dataset.
+                current_states,
+                # As we are working with a simulated dataset, we can also output
+                # additional information that is not available in an observed dataset.
+                # The discount rate is included as this allows to construct the EMAX
+                # with the information provided in the simulation output.
+                total_values,
+                state_space.rewards[ks, :4],
+                draws,
+                np.full(num_agents_sim, optim_paras["delta"][0]),
+                # For testing purposes, we also explicitly include the general reward
+                # component, the common component, and the immediate ex post rewards.
+                state_space.rewards[ks, 4:7],
+                rewards_ex_post,
+            )
+        )
         data.append(rows)
 
         # Update work experiences or education and lagged choice for the next period.

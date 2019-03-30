@@ -887,11 +887,11 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
     num_states = covariates.shape[0]
     rewards_general = np.full((num_states, 2), np.nan)
 
-    rewards_general[:, 0] = np.hstack(
-        (np.ones((num_states, 1)), covariates[:, [0, 5]])
+    rewards_general[:, 0] = np.column_stack(
+        (np.ones(num_states), covariates[:, [0, 5]])
     ).dot(coeffs_a)
-    rewards_general[:, 1] = np.hstack(
-        (np.ones((num_states, 1)), covariates[:, [1, 6]])
+    rewards_general[:, 1] = np.column_stack(
+        (np.ones(num_states), covariates[:, [1, 6]])
     ).dot(coeffs_b)
 
     return rewards_general
