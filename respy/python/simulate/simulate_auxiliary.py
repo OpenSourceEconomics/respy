@@ -16,7 +16,7 @@ def construct_transition_matrix(base_df):
     args = []
     for label in ["Choice", "Choice_Next"]:
         args += [pd.Categorical(df[label], categories=range(1, 5))]
-    tm = pd.crosstab(*args, normalize="index", dropna=False).values
+    tm = pd.crosstab(*args, normalize="index", dropna=False).to_numpy()
 
     return tm
 
@@ -177,7 +177,7 @@ def write_info(respy_obj, data_frame):
 
             info = pd.crosstab(
                 cat_schl, cat_type, normalize=normalize, dropna=False, margins=True
-            ).values
+            ).to_numpy()
 
             fmt_ = "   {:>10}    " + "{:>25}" * num_columns + "\n\n"
             line = ["Schooling"]
@@ -203,7 +203,7 @@ def write_info(respy_obj, data_frame):
             data_frame["Years_Schooling"][:, 0], categories=edu_spec["start"]
         )
         cat_2 = pd.Categorical(data_frame["Lagged_Choice"][:, 0], categories=[3, 4])
-        info = pd.crosstab(cat_1, cat_2, normalize=normalize, dropna=False).values
+        info = pd.crosstab(cat_1, cat_2, normalize=normalize, dropna=False).to_numpy()
 
         file_.write("\n\n   Initial Lagged Activity by Schooling\n\n")
         fmt_ = "\n   {:>10}" + "    {:>25}" + "{:>25}\n\n"
@@ -230,9 +230,7 @@ def write_out(respy_obj, data_frame):
     # We maintain several versions of the file.
     with open(file_sim + ".respy.dat", "w") as file_:
         data_frame.to_string(file_, index=False, header=True, na_rep=".")
-
-    with open(file_sim + ".respy.pkl", "wb") as file_:
-        data_frame.to_pickle(file_)
+    data_frame.to_pickle(file_sim + ".respy.pkl")
 
 
 def format_float(x):

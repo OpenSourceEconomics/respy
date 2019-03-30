@@ -34,7 +34,7 @@ class TestClass(object):
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
         is_interpolated = bool(np.random.choice([True, False], p=[0.10, 0.9]))
         is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
-        max_draws = np.random.randint(11, 100)
+        max_draws = np.random.randint(10, 100)
         num_agents = np.random.randint(10, max_draws)
 
         bound_constr = {'max_draws': max_draws}

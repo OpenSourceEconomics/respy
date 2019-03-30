@@ -118,7 +118,7 @@ def _create_attribute_dictionary(params_spec, options_spec):
         "num_procs": int(options_spec["program"]["procs"]),
         "num_threads": int(options_spec["program"]["threads"]),
         "num_types": int(_get_num_types(params_spec)),
-        "optim_paras": distribute_parameters(params_spec["para"].values, is_debug=True),
+        "optim_paras": distribute_parameters(params_spec["para"].to_numpy(), is_debug=True),
         "optimizer_used": str(options_spec["estimation"]["optimizer"]),
         # make type conversions here
         "precond_spec": options_spec["preconditioning"],
@@ -146,7 +146,7 @@ def _create_attribute_dictionary(params_spec, options_spec):
         bounds.append(bound)
 
     attr["optim_paras"]["paras_bounds"] = bounds
-    attr["optim_paras"]["paras_fixed"] = params_spec["fixed"].astype(bool).values.tolist()
+    attr["optim_paras"]["paras_fixed"] = params_spec["fixed"].astype(bool).to_numpy().tolist()
 
     optimizers = [
         "FORT-NEWUOA",

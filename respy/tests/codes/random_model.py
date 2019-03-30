@@ -98,10 +98,10 @@ def generate_random_model(
         [True, False], size=len(params), p=[0.1, 0.9]
     )
     params.loc['shocks', 'fixed'] = choice([True, False])
-    if params["fixed"].values.all():
+    if params["fixed"].to_numpy().all():
         params.loc['coeffs_a', 'fixed'] = False
 
-    if params.loc['shocks', 'fixed'].values.any() or deterministic is True:
+    if params.loc['shocks', 'fixed'].to_numpy().any() or deterministic is True:
         params.loc['shocks', 'para'] = 0.0
 
     options["simulation"]["agents"] = randint(3, bound_constr["max_agents"] + 1)

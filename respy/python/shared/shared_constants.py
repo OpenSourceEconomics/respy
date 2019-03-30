@@ -3,7 +3,6 @@ aligned with the constants from the FORTRAN implementation.
 """
 import numpy as np
 import json
-import os
 import respy
 from pathlib import Path
 

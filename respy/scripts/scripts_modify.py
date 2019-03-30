@@ -28,7 +28,7 @@ def dist_input_arguments(parser):
     # Distribute arguments
     identifiers = args.identifiers
     init_file = args.init_file
-    values = args.values
+    values = args.to_numpy()
     action = args.action
     bounds = args.bounds
 

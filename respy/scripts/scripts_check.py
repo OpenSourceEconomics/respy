@@ -48,7 +48,7 @@ def scripts_check(request, respy_obj):
         mapping_state_idx = pyth_create_state_space(*args)[2]
 
         # We also check the structure of the dataset.
-        data_array = process_dataset(respy_obj).values
+        data_array = process_dataset(respy_obj).to_numpy()
         num_rows = data_array.shape[0]
 
         for j in range(num_rows):

@@ -54,7 +54,7 @@ assert_allclose = partial(np.testing.assert_allclose, rtol=TOL, atol=TOL)
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
 if IS_F2PY:
-    sys.path.insert(0, TEST_RESOURCES_BUILD)
+    sys.path.insert(0, str(TEST_RESOURCES_BUILD))
     import f2py_interface as fort_debug
 
 
@@ -418,7 +418,7 @@ class TestClass(object):
             "num_paras",
         )
 
-        data_array = process_dataset(respy_obj).values
+        data_array = process_dataset(respy_obj).to_numpy()
         num_obs_agent = get_num_obs_agent(data_array, num_agents_est)
         min_idx = edu_spec["max"] + 1
 
@@ -783,7 +783,7 @@ class TestClass(object):
 
             num_agents_est = respy_obj.get_attr("num_agents_est")
 
-            data_array = process_dataset(respy_obj).values
+            data_array = process_dataset(respy_obj).to_numpy()
 
             py = get_num_obs_agent(data_array, num_agents_est)
             f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)

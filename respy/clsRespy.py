@@ -231,7 +231,7 @@ class RespyCls(object):
         # less). It allows to read in only a subset of the initial conditions.
         data_frame = process_dataset(self)
         record_estimation_sample(data_frame)
-        data_array = data_frame.values
+        data_array = data_frame.to_numpy()
 
         # Distribute class attributes
         version = self.get_attr("version")
