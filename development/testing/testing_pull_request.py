@@ -10,7 +10,7 @@ from development.testing.property.run_property import run as run_property
 from development.testing.robustness.run_robustness import run as run_robustness
 from development.testing.parallelism.run_parallelism import run as run_parallelism
 
-CURRENT_DIR = Path(__file__).parent
+CURRENT_DIR = Path(__file__).parent.resolve()
 
 
 def main():
