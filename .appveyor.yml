@@ -1,65 +1,84 @@
 notifications:
   - provider: Slack
-    incoming_webhook:
-      secure: LkWqVb15dNvdLjMQOyacTXy6
+    incoming_webhook: https://hooks.slack.com/services/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
     on_build_success: false
-    on_build_failure: false
+    on_build_failure: true
     on_build_status_changed: true
   - provider: Email
     on_build_success: false
     on_build_failure: false
     on_build_status_changed: false
 
+# Do not start two builds, one for the branch and one for the PR.
+skip_branch_with_pr: true
 
-branches:
-  only:
-    - master
+image: Visual Studio 2015
 
 environment:
-  - PYTHON: "C:\\Python36"
+  MINICONDA: "C:\\Miniconda36-x64"
   matrix:
-      - TRAVIS_CI_FORTRAN: false
-        TRAVIS_CI_MPI: false
-        TRAVIS_CI_OMP: false
-      - TRAVIS_CI_FORTRAN: true
-        TRAVIS_CI_MPI: true
-        TRAVIS_CI_OMP: true
-      - TRAVIS_CI_FORTRAN: true
-        TRAVIS_CI_MPI: false
-        TRAVIS_CI_OMP: true
-      - TRAVIS_CI_FORTRAN: true
-        TRAVIS_CI_MPI: true
-        TRAVIS_CI_OMP: false
-
+      # - CI_FORTRAN: false
+      #   CI_MPI: false
+      #   CI_OMP: false
+      - CI_FORTRAN: true
+        CI_MPI: true
+        CI_OMP: true
+      # - CI_FORTRAN: true
+      #   CI_MPI: false
+      #   CI_OMP: true
+      # - CI_FORTRAN: true
+      #   CI_MPI: true
+      #   CI_OMP: false
 
 install:
-  # If there is a newer build queued for the same PR, cancel this one.
-  # The AppVeyor 'rollout builds' option is supposed to serve the same
-  # purpose but it is problematic because it tends to cancel builds pushed
-  # directly to master instead of just PR builds (or the converse).
-  # Credits: JuliaLang developers.
+  # If there is a newer build queued for the same PR, cancel this one. The AppVeyor
+  # 'roll-out builds' option is supposed to serve the same purpose but it is problematic
+  # because it tends to cancel builds pushed directly to master instead of just PR
+  # builds (or the converse). Credits: JuliaLang developers.
   - ps: if ($env:APPVEYOR_PULL_REQUEST_NUMBER -and $env:APPVEYOR_BUILD_NUMBER -ne ((Invoke-RestMethod `
       https://ci.appveyor.com/api/projects/$env:APPVEYOR_ACCOUNT_NAME/$env:APPVEYOR_PROJECT_SLUG/history?recordsNumber=50).builds | `
       Where-Object pullRequestId -eq $env:APPVEYOR_PULL_REQUEST_NUMBER)[0].buildNumber) { `
         throw "There are newer queued builds for this pull request, failing early." }
-  # Add Python to path
-  - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
-  # Add MPI to path
-  - set PATH=C:\Program Files\Microsoft MPI\Bin;%PATH%
-  - pip install -r requirements.txt
-  - pip install -e . -vv
-  - pip install pytest-cov
-  - pip install codecov
-  - pytest --cov=respy -vvv -s
 
+  # Add miniconda to PATH
+  - ps: $env:PATH = "$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin;$env:PATH"
+
+  # Add Fortran to PATH and install dependencies.
+  - ps: >-
+      if ($env:CI_FORTRAN -eq $true) {
+        $env:PATH += ";C:\msys64\mingw64\bin;C:\msys64\usr\bin"
+        pacman -S mingw64/mingw-w64-x86_64-liblas mingw64/mingw-w64-x86_64-lapack --noconfirm
+        echo "[build]`ncompiler=mingw32" > C:\Miniconda36-x64\Lib\distutils\distutils.cfg
+      }
+
+  # Install MS-MPI
+  - ps: >-
+      if ($env:CI_MPI -eq $true) {
+        Start-FileDownload https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisdk.msi -FileName msmpisdk.msi
+        msiexec msmpisdk.msi /quiet /norestart
+        $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
+      }
+
+  # Configure conda and install packages
+  - conda config --set always_yes yes --set changeps1 no
+  - conda info -a
+  - conda env create -n respy -f environment.yml
+  - activate respy
+
+  # Install respy
+  - pip install -e . -vv
+
+  # Run tests
+  - pytest --cov=respy -vvv -s
 
 build: false
 
-
-- if  [ $TRAVIS_CI_FORTRAN ] || \
-      [ $TRAVIS_CI_MPI ] || \
-      [ $TRAVIS_CI_OMP ] ||
-  then
-      codecov
-      echo 'send coverage statistic'
-  fi
+on_success:
+  - sh: |
+      if  [ $CI_FORTRAN ] || \
+          [ $CI_MPI ] || \
+          [ $CI_OMP ] ||
+      then
+          codecov
+          echo 'send coverage statistic'
+      fi
