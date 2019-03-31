@@ -5,33 +5,23 @@ import numpy as np
 import pandas as pd
 import pytest
 import random
-import shutil
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
-from respy.python.shared.shared_auxiliary import get_valid_bounds
 from respy.python.shared.shared_auxiliary import extract_cholesky
-from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.scripts.scripts_estimate import scripts_estimate
-from respy.scripts.scripts_simulate import scripts_simulate
 from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.scripts.scripts_update import scripts_update
-from respy.scripts.scripts_modify import scripts_modify
 from respy.pre_processing.data_processing import process_dataset
 from respy.scripts.scripts_check import scripts_check
 from respy.tests.codes.auxiliary import write_interpolation_grid
-from respy.tests.codes.random_init import generate_random_dict
-from respy.tests.codes.auxiliary import transform_to_logit
 from respy.tests.codes.auxiliary import write_lagged_start
 from respy.custom_exceptions import UserError
 from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import write_edu_start
-from respy.tests.codes.auxiliary import compare_init
 from respy.tests.codes.auxiliary import write_types
-
 from respy import RespyCls
 
 
@@ -40,76 +30,50 @@ class TestClass(object):
     """
 
     def test_1(self):
-        """ Testing whether random model specifications can be simulated and processed.
-        """
-        # Generate random initialization file
-        generate_init()
-
-        respy_obj = RespyCls("test.respy.ini")
-
+        """Test if random model specifications can be simulated and processed."""
+        params_spec, options_spec = generate_random_model()
+        respy_obj = RespyCls(params_spec, options_spec)
         simulate_observed(respy_obj)
-
         process_dataset(respy_obj)
 
     def test_2(self):
         """ If there is no random variation in rewards then the number of draws to simulate the
         expected future value should have no effect.
         """
-        # Generate constraints
-        constr = dict()
-        constr["flag_deterministic"] = True
-
-        # Generate random initialization file
-        generate_init(constr)
+        params_spec, options_spec = generate_random_model(deterministic=True)
 
         # Initialize auxiliary objects
         base = None
 
         for _ in range(2):
-
-            # Draw a random number of draws for
-            # expected future value calculations.
             num_draws_emax = np.random.randint(1, 100)
-
-            # Perform toolbox actions
-            respy_obj = RespyCls("test.respy.ini")
-
+            respy_obj = RespyCls(params_spec, options_spec)
             respy_obj.unlock()
-
             respy_obj.set_attr("num_draws_emax", num_draws_emax)
-
             respy_obj.lock()
-
             respy_obj = simulate_observed(respy_obj)
-
-            # Distribute class attributes
             periods_emax = respy_obj.get_attr("periods_emax")
 
             if base is None:
                 base = periods_emax.copy()
 
-            # Statistic
             diff = np.max(
                 abs(
                     np.ma.masked_invalid(base)
                     - np.ma.masked_invalid(periods_emax)
                 )
             )
-
-            # Checks
             np.testing.assert_almost_equal(diff, 0.0)
 
     def test_3(self):
         """ Testing whether the a simulated dataset and the evaluation of the criterion function
         are the same for a tiny delta and a myopic agent.
         """
-        # Generate random initialization dictionary
-        constr = dict()
-        constr["maxfun"] = 0
-        constr["flag_myopic"] = True
-
-        generate_init(constr)
-        respy_obj = RespyCls("test.respy.ini")
+        constr = {"estimation": {"maxfun": 0}}
+        params_spec, options_spec = generate_random_model(
+            point_constr=constr, myopic=True
+        )
+        respy_obj = RespyCls(params_spec, options_spec)
 
         optim_paras, num_agents_sim, edu_spec = dist_class_attributes(
             respy_obj, "optim_paras", "num_agents_sim", "edu_spec"
@@ -124,7 +88,7 @@ class TestClass(object):
 
         for delta in [0.00, 0.000001]:
 
-            respy_obj = RespyCls("test.respy.ini")
+            respy_obj = RespyCls(params_spec, options_spec)
 
             respy_obj.unlock()
 
@@ -159,21 +123,24 @@ class TestClass(object):
         """
         # Constraints that ensure that two alternative initialization files can be used
         # for the same simulated data.
-        constr = dict()
-        constr["agents"] = np.random.randint(1, 100)
-        constr["periods"] = np.random.randint(1, 4)
-        constr["edu"] = (7, 15)
-        constr["maxfun"] = 0
+
+        num_agents = np.random.randint(5, 100)
+        constr = {
+            "simulation": {"agents": num_agents},
+            "num_periods": np.random.randint(1, 4),
+            "edu_spec": {"start": [7], "max": 15, "share": [1.0]},
+            "estimation": {"maxfun": 0, "agents": num_agents},
+        }
 
         # Simulate a dataset
-        generate_init(constr)
-        respy_obj = RespyCls("test.respy.ini")
+
+        params_spec, options_spec = generate_random_model(point_constr=constr)
+        respy_obj = RespyCls(params_spec, options_spec)
         simulate_observed(respy_obj)
 
         # Evaluate at different points, ensuring that the simulated dataset still fits.
-        generate_init(constr)
-
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model(point_constr=constr)
+        respy_obj = RespyCls(params_spec, options_spec)
         respy_obj.fit()
 
     def test_5(self):
@@ -182,15 +149,18 @@ class TestClass(object):
         # Constraints that ensure that two alternative initialization files can be used
         # for the same simulated data.
         for _ in range(10):
-            constr = dict()
-            constr["periods"] = np.random.randint(1, 4)
-            constr["agents"] = np.random.randint(5, 100)
-            constr["flag_estimation"] = True
-            constr["edu"] = (7, 15)
-
+            num_agents = np.random.randint(5, 100)
+            constr = {
+                "simulation": {"agents": num_agents},
+                "num_periods": np.random.randint(1, 4),
+                "edu_spec": {"start": [7], "max": 15, "share": [1.0]},
+                "estimation": {"maxfun": 0, "agents": num_agents},
+            }
             # Simulate a dataset
-            generate_init(constr)
-            respy_obj = RespyCls("test.respy.ini")
+            params_spec, options_spec = generate_random_model(
+                point_constr=constr
+            )
+            respy_obj = RespyCls(params_spec, options_spec)
             simulate_observed(respy_obj)
 
             # Create output to process a baseline.
@@ -201,80 +171,38 @@ class TestClass(object):
             respy_obj.fit()
 
             # Potentially evaluate at different points.
-            generate_init(constr)
-
-            init_file = "test.respy.ini"
-            file_sim = "sim.respy.dat"
+            params_spec, options_spec = generate_random_model(
+                point_constr=constr
+            )
+            respy_obj = RespyCls(params_spec, options_spec)
 
             single = np.random.choice([True, False])
 
-            scripts_check("estimate", init_file)
-            scripts_estimate(single, init_file)
-            scripts_update(init_file)
-
-            action = np.random.choice(["fix", "free", "bounds", "values"])
-
-            # The set of identifiers is a little complicated as we only allow sampling
-            # of the diagonal terms of the covariance matrix. Otherwise, we sometimes
-            # run into the problem of very ill conditioned matrices resulting in a
-            # failed Cholesky decomposition.
-            valid_identifiers = list(range(43))
-
-            respy_obj = RespyCls("test.respy.ini")
-            optim_paras, num_paras = dist_class_attributes(
-                respy_obj, "optim_paras", "num_paras"
-            )
-
-            # Now we need to handle some different case distinctions.
-            if action in ["bounds"]:
-                identifiers = np.random.choice(valid_identifiers, size=2)[0:1]
-                value = get_optim_paras(optim_paras, num_paras, "all", True)[
-                    identifiers
-                ][0]
-
-                if identifiers in [0]:
-                    which = "delta"
-                else:
-                    which = "coeff"
-
-                bounds = get_valid_bounds(which, value)
-                values = None
-
-            elif action in ["fix", "free"]:
-                num_draws = np.random.randint(1, 43)
-                identifiers = np.random.choice(
-                    valid_identifiers, num_draws, replace=False
-                )
-                bounds, values = None, None
-            else:
-                # This is restrictive in the sense that the original value will be used
-                # for the replacement. However, otherwise the handling of the bounds
-                # requires too much effort at this point.
-                num_draws = np.random.randint(1, 43)
-                identifiers = np.random.choice(
-                    valid_identifiers, num_draws, replace=False
-                )
-                values = get_optim_paras(optim_paras, num_paras, "all", True)[
-                    identifiers
-                ]
-                bounds = None
-
-            scripts_simulate(init_file, file_sim)
-            scripts_modify(identifiers, action, init_file, values, bounds)
+            scripts_check("estimate", respy_obj)
+            scripts_estimate(single, respy_obj)
 
     @pytest.mark.slow
     def test_6(self):
         """ Test short estimation tasks.
         """
-        constr = dict()
-        constr["flag_estimation"] = True
+        num_agents = np.random.randint(5, 100)
+        constr = {
+            "simulation": {"agents": num_agents},
+            "num_periods": np.random.randint(1, 4),
+            "estimation": {
+                "maxfun": np.random.randint(0, 5),
+                "agents": num_agents,
+            },
+        }
 
-        generate_init(constr)
+        # Simulate a dataset
 
-        write_interpolation_grid("test.respy.ini")
+        params_spec, options_spec = generate_random_model(point_constr=constr)
+        respy_obj = RespyCls(params_spec, options_spec)
+
+        write_interpolation_grid(respy_obj)
 
         # Run estimation task.
-        respy_obj = RespyCls("test.respy.ini")
         simulate_observed(respy_obj)
         base_x, base_val = respy_obj.fit()
 
@@ -289,52 +217,25 @@ class TestClass(object):
             np.testing.assert_almost_equal(arg[0], arg[1])
 
     def test_7(self):
-        """ We test whether a restart does result in the exact function evaluation.
-        Additionally, we change the status of parameters at random.
-        """
-        constr = dict()
-        constr["flag_estimation"] = True
-        generate_init(constr)
-
-        respy_obj = RespyCls("test.respy.ini")
-        respy_obj = simulate_observed(respy_obj)
-        _, base_val = respy_obj.fit()
-
-        scripts_update("test.respy.ini")
-        respy_obj = RespyCls("test.respy.ini")
-
-        respy_obj.unlock()
-        respy_obj.set_attr("maxfun", 0)
-        respy_obj.lock()
-
-        action = np.random.choice(["fix", "free"])
-        num_draws = np.random.randint(1, 18)
-        identifiers = np.random.choice(range(18), num_draws, replace=False)
-        scripts_modify(identifiers, action, "test.respy.ini")
-
-        _, update_val = respy_obj.fit()
-
-        np.testing.assert_almost_equal(update_val, base_val)
-
-    def test_8(self):
         """ This test ensures that the constraints for the covariance matrix are
         properly handled.
         """
 
-        init_dict = generate_random_dict()
+        params_spec, options_spec = generate_random_model(deterministic=True)
 
         # Manual specification of update patterns.
         updates = dict()
 
+        # off-diagonals fixed
         updates["valid_1"] = [
             False,
             True,
-            True,
-            True,
             False,
             True,
             True,
             False,
+            True,
+            True,
             True,
             False,
         ]
@@ -368,43 +269,40 @@ class TestClass(object):
 
         # We draw a random update and print it out to the initialization file.
         label = np.random.choice(list(updates.keys()))
-        init_dict["SHOCKS"]["fixed"] = updates[label]
-        write_init_file(init_dict)
+        params_spec.loc["shocks", "fixed"] = np.array(updates[label])
 
         if "invalid" in label:
             # This exception block makes sure that the UserError is in fact raised.
             try:
-                RespyCls("test.respy.ini")
+                RespyCls(params_spec, options_spec)
                 raise AssertionError
             except UserError:
                 pass
         else:
-            RespyCls("test.respy.ini")
+            RespyCls(params_spec, options_spec)
 
     def test_9(self):
         """ We ensure that the number of initial conditions does not matter for the
         evaluation of the criterion function if a weight of one is put on the first
         group.
         """
-        constr = dict()
-        constr["flag_estimation"] = True
+        num_agents = np.random.randint(5, 100)
+        constr = {
+            "simulation": {"agents": num_agents},
+            "num_periods": np.random.randint(1, 4),
+            "edu_spec": {"max": np.random.randint(15, 25, size=1).tolist()[0]},
+            "estimation": {"maxfun": 0, "agents": num_agents},
+            "interpolation": {"flag": False},
+        }
 
-        # The interpolation equation is affected by the number of types regardless of
-        # the weights.
-        constr["flag_interpolation"] = False
-
-        init_dict = generate_init(constr)
+        params_spec, options_spec = generate_random_model(point_constr=constr)
+        respy_obj = RespyCls(params_spec, options_spec)
+        simulate_observed(respy_obj)
 
         base_val, edu_start_base = (
             None,
             np.random.randint(1, 5, size=1).tolist()[0],
         )
-
-        # We need to make sure that the maximum level of education is the same across
-        # iterations, but also larger than any of the initial starting levels.
-        init_dict["EDUCATION"]["max"] = np.random.randint(
-            15, 25, size=1
-        ).tolist()[0]
 
         # We need to ensure that the initial lagged activity always has the same
         # distribution.
@@ -414,10 +312,12 @@ class TestClass(object):
 
             # We always need to ensure that a weight of one is on the first level of
             # initial schooling.
-            init_dict["EDUCATION"]["share"] = [1.0] + [0.0] * (
+            options_spec["edu_spec"]["share"] = [1.0] + [0.0] * (
                 num_edu_start - 1
             )
-            init_dict["EDUCATION"]["lagged"] = edu_lagged_base[:num_edu_start]
+            options_spec["edu_spec"]["lagged"] = edu_lagged_base[
+                :num_edu_start
+            ]
 
             # We need to make sure that the baseline level of initial schooling is
             # always included. At the same time we cannot have any duplicates.
@@ -430,29 +330,15 @@ class TestClass(object):
             else:
                 edu_start[0] = edu_start_base
 
-            init_dict["EDUCATION"]["start"] = edu_start
+            options_spec["edu_spec"]["start"] = edu_start
 
-            write_init_file(init_dict)
-
-            respy_obj = RespyCls("test.respy.ini")
+            respy_obj = RespyCls(params_spec, options_spec)
             simulate_observed(respy_obj)
             _, val = respy_obj.fit()
             if base_val is None:
                 base_val = val
 
             np.testing.assert_almost_equal(base_val, val)
-
-    @pytest.mark.skipif(not IS_FORTRAN, reason="No FORTRAN available")
-    def test_11(self):
-        """ This step ensures that the printing of the initialization file is done properly. We
-        compare the content of the files line by line, but drop any spaces.
-        """
-        for fname in TEST_RESOURCES_DIR.glob("*.ini"):
-            respy_obj = RespyCls(fname)
-            respy_obj.write_out("test.respy.ini")
-            np.testing.assert_equal(
-                compare_init(fname, "test.respy.ini"), True
-            )
 
     @pytest.mark.skipif(not IS_FORTRAN, reason="No FORTRAN available")
     @pytest.mark.slow
@@ -478,8 +364,13 @@ class TestClass(object):
         # This ensures that the experience effect is taken care of properly.
         open(".restud.respy.scratch", "w").close()
 
+        base_path = TEST_RESOURCES_DIR / fname
+
         # Evaluate criterion function at true values.
-        respy_obj = RespyCls(TEST_RESOURCES_DIR / fname)
+        respy_obj = RespyCls(
+            str(base_path.with_suffix(".csv")),
+            str(base_path.with_suffix(".json")),
+        )
 
         respy_obj.unlock()
         respy_obj.set_attr("maxfun", 0)
@@ -488,88 +379,8 @@ class TestClass(object):
         simulate_observed(respy_obj, is_missings=False)
 
         _, val = respy_obj.fit()
+
         np.testing.assert_allclose(val, result)
-
-    def test_13(self):
-        """ We ensure that the number of types does not matter for the evaluation of the
-        criterion function if a weight of one is put on the first group.
-        """
-
-        constr = dict()
-        constr["flag_estimation"] = True
-
-        # The interpolation equation is affected by the number of types regardless of
-        # the weights.
-        constr["flag_interpolation"] = False
-
-        init_dict = generate_init(constr)
-
-        base_val = None
-
-        for num_types in [1, np.random.choice([2, 3, 4]).tolist()]:
-
-            # We construct a set of coefficients that matches the type shares.
-            coeffs = transform_to_logit([1.0] + [0.00000001] * (num_types - 1))
-
-            # We always need to ensure that a weight of one is on the first type. We
-            # need to fix the weight in this case to not change during an estimation as
-            # well.
-            shifts = np.random.uniform(-0.05, 0.05, size=(num_types - 1) * 4)
-            init_dict["TYPE SHIFTS"]["coeffs"] = shifts
-            init_dict["TYPE SHIFTS"]["fixed"] = [False] * (num_types * 4)
-            init_dict["TYPE SHIFTS"]["bounds"] = [[None, None]] * (
-                num_types * 4
-            )
-
-            init_dict["TYPE SHARES"]["coeffs"] = coeffs[2:]
-            init_dict["TYPE SHARES"]["fixed"] = [True, True] * (num_types - 1)
-            init_dict["TYPE SHARES"]["bounds"] = [
-                [None, None],
-                [None, None],
-            ] * (num_types - 1)
-
-            write_init_file(init_dict)
-
-            respy_obj = RespyCls("test.respy.ini")
-            simulate_observed(respy_obj)
-            _, val = respy_obj.fit()
-            if base_val is None:
-                base_val = val
-
-            np.testing.assert_almost_equal(base_val, val)
-
-    def test_14(self):
-        """ Testing the modification routine.
-        """
-
-        generate_init()
-
-        respy_obj = RespyCls("test.respy.ini")
-        num_paras, optim_paras = dist_class_attributes(
-            respy_obj, "num_paras", "optim_paras"
-        )
-
-        # We need to switch perspective where the initialization file is the flattened
-        # covariance matrix.
-        x_econ = get_optim_paras(optim_paras, num_paras, "all", True)
-        x_econ[43:53] = cholesky_to_coeffs(optim_paras["shocks_cholesky"])
-
-        # We now draw a random set of points where we replace the value with their
-        # actual value. Thus, there should be no differences in the initialization files
-        # afterwards.
-        shutil.copy("test.respy.ini", "baseline.respy.ini")
-
-        num_subset = np.random.randint(low=0, high=num_paras)
-        identifiers = np.random.choice(
-            range(num_paras), size=num_subset, replace=False
-        )
-
-        scripts_modify(
-            identifiers, "values", "test.respy.ini", values=x_econ[identifiers]
-        )
-        np.testing.assert_equal(
-            compare_init("baseline.respy.ini", "test.respy.ini"), True
-        )
 
     def test_15(self):
         """ This test ensures that the order of the initial schooling level specified in
@@ -580,16 +391,19 @@ class TestClass(object):
         ordering is determined than.
         """
 
-        constr = dict()
-        constr["maxfun"] = 0
+        point_constr = {
+            "estimation": {"maxfun": 0},
+            # We cannot allow for interpolation as the order of states within each
+            # period changes and thus the prediction model is altered even if the same
+            # state identifier is used.
+            "interpolation": {"flag": False},
+        }
 
-        # We cannot allow for interpolation as the order of states within each period
-        # changes and thus the prediction model is altered even if the same state
-        # identifier is used.
-        constr["flag_interpolation"] = False
-        generate_init(constr)
+        params_spec, options_spec = generate_random_model(
+            point_constr=point_constr
+        )
 
-        respy_obj = RespyCls("test.respy.ini")
+        respy_obj = RespyCls(params_spec, options_spec)
 
         edu_baseline_spec, num_types, num_paras, optim_paras = dist_class_attributes(
             respy_obj, "edu_spec", "num_types", "num_paras", "optim_paras"
@@ -640,6 +454,8 @@ class TestClass(object):
 
         base_data, base_val = None, None
 
+        k = 0
+
         for optim_paras in [optim_paras_baseline, optim_paras_shuffled]:
             for edu_spec in [edu_baseline_spec, edu_shuffled_spec]:
 
@@ -657,6 +473,7 @@ class TestClass(object):
                 respy_obj.update_optim_paras(x)
 
                 respy_obj.reset()
+
                 simulate_observed(respy_obj)
 
                 # This part checks the equality of simulated dataset.
@@ -666,6 +483,7 @@ class TestClass(object):
 
                 if base_data is None:
                     base_data = data_frame.copy()
+
                 assert_frame_equal(base_data, data_frame)
 
                 # This part checks the equality of a single function evaluation.
@@ -675,3 +493,4 @@ class TestClass(object):
                 np.testing.assert_almost_equal(base_val, val)
 
                 respy_obj.reset()
+                k += 1

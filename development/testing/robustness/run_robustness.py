@@ -44,6 +44,7 @@ def run(request, is_compile, is_background, num_procs, keep_dataset):
             failed_dict = {}
         else:
             failed_dict = {seed_investigation: error_message}
+            print(error_message)
     else:
         # make seed list
         if num_procs == 1:

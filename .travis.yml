@@ -1,3 +1,11 @@
+notifications:
+    slack:
+        rooms:
+          - oseconomics:NwY0nlxNsQh1WTEs7Y1acukS
+        on_success: change
+        on_failure: always
+    email: false
+
 language:
     - python
 
@@ -48,13 +56,3 @@ after_success:
           codecov
           echo 'send coverage statistic'
       fi
-
-notifications:
-
-  slack:
-    rooms:
-      - oseconomics:NwY0nlxNsQh1WTEs7Y1acukS
-    on_success: change # default: always
-    on_failure: always # default: always
-
-  email: false

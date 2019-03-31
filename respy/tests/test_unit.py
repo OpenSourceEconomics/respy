@@ -1,12 +1,15 @@
 import numpy as np
+
+from pandas.testing import assert_series_equal
+from respy import RespyCls
+from respy.pre_processing.model_processing import _read_options_spec
+from respy.pre_processing.model_processing import _read_params_spec
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import get_continuation_value
-from respy.pre_processing.model_processing import write_init_file
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.solve.solve_auxiliary import StateSpace
-from respy.tests.codes.random_init import generate_init
-from respy import RespyCls
+from respy.tests.codes.random_model import generate_random_model
 
 
 class TestClass(object):
@@ -37,42 +40,40 @@ class TestClass(object):
         """ Testing whether the back and forth transformation works.
         """
         for _ in range(100):
-
-            # Generate random request
-            generate_init()
-
+            params_spec, options_spec = generate_random_model()
             # Process request and write out again.
-            respy_obj = RespyCls("test.respy.ini")
-            respy_obj.write_out("alt.respy.ini")
+            respy_obj = RespyCls(params_spec, options_spec)
+            respy_obj.write_out("alt.respy")
 
-            # Read both initialization files and compare
-            base_ini = open("test.respy.ini", "r").read()
-            alt_ini = open("alt.respy.ini", "r").read()
-            assert base_ini == alt_ini
+            new_params_spec = _read_params_spec("alt.respy.csv")
+            new_options_spec = _read_options_spec("alt.respy.json")
+
+            assert options_spec == new_options_spec
+
+            for col in params_spec.columns:
+                assert_series_equal(params_spec[col], new_params_spec[col])
 
     def test_3(self):
         """ Testing some of the relationships in the simulated dataset.
         """
-        # Generate constraint periods
-        constr = dict()
-        constr["flag_deterministic"] = np.random.choice([True, False])
-        constr["flag_myopic"] = np.random.choice([True, False])
+        is_deterministic = np.random.choice([True, False])
+        is_myopic = np.random.choice([True, False])
 
-        # Generate random initialization file
-        generate_init(constr)
+        max_draws = np.random.randint(5, 200)
+        bound_constr = {"max_draws": max_draws, "max_agents": max_draws}
 
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model(
+            bound_constr=bound_constr,
+            deterministic=is_deterministic,
+            myopic=is_myopic,
+        )
+
+        respy_obj = RespyCls(params_spec, options_spec)
         _, df = respy_obj.simulate()
 
-        # Check special case
         optim_paras, num_types, edu_spec, num_periods = dist_class_attributes(
             respy_obj, "optim_paras", "num_types", "edu_spec", "num_periods"
         )
-
-        shocks_cholesky = optim_paras["shocks_cholesky"]
-
-        is_deterministic = np.count_nonzero(shocks_cholesky) == 0
 
         # We can back out the wage information from other information provided in the
         # simulated dataset.
@@ -91,7 +92,7 @@ class TestClass(object):
             np.testing.assert_array_almost_equal(col_1, col_2)
 
         # In the myopic case, the total reward should the equal to the ex post rewards.
-        if respy_obj.get_attr("is_myopic"):
+        if is_myopic:
             # The shock only affects the skill-function and not the other components
             # determining the overall reward.
             for choice in [1, 2]:
@@ -149,17 +150,14 @@ class TestClass(object):
         stages.
 
         """
-        constr = dict()
-        constr["flag_myopic"] = True
 
-        init_dict = generate_init(constr)
+        constr = {"edu_spec": {"max": 99}}
+        params_spec, options_spec = generate_random_model(
+            myopic=True, point_constr=constr
+        )
 
         # The equality below does not hold if schooling is an inadmissible state.
-        init_dict["EDUCATION"]["max"] = 99
-        write_init_file(init_dict)
-
-        respy_obj = RespyCls("test.respy.ini")
-
+        respy_obj = RespyCls(params_spec, options_spec)
         respy_obj, _ = respy_obj.simulate()
 
         (
@@ -198,7 +196,9 @@ class TestClass(object):
 
         # Check that rewards match
         _, _, pyth, _ = state_space._get_fortran_counterparts()
-        np.testing.assert_almost_equal(pyth, periods_rewards_systematic, decimal=15)
+        np.testing.assert_almost_equal(
+            pyth, periods_rewards_systematic, decimal=15
+        )
 
         period = np.random.choice(num_periods)
         draws = np.random.normal(size=4)

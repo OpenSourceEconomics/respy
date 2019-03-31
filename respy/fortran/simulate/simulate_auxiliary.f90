@@ -104,7 +104,7 @@ FUNCTION get_random_lagged_start(edu_spec, edu_start, is_debug) RESULT(lagged_st
         DO i = 1, num_agents_sim
 
             ! We need to determine the corresponding position of the lagged probability entry.
-            DO j = 1, 2
+            DO j = 1, SIZE(edu_spec%start)
                 IF(edu_start(i) .EQ. edu_spec%start(j)) EXIT
             END DO
 

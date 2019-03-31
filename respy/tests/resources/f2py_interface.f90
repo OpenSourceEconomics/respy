@@ -1002,7 +1002,7 @@ SUBROUTINE wrapper_get_coefficients(coeffs, Y, X, num_covars, num_states)
 END SUBROUTINE
 !*******************************************************************************
 !*******************************************************************************
-SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_risk, edu_start, edu_max, shocks_cov, delta, coeffs_common, coeffs_a, coeffs_b)
+SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_periods_int, num_states, periods_rewards_systematic_int, mapping_state_idx_int, periods_emax_int, states_all_int, is_simulated, num_draws_emax_int, maxe, draws_emax_risk, edu_start, edu_max, shocks_cholesky, delta, coeffs_common, coeffs_a, coeffs_b)
 
     !/* external libraries      */
 
@@ -1020,7 +1020,7 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     DOUBLE PRECISION, INTENT(IN)        :: draws_emax_risk(:, :)
 
     DOUBLE PRECISION, INTENT(IN)        :: periods_emax_int(:, :)
-    DOUBLE PRECISION, INTENT(IN)        :: shocks_cov(4, 4)
+    DOUBLE PRECISION, INTENT(IN)        :: shocks_cholesky(4, 4)
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_common(2)
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_a(15)
     DOUBLE PRECISION, INTENT(IN)        :: coeffs_b(15)
@@ -1038,11 +1038,6 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
 
     LOGICAL, INTENT(IN)                 :: is_simulated(:)
 
-
-    !/* internal arguments*/
-    INTEGER                             :: info
-
-    DOUBLE PRECISION                    :: shocks_cholesky(4, 4)
 !-------------------------------------------------------------------------------
 ! Algorithm
 !-------------------------------------------------------------------------------
@@ -1056,12 +1051,6 @@ SUBROUTINE wrapper_get_endogenous_variable(exogenous_variable, period, num_perio
     num_draws_emax = num_draws_emax_int
     num_periods = num_periods_int
     min_idx = edu_max + 1
-
-
-    CALL get_cholesky_decomposition(shocks_cholesky, info, shocks_cov)
-    IF (info .NE. zero_dble) THEN
-        STOP 'Problem in the Cholesky decomposition'
-    END IF
 
     ! Ensure that array not already allocated
     IF(ALLOCATED(edu_spec%start)) DEALLOCATE(edu_spec%start)

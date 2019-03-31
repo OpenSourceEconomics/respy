@@ -13,9 +13,6 @@ from respy.python.shared.shared_constants import DATA_LABELS_SIM
 from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.shared.shared_constants import HUGE_FLOAT
-
-from respy import RespyCls
 
 # module-wide variables
 OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
@@ -27,8 +24,8 @@ def simulate_observed(respy_obj, is_missings=True):
     """
 
     def drop_agents_obs(agent):
-        """ We now determine the exact period from which onward the history is truncated and
-        cut the simulated dataset down to size.
+        """ We now determine the exact period from which onward the history is truncated
+        and cut the simulated dataset down to size.
         """
         start_truncation = np.random.choice(range(1, agent["Period"].max() + 2))
         agent = agent[agent["Period"] < start_truncation]
@@ -78,19 +75,6 @@ def simulate_observed(respy_obj, is_missings=True):
     return respy_obj
 
 
-def compare_init(fname_base, fname_alt):
-    """ This function compares the content of each line of a file without any regards
-    for spaces.
-    """
-    base_lines = [line.rstrip("\n") for line in open(fname_base, "r")]
-    alt_lines = [line.rstrip("\n") for line in open(fname_alt, "r")]
-
-    for i, base_line in enumerate(base_lines):
-        if alt_lines[i].replace(" ", "") != base_line.replace(" ", ""):
-            return False
-    return True
-
-
 def compare_est_log(base_est_log):
     """ This function is required as the log files can be slightly different for good
     reasons.
@@ -115,15 +99,22 @@ def compare_est_log(base_est_log):
         else:
 
             is_floats = False
-            try:
-                int(shlex.split(alt_line)[0])
-                is_floats = True
-            except ValueError:
-                pass
-            # We need to cut the floats some slack. It might very well happen that in
-            # the very last digits they are in fact different across the versions.
+            entries = shlex.split(alt_line)
+            if len(entries) >= 2:
+                try:
+                    int(entries[1])
+                except ValueError:
+                    is_floats = True
+
+            else:
+                try:
+                    int(entries[0])
+                except ValueError:
+                    is_floats = True
+
             if not is_floats:
                 assert alt_line == base_line
+
             else:
                 base_floats = get_floats(base_line)
                 alt_floats = get_floats(alt_line)
@@ -131,25 +122,15 @@ def compare_est_log(base_est_log):
 
 
 def get_floats(line):
-    """ This extracts the floats from the line
-    """
-    list_ = shlex.split(line)[1:]
-    rslt = []
-    for val in list_:
-        if val == "---":
-            val = HUGE_FLOAT
-        else:
-            val = float(val)
-        rslt += [val]
-    return rslt
+    """ This extracts the floats from the line."""
+    line_entries = shlex.split(line)
+    return [float(val) for val in line_entries if not isinstance(val, str)]
 
 
-def write_interpolation_grid(file_name):
+def write_interpolation_grid(respy_obj):
     """ Write out an interpolation grid that can be used across
     implementations.
     """
-    # Process relevant initialization file
-    respy_obj = RespyCls(file_name)
 
     # Distribute class attribute
     num_periods, num_points_interp, edu_spec, num_types = dist_class_attributes(
@@ -213,11 +194,11 @@ def write_draws(num_periods, max_draws):
 
 
 def write_types(type_shares, num_agents_sim):
-    """ We also need to fully control the random types to ensure the comparability between PYTHON
-    and FORTRAN simulations.
+    """ We also need to fully control the random types to ensure the comparability
+    between PYTHON and FORTRAN simulations.
     """
-    # Note that the we simply set the relevant initial condition to a random value. This seems to
-    # be sufficient for the testing purposes.
+    # Note that the we simply set the relevant initial condition to a random value. This
+    # seems to be sufficient for the testing purposes.
     type_probs = get_conditional_probabilities(
         type_shares, np.random.choice([10, 12, 15])
     )
@@ -226,8 +207,8 @@ def write_types(type_shares, num_agents_sim):
 
 
 def write_edu_start(edu_spec, num_agents_sim):
-    """ We also need to fully control the random initial schooling to ensure the comparability
-    between PYTHON and FORTRAN simulations.
+    """ We also need to fully control the random initial schooling to ensure the
+    comparability between PYTHON and FORTRAN simulations.
     """
     types = np.random.choice(
         edu_spec["start"], p=edu_spec["share"], size=num_agents_sim
@@ -241,21 +222,6 @@ def write_lagged_start(num_agents_sim):
     """
     types = np.random.choice([3, 4], size=num_agents_sim)
     np.savetxt(".initial_lagged.respy.test", types, fmt="%i")
-
-
-def get_valid_values(which):
-    """ Simply get a valid value.
-    """
-    assert which in ["amb", "cov", "coeff", "delta"]
-
-    if which in ["amb", "delta"]:
-        value = np.random.choice([0.0, np.random.uniform()])
-    elif which in ["coeff"]:
-        value = np.random.uniform(-0.05, 0.05)
-    elif which in ["cov"]:
-        value = np.random.uniform(0.05, 1)
-
-    return value
 
 
 def get_valid_shares(num_groups):
