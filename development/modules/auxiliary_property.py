@@ -8,6 +8,7 @@ import importlib
 import numpy as np
 import os
 import shutil
+from pathlib import Path
 
 # RESPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.
@@ -141,24 +142,25 @@ def get_test_dict(test_dir):
     modules as the keys. The corresponding value is a list with all test
     methods inside that module.
     """
-    # Process all candidate modules.
-    current_directory = os.getcwd()
-    os.chdir(test_dir)
-    test_modules = []
-    for test_file in glob.glob("test_*.py"):
-        test_module = test_file.replace(".py", "")
-        test_modules.append(test_module)
-    os.chdir(current_directory)
+    # Get all test modules
+    test_modules = test_dir.glob("*.py")
+    # Add test_dir to path for importing
+    sys.path.append(str(test_dir))
 
     # Given the modules, get all tests methods.
-    test_dict = dict()
+    test_dict = {}
     for test_module in test_modules:
-        test_dict[test_module] = []
-        mod = importlib.import_module(test_module.replace(".py", ""))
+        if test_module.stem == "__init__":
+            continue
+        test_dict[test_module.stem] = []
+        mod = importlib.import_module(test_module.stem)
         candidate_methods = dir(mod.TestClass)
         for candidate_method in candidate_methods:
             if "test_" in candidate_method:
-                test_dict[test_module].append(candidate_method)
+                test_dict[test_module.stem].append(candidate_method)
+
+    # Remove path from PYTHONPATH
+    sys.path.remove(str(test_dir))
 
     # If the PARALLELISM or FORTRAN is not available, we remove the parallel tests.
     if not IS_PARALLELISM_MPI and not IS_PARALLELISM_OMP:
@@ -173,7 +175,6 @@ def get_test_dict(test_dir):
     if not IS_F2PY:
         del test_dict["test_f2py"]
 
-    # Finishing
     return test_dict
 
 

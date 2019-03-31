@@ -1,34 +1,30 @@
 #!/usr/bin/env python
-""" This script checks the regression tests vault for any unintended changes during further
-development and refactoring efforts.
+""" This script checks the regression tests vault for any unintended changes during
+further development and refactoring efforts.
 """
 from __future__ import print_function
 
-from functools import partial
-
+import argparse
+import json
 import multiprocessing as mp
 import numpy as np
-import argparse
 import socket
-import json
 
-from development.modules.auxiliary_shared import send_notification
-from development.modules.auxiliary_shared import compile_package
-
-from development.modules.auxiliary_regression import create_single
 from development.modules.auxiliary_regression import check_single
+from development.modules.auxiliary_regression import create_single
 from development.modules.auxiliary_regression import get_chunks
-
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.python.shared.shared_constants import DECIMALS
+from development.modules.auxiliary_shared import compile_package
+from development.modules.auxiliary_shared import send_notification
+from functools import partial
 from respy.pre_processing.model_processing import write_init_file
+from respy.python.shared.shared_constants import DECIMALS
+from respy.python.shared.shared_constants import IS_FORTRAN
+from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
+from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.tests.codes.auxiliary import simulate_observed
 
 HOSTNAME = socket.gethostname()
-
-from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
-from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_constants import IS_FORTRAN
 
 
 def run(request, is_compile, is_background, is_strict, num_procs):
@@ -162,7 +158,9 @@ def run(request, is_compile, is_background, is_strict, num_procs):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Create or check regression vault")
+    parser = argparse.ArgumentParser(
+        description="Create or check regression vault"
+    )
 
     parser.add_argument(
         "--request",
