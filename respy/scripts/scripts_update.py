@@ -7,7 +7,6 @@ import shutil
 import os
 
 from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.pre_processing.model_processing import read_init_file
 from respy.custom_exceptions import UserError

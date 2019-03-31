@@ -32,11 +32,9 @@ def dist_input_arguments(parser):
     return request, init_file
 
 
-def scripts_check(request, init_file):
+def scripts_check(request, respy_obj):
     """ Wrapper for the estimation.
     """
-    # Read in baseline model specification
-    respy_obj = RespyCls(init_file)
 
     # Distribute model parameters
     num_periods, edu_spec, num_types = dist_class_attributes(
@@ -51,7 +49,7 @@ def scripts_check(request, init_file):
         )
 
         # We also check the structure of the dataset.
-        data_array = process_dataset(respy_obj).values
+        data_array = process_dataset(respy_obj).to_numpy()
         num_rows = data_array.shape[0]
 
         for j in range(num_rows):

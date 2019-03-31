@@ -87,7 +87,6 @@ def run(request, is_compile, is_background):
 
         np.random.seed(seed)
 
-        # Construct test case.
         module, method = get_random_request(test_dict)
         mod = importlib.import_module(module)
         test = getattr(mod.TestClass(), method)

@@ -350,7 +350,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
 
     ALLOCATE(seed_inflated(seed_size))
     seed_inflated(:) = 123
-    
+
     CALL RANDOM_SEED(put=seed_inflated)
 
     shocks_cov = MATMUL(optim_paras%shocks_cholesky, TRANSPOSE(optim_paras%shocks_cholesky))

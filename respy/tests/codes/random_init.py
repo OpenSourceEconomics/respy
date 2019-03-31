@@ -73,8 +73,8 @@ def generate_random_dict(constr=None):
     max_agents = 1000
     max_draws = 100
 
-    # We need to determine the final number of types right here, as it determines the number of
-    # parameters. This includes imposing constraints.
+    # We need to determine the final number of types right here, as it determines the
+    # number of parameters. This includes imposing constraints.
     num_types = np.random.choice(range(1, max_types))
     if "types" in constr.keys():
         # Extract objects
@@ -102,9 +102,10 @@ def generate_random_dict(constr=None):
 
         paras_values += [value]
 
-    # Construct a set of valid bounds. Note that there are now bounds for the coefficients of the
-    #  covariance matrix. It is not clear how to enforce these during an estimation on the
-    # Cholesky factors. Same problem occurs for the set of fixed parameters.
+    # Construct a set of valid bounds. Note that there are now bounds for the
+    #  coefficients of the covariance matrix. It is not clear how to enforce these
+    #  during an estimation on the Cholesky factors. Same problem occurs for the set of
+    #  fixed parameters.
     paras_bounds = []
     for i, value in enumerate(paras_values):
         if i in [0]:
@@ -116,18 +117,18 @@ def generate_random_dict(constr=None):
 
         paras_bounds += [bounds]
 
-    # The dictionary also contains the information whether parameters are fixed during an
-    # estimation. We need to ensure that at least one parameter is always free. At this point we
-    # also want to ensure that either all shock coefficients are fixed or none. It is not clear
-    # how to ensure other constraints on the Cholesky factors.
+    # The dictionary also contains the information whether parameters are fixed during
+    # an estimation. We need to ensure that at least one parameter is always free. At
+    # this point we also want to ensure that either all shock coefficients are fixed or
+    # none. It is not clear how to ensure other constraints on the Cholesky factors.
     paras_fixed = np.random.choice([True, False], 43).tolist()
     if sum(paras_fixed) == 43:
         paras_fixed[np.random.randint(0, 43)] = True
     paras_fixed += [np.random.choice([True, False]).tolist()] * 10
     paras_fixed += np.random.choice([True, False], (num_types - 1) * 6).tolist()
 
-    # Sampling number of agents for the simulation. This is then used as the upper bound for the
-    # dataset used in the estimation.
+    # Sampling number of agents for the simulation. This is then used as the upper bound
+    # for the dataset used in the estimation.
     num_agents_sim = np.random.randint(3, max_agents)
 
     # Basics
