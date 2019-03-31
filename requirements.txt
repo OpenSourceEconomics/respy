@@ -1,6 +1,0 @@
-numpy==1.14         # rq.filter: ==1.14
-pandas==0.23.4      # rq.filter: ==0.23.4
-scipy==1.1.0        # rq.filter: ==1.1.0
-statsmodels==0.9    # rq.filter: ==0.9
-pytest==4.0.2       # rq.filter: ==4.0.2
-pyaml==18.11.0      # rq.filter: ==18.11.0

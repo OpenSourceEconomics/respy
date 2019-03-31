@@ -26,8 +26,8 @@ def get_final_education(agent):
     """
     edu_final = agent["Years_Schooling"].iloc[0] + (agent["Choice"] == 3).sum()
 
-    # As a little test, we just ensure that the final level of education is equal or less the
-    # level the agent entered the final period.
+    # As a little test, we just ensure that the final level of education is equal or
+    # less the level the agent entered the final period.
     valid = [agent["Years_Schooling"].iloc[-1], agent["Years_Schooling"].iloc[-1] + 1]
     np.testing.assert_equal(edu_final in valid, True)
 
@@ -415,9 +415,11 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     return edu_start
 
 
-def get_random_lagged_start(edu_spec, num_agents_sim, edu_start, is_debug):
-    """ This function provides random draws for the initial lagged activity or reads them in
-    from a file.
+def get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start, is_debug):
+    """ This function provides values for the initial lagged choice.
+
+    The values are random draws or read in from a file.
+
     """
     if is_debug and os.path.exists(".initial_lagged.respy.test"):
         lagged_start = np.genfromtxt(".initial_lagged.respy.test")

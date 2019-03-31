@@ -1,26 +1,21 @@
 import numpy as np
 
 from respy.python.record.record_simulation import record_simulation_progress
-from respy.python.simulate.simulate_auxiliary import get_random_lagged_start
-from respy.python.shared.shared_auxiliary import back_out_systematic_wages
-from respy.python.shared.shared_auxiliary import calculate_rewards_general
-from respy.python.shared.shared_auxiliary import calculate_rewards_common
+from respy.python.simulate.simulate_auxiliary import (
+    get_random_choice_lagged_start,
+)
 from respy.python.record.record_simulation import record_simulation_start
 from respy.python.simulate.simulate_auxiliary import get_random_edu_start
 from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.simulate.simulate_auxiliary import get_random_types
-from respy.python.shared.shared_auxiliary import construct_covariates
-from respy.python.shared.shared_auxiliary import get_total_values
-from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import HUGE_FLOAT
+import pandas as pd
+from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
 def pyth_simulate(
-    periods_rewards_systematic,
-    mapping_state_idx,
-    periods_emax,
-    states_all,
+    state_space,
     num_periods,
     num_agents_sim,
     periods_draws_sims,
@@ -32,121 +27,120 @@ def pyth_simulate(
     is_debug,
 ):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
-    """
 
+    Parameters
+    ----------
+    num_periods : int
+    num_agents_sim : int
+    states : pd.DataFrame
+    states_indexer : np.array
+    periods_draws_sims : ???
+    seed_sim : ???
+    file_sim : ???
+    edu_spec : dict
+    optim_paras : dict
+    num_types : int
+    is_debug : bool
+
+    Returns
+    -------
+    simulated_data : pd.DataFrame
+
+    """
     record_simulation_start(num_agents_sim, seed_sim, file_sim)
 
-    # Standard deviates transformed to the distributions relevant for the agents actual decision
-    # making as traversing the tree.
-    periods_draws_sims_transformed = np.tile(np.nan, (num_periods, num_agents_sim, 4))
+    # Standard deviates transformed to the distributions relevant for the agents actual
+    # decision making as traversing the tree.
+    periods_draws_sims_transformed = np.full(
+        (num_periods, num_agents_sim, 4), np.nan
+    )
 
     for period in range(num_periods):
         periods_draws_sims_transformed[period, :, :] = transform_disturbances(
             periods_draws_sims[period, :, :],
-            np.array([0.0, 0.0, 0.0, 0.0]),
+            np.zeros(4),
             optim_paras["shocks_cholesky"],
         )
 
     # We also need to sample the set of initial conditions.
-    edu_start = get_random_edu_start(edu_spec, num_agents_sim, is_debug)
-    types = get_random_types(
-        num_types, optim_paras, num_agents_sim, edu_start, is_debug
+    initial_education = get_random_edu_start(
+        edu_spec, num_agents_sim, is_debug
     )
-    lagged_start = get_random_lagged_start(
-        edu_spec, num_agents_sim, edu_start, is_debug
+    initial_types = get_random_types(
+        num_types, optim_paras, num_agents_sim, initial_education, is_debug
+    )
+    initial_choice_lagged = get_random_choice_lagged_start(
+        edu_spec, num_agents_sim, initial_education, is_debug
     )
 
-    # Simulate agent experiences
-    count = 0
-
-    # Initialize data
-    dataset = np.tile(MISSING_FLOAT, (num_agents_sim * num_periods, 29))
+    data = []
 
     for i in range(num_agents_sim):
 
-        current_state = states_all[0, 0, :].copy()
-
-        # We need to modify the initial conditions: (1) Schooling when entering the model and (2)
-        # individual type. We need to determine the initial value for the lagged variable.
-        current_state[3] = lagged_start[i]
-        current_state[2] = edu_start[i]
-        current_state[4] = types[i]
+        # We need to modify the initial conditions: (1) Schooling when entering the
+        # model and (2) individual type. We need to determine the initial value for the
+        # lagged variable.
+        current_state = np.array(
+            [
+                0,
+                0,
+                initial_education[i],
+                initial_choice_lagged[i],
+                initial_types[i],
+            ]
+        )
 
         record_simulation_progress(i, file_sim)
 
-        # Iterate over each period for the agent
         for period in range(num_periods):
 
-            # Distribute state space
             exp_a, exp_b, edu, choice_lagged, type_ = current_state
 
-            k = mapping_state_idx[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
-
-            # Write agent identifier and current period to data frame
-            dataset[count, :2] = i, period
+            state = state_space[
+                period, exp_a, exp_b, edu, choice_lagged - 1, type_
+            ]
 
             # Select relevant subset
-            rewards_systematic = periods_rewards_systematic[period, k, :]
             draws = periods_draws_sims_transformed[period, i, :]
 
             # Get total value of admissible states
-            total_values, rewards_ex_post = get_total_values(
-                period,
-                num_periods,
-                optim_paras,
-                rewards_systematic,
-                draws,
-                edu_spec,
-                mapping_state_idx,
-                periods_emax,
-                k,
-                states_all,
+            total_values, rewards_ex_post = get_continuation_value(
+                state[["wage_a", "wage_b"]].values,
+                state[
+                    [
+                        "rewards_systematic_a",
+                        "rewards_systematic_b",
+                        "rewards_systematic_edu",
+                        "rewards_systematic_home",
+                    ]
+                ].values,
+                draws.reshape(1, -1),
+                state[
+                    ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
+                ].values,
+                optim_paras["delta"],
             )
+            total_values = total_values.ravel()
+            rewards_ex_post = rewards_ex_post.ravel()
 
-            # We need to ensure that no individual chooses an inadmissible state. This cannot be
-            # done directly in the get_total_values function as the penalty otherwise dominates
-            # the interpolation equation. The parameter INADMISSIBILITY_PENALTY is a compromise.
-            # It is only relevant in very constructed cases.
+            # We need to ensure that no individual chooses an inadmissible state. This
+            # cannot be done directly in the get_continuation_value function as the
+            # penalty otherwise dominates the interpolation equation. The parameter
+            # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
+            # constructed cases.
             if edu >= edu_spec["max"]:
                 total_values[2] = -HUGE_FLOAT
 
             # Determine optimal choice
             max_idx = np.argmax(total_values)
 
-            # Record agent decision
-            dataset[count, 2] = max_idx + 1
-
             # Record wages
-            dataset[count, 3] = MISSING_FLOAT
-            wages_systematic = back_out_systematic_wages(
-                rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras
+            wages = np.array([state.wage_a, state.wage_b])
+            wage = (
+                wages[max_idx] * draws[max_idx]
+                if max_idx in [0, 1]
+                else np.nan
             )
-
-            if max_idx in [0, 1]:
-                dataset[count, 3] = wages_systematic[max_idx] * draws[max_idx]
-
-            # Write relevant state space for period to data frame. However, the individual's type
-            # is not part of the observed dataset. This is included in the simulated dataset.
-            dataset[count, 4:8] = current_state[:4]
-
-            # As we are working with a simulated dataset, we can also output additional
-            # information that is not available in an observed dataset. The discount rate is
-            # included as this allows to construct the EMAX with the information provided in the
-            # simulation output.
-            dataset[count, 8:9] = type_
-            dataset[count, 9:13] = total_values
-            dataset[count, 13:17] = rewards_systematic
-            dataset[count, 17:21] = draws
-            dataset[count, 21:22] = optim_paras["delta"]
-
-            # For testing purposes, we also explicitly include the general reward component,
-            # the common component, and the immediate ex post rewards.
-            covariates = construct_covariates(
-                exp_a, exp_b, edu, choice_lagged, type_, period
-            )
-            dataset[count, 22:24] = calculate_rewards_general(covariates, optim_paras)
-            dataset[count, 24:25] = calculate_rewards_common(covariates, optim_paras)
-            dataset[count, 25:29] = rewards_ex_post
 
             # Update work experiences or education
             if max_idx in [0, 1, 2]:
@@ -155,10 +149,50 @@ def pyth_simulate(
             # Update lagged activity variable.
             current_state[3] = max_idx + 1
 
-            # Update row indicator
-            count += 1
+            row = {
+                "Identifier": i,
+                "Period": period,
+                "Choice": max_idx + 1,
+                "Wage": wage,
+                # Write relevant state space for period to data frame. However, the
+                # individual's type is not part of the observed dataset. This is
+                # included in the simulated dataset.
+                "Experience_A": exp_a,
+                "Experience_B": exp_b,
+                "Years_Schooling": edu,
+                "Lagged_Choice": choice_lagged,
+                # As we are working with a simulated dataset, we can also output
+                # additional information that is not available in an observed dataset.
+                # The discount rate is included as this allows to construct the EMAX
+                # with the information provided in the simulation output.
+                "Type": type_,
+                "Total_Reward_1": total_values[0],
+                "Total_Reward_2": total_values[1],
+                "Total_Reward_3": total_values[2],
+                "Total_Reward_4": total_values[3],
+                "Systematic_Reward_1": state.rewards_systematic_a,
+                "Systematic_Reward_2": state.rewards_systematic_b,
+                "Systematic_Reward_3": state.rewards_systematic_edu,
+                "Systematic_Reward_4": state.rewards_systematic_home,
+                "Shock_Reward_1": draws[0],
+                "Shock_Reward_2": draws[1],
+                "Shock_Reward_3": draws[2],
+                "Shock_Reward_4": draws[3],
+                "Discount_Rate": optim_paras["delta"][0],
+                # For testing purposes, we also explicitly include the general reward
+                # component, the common component, and the immediate ex post rewards.
+                "General_Reward_1": state.rewards_general_a,
+                "General_Reward_2": state.rewards_general_b,
+                "Common_Reward": state.rewards_common,
+                "Immediate_Reward_1": rewards_ex_post[0],
+                "Immediate_Reward_2": rewards_ex_post[1],
+                "Immediate_Reward_3": rewards_ex_post[2],
+                "Immediate_Reward_4": rewards_ex_post[3],
+            }
+            data.append(row)
 
     record_simulation_stop(file_sim)
 
-    # Finishing
-    return dataset
+    simulated_data = pd.DataFrame.from_records(data, columns=data[0].keys())
+
+    return simulated_data

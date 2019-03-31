@@ -1,16 +1,13 @@
-import numpy as np
 import pytest
-
-from respy.python.shared.shared_auxiliary import back_out_systematic_wages
-from respy.python.solve.solve_auxiliary import calculate_wages_systematic
+import numpy as np
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_auxiliary import get_optim_paras
-
 from respy.tests.codes.random_model import generate_random_model
-from respy.pre_processing.model_processing import _read_options_spec, _read_params_spec
+from respy.pre_processing.model_processing import (
+    _read_options_spec,
+    _read_params_spec,
+)
 from respy import RespyCls
 from pandas.testing import assert_series_equal
 
@@ -37,7 +34,6 @@ class TestClass(object):
                 args = (optim_paras, num_paras, "all", True)
                 x = get_optim_paras(*args)
 
-            # Checks
             np.testing.assert_allclose(base, x)
 
     def test_2(self):
@@ -49,8 +45,8 @@ class TestClass(object):
             respy_obj = RespyCls(params_spec, options_spec)
             respy_obj.write_out("alt.respy")
 
-            new_params_spec = _read_params_spec('alt.respy.csv')
-            new_options_spec = _read_options_spec('alt.respy.json')
+            new_params_spec = _read_params_spec("alt.respy.csv")
+            new_options_spec = _read_options_spec("alt.respy.json")
 
             assert options_spec == new_options_spec
 
@@ -68,7 +64,9 @@ class TestClass(object):
 
         params_spec, options_spec = generate_random_model(
             bound_constr=bound_constr,
-            deterministic=is_deterministic, myopic=is_myopic)
+            deterministic=is_deterministic,
+            myopic=is_myopic,
+        )
 
         respy_obj = RespyCls(params_spec, options_spec)
         _, df = respy_obj.simulate()
@@ -77,17 +75,17 @@ class TestClass(object):
             respy_obj, "optim_paras", "num_types", "edu_spec", "num_periods"
         )
 
-        # We can back out the wage information from other information provided in the simulated
-        # dataset.
+        # We can back out the wage information from other information provided in the
+        # simulated dataset.
         for choice in [1, 2]:
             cond = df["Choice"] == choice
             label_sys = "Systematic_Reward_{}".format(choice)
             label_sho = "Shock_Reward_{}".format(choice)
             label_gen = "General_Reward_{}".format(choice)
             label_com = "Common_Reward"
-            df["Ex_Post_Reward"] = (df[label_sys] - df[label_gen] - df[label_com]) * df[
-                label_sho
-            ]
+            df["Ex_Post_Reward"] = (
+                df[label_sys] - df[label_gen] - df[label_com]
+            ) * df[label_sho]
 
             col_1 = df["Ex_Post_Reward"].loc[:, cond]
             col_2 = df["Wage"].loc[:, cond]
@@ -95,8 +93,8 @@ class TestClass(object):
 
         # In the myopic case, the total reward should the equal to the ex post rewards.
         if is_myopic:
-            # The shock only affects the skill-function and not the other components determining
-            # the overall reward.
+            # The shock only affects the skill-function and not the other components
+            # determining the overall reward.
             for choice in [1, 2]:
                 cond = df["Choice"] == choice
 
@@ -139,56 +137,37 @@ class TestClass(object):
                     cond = df[label] == 0
                 assert np.all(cond)
 
+    @pytest.mark.skip(
+        "get_total_values was removed. We can rewrite the test with the similar"
+        "get_continuation_value function. For that, we need to be able to inject "
+        "Fortran outputs into the python function. As a new PR will redefine the state"
+        "space object, we will tackle the test afterwards."
+    )
     def test_4(self):
-        """ Testing whether back and forth transformations for the wage does work.
+        """ Testing the return values for the total values in case of myopic
+        individuals.
+
         """
-        # Generate random initialization file
-        params_spec, options_spec = generate_random_model()
-
-        # Perform toolbox actions
-        respy_obj = RespyCls(params_spec, options_spec)
-        respy_obj, _ = respy_obj.simulate()
-
-        periods_rewards_systematic, states_number_period, states_all, num_periods, optim_paras = dist_class_attributes(
-            respy_obj,
-            "periods_rewards_systematic",
-            "states_number_period",
-            "states_all",
-            "num_periods",
-            "optim_paras",
+        constr = {"edu_spec": {"max": 99}}
+        params_spec, options_spec = generate_random_model(
+            myopic=True, point_constr=constr
         )
-
-        for _ in range(10):
-            # Construct a random state for the calculations.
-            period = np.random.choice(range(num_periods))
-            k = np.random.choice(range(states_number_period[period]))
-
-            rewards_systematic = periods_rewards_systematic[period, k, :]
-            exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
-
-            covariates = construct_covariates(
-                exp_a, exp_b, edu, choice_lagged, type_, period
-            )
-            wages = calculate_wages_systematic(covariates, optim_paras)
-
-            args = (rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras)
-            rslt = back_out_systematic_wages(*args)
-
-            np.testing.assert_almost_equal(rslt, wages)
-
-    def test_5(self):
-        """ Testing the return values for the total values in case of myopic individuals.
-        """
-
-        constr = {'edu_spec': {'max': 99}}
-        params_spec, options_spec = generate_random_model(myopic=True, point_constr=constr)
 
         # The equality below does not hold if schooling is an inadmissible state.
 
         respy_obj = RespyCls(params_spec, options_spec)
         respy_obj, _ = respy_obj.simulate()
 
-        num_periods, optim_paras, edu_spec, mapping_state_idx, periods_emax, states_all, periods_rewards_systematic, states_number_period = dist_class_attributes(
+        (
+            num_periods,
+            optim_paras,
+            edu_spec,
+            mapping_state_idx,
+            periods_emax,
+            states_all,
+            periods_rewards_systematic,
+            states_number_period,
+        ) = dist_class_attributes(
             respy_obj,
             "num_periods",
             "optim_paras",

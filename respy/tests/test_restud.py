@@ -121,8 +121,9 @@ def write_core_parameters(optim_paras):
             fmt = " {0:10.6f} {1:10.6f} {2:10.6f} {3:10.6f} {4:10.6f} {5:10.6f}\n"
             file_.write(fmt.format(*coeffs))
 
-        # Write out coefficients for education and home rewards as well as the discount factor.
-        # The intercept is scaled. This is later undone again in the original FORTRAN code.
+        # Write out coefficients for education and home rewards as well as the discount
+        # factor. The intercept is scaled. This is later undone again in the original
+        # FORTRAN code.
         coeffs_edu, coeffs_home = (
             optim_paras["coeffs_edu"],
             optim_paras["coeffs_home"],
@@ -157,9 +158,11 @@ def transform_respy_to_restud_est(
     with open("in.txt", "w") as file_:
 
         # Write out some basic information about the problem.
-        fmt = " {:03d} {:05d} {:06d}. {:05d}. {:05d}. {:02d} {:02d} {:02d} {:} {:05d} {:03d}.\n"
-        args = []
-        args += [
+        fmt = (
+            " {:03d} {:05d} {:06d}. {:05d}. {:05d}. {:02d} {:02d} {:02d} {:} {:05d} "
+            "{:03d}.\n"
+        )
+        args = [
             num_periods,
             num_agents_est,
             num_draws_emax,
@@ -168,8 +171,10 @@ def transform_respy_to_restud_est(
             1,
             1,
             1,
+            " NO",
+            13150,
+            40,
         ]
-        args += [" NO", 13150, 40]
         file_.write(fmt.format(*args))
 
     write_core_parameters(optim_paras)
@@ -189,8 +194,8 @@ def transform_respy_to_restud_est(
 def write_covariance_parameters(cov):
     """THis function writes out the information contained in the covariance matrix."""
     with open("in.txt", "a") as file_:
-        # We need to undo the scaling procedure in the RESTUD codes and then write out the
-        # correlation matrix and the standard deviations.
+        # We need to undo the scaling procedure in the RESTUD codes and then write out
+        # the correlation matrix and the standard deviations.
         sd = np.sqrt(np.diag(cov)).copy().tolist()
         corr = np.identity(4)
 
@@ -258,8 +263,8 @@ def generate_constraints_dict():
 
 
 def adjust_model_spec(params_spec, options_spec):
-    """ This function adjusts the random initialization dictionary further so we can campare
-    RESPY against RESTUD."""
+    """ This function adjusts the random initialization dictionary further so we can
+    campare RESPY against RESTUD."""
     attr = _create_attribute_dictionary(params_spec, options_spec)
     op = attr["optim_paras"]
     op["coeffs_a"][-9:] = [0.0] * 9
@@ -299,9 +304,16 @@ class TestClass(object):
         # Perform toolbox actions
         respy_obj = RespyCls(params_spec, options_spec)
 
-        # This flag aligns the random components between the RESTUD program and RESPY package.
-        # The existence of the file leads to the RESTUD program to write out the random components.
-        optim_paras, edu_spec, num_agents_sim, num_periods, num_draws_emax = dist_class_attributes(
+        # This flag aligns the random components between the RESTUD program and RESPY
+        # package. The existence of the file leads to the RESTUD program to write out
+        # the random components.
+        (
+            optim_paras,
+            edu_spec,
+            num_agents_sim,
+            num_periods,
+            num_draws_emax,
+        ) = dist_class_attributes(
             respy_obj,
             "optim_paras",
             "edu_spec",
@@ -327,8 +339,8 @@ class TestClass(object):
         cmd = str(TEST_RESOURCES_BUILD / "kw_dp3asim")
         subprocess.check_call(cmd, shell=True)
 
-        # We need to ensure for RESPY that the lagged activity variable indicates that the
-        # individuals were in school the period before entering the model.
+        # We need to ensure for RESPY that the lagged activity variable indicates that
+        # the individuals were in school the period before entering the model.
         types = np.random.choice([3], size=num_agents_sim)
         np.savetxt(".initial_lagged.respy.test", types, fmt="%i")
 
@@ -355,7 +367,8 @@ class TestClass(object):
             columns=column_labels,
         ).astype(np.float)
 
-        # The simulated dataset from FORTRAN includes an indicator for the lagged activities.
+        # The simulated dataset from FORTRAN includes an indicator for the lagged
+        # activities.
         py["Lagged_Choice"] = py["Lagged_Choice"].map(
             {1: 0.0, 2: 0.0, 3: 1.0, 4: 0.0}
         )
@@ -373,7 +386,8 @@ class TestClass(object):
 
         max_draws = args["bound_constr"]["max_draws"]
 
-        # At this point, the random initialization file does only provide diagonal covariances.
+        # At this point, the random initialization file does only provide diagonal
+        # covariances.
         cov_sampled = np.random.uniform(0, 0.01, size=(4, 4)) + np.diag(
             np.random.uniform(1.0, 1.5, size=4)
         )
@@ -387,9 +401,19 @@ class TestClass(object):
 
         respy_obj = RespyCls(params_spec, options_spec)
 
-        # This flag aligns the random components between the RESTUD program and RESPY package.
-        # The existence of the file leads to the RESTUD program to write out the random components.
-        optim_paras, edu_spec, num_agents_est, num_periods, num_draws_emax, num_draws_prob, tau, num_agents_sim = dist_class_attributes(
+        # This flag aligns the random components between the RESTUD program and RESPY
+        # package. The existence of the file leads to the RESTUD program to write out
+        # the random components.
+        (
+            optim_paras,
+            edu_spec,
+            num_agents_est,
+            num_periods,
+            num_draws_emax,
+            num_draws_prob,
+            tau,
+            num_agents_sim,
+        ) = dist_class_attributes(
             respy_obj,
             "optim_paras",
             "edu_spec",

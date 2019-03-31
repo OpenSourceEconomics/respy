@@ -5,7 +5,7 @@ import pytest
 import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import StateSpace
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.tests.codes.random_model import generate_random_model
@@ -28,7 +28,8 @@ class TestClass(object):
     """
 
     def test_1(self):
-        """ Testing the equality of an evaluation of the criterion function for a random request.
+        """ Testing the equality of an evaluation of the criterion function for a random
+        request.
         """
         # Run evaluation for multiple random requests.
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
@@ -58,24 +59,24 @@ class TestClass(object):
         edu_spec = options_spec['edu_spec']
         num_periods = point_constr['num_periods']
 
-        # The use of the interpolation routines is a another special case. Constructing a request
-        #  that actually involves the use of the interpolation routine is a little involved as
-        # the number of interpolation points needs to be lower than the actual number of states.
-        # And to know the number of states each period, I need to construct the whole state space.
+        # The use of the interpolation routines is a another special case. Constructing
+        #  a request that actually involves the use of the interpolation routine is a
+        #  little involved as the number of interpolation points needs to be lower than
+        #  the actual number of states. And to know the number of states each period, I
+        #  need to construct the whole state space.
         if is_interpolated:
-            # Extract from future initialization file the information required to construct the
-            # state space. The number of periods needs to be at least three in order to provide
-            # enough state points.
+            state_space = StateSpace(
+                num_periods, num_types, edu_spec["start"], edu_spec["max"]
+            )
 
-            max_states_period = pyth_create_state_space(
-                num_periods, num_types, edu_spec
-            )[3]
+            max_states_period = state_space.states_per_period.max()
 
             options_spec['interpolation']['points'] = np.random.randint(
                 10, max_states_period
             )
 
-        # Write out random components and interpolation grid to align the three implementations.
+        # Write out random components and interpolation grid to align the three
+        # implementations.
         write_draws(num_periods, max_draws)
         respy_obj = RespyCls(params_spec, options_spec)
         write_interpolation_grid(respy_obj)
@@ -100,8 +101,8 @@ class TestClass(object):
             # Solve the model
             respy_obj = simulate_observed(respy_obj)
 
-            # This parts checks the equality of simulated dataset for the different versions of
-            # the code.
+            # This parts checks the equality of simulated dataset for the different
+            # versions of the code.
             data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
 
             if base_data is None:
@@ -115,7 +116,9 @@ class TestClass(object):
             if base_val is None:
                 base_val = crit_val
 
-            np.testing.assert_allclose(base_val, crit_val, rtol=1e-05, atol=1e-06)
+            np.testing.assert_allclose(
+                base_val, crit_val, rtol=1e-05, atol=1e-06
+            )
 
             # We know even more for the deterministic case.
             if is_deterministic:
@@ -243,7 +246,8 @@ class TestClass(object):
             compare_est_log(base_est_log)
 
     def test_4(self):
-        """ This test ensures that the scaling matrix is identical between the alternative versions.
+        """ This test ensures that the scaling matrix is identical between the
+        alternative versions.
         """
         max_draws = np.random.randint(10, 300)
 
@@ -276,8 +280,8 @@ class TestClass(object):
         for version in ["fortran", "python"]:
             respy_obj = copy.deepcopy(respy_base)
 
-            # The actual optimizer does not matter for the scaling matrix. We also need to make
-            # sure that PYTHON is only called with a single processor.
+            # The actual optimizer does not matter for the scaling matrix. We also need
+            # to make sure that PYTHON is only called with a single processor.
             if version in ["python"]:
                 optimizer_used = "SCIPY-LBFGSB"
                 num_procs = 1

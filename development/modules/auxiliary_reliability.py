@@ -4,12 +4,12 @@ import numpy as np
 import shlex
 import os
 
-from auxiliary_shared import update_class_instance
-from auxiliary_shared import aggregate_information
-from auxiliary_shared import send_notification
-from auxiliary_shared import cleanup
+from development.modules.auxiliary_shared import update_class_instance
+from development.modules.auxiliary_shared import aggregate_information
+from development.modules.auxiliary_shared import send_notification
+from development.modules.auxiliary_shared import cleanup
 
-from config_analysis import SPEC_DIR
+from config import SPEC_DIR
 
 from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_compare import scripts_compare

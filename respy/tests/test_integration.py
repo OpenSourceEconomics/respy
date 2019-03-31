@@ -1,28 +1,27 @@
-from pandas.util.testing import assert_frame_equal
-
+import copy
 import numpy as np
 import pandas as pd
 import pytest
-import copy
-from os.path import join
+import random
 
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from pandas.util.testing import assert_frame_equal
+from respy import RespyCls
+from respy.custom_exceptions import UserError
+from respy.pre_processing.data_processing import process_dataset
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.scripts.scripts_estimate import scripts_estimate
 from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.pre_processing.data_processing import process_dataset
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.scripts.scripts_check import scripts_check
+from respy.scripts.scripts_estimate import scripts_estimate
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.tests.codes.auxiliary import write_lagged_start
-from respy.custom_exceptions import UserError
-from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.random_model import generate_random_model
-from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_types
-from respy import RespyCls
+from respy.tests.codes.random_model import generate_random_model
 
 
 class TestClass(object):
@@ -58,7 +57,10 @@ class TestClass(object):
                 base = periods_emax.copy()
 
             diff = np.max(
-                abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(periods_emax))
+                abs(
+                    np.ma.masked_invalid(base)
+                    - np.ma.masked_invalid(periods_emax)
+                )
             )
             np.testing.assert_almost_equal(diff, 0.0)
 
@@ -68,7 +70,8 @@ class TestClass(object):
         """
         constr = {"estimation": {"maxfun": 0}}
         params_spec, options_spec = generate_random_model(
-            point_constr=constr, myopic=True)
+            point_constr=constr, myopic=True
+        )
         respy_obj = RespyCls(params_spec, options_spec)
 
         optim_paras, num_agents_sim, edu_spec = dist_class_attributes(
@@ -94,8 +97,8 @@ class TestClass(object):
 
             simulate_observed(respy_obj)
 
-            # This parts checks the equality of simulated dataset for the different versions of
-            # the code.
+            # This parts checks the equality of simulated dataset for the different
+            # versions of the code.
             data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
 
             if base_data is None:
@@ -109,21 +112,22 @@ class TestClass(object):
             if base_val is None:
                 base_val = crit_val
 
-            np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
+            np.testing.assert_allclose(
+                base_val, crit_val, rtol=1e-03, atol=1e-03
+            )
 
     def test_4(self):
-        """ Test the evaluation of the criterion function for random requests, not just at the
-        true values.
+        """ Test the evaluation of the criterion function for random requests, not just
+        at the true values.
         """
-        # Constraints that ensure that two alternative initialization files can be used for the
-        # same simulated data.
-
+        # Constraints that ensure that two alternative initialization files can be used
+        # for the same simulated data.
         num_agents = np.random.randint(5, 100)
         constr = {
             "simulation": {"agents": num_agents},
             "num_periods": np.random.randint(1, 4),
             "edu_spec": {"start": [7], "max": 15, "share": [1.0]},
-            "estimation": {"maxfun": 0, "agents": num_agents}
+            "estimation": {"maxfun": 0, "agents": num_agents},
         }
 
         # Simulate a dataset
@@ -140,18 +144,20 @@ class TestClass(object):
     def test_5(self):
         """ Test the scripts.
         """
-        # Constraints that ensure that two alternative initialization files can be used for the
-        # same simulated data.
+        # Constraints that ensure that two alternative initialization files can be used
+        # for the same simulated data.
         for _ in range(10):
             num_agents = np.random.randint(5, 100)
             constr = {
                 "simulation": {"agents": num_agents},
                 "num_periods": np.random.randint(1, 4),
                 "edu_spec": {"start": [7], "max": 15, "share": [1.0]},
-                "estimation": {"maxfun": 0, "agents": num_agents}
+                "estimation": {"maxfun": 0, "agents": num_agents},
             }
             # Simulate a dataset
-            params_spec, options_spec = generate_random_model(point_constr=constr)
+            params_spec, options_spec = generate_random_model(
+                point_constr=constr
+            )
             respy_obj = RespyCls(params_spec, options_spec)
             simulate_observed(respy_obj)
 
@@ -163,10 +169,10 @@ class TestClass(object):
             respy_obj.fit()
 
             # Potentially evaluate at different points.
-            params_spec, options_spec = generate_random_model(point_constr=constr)
+            params_spec, options_spec = generate_random_model(
+                point_constr=constr
+            )
             respy_obj = RespyCls(params_spec, options_spec)
-
-            file_sim = "sim.respy.dat"
 
             single = np.random.choice([True, False])
 
@@ -181,7 +187,10 @@ class TestClass(object):
         constr = {
             "simulation": {"agents": num_agents},
             "num_periods": np.random.randint(1, 4),
-            "estimation": {"maxfun": np.random.randint(0, 5), "agents": num_agents}
+            "estimation": {
+                "maxfun": np.random.randint(0, 5),
+                "agents": num_agents,
+            },
         }
 
         # Simulate a dataset
@@ -195,8 +204,8 @@ class TestClass(object):
         simulate_observed(respy_obj)
         base_x, base_val = respy_obj.fit()
 
-        # We also check whether updating the class instance and a single evaluation of the
-        # criterion function give the same result.
+        # We also check whether updating the class instance and a single evaluation of
+        # the criterion function give the same result.
         respy_obj.update_optim_paras(base_x)
         respy_obj.attr["maxfun"] = 0
 
@@ -205,8 +214,9 @@ class TestClass(object):
         for arg in [(alt_val, base_val), (alt_x, base_x)]:
             np.testing.assert_almost_equal(arg[0], arg[1])
 
-    def test_8(self):
-        """ This test ensures that the constraints for the covariance matrix are properly handled.
+    def test_7(self):
+        """ This test ensures that the constraints for the covariance matrix are
+        properly handled.
         """
 
         params_spec, options_spec = generate_random_model(deterministic=True)
@@ -225,7 +235,7 @@ class TestClass(object):
             True,
             True,
             True,
-            False
+            False,
         ]
         updates["valid_2"] = [False] * 10
         updates["valid_3"] = [True] * 10
@@ -257,7 +267,7 @@ class TestClass(object):
 
         # We draw a random update and print it out to the initialization file.
         label = np.random.choice(list(updates.keys()))
-        params_spec.loc['shocks', 'fixed'] = np.array(updates[label])
+        params_spec.loc["shocks", "fixed"] = np.array(updates[label])
 
         if "invalid" in label:
             # This exception block makes sure that the UserError is in fact raised.
@@ -269,9 +279,10 @@ class TestClass(object):
         else:
             RespyCls(params_spec, options_spec)
 
-    def test_9(self):
-        """ We ensure that the number of initial conditions does not matter for the evaluation of
-        the criterion function if a weight of one is put on the first group.
+    def test_8(self):
+        """ We ensure that the number of initial conditions does not matter for the
+        evaluation of the criterion function if a weight of one is put on the first
+        group.
         """
         num_agents = np.random.randint(5, 100)
         constr = {
@@ -279,29 +290,35 @@ class TestClass(object):
             "num_periods": np.random.randint(1, 4),
             "edu_spec": {"max": np.random.randint(15, 25, size=1).tolist()[0]},
             "estimation": {"maxfun": 0, "agents": num_agents},
-            "interpolation": {"flag": False}
+            "interpolation": {"flag": False},
         }
-
 
         params_spec, options_spec = generate_random_model(point_constr=constr)
         respy_obj = RespyCls(params_spec, options_spec)
         simulate_observed(respy_obj)
 
+        base_val, edu_start_base = (
+            None,
+            np.random.randint(1, 5, size=1).tolist()[0],
+        )
 
-        base_val, edu_start_base = None, np.random.randint(1, 5, size=1).tolist()[0]
-
-        # We need to ensure that the initial lagged activity always has the same distribution.
+        # We need to ensure that the initial lagged activity always has the same
+        # distribution.
         edu_lagged_base = np.random.uniform(size=5).tolist()
 
         for num_edu_start in [1, np.random.choice([2, 3, 4]).tolist()]:
 
-            # We always need to ensure that a weight of one is on the first level of initial
-            # schooling.
-            options_spec["edu_spec"]["share"] = [1.0] + [0.0] * (num_edu_start - 1)
-            options_spec["edu_spec"]["lagged"] = edu_lagged_base[:num_edu_start]
+            # We always need to ensure that a weight of one is on the first level of
+            # initial schooling.
+            options_spec["edu_spec"]["share"] = [1.0] + [0.0] * (
+                num_edu_start - 1
+            )
+            options_spec["edu_spec"]["lagged"] = edu_lagged_base[
+                :num_edu_start
+            ]
 
-            # We need to make sure that the baseline level of initial schooling is always
-            # included. At the same time we cannot have any duplicates.
+            # We need to make sure that the baseline level of initial schooling is
+            # always included. At the same time we cannot have any duplicates.
             edu_start = np.random.choice(
                 range(1, 10), size=num_edu_start, replace=False
             ).tolist()
@@ -321,34 +338,38 @@ class TestClass(object):
 
             np.testing.assert_almost_equal(base_val, val)
 
-
     @pytest.mark.skipif(not IS_FORTRAN, reason="No FORTRAN available")
     @pytest.mark.slow
-    def test_12(self):
-        """ This test just locks in the evaluation of the criterion function for the original
-        Keane & Wolpin data. We create an additional initialization files that include numerous
-        types and initial conditions.
+    @pytest.mark.parametrize(
+        "fname, result",
+        random.sample(
+            [
+                ("kw_data_one.ini", 10.45950941513551),
+                ("kw_data_two.ini", 45.04552402391903),
+                ("kw_data_three.ini", 74.28253652773714),
+                ("kw_data_one_types.ini", 9.098738585839529),
+                ("kw_data_one_initial.ini", 7.965979149372883),
+            ],
+            1,
+        ),
+    )
+    def test_9(self, fname, result):
+        """ This test just locks in the evaluation of the criterion function for the
+        original Keane & Wolpin data. We create an additional initialization files that
+        include numerous types and initial conditions.
+
         """
-        # Sample one task
-        results = {
-            "kw_data_one": 10.45950941513551,
-            "kw_data_two": 45.04552402391903,
-            "kw_data_three": 74.28253652773714,
-            "kw_data_one_types": 9.098738585839529,
-            "kw_data_one_initial": 7.965979149372883,
-        }
-
-        resources = list(results.keys())
-
-        fname = np.random.choice(resources)
-
         # This ensures that the experience effect is taken care of properly.
         open(".restud.respy.scratch", "w").close()
 
-        base_path = join(TEST_RESOURCES_DIR, fname)
+        base_path = TEST_RESOURCES_DIR / fname
 
         # Evaluate criterion function at true values.
-        respy_obj = RespyCls(base_path + '.csv', base_path + '.json')
+
+        respy_obj = RespyCls(
+            str(base_path.with_suffix(".csv")),
+            str(base_path.with_suffix(".json")),
+        )
 
         respy_obj.unlock()
         respy_obj.set_attr("maxfun", 0)
@@ -357,25 +378,28 @@ class TestClass(object):
         simulate_observed(respy_obj, is_missings=False)
 
         _, val = respy_obj.fit()
-        np.testing.assert_allclose(val, results[fname])
+        np.testing.assert_allclose(val, result)
 
-    def test_15(self):
-        """ This test ensures that the order of the initial schooling level specified in the
-        initialization files does not matter for the simulation of a dataset and subsequent
-        evaluation of the criterion function.
+    def test_10(self):
+        """ This test ensures that the order of the initial schooling level specified in
+        the initialization files does not matter for the simulation of a dataset and
+        subsequent evaluation of the criterion function.
 
-        WARNING: This test fails if types have the identical intercept as no unique ordering is
-        determined than.
+        WARNING: This test fails if types have the identical intercept as no unique
+        ordering is determined than.
         """
 
         point_constr = {
             "estimation": {"maxfun": 0},
-            # We cannot allow for interpolation as the order of states within each period changes and
-            # thus the prediction model is altered even if the same state identifier is used.
-            "interpolation": {"flag": False}
+            # We cannot allow for interpolation as the order of states within each
+            # period changes and thus the prediction model is altered even if the same
+            # state identifier is used.
+            "interpolation": {"flag": False},
         }
 
-        params_spec, options_spec = generate_random_model(point_constr=point_constr)
+        params_spec, options_spec = generate_random_model(
+            point_constr=point_constr
+        )
 
         respy_obj = RespyCls(params_spec, options_spec)
 
@@ -383,9 +407,11 @@ class TestClass(object):
             respy_obj, "edu_spec", "num_types", "num_paras", "optim_paras"
         )
 
-        # We want to randomly shuffle the list of initial schooling but need to maintain the
-        # order of the shares.
-        edu_shuffled_start = np.random.permutation(edu_baseline_spec["start"]).tolist()
+        # We want to randomly shuffle the list of initial schooling but need to maintain
+        # the order of the shares.
+        edu_shuffled_start = np.random.permutation(
+            edu_baseline_spec["start"]
+        ).tolist()
 
         edu_shuffled_share, edu_shuffled_lagged = [], []
         for start in edu_shuffled_start:
@@ -398,9 +424,9 @@ class TestClass(object):
         edu_shuffled_spec["start"] = edu_shuffled_start
         edu_shuffled_spec["share"] = edu_shuffled_share
 
-        # We are only looking at a single evaluation as otherwise the reordering affects the
-        # optimizer that is trying better parameter values one-by-one. The reordering might also
-        # violate the bounds.
+        # We are only looking at a single evaluation as otherwise the reordering affects
+        # the optimizer that is trying better parameter values one-by-one. The
+        # reordering might also violate the bounds.
         for i in range(53, num_paras):
             optim_paras["paras_bounds"][i] = [None, None]
             optim_paras["paras_fixed"][i] = False
@@ -416,7 +442,9 @@ class TestClass(object):
         optim_paras_baseline = copy.deepcopy(optim_paras)
         optim_paras_shuffled = copy.deepcopy(optim_paras)
 
-        list_ = list(optim_paras["type_shifts"][i, :].tolist() for i in types_order)
+        list_ = list(
+            optim_paras["type_shifts"][i, :].tolist() for i in types_order
+        )
         optim_paras_shuffled["type_shifts"] = np.array(list_)
 
         list_ = list(type_shares[i] for i in types_order)
@@ -433,8 +461,9 @@ class TestClass(object):
                 respy_obj.set_attr("edu_spec", edu_spec)
                 respy_obj.lock()
 
-                # There is some more work to do to update the coefficients as we distinguish
-                # between the economic and optimization version of the parameters.
+                # There is some more work to do to update the coefficients as we
+                # distinguish between the economic and optimization version of the
+                # parameters.
                 x = get_optim_paras(optim_paras, num_paras, "all", True)
                 shocks_cholesky, _ = extract_cholesky(x)
                 shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
@@ -446,7 +475,9 @@ class TestClass(object):
                 simulate_observed(respy_obj)
 
                 # This part checks the equality of simulated dataset.
-                data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
+                data_frame = pd.read_csv(
+                    "data.respy.dat", delim_whitespace=True
+                )
 
                 if base_data is None:
                     base_data = data_frame.copy()
@@ -461,6 +492,3 @@ class TestClass(object):
 
                 respy_obj.reset()
                 k += 1
-
-
-
