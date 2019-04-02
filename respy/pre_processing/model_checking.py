@@ -23,23 +23,23 @@ def check_model_attributes(attr_dict):
     assert isinstance(a["num_procs"], int)
     assert a["num_procs"] > 0
     if a["num_procs"] > 1:
-        assert a["version"] == "FORTRAN"
+        assert a["version"] == "fortran"
 
     assert isinstance(a["num_procs"], int)
     assert a["num_procs"] > 0
     if a["num_procs"] > 1:
-        assert a["version"] == "FORTRAN"
+        assert a["version"] == "fortran"
         assert IS_PARALLELISM_MPI
 
     # Version version of package
-    assert a["version"] in ["FORTRAN", "PYTHON"]
-    if a["version"] == "FORTRAN":
+    assert a["version"] in ["fortran", "python"]
+    if a["version"] == "fortran":
         assert IS_FORTRAN
 
     assert isinstance(a["num_threads"], int)
     assert a["num_threads"] >= 1
     if a["num_threads"] >= 2:
-        assert a["version"] == "FORTRAN"
+        assert a["version"] == "fortran"
         assert IS_PARALLELISM_OMP
 
     # Debug status
@@ -113,7 +113,7 @@ def check_model_attributes(attr_dict):
     np.testing.assert_almost_equal(np.sum(a["edu_spec"]["share"]), 1.0, decimal=4)
 
     # Derivatives
-    assert a["derivatives"] in ["FORWARD-DIFFERENCES"]
+    assert a["derivatives"] in ["forward-differences"]
 
     # Check model parameters
     check_model_parameters(a["optim_paras"])
@@ -126,19 +126,22 @@ def check_model_attributes(attr_dict):
     # none. As a special case, we also allow for all off-diagonal elements
     # to be fixed to zero.
     shocks_coeffs = a["optim_paras"]["shocks_cholesky"][np.tril_indices(4)]
-    shocks_fixed = a["optim_paras"]["paras_fixed"][43:53]
+    shocks_fixed = np.array(a["optim_paras"]["paras_fixed"][43:53])
 
-    all_fixed = all(is_fixed is False for is_fixed in shocks_fixed)
-    all_free = all(is_free is True for is_free in shocks_fixed)
+    all_free = not shocks_fixed.any()
 
-    subset_fixed = [shocks_fixed[i] for i in [1, 3, 4, 6, 7, 8]]
-    subset_value = [shocks_coeffs[i] for i in [1, 3, 4, 6, 7, 8]]
+    dim = len(a['optim_paras']['shocks_cholesky'])
+    helper = np.zeros((dim, dim))
+    helper[np.tril_indices(dim)] = shocks_coeffs
+    off_diagonals_zero = np.diag(helper).sum() == helper.sum()
 
-    off_diagonal_fixed = all(is_free is True for is_free in subset_fixed)
-    off_diagonal_value = all(value == 0.0 for value in subset_value)
-    off_diagonal = off_diagonal_fixed and off_diagonal_value
+    helper = np.zeros((dim, dim), dtype=bool)
+    helper[np.tril_indices(dim)] = shocks_fixed
+    off_diagonals_fixed = (helper[np.tril_indices(dim, k=-1)]).all()
 
-    if not (all_free or all_fixed or off_diagonal):
+    diagonal_matrix = off_diagonals_zero & off_diagonals_fixed
+
+    if not (all_free or shocks_fixed.all() or diagonal_matrix):
         raise UserError(" Misspecified constraints for covariance matrix")
 
     # Discount rate and type shares need to be larger than on at all times.
@@ -161,10 +164,13 @@ def check_model_attributes(attr_dict):
             assert abs(upper) < PRINT_FLOAT
         if (upper is not None) and (lower is not None):
             assert upper >= lower
+
+        # todo: add this condition again, when we introduce estimation of covariances
+        # todo: and not only their cholesky factors
         # At this point no bounds for the elements of the covariance matrix
         # are allowed.
-        if i in range(43, 53):
-            assert a["optim_paras"]["paras_bounds"][i] == [None, None]
+        # if i in range(43, 53):
+        #     assert a["optim_paras"]["paras_bounds"][i] == [None, None]
 
     _check_optimizer_options(a["optimizer_options"])
 

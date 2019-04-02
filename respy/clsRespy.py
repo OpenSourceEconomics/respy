@@ -5,22 +5,18 @@ import copy
 import os
 import atexit
 
-from respy.pre_processing.model_processing import write_init_file
+from respy.pre_processing.model_processing import write_out_model_spec
 from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import remove_scratch
 
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.pre_processing.model_processing import (
-    read_init_file,
-    convert_init_dict_to_attr_dict,
-    convert_attr_dict_to_init_dict,
-)
 from respy.pre_processing.model_checking import (
     check_model_attributes,
     check_model_solution,
 )
+from respy.pre_processing.model_processing import process_model_spec
 from respy.custom_exceptions import UserError
 from respy.python.interface import respy_interface
 from respy.fortran.interface import resfort_interface
@@ -39,10 +35,9 @@ from respy.python.shared.shared_auxiliary import add_solution
 class RespyCls(object):
     """Class that defines a model in respy.  """
 
-    def __init__(self, fname):
+    def __init__(self, params_spec, options_spec):
         self._set_hardcoded_attributes()
-        ini = read_init_file(fname)
-        self.attr = convert_init_dict_to_attr_dict(ini)
+        self.attr = process_model_spec(params_spec, options_spec)
         self._update_derived_attributes()
         self._initialize_solution_attributes()
         self.attr["is_locked"] = False
@@ -136,10 +131,9 @@ class RespyCls(object):
         assert isinstance(file_name, str)
         pkl.dump(self, open(file_name, "wb"))
 
-    def write_out(self, fname="model.respy.ini"):
+    def write_out(self, fname="model.respy"):
         """Write out the implied initialization file of the class instance."""
-        init_dict = convert_attr_dict_to_init_dict(self.attr)
-        write_init_file(init_dict, fname)
+        write_out_model_spec(self.attr, fname)
 
     def reset(self):
         """Remove solution attributes from class instance."""
@@ -163,9 +157,10 @@ class RespyCls(object):
 
     def _update_derived_attributes(self):
         """Update derived attributes."""
-        num_types = self.attr["num_types"]
-        self.attr["is_myopic"] = (self.attr["optim_paras"]["delta"] == 0.00)[0]
-        self.attr["num_paras"] = 53 + (num_types - 1) * 6
+        # note: don't remove the conversion to bool. It seems unnecessary but it
+        # converts a numpy bool to python bool.
+        self.attr["is_myopic"] = bool(
+            (self.attr["optim_paras"]["delta"] == 0.00)[0])
 
     def _check_model_attributes(self):
         """Check integrity of class instance.
@@ -224,9 +219,9 @@ class RespyCls(object):
             assert optimizer_used in optimizer_options.keys()
 
             # Make sure the requested optimizer is valid
-            if version == "PYTHON":
+            if version == "python":
                 assert optimizer_used in OPT_EST_PYTH
-            elif version == "FORTRAN":
+            elif version == "fortran":
                 assert optimizer_used in OPT_EST_FORT
             else:
                 raise AssertionError
@@ -258,11 +253,13 @@ class RespyCls(object):
         # Distribute class attributes
         version = self.get_attr("version")
 
+        data_array = data_frame.to_numpy()
+
         # Select appropriate interface
-        if version in ["PYTHON"]:
+        if version in ["python"]:
             respy_interface(self, "estimate", data_frame)
-        elif version in ["FORTRAN"]:
-            resfort_interface(self, "estimate", data_frame.values)
+        elif version in ["fortran"]:
+            resfort_interface(self, "estimate", data_array)
         else:
             raise NotImplementedError
 
@@ -288,18 +285,17 @@ class RespyCls(object):
                 os.unlink(fname)
 
         # Select appropriate interface
-        if version in ["PYTHON"]:
+        if version in ["python"]:
             state_space, data_array = respy_interface(self, "simulate")
-
-        elif version in ["FORTRAN"]:
+        elif version in ["fortran"]:
             solution, data_array = resfort_interface(self, "simulate")
         else:
             raise NotImplementedError
 
         # Attach solution to class instance
-        if self.attr["version"] == "FORTRAN":
+        if version == "fortran":
             self = add_solution(self, *solution)
-        elif self.attr["version"] == "PYTHON":
+        elif version == "python":
             self.unlock()
             self.set_attr("state_space", state_space)
             self.lock()
@@ -331,9 +327,9 @@ class RespyCls(object):
         # ====================================================================
         # todo: harmonize python and fortran
         # ====================================================================
-        if self.attr["version"] == "PYTHON":
+        if self.attr["version"] == "python":
             data_frame = data_array[DATA_LABELS_SIM]
-        elif self.attr["version"] == "FORTRAN":
+        elif self.attr["version"] == "fortran":
             data_frame = pd.DataFrame(
                 data=replace_missing_values(data_array),
                 columns=DATA_LABELS_SIM,

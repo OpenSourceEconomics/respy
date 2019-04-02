@@ -92,12 +92,9 @@ def respy_interface(respy_obj, request, data=None):
             optim_paras, num_paras, "all", is_debug
         )
 
-        # Construct the state space without rewards.
+        # Construct the state space
         state_space = StateSpace(
-            num_periods,
-            num_types,
-            edu_spec["start"],
-            edu_spec["max"],
+            num_periods, num_types, edu_spec["start"], edu_spec["max"]
         )
 
         # Collect arguments that are required for the criterion function.

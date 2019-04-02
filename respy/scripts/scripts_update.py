@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-""" This script allows upgrades the initialization file with the parameter values from the last
-step.
+""" This script allows upgrades the initialization file with the parameter values from
+the last step.
 """
 import argparse
 import shutil
 import os
 
 from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_auxiliary import get_est_info
-from respy.pre_processing.model_processing import read_init_file
+# from respy.pre_processing.model_processing import read_init_file
+# from respy.pre_processing.model_processing import write_init_file
 from respy.custom_exceptions import UserError
 
 
@@ -40,14 +40,15 @@ def scripts_update(init_file):
 
     paras_steps = get_est_info()["paras_step"]
 
-    # While sometimes useful, we cannot use this script if there are missing values in the
-    # parameters due to too large values.
+    # While sometimes useful, we cannot use this script if there are missing values in
+    # the parameters due to too large values.
     if "---" in paras_steps.tolist():
         raise UserError("Missing values in est.respy.info")
 
-    # We need to make sure that the size of the parameter vector does fit the initialization
-    # file. For example, this might not be the case when the number of types is changed in the
-    # initialization file and an update is requested with an earlier logfile.
+    # We need to make sure that the size of the parameter vector does fit the
+    # initialization file. For example, this might not be the case when the number of
+    # types is changed in the initialization file and an update is requested with an
+    # earlier logfile.
     num_types, num_paras = (
         len(init_dict["TYPE SHARES"]["coeffs"]) / 2 + 1,
         len(paras_steps),
@@ -69,8 +70,8 @@ def scripts_update(init_file):
     init_dict["TYPE SHARES"]["coeffs"] = optim_paras["type_shares"][2:]
     init_dict["TYPE SHIFTS"]["coeffs"] = optim_paras["type_shifts"].flatten()[4:]
 
-    # We first print to an intermediate file as otherwise the original file is lost in case a
-    # problem during printing occurs.
+    # We first print to an intermediate file as otherwise the original file is lost in
+    # case a problem during printing occurs.
     write_init_file(init_dict, ".model.respy.ini")
     shutil.move(".model.respy.ini", init_file)
 

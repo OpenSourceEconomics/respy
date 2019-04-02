@@ -4,13 +4,13 @@ channels:
   - numba
 dependencies:
   - python=3.6
-  - pandas=0.20
+  - pandas=0.24
   - numba=0.43
   - numpy
-  - scipy=0.19
-  - statsmodels=0.8.0
+  - scipy>=0.19
+  - statsmodels=0.9
   - pip:
     - pytest
     - pytest-cov
-    - pytest-pythonpath
     - codecov
+    - pyaml

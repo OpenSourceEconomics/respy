@@ -1,6 +1,5 @@
 """ Script to start development test battery for the RESPY package."""
-from datetime import timedelta
-from datetime import datetime
+import datetime as dt
 import numpy as np
 import traceback
 import importlib
@@ -22,7 +21,7 @@ from development.modules.auxiliary_shared import compile_package
 from development.modules.auxiliary_property import get_test_dict
 from development.modules.auxiliary_shared import cleanup
 
-PACKAGE_DIR = Path(__file__).parent / "development" / "testing" / "property"
+PACKAGE_DIR = Path(__file__).parents[3]
 
 
 def run(request, is_compile, is_background):
@@ -52,7 +51,7 @@ def run(request, is_compile, is_background):
         compile_package(True)
 
     # Get a dictionary with all candidate test cases.
-    test_dict = get_test_dict(PACKAGE_DIR + "respy/tests")
+    test_dict = get_test_dict(PACKAGE_DIR / "respy" / "tests")
 
     # We initialize a dictionary that allows to keep track of each test's success or
     # failure.
@@ -63,7 +62,7 @@ def run(request, is_compile, is_background):
             full_test_record[key_][value] = [0, 0]
 
     # Start with a clean slate.
-    start, timeout = datetime.now(), timedelta(hours=hours)
+    start, timeout = dt.datetime.now(), dt.timedelta(hours=hours)
 
     if not is_investigation:
         cleanup_testing_infrastructure(False)
@@ -80,7 +79,6 @@ def run(request, is_compile, is_background):
 
         np.random.seed(seed)
 
-        # Construct test case.
         module, method = get_random_request(test_dict)
         mod = importlib.import_module(module)
         test = getattr(mod.TestClass(), method)
@@ -121,7 +119,7 @@ def run(request, is_compile, is_background):
             cleanup_testing_infrastructure(True)
 
         #  Timeout.
-        if timeout < datetime.now() - start:
+        if timeout < dt.datetime.now() - start:
             break
 
     if not is_investigation:

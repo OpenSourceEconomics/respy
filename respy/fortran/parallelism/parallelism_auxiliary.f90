@@ -276,6 +276,7 @@ SUBROUTINE fort_backward_induction_slave(periods_emax, num_periods, periods_draw
     END IF
 
     ! Set random seed for interpolation grid.
+
     CALL RANDOM_SEED(size=seed_size)
 
     ALLOCATE(seed_inflated(seed_size))

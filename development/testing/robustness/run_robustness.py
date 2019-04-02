@@ -11,22 +11,25 @@ from development.modules.auxiliary_robustness import run_for_hours_parallel
 from development.modules.auxiliary_career_decision_data import prepare_dataset
 import argparse
 import numpy as np
-from os.path import exists, join
-import os
-from development.modules.auxiliary_property import cleanup_testing_infrastructure
+from pathlib import Path
+from development.modules.auxiliary_property import (
+    cleanup_testing_infrastructure,
+)
 
 
 def run(request, is_compile, is_background, num_procs, keep_dataset):
-    cleanup_testing_infrastructure(keep_results=False, keep_dataset=keep_dataset)
-    data_path = join(os.getcwd(), "career_data.respy.dat")
-    if not exists(data_path):
+    cleanup_testing_infrastructure(
+        keep_results=False, keep_dataset=keep_dataset
+    )
+    data_path = Path.cwd() / "career_data.respy.dat"
+    if not data_path.exists():
         prepare_dataset()
     if request[0] == "investigate":
         is_investigation, is_run = True, False
     elif request[0] == "run":
         is_investigation, is_run = False, True
     else:
-        raise AssertionError("request in [run, investigate]")
+        raise NotImplementedError("request in [run, investigate]")
 
     seed_investigation, hours = None, 0.0
     if is_investigation:
@@ -45,6 +48,7 @@ def run(request, is_compile, is_background, num_procs, keep_dataset):
             failed_dict = {}
         else:
             failed_dict = {seed_investigation: error_message}
+            print(error_message)
     else:
         # make seed list
         if num_procs == 1:
@@ -84,13 +88,17 @@ def run(request, is_compile, is_background, num_procs, keep_dataset):
             procs=num_procs,
             num_tests=num_tests,
         )
-        cleanup_testing_infrastructure(keep_results=False, keep_dataset=keep_dataset)
+        cleanup_testing_infrastructure(
+            keep_results=False, keep_dataset=keep_dataset
+        )
 
 
 if __name__ == "__main__":
     # args = process_command_line_arguments('robustness')
     # run(args)
-    parser = argparse.ArgumentParser(description="Run or investigate robustness tests.")
+    parser = argparse.ArgumentParser(
+        description="Run or investigate robustness tests."
+    )
 
     parser.add_argument(
         "--request",

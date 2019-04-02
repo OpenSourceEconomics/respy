@@ -1,12 +1,10 @@
 import sys
 import os
-
 import statsmodels.api as sm
 from scipy.stats import norm
 import numpy as np
 import pytest
 import scipy
-
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.record.record_estimation import _spectral_condition_number
 from respy.python.shared.shared_auxiliary import replace_missing_values
@@ -38,7 +36,7 @@ from respy.fortran.interface import resfort_interface
 from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.tests.codes.auxiliary import write_lagged_start
 from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_draws
 from respy.tests.codes.auxiliary import write_types
@@ -73,14 +71,10 @@ class TestClass(object):
         """
         # Generate constraint periods
         constr = dict()
-        constr["version"] = "PYTHON"
-
+        constr["version"] = "python"
         # Generate random initialization file
-        generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
-
+        params_spec, options_spec = generate_random_model(point_constr=constr)
+        respy_obj = RespyCls(params_spec, options_spec)
         respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
@@ -124,7 +118,8 @@ class TestClass(object):
         # Select systematic rewards
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
-        # Evaluation of simulated expected future values
+        # Evaluation of simulated expected future values. Limit to one individual as the
+        # Fortran version.
         rewards_period = state_space.get_attribute_from_period(
             "rewards", period
         )[k]
@@ -323,19 +318,12 @@ class TestClass(object):
         """ Testing the core functions of the solution step for the equality of results
         between the PYTHON and FORTRAN implementations.
         """
-
-        # Generate random initialization file
-
-        constr = dict()
-
-        generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model()
+        respy_obj = RespyCls(params_spec, options_spec)
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
-        write_interpolation_grid("test.respy.ini")
+        write_interpolation_grid(respy_obj)
 
         # Extract class attributes
         (
@@ -379,15 +367,13 @@ class TestClass(object):
         min_idx = edu_spec["max"] + 1
 
         # Check the state space creation.
-        base_args = (
+        state_space = StateSpace(
             num_periods,
             num_types,
             edu_spec["start"],
             edu_spec["max"],
+            optim_paras,
         )
-        args = base_args + (optim_paras,)
-
-        state_space = StateSpace(*args)
 
         states_all, mapping_state_idx, _, _ = (
             state_space._get_fortran_counterparts()
@@ -400,8 +386,9 @@ class TestClass(object):
             state_space.states_per_period.max(),
         ]
 
-        args = base_args + (min_idx,)
-        f2py = fort_debug.wrapper_create_state_space(*args)
+        f2py = fort_debug.wrapper_create_state_space(
+            num_periods, num_types, edu_spec["start"], edu_spec["max"], min_idx
+        )
         for i in range(4):
             # Slice Fortran output to shape of Python output.
             if isinstance(f2py[i], np.ndarray):
@@ -485,18 +472,13 @@ class TestClass(object):
         """ This methods ensures that the core functions yield the same results across
         implementations.
         """
-        # Generate random initialization file
-
-        constr = dict()
-        generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model()
+        respy_obj = RespyCls(params_spec, options_spec)
         respy_obj = simulate_observed(respy_obj)
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
-        max_states_period = write_interpolation_grid("test.respy.ini")
+        max_states_period = write_interpolation_grid(respy_obj)
 
         # Extract class attributes
         (
@@ -538,9 +520,8 @@ class TestClass(object):
             "num_paras",
         )
 
-        data_array = process_dataset(respy_obj).values
+        data_array = process_dataset(respy_obj).to_numpy()
         min_idx = edu_spec["max"] + 1
-
         shocks_cholesky = optim_paras["shocks_cholesky"]
         coeffs_common = optim_paras["coeffs_common"]
         coeffs_home = optim_paras["coeffs_home"]
@@ -630,10 +611,15 @@ class TestClass(object):
             periods_emax,
         ) = state_space._get_fortran_counterparts()
 
-        shared_args = (num_agents_sim, periods_draws_sims, seed_sim, file_sim)
-
         simulated_data = pyth_simulate(
-            state_space, *shared_args, edu_spec, optim_paras, is_debug
+            state_space,
+            num_agents_sim,
+            periods_draws_sims,
+            seed_sim,
+            file_sim,
+            edu_spec,
+            optim_paras,
+            is_debug,
         )
         py = simulated_data.copy().fillna(MISSING_FLOAT).values
 
@@ -647,7 +633,10 @@ class TestClass(object):
             periods_emax,
             states_all,
             num_periods,
-            *shared_args,
+            num_agents_sim,
+            periods_draws_sims,
+            seed_sim,
+            file_sim,
             edu_spec["start"],
             edu_spec["max"],
             edu_spec["share"],
@@ -675,7 +664,7 @@ class TestClass(object):
             state_space, simulated_data, periods_draws_prob, tau, optim_paras
         )
 
-        num_obs_agent = np.bincount(simulated_data.Identifier.values)
+        num_obs_agent = np.bincount(simulated_data.Identifier.to_numpy())
 
         f2py = fort_debug.wrapper_contributions(
             periods_rewards_systematic,
@@ -750,12 +739,8 @@ class TestClass(object):
     def test_6(self):
         """ Further tests for the interpolation routines.
         """
-        # Generate random initialization file
-        constr = dict()
-        generate_init(constr)
-
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model()
+        respy_obj = RespyCls(params_spec, options_spec)
         respy_obj = simulate_observed(respy_obj)
 
         # Extract class attributes
@@ -796,11 +781,8 @@ class TestClass(object):
             "num_types",
         )
 
-        shocks_cov = optim_paras["shocks_cholesky"].dot(
-            optim_paras["shocks_cholesky"].T
-        )
-
         shocks_cholesky = optim_paras["shocks_cholesky"]
+        shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
         coeffs_common = optim_paras["coeffs_common"]
         coeffs_a = optim_paras["coeffs_a"]
         coeffs_b = optim_paras["coeffs_b"]
@@ -957,14 +939,12 @@ class TestClass(object):
         """ This is a special test for shared functions related to the interpolation setup.
         """
         # Impose constraints
-        constr = dict()
-        constr["periods"] = np.random.randint(2, 5)
+        point_constr = {"num_periods": np.random.randint(2, 5)}
 
-        # Construct a random initialization file
-        generate_init(constr)
-
-        # Extract required information
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model(
+            point_constr=point_constr
+        )
+        respy_obj = RespyCls(params_spec, options_spec)
 
         # Extract class attributes
         is_debug, num_periods = dist_class_attributes(
@@ -972,7 +952,7 @@ class TestClass(object):
         )
 
         # Write out a grid for the interpolation
-        max_states_period = write_interpolation_grid("test.respy.ini")
+        max_states_period = write_interpolation_grid(respy_obj)
 
         # Draw random request for testing
         num_states = np.random.randint(1, max_states_period)
@@ -1038,16 +1018,13 @@ class TestClass(object):
         """ Function that calculates the number of observations by individual.
         """
         for _ in range(2):
-
-            generate_init()
-
-            respy_obj = RespyCls("test.respy.ini")
-
-            simulate_observed(respy_obj)
+            params_spec, options_spec = generate_random_model()
+            respy_obj = RespyCls(params_spec, options_spec)
+            respy_obj = simulate_observed(respy_obj)
 
             num_agents_est = respy_obj.get_attr("num_agents_est")
 
-            data_array = process_dataset(respy_obj).values
+            data_array = process_dataset(respy_obj).to_numpy()
 
             py = np.bincount(data_array[:, 0].astype(int))
             f90 = fort_debug.wrapper_get_num_obs_agent(
@@ -1057,10 +1034,8 @@ class TestClass(object):
             assert_almost_equal(py, f90)
 
     def test_11(self):
-        """ Function that calculates the conditional type probabilites.
-        """
+        """ Function that calculates the conditional type probabilites."""
         for _ in range(1000):
-
             num_types = np.random.randint(1, 10)
             edu_start = np.random.randint(10, 100)
             type_shares = np.random.normal(0, 1, size=num_types * 2)
@@ -1090,10 +1065,8 @@ class TestClass(object):
         f90 = fort_debug.wrapper_sorted(input_array, num_elements)
         assert_equal(py, f90)
 
-        # We now turn to the more complicated testing of hand-crafted functions for this
-        # purpose.
-        generate_init()
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model()
+        respy_obj = RespyCls(params_spec, options_spec)
 
         edu_spec, optim_paras, num_types = dist_class_attributes(
             respy_obj, "edu_spec", "optim_paras", "num_types"

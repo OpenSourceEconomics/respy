@@ -3,8 +3,8 @@ import os
 from os.path import join, exists
 from shutil import rmtree, copy
 from time import time
-from respy.tests.codes.random_init import VERSION_CONSTRAINTS
-from respy.tests.codes.random_init import generate_init
+from respy.tests.codes.random_model import generate_random_model
+from respy.pre_processing.model_processing import write_out_model_spec
 from respy import RespyCls
 from datetime import timedelta, datetime
 import traceback
@@ -33,29 +33,44 @@ def run_robustness_test(seed, is_investigation):
         copy(join(old_dir, file), join(new_dir, file))
     os.chdir(new_dir)
 
-    # We need to impose some constraints so that the random initialization file does meet the
-    # structure of the empirical dataset. We need to be particularly careful with the
-    # construction of the maximum level of schooling as we need to rule out that anyone in the
-    # estimation sample has a value larger then the specified maximum value.
-    version = np.random.choice(["PYTHON", "FORTRAN"])
-    max_periods = VERSION_CONSTRAINTS["max_periods"][version]
+    # We need to impose some constraints so that the random initialization file does
+    # meet the structure of the empirical dataset. We need to be particularly careful
+    # with the construction of the maximum level of schooling as we need to rule out
+    # that anyone in the estimation sample has a value larger then the specified maximum
+    # value.
+    version = np.random.choice(["python", "fortran"])
+    if version == 'python':
+        max_periods = 3
+    else:
+        max_periods = 10
+
     num_periods = np.random.randint(1, max_periods)
-
+    agents = np.random.randint(500, 1372 + 1)
     edu_start = np.random.choice(range(7, 12))
-    edu_max = np.random.randint(edu_start + num_periods, 30)
 
-    constr = dict()
-    constr["file_est"] = join(new_dir, "career_data.respy.dat")
-    constr["agents"] = np.random.randint(500, 1372 + 1)
-    constr["edu"] = (edu_start, edu_max)
-    constr["flag_estimation"] = True
-    constr["periods"] = num_periods
-    constr["version"] = version
+    constr = {
+        "num_periods": num_periods,
+        "edu_spec": {
+            "start": [int(edu_start)],
+            "max": np.random.randint(edu_start + num_periods, 30)},
+        "estimation": {"file": "career_data.respy.dat",
+                       "agents": agents,
+                       "maxfun": np.random.randint(1, 5)
+                       },
+        "program": {"version": version}
+    }
 
-    generate_init(constr)
+    if version == 'fortran':
+        constr['estimation']['optimizer'] = 'FORT-BOBYQA'
+    if version == 'python':
+        constr['estimation']['optimizer'] = "SCIPY-LBFGSB"
+
+    params_spec, options_spec = generate_random_model(point_constr=constr)
 
     try:
-        respy_obj = RespyCls("test.respy.ini")
+        respy_obj = RespyCls(params_spec, options_spec)
+        if is_investigation:
+            write_out_model_spec(respy_obj.attr, str(seed))
         respy_obj.fit()
     except:
         tb = traceback.format_exc()

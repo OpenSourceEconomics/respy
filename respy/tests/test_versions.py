@@ -6,14 +6,12 @@ import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import StateSpace
-from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.tests.codes.auxiliary import write_interpolation_grid
-from respy.tests.codes.random_init import generate_random_dict
+from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import write_lagged_start
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.auxiliary import compare_est_log
-from respy.tests.codes.random_init import generate_init
 from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_draws
 from respy.tests.codes.auxiliary import write_types
@@ -34,72 +32,66 @@ class TestClass(object):
         request.
         """
         # Run evaluation for multiple random requests.
-        flag_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
-        is_interpolated = np.random.choice([True, False], p=[0.10, 0.9])
-        flag_myopic = np.random.choice([True, False], p=[0.10, 0.9])
+        is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
+        is_interpolated = bool(np.random.choice([True, False], p=[0.10, 0.9]))
+        is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
         max_draws = np.random.randint(10, 100)
+        num_agents = np.random.randint(10, max_draws)
 
-        # Generate random initialization file
-        constr = dict()
-        constr["flag_deterministic"] = flag_deterministic
-        constr["flag_myopic"] = flag_myopic
-        constr["flag_parallelism"] = False
-        constr["max_draws"] = max_draws
-        constr["version"] = "PYTHON"
-        constr["maxfun"] = 0
+        bound_constr = {'max_draws': max_draws}
+        point_constr = {
+            'interpolation': {'flag': is_interpolated},
+            'program': {'procs': 1, 'threads': 1, 'version': 'python'},
+            'estimation': {'maxfun': 0, 'agents': num_agents},
+            'simulation': {'agents': num_agents},
+            'num_periods': np.random.randint(1, 5)
+        }
 
-        init_dict = generate_random_dict(constr)
+        num_types = np.random.randint(2, 5)
 
-        edu_spec = dict()
-        edu_spec["start"] = init_dict["EDUCATION"]["start"]
-        edu_spec["share"] = init_dict["EDUCATION"]["share"]
-        edu_spec["max"] = init_dict["EDUCATION"]["max"]
+        if is_interpolated:
+            point_constr['num_periods'] = np.random.randint(3, 5)
+
+        params_spec, options_spec = generate_random_model(
+            bound_constr=bound_constr, point_constr=point_constr,
+            deterministic=is_deterministic, myopic=is_myopic, num_types=num_types)
+
+        edu_spec = options_spec['edu_spec']
+        num_periods = point_constr['num_periods']
 
         # The use of the interpolation routines is a another special case. Constructing
-        # a request that actually involves the use of the interpolation routine is a
-        # little involved as the number of interpolation points needs to be lower than
-        # the actual number of states. And to know the number of states each period, I
-        # need to construct the whole state space.
+        #  a request that actually involves the use of the interpolation routine is a
+        #  little involved as the number of interpolation points needs to be lower than
+        #  the actual number of states. And to know the number of states each period, I
+        #  need to construct the whole state space.
         if is_interpolated:
-            # Extract from future initialization file the information required to
-            # construct the state space. The number of periods needs to be at least
-            # three in order to provide enough state points.
-            num_periods = np.random.randint(3, 6)
-            num_types = int(len(init_dict["TYPE SHARES"]["coeffs"]) / 2) + 1
-
             state_space = StateSpace(
                 num_periods, num_types, edu_spec["start"], edu_spec["max"]
             )
 
             max_states_period = state_space.states_per_period.max()
 
-            # Updates to initialization dictionary that trigger a use of the
-            # interpolation code.
-            init_dict["BASICS"]["periods"] = num_periods
-            init_dict["INTERPOLATION"]["flag"] = True
-            init_dict["INTERPOLATION"]["points"] = np.random.randint(
+            options_spec['interpolation']['points'] = np.random.randint(
                 10, max_states_period
             )
 
-        # Print out the relevant initialization file.
-        write_init_file(init_dict)
-
         # Write out random components and interpolation grid to align the three
         # implementations.
-        num_agents_sim = init_dict["SIMULATION"]["agents"]
-        num_periods = init_dict["BASICS"]["periods"]
         write_draws(num_periods, max_draws)
-        write_interpolation_grid("test.respy.ini")
-        type_shares = np.array([0.0, 0.0] + init_dict["TYPE SHARES"]["coeffs"])
-        write_types(type_shares, num_agents_sim)
-        write_edu_start(edu_spec, num_agents_sim)
-        write_lagged_start(num_agents_sim)
+        respy_obj = RespyCls(params_spec, options_spec)
+        write_interpolation_grid(respy_obj)
+
+        type_shares = respy_obj.attr['optim_paras']['type_shares']
+
+        write_types(type_shares, num_agents)
+        write_edu_start(edu_spec, num_agents)
+        write_lagged_start(num_agents)
 
         # Clean evaluations based on interpolation grid,
         base_val, base_data = None, None
 
-        for version in ["PYTHON", "FORTRAN"]:
-            respy_obj = RespyCls("test.respy.ini")
+        for version in ["python", "fortran"]:
+            respy_obj = RespyCls(params_spec, options_spec)
 
             # Modify the version of the program for the different requests.
             respy_obj.unlock()
@@ -129,32 +121,32 @@ class TestClass(object):
             )
 
             # We know even more for the deterministic case.
-            if constr["flag_deterministic"]:
+            if is_deterministic:
                 assert crit_val in [-1.0, 0.0]
 
     def test_2(self):
-        """ This test ensures that the evaluation of the criterion function at the
-        starting value is identical between the different versions.
-        """
-
+        """Ensure that the evaluation of the criterion is equal across versions."""
         max_draws = np.random.randint(10, 100)
 
-        # Generate random initialization file
-        constr = dict()
-        constr["flag_interpolation"] = False
-        constr["flag_parallelism"] = False
-        constr["max_draws"] = max_draws
-        constr["version"] = "PYTHON"
+        # It seems to be important that max_draws and max_agents is the same
+        # number because otherwise some functions that read draws from a file
+        # to ensure compatibility of fortran and python versions won't work.
+        bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
 
-        constr["maxfun"] = 0
+        point_constr = {
+            'interpolation': {'flag': False},
+            'program': {'procs': 1, 'threads': 1, 'version': 'python'},
+            'estimation': {'maxfun': 0}
+        }
 
-        # Generate random initialization file
-        init_dict = generate_init(constr)
+        params_spec, options_spec = generate_random_model(
+            point_constr=point_constr, bound_constr=bound_constr)
+        respy_obj = RespyCls(params_spec, options_spec)
 
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
+        num_agents_sim, optim_paras = dist_class_attributes(
+            respy_obj, "num_agents_sim", "optim_paras")
 
-        num_agents_sim = dist_class_attributes(respy_obj, "num_agents_sim")
+        type_shares = optim_paras['type_shares']
 
         # Simulate a dataset
         simulate_observed(respy_obj)
@@ -162,13 +154,12 @@ class TestClass(object):
         # Iterate over alternative implementations
         base_x, base_val = None, None
 
-        num_periods = init_dict["BASICS"]["periods"]
-        type_shares = np.array([0.0, 0.0] + init_dict["TYPE SHARES"]["coeffs"])
+        num_periods = options_spec['num_periods']
 
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
 
-        for version in ["PYTHON", "FORTRAN"]:
+        for version in ["python", "fortran"]:
 
             respy_obj.unlock()
 
@@ -189,51 +180,40 @@ class TestClass(object):
             np.testing.assert_allclose(base_val, val)
 
     def test_3(self):
-        """ This test ensures that the logging looks exactly the same for the
-        different versions.
-        """
-        max_draws = np.random.randint(10, 300)
+        """Ensure that the log looks exactly the same for different versions."""
+        max_draws = np.random.randint(10, 100)
 
-        # Generate random initialization file
-        constr = dict()
-        constr["flag_interpolation"] = False
-        constr["flag_parallelism"] = False
-        constr["max_draws"] = max_draws
-        constr["version"] = "PYTHON"
-        constr["maxfun"] = 0
+        bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
 
-        # Generate random initialization file
-        init_dict = generate_init(constr)
+        point_constr = {
+            'interpolation': {'flag': False},
+            'program': {'procs': 1, 'threads': 1, 'version': 'python'},
+            'estimation': {'maxfun': 0}
+        }
 
-        # Perform toolbox actions
-        respy_obj = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model(
+            point_constr=point_constr, bound_constr=bound_constr)
+        respy_obj = RespyCls(params_spec, options_spec)
 
         num_agents_sim, optim_paras, file_sim = dist_class_attributes(
             respy_obj, "num_agents_sim", "optim_paras", "file_sim"
         )
 
         # Iterate over alternative implementations
-        base_sol_log, base_est_info, base_est_log, base_sim_log = (
-            None,
-            None,
-            None,
-            None,
-        )
+        base_sol_log, base_est_info, base_est_log = None, None, None
+        base_sim_log = None
 
-        type_shares = np.array([0.0, 0.0] + init_dict["TYPE SHARES"]["coeffs"])
-        num_periods = init_dict["BASICS"]["periods"]
+        type_shares = respy_obj.attr['optim_paras']['type_shares']
+        num_periods = options_spec['num_periods']
 
-        edu_spec = {
-            "start": init_dict["EDUCATION"]["start"],
-            "share": init_dict["EDUCATION"]["share"],
-        }
+        edu_spec = options_spec['edu_spec']
 
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
         write_edu_start(edu_spec, num_agents_sim)
         write_lagged_start(num_agents_sim)
 
-        for version in ["FORTRAN", "PYTHON"]:
+        for version in ["fortran", "python"]:
 
             respy_obj.unlock()
 
@@ -271,34 +251,38 @@ class TestClass(object):
         """
         max_draws = np.random.randint(10, 300)
 
-        constr = dict()
-        constr["flag_estimation"] = True
-        constr["max_draws"] = max_draws
-        constr["version"] = "PYTHON"
+        bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
+        num_agents = np.random.randint(10, max_draws)
 
-        # Simulate a dataset
-        init_dict = generate_init(constr)
+        point_constr = {
+            'program': {'version': 'python'},
+            'estimation': {'maxfun': np.random.randint(1, 6), 'agents': num_agents},
+            'simulation': {'agents': num_agents}
+        }
 
-        respy_base = RespyCls("test.respy.ini")
+        params_spec, options_spec = generate_random_model(
+            point_constr=point_constr, bound_constr=bound_constr)
+        respy_base = RespyCls(params_spec, options_spec)
 
-        num_agents_sim = dist_class_attributes(respy_base, "num_agents_sim")
+        num_agents_sim, optim_paras = dist_class_attributes(
+            respy_base, "num_agents_sim", "optim_paras")
 
-        type_shares = np.array([0.0, 0.0] + init_dict["TYPE SHARES"]["coeffs"])
-        num_periods = init_dict["BASICS"]["periods"]
+        type_shares = optim_paras['type_shares']
+        num_periods = options_spec['num_periods']
 
         write_draws(num_periods, max_draws)
-        write_interpolation_grid("test.respy.ini")
+        write_interpolation_grid(respy_base)
         write_types(type_shares, num_agents_sim)
 
         simulate_observed(respy_base)
 
         base_scaling_matrix = None
-        for version in ["FORTRAN", "PYTHON"]:
+        for version in ["fortran", "python"]:
             respy_obj = copy.deepcopy(respy_base)
 
             # The actual optimizer does not matter for the scaling matrix. We also need
             # to make sure that PYTHON is only called with a single processor.
-            if version in ["PYTHON"]:
+            if version in ["python"]:
                 optimizer_used = "SCIPY-LBFGSB"
                 num_procs = 1
             else:

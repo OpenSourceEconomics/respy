@@ -79,7 +79,7 @@ def _prepare_wages(data_obs, data_sim, which):
         for period in range(data_obs["Period"].nunique()):
             is_occupation = data["Choice"] == choice_ind
             series = data["Wage"].ix[is_occupation][:, period]
-            rslt[label] += [list(series.describe().values)]
+            rslt[label] += [list(series.describe().to_numpy())]
 
     return rslt
 
