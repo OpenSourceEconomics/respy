@@ -1,34 +1,28 @@
-#!/usr/bin/env python
-""" This script checks the regression tests vault for any unintended changes during further
-development and refactoring efforts.
+""" This script checks the regression tests vault for any unintended changes during
+further development and refactoring efforts.
 """
 from __future__ import print_function
-
-from functools import partial
-
+import argparse
 import multiprocessing as mp
 import numpy as np
-import argparse
 import socket
-import json
-
+import pickle
 from development.modules.auxiliary_shared import send_notification
 from development.modules.auxiliary_shared import compile_package
-
 from development.modules.auxiliary_regression import create_single
 from development.modules.auxiliary_regression import check_single
 from development.modules.auxiliary_regression import get_chunks
-
+from functools import partial
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import DECIMALS
-from respy.pre_processing.model_processing import write_init_file
+from respy.pre_processing.model_processing import (
+    _options_spec_from_attributes,
+    _params_spec_from_attributes,
+)
 from respy.tests.codes.auxiliary import simulate_observed
 
-HOSTNAME = socket.gethostname()
 
-from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
-from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_constants import IS_FORTRAN
+HOSTNAME = socket.gethostname()
 
 
 def run(request, is_compile, is_background, is_strict, num_procs):
@@ -64,42 +58,15 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         assert idx > 0
 
     if is_investigation:
-        fname = TEST_RESOURCES_DIR / "regression_vault.respy.json"
-        tests = json.load(open(fname, "r"))
+        fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
+        with open(fname, "rb") as p:
+            tests = pickle.load(p)
 
-        # TODO: The code that follows has a large overlap with check_single() function.
-        #  However, to get a clear failure in the assertion statements. This should be
-        #  streamlined in the revised regression test setup.
-        init_dict, crit_val = tests[idx]
+        attr, crit_val = tests[idx]
+        params_spec = _params_spec_from_attributes(attr)
+        options_spec = _options_spec_from_attributes(attr)
 
-        # TODO: These are temporary modifications that ensure compatibility over time
-        # and will be removed once we update the regression test battery.
-        init_dict["EDUCATION"]["lagged"] = []
-        for edu_start in init_dict["EDUCATION"]["start"]:
-            if edu_start >= 10:
-                init_dict["EDUCATION"]["lagged"] += [1.0]
-            else:
-                init_dict["EDUCATION"]["lagged"] += [0.0]
-
-        init_dict["PROGRAM"]["threads"] = 1
-        if IS_PARALLELISM_OMP and init_dict["PROGRAM"]["version"] == "FORTRAN":
-            init_dict["PROGRAM"]["threads"] = np.random.randint(1, 5)
-
-        # During development it is useful that we can only run the PYTHON versions of
-        # the program.
-        msg = " ... skipped as required version of package not available"
-        if init_dict["PROGRAM"]["version"] == "FORTRAN" and not IS_FORTRAN:
-            print(msg)
-            return None
-        if init_dict["PROGRAM"]["procs"] > 1 and not IS_PARALLELISM_MPI:
-            print(msg)
-            return None
-        if init_dict["PROGRAM"]["threads"] > 1 and not IS_PARALLELISM_OMP:
-            print(msg)
-            return None
-
-        write_init_file(init_dict)
-        respy_obj = RespyCls("test.respy.ini")
+        respy_obj = RespyCls(params_spec, options_spec)
 
         simulate_observed(respy_obj)
 
@@ -116,12 +83,14 @@ def run(request, is_compile, is_background, is_strict, num_procs):
         else:
             tests = mp_pool.map(create_single, range(num_tests))
 
-        json.dump(tests, open("regression_vault.respy.json", "w"))
+        with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "wb") as p:
+            pickle.dump(tests, p)
         return
 
     if is_check:
-        fname = TEST_RESOURCES_DIR / "regression_vault.respy.json"
-        tests = json.load(open(fname, "r"))
+        fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
+        with open(fname, "rb") as p:
+            tests = pickle.load(p)
 
         run_single = partial(check_single, tests)
         indices = list(range(num_tests))
@@ -162,7 +131,9 @@ def run(request, is_compile, is_background, is_strict, num_procs):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Create or check regression vault")
+    parser = argparse.ArgumentParser(
+        description="Create or check regression vault"
+    )
 
     parser.add_argument(
         "--request",

@@ -1,0 +1,54 @@
+category,name,para,fixed,lower,upper,comment
+delta,delta,0.95,False,0.7,1.0,discount factor
+coeffs_common,return_hs_degree,0.0,False,,,return to high school degree (non pecuniary)
+coeffs_common,return_col_degree,0.0,False,,,return to college degree (non pecuniary)
+coeffs_a,skill_price,8.0,False,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+coeffs_a,return_schooling,0.07,False,,,linear return to an additional year of schooling (wage)
+coeffs_a,exp_a,0.055,False,,,"return to experience, same sector, linear (wage)"
+coeffs_a,exp_a_square,-0.0,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+coeffs_a,exp_b,0.0,False,,,"return to experience, other civilian sector, linear (wage)"
+coeffs_a,exb_b_square,-0.0,False,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
+coeffs_a,premium_hs,0.0,False,,,skill premium of having finished high school (wage)
+coeffs_a,premium_col,-0.0,False,,,skill premium of having finished college (wage)
+coeffs_a,age,0.0,False,,,linear age effect (wage)
+coeffs_a,minor,0.0,False,,,effect of being a minor (wage)
+coeffs_a,not_first,0.0,False,,,gain of having worked in the same occupation at least once before (wage)
+coeffs_a,no_switch,0.0,False,,,gain of remaining in the same occupation as previous period (wage)
+coeffs_a,constant,0.0,False,,,constant (non pecuniary)
+coeffs_a,first,0.0,False,,,reward of switching to a from other occupation (non pecuniary)
+coeffs_a,switch,0.0,False,,,reward of working in a for the first time (non pecuniary)
+coeffs_b,skill_price,7.9,False,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+coeffs_b,return_schooling,0.07,False,,,linear return to an additional year of schooling (wage)
+coeffs_b,exp_a,0.055,False,,,"return to experience, other civilian sector, linear (wage)"
+coeffs_b,exp_a_square,-0.0,False,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
+coeffs_b,exp_b,0.06,False,,,"return to experience, same sector, linear (wage)"
+coeffs_b,exb_b_square,-0.0,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+coeffs_b,premium_hs,0.0,False,,,skill premium of having finished high school (wage)
+coeffs_b,premium_col,-0.0,False,,,skill premium of having finished college (wage)
+coeffs_b,age,0.0,False,,,linear age effect (wage)
+coeffs_b,minor,0.0,False,,,effect of being a minor (wage)
+coeffs_b,not_first,0.0,False,,,gain of having worked in the same occupation at least once before (wage)
+coeffs_b,no_switch,0.0,False,,,gain of remaining in the same occupation as previous period (wage)
+coeffs_b,constant,0.0,False,,,constant (non pecuniary)
+coeffs_b,first,0.0,False,,,reward of switching to a from other occupation (non pecuniary)
+coeffs_b,switch,0.0,False,,,reward of working in a for the first time (non pecuniary)
+coeffs_edu,constant,5000.0,False,,,consumption value of school attendance for type 1
+coeffs_edu,value_col,-5000.0,False,,,consumption value of college
+coeffs_edu,value_grad,0.0,False,,,consumption value of graduate school
+coeffs_edu,reenroll_col,-20000.0,False,,,reward for going back to college
+coeffs_edu,reenroll_hs,-20000.0,False,,,reward for going back to high school
+coeffs_edu,age,0.0,False,,,linear age effect
+coeffs_edu,minor,0.0,False,,,effect of being a minor
+coeffs_home,constant,21500.0,False,,,mean value of non-market alternative for type 1
+coeffs_home,18_to_20,0.0,False,,,additional value of staying home if aged 18-20
+coeffs_home,21_plus,0.0,False,,,additional value of staying home if 21 or older
+shocks,chol_sigma_1,1.0,False,,,"Element 1,1 of cholesky factor of shock covariance matrix"
+shocks,chol_sigma_21,0.5,False,,,"Element 2,1 of cholesky factor of shock covariance matrix"
+shocks,chol_sigma_2,0.8660254037844386,False,,,"Element 2,2 of cholesky factor of shock covariance matrix"
+shocks,chol_sigma_31,0.0,False,,,"Element 3,1 of cholesky factor of shock covariance matrix"
+shocks,chol_sigma_32,0.0,False,,,"Element 3,2 of cholesky factor of shock covariance matrix"
+shocks,chol_sigma_3,7000.0,False,,,"Element 3,3 of cholesky factor of shock covariance matrix"
+shocks,chol_sigma_41,0.0,False,,,"Element 4,1 of cholesky factor of shock covariance matrix"
+shocks,chol_sigma_42,0.0,False,,,"Element 4,2 of cholesky factor of shock covariance matrix"
+shocks,chol_sigma_43,-4250.0,False,,,"Element 4,3 of cholesky factor of shock covariance matrix"
+shocks,chol_sigma_4,7361.215932167728,False,,,"Element 4,4 of cholesky factor of shock covariance matrix"

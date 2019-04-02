@@ -54,6 +54,7 @@ def setup_package():
                 "fortran/include/*.*",
                 "tests/resources/*",
                 ".config",
+                "pre_processing/base_spec.csv",
             ]
         },
         version="2.0.0.dev20",

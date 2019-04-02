@@ -104,8 +104,9 @@ def pyth_contributions(
                 is_wage_missing = np.isnan(wage_observed)
                 is_working = choice in [1, 2]
 
+                # TODO: Type conversion for tests.
                 # Create an index for the choice.
-                idx = choice - 1
+                idx = int(choice - 1)
 
                 # Extract relevant deviates from standard normal distribution. The same
                 # set of baseline draws are used for each agent and period. The copy is

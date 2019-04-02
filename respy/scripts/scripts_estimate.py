@@ -25,12 +25,9 @@ def dist_input_arguments(parser):
     return single, init_file
 
 
-def scripts_estimate(single, init_file):
+def scripts_estimate(single, respy_obj):
     """ Wrapper for the estimation.
     """
-    # Read in baseline model specification.
-    respy_obj = RespyCls(init_file)
-
     # Set maximum iteration count when only an evaluation of the criterion function is requested.
     if single:
         respy_obj.unlock()
