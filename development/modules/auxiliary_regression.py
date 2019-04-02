@@ -18,7 +18,7 @@ def get_chunks(l, n):
     """ Yield successive n-sized chunks from l.
     """
     for i in range(0, len(l), n):
-        yield l[i: i + n]
+        yield l[i : i + n]
 
 
 def create_single(idx):
@@ -39,16 +39,22 @@ def create_single(idx):
     version = np.random.choice(["python", "fortran"])
 
     # only choose from constraint optimizers because we always have some bounds
-    if version == 'python':
+    if version == "python":
         optimizer = "SCIPY-LBFGSB"
     else:
         optimizer = "FORTE-BOBYQA"
 
     constr = {
         "program": {"version": version},
-        "preconditioning": {"type": np.random.choice(["identity", "magnitudes"])},
-        "estimation": {"maxfun": int(np.random.choice(range(6), p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1])),
-                       "optimizer": optimizer},
+        "preconditioning": {
+            "type": np.random.choice(["identity", "magnitudes"])
+        },
+        "estimation": {
+            "maxfun": int(
+                np.random.choice(range(6), p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1])
+            ),
+            "optimizer": optimizer,
+        },
     }
     constr["flag_estimation"] = True
 
@@ -84,7 +90,7 @@ def check_single(tests, idx):
         attr["num_procs"] = 1
 
     if not IS_FORTRAN:
-        attr['version'] = 'python'
+        attr["version"] = "python"
 
     # In the past we also had the problem that some of the testing machines report
     # selective failures when the regression vault was created on another machine.

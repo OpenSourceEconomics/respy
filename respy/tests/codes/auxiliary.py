@@ -24,8 +24,8 @@ def simulate_observed(respy_obj, is_missings=True):
     """
 
     def drop_agents_obs(agent):
-        """ We now determine the exact period from which onward the history is truncated and
-        cut the simulated dataset down to size.
+        """ We now determine the exact period from which onward the history is truncated
+        and cut the simulated dataset down to size.
         """
         start_truncation = np.random.choice(range(1, agent["Period"].max() + 2))
         agent = agent[agent["Period"] < start_truncation]

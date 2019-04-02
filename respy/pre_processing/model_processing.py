@@ -1,13 +1,10 @@
-"""Process model specification files or objects.
-
-"""
+"""Process model specification files or objects."""
 import pandas as pd
 import numpy as np
 import json
 import yaml
 from respy.python.shared.shared_auxiliary import distribute_parameters, get_optim_paras
 from respy.pre_processing.specification_helpers import csv_template
-from pathlib import Path
 
 
 def process_model_spec(params_spec, options_spec):

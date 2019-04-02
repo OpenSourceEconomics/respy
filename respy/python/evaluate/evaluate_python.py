@@ -13,11 +13,9 @@ def pyth_contributions(
     data,
     periods_draws_prob,
     tau,
-    num_periods,
     num_draws_prob,
     num_agents_est,
     num_obs_agent,
-    num_types,
     edu_spec,
     optim_paras,
 ):
@@ -29,31 +27,30 @@ def pyth_contributions(
 
     Parameters
     ----------
-    state_space
-    data : pd.DataFrame with the empirical dataset
-    periods_draws_prob : np.array
-        3d numpy array of dimension [nperiods, ndraws_prob, nchoices]. Contains iid
+    state_space : class
+        Class of state space.
+    data : pd.DataFrame
+        DataFrame with the empirical dataset.
+    periods_draws_prob : np.ndarray
+        Array with shape (num_periods, num_draws_prob, num_choices) containing i.i.d.
         draws from standard normal distributions.
     tau : float
         Smoothing parameter for choice probabilities.
-    num_periods : int
-        Number of periods of the model
     num_draws_prob : int
         Number of draws in the Monte Carlo integration of the choice probabilities.
     num_agents_est : int
         Number of observations used for estimation.
     num_obs_agent : np.array
-        1d numpy array with length num_agents_est that contains the number of observed
+        Array with shape (num_agents_est,) that contains the number of observed
         observations for each individual in the sample.
-    num_types : int
-        Number of types that govern unobserved heterogeneity.
     edu_spec : dict
     optim_paras : dict
         Dictionary with quantities that were extracted from the parameter vector.
 
     Returns
     -------
-    ???
+    contribs : np.ndarray
+        Array with shape (num_agents_est,) containing contributions of estimated agents.
 
     """
     # Define a shortcut to the Cholesky factors of the shocks, because they are so
@@ -63,7 +60,7 @@ def pyth_contributions(
 
     # Initialize auxiliary objects
     contribs = np.full(num_agents_est, -HUGE_FLOAT)
-    prob_obs = np.full(num_periods, -HUGE_FLOAT)
+    prob_obs = np.full(state_space.num_periods, -HUGE_FLOAT)
 
     # Calculate the probability over agents and time.
     for j in range(num_agents_est):
@@ -79,9 +76,9 @@ def pyth_contributions(
 
         # Container for the likelihood of the observed choice for each type. Likelihood
         # contribution for each type
-        prob_type = np.ones(num_types)
+        prob_type = np.ones(state_space.num_types)
 
-        for type_ in range(num_types):
+        for type_ in range(state_space.num_types):
 
             # prob_obs has length p
             prob_obs[:] = 0.00
@@ -89,19 +86,19 @@ def pyth_contributions(
 
                 agent = data.iloc[row_start + p]
 
-                period = int(agent["Period"])
                 # Extract observable components of state space as well as agent
                 # decision.
-                exp_a, exp_b, edu, choice_lagged, choice, wage_observed = agent[
+                period, exp_a, exp_b, edu, choice_lagged, choice = agent[
                     [
+                        "Period",
                         "Experience_A",
                         "Experience_B",
                         "Years_Schooling",
                         "Lagged_Choice",
                         "Choice",
-                        "Wage",
                     ]
-                ]
+                ].astype(int)
+                wage_observed = agent.Wage
 
                 # Determine whether the agent's wage is known
                 is_wage_missing = np.isnan(wage_observed)
@@ -118,7 +115,7 @@ def pyth_contributions(
 
                 # Get state index to access the systematic component of the agents
                 # rewards. These feed into the simulation of choice probabilities.
-                state = state_space[
+                k = state_space.indexer[
                     period, exp_a, exp_b, edu, choice_lagged - 1, type_
                 ]
 
@@ -126,7 +123,7 @@ def pyth_contributions(
                 # observed and the conditional distribution is used to determine the
                 # choice probabilities if the wage information is available as well.
                 if is_working and (not is_wage_missing):
-                    wages_systematic = state[["wage_a", "wage_b"]].values
+                    wages_systematic = state_space.rewards[k, -2:]
 
                     # Calculate the disturbance which are implied by the model and the
                     # observed wages.
@@ -147,7 +144,7 @@ def pyth_contributions(
 
                 # Simulate the conditional distribution of alternative-specific value
                 # functions and determine the choice probabilities.
-                counts = np.full(4, 0)
+                counts = np.zeros(4)
 
                 for s in range(num_draws_prob):
 
@@ -181,29 +178,19 @@ def pyth_contributions(
                     # conditional draws. Note, that the realization of the random
                     # component of wages align with their observed counterpart in the
                     # data.
-                    draws_cond = sc.dot(draws_stan.T).T
+                    draws = draws_stan.dot(sc.T)
 
                     # Extract deviates from (un-)conditional normal distributions and
-                    # transform labor market shocks. This makes a copy.
-                    draws = draws_cond[:]
+                    # transform labor market shocks.
                     draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
 
                     # Calculate total values. immediate rewards, including shock +
                     # expected future value!
                     total_values, _ = get_continuation_value(
-                        state[["wage_a", "wage_b"]].values,
-                        state[
-                            [
-                                "rewards_systematic_a",
-                                "rewards_systematic_b",
-                                "rewards_systematic_edu",
-                                "rewards_systematic_home",
-                            ]
-                        ].values,
+                        state_space.rewards[k, -2:],
+                        state_space.rewards[k, :4],
                         draws.reshape(1, -1),
-                        state[
-                            ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
-                        ].values,
+                        state_space.emaxs[k, :4],
                         optim_paras["delta"],
                     )
                     total_values = total_values.ravel()

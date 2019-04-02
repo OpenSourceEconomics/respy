@@ -350,7 +350,7 @@ class TestClass(object):
                 ("kw_data_one_types.ini", 9.098738585839529),
                 ("kw_data_one_initial.ini", 7.965979149372883),
             ],
-            1,
+            k=1,
         ),
     )
     def test_9(self, fname, result):
@@ -365,7 +365,6 @@ class TestClass(object):
         base_path = TEST_RESOURCES_DIR / fname
 
         # Evaluate criterion function at true values.
-
         respy_obj = RespyCls(
             str(base_path.with_suffix(".csv")),
             str(base_path.with_suffix(".json")),

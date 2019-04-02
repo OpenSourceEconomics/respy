@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from respy.python.record.record_simulation import record_simulation_progress
 from respy.python.simulate.simulate_auxiliary import (
@@ -10,41 +11,41 @@ from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.simulate.simulate_auxiliary import get_random_types
 from respy.python.shared.shared_constants import HUGE_FLOAT
-import pandas as pd
 from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
 def pyth_simulate(
     state_space,
-    num_periods,
     num_agents_sim,
     periods_draws_sims,
     seed_sim,
     file_sim,
     edu_spec,
     optim_paras,
-    num_types,
     is_debug,
 ):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
 
     Parameters
     ----------
-    num_periods : int
+    state_space : class
+        Class of state space.
     num_agents_sim : int
-    states : pd.DataFrame
-    states_indexer : np.array
-    periods_draws_sims : ???
-    seed_sim : ???
+        Number of simulated agents.
+    periods_draws_sims : np.ndarray
+        Array with shape (num_periods, num_agents_sim, num_choices)
+    seed_sim : int
+        Seed for the simulation.
     file_sim : ???
     edu_spec : dict
     optim_paras : dict
-    num_types : int
     is_debug : bool
+        Flag for debugging modus.
 
     Returns
     -------
     simulated_data : pd.DataFrame
+        Dataset of simulated agents.
 
     """
     record_simulation_start(num_agents_sim, seed_sim, file_sim)
@@ -52,10 +53,10 @@ def pyth_simulate(
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
     periods_draws_sims_transformed = np.full(
-        (num_periods, num_agents_sim, 4), np.nan
+        (state_space.num_periods, num_agents_sim, 4), np.nan
     )
 
-    for period in range(num_periods):
+    for period in range(state_space.num_periods):
         periods_draws_sims_transformed[period, :, :] = transform_disturbances(
             periods_draws_sims[period, :, :],
             np.zeros(4),
@@ -67,7 +68,11 @@ def pyth_simulate(
         edu_spec, num_agents_sim, is_debug
     )
     initial_types = get_random_types(
-        num_types, optim_paras, num_agents_sim, initial_education, is_debug
+        state_space.num_types,
+        optim_paras,
+        num_agents_sim,
+        initial_education,
+        is_debug,
     )
     initial_choice_lagged = get_random_choice_lagged_start(
         edu_spec, num_agents_sim, initial_education, is_debug
@@ -87,16 +92,17 @@ def pyth_simulate(
                 initial_education[i],
                 initial_choice_lagged[i],
                 initial_types[i],
-            ]
+            ],
+            dtype=np.uint8,
         )
 
         record_simulation_progress(i, file_sim)
 
-        for period in range(num_periods):
+        for period in range(state_space.num_periods):
 
             exp_a, exp_b, edu, choice_lagged, type_ = current_state
 
-            state = state_space[
+            k = state_space.indexer[
                 period, exp_a, exp_b, edu, choice_lagged - 1, type_
             ]
 
@@ -105,21 +111,13 @@ def pyth_simulate(
 
             # Get total value of admissible states
             total_values, rewards_ex_post = get_continuation_value(
-                state[["wage_a", "wage_b"]].values,
-                state[
-                    [
-                        "rewards_systematic_a",
-                        "rewards_systematic_b",
-                        "rewards_systematic_edu",
-                        "rewards_systematic_home",
-                    ]
-                ].values,
+                state_space.rewards[k, -2:],
+                state_space.rewards[k, :4],
                 draws.reshape(1, -1),
-                state[
-                    ["emaxs_a", "emaxs_b", "emaxs_edu", "emaxs_home"]
-                ].values,
+                state_space.emaxs[k, :4],
                 optim_paras["delta"],
             )
+
             total_values = total_values.ravel()
             rewards_ex_post = rewards_ex_post.ravel()
 
@@ -135,9 +133,8 @@ def pyth_simulate(
             max_idx = np.argmax(total_values)
 
             # Record wages
-            wages = np.array([state.wage_a, state.wage_b])
             wage = (
-                wages[max_idx] * draws[max_idx]
+                state_space.rewards[k, -2:][max_idx] * draws[max_idx]
                 if max_idx in [0, 1]
                 else np.nan
             )
@@ -170,10 +167,10 @@ def pyth_simulate(
                 "Total_Reward_2": total_values[1],
                 "Total_Reward_3": total_values[2],
                 "Total_Reward_4": total_values[3],
-                "Systematic_Reward_1": state.rewards_systematic_a,
-                "Systematic_Reward_2": state.rewards_systematic_b,
-                "Systematic_Reward_3": state.rewards_systematic_edu,
-                "Systematic_Reward_4": state.rewards_systematic_home,
+                "Systematic_Reward_1": state_space.rewards[k, 0],
+                "Systematic_Reward_2": state_space.rewards[k, 1],
+                "Systematic_Reward_3": state_space.rewards[k, 2],
+                "Systematic_Reward_4": state_space.rewards[k, 3],
                 "Shock_Reward_1": draws[0],
                 "Shock_Reward_2": draws[1],
                 "Shock_Reward_3": draws[2],
@@ -181,9 +178,9 @@ def pyth_simulate(
                 "Discount_Rate": optim_paras["delta"][0],
                 # For testing purposes, we also explicitly include the general reward
                 # component, the common component, and the immediate ex post rewards.
-                "General_Reward_1": state.rewards_general_a,
-                "General_Reward_2": state.rewards_general_b,
-                "Common_Reward": state.rewards_common,
+                "General_Reward_1": state_space.rewards[k, 4],
+                "General_Reward_2": state_space.rewards[k, 5],
+                "Common_Reward": state_space.rewards[k, 6],
                 "Immediate_Reward_1": rewards_ex_post[0],
                 "Immediate_Reward_2": rewards_ex_post[1],
                 "Immediate_Reward_3": rewards_ex_post[2],

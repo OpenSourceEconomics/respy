@@ -18,7 +18,7 @@ class UserError(Exception):
         return "\n\n         {}\n\n".format(self.msg)
 
 
-class InadmissibleStateError(KeyError):
+class StateSpaceError(KeyError):
     """Exception raised when an inadmissible state is indexed."""
 
     pass

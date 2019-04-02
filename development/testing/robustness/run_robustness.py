@@ -4,29 +4,28 @@ The goal is to ensure that the code handles it all well. This increases the
 robustness of the package as the data is not so well-behaved as simulations.
 """
 
-from auxiliary_shared import send_notification
-from auxiliary_robustness import run_robustness_test
-from auxiliary_robustness import run_for_hours_sequential
-from auxiliary_robustness import run_for_hours_parallel
-from auxiliary_career_decision_data import prepare_dataset
+from development.modules.auxiliary_shared import send_notification
+from development.modules.auxiliary_robustness import run_robustness_test
+from development.modules.auxiliary_robustness import run_for_hours_sequential
+from development.modules.auxiliary_robustness import run_for_hours_parallel
+from development.modules.auxiliary_career_decision_data import prepare_dataset
 import argparse
 import numpy as np
-from os.path import exists, join
-import os
-from auxiliary_property import cleanup_testing_infrastructure
+from pathlib import Path
+from development.modules.auxiliary_property import cleanup_testing_infrastructure
 
 
 def run(request, is_compile, is_background, num_procs, keep_dataset):
     cleanup_testing_infrastructure(keep_results=False, keep_dataset=keep_dataset)
-    data_path = join(os.getcwd(), "career_data.respy.dat")
-    if not exists(data_path):
+    data_path = Path.cwd() / "career_data.respy.dat"
+    if not data_path.exists():
         prepare_dataset()
     if request[0] == "investigate":
         is_investigation, is_run = True, False
     elif request[0] == "run":
         is_investigation, is_run = False, True
     else:
-        raise AssertionError("request in [run, investigate]")
+        raise NotImplementedError("request in [run, investigate]")
 
     seed_investigation, hours = None, 0.0
     if is_investigation:

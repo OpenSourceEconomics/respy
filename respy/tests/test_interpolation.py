@@ -16,12 +16,16 @@ class TestClass(object):
         # Set initial constraints
         constr = {
             "interpolation": {"flag": False},
-            "num_periods": np.random.randint(3, 6)
+            "num_periods": np.random.randint(3, 6),
         }
 
-        params_spec, options_spec = generate_random_model(point_constr=constr, deterministic=True)
+        params_spec, options_spec = generate_random_model(
+            point_constr=constr, deterministic=True
+        )
 
         baseline = None
+
+        a = []
 
         # Solve with and without interpolation code
         for _ in range(2):
@@ -29,39 +33,43 @@ class TestClass(object):
             respy_obj = simulate_observed(respy_obj)
 
             # Extract class attributes
-            states_number_period, periods_emax = dist_class_attributes(
-                respy_obj, "states_number_period", "periods_emax"
+            states_number_period, periods_emax, state_space = dist_class_attributes(
+                respy_obj,
+                "states_number_period",
+                "periods_emax",
+                "state_space",
             )
+
+            a.append(state_space)
 
             # Store and check results
             if baseline is None:
-                baseline = periods_emax
+                baseline = periods_emax.copy()
             else:
                 np.testing.assert_array_almost_equal(baseline, periods_emax)
 
-            # Updates for second iteration. This ensures that there is at least one interpolation
-            #  taking place.
+            # Updates for second iteration. This ensures that there is at least one
+            # interpolation taking place.
             options_spec["interpolation"]["points"] = max(states_number_period)
             options_spec["interpolation"]["flag"] = True
 
     def test_2(self):
-        """ This test compares the results from a solution using the interpolation code for the
-        special case where the number of interpolation points is exactly the number of states in
-        the final period. In this case the interpolation code is run and then all predicted
-        values replaced with their actual values.
+        """ This test compares the results from a solution using the interpolation code
+        for the special case where the number of interpolation points is exactly the
+        number of states in the final period. In this case the interpolation code is run
+        and then all predicted values replaced with their actual values.
         """
         # Set initial constraints
         # Set initial constraints
         constr = {"interpolation": {"flag": False}}
 
-        params_spec, options_spec = generate_random_model(point_constr=constr,
-                                                          deterministic=True)
+        params_spec, options_spec = generate_random_model(
+            point_constr=constr, deterministic=True
+        )
         baseline = None
 
         # Solve with and without interpolation code
         for _ in range(2):
-
-
             # Process and solve
             respy_obj = RespyCls(params_spec, options_spec)
             respy_obj = simulate_observed(respy_obj)

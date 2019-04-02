@@ -1,4 +1,3 @@
-from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.shared.shared_auxiliary import distribute_parameters
@@ -28,15 +27,11 @@ def pyth_criterion(
     optim_paras = distribute_parameters(x, is_debug)
 
     # Calculate all systematic rewards
-    state_space.states = pyth_calculate_rewards_systematic(
-        state_space.states, optim_paras
-    )
+    state_space.update_systematic_rewards(optim_paras)
 
     state_space = pyth_backward_induction(
-        num_periods,
         is_myopic,
         periods_draws_emax,
-        num_draws_emax,
         state_space,
         is_debug,
         is_interpolated,
@@ -52,11 +47,9 @@ def pyth_criterion(
         data,
         periods_draws_prob,
         tau,
-        num_periods,
         num_draws_prob,
         num_agents_est,
         num_obs_agent,
-        num_types,
         edu_spec,
         optim_paras,
     )

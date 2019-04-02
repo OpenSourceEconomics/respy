@@ -71,8 +71,8 @@ def write_info(respy_obj, data_frame):
             file_.write(fmt_.format((t + 1), *args))
 
         # We also print out the transition matrix as it provides some insights about the
-        # persistence of choices. However, we can only compute this transition matrix if the
-        # number of periods is larger than one.
+        # persistence of choices. However, we can only compute this transition matrix if
+        # the number of periods is larger than one.
         if num_periods > 1:
             file_.write("\n\n")
             file_.write("    Transition Matrix\n\n")

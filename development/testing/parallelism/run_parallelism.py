@@ -8,8 +8,8 @@ import numpy as np
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
 
-from codes.random_model import generate_random_model
-from codes.auxiliary import simulate_observed
+from respy.tests.codes.random_model import generate_random_model
+from respy.tests.codes.auxiliary import simulate_observed
 
 from respy import RespyCls
 
@@ -25,7 +25,10 @@ def run(hours):
         # Generate random initialization file
         constr = {
             "program": {"version": "fortran"},
-            "estimation": {"maxfun": np.random.randint(0, 50), "optimizer": "FORT-BOBYQA"}
+            "estimation": {
+                "maxfun": np.random.randint(0, 50),
+                "optimizer": "FORT-BOBYQA",
+            },
         }
         params_spec, options_spec = generate_random_model(point_constr=constr)
 
@@ -37,7 +40,9 @@ def run(hours):
                 options_spec["program"]["procs"] = 1
             else:
                 if IS_PARALLELISM_OMP:
-                    options_spec["program"]["threads"] = np.random.randint(2, 5)
+                    options_spec["program"]["threads"] = np.random.randint(
+                        2, 5
+                    )
                 if IS_PARALLELISM_MPI:
                     options_spec["program"]["procs"] = np.random.randint(2, 5)
 

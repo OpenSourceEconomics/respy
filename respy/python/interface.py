@@ -197,10 +197,7 @@ def respy_interface(respy_obj, request, data=None):
             record_estimation_scalability("Finish")
 
             success = True
-            message = (
-                "Single evaluation of criterion function at starting "
-                "values."
-            )
+            message = "Single evaluation of criterion function at starting values."
 
         elif optimizer_used == "SCIPY-BFGS":
 
@@ -327,14 +324,12 @@ def respy_interface(respy_obj, request, data=None):
 
         simulated_data = pyth_simulate(
             state_space,
-            num_periods,
             num_agents_sim,
             periods_draws_sims,
             seed_sim,
             file_sim,
             edu_spec,
             optim_paras,
-            num_types,
             is_debug,
         )
 

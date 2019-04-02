@@ -157,8 +157,8 @@ class RespyCls(object):
 
     def _update_derived_attributes(self):
         """Update derived attributes."""
-        # note: don't remove the conversion to bool. It seems unnecessary but it converts
-        # a numpy bool to python bool.
+        # note: don't remove the conversion to bool. It seems unnecessary but it
+        # converts a numpy bool to python bool.
         self.attr["is_myopic"] = bool(
             (self.attr["optim_paras"]["delta"] == 0.00)[0])
 
@@ -293,9 +293,9 @@ class RespyCls(object):
             raise NotImplementedError
 
         # Attach solution to class instance
-        if self.attr["version"] == "fortran":
+        if version == "fortran":
             self = add_solution(self, *solution)
-        elif self.attr["version"] == "python":
+        elif version == "python":
             self.unlock()
             self.set_attr("state_space", state_space)
             self.lock()
