@@ -1,5 +1,4 @@
-""" This module contains auxiliary functions for the PYTEST suite.
-"""
+"""This module contains auxiliary functions for the PYTEST suite."""
 import pandas as pd
 import numpy as np
 import shlex

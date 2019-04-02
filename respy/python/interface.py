@@ -197,7 +197,9 @@ def respy_interface(respy_obj, request, data=None):
             record_estimation_scalability("Finish")
 
             success = True
-            message = "Single evaluation of criterion function at starting values."
+            message = (
+                "Single evaluation of criterion function at starting values."
+            )
 
         elif optimizer_used == "SCIPY-BFGS":
 

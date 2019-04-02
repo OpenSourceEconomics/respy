@@ -257,17 +257,21 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
     rewards[:, :2] = wages + rewards_general
 
     # Calculate systematic part of SCHOOL rewards
-    covariates_education = np.c_[
-        np.ones(states.shape[0]),
-        covariates[:, 9:13],
-        states[:, 0],
-        covariates[:, 13],
-    ]
+    covariates_education = np.column_stack(
+        (
+            np.ones(states.shape[0]),
+            covariates[:, 9:13],
+            states[:, 0],
+            covariates[:, 13],
+        )
+    )
 
     rewards[:, 2] = covariates_education.dot(optim_paras["coeffs_edu"])
 
     # Calculate systematic part of HOME
-    covariates_home = np.c_[np.ones(states.shape[0]), covariates[:, 14:]]
+    covariates_home = np.column_stack(
+        (np.ones(states.shape[0]), covariates[:, 14:])
+    )
 
     rewards[:, 3] = covariates_home.dot(optim_paras["coeffs_home"])
 
@@ -322,7 +326,7 @@ def pyth_backward_induction(
     state_space : class
         State space containing the emax of the subsequent period of each choice, columns
         0-3, as well as the maximum emax of the current period for each state, column 4,
-        in ``.emaxs``.
+        in ``state_space.emaxs``.
 
     """
     state_space.emaxs = np.zeros((state_space.num_states, 5))
@@ -568,9 +572,9 @@ def get_predictions(
     is_write : bool
 
     """
-    exogenous = np.c_[
-        exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0])
-    ]
+    exogenous = np.column_stack(
+        (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
+    )
 
     # Define ordinary least squares model and fit to the data.
     model = sm.OLS(endogenous[is_simulated], exogenous[is_simulated])
@@ -676,27 +680,29 @@ def calculate_wages_systematic(
         exp_a_sq *= 100.00
         exp_b_sq *= 100.00
 
-    relevant_covariates = np.c_[
-        np.ones(states.shape[0]),
-        states[:, [3, 1]],
-        exp_a_sq,
-        states[:, 2],
-        exp_b_sq,
-        covariates[:, 9:11],
-        states[:, 0],
-        covariates[:, 13],
-    ]
+    relevant_covariates = np.column_stack(
+        (
+            np.ones(states.shape[0]),
+            states[:, [3, 1]],
+            exp_a_sq,
+            states[:, 2],
+            exp_b_sq,
+            covariates[:, 9:11],
+            states[:, 0],
+            covariates[:, 13],
+        )
+    )
 
     # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
     wages = np.full((states.shape[0], 2), np.nan)
 
-    wages[:, 0] = np.c_[relevant_covariates, covariates[:, [7, 2]]].dot(
-        coeffs_a
-    )
+    wages[:, 0] = np.column_stack(
+        (relevant_covariates, covariates[:, [7, 2]])
+    ).dot(coeffs_a)
 
-    wages[:, 1] = np.c_[relevant_covariates, covariates[:, [8, 3]]].dot(
-        coeffs_b
-    )
+    wages[:, 1] = np.column_stack(
+        (relevant_covariates, covariates[:, [8, 3]])
+    ).dot(coeffs_b)
 
     wages = np.clip(np.exp(wages), 0.0, HUGE_FLOAT)
 
@@ -862,11 +868,13 @@ class StateSpace:
         return self.states.shape[0]
 
     def update_systematic_rewards(self, optim_paras):
-        self.rewards = np.c_[
-            pyth_calculate_rewards_systematic(
-                self.states, self.covariates, optim_paras
+        self.rewards = np.column_stack(
+            (
+                pyth_calculate_rewards_systematic(
+                    self.states, self.covariates, optim_paras
+                )
             )
-        ]
+        )
 
     def get_attribute_from_period(self, attr, period):
         """Get an attribute of the state space sliced to a given period.
@@ -942,10 +950,12 @@ class StateSpace:
         used elsewhere.
 
         """
-        self.emaxs = np.c_[
-            np.zeros((self.states_per_period.sum(), 4)),
-            periods_emax[periods_emax != -99],
-        ]
+        self.emaxs = np.column_stack(
+            (
+                np.zeros((self.states_per_period.sum(), 4)),
+                periods_emax[periods_emax != -99],
+            )
+        )
 
     def _get_fortran_counterparts(self):
         """Convert own results to the format of FORTRAN results."""

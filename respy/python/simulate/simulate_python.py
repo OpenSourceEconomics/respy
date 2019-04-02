@@ -10,7 +10,11 @@ from respy.python.simulate.simulate_auxiliary import get_random_edu_start
 from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.simulate.simulate_auxiliary import get_random_types
-from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import (
+    HUGE_FLOAT,
+    DATA_LABELS_SIM,
+    DATA_FORMATS_SIM,
+)
 from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
@@ -25,6 +29,13 @@ def pyth_simulate(
     is_debug,
 ):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
+
+    At the beginning, agents are initialized with zero experience in occupations and
+    random values for years of education, lagged choices and types. Then, each simulated
+    agent in each period is paired with its corresponding state in the state space. We
+    recalculate utilities for each choice as the agents experience different shocks in
+    the simulation. In the end, observed and unobserved information is recorded in the
+    simulated dataset.
 
     Parameters
     ----------
@@ -63,9 +74,12 @@ def pyth_simulate(
             optim_paras["shocks_cholesky"],
         )
 
-    # We also need to sample the set of initial conditions.
+    # Get initial values of SCHOOLING, lagged choices and types for simulated agents.
     initial_education = get_random_edu_start(
         edu_spec, num_agents_sim, is_debug
+    )
+    initial_choice_lagged = get_random_choice_lagged_start(
+        edu_spec, num_agents_sim, initial_education, is_debug
     )
     initial_types = get_random_types(
         state_space.num_types,
@@ -74,122 +88,117 @@ def pyth_simulate(
         initial_education,
         is_debug,
     )
-    initial_choice_lagged = get_random_choice_lagged_start(
-        edu_spec, num_agents_sim, initial_education, is_debug
-    )
+
+    # Create a matrix of initial states of simulated agents. OCCUPATION A and OCCUPATION
+    # B are set to zero.
+    current_states = np.column_stack(
+        (
+            np.zeros((num_agents_sim, 2)),
+            initial_education,
+            initial_choice_lagged,
+            initial_types,
+        )
+    ).astype(np.uint8)
 
     data = []
 
-    for i in range(num_agents_sim):
+    for period in range(state_space.num_periods):
 
-        # We need to modify the initial conditions: (1) Schooling when entering the
-        # model and (2) individual type. We need to determine the initial value for the
-        # lagged variable.
-        current_state = np.array(
-            [
-                0,
-                0,
-                initial_education[i],
-                initial_choice_lagged[i],
-                initial_types[i],
-            ],
-            dtype=np.uint8,
+        # Get indices which connect states in the state space and simulated agents.
+        ks = state_space.indexer[
+            np.full(num_agents_sim, period),
+            current_states[:, 0],
+            current_states[:, 1],
+            current_states[:, 2],
+            current_states[:, 3] - 1,
+            current_states[:, 4],
+        ]
+
+        # Select relevant subset of random draws.
+        draws = periods_draws_sims_transformed[period]
+
+        # Get total values and ex post rewards.
+        total_values, rewards_ex_post = get_continuation_value(
+            state_space.rewards[ks, -2:],
+            state_space.rewards[ks, :4],
+            draws.reshape(-1, 1, 4),
+            state_space.emaxs[ks, :4],
+            optim_paras["delta"],
+        )
+        total_values = total_values.reshape(-1, 4)
+        rewards_ex_post = rewards_ex_post.reshape(-1, 4)
+
+        # We need to ensure that no individual chooses an inadmissible state. This
+        # cannot be done directly in the get_continuation_value function as the penalty
+        # otherwise dominates the interpolation equation. The parameter
+        # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
+        # constructed cases.
+        total_values[:, 2] = np.where(
+            current_states[:, 2] >= edu_spec["max"],
+            -HUGE_FLOAT,
+            total_values[:, 2],
         )
 
-        record_simulation_progress(i, file_sim)
+        # Determine optimal choice.
+        max_idx = np.argmax(total_values, axis=1)
 
-        for period in range(state_space.num_periods):
-
-            exp_a, exp_b, edu, choice_lagged, type_ = current_state
-
-            k = state_space.indexer[
-                period, exp_a, exp_b, edu, choice_lagged - 1, type_
-            ]
-
-            # Select relevant subset
-            draws = periods_draws_sims_transformed[period, i, :]
-
-            # Get total value of admissible states
-            total_values, rewards_ex_post = get_continuation_value(
-                state_space.rewards[k, -2:],
-                state_space.rewards[k, :4],
-                draws.reshape(1, -1),
-                state_space.emaxs[k, :4],
-                optim_paras["delta"],
+        # Record wages. Expand matrix with NaNs for choice 2 and 3 for easier indexing.
+        wages = (
+            np.column_stack(
+                (
+                    state_space.rewards[ks, -2:],
+                    np.full((num_agents_sim, 2), np.nan),
+                )
             )
+            * draws
+        )
+        # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
+        wage = wages[np.arange(num_agents_sim), max_idx]
 
-            total_values = total_values.ravel()
-            rewards_ex_post = rewards_ex_post.ravel()
-
-            # We need to ensure that no individual chooses an inadmissible state. This
-            # cannot be done directly in the get_continuation_value function as the
-            # penalty otherwise dominates the interpolation equation. The parameter
-            # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
-            # constructed cases.
-            if edu >= edu_spec["max"]:
-                total_values[2] = -HUGE_FLOAT
-
-            # Determine optimal choice
-            max_idx = np.argmax(total_values)
-
-            # Record wages
-            wage = (
-                state_space.rewards[k, -2:][max_idx] * draws[max_idx]
-                if max_idx in [0, 1]
-                else np.nan
-            )
-
-            # Update work experiences or education
-            if max_idx in [0, 1, 2]:
-                current_state[max_idx] += 1
-
-            # Update lagged activity variable.
-            current_state[3] = max_idx + 1
-
-            row = {
-                "Identifier": i,
-                "Period": period,
-                "Choice": max_idx + 1,
-                "Wage": wage,
+        # Record data of all agents in one period.
+        rows = np.column_stack(
+            (
+                np.arange(num_agents_sim),
+                np.full(num_agents_sim, period),
+                max_idx + 1,
+                wage,
                 # Write relevant state space for period to data frame. However, the
                 # individual's type is not part of the observed dataset. This is
                 # included in the simulated dataset.
-                "Experience_A": exp_a,
-                "Experience_B": exp_b,
-                "Years_Schooling": edu,
-                "Lagged_Choice": choice_lagged,
+                current_states,
                 # As we are working with a simulated dataset, we can also output
                 # additional information that is not available in an observed dataset.
                 # The discount rate is included as this allows to construct the EMAX
                 # with the information provided in the simulation output.
-                "Type": type_,
-                "Total_Reward_1": total_values[0],
-                "Total_Reward_2": total_values[1],
-                "Total_Reward_3": total_values[2],
-                "Total_Reward_4": total_values[3],
-                "Systematic_Reward_1": state_space.rewards[k, 0],
-                "Systematic_Reward_2": state_space.rewards[k, 1],
-                "Systematic_Reward_3": state_space.rewards[k, 2],
-                "Systematic_Reward_4": state_space.rewards[k, 3],
-                "Shock_Reward_1": draws[0],
-                "Shock_Reward_2": draws[1],
-                "Shock_Reward_3": draws[2],
-                "Shock_Reward_4": draws[3],
-                "Discount_Rate": optim_paras["delta"][0],
+                total_values,
+                state_space.rewards[ks, :4],
+                draws,
+                np.full(num_agents_sim, optim_paras["delta"][0]),
                 # For testing purposes, we also explicitly include the general reward
                 # component, the common component, and the immediate ex post rewards.
-                "General_Reward_1": state_space.rewards[k, 4],
-                "General_Reward_2": state_space.rewards[k, 5],
-                "Common_Reward": state_space.rewards[k, 6],
-                "Immediate_Reward_1": rewards_ex_post[0],
-                "Immediate_Reward_2": rewards_ex_post[1],
-                "Immediate_Reward_3": rewards_ex_post[2],
-                "Immediate_Reward_4": rewards_ex_post[3],
-            }
-            data.append(row)
+                state_space.rewards[ks, 4:7],
+                rewards_ex_post,
+            )
+        )
+        data.append(rows)
 
+        # Update work experiences or education and lagged choice for the next period.
+        current_states[np.arange(num_agents_sim), max_idx] = np.where(
+            max_idx <= 2,
+            current_states[np.arange(num_agents_sim), max_idx] + 1,
+            current_states[np.arange(num_agents_sim), max_idx],
+        )
+        current_states[:, 3] = max_idx + 1
+
+    simulated_data = (
+        pd.DataFrame(data=np.vstack(data), columns=DATA_LABELS_SIM)
+        .astype(DATA_FORMATS_SIM)
+        .sort_values(["Identifier", "Period"])
+    )
+
+    # TODO: Replace logging which is useless here and kept only for successful testing.
+    for i in range(num_agents_sim):
+        record_simulation_progress(i, file_sim)
     record_simulation_stop(file_sim)
-
-    simulated_data = pd.DataFrame.from_records(data, columns=data[0].keys())
 
     return simulated_data

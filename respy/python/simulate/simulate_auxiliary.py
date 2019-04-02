@@ -24,7 +24,7 @@ def construct_transition_matrix(base_df):
 def get_final_education(agent):
     """ This method construct the final level of schooling for each individual.
     """
-    edu_final = agent["Years_Schooling"].iloc[0] + (agent["Choice"] == 3).sum()
+    edu_final = agent["Years_Schooling"].iloc[0] + agent["Choice"].eq(3).sum()
 
     # As a little test, we just ensure that the final level of education is equal or
     # less the level the agent entered the final period.
@@ -43,8 +43,8 @@ def write_info(respy_obj, data_frame):
     )
 
     # Get basic information
-    num_agents_sim = len(data_frame["Identifier"].unique())
-    num_periods = len(data_frame["Period"].unique())
+    num_agents_sim = data_frame["Identifier"].unique().shape[0]
+    num_periods = data_frame["Period"].unique().shape[0]
 
     # Write information to file
     with open(file_sim + ".respy.info", "w") as file_:
@@ -64,7 +64,7 @@ def write_info(respy_obj, data_frame):
         for t in range(num_periods):
             args = []
             for decision in [1, 2, 3, 4]:
-                args += [(choices.loc[slice(None), t] == decision).sum()]
+                args += [choices.loc[slice(None), t].eq(decision).sum()]
             args = [x / float(num_agents_sim) for x in args]
 
             fmt_ = "{:>10}" + "{:14.4f}" * 4 + "\n"
@@ -86,8 +86,8 @@ def write_info(respy_obj, data_frame):
                 line = [labels[i]] + tb[i, :].tolist()
 
                 # In contrast to the official documentation, the crosstab command omits
-                # categories in the current pandas release when they are not part of the data. We
-                # suspect this will be ironed out in the next releases.
+                # categories in the current pandas release when they are not part of the
+                # data. We suspect this will be ironed out in the next releases.
                 try:
                     file_.write(fmt_.format(*line))
                 except IndexError:
@@ -138,21 +138,21 @@ def write_info(respy_obj, data_frame):
         fmt_ = "    {:<16}" + "   {:15.5f}\n"
         file_.write("   Additional Information\n\n")
 
-        stat = (data_frame["Choice"] == 1).sum() / float(num_agents_sim)
+        stat = data_frame["Choice"].eq(1).sum() / float(num_agents_sim)
         file_.write(fmt_.format(*["Average Work A", stat]))
 
-        stat = (data_frame["Choice"] == 2).sum() / float(num_agents_sim)
+        stat = data_frame["Choice"].eq(2).sum() / float(num_agents_sim)
         file_.write(fmt_.format(*["Average Work B", stat]))
 
-        # The calculation of years of schooling is a little more difficult to determine as we
-        # need to account for the different levels of initial schooling. The column on
-        # Years_Schooling only contains information on the level of schooling attainment going in
-        # the period, thus is not identical to the final level of schooling for individuals that
-        # enroll in school in the very last period.
+        # The calculation of years of schooling is a little more difficult to determine
+        # as we need to account for the different levels of initial schooling. The
+        # column on Years_Schooling only contains information on the level of schooling
+        # attainment going in the period, thus is not identical to the final level of
+        # schooling for individuals that enroll in school in the very last period.
         stat = data_frame.groupby(level="Identifier").apply(get_final_education).mean()
         file_.write(fmt_.format(*["Average School", stat]))
 
-        stat = (data_frame["Choice"] == 4).sum() / float(num_agents_sim)
+        stat = data_frame["Choice"].eq(4).sum() / float(num_agents_sim)
         file_.write(fmt_.format(*["Average Home", stat]))
         file_.write("\n")
 
@@ -197,8 +197,8 @@ def write_info(respy_obj, data_frame):
                 line = ["All"] + info[-1, :].tolist()
                 file_.write(fmt_.format(*line))
 
-        # We want to provide information on the value of the lagged activity when entering the
-        # model based on the level of initial education.
+        # We want to provide information on the value of the lagged activity when
+        # entering the model based on the level of initial education.
         cat_1 = pd.Categorical(
             data_frame["Years_Schooling"][:, 0], categories=edu_spec["start"]
         )
@@ -258,7 +258,7 @@ def get_estimation_vector(optim_paras):
     num_types = int(len(optim_paras["type_shares"]) / 2)
 
     # Collect parameters
-    vector = list()
+    vector = []
     vector += optim_paras["delta"].tolist()
     vector += optim_paras["coeffs_a"].tolist()
     vector += optim_paras["coeffs_b"].tolist()
@@ -314,8 +314,8 @@ def check_dataset_sim(data_frame, respy_obj):
     np.testing.assert_equal(dat.isnull().any(), False)
     data_frame.groupby(level="Identifier").apply(check_check_time_constant)
 
-    # Check that there are not missing wage observations if an agent is working. Also, we check
-    # that if an agent is not working, there also is no wage observation.
+    # Check that there are not missing wage observations if an agent is working. Also,
+    # we check that if an agent is not working, there also is no wage observation.
     is_working = data_frame["Choice"].isin([1, 2])
 
     dat = data_frame["Wage"][is_working]
@@ -336,7 +336,8 @@ def sort_type_info(optim_paras, num_types):
     # We simply fix the order by the size of the intercepts.
     type_info["order"] = np.argsort(optim_paras["type_shares"].tolist()[0::2])
 
-    # We need to reorder the coefficients determining the type probabilities accordingly.
+    # We need to reorder the coefficients determining the type probabilities
+    # accordingly.
     type_shares = []
     for i in range(num_types):
         lower, upper = i * 2, (i + 1) * 2
@@ -349,8 +350,8 @@ def sort_type_info(optim_paras, num_types):
 
 
 def sort_edu_spec(edu_spec):
-    """ This function sorts the dictionary that provides the information about initial education.
-    It adjusts the order of the shares accordingly.
+    """ This function sorts the dictionary that provides the information about initial
+    education. It adjusts the order of the shares accordingly.
     """
     edu_start_ordered = sorted(edu_spec["start"])
 
@@ -372,8 +373,8 @@ def sort_edu_spec(edu_spec):
 def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug):
     """ This function provides random draws for the types, or reads them in from a file.
     """
-    # We want to ensure that the order of types in the initialization file does not matter for
-    # the simulated sample.
+    # We want to ensure that the order of types in the initialization file does not
+    # matter for the simulated sample.
     type_info = sort_type_info(optim_paras, num_types)
 
     if is_debug and os.path.exists(".types.respy.test"):
@@ -391,19 +392,19 @@ def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug
 
 
 def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
-    """ This function provides random draws for the initial schooling level, or reads them in
-    from a file.
+    """ This function provides random draws for the initial schooling level, or reads
+    them in from a file.
     """
-    # We want to ensure that the order of initial schooling levels in the initialization files
-    # does not matter for the simulated sample. That is why we create an ordered version for this
-    # function.
+    # We want to ensure that the order of initial schooling levels in the initialization
+    # files does not matter for the simulated sample. That is why we create an ordered
+    # version for this function.
     edu_spec_ordered = sort_edu_spec(edu_spec)
 
     if is_debug and os.path.exists(".initial_schooling.respy.test"):
         edu_start = np.genfromtxt(".initial_schooling.respy.test")
     else:
-        # As we do not want to be too strict at the user-level the sum of edu_spec might be
-        # slightly larger than one. This needs to be corrected here.
+        # As we do not want to be too strict at the user-level the sum of edu_spec might
+        # be slightly larger than one. This needs to be corrected here.
         probs = edu_spec_ordered["share"] / np.sum(edu_spec_ordered["share"])
         edu_start = np.random.choice(
             edu_spec_ordered["start"], p=probs, size=num_agents_sim

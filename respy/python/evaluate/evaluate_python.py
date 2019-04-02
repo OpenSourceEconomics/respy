@@ -40,7 +40,7 @@ def pyth_contributions(
         Number of draws in the Monte Carlo integration of the choice probabilities.
     num_agents_est : int
         Number of observations used for estimation.
-    num_obs_agent : np.array
+    num_obs_agent : np.ndarray
         Array with shape (num_agents_est,) that contains the number of observed
         observations for each individual in the sample.
     edu_spec : dict

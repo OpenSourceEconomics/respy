@@ -129,7 +129,7 @@ def _configure_debug(self):
     else:
         is_debug = False
 
-    is_debug = _ci_build_matrix('DEBUG', is_debug)
+    is_debug = _ci_build_matrix("DEBUG", is_debug)
 
     self._construct_end_message(is_debug)
 

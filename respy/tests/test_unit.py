@@ -140,7 +140,7 @@ class TestClass(object):
 
     def test_4(self):
         """ Testing the return values for the total values in case of myopic
-        individuals.
+        individuals for one period.
 
         Note
         ----

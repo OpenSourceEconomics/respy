@@ -372,15 +372,13 @@ class TestClass(object):
         min_idx = edu_spec["max"] + 1
 
         # Check the state space creation.
-        base_args = (
+        state_space = StateSpace(
             num_periods,
             num_types,
             edu_spec["start"],
             edu_spec["max"],
+            optim_paras,
         )
-        args = base_args + (optim_paras,)
-
-        state_space = StateSpace(*args)
 
         states_all, mapping_state_idx, _, _ = (
             state_space._get_fortran_counterparts()
@@ -393,8 +391,9 @@ class TestClass(object):
             state_space.states_per_period.max(),
         ]
 
-        args = base_args + (min_idx,)
-        f2py = fort_debug.wrapper_create_state_space(*args)
+        f2py = fort_debug.wrapper_create_state_space(
+            num_periods, num_types, edu_spec["start"], edu_spec["max"], min_idx
+        )
         for i in range(4):
             # Slice Fortran output to shape of Python output.
             if isinstance(f2py[i], np.ndarray):
@@ -867,9 +866,9 @@ class TestClass(object):
         )
 
         # Align output between Python and Fortran version.
-        exogenous_9 = np.c_[
-            exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0])
-        ]
+        exogenous_9 = np.column_stack(
+            (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
+        )
         py = (exogenous_9, max_emax)
 
         f90 = fort_debug.wrapper_get_exogenous_variables(
@@ -923,7 +922,6 @@ class TestClass(object):
             coeffs_a,
             coeffs_b,
         )
-
         assert_almost_equal(endogenous, replace_missing_values(f90))
 
         py = get_predictions(

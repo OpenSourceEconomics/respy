@@ -796,52 +796,15 @@ def create_covariates(states):
     covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
     covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
 
-    # Was not in school last period and is/is not high school graduate
-    covariates[:, 11] = np.where(
-        (covariates[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0
-    )
-    covariates[:, 12] = np.where(
-        (covariates[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0
-    )
+    # Any experience in A or B.
+    covariates[:, 7] = np.where(states[:, 1] > 0, 1, 0)
+    covariates[:, 8] = np.where(states[:, 2] > 0, 1, 0)
 
-    # Define age groups minor (period < 2), young adult (2 <= period <= 4) and adult (5
-    # <= period).
-    covariates[:, 13] = np.where(states[:, 0] < 2, 1, 0)
-    covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
-    covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
+    # High school or college graduate
+    covariates[:, 9] = np.where(states[:, 3] >= 12, 1, 0)
+    covariates[:, 10] = np.where(states[:, 3] >= 16, 1, 0)
 
     return covariates
-
-
-def calculate_rewards_common(covariates, coeffs_common):
-    """Calculate common rewards.
-
-    Covariates 9 and 10 are indicators for high school and college graduates.
-
-    Parameters
-    ----------
-    covariates : np.ndarray
-        Array with shape (num_states, 16) containing covariates.
-    coeffs_common : np.ndarray
-        Array with shape (2,) containing coefficients for high school and college
-        graduates.
-
-    Returns
-    -------
-    np.ndarray
-        Array with shape (num_states, 1) containing common rewards. Reshaping is
-        necessary to broadcast the array over rewards with shape (num_states, 4).
-
-    Example
-    -------
-    >>> state_space = StateSpace(2, 1, [12, 16], 20)
-    >>> coeffs_common = np.array([0.05, 0.6])
-    >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
-    array([0.05, 0.05, 0.65, 0.65, 0.05, 0.05, 0.05, 0.05, 0.65, 0.65, 0.65,
-           0.65])
-
-    """
-    return covariates[:, 9:11].dot(coeffs_common).reshape(-1, 1)
 
 
 def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
@@ -876,27 +839,61 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
     num_states = covariates.shape[0]
     rewards_general = np.full((num_states, 2), np.nan)
 
-    rewards_general[:, 0] = np.c_[
-        np.ones(num_states), covariates[:, [0, 5]]
-    ].dot(coeffs_a)
-    rewards_general[:, 1] = np.c_[
-        np.ones(num_states), covariates[:, [1, 6]]
-    ].dot(coeffs_b)
+    rewards_general[:, 0] = np.column_stack(
+        (np.ones(num_states), covariates[:, [0, 5]])
+    ).dot(coeffs_a)
+    rewards_general[:, 1] = np.column_stack(
+        (np.ones(num_states), covariates[:, [1, 6]])
+    ).dot(coeffs_b)
 
     return rewards_general
+
+
+def calculate_rewards_common(covariates, coeffs_common):
+    """Calculate common rewards.
+
+    Covariates 9 and 10 are indicators for high school and college graduates.
+
+    Parameters
+    ----------
+    covariates : np.ndarray
+        Array with shape (num_states, 16) containing covariates.
+    coeffs_common : np.ndarray
+        Array with shape (2,) containing coefficients for high school and college
+        graduates.
+
+    Returns
+    -------
+    np.ndarray
+        Array with shape (num_states, 1) containing common rewards. Reshaping is
+        necessary to broadcast the array over rewards with shape (num_states, 4).
+
+    Example
+    -------
+    >>> state_space = StateSpace(2, 1, [12, 16], 20)
+    >>> coeffs_common = np.array([0.05, 0.6])
+    >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
+    array([0.05, 0.05, 0.65, 0.65, 0.05, 0.05, 0.05, 0.05, 0.65, 0.65, 0.65,
+           0.65])
+
+    """
+    return covariates[:, 9:11].dot(coeffs_common).reshape(-1, 1)
 
 
 def number_of_triangular_elements_to_dimensio(num):
     """Calculate the dimension of a square matrix from number of triangular elements.
 
-    Args:
-        num (int): The number of upper or lower triangular elements in the matrix
+    Parameters
+    ----------
+    num : int
+        The number of upper or lower triangular elements in the matrix.
 
-    Example:
-        >>> number_of_triangular_elements_to_dimensio(6)
-        3
-        >>> number_of_triangular_elements_to_dimensio(10)
-        4
+    Example
+    -------
+    >>> number_of_triangular_elements_to_dimensio(6)
+    3
+    >>> number_of_triangular_elements_to_dimensio(10)
+    4
 
     """
     return int(np.sqrt(8 * num + 1) / 2 - 0.5)

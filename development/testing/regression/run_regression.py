@@ -2,22 +2,17 @@
 further development and refactoring efforts.
 """
 from __future__ import print_function
-
 import argparse
 import multiprocessing as mp
 import numpy as np
 import socket
 import pickle
-
 from development.modules.auxiliary_shared import send_notification
 from development.modules.auxiliary_shared import compile_package
-
 from development.modules.auxiliary_regression import create_single
 from development.modules.auxiliary_regression import check_single
 from development.modules.auxiliary_regression import get_chunks
-
 from functools import partial
-
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import DECIMALS
 from respy.pre_processing.model_processing import (
@@ -26,11 +21,8 @@ from respy.pre_processing.model_processing import (
 )
 from respy.tests.codes.auxiliary import simulate_observed
 
-HOSTNAME = socket.gethostname()
 
-from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
-from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_constants import IS_FORTRAN
+HOSTNAME = socket.gethostname()
 
 
 def run(request, is_compile, is_background, is_strict, num_procs):

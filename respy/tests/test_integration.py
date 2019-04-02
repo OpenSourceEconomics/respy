@@ -384,10 +384,12 @@ class TestClass(object):
         the initialization files does not matter for the simulation of a dataset and
         subsequent evaluation of the criterion function.
 
-        WARNING: This test fails if types have the identical intercept as no unique
-        ordering is determined than.
-        """
+        Warning
+        -------
+        This test fails if types have the identical intercept as no unique ordering is
+        determined than.
 
+        """
         point_constr = {
             "estimation": {"maxfun": 0},
             # We cannot allow for interpolation as the order of states within each

@@ -1,5 +1,4 @@
-"""This script runs a series of tests that are required for any pull request to be
-merged."""
+"""Run a series of tests that are required for any pull request to be merged."""
 import os
 import respy
 
@@ -10,7 +9,7 @@ from development.testing.regression.run_regression import run as run_regression
 from development.testing.robustness.run_robustness import run as run_robustness
 from socket import gethostname
 
-CURRENT_DIR = Path(__file__).parent.resolve()
+CURRENT_DIR = Path(__file__).parent
 
 
 def main():
