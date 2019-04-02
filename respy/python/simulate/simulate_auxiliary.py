@@ -24,7 +24,7 @@ def construct_transition_matrix(base_df):
 def get_final_education(agent):
     """ This method construct the final level of schooling for each individual.
     """
-    edu_final = agent["Years_Schooling"].iloc[0] + (agent["Choice"] == 3).sum()
+    edu_final = agent["Years_Schooling"].iloc[0] + agent["Choice"].eq(3).sum()
 
     # As a little test, we just ensure that the final level of education is equal or
     # less the level the agent entered the final period.
@@ -43,8 +43,8 @@ def write_info(respy_obj, data_frame):
     )
 
     # Get basic information
-    num_agents_sim = len(data_frame["Identifier"].unique())
-    num_periods = len(data_frame["Period"].unique())
+    num_agents_sim = data_frame["Identifier"].unique().shape[0]
+    num_periods = data_frame["Period"].unique().shape[0]
 
     # Write information to file
     with open(file_sim + ".respy.info", "w") as file_:
@@ -64,7 +64,7 @@ def write_info(respy_obj, data_frame):
         for t in range(num_periods):
             args = []
             for decision in [1, 2, 3, 4]:
-                args += [(choices.loc[slice(None), t] == decision).sum()]
+                args += [choices.loc[slice(None), t].eq(decision).sum()]
             args = [x / float(num_agents_sim) for x in args]
 
             fmt_ = "{:>10}" + "{:14.4f}" * 4 + "\n"
@@ -138,10 +138,10 @@ def write_info(respy_obj, data_frame):
         fmt_ = "    {:<16}" + "   {:15.5f}\n"
         file_.write("   Additional Information\n\n")
 
-        stat = (data_frame["Choice"] == 1).sum() / float(num_agents_sim)
+        stat = data_frame["Choice"].eq(1).sum() / float(num_agents_sim)
         file_.write(fmt_.format(*["Average Work A", stat]))
 
-        stat = (data_frame["Choice"] == 2).sum() / float(num_agents_sim)
+        stat = data_frame["Choice"].eq(2).sum() / float(num_agents_sim)
         file_.write(fmt_.format(*["Average Work B", stat]))
 
         # The calculation of years of schooling is a little more difficult to determine
@@ -152,7 +152,7 @@ def write_info(respy_obj, data_frame):
         stat = data_frame.groupby(level="Identifier").apply(get_final_education).mean()
         file_.write(fmt_.format(*["Average School", stat]))
 
-        stat = (data_frame["Choice"] == 4).sum() / float(num_agents_sim)
+        stat = data_frame["Choice"].eq(4).sum() / float(num_agents_sim)
         file_.write(fmt_.format(*["Average Home", stat]))
         file_.write("\n")
 
