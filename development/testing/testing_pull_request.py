@@ -4,10 +4,10 @@ import os
 import respy
 
 from pathlib import Path
-from run_parallelism import run as run_parallelism
-from run_property import run as run_property
-from run_regression import run as run_regression
-from run_robustness import run as run_robustness
+from development.testing.parallelism.run_parallelism import run as run_parallelism
+from development.testing.property.run_property import run as run_property
+from development.testing.regression.run_regression import run as run_regression
+from development.testing.robustness.run_robustness import run as run_robustness
 from socket import gethostname
 
 CURRENT_DIR = Path(__file__).parent.resolve()

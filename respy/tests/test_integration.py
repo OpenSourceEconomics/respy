@@ -1,28 +1,27 @@
-from pandas.util.testing import assert_frame_equal
-
 import copy
 import numpy as np
 import pandas as pd
 import pytest
 import random
 
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from pandas.util.testing import assert_frame_equal
+from respy import RespyCls
+from respy.custom_exceptions import UserError
+from respy.pre_processing.data_processing import process_dataset
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.scripts.scripts_estimate import scripts_estimate
 from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.pre_processing.data_processing import process_dataset
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.scripts.scripts_check import scripts_check
+from respy.scripts.scripts_estimate import scripts_estimate
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.tests.codes.auxiliary import write_lagged_start
-from respy.custom_exceptions import UserError
-from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.random_model import generate_random_model
-from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_types
-from respy import RespyCls
+from respy.tests.codes.random_model import generate_random_model
 
 
 class TestClass(object):
@@ -123,7 +122,6 @@ class TestClass(object):
         """
         # Constraints that ensure that two alternative initialization files can be used
         # for the same simulated data.
-
         num_agents = np.random.randint(5, 100)
         constr = {
             "simulation": {"agents": num_agents},
@@ -281,7 +279,7 @@ class TestClass(object):
         else:
             RespyCls(params_spec, options_spec)
 
-    def test_9(self):
+    def test_8(self):
         """ We ensure that the number of initial conditions does not matter for the
         evaluation of the criterion function if a weight of one is put on the first
         group.
@@ -355,7 +353,7 @@ class TestClass(object):
             k=1,
         ),
     )
-    def test_12(self, fname, result):
+    def test_9(self, fname, result):
         """ This test just locks in the evaluation of the criterion function for the
         original Keane & Wolpin data. We create an additional initialization files that
         include numerous types and initial conditions.
@@ -379,10 +377,9 @@ class TestClass(object):
         simulate_observed(respy_obj, is_missings=False)
 
         _, val = respy_obj.fit()
-
         np.testing.assert_allclose(val, result)
 
-    def test_15(self):
+    def test_10(self):
         """ This test ensures that the order of the initial schooling level specified in
         the initialization files does not matter for the simulation of a dataset and
         subsequent evaluation of the criterion function.

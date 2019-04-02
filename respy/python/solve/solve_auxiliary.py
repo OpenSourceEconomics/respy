@@ -839,11 +839,13 @@ class StateSpace:
 
         # Passing :data:`optim_paras` is optional.
         if optim_paras:
-            self.rewards = np.c_[
-                pyth_calculate_rewards_systematic(
-                    self.states, self.covariates, optim_paras
+            self.rewards = np.column_stack(
+                (
+                    pyth_calculate_rewards_systematic(
+                        self.states, self.covariates, optim_paras
+                    )
                 )
-            ]
+            )
 
         self._create_slices_by_periods(num_periods)
 

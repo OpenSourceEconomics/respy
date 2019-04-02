@@ -1,15 +1,16 @@
 import numpy as np
-
-from pandas.testing import assert_series_equal
-from respy import RespyCls
-from respy.pre_processing.model_processing import _read_options_spec
-from respy.pre_processing.model_processing import _read_params_spec
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import get_continuation_value
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.solve.solve_auxiliary import StateSpace
 from respy.tests.codes.random_model import generate_random_model
+from respy.pre_processing.model_processing import (
+    _read_options_spec,
+    _read_params_spec,
+)
+from respy import RespyCls
+from pandas.testing import assert_series_equal
+from respy.python.solve.solve_auxiliary import StateSpace
+from respy.python.shared.shared_auxiliary import get_continuation_value
 
 
 class TestClass(object):
@@ -139,7 +140,7 @@ class TestClass(object):
 
     def test_4(self):
         """ Testing the return values for the total values in case of myopic
-        individuals for one period.
+        individuals.
 
         Note
         ----

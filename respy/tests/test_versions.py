@@ -6,7 +6,6 @@ import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.solve.solve_auxiliary import StateSpace
-from respy.pre_processing.model_processing import write_init_file
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.tests.codes.random_model import generate_random_model
@@ -66,10 +65,6 @@ class TestClass(object):
         #  the actual number of states. And to know the number of states each period, I
         #  need to construct the whole state space.
         if is_interpolated:
-            # Extract from future initialization file the information required to
-            # construct the state space. The number of periods needs to be at least
-            # three in order to provide enough state points.
-
             state_space = StateSpace(
                 num_periods, num_types, edu_spec["start"], edu_spec["max"]
             )

@@ -327,9 +327,9 @@ class RespyCls(object):
         # ====================================================================
         # todo: harmonize python and fortran
         # ====================================================================
-        if self.attr["version"] == "PYTHON":
+        if self.attr["version"] == "python":
             data_frame = data_array[DATA_LABELS_SIM]
-        elif self.attr["version"] == "FORTRAN":
+        elif self.attr["version"] == "fortran":
             data_frame = pd.DataFrame(
                 data=replace_missing_values(data_array),
                 columns=DATA_LABELS_SIM,

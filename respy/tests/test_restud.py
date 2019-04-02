@@ -263,8 +263,8 @@ def generate_constraints_dict():
 
 
 def adjust_model_spec(params_spec, options_spec):
-    """ This function adjusts the random initialization dictionary further so we can campare
-    RESPY against RESTUD."""
+    """ This function adjusts the random initialization dictionary further so we can
+    campare RESPY against RESTUD."""
     attr = _create_attribute_dictionary(params_spec, options_spec)
     op = attr["optim_paras"]
     op["coeffs_a"][-9:] = [0.0] * 9

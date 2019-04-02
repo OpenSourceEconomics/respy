@@ -7,7 +7,7 @@ dependencies:
   - pandas=0.24
   - numba=0.43
   - numpy
-  - scipy=0.19
+  - scipy>=0.19
   - statsmodels=0.9
   - pip:
     - pytest

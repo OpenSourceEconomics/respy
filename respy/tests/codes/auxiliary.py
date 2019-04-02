@@ -14,7 +14,7 @@ from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
 
-# module-wide variables
+
 OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
 
 

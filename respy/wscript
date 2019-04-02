@@ -247,13 +247,14 @@ def _write_configuration(self):
 
 @conf
 def _ci_build_matrix(label, is_support):
-    """This function enforces the TRAVIS build matrix."""
-    if 'TRAVIS' in os.environ.keys():
+    """This function enforces the CI build matrix."""
+    # CI is available on TRAVIS and APPVEYOR
+    if "CI" in os.environ.keys():
 
         if label in ["DEBUG"]:
             is_support = True
         else:
-            is_support = os.environ['CI_' + label] == 'True'
+            is_support = os.environ["CI_" + label] == "True"
 
     return is_support
 

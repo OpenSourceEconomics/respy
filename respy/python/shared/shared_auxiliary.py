@@ -283,8 +283,8 @@ def cholesky_to_coeffs(shocks_cholesky):
 
 @guvectorize(
     [
-        "void(float32[:], float32[:], float32[:, :], float32[:], float32, float32[:, :], float32[:, :])",
-        "void(float64[:], float64[:], float64[:, :], float64[:], float64, float64[:, :], float64[:, :])",
+        "f4[:], f4[:], f4[:, :], f4[:], f4, f4[:, :], f4[:, :]",
+        "f8[:], f8[:], f8[:, :], f8[:], f8, f8[:, :], f8[:, :]",
     ],
     "(m), (n), (p, n), (n), () -> (n, p), (n, p)",
     nopython=True,
@@ -356,9 +356,7 @@ def get_continuation_value(
 
 
 @njit
-def get_emaxs_of_subsequent_period(
-    states, indexer, emaxs, edu_max
-):
+def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
     """Get the maxmium utility from the subsequent period.
 
     This function takes a parent node and looks up the utility from each of the four
@@ -783,6 +781,20 @@ def create_covariates(states):
     # High school or college graduate
     covariates[:, 9] = np.where(states[:, 3] >= 12, 1, 0)
     covariates[:, 10] = np.where(states[:, 3] >= 16, 1, 0)
+
+    # Was not in school last period and is/is not high school graduate
+    covariates[:, 11] = np.where(
+        (covariates[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0
+    )
+    covariates[:, 12] = np.where(
+        (covariates[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0
+    )
+
+    # Define age groups minor (period < 2), young adult (2 <= period <= 4) and adult (5
+    # <= period).
+    covariates[:, 13] = np.where(states[:, 0] < 2, 1, 0)
+    covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
+    covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
 
     # Was not in school last period and is/is not high school graduate
     covariates[:, 11] = np.where(

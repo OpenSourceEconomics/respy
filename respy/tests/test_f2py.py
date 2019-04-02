@@ -620,10 +620,15 @@ class TestClass(object):
             periods_emax,
         ) = state_space._get_fortran_counterparts()
 
-        shared_args = (num_agents_sim, periods_draws_sims, seed_sim, file_sim)
-
         simulated_data = pyth_simulate(
-            state_space, *shared_args, edu_spec, optim_paras, is_debug
+            state_space,
+            num_agents_sim,
+            periods_draws_sims,
+            seed_sim,
+            file_sim,
+            edu_spec,
+            optim_paras,
+            is_debug,
         )
         py = simulated_data.copy().fillna(MISSING_FLOAT).values
 
@@ -637,7 +642,10 @@ class TestClass(object):
             periods_emax,
             states_all,
             num_periods,
-            *shared_args,
+            num_agents_sim,
+            periods_draws_sims,
+            seed_sim,
+            file_sim,
             edu_spec["start"],
             edu_spec["max"],
             edu_spec["share"],
@@ -785,6 +793,7 @@ class TestClass(object):
         )
 
         shocks_cholesky = optim_paras["shocks_cholesky"]
+        shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
         coeffs_common = optim_paras["coeffs_common"]
         coeffs_a = optim_paras["coeffs_a"]
         coeffs_b = optim_paras["coeffs_b"]
@@ -906,9 +915,15 @@ class TestClass(object):
             num_draws_emax,
             max_emax,
             draws_emax_risk,
-            edu_spec,
-            optim_paras,
+            edu_spec["start"],
+            edu_spec["max"],
+            shocks_cov,
+            delta,
+            coeffs_common,
+            coeffs_a,
+            coeffs_b,
         )
+
         assert_almost_equal(endogenous, replace_missing_values(f90))
 
         py = get_predictions(
@@ -936,7 +951,9 @@ class TestClass(object):
         # Impose constraints
         point_constr = {"num_periods": np.random.randint(2, 5)}
 
-        params_spec, options_spec = generate_random_model(point_constr=point_constr)
+        params_spec, options_spec = generate_random_model(
+            point_constr=point_constr
+        )
         respy_obj = RespyCls(params_spec, options_spec)
 
         # Extract class attributes
@@ -1027,8 +1044,7 @@ class TestClass(object):
             assert_almost_equal(py, f90)
 
     def test_11(self):
-        """ Function that calculates the conditional type probabilites.
-        """
+        """ Function that calculates the conditional type probabilites."""
         for _ in range(1000):
             num_types = np.random.randint(1, 10)
             edu_start = np.random.randint(10, 100)
