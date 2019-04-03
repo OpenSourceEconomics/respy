@@ -12,11 +12,15 @@ from development.modules.auxiliary_career_decision_data import prepare_dataset
 import argparse
 import numpy as np
 from pathlib import Path
-from development.modules.auxiliary_property import cleanup_testing_infrastructure
+from development.modules.auxiliary_property import (
+    cleanup_testing_infrastructure,
+)
 
 
 def run(request, is_compile, is_background, num_procs, keep_dataset):
-    cleanup_testing_infrastructure(keep_results=False, keep_dataset=keep_dataset)
+    cleanup_testing_infrastructure(
+        keep_results=False, keep_dataset=keep_dataset
+    )
     data_path = Path.cwd() / "career_data.respy.dat"
     if not data_path.exists():
         prepare_dataset()
@@ -84,13 +88,17 @@ def run(request, is_compile, is_background, num_procs, keep_dataset):
             procs=num_procs,
             num_tests=num_tests,
         )
-        cleanup_testing_infrastructure(keep_results=False, keep_dataset=keep_dataset)
+        cleanup_testing_infrastructure(
+            keep_results=False, keep_dataset=keep_dataset
+        )
 
 
 if __name__ == "__main__":
     # args = process_command_line_arguments('robustness')
     # run(args)
-    parser = argparse.ArgumentParser(description="Run or investigate robustness tests.")
+    parser = argparse.ArgumentParser(
+        description="Run or investigate robustness tests."
+    )
 
     parser.add_argument(
         "--request",

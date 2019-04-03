@@ -131,7 +131,6 @@ class TestClass(object):
         }
 
         # Simulate a dataset
-
         params_spec, options_spec = generate_random_model(point_constr=constr)
         respy_obj = RespyCls(params_spec, options_spec)
         simulate_observed(respy_obj)

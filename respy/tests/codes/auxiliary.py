@@ -143,7 +143,7 @@ def write_interpolation_grid(respy_obj):
     max_states_period = max(states_number_period)
 
     # Initialize container
-    booleans = np.tile(True, (max_states_period, num_periods))
+    booleans = np.full((max_states_period, num_periods), True)
 
     # Iterate over all periods
     for period in range(num_periods):
@@ -199,7 +199,7 @@ def write_types(type_shares, num_agents_sim):
     # Note that the we simply set the relevant initial condition to a random value. This
     # seems to be sufficient for the testing purposes.
     type_probs = get_conditional_probabilities(
-        type_shares, np.random.choice([10, 12, 15])
+        type_shares, np.array([np.random.choice([10, 12, 15])])
     )
     types = np.random.choice(len(type_probs), p=type_probs, size=num_agents_sim)
     np.savetxt(".types.respy.test", types, fmt="%i")

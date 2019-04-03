@@ -6,7 +6,6 @@ from respy.python.solve.solve_auxiliary import StateSpace
 def pyth_solve(
     is_interpolated,
     num_points_interp,
-    num_draws_emax,
     num_periods,
     is_myopic,
     is_debug,
@@ -14,7 +13,6 @@ def pyth_solve(
     edu_spec,
     optim_paras,
     file_sim,
-    optimizer_options,
     num_types,
 ):
     """ Solving the model using pure PYTHON code.

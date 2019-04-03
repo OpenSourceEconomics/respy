@@ -6,7 +6,6 @@ import pytest
 import shutil
 import shlex
 from pathlib import Path
-
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR

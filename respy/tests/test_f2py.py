@@ -1,12 +1,10 @@
 import sys
 import os
-
 import statsmodels.api as sm
 from scipy.stats import norm
 import numpy as np
 import pytest
 import scipy
-
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.record.record_estimation import _spectral_condition_number
 from respy.python.shared.shared_auxiliary import replace_missing_values
@@ -22,7 +20,6 @@ from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.simulate.simulate_auxiliary import sort_type_info
 from respy.python.simulate.simulate_auxiliary import sort_edu_spec
-from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.estimate.estimate_python import pyth_criterion
@@ -121,17 +118,18 @@ class TestClass(object):
         # Select systematic rewards
         rewards_systematic = periods_rewards_systematic[period, k, :]
 
-        # Evaluation of simulated expected future values
+        # Evaluation of simulated expected future values. Limit to one individual as the
+        # Fortran version.
         rewards_period = state_space.get_attribute_from_period(
             "rewards", period
-        )
+        )[k]
         emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
-            :, :4
+            k, :4
         ]
 
         py = construct_emax_risk(
-            rewards_period[:, -2:],
-            rewards_period[:, :4],
+            rewards_period[-2:],
+            rewards_period[:4],
             emaxs_period,
             draws_emax_risk,
             optim_paras["delta"],
@@ -156,10 +154,7 @@ class TestClass(object):
             num_types,
         )
 
-        # The old FORTRAN version of ``construct_emax_risk`` calculates the emax for one
-        # state whereas the new Python implementation calculates the emax for all states
-        # in a given period. Thus, index the Python output with ``k``.
-        assert_allclose(py[k], f90)
+        assert_allclose(py, f90)
 
     def test_2(self):
         """ Compare results between FORTRAN and PYTHON of selected hand-crafted
@@ -526,9 +521,7 @@ class TestClass(object):
         )
 
         data_array = process_dataset(respy_obj).to_numpy()
-        num_obs_agent = get_num_obs_agent(data_array, num_agents_est)
         min_idx = edu_spec["max"] + 1
-
         shocks_cholesky = optim_paras["shocks_cholesky"]
         coeffs_common = optim_paras["coeffs_common"]
         coeffs_home = optim_paras["coeffs_home"]
@@ -552,25 +545,18 @@ class TestClass(object):
         periods_draws_prob = read_draws(num_periods, num_draws_prob)
         periods_draws_sims = read_draws(num_periods, num_agents_sim)
 
-        # Check the full solution procedure
-        base_args = (
+        fort, _ = resfort_interface(respy_obj, "simulate")
+
+        state_space = pyth_solve(
             is_interpolated,
             num_points_interp,
-            num_draws_emax,
             num_periods,
             is_myopic,
             is_debug,
             periods_draws_emax,
-        )
-
-        fort, _ = resfort_interface(respy_obj, "simulate")
-
-        state_space = pyth_solve(
-            *base_args,
             edu_spec,
             optim_paras,
             file_sim,
-            optimizer_options,
             num_types,
         )
 
@@ -590,7 +576,13 @@ class TestClass(object):
         )
 
         f2py = fort_debug.wrapper_solve(
-            *base_args,
+            is_interpolated,
+            num_points_interp,
+            num_draws_emax,
+            num_periods,
+            is_myopic,
+            is_debug,
+            periods_draws_emax,
             min_idx,
             edu_spec["start"],
             edu_spec["max"],
@@ -661,17 +653,18 @@ class TestClass(object):
         )
         assert_allclose(py, f2py)
 
+        # We have to cut the simulated data to `num_agents_est` as the Python
+        # implementation calculates the likelihood contributions for all agents in the
+        # data.
+        simulated_data = simulated_data.loc[
+            simulated_data.Identifier.lt(num_agents_est)
+        ]
+
         py = pyth_contributions(
-            state_space,
-            simulated_data,
-            periods_draws_prob,
-            tau,
-            num_draws_prob,
-            num_agents_est,
-            num_obs_agent,
-            edu_spec,
-            optim_paras,
+            state_space, simulated_data, periods_draws_prob, tau, optim_paras
         )
+
+        num_obs_agent = np.bincount(simulated_data.Identifier.to_numpy())
 
         f2py = fort_debug.wrapper_contributions(
             periods_rewards_systematic,
@@ -699,43 +692,40 @@ class TestClass(object):
         # Evaluation of criterion function
         x0 = get_optim_paras(optim_paras, num_paras, "all", is_debug)
 
-        base_args_1 = (
+        py = pyth_criterion(
+            x0,
+            is_interpolated,
+            num_points_interp,
+            is_myopic,
+            is_debug,
+            simulated_data,
+            tau,
+            periods_draws_emax,
+            periods_draws_prob,
+            state_space,
+            edu_spec,
+        )
+
+        f2py = fort_debug.wrapper_criterion(
+            x0,
             is_interpolated,
             num_draws_emax,
             num_periods,
             num_points_interp,
             is_myopic,
             is_debug,
-        )
-
-        base_args_2 = (
+            data_array,
             num_draws_prob,
             tau,
             periods_draws_emax,
             periods_draws_prob,
-        )
-        base_args_3 = (num_agents_est, num_obs_agent, num_types)
-
-        py = pyth_criterion(
-            x0,
-            *base_args_1,
-            simulated_data,
-            *base_args_2,
-            state_space,
-            *base_args_3,
-            edu_spec,
-        )
-
-        f2py = fort_debug.wrapper_criterion(
-            x0,
-            *base_args_1,
-            data_array,
-            *base_args_2,
             states_all,
             state_space.states_per_period,
             mapping_state_idx,
             max_states_period,
-            *base_args_3,
+            num_agents_est,
+            num_obs_agent,
+            num_types,
             edu_spec["start"],
             edu_spec["max"],
             edu_spec["share"],
@@ -821,10 +811,12 @@ class TestClass(object):
         )
 
         # Integrate periods_emax in state_space
-        state_space.emaxs = np.c_[
-            np.zeros((state_space.num_states, 4)),
-            periods_emax[periods_emax != MISSING_FLOAT],
-        ]
+        state_space.emaxs = np.column_stack(
+            (
+                np.zeros((state_space.num_states, 4)),
+                periods_emax[periods_emax != MISSING_FLOAT],
+            )
+        )
 
         # Fill emaxs_a - emaxs_home in the requested period
         states_period = state_space.get_attribute_from_period("states", period)
@@ -1034,7 +1026,7 @@ class TestClass(object):
 
             data_array = process_dataset(respy_obj).to_numpy()
 
-            py = get_num_obs_agent(data_array, num_agents_est)
+            py = np.bincount(data_array[:, 0].astype(int))
             f90 = fort_debug.wrapper_get_num_obs_agent(
                 data_array, num_agents_est
             )
@@ -1048,7 +1040,7 @@ class TestClass(object):
             edu_start = np.random.randint(10, 100)
             type_shares = np.random.normal(0, 1, size=num_types * 2)
 
-            args = [type_shares, edu_start]
+            args = [type_shares, np.array([edu_start])]
 
             py = get_conditional_probabilities(*args)
             fort = fort_debug.wrapper_get_conditional_probabilities(

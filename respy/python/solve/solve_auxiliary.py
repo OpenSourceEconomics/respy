@@ -59,7 +59,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
         Array with shape (num_states, 6) containing period, experience in OCCUPATION A,
         experience in OCCUPATION B, years of schooling, the lagged choice and the type
         of the agent.
-    indexer : np.array
+    indexer : np.ndarray
         A matrix where each dimension represents a characteristic of the state space.
         Switching from one state is possible via incrementing appropriate indices by 1.
 
@@ -430,7 +430,6 @@ def pyth_backward_induction(
             )
 
         else:
-
             emax = construct_emax_risk(
                 rewards_period[:, -2:],
                 rewards_period[:, :4],
@@ -466,7 +465,7 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
     """
     # Drawing random interpolation points
     interpolation_points = np.random.choice(
-        range(num_states), size=num_points_interp, replace=False
+        num_states, size=num_points_interp, replace=False
     )
 
     # Constructing an indicator whether a state will be simulated or interpolated.
@@ -515,8 +514,8 @@ def get_exogenous_variables(rewards, emaxs, draws, delta):
         Array with shape (num_states_in_period,) containing maximum emax.
 
     """
-    total_values, _ = get_continuation_value(
-        rewards[:, -2:], rewards[:, :4], draws.reshape(1, -1), emaxs, delta
+    total_values = get_continuation_value(
+        rewards[:, -2:], rewards[:, :4], emaxs, draws.reshape(1, -1), delta
     )
     max_emax = total_values.max(axis=1)
     exogenous = max_emax - total_values.reshape(-1, 4)
@@ -609,19 +608,6 @@ def check_prediction_model(predictions_diff, model):
     assert np.all(predictions_diff >= 0.00)
     assert results.params.shape == (9,)
     assert np.all(np.isfinite(results.params))
-
-
-def check_input(respy_obj):
-    """ Check input arguments.
-    """
-    # Check that class instance is locked.
-    assert respy_obj.get_attr("is_locked")
-
-    # Check for previous solution attempt.
-    if respy_obj.get_attr("is_solved"):
-        respy_obj.reset()
-
-    return True
 
 
 def calculate_wages_systematic(
@@ -779,6 +765,10 @@ class StateSpace:
         Array with shape (num_states, 5) containing containing the emax of each choice
         (OCCUPATION A, OCCUPATION B, SCHOOL, HOME) of the subsequent period and the
         simulated or interpolated maximum of the current period.
+    num_periods : int
+        Number of periods.
+    num_types : int
+        Number of types.
     states_columns : list
         List of column names in ``self.states``.
     covariates_columns : list
@@ -835,8 +825,7 @@ class StateSpace:
     def __init__(
         self, num_periods, num_types, edu_starts, edu_max, optim_paras=None
     ):
-        self.num_periods = num_periods
-        self.num_types = num_types
+        self.num_periods, self.num_types = num_periods, num_types
 
         self.states, self.indexer = pyth_create_state_space(
             num_periods, num_types, edu_starts, edu_max
@@ -927,9 +916,7 @@ class StateSpace:
             if getattr(self, i, None) is not None
         ]
 
-        return pd.DataFrame(
-            np.concatenate(attributes, axis=1), columns=columns
-        )
+        return pd.DataFrame(np.hstack(attributes), columns=columns)
 
     def _create_slices_by_periods(self, num_periods):
         """Create slices to index all attributes in a given period.

@@ -13,7 +13,6 @@ from respy.python.record.record_estimation import record_estimation_final
 from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_wrapper import OptimizationClass
-from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
@@ -78,7 +77,6 @@ def respy_interface(respy_obj, request, data=None):
 
     if request == "estimate":
 
-        num_obs = get_num_obs_agent(data.values, num_agents_est)
         periods_draws_prob = create_draws(
             num_periods, num_draws_prob, seed_prob, is_debug
         )
@@ -103,20 +101,14 @@ def respy_interface(respy_obj, request, data=None):
         # These must be in the correct order already.
         args = (
             is_interpolated,
-            num_draws_emax,
-            num_periods,
             num_points_interp,
             is_myopic,
             is_debug,
             data,
-            num_draws_prob,
             tau,
             periods_draws_emax,
             periods_draws_prob,
             state_space,
-            num_agents_est,
-            num_obs,
-            num_types,
             edu_spec,
         )
 
@@ -197,9 +189,7 @@ def respy_interface(respy_obj, request, data=None):
             record_estimation_scalability("Finish")
 
             success = True
-            message = (
-                "Single evaluation of criterion function at starting values."
-            )
+            message = "Single evaluation of criterion function at starting values."
 
         elif optimizer_used == "SCIPY-BFGS":
 
@@ -312,7 +302,6 @@ def respy_interface(respy_obj, request, data=None):
         state_space = pyth_solve(
             is_interpolated,
             num_points_interp,
-            num_draws_emax,
             num_periods,
             is_myopic,
             is_debug,
@@ -320,7 +309,6 @@ def respy_interface(respy_obj, request, data=None):
             edu_spec,
             optim_paras,
             file_sim,
-            optimizer_options,
             num_types,
         )
 

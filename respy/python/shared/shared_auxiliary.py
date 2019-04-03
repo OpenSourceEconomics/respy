@@ -16,8 +16,19 @@ from numba import guvectorize, njit
 
 
 def get_log_likl(contribs):
-    """Aggregate contributions to the likelihood value."""
-    if sum(np.abs(contribs) > HUGE_FLOAT) > 0:
+    """Aggregate contributions to the likelihood value.
+
+    Parameters
+    ----------
+    contribs : np.ndarray
+        Array with shape (num_agents_est,).
+
+    Returns
+    -------
+    crit_val : float
+
+    """
+    if np.sum(np.abs(contribs) > HUGE_FLOAT) > 0:
         record_warning(5)
 
     crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
@@ -100,7 +111,7 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
         assert check_model_parameters(paras_dict)
 
     pinfo = paras_parsing_information(num_paras)
-    x = np.tile(np.nan, num_paras)
+    x = np.full(num_paras, np.nan)
 
     start, stop = pinfo["delta"]["start"], pinfo["delta"]["stop"]
     x[start:stop] = paras_dict["delta"]
@@ -173,23 +184,23 @@ def _check_optimization_parameters(x):
     return True
 
 
-def get_conditional_probabilities(type_shares, edu_start):
+def get_conditional_probabilities(type_shares, edu_starts):
     """Calculate the conditional choice probabilities.
 
     The calculation is based on the mulitnomial logit model for one particular
     initial condition.
 
     """
-    # Auxiliary objects
-    num_types = int(len(type_shares) / 2)
-    probs = np.tile(np.nan, num_types)
-    for i in range(num_types):
-        lower, upper = i * 2, (i + 1) * 2
-        covariate = edu_start > 9
-        probs[i] = np.exp(np.sum(type_shares[lower:upper] * [1.0, covariate]))
+    type_shares = type_shares.reshape(-1, 2)
+    covariate = edu_starts > 9
+    covariates = np.hstack(
+        [np.ones((covariate.shape[0], 1)), covariate.reshape(-1, 1)]
+    )
+    probs = np.exp(covariates.dot(type_shares.T))
+    probs /= probs.sum(axis=1, keepdims=True)
 
-    # Scaling
-    probs = probs / sum(probs)
+    if edu_starts.shape[0] == 1:
+        probs = probs.ravel()
 
     return probs
 
@@ -202,13 +213,13 @@ def extract_type_information(x):
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
     num_types = int(len(x[start:]) / 6) + 1
     type_shares = x[start:stop]
-    type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
+    type_shares = np.hstack((np.zeros(2), type_shares))
 
     # Type shifts
     start, stop = pinfo["type_shifts"]["start"], pinfo["type_shifts"]["stop"]
     type_shifts = x[start:stop]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
-    type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
+    type_shifts = np.vstack((np.zeros(4), type_shifts))
 
     return type_shares, type_shifts
 
@@ -283,21 +294,15 @@ def cholesky_to_coeffs(shocks_cholesky):
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:, :], f4[:], f4, f4[:, :], f4[:, :]",
-        "f8[:], f8[:], f8[:, :], f8[:], f8, f8[:, :], f8[:, :]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, f4[:, :], f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, f8[:, :], f8[:, :]",
     ],
-    "(m), (n), (p, n), (n), () -> (n, p), (n, p)",
+    "(m), (n), (n), (p, n), () -> (n, p), (n, p)",
     nopython=True,
     target="cpu",
 )
-def get_continuation_value(
-    wages,
-    rewards_systematic,
-    draws,
-    emaxs_sub_period,
-    delta,
-    cont_value,
-    rew_ex_post,
+def get_continuation_value_and_ex_post_rewards(
+    wages, rewards_systematic, emaxs, draws, delta, cont_value, rew_ex_post
 ):
     """Calculate the continuation value and ex-post rewards.
 
@@ -307,22 +312,22 @@ def get_continuation_value(
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (num_states_in_period, 2).
+        Array with shape (2,).
     rewards_systematic : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (4,).
+    emaxs : np.ndarray
+        Array with shape (4,)
     draws : np.ndarray
         Array with shape (num_draws, 4)
-    emaxs_sub_period : np.ndarray
-        Array with shape (num_states_in_period, 4)
     delta : float
         Discount rate.
 
     Returns
     -------
     cont_value : np.ndarray
-        Array with shape (num_states_in_period, 4, num_draws).
+        Array with shape (4, num_draws).
     rew_ex_post : np.ndarray
-        Array with shape (num_states_in_period, 4, num_draws)
+        Array with shape (4, num_draws)
 
     Examples
     --------
@@ -342,20 +347,59 @@ def get_continuation_value(
     (10000, 4, 500)
 
     """
-    for i in range(draws.shape[0]):
-        for j in range(rewards_systematic.shape[0]):
-            if j < wages.shape[0]:
+    num_draws = draws.shape[0]
+    num_choices = rewards_systematic.shape[0]
+    num_wages = wages.shape[0]
+
+    for i in range(num_draws):
+        for j in range(num_choices):
+            if j < num_wages:
                 rew_ex = (
                     wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
                 )
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
-            cont_value[j, i] = rew_ex + delta * emaxs_sub_period[j]
+            cont_value[j, i] = rew_ex + delta * emaxs[j]
             rew_ex_post[j, i] = rew_ex
 
 
-@njit
+@guvectorize(
+    [
+        "f4[:], f4[:], f4[:], f4[:, :], f4, f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, f8[:, :]",
+    ],
+    "(m), (n), (n), (p, n), () -> (n, p)",
+    nopython=True,
+    target="cpu",
+)
+def get_continuation_value(
+    wages, rewards_systematic, emaxs, draws, delta, cont_value
+):
+    """Calculate the continuation value.
+
+    This function is a reduced version of
+    :func:`get_continutation_value_and_ex_post_rewards` which does not return ex post
+    rewards. The reason is that a second return argument doubles runtime whereas it is
+    only needed during simulation.
+
+    """
+    num_draws, num_choices = draws.shape
+    num_wages = wages.shape[0]
+
+    for i in range(num_draws):
+        for j in range(num_choices):
+            if j < num_wages:
+                rew_ex = (
+                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                )
+            else:
+                rew_ex = rewards_systematic[j] + draws[i, j]
+
+            cont_value[j, i] = rew_ex + delta * emaxs[j]
+
+
+@njit(nogil=True)
 def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
     """Get the maxmium utility from the subsequent period.
 
@@ -716,24 +760,6 @@ def check_early_termination(maxfun, num_eval):
         raise MaxfunError
 
 
-def get_num_obs_agent(data_array, num_agents_est):
-    """Get a list with the number of observations for each agent."""
-    num_obs_agent = np.tile(0, num_agents_est)
-    agent_number = data_array[0, 0]
-    num_rows = data_array.shape[0]
-
-    q = 0
-    for i in range(num_rows):
-        # We need to check whether we are faced with a new agent.
-        if data_array[i, 0] != agent_number:
-            q += 1
-            agent_number = data_array[i, 0]
-
-        num_obs_agent[q] += 1
-
-    return num_obs_agent
-
-
 def create_covariates(states):
     """Create set of covariates for each state.
 
@@ -748,18 +774,17 @@ def create_covariates(states):
     covariates : np.ndarray
         Array with shape (num_states, 16) containing covariates of each state.
 
-    Example
-    -------
+    Examples
+    --------
     This example is to benchmark alternative implementations, but even this version does
     not benefit from Numba anymore.
 
-    >>> from respy.python.solve.solve_auxiliary import pyth_create_state_space
     >>> states, _ = pyth_create_state_space(40, 5, [10], 20)
     >>> covariates = create_covariates(states)
     >>> assert covariates.shape == (states.shape[0], 16)
 
     """
-    covariates = np.full((states.shape[0], 16), np.nan)
+    covariates = np.zeros((states.shape[0], 16), dtype=np.int8)
 
     # Experience in A or B, but not in the last period.
     covariates[:, 0] = np.where((states[:, 1] > 0) & (states[:, 4] != 1), 1, 0)
@@ -795,14 +820,6 @@ def create_covariates(states):
     covariates[:, 13] = np.where(states[:, 0] < 2, 1, 0)
     covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
     covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
-
-    # Any experience in A or B.
-    covariates[:, 7] = np.where(states[:, 1] > 0, 1, 0)
-    covariates[:, 8] = np.where(states[:, 2] > 0, 1, 0)
-
-    # High school or college graduate
-    covariates[:, 9] = np.where(states[:, 3] >= 12, 1, 0)
-    covariates[:, 10] = np.where(states[:, 3] >= 16, 1, 0)
 
     return covariates
 

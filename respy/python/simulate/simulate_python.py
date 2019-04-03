@@ -15,7 +15,9 @@ from respy.python.shared.shared_constants import (
     DATA_LABELS_SIM,
     DATA_FORMATS_SIM,
 )
-from respy.python.shared.shared_auxiliary import get_continuation_value
+from respy.python.shared.shared_auxiliary import (
+    get_continuation_value_and_ex_post_rewards,
+)
 
 
 def pyth_simulate(
@@ -118,11 +120,11 @@ def pyth_simulate(
         draws = periods_draws_sims_transformed[period]
 
         # Get total values and ex post rewards.
-        total_values, rewards_ex_post = get_continuation_value(
+        total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
             state_space.rewards[ks, -2:],
             state_space.rewards[ks, :4],
-            draws.reshape(-1, 1, 4),
             state_space.emaxs[ks, :4],
+            draws.reshape(-1, 1, 4),
             optim_paras["delta"],
         )
         total_values = total_values.reshape(-1, 4)
@@ -194,6 +196,7 @@ def pyth_simulate(
         pd.DataFrame(data=np.vstack(data), columns=DATA_LABELS_SIM)
         .astype(DATA_FORMATS_SIM)
         .sort_values(["Identifier", "Period"])
+        .reset_index(drop=True)
     )
 
     # TODO: Replace logging which is useless here and kept only for successful testing.

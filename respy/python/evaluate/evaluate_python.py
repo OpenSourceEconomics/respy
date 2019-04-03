@@ -1,29 +1,22 @@
-from scipy.stats import norm
 import numpy as np
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
-from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
-from respy.python.shared.shared_constants import SMALL_FLOAT
-from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_auxiliary import get_continuation_value
+from respy.python.evaluate.evaluate_auxiliary import (
+    simulate_probability_of_agents_observed_choice,
+    create_draws_and_prob_wages,
+)
 
 
 def pyth_contributions(
-    state_space,
-    data,
-    periods_draws_prob,
-    tau,
-    num_draws_prob,
-    num_agents_est,
-    num_obs_agent,
-    edu_spec,
-    optim_paras,
+    state_space, data, periods_draws_prob, tau, optim_paras
 ):
-    """Likelihood contribution of each individual in the sample.
+    """Calculate the likelihood contribution of each individual in the sample.
 
-    The code allows for a deterministic model (i.e. without randomness in the rewards).
-    If that is the case and all agents have corresponding experiences, then one is
-    returned. If a single agent violates the implications, then the zero is returned.
+    The function calculates all likelihood contributions for all observations in the
+    data which means all individual-period-type combinations. Then, likelihoods are
+    accumulated within each individual and type over all periods. After that, the result
+    is multiplied with the type-specific shares which yields the contribution to the
+    likelihood for each individual.
 
     Parameters
     ----------
@@ -36,191 +29,99 @@ def pyth_contributions(
         draws from standard normal distributions.
     tau : float
         Smoothing parameter for choice probabilities.
-    num_draws_prob : int
-        Number of draws in the Monte Carlo integration of the choice probabilities.
-    num_agents_est : int
-        Number of observations used for estimation.
-    num_obs_agent : np.ndarray
-        Array with shape (num_agents_est,) that contains the number of observed
-        observations for each individual in the sample.
-    edu_spec : dict
     optim_paras : dict
         Dictionary with quantities that were extracted from the parameter vector.
 
     Returns
     -------
     contribs : np.ndarray
-        Array with shape (num_agents_est,) containing contributions of estimated agents.
+        Array with shape (num_agents,) containing contributions of estimated agents.
 
     """
-    # Define a shortcut to the Cholesky factors of the shocks, because they are so
-    # frequently used inside deeply nested loops
-    sc = optim_paras["shocks_cholesky"]
-    is_deterministic = np.count_nonzero(sc) == 0
+    if np.count_nonzero(optim_paras["shocks_cholesky"]) == 0:
+        return np.ones(data.Identifier.unique().shape[0])
 
-    # Initialize auxiliary objects
-    contribs = np.full(num_agents_est, -HUGE_FLOAT)
-    prob_obs = np.full(state_space.num_periods, -HUGE_FLOAT)
+    # Convert data to np.ndarray. Separate wages from other characteristics as they need
+    # to be integers.
+    agents = data[
+        [
+            "Period",
+            "Experience_A",
+            "Experience_B",
+            "Years_Schooling",
+            "Lagged_Choice",
+            "Choice",
+        ]
+    ].values.astype(int)
+    wages_observed = data["Wage"].values
 
-    # Calculate the probability over agents and time.
-    for j in range(num_agents_est):
+    # Get the number of observations for each individual and an array with indices of
+    # each individual's first observation. After that, extract initial education levels
+    # per agent which are important for type-specific probabilities.
+    num_obs_per_agent = np.bincount(data.Identifier.values)
+    idx_agents_first_observation = np.hstack((0, np.cumsum(num_obs_per_agent)[:-1]))
+    agents_initial_education_levels = agents[idx_agents_first_observation, 3]
 
-        row_start = sum(num_obs_agent[:j])
-        num_obs = num_obs_agent[j]
-        edu_start = data.iloc[row_start]["Years_Schooling"].astype(int)
+    # Update type-specific probabilities conditional on whether the initial level of
+    # education is greater than nine.
+    type_shares = get_conditional_probabilities(
+        optim_paras["type_shares"], agents_initial_education_levels
+    )
 
-        # updated type probabilities, conditional on edu_start >= 9 or <= 9
-        type_shares = get_conditional_probabilities(
-            optim_paras["type_shares"], edu_start
-        )
+    # Extract observable components of the state space and agent's decision.
+    periods, exp_as, exp_bs, edus, choices_lagged, choices = (
+        agents[:, i] for i in range(6)
+    )
 
-        # Container for the likelihood of the observed choice for each type. Likelihood
-        # contribution for each type
-        prob_type = np.ones(state_space.num_types)
+    # Get indices of states in the state space corresponding to all observations for all
+    # types. The indexer has the shape (num_obs, num_types).
+    ks = state_space.indexer[
+        periods, exp_as, exp_bs, edus, choices_lagged - 1, :
+    ]
 
-        for type_ in range(state_space.num_types):
+    # Reshape periods, choices and wages_observed so that they match the shape (num_obs,
+    # num_types) of the indexer.
+    periods = state_space.states[ks, 0]
+    choices = choices.repeat(state_space.num_types).reshape(
+        -1, state_space.num_types
+    )
+    wages_observed = wages_observed.repeat(state_space.num_types).reshape(
+        -1, state_space.num_types
+    )
+    wages_systematic = state_space.rewards[ks, -2:]
 
-            # prob_obs has length p
-            prob_obs[:] = 0.00
-            for p in range(num_obs):
+    # Adjust the draws to simulate the expected maximum utility and calculate the
+    # probability of observing the wage.
+    draws, prob_wages = create_draws_and_prob_wages(
+        wages_observed,
+        wages_systematic,
+        periods,
+        periods_draws_prob,
+        choices,
+        optim_paras["shocks_cholesky"],
+    )
 
-                agent = data.iloc[row_start + p]
+    # Simulate the probability of observing the choice of the individual.
+    prob_choices = simulate_probability_of_agents_observed_choice(
+        state_space.rewards[ks, -2:],
+        state_space.rewards[ks, :4],
+        state_space.emaxs[ks, :4],
+        draws,
+        optim_paras["delta"],
+        choices - 1,
+        tau,
+    )
 
-                # Extract observable components of state space as well as agent
-                # decision.
-                period, exp_a, exp_b, edu, choice_lagged, choice = agent[
-                    [
-                        "Period",
-                        "Experience_A",
-                        "Experience_B",
-                        "Years_Schooling",
-                        "Lagged_Choice",
-                        "Choice",
-                    ]
-                ].astype(int)
-                wage_observed = agent.Wage
+    # Multiply the probability of the agent's choice with the probability of wage and
+    # average over all draws to get the probability of the observation.
+    prob_obs = (prob_choices * prob_wages).mean(axis=2)
 
-                # Determine whether the agent's wage is known
-                is_wage_missing = np.isnan(wage_observed)
-                is_working = choice in [1, 2]
+    # Accumulate the likelihood of observations for each individual-type combination
+    # over all periods.
+    prob_type = np.multiply.reduceat(prob_obs, idx_agents_first_observation)
 
-                # TODO: Type conversion for tests.
-                # Create an index for the choice.
-                idx = int(choice - 1)
-
-                # Extract relevant deviates from standard normal distribution. The same
-                # set of baseline draws are used for each agent and period. The copy is
-                # needed as the object is otherwise changed inplace.
-                draws_prob_raw = periods_draws_prob[period, :, :].copy()
-
-                # Get state index to access the systematic component of the agents
-                # rewards. These feed into the simulation of choice probabilities.
-                k = state_space.indexer[
-                    period, exp_a, exp_b, edu, choice_lagged - 1, type_
-                ]
-
-                # If an agent is observed working, then the the labor market shocks are
-                # observed and the conditional distribution is used to determine the
-                # choice probabilities if the wage information is available as well.
-                if is_working and (not is_wage_missing):
-                    wages_systematic = state_space.rewards[k, -2:]
-
-                    # Calculate the disturbance which are implied by the model and the
-                    # observed wages.
-                    dist = np.clip(
-                        np.log(wage_observed), -HUGE_FLOAT, HUGE_FLOAT
-                    ) - np.clip(
-                        np.log(wages_systematic[idx]), -HUGE_FLOAT, HUGE_FLOAT
-                    )
-
-                    # If there is no random variation in rewards, then the observed
-                    # wages need to be identical to their systematic components. The
-                    # discrepancy between the observed wages and their systematic
-                    # components might be nonzero (but small) due to the reading in of
-                    # the dataset (FORTRAN only).
-                    if is_deterministic and (dist > SMALL_FLOAT):
-                        contribs[:] = 1
-                        return contribs
-
-                # Simulate the conditional distribution of alternative-specific value
-                # functions and determine the choice probabilities.
-                counts = np.zeros(4)
-
-                for s in range(num_draws_prob):
-
-                    # Extract the standard normal deviates for the iteration.
-                    draws_stan = draws_prob_raw[s, :]
-
-                    # Construct independent normal draws implied by the agents state
-                    # experience. This is needed to maintain the correlation structure
-                    # of the disturbances. Special care is needed in case of a
-                    # deterministic model, as otherwise a zero division error occurs.
-                    if is_working and (not is_wage_missing):
-                        if is_deterministic:
-                            prob_wage = HUGE_FLOAT
-                        else:
-                            if choice == 1:
-                                draws_stan[0] = dist / sc[idx, idx]
-                                mean = 0.00
-                                sd = abs(sc[idx, idx])
-                            else:
-                                draws_stan[idx] = (
-                                    dist - sc[idx, 0] * draws_stan[0]
-                                ) / sc[idx, idx]
-                                mean = sc[idx, 0] * draws_stan[0]
-                                sd = abs(sc[idx, idx])
-
-                            prob_wage = norm.pdf(dist, mean, sd)
-                    else:
-                        prob_wage = 1.0
-
-                    # As deviates are aligned with the state experiences, create the
-                    # conditional draws. Note, that the realization of the random
-                    # component of wages align with their observed counterpart in the
-                    # data.
-                    draws = draws_stan.dot(sc.T)
-
-                    # Extract deviates from (un-)conditional normal distributions and
-                    # transform labor market shocks.
-                    draws[:2] = np.clip(np.exp(draws[:2]), 0.0, HUGE_FLOAT)
-
-                    # Calculate total values. immediate rewards, including shock +
-                    # expected future value!
-                    total_values, _ = get_continuation_value(
-                        state_space.rewards[k, -2:],
-                        state_space.rewards[k, :4],
-                        draws.reshape(1, -1),
-                        state_space.emaxs[k, :4],
-                        optim_paras["delta"],
-                    )
-                    total_values = total_values.ravel()
-
-                    # Record optimal choices
-                    counts[np.argmax(total_values)] += 1
-
-                    # Get the smoothed choice probability.
-                    prob_choice = get_smoothed_probability(
-                        total_values, idx, tau
-                    )
-                    prob_obs[p] += prob_choice * prob_wage
-
-                # Determine relative shares
-                prob_obs[p] = prob_obs[p] / num_draws_prob
-
-                # If there is no random variation in rewards, then this implies that the
-                # observed choice in the dataset is the only choice.
-                if is_deterministic and (not (counts[idx] == num_draws_prob)):
-                    contribs[:] = 1
-                    return contribs
-
-            prob_type[type_] = np.prod(prob_obs[:num_obs])
-
-        # Adjust  and record likelihood contribution
-        contribs[j] = np.sum(prob_type * type_shares)
-
-    # If there is no random variation in rewards and no agent violated the implications
-    # of observed wages and choices, then the evaluation return value of one.
-    if is_deterministic:
-        contribs[:] = np.exp(1.0)
+    # Multiply each individual-type contribution with its type-specific shares and sum
+    # over types to get the likelihood contribution for each individual.
+    contribs = (prob_type * type_shares).sum(axis=1)
 
     return contribs
