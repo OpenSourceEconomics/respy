@@ -38,6 +38,9 @@ def pyth_contributions(
         Array with shape (num_agents,) containing contributions of estimated agents.
 
     """
+    if np.count_nonzero(optim_paras["shocks_cholesky"]) == 0:
+        return np.ones(data.Identifier.unique().shape[0])
+
     # Convert data to np.ndarray. Separate wages from other characteristics as they need
     # to be integers.
     agents = data[
