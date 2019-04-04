@@ -56,6 +56,7 @@ assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 if IS_F2PY:
     print(TEST_RESOURCES_BUILD)
     print(sys.path)
+    print(os.listdir(str(TEST_RESOURCES_BUILD)))
     sys.path.insert(0, str(TEST_RESOURCES_BUILD))
     import f2py_interface as fort_debug
 

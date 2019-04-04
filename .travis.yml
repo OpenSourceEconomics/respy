@@ -40,7 +40,7 @@ install:
     - conda info -a
 
     # Install respy
-    - pip install -e . -vv --no-deps
+    - pip install -e . --no-binary . -vv --no-deps
 
     - pip install tox-conda
 
