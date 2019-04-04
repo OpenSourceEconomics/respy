@@ -11,12 +11,11 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
-import sphinx_rtd_theme
-
+import os
 import socket
 import sys
-import os
+
+import sphinx_rtd_theme
 
 # Set variable so that todos are shown in local build
 on_rtd = os.environ.get("READTHEDOCS") == "True"
@@ -44,6 +43,9 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinxcontrib.bibtex",
 ]
+
+# Settings for extensions.
+autodoc_mock_imports = ["numba", "patsy"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

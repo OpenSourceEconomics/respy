@@ -70,10 +70,11 @@ def setup_package():
         install_requires=[
             "numpy>=1.11",
             "scipy>=0.18",
-            "pandas>=0.18",
-            "statsmodels>=0.6",
+            "pandas>=0.24",
+            "statsmodels>=0.9",
             "pip>=8.0",
             "pytest>=3.0",
+            "pyaml",
         ],
         cmdclass={"build_py": CustomBuildCommand, "develop": CustomDevelopCommand},
         include_package_data=True,

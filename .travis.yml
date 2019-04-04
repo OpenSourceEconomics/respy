@@ -39,14 +39,13 @@ install:
     - conda config --set always_yes yes --set changeps1 no
     - conda info -a
 
-    - conda env create -n respy -f environment.yml
-    - source activate respy
-
     # Install respy
-    - pip install -e . -vv
+    - pip install -e . -vv --no-deps
+
+    - pip install tox-conda
 
 script:
-    - travis_wait 45 pytest --cov=respy -vvv -s
+    - travis_wait 45 tox
 
 after_success:
     - if  [ $CI_FORTRAN ] || \
