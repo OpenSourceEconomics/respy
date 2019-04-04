@@ -59,7 +59,7 @@ install:
         $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
       }
 
-  # Configure conda and install packages
+  # Configure conda
   - conda config --set always_yes yes --set changeps1 no
   - conda info -a
 
