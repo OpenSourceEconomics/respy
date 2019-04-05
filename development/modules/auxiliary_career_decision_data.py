@@ -1,6 +1,7 @@
 """This module contains the auxiliary function for the data transformation."""
 import pandas as pd
 import numpy as np
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 
 
 def prepare_dataset():
@@ -22,7 +23,7 @@ def load_dataset():
         "Choice": "category",
     }
     df = pd.DataFrame(
-        np.genfromtxt("../../../respy/tests/resources/KW_97.raw"), columns=columns
+        np.genfromtxt(str(TEST_RESOURCES_DIR / "KW_97.raw")), columns=columns
     ).astype(dtype)
 
     df.set_index(["Identifier", "Age"], inplace=True, drop=False)

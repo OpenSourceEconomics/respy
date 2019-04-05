@@ -70,8 +70,7 @@ class TestClass(object):
         large setup cost to construct the ingredients for the interface.
         """
         # Generate constraint periods
-        constr = dict()
-        constr["version"] = "python"
+        constr = {"program": {"version": "python"}}
         # Generate random initialization file
         params_spec, options_spec = generate_random_model(point_constr=constr)
         respy_obj = RespyCls(params_spec, options_spec)
@@ -126,6 +125,10 @@ class TestClass(object):
         emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
             k, :4
         ]
+        max_education_period = (
+            state_space.get_attribute_from_period("states", period)[k, 3]
+            >= edu_spec["max"]
+        )
 
         py = construct_emax_risk(
             rewards_period[-2:],
@@ -133,6 +136,7 @@ class TestClass(object):
             emaxs_period,
             draws_emax_risk,
             optim_paras["delta"],
+            max_education_period,
         )
 
         f90 = fort_debug.wrapper_construct_emax_risk(
@@ -400,7 +404,7 @@ class TestClass(object):
 
         _, _, pyth, _ = state_space._get_fortran_counterparts()
 
-        args = (
+        f2py = fort_debug.wrapper_calculate_rewards_systematic(
             num_periods,
             state_space.states_per_period,
             states_all,
@@ -413,7 +417,6 @@ class TestClass(object):
             type_spec_shares,
             type_spec_shifts,
         )
-        f2py = fort_debug.wrapper_calculate_rewards_systematic(*args)
 
         assert_allclose(pyth, f2py)
 
@@ -441,7 +444,7 @@ class TestClass(object):
         )
         _, _, _, pyth = state_space._get_fortran_counterparts()
 
-        args = (
+        f2py = fort_debug.wrapper_backward_induction(
             num_periods,
             False,
             state_space.states_per_period.max(),
@@ -464,7 +467,6 @@ class TestClass(object):
             file_sim,
             False,
         )
-        f2py = fort_debug.wrapper_backward_induction(*args)
 
         assert_allclose(pyth, f2py)
 
@@ -600,9 +602,17 @@ class TestClass(object):
             type_spec_shifts,
         )
 
-        for alt in [fort, f2py]:
-            for i in range(5):
-                assert_allclose(py[i], alt[i])
+        assert_allclose(py[0], fort[0])
+        assert_allclose(py[1], fort[1])
+        assert_allclose(py[2], fort[2])
+        assert_allclose(py[3], fort[3])
+        assert_allclose(py[4], fort[4])
+
+        assert_allclose(py[0], f2py[0])
+        assert_allclose(py[1], f2py[1])
+        assert_allclose(py[2], f2py[2])
+        assert_allclose(py[3], f2py[3])
+        assert_allclose(py[4], f2py[4])
 
         (
             states_all,
@@ -814,7 +824,9 @@ class TestClass(object):
         state_space.emaxs = np.column_stack(
             (
                 np.zeros((state_space.num_states, 4)),
-                periods_emax[periods_emax != MISSING_FLOAT],
+                periods_emax[
+                    ~np.isnan(periods_emax) & (periods_emax != MISSING_FLOAT)
+                ],
             )
         )
 
@@ -851,17 +863,22 @@ class TestClass(object):
         emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
             :, :4
         ]
+        max_education = (
+            state_space.get_attribute_from_period("states", period)[:, 3]
+            >= edu_spec["max"]
+        )
 
         # Construct the exogenous variables for all points of the state space.
         exogenous, max_emax = get_exogenous_variables(
-            rewards_period, emaxs_period, shifts, optim_paras["delta"]
+            rewards_period,
+            emaxs_period,
+            shifts,
+            optim_paras["delta"],
+            max_education,
         )
 
         # Align output between Python and Fortran version.
-        exogenous_9 = np.column_stack(
-            (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
-        )
-        py = (exogenous_9, max_emax)
+        py = (exogenous, max_emax)
 
         f90 = fort_debug.wrapper_get_exogenous_variables(
             period,
@@ -881,8 +898,8 @@ class TestClass(object):
             num_types,
         )
 
-        assert_almost_equal(py[0], f90[0], decimal=15)
-        assert_almost_equal(py[1], f90[1], decimal=15)
+        assert_almost_equal(py[0], f90[0])
+        assert_almost_equal(py[1], f90[1])
 
         # Construct endogenous variable so that the prediction model can be fitted.
         endogenous = get_endogenous_variable(
@@ -892,6 +909,7 @@ class TestClass(object):
             is_simulated,
             draws_emax_risk,
             optim_paras["delta"],
+            max_education,
         )
 
         f90 = fort_debug.wrapper_get_endogenous_variable(
@@ -922,7 +940,7 @@ class TestClass(object):
 
         f90 = fort_debug.wrapper_get_predictions(
             endogenous,
-            exogenous_9,
+            exogenous,
             max_emax,
             is_simulated,
             num_points_interp,

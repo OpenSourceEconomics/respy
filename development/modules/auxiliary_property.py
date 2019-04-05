@@ -199,7 +199,8 @@ def cleanup_testing_infrastructure(keep_results, keep_dataset=False):
     """ This function cleans up before and after a testing run. If requested,
     the log file is retained.
     """
-    for fname in glob.glob("*"):
+    files = glob.glob("*")
+    for fname in files:
         if ".py" in fname or ".pbs" in fname:
             continue
         if keep_results:

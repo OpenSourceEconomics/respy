@@ -11,8 +11,8 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
-from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from numba import guvectorize, njit
+from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 
 
 def get_log_likl(contribs):
@@ -294,15 +294,22 @@ def cholesky_to_coeffs(shocks_cholesky):
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, f4[:, :], f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, f8[:, :], f8[:, :]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:, :], f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:, :], f8[:, :]",
     ],
-    "(m), (n), (n), (p, n), () -> (n, p), (n, p)",
+    "(m), (n), (n), (p, n), (), () -> (n, p), (n, p)",
     nopython=True,
     target="cpu",
 )
 def get_continuation_value_and_ex_post_rewards(
-    wages, rewards_systematic, emaxs, draws, delta, cont_value, rew_ex_post
+    wages,
+    rewards_systematic,
+    emaxs,
+    draws,
+    delta,
+    max_education,
+    cont_value,
+    rew_ex_post,
 ):
     """Calculate the continuation value and ex-post rewards.
 
@@ -360,21 +367,24 @@ def get_continuation_value_and_ex_post_rewards(
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
+            if j == 2 and max_education:
+                rew_ex += INADMISSIBILITY_PENALTY
+
             cont_value[j, i] = rew_ex + delta * emaxs[j]
             rew_ex_post[j, i] = rew_ex
 
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, f8[:, :]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:, :]",
     ],
-    "(m), (n), (n), (p, n), () -> (n, p)",
+    "(m), (n), (n), (p, n), (), () -> (n, p)",
     nopython=True,
     target="cpu",
 )
 def get_continuation_value(
-    wages, rewards_systematic, emaxs, draws, delta, cont_value
+    wages, rewards_systematic, emaxs, draws, delta, max_education, cont_value
 ):
     """Calculate the continuation value.
 
@@ -395,6 +405,9 @@ def get_continuation_value(
                 )
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
+
+            if j == 2 and max_education:
+                rew_ex += INADMISSIBILITY_PENALTY
 
             cont_value[j, i] = rew_ex + delta * emaxs[j]
 
@@ -452,7 +465,7 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
         # which have reached maximum education. Incrementing education by one would
         # target an inadmissible state.
         if edu >= edu_max:
-            emaxs[k_parent, 2] = INADMISSIBILITY_PENALTY
+            emaxs[k_parent, 2] = 0.0
         else:
             k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
             emaxs[k_parent, 2] = emaxs[k, 4]

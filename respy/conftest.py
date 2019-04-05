@@ -1,5 +1,4 @@
 import numpy as np
-import os
 import pandas as pd
 import pytest
 
@@ -28,4 +27,4 @@ def set_seed():
 @pytest.fixture(scope="function", autouse=True)
 def fresh_directory(tmpdir):
     """Each test is executed in a fresh directory."""
-    os.chdir(tmpdir)
+    tmpdir.chdir()
