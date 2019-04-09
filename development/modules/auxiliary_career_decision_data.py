@@ -40,7 +40,8 @@ def load_dataset():
 
 
 def minor_refactoring(df):
-    """This function performs some basic refactoring directly from existing variables."""
+    """This function performs some basic refactoring directly from existing
+    variables."""
 
     df["Period"] = df["Age"] - 16
     df["Choice"].cat.categories = [3, 4, 1, 2, -99]
@@ -53,8 +54,8 @@ def truncate_military_history(df):
     """This function truncates in individual's history once assigned to the military."""
 
     def _delete_military_service(agent):
-        """This function deletes all observations going forward if an individual enrolls in the
-        military."""
+        """This function deletes all observations going forward if an individual enrolls
+        in the military."""
         for index, row in agent.iterrows():
             identifier, period = index
             if row["Choice"] == -99:
@@ -78,13 +79,13 @@ def add_state_variables(df):
     """This function adds all additional state variables."""
 
     def _add_state_variables(agent):
-        """This function iterates through an agent record and constructs the state variables for
-        each point in tim.
+        """This function iterates through an agent record and constructs the state
+        variables for each point in tim.
         """
         exp_a, exp_b = 0, 0
 
-        # We simply assume that individuals who do not have the expected number of years of
-        # education did spend the last year at home.
+        # We simply assume that individuals who do not have the expected number of years
+        # of education did spend the last year at home.
         if agent.loc[(slice(None), slice(16, 16)), "Years_Schooling"].to_numpy() < 10:
             lagged_choice = 4
         else:
