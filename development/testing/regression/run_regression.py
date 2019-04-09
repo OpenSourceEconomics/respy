@@ -55,7 +55,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
     if num_tests is not None:
         assert num_tests > 0
     if idx is not None:
-        assert idx > 0
+        assert idx >= 0
 
     if is_investigation:
         fname = TEST_RESOURCES_DIR / "regression_vault.pickle"

@@ -80,15 +80,15 @@ def pyth_simulate(
     initial_education = get_random_edu_start(
         edu_spec, num_agents_sim, is_debug
     )
-    initial_choice_lagged = get_random_choice_lagged_start(
-        edu_spec, num_agents_sim, initial_education, is_debug
-    )
     initial_types = get_random_types(
         state_space.num_types,
         optim_paras,
         num_agents_sim,
         initial_education,
         is_debug,
+    )
+    initial_choice_lagged = get_random_choice_lagged_start(
+        edu_spec, num_agents_sim, initial_education, is_debug
     )
 
     # Create a matrix of initial states of simulated agents. OCCUPATION A and OCCUPATION
