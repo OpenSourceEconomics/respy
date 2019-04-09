@@ -2,7 +2,7 @@
 import numpy as np
 
 from numba import guvectorize, vectorize
-from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import HUGE_FLOAT, INADMISSIBILITY_PENALTY
 
 
 @vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
@@ -33,13 +33,13 @@ def clip(x, min_=None, max_=None):
 
 
 @guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, i8, f8, f8[:]"],
-    "(m), (n), (n), (p, n), (), (), () -> (p)",
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1, i8, f8, f8[:]"],
+    "(m), (n), (n), (p, n), (), (), (), () -> (p)",
     nopython=True,
     target="parallel",
 )
 def simulate_probability_of_agents_observed_choice(
-    wages, rewards_systematic, emaxs, draws, delta, idx, tau, prob_choice
+    wages, rewards_systematic, emaxs, draws, delta, max_education, idx, tau, prob_choice
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -87,6 +87,9 @@ def simulate_probability_of_agents_observed_choice(
                 )
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
+
+            if j == 2 and max_education:
+                rew_ex += INADMISSIBILITY_PENALTY
 
             total_values[j, i] = rew_ex + delta * emaxs[j]
 
