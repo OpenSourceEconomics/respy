@@ -671,7 +671,7 @@ class TestClass(object):
         ]
 
         py = pyth_contributions(
-            state_space, simulated_data, periods_draws_prob, tau, optim_paras
+            state_space, simulated_data, periods_draws_prob, tau, edu_spec, optim_paras
         )
 
         num_obs_agent = np.bincount(simulated_data.Identifier.to_numpy())

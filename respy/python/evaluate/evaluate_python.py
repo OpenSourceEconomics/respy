@@ -38,7 +38,6 @@ def pyth_contributions(
         Array with shape (num_agents,) containing contributions of estimated agents.
 
     """
-    import pdb; pdb.set_trace()
     if np.count_nonzero(optim_paras["shocks_cholesky"]) == 0:
         return np.ones(data.Identifier.unique().shape[0])
 
