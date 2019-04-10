@@ -8,14 +8,12 @@ def pyth_criterion(
     x,
     is_interpolated,
     num_points_interp,
-    is_myopic,
     is_debug,
     data,
     tau,
     periods_draws_emax,
     periods_draws_prob,
     state_space,
-    edu_spec,
 ):
     """Criterion function for the likelihood maximization."""
     optim_paras = distribute_parameters(x, is_debug)
@@ -24,13 +22,11 @@ def pyth_criterion(
     state_space.update_systematic_rewards(optim_paras)
 
     state_space = pyth_backward_induction(
-        is_myopic,
         periods_draws_emax,
         state_space,
         is_debug,
         is_interpolated,
         num_points_interp,
-        edu_spec,
         optim_paras,
         "",
         False,
@@ -41,7 +37,6 @@ def pyth_criterion(
         data,
         periods_draws_prob,
         tau,
-        edu_spec,
         optim_paras,
     )
 

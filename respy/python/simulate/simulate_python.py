@@ -70,8 +70,8 @@ def pyth_simulate(
     )
 
     for period in range(state_space.num_periods):
-        periods_draws_sims_transformed[period, :, :] = transform_disturbances(
-            periods_draws_sims[period, :, :],
+        periods_draws_sims_transformed[period] = transform_disturbances(
+            periods_draws_sims[period],
             np.zeros(4),
             optim_paras["shocks_cholesky"],
         )
@@ -126,7 +126,7 @@ def pyth_simulate(
             state_space.emaxs[ks, :4],
             draws.reshape(-1, 1, 4),
             optim_paras["delta"],
-            state_space.states[ks, 3] >= edu_spec["max"]
+            state_space.states[ks, 3] >= edu_spec["max"],
         )
         total_values = total_values.reshape(-1, 4)
         rewards_ex_post = rewards_ex_post.reshape(-1, 4)

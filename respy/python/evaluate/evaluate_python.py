@@ -8,7 +8,7 @@ from respy.python.evaluate.evaluate_auxiliary import (
 
 
 def pyth_contributions(
-    state_space, data, periods_draws_prob, tau, edu_spec, optim_paras
+    state_space, data, periods_draws_prob, tau, optim_paras
 ):
     """Calculate the likelihood contribution of each individual in the sample.
 
@@ -110,7 +110,7 @@ def pyth_contributions(
         state_space.emaxs[ks, :4],
         draws,
         optim_paras["delta"],
-        state_space.states[ks, 3] >= edu_spec["max"],
+        state_space.states[ks, 3] >= state_space.edu_max,
         choices - 1,
         tau,
     )

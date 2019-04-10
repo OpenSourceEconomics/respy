@@ -184,22 +184,30 @@ def _check_optimization_parameters(x):
     return True
 
 
-def get_conditional_probabilities(type_shares, edu_starts):
+def get_conditional_probabilities(type_shares, initial_level_of_education):
     """Calculate the conditional choice probabilities.
 
-    The calculation is based on the mulitnomial logit model for one particular
-    initial condition.
+    The calculation is based on the multinomial logit model for one particular initial
+    condition.
+
+    Parameters
+    ----------
+    type_shares : np.ndarray
+    initial_level_of_education : np.ndarray
+        Array with shape (num_obs,) containing initial levels of education.
 
     """
     type_shares = type_shares.reshape(-1, 2)
-    covariate = edu_starts > 9
-    covariates = np.hstack(
-        [np.ones((covariate.shape[0], 1)), covariate.reshape(-1, 1)]
+    covariates = np.column_stack(
+        (
+            np.ones(initial_level_of_education.shape[0]),
+            initial_level_of_education > 9,
+        )
     )
     probs = np.exp(covariates.dot(type_shares.T))
     probs /= probs.sum(axis=1, keepdims=True)
 
-    if edu_starts.shape[0] == 1:
+    if initial_level_of_education.shape[0] == 1:
         probs = probs.ravel()
 
     return probs
@@ -308,7 +316,7 @@ def get_continuation_value_and_ex_post_rewards(
     draws,
     delta,
     max_education,
-    cont_value,
+    continuation_value,
     rew_ex_post,
 ):
     """Calculate the continuation value and ex-post rewards.
@@ -331,7 +339,7 @@ def get_continuation_value_and_ex_post_rewards(
 
     Returns
     -------
-    cont_value : np.ndarray
+    continuation_value : np.ndarray
         Array with shape (4, num_draws).
     rew_ex_post : np.ndarray
         Array with shape (4, num_draws)
@@ -367,11 +375,13 @@ def get_continuation_value_and_ex_post_rewards(
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
-            if j == 2 and max_education:
-                rew_ex += INADMISSIBILITY_PENALTY
+            cont_value = rew_ex + delta * emaxs[j]
 
-            cont_value[j, i] = rew_ex + delta * emaxs[j]
+            if j == 2 and max_education:
+                cont_value += INADMISSIBILITY_PENALTY
+
             rew_ex_post[j, i] = rew_ex
+            continuation_value[j, i] = cont_value
 
 
 @guvectorize(
@@ -414,7 +424,7 @@ def get_continuation_value(
 
 @njit(nogil=True)
 def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
-    """Get the maxmium utility from the subsequent period.
+    """Get the maximum utility from the subsequent period.
 
     This function takes a parent node and looks up the utility from each of the four
     choices in the subsequent period.

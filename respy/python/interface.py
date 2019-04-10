@@ -35,7 +35,6 @@ def respy_interface(respy_obj, request, data=None):
         seed_prob,
         num_draws_emax,
         seed_emax,
-        is_myopic,
         is_interpolated,
         num_points_interp,
         maxfun,
@@ -59,7 +58,6 @@ def respy_interface(respy_obj, request, data=None):
         "seed_prob",
         "num_draws_emax",
         "seed_emax",
-        "is_myopic",
         "is_interpolated",
         "num_points_interp",
         "maxfun",
@@ -102,14 +100,12 @@ def respy_interface(respy_obj, request, data=None):
         args = (
             is_interpolated,
             num_points_interp,
-            is_myopic,
             is_debug,
             data,
             tau,
             periods_draws_emax,
             periods_draws_prob,
             state_space,
-            edu_spec,
         )
 
         # Special case where just one evaluation at the starting values is
@@ -303,7 +299,6 @@ def respy_interface(respy_obj, request, data=None):
             is_interpolated,
             num_points_interp,
             num_periods,
-            is_myopic,
             is_debug,
             periods_draws_emax,
             edu_spec,

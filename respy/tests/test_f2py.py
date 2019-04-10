@@ -429,15 +429,16 @@ class TestClass(object):
         # Save result for next test.
         periods_rewards_systematic = pyth.copy()
 
+        # Fix for hardcoded myopic agents.
+        optim_paras["delta"] = 0.0000000000001
+
         # Check backward induction procedure.
         state_space = pyth_backward_induction(
-            False,
             periods_draws_emax,
             state_space,
             is_debug,
             is_interpolated,
             num_points_interp,
-            edu_spec,
             optim_paras,
             file_sim,
             False,
@@ -553,7 +554,6 @@ class TestClass(object):
             is_interpolated,
             num_points_interp,
             num_periods,
-            is_myopic,
             is_debug,
             periods_draws_emax,
             edu_spec,
@@ -671,7 +671,7 @@ class TestClass(object):
         ]
 
         py = pyth_contributions(
-            state_space, simulated_data, periods_draws_prob, tau, edu_spec, optim_paras
+            state_space, simulated_data, periods_draws_prob, tau, optim_paras
         )
 
         num_obs_agent = np.bincount(simulated_data.Identifier.to_numpy())
@@ -706,14 +706,12 @@ class TestClass(object):
             x0,
             is_interpolated,
             num_points_interp,
-            is_myopic,
             is_debug,
             simulated_data,
             tau,
             periods_draws_emax,
             periods_draws_prob,
             state_space,
-            edu_spec,
         )
 
         f2py = fort_debug.wrapper_criterion(

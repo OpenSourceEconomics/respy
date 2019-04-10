@@ -64,6 +64,8 @@ class OptimizationClass(object):
             # Enforce a maximum number of function evaluations.
             check_early_termination(self.maxfun, self.num_eval)
 
+        print(fval)
+
         # Finishing
         return fval
 
