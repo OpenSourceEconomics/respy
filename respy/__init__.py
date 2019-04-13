@@ -2,17 +2,14 @@ import warnings
 import sys
 import os
 
-import numpy as np
 import pytest
 
 from respy.python.shared.shared_constants import ROOT_DIR
 from respy.python.shared.shared_constants import IS_DEBUG
 from respy.clsRespy import RespyCls  # noqa: F401
 
-# We only maintain the code base for modern Python.
-major, minor = sys.version_info[:2]
-np.testing.assert_equal(major == 3, True)
-np.testing.assert_equal(minor >= 6, True)
+# We only maintain the code base for Python >= 3.6
+assert sys.version_info[:2] >= (3, 6)
 
 
 # We want to turn off the nuisance warnings while in production.

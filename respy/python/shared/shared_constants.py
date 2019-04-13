@@ -3,11 +3,11 @@ aligned with the constants from the FORTRAN implementation.
 """
 import numpy as np
 import json
-import respy
 from pathlib import Path
 
-# Obtain the root directory of the package
-ROOT_DIR = Path(respy.__path__[0])
+# Obtain the root directory of the package. Do not import respy which creates a circular
+# import.
+ROOT_DIR = Path(__file__.parents[2])
 
 # Directory with additional resources for the testing harness
 TEST_DIR = ROOT_DIR / "tests"
@@ -91,3 +91,8 @@ for key_ in DATA_LABELS_SIM:
         DATA_FORMATS_SIM[key_] = np.int
     else:
         DATA_FORMATS_SIM[key_] = np.float
+
+# Set Numba configuration.
+import numba  # noqa: E402
+if True:
+    numba.config.WARNINGS = 1

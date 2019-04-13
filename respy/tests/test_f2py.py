@@ -383,12 +383,12 @@ class TestClass(object):
             state_space._get_fortran_counterparts()
         )
 
-        pyth = [
+        pyth = (
             states_all,
             state_space.states_per_period,
             mapping_state_idx,
             state_space.states_per_period.max(),
-        ]
+        )
 
         f2py = fort_debug.wrapper_create_state_space(
             num_periods, num_types, edu_spec["start"], edu_spec["max"], min_idx
@@ -430,7 +430,7 @@ class TestClass(object):
         periods_rewards_systematic = pyth.copy()
 
         # Fix for hardcoded myopic agents.
-        optim_paras["delta"] = 0.0000000000001
+        optim_paras["delta"] = 0.00000000000000001
 
         # Check backward induction procedure.
         state_space = pyth_backward_induction(
