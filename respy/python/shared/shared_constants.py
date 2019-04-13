@@ -7,7 +7,7 @@ from pathlib import Path
 
 # Obtain the root directory of the package. Do not import respy which creates a circular
 # import.
-ROOT_DIR = Path(__file__.parents[2])
+ROOT_DIR = Path(__file__).parents[2]
 
 # Directory with additional resources for the testing harness
 TEST_DIR = ROOT_DIR / "tests"
