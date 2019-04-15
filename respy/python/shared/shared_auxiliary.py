@@ -416,10 +416,12 @@ def get_continuation_value(
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
-            if j == 2 and max_education:
-                rew_ex += INADMISSIBILITY_PENALTY
+            cont_value_ = rew_ex + delta * emaxs[j]
 
-            cont_value[j, i] = rew_ex + delta * emaxs[j]
+            if j == 2 and max_education:
+                cont_value_ += INADMISSIBILITY_PENALTY
+
+            cont_value[j, i] = cont_value_
 
 
 @njit(nogil=True)

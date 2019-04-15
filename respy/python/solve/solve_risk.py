@@ -70,7 +70,7 @@ def construct_emax_risk(
             emax_choice = rew_ex + delta * emaxs[j]
 
             if j == 2 and max_education:
-                emax_choice = INADMISSIBILITY_PENALTY
+                emax_choice += INADMISSIBILITY_PENALTY
 
             if emax_choice > current_max_emax:
                 current_max_emax = emax_choice

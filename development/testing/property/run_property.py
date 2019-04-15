@@ -21,7 +21,7 @@ from development.modules.auxiliary_shared import compile_package
 from development.modules.auxiliary_property import get_test_dict
 from development.modules.auxiliary_shared import cleanup
 
-PACKAGE_DIR = Path(__file__).parents[3]
+PACKAGE_DIR = Path(__file__).resolve().parents[3]
 
 
 def run(request, is_compile, is_background):
