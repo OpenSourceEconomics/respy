@@ -493,12 +493,6 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
 def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
     """Get exogenous variables for interpolation scheme.
 
-    The unused argument is present to align the interface between the PYTHON and FORTRAN
-    implementations.
-
-    Note that, unlike the Fortran implementation this function does not return 9
-    exogenous variables, but only 4. This step is done in :func:``get_predictions``.
-
     Parameters
     ----------
     rewards : np.ndarray
@@ -513,7 +507,7 @@ def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
     Returns
     -------
     exogenous : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (num_states_in_period, 9).
     max_emax : np.ndarray
         Array with shape (num_states_in_period,) containing maximum emax.
 
@@ -608,6 +602,7 @@ def get_predictions(
     # Construct predicted EMAX for all states and the replace interpolation points with
     # simulated values.
     predictions = endogenous_predicted + max_emax
+
     predictions[is_simulated] = (
         endogenous[is_simulated] + max_emax[is_simulated]
     )

@@ -477,7 +477,6 @@ class TestClass(object):
         """
         params_spec, options_spec = generate_random_model()
         respy_obj = RespyCls(params_spec, options_spec)
-        respy_obj = simulate_observed(respy_obj)
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
@@ -523,7 +522,6 @@ class TestClass(object):
             "num_paras",
         )
 
-        data_array = process_dataset(respy_obj).to_numpy()
         min_idx = edu_spec["max"] + 1
         shocks_cholesky = optim_paras["shocks_cholesky"]
         coeffs_common = optim_paras["coeffs_common"]
@@ -543,6 +541,10 @@ class TestClass(object):
         write_edu_start(edu_spec, num_agents_sim)
         write_draws(num_periods, max_draws)
         write_lagged_start(num_agents_sim)
+
+        # It is critical that the model is simulated after all files have been written
+        # to the disk because they are picked up in the subroutines.
+        respy_obj = simulate_observed(respy_obj)
 
         periods_draws_emax = read_draws(num_periods, num_draws_emax)
         periods_draws_prob = read_draws(num_periods, num_draws_prob)
@@ -632,6 +634,8 @@ class TestClass(object):
             is_debug,
         )
         py = simulated_data.copy().fillna(MISSING_FLOAT).values
+
+        data_array = process_dataset(respy_obj).to_numpy()
 
         # Is is very important to cut the data array down to the size of the estimation
         # sample for the calculation of contributions.

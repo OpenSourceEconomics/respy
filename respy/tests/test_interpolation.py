@@ -50,7 +50,7 @@ class TestClass(object):
 
             # Updates for second iteration. This ensures that there is at least one
             # interpolation taking place.
-            options_spec["interpolation"]["points"] = max(states_number_period)
+            options_spec["interpolation"]["points"] = max(states_number_period) - 1
             options_spec["interpolation"]["flag"] = True
 
     def test_2(self):
