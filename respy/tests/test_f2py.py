@@ -383,12 +383,12 @@ class TestClass(object):
             state_space._get_fortran_counterparts()
         )
 
-        pyth = [
+        pyth = (
             states_all,
             state_space.states_per_period,
             mapping_state_idx,
             state_space.states_per_period.max(),
-        ]
+        )
 
         f2py = fort_debug.wrapper_create_state_space(
             num_periods, num_types, edu_spec["start"], edu_spec["max"], min_idx
@@ -429,15 +429,16 @@ class TestClass(object):
         # Save result for next test.
         periods_rewards_systematic = pyth.copy()
 
+        # Fix for hardcoded myopic agents.
+        optim_paras["delta"] = 0.00000000000000001
+
         # Check backward induction procedure.
         state_space = pyth_backward_induction(
-            False,
             periods_draws_emax,
             state_space,
             is_debug,
             is_interpolated,
             num_points_interp,
-            edu_spec,
             optim_paras,
             file_sim,
             False,
@@ -476,7 +477,6 @@ class TestClass(object):
         """
         params_spec, options_spec = generate_random_model()
         respy_obj = RespyCls(params_spec, options_spec)
-        respy_obj = simulate_observed(respy_obj)
 
         # Ensure that backward induction routines use the same grid for the
         # interpolation.
@@ -522,7 +522,6 @@ class TestClass(object):
             "num_paras",
         )
 
-        data_array = process_dataset(respy_obj).to_numpy()
         min_idx = edu_spec["max"] + 1
         shocks_cholesky = optim_paras["shocks_cholesky"]
         coeffs_common = optim_paras["coeffs_common"]
@@ -543,6 +542,10 @@ class TestClass(object):
         write_draws(num_periods, max_draws)
         write_lagged_start(num_agents_sim)
 
+        # It is critical that the model is simulated after all files have been written
+        # to the disk because they are picked up in the subroutines.
+        respy_obj = simulate_observed(respy_obj)
+
         periods_draws_emax = read_draws(num_periods, num_draws_emax)
         periods_draws_prob = read_draws(num_periods, num_draws_prob)
         periods_draws_sims = read_draws(num_periods, num_agents_sim)
@@ -553,7 +556,6 @@ class TestClass(object):
             is_interpolated,
             num_points_interp,
             num_periods,
-            is_myopic,
             is_debug,
             periods_draws_emax,
             edu_spec,
@@ -633,6 +635,8 @@ class TestClass(object):
         )
         py = simulated_data.copy().fillna(MISSING_FLOAT).values
 
+        data_array = process_dataset(respy_obj).to_numpy()
+
         # Is is very important to cut the data array down to the size of the estimation
         # sample for the calculation of contributions.
         data_array = py[: num_agents_est * num_periods, :]
@@ -706,14 +710,12 @@ class TestClass(object):
             x0,
             is_interpolated,
             num_points_interp,
-            is_myopic,
             is_debug,
             simulated_data,
             tau,
             periods_draws_emax,
             periods_draws_prob,
             state_space,
-            edu_spec,
         )
 
         f2py = fort_debug.wrapper_criterion(

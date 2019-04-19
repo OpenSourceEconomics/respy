@@ -290,13 +290,11 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
 
 
 def pyth_backward_induction(
-    is_myopic,
     periods_draws_emax,
     state_space,
     is_debug,
     is_interpolated,
     num_points_interp,
-    edu_spec,
     optim_paras,
     file_sim,
     is_write,
@@ -305,8 +303,6 @@ def pyth_backward_induction(
 
     Parameters
     ----------
-    is_myopic : bool
-        Flag indicating myopic agents for which the discount factor is set to zero.
     periods_draws_emax : np.ndarray
         Array with shape (num_periods, num_draws, num_choices) containing the
         random draws used to simulate the emax.
@@ -318,7 +314,6 @@ def pyth_backward_induction(
         Flag indicating whether interpolation is used to construct the emax in a period.
     num_points_interp : int
         Number of states for which the emax will be interpolated.
-    edu_spec : dict
     optim_paras : dict
     file_sim : ???
     is_write : bool
@@ -333,7 +328,8 @@ def pyth_backward_induction(
     """
     state_space.emaxs = np.zeros((state_space.num_states, 5))
 
-    if is_myopic:
+    # For myopic agents, utility of later periods does not play a role.
+    if optim_paras["delta"] == 0:
         record_solution_progress(-2, file_sim)
         return state_space
 
@@ -365,7 +361,7 @@ def pyth_backward_induction(
                 states_period,
                 state_space.indexer,
                 state_space.emaxs,
-                edu_spec["max"],
+                state_space.edu_max,
             )
 
         num_states = state_space.states_per_period[period]
@@ -396,7 +392,7 @@ def pyth_backward_induction(
         ]
         max_education = (
             state_space.get_attribute_from_period("states", period)[:, 3]
-            >= edu_spec["max"]
+            >= state_space.edu_max
         )
 
         if any_interpolated:
@@ -497,12 +493,6 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
 def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
     """Get exogenous variables for interpolation scheme.
 
-    The unused argument is present to align the interface between the PYTHON and FORTRAN
-    implementations.
-
-    Note that, unlike the Fortran implementation this function does not return 9
-    exogenous variables, but only 4. This step is done in :func:``get_predictions``.
-
     Parameters
     ----------
     rewards : np.ndarray
@@ -513,11 +503,14 @@ def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
         Array with shape (num_draws, 4).
     delta : float
         Discount factor.
+    max_education: np.ndarray
+        Array with shape (num_states_in_period,) containing an indicator for whether the
+        state has reached maximum education.
 
     Returns
     -------
     exogenous : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (num_states_in_period, 9).
     max_emax : np.ndarray
         Array with shape (num_states_in_period,) containing maximum emax.
 
@@ -567,6 +560,9 @@ def get_endogenous_variable(
         Array with shape (num_draws, 4) containing draws.
     delta : float
         Discount factor.
+    max_education: np.ndarray
+        Array with shape (num_states_in_period,) containing an indicator for whether the
+        state has reached maximum education.
 
     """
     emax = construct_emax_risk(
@@ -612,6 +608,7 @@ def get_predictions(
     # Construct predicted EMAX for all states and the replace interpolation points with
     # simulated values.
     predictions = endogenous_predicted + max_emax
+
     predictions[is_simulated] = (
         endogenous[is_simulated] + max_emax[is_simulated]
     )
@@ -850,7 +847,9 @@ class StateSpace:
     def __init__(
         self, num_periods, num_types, edu_starts, edu_max, optim_paras=None
     ):
-        self.num_periods, self.num_types = num_periods, num_types
+        self.num_periods = num_periods
+        self.num_types = num_types
+        self.edu_max = edu_max
 
         self.states, self.indexer = pyth_create_state_space(
             num_periods, num_types, edu_starts, edu_max
