@@ -1,3 +1,5 @@
+.. _model-specification:
+
 Model specification
 ===================
 

@@ -20,7 +20,7 @@ Contributors
 Acknowledgments
 ^^^^^^^^^^^^^^^
 
-We are grateful to the `Social Science Computing Services <https://sscs.uchicago.edu/>`_ at the `University of Chicago <http://www.uchicago.edu/>`_ who let us use the Acropolis cluster for scalability and performance testing. We appreciate the financial support of the `AXA Research Fund <https://www.axa-research.org/>`_ and the  `University of Bonn <https://www.uni-bonn.de>`_. We are indebted to the open source community as we build on top of numerous open source tools such as the `SciPy Stack <https://www.scipy.org>`_, `statsmodels <http://statsmodels.sourceforge.net/>`_, and `waf <https://waf.io/>`_.
+We are grateful to the `Social Science Computing Services <https://sscs.uchicago.edu/>`_ at the `University of Chicago <http://www.uchicago.edu/>`_ who let us use the Acropolis cluster for scalability and performance testing. We appreciate the financial support of the `AXA Research Fund <https://www.axa-research.org/>`_ and the  `University of Bonn <https://www.uni-bonn.de>`_. We are indebted to the open source community as we build on top of numerous open source tools such as the `SciPy Stack <https://www.scipy.org>`_, `statsmodels <http://www.statsmodels.org/>`_, and `waf <https://waf.io/>`_.
 
 Suggested Citation
 ^^^^^^^^^^^^^^^^^^

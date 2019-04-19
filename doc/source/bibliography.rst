@@ -15,15 +15,15 @@ Fisher, R. A. (1922). `On the Mathematical Foundations of Theoretical Statistics
 
 Skrainka, B. S. and Judd, K. L. (2011). High Performance Quadrature Rules: How Numerical Integration Affects a Popular Model of Product Differentiation. *SSRN Working Paper*.
 
-Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <http://www.jstor.org/stable/2109768>`__. *The Review of Economics and Statistics*, 76(4): 648-672.
+Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <https://www.jstor.org/stable/2109768>`__. *The Review of Economics and Statistics*, 76(4): 648-672.
 
 Keane, M. P. and  Wolpin, K. I. (1994b). `The Solution and Estimation of Discrete Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence <https://www.minneapolisfed.org/research/staff-reports/the-solution-and-estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-carlo-evidence>`__. *Federal Reserve Bank of Minneapolis*, No. 181.
 
-Keane, M. P. and Wolpin, K. I. (1996). `The Career Decisions of Young Men <http://www.jstor.org/stable/10.1086/262080>`_. *Journal of Political Economy*, 105(3): 473-522.
+Keane, M. P. and Wolpin, K. I. (1996). `The Career Decisions of Young Men <https://www.jstor.org/stable/10.1086/262080>`_. *Journal of Political Economy*, 105(3): 473-522.
 
 Manski, C. and Lerman S. (1977). `The Estimation of Choice Probabilities from Choice Based Samples <https://www.jstor.org/stable/1914121>`_. *Econometrica*, 45(8): 1977-1988.
 
-Marsaglia, G. (1968). `Random Numbers fall Mainly in the Planes <http://www.ncbi.nlm.nih.gov/pmc/articles/PMC285899/pdf/pnas00123-0038.pdf>`_. *Proceedings of the National Academy of Sciences*, 61(1): 25-28.
+Marsaglia, G. (1968). `Random Numbers fall Mainly in the Planes <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC285899/pdf/pnas00123-0038.pdf>`_. *Proceedings of the National Academy of Sciences*, 61(1): 25-28.
 
 Matsumoto, M. and Nishimura, T. (1998). `Mersenne Twister: A 623-dimensionally Equidistributed Uniform Pseudo-random Number Generator <http://dl.acm.org/citation.cfm?doid=272991.272995>`_. *ACM Transactions on Modeling and Computer Simulation*, 8(1): 3-30.
 

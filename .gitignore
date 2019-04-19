@@ -9,3 +9,4 @@ doc/build/
 .bld
 .waf*
 .lock-waf_linux_build
+.tox

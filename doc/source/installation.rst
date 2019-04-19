@@ -2,7 +2,7 @@ Installation
 ============
 
 The ``respy`` package can be conveniently installed from the `Python Package Index
-<https://pypi.python.org/pypi>`_ (PyPI) or directly from its source files. We currently
+<https://pypi.org/>`_ (PyPI) or directly from its source files. We currently
 support Python 2.7 and Python 3.3+. We develop the package on Linux systems, but it can
 also be installed on MacOS and Windows.
 
@@ -81,7 +81,7 @@ a compilation of the Fortran source code during the build.
 ... adding Parallelism
 ^^^^^^^^^^^^^^^^^^^^^^
 
-We use the `Message Passing Interface (MPI) <http://www.mpi-forum.org/>`_ library. This
+We use the `Message Passing Interface (MPI) <https://www.mpi-forum.org/>`_ library. This
 requires a recent version of its `MPICH <https://www.mpich.org/>`_ implementation
 available on your compiler's search path which was build with shared/dynamic libraries.
 
@@ -89,7 +89,7 @@ Source Files
 ------------
 
 You can download the sources directly from our `GitHub repository
-<https://github.com/restudToolbox/package>`_.
+<https://github.com/OpenSourceEconomics/respy>`_.
 
 .. code-block:: bash
 

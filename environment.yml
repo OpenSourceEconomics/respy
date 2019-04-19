@@ -10,9 +10,11 @@ dependencies:
   - scipy>=0.19
   - statsmodels=0.9
   - pip:
+    - codecov
+    - doc8
     - pytest
     - pytest-cov
-    - codecov
     - pyaml
     - restructuredtext_lint
-    - doc8
+    - sphinx_rtd_theme
+    - tox-conda

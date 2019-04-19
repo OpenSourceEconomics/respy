@@ -46,14 +46,14 @@ We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group o
 
     Numerical instabilities often only become apparent on real world data that is less well behaved than simulated data. To test the stability of our package we start thousands of estimation tasks on the NLSY dataset used by Keane and Wolpin. We use random start values for the parameter vector that can be far from the true values and make sure that the code can handle those cases.
 
-Our `tests <https://github.com/OpenSourceEconomics/respy/tree/janosg/respy/tests>`_ and the `testing infrastructure <https://github.com/OpenSourceEconomics/respy/tree/janosg/development/testing>`_ are available online. As new features are added and the code matures, we constantly expand our testing harness. We run a test battery nightly on our development server, see `here <https://github.com/restudToolbox/package/blob/master/example/ec2-respy.testing.log>`__  for an example output.
+Our `tests <https://github.com/OpenSourceEconomics/respy/tree/janosg/respy/tests>`_ and the `testing infrastructure <https://github.com/OpenSourceEconomics/respy/tree/janosg/development/testing>`_ are available online. As new features are added and the code matures, we constantly expand our testing harness. We run a test battery nightly on our development server, see `here <https://github.com/OpenSourceEconomics/respy/blob/master/example/ec2-respy.testing.log>`__  for an example output.
 
 Documentation
 -------------
-.. todo:: All batches reefer to the no longer existing restudtoolbox repository. 
+.. todo:: All batches reefer to the no longer existing restudtoolbox repository.
 
 .. image:: https://readthedocs.org/projects/respy/badge/?version=latest
-   :target: http://respy.readthedocs.io/en/latest/?badge=latest
+   :target: https://respy.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
 The documentation is created using `Sphinx <http://www.sphinx-doc.org/>`_ and hosted on `Read the Docs <https://readthedocs.org/>`_.
@@ -68,19 +68,12 @@ Code Review
     :target: https://landscape.io/github/restudToolbox/package/master
     :alt: Code Health
 
-We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we work with `Codacy <https://www.codacy.com/app/eisenhauer/respy/dashboard>`_ and `Landscape <https://landscape.io/github/restudToolbox/package>`_
+We use several automatic code review tools to help us improve the readability and maintainability of our code base. For example, we work with `Codacy <https://app.codacy.com/app/eisenhauer/respy/dashboard>`_ and `Landscape <https://landscape.io/github/restudToolbox/package>`_
 
 Continuous Integration Workflow
 -------------------------------
 
-.. image:: https://travis-ci.org/restudToolbox/package.svg?branch=master
-   :target: https://travis-ci.org/restudToolbox/package
+.. image:: https://api.travis-ci.org/OpenSourceEconomics/respy.svg?branch=master
+   :target: https://travis-ci.org/OpenSourceEconomics/respy
 
-.. image:: https://requires.io/github/restudToolbox/package/requirements.svg?branch=master
-    :target: https://requires.io/github/restudToolbox/package/requirements/?branch=master
-    :alt: Requirements Status
-
-.. image:: https://badge.fury.io/py/respy.svg
-    :target: https://badge.fury.io/py/respy
-
-We set up a continuous integration workflow around our `GitHub Organization <https://github.com/OpenSourceEconomics>`_. We use the continuous integration services provided by `Travis CI <https://travis-ci.org/restudToolbox/package>`_. `tox <https://tox.readthedocs.io>`_ helps us to ensure the proper workings of the package for alternative Python implementations. Our build process is managed by `Waf <https://waf.io/>`_. We rely on `Git <https://git-scm.com/>`_ as our version control system and follow the `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_. We use `GitLab <https://gitlab.com/restudToolbox/package/issues>`_ for our issue tracking. The package is distributed through `PyPI <https://pypi.python.org/pypi/respy>`_ which automatically updated from our development server.
+We set up a continuous integration workflow around our `GitHub Organization <https://github.com/OpenSourceEconomics>`_. We use the continuous integration services provided by `Travis CI <https://travis-ci.org/restudToolbox/package>`_. `tox <https://tox.readthedocs.io>`_ helps us to ensure the proper workings of the package for alternative Python implementations. Our build process is managed by `Waf <https://waf.io/>`_. We rely on `Git <https://git-scm.com/>`_ as our version control system and follow the `Gitflow Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_. We use `Github <https://github.com/OpenSourceEconomics/respy/issues>`_ for our issue tracking. The package is distributed through `PyPI <https://pypi.org/project/respy/>`_ which automatically updated from our development server.
