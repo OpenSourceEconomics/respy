@@ -14,6 +14,11 @@ from respy.python.shared.shared_auxiliary import (
     get_continuation_value_and_ex_post_rewards,
 )
 from respy.python.evaluate.evaluate_python import create_draws_and_prob_wages
+from respy.python.shared.shared_constants import DECIMALS, MISSING_FLOAT
+from functools import partial
+
+
+assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
 
 class TestClass(object):
@@ -200,9 +205,12 @@ class TestClass(object):
 
         # Check that rewards match
         _, _, pyth, _ = state_space._get_fortran_counterparts()
-        np.testing.assert_almost_equal(
-            pyth, periods_rewards_systematic, decimal=15
-        )
+
+        # Set NaNs to -99.
+        mask = np.isnan(periods_rewards_systematic)
+        periods_rewards_systematic[mask] = MISSING_FLOAT
+
+        assert_almost_equal(pyth, periods_rewards_systematic)
 
         period = np.random.choice(num_periods)
         draws = np.random.normal(size=4)
@@ -217,6 +225,10 @@ class TestClass(object):
         emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
             :, :4
         ]
+        max_education_period = (
+            state_space.get_attribute_from_period("states", period)[:, 3]
+            >= edu_spec["max"]
+        )
 
         total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
             rewards_period[:, -2:],
@@ -224,6 +236,7 @@ class TestClass(object):
             emaxs_period,
             draws.reshape(1, -1),
             optim_paras["delta"],
+            max_education_period,
         )
 
         np.testing.assert_equal(total_values, rewards_ex_post)

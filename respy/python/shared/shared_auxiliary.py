@@ -11,8 +11,8 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
-from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from numba import guvectorize, njit
+from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 
 
 def get_log_likl(contribs):
@@ -184,22 +184,30 @@ def _check_optimization_parameters(x):
     return True
 
 
-def get_conditional_probabilities(type_shares, edu_starts):
+def get_conditional_probabilities(type_shares, initial_level_of_education):
     """Calculate the conditional choice probabilities.
 
-    The calculation is based on the mulitnomial logit model for one particular
-    initial condition.
+    The calculation is based on the multinomial logit model for one particular initial
+    condition.
+
+    Parameters
+    ----------
+    type_shares : np.ndarray
+    initial_level_of_education : np.ndarray
+        Array with shape (num_obs,) containing initial levels of education.
 
     """
     type_shares = type_shares.reshape(-1, 2)
-    covariate = edu_starts > 9
-    covariates = np.hstack(
-        [np.ones((covariate.shape[0], 1)), covariate.reshape(-1, 1)]
+    covariates = np.column_stack(
+        (
+            np.ones(initial_level_of_education.shape[0]),
+            initial_level_of_education > 9,
+        )
     )
     probs = np.exp(covariates.dot(type_shares.T))
     probs /= probs.sum(axis=1, keepdims=True)
 
-    if edu_starts.shape[0] == 1:
+    if initial_level_of_education.shape[0] == 1:
         probs = probs.ravel()
 
     return probs
@@ -294,15 +302,22 @@ def cholesky_to_coeffs(shocks_cholesky):
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, f4[:, :], f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, f8[:, :], f8[:, :]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:, :], f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:, :], f8[:, :]",
     ],
-    "(m), (n), (n), (p, n), () -> (n, p), (n, p)",
+    "(m), (n), (n), (p, n), (), () -> (n, p), (n, p)",
     nopython=True,
     target="cpu",
 )
 def get_continuation_value_and_ex_post_rewards(
-    wages, rewards_systematic, emaxs, draws, delta, cont_value, rew_ex_post
+    wages,
+    rewards_systematic,
+    emaxs,
+    draws,
+    delta,
+    max_education,
+    continuation_value,
+    rew_ex_post,
 ):
     """Calculate the continuation value and ex-post rewards.
 
@@ -321,10 +336,12 @@ def get_continuation_value_and_ex_post_rewards(
         Array with shape (num_draws, 4)
     delta : float
         Discount rate.
+    max_education: bool
+        Indicator for whether the state has reached maximum education.
 
     Returns
     -------
-    cont_value : np.ndarray
+    continuation_value : np.ndarray
         Array with shape (4, num_draws).
     rew_ex_post : np.ndarray
         Array with shape (4, num_draws)
@@ -360,21 +377,26 @@ def get_continuation_value_and_ex_post_rewards(
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
-            cont_value[j, i] = rew_ex + delta * emaxs[j]
+            cont_value = rew_ex + delta * emaxs[j]
+
+            if j == 2 and max_education:
+                cont_value += INADMISSIBILITY_PENALTY
+
             rew_ex_post[j, i] = rew_ex
+            continuation_value[j, i] = cont_value
 
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, f8[:, :]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:, :]",
     ],
-    "(m), (n), (n), (p, n), () -> (n, p)",
+    "(m), (n), (n), (p, n), (), () -> (n, p)",
     nopython=True,
     target="cpu",
 )
 def get_continuation_value(
-    wages, rewards_systematic, emaxs, draws, delta, cont_value
+    wages, rewards_systematic, emaxs, draws, delta, max_education, cont_value
 ):
     """Calculate the continuation value.
 
@@ -396,12 +418,17 @@ def get_continuation_value(
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
-            cont_value[j, i] = rew_ex + delta * emaxs[j]
+            cont_value_ = rew_ex + delta * emaxs[j]
+
+            if j == 2 and max_education:
+                cont_value_ += INADMISSIBILITY_PENALTY
+
+            cont_value[j, i] = cont_value_
 
 
 @njit(nogil=True)
 def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
-    """Get the maxmium utility from the subsequent period.
+    """Get the maximum utility from the subsequent period.
 
     This function takes a parent node and looks up the utility from each of the four
     choices in the subsequent period.
@@ -452,7 +479,7 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
         # which have reached maximum education. Incrementing education by one would
         # target an inadmissible state.
         if edu >= edu_max:
-            emaxs[k_parent, 2] = INADMISSIBILITY_PENALTY
+            emaxs[k_parent, 2] = 0.0
         else:
             k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
             emaxs[k_parent, 2] = emaxs[k, 4]

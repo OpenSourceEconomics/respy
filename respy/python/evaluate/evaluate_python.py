@@ -59,7 +59,9 @@ def pyth_contributions(
     # each individual's first observation. After that, extract initial education levels
     # per agent which are important for type-specific probabilities.
     num_obs_per_agent = np.bincount(data.Identifier.values)
-    idx_agents_first_observation = np.hstack((0, np.cumsum(num_obs_per_agent)[:-1]))
+    idx_agents_first_observation = np.hstack(
+        (0, np.cumsum(num_obs_per_agent)[:-1])
+    )
     agents_initial_education_levels = agents[idx_agents_first_observation, 3]
 
     # Update type-specific probabilities conditional on whether the initial level of
@@ -108,6 +110,7 @@ def pyth_contributions(
         state_space.emaxs[ks, :4],
         draws,
         optim_paras["delta"],
+        state_space.states[ks, 3] >= state_space.edu_max,
         choices - 1,
         tau,
     )

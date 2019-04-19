@@ -339,27 +339,26 @@ class TestClass(object):
 
     @pytest.mark.skipif(not IS_FORTRAN, reason="No FORTRAN available")
     @pytest.mark.slow
-    @pytest.mark.parametrize(
-        "fname, result",
-        random.sample(
+    def test_9(self):
+        """ This test just locks in the evaluation of the criterion function for the
+        original Keane & Wolpin data. We create an additional initialization files that
+        include numerous types and initial conditions.
+
+        TODO: Parametrize.
+
+        """
+        # This ensures that the experience effect is taken care of properly.
+        open(".restud.respy.scratch", "w").close()
+
+        fname, result = random.choice(
             [
                 ("kw_data_one.ini", 10.45950941513551),
                 ("kw_data_two.ini", 45.04552402391903),
                 ("kw_data_three.ini", 74.28253652773714),
                 ("kw_data_one_types.ini", 9.098738585839529),
                 ("kw_data_one_initial.ini", 7.965979149372883),
-            ],
-            k=1,
-        ),
-    )
-    def test_9(self, fname, result):
-        """ This test just locks in the evaluation of the criterion function for the
-        original Keane & Wolpin data. We create an additional initialization files that
-        include numerous types and initial conditions.
-
-        """
-        # This ensures that the experience effect is taken care of properly.
-        open(".restud.respy.scratch", "w").close()
+            ]
+        )
 
         base_path = TEST_RESOURCES_DIR / fname
 

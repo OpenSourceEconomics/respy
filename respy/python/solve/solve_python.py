@@ -7,7 +7,6 @@ def pyth_solve(
     is_interpolated,
     num_points_interp,
     num_periods,
-    is_myopic,
     is_debug,
     periods_draws_emax,
     edu_spec,
@@ -15,7 +14,30 @@ def pyth_solve(
     file_sim,
     num_types,
 ):
-    """ Solving the model using pure PYTHON code.
+    """Solve the model.
+
+    This function is a wrapper around state space creation and determining the optimal
+    decision in each state by backward induction.
+
+    Parameters
+    ----------
+    is_interpolated : bool
+        Indicator for whether the expected maximum utility should be interpolated.
+    num_points_interp : int
+        Number of points used for the interpolation.
+    num_periods : int
+        Number of periods.
+    is_debug : bool
+        Flag for debugging.
+    periods_draws_emax : np.ndarray
+        Array with shape (num_periods, num_draws, num_choices) containing draws for the
+        Monte Carlo simulation of expected maximum utility.
+    edu_spec : dict
+    optim_paras : dict
+    file_sim : ???
+    num_types : int
+        Number of types.
+
     """
     record_solution_progress(1, file_sim)
 
@@ -36,19 +58,17 @@ def pyth_solve(
     record_solution_progress(3, file_sim)
 
     state_space = pyth_backward_induction(
-        is_myopic,
         periods_draws_emax,
         state_space,
         is_debug,
         is_interpolated,
         num_points_interp,
-        edu_spec,
         optim_paras,
         file_sim,
         True,
     )
 
-    if not is_myopic:
+    if optim_paras["delta"]:
         record_solution_progress(-1, file_sim)
 
     return state_space

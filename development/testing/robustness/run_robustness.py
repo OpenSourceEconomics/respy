@@ -4,24 +4,27 @@ The goal is to ensure that the code handles it all well. This increases the
 robustness of the package as the data is not so well-behaved as simulations.
 """
 
-from development.modules.auxiliary_shared import send_notification
-from development.modules.auxiliary_robustness import run_robustness_test
-from development.modules.auxiliary_robustness import run_for_hours_sequential
-from development.modules.auxiliary_robustness import run_for_hours_parallel
-from development.modules.auxiliary_career_decision_data import prepare_dataset
 import argparse
 import numpy as np
+import os
+import shutil
+import tempfile
+
+from development.modules.auxiliary_career_decision_data import prepare_dataset
+from development.modules.auxiliary_robustness import run_for_hours_parallel
+from development.modules.auxiliary_robustness import run_for_hours_sequential
+from development.modules.auxiliary_robustness import run_robustness_test
+from development.modules.auxiliary_shared import send_notification
 from pathlib import Path
-from development.modules.auxiliary_property import (
-    cleanup_testing_infrastructure,
-)
 
 
 def run(request, is_compile, is_background, num_procs, keep_dataset):
-    cleanup_testing_infrastructure(
-        keep_results=False, keep_dataset=keep_dataset
-    )
-    data_path = Path.cwd() / "career_data.respy.dat"
+    # Create temporary directory and walk into it.
+    temporary_directory = Path(tempfile.mkdtemp())
+    current_directory = Path.cwd()
+    os.chdir(str(temporary_directory))
+
+    data_path = temporary_directory / "career_data.respy.dat"
     if not data_path.exists():
         prepare_dataset()
     if request[0] == "investigate":
@@ -88,9 +91,9 @@ def run(request, is_compile, is_background, num_procs, keep_dataset):
             procs=num_procs,
             num_tests=num_tests,
         )
-        cleanup_testing_infrastructure(
-            keep_results=False, keep_dataset=keep_dataset
-        )
+
+    os.chdir(current_directory)
+    shutil.rmtree(temporary_directory)
 
 
 if __name__ == "__main__":

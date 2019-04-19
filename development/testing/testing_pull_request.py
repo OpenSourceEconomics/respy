@@ -10,7 +10,7 @@ from development.testing.robustness.run_robustness import run as run_robustness
 from socket import gethostname
 
 
-CURRENT_DIR = Path(__file__).parent
+CURRENT_DIR = Path(__file__).resolve().parent
 
 
 def main():
@@ -37,7 +37,7 @@ def main():
     test_spec["REGRESSION"]["is_background"] = False
     test_spec["REGRESSION"]["is_compile"] = False
     test_spec["REGRESSION"]["is_strict"] = True
-    test_spec["REGRESSION"]["num_procs"] = 3
+    test_spec["REGRESSION"]["num_procs"] = 1
 
     test_spec["PROPERTY"] = {}
     if short_run is True:
@@ -55,7 +55,7 @@ def main():
     test_spec["ROBUSTNESS"]["is_compile"] = False
     test_spec["ROBUSTNESS"]["is_background"] = False
     test_spec["ROBUSTNESS"]["keep_dataset"] = False
-    test_spec["ROBUSTNESS"]["num_procs"] = 3
+    test_spec["ROBUSTNESS"]["num_procs"] = 1
 
     test_spec["PARALLELISM"] = {}
     if short_run is True:
