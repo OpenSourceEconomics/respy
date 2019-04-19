@@ -1,22 +1,24 @@
 import os
 import shlex
 
-import statsmodels.api as sm
 import numpy as np
 import pandas as pd
-from respy.python.record.record_solution import record_solution_prediction
-from respy.python.shared.shared_auxiliary import calculate_rewards_general
-from respy.python.shared.shared_auxiliary import calculate_rewards_common
-from respy.python.record.record_solution import record_solution_progress
-from respy.python.shared.shared_auxiliary import transform_disturbances
-from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
-from respy.python.solve.solve_risk import construct_emax_risk
-from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_auxiliary import get_continuation_value
-from respy.custom_exceptions import StateSpaceError
-from respy.python.shared.shared_auxiliary import create_covariates
-from respy.python.shared.shared_constants import MISSING_FLOAT, MISSING_INT
+import statsmodels.api as sm
+
 from numba import njit
+from respy.custom_exceptions import StateSpaceError
+from respy.python.record.record_solution import record_solution_prediction
+from respy.python.record.record_solution import record_solution_progress
+from respy.python.shared.shared_auxiliary import calculate_rewards_common
+from respy.python.shared.shared_auxiliary import calculate_rewards_general
+from respy.python.shared.shared_auxiliary import create_covariates
+from respy.python.shared.shared_auxiliary import get_continuation_value
+from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
+from respy.python.shared.shared_auxiliary import transform_disturbances
+from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import MISSING_INT
+from respy.python.solve.solve_risk import construct_emax_risk
 
 
 @njit
@@ -288,13 +290,11 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
 
 
 def pyth_backward_induction(
-    is_myopic,
     periods_draws_emax,
     state_space,
     is_debug,
     is_interpolated,
     num_points_interp,
-    edu_spec,
     optim_paras,
     file_sim,
     is_write,
@@ -303,8 +303,6 @@ def pyth_backward_induction(
 
     Parameters
     ----------
-    is_myopic : bool
-        Flag indicating myopic agents for which the discount factor is set to zero.
     periods_draws_emax : np.ndarray
         Array with shape (num_periods, num_draws, num_choices) containing the
         random draws used to simulate the emax.
@@ -316,7 +314,6 @@ def pyth_backward_induction(
         Flag indicating whether interpolation is used to construct the emax in a period.
     num_points_interp : int
         Number of states for which the emax will be interpolated.
-    edu_spec : dict
     optim_paras : dict
     file_sim : ???
     is_write : bool
@@ -331,7 +328,8 @@ def pyth_backward_induction(
     """
     state_space.emaxs = np.zeros((state_space.num_states, 5))
 
-    if is_myopic:
+    # For myopic agents, utility of later periods does not play a role.
+    if optim_paras["delta"] == 0:
         record_solution_progress(-2, file_sim)
         return state_space
 
@@ -363,7 +361,7 @@ def pyth_backward_induction(
                 states_period,
                 state_space.indexer,
                 state_space.emaxs,
-                edu_spec["max"],
+                state_space.edu_max,
             )
 
         num_states = state_space.states_per_period[period]
@@ -392,6 +390,10 @@ def pyth_backward_induction(
         emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
             :, :4
         ]
+        max_education = (
+            state_space.get_attribute_from_period("states", period)[:, 3]
+            >= state_space.edu_max
+        )
 
         if any_interpolated:
             # Get indicator for interpolation and simulation of states
@@ -403,7 +405,7 @@ def pyth_backward_induction(
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
             exogenous, max_emax = get_exogenous_variables(
-                rewards_period, emaxs_period, shifts, delta
+                rewards_period, emaxs_period, shifts, delta, max_education
             )
 
             # Constructing the dependent variables for all states at the random subset
@@ -415,6 +417,7 @@ def pyth_backward_induction(
                 is_simulated,
                 draws_emax_risk,
                 delta,
+                max_education,
             )
 
             # Create prediction model based on the random subset of points where the
@@ -436,6 +439,7 @@ def pyth_backward_induction(
                 emaxs_period,
                 draws_emax_risk,
                 delta,
+                max_education,
             )
 
         state_space.get_attribute_from_period("emaxs", period)[:, 4] = emax
@@ -486,14 +490,8 @@ def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
     return is_simulated
 
 
-def get_exogenous_variables(rewards, emaxs, draws, delta):
+def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
     """Get exogenous variables for interpolation scheme.
-
-    The unused argument is present to align the interface between the PYTHON and FORTRAN
-    implementations.
-
-    Note that, unlike the Fortran implementation this function does not return 9
-    exogenous variables, but only 4. This step is done in :func:``get_predictions``.
 
     Parameters
     ----------
@@ -505,26 +503,45 @@ def get_exogenous_variables(rewards, emaxs, draws, delta):
         Array with shape (num_draws, 4).
     delta : float
         Discount factor.
+    max_education: np.ndarray
+        Array with shape (num_states_in_period,) containing an indicator for whether the
+        state has reached maximum education.
 
     Returns
     -------
     exogenous : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (num_states_in_period, 9).
     max_emax : np.ndarray
         Array with shape (num_states_in_period,) containing maximum emax.
 
     """
     total_values = get_continuation_value(
-        rewards[:, -2:], rewards[:, :4], emaxs, draws.reshape(1, -1), delta
+        rewards[:, -2:],
+        rewards[:, :4],
+        emaxs,
+        draws.reshape(1, -1),
+        delta,
+        max_education,
     )
+
     max_emax = total_values.max(axis=1)
     exogenous = max_emax - total_values.reshape(-1, 4)
+
+    exogenous = np.column_stack(
+        (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
+    )
 
     return exogenous, max_emax.reshape(-1)
 
 
 def get_endogenous_variable(
-    rewards, emaxs, max_emax, is_simulated, draws_emax_risk, delta
+    rewards,
+    emaxs,
+    max_emax,
+    is_simulated,
+    draws_emax_risk,
+    delta,
+    max_education,
 ):
     """Construct endogenous variable for the subset of interpolation points.
 
@@ -543,10 +560,18 @@ def get_endogenous_variable(
         Array with shape (num_draws, 4) containing draws.
     delta : float
         Discount factor.
+    max_education: np.ndarray
+        Array with shape (num_states_in_period,) containing an indicator for whether the
+        state has reached maximum education.
 
     """
     emax = construct_emax_risk(
-        rewards[:, -2:], rewards[:, :4], emaxs, draws_emax_risk, delta
+        rewards[:, -2:],
+        rewards[:, :4],
+        emaxs,
+        draws_emax_risk,
+        delta,
+        max_education,
     )
     endogenous = emax - max_emax
     endogenous[~is_simulated] = np.nan
@@ -571,10 +596,6 @@ def get_predictions(
     is_write : bool
 
     """
-    exogenous = np.column_stack(
-        (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
-    )
-
     # Define ordinary least squares model and fit to the data.
     model = sm.OLS(endogenous[is_simulated], exogenous[is_simulated])
     results = model.fit()
@@ -587,6 +608,7 @@ def get_predictions(
     # Construct predicted EMAX for all states and the replace interpolation points with
     # simulated values.
     predictions = endogenous_predicted + max_emax
+
     predictions[is_simulated] = (
         endogenous[is_simulated] + max_emax[is_simulated]
     )
@@ -825,7 +847,9 @@ class StateSpace:
     def __init__(
         self, num_periods, num_types, edu_starts, edu_max, optim_paras=None
     ):
-        self.num_periods, self.num_types = num_periods, num_types
+        self.num_periods = num_periods
+        self.num_types = num_types
+        self.edu_max = edu_max
 
         self.states, self.indexer = pyth_create_state_space(
             num_periods, num_types, edu_starts, edu_max
@@ -940,7 +964,9 @@ class StateSpace:
         self.emaxs = np.column_stack(
             (
                 np.zeros((self.states_per_period.sum(), 4)),
-                periods_emax[periods_emax != -99],
+                periods_emax[
+                    ~np.isnan(periods_emax) & (periods_emax != MISSING_FLOAT)
+                ],
             )
         )
 

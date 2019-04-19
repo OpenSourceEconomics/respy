@@ -35,7 +35,6 @@ def respy_interface(respy_obj, request, data=None):
         seed_prob,
         num_draws_emax,
         seed_emax,
-        is_myopic,
         is_interpolated,
         num_points_interp,
         maxfun,
@@ -59,7 +58,6 @@ def respy_interface(respy_obj, request, data=None):
         "seed_prob",
         "num_draws_emax",
         "seed_emax",
-        "is_myopic",
         "is_interpolated",
         "num_points_interp",
         "maxfun",
@@ -102,14 +100,12 @@ def respy_interface(respy_obj, request, data=None):
         args = (
             is_interpolated,
             num_points_interp,
-            is_myopic,
             is_debug,
             data,
             tau,
             periods_draws_emax,
             periods_draws_prob,
             state_space,
-            edu_spec,
         )
 
         # Special case where just one evaluation at the starting values is
@@ -118,23 +114,21 @@ def respy_interface(respy_obj, request, data=None):
         # and not the value returned by the optimization algorithm.
         num_free = optim_paras["paras_fixed"].count(False)
 
-        paras_bounds_free_unscaled = []
-        for i in range(num_paras):
-            if not optim_paras["paras_fixed"][i]:
-                lower, upper = optim_paras["paras_bounds"][i][:]
-                if lower is None:
-                    lower = -HUGE_FLOAT
-                else:
-                    lower = lower
-
-                if upper is None:
-                    upper = HUGE_FLOAT
-                else:
-                    upper = upper
-
-                paras_bounds_free_unscaled += [[lower, upper]]
-
-        paras_bounds_free_unscaled = np.array(paras_bounds_free_unscaled)
+        # Take only bounds from unfixed parameters and insert default bounds.
+        mask_paras_fixed = np.array(optim_paras["paras_fixed"])
+        paras_bounds_free_unscaled = np.array(optim_paras["paras_bounds"])[
+            ~mask_paras_fixed
+        ]
+        paras_bounds_free_unscaled[:, 0] = np.where(
+            paras_bounds_free_unscaled[:, 0] == None,
+            -HUGE_FLOAT,
+            paras_bounds_free_unscaled[:, 0],
+        )
+        paras_bounds_free_unscaled[:, 1] = np.where(
+            paras_bounds_free_unscaled[:, 1] == None,
+            HUGE_FLOAT,
+            paras_bounds_free_unscaled[:, 1],
+        )
 
         record_estimation_scaling(
             x_optim_free_unscaled_start,
@@ -189,7 +183,9 @@ def respy_interface(respy_obj, request, data=None):
             record_estimation_scalability("Finish")
 
             success = True
-            message = "Single evaluation of criterion function at starting values."
+            message = (
+                "Single evaluation of criterion function at starting values."
+            )
 
         elif optimizer_used == "SCIPY-BFGS":
 
@@ -303,7 +299,6 @@ def respy_interface(respy_obj, request, data=None):
             is_interpolated,
             num_points_interp,
             num_periods,
-            is_myopic,
             is_debug,
             periods_draws_emax,
             edu_spec,

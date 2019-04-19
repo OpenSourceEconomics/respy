@@ -72,7 +72,6 @@ def setup_package():
             "scipy>=0.18",
             "pandas>=0.24",
             "statsmodels>=0.9",
-            "pip>=8.0",
             "pytest>=3.0",
             "pyaml",
         ],

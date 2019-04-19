@@ -1,19 +1,16 @@
-import string
-from string import Formatter
-
-import subprocess
 import argparse
-import socket
-import sys
-import os
-from pathlib import Path
-
 import numpy as np
+import os
 import random
-
-from development.modules.config import PACKAGE_DIR
+import socket
+import string
+import subprocess
+import sys
 
 from development.modules.clsMail import MailCls
+from development.modules.config import PACKAGE_DIR
+from pathlib import Path
+from string import Formatter
 
 
 def update_class_instance(respy_obj, spec_dict):

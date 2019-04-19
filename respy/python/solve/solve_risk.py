@@ -1,17 +1,18 @@
 from numba import guvectorize
+from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 
 
 @guvectorize(
     [
-        "float32[:], float32[:], float32[:], float32[:, :], float32, float32[:]",
-        "float64[:], float64[:], float64[:], float64[:, :], float64, float64[:]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:]",
     ],
-    "(m), (n), (n), (p, n), () -> ()",
+    "(m), (n), (n), (p, n), (), () -> ()",
     nopython=True,
     target="parallel",
 )
 def construct_emax_risk(
-    wages, rewards_systematic, emaxs, draws, delta, cont_value
+    wages, rewards_systematic, emaxs, draws, delta, max_education, cont_value
 ):
     """Simulate expected maximum utility for a given distribution of the unobservables.
 
@@ -39,6 +40,8 @@ def construct_emax_risk(
         Array with shape (num_draws, 4).
     delta : float
         The discount factor.
+    max_education: bool
+        Indicator for whether the state has reached maximum education.
 
     Returns
     -------
@@ -67,6 +70,9 @@ def construct_emax_risk(
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
             emax_choice = rew_ex + delta * emaxs[j]
+
+            if j == 2 and max_education:
+                emax_choice += INADMISSIBILITY_PENALTY
 
             if emax_choice > current_max_emax:
                 current_max_emax = emax_choice

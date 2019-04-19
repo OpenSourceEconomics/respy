@@ -2,7 +2,10 @@
 import numpy as np
 
 from numba import guvectorize, vectorize
-from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import (
+    HUGE_FLOAT,
+    INADMISSIBILITY_PENALTY,
+)
 
 
 @vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
@@ -33,13 +36,21 @@ def clip(x, min_=None, max_=None):
 
 
 @guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, i8, f8, f8[:]"],
-    "(m), (n), (n), (p, n), (), (), () -> (p)",
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1, i8, f8, f8[:]"],
+    "(m), (n), (n), (p, n), (), (), (), () -> (p)",
     nopython=True,
     target="parallel",
 )
 def simulate_probability_of_agents_observed_choice(
-    wages, rewards_systematic, emaxs, draws, delta, idx, tau, prob_choice
+    wages,
+    rewards_systematic,
+    emaxs,
+    draws,
+    delta,
+    max_education,
+    idx,
+    tau,
+    prob_choice,
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -59,6 +70,8 @@ def simulate_probability_of_agents_observed_choice(
         Array with shape (num_draws, 4)
     delta : float
         Discount rate.
+    max_education: bool
+        Indicator for whether the state has reached maximum education.
     idx : int
         Choice of the agent minus one to get an index.
     tau : float
@@ -88,10 +101,15 @@ def simulate_probability_of_agents_observed_choice(
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
-            total_values[j, i] = rew_ex + delta * emaxs[j]
+            cont_value = rew_ex + delta * emaxs[j]
 
-            if total_values[j, i] > max_total_values or j == 0:
-                max_total_values = total_values[j, i]
+            if j == 2 and max_education:
+                cont_value += INADMISSIBILITY_PENALTY
+
+            total_values[j, i] = cont_value
+
+            if cont_value > max_total_values or j == 0:
+                max_total_values = cont_value
 
         sum_smooth_values = 0.0
 
@@ -106,7 +124,7 @@ def simulate_probability_of_agents_observed_choice(
         prob_choice[i] = total_values[idx, i] / sum_smooth_values
 
 
-@vectorize(["float64(float64, float64, float64)"], nopython=True, target="cpu")
+@vectorize(["f4(f4, f4, f4)", "f8(f8, f8, f8)"], nopython=True, target="cpu")
 def get_pdf_of_normal_distribution(x, mu, sigma):
     """Compute the probability of ``x`` under a normal distribution.
 
