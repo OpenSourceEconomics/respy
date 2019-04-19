@@ -33,9 +33,9 @@ class OptimizationClass(object):
 
         num_paras = len(x_optim_all_unscaled_start)
         # Updated attributes
-        self.x_optim_container = np.tile(np.nan, (num_paras, 3))
-        self.x_econ_container = np.tile(np.nan, (num_paras, 3))
-        self.crit_vals = np.tile(np.inf, 3)
+        self.x_optim_container = np.full((num_paras, 3), np.nan)
+        self.x_econ_container = np.full((num_paras, 3), np.nan)
+        self.crit_vals = np.full(3, np.inf)
         self.num_step = -1
         self.num_eval = 0
 
@@ -73,7 +73,7 @@ class OptimizationClass(object):
         paras_fixed = self.paras_fixed
         num_paras = self.num_paras
 
-        x_optim_all_unscaled = np.tile(np.nan, num_paras)
+        x_optim_all_unscaled = np.full(num_paras, np.nan)
         j = 0
         for i in range(num_paras):
             if paras_fixed[i]:

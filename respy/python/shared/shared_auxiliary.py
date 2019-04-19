@@ -4,7 +4,6 @@ import linecache
 import shlex
 import os
 
-from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.record.record_warning import record_warning
 from respy.python.shared.shared_constants import PRINT_FLOAT
@@ -12,11 +11,24 @@ from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import TINY_FLOAT
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
+from numba import guvectorize, njit
+from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 
 
 def get_log_likl(contribs):
-    """Aggregate contributions to the likelihood value."""
-    if sum(np.abs(contribs) > HUGE_FLOAT) > 0:
+    """Aggregate contributions to the likelihood value.
+
+    Parameters
+    ----------
+    contribs : np.ndarray
+        Array with shape (num_agents_est,).
+
+    Returns
+    -------
+    crit_val : float
+
+    """
+    if np.sum(np.abs(contribs) > HUGE_FLOAT) > 0:
         record_warning(5)
 
     crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
@@ -24,20 +36,26 @@ def get_log_likl(contribs):
     return crit_val
 
 
-def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type="optim"):
+def distribute_parameters(
+    paras_vec, is_debug=False, info=None, paras_type="optim"
+):
     """Parse the parameter vector into a dictionary of model quantities.
 
-    Args:
-        paras_vec (np.ndarray): 1d numpy array with the parameters
-        is_debug (bool): If true, the parameters are checked for validity
-        info: ????
-        paras_type (str): one of ['econ', 'optim']. A paras_vec of type 'econ' contains the
-            the standard deviations and covariances of the shock distribution. This is how
-            parameters are represented in the .ini file and the output of .fit().
-            A paras_vec of type 'optim' contains the elements of the cholesky factors of the
-            covariance matrix of the shock distribution. This type is used internally during
-            the likelihood estimation. The default value is 'optim' in order to make the function
-            more aligned with Fortran, where we never have to parse 'econ' parameters.
+    Parameters
+    ----------
+    paras_vec : np.ndarray
+        1d numpy array with the parameters
+    is_debug : bool
+        If true, the parameters are checked for validity
+    info : ????
+    paras_type : str
+        one of ['econ', 'optim']. A paras_vec of type 'econ' contains the the standard
+        deviations and covariances of the shock distribution. This is how parameters are
+        represented in the .ini file and the output of .fit(). A paras_vec of type
+        'optim' contains the elements of the cholesky factors of the covariance matrix
+        of the shock distribution. This type is used internally during the likelihood
+        estimation. The default value is 'optim' in order to make the function more
+        aligned with Fortran, where we never have to parse 'econ' parameters.
 
     """
     paras_vec = paras_vec.copy()
@@ -79,10 +97,11 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     """Stack optimization parameters from a dictionary into a vector of type 'optim'.
 
     Args:
-        paras_dict (dict): dictionary with quantities from which the parameters can be extracted
+        paras_dict (dict): dictionary with quantities from which the parameters can be
+            extracted.
         num_paras (int): number of parameters in the model (not only free parameters)
-        which (str): one of ['free', 'all'], determines whether the resulting parameter vetcor
-            contains only free parameters or all parameters.
+        which (str): one of ['free', 'all'], determines whether the resulting parameter
+            vector contains only free parameters or all parameters.
         is_debug (bool): If True, inputs and outputs are checked for consistency.
 
 
@@ -92,12 +111,15 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
         assert check_model_parameters(paras_dict)
 
     pinfo = paras_parsing_information(num_paras)
-    x = np.tile(np.nan, num_paras)
+    x = np.full(num_paras, np.nan)
 
     start, stop = pinfo["delta"]["start"], pinfo["delta"]["stop"]
     x[start:stop] = paras_dict["delta"]
 
-    start, stop = pinfo["coeffs_common"]["start"], pinfo["coeffs_common"]["stop"]
+    start, stop = (
+        pinfo["coeffs_common"]["start"],
+        pinfo["coeffs_common"]["stop"],
+    )
     x[start:stop] = paras_dict["coeffs_common"]
 
     start, stop = pinfo["coeffs_a"]["start"], pinfo["coeffs_a"]["stop"]
@@ -112,7 +134,10 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     start, stop = pinfo["coeffs_home"]["start"], pinfo["coeffs_home"]["stop"]
     x[start:stop] = paras_dict["coeffs_home"]
 
-    start, stop = pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"]
+    start, stop = (
+        pinfo["shocks_coeffs"]["start"],
+        pinfo["shocks_coeffs"]["stop"],
+    )
     x[start:stop] = paras_dict["shocks_cholesky"][np.tril_indices(4)]
 
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
@@ -125,7 +150,9 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
         _check_optimization_parameters(x)
 
     if which == "free":
-        x = [x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]]
+        x = [
+            x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]
+        ]
         x = np.array(x)
 
     return x
@@ -157,23 +184,31 @@ def _check_optimization_parameters(x):
     return True
 
 
-def get_conditional_probabilities(type_shares, edu_start):
+def get_conditional_probabilities(type_shares, initial_level_of_education):
     """Calculate the conditional choice probabilities.
 
-    The calculation is based on the mulitnomial logit model for one particular
-    initial condition.
+    The calculation is based on the multinomial logit model for one particular initial
+    condition.
+
+    Parameters
+    ----------
+    type_shares : np.ndarray
+    initial_level_of_education : np.ndarray
+        Array with shape (num_obs,) containing initial levels of education.
 
     """
-    # Auxiliary objects
-    num_types = int(len(type_shares) / 2)
-    probs = np.tile(np.nan, num_types)
-    for i in range(num_types):
-        lower, upper = i * 2, (i + 1) * 2
-        covariate = edu_start > 9
-        probs[i] = np.exp(np.sum(type_shares[lower:upper] * [1.0, covariate]))
+    type_shares = type_shares.reshape(-1, 2)
+    covariates = np.column_stack(
+        (
+            np.ones(initial_level_of_education.shape[0]),
+            initial_level_of_education > 9,
+        )
+    )
+    probs = np.exp(covariates.dot(type_shares.T))
+    probs /= probs.sum(axis=1, keepdims=True)
 
-    # Scaling
-    probs = probs / sum(probs)
+    if initial_level_of_education.shape[0] == 1:
+        probs = probs.ravel()
 
     return probs
 
@@ -186,21 +221,25 @@ def extract_type_information(x):
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
     num_types = int(len(x[start:]) / 6) + 1
     type_shares = x[start:stop]
-    type_shares = np.concatenate((np.tile(0.0, 2), type_shares), axis=0)
+    type_shares = np.hstack((np.zeros(2), type_shares))
 
     # Type shifts
     start, stop = pinfo["type_shifts"]["start"], pinfo["type_shifts"]["stop"]
     type_shifts = x[start:stop]
     type_shifts = np.reshape(type_shifts, (num_types - 1, 4))
-    type_shifts = np.concatenate((np.tile(0.0, (1, 4)), type_shifts), axis=0)
+    type_shifts = np.vstack((np.zeros(4), type_shifts))
 
     return type_shares, type_shifts
 
 
 def extract_cholesky(x, info=None):
-    """Extract the cholesky factor of the shock covariance from parameters of type 'optim."""
+    """Extract the cholesky factor of the shock covariance from parameters of type
+    'optim."""
     pinfo = paras_parsing_information(len(x))
-    start, stop = pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"]
+    start, stop = (
+        pinfo["shocks_coeffs"]["start"],
+        pinfo["shocks_coeffs"]["stop"],
+    )
     shocks_coeffs = x[start:stop]
     dim = number_of_triangular_elements_to_dimensio(len(shocks_coeffs))
     shocks_cholesky = np.zeros((dim, dim))
@@ -230,14 +269,16 @@ def extract_cholesky(x, info=None):
 def coeffs_to_cholesky(coeffs):
     """Return the cholesky factor of a covariance matrix described by coeffs.
 
-    The function can handle the case of a deterministic model (i.e. where all coeffs = 0)
+    The function can handle the case of a deterministic model (i.e. where all coeffs =
+    0)
 
     Args:
-        coeffs (np.ndarray): 1d numpy array that contains the upper triangular elements of a
-        covariance matrix whose diagonal elements have been replaced by their square roots.
+        coeffs (np.ndarray): 1d numpy array that contains the upper triangular elements
+            of a covariance matrix whose diagonal elements have been replaced by their
+            square roots.
 
     """
-    dim = dim = number_of_triangular_elements_to_dimensio(len(coeffs))
+    dim = number_of_triangular_elements_to_dimensio(coeffs.shape[0])
     shocks = np.zeros((dim, dim))
     shocks[np.triu_indices(dim)] = coeffs
     shocks[np.diag_indices(dim)] **= 2
@@ -252,99 +293,201 @@ def coeffs_to_cholesky(coeffs):
 
 def cholesky_to_coeffs(shocks_cholesky):
     """ Map the Cholesky factor into the coefficients from the .ini file."""
-    shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-    shocks_cov[np.diag_indices(len(shocks_cov))] **= 0.5
-    shocks_coeffs = shocks_cov[np.triu_indices(len(shocks_cov))].tolist()
+    shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
+    shocks_cov[np.diag_indices(shocks_cov.shape[0])] **= 0.5
+    shocks_coeffs = shocks_cov[np.triu_indices(shocks_cov.shape[0])].tolist()
+
     return shocks_coeffs
 
 
-def get_total_values(
-    period,
-    num_periods,
-    optim_paras,
+@guvectorize(
+    [
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:, :], f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:, :], f8[:, :]",
+    ],
+    "(m), (n), (n), (p, n), (), () -> (n, p), (n, p)",
+    nopython=True,
+    target="cpu",
+)
+def get_continuation_value_and_ex_post_rewards(
+    wages,
     rewards_systematic,
+    emaxs,
     draws,
-    edu_spec,
-    mapping_state_idx,
-    periods_emax,
-    k,
-    states_all,
+    delta,
+    max_education,
+    continuation_value,
+    rew_ex_post,
 ):
-    """Get value function of all possible states.
+    """Calculate the continuation value and ex-post rewards.
 
-    This is called total value because it is the sum of immediate rewards, including realized
-    shocks, and expected future rewards.
+    This function is a generalized ufunc which is flexible in the number of individuals
+    and draws.
+
+    Parameters
+    ----------
+    wages : np.ndarray
+        Array with shape (2,).
+    rewards_systematic : np.ndarray
+        Array with shape (4,).
+    emaxs : np.ndarray
+        Array with shape (4,)
+    draws : np.ndarray
+        Array with shape (num_draws, 4)
+    delta : float
+        Discount rate.
+    max_education: bool
+        Indicator for whether the state has reached maximum education.
+
+    Returns
+    -------
+    continuation_value : np.ndarray
+        Array with shape (4, num_draws).
+    rew_ex_post : np.ndarray
+        Array with shape (4, num_draws)
+
+    Examples
+    --------
+    This example is only valid to benchmark different implementations, but does not
+    represent a use case.
+
+    >>> num_states_in_period = 10000
+    >>> num_draws = 500
+
+    >>> delta = np.array(0.9)
+    >>> wages = np.random.randn(num_states_in_period, 2)
+    >>> rewards = np.random.randn(num_states_in_period, 4)
+    >>> draws = np.random.randn(num_draws, 4)
+    >>> emaxs = np.random.randn(num_states_in_period, 4)
+
+    >>> get_continuation_value(wages, rewards, draws, emaxs, delta).shape
+    (10000, 4, 500)
 
     """
-    # We need to back out the wages from the total systematic rewards to
-    # working in the labor market to add the shock properly.
-    exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
-    wages_systematic = back_out_systematic_wages(
-        rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras
-    )
+    num_draws = draws.shape[0]
+    num_choices = rewards_systematic.shape[0]
+    num_wages = wages.shape[0]
 
-    # Initialize containers
-    rewards_ex_post = np.tile(np.nan, 4)
+    for i in range(num_draws):
+        for j in range(num_choices):
+            if j < num_wages:
+                rew_ex = (
+                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                )
+            else:
+                rew_ex = rewards_systematic[j] + draws[i, j]
 
-    # Calculate ex post rewards
-    for j in [0, 1]:
-        total_increment = rewards_systematic[j] - wages_systematic[j]
-        rewards_ex_post[j] = wages_systematic[j] * draws[j] + total_increment
+            cont_value = rew_ex + delta * emaxs[j]
 
-    for j in [2, 3]:
-        rewards_ex_post[j] = rewards_systematic[j] + draws[j]
+            if j == 2 and max_education:
+                cont_value += INADMISSIBILITY_PENALTY
 
-    # Get future values
-    if period != (num_periods - 1):
-        emaxs = get_emaxs(
-            edu_spec, mapping_state_idx, period, periods_emax, k, states_all
-        )
-    else:
-        emaxs = np.tile(0.0, 4)
-
-    # Calculate total utilities
-    total_values = rewards_ex_post + optim_paras["delta"] * emaxs
-
-    # This is required to ensure that the agent does not choose any
-    # inadmissible states. If the state is inadmissible emaxs takes value zero.
-    if states_all[period, k, 2] >= edu_spec["max"]:
-        total_values[2] += INADMISSIBILITY_PENALTY
-
-    # Finishing
-    return total_values, rewards_ex_post
+            rew_ex_post[j, i] = rew_ex
+            continuation_value[j, i] = cont_value
 
 
-def get_emaxs(edu_spec, mapping_state_idx, period, periods_emax, k, states_all):
-    """Get emaxs for additional choices."""
-    # Distribute state space
-    exp_a, exp_b, edu, _, type_ = states_all[period, k, :]
+@guvectorize(
+    [
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:, :]",
+    ],
+    "(m), (n), (n), (p, n), (), () -> (n, p)",
+    nopython=True,
+    target="cpu",
+)
+def get_continuation_value(
+    wages, rewards_systematic, emaxs, draws, delta, max_education, cont_value
+):
+    """Calculate the continuation value.
 
-    # Future utilities
-    emaxs = np.tile(np.nan, 4)
+    This function is a reduced version of
+    :func:`get_continutation_value_and_ex_post_rewards` which does not return ex post
+    rewards. The reason is that a second return argument doubles runtime whereas it is
+    only needed during simulation.
 
-    # Working in Occupation A
-    future_idx = mapping_state_idx[period + 1, exp_a + 1, exp_b, edu, 1 - 1, type_]
-    emaxs[0] = periods_emax[period + 1, future_idx]
+    """
+    num_draws, num_choices = draws.shape
+    num_wages = wages.shape[0]
 
-    # Working in Occupation B
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b + 1, edu, 2 - 1, type_]
-    emaxs[1] = periods_emax[period + 1, future_idx]
+    for i in range(num_draws):
+        for j in range(num_choices):
+            if j < num_wages:
+                rew_ex = (
+                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                )
+            else:
+                rew_ex = rewards_systematic[j] + draws[i, j]
 
-    # Increasing schooling. Note that adding an additional year of schooling
-    # is only possible for those that have strictly less than the maximum level
-    # of additional education allowed.
-    is_inadmissible = edu >= edu_spec["max"]
-    if is_inadmissible:
-        emaxs[2] = 0.00
-    else:
-        future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu + 1, 3 - 1, type_]
-        emaxs[2] = periods_emax[period + 1, future_idx]
+            cont_value_ = rew_ex + delta * emaxs[j]
 
-    # Staying at home
-    future_idx = mapping_state_idx[period + 1, exp_a, exp_b, edu, 4 - 1, type_]
-    emaxs[3] = periods_emax[period + 1, future_idx]
+            if j == 2 and max_education:
+                cont_value_ += INADMISSIBILITY_PENALTY
 
-    # Finishing
+            cont_value[j, i] = cont_value_
+
+
+@njit(nogil=True)
+def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
+    """Get the maximum utility from the subsequent period.
+
+    This function takes a parent node and looks up the utility from each of the four
+    choices in the subsequent period.
+
+    Warning
+    -------
+    This function must be extremely performant as the lookup is done for each state in a
+    state space (except for states in the last period) for each evaluation of the
+    optimization of parameters.
+
+    Example
+    -------
+    This example is first and foremost for benchmarking different implementations, not
+    for validation.
+
+    >>> num_periods, num_types = 50, 3
+    >>> edu_start, edu_max = [10, 15], 20
+    >>> state_space = StateSpace(num_periods, num_types, edu_start, edu_max)
+    >>> state_space.emaxs = np.r_[
+    ...     np.zeros((state_space.states_per_period[:-1].sum(), 5)),
+    ...     np.full((state_space.states_per_period[-1], 5), 10)
+    ... ]
+    >>> for period in reversed(range(state_space.num_periods - 1)):
+    ...     states = state_space.get_attribute_from_period("states", period)
+    ...     state_space.emaxs = get_emaxs_of_subsequent_period(
+    ...         states, state_space.indexer, state_space.emaxs, edu_max
+    ...     )
+    ...     state_space.emaxs[:, 4] = state_space.emaxs[:, :4].max()
+    >>> assert (state_space.emaxs == 10).mean() >= 0.95
+
+    """
+    for i in range(states.shape[0]):
+        # Unpack parent state and get index.
+        period, exp_a, exp_b, edu, choice_lagged, type_ = states[i]
+        k_parent = indexer[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
+
+        # Working in Occupation A in period + 1
+        k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
+        emaxs[k_parent, 0] = emaxs[k, 4]
+
+        # Working in Occupation B in period +1
+        k = indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
+        emaxs[k_parent, 1] = emaxs[k, 4]
+
+        # Schooling in period + 1. Note that adding an additional year of schooling is
+        # only possible for those that have strictly less than the maximum level of
+        # additional education allowed. This condition is necessary as there are states
+        # which have reached maximum education. Incrementing education by one would
+        # target an inadmissible state.
+        if edu >= edu_max:
+            emaxs[k_parent, 2] = 0.0
+        else:
+            k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
+            emaxs[k_parent, 2] = emaxs[k, 4]
+
+        # Staying at home in period + 1
+        k = indexer[period + 1, exp_a, exp_b, edu, 3, type_]
+        emaxs[k_parent, 3] = emaxs[k, 4]
+
     return emaxs
 
 
@@ -354,6 +497,19 @@ def create_draws(num_periods, num_draws, seed, is_debug):
     Handle special case of zero variances as this case is useful for testing.
     The draws are from a standard normal distribution and transformed later in
     the code.
+
+    Parameters
+    ----------
+    num_periods : int
+    num_draws : int
+    seed : int
+    is_debug : bool
+
+    Returns
+    -------
+    draws : np.array
+        Draws with shape (num_periods, num_draws)
+
     """
     # Control randomness by setting seed value
     np.random.seed(seed)
@@ -367,7 +523,6 @@ def create_draws(num_periods, num_draws, seed, is_debug):
             np.zeros(4), np.identity(4), (num_periods, num_draws)
         )
 
-    # Finishing
     return draws
 
 
@@ -378,16 +533,20 @@ def add_solution(
     mapping_state_idx,
     periods_emax,
     states_all,
+    *args,
 ):
     """Add solution to class instance."""
     respy_obj.unlock()
-    respy_obj.set_attr("periods_rewards_systematic", periods_rewards_systematic)
+    respy_obj.set_attr(
+        "periods_rewards_systematic", periods_rewards_systematic
+    )
     respy_obj.set_attr("states_number_period", states_number_period)
     respy_obj.set_attr("mapping_state_idx", mapping_state_idx)
     respy_obj.set_attr("periods_emax", periods_emax)
     respy_obj.set_attr("states_all", states_all)
     respy_obj.set_attr("is_solved", True)
     respy_obj.lock()
+
     return respy_obj
 
 
@@ -398,7 +557,6 @@ def replace_missing_values(arguments):
     are found.
 
     """
-    # Antibugging
     assert isinstance(arguments, tuple) or isinstance(arguments, np.ndarray)
 
     if isinstance(arguments, np.ndarray):
@@ -423,7 +581,6 @@ def replace_missing_values(arguments):
     if len(rslt) == 1:
         rslt = rslt[0]
 
-    # Finishing
     return rslt
 
 
@@ -465,7 +622,9 @@ def check_model_parameters(optim_paras):
 
     # Checks shock matrix
     assert optim_paras["shocks_cholesky"].shape == (4, 4)
-    np.allclose(optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"]))
+    np.allclose(
+        optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"])
+    )
 
     # Checks for type shares
     assert optim_paras["type_shares"].size == num_types * 2
@@ -473,7 +632,6 @@ def check_model_parameters(optim_paras):
     # Checks for type shifts
     assert optim_paras["type_shifts"].shape == (num_types, 4)
 
-    # Finishing
     return True
 
 
@@ -499,9 +657,10 @@ def read_draws(num_periods, num_draws):
     """Read the draws from disk.
 
     This is only used in the development process.
+
     """
     # Initialize containers
-    periods_draws = np.tile(np.nan, (num_periods, num_draws, 4))
+    periods_draws = np.full((num_periods, num_draws, 4), np.nan)
 
     # Read and distribute draws
     draws = np.array(np.genfromtxt(".draws.respy.test"), ndmin=2)
@@ -510,22 +669,18 @@ def read_draws(num_periods, num_draws):
         upper = lower + num_draws
         periods_draws[period, :, :] = draws[lower:upper, :]
 
-    # Finishing
     return periods_draws
 
 
 def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     """Transform the standard normal deviates to the relevant distribution."""
-    draws_transformed = draws.copy()
-    draws_transformed = np.dot(shocks_cholesky, draws_transformed.T).T
+    draws_transformed = draws.dot(shocks_cholesky.T)
 
-    for j in range(4):
-        draws_transformed[:, j] = draws_transformed[:, j] + shocks_mean[j]
+    draws_transformed += shocks_mean
 
-    for j in range(2):
-        draws_transformed[:, j] = np.clip(
-            np.exp(draws_transformed[:, j]), 0.0, HUGE_FLOAT
-        )
+    draws_transformed[:, :2] = np.clip(
+        np.exp(draws_transformed[:, :2]), 0.0, HUGE_FLOAT
+    )
 
     return draws_transformed
 
@@ -545,7 +700,6 @@ def format_opt_parameters(dict_, pos):
     if any(x is not None for x in bounds):
         line[-1] = "(" + str(bounds[0]) + "," + str(bounds[1]) + ")"
 
-    # Finishing
     return line
 
 
@@ -633,118 +787,157 @@ def check_early_termination(maxfun, num_eval):
         raise MaxfunError
 
 
-def get_num_obs_agent(data_array, num_agents_est):
-    """Get a list with the number of observations for each agent."""
-    num_obs_agent = np.tile(0, num_agents_est)
-    agent_number = data_array[0, 0]
-    num_rows = data_array.shape[0]
+def create_covariates(states):
+    """Create set of covariates for each state.
 
-    q = 0
-    for i in range(num_rows):
-        # We need to check whether we are faced with a new agent.
-        if data_array[i, 0] != agent_number:
-            q += 1
-            agent_number = data_array[i, 0]
+    Parameters
+    ----------
+    states : np.ndarray
+        Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
+        choice_lagged and type of each state.
 
-        num_obs_agent[q] += 1
+    Returns
+    -------
+    covariates : np.ndarray
+        Array with shape (num_states, 16) containing covariates of each state.
 
-    return num_obs_agent
+    Examples
+    --------
+    This example is to benchmark alternative implementations, but even this version does
+    not benefit from Numba anymore.
 
+    >>> states, _ = pyth_create_state_space(40, 5, [10], 20)
+    >>> covariates = create_covariates(states)
+    >>> assert covariates.shape == (states.shape[0], 16)
 
-def back_out_systematic_wages(
-    rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras
-):
-    """Construct the wage component for the labor market rewards."""
-    # Construct covariates needed for the general part of labor market rewards.
-    covariates = construct_covariates(exp_a, exp_b, edu, choice_lagged, None, None)
-
-    # First we calculate the general component.
-    general, wages_systematic = np.tile(np.nan, 2), np.tile(np.nan, 2)
-
-    covars_general = [1.0, covariates["not_exp_a_lagged"], covariates["not_any_exp_a"]]
-    general[0] = np.dot(optim_paras["coeffs_a"][12:], covars_general)
-
-    covars_general = [1.0, covariates["not_exp_b_lagged"], covariates["not_any_exp_b"]]
-    general[1] = np.dot(optim_paras["coeffs_b"][12:], covars_general)
-
-    # Second we do the same with the common component.
-    covars_common = [covariates["hs_graduate"], covariates["co_graduate"]]
-    rewards_common = np.dot(optim_paras["coeffs_common"], covars_common)
-
-    for j in [0, 1]:
-        wages_systematic[j] = rewards_systematic[j] - general[j] - rewards_common
-
-    return wages_systematic
-
-
-def construct_covariates(exp_a, exp_b, edu, choice_lagged, type_, period):
-    """ Construction of some additional covariates for the reward calculations.
     """
-    covariates = dict()
+    covariates = np.zeros((states.shape[0], 16), dtype=np.int8)
 
-    # These are covariates that are supposed to capture the entry costs.
-    covariates["not_exp_a_lagged"] = int((exp_a > 0) and (choice_lagged != 1))
-    covariates["not_exp_b_lagged"] = int((exp_b > 0) and (choice_lagged != 2))
-    covariates["work_a_lagged"] = int(choice_lagged == 1)
-    covariates["work_b_lagged"] = int(choice_lagged == 2)
-    covariates["edu_lagged"] = int(choice_lagged == 3)
-    covariates["choice_lagged"] = choice_lagged
-    covariates["not_any_exp_a"] = int(exp_a == 0)
-    covariates["not_any_exp_b"] = int(exp_b == 0)
-    covariates["any_exp_a"] = int(exp_a > 0)
-    covariates["any_exp_b"] = int(exp_b > 0)
-    covariates["period"] = period
-    covariates["exp_a"] = exp_a
-    covariates["exp_b"] = exp_b
-    covariates["type"] = type_
-    covariates["edu"] = edu
+    # Experience in A or B, but not in the last period.
+    covariates[:, 0] = np.where((states[:, 1] > 0) & (states[:, 4] != 1), 1, 0)
+    covariates[:, 1] = np.where((states[:, 2] > 0) & (states[:, 4] != 2), 1, 0)
 
-    if edu is not None:
-        covariates["hs_graduate"] = int(edu >= 12)
-        covariates["co_graduate"] = int(edu >= 16)
+    # Last occupation was A, B, or education.
+    covariates[:, 2] = np.where(states[:, 4] == 1, 1, 0)
+    covariates[:, 3] = np.where(states[:, 4] == 2, 1, 0)
+    covariates[:, 4] = np.where(states[:, 4] == 3, 1, 0)
 
-        cond = (not covariates["edu_lagged"]) and (not covariates["hs_graduate"])
-        covariates["is_return_not_high_school"] = int(cond)
+    # No experience in A or B.
+    covariates[:, 5] = np.where(states[:, 1] == 0, 1, 0)
+    covariates[:, 6] = np.where(states[:, 2] == 0, 1, 0)
 
-        cond = (not covariates["edu_lagged"]) and covariates["hs_graduate"]
-        covariates["is_return_high_school"] = int(cond)
+    # Any experience in A or B.
+    covariates[:, 7] = np.where(states[:, 1] > 0, 1, 0)
+    covariates[:, 8] = np.where(states[:, 2] > 0, 1, 0)
 
-    if period is not None:
-        covariates["is_minor"] = int(period < 2)
-        covariates["is_young_adult"] = int(period in [2, 3, 4])
-        covariates["is_adult"] = int(period >= 5)
+    # High school or college graduate
+    covariates[:, 9] = np.where(states[:, 3] >= 12, 1, 0)
+    covariates[:, 10] = np.where(states[:, 3] >= 16, 1, 0)
+
+    # Was not in school last period and is/is not high school graduate
+    covariates[:, 11] = np.where(
+        (covariates[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0
+    )
+    covariates[:, 12] = np.where(
+        (covariates[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0
+    )
+
+    # Define age groups minor (period < 2), young adult (2 <= period <= 4) and adult (5
+    # <= period).
+    covariates[:, 13] = np.where(states[:, 0] < 2, 1, 0)
+    covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
+    covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
 
     return covariates
 
 
-def calculate_rewards_common(covariates, optim_paras):
-    """ Calculate the reward component that is common to all alternatives.
+def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
+    """Calculate general rewards.
+
+    Parameters
+    ----------
+    covariates : np.ndarray
+        Array with shape (num_states, 16) containing covariates.
+    coeffs_a : np.ndarray
+        Array with shape (3,) containing coefficients.
+    coeffs_b : np.ndarray
+        Array with shape (3,) containing coefficients.
+
+    Returns
+    -------
+    rewards_general : np.ndarray
+        Array with shape (num_states, 2) containing general rewards of occupation.
+
+    Example
+    -------
+    >>> state_space = StateSpace(2, 1, [12, 16], 20)
+    >>> coeffs_a, coeffs_b = np.array([0.05, 0.6, 0.4]), np.array([0.36, 0.7, 1])
+    >>> calculate_rewards_general(
+    ...     state_space.covariates, coeffs_a, coeffs_b
+    ... ).reshape(-1)
+    array([0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45,
+           1.36, 0.45, 0.36, 0.05, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 0.36,
+           0.05, 1.36])
+
     """
-    covars_common = [covariates["hs_graduate"], covariates["co_graduate"]]
-    rewards_common = np.dot(optim_paras["coeffs_common"], covars_common)
+    num_states = covariates.shape[0]
+    rewards_general = np.full((num_states, 2), np.nan)
 
-    return rewards_common
-
-
-def calculate_rewards_general(covariates, optim_paras):
-    """ Calculate the non-skill related reward components.
-    """
-    rewards_general = np.tile(np.nan, 2)
-    covars_general = [1.0, covariates["not_exp_a_lagged"], covariates["not_any_exp_a"]]
-    rewards_general[0] = np.dot(optim_paras["coeffs_a"][12:], covars_general)
-
-    covars_general = [1.0, covariates["not_exp_b_lagged"], covariates["not_any_exp_b"]]
-    rewards_general[1] = np.dot(optim_paras["coeffs_b"][12:], covars_general)
+    rewards_general[:, 0] = np.column_stack(
+        (np.ones(num_states), covariates[:, [0, 5]])
+    ).dot(coeffs_a)
+    rewards_general[:, 1] = np.column_stack(
+        (np.ones(num_states), covariates[:, [1, 6]])
+    ).dot(coeffs_b)
 
     return rewards_general
+
+
+def calculate_rewards_common(covariates, coeffs_common):
+    """Calculate common rewards.
+
+    Covariates 9 and 10 are indicators for high school and college graduates.
+
+    Parameters
+    ----------
+    covariates : np.ndarray
+        Array with shape (num_states, 16) containing covariates.
+    coeffs_common : np.ndarray
+        Array with shape (2,) containing coefficients for high school and college
+        graduates.
+
+    Returns
+    -------
+    np.ndarray
+        Array with shape (num_states, 1) containing common rewards. Reshaping is
+        necessary to broadcast the array over rewards with shape (num_states, 4).
+
+    Example
+    -------
+    >>> state_space = StateSpace(2, 1, [12, 16], 20)
+    >>> coeffs_common = np.array([0.05, 0.6])
+    >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
+    array([0.05, 0.05, 0.65, 0.65, 0.05, 0.05, 0.05, 0.05, 0.65, 0.65, 0.65,
+           0.65])
+
+    """
+    return covariates[:, 9:11].dot(coeffs_common).reshape(-1, 1)
 
 
 def number_of_triangular_elements_to_dimensio(num):
     """Calculate the dimension of a square matrix from number of triangular elements.
 
-    Args:
-        num (int): The number of upper or lower triangular elements in the matrix
+    Parameters
+    ----------
+    num : int
+        The number of upper or lower triangular elements in the matrix.
 
+    Example
+    -------
+    >>> number_of_triangular_elements_to_dimensio(6)
+    3
+    >>> number_of_triangular_elements_to_dimensio(10)
+    4
 
     """
     return int(np.sqrt(8 * num + 1) / 2 - 0.5)

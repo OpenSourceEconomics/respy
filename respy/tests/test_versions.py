@@ -5,7 +5,7 @@ import pytest
 import copy
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import StateSpace
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.tests.codes.random_model import generate_random_model
@@ -19,6 +19,7 @@ from respy import RespyCls
 from functools import partial
 from respy.python.shared.shared_constants import DECIMALS
 
+
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
 
@@ -28,59 +29,64 @@ class TestClass(object):
     """
 
     def test_1(self):
-        """ Testing the equality of an evaluation of the criterion function for a random request.
+        """ Testing the equality of an evaluation of the criterion function for a random
+        request.
         """
         # Run evaluation for multiple random requests.
         is_deterministic = np.random.choice([True, False], p=[0.10, 0.9])
         is_interpolated = bool(np.random.choice([True, False], p=[0.10, 0.9]))
         is_myopic = np.random.choice([True, False], p=[0.10, 0.9])
-        max_draws = np.random.randint(10, 100)
+        max_draws = np.random.randint(11, 100)
         num_agents = np.random.randint(10, max_draws)
 
-        bound_constr = {'max_draws': max_draws}
+        bound_constr = {"max_draws": max_draws}
         point_constr = {
-            'interpolation': {'flag': is_interpolated},
-            'program': {'procs': 1, 'threads': 1, 'version': 'python'},
-            'estimation': {'maxfun': 0, 'agents': num_agents},
-            'simulation': {'agents': num_agents},
-            'num_periods': np.random.randint(1, 5)
+            "interpolation": {"flag": is_interpolated},
+            "program": {"procs": 1, "threads": 1, "version": "python"},
+            "estimation": {"maxfun": 0, "agents": num_agents},
+            "simulation": {"agents": num_agents},
+            "num_periods": np.random.randint(1, 5),
         }
 
         num_types = np.random.randint(2, 5)
 
         if is_interpolated:
-            point_constr['num_periods'] = np.random.randint(3, 5)
+            point_constr["num_periods"] = np.random.randint(3, 5)
 
         params_spec, options_spec = generate_random_model(
-            bound_constr=bound_constr, point_constr=point_constr,
-            deterministic=is_deterministic, myopic=is_myopic, num_types=num_types)
+            bound_constr=bound_constr,
+            point_constr=point_constr,
+            deterministic=is_deterministic,
+            myopic=is_myopic,
+            num_types=num_types,
+        )
 
-        edu_spec = options_spec['edu_spec']
-        num_periods = point_constr['num_periods']
+        edu_spec = options_spec["edu_spec"]
+        num_periods = point_constr["num_periods"]
 
-        # The use of the interpolation routines is a another special case. Constructing a request
-        #  that actually involves the use of the interpolation routine is a little involved as
-        # the number of interpolation points needs to be lower than the actual number of states.
-        # And to know the number of states each period, I need to construct the whole state space.
+        # The use of the interpolation routines is a another special case. Constructing
+        #  a request that actually involves the use of the interpolation routine is a
+        #  little involved as the number of interpolation points needs to be lower than
+        #  the actual number of states. And to know the number of states each period, I
+        #  need to construct the whole state space.
         if is_interpolated:
-            # Extract from future initialization file the information required to construct the
-            # state space. The number of periods needs to be at least three in order to provide
-            # enough state points.
+            state_space = StateSpace(
+                num_periods, num_types, edu_spec["start"], edu_spec["max"]
+            )
 
-            max_states_period = pyth_create_state_space(
-                num_periods, num_types, edu_spec
-            )[3]
+            max_states_period = state_space.states_per_period.max()
 
-            options_spec['interpolation']['points'] = np.random.randint(
+            options_spec["interpolation"]["points"] = np.random.randint(
                 10, max_states_period
             )
 
-        # Write out random components and interpolation grid to align the three implementations.
+        # Write out random components and interpolation grid to align the three
+        # implementations.
         write_draws(num_periods, max_draws)
         respy_obj = RespyCls(params_spec, options_spec)
         write_interpolation_grid(respy_obj)
 
-        type_shares = respy_obj.attr['optim_paras']['type_shares']
+        type_shares = respy_obj.attr["optim_paras"]["type_shares"]
 
         write_types(type_shares, num_agents)
         write_edu_start(edu_spec, num_agents)
@@ -100,8 +106,8 @@ class TestClass(object):
             # Solve the model
             respy_obj = simulate_observed(respy_obj)
 
-            # This parts checks the equality of simulated dataset for the different versions of
-            # the code.
+            # This parts checks the equality of simulated dataset for the different
+            # versions of the code.
             data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
 
             if base_data is None:
@@ -115,7 +121,9 @@ class TestClass(object):
             if base_val is None:
                 base_val = crit_val
 
-            np.testing.assert_allclose(base_val, crit_val, rtol=1e-05, atol=1e-06)
+            np.testing.assert_allclose(
+                base_val, crit_val, rtol=1e-05, atol=1e-06
+            )
 
             # We know even more for the deterministic case.
             if is_deterministic:
@@ -128,22 +136,24 @@ class TestClass(object):
         # It seems to be important that max_draws and max_agents is the same
         # number because otherwise some functions that read draws from a file
         # to ensure compatibility of fortran and python versions won't work.
-        bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
+        bound_constr = {"max_draws": max_draws, "max_agents": max_draws}
 
         point_constr = {
-            'interpolation': {'flag': False},
-            'program': {'procs': 1, 'threads': 1, 'version': 'python'},
-            'estimation': {'maxfun': 0}
+            "interpolation": {"flag": False},
+            "program": {"procs": 1, "threads": 1, "version": "python"},
+            "estimation": {"maxfun": 0},
         }
 
         params_spec, options_spec = generate_random_model(
-            point_constr=point_constr, bound_constr=bound_constr)
+            point_constr=point_constr, bound_constr=bound_constr
+        )
         respy_obj = RespyCls(params_spec, options_spec)
 
         num_agents_sim, optim_paras = dist_class_attributes(
-            respy_obj, "num_agents_sim", "optim_paras")
+            respy_obj, "num_agents_sim", "optim_paras"
+        )
 
-        type_shares = optim_paras['type_shares']
+        type_shares = optim_paras["type_shares"]
 
         # Simulate a dataset
         simulate_observed(respy_obj)
@@ -151,7 +161,7 @@ class TestClass(object):
         # Iterate over alternative implementations
         base_x, base_val = None, None
 
-        num_periods = options_spec['num_periods']
+        num_periods = options_spec["num_periods"]
 
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
@@ -180,16 +190,17 @@ class TestClass(object):
         """Ensure that the log looks exactly the same for different versions."""
         max_draws = np.random.randint(10, 100)
 
-        bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
+        bound_constr = {"max_draws": max_draws, "max_agents": max_draws}
 
         point_constr = {
-            'interpolation': {'flag': False},
-            'program': {'procs': 1, 'threads': 1, 'version': 'python'},
-            'estimation': {'maxfun': 0}
+            "interpolation": {"flag": False},
+            "program": {"procs": 1, "threads": 1, "version": "python"},
+            "estimation": {"maxfun": 0},
         }
 
         params_spec, options_spec = generate_random_model(
-            point_constr=point_constr, bound_constr=bound_constr)
+            point_constr=point_constr, bound_constr=bound_constr
+        )
         respy_obj = RespyCls(params_spec, options_spec)
 
         num_agents_sim, optim_paras, file_sim = dist_class_attributes(
@@ -200,10 +211,10 @@ class TestClass(object):
         base_sol_log, base_est_info, base_est_log = None, None, None
         base_sim_log = None
 
-        type_shares = respy_obj.attr['optim_paras']['type_shares']
-        num_periods = options_spec['num_periods']
+        type_shares = respy_obj.attr["optim_paras"]["type_shares"]
+        num_periods = options_spec["num_periods"]
 
-        edu_spec = options_spec['edu_spec']
+        edu_spec = options_spec["edu_spec"]
 
         write_draws(num_periods, max_draws)
         write_types(type_shares, num_agents_sim)
@@ -243,28 +254,34 @@ class TestClass(object):
             compare_est_log(base_est_log)
 
     def test_4(self):
-        """ This test ensures that the scaling matrix is identical between the alternative versions.
+        """ This test ensures that the scaling matrix is identical between the
+        alternative versions.
         """
-        max_draws = np.random.randint(10, 300)
+        max_draws = np.random.randint(11, 300)
 
-        bound_constr = {'max_draws': max_draws, 'max_agents': max_draws}
+        bound_constr = {"max_draws": max_draws, "max_agents": max_draws}
         num_agents = np.random.randint(10, max_draws)
 
         point_constr = {
-            'program': {'version': 'python'},
-            'estimation': {'maxfun': np.random.randint(1, 6), 'agents': num_agents},
-            'simulation': {'agents': num_agents}
+            "program": {"version": "python"},
+            "estimation": {
+                "maxfun": np.random.randint(1, 6),
+                "agents": num_agents,
+            },
+            "simulation": {"agents": num_agents},
         }
 
         params_spec, options_spec = generate_random_model(
-            point_constr=point_constr, bound_constr=bound_constr)
+            point_constr=point_constr, bound_constr=bound_constr
+        )
         respy_base = RespyCls(params_spec, options_spec)
 
         num_agents_sim, optim_paras = dist_class_attributes(
-            respy_base, "num_agents_sim", "optim_paras")
+            respy_base, "num_agents_sim", "optim_paras"
+        )
 
-        type_shares = optim_paras['type_shares']
-        num_periods = options_spec['num_periods']
+        type_shares = optim_paras["type_shares"]
+        num_periods = options_spec["num_periods"]
 
         write_draws(num_periods, max_draws)
         write_interpolation_grid(respy_base)
@@ -276,9 +293,9 @@ class TestClass(object):
         for version in ["fortran", "python"]:
             respy_obj = copy.deepcopy(respy_base)
 
-            # The actual optimizer does not matter for the scaling matrix. We also need to make
-            # sure that PYTHON is only called with a single processor.
-            if version in ["python"]:
+            # The actual optimizer does not matter for the scaling matrix. We also need
+            # to make sure that PYTHON is only called with a single processor.
+            if version == "python":
                 optimizer_used = "SCIPY-LBFGSB"
                 num_procs = 1
             else:

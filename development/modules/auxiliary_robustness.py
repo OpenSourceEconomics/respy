@@ -33,10 +33,11 @@ def run_robustness_test(seed, is_investigation):
         copy(join(old_dir, file), join(new_dir, file))
     os.chdir(new_dir)
 
-    # We need to impose some constraints so that the random initialization file does meet the
-    # structure of the empirical dataset. We need to be particularly careful with the
-    # construction of the maximum level of schooling as we need to rule out that anyone in the
-    # estimation sample has a value larger then the specified maximum value.
+    # We need to impose some constraints so that the random initialization file does
+    # meet the structure of the empirical dataset. We need to be particularly careful
+    # with the construction of the maximum level of schooling as we need to rule out
+    # that anyone in the estimation sample has a value larger then the specified maximum
+    # value.
     version = np.random.choice(["python", "fortran"])
     if version == 'python':
         max_periods = 3

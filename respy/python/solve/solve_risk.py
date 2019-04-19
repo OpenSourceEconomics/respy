@@ -1,55 +1,82 @@
-import numpy as np
+from numba import guvectorize
+from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 
-from respy.python.shared.shared_auxiliary import get_total_values
 
-
+@guvectorize(
+    [
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:]",
+    ],
+    "(m), (n), (n), (p, n), (), () -> ()",
+    nopython=True,
+    target="parallel",
+)
 def construct_emax_risk(
-    num_periods,
-    num_draws_emax,
-    period,
-    k,
-    draws_emax_risk,
-    rewards_systematic,
-    periods_emax,
-    states_all,
-    mapping_state_idx,
-    edu_spec,
-    optim_paras,
+    wages, rewards_systematic, emaxs, draws, delta, max_education, cont_value
 ):
-    """ Simulate expected future value for a given distribution of the unobservables.
+    """Simulate expected maximum utility for a given distribution of the unobservables.
+
+    The function takes an agent and calculates the utility for each of the choices, the
+    ex-post rewards, with multiple draws from the distribution of unobservables and adds
+    the discounted expected maximum utility of subsequent periods resulting from
+    choices. Averaging over all maximum utilities yields the expected maximum utility of
+    this state.
+
+    The underlying process in this function is called `Monte Carlo integration`_. The
+    goal is to approximate an integral by evaluating the integrand at randomly chosen
+    points. In this setting, one wants to approximate the expected maximum utility of
+    the current state.
+
+    Parameters
+    ----------
+    wages : np.ndarray
+        Array with shape (2,) containing wages.
+    rewards_systematic : np.ndarray
+        Array with shape (4,) containing systematic rewards.
+    emaxs : np.ndarray
+        Array with shape (4,) containing expected maximum utility for each choice in the
+        subsequent period.
+    draws : np.ndarray
+        Array with shape (num_draws, 4).
+    delta : float
+        The discount factor.
+    max_education: bool
+        Indicator for whether the state has reached maximum education.
+
+    Returns
+    -------
+    cont_value : float
+        Expected maximum utility of an agent.
+
+    .. _Monte Carlo integration:
+        https://en.wikipedia.org/wiki/Monte_Carlo_integration
+
     """
-    # Antibugging
-    assert np.all(draws_emax_risk[:, :2] >= 0)
+    num_draws, num_choices = draws.shape
+    num_wages = wages.shape[0]
 
-    # Calculate maximum value
-    emax = 0.0
-    for i in range(num_draws_emax):
+    cont_value[0] = 0.0
 
-        # Select draws for this draw
-        draws = draws_emax_risk[i, :]
+    for i in range(num_draws):
 
-        # Get total value of admissible states
-        total_values, _ = get_total_values(
-            period,
-            num_periods,
-            optim_paras,
-            rewards_systematic,
-            draws,
-            edu_spec,
-            mapping_state_idx,
-            periods_emax,
-            k,
-            states_all,
-        )
+        current_max_emax = 0.0
 
-        # Determine optimal choice
-        maximum = max(total_values)
+        for j in range(num_choices):
+            if j < num_wages:
+                rew_ex = (
+                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                )
+            else:
+                rew_ex = rewards_systematic[j] + draws[i, j]
 
-        # Recording expected future value
-        emax += maximum
+            emax_choice = rew_ex + delta * emaxs[j]
 
-    # Scaling
-    emax = emax / num_draws_emax
+            if j == 2 and max_education:
+                emax_choice += INADMISSIBILITY_PENALTY
 
-    # Finishing
-    return emax
+            if emax_choice > current_max_emax:
+                current_max_emax = emax_choice
+
+        cont_value[0] += current_max_emax
+
+    cont_value[0] /= num_draws

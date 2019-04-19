@@ -1,4 +1,3 @@
-from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.shared.shared_auxiliary import distribute_parameters
@@ -8,66 +7,36 @@ from respy.python.shared.shared_auxiliary import get_log_likl
 def pyth_criterion(
     x,
     is_interpolated,
-    num_draws_emax,
-    num_periods,
     num_points_interp,
-    is_myopic,
     is_debug,
-    data_array,
-    num_draws_prob,
+    data,
     tau,
     periods_draws_emax,
     periods_draws_prob,
-    states_all,
-    states_number_period,
-    mapping_state_idx,
-    max_states_period,
-    num_agents_est,
-    num_obs_agent,
-    num_types,
-    edu_spec,
+    state_space,
 ):
     """Criterion function for the likelihood maximization."""
     optim_paras = distribute_parameters(x, is_debug)
 
     # Calculate all systematic rewards
-    periods_rewards_systematic = pyth_calculate_rewards_systematic(
-        num_periods, states_number_period, states_all, max_states_period, optim_paras
-    )
+    state_space.update_systematic_rewards(optim_paras)
 
-    periods_emax = pyth_backward_induction(
-        num_periods,
-        is_myopic,
-        max_states_period,
+    state_space = pyth_backward_induction(
         periods_draws_emax,
-        num_draws_emax,
-        states_number_period,
-        periods_rewards_systematic,
-        mapping_state_idx,
-        states_all,
+        state_space,
         is_debug,
         is_interpolated,
         num_points_interp,
-        edu_spec,
         optim_paras,
         "",
         False,
     )
 
     contribs = pyth_contributions(
-        periods_rewards_systematic,
-        mapping_state_idx,
-        periods_emax,
-        states_all,
-        data_array,
+        state_space,
+        data,
         periods_draws_prob,
         tau,
-        num_periods,
-        num_draws_prob,
-        num_agents_est,
-        num_obs_agent,
-        num_types,
-        edu_spec,
         optim_paras,
     )
 

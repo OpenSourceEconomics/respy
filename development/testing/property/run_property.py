@@ -1,36 +1,27 @@
-#!/usr/bin/env python
-""" Script to start development test battery for the RESPY package.
-"""
-from datetime import timedelta
-from datetime import datetime
+""" Script to start development test battery for the RESPY package."""
+import datetime as dt
 import numpy as np
 import traceback
 import importlib
 import argparse
 import random
-import sys
 import os
+from pathlib import Path
 
-# RESPY testing codes. The import of the PYTEST configuration file ensures that the PYTHONPATH is
-#  modified to allow for the use of the tests..
-PACKAGE_DIR = os.path.dirname(os.path.realpath(__file__))
-PACKAGE_DIR = PACKAGE_DIR.replace("development/testing/property", "")
+# RESPY testing codes. The import of the PYTEST configuration file ensures that the
+#  PYTHONPATH is modified to allow for the use of the tests..
+from development.modules.auxiliary_property import cleanup_testing_infrastructure
+from development.modules.auxiliary_property import initialize_record_canvas
+from development.modules.auxiliary_property import finalize_testing_record
+from development.modules.auxiliary_property import update_testing_record
+from development.modules.auxiliary_property import get_random_request
+from development.modules.auxiliary_shared import send_notification
+from development.modules.auxiliary_shared import get_random_dirname
+from development.modules.auxiliary_shared import compile_package
+from development.modules.auxiliary_property import get_test_dict
+from development.modules.auxiliary_shared import cleanup
 
-# PYTEST ensures the path is set up correctly.
-sys.path.insert(0, PACKAGE_DIR + "respy/tests")
-sys.path.insert(0, PACKAGE_DIR)
-sys.path.insert(0, "../modules")
-
-from auxiliary_property import cleanup_testing_infrastructure
-from auxiliary_property import initialize_record_canvas
-from auxiliary_property import finalize_testing_record
-from auxiliary_property import update_testing_record
-from auxiliary_property import get_random_request
-from auxiliary_shared import send_notification
-from auxiliary_shared import get_random_dirname
-from auxiliary_shared import compile_package
-from auxiliary_property import get_test_dict
-from auxiliary_shared import cleanup
+PACKAGE_DIR = Path(__file__).resolve().parents[3]
 
 
 def run(request, is_compile, is_background):
@@ -60,9 +51,10 @@ def run(request, is_compile, is_background):
         compile_package(True)
 
     # Get a dictionary with all candidate test cases.
-    test_dict = get_test_dict(PACKAGE_DIR + "respy/tests")
+    test_dict = get_test_dict(PACKAGE_DIR / "respy" / "tests")
 
-    # We initialize a dictionary that allows to keep track of each test's success or failure.
+    # We initialize a dictionary that allows to keep track of each test's success or
+    # failure.
     full_test_record = dict()
     for key_ in test_dict.keys():
         full_test_record[key_] = dict()
@@ -70,7 +62,7 @@ def run(request, is_compile, is_background):
             full_test_record[key_][value] = [0, 0]
 
     # Start with a clean slate.
-    start, timeout = datetime.now(), timedelta(hours=hours)
+    start, timeout = dt.datetime.now(), dt.timedelta(hours=hours)
 
     if not is_investigation:
         cleanup_testing_infrastructure(False)
@@ -127,7 +119,7 @@ def run(request, is_compile, is_background):
             cleanup_testing_infrastructure(True)
 
         #  Timeout.
-        if timeout < datetime.now() - start:
+        if timeout < dt.datetime.now() - start:
             break
 
     if not is_investigation:

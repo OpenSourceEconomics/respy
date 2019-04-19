@@ -1,4 +1,6 @@
-""" This module serves as the interface between the PYTHON code and the FORTRAN implementations.
+""" This module serves as the interface between the PYTHON code and the FORTRAN
+implementations.
+
 """
 import pandas as pd
 import numpy as np
@@ -8,7 +10,6 @@ import os
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import EXEC_DIR
 
@@ -17,7 +18,32 @@ def resfort_interface(respy_obj, request, data_array=None):
     """ This function provides the interface to the FORTRAN functionality.
     """
     # Distribute class attributes
-    optim_paras, num_periods, edu_spec, is_debug, num_draws_emax, seed_emax, is_interpolated, num_points_interp, is_myopic, tau, num_procs, num_threads, num_agents_sim, num_draws_prob, seed_prob, seed_sim, optimizer_options, optimizer_used, maxfun, precond_spec, file_sim, num_paras, num_types, num_agents_est = dist_class_attributes(
+    (
+        optim_paras,
+        num_periods,
+        edu_spec,
+        is_debug,
+        num_draws_emax,
+        seed_emax,
+        is_interpolated,
+        num_points_interp,
+        is_myopic,
+        tau,
+        num_procs,
+        num_threads,
+        num_agents_sim,
+        num_draws_prob,
+        seed_prob,
+        seed_sim,
+        optimizer_options,
+        optimizer_used,
+        maxfun,
+        precond_spec,
+        file_sim,
+        num_paras,
+        num_types,
+        num_agents_est,
+    ) = dist_class_attributes(
         respy_obj,
         "optim_paras",
         "num_periods",
@@ -51,8 +77,8 @@ def resfort_interface(respy_obj, request, data_array=None):
             assert optimizer_used in OPT_EST_FORT
 
         assert data_array is not None
-        # If an evaluation is requested, then a specially formatted dataset is written to a
-        # scratch file. This eases the reading of the dataset in FORTRAN.
+        # If an evaluation is requested, then a specially formatted dataset is written
+        # to a scratch file. This eases the reading of the dataset in FORTRAN.
         write_dataset(data_array)
 
     args = (
@@ -115,8 +141,8 @@ def get_results(num_periods, edu_spec, num_agents_sim, num_types, which):
     # Auxiliary information
     min_idx = edu_spec["max"] + 1
 
-    # Get the maximum number of states. The special treatment is required as it informs about the
-    # dimensions of some of the arrays that are processed below.
+    # Get the maximum number of states. The special treatment is required as it informs
+    # about the dimensions of some of the arrays that are processed below.
     max_states_period = int(np.loadtxt(".max_states_period.resfort.dat"))
 
     os.unlink(".max_states_period.resfort.dat")
@@ -125,7 +151,9 @@ def get_results(num_periods, edu_spec, num_agents_sim, num_types, which):
     mapping_state_idx = read_data("mapping_state_idx", shape).astype("int")
 
     shape = (num_periods,)
-    states_number_period = read_data("states_number_period", shape).astype("int")
+    states_number_period = read_data("states_number_period", shape).astype(
+        "int"
+    )
 
     shape = (num_periods, max_states_period, 5)
     states_all = read_data("states_all", shape).astype("int")
@@ -162,8 +190,9 @@ def read_data(label, shape):
     """
     file_ = "." + label + ".resfort.dat"
 
-    # This special treatment is required as it is crucial for this data to stay of integer type.
-    # All other data is transformed to float in the replacement of missing values.
+    # This special treatment is required as it is crucial for this data to stay of
+    # integer type. All other data is transformed to float in the replacement of missing
+    # values.
     if label == "states_number_period":
         data = np.loadtxt(file_, dtype=np.int64)
     else:
@@ -361,10 +390,14 @@ def write_resfort_initialization(
             line = "{0:10d}\n".format(optimizer_options[optimizer]["maxfun"])
             file_.write(line)
 
-            line = " {0:25.15f}\n".format(optimizer_options[optimizer]["rhobeg"])
+            line = " {0:25.15f}\n".format(
+                optimizer_options[optimizer]["rhobeg"]
+            )
             file_.write(line)
 
-            line = " {0:25.15f}\n".format(optimizer_options[optimizer]["rhoend"])
+            line = " {0:25.15f}\n".format(
+                optimizer_options[optimizer]["rhoend"]
+            )
             file_.write(line)
 
         line = " {0:25.15f}\n".format(optimizer_options["FORT-BFGS"]["gtol"])
@@ -405,8 +438,10 @@ def write_resfort_initialization(
 def write_dataset(data_array):
     """ Write the dataset to a temporary file. Missing values are set to large values.
     """
-    # Transfer to data frame as this allows to fill the missing values with HUGE FLOAT. The numpy
-    # array is passed in to align the interfaces across implementations
+    # Transfer to data frame as this allows to fill the missing values with HUGE FLOAT.
+    # The numpy array is passed in to align the interfaces across implementations
     data_frame = pd.DataFrame(data_array)
     with open(".data.resfort.dat", "w") as file_:
-        data_frame.to_string(file_, index=False, header=None, na_rep=str(HUGE_FLOAT))
+        data_frame.to_string(
+            file_, index=False, header=None, na_rep=str(HUGE_FLOAT)
+        )

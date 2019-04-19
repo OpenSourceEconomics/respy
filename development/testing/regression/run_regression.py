@@ -2,26 +2,25 @@
 further development and refactoring efforts.
 """
 from __future__ import print_function
-
-from functools import partial
-
+import argparse
 import multiprocessing as mp
 import numpy as np
-import argparse
 import socket
 import pickle
-
-from auxiliary_shared import send_notification
-from auxiliary_shared import compile_package
-
-from auxiliary_regression import create_single
-from auxiliary_regression import check_single
-from auxiliary_regression import get_chunks
-
+from development.modules.auxiliary_shared import send_notification
+from development.modules.auxiliary_shared import compile_package
+from development.modules.auxiliary_regression import create_single
+from development.modules.auxiliary_regression import check_single
+from development.modules.auxiliary_regression import get_chunks
+from functools import partial
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import DECIMALS
-from respy.pre_processing.model_processing import _options_spec_from_attributes, _params_spec_from_attributes
+from respy.pre_processing.model_processing import (
+    _options_spec_from_attributes,
+    _params_spec_from_attributes,
+)
 from respy.tests.codes.auxiliary import simulate_observed
+
 
 HOSTNAME = socket.gethostname()
 
@@ -56,11 +55,11 @@ def run(request, is_compile, is_background, is_strict, num_procs):
     if num_tests is not None:
         assert num_tests > 0
     if idx is not None:
-        assert idx > 0
+        assert idx >= 0
 
     if is_investigation:
         fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
-        with open(fname, 'rb') as p:
+        with open(fname, "rb") as p:
             tests = pickle.load(p)
 
         attr, crit_val = tests[idx]
@@ -90,7 +89,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
 
     if is_check:
         fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
-        with open(fname, 'rb') as p:
+        with open(fname, "rb") as p:
             tests = pickle.load(p)
 
         run_single = partial(check_single, tests)
@@ -132,7 +131,9 @@ def run(request, is_compile, is_background, is_strict, num_procs):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Create or check regression vault")
+    parser = argparse.ArgumentParser(
+        description="Create or check regression vault"
+    )
 
     parser.add_argument(
         "--request",

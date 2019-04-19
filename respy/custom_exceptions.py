@@ -7,8 +7,8 @@ class MaxfunError(Exception):
 
 
 class UserError(Exception):
-    """ This custom error class provides informative feedback in case of a misspecified request
-    by the user.
+    """ This custom error class provides informative feedback in case of a misspecified
+    request by the user.
     """
 
     def __init__(self, msg):
@@ -16,3 +16,9 @@ class UserError(Exception):
 
     def __str__(self):
         return "\n\n         {}\n\n".format(self.msg)
+
+
+class StateSpaceError(KeyError):
+    """Exception raised when an inadmissible state is indexed."""
+
+    pass

@@ -1,18 +1,16 @@
-import string
-from string import Formatter
-
-import subprocess
 import argparse
-import socket
-import sys
-import os
-
 import numpy as np
+import os
 import random
+import socket
+import string
+import subprocess
+import sys
 
-from config import PACKAGE_DIR
-
-from clsMail import MailCls
+from development.modules.clsMail import MailCls
+from development.modules.config import PACKAGE_DIR
+from pathlib import Path
+from string import Formatter
 
 
 def update_class_instance(respy_obj, spec_dict):
@@ -21,8 +19,8 @@ def update_class_instance(respy_obj, spec_dict):
 
     respy_obj.unlock()
 
-    # Varying the baseline level of ambiguity requires special case. The same is true for the
-    # discount rate.
+    # Varying the baseline level of ambiguity requires special case. The same is true
+    # for the discount rate.
     if "level" in spec_dict["update"].keys():
         respy_obj.attr["optim_paras"]["level"] = np.array(
             [spec_dict["update"]["level"]]
@@ -69,7 +67,9 @@ def compile_package(is_debug=False):
     if not is_debug:
         subprocess.check_call(python_exec + " waf configure build", shell=True)
     else:
-        subprocess.check_call(python_exec + " waf configure build --debug ", shell=True)
+        subprocess.check_call(
+            python_exec + " waf configure build --debug ", shell=True
+        )
 
     os.chdir(cwd)
 
@@ -78,7 +78,8 @@ def send_notification(which, **kwargs):
     """ Finishing up a run of the testing battery.
     """
     # This allows to run the scripts even when no notification can be send.
-    if not os.path.exists(os.environ["HOME"] + "/.credentials"):
+    home = Path(os.environ.get("HOME") or os.environ.get("HOMEPATH"))
+    if not os.path.exists(str(home / ".credentials")):
         return
 
     hours, is_failed, num_tests, seed = None, None, None, None
@@ -267,7 +268,14 @@ def process_command_line_arguments(description):
 
 
 def get_random_dirname(length):
-    """ This function creates a random string that is used as the testing
-    subdirectory.
+    """ This function creates a random directory name.
+
+    The random name is used for a temporary testing directory. It starts with two
+    underscores so that it does not clutter the root directory.
+
+    TODO: Sensible length default.
+
     """
-    return "".join(random.choice(string.ascii_lowercase) for _ in range(length))
+    return "__" + "".join(
+        random.choice(string.ascii_lowercase) for _ in range(length)
+    )

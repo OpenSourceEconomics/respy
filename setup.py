@@ -16,7 +16,7 @@ class CustomDevelopCommand(develop):
         os.chdir("respy")
 
         subprocess.run(["python", "waf", "distclean"])
-        subprocess.run(["python", "waf", "configure", "build",  "-j", "1"])
+        subprocess.run(["python", "waf", "configure", "build", "-j", "1", "-vvv"])
 
         os.chdir("../")
 
@@ -33,7 +33,7 @@ class CustomBuildCommand(build_py):
         os.chdir("respy")
 
         subprocess.run(["python", "waf", "distclean"])
-        subprocess.run(["python", "waf", "configure", "build",  "-j", "1"])
+        subprocess.run(["python", "waf", "configure", "build", "-j", "1", "-vvv"])
 
         os.chdir("../")
 
@@ -72,8 +72,8 @@ def setup_package():
             "scipy>=0.18",
             "pandas>=0.18",
             "statsmodels>=0.6",
-            "pip>=8.0",
             "pytest>=3.0",
+            "pyaml",
         ],
         cmdclass={"build_py": CustomBuildCommand, "develop": CustomDevelopCommand},
         include_package_data=True,

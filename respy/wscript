@@ -3,94 +3,133 @@ import os
 
 from waflib.Configure import conf
 
-top = '.'
-out = '.bld'
+top = "."
+out = ".bld"
 
-GFORTRAN_FLAGS = ['-ffree-line-length-0', '-cpp']
+GFORTRAN_FLAGS = ["-ffree-line-length-0", "-cpp"]
 
 GFORTRAN_FLAGS_DEBUG = []
-GFORTRAN_FLAGS_DEBUG += ['-O', '-Wall', '-Wline-truncation', '-Wsurprising', '-Waliasing']
-GFORTRAN_FLAGS_DEBUG += ['-Wunused-parameter', '-fwhole-file', '-fcheck=all']
-GFORTRAN_FLAGS_DEBUG += ['-fbacktrace', '-g', '-fmax-errors=1', '-fopt-info-all=fopt.log']
-GFORTRAN_FLAGS_DEBUG += ['-Wcharacter-truncation', '-Wimplicit-interface', '-std=f2008']
+GFORTRAN_FLAGS_DEBUG += [
+    "-O",
+    "-Wall",
+    "-Wline-truncation",
+    "-Wsurprising",
+    "-Waliasing",
+]
+GFORTRAN_FLAGS_DEBUG += ["-Wunused-parameter", "-fwhole-file", "-fcheck=all"]
+GFORTRAN_FLAGS_DEBUG += [
+    "-fbacktrace",
+    "-g",
+    "-fmax-errors=1",
+    "-fopt-info-all=fopt.log",
+]
+GFORTRAN_FLAGS_DEBUG += [
+    "-Wcharacter-truncation",
+    "-Wimplicit-interface",
+    "-std=f2008",
+]
 
-GFORTRAN_FLAGS_PRODUCTION = ['-O3']
+GFORTRAN_FLAGS_PRODUCTION = ["-O3"]
 
 
 def options(ctx):
 
-    ctx.load('compiler_c')
+    ctx.load("compiler_c")
 
-    ctx.load('compiler_fc')
+    ctx.load("compiler_fc")
 
-    ctx.add_option('--debug', action='store_true', dest='is_debug', help='use debug compiler flags')
+    ctx.add_option(
+        "--debug",
+        action="store_true",
+        dest="is_debug",
+        help="use debug compiler flags",
+    )
 
-    ctx.add_option('--no_mpi', action='store_true', dest='no_mpi',
-                   help='no support for MPI parallelism')
+    ctx.add_option(
+        "--no_mpi",
+        action="store_true",
+        dest="no_mpi",
+        help="no support for MPI parallelism",
+    )
 
-    ctx.add_option('--no_omp', action='store_true', dest='no_omp',
-                   help='no support for OMP parallelism')
+    ctx.add_option(
+        "--no_omp",
+        action="store_true",
+        dest="no_omp",
+        help="no support for OMP parallelism",
+    )
 
-    ctx.add_option('--no_fortran', action='store_true', dest='no_fortran',
-                   help='no support for FORTRAN')
+    ctx.add_option(
+        "--no_fortran",
+        action="store_true",
+        dest="no_fortran",
+        help="no support for FORTRAN",
+    )
 
-    # This option is convenient in the development process as it allows to later analyze the F2PY
-    # testing battery.
-    ctx.add_option('--no_f2py', action='store_true', dest='no_f2py', help='no support for F2PY')
+    # This option is convenient in the development process as it allows to later analyze
+    # the F2PY testing battery.
+    ctx.add_option(
+        "--no_f2py",
+        action="store_true",
+        dest="no_f2py",
+        help="no support for F2PY",
+    )
 
 
 def configure(ctx):
 
-    ctx.env['DEBUG'] = ctx._configure_debug()
-    ctx.env['FORTRAN'] = ctx._check_support_fortran()
-    ctx.env['F2PY'] = ctx._check_support_f2py()
+    ctx.env["DEBUG"] = ctx._configure_debug()
+    ctx.env["FORTRAN"] = ctx._check_support_fortran()
+    ctx.env["F2PY"] = ctx._check_support_f2py()
 
-    # This needs to be checked after FORTRAN is checked, only then the required tools are
-    # available.
-    ctx.env['PARALLELISM_MPI'] = ctx._check_support_parallelism_mpi()
-    ctx.env['PARALLELISM_OMP'] = ctx._check_support_parallelism_omp()
+    # This needs to be checked after FORTRAN is checked, only then the required tools
+    # are available.
+    ctx.env["PARALLELISM_MPI"] = ctx._check_support_parallelism_mpi()
+    ctx.env["PARALLELISM_OMP"] = ctx._check_support_parallelism_omp()
 
     ctx._write_configuration()
 
-    if ctx.env['FORTRAN']:
-        ctx.env.append_unique('STLIBPATH', ['../.bld/fortran', '../.bld/tests/resources'])
-        ctx.env.append_unique('LIB', ['lapack'])
+    if ctx.env["FORTRAN"]:
+        ctx.env.append_unique(
+            "STLIBPATH", ["../.bld/fortran", "../.bld/tests/resources"]
+        )
+        ctx.env.append_unique("LIB", ["lapack"])
 
-        ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS)
-        if ctx.env['DEBUG']:
-            ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_DEBUG)
+        ctx.env.append_unique("FCFLAGS", GFORTRAN_FLAGS)
+        if ctx.env["DEBUG"]:
+            ctx.env.append_unique("FCFLAGS", GFORTRAN_FLAGS_DEBUG)
         else:
-            ctx.env.append_unique('FCFLAGS', GFORTRAN_FLAGS_PRODUCTION)
+            ctx.env.append_unique("FCFLAGS", GFORTRAN_FLAGS_PRODUCTION)
 
-    if ctx.env['PARALLELISM_MPI']:
-        ctx.env['FC'] = ['mpif90']
-        ctx.env.append_unique('FCFLAGS', ['-DMPI_AVAILABLE'])
+    if ctx.env["PARALLELISM_MPI"]:
+        ctx.env["FC"] = ["mpif90"]
+        ctx.env.append_unique("FCFLAGS", ["-DMPI_AVAILABLE"])
 
-    if ctx.env['PARALLELISM_OMP']:
-        ctx.env.append_unique('LINKFLAGS', ['-fopenmp'])
-        ctx.env.append_unique('FCFLAGS', ['-fopenmp'])
+    if ctx.env["PARALLELISM_OMP"]:
+        ctx.env.append_unique("LINKFLAGS", ["-fopenmp"])
+        ctx.env.append_unique("FCFLAGS", ["-fopenmp"])
 
 
 def build(ctx):
 
-    if ctx.env['FORTRAN']:
+    if ctx.env["FORTRAN"]:
 
-        ctx.recurse('fortran')
+        ctx.recurse("fortran")
 
-        ctx.recurse('tests/resources')
+        ctx.recurse("tests/resources")
 
 
 @conf
 def _configure_debug(self):
     """This function determines whether F2PY is supported or not."""
-    self.start_msg('Configuration DEBUG')
+    self.start_msg("Configuration DEBUG")
 
     if self.options.is_debug:
         is_debug = True
     else:
         is_debug = False
 
-    is_debug = _ci_build_matrix('DEBUG', is_debug)
+    is_debug = _ci_build_matrix("DEBUG", is_debug)
 
     self._construct_end_message(is_debug)
 
@@ -100,12 +139,12 @@ def _configure_debug(self):
 @conf
 def _check_support_f2py(self):
     """This function determines whether F2PY is supported or not."""
-    self.start_msg('Support F2PY ')
+    self.start_msg("Support F2PY ")
 
     if self.options.no_f2py:
         is_support = False
     else:
-        if self.env['FORTRAN']:
+        if self.env["FORTRAN"]:
             is_support = True
         else:
             is_support = False
@@ -119,21 +158,21 @@ def _check_support_f2py(self):
 def _check_support_fortran(self):
     """This function determines whether FORTRAN is supported or not."""
     # At this point we only test for the GFORTRAN compiler.
-    self.options.check_fortran_compiler = 'gfortran'
+    self.options.check_fortran_compiler = "gfortran"
 
-    self.start_msg('Support FORTRAN ')
+    self.start_msg("Support FORTRAN ")
 
     if self.options.no_fortran:
         is_support = False
     else:
         try:
-            self.load('compiler_fc')
+            self.load("compiler_fc")
             try:
-                assert self.env.FC_NAME == 'GFORTRAN'
+                assert self.env.FC_NAME == "GFORTRAN"
             except AssertionError:
                 raise self.errors.ConfigurationError
             self.check_fortran()
-            self.check_fc(lib='lapack')
+            self.check_fc(lib="lapack")
 
         except self.errors.ConfigurationError:
             is_support = False
@@ -150,13 +189,13 @@ def _check_support_fortran(self):
 @conf
 def _check_support_parallelism_mpi(self):
     """This function determines whether MPI parallelism is supported or not."""
-    self.start_msg('Support MPI PARALLELISM ')
+    self.start_msg("Support MPI PARALLELISM ")
 
-    if self.options.no_mpi or self.env['FORTRAN'] is False:
+    if self.options.no_mpi or self.env["FORTRAN"] is False:
         is_support = False
     else:
         try:
-            self.find_program('mpif90')
+            self.find_program("mpif90")
         except self.errors.ConfigurationError:
             is_support = False
         else:
@@ -172,9 +211,9 @@ def _check_support_parallelism_mpi(self):
 @conf
 def _check_support_parallelism_omp(self):
     """This function determines whether OMP parallelism is supported or not."""
-    self.start_msg('Support OMP PARALLELISM ')
+    self.start_msg("Support OMP PARALLELISM ")
 
-    if self.options.no_omp or self.env['FORTRAN'] is False:
+    if self.options.no_omp or self.env["FORTRAN"] is False:
         is_support = False
     else:
         try:
@@ -195,20 +234,27 @@ def _check_support_parallelism_omp(self):
 def _write_configuration(self):
     """This function records the package specification in a simple file."""
     config_dict = dict()
-    for label in ['DEBUG', 'FORTRAN', 'F2PY', 'PARALLELISM_MPI', 'PARALLELISM_OMP']:
+    for label in [
+        "DEBUG",
+        "FORTRAN",
+        "F2PY",
+        "PARALLELISM_MPI",
+        "PARALLELISM_OMP",
+    ]:
         config_dict[label] = self.env[label]
-    json.dump(config_dict, open('.bld/.config', 'w'))
+    json.dump(config_dict, open(".bld/.config", "w"))
 
 
 @conf
 def _ci_build_matrix(label, is_support):
-    """This function enforces the TRAVIS build matrix."""
-    if 'TRAVIS' in os.environ.keys():
+    """This function enforces the CI build matrix."""
+    # CI is available on TRAVIS and APPVEYOR
+    if "CI" in os.environ.keys():
 
-        if label in ['DEBUG']:
+        if label in ["DEBUG"]:
             is_support = True
         else:
-            is_support = os.environ['CI_' + label] == 'True'
+            is_support = os.environ["CI_" + label] == "True"
 
     return is_support
 
@@ -217,6 +263,6 @@ def _ci_build_matrix(label, is_support):
 def _construct_end_message(self, is_support):
     """This function constructs the end messages for the configuration step."""
     if is_support:
-        self.end_msg('yes', color='GREEN')
+        self.end_msg("yes", color="GREEN")
     else:
-        self.end_msg('no', color='RED')
+        self.end_msg("no", color="RED")

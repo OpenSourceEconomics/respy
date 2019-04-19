@@ -53,6 +53,7 @@ class RespyCls(object):
             "mapping_state_idx",
             "periods_emax",
             "states_all",
+            "state_space",
         ]
 
     def _initialize_solution_attributes(self):
@@ -79,7 +80,12 @@ class RespyCls(object):
 
         self._update_derived_attributes()
         self._check_model_attributes()
-        self._check_model_solution()
+        # ====================================================================
+        # todo: reimplement checks for python solution
+        # ====================================================================
+        if self.attr["version"] == "fortran":
+            self._check_model_solution()
+        # ====================================================================
         self.attr["is_locked"] = True
 
     def unlock(self):
@@ -107,7 +113,9 @@ class RespyCls(object):
 
         invalid_attr = self.derived_attributes + ["optim_paras", "init_dict"]
         if key in invalid_attr:
-            raise AssertionError("{} must not be modified by users!".format(key))
+            raise AssertionError(
+                "{} must not be modified by users!".format(key)
+            )
 
         if key in self.solution_attributes:
             assert not self.attr[
@@ -139,7 +147,9 @@ class RespyCls(object):
 
         for key_ in self.solution_attributes:
             try:
-                np.testing.assert_almost_equal(self.attr[key_], other.attr[key_])
+                np.testing.assert_almost_equal(
+                    self.attr[key_], other.attr[key_]
+                )
             except AssertionError:
                 return False
 
@@ -147,8 +157,8 @@ class RespyCls(object):
 
     def _update_derived_attributes(self):
         """Update derived attributes."""
-        # note: don't remove the conversion to bool. It seems unnecessary but it converts
-        # a numpy bool to python bool.
+        # note: don't remove the conversion to bool. It seems unnecessary but it
+        # converts a numpy bool to python bool.
         self.attr["is_myopic"] = bool(
             (self.attr["optim_paras"]["delta"] == 0.00)[0])
 
@@ -178,7 +188,15 @@ class RespyCls(object):
         assert not os.path.exists(".estimation.respy.scratch")
 
         # Distribute class attributes
-        optimizer_options, optimizer_used, optim_paras, version, maxfun, num_paras, file_est = dist_class_attributes(
+        (
+            optimizer_options,
+            optimizer_used,
+            optim_paras,
+            version,
+            maxfun,
+            num_paras,
+            file_est,
+        ) = dist_class_attributes(
             self,
             "optimizer_options",
             "optimizer_used",
@@ -231,14 +249,15 @@ class RespyCls(object):
         # less). It allows to read in only a subset of the initial conditions.
         data_frame = process_dataset(self)
         record_estimation_sample(data_frame)
-        data_array = data_frame.to_numpy()
 
         # Distribute class attributes
         version = self.get_attr("version")
 
+        data_array = data_frame.to_numpy()
+
         # Select appropriate interface
         if version in ["python"]:
-            respy_interface(self, "estimate", data_array)
+            respy_interface(self, "estimate", data_frame)
         elif version in ["fortran"]:
             resfort_interface(self, "estimate", data_array)
         else:
@@ -250,7 +269,6 @@ class RespyCls(object):
         for fname in [".estimation.respy.scratch", ".stop.respy.scratch"]:
             remove_scratch(fname)
 
-        # Finishing
         return x, val
 
     def simulate(self):
@@ -268,14 +286,35 @@ class RespyCls(object):
 
         # Select appropriate interface
         if version in ["python"]:
-            solution, data_array = respy_interface(self, "simulate")
+            state_space, data_array = respy_interface(self, "simulate")
         elif version in ["fortran"]:
             solution, data_array = resfort_interface(self, "simulate")
         else:
             raise NotImplementedError
 
         # Attach solution to class instance
-        self = add_solution(self, *solution)
+        if version == "fortran":
+            self = add_solution(self, *solution)
+        elif version == "python":
+            self.unlock()
+            self.set_attr("state_space", state_space)
+            self.lock()
+            (
+                states_all,
+                mapping_state_idx,
+                periods_rewards_systematic,
+                periods_emax,
+            ) = state_space._get_fortran_counterparts()
+            self = add_solution(
+                self,
+                periods_rewards_systematic,
+                state_space.states_per_period,
+                mapping_state_idx,
+                periods_emax,
+                states_all,
+            )
+        else:
+            raise NotImplementedError
 
         self.unlock()
         self.set_attr("is_solved", True)
@@ -285,12 +324,25 @@ class RespyCls(object):
         if is_store:
             self.store("solution.respy.pkl")
 
-        # Create pandas data frame with missing values.
-        data_frame = pd.DataFrame(
-            data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
-        )
+        # ====================================================================
+        # todo: harmonize python and fortran
+        # ====================================================================
+        if self.attr["version"] == "python":
+            data_frame = data_array[DATA_LABELS_SIM]
+        elif self.attr["version"] == "fortran":
+            data_frame = pd.DataFrame(
+                data=replace_missing_values(data_array),
+                columns=DATA_LABELS_SIM,
+            )
+        else:
+            raise NotImplementedError
+
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
-        data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
+
+        # ====================================================================
+        data_frame.set_index(
+            ["Identifier", "Period"], drop=False, inplace=True
+        )
 
         # Checks
         if is_debug:

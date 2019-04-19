@@ -1,18 +1,24 @@
 import numpy as np
-import pytest
-
-from respy.python.shared.shared_auxiliary import back_out_systematic_wages
-from respy.python.solve.solve_auxiliary import calculate_wages_systematic
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import construct_covariates
 from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import get_total_values
 from respy.python.shared.shared_auxiliary import get_optim_paras
-
 from respy.tests.codes.random_model import generate_random_model
-from respy.pre_processing.model_processing import _read_options_spec, _read_params_spec
+from respy.pre_processing.model_processing import (
+    _read_options_spec,
+    _read_params_spec,
+)
 from respy import RespyCls
 from pandas.testing import assert_series_equal
+from respy.python.solve.solve_auxiliary import StateSpace
+from respy.python.shared.shared_auxiliary import (
+    get_continuation_value_and_ex_post_rewards,
+)
+from respy.python.evaluate.evaluate_python import create_draws_and_prob_wages
+from respy.python.shared.shared_constants import DECIMALS, MISSING_FLOAT
+from functools import partial
+
+
+assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
 
 
 class TestClass(object):
@@ -37,7 +43,6 @@ class TestClass(object):
                 args = (optim_paras, num_paras, "all", True)
                 x = get_optim_paras(*args)
 
-            # Checks
             np.testing.assert_allclose(base, x)
 
     def test_2(self):
@@ -49,8 +54,8 @@ class TestClass(object):
             respy_obj = RespyCls(params_spec, options_spec)
             respy_obj.write_out("alt.respy")
 
-            new_params_spec = _read_params_spec('alt.respy.csv')
-            new_options_spec = _read_options_spec('alt.respy.json')
+            new_params_spec = _read_params_spec("alt.respy.csv")
+            new_options_spec = _read_options_spec("alt.respy.json")
 
             assert options_spec == new_options_spec
 
@@ -68,7 +73,9 @@ class TestClass(object):
 
         params_spec, options_spec = generate_random_model(
             bound_constr=bound_constr,
-            deterministic=is_deterministic, myopic=is_myopic)
+            deterministic=is_deterministic,
+            myopic=is_myopic,
+        )
 
         respy_obj = RespyCls(params_spec, options_spec)
         _, df = respy_obj.simulate()
@@ -77,17 +84,17 @@ class TestClass(object):
             respy_obj, "optim_paras", "num_types", "edu_spec", "num_periods"
         )
 
-        # We can back out the wage information from other information provided in the simulated
-        # dataset.
+        # We can back out the wage information from other information provided in the
+        # simulated dataset.
         for choice in [1, 2]:
             cond = df["Choice"] == choice
             label_sys = "Systematic_Reward_{}".format(choice)
             label_sho = "Shock_Reward_{}".format(choice)
             label_gen = "General_Reward_{}".format(choice)
             label_com = "Common_Reward"
-            df["Ex_Post_Reward"] = (df[label_sys] - df[label_gen] - df[label_com]) * df[
-                label_sho
-            ]
+            df["Ex_Post_Reward"] = (
+                df[label_sys] - df[label_gen] - df[label_com]
+            ) * df[label_sho]
 
             col_1 = df["Ex_Post_Reward"].loc[:, cond]
             col_2 = df["Wage"].loc[:, cond]
@@ -95,8 +102,8 @@ class TestClass(object):
 
         # In the myopic case, the total reward should the equal to the ex post rewards.
         if is_myopic:
-            # The shock only affects the skill-function and not the other components determining
-            # the overall reward.
+            # The shock only affects the skill-function and not the other components
+            # determining the overall reward.
             for choice in [1, 2]:
                 cond = df["Choice"] == choice
 
@@ -140,57 +147,42 @@ class TestClass(object):
                 assert np.all(cond)
 
     def test_4(self):
-        """ Testing whether back and forth transformations for the wage does work.
+        """ Testing the return values for the total values in case of myopic
+        individuals for one period.
+
+        Note
+        ----
+        The original test was designed to use Fortran rewards and calculate the total
+        values and rewards ex post in Python and see whether they match. As both
+        versions diverged in their implementation, we will implement the test with the
+        Python version and check the equality of Fortran and Python outputs at all
+        stages.
+
         """
-        # Generate random initialization file
-        params_spec, options_spec = generate_random_model()
 
-        # Perform toolbox actions
-        respy_obj = RespyCls(params_spec, options_spec)
-        respy_obj, _ = respy_obj.simulate()
-
-        periods_rewards_systematic, states_number_period, states_all, num_periods, optim_paras = dist_class_attributes(
-            respy_obj,
-            "periods_rewards_systematic",
-            "states_number_period",
-            "states_all",
-            "num_periods",
-            "optim_paras",
+        constr = {"edu_spec": {"max": 99}}
+        params_spec, options_spec = generate_random_model(
+            myopic=True, point_constr=constr
         )
 
-        for _ in range(10):
-            # Construct a random state for the calculations.
-            period = np.random.choice(range(num_periods))
-            k = np.random.choice(range(states_number_period[period]))
-
-            rewards_systematic = periods_rewards_systematic[period, k, :]
-            exp_a, exp_b, edu, choice_lagged, type_ = states_all[period, k, :]
-
-            covariates = construct_covariates(
-                exp_a, exp_b, edu, choice_lagged, type_, period
-            )
-            wages = calculate_wages_systematic(covariates, optim_paras)
-
-            args = (rewards_systematic, exp_a, exp_b, edu, choice_lagged, optim_paras)
-            rslt = back_out_systematic_wages(*args)
-
-            np.testing.assert_almost_equal(rslt, wages)
-
-    def test_5(self):
-        """ Testing the return values for the total values in case of myopic individuals.
-        """
-
-        constr = {'edu_spec': {'max': 99}}
-        params_spec, options_spec = generate_random_model(myopic=True, point_constr=constr)
-
         # The equality below does not hold if schooling is an inadmissible state.
-
         respy_obj = RespyCls(params_spec, options_spec)
         respy_obj, _ = respy_obj.simulate()
 
-        num_periods, optim_paras, edu_spec, mapping_state_idx, periods_emax, states_all, periods_rewards_systematic, states_number_period = dist_class_attributes(
+        (
+            num_periods,
+            num_types,
+            optim_paras,
+            edu_spec,
+            mapping_state_idx,
+            periods_emax,
+            states_all,
+            periods_rewards_systematic,
+            states_number_period,
+        ) = dist_class_attributes(
             respy_obj,
             "num_periods",
+            "num_types",
             "optim_paras",
             "edu_spec",
             "mapping_state_idx",
@@ -200,23 +192,87 @@ class TestClass(object):
             "states_number_period",
         )
 
-        period = np.random.choice(range(num_periods))
-        k = np.random.choice(range(states_number_period[period]))
-
-        rewards_systematic = periods_rewards_systematic[period, k, :]
-        draws = np.random.normal(size=4)
-
-        total_values, rewards_ex_post = get_total_values(
-            period,
+        # We have to create the state space and calculate the rewards in the Python
+        # version as we later need the wages which are not part of
+        # ``periods_rewards_systematic``.
+        state_space = StateSpace(
             num_periods,
+            num_types,
+            edu_spec["start"],
+            edu_spec["max"],
             optim_paras,
-            rewards_systematic,
-            draws,
-            edu_spec,
-            mapping_state_idx,
-            periods_emax,
-            k,
-            states_all,
         )
 
-        np.testing.assert_almost_equal(total_values, rewards_ex_post)
+        # Check that rewards match
+        _, _, pyth, _ = state_space._get_fortran_counterparts()
+
+        # Set NaNs to -99.
+        mask = np.isnan(periods_rewards_systematic)
+        periods_rewards_systematic[mask] = MISSING_FLOAT
+
+        assert_almost_equal(pyth, periods_rewards_systematic)
+
+        period = np.random.choice(num_periods)
+        draws = np.random.normal(size=4)
+
+        # Internalize periods_emax
+        state_space._create_attributes_from_fortran_counterparts(periods_emax)
+
+        # Unpack necessary attributes
+        rewards_period = state_space.get_attribute_from_period(
+            "rewards", period
+        )
+        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
+            :, :4
+        ]
+        max_education_period = (
+            state_space.get_attribute_from_period("states", period)[:, 3]
+            >= edu_spec["max"]
+        )
+
+        total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
+            rewards_period[:, -2:],
+            rewards_period[:, :4],
+            emaxs_period,
+            draws.reshape(1, -1),
+            optim_paras["delta"],
+            max_education_period,
+        )
+
+        np.testing.assert_equal(total_values, rewards_ex_post)
+
+
+def test_create_draws_and_prob_wages():
+    """This test ensures that the matrix multiplication returns the correct result.
+
+    The problem is that the second part of the function should yield a matrix
+    multiplication of ``draws.dot(sc.T)``, but ``sc`` is not transposed. We will run the
+    function with appropriate arguments and receive ``draws`` as the first return value.
+    Then, we will reverse the matrix multiplication with ``temp =
+    draws.dot(np.inv(sc.T))`` and redo it with ``result = temp.dot(sc.T)``. If ``draws
+    == result``, the result is correct.
+
+    """
+    wage_observed = 2.5
+    wage_systematic = np.array([2.0, 2.0])
+    period = 0
+    draws = np.random.randn(1, 20, 4)
+    choice = 2
+    sc = np.array(
+        [
+            [0.43536991, 0.15, 0.0, 0.0],
+            [0.15, 0.48545471, 0.0, 0.0],
+            [0.0, 0.0, 0.09465536, 0.0],
+            [0.0, 0.0, 0.0, 0.46978499],
+        ]
+    )
+
+    draws, _ = create_draws_and_prob_wages(
+        wage_observed, wage_systematic, period, draws, choice, sc
+    )
+
+    temp = draws.dot(np.linalg.inv(sc.T))
+
+    result = temp.dot(sc.T)
+
+    assert np.allclose(draws, result)

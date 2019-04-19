@@ -9,7 +9,7 @@ from respy.pre_processing.model_processing import _params_spec_from_attributes
 from respy.pre_processing.model_processing import _options_spec_from_attributes
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TOL
-from auxiliary_shared import get_random_dirname
+from development.modules.auxiliary_shared import get_random_dirname
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.random_model import generate_random_model
 
@@ -18,7 +18,7 @@ def get_chunks(l, n):
     """ Yield successive n-sized chunks from l.
     """
     for i in range(0, len(l), n):
-        yield l[i: i + n]
+        yield l[i : i + n]
 
 
 def create_single(idx):
@@ -28,9 +28,9 @@ def create_single(idx):
     os.mkdir(dirname)
     os.chdir(dirname)
 
-    # The late import is required so a potentially just compiled FORTRAN implementation is
-    # recognized. This is important for the creation of the regression vault as we want to
-    # include FORTRAN use cases.
+    # The late import is required so a potentially just compiled FORTRAN implementation
+    # is recognized. This is important for the creation of the regression vault as we
+    # want to include FORTRAN use cases.
     from respy import RespyCls
 
     # We impose a couple of constraints that make the requests manageable.
@@ -39,16 +39,22 @@ def create_single(idx):
     version = np.random.choice(["python", "fortran"])
 
     # only choose from constraint optimizers because we always have some bounds
-    if version == 'python':
+    if version == "python":
         optimizer = "SCIPY-LBFGSB"
     else:
         optimizer = "FORTE-BOBYQA"
 
     constr = {
         "program": {"version": version},
-        "preconditioning": {"type": np.random.choice(["identity", "magnitudes"])},
-        "estimation": {"maxfun": int(np.random.choice(range(6), p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1])),
-                       "optimizer": optimizer},
+        "preconditioning": {
+            "type": np.random.choice(["identity", "magnitudes"])
+        },
+        "estimation": {
+            "maxfun": int(
+                np.random.choice(range(6), p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1])
+            ),
+            "optimizer": optimizer,
+        },
     }
     constr["flag_estimation"] = True
 
@@ -59,8 +65,8 @@ def create_single(idx):
 
     # In rare instances, the value of the criterion function might be too large and thus
     # printed as a string. This occurred in the past, when the gradient preconditioning
-    # had zero probability observations. We now generate random initialization files with
-    # smaller gradient step sizes.
+    # had zero probability observations. We now generate random initialization files
+    # with smaller gradient step sizes.
     if not isinstance(crit_val, float):
         raise AssertionError(" ... value of criterion function too large.")
 
@@ -84,10 +90,10 @@ def check_single(tests, idx):
         attr["num_procs"] = 1
 
     if not IS_FORTRAN:
-        attr['version'] = 'python'
+        attr["version"] = "python"
 
-    # In the past we also had the problem that some of the testing machines report selective
-    # failures when the regression vault was created on another machine.
+    # In the past we also had the problem that some of the testing machines report
+    # selective failures when the regression vault was created on another machine.
     msg = " ... test is known to fail on this machine"
     if "zeus" in socket.gethostname() and idx in []:
         print(msg)
@@ -99,15 +105,16 @@ def check_single(tests, idx):
         print(msg)
         return None
 
-    # We need to create an temporary directory, so the multiprocessing does not interfere with
-    # any of the files that are printed and used during the small estimation request.
+    # We need to create an temporary directory, so the multiprocessing does not
+    # interfere with any of the files that are printed and used during the small
+    # estimation request.
     dirname = get_random_dirname(5)
     os.mkdir(dirname)
     os.chdir(dirname)
 
-    # The late import is required so a potentially just compiled FORTRAN implementation is
-    # recognized. This is important for the creation of the regression vault as we want to
-    # include FORTRAN use cases.
+    # The late import is required so a potentially just compiled FORTRAN implementation
+    # is recognized. This is important for the creation of the regression vault as we
+    # want to include FORTRAN use cases.
     from respy import RespyCls
 
     params_spec = _params_spec_from_attributes(attr)

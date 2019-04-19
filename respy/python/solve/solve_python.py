@@ -1,48 +1,54 @@
-from respy.python.solve.solve_auxiliary import pyth_calculate_rewards_systematic
 from respy.python.record.record_solution import record_solution_progress
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
+from respy.python.solve.solve_auxiliary import StateSpace
 
 
 def pyth_solve(
     is_interpolated,
     num_points_interp,
-    num_draws_emax,
     num_periods,
-    is_myopic,
     is_debug,
     periods_draws_emax,
     edu_spec,
     optim_paras,
     file_sim,
-    optimizer_options,
     num_types,
 ):
-    """ Solving the model using pure PYTHON code.
+    """Solve the model.
+
+    This function is a wrapper around state space creation and determining the optimal
+    decision in each state by backward induction.
+
+    Parameters
+    ----------
+    is_interpolated : bool
+        Indicator for whether the expected maximum utility should be interpolated.
+    num_points_interp : int
+        Number of points used for the interpolation.
+    num_periods : int
+        Number of periods.
+    is_debug : bool
+        Flag for debugging.
+    periods_draws_emax : np.ndarray
+        Array with shape (num_periods, num_draws, num_choices) containing draws for the
+        Monte Carlo simulation of expected maximum utility.
+    edu_spec : dict
+    optim_paras : dict
+    file_sim : ???
+    num_types : int
+        Number of types.
+
     """
-    # Creating the state space of the model and collect the results in the
-    # package class.
     record_solution_progress(1, file_sim)
 
-    # Create state space
-    states_all, states_number_period, mapping_state_idx, max_states_period = pyth_create_state_space(
-        num_periods, num_types, edu_spec
+    # Create the state space
+    state_space = StateSpace(
+        num_periods, num_types, edu_spec["start"], edu_spec["max"], optim_paras
     )
-
-    # Cutting to size
-    states_all = states_all[:, : max(states_number_period), :]
 
     record_solution_progress(-1, file_sim)
 
-    # Calculate systematic rewards which are later used in the backward
-    # induction procedure. These are calculated without any reference
-    # to the alternative shock distributions.
     record_solution_progress(2, file_sim)
-
-    # Calculate all systematic rewards
-    periods_rewards_systematic = pyth_calculate_rewards_systematic(
-        num_periods, states_number_period, states_all, max_states_period, optim_paras
-    )
 
     record_solution_progress(-1, file_sim)
 
@@ -51,36 +57,18 @@ def pyth_solve(
     # procedure is not called upon.
     record_solution_progress(3, file_sim)
 
-    periods_emax = pyth_backward_induction(
-        num_periods,
-        is_myopic,
-        max_states_period,
+    state_space = pyth_backward_induction(
         periods_draws_emax,
-        num_draws_emax,
-        states_number_period,
-        periods_rewards_systematic,
-        mapping_state_idx,
-        states_all,
+        state_space,
         is_debug,
         is_interpolated,
         num_points_interp,
-        edu_spec,
         optim_paras,
         file_sim,
         True,
     )
 
-    if not is_myopic:
+    if optim_paras["delta"]:
         record_solution_progress(-1, file_sim)
 
-    # Collect return arguments in tuple
-    args = (
-        periods_rewards_systematic,
-        states_number_period,
-        mapping_state_idx,
-        periods_emax,
-        states_all,
-    )
-
-    # Finishing
-    return args
+    return state_space

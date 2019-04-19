@@ -108,6 +108,9 @@ SUBROUTINE fort_create_state_space(states_all, states_number_period, mapping_sta
                                     ! (0, 4) Whenever an agent has not acquired any additional education and we are not in the first period, then lagged education cannot take a value of three.
                                     IF ((choice_lagged .EQ. three_int) .AND. (edu_add .EQ. zero_int)) CYCLE
 
+                                    ! (0, 5) Whenever an agent has always chosen Occupation A, Occupation B or education, then lagged activity cannot take a value of four.
+                                    IF ((choice_lagged .EQ. four_int) .AND. (exp_a + exp_b + edu_add .EQ. period)) CYCLE
+
                                 END IF
 
                                 ! (1, 1) In the first period individual either were in school the previous period as well or at home. The cannot have any work experience.

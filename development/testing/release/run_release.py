@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-""" This script allows to test alternative releases against each other that are supposed to lead
-to the same results for selected requests.
+""" This script allows to test alternative releases against each other that are supposed
+to lead to the same results for selected requests.
 """
 from datetime import timedelta
 from datetime import datetime
@@ -15,9 +14,9 @@ import os
 
 from respy import RespyCls
 
-from auxiliary_release import prepare_release_tests
-from auxiliary_shared import send_notification
-from auxiliary_shared import cleanup
+from development.modules.auxiliary_release import prepare_release_tests
+from development.modules.auxiliary_shared import send_notification
+from development.modules.auxiliary_shared import cleanup
 
 SCRIPT_FNAME = "../../modules/auxiliary_release.py"
 

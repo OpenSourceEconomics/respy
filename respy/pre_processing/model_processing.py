@@ -1,13 +1,13 @@
-"""Process model specification files or objects.
-
-"""
+"""Process model specification files or objects."""
 import pandas as pd
 import numpy as np
 import json
 import yaml
-from respy.python.shared.shared_auxiliary import distribute_parameters, get_optim_paras
+from respy.python.shared.shared_auxiliary import (
+    distribute_parameters,
+    get_optim_paras,
+)
 from respy.pre_processing.specification_helpers import csv_template
-from pathlib import Path
 
 
 def process_model_spec(params_spec, options_spec):
@@ -29,76 +29,76 @@ def write_out_model_spec(attr, save_path):
     params_spec = _params_spec_from_attributes(attr)
     options_spec = _options_spec_from_attributes(attr)
     # todo: does this need index=False?
-    params_spec.to_csv(save_path + '.csv')
-    with open(save_path + '.json', 'w') as j:
+    params_spec.to_csv(save_path + ".csv")
+    with open(save_path + ".json", "w") as j:
         json.dump(options_spec, j)
 
 
 def _options_spec_from_attributes(attr):
     estimation = {
-        'file': attr['file_est'],
-        'maxfun': attr['maxfun'],
-        'agents': attr['num_agents_est'],
-        'draws': attr['num_draws_prob'],
-        'optimizer': attr['optimizer_used'],
-        'seed': attr['seed_prob'],
-        'tau': attr['tau']
+        "file": attr["file_est"],
+        "maxfun": attr["maxfun"],
+        "agents": attr["num_agents_est"],
+        "draws": attr["num_draws_prob"],
+        "optimizer": attr["optimizer_used"],
+        "seed": attr["seed_prob"],
+        "tau": attr["tau"],
     }
 
     simulation = {
-        'file': attr['file_sim'],
-        'agents': attr['num_agents_sim'],
-        'seed': attr['seed_sim']
-
+        "file": attr["file_sim"],
+        "agents": attr["num_agents_sim"],
+        "seed": attr["seed_sim"],
     }
 
     program = {
-        'debug': attr['is_debug'],
-        'procs': attr['num_procs'],
-        'threads': attr['num_threads'],
-        'version': attr['version']
+        "debug": attr["is_debug"],
+        "procs": attr["num_procs"],
+        "threads": attr["num_threads"],
+        "version": attr["version"],
     }
 
     interpolation = {
-        'flag': attr['is_interpolated'],
-        'points': attr['num_points_interp'],
+        "flag": attr["is_interpolated"],
+        "points": attr["num_points_interp"],
     }
 
     solution = {
-        'store': attr['is_store'],
-        'seed': attr['seed_emax'],
-        'draws': attr['num_draws_emax']
+        "store": attr["is_store"],
+        "seed": attr["seed_emax"],
+        "draws": attr["num_draws_emax"],
     }
 
     options_spec = {
-        'estimation': estimation,
-        'simulation': simulation,
-        'program': program,
-        'interpolation': interpolation,
-        'solution': solution,
-        'preconditioning': attr['precond_spec'],
-        'derivatives': attr['derivatives'],
-        'edu_spec': attr['edu_spec'],
-        'num_periods': attr['num_periods'],
+        "estimation": estimation,
+        "simulation": simulation,
+        "program": program,
+        "interpolation": interpolation,
+        "solution": solution,
+        "preconditioning": attr["precond_spec"],
+        "derivatives": attr["derivatives"],
+        "edu_spec": attr["edu_spec"],
+        "num_periods": attr["num_periods"],
     }
 
-    for optimizer, option in attr['optimizer_options'].items():
+    for optimizer, option in attr["optimizer_options"].items():
         options_spec[optimizer] = option
 
     return options_spec
 
 
 def _params_spec_from_attributes(attr):
-    csv = csv_template(attr['num_types'])
-    bounds = np.array(attr['optim_paras']['paras_bounds'])
-    csv['lower'] = bounds[:, 0]
-    csv['upper'] = bounds[:, 1]
-    csv['fixed'] = attr['optim_paras']['paras_fixed']
-    csv['para'] = get_optim_paras(
-        paras_dict=attr['optim_paras'],
-        num_paras=attr['num_paras'],
-        which='all',
-        is_debug=True)
+    csv = csv_template(attr["num_types"])
+    bounds = np.array(attr["optim_paras"]["paras_bounds"])
+    csv["lower"] = bounds[:, 0]
+    csv["upper"] = bounds[:, 1]
+    csv["fixed"] = attr["optim_paras"]["paras_fixed"]
+    csv["para"] = get_optim_paras(
+        paras_dict=attr["optim_paras"],
+        num_paras=attr["num_paras"],
+        which="all",
+        is_debug=True,
+    )
     return csv
 
 
@@ -119,7 +119,9 @@ def _create_attribute_dictionary(params_spec, options_spec):
         "num_procs": int(options_spec["program"]["procs"]),
         "num_threads": int(options_spec["program"]["threads"]),
         "num_types": int(_get_num_types(params_spec)),
-        "optim_paras": distribute_parameters(params_spec["para"].to_numpy(), is_debug=True),
+        "optim_paras": distribute_parameters(
+            params_spec["para"].to_numpy(), is_debug=True
+        ),
         "optimizer_used": str(options_spec["estimation"]["optimizer"]),
         # make type conversions here
         "precond_spec": options_spec["preconditioning"],
@@ -128,18 +130,18 @@ def _create_attribute_dictionary(params_spec, options_spec):
         "seed_sim": int(options_spec["simulation"]["seed"]),
         "tau": float(options_spec["estimation"]["tau"]),
         "version": str(options_spec["program"]["version"]),
-        "derivatives": str(options_spec['derivatives']),
+        "derivatives": str(options_spec["derivatives"]),
         # to-do: add type conversions and checks for edu spec
-        'edu_spec': options_spec['edu_spec'],
-        'num_periods': int(options_spec['num_periods']),
-        'num_paras': len(params_spec),
+        "edu_spec": options_spec["edu_spec"],
+        "num_periods": int(options_spec["num_periods"]),
+        "num_paras": len(params_spec),
     }
 
     # todo: add assert statements for bounds
     bounds = []
     for coeff in params_spec.index:
         bound = []
-        for bounds_type in ['lower', 'upper']:
+        for bounds_type in ["lower", "upper"]:
             if pd.isnull(params_spec.loc[coeff, bounds_type]):
                 bound.append(None)
             else:
@@ -147,7 +149,9 @@ def _create_attribute_dictionary(params_spec, options_spec):
         bounds.append(bound)
 
     attr["optim_paras"]["paras_bounds"] = bounds
-    attr["optim_paras"]["paras_fixed"] = params_spec["fixed"].astype(bool).to_numpy().tolist()
+    attr["optim_paras"]["paras_fixed"] = (
+        params_spec["fixed"].astype(bool).to_numpy().tolist()
+    )
 
     optimizers = [
         "FORT-NEWUOA",
@@ -162,14 +166,14 @@ def _create_attribute_dictionary(params_spec, options_spec):
     for opt in optimizers:
         attr["optimizer_options"][opt] = options_spec[opt]
 
-    attr['is_myopic'] = params_spec.loc[('delta', 'delta'), 'para'] == 0.0
+    attr["is_myopic"] = params_spec.loc[("delta", "delta"), "para"] == 0.0
 
     # to-do: make asserts that all string values are lowercase
     return attr
 
 
 def _get_num_types(params_spec):
-    if 'type_shares' in params_spec.index:
+    if "type_shares" in params_spec.index:
         len_type_shares = len(params_spec.loc["type_shares"])
         num_types = len_type_shares / 2 + 1
     else:
@@ -181,7 +185,7 @@ def _read_params_spec(file_path):
     assert file_path.endswith(".csv"), "file_path has to be a .csv file"
     params_spec = pd.read_csv(file_path)
     params_spec["para"] = params_spec["para"].astype(float)
-    params_spec.set_index(['category', 'name'], inplace=True)
+    params_spec.set_index(["category", "name"], inplace=True)
     return params_spec
 
 
@@ -207,9 +211,24 @@ def default_model_dict():
 
     """
     default = {
-        "FORT-NEWUOA": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 0.000001},
-        "FORT-BFGS": {"eps": 0.0001, "gtol": 0.00001, "maxiter": 10, "stpmx": 100.0},
-        "FORT-BOBYQA": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 0.000001},
+        "FORT-NEWUOA": {
+            "maxfun": 1000000,
+            "npt": 1,
+            "rhobeg": 1.0,
+            "rhoend": 0.000001,
+        },
+        "FORT-BFGS": {
+            "eps": 0.0001,
+            "gtol": 0.00001,
+            "maxiter": 10,
+            "stpmx": 100.0,
+        },
+        "FORT-BOBYQA": {
+            "maxfun": 1000000,
+            "npt": 1,
+            "rhobeg": 1.0,
+            "rhoend": 0.000001,
+        },
         "SCIPY-BFGS": {"eps": 0.0001, "gtol": 0.0001, "maxiter": 1},
         "SCIPY-POWELL": {
             "ftol": 0.0001,

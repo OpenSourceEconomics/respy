@@ -11,10 +11,8 @@ from respy.python.record.record_estimation import record_estimation_scalability
 from respy.python.record.record_estimation import record_estimation_scaling
 from respy.python.record.record_estimation import record_estimation_final
 from respy.python.record.record_estimation import record_estimation_stop
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.estimate.estimate_wrapper import OptimizationClass
-from respy.python.shared.shared_auxiliary import get_num_obs_agent
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
@@ -22,9 +20,10 @@ from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.solve.solve_python import pyth_solve
 from respy.custom_exceptions import MaxfunError
+from respy.python.solve.solve_auxiliary import StateSpace
 
 
-def respy_interface(respy_obj, request, data_array=None):
+def respy_interface(respy_obj, request, data=None):
     """Provide the interface to the PYTHON functionality."""
     # Distribute class attributes
     (
@@ -36,7 +35,6 @@ def respy_interface(respy_obj, request, data_array=None):
         seed_prob,
         num_draws_emax,
         seed_emax,
-        is_myopic,
         is_interpolated,
         num_points_interp,
         maxfun,
@@ -60,7 +58,6 @@ def respy_interface(respy_obj, request, data_array=None):
         "seed_prob",
         "num_draws_emax",
         "seed_emax",
-        "is_myopic",
         "is_interpolated",
         "num_points_interp",
         "maxfun",
@@ -78,7 +75,6 @@ def respy_interface(respy_obj, request, data_array=None):
 
     if request == "estimate":
 
-        num_obs = get_num_obs_agent(data_array, num_agents_est)
         periods_draws_prob = create_draws(
             num_periods, num_draws_prob, seed_prob, is_debug
         )
@@ -95,38 +91,21 @@ def respy_interface(respy_obj, request, data_array=None):
         )
 
         # Construct the state space
-        (
-            states_all,
-            states_number_period,
-            mapping_state_idx,
-            max_states_period,
-        ) = pyth_create_state_space(num_periods, num_types, edu_spec)
-
-        # Cutting to size
-        states_all = states_all[:, : max(states_number_period), :]
+        state_space = StateSpace(
+            num_periods, num_types, edu_spec["start"], edu_spec["max"]
+        )
 
         # Collect arguments that are required for the criterion function.
         # These must be in the correct order already.
         args = (
             is_interpolated,
-            num_draws_emax,
-            num_periods,
             num_points_interp,
-            is_myopic,
             is_debug,
-            data_array,
-            num_draws_prob,
+            data,
             tau,
             periods_draws_emax,
             periods_draws_prob,
-            states_all,
-            states_number_period,
-            mapping_state_idx,
-            max_states_period,
-            num_agents_est,
-            num_obs,
-            num_types,
-            edu_spec,
+            state_space,
         )
 
         # Special case where just one evaluation at the starting values is
@@ -135,23 +114,21 @@ def respy_interface(respy_obj, request, data_array=None):
         # and not the value returned by the optimization algorithm.
         num_free = optim_paras["paras_fixed"].count(False)
 
-        paras_bounds_free_unscaled = []
-        for i in range(num_paras):
-            if not optim_paras["paras_fixed"][i]:
-                lower, upper = optim_paras["paras_bounds"][i][:]
-                if lower is None:
-                    lower = -HUGE_FLOAT
-                else:
-                    lower = lower
-
-                if upper is None:
-                    upper = HUGE_FLOAT
-                else:
-                    upper = upper
-
-                paras_bounds_free_unscaled += [[lower, upper]]
-
-        paras_bounds_free_unscaled = np.array(paras_bounds_free_unscaled)
+        # Take only bounds from unfixed parameters and insert default bounds.
+        mask_paras_fixed = np.array(optim_paras["paras_fixed"])
+        paras_bounds_free_unscaled = np.array(optim_paras["paras_bounds"])[
+            ~mask_paras_fixed
+        ]
+        paras_bounds_free_unscaled[:, 0] = np.where(
+            paras_bounds_free_unscaled[:, 0] == None,
+            -HUGE_FLOAT,
+            paras_bounds_free_unscaled[:, 0],
+        )
+        paras_bounds_free_unscaled[:, 1] = np.where(
+            paras_bounds_free_unscaled[:, 1] == None,
+            HUGE_FLOAT,
+            paras_bounds_free_unscaled[:, 1],
+        )
 
         record_estimation_scaling(
             x_optim_free_unscaled_start,
@@ -176,7 +153,7 @@ def respy_interface(respy_obj, request, data_array=None):
             x_optim_free_unscaled_start, precond_matrix, "do"
         )
 
-        paras_bounds_free_scaled = np.tile(np.nan, (num_free, 2))
+        paras_bounds_free_scaled = np.full((num_free, 2), np.nan)
         for i in range(2):
             paras_bounds_free_scaled[:, i] = apply_scaling(
                 paras_bounds_free_unscaled[:, i], precond_matrix, "do"
@@ -206,7 +183,9 @@ def respy_interface(respy_obj, request, data_array=None):
             record_estimation_scalability("Finish")
 
             success = True
-            message = "Single evaluation of criterion function at starting " "values."
+            message = (
+                "Single evaluation of criterion function at starting values."
+            )
 
         elif optimizer_used == "SCIPY-BFGS":
 
@@ -316,55 +295,33 @@ def respy_interface(respy_obj, request, data_array=None):
         )
 
         # Collect arguments for different implementations of the simulation.
-        (
-            periods_rewards_systematic,
-            states_number_period,
-            mapping_state_idx,
-            periods_emax,
-            states_all,
-        ) = pyth_solve(
+        state_space = pyth_solve(
             is_interpolated,
             num_points_interp,
-            num_draws_emax,
             num_periods,
-            is_myopic,
             is_debug,
             periods_draws_emax,
             edu_spec,
             optim_paras,
             file_sim,
-            optimizer_options,
             num_types,
         )
 
-        solution = (
-            periods_rewards_systematic,
-            states_number_period,
-            mapping_state_idx,
-            periods_emax,
-            states_all,
-        )
-
-        data_array = pyth_simulate(
-            periods_rewards_systematic,
-            mapping_state_idx,
-            periods_emax,
-            states_all,
-            num_periods,
+        simulated_data = pyth_simulate(
+            state_space,
             num_agents_sim,
             periods_draws_sims,
             seed_sim,
             file_sim,
             edu_spec,
             optim_paras,
-            num_types,
             is_debug,
         )
 
-        args = (solution, data_array)
+        args = (state_space, simulated_data)
 
     else:
-        raise AssertionError
+        raise NotImplementedError("This request is not implemented.")
 
     return args
 

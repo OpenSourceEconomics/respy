@@ -1,24 +1,19 @@
-""" This module contains auxiliary functions for the PYTEST suite.
-"""
+"""This module contains auxiliary functions for the PYTEST suite."""
 import pandas as pd
 import numpy as np
 import shlex
 
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import StateSpace
 from respy.python.shared.shared_constants import DATA_FORMATS_SIM
 from respy.python.shared.shared_constants import DATA_LABELS_EST
 from respy.python.shared.shared_constants import DATA_LABELS_SIM
 from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.shared.shared_constants import OPT_EST_FORT
 from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.python.shared.shared_constants import HUGE_FLOAT
-from pandas.testing import assert_frame_equal
 
-from respy import RespyCls
 
-# module-wide variables
 OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
 
 
@@ -28,8 +23,8 @@ def simulate_observed(respy_obj, is_missings=True):
     """
 
     def drop_agents_obs(agent):
-        """ We now determine the exact period from which onward the history is truncated and
-        cut the simulated dataset down to size.
+        """ We now determine the exact period from which onward the history is truncated
+        and cut the simulated dataset down to size.
         """
         start_truncation = np.random.choice(range(1, agent["Period"].max() + 2))
         agent = agent[agent["Period"] < start_truncation]
@@ -39,8 +34,9 @@ def simulate_observed(respy_obj, is_missings=True):
 
     respy_obj.simulate()
 
-    # It is important to set the seed after the simulation call. Otherwise, the value of the
-    # seed differs due to the different implementations of the PYTHON and FORTRAN programs.
+    # It is important to set the seed after the simulation call. Otherwise, the value of
+    # the seed differs due to the different implementations of the PYTHON and FORTRAN
+    # programs.
     np.random.seed(seed_sim)
 
     # We read in the baseline simulated dataset.
@@ -54,12 +50,12 @@ def simulate_observed(respy_obj, is_missings=True):
     )
 
     if is_missings:
-        # We truncate the histories of agents. This mimics the frequent empirical fact that we loose
-        # track of more and more agents over time.
+        # We truncate the histories of agents. This mimics the frequent empirical fact
+        # that we loose track of more and more agents over time.
         data_subset = data_frame.groupby("Identifier").apply(drop_agents_obs)
 
-        # We also want to drop the some wage observations. Note that we might be dealing with a
-        # dataset where nobody is working anyway.
+        # We also want to drop the some wage observations. Note that we might be dealing
+        # with a dataset where nobody is working anyway.
         is_working = data_subset["Choice"].isin([1, 2])
         num_drop_wages = int(np.sum(is_working) * np.random.uniform(high=0.5, size=1))
         if num_drop_wages > 0:
@@ -79,7 +75,8 @@ def simulate_observed(respy_obj, is_missings=True):
 
 
 def compare_est_log(base_est_log):
-    """ This function is required as the log files can be slightly different for good reasons.
+    """ This function is required as the log files can be slightly different for good
+    reasons.
     """
     with open("est.respy.log") as in_file:
         alt_est_log = in_file.readlines()
@@ -140,12 +137,13 @@ def write_interpolation_grid(respy_obj):
     )
 
     # Determine maximum number of states
-    _, states_number_period, _, max_states_period = pyth_create_state_space(
-        num_periods, num_types, edu_spec
-    )
+    state_space = StateSpace(num_periods, num_types, edu_spec["start"], edu_spec["max"])
+
+    states_number_period = state_space.states_per_period
+    max_states_period = max(states_number_period)
 
     # Initialize container
-    booleans = np.tile(True, (max_states_period, num_periods))
+    booleans = np.full((max_states_period, num_periods), True)
 
     # Iterate over all periods
     for period in range(num_periods):
@@ -195,21 +193,21 @@ def write_draws(num_periods, max_draws):
 
 
 def write_types(type_shares, num_agents_sim):
-    """ We also need to fully control the random types to ensure the comparability between PYTHON
-    and FORTRAN simulations.
+    """ We also need to fully control the random types to ensure the comparability
+    between PYTHON and FORTRAN simulations.
     """
-    # Note that the we simply set the relevant initial condition to a random value. This seems to
-    # be sufficient for the testing purposes.
+    # Note that the we simply set the relevant initial condition to a random value. This
+    # seems to be sufficient for the testing purposes.
     type_probs = get_conditional_probabilities(
-        type_shares, np.random.choice([10, 12, 15])
+        type_shares, np.array([np.random.choice([10, 12, 15])])
     )
     types = np.random.choice(len(type_probs), p=type_probs, size=num_agents_sim)
     np.savetxt(".types.respy.test", types, fmt="%i")
 
 
 def write_edu_start(edu_spec, num_agents_sim):
-    """ We also need to fully control the random initial schooling to ensure the comparability
-    between PYTHON and FORTRAN simulations.
+    """ We also need to fully control the random initial schooling to ensure the
+    comparability between PYTHON and FORTRAN simulations.
     """
     types = np.random.choice(
         edu_spec["start"], p=edu_spec["share"], size=num_agents_sim

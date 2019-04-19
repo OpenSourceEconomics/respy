@@ -140,6 +140,7 @@ FUNCTION pinv(A, m)
 
     INTEGER(our_int)                :: i
 
+    REAL(our_dble)                  :: pinv_aux(m, m)
     REAL(our_dble)                  :: VT(m, m)
     REAL(our_dble)                  :: UT(m, m)
     REAL(our_dble)                  :: U(m, m)
@@ -172,11 +173,11 @@ FUNCTION pinv(A, m)
 
     DO i = 1, M
 
-        pinv(i, :) = S(i) * UT(i,:)
+        pinv_aux(i, :) = S(i) * UT(i,:)
 
     END DO
 
-    pinv = MATMUL(TRANSPOSE(VT), pinv)
+    pinv = MATMUL(TRANSPOSE(VT), pinv_aux)
 
 END FUNCTION
 !******************************************************************************

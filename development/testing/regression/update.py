@@ -1,13 +1,11 @@
-#!/usr/bin/env python
-""" This script allows to update the regression tests.
-"""
+""" This script allows to update the regression tests."""
 
 import subprocess
 import argparse
 import shutil
 import sys
 
-from auxiliary_shared import cleanup
+from development.modules.auxiliary_shared import cleanup
 
 PYTHON_EXEC = sys.executable
 
@@ -32,8 +30,8 @@ def run(num_procs, num_tests, is_check):
     # These are subsequently copied into the test resources of the package.
     shutil.copy("regression_vault.respy.json", "../../../respy/tests/resources")
 
-    # Just to be sure, we immediately check them again. This might fail if the random elements are
-    # not properly controlled for.
+    # Just to be sure, we immediately check them again. This might fail if the random
+    # elements are not properly controlled for.
     cleanup()
     cmd = PYTHON_EXEC + " run_regression.py --request check " + str(num_tests)
     cmd += " --strict" + " --procs " + str(num_procs)

@@ -4,12 +4,12 @@ import numpy as np
 import shlex
 import os
 
-from auxiliary_shared import update_class_instance
-from auxiliary_shared import aggregate_information
-from auxiliary_shared import send_notification
-from auxiliary_shared import cleanup
+from development.modules.auxiliary_shared import update_class_instance
+from development.modules.auxiliary_shared import aggregate_information
+from development.modules.auxiliary_shared import send_notification
+from development.modules.auxiliary_shared import cleanup
 
-from config_analysis import SPEC_DIR
+from development.modules.config import SPEC_DIR
 
 from respy.scripts.scripts_simulate import scripts_simulate
 from respy.scripts.scripts_compare import scripts_compare
@@ -17,8 +17,9 @@ import respy
 
 
 def run(spec_dict):
-    """ Details of the Monte Carlo exercise can be specified in the code block below. Note that
-    only deviations from the benchmark initialization files need to be addressed.
+    """ Details of the Monte Carlo exercise can be specified in the code block below.
+    Note that only deviations from the benchmark initialization files need to be
+    addressed.
     """
 
     cleanup()
@@ -42,15 +43,15 @@ def run_single(spec_dict, fname):
     os.mkdir(fname.replace(".ini", ""))
     os.chdir(fname.replace(".ini", ""))
 
-    # We first read in the first specification from the initial paper for our baseline and
-    # process only the specified deviations.
+    # We first read in the first specification from the initial paper for our baseline
+    # and process only the specified deviations.
     respy_obj = respy.RespyCls(SPEC_DIR + fname)
     update_class_instance(respy_obj, spec_dict)
 
     respy_obj.write_out()
 
-    # Let us first simulate a baseline sample, store the results for future reference, and start
-    # an estimation from the true values.
+    # Let us first simulate a baseline sample, store the results for future reference,
+    # and start an estimation from the true values.
     x = None
 
     is_risk = spec_dict["update"]["level"] == 0.00
@@ -58,12 +59,13 @@ def run_single(spec_dict, fname):
 
     for request in ["Truth", "Static", "Risk", "Ambiguity"]:
 
-        # If there is no ambiguity in the dataset, then we can skip the AMBIGUITY estimation.
+        # If there is no ambiguity in the dataset, then we can skip the AMBIGUITY
+        # estimation.
         if is_risk and request == "Ambiguity":
             continue
 
-        # If there is no ambiguity, we will just fit the ambiguity parameter to avoid the
-        # computational costs.
+        # If there is no ambiguity, we will just fit the ambiguity parameter to avoid
+        # the computational costs.
         respy_obj.unlock()
 
         if request == "Truth" and is_risk:
@@ -78,8 +80,8 @@ def run_single(spec_dict, fname):
             # We do only need a subset of the available processors
             respy_obj.attr["num_procs"] = min(num_procs, spec_dict["procs"]["static"])
 
-            # There is no update required, we start with the true parameters from the dynamic
-            # ambiguity model.
+            # There is no update required, we start with the true parameters from the
+            # dynamic ambiguity model.
             respy_obj.attr["optim_paras"]["delta"] = np.array([0.00])
             respy_obj.attr["optim_paras"]["level"] = np.array([0.00])
             respy_obj.attr["optim_paras"]["paras_fixed"][:2] = [True, True]
@@ -93,9 +95,9 @@ def run_single(spec_dict, fname):
             # This is an update with the results from the static estimation.
             respy_obj.update_optim_paras(x)
 
-            # Note that we now start with 0.85, which is in the middle of the parameter bounds.
-            # Manual testing showed that the program is reliable even if we start at 0.00.
-            # However, it does take much more function evaluations.
+            # Note that we now start with 0.85, which is in the middle of the parameter
+            # bounds. Manual testing showed that the program is reliable even if we
+            # start at 0.00. However, it does take much more function evaluations.
             respy_obj.attr["optim_paras"]["delta"] = np.array([0.85])
             respy_obj.attr["optim_paras"]["level"] = np.array([0.00])
             respy_obj.attr["optim_paras"]["paras_fixed"][:2] = [False, True]
@@ -110,9 +112,10 @@ def run_single(spec_dict, fname):
             # This is an update with the results from the dynamic risk estimation.
             respy_obj.update_optim_paras(x)
 
-            # We want to be able to start the ambiguity estimation directly from the risk-only
-            # case. This requires that we adjust the the starting values for the discount factor
-            # manually from zero as it otherwise violates the bounds.
+            # We want to be able to start the ambiguity estimation directly from the
+            # risk-only case. This requires that we adjust the the starting values for
+            # the discount factor manually from zero as it otherwise violates the
+            # bounds.
             if respy_obj.attr["optim_paras"]["delta"] == 0.0:
                 respy_obj.attr["optim_paras"]["delta"] = np.array([0.85])
 
@@ -180,7 +183,7 @@ def get_choice_probabilities(fname, is_flatten=True):
     """
 
     # Initialize container.
-    stats = np.tile(np.nan, (0, 4))
+    stats = np.full((0, 4), np.nan)
 
     with open(fname) as in_file:
 
@@ -252,8 +255,8 @@ def get_rmse():
 
 
 def simulate_specification(respy_obj, subdir, update, paras=None):
-    """ Simulate results to assess the estimation performance. Note that we do not update the
-    object that is passed in.
+    """ Simulate results to assess the estimation performance. Note that we do not
+    update the object that is passed in.
     """
     os.mkdir(subdir)
     os.chdir(subdir)
@@ -266,7 +269,8 @@ def simulate_specification(respy_obj, subdir, update, paras=None):
         assert paras is not None
         respy_copy.update_optim_paras(paras)
 
-    # The initialization file is specified to run the actual estimation in the directory above.
+    # The initialization file is specified to run the actual estimation in the directory
+    # above.
     respy_copy.attr["file_est"] = "../" + respy_copy.attr["file_est"]
     respy_copy.write_out()
 
