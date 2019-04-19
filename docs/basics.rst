@@ -16,7 +16,7 @@ To complete the current tutorial a Pyhon v. 3.4 or newer installation is require
 
 **Initialization File**
 
-In order to perform simulation and/or estimation using ``respy`` package an initialization file containing initial parameter values, important data set dimentions, arguments for the optimization algorythms, etc. needs to be specified. Details on the components of the initialization file are presented in the section :ref:`<model-specification`.
+In order to perform simulation and/or estimation using ``respy`` package an initialization file containing initial parameter values, important data set dimentions, arguments for the optimization algorythms, etc. needs to be specified. Details on the components of the initialization file are presented in the section :ref:`model-specification`.
 Please note that the initialization file should be in your current working directory or another accessible directory when executing the commands and scripts discussed below.
 
 Example
@@ -33,9 +33,9 @@ Execution of the short script below in a python interpreter performs the followi
 * simulates a data set for the specified number of agents and periods based on the parameters values in the initialization file.
 
 
-::
-    """ This module simulates and estimates a model based on an initial specification
-    """
+.. code-block:: python
+
+    """Simulates and estimates a model based on an initial specification."""
 
     # Import the package
     import respy
@@ -58,7 +58,7 @@ Execution of the short script below in a python interpreter performs the followi
     respy_obj.update_model_paras(x)
     respy.simulate(respy_obj)
 
-The simulation and estimation functionalities of the ``respy`` package can also be used seperately. To perform a simulation only an initialization file, as discussed above, is required. To directly estimate the model parameters your working directory has to contain the initialization file and your data set. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample as visible in ``data.respy.dat``. For more information on the required structure of the dataset see :ref:`<model-specification`. The coefficient values in the initialization file serve as the starting values.
+The simulation and estimation functionalities of the ``respy`` package can also be used seperately. To perform a simulation only an initialization file, as discussed above, is required. To directly estimate the model parameters your working directory has to contain the initialization file and your data set. Here we are using the simulated data for the estimation. However, you can of course also use other data sources. Just make sure they follow the layout of the simulated sample as visible in ``data.respy.dat``. For more information on the required structure of the dataset see :ref:`model-specification`. The coefficient values in the initialization file serve as the starting values.
 
 
 **Output Files**

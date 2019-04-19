@@ -1,8 +1,3 @@
-.. respy documentation master file, created by
-   sphinx-quickstart on Tue Apr 19 09:21:17 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to respy's documentation!
 =================================
 
@@ -14,21 +9,40 @@ Welcome to respy's documentation!
 
 .. image:: https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000   :target:
 
-**Contents:**
-
 .. toctree::
    :maxdepth: 1
+   :caption: Getting Started
+   :hidden:
 
    introduction
    installation
+   basics
+   tutorial
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Economics
+   :hidden:
+
    economic_model
    solution_and_estimation
-   basics
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Software
+   :hidden:
+
    specification
    numerical_methods
    reliability
    scalability
    software_engineering
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Additional Information
+   :hidden:
+
    contributing
    details
    developer_doc

@@ -1,6 +1,9 @@
 Contributing
 ============
 
+.. todo::
+    We probably need not another channel for contact.
+
 Great, you are interesting in contributing to the package. Please announce your interest on our `mailing list <https://groups.google.com/forum/#!forum/respy/join>`_  so we can find you something to work on.
 
 .. todo::
@@ -14,6 +17,9 @@ Roadmap
 
 We aim for improvements to ``respy`` in three domains: Economics, Software Engineering, and Numerical Methods.
 
+.. todo::
+    Extend list with possible topics for theses?
+
 Economics
 ^^^^^^^^^
 
@@ -22,7 +28,6 @@ Economics
 Software Engineering
 ^^^^^^^^^^^^^^^^^^^^
 
-* explore *Autotools* as a new build system
 * research the *hypothesis* package to replace the hand-crafted property-based testing routines
 
 Numerical Methods

@@ -16,5 +16,6 @@ dependencies:
     - pytest-cov
     - pyaml
     - restructuredtext_lint
+    - sphinx-autobuild
     - sphinx_rtd_theme
     - tox-conda
