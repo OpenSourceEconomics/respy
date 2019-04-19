@@ -336,6 +336,8 @@ def get_continuation_value_and_ex_post_rewards(
         Array with shape (num_draws, 4)
     delta : float
         Discount rate.
+    max_education: bool
+        Indicator for whether the state has reached maximum education.
 
     Returns
     -------

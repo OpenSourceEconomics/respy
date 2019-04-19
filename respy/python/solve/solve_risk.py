@@ -40,6 +40,8 @@ def construct_emax_risk(
         Array with shape (num_draws, 4).
     delta : float
         The discount factor.
+    max_education: bool
+        Indicator for whether the state has reached maximum education.
 
     Returns
     -------

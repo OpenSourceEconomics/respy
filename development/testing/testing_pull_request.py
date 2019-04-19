@@ -10,7 +10,7 @@ from development.testing.robustness.run_robustness import run as run_robustness
 from socket import gethostname
 
 
-CURRENT_DIR = Path(__file__).parent.absolute()
+CURRENT_DIR = Path(__file__).resolve().parent
 
 
 def main():

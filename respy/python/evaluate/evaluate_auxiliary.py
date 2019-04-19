@@ -70,6 +70,8 @@ def simulate_probability_of_agents_observed_choice(
         Array with shape (num_draws, 4)
     delta : float
         Discount rate.
+    max_education: bool
+        Indicator for whether the state has reached maximum education.
     idx : int
         Choice of the agent minus one to get an index.
     tau : float

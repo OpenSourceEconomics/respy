@@ -503,6 +503,9 @@ def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
         Array with shape (num_draws, 4).
     delta : float
         Discount factor.
+    max_education: np.ndarray
+        Array with shape (num_states_in_period,) containing an indicator for whether the
+        state has reached maximum education.
 
     Returns
     -------
@@ -557,6 +560,9 @@ def get_endogenous_variable(
         Array with shape (num_draws, 4) containing draws.
     delta : float
         Discount factor.
+    max_education: np.ndarray
+        Array with shape (num_states_in_period,) containing an indicator for whether the
+        state has reached maximum education.
 
     """
     emax = construct_emax_risk(

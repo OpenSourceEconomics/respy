@@ -94,5 +94,5 @@ for key_ in DATA_LABELS_SIM:
 
 # Set Numba configuration.
 import numba  # noqa: E402
-if True:
+if IS_DEBUG:
     numba.config.WARNINGS = 1
