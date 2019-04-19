@@ -280,7 +280,6 @@ def test_create_draws_and_prob_wages():
     assert np.allclose(draws, result)
 
 
-@pytest.mark.wip
 @pytest.mark.parametrize(
     "num_periods, num_types, edu_starts, edu_max",
     [(40, 1, [10], 20), (40, 5, [10, 15], 20)],
