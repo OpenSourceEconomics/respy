@@ -1,13 +1,14 @@
 Tutorial
 ========
 
-We now illustrate the basic capabilities of the ``respy`` package. We start with the model specification and then turn to some example use cases.
-
+We now illustrate the basic capabilities of the ``respy`` package. We start with the
+model specification and then turn to some example use cases.
 
 Model Specification
 -------------------
 
-The model is specified in an initialization file. Let us discuss each of its elements in more detail.
+The model is specified in an initialization file. Let us discuss each of its elements in
+more detail.
 
 **BASICS**
 
@@ -29,7 +30,11 @@ coeff       float       return to college education
 
 .. Warning::
 
-    There are two small differences compared to Keane and Wolpin (1997). First, all coefficients enter the return function with a positive sign, while the squared terms enter with a minus in the original paper. Second, the order of covariates is fixed across the two occupations. In the original paper, own experience always comes before other experience.
+    There are two small differences compared to Keane and Wolpin (1997). First, all
+    coefficients enter the return function with a positive sign, while the squared terms
+    enter with a minus in the original paper. Second, the order of covariates is fixed
+    across the two occupations. In the original paper, own experience always comes
+    before other experience.
 
 **OCCUPATION A**
 
@@ -104,9 +109,13 @@ max      int      maximum level of schooling
 
 .. Warning::
 
-    Again, there is a small difference between this setup and Keane and Wolpin (1997). There is no automatic change in sign for the costs. Thus, e.g. a \$1,000 tuition cost must be specified as -1000.
+    Again, there is a small difference between this setup and Keane and Wolpin (1997).
+    There is no automatic change in sign for the costs. Thus, e.g. a \$1,000 tuition
+    cost must be specified as -1000.
 
-Note that in order to implement the model based on agents with different nitial levels of schooling the three integer values - start, share, and lagged - have to be specified together as a block.
+Note that in order to implement the model based on agents with different nitial levels
+of schooling the three integer values - start, share, and lagged - have to be specified
+together as a block.
 
 **HOME**
 
@@ -164,7 +173,11 @@ coeff       float       deviation for Type 3 from Type 1 in education contant
 coeff       float       deviation for Type 3 from Type 1 in home contant
 =======     ======      ==========================
 
-In this example initialization file the model implementation implies three types of heterogenous agents. The current version of the code works both with more than three types, as well as with homogenous agents (only one type). In order to add a type, a block of two and a block of four coefficients need to be specified in the sections ``type shares`` and "T``type shifts``", respectively.
+In this example initialization file the model implementation implies three types of
+heterogenous agents. The current version of the code works both with more than three
+types, as well as with homogenous agents (only one type). In order to add a type, a
+block of two and a block of four coefficients need to be specified in the sections
+``type shares`` and "T``type shifts``", respectively.
 
 **SOLUTION**
 
@@ -229,7 +242,6 @@ threads     int         number of threads
 version     str         program version
 =======     ======      ==========================
 
-
 **INTERPOLATION**
 
 =======     ======      ==========================
@@ -239,10 +251,12 @@ flag        bool        flag to use interpolation
 points      int         number of interpolation points
 =======     ======      ==========================
 
-
-
-The implemented optimization algorithms vary with the program's version. If you request the Python version of the program, you can choose from the ``scipy`` implementations of the BFGS  (Norcedal and Wright, 2006) and POWELL (Powell, 1964) algorithm. Their implementation details are available `here <https://docs.scipy.org/doc/scipy-0.17.0/reference/generated/scipy.optimize.minimize.html>`__. For Fortran, we implemented the BFGS and NEWUOA (Powell, 2004) algorithms.
-
+The implemented optimization algorithms vary with the program's version. If you request
+the Python version of the program, you can choose from the ``scipy`` implementations of
+the BFGS  (Norcedal and Wright, 2006) and POWELL (Powell, 1964) algorithm. Their
+implementation details are available `here <https://docs.scipy.org/doc/scipy-0.17.0/
+reference/generated/scipy.optimize.minimize.html>`_. For Fortran, we implemented the
+BFGS and NEWUOA (Powell, 2004) algorithms.
 
 **FORT-NEWUOA**
 
@@ -261,7 +275,8 @@ rhoend      float       minimum value of size for trust region
 Key         Value       Interpretation
 =======     ======      ==========================
 eps         float       value to use for step size if fprime is approximated
-gtol        float       gradient norm must be less than gtol before successful termination
+gtol        float       gradient norm must be less than gtol before successful
+                        termination
 maxiter     int         maximum number of iterations
 stpmx       float       maximum step size
 =======     ======      ==========================
@@ -284,7 +299,8 @@ rhoend      float       minimum value of size for trust region
 Key         Value       Interpretation
 =======     ======      ==========================
 eps         float       value to use for step size if fprime is approximated
-gtol        float       gradient norm must be less than gtol before successful termination
+gtol        float       gradient norm must be less than gtol before successful
+                        termination
 maxiter     int         maximum number of iterations
 stpmx       int         maximum step size
 =======     ======      ==========================
@@ -306,12 +322,17 @@ xtol        float       line-search error tolerance
 =======     ======      ==========================
 Key         Value       Interpretation
 =======     ======      ==========================
-eps         float       Step size used when approx_grad is True, for numerically calculating the gradient
-factr       float       Multiple of the default machine precision used to determine the relative error in func(xopt) acceptable for convergence
-m           int         Maximum number of variable metric corrections used to define the limited memory matrix.
+eps         float       Step size used when approx_grad is True, for numerically
+                        calculating the gradient
+factr       float       Multiple of the default machine precision used to determine the
+                        relative error in func(xopt) acceptable for convergence
+m           int         Maximum number of variable metric corrections used to define the
+                        limited memory matrix.
 maxiter     int         maximum number of iterations
-maxls       int         Maximum number of line search steps (per iteration). Default is 20.
-pgtol       float       gradient norm must be less than gtol before successful termination
+maxls       int         Maximum number of line search steps (per iteration). Default is
+                        20.
+pgtol       float       gradient norm must be less than gtol before successful
+                        termination
 =======     ======      ==========================
 
 
@@ -342,15 +363,21 @@ minimum     float       minimum value for gradient approximation
 Constraints for the Optimizer
 -----------------------------
 
-If you want to keep any parameter fixed at the value you specified (i.e. not estimate this parameter) you can simply add an exclamation mark after the value. If you want to provide bounds for a constrained optimizer you can specify a lower and upper bound in round brackets. A section of such an .ini file would look as follows:
+If you want to keep any parameter fixed at the value you specified (i.e. not estimate
+this parameter) you can simply add an exclamation mark after the value. If you want to
+provide bounds for a constrained optimizer you can specify a lower and upper bound in
+round brackets. A section of such an .ini file would look as follows:
 
-.. code::
+.. code-block::
 
     coeff             -0.049538516229344
     coeff              0.020000000000000     !
     coeff             -0.037283956168153       (-0.5807488086366478,None)
     coeff              0.036340835226155     ! (None,0.661243603948984)
 
-In this example, the first coefficient is free. The second one is fixed at 0.2. The third one will be estimated but has a lower bound. In the fourth case, the parameter is fixed and the bounds will be ignored.
+In this example, the first coefficient is free. The second one is fixed at 0.2. The
+third one will be estimated but has a lower bound. In the fourth case, the parameter is
+fixed and the bounds will be ignored.
 
-If you specify bounds for any free parameter, you have to choose a constraint optimizer such as SCIPY-LBFGSB or FORT-BOBYQA.
+If you specify bounds for any free parameter, you have to choose a constraint optimizer
+such as SCIPY-LBFGSB or FORT-BOBYQA.
