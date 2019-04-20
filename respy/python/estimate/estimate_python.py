@@ -37,7 +37,6 @@ def pyth_criterion(
         data,
         periods_draws_prob,
         tau,
-        edu_spec,
         optim_paras,
     )
 
