@@ -1,5 +1,5 @@
-from development.modules.auxiliary_shared import process_command_line_arguments
 from development.modules.auxiliary_reliability import run
+from development.modules.auxiliary_shared import process_command_line_arguments
 
 
 def main():
@@ -43,5 +43,5 @@ def main():
     run(spec_dict)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

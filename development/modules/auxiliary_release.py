@@ -1,14 +1,14 @@
-import pickle as pkl
-
-import subprocess
-import shutil
-import shlex
+import copy
 import glob
 import json
-import copy
-import sys
-import pip
 import os
+import pickle as pkl
+import shlex
+import shutil
+import subprocess
+import sys
+
+import pip
 
 
 def install(version):

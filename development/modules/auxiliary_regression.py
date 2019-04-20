@@ -1,15 +1,16 @@
-import numpy as np
+import os
 import shutil
 import socket
-import os
 
-from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
-from respy.pre_processing.model_processing import _params_spec_from_attributes
-from respy.pre_processing.model_processing import _options_spec_from_attributes
-from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.python.shared.shared_constants import TOL
+import numpy as np
+
 from development.modules.auxiliary_shared import get_random_dirname
+from respy.pre_processing.model_processing import _options_spec_from_attributes
+from respy.pre_processing.model_processing import _params_spec_from_attributes
+from respy.python.shared.shared_constants import IS_FORTRAN
+from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
+from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
+from respy.python.shared.shared_constants import TOL
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.random_model import generate_random_model
 
@@ -46,13 +47,9 @@ def create_single(idx):
 
     constr = {
         "program": {"version": version},
-        "preconditioning": {
-            "type": np.random.choice(["identity", "magnitudes"])
-        },
+        "preconditioning": {"type": np.random.choice(["identity", "magnitudes"])},
         "estimation": {
-            "maxfun": int(
-                np.random.choice(range(6), p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1])
-            ),
+            "maxfun": int(np.random.choice(range(6), p=[0.5, 0.1, 0.1, 0.1, 0.1, 0.1])),
             "optimizer": optimizer,
         },
     }

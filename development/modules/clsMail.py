@@ -17,16 +17,16 @@
         mailObj.send()
 
 """
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-import pickle as pkl
-import smtplib
-import socket
 import copy
 import json
 import os
-from socket import gethostname
+import pickle as pkl
+import smtplib
+import socket
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from pathlib import Path
+from socket import gethostname
 
 
 class MailCls(object):

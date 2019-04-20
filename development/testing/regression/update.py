@@ -1,8 +1,7 @@
 """ This script allows to update the regression tests."""
-
-import subprocess
 import argparse
 import shutil
+import subprocess
 import sys
 
 from development.modules.auxiliary_shared import cleanup

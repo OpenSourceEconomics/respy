@@ -1,35 +1,33 @@
-import pickle as pkl
-import numpy as np
-import pandas as pd
+import atexit
 import copy
 import os
-import atexit
+import pickle as pkl
 
-from respy.pre_processing.model_processing import write_out_model_spec
-from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_auxiliary import remove_scratch
+import numpy as np
+import pandas as pd
 
-from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_EST_PYTH
-from respy.pre_processing.model_checking import (
-    check_model_attributes,
-    check_model_solution,
-)
-from respy.pre_processing.model_processing import process_model_spec
 from respy.custom_exceptions import UserError
-from respy.python.interface import respy_interface
 from respy.fortran.interface import resfort_interface
-from respy.python.record.record_estimation import record_estimation_sample
-from respy.python.shared.shared_auxiliary import get_est_info
 from respy.pre_processing.data_processing import process_dataset
+from respy.pre_processing.model_checking import check_model_attributes
+from respy.pre_processing.model_checking import check_model_solution
+from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import write_out_model_spec
+from respy.python.interface import respy_interface
+from respy.python.record.record_estimation import record_estimation_sample
+from respy.python.shared.shared_auxiliary import add_solution
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import distribute_parameters
+from respy.python.shared.shared_auxiliary import get_est_info
+from respy.python.shared.shared_auxiliary import remove_scratch
 from respy.python.shared.shared_auxiliary import replace_missing_values
-from respy.python.simulate.simulate_auxiliary import check_dataset_sim
 from respy.python.shared.shared_constants import DATA_FORMATS_SIM
 from respy.python.shared.shared_constants import DATA_LABELS_SIM
+from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.simulate.simulate_auxiliary import check_dataset_sim
 from respy.python.simulate.simulate_auxiliary import write_info
 from respy.python.simulate.simulate_auxiliary import write_out
-from respy.python.shared.shared_auxiliary import add_solution
 
 
 class RespyCls(object):
@@ -113,9 +111,7 @@ class RespyCls(object):
 
         invalid_attr = self.derived_attributes + ["optim_paras", "init_dict"]
         if key in invalid_attr:
-            raise AssertionError(
-                "{} must not be modified by users!".format(key)
-            )
+            raise AssertionError("{} must not be modified by users!".format(key))
 
         if key in self.solution_attributes:
             assert not self.attr[
@@ -147,9 +143,7 @@ class RespyCls(object):
 
         for key_ in self.solution_attributes:
             try:
-                np.testing.assert_almost_equal(
-                    self.attr[key_], other.attr[key_]
-                )
+                np.testing.assert_almost_equal(self.attr[key_], other.attr[key_])
             except AssertionError:
                 return False
 
@@ -159,8 +153,7 @@ class RespyCls(object):
         """Update derived attributes."""
         # note: don't remove the conversion to bool. It seems unnecessary but it
         # converts a numpy bool to python bool.
-        self.attr["is_myopic"] = bool(
-            (self.attr["optim_paras"]["delta"] == 0.00)[0])
+        self.attr["is_myopic"] = bool((self.attr["optim_paras"]["delta"] == 0.00)[0])
 
     def _check_model_attributes(self):
         """Check integrity of class instance.
@@ -331,8 +324,7 @@ class RespyCls(object):
             data_frame = data_array[DATA_LABELS_SIM]
         elif self.attr["version"] == "fortran":
             data_frame = pd.DataFrame(
-                data=replace_missing_values(data_array),
-                columns=DATA_LABELS_SIM,
+                data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
             )
         else:
             raise NotImplementedError
@@ -340,9 +332,7 @@ class RespyCls(object):
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
 
         # ====================================================================
-        data_frame.set_index(
-            ["Identifier", "Period"], drop=False, inplace=True
-        )
+        data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
 
         # Checks
         if is_debug:

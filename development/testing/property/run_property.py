@@ -1,25 +1,26 @@
 """ Script to start development test battery for the RESPY package."""
-import datetime as dt
-import numpy as np
-import traceback
-import importlib
 import argparse
-import random
+import datetime as dt
+import importlib
 import os
+import random
+import traceback
 from pathlib import Path
 
+import numpy as np
+
+from development.modules.auxiliary_property import cleanup_testing_infrastructure
+from development.modules.auxiliary_property import finalize_testing_record
+from development.modules.auxiliary_property import get_random_request
+from development.modules.auxiliary_property import get_test_dict
+from development.modules.auxiliary_property import initialize_record_canvas
+from development.modules.auxiliary_property import update_testing_record
+from development.modules.auxiliary_shared import cleanup
+from development.modules.auxiliary_shared import compile_package
+from development.modules.auxiliary_shared import get_random_dirname
+from development.modules.auxiliary_shared import send_notification
 # RESPY testing codes. The import of the PYTEST configuration file ensures that the
 #  PYTHONPATH is modified to allow for the use of the tests..
-from development.modules.auxiliary_property import cleanup_testing_infrastructure
-from development.modules.auxiliary_property import initialize_record_canvas
-from development.modules.auxiliary_property import finalize_testing_record
-from development.modules.auxiliary_property import update_testing_record
-from development.modules.auxiliary_property import get_random_request
-from development.modules.auxiliary_shared import send_notification
-from development.modules.auxiliary_shared import get_random_dirname
-from development.modules.auxiliary_shared import compile_package
-from development.modules.auxiliary_property import get_test_dict
-from development.modules.auxiliary_shared import cleanup
 
 PACKAGE_DIR = Path(__file__).resolve().parents[3]
 

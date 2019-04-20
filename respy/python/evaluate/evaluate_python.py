@@ -1,15 +1,11 @@
 import numpy as np
 
+from respy.python.evaluate.evaluate_auxiliary import create_draws_and_prob_wages
+from respy.python.evaluate.evaluate_auxiliary import simulate_probability_of_agents_observed_choice
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
-from respy.python.evaluate.evaluate_auxiliary import (
-    simulate_probability_of_agents_observed_choice,
-    create_draws_and_prob_wages,
-)
 
 
-def pyth_contributions(
-    state_space, data, periods_draws_prob, tau, optim_paras
-):
+def pyth_contributions(state_space, data, periods_draws_prob, tau, optim_paras):
     """Calculate the likelihood contribution of each individual in the sample.
 
     The function calculates all likelihood contributions for all observations in the
@@ -59,9 +55,7 @@ def pyth_contributions(
     # each individual's first observation. After that, extract initial education levels
     # per agent which are important for type-specific probabilities.
     num_obs_per_agent = np.bincount(data.Identifier.values)
-    idx_agents_first_observation = np.hstack(
-        (0, np.cumsum(num_obs_per_agent)[:-1])
-    )
+    idx_agents_first_observation = np.hstack((0, np.cumsum(num_obs_per_agent)[:-1]))
     agents_initial_education_levels = agents[idx_agents_first_observation, 3]
 
     # Update type-specific probabilities conditional on whether the initial level of
@@ -77,16 +71,12 @@ def pyth_contributions(
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (num_obs, num_types).
-    ks = state_space.indexer[
-        periods, exp_as, exp_bs, edus, choices_lagged - 1, :
-    ]
+    ks = state_space.indexer[periods, exp_as, exp_bs, edus, choices_lagged - 1, :]
 
     # Reshape periods, choices and wages_observed so that they match the shape (num_obs,
     # num_types) of the indexer.
     periods = state_space.states[ks, 0]
-    choices = choices.repeat(state_space.num_types).reshape(
-        -1, state_space.num_types
-    )
+    choices = choices.repeat(state_space.num_types).reshape(-1, state_space.num_types)
     wages_observed = wages_observed.repeat(state_space.num_types).reshape(
         -1, state_space.num_types
     )

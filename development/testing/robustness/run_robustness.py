@@ -3,19 +3,19 @@
 The goal is to ensure that the code handles it all well. This increases the
 robustness of the package as the data is not so well-behaved as simulations.
 """
-
 import argparse
-import numpy as np
 import os
 import shutil
 import tempfile
+from pathlib import Path
+
+import numpy as np
 
 from development.modules.auxiliary_career_decision_data import prepare_dataset
 from development.modules.auxiliary_robustness import run_for_hours_parallel
 from development.modules.auxiliary_robustness import run_for_hours_sequential
 from development.modules.auxiliary_robustness import run_robustness_test
 from development.modules.auxiliary_shared import send_notification
-from pathlib import Path
 
 
 def run(request, is_compile, is_background, num_procs, keep_dataset):
@@ -99,9 +99,7 @@ def run(request, is_compile, is_background, num_procs, keep_dataset):
 if __name__ == "__main__":
     # args = process_command_line_arguments('robustness')
     # run(args)
-    parser = argparse.ArgumentParser(
-        description="Run or investigate robustness tests."
-    )
+    parser = argparse.ArgumentParser(description="Run or investigate robustness tests.")
 
     parser.add_argument(
         "--request",

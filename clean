@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 """ Cleanup of directories.
 """
-
 import os
 
-os.system('git clean -d -f')
-os.system('pip uninstall -y respy')
+os.system("git clean -d -f")
+os.system("pip uninstall -y respy")

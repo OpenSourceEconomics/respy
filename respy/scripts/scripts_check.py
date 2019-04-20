@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-import numpy as np
-
 import argparse
 import os
 
-from respy.python.solve.solve_auxiliary import StateSpace
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.pre_processing.data_processing import process_dataset
-from respy.custom_exceptions import UserError
+import numpy as np
+
 from respy import RespyCls
+from respy.custom_exceptions import UserError
+from respy.pre_processing.data_processing import process_dataset
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.solve.solve_auxiliary import StateSpace
 
 # module-wide variables
 ERR_MSG = " Observations not meeting model requirements."
@@ -38,7 +38,7 @@ def scripts_check(request, respy_obj):
 
     # Distribute model parameters
     num_periods, edu_spec, num_types, optim_paras = dist_class_attributes(
-        respy_obj, "num_periods", "edu_spec", "num_types", "optim_paras",
+        respy_obj, "num_periods", "edu_spec", "num_types", "optim_paras"
     )
 
     # We need to run additional checks if an estimation is requested.
@@ -68,9 +68,7 @@ def scripts_check(request, respy_obj):
             # rewards. This might fail either because the state is simply infeasible at
             # any period or just not defined for the particular period requested.
             try:
-                k = state_space.indexer[
-                    period, exp_a, exp_b, edu, choice_lagged - 1
-                ]
+                k = state_space.indexer[period, exp_a, exp_b, edu, choice_lagged - 1]
                 np.testing.assert_equal(k >= 0, True)
             except (IndexError, AssertionError):
                 raise UserError(ERR_MSG)
@@ -81,9 +79,7 @@ def scripts_check(request, respy_obj):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(
-        description="Check request for the RESPY package."
-    )
+    parser = argparse.ArgumentParser(description="Check request for the RESPY package.")
 
     parser.add_argument(
         "--request",

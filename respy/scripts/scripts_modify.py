@@ -8,15 +8,15 @@
 
 """
 import argparse
-import shutil
 import os
+import shutil
 
-from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy import RespyCls
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import get_optim_paras
 # from respy.pre_processing.model_processing import write_init_file
 # from respy.pre_processing.model_processing import read_init_file
-from respy import RespyCls
 
 
 def dist_input_arguments(parser):

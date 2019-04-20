@@ -1,24 +1,24 @@
-from pandas.util.testing import assert_frame_equal
-import pandas as pd
-import numpy as np
-import subprocess
-import pytest
-import shutil
 import shlex
+import shutil
+import subprocess
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+from pandas.util.testing import assert_frame_equal
+
+import respy
+from respy import RespyCls
+from respy.pre_processing.model_processing import _create_attribute_dictionary
+from respy.pre_processing.model_processing import _options_spec_from_attributes
+from respy.pre_processing.model_processing import _params_spec_from_attributes
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.tests.codes.random_model import generate_random_model
 from respy.tests.codes.auxiliary import simulate_observed
-from respy.pre_processing.model_processing import (
-    _create_attribute_dictionary,
-    _options_spec_from_attributes,
-    _params_spec_from_attributes,
-)
-from respy import RespyCls
-import respy
+from respy.tests.codes.random_model import generate_random_model
 
 
 COLUMNS = []
@@ -84,13 +84,7 @@ def restud_sample_to_respy():
         return agent
 
     column_labels = []
-    column_labels += [
-        "Identifier",
-        "Total_Periods",
-        "Choice",
-        "Reward",
-        "Experience_A",
-    ]
+    column_labels += ["Identifier", "Total_Periods", "Choice", "Reward", "Experience_A"]
     column_labels += ["Experience_B", "Years_Schooling", "Lagged_Choice"]
 
     matrix = np.array(np.genfromtxt("ftest.txt", missing_values="."), ndmin=2)
@@ -207,9 +201,7 @@ def write_covariance_parameters(cov):
                 for j in range(4):
                     if j >= i:
                         continue
-                    corr[i, j] = cov[i, j] / (
-                        np.sqrt(cov[i, i]) * np.sqrt(cov[j, j])
-                    )
+                    corr[i, j] = cov[i, j] / (np.sqrt(cov[i, i]) * np.sqrt(cov[j, j]))
 
         for j in range(4):
             fmt = " {0:10.5f} {1:10.5f} {2:10.5f} {3:10.5f}\n"
@@ -290,9 +282,7 @@ class TestClass(object):
         """Compare simulation results from the RESTUD program and the RESPY package."""
         args = generate_constraints_dict()
         params_spec, options_spec = generate_random_model(**args)
-        params_spec, options_spec = adjust_model_spec(
-            params_spec, options_spec
-        )
+        params_spec, options_spec = adjust_model_spec(params_spec, options_spec)
 
         # Indicate RESTUD code the special case of zero disturbance.
         open(".restud.testing.scratch", "a").close()
@@ -326,12 +316,7 @@ class TestClass(object):
 
         # Simulate sample model using RESTUD code.
         transform_respy_to_restud_sim(
-            optim_paras,
-            edu_spec,
-            num_agents_sim,
-            num_periods,
-            num_draws_emax,
-            cov,
+            optim_paras, edu_spec, num_agents_sim, num_periods, num_draws_emax, cov
         )
 
         # Solve model using RESTUD code.
@@ -360,17 +345,13 @@ class TestClass(object):
         ).astype(np.float)
 
         fort = pd.DataFrame(
-            np.array(np.genfromtxt("ftest.txt", missing_values="."), ndmin=2)[
-                :, -4:
-            ],
+            np.array(np.genfromtxt("ftest.txt", missing_values="."), ndmin=2)[:, -4:],
             columns=column_labels,
         ).astype(np.float)
 
         # The simulated dataset from FORTRAN includes an indicator for the lagged
         # activities.
-        py["Lagged_Choice"] = py["Lagged_Choice"].map(
-            {1: 0.0, 2: 0.0, 3: 1.0, 4: 0.0}
-        )
+        py["Lagged_Choice"] = py["Lagged_Choice"].map({1: 0.0, 2: 0.0, 3: 1.0, 4: 0.0})
 
         assert_frame_equal(py, fort)
 
@@ -379,9 +360,7 @@ class TestClass(object):
         """
         args = generate_constraints_dict()
         params_spec, options_spec = generate_random_model(**args)
-        params_spec, options_spec = adjust_model_spec(
-            params_spec, options_spec
-        )
+        params_spec, options_spec = adjust_model_spec(params_spec, options_spec)
 
         max_draws = args["bound_constr"]["max_draws"]
 
@@ -429,12 +408,7 @@ class TestClass(object):
 
         # Simulate sample model using RESTUD code.
         transform_respy_to_restud_sim(
-            optim_paras,
-            edu_spec,
-            num_agents_sim,
-            num_periods,
-            num_draws_emax,
-            cov,
+            optim_paras, edu_spec, num_agents_sim, num_periods, num_draws_emax, cov
         )
 
         open(".restud.testing.scratch", "a").close()

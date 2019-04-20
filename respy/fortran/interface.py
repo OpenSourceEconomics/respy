@@ -2,16 +2,17 @@
 implementations.
 
 """
-import pandas as pd
-import numpy as np
-import subprocess
 import os
+import subprocess
+
+import numpy as np
+import pandas as pd
 
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_constants import EXEC_DIR
+from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import MISSING_FLOAT
 from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_constants import EXEC_DIR
 
 
 def resfort_interface(respy_obj, request, data_array=None):
@@ -151,9 +152,7 @@ def get_results(num_periods, edu_spec, num_agents_sim, num_types, which):
     mapping_state_idx = read_data("mapping_state_idx", shape).astype("int")
 
     shape = (num_periods,)
-    states_number_period = read_data("states_number_period", shape).astype(
-        "int"
-    )
+    states_number_period = read_data("states_number_period", shape).astype("int")
 
     shape = (num_periods, max_states_period, 5)
     states_all = read_data("states_all", shape).astype("int")
@@ -390,14 +389,10 @@ def write_resfort_initialization(
             line = "{0:10d}\n".format(optimizer_options[optimizer]["maxfun"])
             file_.write(line)
 
-            line = " {0:25.15f}\n".format(
-                optimizer_options[optimizer]["rhobeg"]
-            )
+            line = " {0:25.15f}\n".format(optimizer_options[optimizer]["rhobeg"])
             file_.write(line)
 
-            line = " {0:25.15f}\n".format(
-                optimizer_options[optimizer]["rhoend"]
-            )
+            line = " {0:25.15f}\n".format(optimizer_options[optimizer]["rhoend"])
             file_.write(line)
 
         line = " {0:25.15f}\n".format(optimizer_options["FORT-BFGS"]["gtol"])
@@ -442,6 +437,4 @@ def write_dataset(data_array):
     # The numpy array is passed in to align the interfaces across implementations
     data_frame = pd.DataFrame(data_array)
     with open(".data.resfort.dat", "w") as file_:
-        data_frame.to_string(
-            file_, index=False, header=None, na_rep=str(HUGE_FLOAT)
-        )
+        data_frame.to_string(file_, index=False, header=None, na_rep=str(HUGE_FLOAT))

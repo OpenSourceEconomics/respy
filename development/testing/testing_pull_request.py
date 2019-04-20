@@ -1,13 +1,13 @@
 """Run a series of tests that are required for any pull request to be merged."""
 import os
-import respy
-
 from pathlib import Path
+from socket import gethostname
+
+import respy
 from development.testing.parallelism.run_parallelism import run as run_parallelism
 from development.testing.property.run_property import run as run_property
 from development.testing.regression.run_regression import run as run_regression
 from development.testing.robustness.run_robustness import run as run_robustness
-from socket import gethostname
 
 
 CURRENT_DIR = Path(__file__).resolve().parent

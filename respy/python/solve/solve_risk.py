@@ -1,4 +1,5 @@
 from numba import guvectorize
+
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 
 
@@ -63,9 +64,7 @@ def construct_emax_risk(
 
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = (
-                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
-                )
+                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 

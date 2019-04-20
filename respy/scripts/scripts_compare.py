@@ -1,17 +1,18 @@
 #!/usr/bin/env python
-from statsmodels.tools.eval_measures import rmse
-import numpy as np
 import argparse
-import shutil
 import os
+import shutil
 
-from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.simulate.simulate_auxiliary import format_float
-from respy.pre_processing.data_processing import process_dataset
-from respy.scripts.scripts_update import scripts_update
-from respy.custom_exceptions import UserError
+import numpy as np
+from statsmodels.tools.eval_measures import rmse
+
 from respy import RespyCls
+from respy.custom_exceptions import UserError
+from respy.pre_processing.data_processing import process_dataset
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
+from respy.python.simulate.simulate_auxiliary import format_float
+from respy.scripts.scripts_update import scripts_update
 
 
 def dist_input_arguments(parser):

@@ -1,23 +1,24 @@
-from pandas.util.testing import assert_frame_equal
-import pandas as pd
-import numpy as np
-import pytest
 import copy
-
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import StateSpace
-from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.tests.codes.auxiliary import write_interpolation_grid
-from respy.tests.codes.random_model import generate_random_model
-from respy.tests.codes.auxiliary import write_lagged_start
-from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.auxiliary import compare_est_log
-from respy.tests.codes.auxiliary import write_edu_start
-from respy.tests.codes.auxiliary import write_draws
-from respy.tests.codes.auxiliary import write_types
-from respy import RespyCls
 from functools import partial
+
+import numpy as np
+import pandas as pd
+import pytest
+from pandas.util.testing import assert_frame_equal
+
+from respy import RespyCls
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import DECIMALS
+from respy.python.shared.shared_constants import IS_FORTRAN
+from respy.python.solve.solve_auxiliary import StateSpace
+from respy.tests.codes.auxiliary import compare_est_log
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.auxiliary import write_draws
+from respy.tests.codes.auxiliary import write_edu_start
+from respy.tests.codes.auxiliary import write_interpolation_grid
+from respy.tests.codes.auxiliary import write_lagged_start
+from respy.tests.codes.auxiliary import write_types
+from respy.tests.codes.random_model import generate_random_model
 
 
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
@@ -121,9 +122,7 @@ class TestClass(object):
             if base_val is None:
                 base_val = crit_val
 
-            np.testing.assert_allclose(
-                base_val, crit_val, rtol=1e-05, atol=1e-06
-            )
+            np.testing.assert_allclose(base_val, crit_val, rtol=1e-05, atol=1e-06)
 
             # We know even more for the deterministic case.
             if is_deterministic:
@@ -264,10 +263,7 @@ class TestClass(object):
 
         point_constr = {
             "program": {"version": "python"},
-            "estimation": {
-                "maxfun": np.random.randint(1, 6),
-                "agents": num_agents,
-            },
+            "estimation": {"maxfun": np.random.randint(1, 6), "agents": num_agents},
             "simulation": {"agents": num_agents},
         }
 
