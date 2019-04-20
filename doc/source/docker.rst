@@ -28,8 +28,8 @@ change something in the code. Since Docker creates layers during builds which ar
 essentially snapshots after each statement in the ``Dockerfile``, this is not as costly
 as it sounds.
 
-Enter the the container interactively
--------------------------------------
+Enter the container interactively
+---------------------------------
 
 Type
 
