@@ -1,4 +1,9 @@
-exclude: ^\.
+exclude: >
+    (?x)^(
+        .pytest_cache |
+        .tox |
+        respy/*.waf*.
+    )$
 repos:
 -   repo: https://github.com/asottile/reorder_python_imports
     rev: v1.4.0
@@ -19,6 +24,7 @@ repos:
             flake8-eradicate, flake8-print, flake8-rst-docstrings, flake8-todo,
             pep8-naming,
         ]
+        files: 'respy/.*'  # We start with a subfolder and extend the scope later.
 -   repo: https://github.com/asottile/blacken-docs
     rev: v0.5.0
     hooks:
@@ -42,3 +48,8 @@ repos:
         language: system
         files: '(README.rst)'
         name: restructuredtext-lint - Is the README PyPi-compliant?
+-   repo: meta
+    hooks:
+    -   id: check-hooks-apply
+    -   id: check-useless-excludes
+    # -   id: identity  # Prints all files passed to pre-commits. Debugging.
