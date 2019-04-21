@@ -22,7 +22,7 @@ class OptimizationClass(object):
         self, x_optim_all_unscaled_start, paras_fixed, precond_matrix, num_types
     ):
 
-        self.attr = dict()
+        self.attr = {}
 
         # Constitutive attributes
         self.x_optim_all_unscaled_start = x_optim_all_unscaled_start

@@ -84,7 +84,7 @@ def run(request, is_create, is_background, old_release, new_release):
 
         # The idea is to have all elements that are hand-crafted for the release comparison in
         # the function below.
-        constr = dict()
+        constr = {}
         constr["flag_estimation"] = True
 
         prepare_release_tests(constr, old_release, new_release)

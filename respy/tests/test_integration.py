@@ -210,7 +210,7 @@ class TestClass(object):
         params_spec, options_spec = generate_random_model(deterministic=True)
 
         # Manual specification of update patterns.
-        updates = dict()
+        updates = {}
 
         # off-diagonals fixed
         updates["valid_1"] = [
@@ -326,8 +326,6 @@ class TestClass(object):
         original Keane & Wolpin data. We create an additional initialization files that
         include numerous types and initial conditions.
 
-        TODO: Parametrize.
-
         """
         # This ensures that the experience effect is taken care of properly.
         open(".restud.respy.scratch", "w").close()
@@ -418,10 +416,10 @@ class TestClass(object):
         optim_paras_baseline = copy.deepcopy(optim_paras)
         optim_paras_shuffled = copy.deepcopy(optim_paras)
 
-        list_ = list(optim_paras["type_shifts"][i, :].tolist() for i in types_order)
+        list_ = [optim_paras["type_shifts"][i, :].tolist() for i in types_order]
         optim_paras_shuffled["type_shifts"] = np.array(list_)
 
-        list_ = list(type_shares[i] for i in types_order)
+        list_ = [type_shares[i] for i in types_order]
         optim_paras_shuffled["type_shares"] = np.array(list_).flatten()
 
         base_data, base_val = None, None

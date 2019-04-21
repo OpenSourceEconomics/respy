@@ -78,7 +78,7 @@ DATA_LABELS_SIM += [
 DATA_LABELS_SIM += ["Immediate_Reward_1", "Immediate_Reward_2", "Immediate_Reward_3"]
 DATA_LABELS_SIM += ["Immediate_Reward_4"]
 
-DATA_FORMATS_EST = dict()
+DATA_FORMATS_EST = {}
 for key_ in DATA_LABELS_EST:
     DATA_FORMATS_EST[key_] = np.int
     if key_ in ["Wage"]:

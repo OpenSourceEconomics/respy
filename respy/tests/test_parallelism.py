@@ -28,10 +28,10 @@ class TestClass(object):
         params_spec, options_spec = generate_random_model(point_constr=constr)
 
         # If delta is a not fixed, we need to ensure a bound-constraint optimizer.
-        # However, this is not the standard flag_estimation as the number of function evaluation
-        # is possibly much larger to detect and differences in the updates of the optimizer
-        # steps depending on the implementation.
-        if params_spec.loc[("delta", "delta"), "fixed"] == False:
+        # However, this is not the standard flag_estimation as the number of function
+        # evaluation is possibly much larger to detect and differences in the updates of
+        # the optimizer steps depending on the implementation.
+        if params_spec.loc[("delta", "delta"), "fixed"].eq(False):
             options_spec["estimation"]["optimizer"] = "FORT-BOBYQA"
 
         base = None
@@ -56,9 +56,9 @@ class TestClass(object):
     def test_2(self):
         """ This test ensures that the record files are identical.
         """
-        # Generate random initialization file. The number of periods is higher than usual as only
-        # FORTRAN implementations are used to solve the random request. This ensures that also
-        # some cases of interpolation are explored.
+        # Generate random initialization file. The number of periods is higher than
+        # usual as only FORTRAN implementations are used to solve the random request.
+        # This ensures that also some cases of interpolation are explored.
         constr = {
             "program": {"version": "fortran"},
             "num_periods": np.random.randint(3, 10),

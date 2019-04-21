@@ -8,21 +8,21 @@ if __name__ == "__main__":
     )
 
     # The following key value pairs describe the quantification exercise itself.
-    spec_dict = dict()
+    spec_dict = {}
     spec_dict["fnames"] = ["kw_data_one.ini", "kw_data_two.ini"]
     spec_dict["slaves"] = [0, 2, 4]
 
     # The following key value pairs are the requested updates from the
     # baseline initialization file.
-    spec_dict["update"] = dict()
+    spec_dict["update"] = {}
     spec_dict["update"]["file_est"] = "../data.respy.dat"
 
-    spec_dict["precond_spec"] = dict()
+    spec_dict["precond_spec"] = {}
     spec_dict["precond_spec"]["type"] = "identity"
     spec_dict["precond_spec"]["minimum"] = 0.00001
     spec_dict["precond_spec"]["eps"] = 1e-6
 
-    spec_dict["ambi_spec"] = dict()
+    spec_dict["ambi_spec"] = {}
     spec_dict["ambi_spec"]["measure"] = "kl"
     spec_dict["ambi_spec"]["mean"] = True
 

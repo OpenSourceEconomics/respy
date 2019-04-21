@@ -33,8 +33,11 @@ def pyth_solve(
         Array with shape (num_periods, num_draws, num_choices) containing draws for the
         Monte Carlo simulation of expected maximum utility.
     edu_spec : dict
+        Information on education.
     optim_paras : dict
+        Parameters affected by optimization.
     file_sim : ???
+        Undocumented parameter.
     num_types : int
         Number of types.
 

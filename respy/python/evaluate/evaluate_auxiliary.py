@@ -8,16 +8,16 @@ from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 
 
 @vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
-def clip(x, min_=None, max_=None):
+def clip(x, minimum=None, maximum=None):
     """Clip (limit) input value.
 
     Parameters
     ----------
     x : float
         Value to be clipped.
-    min_ : float
+    minimum : float
         Lower limit.
-    max_ : float
+    maximum : float
         Upper limit.
 
     Returns
@@ -26,10 +26,10 @@ def clip(x, min_=None, max_=None):
         Clipped value.
 
     """
-    if min_ is not None and x < min_:
-        return min_
-    elif max_ is not None and x > max_:
-        return max_
+    if minimum is not None and x < minimum:
+        return minimum
+    elif maximum is not None and x > maximum:
+        return maximum
     else:
         return x
 
@@ -117,7 +117,7 @@ def simulate_probability_of_agents_observed_choice(
 def get_pdf_of_normal_distribution(x, mu, sigma):
     """Compute the probability of ``x`` under a normal distribution.
 
-    This implementation is faster than calling :func:`scipy.stats.norm.pdf`.
+    This implementation is faster than calling ``scipy.stats.norm.pdf``.
 
     Parameters
     ----------

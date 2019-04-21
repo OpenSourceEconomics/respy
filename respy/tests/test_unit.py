@@ -29,7 +29,7 @@ class TestClass(object):
     def test_1(self):
         """ Testing whether back-and-forth transformation have no effect.
         """
-        for i in range(10):
+        for _ in range(10):
             num_types = np.random.randint(1, 5)
             num_paras = 53 + (num_types - 1) * 6
 
@@ -39,7 +39,7 @@ class TestClass(object):
             x = base.copy()
 
             # Apply numerous transformations
-            for j in range(10):
+            for _ in range(10):
                 optim_paras = distribute_parameters(x, is_debug=True)
                 args = (optim_paras, num_paras, "all", True)
                 x = get_optim_paras(*args)

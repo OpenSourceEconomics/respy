@@ -1,7 +1,9 @@
 import numpy as np
 
 from respy.python.evaluate.evaluate_auxiliary import create_draws_and_prob_wages
-from respy.python.evaluate.evaluate_auxiliary import simulate_probability_of_agents_observed_choice
+from respy.python.evaluate.evaluate_auxiliary import (
+    simulate_probability_of_agents_observed_choice,
+)
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 
 

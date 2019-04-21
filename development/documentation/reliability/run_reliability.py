@@ -8,12 +8,12 @@ def main():
     )
 
     # The following key value pairs describe the quantification exercise itself.
-    spec_dict = dict()
+    spec_dict = {}
     spec_dict["fnames"] = ["reliability_short.ini"]
 
     # The following key-value pairs are the requested updates from the baseline
     # initialization file.
-    spec_dict["update"] = dict()
+    spec_dict["update"] = {}
 
     spec_dict["update"]["is_store"] = True
     spec_dict["update"]["file_est"] = "../truth/start/data.respy.dat"
@@ -27,7 +27,7 @@ def main():
     # estimations. This is required as the maximum number of useful cores varies
     # drastically depending on the model. The requested number of processors is never
     # larger than the one specified as part of the update dictionary.
-    spec_dict["procs"] = dict()
+    spec_dict["procs"] = {}
     spec_dict["procs"]["ambiguity"] = 1
     spec_dict["procs"]["static"] = 1
     spec_dict["procs"]["truth"] = 1

@@ -332,7 +332,7 @@ def check_dataset_sim(data_frame, respy_obj):
 def sort_type_info(optim_paras, num_types):
     """ We fix an order for the sampling of the types.
     """
-    type_info = dict()
+    type_info = {}
 
     # We simply fix the order by the size of the intercepts.
     type_info["order"] = np.argsort(optim_paras["type_shares"].tolist()[0::2])
@@ -344,7 +344,7 @@ def sort_type_info(optim_paras, num_types):
         lower, upper = i * 2, (i + 1) * 2
         type_shares += [optim_paras["type_shares"][lower:upper].tolist()]
     type_info["shares"] = np.array(
-        list(type_shares[i] for i in type_info["order"])
+        [type_shares[i] for i in type_info["order"]]
     ).flatten()
 
     return type_info

@@ -169,7 +169,7 @@ class TestClass(object):
             num_periods = np.random.randint(1, 15)
             num_types = np.random.randint(1, 3)
 
-            edu_spec = dict()
+            edu_spec = {}
             edu_spec["start"] = np.random.choice(
                 range(1, 10), size=num_edu_start, replace=False
             ).tolist()

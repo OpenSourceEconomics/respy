@@ -1,5 +1,4 @@
-""" This module contains the functions for the generation of random requests.
-"""
+"""This module contains the functions for the generation of random requests."""
 import json
 
 import numpy as np
@@ -13,15 +12,13 @@ from respy.pre_processing.specification_helpers import csv_template
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.tests.codes.auxiliary import get_valid_shares
 from respy.tests.codes.auxiliary import OPTIMIZERS_EST
 
 
 def generate_random_model(
-    point_constr={},
-    bound_constr={},
+    point_constr=None,
+    bound_constr=None,
     num_types=None,
     file_path=None,
     deterministic=False,
@@ -29,20 +26,27 @@ def generate_random_model(
 ):
     """Generate a random model specification.
 
-    Args:
-        point_constr (dict): A full or partial options specification. Elements that
-            are specified here are not drawn randomly.
-        bound_constr (dict): Upper bounds for some options to keep computation time
-            reasonable. Can have the keys ["max_types", "max_periods",
-            "max_edu_start", "max_agents", "max_draws"]
-        num_types (int, optional): fix number of unobserved types.
-        file_path (str, optional): save path for the output. The extensions .csv and
-        .json are appended automatically.
+    Parameters
+    ----------
+    point_constr : dict
+        A full or partial options specification. Elements that are specified here are
+        not drawn randomly.
+    bound_constr : dict
+        Upper bounds for some options to keep computation time reasonable. Can have the
+        keys ["max_types", "max_periods", "max_edu_start", "max_agents", "max_draws"]
+    num_types : int
+        fix number of unobserved types.
+    file_path : str
+        save path for the output. The extensions .csv and .json are appended
+        automatically.
 
     """
     # potential conversions from numpy._bool to python bool. Don't remove!
     deterministic = bool(deterministic)
     myopic = bool(myopic)
+
+    point_constr = {} if point_constr is None else point_constr
+    bound_constr = {} if bound_constr is None else bound_constr
 
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
@@ -179,7 +183,6 @@ def generate_random_model(
     if file_path is not None:
         with open(file_path + ".json", "w") as j:
             json.dump(options, j)
-        # todo: does this need index=False?
         params.to_csv(file_path + ".csv")
 
     return params, options
@@ -198,7 +201,7 @@ def _consolidate_bound_constraints(bound_constr, version):
 def generate_optimizer_options(which, params_spec):
 
     free_params = len(params_spec) - params_spec["fixed"].sum()
-    dict_ = dict()
+    dict_ = {}
 
     if which == "SCIPY-BFGS":
         dict_["gtol"] = uniform(0.0000001, 0.1)

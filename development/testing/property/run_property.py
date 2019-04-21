@@ -56,9 +56,9 @@ def run(request, is_compile, is_background):
 
     # We initialize a dictionary that allows to keep track of each test's success or
     # failure.
-    full_test_record = dict()
+    full_test_record = {}
     for key_ in test_dict.keys():
-        full_test_record[key_] = dict()
+        full_test_record[key_] = {}
         for value in test_dict[key_]:
             full_test_record[key_][value] = [0, 0]
 

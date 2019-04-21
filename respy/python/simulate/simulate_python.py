@@ -46,8 +46,11 @@ def pyth_simulate(
     seed_sim : int
         Seed for the simulation.
     file_sim : ???
+        Undocumented parameter.
     edu_spec : dict
+        Information on education.
     optim_paras : dict
+        Parameters affected by optimization.
     is_debug : bool
         Flag for debugging modus.
 
@@ -183,7 +186,6 @@ def pyth_simulate(
         .reset_index(drop=True)
     )
 
-    # TODO: Replace logging which is useless here and kept only for successful testing.
     for i in range(num_agents_sim):
         record_simulation_progress(i, file_sim)
     record_simulation_stop(file_sim)

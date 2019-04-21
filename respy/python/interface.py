@@ -120,12 +120,12 @@ def respy_interface(respy_obj, request, data=None):
             ~mask_paras_fixed
         ]
         paras_bounds_free_unscaled[:, 0] = np.where(
-            paras_bounds_free_unscaled[:, 0] == None,
+            paras_bounds_free_unscaled[:, 0] == None,  # noqa: E711
             -HUGE_FLOAT,
             paras_bounds_free_unscaled[:, 0],
         )
         paras_bounds_free_unscaled[:, 1] = np.where(
-            paras_bounds_free_unscaled[:, 1] == None,
+            paras_bounds_free_unscaled[:, 1] == None,  # noqa: E711
             HUGE_FLOAT,
             paras_bounds_free_unscaled[:, 1],
         )

@@ -36,13 +36,12 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
     tabular format has better performance, but looses the information on the
     connections.
 
-    The current implementation of :data:`states` and :data:`indexer` allows to have both
-    advantages at the cost of an additional object. :data:`states` stores the
-    information on states in a tabular format. :data:`indexer` is a matrix where each
-    characteristic of the state space represents one dimension. The values of the matrix
-    are the indices of states in :data:`states`. Traversing the state space is as easy
-    as incrementing the right indices of :data:`indexer` by 1 and use the resulting
-    index in :data:`states`.
+    The current implementation of ``states`` and ``indexer`` allows to have both
+    advantages at the cost of an additional object. ``states`` stores the information on
+    states in a tabular format. ``indexer`` is a matrix where each characteristic of the
+    state space represents one dimension. The values of the matrix are the indices of
+    states in ``states``. Traversing the state space is as easy as incrementing the
+    right indices of ``indexer`` by 1 and use the resulting index in ``states``.
 
     Parameters
     ----------
@@ -50,7 +49,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
         Number of periods in the state space.
     num_types : int
         Number of types of agents.
-    edu_starts : :obj:`list` of :obj:`int`
+    edu_starts : List[int]
         Contains levels of initial education.
     edu_max : int
         Maximum level of education which can be obtained by an agent.
@@ -225,6 +224,7 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
     covariates : np.ndarray
         Array with shape (num_states, 16).
     optim_paras : dict
+        Contains parameters affected by the optimization.
 
     """
     # Calculate common and general rewards component.
@@ -297,8 +297,11 @@ def pyth_backward_induction(
     num_points_interp : int
         Number of states for which the emax will be interpolated.
     optim_paras : dict
+        Parameters affected by optimization.
     file_sim : ???
+        Undocumented parameter.
     is_write : bool
+        Undocumented parameter.
 
     Returns
     -------

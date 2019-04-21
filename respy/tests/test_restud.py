@@ -54,7 +54,7 @@ DATA_LABELS_EST += [
 ]
 DATA_LABELS_EST += ["Years_Schooling", "Lagged_Choice"]
 
-DATA_FORMATS_EST = dict()
+DATA_FORMATS_EST = {}
 for key_ in DATA_LABELS_EST:
     DATA_FORMATS_EST[key_] = np.int
     if key_ in ["Wage"]:
@@ -62,8 +62,8 @@ for key_ in DATA_LABELS_EST:
 
 
 def restud_sample_to_respy():
-    """This function transforms the RESTUD simulation sample for processing for the RESPY
-    package."""
+    """This function transforms the RESTUD simulation sample for processing for the
+    RESPY package."""
 
     def _add_period(agent):
         """This function adds the period information."""
@@ -72,11 +72,11 @@ def restud_sample_to_respy():
         return agent
 
     def _add_lagged_choice(agent):
-        """This function iterates through an agent record and constructs the state variables for
-        each point in time."""
+        """This function iterates through an agent record and constructs the state
+        variables for each point in time."""
         agent["lagged_choice"] = np.nan
         lagged_choice = 3
-        for index, row in agent.iterrows():
+        for _, row in agent.iterrows():
             period = int(row["Period"])
             agent["Lagged_Choice"].iloc[period] = lagged_choice
             lagged_choice = row["Choice"]
@@ -212,8 +212,7 @@ def write_covariance_parameters(cov):
 def transform_respy_to_restud_sim(
     optim_paras, edu_spec, num_agents_sim, num_periods, num_draws_emax, cov
 ):
-    """ Transform a RESPY initialization file to a RESTUD file.
-    """
+    """Transform a RESPY initialization file to a RESTUD file."""
     # Ensure restrictions
     assert edu_spec["start"][0] == 10
     assert edu_spec["max"] == 20
@@ -356,8 +355,8 @@ class TestClass(object):
         assert_frame_equal(py, fort)
 
     def test_2(self):
-        """ Compare results from an evaluation of the criterion function at the initial values.
-        """
+        """Compare results from an evaluation of the criterion function at the initial
+        values."""
         args = generate_constraints_dict()
         params_spec, options_spec = generate_random_model(**args)
         params_spec, options_spec = adjust_model_spec(params_spec, options_spec)
@@ -369,8 +368,6 @@ class TestClass(object):
         cov_sampled = np.random.uniform(0, 0.01, size=(4, 4)) + np.diag(
             np.random.uniform(1.0, 1.5, size=4)
         )
-        # cov_sampled = wishart.rvs(4, 0.2 * np.identity(4))
-        # cov_sampled[np.diag_indices(4)] = np.sqrt(cov_sampled[np.diag_indices(4)])
         chol = np.linalg.cholesky(cov_sampled)
         coeffs = chol[np.tril_indices(4)]
         params_spec.loc["shocks", "para"] = coeffs

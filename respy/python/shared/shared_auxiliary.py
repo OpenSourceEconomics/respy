@@ -46,7 +46,8 @@ def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type="opti
         1d numpy array with the parameters
     is_debug : bool
         If true, the parameters are checked for validity
-    info : ????
+    info : ???
+        Unknown argument.
     paras_type : str
         one of ['econ', 'optim']. A paras_vec of type 'econ' contains the the standard
         deviations and covariances of the shock distribution. This is how parameters are
@@ -95,14 +96,17 @@ def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type="opti
 def get_optim_paras(paras_dict, num_paras, which, is_debug):
     """Stack optimization parameters from a dictionary into a vector of type 'optim'.
 
-    Args:
-        paras_dict (dict): dictionary with quantities from which the parameters can be
-            extracted.
-        num_paras (int): number of parameters in the model (not only free parameters)
-        which (str): one of ['free', 'all'], determines whether the resulting parameter
-            vector contains only free parameters or all parameters.
-        is_debug (bool): If True, inputs and outputs are checked for consistency.
-
+    Parameters
+    ----------
+    paras_dict : dict
+        dictionary with quantities from which the parameters can be extracted.
+    num_paras : int
+        number of parameters in the model (not only free parameters)
+    which : str
+        one of ['free', 'all'], determines whether the resulting parameter vector
+        contains only free parameters or all parameters.
+    is_debug : bool
+        If True, inputs and outputs are checked for consistency.
 
     """
     if is_debug:
@@ -184,6 +188,7 @@ def get_conditional_probabilities(type_shares, initial_level_of_education):
     Parameters
     ----------
     type_shares : np.ndarray
+        Undocumented parameter.
     initial_level_of_education : np.ndarray
         Array with shape (num_obs,) containing initial levels of education.
 
@@ -384,7 +389,7 @@ def get_continuation_value(
     """Calculate the continuation value.
 
     This function is a reduced version of
-    :func:`get_continutation_value_and_ex_post_rewards` which does not return ex post
+    ``get_continutation_value_and_ex_post_rewards`` which does not return ex post
     rewards. The reason is that a second return argument doubles runtime whereas it is
     only needed during simulation.
 
@@ -541,7 +546,7 @@ def replace_missing_values(arguments):
     if isinstance(arguments, np.ndarray):
         arguments = (arguments,)
 
-    rslt = tuple()
+    rslt = ()
 
     for argument in arguments:
         # Transform to float array to evaluate missing values.
@@ -714,7 +719,7 @@ def get_est_info():
 
     # Initialize container and ensure a fresh start processing the file
     linecache.clearcache()
-    rslt = dict()
+    rslt = {}
 
     # Value of the criterion function
     line = shlex.split(linecache.getline("est.respy.info", 6))

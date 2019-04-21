@@ -37,7 +37,7 @@ class MailCls(object):
     def __init__(self):
         """ Initialization of MailCls.
         """
-        self.attr = dict()
+        self.attr = {}
 
         # Constitutive attributes
         self.attr["subject"] = None
