@@ -7,10 +7,10 @@ import os
 import shutil
 
 from respy.custom_exceptions import UserError
-from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import get_est_info
 from respy.pre_processing.model_processing import read_init_file
 from respy.pre_processing.model_processing import write_init_file
+from respy.python.shared.shared_auxiliary import distribute_parameters
+from respy.python.shared.shared_auxiliary import get_est_info
 
 
 def dist_input_arguments(parser):
