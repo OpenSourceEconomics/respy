@@ -59,3 +59,16 @@ If you want to exit the container, hit ``Ctrl + d`` or type
 .. code-block:: bash
 
     $ exit.
+
+Reclaiming space on disk
+------------------------
+
+Docker occupies a lot of space on your disk due to saving snapshots of the container,
+container itself, images, etc.. To reclaim the space, `prune
+<https://docs.docker.com/config/pruning/>`_ unused docker objects. Make sure that you do
+not accidentally delete valuable information.
+
+.. code-block:: bash
+
+    $ docker container prune  # Delete unused containers.
+    $ docker system prune     # Delete unused docker objects.
