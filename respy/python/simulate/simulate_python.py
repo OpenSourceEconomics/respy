@@ -126,7 +126,7 @@ def pyth_simulate(
             state_space.emaxs[ks, :4],
             draws.reshape(-1, 1, 4),
             optim_paras["delta"],
-            state_space.states[ks, 3] >= edu_spec["max"],
+            state_space.states[ks, 3] >= state_space.edu_max,
         )
         total_values = total_values.reshape(-1, 4)
         rewards_ex_post = rewards_ex_post.reshape(-1, 4)
