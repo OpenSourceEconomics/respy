@@ -18,7 +18,8 @@ Download the appropriate Docker engine `here
 Build the image
 ---------------
 
-In order to build the image with the current respy version in the repository, cd to the respy folder and type
+In order to build the image with the current respy version in the repository, cd to the
+respy folder and type
 
 .. code-block:: bash
 
@@ -52,7 +53,8 @@ with
 
     $ conda activate respy.
 
-After entering the container you are in the home directory of a Linux system that contains the standard files and the `respy` folder.
+After entering the container you are in the home directory of a Linux system that
+contains the standard files and the `respy` folder.
 
 If you want to exit the container, hit ``Ctrl + d`` or type
 
