@@ -3,10 +3,7 @@ from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.tests.codes.random_model import generate_random_model
-from respy.pre_processing.model_processing import (
-    _read_options_spec,
-    _read_params_spec,
-)
+from respy.pre_processing.model_processing import _read_options_spec, _read_params_spec
 from respy import RespyCls
 from pandas.testing import assert_series_equal
 from respy.python.solve.solve_auxiliary import StateSpace
@@ -74,9 +71,7 @@ class TestClass(object):
         bound_constr = {"max_draws": max_draws, "max_agents": max_draws}
 
         params_spec, options_spec = generate_random_model(
-            bound_constr=bound_constr,
-            deterministic=is_deterministic,
-            myopic=is_myopic,
+            bound_constr=bound_constr, deterministic=is_deterministic, myopic=is_myopic
         )
 
         respy_obj = RespyCls(params_spec, options_spec)
@@ -94,9 +89,9 @@ class TestClass(object):
             label_sho = "Shock_Reward_{}".format(choice)
             label_gen = "General_Reward_{}".format(choice)
             label_com = "Common_Reward"
-            df["Ex_Post_Reward"] = (
-                df[label_sys] - df[label_gen] - df[label_com]
-            ) * df[label_sho]
+            df["Ex_Post_Reward"] = (df[label_sys] - df[label_gen] - df[label_com]) * df[
+                label_sho
+            ]
 
             col_1 = df["Ex_Post_Reward"].loc[:, cond]
             col_2 = df["Wage"].loc[:, cond]
@@ -198,11 +193,7 @@ class TestClass(object):
         # version as we later need the wages which are not part of
         # ``periods_rewards_systematic``.
         state_space = StateSpace(
-            num_periods,
-            num_types,
-            edu_spec["start"],
-            edu_spec["max"],
-            optim_paras,
+            num_periods, num_types, edu_spec["start"], edu_spec["max"], optim_paras
         )
 
         # Check that rewards match
@@ -221,12 +212,8 @@ class TestClass(object):
         state_space._create_attributes_from_fortran_counterparts(periods_emax)
 
         # Unpack necessary attributes
-        rewards_period = state_space.get_attribute_from_period(
-            "rewards", period
-        )
-        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
-            :, :4
-        ]
+        rewards_period = state_space.get_attribute_from_period("rewards", period)
+        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[:, :4]
         max_education_period = (
             state_space.get_attribute_from_period("states", period)[:, 3]
             >= edu_spec["max"]
@@ -282,7 +269,7 @@ def test_create_draws_and_prob_wages():
 
 @pytest.mark.parametrize(
     "num_periods, num_types, edu_starts, edu_max",
-    [(40, 1, [10], 20), (40, 5, [10, 15], 20)],
+    [(15, 1, [10], 20), (15, 5, [10, 15], 20)],
 )
 def test_state_space_restrictions_by_traversing_forward(
     num_periods, num_types, edu_starts, edu_max
@@ -297,7 +284,8 @@ def test_state_space_restrictions_by_traversing_forward(
     and ones for each state which indicates whether the state was indexed or not.
 
     """
-    @njit(nogil=True)
+
+    @njit
     def traverse_forward(states, indexer, indicator):
         for i in range(states.shape[0]):
             # Unpack parent state and get index.
