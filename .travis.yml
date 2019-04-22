@@ -39,6 +39,8 @@ install:
     - conda config --set always_yes yes --set changeps1 no
     - conda info -a
 
+    # Install Numpy for compilation
+    - conda install numpy
     # Install respy
     - pip install -e . -vv --no-deps
 

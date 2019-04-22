@@ -31,7 +31,7 @@ class TestClass(object):
         # However, this is not the standard flag_estimation as the number of function
         # evaluation is possibly much larger to detect and differences in the updates of
         # the optimizer steps depending on the implementation.
-        if params_spec.loc[("delta", "delta"), "fixed"].eq(False):
+        if params_spec.loc[("delta", "delta"), "fixed"] is False:
             options_spec["estimation"]["optimizer"] = "FORT-BOBYQA"
 
         base = None
