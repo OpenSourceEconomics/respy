@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from respy.python.solve.solve_auxiliary import StateSpace
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
+from respy.python.solve.solve_auxiliary import StateSpace
 
 
 @pytest.fixture(autouse=True)

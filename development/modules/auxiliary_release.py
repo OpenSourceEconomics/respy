@@ -1,14 +1,14 @@
-import pickle as pkl
-
-import subprocess
-import shutil
-import shlex
+import copy
 import glob
 import json
-import copy
-import sys
-import pip
 import os
+import pickle as pkl
+import shlex
+import shutil
+import subprocess
+import sys
+
+import pip
 
 
 def install(version):
@@ -135,17 +135,17 @@ def prepare_release_tests_1(constr):
 
     # Added more fine grained scaling. Needs to be aligned across old/new with identity or flag
     # False first and then we want to allow for more nuanced check.
-    init_dict["SCALING"] = dict()
+    init_dict["SCALING"] = {}
     init_dict["SCALING"]["flag"] = init_dict["PRECONDITIONING"]["type"] == "gradient"
     init_dict["SCALING"]["minimum"] = init_dict["PRECONDITIONING"]["minimum"]
 
     # More flexible parallelism. We removed the extra section onn parallelism.
-    init_dict["PARALLELISM"] = dict()
+    init_dict["PARALLELISM"] = {}
     init_dict["PARALLELISM"]["flag"] = init_dict["PROGRAM"]["procs"] > 1
     init_dict["PARALLELISM"]["procs"] = init_dict["PROGRAM"]["procs"]
 
     # We had a section that enforced the same step size for the derivative calculation in each.
-    init_dict["DERIVATIVES"] = dict()
+    init_dict["DERIVATIVES"] = {}
     init_dict["DERIVATIVES"]["version"] = "FORWARD-DIFFERENCES"
     init_dict["DERIVATIVES"]["eps"] = eps
 
@@ -318,7 +318,7 @@ def prepare_release_tests_6(constr):
     json.dump(old_dict, open("old/init_dict.respy.json", "w"))
 
     # We need to specify a sample with a baseline type only a single initial condition.
-    init_dict["TYPE_SHIFTS"] = dict()
+    init_dict["TYPE_SHIFTS"] = {}
     init_dict["TYPE_SHIFTS"]["coeffs"] = [0.0, 0.0, 0.0, 0.0]
     init_dict["TYPE_SHIFTS"]["bounds"] = [
         (None, None),
@@ -328,7 +328,7 @@ def prepare_release_tests_6(constr):
     ]
     init_dict["TYPE_SHIFTS"]["fixed"] = [True, True, True, True]
 
-    init_dict["TYPE_SHARES"] = dict()
+    init_dict["TYPE_SHARES"] = {}
     init_dict["TYPE_SHARES"]["coeffs"] = [1.0]
     init_dict["TYPE_SHARES"]["bounds"] = [(0.0, None)]
     init_dict["TYPE_SHARES"]["fixed"] = [True]
@@ -485,7 +485,7 @@ def prepare_release_tests_9(constr):
     old_dict["TYPE_SHIFTS"] = old_dict["TYPE SHIFTS"]
     del old_dict["TYPE SHIFTS"]
 
-    old_dict["TYPE_SHARES"] = dict()
+    old_dict["TYPE_SHARES"] = {}
     old_dict["TYPE_SHARES"]["coeffs"] = shares
     old_dict["TYPE_SHARES"]["fixed"] = [True] * num_types
     old_dict["TYPE_SHARES"]["bounds"] = [[0.00, None]] * num_types

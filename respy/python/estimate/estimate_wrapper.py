@@ -1,12 +1,13 @@
 from datetime import datetime
+
 import numpy as np
 
+from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.record.record_estimation import record_estimation_eval
+from respy.python.record.record_warning import record_warning
+from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import check_early_termination
 from respy.python.shared.shared_auxiliary import extract_cholesky
-from respy.python.estimate.estimate_python import pyth_criterion
-from respy.python.shared.shared_auxiliary import apply_scaling
-from respy.python.record.record_warning import record_warning
 
 
 class OptimizationClass(object):
@@ -21,7 +22,7 @@ class OptimizationClass(object):
         self, x_optim_all_unscaled_start, paras_fixed, precond_matrix, num_types
     ):
 
-        self.attr = dict()
+        self.attr = {}
 
         # Constitutive attributes
         self.x_optim_all_unscaled_start = x_optim_all_unscaled_start

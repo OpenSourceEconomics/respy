@@ -1,9 +1,9 @@
 import numpy as np
 
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.tests.codes.random_model import generate_random_model
-from respy.tests.codes.auxiliary import simulate_observed
 from respy import RespyCls
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.random_model import generate_random_model
 
 
 class TestClass(object):
@@ -34,10 +34,7 @@ class TestClass(object):
 
             # Extract class attributes
             states_number_period, periods_emax, state_space = dist_class_attributes(
-                respy_obj,
-                "states_number_period",
-                "periods_emax",
-                "state_space",
+                respy_obj, "states_number_period", "periods_emax", "state_space"
             )
 
             a.append(state_space)

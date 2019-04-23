@@ -1,26 +1,26 @@
-from scipy.optimize import fmin_l_bfgs_b
-from scipy.optimize import approx_fprime
-from scipy.optimize import fmin_powell
-from scipy.optimize import fmin_bfgs
-
 from math import floor
 from math import log10
-import numpy as np
 
+import numpy as np
+from scipy.optimize import approx_fprime
+from scipy.optimize import fmin_bfgs
+from scipy.optimize import fmin_l_bfgs_b
+from scipy.optimize import fmin_powell
+
+from respy.custom_exceptions import MaxfunError
+from respy.python.estimate.estimate_wrapper import OptimizationClass
+from respy.python.record.record_estimation import record_estimation_final
 from respy.python.record.record_estimation import record_estimation_scalability
 from respy.python.record.record_estimation import record_estimation_scaling
-from respy.python.record.record_estimation import record_estimation_final
 from respy.python.record.record_estimation import record_estimation_stop
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.estimate.estimate_wrapper import OptimizationClass
-from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.solve.solve_python import pyth_solve
-from respy.custom_exceptions import MaxfunError
+from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import StateSpace
+from respy.python.solve.solve_python import pyth_solve
 
 
 def respy_interface(respy_obj, request, data=None):
@@ -120,12 +120,12 @@ def respy_interface(respy_obj, request, data=None):
             ~mask_paras_fixed
         ]
         paras_bounds_free_unscaled[:, 0] = np.where(
-            paras_bounds_free_unscaled[:, 0] == None,
+            paras_bounds_free_unscaled[:, 0] == None,  # noqa: E711
             -HUGE_FLOAT,
             paras_bounds_free_unscaled[:, 0],
         )
         paras_bounds_free_unscaled[:, 1] = np.where(
-            paras_bounds_free_unscaled[:, 1] == None,
+            paras_bounds_free_unscaled[:, 1] == None,  # noqa: E711
             HUGE_FLOAT,
             paras_bounds_free_unscaled[:, 1],
         )
@@ -183,9 +183,7 @@ def respy_interface(respy_obj, request, data=None):
             record_estimation_scalability("Finish")
 
             success = True
-            message = (
-                "Single evaluation of criterion function at starting values."
-            )
+            message = "Single evaluation of criterion function at starting values."
 
         elif optimizer_used == "SCIPY-BFGS":
 

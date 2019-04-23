@@ -1,9 +1,10 @@
 """ Module for program constants used across the RESPY package. This is
 aligned with the constants from the FORTRAN implementation.
 """
-import numpy as np
 import json
 from pathlib import Path
+
+import numpy as np
 
 # Obtain the root directory of the package. Do not import respy which creates a circular
 # import.
@@ -50,8 +51,8 @@ IS_FORTRAN = config_dict["FORTRAN"]
 IS_F2PY = config_dict["F2PY"]
 
 # Each implementation has its own set of optimizers available.
-OPT_EST_PYTH = ['SCIPY-BFGS', 'SCIPY-POWELL', 'SCIPY-LBFGSB']
-OPT_EST_FORT = ['FORT-NEWUOA', 'FORT-BFGS', 'FORT-BOBYQA']
+OPT_EST_PYTH = ["SCIPY-BFGS", "SCIPY-POWELL", "SCIPY-LBFGSB"]
+OPT_EST_FORT = ["FORT-NEWUOA", "FORT-BFGS", "FORT-BOBYQA"]
 
 # Labels for columns in a dataset as well as the formatters.
 DATA_LABELS_EST = []
@@ -77,7 +78,7 @@ DATA_LABELS_SIM += [
 DATA_LABELS_SIM += ["Immediate_Reward_1", "Immediate_Reward_2", "Immediate_Reward_3"]
 DATA_LABELS_SIM += ["Immediate_Reward_4"]
 
-DATA_FORMATS_EST = dict()
+DATA_FORMATS_EST = {}
 for key_ in DATA_LABELS_EST:
     DATA_FORMATS_EST[key_] = np.int
     if key_ in ["Wage"]:
@@ -94,5 +95,6 @@ for key_ in DATA_LABELS_SIM:
 
 # Set Numba configuration.
 import numba  # noqa: E402
+
 if IS_DEBUG:
     numba.config.WARNINGS = 1

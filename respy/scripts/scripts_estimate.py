@@ -1,9 +1,7 @@
-#!/usr/bin/env python
 import argparse
 import os
 
 from respy.custom_exceptions import UserError
-from respy import RespyCls
 
 
 def dist_input_arguments(parser):
@@ -28,12 +26,13 @@ def dist_input_arguments(parser):
 def scripts_estimate(single, respy_obj):
     """ Wrapper for the estimation.
     """
-    # Set maximum iteration count when only an evaluation of the criterion function is requested.
+    # Set maximum iteration count when only an evaluation of the criterion function is
+    # requested.
     if single:
         respy_obj.unlock()
         respy_obj.set_attr("maxfun", 0)
 
-        precond_spec = dict()
+        precond_spec = {}
         precond_spec["type"] = "identity"
         precond_spec["minimum"] = 0.01
         precond_spec["eps"] = 0.01

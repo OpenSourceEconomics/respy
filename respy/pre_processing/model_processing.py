@@ -1,13 +1,13 @@
 """Process model specification files or objects."""
-import pandas as pd
-import numpy as np
 import json
+
+import numpy as np
+import pandas as pd
 import yaml
-from respy.python.shared.shared_auxiliary import (
-    distribute_parameters,
-    get_optim_paras,
-)
+
 from respy.pre_processing.specification_helpers import csv_template
+from respy.python.shared.shared_auxiliary import distribute_parameters
+from respy.python.shared.shared_auxiliary import get_optim_paras
 
 
 def process_model_spec(params_spec, options_spec):
@@ -211,24 +211,9 @@ def default_model_dict():
 
     """
     default = {
-        "FORT-NEWUOA": {
-            "maxfun": 1000000,
-            "npt": 1,
-            "rhobeg": 1.0,
-            "rhoend": 0.000001,
-        },
-        "FORT-BFGS": {
-            "eps": 0.0001,
-            "gtol": 0.00001,
-            "maxiter": 10,
-            "stpmx": 100.0,
-        },
-        "FORT-BOBYQA": {
-            "maxfun": 1000000,
-            "npt": 1,
-            "rhobeg": 1.0,
-            "rhoend": 0.000001,
-        },
+        "FORT-NEWUOA": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 0.000001},
+        "FORT-BFGS": {"eps": 0.0001, "gtol": 0.00001, "maxiter": 10, "stpmx": 100.0},
+        "FORT-BOBYQA": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 0.000001},
         "SCIPY-BFGS": {"eps": 0.0001, "gtol": 0.0001, "maxiter": 1},
         "SCIPY-POWELL": {
             "ftol": 0.0001,

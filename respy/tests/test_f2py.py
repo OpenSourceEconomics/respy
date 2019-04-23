@@ -1,54 +1,55 @@
-import sys
 import os
-import statsmodels.api as sm
-from scipy.stats import norm
+import sys
+from functools import partial
+
 import numpy as np
 import pytest
 import scipy
-from respy.python.shared.shared_auxiliary import get_conditional_probabilities
+import statsmodels.api as sm
+from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_equal
+from numpy.testing import assert_equal
+from scipy.stats import norm
+
+from respy import RespyCls
+from respy.fortran.interface import resfort_interface
+from respy.pre_processing.data_processing import process_dataset
+from respy.python.estimate.estimate_python import pyth_criterion
+from respy.python.evaluate.evaluate_python import pyth_contributions
+from respy.python.interface import get_scales_magnitudes
 from respy.python.record.record_estimation import _spectral_condition_number
+from respy.python.shared.shared_auxiliary import create_draws
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import extract_cholesky
+from respy.python.shared.shared_auxiliary import get_conditional_probabilities
+from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
+from respy.python.shared.shared_auxiliary import get_optim_paras
+from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
-from respy.python.solve.solve_auxiliary import StateSpace
-from respy.python.solve.solve_auxiliary import pyth_backward_induction
-from respy.python.solve.solve_auxiliary import get_simulated_indicator
-from respy.python.solve.solve_auxiliary import get_exogenous_variables
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.solve.solve_auxiliary import get_endogenous_variable
-from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
-from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
-from respy.python.evaluate.evaluate_python import pyth_contributions
-from respy.python.simulate.simulate_auxiliary import sort_type_info
-from respy.python.simulate.simulate_auxiliary import sort_edu_spec
-from respy.python.shared.shared_auxiliary import extract_cholesky
-from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.estimate.estimate_python import pyth_criterion
-from respy.python.simulate.simulate_python import pyth_simulate
-from respy.python.solve.solve_auxiliary import get_predictions
-from respy.python.solve.solve_risk import construct_emax_risk
-from respy.python.shared.shared_auxiliary import create_draws
-from respy.python.shared.shared_auxiliary import read_draws
+from respy.python.shared.shared_constants import DECIMALS
 from respy.python.shared.shared_constants import IS_F2PY
-from respy.python.interface import get_scales_magnitudes
-from respy.pre_processing.data_processing import process_dataset
+from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import TEST_RESOURCES_BUILD
+from respy.python.shared.shared_constants import TOL
+from respy.python.simulate.simulate_auxiliary import sort_edu_spec
+from respy.python.simulate.simulate_auxiliary import sort_type_info
+from respy.python.simulate.simulate_python import pyth_simulate
+from respy.python.solve.solve_auxiliary import get_endogenous_variable
+from respy.python.solve.solve_auxiliary import get_exogenous_variables
+from respy.python.solve.solve_auxiliary import get_predictions
+from respy.python.solve.solve_auxiliary import get_simulated_indicator
+from respy.python.solve.solve_auxiliary import pyth_backward_induction
+from respy.python.solve.solve_auxiliary import StateSpace
 from respy.python.solve.solve_python import pyth_solve
-from respy.fortran.interface import resfort_interface
+from respy.python.solve.solve_risk import construct_emax_risk
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.auxiliary import write_draws
+from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_interpolation_grid
 from respy.tests.codes.auxiliary import write_lagged_start
-from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.random_model import generate_random_model
-from respy.tests.codes.auxiliary import write_edu_start
-from respy.tests.codes.auxiliary import write_draws
 from respy.tests.codes.auxiliary import write_types
-from functools import partial
-from numpy.testing import (
-    assert_equal,
-    assert_array_equal,
-    assert_array_almost_equal,
-)
-from respy import RespyCls
-
-from respy.python.shared.shared_constants import DECIMALS, TOL, MISSING_FLOAT
+from respy.tests.codes.random_model import generate_random_model
 
 assert_allclose = partial(np.testing.assert_allclose, rtol=TOL, atol=TOL)
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
@@ -119,12 +120,8 @@ class TestClass(object):
 
         # Evaluation of simulated expected future values. Limit to one individual as the
         # Fortran version.
-        rewards_period = state_space.get_attribute_from_period(
-            "rewards", period
-        )[k]
-        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
-            k, :4
-        ]
+        rewards_period = state_space.get_attribute_from_period("rewards", period)[k]
+        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[k, :4]
         max_education_period = (
             state_space.get_attribute_from_period("states", period)[k, 3]
             >= edu_spec["max"]
@@ -172,7 +169,7 @@ class TestClass(object):
             num_periods = np.random.randint(1, 15)
             num_types = np.random.randint(1, 3)
 
-            edu_spec = dict()
+            edu_spec = {}
             edu_spec["start"] = np.random.choice(
                 range(1, 10), size=num_edu_start, replace=False
             ).tolist()
@@ -182,9 +179,7 @@ class TestClass(object):
             # FORTRAN
             base_args = (num_periods, num_types)
 
-            state_space = StateSpace(
-                *base_args, edu_spec["start"], edu_spec["max"]
-            )
+            state_space = StateSpace(*base_args, edu_spec["start"], edu_spec["max"])
 
             py_a, py_c, _, _ = state_space._get_fortran_counterparts()
             py_b = state_space.states_per_period
@@ -195,12 +190,7 @@ class TestClass(object):
             )
 
             # Ensure equivalence
-            rslts = [
-                [fort_a, py_a],
-                [fort_b, py_b],
-                [fort_c, py_c],
-                [fort_d, py_d],
-            ]
+            rslts = [[fort_a, py_a], [fort_b, py_b], [fort_c, py_c], [fort_d, py_d]]
             for obj in rslts:
                 # Slice Fortran output to shape of Python output.
                 if isinstance(obj[0], np.ndarray):
@@ -372,16 +362,10 @@ class TestClass(object):
 
         # Check the state space creation.
         state_space = StateSpace(
-            num_periods,
-            num_types,
-            edu_spec["start"],
-            edu_spec["max"],
-            optim_paras,
+            num_periods, num_types, edu_spec["start"], edu_spec["max"], optim_paras
         )
 
-        states_all, mapping_state_idx, _, _ = (
-            state_space._get_fortran_counterparts()
-        )
+        states_all, mapping_state_idx, _, _ = state_space._get_fortran_counterparts()
 
         pyth = (
             states_all,
@@ -815,20 +799,14 @@ class TestClass(object):
 
         # Initialize Python version and solve.
         state_space = StateSpace(
-            num_periods,
-            num_types,
-            edu_spec["start"],
-            edu_spec["max"],
-            optim_paras,
+            num_periods, num_types, edu_spec["start"], edu_spec["max"], optim_paras
         )
 
         # Integrate periods_emax in state_space
         state_space.emaxs = np.column_stack(
             (
                 np.zeros((state_space.num_states, 4)),
-                periods_emax[
-                    ~np.isnan(periods_emax) & (periods_emax != MISSING_FLOAT)
-                ],
+                periods_emax[~np.isnan(periods_emax) & (periods_emax != MISSING_FLOAT)],
             )
         )
 
@@ -838,10 +816,7 @@ class TestClass(object):
         # Do not get the emaxs from the previous period if we are in the last one.
         if period != state_space.num_periods - 1:
             state_space.emaxs = get_emaxs_of_subsequent_period(
-                states_period,
-                state_space.indexer,
-                state_space.emaxs,
-                edu_spec["max"],
+                states_period, state_space.indexer, state_space.emaxs, edu_spec["max"]
             )
 
         num_states = state_space.states_per_period[period]
@@ -859,12 +834,8 @@ class TestClass(object):
         )
 
         # Unpack necessary attributes
-        rewards_period = state_space.get_attribute_from_period(
-            "rewards", period
-        )
-        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[
-            :, :4
-        ]
+        rewards_period = state_space.get_attribute_from_period("rewards", period)
+        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[:, :4]
         max_education = (
             state_space.get_attribute_from_period("states", period)[:, 3]
             >= edu_spec["max"]
@@ -872,11 +843,7 @@ class TestClass(object):
 
         # Construct the exogenous variables for all points of the state space.
         exogenous, max_emax = get_exogenous_variables(
-            rewards_period,
-            emaxs_period,
-            shifts,
-            optim_paras["delta"],
-            max_education,
+            rewards_period, emaxs_period, shifts, optim_paras["delta"], max_education
         )
 
         # Align output between Python and Fortran version.
@@ -961,9 +928,7 @@ class TestClass(object):
         # Impose constraints
         point_constr = {"num_periods": np.random.randint(2, 5)}
 
-        params_spec, options_spec = generate_random_model(
-            point_constr=point_constr
-        )
+        params_spec, options_spec = generate_random_model(point_constr=point_constr)
         respy_obj = RespyCls(params_spec, options_spec)
 
         # Extract class attributes
@@ -1047,9 +1012,7 @@ class TestClass(object):
             data_array = process_dataset(respy_obj).to_numpy()
 
             py = np.bincount(data_array[:, 0].astype(int))
-            f90 = fort_debug.wrapper_get_num_obs_agent(
-                data_array, num_agents_est
-            )
+            f90 = fort_debug.wrapper_get_num_obs_agent(data_array, num_agents_est)
 
             assert_almost_equal(py, f90)
 
@@ -1063,9 +1026,7 @@ class TestClass(object):
             args = [type_shares, np.array([edu_start])]
 
             py = get_conditional_probabilities(*args)
-            fort = fort_debug.wrapper_get_conditional_probabilities(
-                *args + [num_types]
-            )
+            fort = fort_debug.wrapper_get_conditional_probabilities(*args + [num_types])
 
             assert_almost_equal(np.sum(py), 1.0)
             assert_almost_equal(py, fort)
@@ -1099,8 +1060,6 @@ class TestClass(object):
             assert_equal(py[label], f90[i])
 
         py = sort_type_info(optim_paras, num_types)
-        f90 = fort_debug.wrapper_sort_type_info(
-            optim_paras["type_shares"], num_types
-        )
+        f90 = fort_debug.wrapper_sort_type_info(optim_paras["type_shares"], num_types)
         for i, label in enumerate(["order", "shares"]):
             assert_equal(py[label], f90[i])

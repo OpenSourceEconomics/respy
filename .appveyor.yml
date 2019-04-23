@@ -59,17 +59,17 @@ install:
         $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
       }
 
-  # Configure conda and install packages
+  # Configure conda
   - conda config --set always_yes yes --set changeps1 no
   - conda info -a
-  - conda env create -n respy -f environment.yml
-  - activate respy
 
   # Install respy
-  - pip install -e . -vv
+  - pip install -e . -vv --no-deps
+
+  - pip install tox-conda
 
   # Run tests
-  - pytest --cov=respy -vvv -s
+  - tox
 
 build: false
 

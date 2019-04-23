@@ -2,9 +2,8 @@
 """ This script compiles and executes the upgraded file that inspired the
 RESPY package.
 """
-
-import shutil
 import os
+import shutil
 from pathlib import Path
 
 
@@ -58,5 +57,5 @@ def main():
     os.system(cmd + "; ./dpml4a")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

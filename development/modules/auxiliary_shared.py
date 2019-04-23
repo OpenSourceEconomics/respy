@@ -1,16 +1,17 @@
 import argparse
-import numpy as np
 import os
 import random
 import socket
 import string
 import subprocess
 import sys
+from pathlib import Path
+from string import Formatter
+
+import numpy as np
 
 from development.modules.clsMail import MailCls
 from development.modules.config import PACKAGE_DIR
-from pathlib import Path
-from string import Formatter
 
 
 def update_class_instance(respy_obj, spec_dict):
@@ -67,9 +68,7 @@ def compile_package(is_debug=False):
     if not is_debug:
         subprocess.check_call(python_exec + " waf configure build", shell=True)
     else:
-        subprocess.check_call(
-            python_exec + " waf configure build --debug ", shell=True
-        )
+        subprocess.check_call(python_exec + " waf configure build --debug ", shell=True)
 
     os.chdir(cwd)
 
@@ -276,6 +275,4 @@ def get_random_dirname(length):
     TODO: Sensible length default.
 
     """
-    return "__" + "".join(
-        random.choice(string.ascii_lowercase) for _ in range(length)
-    )
+    return "__" + "".join(random.choice(string.ascii_lowercase) for _ in range(length))

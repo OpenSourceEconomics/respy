@@ -1,22 +1,20 @@
 """ This script allows to test alternative releases against each other that are supposed
 to lead to the same results for selected requests.
 """
-from datetime import timedelta
-from datetime import datetime
-
+import argparse
+import os
 import pickle as pkl
+import random
+import subprocess
+from datetime import datetime
+from datetime import timedelta
+
 import numpy as np
 
-import subprocess
-import argparse
-import random
-import os
-
-from respy import RespyCls
-
 from development.modules.auxiliary_release import prepare_release_tests
-from development.modules.auxiliary_shared import send_notification
 from development.modules.auxiliary_shared import cleanup
+from development.modules.auxiliary_shared import send_notification
+from respy import RespyCls
 
 SCRIPT_FNAME = "../../modules/auxiliary_release.py"
 
@@ -86,7 +84,7 @@ def run(request, is_create, is_background, old_release, new_release):
 
         # The idea is to have all elements that are hand-crafted for the release comparison in
         # the function below.
-        constr = dict()
+        constr = {}
         constr["flag_estimation"] = True
 
         prepare_release_tests(constr, old_release, new_release)

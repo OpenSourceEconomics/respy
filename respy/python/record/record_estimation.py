@@ -1,12 +1,13 @@
+import time
 from datetime import datetime
+
 import numpy as np
 import scipy
-import time
 
-from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
-from respy.python.shared.shared_auxiliary import extract_cholesky
-from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.record.record_warning import record_warning
+from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
+from respy.python.shared.shared_auxiliary import distribute_parameters
+from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 
@@ -177,7 +178,6 @@ def record_estimation_eval(opt_obj, fval, x_optim_all_unscaled, start):
         # matrix of the shock distribution.
         cond = []
         for i in range(3):
-            # shocks_cov = dist_econ_paras(x_econ_container[:, i].copy())[-3]
             shocks_cholesky = distribute_parameters(
                 x_econ_container[:, i], paras_type="econ"
             )["shocks_cholesky"]

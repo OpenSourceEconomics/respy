@@ -2,22 +2,18 @@ import numpy as np
 import pandas as pd
 
 from respy.python.record.record_simulation import record_simulation_progress
-from respy.python.simulate.simulate_auxiliary import (
-    get_random_choice_lagged_start,
-)
 from respy.python.record.record_simulation import record_simulation_start
-from respy.python.simulate.simulate_auxiliary import get_random_edu_start
 from respy.python.record.record_simulation import record_simulation_stop
-from respy.python.shared.shared_auxiliary import transform_disturbances
-from respy.python.simulate.simulate_auxiliary import get_random_types
-from respy.python.shared.shared_constants import (
-    HUGE_FLOAT,
-    DATA_LABELS_SIM,
-    DATA_FORMATS_SIM,
-)
 from respy.python.shared.shared_auxiliary import (
     get_continuation_value_and_ex_post_rewards,
 )
+from respy.python.shared.shared_auxiliary import transform_disturbances
+from respy.python.shared.shared_constants import DATA_FORMATS_SIM
+from respy.python.shared.shared_constants import DATA_LABELS_SIM
+from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.simulate.simulate_auxiliary import get_random_choice_lagged_start
+from respy.python.simulate.simulate_auxiliary import get_random_edu_start
+from respy.python.simulate.simulate_auxiliary import get_random_types
 
 
 def pyth_simulate(
@@ -50,8 +46,11 @@ def pyth_simulate(
     seed_sim : int
         Seed for the simulation.
     file_sim : ???
+        Undocumented parameter.
     edu_spec : dict
+        Information on education.
     optim_paras : dict
+        Parameters affected by optimization.
     is_debug : bool
         Flag for debugging modus.
 
@@ -71,21 +70,13 @@ def pyth_simulate(
 
     for period in range(state_space.num_periods):
         periods_draws_sims_transformed[period] = transform_disturbances(
-            periods_draws_sims[period],
-            np.zeros(4),
-            optim_paras["shocks_cholesky"],
+            periods_draws_sims[period], np.zeros(4), optim_paras["shocks_cholesky"]
         )
 
     # Get initial values of SCHOOLING, lagged choices and types for simulated agents.
-    initial_education = get_random_edu_start(
-        edu_spec, num_agents_sim, is_debug
-    )
+    initial_education = get_random_edu_start(edu_spec, num_agents_sim, is_debug)
     initial_types = get_random_types(
-        state_space.num_types,
-        optim_paras,
-        num_agents_sim,
-        initial_education,
-        is_debug,
+        state_space.num_types, optim_paras, num_agents_sim, initial_education, is_debug
     )
     initial_choice_lagged = get_random_choice_lagged_start(
         edu_spec, num_agents_sim, initial_education, is_debug
@@ -137,9 +128,7 @@ def pyth_simulate(
         # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
         # constructed cases.
         total_values[:, 2] = np.where(
-            current_states[:, 2] >= edu_spec["max"],
-            -HUGE_FLOAT,
-            total_values[:, 2],
+            current_states[:, 2] >= edu_spec["max"], -HUGE_FLOAT, total_values[:, 2]
         )
 
         # Determine optimal choice.
@@ -148,10 +137,7 @@ def pyth_simulate(
         # Record wages. Expand matrix with NaNs for choice 2 and 3 for easier indexing.
         wages = (
             np.column_stack(
-                (
-                    state_space.rewards[ks, -2:],
-                    np.full((num_agents_sim, 2), np.nan),
-                )
+                (state_space.rewards[ks, -2:], np.full((num_agents_sim, 2), np.nan))
             )
             * draws
         )
@@ -200,7 +186,6 @@ def pyth_simulate(
         .reset_index(drop=True)
     )
 
-    # TODO: Replace logging which is useless here and kept only for successful testing.
     for i in range(num_agents_sim):
         record_simulation_progress(i, file_sim)
     record_simulation_stop(file_sim)

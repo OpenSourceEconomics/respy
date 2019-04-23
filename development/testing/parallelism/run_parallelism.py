@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 """Module to test the parallel implementations of the model."""
 import argparse
-import numpy as np
-
 from datetime import datetime
 from datetime import timedelta
+
+import numpy as np
+
 from respy import RespyCls
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
@@ -38,9 +39,7 @@ def run(hours):
                 options_spec["program"]["procs"] = 1
             else:
                 if IS_PARALLELISM_OMP:
-                    options_spec["program"]["threads"] = np.random.randint(
-                        2, 5
-                    )
+                    options_spec["program"]["threads"] = np.random.randint(2, 5)
                 if IS_PARALLELISM_MPI:
                     options_spec["program"]["procs"] = np.random.randint(2, 5)
 

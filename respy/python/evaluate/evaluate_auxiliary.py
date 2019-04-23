@@ -1,24 +1,23 @@
 """Auxiliary functions for the evaluation of the likelihood."""
 import numpy as np
+from numba import guvectorize
+from numba import vectorize
 
-from numba import guvectorize, vectorize
-from respy.python.shared.shared_constants import (
-    HUGE_FLOAT,
-    INADMISSIBILITY_PENALTY,
-)
+from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
 
 
 @vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
-def clip(x, min_=None, max_=None):
+def clip(x, minimum=None, maximum=None):
     """Clip (limit) input value.
 
     Parameters
     ----------
     x : float
         Value to be clipped.
-    min_ : float
+    minimum : float
         Lower limit.
-    max_ : float
+    maximum : float
         Upper limit.
 
     Returns
@@ -27,10 +26,10 @@ def clip(x, min_=None, max_=None):
         Clipped value.
 
     """
-    if min_ is not None and x < min_:
-        return min_
-    elif max_ is not None and x > max_:
-        return max_
+    if minimum is not None and x < minimum:
+        return minimum
+    elif maximum is not None and x > maximum:
+        return maximum
     else:
         return x
 
@@ -42,15 +41,7 @@ def clip(x, min_=None, max_=None):
     target="parallel",
 )
 def simulate_probability_of_agents_observed_choice(
-    wages,
-    rewards_systematic,
-    emaxs,
-    draws,
-    delta,
-    max_education,
-    idx,
-    tau,
-    prob_choice,
+    wages, rewards_systematic, emaxs, draws, delta, max_education, idx, tau, prob_choice
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -95,9 +86,7 @@ def simulate_probability_of_agents_observed_choice(
 
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = (
-                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
-                )
+                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
@@ -128,7 +117,7 @@ def simulate_probability_of_agents_observed_choice(
 def get_pdf_of_normal_distribution(x, mu, sigma):
     """Compute the probability of ``x`` under a normal distribution.
 
-    This implementation is faster than calling :func:`scipy.stats.norm.pdf`.
+    This implementation is faster than calling ``scipy.stats.norm.pdf``.
 
     Parameters
     ----------
@@ -243,9 +232,7 @@ def create_draws_and_prob_wages(
             temp_draws[:, 1] = (dist - sc[1, 0] * draws_stan[:, 0]) / sc[1, 1]
 
             means = sc[1, 0] * draws_stan[:, 0]
-            prob_wages[:] = get_pdf_of_normal_distribution(
-                dist, means, sc[1, 1]
-            )
+            prob_wages[:] = get_pdf_of_normal_distribution(dist, means, sc[1, 1])
 
         temp_draws[:, 2:] = draws_stan[:, 2:]
 

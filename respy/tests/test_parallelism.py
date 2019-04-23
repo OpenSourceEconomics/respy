@@ -1,14 +1,12 @@
 import numpy as np
 import pytest
 
+from respy import RespyCls
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-
-from respy.tests.codes.random_model import generate_random_model
-from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.auxiliary import compare_est_log
-
-from respy import RespyCls
+from respy.tests.codes.auxiliary import simulate_observed
+from respy.tests.codes.random_model import generate_random_model
 
 
 @pytest.mark.skipif(
@@ -23,30 +21,29 @@ class TestClass(object):
         """
         # Generate random initialization file
         constr = {
-            'program': {'version': 'fortran'},
-            'estimation': {'maxfun': np.random.randint(0, 50)},
+            "program": {"version": "fortran"},
+            "estimation": {"maxfun": np.random.randint(0, 50)},
         }
 
         params_spec, options_spec = generate_random_model(point_constr=constr)
 
         # If delta is a not fixed, we need to ensure a bound-constraint optimizer.
-        # However, this is not the standard flag_estimation as the number of function evaluation
-        # is possibly much larger to detect and differences in the updates of the optimizer
-        # steps depending on the implementation.
-        if params_spec.loc[('delta', 'delta'), 'fixed'] == False:
-            options_spec['estimation']['optimizer'] = 'FORT-BOBYQA'
+        # However, this is not the standard flag_estimation as the number of function
+        # evaluation is possibly much larger to detect and differences in the updates of
+        # the optimizer steps depending on the implementation.
+        if params_spec.loc[("delta", "delta"), "fixed"] is False:
+            options_spec["estimation"]["optimizer"] = "FORT-BOBYQA"
 
         base = None
         for is_parallel in [True, False]:
-            options_spec['program']['threads'] = 1
-            options_spec['program']['procs'] = 1
+            options_spec["program"]["threads"] = 1
+            options_spec["program"]["procs"] = 1
 
             if is_parallel:
                 if IS_PARALLELISM_OMP:
-                    options_spec['program']["threads"] = np.random.randint(2, 5)
+                    options_spec["program"]["threads"] = np.random.randint(2, 5)
                 if IS_PARALLELISM_MPI:
-                    options_spec['program']["procs"] = np.random.randint(2, 5)
-
+                    options_spec["program"]["procs"] = np.random.randint(2, 5)
 
             respy_obj = RespyCls(params_spec, options_spec)
             respy_obj = simulate_observed(respy_obj)
@@ -59,13 +56,13 @@ class TestClass(object):
     def test_2(self):
         """ This test ensures that the record files are identical.
         """
-        # Generate random initialization file. The number of periods is higher than usual as only
-        # FORTRAN implementations are used to solve the random request. This ensures that also
-        # some cases of interpolation are explored.
+        # Generate random initialization file. The number of periods is higher than
+        # usual as only FORTRAN implementations are used to solve the random request.
+        # This ensures that also some cases of interpolation are explored.
         constr = {
-            'program': {'version': 'fortran'},
-            'num_periods': np.random.randint(3, 10),
-            'estimation': {'maxfun': 0}
+            "program": {"version": "fortran"},
+            "num_periods": np.random.randint(3, 10),
+            "estimation": {"maxfun": 0},
         }
 
         params_spec, options_spec = generate_random_model(point_constr=constr)
@@ -75,14 +72,14 @@ class TestClass(object):
 
         for is_parallel in [False, True]:
 
-            options_spec['program']["threads"] = 1
-            options_spec['program']["procs"] = 1
+            options_spec["program"]["threads"] = 1
+            options_spec["program"]["procs"] = 1
 
             if is_parallel:
                 if IS_PARALLELISM_OMP:
-                    options_spec['program']["threads"] = np.random.randint(2, 5)
+                    options_spec["program"]["threads"] = np.random.randint(2, 5)
                 if IS_PARALLELISM_MPI:
-                    options_spec['program']["procs"] = np.random.randint(2, 5)
+                    options_spec["program"]["procs"] = np.random.randint(2, 5)
 
             respy_obj = RespyCls(params_spec, options_spec)
 

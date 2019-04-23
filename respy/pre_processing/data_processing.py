@@ -1,15 +1,13 @@
 import pandas as pd
 
-from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.pre_processing.data_checking import check_estimation_dataset
+from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_constants import DATA_FORMATS_EST
 from respy.python.shared.shared_constants import DATA_LABELS_EST
 
 
 def process_dataset(respy_obj):
     """Process the dataset from disk."""
-    # TODO: we should make this function more robust by sorting the columns and rows of
-    # the dataframe in the order we need for the likelihood function.
     num_agents_est, file_est, edu_spec, num_periods = dist_class_attributes(
         respy_obj, "num_agents_est", "file_est", "edu_spec", "num_periods"
     )

@@ -1,16 +1,15 @@
-from datetime import datetime
 import datetime as dt
-import shlex
 import os
-
-from development.modules.auxiliary_shared import update_class_instance
-from development.modules.auxiliary_shared import aggregate_information
-from development.modules.auxiliary_shared import send_notification
-from development.modules.auxiliary_shared import strfdelta
-from development.modules.auxiliary_shared import cleanup
-from development.modules.config import SPEC_DIR
+import shlex
+from datetime import datetime
 
 import respy
+from development.modules.auxiliary_shared import aggregate_information
+from development.modules.auxiliary_shared import cleanup
+from development.modules.auxiliary_shared import send_notification
+from development.modules.auxiliary_shared import strfdelta
+from development.modules.auxiliary_shared import update_class_instance
+from development.modules.config import SPEC_DIR
 
 
 def run(spec_dict):

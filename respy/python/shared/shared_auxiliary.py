@@ -1,18 +1,19 @@
-import numpy as np
-
 import linecache
-import shlex
 import os
+import shlex
 
-from respy.python.shared.shared_constants import MISSING_FLOAT
-from respy.python.record.record_warning import record_warning
-from respy.python.shared.shared_constants import PRINT_FLOAT
-from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_constants import TINY_FLOAT
+import numpy as np
+from numba import guvectorize
+from numba import njit
+
 from respy.custom_exceptions import MaxfunError
 from respy.custom_exceptions import UserError
-from numba import guvectorize, njit
+from respy.python.record.record_warning import record_warning
+from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import INADMISSIBILITY_PENALTY
+from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.shared.shared_constants import PRINT_FLOAT
+from respy.python.shared.shared_constants import TINY_FLOAT
 
 
 def get_log_likl(contribs):
@@ -36,9 +37,7 @@ def get_log_likl(contribs):
     return crit_val
 
 
-def distribute_parameters(
-    paras_vec, is_debug=False, info=None, paras_type="optim"
-):
+def distribute_parameters(paras_vec, is_debug=False, info=None, paras_type="optim"):
     """Parse the parameter vector into a dictionary of model quantities.
 
     Parameters
@@ -47,7 +46,8 @@ def distribute_parameters(
         1d numpy array with the parameters
     is_debug : bool
         If true, the parameters are checked for validity
-    info : ????
+    info : ???
+        Unknown argument.
     paras_type : str
         one of ['econ', 'optim']. A paras_vec of type 'econ' contains the the standard
         deviations and covariances of the shock distribution. This is how parameters are
@@ -96,14 +96,17 @@ def distribute_parameters(
 def get_optim_paras(paras_dict, num_paras, which, is_debug):
     """Stack optimization parameters from a dictionary into a vector of type 'optim'.
 
-    Args:
-        paras_dict (dict): dictionary with quantities from which the parameters can be
-            extracted.
-        num_paras (int): number of parameters in the model (not only free parameters)
-        which (str): one of ['free', 'all'], determines whether the resulting parameter
-            vector contains only free parameters or all parameters.
-        is_debug (bool): If True, inputs and outputs are checked for consistency.
-
+    Parameters
+    ----------
+    paras_dict : dict
+        dictionary with quantities from which the parameters can be extracted.
+    num_paras : int
+        number of parameters in the model (not only free parameters)
+    which : str
+        one of ['free', 'all'], determines whether the resulting parameter vector
+        contains only free parameters or all parameters.
+    is_debug : bool
+        If True, inputs and outputs are checked for consistency.
 
     """
     if is_debug:
@@ -116,10 +119,7 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     start, stop = pinfo["delta"]["start"], pinfo["delta"]["stop"]
     x[start:stop] = paras_dict["delta"]
 
-    start, stop = (
-        pinfo["coeffs_common"]["start"],
-        pinfo["coeffs_common"]["stop"],
-    )
+    start, stop = (pinfo["coeffs_common"]["start"], pinfo["coeffs_common"]["stop"])
     x[start:stop] = paras_dict["coeffs_common"]
 
     start, stop = pinfo["coeffs_a"]["start"], pinfo["coeffs_a"]["stop"]
@@ -134,10 +134,7 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
     start, stop = pinfo["coeffs_home"]["start"], pinfo["coeffs_home"]["stop"]
     x[start:stop] = paras_dict["coeffs_home"]
 
-    start, stop = (
-        pinfo["shocks_coeffs"]["start"],
-        pinfo["shocks_coeffs"]["stop"],
-    )
+    start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
     x[start:stop] = paras_dict["shocks_cholesky"][np.tril_indices(4)]
 
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
@@ -150,9 +147,7 @@ def get_optim_paras(paras_dict, num_paras, which, is_debug):
         _check_optimization_parameters(x)
 
     if which == "free":
-        x = [
-            x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]
-        ]
+        x = [x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]]
         x = np.array(x)
 
     return x
@@ -193,16 +188,14 @@ def get_conditional_probabilities(type_shares, initial_level_of_education):
     Parameters
     ----------
     type_shares : np.ndarray
+        Undocumented parameter.
     initial_level_of_education : np.ndarray
         Array with shape (num_obs,) containing initial levels of education.
 
     """
     type_shares = type_shares.reshape(-1, 2)
     covariates = np.column_stack(
-        (
-            np.ones(initial_level_of_education.shape[0]),
-            initial_level_of_education > 9,
-        )
+        (np.ones(initial_level_of_education.shape[0]), initial_level_of_education > 9)
     )
     probs = np.exp(covariates.dot(type_shares.T))
     probs /= probs.sum(axis=1, keepdims=True)
@@ -236,10 +229,7 @@ def extract_cholesky(x, info=None):
     """Extract the cholesky factor of the shock covariance from parameters of type
     'optim."""
     pinfo = paras_parsing_information(len(x))
-    start, stop = (
-        pinfo["shocks_coeffs"]["start"],
-        pinfo["shocks_coeffs"]["stop"],
-    )
+    start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
     shocks_coeffs = x[start:stop]
     dim = number_of_triangular_elements_to_dimensio(len(shocks_coeffs))
     shocks_cholesky = np.zeros((dim, dim))
@@ -371,9 +361,7 @@ def get_continuation_value_and_ex_post_rewards(
     for i in range(num_draws):
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = (
-                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
-                )
+                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
@@ -401,7 +389,7 @@ def get_continuation_value(
     """Calculate the continuation value.
 
     This function is a reduced version of
-    :func:`get_continutation_value_and_ex_post_rewards` which does not return ex post
+    ``get_continutation_value_and_ex_post_rewards`` which does not return ex post
     rewards. The reason is that a second return argument doubles runtime whereas it is
     only needed during simulation.
 
@@ -412,9 +400,7 @@ def get_continuation_value(
     for i in range(num_draws):
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = (
-                    wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
-                )
+                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
             else:
                 rew_ex = rewards_systematic[j] + draws[i, j]
 
@@ -537,9 +523,7 @@ def add_solution(
 ):
     """Add solution to class instance."""
     respy_obj.unlock()
-    respy_obj.set_attr(
-        "periods_rewards_systematic", periods_rewards_systematic
-    )
+    respy_obj.set_attr("periods_rewards_systematic", periods_rewards_systematic)
     respy_obj.set_attr("states_number_period", states_number_period)
     respy_obj.set_attr("mapping_state_idx", mapping_state_idx)
     respy_obj.set_attr("periods_emax", periods_emax)
@@ -562,7 +546,7 @@ def replace_missing_values(arguments):
     if isinstance(arguments, np.ndarray):
         arguments = (arguments,)
 
-    rslt = tuple()
+    rslt = ()
 
     for argument in arguments:
         # Transform to float array to evaluate missing values.
@@ -622,9 +606,7 @@ def check_model_parameters(optim_paras):
 
     # Checks shock matrix
     assert optim_paras["shocks_cholesky"].shape == (4, 4)
-    np.allclose(
-        optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"])
-    )
+    np.allclose(optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"]))
 
     # Checks for type shares
     assert optim_paras["type_shares"].size == num_types * 2
@@ -737,7 +719,7 @@ def get_est_info():
 
     # Initialize container and ensure a fresh start processing the file
     linecache.clearcache()
-    rslt = dict()
+    rslt = {}
 
     # Value of the criterion function
     line = shlex.split(linecache.getline("est.respy.info", 6))

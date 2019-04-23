@@ -1,14 +1,14 @@
 import fileinput
-import shlex
 import glob
+import importlib
+import os
+import shlex
+import shutil
 import sys
 from datetime import datetime
-
-import importlib
-import numpy as np
-import os
-import shutil
 from pathlib import Path
+
+import numpy as np
 
 # RESPY directory. This allows to compile_ the debug version of the FORTRAN
 # program.

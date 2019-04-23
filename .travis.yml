@@ -32,21 +32,22 @@ matrix:
 install:
     - sudo apt-get install -y -q mpich libmpich-dev
 
-    # Install, configure conda and install packages
+    # Install and configure conda
     - wget https://repo.continuum.io/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O miniconda.sh
     - bash miniconda.sh -b -p /home/travis/miniconda
     - export PATH=/home/travis/miniconda/bin:$PATH
     - conda config --set always_yes yes --set changeps1 no
     - conda info -a
 
-    - conda env create -n respy -f environment.yml
-    - source activate respy
-
+    # Install Numpy for compilation
+    - conda install numpy
     # Install respy
-    - pip install -e . -vv
+    - pip install -e . -vv --no-deps
+
+    - pip install tox-conda
 
 script:
-    - travis_wait 45 pytest --cov=respy -vvv -s
+    - travis_wait 45 tox -e pytest
 
 after_success:
     - if  [ $CI_FORTRAN ] || \

@@ -1,15 +1,16 @@
 import numpy as np
 import pandas as pd
-from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_EST_PYTH
+
+from respy.custom_exceptions import UserError
 from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.shared.shared_constants import PRINT_FLOAT
-from respy.custom_exceptions import UserError
 from respy.python.shared.shared_auxiliary import replace_missing_values
+from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_constants import IS_FORTRAN
+from respy.python.shared.shared_constants import OPT_EST_FORT
+from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import PRINT_FLOAT
 
 
 def check_model_attributes(attr_dict):
@@ -130,7 +131,7 @@ def check_model_attributes(attr_dict):
 
     all_free = not shocks_fixed.any()
 
-    dim = len(a['optim_paras']['shocks_cholesky'])
+    dim = len(a["optim_paras"]["shocks_cholesky"])
     helper = np.zeros((dim, dim))
     helper[np.tril_indices(dim)] = shocks_coeffs
     off_diagonals_zero = np.diag(helper).sum() == helper.sum()
@@ -164,13 +165,6 @@ def check_model_attributes(attr_dict):
             assert abs(upper) < PRINT_FLOAT
         if (upper is not None) and (lower is not None):
             assert upper >= lower
-
-        # todo: add this condition again, when we introduce estimation of covariances
-        # todo: and not only their cholesky factors
-        # At this point no bounds for the elements of the covariance matrix
-        # are allowed.
-        # if i in range(43, 53):
-        #     assert a["optim_paras"]["paras_bounds"][i] == [None, None]
 
     _check_optimizer_options(a["optimizer_options"])
 
@@ -254,7 +248,7 @@ def check_model_solution(attr_dict):
 
         # Check the number of states in the first time period.
         num_states_start = num_types * num_initial * 2
-        assert np.sum(np.isfinite(mapping_state_idx[0, :, :, :, :])) == num_states_start
+        assert np.sum(np.isfinite(mapping_state_idx[0])) == num_states_start
 
         # Check that mapping is defined for all possible realizations of
         # the state space by period. Check that mapping is not defined for
@@ -272,8 +266,8 @@ def check_model_solution(attr_dict):
                 is_infinite[
                     period, index[0], index[1], index[2], index[3] - 1, index[4]
                 ] = True
-        assert np.all(np.isfinite(mapping_state_idx[is_infinite == True]))
-        assert np.all(np.isfinite(mapping_state_idx[is_infinite == False])) == False
+        assert np.all(np.isfinite(mapping_state_idx[is_infinite]))
+        assert not np.all(np.isfinite(mapping_state_idx[~is_infinite]))
 
         # Check the calculated systematic rewards (finite for admissible values
         # and infinite rewards otherwise).
@@ -282,14 +276,9 @@ def check_model_solution(attr_dict):
             for k in range(states_number_period[period]):
                 assert np.all(np.isfinite(periods_rewards_systematic[period, k, :]))
                 is_infinite[period, k, :] = True
-            assert np.all(np.isfinite(periods_rewards_systematic[is_infinite == True]))
+            assert np.all(np.isfinite(periods_rewards_systematic[is_infinite]))
             if num_periods > 1:
-                assert (
-                    np.all(
-                        np.isfinite(periods_rewards_systematic[is_infinite == False])
-                    )
-                    == False
-                )
+                assert not np.all(np.isfinite(periods_rewards_systematic[~is_infinite]))
 
         # Check the expected future value (finite for admissible values
         # and infinite rewards otherwise).
@@ -298,11 +287,11 @@ def check_model_solution(attr_dict):
             for k in range(states_number_period[period]):
                 assert np.all(np.isfinite(periods_emax[period, k]))
                 is_infinite[period, k] = True
-            assert np.all(np.isfinite(periods_emax[is_infinite == True]))
+            assert np.all(np.isfinite(periods_emax[is_infinite]))
             if num_periods == 1:
-                assert len(periods_emax[is_infinite == False]) == 0
+                assert len(periods_emax[~is_infinite]) == 0
             else:
-                assert np.all(np.isfinite(periods_emax[is_infinite == False])) == False
+                assert not np.all(np.isfinite(periods_emax[~is_infinite]))
 
 
 def _check_optimizer_options(optimizer_options):

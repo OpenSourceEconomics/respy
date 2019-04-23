@@ -2,23 +2,24 @@
 further development and refactoring efforts.
 """
 from __future__ import print_function
+
 import argparse
 import multiprocessing as mp
-import numpy as np
-import socket
 import pickle
-from development.modules.auxiliary_shared import send_notification
-from development.modules.auxiliary_shared import compile_package
-from development.modules.auxiliary_regression import create_single
-from development.modules.auxiliary_regression import check_single
-from development.modules.auxiliary_regression import get_chunks
+import socket
 from functools import partial
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+
+import numpy as np
+
+from development.modules.auxiliary_regression import check_single
+from development.modules.auxiliary_regression import create_single
+from development.modules.auxiliary_regression import get_chunks
+from development.modules.auxiliary_shared import compile_package
+from development.modules.auxiliary_shared import send_notification
+from respy.pre_processing.model_processing import _options_spec_from_attributes
+from respy.pre_processing.model_processing import _params_spec_from_attributes
 from respy.python.shared.shared_constants import DECIMALS
-from respy.pre_processing.model_processing import (
-    _options_spec_from_attributes,
-    _params_spec_from_attributes,
-)
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.tests.codes.auxiliary import simulate_observed
 
 
@@ -131,9 +132,7 @@ def run(request, is_compile, is_background, is_strict, num_procs):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(
-        description="Create or check regression vault"
-    )
+    parser = argparse.ArgumentParser(description="Create or check regression vault")
 
     parser.add_argument(
         "--request",

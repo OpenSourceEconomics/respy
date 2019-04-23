@@ -1,15 +1,20 @@
-import numpy as np
 import os
-from os.path import join, exists
-from shutil import rmtree, copy
-from time import time
-from respy.tests.codes.random_model import generate_random_model
-from respy.pre_processing.model_processing import write_out_model_spec
-from respy import RespyCls
-from datetime import timedelta, datetime
 import traceback
+from datetime import datetime
+from datetime import timedelta
 from functools import partial
 from multiprocessing import Pool
+from os.path import exists
+from os.path import join
+from shutil import copy
+from shutil import rmtree
+from time import time
+
+import numpy as np
+
+from respy import RespyCls
+from respy.pre_processing.model_processing import write_out_model_spec
+from respy.tests.codes.random_model import generate_random_model
 
 # import random_init
 
@@ -39,7 +44,7 @@ def run_robustness_test(seed, is_investigation):
     # that anyone in the estimation sample has a value larger then the specified maximum
     # value.
     version = np.random.choice(["python", "fortran"])
-    if version == 'python':
+    if version == "python":
         max_periods = 3
     else:
         max_periods = 10
@@ -52,18 +57,20 @@ def run_robustness_test(seed, is_investigation):
         "num_periods": num_periods,
         "edu_spec": {
             "start": [int(edu_start)],
-            "max": np.random.randint(edu_start + num_periods, 30)},
-        "estimation": {"file": "career_data.respy.dat",
-                       "agents": agents,
-                       "maxfun": np.random.randint(1, 5)
-                       },
-        "program": {"version": version}
+            "max": np.random.randint(edu_start + num_periods, 30),
+        },
+        "estimation": {
+            "file": "career_data.respy.dat",
+            "agents": agents,
+            "maxfun": np.random.randint(1, 5),
+        },
+        "program": {"version": version},
     }
 
-    if version == 'fortran':
-        constr['estimation']['optimizer'] = 'FORT-BOBYQA'
-    if version == 'python':
-        constr['estimation']['optimizer'] = "SCIPY-LBFGSB"
+    if version == "fortran":
+        constr["estimation"]["optimizer"] = "FORT-BOBYQA"
+    if version == "python":
+        constr["estimation"]["optimizer"] = "SCIPY-LBFGSB"
 
     params_spec, options_spec = generate_random_model(point_constr=constr)
 

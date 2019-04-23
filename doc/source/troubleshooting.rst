@@ -1,3 +1,0 @@
-.. Note::
-    
-    In case you have just installed python in order to test and use the ``respy`` package make sure your interpreter is using the correct python version/installation. In case your system is using a basic python installation on your machine as a default, the attempt to import the respy package might result in en error. To resolve, point your interpreter to your current python installation. The ``respy`` package has been installed there.

@@ -1,20 +1,24 @@
+from functools import partial
+
 import numpy as np
+import pytest
+from numba import njit
+from pandas.testing import assert_series_equal
+
+from respy import RespyCls
+from respy.pre_processing.model_processing import _read_options_spec
+from respy.pre_processing.model_processing import _read_params_spec
+from respy.python.evaluate.evaluate_python import create_draws_and_prob_wages
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.tests.codes.random_model import generate_random_model
-from respy.pre_processing.model_processing import _read_options_spec, _read_params_spec
-from respy import RespyCls
-from pandas.testing import assert_series_equal
-from respy.python.solve.solve_auxiliary import StateSpace
 from respy.python.shared.shared_auxiliary import (
     get_continuation_value_and_ex_post_rewards,
 )
-from respy.python.evaluate.evaluate_python import create_draws_and_prob_wages
-from respy.python.shared.shared_constants import DECIMALS, MISSING_FLOAT
-from functools import partial
-import pytest
-from numba import njit
+from respy.python.shared.shared_auxiliary import get_optim_paras
+from respy.python.shared.shared_constants import DECIMALS
+from respy.python.shared.shared_constants import MISSING_FLOAT
+from respy.python.solve.solve_auxiliary import StateSpace
+from respy.tests.codes.random_model import generate_random_model
 
 
 assert_almost_equal = partial(np.testing.assert_almost_equal, decimal=DECIMALS)
@@ -27,7 +31,7 @@ class TestClass(object):
     def test_1(self):
         """ Testing whether back-and-forth transformation have no effect.
         """
-        for i in range(10):
+        for _ in range(10):
             num_types = np.random.randint(1, 5)
             num_paras = 53 + (num_types - 1) * 6
 
@@ -37,7 +41,7 @@ class TestClass(object):
             x = base.copy()
 
             # Apply numerous transformations
-            for j in range(10):
+            for _ in range(10):
                 optim_paras = distribute_parameters(x, is_debug=True)
                 args = (optim_paras, num_paras, "all", True)
                 x = get_optim_paras(*args)

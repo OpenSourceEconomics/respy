@@ -1,17 +1,18 @@
 #!/usr/bin/env python
-from statsmodels.tools.eval_measures import rmse
-import numpy as np
 import argparse
-import shutil
 import os
+import shutil
 
-from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.simulate.simulate_auxiliary import format_float
-from respy.pre_processing.data_processing import process_dataset
-from respy.scripts.scripts_update import scripts_update
-from respy.custom_exceptions import UserError
+import numpy as np
+from statsmodels.tools.eval_measures import rmse
+
 from respy import RespyCls
+from respy.custom_exceptions import UserError
+from respy.pre_processing.data_processing import process_dataset
+from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
+from respy.python.simulate.simulate_auxiliary import format_float
+from respy.scripts.scripts_update import scripts_update
 
 
 def dist_input_arguments(parser):
@@ -36,8 +37,8 @@ def dist_input_arguments(parser):
 
 
 def _prepare_initial(data_obs, data_sim, num_agents_est, num_agents_sim):
-    """ This function prepares the information about the distribution of initial schooling levels
-    in both datasets.
+    """ This function prepares the information about the distribution of initial
+    schooling levels in both datasets.
     """
     # First we want to construct a fill list of available initial schooling levels
     obs_info = data_obs["Years_Schooling"][:, 0].value_counts().to_dict()
@@ -46,8 +47,8 @@ def _prepare_initial(data_obs, data_sim, num_agents_est, num_agents_sim):
 
     infos = []
     for level in initial_levels:
-        # We need to account for the possibility that a particular initial level of schooling
-        # is only present in one of the datasets.
+        # We need to account for the possibility that a particular initial level of
+        # schooling is only present in one of the datasets.
         info = [level, None, None]
 
         if level in obs_info.keys():
@@ -69,7 +70,7 @@ def _prepare_wages(data_obs, data_sim, which):
     else:
         choice_ind = 2
 
-    rslt = dict()
+    rslt = {}
     for label in ["Observed", "Simulated"]:
         rslt[label] = []
         if label == "Observed":
@@ -85,10 +86,10 @@ def _prepare_wages(data_obs, data_sim, which):
 
 
 def _prepare_choices(data_obs, data_sim):
-    """ This function prepares the information about the choice probabilities for easy printing.
-    """
-    rslt_full = dict()
-    rslt_shares = dict()
+    """This function prepares the information about the choice probabilities for easy
+    printing."""
+    rslt_full = {}
+    rslt_shares = {}
 
     for label in ["Observed", "Simulated"]:
 
@@ -116,8 +117,8 @@ def _prepare_choices(data_obs, data_sim):
 
 
 def scripts_compare(base_init, is_update):
-    """ Construct some model fit statistics by comparing the observed and simulated dataset.
-    """
+    """Construct some model fit statistics by comparing the observed and simulated
+    dataset."""
     # In case of updating, we create a new initialization file that contains the updated
     # parameter values.
     if is_update:
@@ -136,8 +137,9 @@ def scripts_compare(base_init, is_update):
         respy_obj, "num_periods", "num_agents_est", "num_agents_sim"
     )
 
-    # The comparison does make sense when the file of the simulated dataset and estimation dataset
-    # are the same. Then the estimation dataset is overwritten by the simulated dataset.
+    # The comparison does make sense when the file of the simulated dataset and
+    # estimation dataset are the same. Then the estimation dataset is overwritten by the
+    # simulated dataset.
     fname_est = respy_obj.attr["file_est"].split(".")[0]
     fname_sim = respy_obj.attr["file_sim"].split(".")[0]
     if fname_est == fname_sim:

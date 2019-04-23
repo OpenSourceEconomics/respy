@@ -1,6 +1,8 @@
-import pandas as pd
-from os.path import join, dirname
+from os.path import dirname
+from os.path import join
+
 import numpy as np
+import pandas as pd
 
 
 def csv_template(num_types, save_path=None, initialize_coeffs=True):

@@ -1,7 +1,7 @@
-from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.evaluate.evaluate_python import pyth_contributions
 from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_log_likl
+from respy.python.solve.solve_auxiliary import pyth_backward_induction
 
 
 def pyth_criterion(
@@ -33,11 +33,7 @@ def pyth_criterion(
     )
 
     contribs = pyth_contributions(
-        state_space,
-        data,
-        periods_draws_prob,
-        tau,
-        optim_paras,
+        state_space, data, periods_draws_prob, tau, optim_paras
     )
 
     crit_val = get_log_likl(contribs)

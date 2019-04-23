@@ -2,8 +2,8 @@
 import argparse
 import os
 
-from respy.custom_exceptions import UserError
 from respy import RespyCls
+from respy.custom_exceptions import UserError
 
 
 def dist_input_arguments(parser):

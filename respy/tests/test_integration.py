@@ -1,10 +1,11 @@
 import copy
+import random
+
 import numpy as np
 import pandas as pd
 import pytest
-import random
-
 from pandas.util.testing import assert_frame_equal
+
 from respy import RespyCls
 from respy.custom_exceptions import UserError
 from respy.pre_processing.data_processing import process_dataset
@@ -57,10 +58,7 @@ class TestClass(object):
                 base = periods_emax.copy()
 
             diff = np.max(
-                abs(
-                    np.ma.masked_invalid(base)
-                    - np.ma.masked_invalid(periods_emax)
-                )
+                abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(periods_emax))
             )
             np.testing.assert_almost_equal(diff, 0.0)
 
@@ -112,9 +110,7 @@ class TestClass(object):
             if base_val is None:
                 base_val = crit_val
 
-            np.testing.assert_allclose(
-                base_val, crit_val, rtol=1e-03, atol=1e-03
-            )
+            np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
     def test_4(self):
         """ Test the evaluation of the criterion function for random requests, not just
@@ -154,9 +150,7 @@ class TestClass(object):
                 "estimation": {"maxfun": 0, "agents": num_agents},
             }
             # Simulate a dataset
-            params_spec, options_spec = generate_random_model(
-                point_constr=constr
-            )
+            params_spec, options_spec = generate_random_model(point_constr=constr)
             respy_obj = RespyCls(params_spec, options_spec)
             simulate_observed(respy_obj)
 
@@ -168,9 +162,7 @@ class TestClass(object):
             respy_obj.fit()
 
             # Potentially evaluate at different points.
-            params_spec, options_spec = generate_random_model(
-                point_constr=constr
-            )
+            params_spec, options_spec = generate_random_model(point_constr=constr)
             respy_obj = RespyCls(params_spec, options_spec)
 
             single = np.random.choice([True, False])
@@ -186,10 +178,7 @@ class TestClass(object):
         constr = {
             "simulation": {"agents": num_agents},
             "num_periods": np.random.randint(1, 4),
-            "estimation": {
-                "maxfun": np.random.randint(0, 5),
-                "agents": num_agents,
-            },
+            "estimation": {"maxfun": np.random.randint(0, 5), "agents": num_agents},
         }
 
         # Simulate a dataset
@@ -221,7 +210,7 @@ class TestClass(object):
         params_spec, options_spec = generate_random_model(deterministic=True)
 
         # Manual specification of update patterns.
-        updates = dict()
+        updates = {}
 
         # off-diagonals fixed
         updates["valid_1"] = [
@@ -296,10 +285,7 @@ class TestClass(object):
         respy_obj = RespyCls(params_spec, options_spec)
         simulate_observed(respy_obj)
 
-        base_val, edu_start_base = (
-            None,
-            np.random.randint(1, 5, size=1).tolist()[0],
-        )
+        base_val, edu_start_base = (None, np.random.randint(1, 5, size=1).tolist()[0])
 
         # We need to ensure that the initial lagged activity always has the same
         # distribution.
@@ -309,12 +295,8 @@ class TestClass(object):
 
             # We always need to ensure that a weight of one is on the first level of
             # initial schooling.
-            options_spec["edu_spec"]["share"] = [1.0] + [0.0] * (
-                num_edu_start - 1
-            )
-            options_spec["edu_spec"]["lagged"] = edu_lagged_base[
-                :num_edu_start
-            ]
+            options_spec["edu_spec"]["share"] = [1.0] + [0.0] * (num_edu_start - 1)
+            options_spec["edu_spec"]["lagged"] = edu_lagged_base[:num_edu_start]
 
             # We need to make sure that the baseline level of initial schooling is
             # always included. At the same time we cannot have any duplicates.
@@ -344,8 +326,6 @@ class TestClass(object):
         original Keane & Wolpin data. We create an additional initialization files that
         include numerous types and initial conditions.
 
-        TODO: Parametrize.
-
         """
         # This ensures that the experience effect is taken care of properly.
         open(".restud.respy.scratch", "w").close()
@@ -364,8 +344,7 @@ class TestClass(object):
 
         # Evaluate criterion function at true values.
         respy_obj = RespyCls(
-            str(base_path.with_suffix(".csv")),
-            str(base_path.with_suffix(".json")),
+            str(base_path.with_suffix(".csv")), str(base_path.with_suffix(".json"))
         )
 
         respy_obj.unlock()
@@ -396,9 +375,7 @@ class TestClass(object):
             "interpolation": {"flag": False},
         }
 
-        params_spec, options_spec = generate_random_model(
-            point_constr=point_constr
-        )
+        params_spec, options_spec = generate_random_model(point_constr=point_constr)
 
         respy_obj = RespyCls(params_spec, options_spec)
 
@@ -408,9 +385,7 @@ class TestClass(object):
 
         # We want to randomly shuffle the list of initial schooling but need to maintain
         # the order of the shares.
-        edu_shuffled_start = np.random.permutation(
-            edu_baseline_spec["start"]
-        ).tolist()
+        edu_shuffled_start = np.random.permutation(edu_baseline_spec["start"]).tolist()
 
         edu_shuffled_share, edu_shuffled_lagged = [], []
         for start in edu_shuffled_start:
@@ -441,12 +416,10 @@ class TestClass(object):
         optim_paras_baseline = copy.deepcopy(optim_paras)
         optim_paras_shuffled = copy.deepcopy(optim_paras)
 
-        list_ = list(
-            optim_paras["type_shifts"][i, :].tolist() for i in types_order
-        )
+        list_ = [optim_paras["type_shifts"][i, :].tolist() for i in types_order]
         optim_paras_shuffled["type_shifts"] = np.array(list_)
 
-        list_ = list(type_shares[i] for i in types_order)
+        list_ = [type_shares[i] for i in types_order]
         optim_paras_shuffled["type_shares"] = np.array(list_).flatten()
 
         base_data, base_val = None, None
@@ -474,9 +447,7 @@ class TestClass(object):
                 simulate_observed(respy_obj)
 
                 # This part checks the equality of simulated dataset.
-                data_frame = pd.read_csv(
-                    "data.respy.dat", delim_whitespace=True
-                )
+                data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
 
                 if base_data is None:
                     base_data = data_frame.copy()
