@@ -18,7 +18,8 @@ How to release a new version?
 1. At first, we need to create a new PR to prepare everything for the new version. We
    need to
 
-   - update all mentions of the old version number
+   - update all references of the old version number (``setup.py``,
+     ``respy/__init__.py``, ``docs/conf.py``).
    - update information in ``CHANGES.rst`` to have summary of the changes which
      can also be posted in the Github repository under the tag.
 
