@@ -15,6 +15,7 @@ dependencies:
     - doc8
     - pytest
     - pytest-cov
+    - pytest-xdist
     - pyaml
     - restructuredtext_lint
     - sphinx-autobuild

@@ -61,6 +61,8 @@ baseline model presented in:
    :hidden:
 
    contributing
+   details
+   developer_doc
    credits
    changes
    bibliography
