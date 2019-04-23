@@ -66,5 +66,4 @@ deploy:
     distributions: "sdist"
     on:
         tags: true
-        branch: master
         condition: "$CI_FORTRAN = False"
