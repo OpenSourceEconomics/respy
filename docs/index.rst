@@ -47,12 +47,20 @@ baseline model presented in:
 
 .. toctree::
    :maxdepth: 1
+   :caption: Development
+   :hidden:
+
+   developer_doc
+   docker
+   releases
+   api
+
+.. toctree::
+   :maxdepth: 1
    :caption: Additional Information
    :hidden:
 
    contributing
-   details
-   developer_doc
    credits
    changes
    bibliography
