@@ -7,7 +7,6 @@ dependencies:
   - pip=19.0.3
   - pandas=0.24
   - numba=0.43
-  - numpy
   - scipy=1.2.1
   - statsmodels=0.9.0
   - pip:

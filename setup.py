@@ -41,9 +41,15 @@ class CustomBuildCommand(build_py):
         build_py.run(self)
 
 
+PROJECT_URLS = {
+    "Bug Tracker": "https://github.com/OpenSourceEconomics/respy/issues",
+    "Documentation": "https://respy.readthedocs.io/en/latest",
+    "Source Code": "https://github.com/OpenSourceEconomics/respy",
+}
+
+
 def setup_package():
-    """ First steps towards a reliable build process.
-    """
+    """First steps towards a reliable build process."""
     metadata = dict(
         name="respy",
         packages=find_packages(),
@@ -65,19 +71,29 @@ def setup_package():
         ),
         author="Philipp Eisenhauer",
         author_email="eisenhauer@policy-lab.org",
-        url="http://respy.readthedocs.io",
+        url="https://respy.readthedocs.io/en/latest/",
+        project_urls=PROJECT_URLS,
+        license="MIT",
         keywords=["Economics", " Dynamic Discrete Choice Model"],
-        classifiers=[],
+        classifiers=[
+            "Intended Audience :: Science/Research",
+            "License :: OSI Approved :: MIT License",
+            "Operating System :: OS Independent",
+            "Programming Language :: Python :: 3.6",
+            "Programming Language :: Python :: 3.7",
+        ],
         install_requires=[
-            "numpy>=1.11",
-            "scipy>=0.18",
+            "numba>=0.43",
             "pandas>=0.24",
+            "scipy>=0.19",
             "statsmodels>=0.9",
             "pytest>=3.0",
             "pyaml",
         ],
         cmdclass={"build_py": CustomBuildCommand, "develop": CustomDevelopCommand},
+        platforms="any",
         include_package_data=True,
+        zip_safe=False,
     )
 
     setup(**metadata)
