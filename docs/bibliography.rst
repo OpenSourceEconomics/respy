@@ -11,7 +11,7 @@ Choice Programming Models. *Unpublished Manuscript*.
 
 Eisenhauer, P. (2016). `The Approximate Solution of Finite-Horizon Discrete Choice
 Dynamic Programming Models: Revisiting Keane & Wolpin (1994)
-<https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdff>`_.
+<https://github.com/structRecomputation/manuscript/blob/master/eisenhauer.2016.pdf>`_.
 *Unpublished Manuscript*.
 
 Eisenhauer, P. (2016b). Risk and Ambiguity in Dynamic Models of Educational Choice.

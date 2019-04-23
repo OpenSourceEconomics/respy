@@ -17,6 +17,9 @@ releases are available on `PyPI <https://pypi.org/project/respy/>`_.
   on Windows.
 
 1.1.0 - 2018-03-02
+------------------
+
+- Undocumented release
 
 1.0.0 - 2016-08-10
 ------------------
