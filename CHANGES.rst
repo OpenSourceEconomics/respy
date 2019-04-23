@@ -5,8 +5,14 @@ This is a record of all past ``respy`` releases and what went into them in rever
 chronological order. We follow `semantic versioning <https://semver.org/>`_ and all
 releases are available on `PyPI <https://pypi.org/project/respy/>`_.
 
+
 1.2.0 - 2019-04-23
 ------------------
+
+This is the last release with a Fortran implementation.
+
+1.2.0-rc.1 - 2019-04-23
+-----------------------
 
 - `#162 <https://github.com/OpenSourceEconomics/respy/pull/162>`_ is a wrapper around
   multiple PRs in which a new Python version is implemented.

@@ -15,7 +15,13 @@ versions.
 How to release a new version?
 -----------------------------
 
-1. At first, we need to create a new PR to prepare everything for the new version. The
+1. At first, we can draft a release on Github. Go to
+   https://github.com/OpenSourceEconomics/respy/releases and click on "Draft a new
+   release". Fill in the new version number as a tag and title. You can write a summary
+   for the release, but also do it later. Important: Only save the draft. Do not publish
+   yet.
+
+2. Second, we need to create a final PR to prepare everything for the new version. The
    name of the PR and the commit message will be "Release vx.y.z". We need to
 
    - update all references of the old version number (``setup.py``,
@@ -23,24 +29,23 @@ How to release a new version?
    - update information in ``CHANGES.rst`` to have summary of the changes which
      can also be posted in the Github repository under the tag.
 
-2. After the PR is merged into master, go to the master branch in your local repository
-   and pull the latest changes. Make sure that the current tip of the branch corresponds
-   to the state where you want to set the new version. Then, type
+   Merge the PR into master.
 
-   .. code-block:: bash
+3. After that, revisit the draft of the release. Make sure everything is fine. Now, you
+   click on "Publish release" which creates a version tag on the latest commit of the
+   specified branch. The tag will trigger a build on Travis-CI which will publish the
+   release on PypI.
 
-       $ git tag -m "x.y.z"
-
-   to create a tag with the version number. After that, you need to push the tag to the
-   remote repository which triggers a Travis-CI build and deployment to PyPI.
-
-   .. code-block:: bash
-
-       $ git push --tags
-
-3. Make sure that the new release was indeed published by checking `PyPI
-   <https://pypi.org/project/respy/>`_. Also, copy the information from the new release
-   in ``CHANGES.rst`` and post it under the `new release
-   <https://github.com/OpenSourceEconomics/respy/releases/>`_.
+4. Make sure that the new release was indeed published by checking `PyPI
+   <https://pypi.org/project/respy/>`_.
 
 4. Spread the word!
+
+
+Notes
+-----
+
+- Travis-CI only builds tags if "Build pushed branches" is active.
+- If you publish a release on PyPI, the same version number cannot be reused even if you
+  delete the release. This is a safety measure. If you are not sure whether the release
+  will work, create a release candidate instead and publish the real version later.
