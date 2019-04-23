@@ -16,9 +16,9 @@ copyright = "2015-2019, Philipp Eisenhauer"
 author = "Philipp Eisenhauer"
 
 # The short X.Y version.
-version = "2.0"
+version = "1.2"
 # The full version, including alpha/beta/rc tags.
-release = "2.0.0dev20"
+release = "1.2.0-rc.1"
 
 # -- General configuration ------------------------------------------------
 

@@ -5,20 +5,21 @@ What is the new version number?
 -------------------------------
 
 The version number depends on the severity of the changes and adheres to `semantic
-versioning <https://semver.org/>`_.
+versioning <https://semver.org/>`_. The format is x.y.z.
 
-You are also allowed to append ``rc1`` after the last digit to indicate the first or
-higher release candidates. By that, you can test the release and deployment on PyPI and
-release preliminary versions.
+You are also allowed to append ``-rc.1`` after the last digit to indicate the first or
+higher release candidates. Thus, you can test deployment on PyPI and release preliminary
+versions.
 
 
 How to release a new version?
 -----------------------------
 
-1. At first, we need to create a new PR to prepare everything for the new version. We
-   need to
+1. At first, we need to create a new PR to prepare everything for the new version. The
+   name of the PR and the commit message will be "Release vx.y.z". We need to
 
-   - update all mentions of the old version number
+   - update all references of the old version number (``setup.py``,
+     ``respy/__init__.py``, ``docs/conf.py``).
    - update information in ``CHANGES.rst`` to have summary of the changes which
      can also be posted in the Github repository under the tag.
 
@@ -28,7 +29,7 @@ How to release a new version?
 
    .. code-block:: bash
 
-       $ git tag -m "x.x.x"
+       $ git tag -m "x.y.z"
 
    to create a tag with the version number. After that, you need to push the tag to the
    remote repository which triggers a Travis-CI build and deployment to PyPI.
