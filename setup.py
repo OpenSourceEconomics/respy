@@ -58,7 +58,7 @@ def setup_package():
                 "pre_processing/base_spec.csv",
             ]
         },
-        version="2.0.0.dev20",
+        version="1.2.0-rc.1",
         description=(
             "respy is a Python package for the simulation and estimation of a "
             "prototypical finite-horizon dynamic discrete choice model."

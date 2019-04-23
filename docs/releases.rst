@@ -7,7 +7,7 @@ What is the new version number?
 The version number depends on the severity of the changes and adheres to `semantic
 versioning <https://semver.org/>`_.
 
-You are also allowed to append ``rc1`` after the last digit to indicate the first or
+You are also allowed to append ``-rc.1`` after the last digit to indicate the first or
 higher release candidates. By that, you can test the release and deployment on PyPI and
 release preliminary versions.
 
@@ -28,7 +28,7 @@ How to release a new version?
 
    .. code-block:: bash
 
-       $ git tag -m "x.x.x"
+       $ git tag -m "x.y.z"
 
    to create a tag with the version number. After that, you need to push the tag to the
    remote repository which triggers a Travis-CI build and deployment to PyPI.
