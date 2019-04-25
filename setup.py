@@ -47,7 +47,7 @@ DESCRIPTION = (
     "finite-horizon dynamic discrete choice model."
 )
 
-README = Path("README.rst").read()
+README = Path("README.rst").read_text()
 
 PROJECT_URLS = {
     "Bug Tracker": "https://github.com/OpenSourceEconomics/respy/issues",
