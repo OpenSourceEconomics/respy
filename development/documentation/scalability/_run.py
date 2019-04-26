@@ -36,18 +36,19 @@ def main():
     options_spec["program"]["version"] = "python"
     options_spec["estimation"]["draws"] = 200
     options_spec["estimation"]["maxfun"] = maxfun
-    options_spec["estimation"]["optimizer"] = "SCIPY-LBFGSB"
-    options_spec["SCIPY-LBFGSB"]["factr"] = 1.0
+    options_spec["estimation"]["optimizer"] = "DUMMY"
+    options_spec["SCIPY-LBFGSB"]["factr"] = 1e-5
     options_spec["preconditioning"].update(
         {"type": "identity", "minimum": 1e-5, "eps": 1e-6}
     )
     options_spec["solution"]["draws"] = 500
 
-    # Adjust parameters
+    # Let model parameters deviate from their true value as otherwise we do not have
+    # enough function evaluations. We change the discount factor.
     params_spec.iloc[0, 2] = 0.95
 
     # Go into temporary folder
-    folder = "__" + str(num_threads)
+    folder = f"__{num_threads}"
     if Path(folder).exists():
         shutil.rmtree(folder)
 
@@ -77,7 +78,6 @@ def main():
 
     # Step out of temp folder
     os.chdir("..")
-    # shutil.rmtree(folder)
 
     # Save time to file
     with open("data.txt", "a+") as file:
