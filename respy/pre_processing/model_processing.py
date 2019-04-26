@@ -16,6 +16,10 @@ def process_model_spec(params_spec, options_spec):
             params_spec, str
         ), "params_spec has to be a DataFrame or file path."
         params_spec = _read_params_spec(params_spec)
+    else:
+        if not params_spec.index.names == ["category", "name"]:
+            params_spec["para"] = params_spec["para"].astype(float)
+            params_spec.set_index(["category", "name"], inplace=True)
     if not isinstance(options_spec, dict):
         assert isinstance(
             options_spec, str
