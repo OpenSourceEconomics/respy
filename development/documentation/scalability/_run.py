@@ -9,11 +9,13 @@ import pandas as pd
 
 
 def main():
-    # Set number of threads
+    """Run the estimation of a model using a number of threads and a maximum of function
+    evaluations."""
     model = sys.argv[1]
     num_threads = sys.argv[2]
     maxfun = sys.argv[3]
 
+    # Set number of threads
     if not num_threads == "-1":
         os.environ["NUMBA_NUM_THREADS"] = f"{num_threads}"
         os.environ["MKL_NUM_THREADS"] = f"{num_threads}"
@@ -32,16 +34,14 @@ def main():
         Path(respy.__path__[0], "tests", "resources", f"{model}.csv")
     )
 
-    breakpoint()
-
     # Adjust options
     options_spec["program"]["version"] = "python"
     options_spec["estimation"]["draws"] = 200
     options_spec["estimation"]["maxfun"] = maxfun
     options_spec["estimation"]["optimizer"] = "SCIPY-LBFGSB"
-    options_spec["preconditioning"].update(
-        {"type": "identity", "minimum": 1e-5, "eps": 1e-6}
-    )
+    # options_spec["preconditioning"].update(
+    #     {"type": "identity", "minimum": 1e-5, "eps": 1e-6}
+    # )
     options_spec["solution"]["draws"] = 500
 
     # Let model parameters deviate from their true value as otherwise we do not have

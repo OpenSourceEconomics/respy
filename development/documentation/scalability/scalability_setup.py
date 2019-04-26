@@ -3,9 +3,15 @@ from pathlib import Path
 
 
 def main():
+    """Run the scalability exercise.
+
+    Define the model, a list with different number of threads and a maximum number of
+    function evaluations.
+
+    """
     model = "kw_data_one"
-    num_threads = [8]
-    maxfun = 5
+    num_threads = [4]
+    maxfun = 1000
 
     filepath = Path(__file__).resolve().parent / "_run.py"
 
