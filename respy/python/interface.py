@@ -277,6 +277,9 @@ def respy_interface(respy_obj, request, data=None):
                 success = False
                 message = "Maximum number of iterations exceeded."
 
+        else:
+            raise NotImplementedError
+
         record_estimation_final(success, message)
         record_estimation_stop()
 

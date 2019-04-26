@@ -159,7 +159,6 @@ def _check_support_fortran(self):
     """This function determines whether FORTRAN is supported or not."""
     # At this point we only test for the GFORTRAN compiler.
     self.options.check_fortran_compiler = "gfortran"
-
     self.start_msg("Support FORTRAN ")
 
     if self.options.no_fortran:

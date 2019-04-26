@@ -4,7 +4,7 @@ from pathlib import Path
 
 def main():
     model = "kw_data_one"
-    num_threads = [-1, 1, 2]
+    num_threads = [1, 2, 4, 6, 8, 10]
     maxfun = 5
 
     filepath = Path(__file__).resolve().parent / "_run.py"
