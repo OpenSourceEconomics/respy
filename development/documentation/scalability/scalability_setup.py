@@ -10,10 +10,10 @@ def main():
 
     """
     model = "kw_data_one"
-    num_threads = [4]
+    num_threads = [1, 2, 4, 6, 8, 10]
     maxfun = 1000
 
-    filepath = Path(__file__).resolve().parent / "_run.py"
+    filepath = Path(__file__).resolve().parent / "run_single_scalability_exercise.py"
 
     for num_thread in num_threads:
         subprocess.check_call(

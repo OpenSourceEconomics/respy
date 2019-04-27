@@ -10,7 +10,12 @@ import pandas as pd
 
 def main():
     """Run the estimation of a model using a number of threads and a maximum of function
-    evaluations."""
+    evaluations.
+
+    Currently, we circumvent the optimization by setting maxfun to 0 and just looping
+    over the estimation.
+
+    """
     model = sys.argv[1]
     num_threads = sys.argv[2]
     maxfun = sys.argv[3]
@@ -25,6 +30,7 @@ def main():
     # Late import of respy to ensure that environment variables are read.
     import respy
     from respy import RespyCls
+    from respy.python.interface import respy_interface
 
     # Get model
     options_spec = json.loads(
@@ -37,16 +43,9 @@ def main():
     # Adjust options
     options_spec["program"]["version"] = "python"
     options_spec["estimation"]["draws"] = 200
-    options_spec["estimation"]["maxfun"] = maxfun
+    options_spec["estimation"]["maxfun"] = 0
     options_spec["estimation"]["optimizer"] = "SCIPY-LBFGSB"
-    # options_spec["preconditioning"].update(
-    #     {"type": "identity", "minimum": 1e-5, "eps": 1e-6}
-    # )
     options_spec["solution"]["draws"] = 500
-
-    # Let model parameters deviate from their true value as otherwise we do not have
-    # enough function evaluations. We change the discount factor.
-    params_spec.iloc[0, 2] = 0.95
 
     # Go into temporary folder
     folder = f"__{num_threads}"
@@ -64,7 +63,8 @@ def main():
 
     # Run the estimation
     start = dt.datetime.now()
-    respy_obj.fit()
+    for _ in range(int(maxfun)):
+        respy_interface(respy_obj, "estimate", simulated_data)
     end = dt.datetime.now()
 
     # Aggregate information
