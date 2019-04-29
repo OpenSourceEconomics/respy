@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 
 def main():
@@ -18,19 +17,25 @@ def main():
 
     """
     model = sys.argv[1]
-    num_threads = sys.argv[2]
-    maxfun = sys.argv[3]
+    maxfun = int(sys.argv[2])
+    num_threads = int(sys.argv[3])
+
+    # Test commandline input
+    assert maxfun >= 0, "Maximum number of function evaluations cannot be negative."
+    assert num_threads >= 1 or num_threads == -1, (
+        "Use -1 to impose no restrictions on maximum number of threads or choose a "
+        "number higher than zero."
+    )
 
     # Set number of threads
-    if not num_threads == "-1":
+    if not num_threads == -1:
         os.environ["NUMBA_NUM_THREADS"] = f"{num_threads}"
         os.environ["MKL_NUM_THREADS"] = f"{num_threads}"
         os.environ["OMP_NUM_THREADS"] = f"{num_threads}"
         os.environ["NUMEXPR_NUM_THREADS"] = f"{num_threads}"
 
     # Late import of respy to ensure that environment variables are read.
-    import respy
-    from respy import RespyCls
+    from respy import RespyCls, get_example_models
     from respy.python.interface import respy_interface
     from respy.python.shared.shared_auxiliary import dist_class_attributes
     from respy.python.estimate.estimate_python import pyth_criterion
@@ -38,19 +43,10 @@ def main():
     from respy.python.shared.shared_auxiliary import get_optim_paras
 
     # Get model
-    options_spec = json.loads(
-        Path(respy.__path__[0], "tests", "resources", f"{model}.json").read_text()
-    )
-    params_spec = pd.read_csv(
-        Path(respy.__path__[0], "tests", "resources", f"{model}.csv")
-    )
+    options_spec, params_spec = get_example_models(model)
 
     # Adjust options
     options_spec["program"]["version"] = "python"
-    options_spec["estimation"]["draws"] = 200
-    options_spec["estimation"]["maxfun"] = 0
-    options_spec["estimation"]["optimizer"] = "SCIPY-LBFGSB"
-    options_spec["solution"]["draws"] = 500
 
     # Go into temporary folder
     folder = f"__{num_threads}"
@@ -101,7 +97,7 @@ def main():
 
     # Run the estimation
     start = dt.datetime.now()
-    for _ in range(int(maxfun)):
+    for _ in range(maxfun):
         # Change parameters only a bit as result caching might be a problem. Changes in
         # parameters are only positive.
         slightly_changed_parameters = (
