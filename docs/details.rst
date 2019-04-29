@@ -10,3 +10,4 @@ The API reference provides detailed descriptions of ``respy`` classes and functi
 should be helpful if you plan to extend ``respy`` with custom components.
 
 .. autoclass:: respy.clsRespy.RespyCls
+    :noindex:

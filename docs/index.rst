@@ -53,6 +53,7 @@ baseline model presented in:
    developer_doc
    docker
    releases
+   roadmap
    api
 
 .. toctree::
