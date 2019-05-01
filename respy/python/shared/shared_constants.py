@@ -2,6 +2,7 @@
 aligned with the constants from the FORTRAN implementation.
 """
 import json
+import os
 from pathlib import Path
 
 import numpy as np
@@ -40,8 +41,20 @@ MISSING_INT = -99
 MISSING_FLOAT = -99.00
 
 # Flags that provide additional information about the exact configuration
-with open(ROOT_DIR / ".bld" / ".config", "r") as infile:
-    config_dict = json.load(infile)
+try:
+    with open(ROOT_DIR / ".bld" / ".config", "r") as infile:
+        config_dict = json.load(infile)
+except FileNotFoundError:
+    if "READTHEDOCS" in os.environ:
+        config_dict = {
+            "DEBUG": False,
+            "FORTRAN": False,
+            "F2PY": False,
+            "PARALLELISM_MPI": False,
+            "PARALLELISM_OMP": False,
+        }
+    else:
+        raise
 
 IS_DEBUG = config_dict["DEBUG"]
 

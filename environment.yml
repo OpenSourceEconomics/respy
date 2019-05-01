@@ -18,6 +18,7 @@ dependencies:
     - pytest-cov
     - pytest-xdist
     - restructuredtext_lint
+    - Sphinx>=2.0.0
     - sphinx-autobuild
     - sphinx_rtd_theme
     - tox-conda

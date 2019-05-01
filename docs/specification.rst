@@ -333,9 +333,7 @@ Constraints for the Optimizer
 If you want to keep any parameter fixed at the value you specified (i.e. not estimate
 this parameter) you can simply add an exclamation mark after the value. If you want to
 provide bounds for a constrained optimizer you can specify a lower and upper bound in
-round brackets. A section of such an .ini file would look as follows:
-
-.. code-block::
+round brackets. A section of such an .ini file would look as follows::
 
     coeff             -0.049538516229344
     coeff              0.020000000000000     !

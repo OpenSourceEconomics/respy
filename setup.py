@@ -1,5 +1,6 @@
 import os
 import subprocess
+from pathlib import Path
 
 from setuptools import find_packages
 from setuptools import setup
@@ -41,6 +42,13 @@ class CustomBuildCommand(build_py):
         build_py.run(self)
 
 
+DESCRIPTION = (
+    "respy is a Python package for the simulation and estimation of a prototypical "
+    "finite-horizon dynamic discrete choice model."
+)
+
+README = Path("README.rst").read_text()
+
 PROJECT_URLS = {
     "Bug Tracker": "https://github.com/OpenSourceEconomics/respy/issues",
     "Documentation": "https://respy.readthedocs.io/en/latest",
@@ -65,10 +73,7 @@ def setup_package():
             ]
         },
         version="1.2.0",
-        description=(
-            "respy is a Python package for the simulation and estimation of a "
-            "prototypical finite-horizon dynamic discrete choice model."
-        ),
+        description=DESCRIPTION,
         author="Philipp Eisenhauer",
         author_email="eisenhauer@policy-lab.org",
         url="https://respy.readthedocs.io/en/latest/",
@@ -87,7 +92,7 @@ def setup_package():
             "pandas>=0.24",
             "scipy>=0.19",
             "statsmodels>=0.9",
-            "pytest>=3.0",
+            "pytest>=4.0",
             "pyaml",
         ],
         cmdclass={"build_py": CustomBuildCommand, "develop": CustomDevelopCommand},
