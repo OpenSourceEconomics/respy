@@ -5,4 +5,4 @@ axes.axisbelow : True       # Draw axis grid lines and ticks below patches (True
                             # Forces grid lines below figures.
 legend.framealpha : 1       # Legend patch transparency.
 legend.scatterpoints : 3    # Number of scatter points in legend.
-figure.figsize : 12, 8      # Figure size in inches.
+figure.figsize : 12.8, 8    # Figure size in inches. Align with golden ratio ~1.6.
