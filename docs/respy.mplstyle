@@ -1,0 +1,8 @@
+lines.linewidth : 3         # line width in points
+font.size : 16
+axes.axisbelow : True       # Draw axis grid lines and ticks below patches (True); above
+                            # patches but below lines ('line'); or above all (False).
+                            # Forces grid lines below figures.
+legend.framealpha : 1       # Legend patch transparency.
+legend.scatterpoints : 3    # Number of scatter points in legend.
+figure.figsize : 12, 8      # Figure size in inches.

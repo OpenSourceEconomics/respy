@@ -12,10 +12,11 @@ dependencies:
   - pip:
     - codecov
     - doc8
+    - nbsphinx
+    - pyaml
     - pytest
     - pytest-cov
     - pytest-xdist
-    - pyaml
     - restructuredtext_lint
     - sphinx-autobuild
     - sphinx_rtd_theme

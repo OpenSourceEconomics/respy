@@ -12,3 +12,5 @@ doc/build/
 .tox
 docs/_build
 .coverage
+.ipynb_checkpoints
+*.respy.*

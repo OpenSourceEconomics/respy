@@ -33,6 +33,7 @@ baseline model presented in:
 
    economic_model
    solution_and_estimation
+   simulation_example.ipynb
 
 .. toctree::
    :maxdepth: 1
@@ -42,7 +43,7 @@ baseline model presented in:
    specification
    numerical_methods
    reliability
-   scalability
+   scalability.ipynb
    software_engineering
 
 .. toctree::
