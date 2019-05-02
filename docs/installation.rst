@@ -39,35 +39,29 @@ On Ubuntu systems, both can be achieved by the following commands:
 Windows
 """""""
 
-For Windows users, the installation is more complicated.
+For Windows users, the installation is more complicated. Install the 32-bit or 64-bit
+version of `MSYS2 <https://www.msys2.org/>`_. Start the MSYS2 MinGW terminal and type
+the following command to update the package list and packages.
 
-1. Install the 32-bit or 64-bit version of `MSYS2 <https://www.msys2.org/>`_. Start the
-   MSYS2 MinGW terminal and type the following command to update the package list and
-   packages.
+.. code-block:: bash
 
-   .. code-block:: bash
+    $ pacman -Syu
 
-       $ pacman -Syu
+After that, we install the gfortran compiler and lapack and blas. Choose the first
+command if you installed the 64-bit version, the second otherwise.
 
-   After that, we install the gfortran compiler and lapack and blas. Choose the first
-   command if you installed the 64-bit version, the second otherwise.
+.. code-block:: bash
 
-   .. code-block:: bash
+    $ pacman -S mingw64/mingw-w64-x86_64-gcc-fortran /      # for 64-bit
+                mingw64/mingw-w64-x86_64-lapack /
+                mingw64/mingw-w64-x86_64-liblas
 
-       $ pacman -S mingw64/mingw-w64-x86_64-gcc-fortran /
-                   mingw64/mingw-w64-x86_64-lapack /
-                   mingw64/mingw-w64-x86_64-liblas # for 64-bit
+    $ pacman -S mingw64/mingw-w64-i686-gcc-fortran /        # for 32-bit
+                mingw64/mingw-w64-i686-lapack /
+                mingw64/mingw-w64-i686-liblas
 
-       $ pacman -S mingw64/mingw-w64-i686-gcc-fortran /
-                   mingw64/mingw-w64-i686-lapack /
-                   mingw64/mingw-w64-i686-liblas # for 32-bit
-
-   At last, make sure that ``C:\msys64\mingw64\bin`` and ``C:\msys64\usr\bin`` is on
-   your ``PATH``. Again, exchange 64 with 32 depending on your installer.
-
-2. Install the latest SDK and the Setup of `MSMPI
-   <https://github.com/Microsoft/Microsoft-MPI/releases>`_ and make sure that
-   ``/Microsoft MPI/bin/`` is on the ``PATH``.
+At last, make sure that ``C:\msys64\mingw64\bin`` and ``C:\msys64\usr\bin`` is on your
+``PATH``. Again, exchange 64 with 32 depending on your installer.
 
 If so, just call a slightly modified version of the installation command.
 
@@ -81,9 +75,20 @@ a compilation of the Fortran source code during the build.
 ... adding Parallelism
 ^^^^^^^^^^^^^^^^^^^^^^
 
+Linux
+"""""
+
 We use the `Message Passing Interface (MPI) <https://www.mpi-forum.org/>`_ library. This
 requires a recent version of its `MPICH <https://www.mpich.org/>`_ implementation
 available on your compiler's search path which was build with shared/dynamic libraries.
+
+Windows
+"""""""
+
+Install the latest SDK and the Setup of `MSMPI
+<https://github.com/Microsoft/Microsoft-MPI/releases>`_ and make sure that
+``/Microsoft MPI/bin/`` is on the ``PATH``.
+
 
 Source Files
 ------------

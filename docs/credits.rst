@@ -21,6 +21,7 @@ Contributors
 
 | `Janos Gabler <https://github.com/janosg>`_
 | `Boryana Ilieva <https://github.com/boryana-ilieva>`_
+| `Tobias Raabe <https://github.com/tobiasraabe>`_
 
 Acknowledgments
 ^^^^^^^^^^^^^^^

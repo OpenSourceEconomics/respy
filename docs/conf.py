@@ -91,15 +91,6 @@ nbsphinx_prolog = r"""
         {{ env.config.release }}?filepath={{ docname }}"><img alt="Binder badge"
         src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom">
         </a>`
-
-    __ https://github.com/spatialaudio/nbsphinx/blob/
-        {{ env.config.release }}/{{ docname }}
-
-.. raw:: latex
-
-    \nbsphinxstartnotebook{\scriptsize\noindent\strut
-    \textcolor{gray}{The following section was generated from
-    \sphinxcode{\sphinxupquote{\strut {{ docname | escape_latex }}}} \dotfill}}
 """
 
 

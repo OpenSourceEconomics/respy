@@ -51,7 +51,6 @@ baseline model presented in:
    :caption: Development
    :hidden:
 
-   developer_doc
    docker
    releases
    roadmap
@@ -63,8 +62,6 @@ baseline model presented in:
    :hidden:
 
    contributing
-   details
-   developer_doc
    credits
    changes
    bibliography
