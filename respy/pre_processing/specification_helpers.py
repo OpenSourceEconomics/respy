@@ -1,8 +1,7 @@
-from os.path import dirname
-from os.path import join
-
 import numpy as np
 import pandas as pd
+
+from respy.python.shared.shared_constants import ROOT_DIR
 
 
 def csv_template(num_types, save_path=None, initialize_coeffs=True):
@@ -22,7 +21,7 @@ def csv_template(num_types, save_path=None, initialize_coeffs=True):
 
 
 def _base_template():
-    path = join(dirname(__file__), "base_spec.csv")
+    path = ROOT_DIR / "pre_processing" / "base_spec.csv"
     base_template = pd.read_csv(path)
     base_template.set_index(["category", "name"], inplace=True)
     return base_template

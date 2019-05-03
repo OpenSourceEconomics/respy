@@ -1,5 +1,6 @@
 """Process model specification files or objects."""
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -11,26 +12,19 @@ from respy.python.shared.shared_auxiliary import get_optim_paras
 
 
 def process_model_spec(params_spec, options_spec):
-    if not isinstance(params_spec, pd.DataFrame):
-        assert isinstance(
-            params_spec, str
-        ), "params_spec has to be a DataFrame or file path."
-        params_spec = _read_params_spec(params_spec)
-    if not isinstance(options_spec, dict):
-        assert isinstance(
-            options_spec, str
-        ), "options_spec has to be a dictionary or file path."
-        options_spec = _read_options_spec(options_spec)
+    params_spec = _read_params_spec(params_spec)
+    options_spec = _read_options_spec(options_spec)
     attr = _create_attribute_dictionary(params_spec, options_spec)
+
     return attr
 
 
 def write_out_model_spec(attr, save_path):
     params_spec = _params_spec_from_attributes(attr)
     options_spec = _options_spec_from_attributes(attr)
-    # todo: does this need index=False?
-    params_spec.to_csv(save_path + ".csv")
-    with open(save_path + ".json", "w") as j:
+
+    params_spec.to_csv(Path(save_path).with_suffix(".csv"))
+    with open(Path(save_path).with_suffix(".json"), "w") as j:
         json.dump(options_spec, j)
 
 
@@ -161,14 +155,12 @@ def _create_attribute_dictionary(params_spec, options_spec):
         "SCIPY-POWELL",
         "SCIPY-LBFGSB",
     ]
-    # to-do: add type checks and/or conversions for optimizer options
     attr["optimizer_options"] = {}
     for opt in optimizers:
         attr["optimizer_options"][opt] = options_spec[opt]
 
     attr["is_myopic"] = params_spec.loc[("delta", "delta"), "para"] == 0.0
 
-    # to-do: make asserts that all string values are lowercase
     return attr
 
 
@@ -178,28 +170,42 @@ def _get_num_types(params_spec):
         num_types = len_type_shares / 2 + 1
     else:
         num_types = 1
+
     return num_types
 
 
-def _read_params_spec(file_path):
-    assert file_path.endswith(".csv"), "file_path has to be a .csv file"
-    params_spec = pd.read_csv(file_path)
+def _read_params_spec(input_):
+    if not isinstance(input_, (Path, pd.DataFrame)):
+        raise TypeError("params_spec must be Path or pd.DataFrame.")
+
+    params_spec = pd.read_csv(input_) if isinstance(input_, Path) else input_
+
     params_spec["para"] = params_spec["para"].astype(float)
-    params_spec.set_index(["category", "name"], inplace=True)
+
+    if not params_spec.index.names == ["category", "name"]:
+        params_spec.set_index(["category", "name"], inplace=True)
+
     return params_spec
 
 
-def _read_options_spec(file_path):
-    if file_path.endswith(".json"):
-        with open(file_path, "r") as j:
-            options_spec = json.load(j)
-    elif file_path.endswith(".yaml"):
-        with open(file_path, "r") as y:
-            options_spec = yaml.load(y)
+def _read_options_spec(input_):
+    if not isinstance(input_, (Path, dict)):
+        raise TypeError("options_spec must be Path or dictionary.")
+
+    if isinstance(input_, Path):
+        with open(input_, "r") as file:
+            if input_.suffix == ".json":
+                options_spec = json.load(file)
+            elif input_.suffix == ".yaml":
+                options_spec = yaml.load(file)
+            else:
+                raise NotImplementedError(f"Format {input_.suffix} is not supported.")
+    else:
+        options_spec = input_
 
     default = default_model_dict()
-    default.update(options_spec)
-    options_spec = default
+    options_spec = {**default, **options_spec}
+
     return options_spec
 
 
