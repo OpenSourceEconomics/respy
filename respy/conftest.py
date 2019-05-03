@@ -35,6 +35,7 @@ def fresh_directory(tmpdir):
 
 @pytest.fixture(scope="session")
 def regression_vault(request):
+    """Make regression vault available to tests."""
     with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "rb") as p:
         regression_vault = pickle.load(p)
 
