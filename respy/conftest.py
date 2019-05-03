@@ -1,7 +1,10 @@
+import pickle
+
 import numpy as np
 import pandas as pd
 import pytest
 
+from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import StateSpace
 
@@ -28,3 +31,11 @@ def set_seed():
 def fresh_directory(tmpdir):
     """Each test is executed in a fresh directory."""
     tmpdir.chdir()
+
+
+@pytest.fixture(scope="session")
+def regression_vault(request):
+    with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "rb") as p:
+        regression_vault = pickle.load(p)
+
+    return regression_vault
