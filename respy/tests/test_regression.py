@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
 
-from respy import RespyCls
 from respy.pre_processing.model_processing import _options_spec_from_attributes
 from respy.pre_processing.model_processing import _params_spec_from_attributes
 from respy.python.shared.shared_constants import IS_FORTRAN
 from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
 from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
+from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.shared.shared_constants import TOL
 from respy.tests.codes.auxiliary import simulate_observed
 
@@ -17,6 +17,9 @@ def test_single_regression(regression_vault, index):
     # Distribute test information.
     attr, crit_val = regression_vault[index]
 
+    if not IS_FORTRAN and attr["version"] == "fortran":
+        pytest.skip()
+
     if not IS_PARALLELISM_OMP or not IS_FORTRAN:
         attr["num_threads"] = 1
 
@@ -25,6 +28,13 @@ def test_single_regression(regression_vault, index):
 
     if not IS_FORTRAN:
         attr["version"] = "python"
+        if attr["optimizer_used"] not in OPT_EST_PYTH:
+            attr["optimizer_used"] = OPT_EST_PYTH[2]
+
+    # The late import is required so a potentially just compiled FORTRAN implementation
+    # is recognized. This is important for the creation of the regression vault as we
+    # want to include FORTRAN use cases.
+    from respy import RespyCls
 
     params_spec = _params_spec_from_attributes(attr)
     options_spec = _options_spec_from_attributes(attr)

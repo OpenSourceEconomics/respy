@@ -3,7 +3,7 @@ channels:
   - defaults
   - numba
 dependencies:
-  - python=3.6
+  - python=3.7
   - pip=19.0.3
   - pandas=0.24
   - numba=0.43
