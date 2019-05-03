@@ -1,10 +1,11 @@
 from functools import partial
+from pathlib import Path
 
 import numpy as np
 import pytest
 from numba import njit
 from pandas.testing import assert_series_equal
-from pathlib import Path
+
 from respy import RespyCls
 from respy.pre_processing.model_processing import _read_options_spec
 from respy.pre_processing.model_processing import _read_params_spec

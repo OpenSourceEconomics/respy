@@ -1,10 +1,11 @@
 """Process model specification files or objects."""
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import yaml
-from pathlib import Path
+
 from respy.pre_processing.specification_helpers import csv_template
 from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_optim_paras
@@ -198,9 +199,7 @@ def _read_options_spec(input_):
             elif input_.suffix == ".yaml":
                 options_spec = yaml.load(file)
             else:
-                raise NotImplementedError(
-                    f"Format {input_.suffix} is not supported."
-                )
+                raise NotImplementedError(f"Format {input_.suffix} is not supported.")
     else:
         options_spec = input_
 
