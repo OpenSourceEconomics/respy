@@ -330,21 +330,21 @@ class TestClass(object):
         # This ensures that the experience effect is taken care of properly.
         open(".restud.respy.scratch", "w").close()
 
-        fname, result = random.choice(
+        kw_spec, result = random.choice(
             [
-                ("kw_data_one.ini", 10.45950941513551),
-                ("kw_data_two.ini", 45.04552402391903),
-                ("kw_data_three.ini", 74.28253652773714),
-                ("kw_data_one_types.ini", 9.098738585839529),
-                ("kw_data_one_initial.ini", 7.965979149372883),
+                ("kw_data_one", 10.45950941513551),
+                ("kw_data_two", 45.04552402391903),
+                ("kw_data_three", 74.28253652773714),
+                ("kw_data_one_types", 9.098738585839529),
+                ("kw_data_one_initial", 7.965979149372883),
             ]
         )
 
-        base_path = TEST_RESOURCES_DIR / fname
+        base_path = TEST_RESOURCES_DIR / kw_spec
 
         # Evaluate criterion function at true values.
         respy_obj = RespyCls(
-            str(base_path.with_suffix(".csv")), str(base_path.with_suffix(".json"))
+            base_path.with_suffix(".csv"), base_path.with_suffix(".json")
         )
 
         respy_obj.unlock()

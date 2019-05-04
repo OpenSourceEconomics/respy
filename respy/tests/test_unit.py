@@ -1,4 +1,5 @@
 from functools import partial
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -55,10 +56,10 @@ class TestClass(object):
             params_spec, options_spec = generate_random_model()
             # Process request and write out again.
             respy_obj = RespyCls(params_spec, options_spec)
-            respy_obj.write_out("alt.respy")
+            respy_obj.write_out("alt_respy")
 
-            new_params_spec = _read_params_spec("alt.respy.csv")
-            new_options_spec = _read_options_spec("alt.respy.json")
+            new_params_spec = _read_params_spec(Path("alt_respy.csv"))
+            new_options_spec = _read_options_spec(Path("alt_respy.json"))
 
             assert options_spec == new_options_spec
 
