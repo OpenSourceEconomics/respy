@@ -397,9 +397,7 @@ def pyth_backward_induction(
             # Create prediction model based on the random subset of points where the
             # EMAX is actually simulated and thus dependent and independent variables
             # are available. For the interpolation points, the actual values are used.
-            emax = get_predictions(
-                endogenous, exogenous, max_emax, is_simulated, file_sim, is_write
-            )
+            emax = get_predictions(endogenous, exogenous, max_emax, is_simulated)
 
         else:
             emax = construct_emax_risk(
@@ -572,15 +570,11 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated):
     return predictions
 
 
-def check_prediction_model(predictions_diff, model):
-    """ Perform some basic consistency checks for the prediction model.
-    """
-    # Construct auxiliary object
-    results = model.fit()
-    # Perform basic checks
+def check_prediction_model(predictions_diff, beta):
+    """ Perform some basic consistency checks for the prediction model."""
     assert np.all(predictions_diff >= 0.00)
-    assert results.params.shape == (9,)
-    assert np.all(np.isfinite(results.params))
+    assert beta.shape == (9,)
+    assert np.all(np.isfinite(beta))
 
 
 def calculate_wages_systematic(states, covariates, coeffs_a, coeffs_b, type_shifts):
