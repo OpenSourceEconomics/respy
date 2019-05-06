@@ -5,7 +5,6 @@ from functools import partial
 import numpy as np
 import pytest
 import scipy
-import statsmodels.api as sm
 from numpy.testing import assert_array_almost_equal
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
@@ -24,6 +23,7 @@ from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
 from respy.python.shared.shared_auxiliary import get_optim_paras
+from respy.python.shared.shared_auxiliary import ols
 from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
@@ -212,7 +212,7 @@ class TestClass(object):
             endog = np.dot(exog, beta) + tiny
 
             # Run statsmodels
-            results = sm.OLS(endog, exog).fit()
+            results = ols(endog, exog).fit()
 
             # Check parameters
             py = results.params

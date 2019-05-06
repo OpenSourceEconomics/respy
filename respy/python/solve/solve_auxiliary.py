@@ -3,17 +3,16 @@ import shlex
 
 import numpy as np
 import pandas as pd
-import statsmodels.api as sm
 from numba import njit
 
 from respy.custom_exceptions import StateSpaceError
-from respy.python.record.record_solution import record_solution_prediction
 from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import calculate_rewards_common
 from respy.python.shared.shared_auxiliary import calculate_rewards_general
 from respy.python.shared.shared_auxiliary import create_covariates
 from respy.python.shared.shared_auxiliary import get_continuation_value
 from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
+from respy.python.shared.shared_auxiliary import ols
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.shared.shared_constants import MISSING_FLOAT
@@ -529,6 +528,7 @@ def get_endogenous_variable(
         state has reached maximum education.
 
     """
+
     emax = construct_emax_risk(
         rewards[:, -2:], rewards[:, :4], emaxs, draws_emax_risk, delta, max_education
     )
@@ -538,40 +538,36 @@ def get_endogenous_variable(
     return endogenous
 
 
-def get_predictions(endogenous, exogenous, max_emax, is_simulated, file_sim, is_write):
-    """Fit an OLS regression of the exogenous variables on the endogenous variables and
-    use the results to predict the endogenous variables for all points in the state
-    space.
+def get_predictions(endogenous, exogenous, maxe, is_simulated):
+    """ Get ols predictions.
 
-    Parameters
-    ----------
-    endogenous : np.ndarray
-    exogenous : np.ndarray
-    max_emax : np.ndarray
-    is_simulated : np.ndarray
-    file_sim : ???
-    is_write : bool
+    Fit an OLS regression of the exogenous variables on the endogenous variables and
+    use the results to predict the endogenous variables for all points in state space.
+
+    Args:
+        endogenous (np.array): 1d numpy array with endogenous variable
+        exogenous (np.array): 2d numpy array with exogenous variables
+        maxe (np.array): 1d numpy array with the maximum expected value of the shocks,
+        has the same length as endogenous.
+        is_simulated (np.array): boolean array that is True at points for which we
+        calculate the exact solution.
 
     """
     # Define ordinary least squares model and fit to the data.
-    model = sm.OLS(endogenous[is_simulated], exogenous[is_simulated])
-    results = model.fit()
+    beta = ols(endogenous[is_simulated], exogenous[is_simulated])
 
-    # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994),
-    # negative predictions are truncated to zero.
-    endogenous_predicted = results.predict(exogenous)
+    # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994),negative
+    # predictions are truncated to zero.
+    endogenous_predicted = exogenous.dot(beta)
     endogenous_predicted = np.clip(endogenous_predicted, 0.00, None)
 
     # Construct predicted EMAX for all states and the replace interpolation points with
     # simulated values.
-    predictions = endogenous_predicted + max_emax
+    predictions = endogenous_predicted + maxe
+    predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
 
-    predictions[is_simulated] = endogenous[is_simulated] + max_emax[is_simulated]
-
-    check_prediction_model(endogenous_predicted, model)
-
-    if is_write:
-        record_solution_prediction(results, file_sim)
+    # Checks
+    check_prediction_model(endogenous_predicted, beta)
 
     return predictions
 
