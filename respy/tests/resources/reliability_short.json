@@ -1,1 +1,93 @@
-{"estimation": {"file": "data.respy.dat", "maxfun": 1000, "agents": 1000, "draws": 200, "optimizer": "FORT-BOBYQA", "seed": 500, "tau": 500.0}, "simulation": {"file": "data", "agents": 1000, "seed": 132}, "program": {"debug": false, "procs": 1, "threads": 1, "version": "fortran"}, "interpolation": {"flag": false, "points": 200}, "solution": {"store": true, "seed": 456, "draws": 500}, "preconditioning": {"minimum": 1e-05, "type": "magnitudes", "eps": 0.0001}, "derivatives": "forward-differences", "edu_spec": {"lagged": [0.5, 0.5, 0.5], "start": [10, 8, 13], "share": [0.5, 0.4, 0.1], "max": 15}, "num_periods": 5, "FORT-NEWUOA": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 1e-06}, "FORT-BFGS": {"eps": 0.0001, "gtol": 1e-05, "maxiter": 10, "stpmx": 100.0}, "FORT-BOBYQA": {"maxfun": 1000000, "npt": 1, "rhobeg": 1.0, "rhoend": 1e-06}, "SCIPY-BFGS": {"eps": 0.0001, "gtol": 0.0001, "maxiter": 1}, "SCIPY-POWELL": {"ftol": 0.0001, "maxfun": 100000, "maxiter": 1, "xtol": 0.0001}, "SCIPY-LBFGSB": {"eps": 4.41037423e-07, "factr": 30.401091854739622, "m": 5, "maxiter": 2, "maxls": 2, "pgtol": 8.6554171164e-05}}
+{
+  "estimation": {
+    "file": "data.respy.dat",
+    "maxfun": 1000,
+    "agents": 1000,
+    "draws": 200,
+    "optimizer": "FORT-BOBYQA",
+    "seed": 500,
+    "tau": 500.0
+  },
+  "simulation": {
+    "file": "data",
+    "agents": 1000,
+    "seed": 132
+  },
+  "program": {
+    "debug": false,
+    "procs": 1,
+    "threads": 1,
+    "version": "fortran"
+  },
+  "interpolation": {
+    "flag": false,
+    "points": 200
+  },
+  "solution": {
+    "store": true,
+    "seed": 456,
+    "draws": 500
+  },
+  "preconditioning": {
+    "minimum": 0.00001,
+    "type": "magnitudes",
+    "eps": 0.0001
+  },
+  "derivatives": "forward-differences",
+  "edu_spec": {
+    "lagged": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "start": [
+      10,
+      8,
+      13
+    ],
+    "share": [
+      0.5,
+      0.4,
+      0.1
+    ],
+    "max": 15
+  },
+  "num_periods": 5,
+  "FORT-NEWUOA": {
+    "maxfun": 1000000,
+    "npt": 1,
+    "rhobeg": 1.0,
+    "rhoend": 0.000001
+  },
+  "FORT-BFGS": {
+    "eps": 0.0001,
+    "gtol": 0.00001,
+    "maxiter": 10,
+    "stpmx": 100.0
+  },
+  "FORT-BOBYQA": {
+    "maxfun": 1000000,
+    "npt": 1,
+    "rhobeg": 1.0,
+    "rhoend": 0.000001
+  },
+  "SCIPY-BFGS": {
+    "eps": 0.0001,
+    "gtol": 0.0001,
+    "maxiter": 1
+  },
+  "SCIPY-POWELL": {
+    "ftol": 0.0001,
+    "maxfun": 100000,
+    "maxiter": 1,
+    "xtol": 0.0001
+  },
+  "SCIPY-LBFGSB": {
+    "eps": 4.41037423E-7,
+    "factr": 30.401091854739622,
+    "m": 5,
+    "maxiter": 2,
+    "maxls": 2,
+    "pgtol": 0.000086554171164
+  }
+}

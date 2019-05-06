@@ -24,7 +24,6 @@ baseline model presented in:
    introduction
    installation
    basics
-   tutorial
 
 .. toctree::
    :maxdepth: 1
@@ -40,7 +39,7 @@ baseline model presented in:
    :caption: Software
    :hidden:
 
-   specification
+   model-specification
    numerical_methods
    reliability
    scalability.ipynb

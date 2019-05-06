@@ -110,7 +110,7 @@ can choose. Some of the rewards of finishing high school and college are univers
 all sectors (:math:`\beta_1 1[g(a) \geq 12] + \beta_2 1[g(a) \geq 16]`).
 
 In contrast to Keane & Wolpin (1997) here all linear indices only carry positive signs
-as this is how parameters are specified in the initialization file.
+as this is how parameters are specified in the model specification.
 
 Occupation A
 ^^^^^^^^^^^^
