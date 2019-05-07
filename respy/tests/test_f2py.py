@@ -222,7 +222,7 @@ class TestClass(object):
             assert_almost_equal(py, f90)
 
             # Check prediction
-            py = exog.predict(beta)
+            py = exog.dot(beta)
             f90 = fort_debug.wrapper_point_predictions(exog, f90, num_agents)
             assert_almost_equal(py, f90)
 
