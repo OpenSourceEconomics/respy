@@ -88,7 +88,6 @@ setup(
         "numba>=0.43",
         "pandas>=0.24",
         "scipy>=0.19",
-        "statsmodels>=0.9",
         "pytest>=4.0",
         "pyaml",
     ],

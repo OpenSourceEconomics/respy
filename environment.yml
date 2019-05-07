@@ -10,7 +10,6 @@ dependencies:
   - nbsphinx=0.4.2
   - numba=0.43
   - scipy=1.2.1
-  - statsmodels=0.9.0
   - pip:
     - codecov
     - doc8

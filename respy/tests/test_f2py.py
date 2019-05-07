@@ -5,7 +5,6 @@ from functools import partial
 import numpy as np
 import pytest
 import scipy
-import statsmodels.api as sm
 from numpy.testing import assert_array_almost_equal
 from numpy.testing import assert_array_equal
 from numpy.testing import assert_equal
@@ -24,6 +23,7 @@ from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
 from respy.python.shared.shared_auxiliary import get_optim_paras
+from respy.python.shared.shared_auxiliary import ols
 from respy.python.shared.shared_auxiliary import read_draws
 from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_auxiliary import transform_disturbances
@@ -212,28 +212,19 @@ class TestClass(object):
             endog = np.dot(exog, beta) + tiny
 
             # Run statsmodels
-            results = sm.OLS(endog, exog).fit()
+            beta_result = ols(y=endog, x=exog)
 
             # Check parameters
-            py = results.params
+            py = beta_result
             f90 = fort_debug.wrapper_get_coefficients(
                 endog, exog, num_covars, num_agents
             )
             assert_almost_equal(py, f90)
 
             # Check prediction
-            py = results.predict(exog)
+            py = exog.dot(beta_result)
             f90 = fort_debug.wrapper_point_predictions(exog, f90, num_agents)
             assert_almost_equal(py, f90)
-
-            # Check coefficient of determination and the standard errors.
-            py = [results.rsquared, results.bse]
-            f90 = fort_debug.wrapper_get_pred_info(
-                endog, f90, exog, num_agents, num_covars
-            )
-
-            for i in range(2):
-                assert_almost_equal(py[i], f90[i])
 
     def test_3(self):
         """ Compare results between FORTRAN and PYTHON of selected functions.
@@ -903,9 +894,7 @@ class TestClass(object):
         )
         assert_almost_equal(endogenous, replace_missing_values(f90))
 
-        py = get_predictions(
-            endogenous, exogenous, max_emax, is_simulated, file_sim, False
-        )
+        py = get_predictions(endogenous, exogenous, max_emax, is_simulated)
 
         f90 = fort_debug.wrapper_get_predictions(
             endogenous,
