@@ -2,9 +2,9 @@ Installation
 ============
 
 The ``respy`` package can be conveniently installed from the `Python Package Index
-<https://pypi.org/>`_ (PyPI) or directly from its source files. We currently
-support Python 2.7 and Python 3.3+. We develop the package on Linux systems, but it can
-also be installed on MacOS and Windows.
+<https://pypi.org/>`_ (PyPI) or directly from its source files. We currently support
+only Python 3.6+. We develop the package mainly on Linux systems, but the test battery
+ensures the compatibility to Windows and MacOS.
 
 Python Package Index
 --------------------
@@ -13,7 +13,7 @@ You can install the stable version of the package the usual way.
 
 .. code-block:: bash
 
-   $ pip install respy
+    $ pip install respy
 
 We provide a pure Python implementation as our baseline. However, to address performance
 constraints, we also maintain scalar and parallel Fortran implementations. If additional
@@ -98,10 +98,10 @@ You can download the sources directly from our `GitHub repository
 
 .. code-block:: bash
 
-   $ git clone https://github.com/restudToolbox/package.git
+   $ git clone https://github.com/OpenSourceEconomics/respy.git
 
-Once you obtained a copy of the source files, installing the package in editable model
-is straightforward.
+Once you obtained a copy of the source files, installing the package in editable mode is
+straightforward.
 
 .. code-block:: bash
 

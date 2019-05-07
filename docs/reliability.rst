@@ -54,7 +54,7 @@ performance in your application, please do not hesitate to let us know so we can
 with the investigation.
 
 For more details, see the script `online <https://github.com/OpenSourceEconomics/
-respy/tree/janosg/development/documentation/reliability>`_. The results for all the
+respy/tree/develop/development/documentation/reliability>`_. The results for all the
 parameterizations analyzed in Keane and Wolpin (1994) are available `here
-<https://github.com/OpenSourceEconomics/respy/blob/janosg/doc/results/reliability
+<https://github.com/OpenSourceEconomics/respy/blob/develop/docs/results/reliability
 .respy.info>`_.

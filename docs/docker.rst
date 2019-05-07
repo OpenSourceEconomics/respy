@@ -14,7 +14,6 @@ Download the appropriate Docker engine `here
              `Docker Toolbox <https://docs.docker.com/toolbox/overview/>`_ instead.
 
 
-
 Build the image
 ---------------
 

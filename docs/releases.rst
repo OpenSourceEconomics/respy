@@ -39,7 +39,7 @@ How to release a new version?
 4. Make sure that the new release was indeed published by checking `PyPI
    <https://pypi.org/project/respy/>`_.
 
-4. Spread the word!
+5. Spread the word!
 
 
 Notes

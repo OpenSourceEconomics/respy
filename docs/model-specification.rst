@@ -1,6 +1,6 @@
 .. _model-specification:
 
-Model specification
+Model Specification
 ===================
 
 In the following, we discuss the model specification in greater detail. In case the
@@ -8,16 +8,13 @@ model specification is used to simulate a data set, the data generation is based
 chosen parameters. As soon as the estimation procedure is invoked, the values specified
 in the model specification are used as starting values for the optimization.
 
-Overview
---------
-
 The model is specified in two separate files as we differentiate between the parameters
 of the model and other options. As an example we take the first parametrization of Keane
 and Wolpin (1994).
 
 
 Parameter specification
-~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------
 
 The following table shows a parameter specification for respy. The first two columns,
 ``category`` and ``name``, can be used for indexing. ``para`` contains the parameter
@@ -31,13 +28,19 @@ bounded between 0.7 and 1.0. ``comment`` contains a short description of the par
     :header-rows: 1
 
 In alignment to Keane and Wolpin (1994), the error terms of the model are set to follow
-a multivariate normal distribution, allowing for cross-corellation are admissible, and
-excluding serial corelation. In the initialization file, the shock parameters have to be
-specified as standard deviations (single-digit subscipts) and covariances (double-digit
-subscipt). In the implemetation, the requested number of realizations is drawn from the
-standard normal distribution. The draws are then multiplied by the shock parameters set
-in the initialization file in order to generate the desired variance-covariance
-structure.
+a multivariate normal distribution, allowing for cross-correlation are admissible, and
+excluding serial correlation. In the initialization file, the shock parameters have to
+be specified as standard deviations (single-digit subscripts) and covariances
+(double-digit subscript). In the implementation, the requested number of realizations is
+drawn from the standard normal distribution. The draws are then multiplied by the shock
+parameters set in the initialization file in order to generate the desired
+variance-covariance structure.
+
+In this example specification the model implementation implies three types of
+heterogeneous agents. The current version of the code works both with more than three
+types, as well as with homogeneous agents (only one type). In order to add a type, a
+block of two and a block of four coefficients need to be specified in the categories
+``type_shares`` and ``type_shifts``", respectively.
 
 .. Warning::
 
@@ -55,7 +58,7 @@ structure.
 
 
 Options specification
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 In addition to the model parameters, other model options are kept in another
 specification file in the ``json`` format.
@@ -68,41 +71,6 @@ specification file in the ``json`` format.
 Note that in order to implement the model based on agents with different initial levels
 of schooling the three integer values - start, share, and lagged - have to be specified
 together as a block.
-
-**TYPE SHARES**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-coeff       float       share of agents of type 2
-coeff       float       effect of having aquired >10 years of schooling
-
-coeff       float       share of agents of type 3
-coeff       float       effect of having aquired >10 years of schooling
-=======     ======      ==========================
-
-
-**TYPE SHIFTS**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-coeff       float       deviation for Type 2 from Type 1 in occupation A contant
-coeff       float       deviation for Type 2 from Type 1 in occupation B contant
-coeff       float       deviation for Type 2 from Type 1 in education contant
-coeff       float       deviation for Type 2 from Type 1 in home contant
-
-coeff       float       deviation for Type 3 from Type 1 in occupation A contant
-coeff       float       deviation for Type 3 from Type 1 in occupation B contant
-coeff       float       deviation for Type 3 from Type 1 in education contant
-coeff       float       deviation for Type 3 from Type 1 in home contant
-=======     ======      ==========================
-
-In this example initialization file the model implementation implies three types of
-heterogenous agents. The current version of the code works both with more than three
-types, as well as with homogenous agents (only one type). In order to add a type, a
-block of two and a block of four coefficients need to be specified in the sections
-``type shares`` and "T``type shifts``", respectively.
 
 **SOLUTION**
 

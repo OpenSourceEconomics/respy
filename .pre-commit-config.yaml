@@ -1,7 +1,5 @@
 exclude: >
     (?x)^(
-        .pytest_cache |
-        .tox |
         respy/*.waf*.
     )$
 repos:
@@ -14,6 +12,10 @@ repos:
     rev: v2.1.0
     hooks:
     -   id: check-yaml
+    -   id: check-merge-conflict
+    -   id: check-json
+    -   id: pretty-format-json
+        args: [--autofix, --no-sort-keys]
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 3.7.7
     hooks:

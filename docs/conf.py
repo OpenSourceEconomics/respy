@@ -73,6 +73,9 @@ else:
     todo_include_todos = True
     todo_emit_warnings = True
 
+# Configure Sphinx' linkcheck
+linkcheck_ignore = ["https://doi.org/*."]
+
 # Configuration for nbsphinx
 nbsphinx_execute = "never"
 nbsphinx_allow_errors = False

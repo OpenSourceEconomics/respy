@@ -3,13 +3,8 @@
 Contact and Credits
 ===================
 
-If you have any questions or comments, please do not hesitate to contact us directly.
-
-.. todo::
-    Not another channel.
-
-.. image:: https://badges.gitter.im/Join%20Chat.svg
-   :target: https://gitter.im/restudToolbox/contact?utm_source=share-link&utm_medium=link&utm_campaign=share-link
+If you have any questions or comments, please do not hesitate to contact us via filing
+an issue on Github or directly via email.
 
 Development Lead
 ^^^^^^^^^^^^^^^^
@@ -32,7 +27,7 @@ cluster for scalability and performance testing. We appreciate the financial sup
 the `AXA Research Fund <https://www.axa-research.org/>`_ and the  `University of Bonn
 <https://www.uni-bonn.de>`_. We are indebted to the open source community as we build on
 top of numerous open source tools such as the `SciPy Stack <https://www.scipy.org>`_,
-`statsmodels <http://www.statsmodels.org/>`_, and `waf <https://waf.io/>`_.
+and `waf <https://waf.io/>`_.
 
 Suggested Citation
 ^^^^^^^^^^^^^^^^^^

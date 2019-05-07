@@ -1,10 +1,6 @@
 The Economic Model
 ===================
 
-.. todo::
-    - really ln(r) the rental price or r (or something different)?
-    - Change equations and functions to have type shifts instead of group specific constants
-
 Introduction
 -------------
 

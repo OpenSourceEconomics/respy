@@ -121,12 +121,17 @@ Continuous Integration Workflow
 
 We set up a continuous integration workflow around our `GitHub Organization
 <https://github.com/OpenSourceEconomics>`_. We use the continuous integration services
-provided by `Travis CI <https://travis-ci.org/restudToolbox/package>`_. `tox
-<https://tox.readthedocs.io>`_ helps us to ensure the proper workings of the package for
-alternative Python implementations. Our build process is managed by `Waf
+provided by `Travis CI <https://travis-ci.org/OpenSourceEconomics/respy>`_. `tox
+<https://tox.readthedocs.io/en/latest/>`_ helps us to ensure the proper workings of the
+package for alternative Python implementations. Our build process is managed by `Waf
 <https://waf.io/>`_. We rely on `Git <https://git-scm.com/>`_ as our version control
 system and follow the `Gitflow Workflow
 <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_. We use
 `Github <https://github.com/OpenSourceEconomics/respy/issues>`_ for our issue tracking.
 The package is distributed through `PyPI <https://pypi.org/project/respy/>`_ which
 automatically updated from our development server.
+
+Lines of code
+-------------
+
+.. image:: ../development/documentation/cloc/lines_of_code_by_language.png

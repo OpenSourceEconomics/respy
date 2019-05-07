@@ -7,8 +7,8 @@ Differentiation
 ^^^^^^^^^^^^^^^
 
 Derivatives are approximated by forward finite differences and used by derivative-based
-optimization algorithms and the scaling procedure. The step-size can be controlled in
-the *DERIVATIVES* section of the initialization file.
+optimization algorithms and the scaling procedure. Thus, the only possible setting for
+now is ``options_spec["derivatives"] = "forward-differences"``.
 
 Integration
 ^^^^^^^^^^^
@@ -16,14 +16,14 @@ Integration
 Integrals are approximated by Monte Carlo integration and occur in two different places:
 
 * The solution of the model requires the evaluation of :math:`E\max`. This integral is
-  approximated using the number of random draws specified in the *SOLUTION* section of
-  the initialization file. The same random draws are used for all integrals within the
-  same period.
+  approximated using the number of random draws specified under
+  ``options_spec["solution"]["draws"]``. The same random draws are used for all
+  integrals within the same period.
 
 * The estimation of the model requires the simulation of the choice probabilities to
   evaluate the sample likelihood. This integral is approximated using the number of
-  random draws specified in the *ESTIMATION* section of the initialization file. The
-  same random draws are used for all integrals within the same period.
+  random draws specified in the under ``options_spec["estimation"]["draws"]``. The same
+  random draws are used for all integrals within the same period.
 
 Optimization
 ^^^^^^^^^^^^
@@ -33,15 +33,16 @@ log-likelihood of the sample. The available optimizers depend on the version of 
 program. If you use the Python implementation, then the Powell (Powell, 1964) and BFGS
 (Norcedal and Wright, 2006) algorithms are available through their ``scipy``
 implementations. For the Fortran  implementation, we provide the BFGS and NEWUOA
-(Powell, 2004) algorithms. The algorithm to be used is specified in the *ESTIMATION*
-section of the initialization file.
+(Powell, 2004) algorithms. The algorithm to be used is specified under
+``options_spec["optimizer"]`` and its default settings under
+``options_spec["SCIPY-LBFGSB"]`` for example.
 
 * **Preconditioning**
 
     We implemented a diagonal scale-based preconditioner based on the gradient. To
     stabilize the routine, the user needs to specify a minimum value for the derivative
-    approximation. The details are governed by the *SCALING* section of the
-    initialization file.
+    approximation. The details are governed by the settings in
+    ``options_spec["preconditioning"]``.
 
 Function Approximation
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -71,7 +72,8 @@ We simulate the agents' choice probabilities to evaluate the negative log-likeli
 the sample. With only a finite number of draws, there is always the risk of simulating a
 zero probability for an agent's observed decision. So we implement the logit-smoothed
 accept-reject simulator as suggested by McFadden (1989). The scale parameter
-:math:`\lambda` is set in the *ESTIMATION* section of the initialization file.
+:math:`\tau` is set in the options specification under
+``options_spec["estimation"]["tau"]``.
 
 Miscellaneous
 ^^^^^^^^^^^^^
