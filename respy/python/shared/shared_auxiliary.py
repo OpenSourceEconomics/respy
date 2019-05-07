@@ -928,11 +928,13 @@ def number_of_triangular_elements_to_dimensio(num):
 def ols(y, x):
     """Ols implementation using a pseudo inverse.
 
-    Args:
-        x (ndarray): n x n matrix of independent variables.
-        y (array): n x 1 matrix with dependant variable.
+    Parameters
+    ----------
+    x (ndarray): n x n matrix of independent variables.
+    y (array): n x 1 matrix with dependant variable.
 
-    Returns:
+    Returns
+    -------
         beta (array): n x 1 array of estimated parameter vector
 
     """
