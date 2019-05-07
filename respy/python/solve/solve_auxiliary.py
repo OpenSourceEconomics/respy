@@ -542,13 +542,14 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated):
     Fit an OLS regression of the exogenous variables on the endogenous variables and
     use the results to predict the endogenous variables for all points in state space.
 
-    Args:
-        endogenous (np.array): 1d numpy array with endogenous variable
-        exogenous (np.array): 2d numpy array with exogenous variables
-        maxe (np.array): 1d numpy array with the maximum expected value of the shocks,
-        has the same length as endogenous.
-        is_simulated (np.array): boolean array that is True at points for which we
-        calculate the exact solution.
+    Parameters
+    ----------
+    endogenous (np.array): 1d numpy array with endogenous variable
+    exogenous (np.array): 2d numpy array with exogenous variables
+    maxe (np.array): 1d numpy array with the maximum expected value of the shocks,
+    has the same length as endogenous.
+    is_simulated (np.array): boolean array that is True at points for which we
+    calculate the exact solution.
 
     """
     # Define ordinary least squares model and fit to the data.

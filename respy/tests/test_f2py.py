@@ -894,9 +894,7 @@ class TestClass(object):
         )
         assert_almost_equal(endogenous, replace_missing_values(f90))
 
-        py = get_predictions(
-            endogenous, exogenous, max_emax, is_simulated, file_sim, False
-        )
+        py = get_predictions(endogenous, exogenous, max_emax, is_simulated)
 
         f90 = fort_debug.wrapper_get_predictions(
             endogenous,
