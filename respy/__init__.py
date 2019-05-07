@@ -16,7 +16,7 @@ assert sys.version_info[:2] >= (3, 6)
 if not IS_DEBUG:
     warnings.simplefilter(action="ignore", category=FutureWarning)
 
-__version__ = "1.2.0"
+__version__ = "1.2.1"
 
 
 def test(opt=None):

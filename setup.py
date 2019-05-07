@@ -72,7 +72,7 @@ def setup_package():
                 "pre_processing/base_spec.csv",
             ]
         },
-        version="1.2.0",
+        version="1.2.1",
         description=DESCRIPTION,
         author="Philipp Eisenhauer",
         author_email="eisenhauer@policy-lab.org",
