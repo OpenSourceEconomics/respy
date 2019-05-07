@@ -212,17 +212,17 @@ class TestClass(object):
             endog = np.dot(exog, beta) + tiny
 
             # Run statsmodels
-            beta = ols(y=endog, x=exog)
+            beta_result = ols(y=endog, x=exog)
 
             # Check parameters
-            py = beta
+            py = beta_result
             f90 = fort_debug.wrapper_get_coefficients(
                 endog, exog, num_covars, num_agents
             )
             assert_almost_equal(py, f90)
 
             # Check prediction
-            py = exog.dot(beta)
+            py = exog.dot(beta_result)
             f90 = fort_debug.wrapper_point_predictions(exog, f90, num_agents)
             assert_almost_equal(py, f90)
 
