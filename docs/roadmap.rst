@@ -48,7 +48,7 @@ understand estimation of structural models with maximum likelihood.
 Estimate a model by CCP
 -----------------------
 
-Implement estimation by CCP and outline the tradeoffs and discuss the validity of
+Implement estimation by CCP and outline the trade-offs and discuss the validity of
 estimation. This could be combined with having a dataset simulated that does not conform
 to the CCP model and the respy model.
 

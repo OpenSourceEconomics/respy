@@ -6,22 +6,19 @@ transparency, reliability, scalability, and extensibility of the ``respy`` packa
 
 Development Infrastructure
 --------------------------
-.. todo:: Do you still use Chef? I am confused since there is no definition file
-          availabe in the `tools_dir <https://github.com/OpenSourceEconomics/respy/
-          tree/janosg/tools>`_.
 
 We maintain a dedicated development and testing server on the `Amazon Elastic Compute
 Cloud <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code thus making
 it versionable, testable, and repeatable. We create our machine images using `Packer
 <https://www.packer.io/>`_ and `Chef <https://www.chef.io/>`_ and manage our compute
 resources with `Terraform <https://www.terraform.io/>`_. Our definition files are
-available `here <https://github.com/OpenSourceEconomics/respy/tree/janosg/tools>`_.
+available `here <https://github.com/OpenSourceEconomics/respy/tree/master/tools>`_.
 
 Program Design
 --------------
 
 We build on the design of the original authors (`codes <https://github.com/
-OpenSourceEconomics/respy/tree/janosg/development/documentation/forensics>`_). We
+OpenSourceEconomics/respy/tree/master/development/documentation/forensics>`_). We
 maintain a pure Python implementation with a focus on readability and a scalar and
 parallel Fortran implementation to address any performance constraints. We keep the
 structure of the Python and Fortran implementation aligned as much as possible. For
@@ -30,11 +27,8 @@ example, we standardize the naming and interface design of the routines across v
 Test Battery
 ------------
 
-.. image:: https://codecov.io/gh/restudToolbox/package/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/restudToolbox/package
-
-We use `pytest <http://docs.pytest.org>`_ as our test runner. We broadly group our tests
-in four categories:
+We use `pytest <https://docs.pytest.org/en/latest/>`_ as our test runner. We broadly
+group our tests in four categories:
 
 * **property-based testing**
 
@@ -81,8 +75,8 @@ in four categories:
     random start values for the parameter vector that can be far from the true values
     and make sure that the code can handle those cases.
 
-Our `tests <https://github.com/OpenSourceEconomics/respy/tree/janosg/respy/tests>`_ and
-the `testing infrastructure <https://github.com/OpenSourceEconomics/respy/tree/janosg/
+Our `tests <https://github.com/OpenSourceEconomics/respy/tree/master/respy/tests>`_ and
+the `testing infrastructure <https://github.com/OpenSourceEconomics/respy/tree/master/
 development/testing>`_ are available online. As new features are added and the code
 matures, we constantly expand our testing harness. We run a test battery nightly on our
 development server, see `here <https://github.com/OpenSourceEconomics/respy/blob/master/
@@ -90,28 +84,13 @@ example/ec2-respy.testing.log>`__ for an example output.
 
 Documentation
 -------------
-.. todo:: All batches reefer to the no longer existing restudtoolbox repository.
 
 .. image:: https://readthedocs.org/projects/respy/badge/?version=latest
    :target: https://respy.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-The documentation is created using `Sphinx <http://www.sphinx-doc.org/>`_ and hosted on `Read the Docs <https://readthedocs.org/>`_.
-
-Code Review
------------
-
-.. image:: https://api.codacy.com/project/badge/Grade/3dd368fb739c49d78d910676c9264a81
-   :target: https://www.codacy.com/app/eisenhauer/respy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=restudToolbox/package&amp;utm_campaign=Badge_Grade
-
-.. image:: https://landscape.io/github/restudToolbox/package/master/landscape.svg?style=flat
-    :target: https://landscape.io/github/restudToolbox/package/master
-    :alt: Code Health
-
-We use several automatic code review tools to help us improve the readability and
-maintainability of our code base. For example, we work with `Codacy
-<https://app.codacy.com/app/eisenhauer/respy/dashboard>`_ and `Landscape
-<https://landscape.io/github/restudToolbox/package>`_
+The documentation is created using `Sphinx <https://www.sphinx-doc.org/en/master/>`_ and
+hosted on `Read the Docs <https://readthedocs.org/>`_.
 
 Continuous Integration Workflow
 -------------------------------
