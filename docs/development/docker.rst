@@ -45,12 +45,8 @@ Type
 
 .. warning:: On Linux systems you will need sudo permissions for `docker run`
 
-to enter the container and open a bash terminal. Then, switch to the correct environment
-with
-
-.. code-block:: bash
-
-    $ conda activate respy.
+to enter the container and open a bash terminal. The conda environment is already
+activated in ``.bashrc``.
 
 After entering the container you are in the home directory of a Linux system that
 contains the standard files and the `respy` folder.

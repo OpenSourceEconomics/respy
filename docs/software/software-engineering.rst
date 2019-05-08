@@ -4,16 +4,6 @@ Software Engineering
 We now briefly discuss our software engineering practices that help us to ensure the
 transparency, reliability, scalability, and extensibility of the ``respy`` package.
 
-Development Infrastructure
---------------------------
-
-We maintain a dedicated development and testing server on the `Amazon Elastic Compute
-Cloud <https://aws.amazon.com/ec2/>`_. We treat our infrastructure as code thus making
-it versionable, testable, and repeatable. We create our machine images using `Packer
-<https://www.packer.io/>`_ and `Chef <https://www.chef.io/>`_ and manage our compute
-resources with `Terraform <https://www.terraform.io/>`_. Our definition files are
-available `here <https://github.com/OpenSourceEconomics/respy/tree/master/tools>`_.
-
 Program Design
 --------------
 

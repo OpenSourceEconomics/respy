@@ -29,12 +29,11 @@ bounded between 0.7 and 1.0. ``comment`` contains a short description of the par
 
 In alignment to Keane and Wolpin (1994), the error terms of the model are set to follow
 a multivariate normal distribution, allowing for cross-correlation are admissible, and
-excluding serial correlation. In the initialization file, the shock parameters have to
-be specified as standard deviations (single-digit subscripts) and covariances
-(double-digit subscript). In the implementation, the requested number of realizations is
-drawn from the standard normal distribution. The draws are then multiplied by the shock
-parameters set in the initialization file in order to generate the desired
-variance-covariance structure.
+excluding serial correlation. In the parameter specification, the shock parameters have
+to be specified as the lower triangular Cholesky factor of the covariance matrix. In the
+implementation, the requested number of realizations is drawn from the standard normal
+distribution. The draws are then multiplied by the shock parameters implied by the
+Cholesky factor in order to generate the desired variance-covariance structure.
 
 In this example specification the model implementation implies three types of
 heterogeneous agents. The current version of the code works both with more than three
@@ -246,6 +245,14 @@ pgtol       float       gradient norm must be less than gtol before successful
                         termination
 =======     ======      ==========================
 
+Helper functions
+----------------
+
+We provide some helper functions to write a model specification. You can use the
+following function to output a template of the parameter specification.
+
+.. autofunction:: respy.pre_processing.specification_helpers.csv_template
+
 Dataset
 -------
 
@@ -254,10 +261,12 @@ To use respy, you need a dataset with the following columns:
 - Identifier: identifies the different individuals in the sample
 - Period: identifies the different rounds of observation for each individual
 - Choice: an integer variable that indicates the labor market choice
-    - 1 = Occupation A
-    - 2 = Occupation B
-    - 3 = Education
-    - 4 = Home
+
+  - 1 = Occupation A
+  - 2 = Occupation B
+  - 3 = Education
+  - 4 = Home
+
 - Earnings: a float variable that indicates how much people are earning. This variable
   is missing (indicated by a dot) if individuals don't work.
 - Experience_A: labor market experience in sector A

@@ -1,4 +1,5 @@
 import os
+import subprocess as sp
 import sys
 
 
@@ -42,16 +43,7 @@ extensions = [
     "nbsphinx",
 ]
 
-autodoc_mock_imports = [
-    "numba",
-    "numpy",
-    "pandas",
-    "patsy",
-    "yaml",
-    "pytest",
-    "scipy",
-    "statsmodels",
-]
+autodoc_mock_imports = ["numba", "numpy", "pandas", "yaml", "pytest", "scipy"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -79,8 +71,29 @@ linkcheck_ignore = ["https://(dx\.)?doi\.org/*.", "https://zenodo\.org/*."]
 # Configuration for nbsphinx
 nbsphinx_execute = "never"
 nbsphinx_allow_errors = False
+
+# The links to mybinder.org should handle two cases. When the documentation is built on
+# the master branch, mybinder-links should point to notebooks under the version tag.
+# But, if the documentation is built elsewhere, the link should refer to the specified
+# commit. To determine this behavior we need the commit hash and the branch.
+def get_git_branch():
+    return sp.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"], stdout=sp.PIPE, text=True
+    ).stdout[:-1]
+
+
+def get_git_commit():
+    return sp.run(["git", "rev-parse", "HEAD"], stdout=sp.PIPE, text=True).stdout[:-1]
+
+
+branch = get_git_branch()
+commit = get_git_commit()
+
+mybinder_target = branch if branch == "master" else commit
+
+
 nbsphinx_prolog = r"""
-{% set docname = env.doc2path(env.docname, base='docs') %}
+{{% set docname = env.doc2path(env.docname, base='docs') %}}
 
 .. only:: html
 
@@ -91,10 +104,12 @@ nbsphinx_prolog = r"""
 
         This page is available as an interactive notebook:
         :raw-html:`<a href="https://mybinder.org/v2/gh/OpenSourceEconomics/respy/
-        {{ env.config.release }}?filepath={{ docname }}"><img alt="Binder badge"
+        {0}?filepath={{{{ docname }}}}"><img alt="Binder badge"
         src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom">
         </a>`
-"""
+""".format(
+    mybinder_target
+)
 
 
 # -- Options for HTML output ----------------------------------------------

@@ -4,7 +4,19 @@ import pandas as pd
 from respy.python.shared.shared_constants import ROOT_DIR
 
 
-def csv_template(num_types, save_path=None, initialize_coeffs=True):
+def csv_template(num_types=1, save_path=None, initialize_coeffs=True):
+    """Creates a template for the parameter specification.
+
+    Parameters
+    ----------
+    num_types : `int`, optional
+        Number of types in the model. Default is one.
+    save_path : str, pathlib.Path, optional
+        The template is saved to this path. Default is ``None``.
+    initialize_coeffs : bool, optional
+        Whether coefficients are initialized with values or not. Default is ``True``.
+
+    """
     template = _base_template()
     if num_types > 1:
         to_concat = [

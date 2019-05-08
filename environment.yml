@@ -4,11 +4,11 @@ channels:
   - numba
   - conda-forge
 dependencies:
-  - python=3.7
+  - python=3.7.3
   - pip=19.0.3
-  - pandas=0.24
+  - pandas=0.24.2
   - nbsphinx=0.4.2
-  - numba=0.43
+  - numba=0.43.1
   - scipy=1.2.1
   - pip:
     - codecov
