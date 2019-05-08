@@ -72,25 +72,16 @@ linkcheck_ignore = ["https://(dx\.)?doi\.org/*.", "https://zenodo\.org/*."]
 nbsphinx_execute = "never"
 nbsphinx_allow_errors = False
 
-# The links to mybinder.org should handle two cases. When the documentation is built on
-# the master branch, mybinder-links should point to notebooks under the version tag.
-# But, if the documentation is built elsewhere, the link should refer to the specified
-# commit. To determine this behavior we need the commit hash and the branch.
-def get_git_branch():
+# The links to mybinder.org should always point to its commit and not to branches or
+# versions. Otherwise, even older examples would point to newer ones or if the notebooks
+# were deleted, launching will fail.
+def get_git_commit_hash():
     return sp.run(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"], stdout=sp.PIPE, text=True
+        ["git", "rev-parse", "--short", "HEAD"], stdout=sp.PIPE, text=True
     ).stdout[:-1]
 
 
-def get_git_commit():
-    return sp.run(["git", "rev-parse", "HEAD"], stdout=sp.PIPE, text=True).stdout[:-1]
-
-
-branch = get_git_branch()
-commit = get_git_commit()
-
-mybinder_target = branch if branch == "master" else commit
-
+commit_hash = get_git_commit_hash()
 
 nbsphinx_prolog = r"""
 {{% set docname = env.doc2path(env.docname, base='docs') %}}
@@ -108,7 +99,7 @@ nbsphinx_prolog = r"""
         src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom">
         </a>`
 """.format(
-    mybinder_target
+    commit_hash
 )
 
 
