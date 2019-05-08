@@ -24,7 +24,7 @@ in conjunction with a constrained optimizer. In this example the discount factor
 bounded between 0.7 and 1.0. ``comment`` contains a short description of the parameter.
 
 .. csv-table:: kw_data_one_types_initial.csv
-    :file: ../respy/tests/resources/kw_data_one_types_initial.csv
+    :file: ../../respy/tests/resources/kw_data_one_types_initial.csv
     :header-rows: 1
 
 In alignment to Keane and Wolpin (1994), the error terms of the model are set to follow
@@ -63,7 +63,7 @@ Options specification
 In addition to the model parameters, other model options are kept in another
 specification file in the ``json`` format.
 
-.. literalinclude:: ../respy/tests/resources/kw_data_one_types_initial.json
+.. literalinclude:: ../../respy/tests/resources/kw_data_one_types_initial.json
     :lines: 1-49, 62-67, 79-
     :language: json
     :name: kw_data_one_types_initial.json

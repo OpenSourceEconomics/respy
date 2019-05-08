@@ -3,7 +3,8 @@ Welcome to respy's documentation!
 
 `PyPI <https://pypi.org/project/respy/>`_ | `GitHub
 <https://github.com/OpenSourceEconomics/respy>`_  | `Issues
-<https://github.com/OpenSourceEconomics/respy/issues>`_
+<https://github.com/OpenSourceEconomics/respy/issues>`_ | `Pull Requests
+<https://github.com/OpenSourceEconomics/respy/pulls>`_
 
 ``respy`` is an open-source Python package for the simulation and estimation of a
 prototypical finite-horizon discrete choice dynamic programming model. We build on the
@@ -21,46 +22,46 @@ baseline model presented in:
    :caption: Getting Started
    :hidden:
 
-   introduction
-   installation
-   tutorial
+   getting_started/introduction
+   getting_started/installation
+   getting_started/tutorial
 
 .. toctree::
    :maxdepth: 1
    :caption: Economics
    :hidden:
 
-   economic_model
-   solution_and_estimation
-   simulation_example.ipynb
+   economics/economic-model
+   economics/solution-and-estimation
+   economics/simulation-example.ipynb
 
 .. toctree::
    :maxdepth: 1
    :caption: Software
    :hidden:
 
-   model-specification
-   numerical_methods
-   reliability
-   scalability.ipynb
-   software_engineering
+   software/model-specification
+   software/numerical-methods
+   software/reliability
+   software/scalability.ipynb
+   software/software-engineering
 
 .. toctree::
    :maxdepth: 1
    :caption: Development
    :hidden:
 
-   docker
-   releases
-   roadmap
-   api
+   development/docker
+   development/releases
+   development/roadmap
+   development/api
 
 .. toctree::
    :maxdepth: 1
    :caption: Additional Information
    :hidden:
 
-   contributing
-   credits
-   changes
-   bibliography
+   additional_information/contributing
+   additional_information/credits
+   additional_information/changes
+   additional_information/bibliography

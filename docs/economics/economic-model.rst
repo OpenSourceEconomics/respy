@@ -19,7 +19,7 @@ fully learns about all immediate rewards, chooses one of the alternatives and re
 the corresponding benefits. The state space is then updated according to the agent's
 state experience and the process is repeated in :math:`a + 1`.
 
-.. image:: images/timing.png
+.. image:: ../images/timing.png
 
 Agents are forward looking. Thus, they do not simply choose the alternative with the
 highest immediate rewards each period. Instead, their objective at any time :math:`\tau`
@@ -143,7 +143,7 @@ Furthermore, Keane & Wolpin (1997) only allow for a second degree polynomial fun
 for the same sector experience. Respy allows for both civilian sectors (occupation A and
 B) to have quadratic effects on wages in both sectors.
 
-.. include:: occ_a_params.rst
+.. include:: occ-a-params.rst
 
 Occupation B
 ^^^^^^^^^^^^
@@ -173,7 +173,7 @@ They evolve according to the following law:
 
 The same comments as for occupation A apply.
 
-.. include:: occ_b_params.rst
+.. include:: occ-b-params.rst
 
 Occupation C
 ^^^^^^^^^^^^
@@ -214,7 +214,7 @@ evolve according to the following law:
     \cdot x_3^2(a) + \\ & e_{3,4} \cdot 1[x_3 > 0] + e_{3,5}(a) + e_{3, 6} \cdot 1[a <
     18]\}
 
-.. include:: occ_c_params.rst
+.. include:: occ-c-params.rst
 
 Note that the coefficients of the skill technology function are identified by the wage
 data separately from the other coefficients. Thus, both a constant factor (:math:`r_3
@@ -251,7 +251,7 @@ The instantaneous utility of schooling is:
 
 **Education Sector Parameters**
 
-.. include:: occ_edu_params.rst
+.. include:: occ-edu-params.rst
 
 There are no skills in education that evolve over time. However, each type has a
 different base endowment :math:`e_{4, k}(a_0)` that affects how much utility this type
@@ -270,7 +270,7 @@ The instantaneous utility of staying home is:
 
 **Home Sector Parameters**
 
-.. include:: occ_home_params.rst
+.. include:: occ-home-params.rst
 
 There are no skills in home production that evolve over time. However, each type has a
 different base endowment :math:`e_{5, k}(a_0)` that affects how much utility this type

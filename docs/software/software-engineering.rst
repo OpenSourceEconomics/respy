@@ -113,4 +113,4 @@ automatically updated from our development server.
 Lines of code
 -------------
 
-.. image:: ../development/documentation/cloc/lines_of_code_by_language.png
+.. image:: ../../development/documentation/cloc/lines_of_code_by_language.png
