@@ -4,11 +4,11 @@ from pathlib import Path
 
 from setuptools import find_packages
 from setuptools import setup
+from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
-from setuptools.command.install import install
 
 
-class PostDevelopCommand(develop):
+class CustomDevelopCommand(develop):
     """Customized setuptools install command - prints a friendly greeting."""
 
     def run(self):
@@ -23,7 +23,7 @@ class PostDevelopCommand(develop):
         develop.run(self)
 
 
-class PostInstallCommand(install):
+class CustonBuildpyCommand(build_py):
     """Customized setuptools install command - prints a friendly greeting."""
 
     def run(self):
@@ -35,7 +35,7 @@ class PostInstallCommand(install):
 
         os.chdir("..")
 
-        install.run(self)
+        build_py.run(self)
 
 
 DESCRIPTION = (
@@ -78,7 +78,7 @@ setup(
         "pytest>=4.0",
         "pyaml",
     ],
-    cmdclass={"install": PostInstallCommand, "develop": PostDevelopCommand},
+    cmdclass={"build_py": CustonBuildpyCommand, "develop": CustomDevelopCommand},
     platforms="any",
     include_package_data=True,
     zip_safe=False,

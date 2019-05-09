@@ -15,6 +15,7 @@ include *.yml
 include CITATION
 include Dockerfile
 include tox.ini
+include .config
 
 graft docs
 graft respy

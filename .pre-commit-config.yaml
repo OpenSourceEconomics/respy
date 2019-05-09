@@ -52,10 +52,10 @@ repos:
         language: system
         files: '(README.rst)'
         name: restructuredtext-lint - Is the README PyPi-compliant?
-# -   repo: https://notabug.org/mjakob/pre-commit-check-manifest
-#     rev: v0.1.0
-#     hooks:
-#     -   id: check-manifest
+-   repo: https://notabug.org/mjakob/pre-commit-check-manifest
+    rev: v0.1.0
+    hooks:
+    -   id: check-manifest
 -   repo: meta
     hooks:
     -   id: check-hooks-apply
