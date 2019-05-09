@@ -1,8 +1,5 @@
 FROM continuumio/miniconda3:4.5.12
 
-# Install doc2unix to change Windows line endings to Unix.
-RUN apt-get update && apt-get install -y dos2unix
-
 # Update conda.
 RUN conda update conda -y
 
@@ -24,7 +21,6 @@ COPY setup.py ${HOME}
 COPY README.rst ${HOME}
 COPY environment.yml ${HOME}
 COPY entrypoint.sh ${HOME}
-RUN dos2unix /entrypoint.sh
 
 # Make everything in the home directory owned by the user and set the working directory
 # to user's home.
