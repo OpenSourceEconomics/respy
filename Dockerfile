@@ -43,7 +43,7 @@ RUN conda env create --name ose
 RUN echo "conda activate ose" >> ~/.bashrc
 
 # Install current version of respy.
-RUN conda run --name ose pip install -e ${HOME}
+RUN conda run --name ose pip install ${HOME}
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["/bin/bash"]

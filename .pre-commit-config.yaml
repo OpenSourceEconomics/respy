@@ -11,7 +11,7 @@ repos:
     -   id: reorder-python-imports
         types: [python]
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.1.0
+    rev: v2.2.1
     hooks:
     -   id: check-yaml
     -   id: check-merge-conflict
@@ -35,7 +35,7 @@ repos:
     -   id: blacken-docs
         additional_dependencies: [black]
         types: [rst]
--   repo: https://github.com/ambv/black
+-   repo: https://github.com/python/black
     rev: 19.3b0
     hooks:
     -   id: black

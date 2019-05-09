@@ -68,9 +68,7 @@ group our tests in four categories:
 Our `tests <https://github.com/OpenSourceEconomics/respy/tree/master/respy/tests>`_ and
 the `testing infrastructure <https://github.com/OpenSourceEconomics/respy/tree/master/
 development/testing>`_ are available online. As new features are added and the code
-matures, we constantly expand our testing harness. We run a test battery nightly on our
-development server, see `here <https://github.com/OpenSourceEconomics/respy/blob/master/
-example/ec2-respy.testing.log>`__ for an example output.
+matures, we constantly expand our testing harness.
 
 Documentation
 -------------
