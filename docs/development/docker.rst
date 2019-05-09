@@ -22,7 +22,7 @@ respy folder and type
 
 .. code-block:: bash
 
-    $ docker build -t respy .
+    $ docker build -t respy
 
 .. warning:: On Linux systems you will need sudo permissions for `docker build`
 
@@ -46,7 +46,7 @@ Type
 .. warning:: On Linux systems you will need sudo permissions for `docker run`
 
 to enter the container and open a bash terminal. The conda environment is already
-activated in ``.bashrc``.
+activated in due to ``entrypoint.sh`` or an entry in ``.bashrc``.
 
 After entering the container you are in the home directory of a Linux system that
 contains the standard files and the `respy` folder.
@@ -55,7 +55,20 @@ If you want to exit the container, hit ``Ctrl + d`` or type
 
 .. code-block:: bash
 
-    $ exit.
+    $ exit
+
+Run Jupyter Notebook in container
+---------------------------------
+
+You can also start Jupyter inside the container and access it from outside. Type
+
+.. code-block:: bash
+
+    docker run -p 8888:8888 respy jupyter notebook --no-browser --port=8888 --ip=0.0.0.0
+
+and paste the resulting link into your browser.
+
+.. warning:: On Windows you have to replace the hash or 127.0.0.1 with localhost.
 
 Reclaiming space on disk
 ------------------------

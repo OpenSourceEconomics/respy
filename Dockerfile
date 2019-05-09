@@ -1,6 +1,9 @@
 FROM continuumio/miniconda3:4.5.12
 
-# Prepare conda
+# Install doc2unix to change Windows line endings to Unix.
+RUN apt-get update && apt-get install -y dos2unix
+
+# Update conda.
 RUN conda update conda -y
 
 # Set up a user different to root which is best practices and needed for mybinder.org.
@@ -20,8 +23,11 @@ COPY respy ${HOME}/respy
 COPY setup.py ${HOME}
 COPY README.rst ${HOME}
 COPY environment.yml ${HOME}
+COPY entrypoint.sh ${HOME}
+RUN dos2unix /entrypoint.sh
 
-# Make everything in the home directory owned by the user.
+# Make everything in the home directory owned by the user and set the working directory
+# to user's home.
 USER root
 RUN chown -R ${NB_UID} ${HOME}
 USER ${NB_USER}
@@ -34,3 +40,6 @@ RUN echo "conda activate respy" >> ~/.bashrc
 
 # Install current version of respy.
 RUN conda run --name respy pip install .
+
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["/bin/bash"]
