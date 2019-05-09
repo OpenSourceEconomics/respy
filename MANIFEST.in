@@ -1,2 +1,31 @@
-recursive-include respy *.f90 *.f wscript waf 
-graft respy/tests
+# The MANIFEST.in specifies which files are copied over from a temporary directory to
+# site-packages after ``pip install``. Examples can be found here:
+# https://www.reddit.com/r/Python/comments/40s8qw/simplify_your_manifestin_commands/ and
+# https://blog.ionelmc.ro/presentations/packaging.
+
+# Test what is included in the package by running ``python setup.py sdist`` and inspect
+# the tarball.
+
+include CHANGES.rst
+include LICENSE
+include README.rst
+include *.sh
+include *.yaml
+include *.yml
+include CITATION
+include Dockerfile
+include tox.ini
+
+graft docs
+graft respy
+
+prune development
+prune docs/_build
+prune docs/getting_started/__tutorial__
+prune respy/.waf*
+prune respy/waf3-*
+
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .lock-waf*
+global-exclude *-checkpoint.ipynb

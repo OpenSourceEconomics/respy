@@ -1,3 +1,3 @@
 #!/bin/bash
-source activate respy
+source activate ose
 exec "$@"

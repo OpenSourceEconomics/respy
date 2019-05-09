@@ -1,5 +1,8 @@
 FROM continuumio/miniconda3:4.5.12
 
+# Install dos2unix to convert line endings in entrypoint.
+RUN apt-get update && apt-get install -y dos2unix
+
 # Update conda.
 RUN conda update conda -y
 
@@ -22,6 +25,11 @@ COPY README.rst ${HOME}
 COPY environment.yml ${HOME}
 COPY entrypoint.sh ${HOME}
 
+# Convert line endings and remove dos2unix.
+RUN dos2unix ${HOME}/entrypoint.sh \
+    && apt-get --purge remove -y dos2unix \
+    && rm -rf /var/lib/apt/lists/*
+
 # Make everything in the home directory owned by the user and set the working directory
 # to user's home.
 USER root
@@ -31,11 +39,11 @@ WORKDIR ${HOME}
 
 # Prepare conda environment.
 RUN conda init
-RUN conda env create
-RUN echo "conda activate respy" >> ~/.bashrc
+RUN conda env create --name ose
+RUN echo "conda activate ose" >> ~/.bashrc
 
 # Install current version of respy.
-RUN conda run --name respy pip install .
+RUN conda run --name ose pip install -e ${HOME}
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["/bin/bash"]

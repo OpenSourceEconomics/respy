@@ -4,17 +4,19 @@ from pathlib import Path
 
 from setuptools import find_packages
 from setuptools import setup
-from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
+from setuptools.command.install import install
 
 
-class CustomDevelopCommand(develop):
+class PostDevelopCommand(develop):
     """Customized setuptools install command - prints a friendly greeting."""
 
     def run(self):
         """ Overwriting the existing command.
         """
         os.chdir("respy")
+
+        print(os.getcwd())
 
         subprocess.run(["python", "waf", "distclean"])
         subprocess.run(["python", "waf", "configure", "build", "-j", "1", "-vvv"])
@@ -24,7 +26,7 @@ class CustomDevelopCommand(develop):
         develop.run(self)
 
 
-class CustomBuildCommand(build_py):
+class PostInstallCommand(install):
     """Customized setuptools install command - prints a friendly greeting."""
 
     def run(self):
@@ -37,7 +39,7 @@ class CustomBuildCommand(build_py):
 
         os.chdir("../")
 
-        build_py.run(self)
+        install.run(self)
 
 
 DESCRIPTION = (
@@ -64,17 +66,6 @@ setup(
     url="https://respy.readthedocs.io/en/latest/",
     project_urls=PROJECT_URLS,
     packages=find_packages(),
-    package_data={
-        "respy": [
-            "fortran/bin/*",
-            "fortran/*.so",
-            "fortran/lib/*.*",
-            "fortran/include/*.*",
-            "tests/resources/*",
-            ".config",
-            "pre_processing/base_spec.csv",
-        ]
-    },
     license="MIT",
     keywords=["Economics", " Dynamic Discrete Choice Model"],
     classifiers=[
@@ -91,7 +82,7 @@ setup(
         "pytest>=4.0",
         "pyaml",
     ],
-    cmdclass={"build_py": CustomBuildCommand, "develop": CustomDevelopCommand},
+    cmdclass={"install": PostInstallCommand, "develop": PostDevelopCommand},
     platforms="any",
     include_package_data=True,
     zip_safe=False,
