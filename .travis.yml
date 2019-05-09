@@ -47,7 +47,7 @@ install:
     # Install Numpy for compilation
     - conda install numpy
     # Install respy
-    - pip install . --no-deps
+    - pip install -e . --no-deps
 
     - pip install tox-conda
 

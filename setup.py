@@ -12,16 +12,13 @@ class PostDevelopCommand(develop):
     """Customized setuptools install command - prints a friendly greeting."""
 
     def run(self):
-        """ Overwriting the existing command.
-        """
+        """Overwriting the existing command."""
         os.chdir("respy")
-
-        print(os.getcwd())
 
         subprocess.run(["python", "waf", "distclean"])
         subprocess.run(["python", "waf", "configure", "build", "-j", "1", "-vvv"])
 
-        os.chdir("../")
+        os.chdir("..")
 
         develop.run(self)
 
@@ -30,14 +27,13 @@ class PostInstallCommand(install):
     """Customized setuptools install command - prints a friendly greeting."""
 
     def run(self):
-        """ Overwriting the existing command.
-        """
+        """Overwriting the existing command."""
         os.chdir("respy")
 
         subprocess.run(["python", "waf", "distclean"])
         subprocess.run(["python", "waf", "configure", "build", "-j", "1", "-vvv"])
 
-        os.chdir("../")
+        os.chdir("..")
 
         install.run(self)
 
