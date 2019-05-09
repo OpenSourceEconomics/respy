@@ -8,6 +8,7 @@ __pycache__
 docs/_build/
 respy/.bld/
 .waf*
+waf3-*
 .lock-waf_linux_build
 .tox
 .coverage

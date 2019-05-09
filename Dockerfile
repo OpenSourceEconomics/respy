@@ -22,6 +22,7 @@ COPY docs ${HOME}/docs
 COPY respy ${HOME}/respy
 COPY setup.py ${HOME}
 COPY README.rst ${HOME}
+COPY MANIFEST.in ${HOME}
 COPY environment.yml ${HOME}
 COPY entrypoint.sh ${HOME}
 
