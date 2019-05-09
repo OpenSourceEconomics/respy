@@ -83,8 +83,8 @@ not accidentally delete valuable information.
     $ docker container prune  # Delete unused containers.
     $ docker system prune -a  # Delete unused docker objects.
 
-But even if you reclaim the space with the above commands, Docker seems to reserve more
-and more space. A restart after the pruning solves this.
+But even if you reclaim disk space with the above commands, Docker seems to reserve more
+and more space without freeing it. A restart after the pruning solves this.
 
 mybinder.org
 ------------

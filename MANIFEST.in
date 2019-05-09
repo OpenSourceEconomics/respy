@@ -20,6 +20,7 @@ include .config
 graft docs
 graft respy
 
+prune .binder
 prune development
 prune docs/_build
 prune docs/getting_started/__tutorial__
