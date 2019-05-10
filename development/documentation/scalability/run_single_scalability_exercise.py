@@ -16,9 +16,10 @@ def main():
     over the estimation.
 
     """
-    model = sys.argv[1]
-    maxfun = int(sys.argv[2])
-    num_threads = int(sys.argv[3])
+    version = sys.argv[1]
+    model = sys.argv[2]
+    maxfun = int(sys.argv[3])
+    num_threads = int(sys.argv[4])
 
     # Test commandline input
     assert maxfun >= 0, "Maximum number of function evaluations cannot be negative."
@@ -28,7 +29,7 @@ def main():
     )
 
     # Set number of threads
-    if not num_threads == -1:
+    if not num_threads == -1 and version == "python":
         os.environ["NUMBA_NUM_THREADS"] = f"{num_threads}"
         os.environ["MKL_NUM_THREADS"] = f"{num_threads}"
         os.environ["OMP_NUM_THREADS"] = f"{num_threads}"
@@ -46,7 +47,10 @@ def main():
     options_spec, params_spec = get_example_model(model)
 
     # Adjust options
-    options_spec["program"]["version"] = "python"
+    options_spec["program"]["version"] = version
+    if version == "fortran":
+        options_spec["program"]["procs"] = 1
+        options_spec["program"]["threads"] = num_threads
 
     # Go into temporary folder
     folder = f"__{num_threads}"
