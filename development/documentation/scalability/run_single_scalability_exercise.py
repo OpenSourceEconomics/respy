@@ -35,7 +35,7 @@ def main():
         os.environ["NUMEXPR_NUM_THREADS"] = f"{num_threads}"
 
     # Late import of respy to ensure that environment variables are read.
-    from respy import RespyCls, get_example_models
+    from respy import RespyCls, get_example_model
     from respy.python.interface import respy_interface
     from respy.python.shared.shared_auxiliary import dist_class_attributes
     from respy.python.estimate.estimate_python import pyth_criterion
@@ -43,7 +43,7 @@ def main():
     from respy.python.shared.shared_auxiliary import get_optim_paras
 
     # Get model
-    options_spec, params_spec = get_example_models(model)
+    options_spec, params_spec = get_example_model(model)
 
     # Adjust options
     options_spec["program"]["version"] = "python"
@@ -129,11 +129,12 @@ def main():
         "duration": str(end - start),
     }
 
-    # Step out of temp folder
+    # Step out of temp folder and delete it
     os.chdir("..")
+    shutil.rmtree(folder)
 
     # Save time to file
-    with open("data.txt", "a+") as file:
+    with open("scalability_results.txt", "a+") as file:
         file.write(json.dumps(output))
         file.write("\n")
 

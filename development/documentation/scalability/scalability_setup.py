@@ -11,7 +11,7 @@ def main():
     """
     model = "kw_data_one"
     num_threads = [1, 2, 4, 6, 8, 10]
-    maxfun = 1000
+    maxfun = 1
 
     filepath = Path(__file__).resolve().parent / "run_single_scalability_exercise.py"
 
