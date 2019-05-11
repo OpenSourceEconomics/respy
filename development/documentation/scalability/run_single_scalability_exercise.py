@@ -19,7 +19,8 @@ def main():
     version = sys.argv[1]
     model = sys.argv[2]
     maxfun = int(sys.argv[3])
-    num_threads = int(sys.argv[4])
+    num_procs = int(sys.argv[4])
+    num_threads = int(sys.argv[5])
 
     # Test commandline input
     assert maxfun >= 0, "Maximum number of function evaluations cannot be negative."
@@ -49,7 +50,7 @@ def main():
     # Adjust options
     options_spec["program"]["version"] = version
     if version == "fortran":
-        options_spec["program"]["procs"] = 1
+        options_spec["program"]["procs"] = num_procs
         options_spec["program"]["threads"] = num_threads
 
     # Go into temporary folder
@@ -100,7 +101,12 @@ def main():
     )
 
     # Run the estimation
+    print(
+        f"Start. Program: {version}, Model: {model}, Maxfun: {maxfun}, Procs: "
+        f"{num_procs}, Threads: {num_threads}."
+    )
     start = dt.datetime.now()
+
     for _ in range(maxfun):
         # Change parameters only a bit as result caching might be a problem. Changes in
         # parameters are only positive.
@@ -123,10 +129,14 @@ def main():
         )
     end = dt.datetime.now()
 
+    print(f"End. Duration: {end - start} seconds.")
+
     # Aggregate information
     output = {
+        "version": version,
         "model": model,
         "maxfun": maxfun,
+        "num_procs": num_procs,
         "num_threads": num_threads,
         "start": str(start),
         "end": str(end),
