@@ -81,6 +81,11 @@ Linux
 We use the `Message Passing Interface (MPI) <https://www.mpi-forum.org/>`_ library. This
 requires a recent version of its `MPICH <https://www.mpich.org/>`_ implementation
 available on your compiler's search path which was build with shared/dynamic libraries.
+Install it with
+
+.. code-block:: bash
+
+    sudo apt-get install libmpich-dev
 
 Windows
 """""""

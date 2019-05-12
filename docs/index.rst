@@ -25,6 +25,7 @@ baseline model presented in:
    getting_started/introduction
    getting_started/installation
    getting_started/tutorial
+   getting_started/simulation-example.ipynb
 
 .. toctree::
    :maxdepth: 1
@@ -33,7 +34,6 @@ baseline model presented in:
 
    economics/economic-model
    economics/solution-and-estimation
-   economics/simulation-example.ipynb
 
 .. toctree::
    :maxdepth: 1

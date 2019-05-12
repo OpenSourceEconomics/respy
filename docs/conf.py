@@ -1,5 +1,4 @@
 import os
-import subprocess as sp
 import sys
 
 
@@ -71,36 +70,6 @@ linkcheck_ignore = ["https://(dx\.)?doi\.org/*.", "https://zenodo\.org/*."]
 # Configuration for nbsphinx
 nbsphinx_execute = "never"
 nbsphinx_allow_errors = False
-
-# The links to mybinder.org should always point to its commit and not to branches or
-# versions. Otherwise, even older examples would point to newer ones or if the notebooks
-# were deleted, launching will fail.
-def get_git_commit_hash():
-    return sp.run(
-        ["git", "rev-parse", "--short", "HEAD"], stdout=sp.PIPE, text=True
-    ).stdout[:-1]
-
-
-commit_hash = get_git_commit_hash()
-
-nbsphinx_prolog = r"""
-{{% set docname = env.doc2path(env.docname, base='docs') %}}
-
-.. only:: html
-
-    .. role:: raw-html(raw)
-        :format: html
-
-    .. nbinfo::
-
-        This page is available as an interactive notebook:
-        :raw-html:`<a href="https://mybinder.org/v2/gh/OpenSourceEconomics/respy/
-        {0}?filepath={{{{ docname }}}}"><img alt="Binder badge"
-        src="https://mybinder.org/badge_logo.svg" style="vertical-align:text-bottom">
-        </a>`
-""".format(
-    commit_hash
-)
 
 
 # -- Options for HTML output ----------------------------------------------

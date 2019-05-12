@@ -23,7 +23,7 @@ class CustomDevelopCommand(develop):
         develop.run(self)
 
 
-class CustonBuildpyCommand(build_py):
+class CustonBuildCommand(build_py):
     """Customized setuptools install command - prints a friendly greeting."""
 
     def run(self):
@@ -78,7 +78,7 @@ setup(
         "pytest>=4.0",
         "pyaml",
     ],
-    cmdclass={"build_py": CustonBuildpyCommand, "develop": CustomDevelopCommand},
+    cmdclass={"build_py": CustonBuildCommand, "develop": CustomDevelopCommand},
     platforms="any",
     include_package_data=True,
     zip_safe=False,
