@@ -4,7 +4,7 @@ Installation
 The ``respy`` package can be conveniently installed from the `Python Package Index
 <https://pypi.org/>`_ (PyPI) or directly from its source files. We currently support
 only Python 3.6+. We develop the package mainly on Linux systems, but the test battery
-ensures the compatibility to Windows and MacOS.
+ensures compatibility with Windows and MacOS.
 
 Python Package Index
 --------------------

@@ -10,4 +10,6 @@ figure.autolayout : true
 xtick.labelsize : 20
 ytick.labelsize : 20
 axes.labelsize: 24
+axes.titlesize : 24
 legend.fontsize: 24
+grid.linewidth : 1.2    # in points

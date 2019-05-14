@@ -5,8 +5,6 @@ import shutil
 import sys
 from pathlib import Path
 
-import numpy as np
-
 
 def main():
     """Run the estimation of a model using a number of threads and a maximum of function
@@ -39,16 +37,14 @@ def main():
     # Late import of respy to ensure that environment variables are read.
     from respy import RespyCls, get_example_model
     from respy.python.interface import respy_interface
-    from respy.python.shared.shared_auxiliary import dist_class_attributes
-    from respy.python.estimate.estimate_python import pyth_criterion
-    from respy.python.shared.shared_auxiliary import create_draws
-    from respy.python.shared.shared_auxiliary import get_optim_paras
+    from respy.fortran.interface import resfort_interface
 
     # Get model
     options_spec, params_spec = get_example_model(model)
 
     # Adjust options
     options_spec["program"]["version"] = version
+    options_spec["estimation"]["maxfun"] = 0
     if version == "fortran":
         options_spec["program"]["procs"] = num_procs
         options_spec["program"]["threads"] = num_threads
@@ -67,39 +63,6 @@ def main():
     # Simulate the data
     state_space, simulated_data = respy_interface(respy_obj, "simulate")
 
-    # Create necessary inputs to pyth_criterion
-    (
-        optim_paras,
-        num_periods,
-        is_debug,
-        num_draws_prob,
-        seed_prob,
-        num_draws_emax,
-        seed_emax,
-        is_interpolated,
-        num_points_interp,
-        tau,
-        num_paras,
-    ) = dist_class_attributes(
-        respy_obj,
-        "optim_paras",
-        "num_periods",
-        "is_debug",
-        "num_draws_prob",
-        "seed_prob",
-        "num_draws_emax",
-        "seed_emax",
-        "is_interpolated",
-        "num_points_interp",
-        "tau",
-        "num_paras",
-    )
-    periods_draws_prob = create_draws(num_periods, num_draws_prob, seed_prob, is_debug)
-    periods_draws_emax = create_draws(num_periods, num_draws_emax, seed_emax, is_debug)
-    x_optim_all_unscaled_start = get_optim_paras(
-        optim_paras, num_paras, "all", is_debug
-    )
-
     # Run the estimation
     print(
         f"Start. Program: {version}, Model: {model}, Maxfun: {maxfun}, Procs: "
@@ -108,25 +71,11 @@ def main():
     start = dt.datetime.now()
 
     for _ in range(maxfun):
-        # Change parameters only a bit as result caching might be a problem. Changes in
-        # parameters are only positive.
-        slightly_changed_parameters = (
-            x_optim_all_unscaled_start
-            + np.random.uniform(low=0, high=1, size=x_optim_all_unscaled_start.shape)
-            * 1e-07
-        )
+        if version == "python":
+            respy_interface(respy_obj, "estimate", simulated_data)
+        else:
+            resfort_interface(respy_obj, "estimate", simulated_data)
 
-        pyth_criterion(
-            slightly_changed_parameters,
-            is_interpolated,
-            num_points_interp,
-            is_debug,
-            simulated_data,
-            tau,
-            periods_draws_emax,
-            periods_draws_prob,
-            state_space,
-        )
     end = dt.datetime.now()
 
     print(f"End. Duration: {end - start} seconds.")
