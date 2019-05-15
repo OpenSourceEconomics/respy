@@ -211,7 +211,7 @@ class TestClass(object):
             exog[:, 0] = 1
             endog = np.dot(exog, beta) + tiny
 
-            # Run statsmodels
+            # Run OLS
             beta_result = ols(y=endog, x=exog)
 
             # Check parameters
