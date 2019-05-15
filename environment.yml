@@ -10,17 +10,16 @@ dependencies:
   - nbsphinx=0.4.2
   - numba=0.43.1
   - scipy=1.2.1
-  - pip:
-    - codecov
-    - doc8
-    - jupyterlab
-    - matplotlib>=3.0.0
-    - pyaml
-    - pytest
-    - pytest-cov
-    - pytest-xdist
-    - restructuredtext_lint
-    - Sphinx>=2.0.0
-    - sphinx-autobuild
-    - sphinx_rtd_theme
-    - tox-conda
+  - codecov
+  - doc8
+  - jupyterlab
+  - matplotlib>=3.0.0
+  - pyaml
+  - pytest
+  - pytest-cov
+  - pytest-xdist
+  - restructuredtext_lint
+  - Sphinx>=2.0.0
+  - sphinx-autobuild
+  - sphinx_rtd_theme
+  - tox-conda

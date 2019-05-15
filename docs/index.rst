@@ -24,8 +24,8 @@ baseline model presented in:
 
    getting_started/introduction
    getting_started/installation
-   getting_started/tutorial
-   getting_started/simulation-example.ipynb
+   getting_started/tutorial-model.ipynb
+   getting_started/tutorial-simulation.ipynb
 
 .. toctree::
    :maxdepth: 1

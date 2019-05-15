@@ -33,3 +33,8 @@ Here is some of the recent work:
 We provide the package and its documentation to ensure the recomputability,
 transparency, and extensibility of this research. We also hope to showcase how software
 engineering practices can help in achieving these goals.
+
+For an almost non-technical introduction to the package see the :download:`paper
+<../_static/cscubs-2019/paper.pdf>` or the :download:`presentation
+<../_static/cscubs-2019/presentation.pdf>` we contributed to `CSCBUS 2019
+<http://cscubs.cs.uni-bonn.de/2019>`_.

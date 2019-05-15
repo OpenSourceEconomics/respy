@@ -14,7 +14,8 @@ releases are available on `PyPI <https://pypi.org/project/respy/>`_.
 - `#180 <https://github.com/OpenSourceEconomics/respy/pull/180>`_ adds a long
   description to the PYPi package.
 - `#181 <https://github.com/OpenSourceEconomics/respy/pull/181>`_ implements `nbsphinx
-  <https://nbsphinx.readthedocs.io/en/latest/>`_ for an interactive documentation.
+  <https://nbsphinx.readthedocs.io/en/latest/>`_ for a documentation based on notebooks
+  and reworks structure and graphics.
 - `#186 <https://github.com/OpenSourceEconomics/respy/pull/186>`_ replaces statsmodels
   as a dependency. OLS is now less error-prone, more efficient and faster.
 
