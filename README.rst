@@ -1,8 +1,6 @@
 respy
 =====
 
-.. image:: https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000
-
 .. image:: https://readthedocs.org/projects/respy/badge/?version=master
     :target: https://respy.readthedocs.io/en/master/?badge=master
     :alt: Documentation Status
@@ -25,5 +23,5 @@ baseline model presented in:
     Evidence <https://doi.org/10.2307/2109768>`_. *The Review of Economics and
     Statistics*, 76(4): 648-672.
 
-Please visit our `online documentation <https://respy.readthedocs.io/en/master/>`_ for
+Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for
 details.

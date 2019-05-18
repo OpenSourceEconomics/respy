@@ -6,10 +6,24 @@ chronological order. We follow `semantic versioning <https://semver.org/>`_ and 
 releases are available on `PyPI <https://pypi.org/project/respy/>`_.
 
 
+1.2.1 - 2019-05-
+----------------
+
+- `#170 <https://github.com/OpenSourceEconomics/respy/pull/170>`_ adds a test for
+  inadmissible states in the state space.
+- `#180 <https://github.com/OpenSourceEconomics/respy/pull/180>`_ adds a long
+  description to the PYPi package.
+- `#181 <https://github.com/OpenSourceEconomics/respy/pull/181>`_ implements `nbsphinx
+  <https://nbsphinx.readthedocs.io/en/latest/>`_ for a documentation based on notebooks
+  and reworks structure and graphics.
+- `#186 <https://github.com/OpenSourceEconomics/respy/pull/186>`_ replaces statsmodels
+  as a dependency. OLS is now less error-prone, more efficient and faster.
+
+
 1.2.0 - 2019-04-23
 ------------------
 
-This is the last release with a Fortran implementation.
+This is the last release with a Fortran implementation. Mirrors 1.2.0-rc.1.
 
 1.2.0-rc.1 - 2019-04-23
 -----------------------
