@@ -5,14 +5,9 @@ This is a record of all past ``respy`` releases and what went into them in rever
 chronological order. We follow `semantic versioning <https://semver.org/>`_ and all
 releases are available on `PyPI <https://pypi.org/project/respy/>`_.
 
-1.2.1 - 2019-05
----------------
 
-- `#186 <https://github.com/OpenSourceEconomics/respy/pull/186>`_ replaces statsmodels
-  as a dependency which is less error-prone, more efficient and faster.
-
-1.2.1 - 2019-05-
-----------------
+1.2.1 - 2019-05-18
+------------------
 
 - `#170 <https://github.com/OpenSourceEconomics/respy/pull/170>`_ adds a test for
   inadmissible states in the state space.
@@ -21,8 +16,12 @@ releases are available on `PyPI <https://pypi.org/project/respy/>`_.
 - `#181 <https://github.com/OpenSourceEconomics/respy/pull/181>`_ implements `nbsphinx
   <https://nbsphinx.readthedocs.io/en/latest/>`_ for a documentation based on notebooks
   and reworks structure and graphics.
+- `#183 <https://github.com/OpenSourceEconomics/respy/pull/183>`_ adds a small set of
+  regression tests.
+- `#185 <https://github.com/OpenSourceEconomics/respy/pull/185>`_ adds a list of topics
+  for theses.
 - `#186 <https://github.com/OpenSourceEconomics/respy/pull/186>`_ replaces statsmodels
-  as a dependency. OLS is now less error-prone, more efficient and faster.
+  as a dependency with our own implementation.
 
 
 1.2.0 - 2019-04-23
