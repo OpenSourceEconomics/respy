@@ -4,12 +4,12 @@ import os
 import shutil
 
 import numpy as np
-from statsmodels.tools.eval_measures import rmse
 
 from respy import RespyCls
 from respy.custom_exceptions import UserError
 from respy.pre_processing.data_processing import process_dataset
 from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import rmse
 from respy.python.simulate.simulate_auxiliary import construct_transition_matrix
 from respy.python.simulate.simulate_auxiliary import format_float
 from respy.scripts.scripts_update import scripts_update

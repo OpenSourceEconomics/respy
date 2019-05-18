@@ -923,3 +923,78 @@ def number_of_triangular_elements_to_dimensio(num):
 
     """
     return int(np.sqrt(8 * num + 1) / 2 - 0.5)
+
+
+def ols(y, x):
+    """Ols implementation using a pseudo inverse.
+
+    Parameters
+    ----------
+    x (ndarray): n x n matrix of independent variables.
+    y (array): n x 1 matrix with dependant variable.
+
+    Returns
+    -------
+        beta (array): n x 1 array of estimated parameter vector
+
+    """
+    beta = np.dot(np.linalg.pinv(x.T.dot(x)), x.T.dot(y))
+    return beta
+
+
+def mse(x1, x2, axis=0):
+    """mean squared error.
+
+    Parameters
+    ----------
+    x1, x2 : array_like
+       The performance measure depends on the difference between these two
+       arrays.
+    axis : int
+       axis along which the summary statistic is calculated
+
+    Returns
+    -------
+    mse : ndarray or float
+       mean squared error along given axis.
+
+    Notes
+    -----
+    If ``x1`` and ``x2`` have different shapes, then they need to broadcast.
+    This uses ``numpy.asanyarray`` to convert the input. Whether this is the
+    desired result or not depends on the array subclass, for example
+    numpy matrices will silently produce an incorrect result.
+
+    """
+    x1 = np.asanyarray(x1)
+    x2 = np.asanyarray(x2)
+    return np.mean((x1 - x2) ** 2, axis=axis)
+
+
+def rmse(x1, x2, axis=0):
+    """root mean squared error
+
+    Parameters
+    ----------
+    x1, x2 : array_like
+       The performance measure depends on the difference between these two
+       arrays.
+    axis : int
+       axis along which the summary statistic is calculated
+
+    Returns
+    -------
+    rmse : ndarray or float
+       root mean squared error along given axis.
+
+    Notes
+    -----
+    If ``x1`` and ``x2`` have different shapes, then they need to broadcast.
+    This uses ``numpy.asanyarray`` to convert the input. Whether this is the
+    desired result or not depends on the array subclass, for example
+    numpy matrices will silently produce an incorrect result.
+
+    """
+    x1 = np.asanyarray(x1)
+    x2 = np.asanyarray(x2)
+    return np.sqrt(mse(x1, x2, axis=axis))

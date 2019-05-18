@@ -203,7 +203,7 @@ SUBROUTINE fort_calculate_rewards_systematic(periods_rewards_systematic, num_per
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! ALlocate container (if required) and initilaize missing values.
+    ! ALlocate container (if required) and initialize missing values.
     IF (.NOT. ALLOCATED(periods_rewards_systematic)) THEN
         ALLOCATE(periods_rewards_systematic(num_periods, max_states_period, 4))
     END IF
@@ -336,7 +336,7 @@ SUBROUTINE fort_backward_induction(periods_emax, num_periods, is_myopic, max_sta
 ! Algorithm
 !------------------------------------------------------------------------------
 
-    ! ALlocate container (if required) and initialize missing values.
+    ! Allocate container (if required) and initialize missing values.
     IF (.NOT. ALLOCATED(periods_emax)) ALLOCATE(periods_emax(num_periods, max_states_period))
 
     periods_emax = MISSING_FLOAT

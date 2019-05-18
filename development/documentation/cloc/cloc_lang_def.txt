@@ -1,0 +1,4 @@
+RestructuredText
+    filter remove_matches ^\.\.
+    extension rst
+    3rd_gen_scale 2.00

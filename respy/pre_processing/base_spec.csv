@@ -7,7 +7,7 @@ coeffs_a,return_schooling,0.07,FALSE,,,linear return to an additional year of sc
 coeffs_a,exp_a,0.027,FALSE,,,"return to experience, same sector, linear (wage)"
 coeffs_a,exp_a_square,-0.0429,FALSE,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
 coeffs_a,exp_b,0.0225,FALSE,,,"return to experience, other civilian sector, linear (wage)"
-coeffs_a,exb_b_square,0,TRUE,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
+coeffs_a,exp_b_square,0,TRUE,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
 coeffs_a,premium_hs,-0.0036,FALSE,,,skill premium of having finished high school (wage)
 coeffs_a,premium_col,0.0023,FALSE,,,skill premium of having finished college (wage)
 coeffs_a,age,0.0102,FALSE,,,linear age effect (wage)
@@ -22,7 +22,7 @@ coeffs_b,return_schooling,0.024,FALSE,,,linear return to an additional year of s
 coeffs_b,exp_a,0.0191,FALSE,,,"return to experience, other civilian sector, linear (wage)"
 coeffs_b,exp_a_square,0,TRUE,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
 coeffs_b,exp_b,0.0464,FALSE,,,"return to experience, same sector, linear (wage)"
-coeffs_b,exb_b_square,-0.0759,FALSE,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+coeffs_b,exp_b_square,-0.0759,FALSE,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
 coeffs_b,premium_hs,0.0058,FALSE,,,skill premium of having finished high school (wage)
 coeffs_b,premium_col,0.0058,FALSE,,,skill premium of having finished college (wage)
 coeffs_b,age,0.0114,FALSE,,,linear age effect (wage)
