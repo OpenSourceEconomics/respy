@@ -1,14 +1,12 @@
 import numpy as np
 
 from respy import RespyCls
-from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.random_model import generate_random_model
 
 
 class TestClass(object):
-    """ This class groups together some tests.
-    """
+    """This class groups together some tests."""
 
     def test_1(self):
         """ This is the special case where the EMAX better be equal to the MAXE.
@@ -25,29 +23,25 @@ class TestClass(object):
 
         baseline = None
 
-        a = []
-
         # Solve with and without interpolation code
         for _ in range(2):
             respy_obj = RespyCls(params_spec, options_spec)
             respy_obj = simulate_observed(respy_obj)
 
             # Extract class attributes
-            states_number_period, periods_emax, state_space = dist_class_attributes(
-                respy_obj, "states_number_period", "periods_emax", "state_space"
-            )
-
-            a.append(state_space)
+            state_space = respy_obj.attr["state_space"]
 
             # Store and check results
             if baseline is None:
-                baseline = periods_emax.copy()
+                baseline = state_space.emaxs.copy()
             else:
-                np.testing.assert_array_almost_equal(baseline, periods_emax)
+                np.testing.assert_array_almost_equal(baseline, state_space.emaxs)
 
             # Updates for second iteration. This ensures that there is at least one
             # interpolation taking place.
-            options_spec["interpolation"]["points"] = max(states_number_period) - 1
+            options_spec["interpolation"]["points"] = (
+                max(state_space.states_per_period) - 1
+            )
             options_spec["interpolation"]["flag"] = True
 
     def test_2(self):
@@ -72,16 +66,14 @@ class TestClass(object):
             respy_obj = simulate_observed(respy_obj)
 
             # Extract class attributes
-            states_number_period, periods_emax = dist_class_attributes(
-                respy_obj, "states_number_period", "periods_emax"
-            )
+            state_space = respy_obj.attr["state_space"]
 
             # Store and check results
             if baseline is None:
-                baseline = periods_emax
+                baseline = state_space.emaxs
             else:
-                np.testing.assert_array_almost_equal(baseline, periods_emax)
+                np.testing.assert_array_almost_equal(baseline, state_space.emaxs)
 
             # Updates for second iteration
-            options_spec["interpolation"]["points"] = max(states_number_period)
+            options_spec["interpolation"]["points"] = max(state_space.states_per_period)
             options_spec["interpolation"]["flag"] = True

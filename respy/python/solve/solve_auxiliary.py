@@ -15,8 +15,6 @@ from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
 from respy.python.shared.shared_auxiliary import ols
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_constants import MISSING_FLOAT
-from respy.python.shared.shared_constants import MISSING_INT
 from respy.python.solve.solve_risk import construct_emax_risk
 
 
@@ -886,63 +884,3 @@ class StateSpace:
         for i in range(num_periods):
             idx_start, idx_end = np.where(self.states[:, 0] == i)[0][[0, -1]]
             self.slices_by_periods.append(slice(idx_start, idx_end + 1))
-
-    def _create_attributes_from_fortran_counterparts(self, periods_emax):
-        """Create state space attributes from FORTRAN outputs.
-
-        This function is only used once in ``test_unit.py`` and could be deleted if not
-        used elsewhere.
-
-        """
-        self.emaxs = np.column_stack(
-            (
-                np.zeros((self.states_per_period.sum(), 4)),
-                periods_emax[~np.isnan(periods_emax) & (periods_emax != MISSING_FLOAT)],
-            )
-        )
-
-    def _get_fortran_counterparts(self):
-        """Convert own results to the format of FORTRAN results."""
-        try:
-            periods_rewards_systematic = np.full(
-                (self.num_periods, self.states_per_period.max(), 4), MISSING_FLOAT
-            )
-            for period in range(self.num_periods):
-                rewards = self.get_attribute_from_period("rewards", period)[:, :4]
-
-                periods_rewards_systematic[period, : rewards.shape[0]] = rewards
-        except KeyError:
-            periods_rewards_systematic = None
-
-        try:
-            periods_emax = np.full(
-                (self.num_periods, self.states_per_period.max()), MISSING_FLOAT
-            )
-            for period in range(self.num_periods):
-                emax = self.get_attribute_from_period("emaxs", period)[:, 4]
-
-                periods_emax[period, : emax.shape[0]] = emax
-        except KeyError:
-            periods_emax = None
-
-        states_all = np.full(
-            (self.num_periods, self.states_per_period[-1], 5), MISSING_INT
-        )
-        for period in range(self.num_periods):
-            states = self.get_attribute_from_period("states", period)[:, 1:]
-
-            states_all[period, : states.shape[0], :] = states
-
-        # The indexer has to be modified because ``mapping_state_idx`` resets the
-        # counter to zero for each period and ``self.indexer`` not. For every period,
-        # subtract the minimum index.
-        mapping_state_idx = self.indexer.copy()
-        for period in range(self.num_periods):
-            mask = mapping_state_idx[period] != -1
-            minimum_index = mapping_state_idx[period][mask].min()
-
-            mapping_state_idx[period][mask] -= minimum_index
-
-        mapping_state_idx[mapping_state_idx == -1] = MISSING_INT
-
-        return (states_all, mapping_state_idx, periods_rewards_systematic, periods_emax)

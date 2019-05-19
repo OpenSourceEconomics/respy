@@ -1,41 +1,7 @@
-import os
-import subprocess
 from pathlib import Path
 
 from setuptools import find_packages
 from setuptools import setup
-from setuptools.command.build_py import build_py
-from setuptools.command.develop import develop
-
-
-class CustomDevelopCommand(develop):
-    """Customized setuptools install command - prints a friendly greeting."""
-
-    def run(self):
-        """Overwriting the existing command."""
-        os.chdir("respy")
-
-        subprocess.run(["python", "waf", "distclean"])
-        subprocess.run(["python", "waf", "configure", "build", "-j", "1", "-vvv"])
-
-        os.chdir("..")
-
-        develop.run(self)
-
-
-class CustonBuildCommand(build_py):
-    """Customized setuptools install command - prints a friendly greeting."""
-
-    def run(self):
-        """Overwriting the existing command."""
-        os.chdir("respy")
-
-        subprocess.run(["python", "waf", "distclean"])
-        subprocess.run(["python", "waf", "configure", "build", "-j", "1", "-vvv"])
-
-        os.chdir("..")
-
-        build_py.run(self)
 
 
 DESCRIPTION = (
@@ -78,7 +44,6 @@ setup(
         "pytest>=4.0",
         "pyaml",
     ],
-    cmdclass={"build_py": CustonBuildCommand, "develop": CustomDevelopCommand},
     platforms="any",
     include_package_data=True,
     zip_safe=False,

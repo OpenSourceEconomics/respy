@@ -1,5 +1,4 @@
 import copy
-import random
 
 import numpy as np
 import pandas as pd
@@ -13,8 +12,6 @@ from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.scripts.scripts_check import scripts_check
 from respy.scripts.scripts_estimate import scripts_estimate
 from respy.tests.codes.auxiliary import simulate_observed
@@ -52,14 +49,12 @@ class TestClass(object):
             respy_obj.set_attr("num_draws_emax", num_draws_emax)
             respy_obj.lock()
             respy_obj = simulate_observed(respy_obj)
-            periods_emax = respy_obj.get_attr("periods_emax")
+            emaxs = respy_obj.get_attr("state_space").emaxs
 
             if base is None:
-                base = periods_emax.copy()
+                base = emaxs.copy()
 
-            diff = np.max(
-                abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(periods_emax))
-            )
+            diff = np.max(abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(emaxs)))
             np.testing.assert_almost_equal(diff, 0.0)
 
     def test_3(self):
@@ -319,44 +314,7 @@ class TestClass(object):
 
             np.testing.assert_almost_equal(base_val, val)
 
-    @pytest.mark.skipif(not IS_FORTRAN, reason="No FORTRAN available")
-    @pytest.mark.slow
     def test_9(self):
-        """ This test just locks in the evaluation of the criterion function for the
-        original Keane & Wolpin data. We create an additional initialization files that
-        include numerous types and initial conditions.
-
-        """
-        # This ensures that the experience effect is taken care of properly.
-        open(".restud.respy.scratch", "w").close()
-
-        kw_spec, result = random.choice(
-            [
-                ("kw_data_one", 10.45950941513551),
-                ("kw_data_two", 45.04552402391903),
-                ("kw_data_three", 74.28253652773714),
-                ("kw_data_one_types", 9.098738585839529),
-                ("kw_data_one_initial", 7.965979149372883),
-            ]
-        )
-
-        base_path = TEST_RESOURCES_DIR / kw_spec
-
-        # Evaluate criterion function at true values.
-        respy_obj = RespyCls(
-            base_path.with_suffix(".csv"), base_path.with_suffix(".json")
-        )
-
-        respy_obj.unlock()
-        respy_obj.set_attr("maxfun", 0)
-        respy_obj.lock()
-
-        simulate_observed(respy_obj, is_missings=False)
-
-        _, val = respy_obj.fit()
-        np.testing.assert_allclose(val, result)
-
-    def test_10(self):
         """ This test ensures that the order of the initial schooling level specified in
         the initialization files does not matter for the simulation of a dataset and
         subsequent evaluation of the criterion function.

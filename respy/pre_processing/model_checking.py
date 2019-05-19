@@ -5,43 +5,18 @@ from respy.custom_exceptions import UserError
 from respy.python.shared.shared_auxiliary import check_model_parameters
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.python.shared.shared_auxiliary import replace_missing_values
-from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
-from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import OPTIMIZERS
 from respy.python.shared.shared_constants import PRINT_FLOAT
 
 
 def check_model_attributes(attr_dict):
     a = attr_dict
 
+    assert a["version"] == "python"
+
     # Number of parameters
     assert isinstance(a["num_paras"], int)
     assert a["num_paras"] >= 53
-
-    # Parallelism
-    assert isinstance(a["num_procs"], int)
-    assert a["num_procs"] > 0
-    if a["num_procs"] > 1:
-        assert a["version"] == "fortran"
-
-    assert isinstance(a["num_procs"], int)
-    assert a["num_procs"] > 0
-    if a["num_procs"] > 1:
-        assert a["version"] == "fortran"
-        assert IS_PARALLELISM_MPI
-
-    # Version version of package
-    assert a["version"] in ["fortran", "python"]
-    if a["version"] == "fortran":
-        assert IS_FORTRAN
-
-    assert isinstance(a["num_threads"], int)
-    assert a["num_threads"] >= 1
-    if a["num_threads"] >= 2:
-        assert a["version"] == "fortran"
-        assert IS_PARALLELISM_OMP
 
     # Debug status
     assert a["is_debug"] in [True, False]
@@ -92,7 +67,7 @@ def check_model_attributes(attr_dict):
     assert a["maxfun"] >= 0
 
     # Optimizers
-    assert a["optimizer_used"] in OPT_EST_FORT + OPT_EST_PYTH
+    assert a["optimizer_used"] in OPTIMIZERS
 
     # Scaling
     assert a["precond_spec"]["type"] in ["identity", "gradient", "magnitudes"]
@@ -296,31 +271,6 @@ def check_model_solution(attr_dict):
 
 def _check_optimizer_options(optimizer_options):
     """Make sure that all optimizer options are valid."""
-    # POWELL's algorithms
-    for optimizer in ["FORT-NEWUOA", "FORT-BOBYQA"]:
-        maxfun = optimizer_options[optimizer]["maxfun"]
-        rhobeg = optimizer_options[optimizer]["rhobeg"]
-        rhoend = optimizer_options[optimizer]["rhoend"]
-        npt = optimizer_options[optimizer]["npt"]
-
-        for var in [maxfun, npt]:
-            assert isinstance(var, int)
-            assert var > 0
-        for var in [rhobeg, rhoend]:
-            assert rhobeg > rhoend
-            assert isinstance(var, float)
-            assert var > 0
-
-    # FORT-BFGS
-    maxiter = optimizer_options["FORT-BFGS"]["maxiter"]
-    stpmx = optimizer_options["FORT-BFGS"]["stpmx"]
-    gtol = optimizer_options["FORT-BFGS"]["gtol"]
-    assert isinstance(maxiter, int)
-    assert maxiter > 0
-    for var in [stpmx, gtol]:
-        assert isinstance(var, float)
-        assert var > 0
-
     # SCIPY-BFGS
     maxiter = optimizer_options["SCIPY-BFGS"]["maxiter"]
     gtol = optimizer_options["SCIPY-BFGS"]["gtol"]

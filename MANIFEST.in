@@ -23,10 +23,7 @@ prune .binder
 prune development
 prune docs/_build
 prune docs/getting_started/__tutorial__
-prune respy/.waf*
-prune respy/waf3-*
 
 global-exclude __pycache__
 global-exclude *.py[co]
-global-exclude .lock-waf*
 global-exclude *-checkpoint.ipynb
