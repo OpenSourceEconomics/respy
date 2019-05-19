@@ -6,7 +6,7 @@ chronological order. We follow `semantic versioning <https://semver.org/>`_ and 
 releases are available on `PyPI <https://pypi.org/project/respy/>`_.
 
 
-1.2.1 - 2019-05-18
+1.2.1 - 2019-05-19
 ------------------
 
 - `#170 <https://github.com/OpenSourceEconomics/respy/pull/170>`_ adds a test for
