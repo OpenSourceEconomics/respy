@@ -1,4 +1,3 @@
-from respy.python.record.record_solution import record_solution_progress
 from respy.python.solve.solve_auxiliary import pyth_backward_induction
 from respy.python.solve.solve_auxiliary import StateSpace
 
@@ -42,23 +41,9 @@ def pyth_solve(
         Number of types.
 
     """
-    record_solution_progress(1, file_sim)
-
-    # Create the state space
     state_space = StateSpace(
         num_periods, num_types, edu_spec["start"], edu_spec["max"], optim_paras
     )
-
-    record_solution_progress(-1, file_sim)
-
-    record_solution_progress(2, file_sim)
-
-    record_solution_progress(-1, file_sim)
-
-    # Backward iteration procedure. There is a PYTHON and FORTRAN
-    # implementation available. If agents are myopic, the backward induction
-    # procedure is not called upon.
-    record_solution_progress(3, file_sim)
 
     state_space = pyth_backward_induction(
         periods_draws_emax,
@@ -70,8 +55,5 @@ def pyth_solve(
         file_sim,
         True,
     )
-
-    if optim_paras["delta"]:
-        record_solution_progress(-1, file_sim)
 
     return state_space

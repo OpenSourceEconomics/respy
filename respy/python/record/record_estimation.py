@@ -11,24 +11,6 @@ from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_constants import LARGE_FLOAT
 
 
-def record_estimation_sample(data_frame):
-    """Record the size of the estimation sample.
-
-    Called before the code separates between the PYTHON and FORTRAN version.
-
-    """
-    num_agents_est = str(data_frame["Identifier"].nunique())
-
-    with open("est.respy.log", "w") as out_file:
-        out_file.write(" {:}\n\n".format("ESTIMATION SAMPLE"))
-        line = (
-            "   The estimation is based on a sample of "
-            + num_agents_est
-            + " agents.\n\n"
-        )
-        out_file.write(line)
-
-
 def record_estimation_scaling(
     x_optim_free_unscaled_start,
     x_optim_free_scaled_start,

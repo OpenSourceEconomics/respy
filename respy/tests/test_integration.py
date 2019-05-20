@@ -12,8 +12,6 @@ from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.scripts.scripts_check import scripts_check
-from respy.scripts.scripts_estimate import scripts_estimate
 from respy.tests.codes.auxiliary import simulate_observed
 from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_interpolation_grid
@@ -130,40 +128,6 @@ class TestClass(object):
         params_spec, options_spec = generate_random_model(point_constr=constr)
         respy_obj = RespyCls(params_spec, options_spec)
         respy_obj.fit()
-
-    def test_5(self):
-        """ Test the scripts.
-        """
-        # Constraints that ensure that two alternative initialization files can be used
-        # for the same simulated data.
-        for _ in range(10):
-            num_agents = np.random.randint(5, 100)
-            constr = {
-                "simulation": {"agents": num_agents},
-                "num_periods": np.random.randint(1, 4),
-                "edu_spec": {"start": [7], "max": 15, "share": [1.0]},
-                "estimation": {"maxfun": 0, "agents": num_agents},
-            }
-            # Simulate a dataset
-            params_spec, options_spec = generate_random_model(point_constr=constr)
-            respy_obj = RespyCls(params_spec, options_spec)
-            simulate_observed(respy_obj)
-
-            # Create output to process a baseline.
-            respy_obj.unlock()
-            respy_obj.set_attr("maxfun", 0)
-            respy_obj.lock()
-
-            respy_obj.fit()
-
-            # Potentially evaluate at different points.
-            params_spec, options_spec = generate_random_model(point_constr=constr)
-            respy_obj = RespyCls(params_spec, options_spec)
-
-            single = np.random.choice([True, False])
-
-            scripts_check("estimate", respy_obj)
-            scripts_estimate(single, respy_obj)
 
     @pytest.mark.slow
     def test_6(self):

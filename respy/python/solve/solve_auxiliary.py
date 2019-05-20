@@ -6,7 +6,6 @@ import pandas as pd
 from numba import njit
 
 from respy.custom_exceptions import StateSpaceError
-from respy.python.record.record_solution import record_solution_progress
 from respy.python.shared.shared_auxiliary import calculate_rewards_common
 from respy.python.shared.shared_auxiliary import calculate_rewards_general
 from respy.python.shared.shared_auxiliary import create_covariates
@@ -312,7 +311,6 @@ def pyth_backward_induction(
 
     # For myopic agents, utility of later periods does not play a role.
     if optim_paras["delta"] == 0:
-        record_solution_progress(-2, file_sim)
         return state_space
 
     # Unpack arguments.
@@ -350,9 +348,6 @@ def pyth_backward_induction(
         draws_emax_risk = transform_disturbances(
             draws_emax_standard, np.zeros(4), shocks_cholesky
         )
-
-        if is_write:
-            record_solution_progress(4, file_sim, period, num_states)
 
         # The number of interpolation points is the same for all periods. Thus, for some
         # periods the number of interpolation points is larger than the actual number of

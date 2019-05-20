@@ -12,7 +12,6 @@ from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_model_spec
 from respy.pre_processing.model_processing import write_out_model_spec
 from respy.python.interface import respy_interface
-from respy.python.record.record_estimation import record_estimation_sample
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_est_info
@@ -228,7 +227,6 @@ class RespyCls(object):
         # requested for the estimation (or all available, depending on which is
         # less). It allows to read in only a subset of the initial conditions.
         data_frame = process_dataset(self)
-        record_estimation_sample(data_frame)
 
         # Distribute class attributes
         version = self.get_attr("version")
