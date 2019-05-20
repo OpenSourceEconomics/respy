@@ -1,19 +1,19 @@
-.idea
-__pycache__
+# Ignore folders.
+.cache/
+.idea/
+.ipynb_checkpoints/
+.tox/
+.vscode/
+__pycache__/
+__tutorial__/
+dist/
+docs/_build/
+
+# Ignore files.
+.coverage
 *.sublime-project
 *.sublime-workspace
 *.egg-info
+
 **/*.pbs
-.cache/
-docs/_build/
-respy/.bld/
-.waf*
-waf3-*
-.lock-waf_linux_build
-.tox
-.coverage
-.ipynb_checkpoints/
 **/*.respy.*
-__tutorial__/
-dist/
-.vscode/
