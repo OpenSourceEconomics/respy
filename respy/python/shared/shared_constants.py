@@ -1,8 +1,4 @@
-""" Module for program constants used across the RESPY package. This is
-aligned with the constants from the FORTRAN implementation.
-"""
-import json
-import os
+"""General configuration for respy."""
 from pathlib import Path
 
 import numpy as np
@@ -14,10 +10,6 @@ ROOT_DIR = Path(__file__).parents[2]
 # Directory with additional resources for the testing harness
 TEST_DIR = ROOT_DIR / "tests"
 TEST_RESOURCES_DIR = ROOT_DIR / "tests" / "resources"
-TEST_RESOURCES_BUILD = ROOT_DIR / ".bld" / "tests" / "resources"
-
-# Directory with the FORTRAN resources
-EXEC_DIR = ROOT_DIR / ".bld" / "fortran"
 
 MINISCULE_FLOAT = 1.0e-100
 LARGE_FLOAT = 1.0e8
@@ -40,32 +32,10 @@ INADMISSIBILITY_PENALTY = -400000.00
 MISSING_INT = -99
 MISSING_FLOAT = -99.00
 
-# Flags that provide additional information about the exact configuration
-try:
-    with open(ROOT_DIR / ".bld" / ".config", "r") as infile:
-        config_dict = json.load(infile)
-except FileNotFoundError:
-    if "READTHEDOCS" in os.environ:
-        config_dict = {
-            "DEBUG": False,
-            "FORTRAN": False,
-            "F2PY": False,
-            "PARALLELISM_MPI": False,
-            "PARALLELISM_OMP": False,
-        }
-    else:
-        raise
-
-IS_DEBUG = config_dict["DEBUG"]
-
-IS_PARALLELISM_MPI = config_dict["PARALLELISM_MPI"]
-IS_PARALLELISM_OMP = config_dict["PARALLELISM_OMP"]
-IS_FORTRAN = config_dict["FORTRAN"]
-IS_F2PY = config_dict["F2PY"]
+IS_DEBUG = False
 
 # Each implementation has its own set of optimizers available.
-OPT_EST_PYTH = ["SCIPY-BFGS", "SCIPY-POWELL", "SCIPY-LBFGSB"]
-OPT_EST_FORT = ["FORT-NEWUOA", "FORT-BFGS", "FORT-BOBYQA"]
+OPTIMIZERS = ["SCIPY-BFGS", "SCIPY-POWELL", "SCIPY-LBFGSB"]
 
 # Labels for columns in a dataset as well as the formatters.
 DATA_LABELS_EST = []

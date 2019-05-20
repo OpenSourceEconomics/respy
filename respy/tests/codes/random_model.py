@@ -9,11 +9,8 @@ from numpy.random import uniform
 from respy.pre_processing.model_checking import check_model_attributes
 from respy.pre_processing.model_processing import _create_attribute_dictionary
 from respy.pre_processing.specification_helpers import csv_template
-from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
-from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
+from respy.python.shared.shared_constants import OPTIMIZERS
 from respy.tests.codes.auxiliary import get_valid_shares
-from respy.tests.codes.auxiliary import OPTIMIZERS_EST
 
 
 def generate_random_model(
@@ -54,11 +51,8 @@ def generate_random_model(
     if "program" in point_constr and "version" in point_constr["program"]:
         version = point_constr["program"]["version"]
         if version == "fortran":
-            assert IS_FORTRAN
-    elif IS_FORTRAN is True:
-        version = choice(["python", "fortran"])
-    else:
-        version = "python"
+            raise NotImplementedError
+    version = "python"
 
     bound_constr = _consolidate_bound_constraints(bound_constr, version)
 
@@ -154,17 +148,11 @@ def generate_random_model(
     options["program"]["threads"] = 1
     options["program"]["procs"] = 1
 
-    if version == "fortran":
-        if IS_PARALLELISM_MPI is True:
-            options["program"]["procs"] = randint(1, 5)
-        if IS_PARALLELISM_OMP is True:
-            options["program"]["threads"] = randint(1, 5)
-
     # don't remove the seemingly redundant conversion from numpy._bool to python bool!
     options["interpolation"]["flag"] = bool(choice([True, False]))
     options["interpolation"]["points"] = randint(10, 100)
 
-    for optimizer in OPTIMIZERS_EST:
+    for optimizer in OPTIMIZERS:
         options[optimizer] = generate_optimizer_options(optimizer, params)
 
     # todo: better error catching here to locate the problems.
@@ -189,18 +177,13 @@ def generate_random_model(
 
 
 def _consolidate_bound_constraints(bound_constr, version):
-    if version == "fortran":
-        constr = {"max_types": 4, "max_periods": 10, "max_edu_start": 4}
-    else:
-        constr = {"max_types": 3, "max_periods": 3, "max_edu_start": 3}
+    constr = {"max_types": 3, "max_periods": 3, "max_edu_start": 3}
     constr.update({"max_agents": 1000, "max_draws": 100})
     constr.update(bound_constr)
     return constr
 
 
 def generate_optimizer_options(which, params_spec):
-
-    free_params = len(params_spec) - params_spec["fixed"].sum()
     dict_ = {}
 
     if which == "SCIPY-BFGS":
@@ -221,25 +204,6 @@ def generate_optimizer_options(which, params_spec):
         dict_["ftol"] = uniform(0.0000001, 0.1)
         dict_["maxfun"] = randint(1, 100)
         dict_["maxiter"] = randint(1, 100)
-
-    elif which in ["FORT-NEWUOA", "FORT-BOBYQA"]:
-        rhobeg = uniform(0.0000001, 0.001)
-        dict_["maxfun"] = randint(1, 100)
-        dict_["rhobeg"] = rhobeg
-        dict_["rhoend"] = uniform(0.01, 0.99) * rhobeg
-
-        # It is not recommended that N is larger than upper as the code might
-        # break down due to a segmentation fault. See the source files for the
-        # absolute upper bounds.
-        lower = (free_params) + 2
-        upper = 2 * (free_params) + 1
-        dict_["npt"] = randint(lower, upper + 1)
-
-    elif which == "FORT-BFGS":
-        dict_["maxiter"] = randint(1, 100)
-        dict_["stpmx"] = uniform(75, 125)
-        dict_["gtol"] = uniform(0.0001, 0.1)
-        dict_["eps"] = uniform(1e-9, 1e-6)
 
     else:
         raise NotImplementedError("The optimizer you requested is not implemented.")

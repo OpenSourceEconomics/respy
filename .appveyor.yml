@@ -12,23 +12,12 @@ notifications:
 # Do not start two builds, one for the branch and one for the PR.
 skip_branch_with_pr: true
 
-image: Visual Studio 2015
+image: Visual Studio 2017
 
 environment:
-  MINICONDA: "C:\\Miniconda36-x64"
   matrix:
-      - CI_FORTRAN: false
-        CI_MPI: false
-        CI_OMP: false
-      # - CI_FORTRAN: true
-      #   CI_MPI: true
-      #   CI_OMP: true
-      # - CI_FORTRAN: true
-      #   CI_MPI: false
-      #   CI_OMP: true
-      # - CI_FORTRAN: true
-      #   CI_MPI: true
-      #   CI_OMP: false
+      - MINICONDA: "C:\\Miniconda36-x64"
+      # - MINICONDA: "C:\\Miniconda37-x64"
 
 install:
   # If there is a newer build queued for the same PR, cancel this one. The AppVeyor
@@ -43,22 +32,6 @@ install:
   # Add miniconda to PATH
   - ps: $env:PATH = "$env:MINICONDA;$env:MINICONDA\Scripts;$env:MINICONDA\bin;$env:PATH"
 
-  # Add Fortran to PATH and install dependencies.
-  - ps: >-
-      if ($env:CI_FORTRAN -eq $true) {
-        $env:PATH += ";C:\msys64\mingw64\bin;C:\msys64\usr\bin"
-        pacman -S mingw64/mingw-w64-x86_64-liblas mingw64/mingw-w64-x86_64-lapack --noconfirm
-        echo "[build]`ncompiler=mingw32" > C:\Miniconda36-x64\Lib\distutils\distutils.cfg
-      }
-
-  # Install MS-MPI
-  - ps: >-
-      if ($env:CI_MPI -eq $true) {
-        Start-FileDownload https://github.com/Microsoft/Microsoft-MPI/releases/download/v10.0/msmpisdk.msi -FileName msmpisdk.msi
-        msiexec msmpisdk.msi /quiet /norestart
-        $env:PATH += ";C:\Program Files\Microsoft MPI\Bin"
-      }
-
   # Configure conda
   - conda config --set always_yes yes --set changeps1 no
   - conda info -a
@@ -72,13 +45,3 @@ install:
   - tox
 
 build: false
-
-on_success:
-  - sh: |
-      if  [ $CI_FORTRAN ] || \
-          [ $CI_MPI ] || \
-          [ $CI_OMP ] ||
-      then
-          codecov
-          echo 'send coverage statistic'
-      fi

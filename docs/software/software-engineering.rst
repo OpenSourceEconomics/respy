@@ -8,11 +8,8 @@ Program Design
 --------------
 
 We build on the design of the original authors (`codes <https://github.com/
-OpenSourceEconomics/respy/tree/master/development/documentation/forensics>`_). We
-maintain a pure Python implementation with a focus on readability and a scalar and
-parallel Fortran implementation to address any performance constraints. We keep the
-structure of the Python and Fortran implementation aligned as much as possible. For
-example, we standardize the naming and interface design of the routines across versions.
+OpenSourceEconomics/respy/tree/v1.2.1/development/documentation/forensics>`_), but
+implement the model in Python.
 
 Test Battery
 ------------

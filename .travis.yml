@@ -6,62 +6,35 @@ notifications:
         on_failure: always
     email: false
 
-language:
-    - python
+language: python
 
-python:
-    - 3.6
+python: 3.6
 
 # The tests run only if it is an PR or if a tag is pushed. This should prevent duplicate
 # builds with pr and push. We cannot disable push as it also disables deployment via
 # tags.
 if: type != push OR tag IS present
 
-before_install:
-    - sudo apt-get update
-
-addons:
-    apt:
-        packages:
-            - gfortran
-            - libatlas-dev
-            - libatlas-base-dev
-
-matrix:
-    include:
-        - env: CI_FORTRAN=False CI_MPI=False  CI_OMP=False
-        - env: CI_FORTRAN=True CI_MPI=True  CI_OMP=True
-        - env: CI_FORTRAN=True CI_MPI=False CI_OMP=True
-        - env: CI_FORTRAN=True CI_MPI=True  CI_OMP=False
+env:
+    - PYTHON_VERSION=3.6
+    - PYTHON_VERSION=3.7
 
 install:
-    - sudo apt-get install -y -q mpich libmpich-dev
-
     # Install and configure conda
-    - wget https://repo.continuum.io/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O miniconda.sh
+    - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - bash miniconda.sh -b -p /home/travis/miniconda
     - export PATH=/home/travis/miniconda/bin:$PATH
     - conda config --set always_yes yes --set changeps1 no
+    - conda install python=$PYTHON_VERSION
     - conda info -a
 
-    # Install Numpy for compilation
-    - conda install numpy
     # Install respy
     - pip install -e . --no-deps
 
     - pip install tox-conda
 
 script:
-    - travis_wait 45 tox -e pytest
-
-after_success:
-    - if  [ $CI_FORTRAN ] || \
-          [ $CI_MPI ] || \
-          [ $CI_OMP ] ||
-      then
-          codecov
-          echo 'send coverage statistic'
-      fi
+    - tox
 
 deploy:
     provider: pypi
@@ -71,4 +44,4 @@ deploy:
     distributions: "sdist"
     on:
         tags: true
-        condition: "$CI_FORTRAN = False"
+        condition: "$PYTHON_VERSION = 3.6"

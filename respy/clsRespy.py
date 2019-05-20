@@ -4,10 +4,8 @@ import os
 import pickle as pkl
 
 import numpy as np
-import pandas as pd
 
 from respy.custom_exceptions import UserError
-from respy.fortran.interface import resfort_interface
 from respy.pre_processing.data_processing import process_dataset
 from respy.pre_processing.model_checking import check_model_attributes
 from respy.pre_processing.model_checking import check_model_solution
@@ -15,16 +13,13 @@ from respy.pre_processing.model_processing import process_model_spec
 from respy.pre_processing.model_processing import write_out_model_spec
 from respy.python.interface import respy_interface
 from respy.python.record.record_estimation import record_estimation_sample
-from respy.python.shared.shared_auxiliary import add_solution
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import get_est_info
 from respy.python.shared.shared_auxiliary import remove_scratch
-from respy.python.shared.shared_auxiliary import replace_missing_values
 from respy.python.shared.shared_constants import DATA_FORMATS_SIM
 from respy.python.shared.shared_constants import DATA_LABELS_SIM
-from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_EST_PYTH
+from respy.python.shared.shared_constants import OPTIMIZERS
 from respy.python.simulate.simulate_auxiliary import check_dataset_sim
 from respy.python.simulate.simulate_auxiliary import write_info
 from respy.python.simulate.simulate_auxiliary import write_out
@@ -78,12 +73,6 @@ class RespyCls(object):
 
         self._update_derived_attributes()
         self._check_model_attributes()
-        # ====================================================================
-        # todo: reimplement checks for python solution
-        # ====================================================================
-        if self.attr["version"] == "fortran":
-            self._check_model_solution()
-        # ====================================================================
         self.attr["is_locked"] = True
 
     def unlock(self):
@@ -213,9 +202,7 @@ class RespyCls(object):
 
             # Make sure the requested optimizer is valid
             if version == "python":
-                assert optimizer_used in OPT_EST_PYTH
-            elif version == "fortran":
-                assert optimizer_used in OPT_EST_FORT
+                assert optimizer_used in OPTIMIZERS
             else:
                 raise AssertionError
 
@@ -246,13 +233,9 @@ class RespyCls(object):
         # Distribute class attributes
         version = self.get_attr("version")
 
-        data_array = data_frame.to_numpy()
-
         # Select appropriate interface
         if version in ["python"]:
             respy_interface(self, "estimate", data_frame)
-        elif version in ["fortran"]:
-            resfort_interface(self, "estimate", data_array)
         else:
             raise NotImplementedError
 
@@ -280,32 +263,14 @@ class RespyCls(object):
         # Select appropriate interface
         if version in ["python"]:
             state_space, data_array = respy_interface(self, "simulate")
-        elif version in ["fortran"]:
-            solution, data_array = resfort_interface(self, "simulate")
         else:
             raise NotImplementedError
 
         # Attach solution to class instance
-        if version == "fortran":
-            self = add_solution(self, *solution)
-        elif version == "python":
+        if version == "python":
             self.unlock()
             self.set_attr("state_space", state_space)
             self.lock()
-            (
-                states_all,
-                mapping_state_idx,
-                periods_rewards_systematic,
-                periods_emax,
-            ) = state_space._get_fortran_counterparts()
-            self = add_solution(
-                self,
-                periods_rewards_systematic,
-                state_space.states_per_period,
-                mapping_state_idx,
-                periods_emax,
-                states_all,
-            )
         else:
             raise NotImplementedError
 
@@ -317,24 +282,15 @@ class RespyCls(object):
         if is_store:
             self.store("solution.respy.pkl")
 
-        # ====================================================================
-        # todo: harmonize python and fortran
-        # ====================================================================
         if self.attr["version"] == "python":
             data_frame = data_array[DATA_LABELS_SIM]
-        elif self.attr["version"] == "fortran":
-            data_frame = pd.DataFrame(
-                data=replace_missing_values(data_array), columns=DATA_LABELS_SIM
-            )
         else:
             raise NotImplementedError
 
         data_frame = data_frame.astype(DATA_FORMATS_SIM)
 
-        # ====================================================================
         data_frame.set_index(["Identifier", "Period"], drop=False, inplace=True)
 
-        # Checks
         if is_debug:
             check_dataset_sim(data_frame, self)
 

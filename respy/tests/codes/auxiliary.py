@@ -9,13 +9,8 @@ from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_constants import DATA_FORMATS_SIM
 from respy.python.shared.shared_constants import DATA_LABELS_EST
 from respy.python.shared.shared_constants import DATA_LABELS_SIM
-from respy.python.shared.shared_constants import OPT_EST_FORT
-from respy.python.shared.shared_constants import OPT_EST_PYTH
 from respy.python.simulate.simulate_auxiliary import write_out
 from respy.python.solve.solve_auxiliary import StateSpace
-
-
-OPTIMIZERS_EST = OPT_EST_FORT + OPT_EST_PYTH
 
 
 def simulate_observed(respy_obj, is_missings=True):
