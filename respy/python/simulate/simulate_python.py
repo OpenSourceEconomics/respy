@@ -1,9 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from respy.python.record.record_simulation import record_simulation_progress
-from respy.python.record.record_simulation import record_simulation_start
-from respy.python.record.record_simulation import record_simulation_stop
 from respy.python.shared.shared_auxiliary import (
     get_continuation_value_and_ex_post_rewards,
 )
@@ -60,8 +57,6 @@ def pyth_simulate(
         Dataset of simulated agents.
 
     """
-    record_simulation_start(num_agents_sim, seed_sim, file_sim)
-
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
     periods_draws_sims_transformed = np.full(
@@ -185,9 +180,5 @@ def pyth_simulate(
         .sort_values(["Identifier", "Period"])
         .reset_index(drop=True)
     )
-
-    for i in range(num_agents_sim):
-        record_simulation_progress(i, file_sim)
-    record_simulation_stop(file_sim)
 
     return simulated_data
