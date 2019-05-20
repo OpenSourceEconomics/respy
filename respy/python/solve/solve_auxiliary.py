@@ -14,6 +14,7 @@ from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
 from respy.python.shared.shared_auxiliary import ols
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import HUGE_FLOAT
+from respy.python.shared.shared_constants import KW_SQUARED_EXPERIENCES
 from respy.python.solve.solve_risk import construct_emax_risk
 
 
@@ -519,7 +520,6 @@ def get_endogenous_variable(
         state has reached maximum education.
 
     """
-
     emax = construct_emax_risk(
         rewards[:, -2:], rewards[:, :4], emaxs, draws_emax_risk, delta, max_education
     )
@@ -530,19 +530,23 @@ def get_endogenous_variable(
 
 
 def get_predictions(endogenous, exogenous, maxe, is_simulated):
-    """ Get ols predictions.
+    """Get ols predictions.
 
     Fit an OLS regression of the exogenous variables on the endogenous variables and
     use the results to predict the endogenous variables for all points in state space.
 
     Parameters
     ----------
-    endogenous (np.array): 1d numpy array with endogenous variable
-    exogenous (np.array): 2d numpy array with exogenous variables
-    maxe (np.array): 1d numpy array with the maximum expected value of the shocks,
-    has the same length as endogenous.
-    is_simulated (np.array): boolean array that is True at points for which we
-    calculate the exact solution.
+    endogenous : np.ndarray
+        Array with shape (num_simulated_states_in_period,) containing emax for states
+        used to interpolate the rest.
+    exogenous : np.ndarray
+        Array with shape (num_states_in_period, 9) containing exogenous variables.
+    maxe : np.ndarray
+        Array with shape (num_states_in_period,) containing the maximum emax.
+    is_simulated : np.ndarray
+        Array with shape (num_states_in_period,) containing indicator for states which
+        are used to estimate the coefficients for the interpolation.
 
     """
     # Define ordinary least squares model and fit to the data.
@@ -558,14 +562,13 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated):
     predictions = endogenous_predicted + maxe
     predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
 
-    # Checks
     check_prediction_model(endogenous_predicted, beta)
 
     return predictions
 
 
 def check_prediction_model(predictions_diff, beta):
-    """ Perform some basic consistency checks for the prediction model."""
+    """Perform some basic consistency checks for the prediction model."""
     assert np.all(predictions_diff >= 0.00)
     assert beta.shape == (9,)
     assert np.all(np.isfinite(beta))
@@ -621,7 +624,7 @@ def calculate_wages_systematic(states, covariates, coeffs_a, coeffs_b, type_shif
     exp_a_sq = states[:, 1] ** 2 / 100
     exp_b_sq = states[:, 2] ** 2 / 100
 
-    if os.path.exists(".restud.respy.scratch"):
+    if KW_SQUARED_EXPERIENCES:
         exp_a_sq *= 100.00
         exp_b_sq *= 100.00
 

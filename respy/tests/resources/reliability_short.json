@@ -4,7 +4,7 @@
     "maxfun": 1000,
     "agents": 1000,
     "draws": 200,
-    "optimizer": "FORT-BOBYQA",
+    "optimizer": "SCIPY-LBFGSB",
     "seed": 500,
     "tau": 500.0
   },
@@ -53,24 +53,6 @@
     "max": 15
   },
   "num_periods": 5,
-  "FORT-NEWUOA": {
-    "maxfun": 1000000,
-    "npt": 1,
-    "rhobeg": 1.0,
-    "rhoend": 1e-06
-  },
-  "FORT-BFGS": {
-    "eps": 0.0001,
-    "gtol": 1e-05,
-    "maxiter": 10,
-    "stpmx": 100.0
-  },
-  "FORT-BOBYQA": {
-    "maxfun": 1000000,
-    "npt": 1,
-    "rhobeg": 1.0,
-    "rhoend": 1e-06
-  },
   "SCIPY-BFGS": {
     "eps": 0.0001,
     "gtol": 0.0001,

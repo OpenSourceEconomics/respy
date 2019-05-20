@@ -41,6 +41,7 @@ baseline model presented in:
    :hidden:
 
    software/model-specification
+   software/configuration
    software/numerical-methods
    software/reliability
    software/scalability.ipynb

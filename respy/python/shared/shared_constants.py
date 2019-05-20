@@ -1,4 +1,5 @@
 """General configuration for respy."""
+import os
 from pathlib import Path
 
 import numpy as np
@@ -32,7 +33,9 @@ INADMISSIBILITY_PENALTY = -400000.00
 MISSING_INT = -99
 MISSING_FLOAT = -99.00
 
-IS_DEBUG = False
+IS_DEBUG = bool(os.environ.get("RESPY_DEBUG", False))
+
+KW_SQUARED_EXPERIENCES = bool(os.environ.get("RESPY_KW_SQUARED_EXPERIENCES", False))
 
 # Each implementation has its own set of optimizers available.
 OPTIMIZERS = ["SCIPY-BFGS", "SCIPY-POWELL", "SCIPY-LBFGSB"]
@@ -75,9 +78,3 @@ for key_ in DATA_LABELS_SIM:
         DATA_FORMATS_SIM[key_] = np.int
     else:
         DATA_FORMATS_SIM[key_] = np.float
-
-# Set Numba configuration.
-import numba  # noqa: E402
-
-if IS_DEBUG:
-    numba.config.WARNINGS = 1
