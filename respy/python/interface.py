@@ -10,7 +10,6 @@ from scipy.optimize import fmin_powell
 from respy.custom_exceptions import MaxfunError
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.python.record.record_estimation import record_estimation_final
-from respy.python.record.record_estimation import record_estimation_scalability
 from respy.python.record.record_estimation import record_estimation_scaling
 from respy.python.record.record_estimation import record_estimation_stop
 from respy.python.shared.shared_auxiliary import apply_scaling
@@ -178,9 +177,7 @@ def respy_interface(respy_obj, request, data=None):
 
         if maxfun == 0:
 
-            record_estimation_scalability("Start")
             opt_obj.crit_func(x_optim_free_scaled_start, *args)
-            record_estimation_scalability("Finish")
 
             success = True
             message = "Single evaluation of criterion function at starting values."

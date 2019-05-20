@@ -75,24 +75,6 @@ def record_estimation_scaling(
             out_file.write("\n")
 
 
-def record_estimation_scalability(which):
-    """ Special output to investigate the scalability of the code.
-    """
-    fmt_ = "   {:<6}     {:>10}     {:>8}\n"
-
-    today = time.strftime("%d/%m/%Y")
-    now = time.strftime("%H:%M:%S")
-
-    if which == "Start":
-        with open(".scalability.respy.log", "w") as out_file:
-            out_file.write(fmt_.format(*[which, today, now]))
-    elif which == "Finish":
-        with open(".scalability.respy.log", "a") as out_file:
-            out_file.write(fmt_.format(*[which, today, now]))
-    else:
-        raise AssertionError
-
-
 def record_estimation_stop():
     with open("est.respy.info", "a") as out_file:
         out_file.write("\n TERMINATED\n")
