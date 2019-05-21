@@ -1,5 +1,4 @@
 """General configuration for respy."""
-import os
 from pathlib import Path
 
 import numpy as np
@@ -33,36 +32,47 @@ INADMISSIBILITY_PENALTY = -400000.00
 MISSING_INT = -99
 MISSING_FLOAT = -99.00
 
-IS_DEBUG = bool(os.environ.get("RESPY_DEBUG", False))
-
-KW_SQUARED_EXPERIENCES = bool(os.environ.get("RESPY_KW_SQUARED_EXPERIENCES", False))
+IS_DEBUG = False
 
 # Each implementation has its own set of optimizers available.
 OPTIMIZERS = ["SCIPY-BFGS", "SCIPY-POWELL", "SCIPY-LBFGSB"]
 
 # Labels for columns in a dataset as well as the formatters.
-DATA_LABELS_EST = []
-DATA_LABELS_EST += ["Identifier", "Period", "Choice", "Wage"]
-DATA_LABELS_EST += ["Experience_A", "Experience_B", "Years_Schooling"]
-DATA_LABELS_EST += ["Lagged_Choice"]
+DATA_LABELS_EST = [
+    "Identifier",
+    "Period",
+    "Choice",
+    "Wage",
+    "Experience_A",
+    "Experience_B",
+    "Years_Schooling",
+    "Lagged_Choice",
+]
 
 # There is additional information available in a simulated dataset.
-DATA_LABELS_SIM = DATA_LABELS_EST[:]
-DATA_LABELS_SIM += ["Type"]
-DATA_LABELS_SIM += ["Total_Reward_1", "Total_Reward_2"]
-DATA_LABELS_SIM += ["Total_Reward_3", "Total_Reward_4"]
-DATA_LABELS_SIM += ["Systematic_Reward_1", "Systematic_Reward_2"]
-DATA_LABELS_SIM += ["Systematic_Reward_3", "Systematic_Reward_4"]
-DATA_LABELS_SIM += ["Shock_Reward_1", "Shock_Reward_2"]
-DATA_LABELS_SIM += ["Shock_Reward_3", "Shock_Reward_4"]
-DATA_LABELS_SIM += [
+DATA_LABELS_SIM = DATA_LABELS_EST + [
+    "Type",
+    "Total_Reward_1",
+    "Total_Reward_2",
+    "Total_Reward_3",
+    "Total_Reward_4",
+    "Systematic_Reward_1",
+    "Systematic_Reward_2",
+    "Systematic_Reward_3",
+    "Systematic_Reward_4",
+    "Shock_Reward_1",
+    "Shock_Reward_2",
+    "Shock_Reward_3",
+    "Shock_Reward_4",
     "Discount_Rate",
     "General_Reward_1",
     "General_Reward_2",
     "Common_Reward",
+    "Immediate_Reward_1",
+    "Immediate_Reward_2",
+    "Immediate_Reward_3",
+    "Immediate_Reward_4",
 ]
-DATA_LABELS_SIM += ["Immediate_Reward_1", "Immediate_Reward_2", "Immediate_Reward_3"]
-DATA_LABELS_SIM += ["Immediate_Reward_4"]
 
 DATA_FORMATS_EST = {}
 for key_ in DATA_LABELS_EST:

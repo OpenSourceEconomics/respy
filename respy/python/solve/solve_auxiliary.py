@@ -14,7 +14,6 @@ from respy.python.shared.shared_auxiliary import get_emaxs_of_subsequent_period
 from respy.python.shared.shared_auxiliary import ols
 from respy.python.shared.shared_auxiliary import transform_disturbances
 from respy.python.shared.shared_constants import HUGE_FLOAT
-from respy.python.shared.shared_constants import KW_SQUARED_EXPERIENCES
 from respy.python.solve.solve_risk import construct_emax_risk
 
 
@@ -616,10 +615,6 @@ def calculate_wages_systematic(states, covariates, coeffs_a, coeffs_b, type_shif
     """
     exp_a_sq = states[:, 1] ** 2 / 100
     exp_b_sq = states[:, 2] ** 2 / 100
-
-    if KW_SQUARED_EXPERIENCES:
-        exp_a_sq *= 100.00
-        exp_b_sq *= 100.00
 
     relevant_covariates = np.column_stack(
         (
