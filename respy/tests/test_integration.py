@@ -131,8 +131,7 @@ class TestClass(object):
 
     @pytest.mark.slow
     def test_6(self):
-        """ Test short estimation tasks.
-        """
+        """Test short estimation tasks."""
         num_agents = np.random.randint(5, 100)
         constr = {
             "simulation": {"agents": num_agents},
@@ -141,7 +140,6 @@ class TestClass(object):
         }
 
         # Simulate a dataset
-
         params_spec, options_spec = generate_random_model(point_constr=constr)
         respy_obj = RespyCls(params_spec, options_spec)
 

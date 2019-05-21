@@ -262,7 +262,6 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
 
     rewards[:, 2:] = rewards[:, 2:] + type_deviations
 
-    # Add the common component to rewards.
     rewards_systematic = rewards + rewards_common
 
     return rewards_systematic, rewards_general, rewards_common, wages
@@ -275,8 +274,6 @@ def pyth_backward_induction(
     is_interpolated,
     num_points_interp,
     optim_paras,
-    file_sim,
-    is_write,
 ):
     """ Calculate utilities with backward induction.
 
@@ -295,10 +292,6 @@ def pyth_backward_induction(
         Number of states for which the emax will be interpolated.
     optim_paras : dict
         Parameters affected by optimization.
-    file_sim : ???
-        Undocumented parameter.
-    is_write : bool
-        Undocumented parameter.
 
     Returns
     -------

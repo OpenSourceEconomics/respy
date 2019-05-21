@@ -11,6 +11,7 @@ docs/_build/
 
 # Ignore files.
 .coverage
+pytestdebug.log
 *.sublime-project
 *.sublime-workspace
 *.egg-info

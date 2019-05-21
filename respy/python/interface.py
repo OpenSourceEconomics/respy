@@ -301,7 +301,6 @@ def respy_interface(respy_obj, request, data=None):
             periods_draws_emax,
             edu_spec,
             optim_paras,
-            file_sim,
             num_types,
         )
 

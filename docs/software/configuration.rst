@@ -20,3 +20,5 @@ The following options are available:
 * ``RESPY_KW_SQUARED_EXPERIENCES`` is ``False`` by default which means that wages are
   computed with quadratic experiences divided by 100. For the original models by Keane
   and Wolpin, the division was omitted.
+
+The tests for the configuration are located under ``respy/tests/test_configuration.py``.

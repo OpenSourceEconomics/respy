@@ -28,8 +28,6 @@ def pyth_criterion(
         is_interpolated,
         num_points_interp,
         optim_paras,
-        "",
-        False,
     )
 
     contribs = pyth_contributions(

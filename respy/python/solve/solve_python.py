@@ -10,7 +10,6 @@ def pyth_solve(
     periods_draws_emax,
     edu_spec,
     optim_paras,
-    file_sim,
     num_types,
 ):
     """Solve the model.
@@ -35,8 +34,6 @@ def pyth_solve(
         Information on education.
     optim_paras : dict
         Parameters affected by optimization.
-    file_sim : ???
-        Undocumented parameter.
     num_types : int
         Number of types.
 
@@ -52,8 +49,6 @@ def pyth_solve(
         is_interpolated,
         num_points_interp,
         optim_paras,
-        file_sim,
-        True,
     )
 
     return state_space
