@@ -67,14 +67,13 @@ class TestClass(object):
     def test_3(self):
         """ Testing some of the relationships in the simulated dataset.
         """
-        is_deterministic = np.random.choice([True, False])
         is_myopic = np.random.choice([True, False])
 
         max_draws = np.random.randint(5, 200)
         bound_constr = {"max_draws": max_draws, "max_agents": max_draws}
 
         params_spec, options_spec = generate_random_model(
-            bound_constr=bound_constr, deterministic=is_deterministic, myopic=is_myopic
+            bound_constr=bound_constr, myopic=is_myopic
         )
 
         respy_obj = RespyCls(params_spec, options_spec)
@@ -134,17 +133,6 @@ class TestClass(object):
                 col_2 = df[label].loc[:, cond]
 
                 np.testing.assert_array_almost_equal(col_1, col_2)
-
-        # If the model is deterministic, all shocks should be equal to zero. Of course,
-        # one after exponentiation for wages.
-        if is_deterministic:
-            for i in range(1, 5):
-                label = "Shock_Reward_{}".format(i)
-                if i in [1, 2]:
-                    cond = df[label] == 1
-                else:
-                    cond = df[label] == 0
-                assert np.all(cond)
 
     def test_4(self):
         """Testing the return values for the total values in case of myopic individuals

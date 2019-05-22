@@ -6,7 +6,6 @@ import pytest
 from pandas.util.testing import assert_frame_equal
 
 from respy import RespyCls
-from respy.custom_exceptions import UserError
 from respy.pre_processing.data_processing import process_dataset
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_class_attributes
@@ -30,30 +29,6 @@ class TestClass(object):
         respy_obj = RespyCls(params_spec, options_spec)
         simulate_observed(respy_obj)
         process_dataset(respy_obj)
-
-    def test_2(self):
-        """ If there is no random variation in rewards then the number of draws to simulate the
-        expected future value should have no effect.
-        """
-        params_spec, options_spec = generate_random_model(deterministic=True)
-
-        # Initialize auxiliary objects
-        base = None
-
-        for _ in range(2):
-            num_draws_emax = np.random.randint(1, 100)
-            respy_obj = RespyCls(params_spec, options_spec)
-            respy_obj.unlock()
-            respy_obj.set_attr("num_draws_emax", num_draws_emax)
-            respy_obj.lock()
-            respy_obj = simulate_observed(respy_obj)
-            emaxs = respy_obj.get_attr("state_space").emaxs
-
-            if base is None:
-                base = emaxs.copy()
-
-            diff = np.max(abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(emaxs)))
-            np.testing.assert_almost_equal(diff, 0.0)
 
     def test_3(self):
         """ Testing whether the a simulated dataset and the evaluation of the criterion function
@@ -158,71 +133,6 @@ class TestClass(object):
 
         for arg in [(alt_val, base_val), (alt_x, base_x)]:
             np.testing.assert_almost_equal(arg[0], arg[1])
-
-    def test_7(self):
-        """ This test ensures that the constraints for the covariance matrix are
-        properly handled.
-        """
-
-        params_spec, options_spec = generate_random_model(deterministic=True)
-
-        # Manual specification of update patterns.
-        updates = {}
-
-        # off-diagonals fixed
-        updates["valid_1"] = [
-            False,
-            True,
-            False,
-            True,
-            True,
-            False,
-            True,
-            True,
-            True,
-            False,
-        ]
-        updates["valid_2"] = [False] * 10
-        updates["valid_3"] = [True] * 10
-
-        updates["invalid_1"] = [
-            False,
-            False,
-            True,
-            True,
-            False,
-            True,
-            True,
-            False,
-            True,
-            False,
-        ]
-        updates["invalid_2"] = [
-            False,
-            False,
-            False,
-            True,
-            False,
-            False,
-            True,
-            False,
-            True,
-            False,
-        ]
-
-        # We draw a random update and print it out to the initialization file.
-        label = np.random.choice(list(updates.keys()))
-        params_spec.loc["shocks", "fixed"] = np.array(updates[label])
-
-        if "invalid" in label:
-            # This exception block makes sure that the UserError is in fact raised.
-            try:
-                RespyCls(params_spec, options_spec)
-                raise AssertionError
-            except UserError:
-                pass
-        else:
-            RespyCls(params_spec, options_spec)
 
     def test_8(self):
         """ We ensure that the number of initial conditions does not matter for the
