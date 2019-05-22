@@ -1,8 +1,10 @@
 """Create, run or investigate regression checks."""
+import argparse
 import os
 import pickle
 import shutil
 import socket
+from functools import partial
 from multiprocessing import Pool
 
 import numpy as np
@@ -21,7 +23,7 @@ from respy.tests.codes.random_model import generate_random_model
 HOSTNAME = socket.gethostname()
 
 
-def run_regression_tests(num_tests=None, tests=None, num_procs=1):
+def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
     """Run regression tests.
 
     Args:
@@ -39,10 +41,11 @@ def run_regression_tests(num_tests=None, tests=None, num_procs=1):
     if num_procs == 1:
         ret = []
         for test in tests:
-            ret.append(check_single(test))
+            ret.append(check_single(test, strict=strict))
     else:
         mp_pool = Pool(num_procs)
-        ret = mp_pool.map(check_single, tests)
+        check = partial(check_single, strict=strict)
+        ret = mp_pool.map(check, tests)
 
     idx_failures = [i for i, x in enumerate(ret) if x is False]
     is_failure = len(idx_failures) > 0
@@ -94,7 +97,7 @@ def investigate_regression_test(idx):
     np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
 
 
-def check_single(test):
+def check_single(test, strict):
     """Check a single test."""
     attr, crit_val = test
 
@@ -110,6 +113,9 @@ def check_single(test):
     _, est_val = minimal_estimation_interface(attr, df)
 
     is_success = np.isclose(est_val, crit_val, rtol=TOL, atol=TOL)
+
+    if strict is True:
+        assert is_success, "Failed regression test."
 
     # Cleanup of temporary directories.from
     os.chdir("..")
@@ -134,3 +140,52 @@ def create_single(idx):
     os.chdir("..")
     shutil.rmtree(dirname)
     return attr, crit_val
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="Create or check regression vault")
+
+    parser.add_argument(
+        "--request",
+        action="store",
+        dest="request",
+        help="task to perform",
+        required=True,
+        nargs=2,
+    )
+
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        dest="is_strict",
+        default=False,
+        help="immediate termination if failure",
+    )
+
+    parser.add_argument(
+        "--procs",
+        action="store",
+        dest="num_procs",
+        default=1,
+        type=int,
+        help="number of processors",
+    )
+
+    args = parser.parse_args()
+    request = args.request
+    is_strict = args.is_strict
+    num_procs = args.num_procs
+
+    if request[0] == "run":
+        run_regression_tests(
+            num_tests=int(request[1]), num_procs=num_procs, strict=is_strict
+        )
+    elif request[0] == "investigate":
+        investigate_regression_test(int(request[1]))
+    elif request[0] == "create":
+        create_regression_tests(
+            num_tests=int(request[1]), num_procs=num_procs, write_out=True
+        )
+    else:
+        raise ValueError("Invalid request.")
