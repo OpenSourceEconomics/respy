@@ -4,6 +4,7 @@ import shlex
 import numpy as np
 import pandas as pd
 
+from respy.python.interface import minimal_simulation_interface
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import get_conditional_probabilities
 from respy.python.shared.shared_constants import DATA_FORMATS_SIM
@@ -28,7 +29,7 @@ def simulate_observed(respy_obj, is_missings=True):
 
     seed_sim = dist_class_attributes(respy_obj, "seed_sim")
 
-    respy_obj.simulate()
+    _, df = respy_obj.simulate()
 
     # It is important to set the seed after the simulation call. Otherwise, the value of
     # the seed differs due to the different implementations of the PYTHON and FORTRAN
@@ -238,3 +239,51 @@ def transform_to_logit(shares):
         coeffs += [0.0]
 
     return coeffs
+
+
+def minimal_simulate_observed(attr, is_missings=True):
+    """ This function adds two important features of observed datasests: (1) missing
+    observations and missing wage information.
+    """
+
+    def drop_agents_obs(agent):
+        """ We now determine the exact period from which onward the history is truncated
+        and cut the simulated dataset down to size.
+        """
+        start_truncation = np.random.choice(range(1, agent["Period"].max() + 2))
+        agent = agent[agent["Period"] < start_truncation]
+        return agent
+
+    state_space, df = minimal_simulation_interface(attr)
+
+    np.random.seed(attr["seed_sim"])
+
+    if is_missings:
+        # We truncate the histories of agents. This mimics the frequent empirical fact
+        # that we loose track of more and more agents over time.
+        data_subset = df.groupby("Identifier").apply(drop_agents_obs)
+
+        # We also want to drop the some wage observations. Note that we might be dealing
+        # with a dataset where nobody is working anyway.
+        is_working = data_subset["Choice"].isin([1, 2])
+        num_drop_wages = int(np.sum(is_working) * np.random.uniform(high=0.5, size=1))
+        if num_drop_wages > 0:
+            indices = data_subset["Wage"][is_working].index
+            index_missing = np.random.choice(indices, num_drop_wages, False)
+            data_subset.loc[index_missing, "Wage"] = None
+        else:
+            pass
+    else:
+        data_subset = df
+
+    # We can restrict the information to observed entities only.
+    data_subset = data_subset[DATA_LABELS_EST]
+
+    # We maintain several versions of the file.
+    with open(attr["file_sim"] + ".respy.dat", "w") as file_:
+        data_subset.to_string(file_, index=False, header=True, na_rep=".")
+    data_subset.to_pickle(attr["file_sim"] + ".respy.pkl")
+
+    data_subset.Wage = data_subset.Wage.round(6)
+
+    return data_subset

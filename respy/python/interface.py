@@ -1,3 +1,4 @@
+from functools import partial
 from math import floor
 from math import log10
 
@@ -8,6 +9,7 @@ from scipy.optimize import fmin_l_bfgs_b
 from scipy.optimize import fmin_powell
 
 from respy.custom_exceptions import MaxfunError
+from respy.python.estimate.estimate_python import pyth_criterion
 from respy.python.estimate.estimate_wrapper import OptimizationClass
 from respy.python.record.record_estimation import record_estimation_final
 from respy.python.record.record_estimation import record_estimation_scaling
@@ -16,6 +18,8 @@ from respy.python.shared.shared_auxiliary import apply_scaling
 from respy.python.shared.shared_auxiliary import create_draws
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import get_optim_paras
+from respy.python.shared.shared_constants import DATA_FORMATS_EST
+from respy.python.shared.shared_constants import DATA_LABELS_EST
 from respy.python.shared.shared_constants import HUGE_FLOAT
 from respy.python.simulate.simulate_python import pyth_simulate
 from respy.python.solve.solve_auxiliary import StateSpace
@@ -404,3 +408,131 @@ def get_scales_magnitudes(x_optim_free_unscaled_start):
         precond_matrix[i, i] = scale
 
     return precond_matrix
+
+
+def minimal_simulation_interface(attr):
+    # Draw draws for the simulation.
+    periods_draws_sims = create_draws(
+        attr["num_periods"], attr["num_agents_sim"], attr["seed_sim"], attr["is_debug"]
+    )
+
+    # Draw standard normal deviates for the solution and evaluation step.
+    periods_draws_emax = create_draws(
+        attr["num_periods"], attr["num_draws_emax"], attr["seed_emax"], attr["is_debug"]
+    )
+
+    state_space = pyth_solve(
+        attr["is_interpolated"],
+        attr["num_points_interp"],
+        attr["num_periods"],
+        attr["is_debug"],
+        periods_draws_emax,
+        attr["edu_spec"],
+        attr["optim_paras"],
+        attr["num_types"],
+    )
+
+    simulated_data = pyth_simulate(
+        state_space,
+        attr["num_agents_sim"],
+        periods_draws_sims,
+        attr["seed_sim"],
+        attr["file_sim"],
+        attr["edu_spec"],
+        attr["optim_paras"],
+        attr["is_debug"],
+    )
+
+    return state_space, simulated_data
+
+
+def minimal_estimation_interface(attr, df):
+    def get_independent_estimation_arguments(attr):
+        periods_draws_prob = create_draws(
+            attr["num_periods"],
+            attr["num_draws_prob"],
+            attr["seed_prob"],
+            attr["is_debug"],
+        )
+        periods_draws_emax = create_draws(
+            attr["num_periods"],
+            attr["num_draws_emax"],
+            attr["seed_emax"],
+            attr["is_debug"],
+        )
+
+        # Construct the state space
+        state_space = StateSpace(
+            attr["num_periods"],
+            attr["num_types"],
+            attr["edu_spec"]["start"],
+            attr["edu_spec"]["max"],
+        )
+
+        return periods_draws_emax, periods_draws_prob, state_space
+
+    def get_parameter_vector(attr):
+        """This function is obsolete with estimagic."""
+        x = get_optim_paras(
+            attr["optim_paras"], attr["num_paras"], "all", attr["is_debug"]
+        )
+
+        return x
+
+    def process_dataset(attr, df):
+        """Process the dataset from disk."""
+
+        # Process dataset from files.
+        df.set_index(["Identifier", "Period"], drop=False, inplace=True)
+
+        # We want to allow to estimate with only a subset of periods in the sample.
+        cond = df["Period"] < attr["num_periods"]
+        df = df[cond]
+
+        # Only keep the information that is relevant for the estimation.
+        # Once that is done,  impose some type restrictions.
+        df = df[DATA_LABELS_EST]
+        df = df.astype(DATA_FORMATS_EST)
+
+        # We want to restrict the sample to meet the specified initial conditions.
+        cond = df["Years_Schooling"].loc[:, 0].isin(attr["edu_spec"]["start"])
+        df.set_index(["Identifier"], drop=False, inplace=True)
+        df = df.loc[cond]
+
+        # We now subset the dataframe to include only the number of agents that are
+        # requested for the estimation. However, this requires to adjust the
+        # num_agents_est as the dataset might actually be smaller as we restrict
+        # initial conditions.
+        df = df.loc[df.index.unique()[: attr["num_agents_est"]]]
+        df.set_index(["Identifier", "Period"], drop=False, inplace=True)
+
+        # We need to update the number of individuals for the estimation as the
+        # whole dataset might actually be lower.
+        num_agents_est = df["Identifier"].nunique()
+
+        return df, num_agents_est
+
+    # Process data
+    df, attr["num_agents_est"] = process_dataset(attr, df)
+
+    # Collect arguments for estimation.
+    (
+        periods_draws_emax,
+        periods_draws_prob,
+        state_space,
+    ) = get_independent_estimation_arguments(attr)
+    x = get_parameter_vector(attr)
+
+    log_likelihood = partial(
+        pyth_criterion,
+        is_interpolated=attr["is_interpolated"],
+        num_points_interp=attr["num_points_interp"],
+        is_debug=attr["is_debug"],
+        data=df,
+        tau=attr["tau"],
+        periods_draws_emax=periods_draws_emax,
+        periods_draws_prob=periods_draws_prob,
+        state_space=state_space,
+    )
+
+    return x, log_likelihood(x)
