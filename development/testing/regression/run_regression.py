@@ -21,22 +21,35 @@ from respy.tests.codes.random_model import generate_random_model
 HOSTNAME = socket.gethostname()
 
 
-def create_single(idx):
-    """Create a single test."""
-    dirname = get_random_dirname(5)
-    os.mkdir(dirname)
-    os.chdir(dirname)
-    np.random.seed(idx)
-    param_spec, options_spec = generate_random_model()
-    attr = process_model_spec(param_spec, options_spec)
-    df = minimal_simulate_observed(attr)
-    _, crit_val = minimal_estimation_interface(attr, df)
+def run_regression_tests(num_tests=None, tests=None, num_procs=1):
+    """Run regression tests.
 
-    if not isinstance(crit_val, float):
-        raise AssertionError(" ... value of criterion function too large.")
-    os.chdir("..")
-    shutil.rmtree(dirname)
-    return attr, crit_val
+    Args:
+        num_tests (int): number of tests to run. If None, all are run.
+        tests (list): list of regression tests. If None, tests are loaded from disk.
+        num_procs (int): number of processes. Default 1.
+
+    """
+    if tests is None:
+        tests = load_regression_tests()
+
+    if num_tests is not None:
+        tests = tests[:num_tests]
+
+    if num_procs == 1:
+        ret = []
+        for test in tests:
+            ret.append(check_single(test))
+    else:
+        mp_pool = Pool(num_procs)
+        ret = mp_pool.map(check_single, tests)
+
+    idx_failures = [i for i, x in enumerate(ret) if x is False]
+    is_failure = len(idx_failures) > 0
+
+    send_notification("regression", is_failed=is_failure, idx_failures=idx_failures)
+
+    return ret
 
 
 def create_regression_tests(num_tests, num_procs=1, write_out=False):
@@ -44,7 +57,9 @@ def create_regression_tests(num_tests, num_procs=1, write_out=False):
 
     Args:
         num_test (int): How many tests are in the vault.
-        num_procs (int): Number of processes.
+        num_procs (int): Number of processes. Default 1.
+        write_out (bool): If True, regression tests are stored to disk, replacing
+            any existing regression tests. Be careful with this. Default False.
 
     """
     if num_procs == 1:
@@ -68,30 +83,6 @@ def load_regression_tests():
     with open(fname, "rb") as p:
         tests = pickle.load(p)
     return tests
-
-
-def run_regression_tests(num_tests=None, tests=None, num_procs=1):
-    """Run regression tests."""
-    if tests is None:
-        tests = load_regression_tests()
-
-    if num_tests is not None:
-        tests = tests[:num_tests]
-
-    if num_procs == 1:
-        ret = []
-        for test in tests:
-            ret.append(check_single(test))
-    else:
-        mp_pool = Pool(num_procs)
-        ret = mp_pool.map(check_single, tests)
-
-    idx_failures = [i for i, x in enumerate(ret) if x is False]
-    is_failure = len(idx_failures) > 0
-
-    send_notification("regression", is_failed=is_failure, idx_failures=idx_failures)
-
-    return ret
 
 
 def investigate_regression_test(idx):
@@ -125,3 +116,21 @@ def check_single(test):
     shutil.rmtree(dirname)
 
     return is_success
+
+
+def create_single(idx):
+    """Create a single test."""
+    dirname = get_random_dirname(5)
+    os.mkdir(dirname)
+    os.chdir(dirname)
+    np.random.seed(idx)
+    param_spec, options_spec = generate_random_model()
+    attr = process_model_spec(param_spec, options_spec)
+    df = minimal_simulate_observed(attr)
+    _, crit_val = minimal_estimation_interface(attr, df)
+
+    if not isinstance(crit_val, float):
+        raise AssertionError(" ... value of criterion function too large.")
+    os.chdir("..")
+    shutil.rmtree(dirname)
+    return attr, crit_val
