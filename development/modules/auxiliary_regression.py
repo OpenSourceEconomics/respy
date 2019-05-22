@@ -7,6 +7,7 @@ import respy as rp
 from development.modules.auxiliary_shared import get_random_dirname
 from respy.pre_processing.model_processing import _options_spec_from_attributes
 from respy.pre_processing.model_processing import _params_spec_from_attributes
+from respy.pre_processing.model_processing import process_model_spec
 from respy.python.interface import minimal_estimation_interface
 from respy.python.shared.shared_constants import DATA_FORMATS_EST
 from respy.python.shared.shared_constants import DATA_LABELS_EST
@@ -40,9 +41,9 @@ def create_single(idx):
     constr["flag_estimation"] = True
 
     param_spec, options_spec = generate_random_model(point_constr=constr)
-    respy_obj = rp.RespyCls(param_spec, options_spec)
-    simulate_observed(respy_obj)
-    _, crit_val = respy_obj.fit()
+    attr = process_model_spec(param_spec, options_spec)
+    df = minimal_simulate_observed(attr)
+    _, crit_val = minimal_estimation_interface(attr, df)
 
     # In rare instances, the value of the criterion function might be too large and thus
     # printed as a string. This occurred in the past, when the gradient preconditioning
@@ -55,7 +56,7 @@ def create_single(idx):
     os.chdir("..")
     shutil.rmtree(dirname)
 
-    return respy_obj.attr, crit_val
+    return attr, crit_val
 
 
 def check_single(tests, idx):
