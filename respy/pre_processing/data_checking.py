@@ -61,7 +61,7 @@ def check_estimation_dataset(data_frame, respy_obj):
     np.testing.assert_equal(
         data_frame["TEMP"].equals(data_frame["Lagged_Choice"]), True
     )
-    del data_frame["TEMP"]
+    data_frame.drop(columns="TEMP", inplace=True)
 
     # Checks for YEARS SCHOOLING. We also know that the initial years of
     # schooling can only take values specified in the initialization file and

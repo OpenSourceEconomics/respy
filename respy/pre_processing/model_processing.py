@@ -87,6 +87,7 @@ def _params_spec_from_attributes(attr):
     bounds = np.array(attr["optim_paras"]["paras_bounds"])
     csv["lower"] = bounds[:, 0]
     csv["upper"] = bounds[:, 1]
+    csv[["lower", "upper"]] = csv[["lower", "upper"]].astype(float)
     csv["fixed"] = attr["optim_paras"]["paras_fixed"]
     csv["para"] = get_optim_paras(
         paras_dict=attr["optim_paras"],
@@ -205,8 +206,8 @@ def _read_options_spec(input_):
 def default_model_dict():
     """Return a partial init_dict with default values.
 
-    This is not a complete init_dict. It only contains the parts
-    for which default values make sense.
+    This is not a complete init_dict. It only contains the parts for which default
+    values make sense.
 
     """
     default = {

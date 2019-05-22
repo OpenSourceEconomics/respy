@@ -1,79 +1,35 @@
+"""Test the interpolation routine."""
 import numpy as np
 
-from respy import RespyCls
-from respy.tests.codes.auxiliary import simulate_observed
+from respy.pre_processing.model_processing import process_model_spec
+from respy.python.interface import minimal_simulation_interface
 from respy.tests.codes.random_model import generate_random_model
 
 
-class TestClass(object):
-    """This class groups together some tests."""
+def test_equality_of_full_and_interpolated_solution():
+    """Test the equality of the full and interpolated solution.
 
-    def test_1(self):
-        """ This is the special case where the EMAX better be equal to the MAXE.
-        """
-        # Set initial constraints
-        constr = {
-            "interpolation": {"flag": False},
-            "num_periods": np.random.randint(3, 6),
-        }
+    If an interpolation is requested but the number of states used for the interpolation
+    is equal to the total number of states in the period, the simulated expected maximum
+    utility should be equal to the full solution.
 
-        params_spec, options_spec = generate_random_model(
-            point_constr=constr, deterministic=True
-        )
+    """
+    # Get results from full solution.
+    constr = {"interpolation": {"flag": False}}
+    params_spec, options_spec = generate_random_model(
+        point_constr=constr, deterministic=True
+    )
+    attr = process_model_spec(params_spec, options_spec)
 
-        baseline = None
+    state_space, _ = minimal_simulation_interface(attr)
+    emaxs_full = state_space.emaxs
 
-        # Solve with and without interpolation code
-        for _ in range(2):
-            respy_obj = RespyCls(params_spec, options_spec)
-            respy_obj = simulate_observed(respy_obj)
+    # Get results from interpolated solution.
+    options_spec["interpolation"]["points"] = max(state_space.states_per_period)
+    options_spec["interpolation"]["flag"] = True
+    attr = process_model_spec(params_spec, options_spec)
 
-            # Extract class attributes
-            state_space = respy_obj.attr["state_space"]
+    state_space, _ = minimal_simulation_interface(attr)
+    emaxs_interpolated = state_space.emaxs
 
-            # Store and check results
-            if baseline is None:
-                baseline = state_space.emaxs.copy()
-            else:
-                np.testing.assert_array_almost_equal(baseline, state_space.emaxs)
-
-            # Updates for second iteration. This ensures that there is at least one
-            # interpolation taking place.
-            options_spec["interpolation"]["points"] = (
-                max(state_space.states_per_period) - 1
-            )
-            options_spec["interpolation"]["flag"] = True
-
-    def test_2(self):
-        """ This test compares the results from a solution using the interpolation code
-        for the special case where the number of interpolation points is exactly the
-        number of states in the final period. In this case the interpolation code is run
-        and then all predicted values replaced with their actual values.
-        """
-        # Set initial constraints
-        # Set initial constraints
-        constr = {"interpolation": {"flag": False}}
-
-        params_spec, options_spec = generate_random_model(
-            point_constr=constr, deterministic=True
-        )
-        baseline = None
-
-        # Solve with and without interpolation code
-        for _ in range(2):
-            # Process and solve
-            respy_obj = RespyCls(params_spec, options_spec)
-            respy_obj = simulate_observed(respy_obj)
-
-            # Extract class attributes
-            state_space = respy_obj.attr["state_space"]
-
-            # Store and check results
-            if baseline is None:
-                baseline = state_space.emaxs
-            else:
-                np.testing.assert_array_almost_equal(baseline, state_space.emaxs)
-
-            # Updates for second iteration
-            options_spec["interpolation"]["points"] = max(state_space.states_per_period)
-            options_spec["interpolation"]["flag"] = True
+    np.testing.assert_array_almost_equal(emaxs_full, emaxs_interpolated)

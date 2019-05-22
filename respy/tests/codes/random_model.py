@@ -50,9 +50,10 @@ def generate_random_model(
 
     if "program" in point_constr and "version" in point_constr["program"]:
         version = point_constr["program"]["version"]
-        if version == "fortran":
+        if version != "python":
             raise NotImplementedError
-    version = "python"
+    else:
+        version = "python"
 
     bound_constr = _consolidate_bound_constraints(bound_constr, version)
 
@@ -155,7 +156,6 @@ def generate_random_model(
     for optimizer in OPTIMIZERS:
         options[optimizer] = generate_optimizer_options(optimizer, params)
 
-    # todo: better error catching here to locate the problems.
     attr = _create_attribute_dictionary(params, options)
     check_model_attributes(attr)
 

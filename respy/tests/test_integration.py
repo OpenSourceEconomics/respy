@@ -7,29 +7,18 @@ from pandas.util.testing import assert_frame_equal
 
 from respy import RespyCls
 from respy.custom_exceptions import UserError
-from respy.pre_processing.data_processing import process_dataset
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
 from respy.python.shared.shared_auxiliary import dist_class_attributes
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.tests.codes.auxiliary import simulate_observed
-from respy.tests.codes.auxiliary import write_edu_start
 from respy.tests.codes.auxiliary import write_interpolation_grid
-from respy.tests.codes.auxiliary import write_lagged_start
-from respy.tests.codes.auxiliary import write_types
 from respy.tests.codes.random_model import generate_random_model
 
 
 class TestClass(object):
     """ This class groups together some tests.
     """
-
-    def test_1(self):
-        """Test if random model specifications can be simulated and processed."""
-        params_spec, options_spec = generate_random_model()
-        respy_obj = RespyCls(params_spec, options_spec)
-        simulate_observed(respy_obj)
-        process_dataset(respy_obj)
 
     def test_2(self):
         """ If there is no random variation in rewards then the number of draws to simulate the
@@ -54,56 +43,6 @@ class TestClass(object):
 
             diff = np.max(abs(np.ma.masked_invalid(base) - np.ma.masked_invalid(emaxs)))
             np.testing.assert_almost_equal(diff, 0.0)
-
-    def test_3(self):
-        """ Testing whether the a simulated dataset and the evaluation of the criterion function
-        are the same for a tiny delta and a myopic agent.
-        """
-        constr = {"estimation": {"maxfun": 0}}
-        params_spec, options_spec = generate_random_model(
-            point_constr=constr, myopic=True
-        )
-        respy_obj = RespyCls(params_spec, options_spec)
-
-        optim_paras, num_agents_sim, edu_spec = dist_class_attributes(
-            respy_obj, "optim_paras", "num_agents_sim", "edu_spec"
-        )
-
-        write_types(optim_paras["type_shares"], num_agents_sim)
-        write_edu_start(edu_spec, num_agents_sim)
-        write_lagged_start(num_agents_sim)
-
-        # Iterate over alternative discount rates.
-        base_data, base_val = None, None
-
-        for delta in [0.00, 0.000001]:
-
-            respy_obj = RespyCls(params_spec, options_spec)
-
-            respy_obj.unlock()
-
-            respy_obj.attr["optim_paras"]["delta"] = np.array([delta])
-
-            respy_obj.lock()
-
-            simulate_observed(respy_obj)
-
-            # This parts checks the equality of simulated dataset for the different
-            # versions of the code.
-            data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
-
-            if base_data is None:
-                base_data = data_frame.copy()
-
-            assert_frame_equal(base_data, data_frame)
-
-            # This part checks the equality of an evaluation of the criterion function.
-            _, crit_val = respy_obj.fit()
-
-            if base_val is None:
-                base_val = crit_val
-
-            np.testing.assert_allclose(base_val, crit_val, rtol=1e-03, atol=1e-03)
 
     def test_4(self):
         """ Test the evaluation of the criterion function for random requests, not just
