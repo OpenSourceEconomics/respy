@@ -1,10 +1,8 @@
-import pickle
-
 import numpy as np
 import pandas as pd
 import pytest
 
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from development.testing.regression.run_regression import load_regression_tests
 from respy.python.solve.solve_auxiliary import pyth_create_state_space
 from respy.python.solve.solve_auxiliary import StateSpace
 
@@ -36,7 +34,4 @@ def fresh_directory(tmpdir):
 @pytest.fixture(scope="session")
 def regression_vault(request):
     """Make regression vault available to tests."""
-    with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "rb") as p:
-        regression_vault = pickle.load(p)
-
-    return regression_vault
+    return load_regression_tests()

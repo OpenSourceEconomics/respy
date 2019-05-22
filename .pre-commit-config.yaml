@@ -12,6 +12,7 @@ repos:
     -   id: check-json
     -   id: pretty-format-json
         args: [--autofix, --no-sort-keys]
+    -   id: debug-statements
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 3.7.7
     hooks:

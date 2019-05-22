@@ -14,12 +14,7 @@ from respy.tests.codes.auxiliary import get_valid_shares
 
 
 def generate_random_model(
-    point_constr=None,
-    bound_constr=None,
-    num_types=None,
-    file_path=None,
-    deterministic=False,
-    myopic=False,
+    point_constr=None, bound_constr=None, num_types=None, file_path=None, myopic=False
 ):
     """Generate a random model specification.
 
@@ -39,7 +34,6 @@ def generate_random_model(
 
     """
     # potential conversions from numpy._bool to python bool. Don't remove!
-    deterministic = bool(deterministic)
     myopic = bool(myopic)
 
     point_constr = {} if point_constr is None else point_constr
@@ -48,14 +42,7 @@ def generate_random_model(
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
 
-    if "program" in point_constr and "version" in point_constr["program"]:
-        version = point_constr["program"]["version"]
-        if version != "python":
-            raise NotImplementedError
-    else:
-        version = "python"
-
-    bound_constr = _consolidate_bound_constraints(bound_constr, version)
+    bound_constr = _consolidate_bound_constraints(bound_constr)
 
     option_categories = [
         "edu_spec",
@@ -68,6 +55,7 @@ def generate_random_model(
     ]
 
     options = {cat: {} for cat in option_categories}
+    options["program"]["version"] = "python"
 
     if num_types is None:
         num_types = randint(1, bound_constr["max_types"] + 1)
@@ -105,8 +93,7 @@ def generate_random_model(
     if params["fixed"].to_numpy().all():
         params.loc["coeffs_a", "fixed"] = False
 
-    if params.loc["shocks", "fixed"].to_numpy().any() or deterministic is True:
-        params.loc["shocks", "para"] = 0.0
+    params.loc["shocks", "fixed"] = False
 
     options["simulation"]["agents"] = randint(3, bound_constr["max_agents"] + 1)
     options["simulation"]["seed"] = randint(1, 1000)
@@ -131,10 +118,8 @@ def generate_random_model(
     options["estimation"]["draws"] = randint(1, bound_constr["max_draws"])
     options["estimation"]["seed"] = randint(1, 10000)
     options["estimation"]["file"] = "data.respy.dat"
-    if version == "fortran":
-        options["estimation"]["optimizer"] = "FORT-BOBYQA"
-    else:
-        options["estimation"]["optimizer"] = "SCIPY-LBFGSB"
+
+    options["estimation"]["optimizer"] = "SCIPY-LBFGSB"
     options["estimation"]["maxfun"] = randint(1, 1000)
     options["estimation"]["tau"] = uniform(100, 500)
 
@@ -144,7 +129,6 @@ def generate_random_model(
     options["preconditioning"]["type"] = choice(["gradient", "identity", "magnitudes"])
     options["preconditioning"]["eps"] = uniform(0.0000001, 0.1)
 
-    options["program"]["version"] = version
     options["program"]["debug"] = True
     options["program"]["threads"] = 1
     options["program"]["procs"] = 1
@@ -176,7 +160,7 @@ def generate_random_model(
     return params, options
 
 
-def _consolidate_bound_constraints(bound_constr, version):
+def _consolidate_bound_constraints(bound_constr):
     constr = {"max_types": 3, "max_periods": 3, "max_edu_start": 3}
     constr.update({"max_agents": 1000, "max_draws": 100})
     constr.update(bound_constr)

@@ -16,9 +16,7 @@ def test_equality_of_full_and_interpolated_solution():
     """
     # Get results from full solution.
     constr = {"interpolation": {"flag": False}}
-    params_spec, options_spec = generate_random_model(
-        point_constr=constr, deterministic=True
-    )
+    params_spec, options_spec = generate_random_model(point_constr=constr)
     attr = process_model_spec(params_spec, options_spec)
 
     state_space, _ = minimal_simulation_interface(attr)

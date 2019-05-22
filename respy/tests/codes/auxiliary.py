@@ -283,7 +283,6 @@ def minimal_simulate_observed(attr, is_missings=True):
     with open(attr["file_sim"] + ".respy.dat", "w") as file_:
         data_subset.to_string(file_, index=False, header=True, na_rep=".")
     data_subset.to_pickle(attr["file_sim"] + ".respy.pkl")
-
     data_subset.Wage = data_subset.Wage.round(6)
 
     return data_subset
