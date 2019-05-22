@@ -18,8 +18,11 @@ from development.modules.auxiliary_shared import compile_package
 from development.modules.auxiliary_shared import send_notification
 from respy.pre_processing.model_processing import _options_spec_from_attributes
 from respy.pre_processing.model_processing import _params_spec_from_attributes
+from respy.pre_processing.model_processing import process_model_spec
+from respy.python.interface import minimal_estimation_interface
 from respy.python.shared.shared_constants import DECIMALS
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.tests.codes.auxiliary import minimal_simulate_observed
 from respy.tests.codes.auxiliary import simulate_observed
 
 
@@ -64,14 +67,10 @@ def run(request, is_compile, is_background, is_strict, num_procs):
             tests = pickle.load(p)
 
         attr, crit_val = tests[idx]
-        params_spec = _params_spec_from_attributes(attr)
-        options_spec = _options_spec_from_attributes(attr)
 
-        respy_obj = RespyCls(params_spec, options_spec)
+        df = minimal_simulate_observed(attr)
+        _, result = minimal_estimation_interface(attr, df)
 
-        simulate_observed(respy_obj)
-
-        result = respy_obj.fit()[1]
         np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
 
     if is_creation:
