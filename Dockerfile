@@ -20,6 +20,7 @@ RUN adduser --disabled-password \
 # Copy necessary content from the repository.
 COPY docs ${HOME}/docs
 COPY respy ${HOME}/respy
+COPY development ${HOME}/development
 COPY setup.py ${HOME}
 COPY README.rst ${HOME}
 COPY MANIFEST.in ${HOME}
