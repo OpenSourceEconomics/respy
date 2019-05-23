@@ -10,8 +10,10 @@ from respy.pre_processing.model_processing import _params_spec_from_attributes
 from respy.pre_processing.model_processing import process_model_spec
 from respy.pre_processing.model_processing import write_out_model_spec
 from respy.python.interface import minimal_estimation_interface
-from respy.tests.codes.auxiliary import minimal_simulate_observed
-from respy.tests.codes.random_model import generate_random_model
+from respy.python.shared.shared_auxiliary import distribute_parameters
+from respy.python.shared.shared_auxiliary import get_optim_paras
+from respy.tests.random_model import generate_random_model
+from respy.tests.random_model import minimal_simulate_observed
 
 
 @pytest.mark.parametrize("seed", range(10))
@@ -53,3 +55,25 @@ def test_generate_random_model(seed):
 
     assert x.shape[0] == params_spec.shape[0]
     assert isinstance(crit_val, float)
+
+
+@pytest.mark.parametrize("seed", range(10))
+def test_back_and_forth_transformation_of_parameter_vector(seed):
+    """Testing whether back-and-forth transformation have no effect."""
+    np.random.seed(seed)
+
+    num_types = np.random.randint(1, 5)
+    num_paras = 53 + (num_types - 1) * 6
+
+    # Create random parameter vector
+    base = np.random.uniform(size=num_paras)
+
+    x = base.copy()
+
+    # Apply numerous transformations
+    for _ in range(10):
+        optim_paras = distribute_parameters(x, is_debug=True)
+        args = (optim_paras, num_paras, "all", True)
+        x = get_optim_paras(*args)
+
+    np.testing.assert_allclose(base, x)

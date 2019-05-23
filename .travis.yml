@@ -2,8 +2,8 @@ notifications:
     slack:
         rooms:
           - oseconomics:NwY0nlxNsQh1WTEs7Y1acukS
-        on_success: change
-        on_failure: always
+        on_success: never
+        on_failure: never
     email: false
 
 language: python

@@ -512,28 +512,6 @@ def create_draws(num_periods, num_draws, seed, is_debug):
     return draws
 
 
-def add_solution(
-    respy_obj,
-    periods_rewards_systematic,
-    states_number_period,
-    mapping_state_idx,
-    periods_emax,
-    states_all,
-    *args,
-):
-    """Add solution to class instance."""
-    respy_obj.unlock()
-    respy_obj.set_attr("periods_rewards_systematic", periods_rewards_systematic)
-    respy_obj.set_attr("states_number_period", states_number_period)
-    respy_obj.set_attr("mapping_state_idx", mapping_state_idx)
-    respy_obj.set_attr("periods_emax", periods_emax)
-    respy_obj.set_attr("states_all", states_all)
-    respy_obj.set_attr("is_solved", True)
-    respy_obj.lock()
-
-    return respy_obj
-
-
 def replace_missing_values(arguments):
     """Replace MISSING_FLOAT with NAN.
 

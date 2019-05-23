@@ -14,7 +14,7 @@ import numpy as np
 
 from respy import RespyCls
 from respy.pre_processing.model_processing import write_out_model_spec
-from respy.tests.codes.random_model import generate_random_model
+from respy.tests.random_model import generate_random_model
 
 # import random_init
 

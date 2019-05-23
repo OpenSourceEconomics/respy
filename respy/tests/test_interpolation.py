@@ -3,7 +3,7 @@ import numpy as np
 
 from respy.pre_processing.model_processing import process_model_spec
 from respy.python.interface import minimal_simulation_interface
-from respy.tests.codes.random_model import generate_random_model
+from respy.tests.random_model import generate_random_model
 
 
 def test_equality_of_full_and_interpolated_solution():

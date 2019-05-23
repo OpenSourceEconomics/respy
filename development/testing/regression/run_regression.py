@@ -16,9 +16,8 @@ from respy.python.interface import minimal_estimation_interface
 from respy.python.shared.shared_constants import DECIMALS
 from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
 from respy.python.shared.shared_constants import TOL
-from respy.tests.codes.auxiliary import minimal_simulate_observed
-from respy.tests.codes.random_model import generate_random_model
-
+from respy.tests.random_model import generate_random_model
+from respy.tests.random_model import minimal_simulate_observed
 
 HOSTNAME = socket.gethostname()
 
@@ -32,11 +31,8 @@ def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
         num_procs (int): number of processes. Default 1.
 
     """
-    if tests is None:
-        tests = load_regression_tests()
-
-    if num_tests is not None:
-        tests = tests[:num_tests]
+    tests = load_regression_tests() if tests is None else tests
+    tests = tests[:num_tests] if num_tests is not None else tests
 
     if num_procs == 1:
         ret = []
@@ -74,16 +70,14 @@ def create_regression_tests(num_tests, num_procs=1, write_out=False):
             tests = p.map(create_single, range(num_tests))
 
     if write_out is True:
-        fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
-        with open(fname, "wb") as p:
+        with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "wb") as p:
             pickle.dump(tests, p)
     return tests
 
 
 def load_regression_tests():
     """Load regression tests from disk."""
-    fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
-    with open(fname, "rb") as p:
+    with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "rb") as p:
         tests = pickle.load(p)
     return tests
 

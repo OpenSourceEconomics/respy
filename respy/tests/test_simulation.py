@@ -9,7 +9,7 @@ from respy.python.interface import minimal_simulation_interface
 from respy.python.shared.shared_auxiliary import (
     get_continuation_value_and_ex_post_rewards,
 )
-from respy.tests.codes.random_model import generate_random_model
+from respy.tests.random_model import generate_random_model
 
 
 @pytest.mark.parametrize("seed", range(10))

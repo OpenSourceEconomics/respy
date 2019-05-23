@@ -14,14 +14,7 @@ from respy.python.simulate.simulate_auxiliary import get_random_types
 
 
 def pyth_simulate(
-    state_space,
-    num_agents_sim,
-    periods_draws_sims,
-    seed_sim,
-    file_sim,
-    edu_spec,
-    optim_paras,
-    is_debug,
+    state_space, num_agents_sim, periods_draws_sims, edu_spec, optim_paras, is_debug
 ):
     """ Wrapper for PYTHON and F2PY implementation of sample simulation.
 
@@ -40,10 +33,6 @@ def pyth_simulate(
         Number of simulated agents.
     periods_draws_sims : np.ndarray
         Array with shape (num_periods, num_agents_sim, num_choices)
-    seed_sim : int
-        Seed for the simulation.
-    file_sim : ???
-        Undocumented parameter.
     edu_spec : dict
         Information on education.
     optim_paras : dict

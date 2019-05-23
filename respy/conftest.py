@@ -32,6 +32,6 @@ def fresh_directory(tmpdir):
 
 
 @pytest.fixture(scope="session")
-def regression_vault(request):
+def regression_vault():
     """Make regression vault available to tests."""
     return load_regression_tests()
