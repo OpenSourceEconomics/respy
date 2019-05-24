@@ -1,6 +1,3 @@
-import os
-import shlex
-
 import numpy as np
 import pandas as pd
 from numba import njit
@@ -267,12 +264,7 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
 
 
 def pyth_backward_induction(
-    periods_draws_emax,
-    state_space,
-    is_debug,
-    is_interpolated,
-    num_points_interp,
-    optim_paras,
+    periods_draws_emax, state_space, interpolation, num_points_interp, optim_paras
 ):
     """ Calculate utilities with backward induction.
 
@@ -283,9 +275,7 @@ def pyth_backward_induction(
         random draws used to simulate the emax.
     state_space : class
         State space object.
-    is_debug : bool
-        Flag for debug modus.
-    is_interpolated : np.array
+    interpolation : np.array
         Flag indicating whether interpolation is used to construct the emax in a period.
     num_points_interp : int
         Number of states for which the emax will be interpolated.
@@ -342,11 +332,6 @@ def pyth_backward_induction(
             draws_emax_standard, np.zeros(4), shocks_cholesky
         )
 
-        # The number of interpolation points is the same for all periods. Thus, for some
-        # periods the number of interpolation points is larger than the actual number of
-        # states. In that case no interpolation is needed.
-        any_interpolated = (num_points_interp <= num_states) and is_interpolated
-
         # Unpack necessary attributes of the specific period.
         rewards_period = state_space.get_attribute_from_period("rewards", period)
         emaxs_period = state_space.get_attribute_from_period("emaxs", period)[:, :4]
@@ -355,10 +340,15 @@ def pyth_backward_induction(
             >= state_space.edu_max
         )
 
+        # The number of interpolation points is the same for all periods. Thus, for some
+        # periods the number of interpolation points is larger than the actual number of
+        # states. In that case no interpolation is needed.
+        any_interpolated = (num_points_interp <= num_states) and interpolation
+
         if any_interpolated:
             # Get indicator for interpolation and simulation of states
-            is_simulated = get_simulated_indicator(
-                num_points_interp, num_states, period, is_debug
+            not_interpolated = get_not_interpolated_indicator(
+                num_points_interp, num_states
             )
 
             # Constructing the exogenous variable for all states, including the ones
@@ -374,7 +364,7 @@ def pyth_backward_induction(
                 rewards_period,
                 emaxs_period,
                 max_emax,
-                is_simulated,
+                not_interpolated,
                 draws_emax_risk,
                 delta,
                 max_education,
@@ -383,7 +373,7 @@ def pyth_backward_induction(
             # Create prediction model based on the random subset of points where the
             # EMAX is actually simulated and thus dependent and independent variables
             # are available. For the interpolation points, the actual values are used.
-            emax = get_predictions(endogenous, exogenous, max_emax, is_simulated)
+            emax = get_predictions(endogenous, exogenous, max_emax, not_interpolated)
 
         else:
             emax = construct_emax_risk(
@@ -400,47 +390,32 @@ def pyth_backward_induction(
     return state_space
 
 
-def get_simulated_indicator(num_points_interp, num_states, period, is_debug):
-    """Get the indicator for points of interpolation and simulation.
+def get_not_interpolated_indicator(num_points_interp, num_states):
+    """Get indicator for states which will be not interpolated.
 
     Parameters
     ----------
     num_points_interp : int
         Number of states which will be interpolated.
     num_states : int
-        Number of states.
-    period : int
-        Number of period.
-    is_debug : bool
-        Flag for debugging. If true, interpolation points are taken from file.
+        Total number of states in period.
 
     Returns
     -------
-    is_simulated : np.array
-        Array of shape (num_states,) indicating states which will be interpolated.
+    not_interpolated : np.ndarray
+        Array of shape (num_states,) indicating states which will not be interpolated.
 
     """
-    # Drawing random interpolation points
+    # Drawing random interpolation indices.
     interpolation_points = np.random.choice(
         num_states, size=num_points_interp, replace=False
     )
 
-    # Constructing an indicator whether a state will be simulated or interpolated.
-    is_simulated = np.full(num_states, False)
-    is_simulated[interpolation_points] = True
+    # Constructing an indicator whether a state will be interpolated.
+    not_interpolated = np.full(num_states, False)
+    not_interpolated[interpolation_points] = True
 
-    # Check for debugging cases.
-    is_standardized = is_debug and os.path.exists(".interpolation.respy.test")
-    if is_standardized:
-        with open(".interpolation.respy.test", "r") as file_:
-            indicators = []
-            for line in file_:
-                indicators += [(shlex.split(line)[period] == "True")]
-        is_simulated = indicators[:num_states]
-
-    is_simulated = np.array(is_simulated)
-
-    return is_simulated
+    return not_interpolated
 
 
 def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
@@ -488,9 +463,9 @@ def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
 
 
 def get_endogenous_variable(
-    rewards, emaxs, max_emax, is_simulated, draws_emax_risk, delta, max_education
+    rewards, emaxs, max_emax, not_interpolated, draws_emax_risk, delta, max_education
 ):
-    """Construct endogenous variable for the subset of interpolation points.
+    """Construct endogenous variable for all states which are not interpolated.
 
     Parameters
     ----------
@@ -500,7 +475,7 @@ def get_endogenous_variable(
         Array with shape (num_states_in_period, 4).
     max_emax : np.ndarray
         Array with shape (num_states_in_period,) containing maximum of exogenous emax.
-    is_simulated : np.ndarray
+    not_interpolated : np.ndarray
         Array with shape (num_states_in_period,) containing indicators for simulated
         emaxs.
     draws_emax_risk : np.ndarray
@@ -513,19 +488,24 @@ def get_endogenous_variable(
 
     """
     emax = construct_emax_risk(
-        rewards[:, -2:], rewards[:, :4], emaxs, draws_emax_risk, delta, max_education
+        rewards[:, -2:][not_interpolated],
+        rewards[:, :4][not_interpolated],
+        emaxs[not_interpolated],
+        draws_emax_risk,
+        delta,
+        max_education[not_interpolated],
     )
-    endogenous = emax - max_emax
-    endogenous[~is_simulated] = np.nan
+    endogenous = emax - max_emax[not_interpolated]
 
     return endogenous
 
 
-def get_predictions(endogenous, exogenous, maxe, is_simulated):
-    """Get ols predictions.
+def get_predictions(endogenous, exogenous, maxe, not_interpolated):
+    """Get predictions for the emax of interpolated states.
 
-    Fit an OLS regression of the exogenous variables on the endogenous variables and
-    use the results to predict the endogenous variables for all points in state space.
+    Fit an OLS regression of the exogenous variables on the endogenous variables and use
+    the results to predict the endogenous variables for all points in state space. Then,
+    replace emax values for not interpolated states with true value.
 
     Parameters
     ----------
@@ -536,23 +516,23 @@ def get_predictions(endogenous, exogenous, maxe, is_simulated):
         Array with shape (num_states_in_period, 9) containing exogenous variables.
     maxe : np.ndarray
         Array with shape (num_states_in_period,) containing the maximum emax.
-    is_simulated : np.ndarray
+    not_interpolated : np.ndarray
         Array with shape (num_states_in_period,) containing indicator for states which
-        are used to estimate the coefficients for the interpolation.
+        are not interpolated and used to estimate the coefficients for the
+        interpolation.
 
     """
     # Define ordinary least squares model and fit to the data.
-    beta = ols(endogenous[is_simulated], exogenous[is_simulated])
+    beta = ols(endogenous, exogenous[not_interpolated])
 
-    # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994),negative
-    # predictions are truncated to zero.
+    # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994),
+    # negative predictions are truncated to zero.
     endogenous_predicted = exogenous.dot(beta)
     endogenous_predicted = np.clip(endogenous_predicted, 0.00, None)
 
-    # Construct predicted EMAX for all states and the replace interpolation points with
-    # simulated values.
+    # Construct predicted EMAX for all states and the
     predictions = endogenous_predicted + maxe
-    predictions[is_simulated] = endogenous[is_simulated] + maxe[is_simulated]
+    predictions[not_interpolated] = endogenous + maxe[not_interpolated]
 
     check_prediction_model(endogenous_predicted, beta)
 

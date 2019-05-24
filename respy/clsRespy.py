@@ -38,7 +38,7 @@ class RespyCls(object):
 
     def _set_hardcoded_attributes(self):
         """Set attributes that can't be changed by the model specification."""
-        self.derived_attributes = ["is_myopic", "num_paras"]
+        self.derived_attributes = ["myopia", "num_paras"]
         self.solution_attributes = [
             "periods_rewards_systematic",
             "states_number_period",
@@ -141,7 +141,7 @@ class RespyCls(object):
         """Update derived attributes."""
         # note: don't remove the conversion to bool. It seems unnecessary but it
         # converts a numpy bool to python bool.
-        self.attr["is_myopic"] = bool((self.attr["optim_paras"]["delta"] == 0.00)[0])
+        self.attr["myopia"] = bool((self.attr["optim_paras"]["delta"] == 0.00)[0])
 
     def _check_model_attributes(self):
         """Check integrity of class instance.

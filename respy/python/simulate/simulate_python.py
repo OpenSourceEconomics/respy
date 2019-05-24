@@ -14,9 +14,9 @@ from respy.python.simulate.simulate_auxiliary import get_random_types
 
 
 def pyth_simulate(
-    state_space, num_agents_sim, periods_draws_sims, edu_spec, optim_paras, is_debug
+    state_space, num_agents_sim, periods_draws_sims, edu_spec, optim_paras
 ):
-    """ Wrapper for PYTHON and F2PY implementation of sample simulation.
+    """Simulate a data set.
 
     At the beginning, agents are initialized with zero experience in occupations and
     random values for years of education, lagged choices and types. Then, each simulated
@@ -37,8 +37,6 @@ def pyth_simulate(
         Information on education.
     optim_paras : dict
         Parameters affected by optimization.
-    is_debug : bool
-        Flag for debugging modus.
 
     Returns
     -------
@@ -58,12 +56,12 @@ def pyth_simulate(
         )
 
     # Get initial values of SCHOOLING, lagged choices and types for simulated agents.
-    initial_education = get_random_edu_start(edu_spec, num_agents_sim, is_debug)
+    initial_education = get_random_edu_start(edu_spec, num_agents_sim)
     initial_types = get_random_types(
-        state_space.num_types, optim_paras, num_agents_sim, initial_education, is_debug
+        state_space.num_types, optim_paras, num_agents_sim, initial_education
     )
     initial_choice_lagged = get_random_choice_lagged_start(
-        edu_spec, num_agents_sim, initial_education, is_debug
+        edu_spec, num_agents_sim, initial_education
     )
 
     # Create a matrix of initial states of simulated agents. OCCUPATION A and OCCUPATION

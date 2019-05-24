@@ -24,12 +24,12 @@ def test_relationships_in_simulated_data(seed):
     np.random.seed(seed)
 
     # Set model constraints
-    is_myopic = np.random.choice([True, False])
+    myopia = np.random.choice([True, False])
     max_draws = np.random.randint(5, 200)
     bound_constr = {"max_draws": max_draws, "max_agents": max_draws}
 
     params_spec, options_spec = generate_random_model(
-        bound_constr=bound_constr, myopic=is_myopic
+        bound_constr=bound_constr, myopic=myopia
     )
     attr = process_model_spec(params_spec, options_spec)
 
@@ -52,7 +52,7 @@ def test_relationships_in_simulated_data(seed):
         )
 
     # In the myopic case, the total reward should the equal to the ex post rewards.
-    if is_myopic:
+    if myopia:
         # The shock only affects the skill-function and not the other components
         # determining the overall reward.
         for choice in [1, 2]:

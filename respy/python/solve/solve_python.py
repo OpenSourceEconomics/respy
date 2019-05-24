@@ -3,10 +3,9 @@ from respy.python.solve.solve_auxiliary import StateSpace
 
 
 def pyth_solve(
-    is_interpolated,
+    interpolation,
     num_points_interp,
     num_periods,
-    is_debug,
     periods_draws_emax,
     edu_spec,
     optim_paras,
@@ -19,14 +18,12 @@ def pyth_solve(
 
     Parameters
     ----------
-    is_interpolated : bool
+    interpolation : bool
         Indicator for whether the expected maximum utility should be interpolated.
     num_points_interp : int
         Number of points used for the interpolation.
     num_periods : int
         Number of periods.
-    is_debug : bool
-        Flag for debugging.
     periods_draws_emax : np.ndarray
         Array with shape (num_periods, num_draws, num_choices) containing draws for the
         Monte Carlo simulation of expected maximum utility.
@@ -43,12 +40,7 @@ def pyth_solve(
     )
 
     state_space = pyth_backward_induction(
-        periods_draws_emax,
-        state_space,
-        is_debug,
-        is_interpolated,
-        num_points_interp,
-        optim_paras,
+        periods_draws_emax, state_space, interpolation, num_points_interp, optim_paras
     )
 
     return state_space

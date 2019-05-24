@@ -3,16 +3,14 @@ import copy
 import numpy as np
 import pandas as pd
 
-from respy import RespyCls
 from respy.pre_processing.model_processing import process_model_spec
 from respy.python.interface import minimal_estimation_interface
 from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
-from respy.python.shared.shared_auxiliary import dist_class_attributes
+from respy.python.shared.shared_auxiliary import distribute_parameters
 from respy.python.shared.shared_auxiliary import extract_cholesky
 from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import minimal_simulate_observed
-from respy.tests.random_model import simulate_observed
 
 
 def test_simulation_and_estimation_with_different_models():
@@ -76,8 +74,8 @@ def test_invariance_to_initial_conditions():
     }
 
     params_spec, options_spec = generate_random_model(point_constr=constr)
-    respy_obj = RespyCls(params_spec, options_spec)
-    simulate_observed(respy_obj)
+    attr = process_model_spec(params_spec, options_spec)
+    df = minimal_simulate_observed(attr)
 
     base_val, edu_start_base = (None, np.random.randint(1, 5, size=1).tolist()[0])
 
@@ -105,9 +103,9 @@ def test_invariance_to_initial_conditions():
 
         options_spec["edu_spec"]["start"] = edu_start
 
-        respy_obj = RespyCls(params_spec, options_spec)
-        simulate_observed(respy_obj)
-        _, val = respy_obj.fit()
+        attr = process_model_spec(params_spec, options_spec)
+        df = minimal_simulate_observed(attr)
+        _, val = minimal_estimation_interface(attr, df)
         if base_val is None:
             base_val = val
 
@@ -137,21 +135,21 @@ def test_invariance_to_order_of_initial_schooling_levels():
 
     params_spec, options_spec = generate_random_model(point_constr=point_constr)
 
-    respy_obj = RespyCls(params_spec, options_spec)
+    attr = process_model_spec(params_spec, options_spec)
 
-    edu_baseline_spec, num_types, num_paras, optim_paras = dist_class_attributes(
-        respy_obj, "edu_spec", "num_types", "num_paras", "optim_paras"
-    )
+    edu_baseline_spec = attr["edu_spec"]
+    num_types = attr["num_types"]
+    num_paras = attr["num_paras"]
+    optim_paras = attr["optim_paras"]
 
     # We want to randomly shuffle the list of initial schooling but need to maintain
     # the order of the shares.
-    edu_shuffled_start = np.random.permutation(edu_baseline_spec["start"]).tolist()
-
-    edu_shuffled_share, edu_shuffled_lagged = [], []
-    for start in edu_shuffled_start:
-        idx = edu_baseline_spec["start"].index(start)
-        edu_shuffled_lagged += [edu_baseline_spec["lagged"][idx]]
-        edu_shuffled_share += [edu_baseline_spec["share"][idx]]
+    shuffled_indices = np.random.permutation(range(len(edu_baseline_spec["start"])))
+    edu_shuffled_start = np.array(edu_baseline_spec["start"])[shuffled_indices].tolist()
+    edu_shuffled_lagged = np.array(edu_baseline_spec["lagged"])[
+        shuffled_indices
+    ].tolist()
+    edu_shuffled_share = np.array(edu_baseline_spec["share"])[shuffled_indices].tolist()
 
     edu_shuffled_spec = copy.deepcopy(edu_baseline_spec)
     edu_shuffled_spec["lagged"] = edu_shuffled_lagged
@@ -184,14 +182,10 @@ def test_invariance_to_order_of_initial_schooling_levels():
 
     base_data, base_val = None, None
 
-    k = 0
-
     for optim_paras in [optim_paras_baseline, optim_paras_shuffled]:
         for edu_spec in [edu_baseline_spec, edu_shuffled_spec]:
 
-            respy_obj.unlock()
-            respy_obj.set_attr("edu_spec", edu_spec)
-            respy_obj.lock()
+            attr["edu_spec"] = edu_spec
 
             # There is some more work to do to update the coefficients as we
             # distinguish between the economic and optimization version of the
@@ -200,25 +194,19 @@ def test_invariance_to_order_of_initial_schooling_levels():
             shocks_cholesky, _ = extract_cholesky(x)
             shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
             x[43:53] = shocks_coeffs
-            respy_obj.update_optim_paras(x)
+            attr["optim_paras"] = distribute_parameters(
+                paras_vec=x, is_debug=True, paras_type="econ"
+            )
 
-            respy_obj.reset()
-
-            simulate_observed(respy_obj)
-
-            # This part checks the equality of simulated dataset.
-            data_frame = pd.read_csv("data.respy.dat", delim_whitespace=True)
+            df = minimal_simulate_observed(attr)
 
             if base_data is None:
-                base_data = data_frame.copy()
+                base_data = df.copy()
 
-            pd.testing.assert_frame_equal(base_data, data_frame)
+            pd.testing.assert_frame_equal(base_data, df)
 
             # This part checks the equality of a single function evaluation.
-            _, val = respy_obj.fit()
+            _, val = minimal_estimation_interface(attr, df)
             if base_val is None:
                 base_val = val
             np.testing.assert_almost_equal(base_val, val)
-
-            respy_obj.reset()
-            k += 1

@@ -38,7 +38,7 @@ def respy_interface(respy_obj, request, data=None):
         seed_prob,
         num_draws_emax,
         seed_emax,
-        is_interpolated,
+        interpolation,
         num_points_interp,
         maxfun,
         optimizer_used,
@@ -61,7 +61,7 @@ def respy_interface(respy_obj, request, data=None):
         "seed_prob",
         "num_draws_emax",
         "seed_emax",
-        "is_interpolated",
+        "interpolation",
         "num_points_interp",
         "maxfun",
         "optimizer_used",
@@ -101,7 +101,7 @@ def respy_interface(respy_obj, request, data=None):
         # Collect arguments that are required for the criterion function.
         # These must be in the correct order already.
         args = (
-            is_interpolated,
+            interpolation,
             num_points_interp,
             is_debug,
             data,
@@ -298,10 +298,9 @@ def respy_interface(respy_obj, request, data=None):
 
         # Collect arguments for different implementations of the simulation.
         state_space = pyth_solve(
-            is_interpolated,
+            interpolation,
             num_points_interp,
             num_periods,
-            is_debug,
             periods_draws_emax,
             edu_spec,
             optim_paras,
@@ -309,12 +308,7 @@ def respy_interface(respy_obj, request, data=None):
         )
 
         simulated_data = pyth_simulate(
-            state_space,
-            num_agents_sim,
-            periods_draws_sims,
-            edu_spec,
-            optim_paras,
-            is_debug,
+            state_space, num_agents_sim, periods_draws_sims, edu_spec, optim_paras
         )
 
         args = (state_space, simulated_data)
@@ -420,10 +414,9 @@ def minimal_simulation_interface(attr):
     )
 
     state_space = pyth_solve(
-        attr["is_interpolated"],
+        attr["interpolation"],
         attr["num_points_interp"],
         attr["num_periods"],
-        attr["is_debug"],
         periods_draws_emax,
         attr["edu_spec"],
         attr["optim_paras"],
@@ -436,7 +429,6 @@ def minimal_simulation_interface(attr):
         periods_draws_sims,
         attr["edu_spec"],
         attr["optim_paras"],
-        attr["is_debug"],
     )
 
     return state_space, simulated_data
@@ -521,7 +513,7 @@ def minimal_estimation_interface(attr, df):
 
     log_likelihood = partial(
         pyth_criterion,
-        is_interpolated=attr["is_interpolated"],
+        interpolation=attr["interpolation"],
         num_points_interp=attr["num_points_interp"],
         is_debug=attr["is_debug"],
         data=df,

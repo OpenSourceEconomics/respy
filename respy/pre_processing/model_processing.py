@@ -53,10 +53,7 @@ def _options_spec_from_attributes(attr):
         "version": attr["version"],
     }
 
-    interpolation = {
-        "flag": attr["is_interpolated"],
-        "points": attr["num_points_interp"],
-    }
+    interpolation = {"flag": attr["interpolation"], "points": attr["num_points_interp"]}
 
     solution = {
         "store": attr["is_store"],
@@ -100,11 +97,10 @@ def _params_spec_from_attributes(attr):
 
 def _create_attribute_dictionary(params_spec, options_spec):
     attr = {
-        "edu_max": int(options_spec["edu_spec"]["max"]),
         "file_est": str(options_spec["estimation"]["file"]),
         "file_sim": str(options_spec["simulation"]["file"]),
         "is_debug": bool(options_spec["program"]["debug"]),
-        "is_interpolated": bool(options_spec["interpolation"]["flag"]),
+        "interpolation": bool(options_spec["interpolation"]["flag"]),
         "is_store": bool(options_spec["solution"]["store"]),
         "maxfun": int(options_spec["estimation"]["maxfun"]),
         "num_agents_est": int(options_spec["estimation"]["agents"]),
@@ -153,7 +149,7 @@ def _create_attribute_dictionary(params_spec, options_spec):
     for opt in OPTIMIZERS:
         attr["optimizer_options"][opt] = options_spec[opt]
 
-    attr["is_myopic"] = params_spec.loc[("delta", "delta"), "para"] == 0.0
+    attr["myopia"] = params_spec.loc[("delta", "delta"), "para"] == 0.0
 
     return attr
 

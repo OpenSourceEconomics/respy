@@ -6,7 +6,7 @@ from respy.python.solve.solve_auxiliary import pyth_backward_induction
 
 def pyth_criterion(
     x,
-    is_interpolated,
+    interpolation,
     num_points_interp,
     is_debug,
     data,
@@ -22,12 +22,7 @@ def pyth_criterion(
     state_space.update_systematic_rewards(optim_paras)
 
     state_space = pyth_backward_induction(
-        periods_draws_emax,
-        state_space,
-        is_debug,
-        is_interpolated,
-        num_points_interp,
-        optim_paras,
+        periods_draws_emax, state_space, interpolation, num_points_interp, optim_paras
     )
 
     contribs = pyth_contributions(

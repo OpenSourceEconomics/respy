@@ -22,7 +22,7 @@ def check_model_attributes(attr_dict):
     assert a["is_debug"] in [True, False]
 
     # Forward-looking agents
-    assert a["is_myopic"] in [True, False]
+    assert a["myopia"] in [True, False]
 
     # Seeds
     for seed in [a["seed_emax"], a["seed_sim"], a["seed_prob"]]:
@@ -54,7 +54,7 @@ def check_model_attributes(attr_dict):
     assert a["tau"] > 0
 
     # Interpolation
-    assert a["is_interpolated"] in [True, False]
+    assert a["interpolation"] in [True, False]
     assert isinstance(a["num_points_interp"], int)
     assert a["num_points_interp"] > 0
 

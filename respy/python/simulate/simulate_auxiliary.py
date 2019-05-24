@@ -1,5 +1,4 @@
 import copy
-import os
 
 import numpy as np
 import pandas as pd
@@ -369,22 +368,19 @@ def sort_edu_spec(edu_spec):
     return edu_spec_ordered
 
 
-def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug):
+def get_random_types(num_types, optim_paras, num_agents_sim, edu_start):
     """ This function provides random draws for the types, or reads them in from a file.
     """
     # We want to ensure that the order of types in the initialization file does not
     # matter for the simulated sample.
     type_info = sort_type_info(optim_paras, num_types)
 
-    if is_debug and os.path.exists(".types.respy.test"):
-        types = np.genfromtxt(".types.respy.test")
-    else:
-        types = []
-        for i in range(num_agents_sim):
-            probs = get_conditional_probabilities(
-                type_info["shares"], np.array([edu_start[i]])
-            )
-            types += np.random.choice(type_info["order"], p=probs, size=1).tolist()
+    types = []
+    for i in range(num_agents_sim):
+        probs = get_conditional_probabilities(
+            type_info["shares"], np.array([edu_start[i]])
+        )
+        types += np.random.choice(type_info["order"], p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that types are a vector.
     types = np.array(types, ndmin=1)
@@ -392,7 +388,7 @@ def get_random_types(num_types, optim_paras, num_agents_sim, edu_start, is_debug
     return types
 
 
-def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
+def get_random_edu_start(edu_spec, num_agents_sim):
     """ This function provides random draws for the initial schooling level, or reads
     them in from a file.
     """
@@ -401,15 +397,12 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     # version for this function.
     edu_spec_ordered = sort_edu_spec(edu_spec)
 
-    if is_debug and os.path.exists(".initial_schooling.respy.test"):
-        edu_start = np.genfromtxt(".initial_schooling.respy.test")
-    else:
-        # As we do not want to be too strict at the user-level the sum of edu_spec might
-        # be slightly larger than one. This needs to be corrected here.
-        probs = edu_spec_ordered["share"] / np.sum(edu_spec_ordered["share"])
-        edu_start = np.random.choice(
-            edu_spec_ordered["start"], p=probs, size=num_agents_sim
-        )
+    # As we do not want to be too strict at the user-level the sum of edu_spec might
+    # be slightly larger than one. This needs to be corrected here.
+    probs = edu_spec_ordered["share"] / np.sum(edu_spec_ordered["share"])
+    edu_start = np.random.choice(
+        edu_spec_ordered["start"], p=probs, size=num_agents_sim
+    )
 
     # If we only have one individual, we need to ensure that types are a vector.
     edu_start = np.array(edu_start, ndmin=1)
@@ -417,20 +410,17 @@ def get_random_edu_start(edu_spec, num_agents_sim, is_debug):
     return edu_start
 
 
-def get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start, is_debug):
+def get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start):
     """ This function provides values for the initial lagged choice.
 
     The values are random draws or read in from a file.
 
     """
-    if is_debug and os.path.exists(".initial_lagged.respy.test"):
-        lagged_start = np.genfromtxt(".initial_lagged.respy.test")
-    else:
-        lagged_start = []
-        for i in range(num_agents_sim):
-            idx = edu_spec["start"].index(edu_start[i])
-            probs = edu_spec["lagged"][idx], 1 - edu_spec["lagged"][idx]
-            lagged_start += np.random.choice([3, 4], p=probs, size=1).tolist()
+    lagged_start = []
+    for i in range(num_agents_sim):
+        idx = edu_spec["start"].index(edu_start[i])
+        probs = edu_spec["lagged"][idx], 1 - edu_spec["lagged"][idx]
+        lagged_start += np.random.choice([3, 4], p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that activities are a vector.
     lagged_start = np.array(lagged_start, ndmin=1)

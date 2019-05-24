@@ -22,6 +22,12 @@ if not IS_DEBUG:
 __version__ = "1.2.1"
 
 
+EXAMPLE_MODELS = [
+    TEST_RESOURCES_DIR / f"kw_data_{suffix}"
+    for suffix in ["one", "one_initial", "one_types", "two", "three"]
+] + [TEST_RESOURCES_DIR / "reliability_short"]
+
+
 def test(opt=None):
     """Run basic tests of the package."""
     current_directory = os.getcwd()
@@ -31,20 +37,9 @@ def test(opt=None):
 
 
 def get_example_model(model):
-    possible_models = [
-        f"kw_data_{suffix}"
-        for suffix in [
-            "one",
-            "one_initial",
-            "one_types",
-            "two",
-            "three",
-            "reliability_short",
-        ]
-    ]
-    assert model in possible_models
+    assert model in EXAMPLE_MODELS
 
     options_spec = json.loads((TEST_RESOURCES_DIR / f"{model}.json").read_text())
     params_spec = pd.read_csv(TEST_RESOURCES_DIR / f"{model}.csv")
 
-    return options_spec, params_spec
+    return params_spec, options_spec
