@@ -5,8 +5,8 @@ from respy.config import DATA_LABELS_EST
 from respy.likelihood import pyth_criterion
 from respy.pre_processing.model_processing import parameters_to_vector
 from respy.shared import create_multivariate_standard_normal_draws
-from respy.simulate import pyth_simulate
-from respy.solve import pyth_backward_induction
+from respy.simulate import simulate_data
+from respy.solve import solve_with_backward_induction
 from respy.solve import StateSpace
 
 
@@ -20,7 +20,7 @@ def minimal_solution_interface(attr, periods_draws_emax):
         attr["optim_paras"],
     )
 
-    state_space = pyth_backward_induction(
+    state_space = solve_with_backward_induction(
         periods_draws_emax,
         state_space,
         attr["interpolation"],
@@ -44,12 +44,13 @@ def minimal_simulation_interface(attr):
 
     state_space = minimal_solution_interface(attr, periods_draws_emax)
 
-    simulated_data = pyth_simulate(
+    simulated_data = simulate_data(
         state_space,
         attr["num_agents_sim"],
         periods_draws_sims,
         attr["edu_spec"],
         attr["optim_paras"],
+        attr["seed_sim"],
     )
 
     return state_space, simulated_data

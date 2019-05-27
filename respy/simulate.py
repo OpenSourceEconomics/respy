@@ -12,8 +12,8 @@ from respy.shared import get_conditional_probabilities
 from respy.shared import transform_disturbances
 
 
-def pyth_simulate(
-    state_space, num_agents_sim, periods_draws_sims, edu_spec, optim_paras
+def simulate_data(
+    state_space, num_agents_sim, periods_draws_sims, edu_spec, optim_paras, seed
 ):
     """Simulate a data set.
 
@@ -32,8 +32,6 @@ def pyth_simulate(
         Number of simulated agents.
     periods_draws_sims : np.ndarray
         Array with shape (num_periods, num_agents_sim, num_choices)
-    edu_spec : dict
-        Information on education.
     optim_paras : dict
         Parameters affected by optimization.
 
@@ -54,13 +52,13 @@ def pyth_simulate(
             periods_draws_sims[period], np.zeros(4), optim_paras["shocks_cholesky"]
         )
 
-    # Get initial values of SCHOOLING, lagged choices and types for simulated agents.
-    initial_education = _get_random_edu_start(edu_spec, num_agents_sim)
+    # Create initial starting values for agents in simulation.
+    initial_education = _get_random_edu_start(edu_spec, num_agents_sim, seed)
     initial_types = _get_random_types(
-        state_space.num_types, optim_paras, num_agents_sim, initial_education
+        state_space.num_types, optim_paras, num_agents_sim, initial_education, seed
     )
-    initial_choice_lagged = _get_random_choice_lagged_start(
-        edu_spec, num_agents_sim, initial_education
+    initial_lagged_choices = _get_random_choice_lagged_start(
+        edu_spec, num_agents_sim, initial_education, seed
     )
 
     # Create a matrix of initial states of simulated agents. OCCUPATION A and OCCUPATION
@@ -69,7 +67,7 @@ def pyth_simulate(
         (
             np.zeros((num_agents_sim, 2)),
             initial_education,
-            initial_choice_lagged,
+            initial_lagged_choices,
             initial_types,
         )
     ).astype(np.uint8)
@@ -109,7 +107,7 @@ def pyth_simulate(
         # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
         # constructed cases.
         total_values[:, 2] = np.where(
-            current_states[:, 2] >= edu_spec["max"], -HUGE_FLOAT, total_values[:, 2]
+            current_states[:, 2] >= state_space.edu_max, -HUGE_FLOAT, total_values[:, 2]
         )
 
         # Determine optimal choice.
@@ -210,9 +208,10 @@ def _sort_edu_spec(edu_spec):
     return edu_spec_ordered
 
 
-def _get_random_types(num_types, optim_paras, num_agents_sim, edu_start):
-    """ This function provides random draws for the types, or reads them in from a file.
-    """
+def _get_random_types(num_types, optim_paras, num_agents_sim, edu_start, seed):
+    """Get random types for simulated agents."""
+    np.random.seed(seed)
+
     # We want to ensure that the order of types in the initialization file does not
     # matter for the simulated sample.
     type_info = _sort_type_info(optim_paras, num_types)
@@ -230,10 +229,9 @@ def _get_random_types(num_types, optim_paras, num_agents_sim, edu_start):
     return types
 
 
-def _get_random_edu_start(edu_spec, num_agents_sim):
-    """ This function provides random draws for the initial schooling level, or reads
-    them in from a file.
-    """
+def _get_random_edu_start(edu_spec, num_agents_sim, seed):
+    """Get random, initial levels of schooling for simulated agents."""
+    np.random.seed(seed)
     # We want to ensure that the order of initial schooling levels in the initialization
     # files does not matter for the simulated sample. That is why we create an ordered
     # version for this function.
@@ -252,12 +250,8 @@ def _get_random_edu_start(edu_spec, num_agents_sim):
     return edu_start
 
 
-def _get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start):
-    """ This function provides values for the initial lagged choice.
-
-    The values are random draws or read in from a file.
-
-    """
+def _get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start, seed):
+    """Get random, initial levels of lagged choices for simulated agents."""
     lagged_start = []
     for i in range(num_agents_sim):
         idx = edu_spec["start"].index(edu_start[i])

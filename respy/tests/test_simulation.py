@@ -119,16 +119,13 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
         np.testing.assert_equal(total_values, rewards_ex_post)
 
 
-@pytest.mark.parametrize("seed", range(10))
+@pytest.mark.parametrize("seed", range(20))
 def test_equality_for_myopic_agents_and_tiny_delta(seed):
     """Test equality of simulated data and likelihood myopic agents and tiny delta."""
     np.random.seed(seed)
 
     # Get simulated data and likelihood for myopic model.
-    bound_constr = {"max_edu_start": 1, "max_types": 1}
-    params_spec, options_spec = generate_random_model(
-        myopic=True, bound_constr=bound_constr
-    )
+    params_spec, options_spec = generate_random_model(myopic=True)
     attr = process_model_spec(params_spec, options_spec)
 
     state_space, df = minimal_simulation_interface(attr)

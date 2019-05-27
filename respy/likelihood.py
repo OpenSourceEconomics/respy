@@ -6,7 +6,7 @@ from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.model_processing import parameters_to_dictionary
 from respy.shared import get_conditional_probabilities
-from respy.solve import pyth_backward_induction
+from respy.solve import solve_with_backward_induction
 
 
 def pyth_criterion(
@@ -26,7 +26,7 @@ def pyth_criterion(
     # Calculate all systematic rewards
     state_space.update_systematic_rewards(optim_paras)
 
-    state_space = pyth_backward_induction(
+    state_space = solve_with_backward_induction(
         periods_draws_emax, state_space, interpolation, num_points_interp, optim_paras
     )
 

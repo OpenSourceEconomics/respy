@@ -9,7 +9,7 @@ from respy.shared import transform_disturbances
 
 
 @njit
-def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
+def create_state_space(num_periods, num_types, edu_starts, edu_max):
     """Create the state space.
 
     The state space consists of all admissible combinations of the following elements:
@@ -56,7 +56,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
     >>> num_periods = 40
     >>> num_types = 1
     >>> edu_starts, edu_max = [10], 20
-    >>> states, indexer = pyth_create_state_space(
+    >>> states, indexer = create_state_space(
     ...     num_periods, num_types, edu_starts, edu_max
     ... )
     >>> states.shape
@@ -201,7 +201,7 @@ def pyth_create_state_space(num_periods, num_types, edu_starts, edu_max):
     return states, indexer
 
 
-def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
+def create_systematic_rewards(states, covariates, optim_paras):
     """Calculate systematic rewards for each state.
 
     Parameters
@@ -257,10 +257,10 @@ def pyth_calculate_rewards_systematic(states, covariates, optim_paras):
     return rewards_systematic, rewards_general, rewards_common, wages
 
 
-def pyth_backward_induction(
+def solve_with_backward_induction(
     periods_draws_emax, state_space, interpolation, num_points_interp, optim_paras
 ):
-    """ Calculate utilities with backward induction.
+    """Calculate utilities with backward induction.
 
     Parameters
     ----------
@@ -743,7 +743,7 @@ class StateSpace:
         self.num_types = num_types
         self.edu_max = edu_max
 
-        self.states, self.indexer = pyth_create_state_space(
+        self.states, self.indexer = create_state_space(
             num_periods, num_types, edu_starts, edu_max
         )
         self.covariates = create_covariates(self.states)
@@ -751,11 +751,7 @@ class StateSpace:
         # Passing :data:`optim_paras` is optional.
         if optim_paras:
             self.rewards = np.column_stack(
-                (
-                    pyth_calculate_rewards_systematic(
-                        self.states, self.covariates, optim_paras
-                    )
-                )
+                (create_systematic_rewards(self.states, self.covariates, optim_paras))
             )
 
         self._create_slices_by_periods(num_periods)
@@ -772,11 +768,7 @@ class StateSpace:
 
     def update_systematic_rewards(self, optim_paras):
         self.rewards = np.column_stack(
-            (
-                pyth_calculate_rewards_systematic(
-                    self.states, self.covariates, optim_paras
-                )
-            )
+            (create_systematic_rewards(self.states, self.covariates, optim_paras))
         )
 
     def get_attribute_from_period(self, attr, period):
@@ -1043,7 +1035,7 @@ def create_covariates(states):
     This example is to benchmark alternative implementations, but even this version does
     not benefit from Numba anymore.
 
-    >>> states, _ = pyth_create_state_space(40, 5, [10], 20)
+    >>> states, _ = create_state_space(40, 5, [10], 20)
     >>> covariates = create_covariates(states)
     >>> assert covariates.shape == (states.shape[0], 16)
 

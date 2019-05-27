@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from development.testing.regression.run_regression import load_regression_tests
-from respy.solve import pyth_create_state_space
+from respy.solve import create_state_space
 from respy.solve import StateSpace
 
 
@@ -15,7 +15,7 @@ def make_imports_available_in_doctest_namespaces(doctest_namespace):
 
     """
     doctest_namespace["pd"] = pd
-    doctest_namespace["pyth_create_state_space"] = pyth_create_state_space
+    doctest_namespace["pyth_create_state_space"] = create_state_space
     doctest_namespace["StateSpace"] = StateSpace
 
 
