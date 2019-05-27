@@ -9,24 +9,6 @@ from respy.shared import get_conditional_probabilities
 from respy.solve import pyth_backward_induction
 
 
-def get_log_likl(contribs):
-    """Aggregate contributions to the likelihood value.
-
-    Parameters
-    ----------
-    contribs : np.ndarray
-        Array with shape (num_agents_est,).
-
-    Returns
-    -------
-    crit_val : float
-
-    """
-    crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
-
-    return crit_val
-
-
 def pyth_criterion(
     x,
     interpolation,
@@ -52,7 +34,7 @@ def pyth_criterion(
         state_space, data, periods_draws_prob, tau, optim_paras
     )
 
-    crit_val = get_log_likl(contribs)
+    crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
 
     return crit_val
 

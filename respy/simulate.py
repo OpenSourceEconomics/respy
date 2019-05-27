@@ -55,11 +55,11 @@ def pyth_simulate(
         )
 
     # Get initial values of SCHOOLING, lagged choices and types for simulated agents.
-    initial_education = get_random_edu_start(edu_spec, num_agents_sim)
-    initial_types = get_random_types(
+    initial_education = _get_random_edu_start(edu_spec, num_agents_sim)
+    initial_types = _get_random_types(
         state_space.num_types, optim_paras, num_agents_sim, initial_education
     )
-    initial_choice_lagged = get_random_choice_lagged_start(
+    initial_choice_lagged = _get_random_choice_lagged_start(
         edu_spec, num_agents_sim, initial_education
     )
 
@@ -170,7 +170,7 @@ def pyth_simulate(
     return simulated_data
 
 
-def sort_type_info(optim_paras, num_types):
+def _sort_type_info(optim_paras, num_types):
     """We fix an order for the sampling of the types."""
     type_info = {"order": np.argsort(optim_paras["type_shares"].tolist()[0::2])}
 
@@ -189,7 +189,7 @@ def sort_type_info(optim_paras, num_types):
     return type_info
 
 
-def sort_edu_spec(edu_spec):
+def _sort_edu_spec(edu_spec):
     """ This function sorts the dictionary that provides the information about initial
     education. It adjusts the order of the shares accordingly.
     """
@@ -210,12 +210,12 @@ def sort_edu_spec(edu_spec):
     return edu_spec_ordered
 
 
-def get_random_types(num_types, optim_paras, num_agents_sim, edu_start):
+def _get_random_types(num_types, optim_paras, num_agents_sim, edu_start):
     """ This function provides random draws for the types, or reads them in from a file.
     """
     # We want to ensure that the order of types in the initialization file does not
     # matter for the simulated sample.
-    type_info = sort_type_info(optim_paras, num_types)
+    type_info = _sort_type_info(optim_paras, num_types)
 
     types = []
     for i in range(num_agents_sim):
@@ -230,14 +230,14 @@ def get_random_types(num_types, optim_paras, num_agents_sim, edu_start):
     return types
 
 
-def get_random_edu_start(edu_spec, num_agents_sim):
+def _get_random_edu_start(edu_spec, num_agents_sim):
     """ This function provides random draws for the initial schooling level, or reads
     them in from a file.
     """
     # We want to ensure that the order of initial schooling levels in the initialization
     # files does not matter for the simulated sample. That is why we create an ordered
     # version for this function.
-    edu_spec_ordered = sort_edu_spec(edu_spec)
+    edu_spec_ordered = _sort_edu_spec(edu_spec)
 
     # As we do not want to be too strict at the user-level the sum of edu_spec might
     # be slightly larger than one. This needs to be corrected here.
@@ -252,7 +252,7 @@ def get_random_edu_start(edu_spec, num_agents_sim):
     return edu_start
 
 
-def get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start):
+def _get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start):
     """ This function provides values for the initial lagged choice.
 
     The values are random draws or read in from a file.

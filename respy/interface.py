@@ -4,7 +4,7 @@ from respy.config import DATA_FORMATS_EST
 from respy.config import DATA_LABELS_EST
 from respy.likelihood import pyth_criterion
 from respy.pre_processing.model_processing import parameters_to_vector
-from respy.shared import create_draws
+from respy.shared import create_multivariate_standard_normal_draws
 from respy.simulate import pyth_simulate
 from respy.solve import pyth_backward_induction
 from respy.solve import StateSpace
@@ -33,13 +33,13 @@ def minimal_solution_interface(attr, periods_draws_emax):
 
 def minimal_simulation_interface(attr):
     # Draw draws for the simulation.
-    periods_draws_sims = create_draws(
-        attr["num_periods"], attr["num_agents_sim"], attr["seed_sim"], attr["is_debug"]
+    periods_draws_sims = create_multivariate_standard_normal_draws(
+        attr["num_periods"], attr["num_agents_sim"], attr["seed_sim"]
     )
 
     # Draw standard normal deviates for the solution and evaluation step.
-    periods_draws_emax = create_draws(
-        attr["num_periods"], attr["num_draws_emax"], attr["seed_emax"], attr["is_debug"]
+    periods_draws_emax = create_multivariate_standard_normal_draws(
+        attr["num_periods"], attr["num_draws_emax"], attr["seed_emax"]
     )
 
     state_space = minimal_solution_interface(attr, periods_draws_emax)
@@ -57,17 +57,11 @@ def minimal_simulation_interface(attr):
 
 def minimal_estimation_interface(attr, df):
     def get_independent_estimation_arguments(attr):
-        periods_draws_prob = create_draws(
-            attr["num_periods"],
-            attr["num_draws_prob"],
-            attr["seed_prob"],
-            attr["is_debug"],
+        periods_draws_prob = create_multivariate_standard_normal_draws(
+            attr["num_periods"], attr["num_draws_prob"], attr["seed_prob"]
         )
-        periods_draws_emax = create_draws(
-            attr["num_periods"],
-            attr["num_draws_emax"],
-            attr["seed_emax"],
-            attr["is_debug"],
+        periods_draws_emax = create_multivariate_standard_normal_draws(
+            attr["num_periods"], attr["num_draws_emax"], attr["seed_emax"]
         )
 
         # Construct the state space
@@ -98,8 +92,8 @@ def minimal_estimation_interface(attr, df):
         cond = df["Period"] < attr["num_periods"]
         df = df[cond]
 
-        # Only keep the information that is relevant for the estimation.
-        # Once that is done,  impose some type restrictions.
+        # Only keep the information that is relevant for the estimation. Once that is
+        # done,  impose some type restrictions.
         df = df[DATA_LABELS_EST]
         df = df.astype(DATA_FORMATS_EST)
 
@@ -110,13 +104,13 @@ def minimal_estimation_interface(attr, df):
 
         # We now subset the dataframe to include only the number of agents that are
         # requested for the estimation. However, this requires to adjust the
-        # num_agents_est as the dataset might actually be smaller as we restrict
-        # initial conditions.
+        # num_agents_est as the dataset might actually be smaller as we restrict initial
+        # conditions.
         df = df.loc[df.index.unique()[: attr["num_agents_est"]]]
         df.set_index(["Identifier", "Period"], drop=False, inplace=True)
 
-        # We need to update the number of individuals for the estimation as the
-        # whole dataset might actually be lower.
+        # We need to update the number of individuals for the estimation as the whole
+        # dataset might actually be lower.
         num_agents_est = df["Identifier"].nunique()
 
         return df, num_agents_est

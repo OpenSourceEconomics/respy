@@ -10,8 +10,6 @@ from respy.config import TINY_FLOAT
 from respy.pre_processing.model_checking import _check_parameter_vector
 from respy.pre_processing.model_checking import check_model_parameters
 from respy.pre_processing.specification_helpers import csv_template
-from respy.shared import _paras_parsing_information
-from respy.shared import number_of_triangular_elements_to_dimensio
 
 
 def process_model_spec(params_spec, options_spec):
@@ -300,7 +298,7 @@ def _extract_cholesky(x, info=None):
     pinfo = _paras_parsing_information(len(x))
     start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
     shocks_coeffs = x[start:stop]
-    dim = number_of_triangular_elements_to_dimensio(len(shocks_coeffs))
+    dim = _get_matrix_dimension_from_num_triangular_elements(len(shocks_coeffs))
     shocks_cholesky = np.zeros((dim, dim))
     shocks_cholesky[np.tril_indices(dim)] = shocks_coeffs
 
@@ -337,7 +335,7 @@ def _coeffs_to_cholesky(coeffs):
             square roots.
 
     """
-    dim = number_of_triangular_elements_to_dimensio(coeffs.shape[0])
+    dim = _get_matrix_dimension_from_num_triangular_elements(coeffs.shape[0])
     shocks = np.zeros((dim, dim))
     shocks[np.triu_indices(dim)] = coeffs
     shocks[np.diag_indices(dim)] **= 2
@@ -348,3 +346,40 @@ def _coeffs_to_cholesky(coeffs):
         return np.zeros((dim, dim))
     else:
         return np.linalg.cholesky(shocks_cov)
+
+
+def _paras_parsing_information(num_paras):
+    """Dictionary with the start and stop indices of each quantity."""
+    num_types = int((num_paras - 53) / 6) + 1
+    num_shares = (num_types - 1) * 2
+    pinfo = {
+        "delta": {"start": 0, "stop": 1},
+        "coeffs_common": {"start": 1, "stop": 3},
+        "coeffs_a": {"start": 3, "stop": 18},
+        "coeffs_b": {"start": 18, "stop": 33},
+        "coeffs_edu": {"start": 33, "stop": 40},
+        "coeffs_home": {"start": 40, "stop": 43},
+        "shocks_coeffs": {"start": 43, "stop": 53},
+        "type_shares": {"start": 53, "stop": 53 + num_shares},
+        "type_shifts": {"start": 53 + num_shares, "stop": num_paras},
+    }
+    return pinfo
+
+
+def _get_matrix_dimension_from_num_triangular_elements(num):
+    """Calculate the dimension of a square matrix from number of triangular elements.
+
+    Parameters
+    ----------
+    num : int
+        The number of upper or lower triangular elements in the matrix.
+
+    Example
+    -------
+    >>> _get_matrix_dimension_from_num_triangular_elements(6)
+    3
+    >>> _get_matrix_dimension_from_num_triangular_elements(10)
+    4
+
+    """
+    return int(np.sqrt(8 * num + 1) / 2 - 0.5)
