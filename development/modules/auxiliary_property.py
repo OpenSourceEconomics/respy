@@ -6,7 +6,6 @@ import shlex
 import shutil
 import sys
 from datetime import datetime
-from pathlib import Path
 
 import numpy as np
 
@@ -17,10 +16,10 @@ RESPY_DIR = RESPY_DIR.replace("development/testing/property/modules", "") + "res
 
 PYTHON_EXEC = sys.executable
 
-from respy.python.shared.shared_constants import IS_PARALLELISM_OMP
-from respy.python.shared.shared_constants import IS_PARALLELISM_MPI
-from respy.python.shared.shared_constants import IS_FORTRAN
-from respy.python.shared.shared_constants import IS_F2PY
+from respy.config import IS_PARALLELISM_OMP
+from respy.config import IS_PARALLELISM_MPI
+from respy.config import IS_FORTRAN
+from respy.config import IS_F2PY
 
 
 def compile_package():

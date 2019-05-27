@@ -7,13 +7,15 @@ import pytest
 
 from respy import EXAMPLE_MODELS
 from respy import get_example_model
+from respy.interface import minimal_estimation_interface
+from respy.pre_processing.model_checking import check_model_attributes
+from respy.pre_processing.model_checking import check_model_parameters
 from respy.pre_processing.model_processing import _options_spec_from_attributes
 from respy.pre_processing.model_processing import _params_spec_from_attributes
+from respy.pre_processing.model_processing import parameters_to_dictionary
+from respy.pre_processing.model_processing import parameters_to_vector
 from respy.pre_processing.model_processing import process_model_spec
 from respy.pre_processing.model_processing import write_out_model_spec
-from respy.python.interface import minimal_estimation_interface
-from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import get_optim_paras
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import minimal_simulate_observed
 
@@ -78,8 +80,34 @@ def test_back_and_forth_transformation_of_parameter_vector(seed):
 
     # Apply numerous transformations
     for _ in range(10):
-        optim_paras = distribute_parameters(x, is_debug=True)
+        optim_paras = parameters_to_dictionary(x, is_debug=True)
         args = (optim_paras, num_paras, "all", True)
-        x = get_optim_paras(*args)
+        x = parameters_to_vector(*args)
 
     np.testing.assert_allclose(base, x)
+
+
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+def test_check_model_attributes(model_or_seed):
+    if isinstance(model_or_seed, Path):
+        params_spec, options_spec = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params_spec, options_spec = generate_random_model()
+
+    attr = process_model_spec(params_spec, options_spec)
+
+    check_model_attributes(attr)
+
+
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+def test_check_model_parameters(model_or_seed):
+    if isinstance(model_or_seed, Path):
+        params_spec, options_spec = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params_spec, options_spec = generate_random_model()
+
+    attr = process_model_spec(params_spec, options_spec)
+
+    check_model_parameters(attr["optim_paras"])

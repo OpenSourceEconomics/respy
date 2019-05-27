@@ -3,12 +3,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from respy.config import TOL
+from respy.interface import minimal_estimation_interface
+from respy.interface import minimal_simulation_interface
 from respy.pre_processing.model_processing import process_model_spec
-from respy.python.interface import minimal_estimation_interface
-from respy.python.interface import minimal_simulation_interface
-from respy.python.shared.shared_auxiliary import (
-    get_continuation_value_and_ex_post_rewards,
-)
+from respy.simulate import get_continuation_value_and_ex_post_rewards
 from respy.tests.random_model import generate_random_model
 
 
@@ -126,18 +125,29 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
     np.random.seed(seed)
 
     # Get simulated data and likelihood for myopic model.
-    params_spec, options_spec = generate_random_model(myopic=True)
+    bound_constr = {"max_edu_start": 1, "max_types": 1}
+    params_spec, options_spec = generate_random_model(
+        myopic=True, bound_constr=bound_constr
+    )
     attr = process_model_spec(params_spec, options_spec)
 
-    _, df = minimal_simulation_interface(attr)
+    state_space, df = minimal_simulation_interface(attr)
     _, likelihood = minimal_estimation_interface(attr, df)
 
     # Get simulated data and likelihood for model with tiny delta.
     params_spec.loc["delta", "para"] = 1e-12
-    attr = process_model_spec(params_spec, options_spec)
+    attr_ = process_model_spec(params_spec, options_spec)
 
-    _, df_ = minimal_simulation_interface(attr)
-    _, likelihood_ = minimal_estimation_interface(attr, df_)
+    state_space_, df_ = minimal_simulation_interface(attr_)
+    _, likelihood_ = minimal_estimation_interface(attr_, df_)
 
+    pd.testing.assert_frame_equal(
+        state_space.to_frame().drop(
+            columns=["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
+        ),
+        state_space_.to_frame().drop(
+            columns=["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
+        ),
+    )
     pd.testing.assert_frame_equal(df, df_)
-    assert likelihood == likelihood_
+    np.isclose(likelihood, likelihood_, rtol=TOL, atol=TOL)

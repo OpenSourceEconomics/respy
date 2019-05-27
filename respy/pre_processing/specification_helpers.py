@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from respy.python.shared.shared_constants import ROOT_DIR
+from respy.config import ROOT_DIR
 
 
 def csv_template(num_types=1, save_path=None, initialize_coeffs=True):

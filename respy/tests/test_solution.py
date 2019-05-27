@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 from numba import njit
 
-from respy.python.solve.solve_auxiliary import StateSpace
+from respy.solve import StateSpace
 
 
 @pytest.mark.parametrize(

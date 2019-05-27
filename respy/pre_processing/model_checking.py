@@ -1,19 +1,11 @@
 import numpy as np
 import pandas as pd
 
-from respy.custom_exceptions import UserError
-from respy.python.shared.shared_auxiliary import check_model_parameters
-from respy.python.shared.shared_auxiliary import get_optim_paras
-from respy.python.shared.shared_auxiliary import replace_missing_values
-from respy.python.shared.shared_constants import OPTIMIZERS
-from respy.python.shared.shared_constants import PRINT_FLOAT
+import respy.pre_processing.model_processing as mp
+from respy.config import PRINT_FLOAT
 
 
-def check_model_attributes(attr_dict):
-    a = attr_dict
-
-    assert a["version"] == "python"
-
+def check_model_attributes(a):
     # Number of parameters
     assert isinstance(a["num_paras"], int)
     assert a["num_paras"] >= 53
@@ -62,19 +54,6 @@ def check_model_attributes(attr_dict):
     assert isinstance(a["num_draws_prob"], int)
     assert a["num_draws_prob"] > 0
 
-    # Maximum number of iterations
-    assert isinstance(a["maxfun"], int)
-    assert a["maxfun"] >= 0
-
-    # Optimizers
-    assert a["optimizer_used"] in OPTIMIZERS
-
-    # Scaling
-    assert a["precond_spec"]["type"] in ["identity", "gradient", "magnitudes"]
-    for key_ in ["minimum", "eps"]:
-        assert isinstance(a["precond_spec"][key_], float)
-        assert a["precond_spec"][key_] > 0.0
-
     # Education
     assert isinstance(a["edu_spec"]["max"], int)
     assert a["edu_spec"]["max"] > 0
@@ -88,14 +67,11 @@ def check_model_attributes(attr_dict):
     assert all(0 <= item <= 1 for item in a["edu_spec"]["share"])
     np.testing.assert_almost_equal(np.sum(a["edu_spec"]["share"]), 1.0, decimal=4)
 
-    # Derivatives
-    assert a["derivatives"] in ["forward-differences"]
-
     # Check model parameters
     check_model_parameters(a["optim_paras"])
 
     # Check that all parameter values are within the bounds.
-    x = get_optim_paras(a["optim_paras"], a["num_paras"], "all", True)
+    x = mp.parameters_to_vector(a["optim_paras"], a["num_paras"], "all", True)
 
     # It is not clear at this point how to impose parameter constraints on
     # the covariance matrix in a flexible manner. So, either all fixed or
@@ -118,7 +94,7 @@ def check_model_attributes(attr_dict):
     diagonal_matrix = off_diagonals_zero & off_diagonals_fixed
 
     if not (all_free or shocks_fixed.all() or diagonal_matrix):
-        raise UserError(" Misspecified constraints for covariance matrix")
+        raise ValueError(" Misspecified constraints for covariance matrix")
 
     # Discount rate and type shares need to be larger than on at all times.
     for label in ["paras_fixed", "paras_bounds"]:
@@ -141,171 +117,112 @@ def check_model_attributes(attr_dict):
         if (upper is not None) and (lower is not None):
             assert upper >= lower
 
-    _check_optimizer_options(a["optimizer_options"])
+
+def check_model_solution(attr, state_space):
+    # Distribute class attributes
+    num_initial = len(attr["edu_spec"]["start"])
+    edu_start = attr["edu_spec"]["start"]
+    edu_start_max = max(edu_start)
+    edu_max = attr["edu_spec"]["max"]
+    num_periods = attr["num_periods"]
+    num_types = attr["num_types"]
+
+    # Check period.
+    assert np.all(np.isin(state_space.states[:, 0], range(num_periods)))
+
+    # The sum of years of experiences cannot be larger than constraint time.
+    assert np.all(
+        state_space.states[:, 1:4].sum(axis=1)
+        <= (state_space.states[:, 0] + edu_start_max)
+    )
+
+    # Sector experience cannot exceed the time frame.
+    assert np.all(state_space.states[:, 1] <= num_periods)
+    assert np.all(state_space.states[:, 2] <= num_periods)
+
+    # The maximum of education years is never larger than ``edu_max``.
+    assert np.all(state_space.states[:, 3] <= edu_max)
+
+    # Lagged choices are always between one and four.
+    assert np.isin(state_space.states[:, 4], [1, 2, 3, 4]).all()
+
+    # States and covariates have finite and nonnegative values.
+    assert np.all(state_space.states >= 0)
+    assert np.all(state_space.covariates >= 0)
+    assert np.all(np.isfinite(state_space.states))
+    assert np.all(np.isfinite(state_space.covariates))
+
+    # Check for duplicate rows in each period. We only have possible duplicates if there
+    # are multiple initial conditions.
+    assert not pd.DataFrame(state_space.states).duplicated().any()
+
+    # Check the number of states in the first time period.
+    num_states_start = num_types * num_initial * 2
+    assert (
+        state_space.get_attribute_from_period("states", 0).shape[0] == num_states_start
+    )
+    assert np.sum(state_space.indexer[0] >= 0) == num_states_start
+
+    # Check that we have as many indices as states.
+    assert state_space.states.shape[0] == (state_space.indexer >= 0).sum()
+
+    # Check finiteness of rewards and emaxs.
+    assert np.all(np.isfinite(state_space.rewards))
+    assert np.all(np.isfinite(state_space.emaxs))
 
 
-def check_model_solution(attr_dict):
-    solution_attributes = [
-        "periods_rewards_systematic",
-        "states_number_period",
-        "mapping_state_idx",
-        "periods_emax",
-        "states_all",
+def check_model_parameters(optim_paras):
+    """Check the integrity of all model parameters."""
+    # Auxiliary objects
+    num_types = len(optim_paras["type_shifts"])
+
+    # Checks for all arguments
+    keys = [
+        "coeffs_a",
+        "coeffs_b",
+        "coeffs_edu",
+        "coeffs_home",
+        "shocks_cholesky",
+        "delta",
+        "type_shares",
+        "type_shifts",
+        "coeffs_common",
     ]
 
-    for label in solution_attributes:
-        if attr_dict["is_solved"]:
-            assert attr_dict[label] is not None
-        else:
-            assert attr_dict[label] is None
+    for key in keys:
+        assert isinstance(optim_paras[key], np.ndarray), key
+        assert np.all(np.isfinite(optim_paras[key]))
+        assert optim_paras[key].dtype == "float"
+        assert np.all(abs(optim_paras[key]) < PRINT_FLOAT)
 
-    if attr_dict["is_solved"]:
-        # Distribute class attributes
-        num_initial = len(attr_dict["edu_spec"]["start"])
-        edu_start = attr_dict["edu_spec"]["start"]
-        edu_start_max = max(edu_start)
-        edu_max = attr_dict["edu_spec"]["max"]
-        num_periods = attr_dict["num_periods"]
-        num_types = attr_dict["num_types"]
+    # Check for discount rate
+    assert optim_paras["delta"] >= 0
 
-        # Distribute results
-        periods_rewards_systematic = attr_dict["periods_rewards_systematic"]
-        states_number_period = attr_dict["states_number_period"]
-        mapping_state_idx = attr_dict["mapping_state_idx"]
-        periods_emax = attr_dict["periods_emax"]
-        states_all = attr_dict["states_all"]
+    # Checks for common returns
+    assert optim_paras["coeffs_common"].size == 2
 
-        # Replace missing value with NAN. This allows to easily select the
-        # valid subsets of the containers
-        mapping_state_idx = replace_missing_values(mapping_state_idx)
-        states_all = replace_missing_values(states_all)
-        periods_rewards_systematic = replace_missing_values(periods_rewards_systematic)
-        periods_emax = replace_missing_values(periods_emax)
+    # Checks for occupations
+    assert optim_paras["coeffs_a"].size == 15
+    assert optim_paras["coeffs_b"].size == 15
+    assert optim_paras["coeffs_edu"].size == 7
+    assert optim_paras["coeffs_home"].size == 3
 
-        # No values can be larger than constraint time. The exception in
-        # the lagged schooling variable in the first period, which takes
-        # value one but has index zero.
-        for period in range(num_periods):
-            assert np.nanmax(states_all[period, :, :3]) <= (period + edu_start_max)
+    # Checks shock matrix
+    assert optim_paras["shocks_cholesky"].shape == (4, 4)
+    np.allclose(optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"]))
 
-        # Lagged schooling can only take value zero or one if finite.
-        for period in range(num_periods):
-            assert np.nanmax(states_all[period, :, 3]) in [1, 2, 3, 4]
-            assert np.nanmin(states_all[period, :, :3]) == 0
+    # Checks for type shares
+    assert optim_paras["type_shares"].size == num_types * 2
 
-        # All finite values have to be larger or equal to zero.
-        # The loop is required as np.all evaluates to FALSE for this
-        # condition (see NUMPY documentation).
-        for period in range(num_periods):
-            assert np.all(states_all[period, : states_number_period[period]] >= 0)
+    # Checks for type shifts
+    assert optim_paras["type_shifts"].shape == (num_types, 4)
 
-        # The maximum of education years is never larger than `edu_max'.
-        for period in range(num_periods):
-            assert np.nanmax(states_all[period, :, :][:, 2], axis=0) <= edu_max
-
-        # Check for duplicate rows in each period. We only have possible
-        # duplicates if there are multiple initial conditions.
-        for period in range(num_periods):
-            nstates = states_number_period[period]
-            assert (
-                np.sum(pd.DataFrame(states_all[period, :nstates, :]).duplicated()) == 0
-            )
-
-        # Checking validity of state space values. All valid values need
-        # to be finite.
-        for period in range(num_periods):
-            assert np.all(
-                np.isfinite(states_all[period, : states_number_period[period]])
-            )
-
-        # There are no infinite values in final period.
-        assert np.all(np.isfinite(states_all[(num_periods - 1), :, :]))
-
-        # Check the number of states in the first time period.
-        num_states_start = num_types * num_initial * 2
-        assert np.sum(np.isfinite(mapping_state_idx[0])) == num_states_start
-
-        # Check that mapping is defined for all possible realizations of
-        # the state space by period. Check that mapping is not defined for
-        # all inadmissible values.
-        is_infinite = np.full(mapping_state_idx.shape, False)
-        for period in range(num_periods):
-            nstates = states_number_period[period]
-            indices = states_all[period, :nstates, :].astype("int")
-            for index in indices:
-                assert np.isfinite(
-                    mapping_state_idx[
-                        period, index[0], index[1], index[2], index[3] - 1, index[4]
-                    ]
-                )
-                is_infinite[
-                    period, index[0], index[1], index[2], index[3] - 1, index[4]
-                ] = True
-        assert np.all(np.isfinite(mapping_state_idx[is_infinite]))
-        assert not np.all(np.isfinite(mapping_state_idx[~is_infinite]))
-
-        # Check the calculated systematic rewards (finite for admissible values
-        # and infinite rewards otherwise).
-        is_infinite = np.full(periods_rewards_systematic.shape, False)
-        for period in range(num_periods):
-            for k in range(states_number_period[period]):
-                assert np.all(np.isfinite(periods_rewards_systematic[period, k, :]))
-                is_infinite[period, k, :] = True
-            assert np.all(np.isfinite(periods_rewards_systematic[is_infinite]))
-            if num_periods > 1:
-                assert not np.all(np.isfinite(periods_rewards_systematic[~is_infinite]))
-
-        # Check the expected future value (finite for admissible values
-        # and infinite rewards otherwise).
-        is_infinite = np.full(periods_emax.shape, False)
-        for period in range(num_periods):
-            for k in range(states_number_period[period]):
-                assert np.all(np.isfinite(periods_emax[period, k]))
-                is_infinite[period, k] = True
-            assert np.all(np.isfinite(periods_emax[is_infinite]))
-            if num_periods == 1:
-                assert len(periods_emax[~is_infinite]) == 0
-            else:
-                assert not np.all(np.isfinite(periods_emax[~is_infinite]))
+    return True
 
 
-def _check_optimizer_options(optimizer_options):
-    """Make sure that all optimizer options are valid."""
-    # SCIPY-BFGS
-    maxiter = optimizer_options["SCIPY-BFGS"]["maxiter"]
-    gtol = optimizer_options["SCIPY-BFGS"]["gtol"]
-    eps = optimizer_options["SCIPY-BFGS"]["eps"]
-    assert isinstance(maxiter, int)
-    assert maxiter > 0
-    for var in [eps, gtol]:
-        assert isinstance(var, float)
-        assert var > 0
-
-    # SCIPY-LBFGSB
-    maxiter = optimizer_options["SCIPY-LBFGSB"]["maxiter"]
-    pgtol = optimizer_options["SCIPY-LBFGSB"]["pgtol"]
-    factr = optimizer_options["SCIPY-LBFGSB"]["factr"]
-    maxls = optimizer_options["SCIPY-LBFGSB"]["maxls"]
-    eps = optimizer_options["SCIPY-LBFGSB"]["eps"]
-    m = optimizer_options["SCIPY-LBFGSB"]["m"]
-
-    for var in [pgtol, factr, eps]:
-        assert isinstance(var, float)
-        assert var > 0
-    for var in [m, maxiter, maxls]:
-        assert isinstance(var, int)
-        assert var >= 0
-
-    # SCIPY-POWELL
-    maxiter = optimizer_options["SCIPY-POWELL"]["maxiter"]
-    maxfun = optimizer_options["SCIPY-POWELL"]["maxfun"]
-    xtol = optimizer_options["SCIPY-POWELL"]["xtol"]
-    ftol = optimizer_options["SCIPY-POWELL"]["ftol"]
-    assert isinstance(maxiter, int)
-    assert maxiter > 0
-    assert isinstance(maxfun, int)
-    assert maxfun > 0
-    assert isinstance(xtol, float)
-    assert xtol > 0
-    assert isinstance(ftol, float)
-    assert ftol > 0
+def _check_parameter_vector(x):
+    """Check optimization parameters."""
+    assert isinstance(x, np.ndarray)
+    assert x.dtype == np.float
+    assert np.all(np.isfinite(x))
+    return True

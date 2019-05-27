@@ -1,39 +1,25 @@
 {
   "estimation": {
-    "file": "data.respy.dat",
-    "maxfun": 1000,
     "agents": 1000,
     "draws": 200,
-    "optimizer": "SCIPY-LBFGSB",
     "seed": 500,
     "tau": 500.0
   },
   "simulation": {
-    "file": "data",
     "agents": 1000,
     "seed": 132
   },
   "program": {
-    "debug": false,
-    "procs": 1,
-    "threads": 1,
-    "version": "python"
+    "debug": false
   },
   "interpolation": {
     "flag": false,
     "points": 200
   },
   "solution": {
-    "store": true,
     "seed": 456,
     "draws": 500
   },
-  "preconditioning": {
-    "minimum": 1e-05,
-    "type": "magnitudes",
-    "eps": 0.0001
-  },
-  "derivatives": "forward-differences",
   "edu_spec": {
     "lagged": [
       0.5,
@@ -52,24 +38,5 @@
     ],
     "max": 15
   },
-  "num_periods": 5,
-  "SCIPY-BFGS": {
-    "eps": 0.0001,
-    "gtol": 0.0001,
-    "maxiter": 1
-  },
-  "SCIPY-POWELL": {
-    "ftol": 0.0001,
-    "maxfun": 100000,
-    "maxiter": 1,
-    "xtol": 0.0001
-  },
-  "SCIPY-LBFGSB": {
-    "eps": 4.41037423e-07,
-    "factr": 30.401091854739622,
-    "m": 5,
-    "maxiter": 2,
-    "maxls": 2,
-    "pgtol": 8.6554171164e-05
-  }
+  "num_periods": 5
 }

@@ -3,12 +3,12 @@ import copy
 import numpy as np
 import pandas as pd
 
+from respy.interface import minimal_estimation_interface
+from respy.pre_processing.model_processing import _extract_cholesky
+from respy.pre_processing.model_processing import parameters_to_dictionary
+from respy.pre_processing.model_processing import parameters_to_vector
 from respy.pre_processing.model_processing import process_model_spec
-from respy.python.interface import minimal_estimation_interface
-from respy.python.shared.shared_auxiliary import cholesky_to_coeffs
-from respy.python.shared.shared_auxiliary import distribute_parameters
-from respy.python.shared.shared_auxiliary import extract_cholesky
-from respy.python.shared.shared_auxiliary import get_optim_paras
+from respy.shared import cholesky_to_coeffs
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import minimal_simulate_observed
 
@@ -21,7 +21,7 @@ def test_simulation_and_estimation_with_different_models():
         "simulation": {"agents": num_agents},
         "num_periods": np.random.randint(1, 4),
         "edu_spec": {"start": [7], "max": 15, "share": [1.0]},
-        "estimation": {"maxfun": 0, "agents": num_agents},
+        "estimation": {"agents": num_agents},
     }
 
     # Simulate a dataset
@@ -40,7 +40,7 @@ def test_invariant_results_for_two_estimations():
     constr = {
         "simulation": {"agents": num_agents},
         "num_periods": np.random.randint(1, 4),
-        "estimation": {"maxfun": np.random.randint(0, 5), "agents": num_agents},
+        "estimation": {"agents": num_agents},
     }
 
     # Simulate a dataset.
@@ -69,7 +69,7 @@ def test_invariance_to_initial_conditions():
         "simulation": {"agents": num_agents},
         "num_periods": np.random.randint(1, 4),
         "edu_spec": {"max": np.random.randint(15, 25, size=1).tolist()[0]},
-        "estimation": {"maxfun": 0, "agents": num_agents},
+        "estimation": {"agents": num_agents},
         "interpolation": {"flag": False},
     }
 
@@ -126,11 +126,10 @@ def test_invariance_to_order_of_initial_schooling_levels():
 
     """
     point_constr = {
-        "estimation": {"maxfun": 0},
         # We cannot allow for interpolation as the order of states within each
         # period changes and thus the prediction model is altered even if the same
         # state identifier is used.
-        "interpolation": {"flag": False},
+        "interpolation": {"flag": False}
     }
 
     params_spec, options_spec = generate_random_model(point_constr=point_constr)
@@ -190,11 +189,11 @@ def test_invariance_to_order_of_initial_schooling_levels():
             # There is some more work to do to update the coefficients as we
             # distinguish between the economic and optimization version of the
             # parameters.
-            x = get_optim_paras(optim_paras, num_paras, "all", True)
-            shocks_cholesky, _ = extract_cholesky(x)
+            x = parameters_to_vector(optim_paras, num_paras, "all", True)
+            shocks_cholesky, _ = _extract_cholesky(x)
             shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
             x[43:53] = shocks_coeffs
-            attr["optim_paras"] = distribute_parameters(
+            attr["optim_paras"] = parameters_to_dictionary(
                 paras_vec=x, is_debug=True, paras_type="econ"
             )
 

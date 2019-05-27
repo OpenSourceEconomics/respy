@@ -6,10 +6,9 @@ import warnings
 import pandas as pd
 import pytest
 
-from respy.clsRespy import RespyCls  # noqa: F401
-from respy.python.shared.shared_constants import IS_DEBUG
-from respy.python.shared.shared_constants import ROOT_DIR
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.config import IS_DEBUG
+from respy.config import ROOT_DIR
+from respy.config import TEST_RESOURCES_DIR
 
 # We only maintain the code base for Python >= 3.6
 assert sys.version_info[:2] >= (3, 6)

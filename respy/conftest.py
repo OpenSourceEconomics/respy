@@ -3,8 +3,8 @@ import pandas as pd
 import pytest
 
 from development.testing.regression.run_regression import load_regression_tests
-from respy.python.solve.solve_auxiliary import pyth_create_state_space
-from respy.python.solve.solve_auxiliary import StateSpace
+from respy.solve import pyth_create_state_space
+from respy.solve import StateSpace
 
 
 @pytest.fixture(autouse=True)

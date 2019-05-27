@@ -34,7 +34,7 @@ def main():
 
     # Late import of respy to ensure that environment variables are read.
     import respy as rp
-    from respy.python.interface import (
+    from respy.interface import (
         minimal_estimation_interface,
         minimal_simulation_interface,
     )

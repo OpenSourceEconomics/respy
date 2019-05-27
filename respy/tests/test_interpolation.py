@@ -1,8 +1,8 @@
 """Test the interpolation routine."""
 import numpy as np
 
+from respy.interface import minimal_simulation_interface
 from respy.pre_processing.model_processing import process_model_spec
-from respy.python.interface import minimal_simulation_interface
 from respy.tests.random_model import generate_random_model
 
 

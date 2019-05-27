@@ -105,35 +105,9 @@ seed            int         random seed for choice probability
 tau             float       scale parameter for function smoothing
 ==========      ======      ==========================
 
-**DERIVATIVES**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-version     str         approximation scheme
-=======     ======      ==========================
 
 The computed derivatives are calculated numerically and are used in the standard error
 calculation.
-
-**PRECONDITIONING**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-eps         int         step size
-minimum     int         minimum admissible value
-type        str         preconditioning type
-=======     ======      ==========================
-
-The inputs in the Preconditioning block are employed in reaching a (faster) solution in
-the optimization step. The coefficients are transformed for better handling by the
-optimizer. Three different types of transformations can be selected via the
-preconditioning type:
-
-* identity - no transformation
-* magnitude - divison by the number of digits
-* gradient based - weighting by the inverse contribution to the likelihood function
 
 **PROGRAM**
 
@@ -155,95 +129,6 @@ flag        bool        flag to use interpolation
 points      int         number of interpolation points
 =======     ======      ==========================
 
-The implemented optimization algorithms vary with the program's version. If you request
-the Python version of the program, you can choose from the ``scipy`` implementations of
-the BFGS  (Norcedal and Wright, 2006), LBFGSB, and POWELL (Powell, 1964) algorithms. In
-essense, POWELL is a conjugate direction method, which performs sequential
-one-dimentional minimizations, does not require that the functions be differentiable and
-no derivatives are taken. The BFGS algorythm is a quasi-Newton type of optimizer, which
-uses first derivatives only, but performs reasonably well even in non-smooth
-optimizations. The LBFGS algorithm can use simple box contraints to potentially improve
-accuracy. Further implementation details are available `here
-<https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html>`__.
-For Fortran, we implemented the BFGS, BOBYQA and NEWUOA (Powell, 2004) algorithms.
-NEWUOA is a gradient-free algorythm which performs unconstrained optimiztion. In a
-similar fashion, BOBYQA performs gradient-free bound constrained optimization.
-
-**FORT-NEWUOA**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-maxfun      float       maximum number of function evaluations
-npt         int         number of points for approximation model
-rhobeg      float       starting value for size of trust region
-rhoend      float       minimum value of size for trust region
-=======     ======      ==========================
-
-**FORT-BFGS**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-eps         int         value to use for step size if fprime is approximated
-gtol        float       gradient norm must be less than gtol before successful
-                        termination
-maxiter     int         maximum number of iterations
-stpmx       int         maximum step size
-=======     ======      ==========================
-
-
-**FORT-BOBYQA**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-maxfun      float       maximum number of function evaluations
-npt         int         number of points for approximation model
-rhobeg      float       starting value for size of trust region
-rhoend      float       minimum value of size for trust region
-=======     ======      ==========================
-
-**SCIPY-BFGS**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-eps                     value to use for step size if fprime is approximated
-gtol        float       gradient norm must be less than gtol before successful
-                        termination
-maxiter     int         maximum number of iterations
-stpmx       int         maximum step size
-=======     ======      ==========================
-
-**SCIPY-POWELL**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-ftol        float       relative error in func(xopt) acceptable for convergence
-maxfun      int         maximum number of function evaluations to make
-maxiter     int         maximum number of iterations
-xtol        float       line-search error tolerance
-=======     ======      ==========================
-
-**SCIPY-LBFGSB**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-eps         float       Step size used when approx_grad is True, for numerically
-                        calculating the gradient
-factr       float       Multiple of the default machine precision used to determine the
-                        relative error in func(xopt) acceptable for convergence
-m           int         Maximum number of variable metric corrections used to define the
-                        limited memory matrix.
-maxiter     int         maximum number of iterations
-maxls       int         Maximum number of line search steps (per iteration). Default is
-                        20.
-pgtol       float       gradient norm must be less than gtol before successful
-                        termination
-=======     ======      ==========================
 
 Helper functions
 ----------------

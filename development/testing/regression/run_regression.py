@@ -11,11 +11,11 @@ import numpy as np
 
 from development.modules.auxiliary_shared import get_random_dirname
 from development.modules.auxiliary_shared import send_notification
+from respy.config import DECIMALS
+from respy.config import TEST_RESOURCES_DIR
+from respy.config import TOL
+from respy.interface import minimal_estimation_interface
 from respy.pre_processing.model_processing import process_model_spec
-from respy.python.interface import minimal_estimation_interface
-from respy.python.shared.shared_constants import DECIMALS
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.python.shared.shared_constants import TOL
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import minimal_simulate_observed
 
@@ -46,9 +46,9 @@ def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
     idx_failures = [i for i, x in enumerate(ret) if x is False]
     is_failure = len(idx_failures) > 0
 
-    send_notification("regression", is_failed=is_failure, idx_failures=idx_failures)
+    print(f"Failures: {idx_failures}")
 
-    return ret
+    send_notification("regression", is_failed=is_failure, idx_failures=idx_failures)
 
 
 def create_regression_tests(num_tests, num_procs=1, write_out=False):
@@ -115,7 +115,7 @@ def check_single(test, strict=False):
     os.chdir("..")
     shutil.rmtree(dirname)
 
-    return is_success
+    assert is_success
 
 
 def create_single(idx):

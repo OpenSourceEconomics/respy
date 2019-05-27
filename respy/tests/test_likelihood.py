@@ -1,7 +1,16 @@
 """Test the likelihood routine."""
-import numpy as np
+from pathlib import Path
 
-from respy.python.evaluate.evaluate_python import create_draws_and_prob_wages
+import numpy as np
+import pytest
+
+from respy import EXAMPLE_MODELS
+from respy import get_example_model
+from respy.interface import minimal_simulation_interface
+from respy.likelihood import create_draws_and_prob_wages
+from respy.pre_processing.data_checking import check_estimation_dataset
+from respy.pre_processing.model_processing import process_model_spec
+from respy.tests.random_model import generate_random_model
 
 
 def test_create_draws_and_prob_wages():
@@ -38,3 +47,18 @@ def test_create_draws_and_prob_wages():
     result = temp.dot(sc.T)
 
     assert np.allclose(draws, result)
+
+
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+def test_estimation_data(model_or_seed):
+    if isinstance(model_or_seed, Path):
+        params_spec, options_spec = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params_spec, options_spec = generate_random_model()
+
+    attr = process_model_spec(params_spec, options_spec)
+
+    state_space, df = minimal_simulation_interface(attr)
+
+    check_estimation_dataset(attr, df)

@@ -42,7 +42,7 @@ extensions = [
     "nbsphinx",
 ]
 
-autodoc_mock_imports = ["numba", "numpy", "pandas", "yaml", "pytest", "scipy"]
+autodoc_mock_imports = ["numba", "numpy", "pandas", "yaml", "pytest"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
