@@ -1,33 +1,121 @@
+from functools import partial
+
 import numpy as np
 from numba import guvectorize
 from numba import vectorize
 
+from respy.config import DATA_FORMATS_EST
+from respy.config import DATA_LABELS_EST
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.model_processing import parameters_to_dictionary
+from respy.pre_processing.model_processing import parameters_to_vector
+from respy.shared import create_multivariate_standard_normal_draws
 from respy.shared import get_conditional_probabilities
+from respy.solve import solve
 from respy.solve import solve_with_backward_induction
 
 
-def pyth_criterion(
+def get_parameter_vector(attr):
+    """This function is obsolete with estimagic."""
+    x = parameters_to_vector(
+        attr["optim_paras"], attr["num_paras"], "all", attr["is_debug"]
+    )
+
+    return x
+
+
+def get_criterion_function(attr, df):
+    def process_dataset(attr, df):
+        """Process the dataset from disk."""
+
+        # Process dataset from files.
+        df.set_index(["Identifier", "Period"], drop=False, inplace=True)
+
+        # We want to allow to estimate with only a subset of periods in the sample.
+        cond = df["Period"] < attr["num_periods"]
+        df = df[cond]
+
+        # Only keep the information that is relevant for the estimation. Once that is
+        # done,  impose some type restrictions.
+        df = df[DATA_LABELS_EST]
+        df = df.astype(DATA_FORMATS_EST)
+
+        # We want to restrict the sample to meet the specified initial conditions.
+        cond = df["Years_Schooling"].loc[:, 0].isin(attr["edu_spec"]["start"])
+        df.set_index(["Identifier"], drop=False, inplace=True)
+        df = df.loc[cond]
+
+        df.set_index(["Identifier", "Period"], drop=False, inplace=True)
+
+        return df
+
+    # Process data
+    df = process_dataset(attr, df)
+
+    # Solve model.
+    state_space = solve(attr)
+
+    # Collect arguments for estimation.
+    periods_draws_prob = create_multivariate_standard_normal_draws(
+        attr["num_periods"], attr["num_draws_prob"], attr["seed_est"]
+    )
+
+    criterion_function = partial(
+        log_likelihood,
+        interpolation=attr["interpolation"],
+        num_points_interp=attr["num_points_interp"],
+        is_debug=attr["is_debug"],
+        data=df,
+        tau=attr["tau"],
+        periods_draws_prob=periods_draws_prob,
+        state_space=state_space,
+    )
+
+    return criterion_function
+
+
+def log_likelihood(
     x,
     interpolation,
     num_points_interp,
     is_debug,
     data,
     tau,
-    periods_draws_emax,
     periods_draws_prob,
     state_space,
 ):
-    """Criterion function for the likelihood maximization."""
+    """Criterion function for the likelihood maximization.
+
+    This function calculates the average likelihood contribution of the sample.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Parameter vector.
+    interpolation : bool
+        Indicator for the interpolation routine.
+    num_points_interp : int
+        Number
+    is_debug : bool
+        Indicator for debugging.
+    data : pd.DataFrame
+        The log likelihood is calculated for this data.
+    tau : float
+        Smoothing parameter.
+    periods_draws_prob : np.ndarray
+        Set of draws to calculate the probability of observed wages.
+    state_space : class
+        State space.
+
+    """
     optim_paras = parameters_to_dictionary(x, is_debug)
 
     # Calculate all systematic rewards
     state_space.update_systematic_rewards(optim_paras)
 
     state_space = solve_with_backward_induction(
-        periods_draws_emax, state_space, interpolation, num_points_interp, optim_paras
+        state_space, interpolation, num_points_interp, optim_paras
     )
 
     contribs = pyth_contributions(

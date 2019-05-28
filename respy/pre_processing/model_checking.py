@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-import respy.pre_processing.model_processing as mp
 from respy.config import PRINT_FLOAT
 
 
@@ -17,18 +16,17 @@ def check_model_attributes(a):
     assert a["myopia"] in [True, False]
 
     # Seeds
-    for seed in [a["seed_emax"], a["seed_sim"], a["seed_prob"]]:
+    for seed in [a["seed_sol"], a["seed_sim"], a["seed_est"]]:
         assert np.isfinite(seed)
         assert isinstance(seed, int)
         assert seed > 0
 
-    # Number of agents
-    for num_agents in [a["num_agents_sim"], a["num_agents_est"]]:
-        assert np.isfinite(num_agents)
-        assert isinstance(num_agents, int)
-        assert num_agents > 0
+    # Number of simulated agents.
+    assert np.isfinite(a["num_agents_sim"])
+    assert isinstance(a["num_agents_sim"], int)
+    assert a["num_agents_sim"] > 0
 
-    # Number of periods
+    # Number of periods.
     assert np.isfinite(a["num_periods"])
     assert isinstance(a["num_periods"], int)
     assert a["num_periods"] > 0
@@ -70,9 +68,6 @@ def check_model_attributes(a):
     # Check model parameters
     check_model_parameters(a["optim_paras"])
 
-    # Check that all parameter values are within the bounds.
-    x = mp.parameters_to_vector(a["optim_paras"], a["num_paras"], "all", True)
-
     # It is not clear at this point how to impose parameter constraints on
     # the covariance matrix in a flexible manner. So, either all fixed or
     # none. As a special case, we also allow for all off-diagonal elements
@@ -103,19 +98,6 @@ def check_model_attributes(a):
 
     for i in range(1):
         assert a["optim_paras"]["paras_bounds"][i][0] >= 0.00
-
-    for i in range(a["num_paras"]):
-        lower, upper = a["optim_paras"]["paras_bounds"][i]
-        if lower is not None:
-            assert isinstance(lower, float)
-            assert lower <= x[i]
-            assert abs(lower) < PRINT_FLOAT
-        if upper is not None:
-            assert isinstance(upper, float)
-            assert upper >= x[i]
-            assert abs(upper) < PRINT_FLOAT
-        if (upper is not None) and (lower is not None):
-            assert upper >= lower
 
 
 def check_model_solution(attr, state_space):
@@ -220,9 +202,25 @@ def check_model_parameters(optim_paras):
     return True
 
 
-def _check_parameter_vector(x):
+def _check_parameter_vector(x, a=None):
     """Check optimization parameters."""
     assert isinstance(x, np.ndarray)
     assert x.dtype == np.float
     assert np.all(np.isfinite(x))
+
+    # Check bounds.
+    if a is not None:
+        for i in range(a["num_paras"]):
+            lower, upper = a["optim_paras"]["paras_bounds"][i]
+            if lower is not None:
+                assert isinstance(lower, float)
+                assert lower <= x[i]
+                assert abs(lower) < PRINT_FLOAT
+            if upper is not None:
+                assert isinstance(upper, float)
+                assert upper >= x[i]
+                assert abs(upper) < PRINT_FLOAT
+            if (upper is not None) and (lower is not None):
+                assert upper >= lower
+
     return True

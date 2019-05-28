@@ -5,7 +5,39 @@ from numba import njit
 
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
+from respy.shared import create_multivariate_standard_normal_draws
 from respy.shared import transform_disturbances
+
+
+def solve(attr):
+    """Solve the model.
+
+    This function is a wrapper for the solution routine.
+
+    Parameters
+    ----------
+    attr : dict
+        Dictionary containing model attributes.
+
+    """
+    state_space = StateSpace(
+        attr["num_periods"],
+        attr["num_types"],
+        attr["num_draws_emax"],
+        attr["edu_spec"]["start"],
+        attr["edu_spec"]["max"],
+        attr["seed_sol"],
+        attr["optim_paras"],
+    )
+
+    state_space = solve_with_backward_induction(
+        state_space,
+        attr["interpolation"],
+        attr["num_points_interp"],
+        attr["optim_paras"],
+    )
+
+    return state_space
 
 
 @njit
@@ -258,15 +290,12 @@ def create_systematic_rewards(states, covariates, optim_paras):
 
 
 def solve_with_backward_induction(
-    periods_draws_emax, state_space, interpolation, num_points_interp, optim_paras
+    state_space, interpolation, num_points_interp, optim_paras
 ):
     """Calculate utilities with backward induction.
 
     Parameters
     ----------
-    periods_draws_emax : np.ndarray
-        Array with shape (num_periods, num_draws, num_choices) containing the
-        random draws used to simulate the emax.
     state_space : class
         State space object.
     interpolation : np.array
@@ -321,7 +350,7 @@ def solve_with_backward_induction(
 
         # Treatment of the disturbances for the risk-only case is straightforward. Their
         # distribution is fixed once and for all.
-        draws_emax_standard = periods_draws_emax[period]
+        draws_emax_standard = state_space.draws[period]
         draws_emax_risk = transform_disturbances(
             draws_emax_standard, np.zeros(4), shocks_cholesky
         )
@@ -340,9 +369,11 @@ def solve_with_backward_induction(
         any_interpolated = (num_points_interp <= num_states) and interpolation
 
         if any_interpolated:
-            # Get indicator for interpolation and simulation of states
+            # Get indicator for interpolation and simulation of states. The seed value
+            # is the base seed plus the number of the period. Thus, not interpolated
+            # states are held constant for each periods and not across periods.
             not_interpolated = get_not_interpolated_indicator(
-                num_points_interp, num_states
+                num_points_interp, num_states, state_space.seed + period
             )
 
             # Constructing the exogenous variable for all states, including the ones
@@ -384,8 +415,11 @@ def solve_with_backward_induction(
     return state_space
 
 
-def get_not_interpolated_indicator(num_points_interp, num_states):
+def get_not_interpolated_indicator(num_points_interp, num_states, seed):
     """Get indicator for states which will be not interpolated.
+
+    Randomness in this function is held constant for each period but not across periods.
+    This is done by adding the period to the seed set for the solution.
 
     Parameters
     ----------
@@ -393,6 +427,8 @@ def get_not_interpolated_indicator(num_points_interp, num_states):
         Number of states which will be interpolated.
     num_states : int
         Total number of states in period.
+    seed : int
+        Seed to set randomness.
 
     Returns
     -------
@@ -400,6 +436,8 @@ def get_not_interpolated_indicator(num_points_interp, num_states):
         Array of shape (num_states,) indicating states which will not be interpolated.
 
     """
+    np.random.seed(seed)
+
     # Drawing random interpolation indices.
     interpolation_points = np.random.choice(
         num_states, size=num_points_interp, replace=False
@@ -561,30 +599,6 @@ def calculate_wages_systematic(states, covariates, coeffs_a, coeffs_b, type_shif
     wages : np.ndarray
         Array with shape (num_states, 2) containing systematic wages.
 
-    Example
-    -------
-    >>> np.random.seed(42)
-    >>> num_types = 2
-    >>> state_space = StateSpace(1, num_types, [12, 16], 20)
-    >>> coeffs_a = np.random.randint(0, 101, 12) / 100
-    >>> coeffs_b = np.random.randint(0, 101, 12) / 100
-    >>> type_shifts = np.random.randn(num_types, 4)
-    >>> calculate_wages_systematic(
-    ...     state_space.states,
-    ...     state_space.covariates,
-    ...     coeffs_a,
-    ...     coeffs_b,
-    ...     type_shifts,
-    ... )
-    array([[2.13158868e+06, 1.87035803e+01],
-           [2.13158868e+06, 1.87035803e+01],
-           [1.99710249e+08, 2.93330530e+01],
-           [1.99710249e+08, 2.93330530e+01],
-           [3.84214409e+05, 3.40802479e+00],
-           [3.84214409e+05, 3.40802479e+00],
-           [3.59973554e+07, 5.34484681e+00],
-           [3.59973554e+07, 5.34484681e+00]])
-
     """
     exp_a_sq = states[:, 1] ** 2 / 100
     exp_b_sq = states[:, 2] ** 2 / 100
@@ -664,10 +678,14 @@ class StateSpace:
         Number of periods.
     num_types : int
         Number of types.
+    num_draws : int
+        Number of draws to simulate the emax of each state.
     edu_starts : list
         Contains different initial levels of education for agents.
     edu_max : int
         Maximum level of education for an agent.
+    seed : int
+        Seed for all randomness in the function.
     optim_paras : dict
         Contains various information necessary for the calculation of rewards for each
         agent.
@@ -738,10 +756,25 @@ class StateSpace:
 
     emaxs_columns = ["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
 
-    def __init__(self, num_periods, num_types, edu_starts, edu_max, optim_paras=None):
+    def __init__(
+        self,
+        num_periods,
+        num_types,
+        num_draws,
+        edu_starts,
+        edu_max,
+        seed,
+        optim_paras=None,
+    ):
+        # Add some arguments to the state space.
+        self.edu_max = edu_max
         self.num_periods = num_periods
         self.num_types = num_types
-        self.edu_max = edu_max
+        self.seed = seed
+
+        self.draws = create_multivariate_standard_normal_draws(
+            self.num_periods, num_draws, self.seed
+        )
 
         self.states, self.indexer = create_state_space(
             num_periods, num_types, edu_starts, edu_max
@@ -803,7 +836,7 @@ class StateSpace:
 
         Example
         -------
-        >>> state_space = StateSpace(1, 1, [10], 11)
+        >>> state_space = StateSpace(1, 1, 1, [10], 11, 42)
         >>> state_space.to_frame().shape
         (2, 22)
 
@@ -931,9 +964,12 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
     This example is first and foremost for benchmarking different implementations, not
     for validation.
 
-    >>> num_periods, num_types = 50, 3
+    >>> num_periods, num_types, num_draws = 50, 3, 50
     >>> edu_start, edu_max = [10, 15], 20
-    >>> state_space = StateSpace(num_periods, num_types, edu_start, edu_max)
+    >>> seed = 42
+    >>> state_space = StateSpace(
+    ...     num_periods, num_types, num_draws, edu_start, edu_max, seed
+    ... )
     >>> state_space.emaxs = np.r_[
     ...     np.zeros((state_space.states_per_period[:-1].sum(), 5)),
     ...     np.full((state_space.states_per_period[-1], 5), 10)
@@ -1099,7 +1135,7 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
 
     Example
     -------
-    >>> state_space = StateSpace(2, 1, [12, 16], 20)
+    >>> state_space = StateSpace(2, 1, 1, [12, 16], 20, 42)
     >>> coeffs_a, coeffs_b = np.array([0.05, 0.6, 0.4]), np.array([0.36, 0.7, 1])
     >>> calculate_rewards_general(
     ...     state_space.covariates, coeffs_a, coeffs_b
@@ -1143,7 +1179,7 @@ def calculate_rewards_common(covariates, coeffs_common):
 
     Example
     -------
-    >>> state_space = StateSpace(2, 1, [12, 16], 20)
+    >>> state_space = StateSpace(2, 1, 1, [12, 16], 20, 42)
     >>> coeffs_common = np.array([0.05, 0.6])
     >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
     array([0.05, 0.05, 0.65, 0.65, 0.05, 0.05, 0.05, 0.05, 0.65, 0.65, 0.65,

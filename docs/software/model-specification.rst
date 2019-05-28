@@ -63,7 +63,6 @@ In addition to the model parameters, other model options are kept in another
 specification file in the ``json`` format.
 
 .. literalinclude:: ../../respy/tests/resources/kw_data_one_types_initial.json
-    :lines: 1-49, 62-67, 79-
     :language: json
     :name: kw_data_one_types_initial.json
 

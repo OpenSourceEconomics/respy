@@ -5,6 +5,10 @@ import shutil
 import sys
 from pathlib import Path
 
+import respy.shared
+from respy.likelihood import get_criterion_function
+from respy.likelihood import get_parameter_vector
+
 
 def main():
     """Run the estimation of a model using a number of threads and a maximum of function
@@ -34,14 +38,11 @@ def main():
 
     # Late import of respy to ensure that environment variables are read.
     import respy as rp
-    from respy.interface import (
-        minimal_estimation_interface,
-        minimal_simulation_interface,
-    )
+    from respy.simulate import simulate
     from respy.pre_processing.model_processing import process_model_spec
 
     # Get model
-    options_spec, params_spec = rp.get_example_model(model)
+    options_spec, params_spec = respy.shared.get_example_model(model)
 
     # Adjust options
     options_spec["estimation"]["maxfun"] = 0
@@ -58,7 +59,11 @@ def main():
     attr = process_model_spec(params_spec, options_spec)
 
     # Simulate the data
-    state_space, simulated_data = minimal_simulation_interface(attr)
+    state_space, simulated_data = simulate(attr)
+
+    # Get the criterion function and the parameter vector.
+    crit_func = get_criterion_function(attr, simulated_data)
+    x = get_parameter_vector(attr)
 
     # Run the estimation
     print(
@@ -68,7 +73,7 @@ def main():
     start = dt.datetime.now()
 
     for _ in range(maxfun):
-        minimal_estimation_interface(attr, simulated_data)
+        crit_func(x)
 
     end = dt.datetime.now()
 

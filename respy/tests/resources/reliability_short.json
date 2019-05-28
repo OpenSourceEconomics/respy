@@ -1,6 +1,5 @@
 {
   "estimation": {
-    "agents": 1000,
     "draws": 200,
     "seed": 500,
     "tau": 500.0

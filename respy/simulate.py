@@ -8,8 +8,41 @@ from respy.config import DATA_FORMATS_SIM
 from respy.config import DATA_LABELS_SIM
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
+from respy.shared import create_multivariate_standard_normal_draws
 from respy.shared import get_conditional_probabilities
 from respy.shared import transform_disturbances
+from respy.solve import solve
+
+
+def simulate(attr):
+    """Simulate a data set.
+
+    This function provides the interface for the simulation of a data set.
+
+    Parameters
+    ----------
+    attr : dict
+        Dictionary containing model attributes.
+
+    """
+    # Solve the model.
+    state_space = solve(attr)
+
+    # Draw draws for the simulation.
+    periods_draws_sims = create_multivariate_standard_normal_draws(
+        attr["num_periods"], attr["num_agents_sim"], attr["seed_sim"]
+    )
+
+    simulated_data = simulate_data(
+        state_space,
+        attr["num_agents_sim"],
+        periods_draws_sims,
+        attr["edu_spec"],
+        attr["optim_paras"],
+        attr["seed_sim"],
+    )
+
+    return state_space, simulated_data
 
 
 def simulate_data(
@@ -57,7 +90,7 @@ def simulate_data(
     initial_types = _get_random_types(
         state_space.num_types, optim_paras, num_agents_sim, initial_education, seed
     )
-    initial_lagged_choices = _get_random_choice_lagged_start(
+    initial_lagged_choices = _get_random_lagged_choices(
         edu_spec, num_agents_sim, initial_education, seed
     )
 
@@ -250,7 +283,7 @@ def _get_random_edu_start(edu_spec, num_agents_sim, seed):
     return edu_start
 
 
-def _get_random_choice_lagged_start(edu_spec, num_agents_sim, edu_start, seed):
+def _get_random_lagged_choices(edu_spec, num_agents_sim, edu_start, seed):
     """Get random, initial levels of lagged choices for simulated agents."""
     lagged_start = []
     for i in range(num_agents_sim):

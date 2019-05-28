@@ -32,8 +32,7 @@ def write_out_model_spec(attr, save_path):
 def _options_spec_from_attributes(attr):
     estimation = {
         "draws": attr["num_draws_prob"],
-        "agents": attr["num_agents_est"],
-        "seed": attr["seed_prob"],
+        "seed": attr["seed_est"],
         "tau": attr["tau"],
     }
 
@@ -43,7 +42,7 @@ def _options_spec_from_attributes(attr):
 
     interpolation = {"flag": attr["interpolation"], "points": attr["num_points_interp"]}
 
-    solution = {"seed": attr["seed_emax"], "draws": attr["num_draws_emax"]}
+    solution = {"seed": attr["seed_sol"], "draws": attr["num_draws_emax"]}
 
     options_spec = {
         "estimation": estimation,
@@ -78,7 +77,6 @@ def _create_attribute_dictionary(params_spec, options_spec):
     attr = {
         "is_debug": bool(options_spec["program"]["debug"]),
         "interpolation": bool(options_spec["interpolation"]["flag"]),
-        "num_agents_est": int(options_spec["estimation"]["agents"]),
         "num_agents_sim": int(options_spec["simulation"]["agents"]),
         "num_draws_emax": int(options_spec["solution"]["draws"]),
         "num_draws_prob": int(options_spec["estimation"]["draws"]),
@@ -87,8 +85,8 @@ def _create_attribute_dictionary(params_spec, options_spec):
         "optim_paras": parameters_to_dictionary(
             params_spec["para"].to_numpy(), is_debug=True
         ),
-        "seed_emax": int(options_spec["solution"]["seed"]),
-        "seed_prob": int(options_spec["estimation"]["seed"]),
+        "seed_sol": int(options_spec["solution"]["seed"]),
+        "seed_est": int(options_spec["estimation"]["seed"]),
         "seed_sim": int(options_spec["simulation"]["seed"]),
         "tau": float(options_spec["estimation"]["tau"]),
         "edu_spec": options_spec["edu_spec"],
@@ -147,8 +145,8 @@ def _read_options_spec(input_):
         with open(input_, "r") as file:
             if input_.suffix == ".json":
                 options_spec = json.load(file)
-            elif input_.suffix == ".yaml":
-                options_spec = yaml.load(file)
+            elif input_.suffix in [".yaml", ".yml"]:
+                options_spec = yaml.safe_load(file)
             else:
                 raise NotImplementedError(f"Format {input_.suffix} is not supported.")
     else:
@@ -326,13 +324,15 @@ def _extract_cholesky(x, info=None):
 def _coeffs_to_cholesky(coeffs):
     """Return the cholesky factor of a covariance matrix described by coeffs.
 
-    The function can handle the case of a deterministic model (i.e. where all coeffs =
-    0)
+    The function can handle the case of a deterministic model where all coefficients
+    were zero.
 
-    Args:
-        coeffs (np.ndarray): 1d numpy array that contains the upper triangular elements
-            of a covariance matrix whose diagonal elements have been replaced by their
-            square roots.
+    Parameters
+    ----------
+    coeffs : np.ndarray
+        Array with shape (num_coeffs,) that contains the upper triangular elements of a
+        covariance matrix whose diagonal elements have been replaced by their square
+        roots.
 
     """
     dim = _get_matrix_dimension_from_num_triangular_elements(coeffs.shape[0])

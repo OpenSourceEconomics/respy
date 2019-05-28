@@ -55,6 +55,7 @@ baseline model presented in:
    development/releases
    development/roadmap
    development/api
+   development/randomness
 
 .. toctree::
    :maxdepth: 1

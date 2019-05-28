@@ -1,6 +1,11 @@
-import numpy as np
+import json
 
+import numpy as np
+import pandas as pd
+
+from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
+from respy.config import TEST_RESOURCES_DIR
 
 
 def get_conditional_probabilities(type_shares, initial_level_of_education):
@@ -81,3 +86,12 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
     )
 
     return draws_transformed
+
+
+def get_example_model(model):
+    assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
+
+    options_spec = json.loads((TEST_RESOURCES_DIR / f"{model}.json").read_text())
+    params_spec = pd.read_csv(TEST_RESOURCES_DIR / f"{model}.csv")
+
+    return params_spec, options_spec

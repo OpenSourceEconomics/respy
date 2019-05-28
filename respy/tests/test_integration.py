@@ -3,7 +3,8 @@ import copy
 import numpy as np
 import pandas as pd
 
-from respy.interface import minimal_estimation_interface
+from respy.likelihood import get_criterion_function
+from respy.likelihood import get_parameter_vector
 from respy.pre_processing.model_processing import _extract_cholesky
 from respy.pre_processing.model_processing import parameters_to_dictionary
 from respy.pre_processing.model_processing import parameters_to_vector
@@ -32,7 +33,10 @@ def test_simulation_and_estimation_with_different_models():
     # Evaluate at different points, ensuring that the simulated dataset still fits.
     params_spec, options_spec = generate_random_model(point_constr=constr)
     attr = process_model_spec(params_spec, options_spec)
-    minimal_estimation_interface(attr, df)
+    x = get_parameter_vector(attr)
+    crit_func = get_criterion_function(attr, df)
+
+    crit_func(x)
 
 
 def test_invariant_results_for_two_estimations():
@@ -48,11 +52,14 @@ def test_invariant_results_for_two_estimations():
     attr = process_model_spec(params_spec, options_spec)
     df = minimal_simulate_observed(attr)
 
+    x = get_parameter_vector(attr)
+    crit_func = get_criterion_function(attr, df)
+
     # First estimation.
-    _, crit_val = minimal_estimation_interface(attr, df)
+    crit_val = crit_func(x)
 
     # Second estimation.
-    _, crit_val_ = minimal_estimation_interface(attr, df)
+    crit_val_ = crit_func(x)
 
     assert crit_val == crit_val_
 
@@ -105,7 +112,12 @@ def test_invariance_to_initial_conditions():
 
         attr = process_model_spec(params_spec, options_spec)
         df = minimal_simulate_observed(attr)
-        _, val = minimal_estimation_interface(attr, df)
+
+        x = get_parameter_vector(attr)
+        crit_func = get_criterion_function(attr, df)
+
+        val = crit_func(x)
+
         if base_val is None:
             base_val = val
 
@@ -205,7 +217,10 @@ def test_invariance_to_order_of_initial_schooling_levels():
             pd.testing.assert_frame_equal(base_data, df)
 
             # This part checks the equality of a single function evaluation.
-            _, val = minimal_estimation_interface(attr, df)
+            x = get_parameter_vector(attr)
+            crit_func = get_criterion_function(attr, df)
+            val = crit_func(x)
+
             if base_val is None:
                 base_val = val
             np.testing.assert_almost_equal(base_val, val)

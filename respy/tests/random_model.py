@@ -1,17 +1,15 @@
 """This module contains the functions for the generation of random requests."""
-import json
-
 import numpy as np
 
 from respy.config import DATA_LABELS_EST
-from respy.interface import minimal_simulation_interface
 from respy.pre_processing.model_checking import check_model_attributes
 from respy.pre_processing.model_processing import _create_attribute_dictionary
 from respy.pre_processing.specification_helpers import csv_template
+from respy.simulate import simulate
 
 
 def generate_random_model(
-    point_constr=None, bound_constr=None, num_types=None, file_path=None, myopic=False
+    point_constr=None, bound_constr=None, num_types=None, myopic=False
 ):
     """Generate a random model specification.
 
@@ -110,12 +108,8 @@ def generate_random_model(
     options["solution"]["draws"] = np.random.randint(1, bound_constr["max_draws"])
     options["solution"]["seed"] = np.random.randint(1, 10000)
 
-    options["estimation"]["agents"] = np.random.randint(
-        1, options["simulation"]["agents"]
-    )
     options["estimation"]["draws"] = np.random.randint(1, bound_constr["max_draws"])
     options["estimation"]["seed"] = np.random.randint(1, 10000)
-
     options["estimation"]["tau"] = np.random.uniform(100, 500)
 
     options["program"]["debug"] = True
@@ -135,11 +129,6 @@ def generate_random_model(
 
     attr = _create_attribute_dictionary(params, options)
     check_model_attributes(attr)
-
-    if file_path is not None:
-        with open(file_path + ".json", "w") as j:
-            json.dump(options, j)
-        params.to_csv(file_path + ".csv")
 
     return params, options
 
@@ -174,7 +163,7 @@ def minimal_simulate_observed(attr, is_missings=True):
         agent = agent[agent["Period"] < start_truncation]
         return agent
 
-    state_space, df = minimal_simulation_interface(attr)
+    state_space, df = simulate(attr)
 
     np.random.seed(attr["seed_sim"])
 

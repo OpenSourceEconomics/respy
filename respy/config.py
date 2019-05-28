@@ -10,8 +10,8 @@ ROOT_DIR = Path(__file__).parent
 # Directory with additional resources for the testing harness
 TEST_RESOURCES_DIR = ROOT_DIR / "tests" / "resources"
 
-HUGE_FLOAT = 1.0e20
-TINY_FLOAT = 1.0e-8
+HUGE_FLOAT = 1e20
+TINY_FLOAT = 1e-8
 PRINT_FLOAT = 1e10
 
 # Number of decimals that are compared for tests This is currently only used in
@@ -21,7 +21,7 @@ DECIMALS = 6
 TOL = 10 ** -DECIMALS
 
 # Interpolation
-INADMISSIBILITY_PENALTY = -400000.00
+INADMISSIBILITY_PENALTY = -400000
 
 IS_DEBUG = False
 
@@ -70,11 +70,7 @@ DATA_FORMATS_SIM = {
 }
 DATA_FORMATS_SIM = {**DATA_FORMATS_SIM, **DATA_FORMATS_EST}
 
-DATA_FORMATS_SIM = dict(DATA_FORMATS_EST)
-for key_ in DATA_LABELS_SIM:
-    if key_ in DATA_FORMATS_SIM.keys():
-        continue
-    elif key_ in ["Type"]:
-        DATA_FORMATS_SIM[key_] = np.int
-    else:
-        DATA_FORMATS_SIM[key_] = np.float
+EXAMPLE_MODELS = [
+    f"kw_data_{suffix}"
+    for suffix in ["one", "one_initial", "one_types", "two", "three"]
+] + ["reliability_short"]
