@@ -5,17 +5,13 @@ import shutil
 import sys
 from pathlib import Path
 
-import respy.shared
-from respy.likelihood import get_criterion_function
-from respy.likelihood import get_parameter_vector
-
 
 def main():
-    """Run the estimation of a model using a number of threads and a maximum of function
-    evaluations.
+    """Evaluate the criterion function multiple times for a scalability report.
 
-    Currently, we circumvent the optimization by setting maxfun to 0 and just looping
-    over the estimation.
+    The criterion function is evaluated ``maxfun``-times. The number of threads used is
+    limited by environment variables. ``respy`` has to be imported after the environment
+    variables are set as Numpy, Numba and others load them at import time.
 
     """
     model = sys.argv[1]
@@ -23,7 +19,7 @@ def main():
     num_procs = int(sys.argv[3])
     num_threads = int(sys.argv[4])
 
-    # Test commandline input
+    # Validate input.
     assert maxfun >= 0, "Maximum number of function evaluations cannot be negative."
     assert num_threads >= 1 or num_threads == -1, (
         "Use -1 to impose no restrictions on maximum number of threads or choose a "
@@ -36,13 +32,11 @@ def main():
     os.environ["OMP_NUM_THREADS"] = f"{num_threads}"
     os.environ["NUMEXPR_NUM_THREADS"] = f"{num_threads}"
 
-    # Late import of respy to ensure that environment variables are read.
+    # Late import of respy to ensure that environment variables are read by Numpy, etc..
     import respy as rp
-    from respy.simulate import simulate
-    from respy.pre_processing.model_processing import process_model_spec
 
     # Get model
-    options_spec, params_spec = respy.shared.get_example_model(model)
+    options_spec, params_spec = rp.get_example_model(model)
 
     # Adjust options
     options_spec["estimation"]["maxfun"] = 0
@@ -56,14 +50,14 @@ def main():
     os.chdir(folder)
 
     # Initialize the class
-    attr = process_model_spec(params_spec, options_spec)
+    attr = rp.process_model_spec(params_spec, options_spec)
 
     # Simulate the data
-    state_space, simulated_data = simulate(attr)
+    state_space, simulated_data = rp.simulate(attr)
 
     # Get the criterion function and the parameter vector.
-    crit_func = get_criterion_function(attr, simulated_data)
-    x = get_parameter_vector(attr)
+    crit_func = rp.get_crit_func_and_initial_guess(attr, simulated_data)
+    x = rp.get_parameter_vector(attr)
 
     # Run the estimation
     print(

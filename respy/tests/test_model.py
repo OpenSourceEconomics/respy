@@ -2,51 +2,51 @@
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import pytest
 import yaml
 
 from respy.config import EXAMPLE_MODELS
-from respy.likelihood import get_criterion_function
-from respy.likelihood import get_parameter_vector
+from respy.likelihood import get_crit_func_and_initial_guess
 from respy.pre_processing.model_checking import check_model_attributes
 from respy.pre_processing.model_checking import check_model_parameters
 from respy.pre_processing.model_processing import _options_spec_from_attributes
 from respy.pre_processing.model_processing import _params_spec_from_attributes
 from respy.pre_processing.model_processing import parameters_to_dictionary
-from respy.pre_processing.model_processing import parameters_to_vector
 from respy.pre_processing.model_processing import process_model_spec
 from respy.pre_processing.model_processing import write_out_model_spec
 from respy.shared import get_example_model
 from respy.tests.random_model import generate_random_model
-from respy.tests.random_model import minimal_simulate_observed
+from respy.tests.random_model import simulate_truncated_data
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
-def test_equality_of_attributes_and_specs_and_files(model_or_seed):
+def test_back_and_forth_transformation_of_specs(model_or_seed):
+    # 1. Start with params_spec and options_spec.
     if isinstance(model_or_seed, str):
         params_spec, options_spec = get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
         params_spec, options_spec = generate_random_model()
 
-    attr = process_model_spec(params_spec, options_spec)
+    # 2. Convert to dictionaries.
+    attr, optim_paras = process_model_spec(params_spec, options_spec)
 
-    params_spec_ = _params_spec_from_attributes(attr)
+    # 3. Convert back to params_spec and options_spec.
+    params_spec_ = _params_spec_from_attributes(optim_paras)
     options_spec_ = _options_spec_from_attributes(attr)
 
-    assert params_spec.equals(params_spec_)
+    assert params_spec.para.equals(params_spec_.para)
     assert options_spec == options_spec_
 
-    write_out_model_spec(attr, "example")
+    write_out_model_spec(attr, optim_paras, "example")
 
-    attr_ = process_model_spec(Path("example.csv"), Path("example.json"))
+    attr_, optim_paras_ = process_model_spec(Path("example.csv"), Path("example.json"))
 
     # Nested dictionaries are hard to compare. Thus, convert to specs again.
-    params_spec_ = _params_spec_from_attributes(attr_)
+    params_spec_ = _params_spec_from_attributes(optim_paras_)
     options_spec_ = _options_spec_from_attributes(attr_)
 
-    pd.testing.assert_frame_equal(params_spec, params_spec_, check_less_precise=15)
+    params_spec.para.equals(params_spec_.para)
     assert options_spec == options_spec_
 
 
@@ -57,12 +57,9 @@ def test_generate_random_model(seed):
 
     params_spec, options_spec = generate_random_model()
 
-    attr = process_model_spec(params_spec, options_spec)
+    df = simulate_truncated_data(params_spec, options_spec)
 
-    df = minimal_simulate_observed(attr)
-
-    x = get_parameter_vector(attr)
-    crit_func = get_criterion_function(attr, df)
+    x, crit_func = get_crit_func_and_initial_guess(params_spec, options_spec, df)
 
     crit_val = crit_func(x)
 
@@ -70,55 +67,46 @@ def test_generate_random_model(seed):
     assert isinstance(crit_val, float)
 
 
-@pytest.mark.parametrize("seed", range(10))
-def test_back_and_forth_transformation_of_parameter_vector(seed):
-    """Testing whether back-and-forth transformation have no effect."""
-    np.random.seed(seed)
-
-    num_types = np.random.randint(1, 5)
-    num_paras = 53 + (num_types - 1) * 6
-
-    # Create random parameter vector
-    base = np.random.uniform(size=num_paras)
-
-    x = base.copy()
-
-    # Apply numerous transformations
-    for _ in range(10):
-        optim_paras = parameters_to_dictionary(x, is_debug=True)
-        args = (optim_paras, num_paras, "all", True)
-        x = parameters_to_vector(*args)
-
-    np.testing.assert_allclose(base, x)
-
-
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
-def test_check_model_attributes(model_or_seed):
+def test_back_and_forth_transformation_of_parameter_vector(model_or_seed):
+    """Testing whether back-and-forth transformation have no effect."""
+    # 1. Start with params_spec and options_spec and calculate likelihood.
     if isinstance(model_or_seed, str):
         params_spec, options_spec = get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
         params_spec, options_spec = generate_random_model()
 
-    attr = process_model_spec(params_spec, options_spec)
+    df = simulate_truncated_data(params_spec, options_spec)
+
+    x, crit_func = get_crit_func_and_initial_guess(params_spec, options_spec, df)
+    likelihood = crit_func(x)
+
+    # 2. Convert parameter vector back to params_spec and calculate likelihood again.
+    optim_paras_ = parameters_to_dictionary(x)
+    params_spec_ = _params_spec_from_attributes(optim_paras_)
+
+    x_, crit_func_ = get_crit_func_and_initial_guess(params_spec_, options_spec, df)
+    likelihood_ = crit_func_(x_)
+
+    assert likelihood == likelihood_
+    np.testing.assert_array_equal(x, x_)
+
+
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+def test_check_model_attributes_and_parameters(model_or_seed):
+    if isinstance(model_or_seed, str):
+        params_spec, options_spec = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params_spec, options_spec = generate_random_model()
+
+    attr, optim_paras = process_model_spec(params_spec, options_spec)
 
     check_model_attributes(attr)
+    check_model_parameters(optim_paras)
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
-def test_check_model_parameters(model_or_seed):
-    if isinstance(model_or_seed, str):
-        params_spec, options_spec = get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params_spec, options_spec = generate_random_model()
-
-    attr = process_model_spec(params_spec, options_spec)
-
-    check_model_parameters(attr["optim_paras"])
-
-
-@pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_yaml_for_options(model_or_seed):
     if isinstance(model_or_seed, str):

@@ -1,6 +1,6 @@
 """This is the entrypoint to the respy package.
 
-Include here only imports which should be available using
+Include only imports which should be available using
 
 .. code-block::
 
@@ -15,9 +15,7 @@ import sys
 import pytest
 
 from respy.config import ROOT_DIR
-from respy.likelihood import get_criterion_function  # noqa: F401
-from respy.likelihood import get_parameter_vector  # noqa: F401
-from respy.pre_processing.model_processing import process_model_spec  # noqa: F401
+from respy.likelihood import get_crit_func_and_initial_guess  # noqa: F401
 from respy.shared import get_example_model  # noqa: F401
 from respy.simulate import simulate  # noqa: F401
 from respy.solve import solve  # noqa: F401

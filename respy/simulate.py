@@ -8,13 +8,15 @@ from respy.config import DATA_FORMATS_SIM
 from respy.config import DATA_LABELS_SIM
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
-from respy.shared import create_multivariate_standard_normal_draws
+from respy.pre_processing.model_processing import process_model_spec
+from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.shared import transform_disturbances
-from respy.solve import solve
+from respy.solve import solve_with_backward_induction
+from respy.solve import StateSpace
 
 
-def simulate(attr):
+def simulate(params_spec, options_spec):
     """Simulate a data set.
 
     This function provides the interface for the simulation of a data set.
@@ -25,20 +27,26 @@ def simulate(attr):
         Dictionary containing model attributes.
 
     """
+    attr, optim_paras = process_model_spec(params_spec, options_spec)
+
     # Solve the model.
-    state_space = solve(attr)
+    state_space = StateSpace(attr, optim_paras)
+
+    state_space = solve_with_backward_induction(
+        state_space, attr["interpolation"], attr["num_points_interp"], optim_paras
+    )
 
     # Draw draws for the simulation.
-    periods_draws_sims = create_multivariate_standard_normal_draws(
-        attr["num_periods"], attr["num_agents_sim"], attr["seed_sim"]
+    base_draws_sims = create_base_draws(
+        (attr["num_periods"], attr["num_agents_sim"], 4), attr["seed_sim"]
     )
 
     simulated_data = simulate_data(
         state_space,
         attr["num_agents_sim"],
-        periods_draws_sims,
+        base_draws_sims,
         attr["edu_spec"],
-        attr["optim_paras"],
+        optim_paras,
         attr["seed_sim"],
     )
 
@@ -46,7 +54,7 @@ def simulate(attr):
 
 
 def simulate_data(
-    state_space, num_agents_sim, periods_draws_sims, edu_spec, optim_paras, seed
+    state_space, num_agents_sim, base_draws_sims, edu_spec, optim_paras, seed
 ):
     """Simulate a data set.
 
@@ -63,7 +71,7 @@ def simulate_data(
         Class of state space.
     num_agents_sim : int
         Number of simulated agents.
-    periods_draws_sims : np.ndarray
+    base_draws_sims : np.ndarray
         Array with shape (num_periods, num_agents_sim, num_choices)
     optim_paras : dict
         Parameters affected by optimization.
@@ -76,13 +84,13 @@ def simulate_data(
     """
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
-    periods_draws_sims_transformed = np.full(
+    base_draws_sims_transformed = np.full(
         (state_space.num_periods, num_agents_sim, 4), np.nan
     )
 
     for period in range(state_space.num_periods):
-        periods_draws_sims_transformed[period] = transform_disturbances(
-            periods_draws_sims[period], np.zeros(4), optim_paras["shocks_cholesky"]
+        base_draws_sims_transformed[period] = transform_disturbances(
+            base_draws_sims[period], np.zeros(4), optim_paras["shocks_cholesky"]
         )
 
     # Create initial starting values for agents in simulation.
@@ -120,7 +128,7 @@ def simulate_data(
         ]
 
         # Select relevant subset of random draws.
-        draws = periods_draws_sims_transformed[period]
+        draws = base_draws_sims_transformed[period]
 
         # Get total values and ex post rewards.
         total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
@@ -195,7 +203,6 @@ def simulate_data(
         pd.DataFrame(data=np.vstack(data), columns=DATA_LABELS_SIM)
         .astype(DATA_FORMATS_SIM)
         .sort_values(["Identifier", "Period"])
-        .reset_index(drop=True)
     )
 
     return simulated_data
@@ -243,11 +250,11 @@ def _sort_edu_spec(edu_spec):
 
 def _get_random_types(num_types, optim_paras, num_agents_sim, edu_start, seed):
     """Get random types for simulated agents."""
-    np.random.seed(seed)
-
     # We want to ensure that the order of types in the initialization file does not
     # matter for the simulated sample.
     type_info = _sort_type_info(optim_paras, num_types)
+
+    np.random.seed(seed)
 
     types = []
     for i in range(num_agents_sim):
@@ -264,11 +271,12 @@ def _get_random_types(num_types, optim_paras, num_agents_sim, edu_start, seed):
 
 def _get_random_edu_start(edu_spec, num_agents_sim, seed):
     """Get random, initial levels of schooling for simulated agents."""
-    np.random.seed(seed)
     # We want to ensure that the order of initial schooling levels in the initialization
     # files does not matter for the simulated sample. That is why we create an ordered
     # version for this function.
     edu_spec_ordered = _sort_edu_spec(edu_spec)
+
+    np.random.seed(seed)
 
     # As we do not want to be too strict at the user-level the sum of edu_spec might
     # be slightly larger than one. This needs to be corrected here.
@@ -285,6 +293,8 @@ def _get_random_edu_start(edu_spec, num_agents_sim, seed):
 
 def _get_random_lagged_choices(edu_spec, num_agents_sim, edu_start, seed):
     """Get random, initial levels of lagged choices for simulated agents."""
+    np.random.seed(seed)
+
     lagged_start = []
     for i in range(num_agents_sim):
         idx = edu_spec["start"].index(edu_start[i])

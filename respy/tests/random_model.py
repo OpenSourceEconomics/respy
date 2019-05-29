@@ -4,6 +4,7 @@ import numpy as np
 from respy.config import DATA_LABELS_EST
 from respy.pre_processing.model_checking import check_model_attributes
 from respy.pre_processing.model_processing import _create_attribute_dictionary
+from respy.pre_processing.model_processing import process_model_spec
 from respy.pre_processing.specification_helpers import csv_template
 from respy.simulate import simulate
 
@@ -118,7 +119,7 @@ def generate_random_model(
     options["interpolation"]["flag"] = bool(np.random.choice([True, False]))
     options["interpolation"]["points"] = np.random.randint(10, 100)
 
-    attr = _create_attribute_dictionary(params, options)
+    attr = _create_attribute_dictionary(options)
     check_model_attributes(attr)
 
     for key, value in point_constr.items():
@@ -127,7 +128,7 @@ def generate_random_model(
         else:
             options[key] = value
 
-    attr = _create_attribute_dictionary(params, options)
+    attr = _create_attribute_dictionary(options)
     check_model_attributes(attr)
 
     return params, options
@@ -148,9 +149,12 @@ def get_valid_shares(num_groups):
     return shares
 
 
-def minimal_simulate_observed(attr, is_missings=True):
-    """ This function adds two important features of observed datasests: (1) missing
-    observations and missing wage information.
+def simulate_truncated_data(params_spec, options_spec, is_missings=True):
+    """Simulate a dataset.
+
+    The data can have two more properties. First, truncated history, second, missing
+    wages.
+
     """
 
     def drop_agents_obs(agent):
@@ -163,14 +167,18 @@ def minimal_simulate_observed(attr, is_missings=True):
         agent = agent[agent["Period"] < start_truncation]
         return agent
 
-    state_space, df = simulate(attr)
+    state_space, df = simulate(params_spec, options_spec)
+
+    attr, _ = process_model_spec(params_spec, options_spec)
 
     np.random.seed(attr["seed_sim"])
 
     if is_missings:
         # We truncate the histories of agents. This mimics the frequent empirical fact
         # that we loose track of more and more agents over time.
-        data_subset = df.groupby("Identifier").apply(drop_agents_obs)
+        data_subset = (
+            df.groupby("Identifier").apply(drop_agents_obs).reset_index(drop=True)
+        )
 
         # We also want to drop the some wage observations. Note that we might be dealing
         # with a dataset where nobody is working anyway.
@@ -189,8 +197,5 @@ def minimal_simulate_observed(attr, is_missings=True):
 
     # We can restrict the information to observed entities only.
     data_subset = data_subset[DATA_LABELS_EST]
-
-    # TODO: Check whether this is necessary.
-    data_subset.Wage = data_subset.Wage.round(6)
 
     return data_subset

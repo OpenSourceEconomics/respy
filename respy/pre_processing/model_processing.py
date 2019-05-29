@@ -6,22 +6,21 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from respy.config import TINY_FLOAT
-from respy.pre_processing.model_checking import _check_parameter_vector
-from respy.pre_processing.model_checking import check_model_parameters
 from respy.pre_processing.specification_helpers import csv_template
 
 
 def process_model_spec(params_spec, options_spec):
     params_spec = _read_params_spec(params_spec)
     options_spec = _read_options_spec(options_spec)
-    attr = _create_attribute_dictionary(params_spec, options_spec)
 
-    return attr
+    attr = _create_attribute_dictionary(options_spec)
+    optim_paras = parameters_to_dictionary(params_spec.para.to_numpy())
+
+    return attr, optim_paras
 
 
-def write_out_model_spec(attr, save_path):
-    params_spec = _params_spec_from_attributes(attr)
+def write_out_model_spec(attr, optim_paras, save_path):
+    params_spec = _params_spec_from_attributes(optim_paras)
     options_spec = _options_spec_from_attributes(attr)
 
     params_spec.to_csv(Path(save_path).with_suffix(".csv"))
@@ -31,7 +30,7 @@ def write_out_model_spec(attr, save_path):
 
 def _options_spec_from_attributes(attr):
     estimation = {
-        "draws": attr["num_draws_prob"],
+        "draws": attr["num_draws_est"],
         "seed": attr["seed_est"],
         "tau": attr["tau"],
     }
@@ -42,7 +41,7 @@ def _options_spec_from_attributes(attr):
 
     interpolation = {"flag": attr["interpolation"], "points": attr["num_points_interp"]}
 
-    solution = {"seed": attr["seed_sol"], "draws": attr["num_draws_emax"]}
+    solution = {"seed": attr["seed_sol"], "draws": attr["num_draws_sol"]}
 
     options_spec = {
         "estimation": estimation,
@@ -57,58 +56,27 @@ def _options_spec_from_attributes(attr):
     return options_spec
 
 
-def _params_spec_from_attributes(attr):
-    csv = csv_template(attr["num_types"])
-    bounds = np.array(attr["optim_paras"]["paras_bounds"])
-    csv["lower"] = bounds[:, 0]
-    csv["upper"] = bounds[:, 1]
-    csv[["lower", "upper"]] = csv[["lower", "upper"]].astype(float)
-    csv["fixed"] = attr["optim_paras"]["paras_fixed"]
-    csv["para"] = parameters_to_vector(
-        paras_dict=attr["optim_paras"],
-        num_paras=attr["num_paras"],
-        which="all",
-        is_debug=True,
-    )
+def _params_spec_from_attributes(optim_paras):
+    csv = csv_template(optim_paras["num_types"])
+    csv["para"] = parameters_to_vector(optim_paras)
     return csv
 
 
-def _create_attribute_dictionary(params_spec, options_spec):
+def _create_attribute_dictionary(options_spec):
     attr = {
         "is_debug": bool(options_spec["program"]["debug"]),
         "interpolation": bool(options_spec["interpolation"]["flag"]),
         "num_agents_sim": int(options_spec["simulation"]["agents"]),
-        "num_draws_emax": int(options_spec["solution"]["draws"]),
-        "num_draws_prob": int(options_spec["estimation"]["draws"]),
+        "num_draws_sol": int(options_spec["solution"]["draws"]),
+        "num_draws_est": int(options_spec["estimation"]["draws"]),
         "num_points_interp": int(options_spec["interpolation"]["points"]),
-        "num_types": int(_get_num_types(params_spec)),
-        "optim_paras": parameters_to_dictionary(
-            params_spec["para"].to_numpy(), is_debug=True
-        ),
         "seed_sol": int(options_spec["solution"]["seed"]),
         "seed_est": int(options_spec["estimation"]["seed"]),
         "seed_sim": int(options_spec["simulation"]["seed"]),
         "tau": float(options_spec["estimation"]["tau"]),
         "edu_spec": options_spec["edu_spec"],
         "num_periods": int(options_spec["num_periods"]),
-        "num_paras": len(params_spec),
-        "myopia": params_spec.loc[("delta", "delta"), "para"] == 0.0,
     }
-
-    bounds = []
-    for coeff in params_spec.index:
-        bound = []
-        for bounds_type in ["lower", "upper"]:
-            if pd.isnull(params_spec.loc[coeff, bounds_type]):
-                bound.append(None)
-            else:
-                bound.append(float(params_spec.loc[coeff, bounds_type]))
-        bounds.append(bound)
-
-    attr["optim_paras"]["paras_bounds"] = bounds
-    attr["optim_paras"]["paras_fixed"] = (
-        params_spec["fixed"].astype(bool).to_numpy().tolist()
-    )
 
     return attr
 
@@ -155,7 +123,7 @@ def _read_options_spec(input_):
     return options_spec
 
 
-def parameters_to_dictionary(paras_vec, is_debug=False, info=None, paras_type="optim"):
+def parameters_to_dictionary(paras_vec, paras_type="optim"):
     """Parse the parameter vector into a dictionary of model quantities.
 
     Parameters
@@ -177,46 +145,40 @@ def parameters_to_dictionary(paras_vec, is_debug=False, info=None, paras_type="o
 
     """
     paras_vec = paras_vec.copy()
-    assert paras_type in ["econ", "optim"], "paras_type must be econ or optim."
-
-    if is_debug and paras_type == "optim":
-        _check_parameter_vector(paras_vec)
 
     pinfo = _paras_parsing_information(len(paras_vec))
-    paras_dict = {}
+    optim_paras = {}
 
     # basic extraction
     for quantity in pinfo:
         start = pinfo[quantity]["start"]
         stop = pinfo[quantity]["stop"]
-        paras_dict[quantity] = paras_vec[start:stop]
+        optim_paras[quantity] = paras_vec[start:stop]
 
     # modify the shock_coeffs
     if paras_type == "econ":
-        shocks_cholesky = _coeffs_to_cholesky(paras_dict["shocks_coeffs"])
+        shocks_cholesky = _coeffs_to_cholesky(optim_paras["shocks_coeffs"])
     else:
-        shocks_cholesky, info = _extract_cholesky(paras_vec, info)
-    paras_dict["shocks_cholesky"] = shocks_cholesky
-    del paras_dict["shocks_coeffs"]
+        shocks_cholesky = _extract_cholesky(paras_vec)
+    optim_paras["shocks_cholesky"] = shocks_cholesky
+    del optim_paras["shocks_coeffs"]
 
     # overwrite the type information
     type_shares, type_shifts = _extract_type_information(paras_vec)
-    paras_dict["type_shares"] = type_shares
-    paras_dict["type_shifts"] = type_shifts
+    optim_paras["type_shares"] = type_shares
+    optim_paras["type_shifts"] = type_shifts
+    optim_paras["num_paras"] = paras_vec.shape[0]
+    optim_paras["num_types"] = type_shifts.shape[0]
 
-    # checks
-    if is_debug:
-        assert check_model_parameters(paras_dict)
-
-    return paras_dict
+    return optim_paras
 
 
-def parameters_to_vector(paras_dict, num_paras, which, is_debug):
+def parameters_to_vector(optim_paras):
     """Stack optimization parameters from a dictionary into a vector of type 'optim'.
 
     Parameters
     ----------
-    paras_dict : dict
+    optim_paras : dict
         dictionary with quantities from which the parameters can be extracted.
     num_paras : int
         number of parameters in the model (not only free parameters)
@@ -227,46 +189,35 @@ def parameters_to_vector(paras_dict, num_paras, which, is_debug):
         If True, inputs and outputs are checked for consistency.
 
     """
-    if is_debug:
-        assert which in ["free", "all"], 'which must be in ["free", "all"]'
-        assert check_model_parameters(paras_dict)
-
-    pinfo = _paras_parsing_information(num_paras)
-    x = np.full(num_paras, np.nan)
+    pinfo = _paras_parsing_information(optim_paras["num_paras"])
+    x = np.full(optim_paras["num_paras"], np.nan)
 
     start, stop = pinfo["delta"]["start"], pinfo["delta"]["stop"]
-    x[start:stop] = paras_dict["delta"]
+    x[start:stop] = optim_paras["delta"]
 
     start, stop = (pinfo["coeffs_common"]["start"], pinfo["coeffs_common"]["stop"])
-    x[start:stop] = paras_dict["coeffs_common"]
+    x[start:stop] = optim_paras["coeffs_common"]
 
     start, stop = pinfo["coeffs_a"]["start"], pinfo["coeffs_a"]["stop"]
-    x[start:stop] = paras_dict["coeffs_a"]
+    x[start:stop] = optim_paras["coeffs_a"]
 
     start, stop = pinfo["coeffs_b"]["start"], pinfo["coeffs_b"]["stop"]
-    x[start:stop] = paras_dict["coeffs_b"]
+    x[start:stop] = optim_paras["coeffs_b"]
 
     start, stop = pinfo["coeffs_edu"]["start"], pinfo["coeffs_edu"]["stop"]
-    x[start:stop] = paras_dict["coeffs_edu"]
+    x[start:stop] = optim_paras["coeffs_edu"]
 
     start, stop = pinfo["coeffs_home"]["start"], pinfo["coeffs_home"]["stop"]
-    x[start:stop] = paras_dict["coeffs_home"]
+    x[start:stop] = optim_paras["coeffs_home"]
 
     start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
-    x[start:stop] = paras_dict["shocks_cholesky"][np.tril_indices(4)]
+    x[start:stop] = optim_paras["shocks_cholesky"][np.tril_indices(4)]
 
     start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
-    x[start:stop] = paras_dict["type_shares"][2:]
+    x[start:stop] = optim_paras["type_shares"][2:]
 
     start, stop = pinfo["type_shifts"]["start"], pinfo["type_shifts"]["stop"]
-    x[start:stop] = paras_dict["type_shifts"].flatten()[4:]
-
-    if is_debug:
-        _check_parameter_vector(x)
-
-    if which == "free":
-        x = [x[i] for i in range(num_paras) if not paras_dict["paras_fixed"][i]]
-        x = np.array(x)
+    x[start:stop] = optim_paras["type_shifts"].flatten()[4:]
 
     return x
 
@@ -290,35 +241,17 @@ def _extract_type_information(x):
     return type_shares, type_shifts
 
 
-def _extract_cholesky(x, info=None):
-    """Extract the cholesky factor of the shock covariance from parameters of type
-    'optim."""
+def _extract_cholesky(x):
+    """Extract the Cholesky factor from the shock's covariance matrix."""
     pinfo = _paras_parsing_information(len(x))
     start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
     shocks_coeffs = x[start:stop]
+
     dim = _get_matrix_dimension_from_num_triangular_elements(len(shocks_coeffs))
     shocks_cholesky = np.zeros((dim, dim))
     shocks_cholesky[np.tril_indices(dim)] = shocks_coeffs
 
-    # Stabilization
-    if info is not None:
-        info = 0
-
-    # We need to ensure that the diagonal elements are larger than zero during
-    # estimation. However, we want to allow for the special case of total
-    # absence of randomness for testing with simulated datasets.
-    if not (np.count_nonzero(shocks_cholesky) == 0):
-        shocks_cov = np.matmul(shocks_cholesky, shocks_cholesky.T)
-        for i in range(len(shocks_cov)):
-            if np.abs(shocks_cov[i, i]) < TINY_FLOAT:
-                shocks_cholesky[i, i] = np.sqrt(TINY_FLOAT)
-                if info is not None:
-                    info = 1
-
-    if info is not None:
-        return shocks_cholesky, info
-    else:
-        return shocks_cholesky, None
+    return shocks_cholesky
 
 
 def _coeffs_to_cholesky(coeffs):

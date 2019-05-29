@@ -16,11 +16,6 @@ RESPY_DIR = RESPY_DIR.replace("development/testing/property/modules", "") + "res
 
 PYTHON_EXEC = sys.executable
 
-from respy.config import IS_PARALLELISM_OMP
-from respy.config import IS_PARALLELISM_MPI
-from respy.config import IS_FORTRAN
-from respy.config import IS_F2PY
-
 
 def compile_package():
     """ Compile RESPY package in debug mode.
@@ -160,18 +155,6 @@ def get_test_dict(test_dir):
 
     # Remove path from PYTHONPATH
     sys.path.remove(str(test_dir))
-
-    # If the PARALLELISM or FORTRAN is not available, we remove the parallel tests.
-    if not IS_PARALLELISM_MPI and not IS_PARALLELISM_OMP:
-        del test_dict["test_parallelism"]
-
-    if not IS_FORTRAN:
-        del test_dict["test_versions"]
-        del test_dict["test_restud"]
-        test_dict["test_integration"].remove("test_9")
-
-    if not IS_F2PY:
-        del test_dict["test_f2py"]
 
     return test_dict
 

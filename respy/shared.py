@@ -45,7 +45,7 @@ def cholesky_to_coeffs(shocks_cholesky):
     return shocks_coeffs
 
 
-def create_multivariate_standard_normal_draws(num_periods, num_draws, seed):
+def create_base_draws(shape, seed):
     """Create the relevant set of draws.
 
     Handle special case of zero variances as this case is useful for testing.
@@ -54,9 +54,10 @@ def create_multivariate_standard_normal_draws(num_periods, num_draws, seed):
 
     Parameters
     ----------
-    num_periods : int
-    num_draws : int
+    shape : Tuple[int]
+        Tuple representing the shape of the resulting array.
     seed : int
+        Seed to control randomness.
 
     Returns
     -------
@@ -68,9 +69,7 @@ def create_multivariate_standard_normal_draws(num_periods, num_draws, seed):
     np.random.seed(seed)
 
     # Draw random deviates from a standard normal distribution.
-    draws = np.random.multivariate_normal(
-        np.zeros(4), np.identity(4), (num_periods, num_draws)
-    )
+    draws = np.random.standard_normal(shape)
 
     return draws
 

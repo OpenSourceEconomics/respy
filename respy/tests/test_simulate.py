@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 import respy as rp
+from respy.likelihood import get_crit_func_and_initial_guess
 from respy.pre_processing.model_processing import process_model_spec
 from respy.simulate import get_continuation_value_and_ex_post_rewards
 from respy.tests.random_model import generate_random_model
@@ -16,11 +17,11 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
 
     # We need to simulate the model to get the emaxs and model attributes.
     params_spec, options_spec = generate_random_model(myopic=True)
-    attr = process_model_spec(params_spec, options_spec)
+    _, optim_paras = process_model_spec(params_spec, options_spec)
 
     draws = np.random.randn(1, 4)
 
-    state_space, _ = rp.simulate(attr)
+    state_space, _ = rp.simulate(params_spec, options_spec)
 
     for period in range(state_space.num_periods):
         # Unpack necessary attributes
@@ -36,7 +37,7 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
             rewards_period[:, :4],
             emaxs_period,
             draws,
-            attr["optim_paras"]["delta"],
+            optim_paras["delta"],
             max_education_period,
         )
 
@@ -50,23 +51,19 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
 
     # Get simulated data and likelihood for myopic model.
     params_spec, options_spec = generate_random_model(myopic=True)
-    attr = process_model_spec(params_spec, options_spec)
 
-    state_space, df = rp.simulate(attr)
+    state_space, df = rp.simulate(params_spec, options_spec)
 
-    x = rp.get_parameter_vector(attr)
-    crit_func = rp.get_criterion_function(attr, df)
+    x, crit_func = get_crit_func_and_initial_guess(params_spec, options_spec, df)
 
     likelihood = crit_func(x)
 
     # Get simulated data and likelihood for model with tiny delta.
     params_spec.loc["delta", "para"] = 1e-12
-    attr_ = process_model_spec(params_spec, options_spec)
 
-    state_space_, df_ = rp.simulate(attr_)
+    state_space_, df_ = rp.simulate(params_spec, options_spec)
 
-    x_ = rp.get_parameter_vector(attr_)
-    crit_func_ = rp.get_criterion_function(attr_, df_)
+    x_, crit_func_ = rp.get_crit_func_and_initial_guess(params_spec, options_spec, df_)
 
     likelihood_ = crit_func_(x_)
 

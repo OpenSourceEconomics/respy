@@ -1,8 +1,8 @@
 respy
 =====
 
-.. image:: https://readthedocs.org/projects/respy/badge/?version=master
-    :target: https://respy.readthedocs.io/en/master
+.. image:: https://readthedocs.org/projects/respy/badge/?version=latest
+    :target: https://respy.readthedocs.io/en/latest
     :alt: Documentation Status
 
 .. image:: https://travis-ci.org/OpenSourceEconomics/respy.svg?branch=master

@@ -1,8 +1,24 @@
 import numpy as np
 
 
-def check_estimation_dataset(attr, df):
-    """Check data for estimation."""
+def check_estimation_data(attr, df):
+    """Check data for estimation.
+
+    Parameters
+    ----------
+    attr : dict
+        Dictionary containing model attributes.
+    df : pd.DataFrame
+        Data for estimation.
+
+    Raises
+    ------
+    AssertionError
+        If data has not the expected format.
+
+    """
+    df = df.copy()
+
     num_periods = attr["num_periods"]
     edu_spec = attr["edu_spec"]
 
@@ -86,19 +102,22 @@ def _check_state_variables(agent):
             pass
 
 
-def check_dataset_sim(attr, df):
-    """ This routine runs some consistency checks on the simulated dataset.
-    Some more restrictions are imposed on the simulated dataset than the
-    observed data.
+def check_simulated_data(attr, optim_paras, df):
+    """Check simulated data.
+
+    This routine runs some consistency checks on the simulated dataset. Some more
+    restrictions are imposed on the simulated dataset than the observed data.
 
     """
+    df = df.copy()
+
     # Distribute class attributes
     num_periods = attr["num_periods"]
-    num_types = attr["num_types"]
+    num_types = optim_paras["num_types"]
     edu_max = attr["edu_spec"]["max"]
 
     # Run all tests available for the estimation data.
-    check_estimation_dataset(attr, df)
+    check_estimation_data(attr, df)
 
     # 9. Types.
     assert df.Type.max() <= num_types - 1

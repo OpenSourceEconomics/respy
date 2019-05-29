@@ -9,16 +9,14 @@ from multiprocessing import Pool
 
 import numpy as np
 
+import respy as rp
 from development.modules.auxiliary_shared import get_random_dirname
 from development.modules.auxiliary_shared import send_notification
 from respy.config import DECIMALS
 from respy.config import TEST_RESOURCES_DIR
 from respy.config import TOL
-from respy.likelihood import get_criterion_function
-from respy.likelihood import get_parameter_vector
-from respy.pre_processing.model_processing import process_model_spec
 from respy.tests.random_model import generate_random_model
-from respy.tests.random_model import minimal_simulate_observed
+from respy.tests.random_model import simulate_truncated_data
 
 HOSTNAME = socket.gethostname()
 
@@ -87,10 +85,10 @@ def investigate_regression_test(idx):
     """Investigate regression tests."""
     tests = load_regression_tests()
     attr, crit_val = tests[idx]
-    df = minimal_simulate_observed(attr)
+    df = simulate_truncated_data(attr)
 
-    x = get_parameter_vector(attr)
-    crit_func = get_criterion_function(attr, df)
+    x = rp.get_parameter_vector(attr)
+    crit_func = rp.get_crit_func_and_initial_guess(attr, df)
 
     result = crit_func(x)
 
@@ -108,10 +106,10 @@ def check_single(test, strict=False):
     os.mkdir(dirname)
     os.chdir(dirname)
 
-    df = minimal_simulate_observed(attr)
+    df = simulate_truncated_data(attr)
 
-    x = get_parameter_vector(attr)
-    crit_func = get_criterion_function(attr, df)
+    x = rp.get_parameter_vector(attr)
+    crit_func = rp.get_crit_func_and_initial_guess(attr, df)
 
     est_val = crit_func(x)
 
@@ -134,11 +132,11 @@ def create_single(idx):
     os.chdir(dirname)
     np.random.seed(idx)
     param_spec, options_spec = generate_random_model()
-    attr = process_model_spec(param_spec, options_spec)
-    df = minimal_simulate_observed(attr)
+    attr = rp.process_model_spec(param_spec, options_spec)
+    df = simulate_truncated_data(attr)
 
-    x = get_parameter_vector(attr)
-    crit_func = get_criterion_function(attr, df)
+    x = rp.get_parameter_vector(attr)
+    crit_func = rp.get_crit_func_and_initial_guess(attr, df)
 
     crit_val = crit_func(x)
 

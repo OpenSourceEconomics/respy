@@ -5,36 +5,30 @@ from numba import njit
 
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
-from respy.shared import create_multivariate_standard_normal_draws
+from respy.pre_processing.model_processing import process_model_spec
+from respy.shared import create_base_draws
 from respy.shared import transform_disturbances
 
 
-def solve(attr):
+def solve(params_spec, options_spec):
     """Solve the model.
 
     This function is a wrapper for the solution routine.
 
     Parameters
     ----------
-    attr : dict
-        Dictionary containing model attributes.
+    params_spec : pd.DataFrame
+        DataFrame containing parameter series.
+    options_spec : dict
+        Dictionary containing model attributes which are not optimized.
 
     """
-    state_space = StateSpace(
-        attr["num_periods"],
-        attr["num_types"],
-        attr["num_draws_emax"],
-        attr["edu_spec"]["start"],
-        attr["edu_spec"]["max"],
-        attr["seed_sol"],
-        attr["optim_paras"],
-    )
+    attr, optim_paras = process_model_spec(params_spec, options_spec)
+
+    state_space = StateSpace(attr, optim_paras)
 
     state_space = solve_with_backward_induction(
-        state_space,
-        attr["interpolation"],
-        attr["num_points_interp"],
-        attr["optim_paras"],
+        state_space, attr["interpolation"], attr["num_points_interp"], optim_paras
     )
 
     return state_space
@@ -350,9 +344,9 @@ def solve_with_backward_induction(
 
         # Treatment of the disturbances for the risk-only case is straightforward. Their
         # distribution is fixed once and for all.
-        draws_emax_standard = state_space.draws[period]
+        base_draws_sol_period = state_space.base_draws_sol[period]
         draws_emax_risk = transform_disturbances(
-            draws_emax_standard, np.zeros(4), shocks_cholesky
+            base_draws_sol_period, np.zeros(4), shocks_cholesky
         )
 
         # Unpack necessary attributes of the specific period.
@@ -674,21 +668,10 @@ class StateSpace:
 
     Parameters
     ----------
-    num_periods : int
-        Number of periods.
-    num_types : int
-        Number of types.
-    num_draws : int
-        Number of draws to simulate the emax of each state.
-    edu_starts : list
-        Contains different initial levels of education for agents.
-    edu_max : int
-        Maximum level of education for an agent.
-    seed : int
-        Seed for all randomness in the function.
+    attr : dict
+        Dictionary containing model attributes.
     optim_paras : dict
-        Contains various information necessary for the calculation of rewards for each
-        agent.
+        Dictionary containing parameters affected by optimization.
 
     Attributes
     ----------
@@ -756,38 +739,27 @@ class StateSpace:
 
     emaxs_columns = ["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
 
-    def __init__(
-        self,
-        num_periods,
-        num_types,
-        num_draws,
-        edu_starts,
-        edu_max,
-        seed,
-        optim_paras=None,
-    ):
+    def __init__(self, attr, optim_paras):
         # Add some arguments to the state space.
-        self.edu_max = edu_max
-        self.num_periods = num_periods
-        self.num_types = num_types
-        self.seed = seed
+        self.edu_max = attr["edu_spec"]["max"]
+        self.num_periods = attr["num_periods"]
+        self.num_types = optim_paras["num_types"]
+        self.seed = attr["seed_sol"]
 
-        self.draws = create_multivariate_standard_normal_draws(
-            self.num_periods, num_draws, self.seed
+        self.base_draws_sol = create_base_draws(
+            (self.num_periods, attr["num_draws_sol"], 4), self.seed
         )
 
         self.states, self.indexer = create_state_space(
-            num_periods, num_types, edu_starts, edu_max
+            self.num_periods, self.num_types, attr["edu_spec"]["start"], self.edu_max
         )
         self.covariates = create_covariates(self.states)
 
-        # Passing :data:`optim_paras` is optional.
-        if optim_paras:
-            self.rewards = np.column_stack(
-                (create_systematic_rewards(self.states, self.covariates, optim_paras))
-            )
+        self.rewards = np.column_stack(
+            (create_systematic_rewards(self.states, self.covariates, optim_paras))
+        )
 
-        self._create_slices_by_periods(num_periods)
+        self._create_slices_by_periods(self.num_periods)
 
     @property
     def states_per_period(self):
@@ -836,9 +808,11 @@ class StateSpace:
 
         Example
         -------
-        >>> state_space = StateSpace(1, 1, 1, [10], 11, 42)
+        >>> params_spec, options_spec = generate_random_model()
+        >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
+        >>> state_space = StateSpace(attr, optim_paras)
         >>> state_space.to_frame().shape
-        (2, 22)
+        (18, 31)
 
         """
         attributes = [
@@ -958,29 +932,6 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
     This function must be extremely performant as the lookup is done for each state in a
     state space (except for states in the last period) for each evaluation of the
     optimization of parameters.
-
-    Example
-    -------
-    This example is first and foremost for benchmarking different implementations, not
-    for validation.
-
-    >>> num_periods, num_types, num_draws = 50, 3, 50
-    >>> edu_start, edu_max = [10, 15], 20
-    >>> seed = 42
-    >>> state_space = StateSpace(
-    ...     num_periods, num_types, num_draws, edu_start, edu_max, seed
-    ... )
-    >>> state_space.emaxs = np.r_[
-    ...     np.zeros((state_space.states_per_period[:-1].sum(), 5)),
-    ...     np.full((state_space.states_per_period[-1], 5), 10)
-    ... ]
-    >>> for period in reversed(range(state_space.num_periods - 1)):
-    ...     states = state_space.get_attribute_from_period("states", period)
-    ...     state_space.emaxs = get_emaxs_of_subsequent_period(
-    ...         states, state_space.indexer, state_space.emaxs, edu_max
-    ...     )
-    ...     state_space.emaxs[:, 4] = state_space.emaxs[:, :4].max()
-    >>> assert (state_space.emaxs == 10).mean() >= 0.95
 
     """
     for i in range(states.shape[0]):
@@ -1135,14 +1086,17 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
 
     Example
     -------
-    >>> state_space = StateSpace(2, 1, 1, [12, 16], 20, 42)
+    >>> params_spec, options_spec = generate_random_model()
+    >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
+    >>> state_space = StateSpace(attr, optim_paras)
     >>> coeffs_a, coeffs_b = np.array([0.05, 0.6, 0.4]), np.array([0.36, 0.7, 1])
     >>> calculate_rewards_general(
     ...     state_space.covariates, coeffs_a, coeffs_b
     ... ).reshape(-1)
     array([0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45,
-           1.36, 0.45, 0.36, 0.05, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 0.36,
-           0.05, 1.36])
+           1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 0.36, 0.05, 1.36, 0.45, 1.36,
+           0.45, 1.36, 0.45, 0.36, 0.05, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45,
+           0.36, 0.05, 1.36])
 
     """
     num_states = covariates.shape[0]
@@ -1179,11 +1133,13 @@ def calculate_rewards_common(covariates, coeffs_common):
 
     Example
     -------
-    >>> state_space = StateSpace(2, 1, 1, [12, 16], 20, 42)
+    >>> params_spec, options_spec = generate_random_model()
+    >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
+    >>> state_space = StateSpace(attr, optim_paras)
     >>> coeffs_common = np.array([0.05, 0.6])
     >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
-    array([0.05, 0.05, 0.65, 0.65, 0.05, 0.05, 0.05, 0.05, 0.65, 0.65, 0.65,
-           0.65])
+    array([0.  , 0.  , 0.05, 0.05, 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.05,
+           0.05, 0.05, 0.05, 0.  , 0.  , 0.  , 0.  ])
 
     """
     return covariates[:, 9:11].dot(coeffs_common).reshape(-1, 1)

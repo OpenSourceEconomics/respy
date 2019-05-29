@@ -4,85 +4,77 @@ import numpy as np
 from numba import guvectorize
 from numba import vectorize
 
-from respy.config import DATA_FORMATS_EST
-from respy.config import DATA_LABELS_EST
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
+from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import parameters_to_dictionary
 from respy.pre_processing.model_processing import parameters_to_vector
-from respy.shared import create_multivariate_standard_normal_draws
+from respy.pre_processing.model_processing import process_model_spec
+from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
-from respy.solve import solve
 from respy.solve import solve_with_backward_induction
+from respy.solve import StateSpace
 
 
-def get_parameter_vector(attr):
-    """This function is obsolete with estimagic."""
-    x = parameters_to_vector(
-        attr["optim_paras"], attr["num_paras"], "all", attr["is_debug"]
-    )
+def get_crit_func_and_initial_guess(params_spec, options_spec, df):
+    """Get the criterion function.
 
-    return x
+    The return value is the :func:`log_like` where all arguments except the
+    parameter vector are fixed with ``functools.partial``. Thus, the function can be
+    passed directly into any optimization algorithm.
 
+    Parameters
+    ----------
+    attr : dict
+        Dictionary containing model attributes.
+    df : pd.DataFrame
+        The model is fit to this dataset.
 
-def get_criterion_function(attr, df):
-    def process_dataset(attr, df):
-        """Process the dataset from disk."""
+    Returns
+    -------
+    criterion_function : func
+        Criterion function where all arguments except the parameter vector are set.
 
-        # Process dataset from files.
-        df.set_index(["Identifier", "Period"], drop=False, inplace=True)
+    Raises
+    ------
+    AssertionError
+        If data has not the expected format.
 
-        # We want to allow to estimate with only a subset of periods in the sample.
-        cond = df["Period"] < attr["num_periods"]
-        df = df[cond]
+    """
+    attr, optim_paras = process_model_spec(params_spec, options_spec)
+    x = parameters_to_vector(optim_paras)
 
-        # Only keep the information that is relevant for the estimation. Once that is
-        # done,  impose some type restrictions.
-        df = df[DATA_LABELS_EST]
-        df = df.astype(DATA_FORMATS_EST)
+    check_estimation_data(attr, df)
 
-        # We want to restrict the sample to meet the specified initial conditions.
-        cond = df["Years_Schooling"].loc[:, 0].isin(attr["edu_spec"]["start"])
-        df.set_index(["Identifier"], drop=False, inplace=True)
-        df = df.loc[cond]
-
-        df.set_index(["Identifier", "Period"], drop=False, inplace=True)
-
-        return df
-
-    # Process data
-    df = process_dataset(attr, df)
-
-    # Solve model.
-    state_space = solve(attr)
+    state_space = StateSpace(attr, optim_paras)
 
     # Collect arguments for estimation.
-    periods_draws_prob = create_multivariate_standard_normal_draws(
-        attr["num_periods"], attr["num_draws_prob"], attr["seed_est"]
+    base_draws_est = create_base_draws(
+        (attr["num_periods"], attr["num_draws_est"], 4), attr["seed_est"]
     )
 
     criterion_function = partial(
-        log_likelihood,
+        log_like,
         interpolation=attr["interpolation"],
         num_points_interp=attr["num_points_interp"],
         is_debug=attr["is_debug"],
         data=df,
         tau=attr["tau"],
-        periods_draws_prob=periods_draws_prob,
+        base_draws_est=base_draws_est,
         state_space=state_space,
     )
 
-    return criterion_function
+    return x, criterion_function
 
 
-def log_likelihood(
+def log_like(
     x,
     interpolation,
     num_points_interp,
     is_debug,
     data,
     tau,
-    periods_draws_prob,
+    base_draws_est,
     state_space,
 ):
     """Criterion function for the likelihood maximization.
@@ -103,7 +95,7 @@ def log_likelihood(
         The log likelihood is calculated for this data.
     tau : float
         Smoothing parameter.
-    periods_draws_prob : np.ndarray
+    base_draws_est : np.ndarray
         Set of draws to calculate the probability of observed wages.
     state_space : class
         State space.
@@ -111,16 +103,13 @@ def log_likelihood(
     """
     optim_paras = parameters_to_dictionary(x, is_debug)
 
-    # Calculate all systematic rewards
     state_space.update_systematic_rewards(optim_paras)
 
     state_space = solve_with_backward_induction(
         state_space, interpolation, num_points_interp, optim_paras
     )
 
-    contribs = pyth_contributions(
-        state_space, data, periods_draws_prob, tau, optim_paras
-    )
+    contribs = log_like_obs(state_space, data, base_draws_est, tau, optim_paras)
 
     crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
 
@@ -234,7 +223,7 @@ def simulate_probability_of_agents_observed_choice(
 
 
 @vectorize(["f4(f4, f4, f4)", "f8(f8, f8, f8)"], nopython=True, target="cpu")
-def get_pdf_of_normal_distribution(x, mu, sigma):
+def normal_pdf(x, mu, sigma):
     """Compute the probability of ``x`` under a normal distribution.
 
     This implementation is faster than calling ``scipy.stats.norm.pdf``.
@@ -256,7 +245,7 @@ def get_pdf_of_normal_distribution(x, mu, sigma):
 
     Example
     -------
-    >>> result = get_pdf_of_normal_distribution(0)
+    >>> result = normal_pdf(0)
     >>> result
     0.3989422804014327
     >>> from scipy.stats import norm
@@ -281,7 +270,7 @@ def create_draws_and_prob_wages(
     wage_observed,
     wages_systematic,
     period,
-    periods_draws_prob,
+    base_draws_est,
     choice,
     sc,
     draws,
@@ -301,7 +290,7 @@ def create_draws_and_prob_wages(
         Array with shape (2,) containing systematic wages.
     period : int
         Number of period.
-    periods_draws_prob : np.ndarray
+    base_draws_est : np.ndarray
         Array with shape (num_periods, num_draws, num_choices) containing sets of draws
         for all periods.
     choice : int
@@ -318,12 +307,12 @@ def create_draws_and_prob_wages(
 
     """
     # Create auxiliary objects
-    num_draws, num_choices = periods_draws_prob.shape[1:]
+    num_draws, num_choices = base_draws_est.shape[1:]
     temp_draws = np.zeros((num_draws, num_choices))
 
     # Extract relevant deviates from standard normal distribution. The same set of
     # baseline draws are used for each agent and period.
-    draws_stan = periods_draws_prob[period]
+    draws_stan = base_draws_est[period]
 
     has_wage = ~np.isnan(wage_observed)
 
@@ -344,7 +333,7 @@ def create_draws_and_prob_wages(
             temp_draws[:, 0] = dist / sc[0, 0]
             temp_draws[:, 1] = draws_stan[:, 1]
 
-            prob_wages[:] = get_pdf_of_normal_distribution(dist, 0.0, sc[0, 0])
+            prob_wages[:] = normal_pdf(dist, 0.0, sc[0, 0])
 
         # Adjust draws and prob_wages in case of OCCUPATION B.
         elif choice == 2:
@@ -352,7 +341,7 @@ def create_draws_and_prob_wages(
             temp_draws[:, 1] = (dist - sc[1, 0] * draws_stan[:, 0]) / sc[1, 1]
 
             means = sc[1, 0] * draws_stan[:, 0]
-            prob_wages[:] = get_pdf_of_normal_distribution(dist, means, sc[1, 1])
+            prob_wages[:] = normal_pdf(dist, means, sc[1, 1])
 
         temp_draws[:, 2:] = draws_stan[:, 2:]
 
@@ -383,7 +372,7 @@ def create_draws_and_prob_wages(
                 draws[k, m] = val
 
 
-def pyth_contributions(state_space, data, periods_draws_prob, tau, optim_paras):
+def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     """Calculate the likelihood contribution of each individual in the sample.
 
     The function calculates all likelihood contributions for all observations in the
@@ -398,8 +387,8 @@ def pyth_contributions(state_space, data, periods_draws_prob, tau, optim_paras):
         Class of state space.
     data : pd.DataFrame
         DataFrame with the empirical dataset.
-    periods_draws_prob : np.ndarray
-        Array with shape (num_periods, num_draws_prob, num_choices) containing i.i.d.
+    base_draws_est : np.ndarray
+        Array with shape (num_periods, num_draws_est, num_choices) containing i.i.d.
         draws from standard normal distributions.
     tau : float
         Smoothing parameter for choice probabilities.
@@ -466,7 +455,7 @@ def pyth_contributions(state_space, data, periods_draws_prob, tau, optim_paras):
         wages_observed,
         wages_systematic,
         periods,
-        periods_draws_prob,
+        base_draws_est,
         choices,
         optim_paras["shocks_cholesky"],
     )

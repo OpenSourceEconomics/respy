@@ -5,15 +5,8 @@ from respy.config import PRINT_FLOAT
 
 
 def check_model_attributes(a):
-    # Number of parameters
-    assert isinstance(a["num_paras"], int)
-    assert a["num_paras"] >= 53
-
     # Debug status
     assert a["is_debug"] in [True, False]
-
-    # Forward-looking agents
-    assert a["myopia"] in [True, False]
 
     # Seeds
     for seed in [a["seed_sol"], a["seed_sim"], a["seed_est"]]:
@@ -32,9 +25,9 @@ def check_model_attributes(a):
     assert a["num_periods"] > 0
 
     # Number of draws for Monte Carlo integration
-    assert np.isfinite(a["num_draws_emax"])
-    assert isinstance(a["num_draws_emax"], int)
-    assert a["num_draws_emax"] >= 0
+    assert np.isfinite(a["num_draws_sol"])
+    assert isinstance(a["num_draws_sol"], int)
+    assert a["num_draws_sol"] >= 0
 
     # Debugging mode
     assert a["is_debug"] in [True, False]
@@ -49,8 +42,8 @@ def check_model_attributes(a):
     assert a["num_points_interp"] > 0
 
     # Simulation of S-ML
-    assert isinstance(a["num_draws_prob"], int)
-    assert a["num_draws_prob"] > 0
+    assert isinstance(a["num_draws_est"], int)
+    assert a["num_draws_est"] > 0
 
     # Education
     assert isinstance(a["edu_spec"]["max"], int)
@@ -65,49 +58,15 @@ def check_model_attributes(a):
     assert all(0 <= item <= 1 for item in a["edu_spec"]["share"])
     np.testing.assert_almost_equal(np.sum(a["edu_spec"]["share"]), 1.0, decimal=4)
 
-    # Check model parameters
-    check_model_parameters(a["optim_paras"])
 
-    # It is not clear at this point how to impose parameter constraints on
-    # the covariance matrix in a flexible manner. So, either all fixed or
-    # none. As a special case, we also allow for all off-diagonal elements
-    # to be fixed to zero.
-    shocks_coeffs = a["optim_paras"]["shocks_cholesky"][np.tril_indices(4)]
-    shocks_fixed = np.array(a["optim_paras"]["paras_fixed"][43:53])
-
-    all_free = not shocks_fixed.any()
-
-    dim = len(a["optim_paras"]["shocks_cholesky"])
-    helper = np.zeros((dim, dim))
-    helper[np.tril_indices(dim)] = shocks_coeffs
-    off_diagonals_zero = np.diag(helper).sum() == helper.sum()
-
-    helper = np.zeros((dim, dim), dtype=bool)
-    helper[np.tril_indices(dim)] = shocks_fixed
-    off_diagonals_fixed = (helper[np.tril_indices(dim, k=-1)]).all()
-
-    diagonal_matrix = off_diagonals_zero & off_diagonals_fixed
-
-    if not (all_free or shocks_fixed.all() or diagonal_matrix):
-        raise ValueError(" Misspecified constraints for covariance matrix")
-
-    # Discount rate and type shares need to be larger than on at all times.
-    for label in ["paras_fixed", "paras_bounds"]:
-        assert isinstance(a["optim_paras"][label], list)
-        assert len(a["optim_paras"][label]) == a["num_paras"]
-
-    for i in range(1):
-        assert a["optim_paras"]["paras_bounds"][i][0] >= 0.00
-
-
-def check_model_solution(attr, state_space):
+def check_model_solution(attr, optim_paras, state_space):
     # Distribute class attributes
     num_initial = len(attr["edu_spec"]["start"])
     edu_start = attr["edu_spec"]["start"]
     edu_start_max = max(edu_start)
     edu_max = attr["edu_spec"]["max"]
     num_periods = attr["num_periods"]
-    num_types = attr["num_types"]
+    num_types = optim_paras["num_types"]
 
     # Check period.
     assert np.all(np.isin(state_space.states[:, 0], range(num_periods)))
@@ -199,28 +158,11 @@ def check_model_parameters(optim_paras):
     # Checks for type shifts
     assert optim_paras["type_shifts"].shape == (num_types, 4)
 
-    return True
-
 
 def _check_parameter_vector(x, a=None):
     """Check optimization parameters."""
     assert isinstance(x, np.ndarray)
     assert x.dtype == np.float
     assert np.all(np.isfinite(x))
-
-    # Check bounds.
-    if a is not None:
-        for i in range(a["num_paras"]):
-            lower, upper = a["optim_paras"]["paras_bounds"][i]
-            if lower is not None:
-                assert isinstance(lower, float)
-                assert lower <= x[i]
-                assert abs(lower) < PRINT_FLOAT
-            if upper is not None:
-                assert isinstance(upper, float)
-                assert upper >= x[i]
-                assert abs(upper) < PRINT_FLOAT
-            if (upper is not None) and (lower is not None):
-                assert upper >= lower
 
     return True
