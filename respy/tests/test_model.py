@@ -11,7 +11,7 @@ from respy.pre_processing.model_checking import check_model_attributes
 from respy.pre_processing.model_checking import check_model_parameters
 from respy.pre_processing.model_processing import _options_spec_from_attributes
 from respy.pre_processing.model_processing import _params_spec_from_attributes
-from respy.pre_processing.model_processing import parameters_to_dictionary
+from respy.pre_processing.model_processing import parse_parameters
 from respy.pre_processing.model_processing import process_model_spec
 from respy.pre_processing.model_processing import write_out_model_spec
 from respy.shared import get_example_model
@@ -83,7 +83,7 @@ def test_back_and_forth_transformation_of_parameter_vector(model_or_seed):
     likelihood = crit_func(x)
 
     # 2. Convert parameter vector back to params_spec and calculate likelihood again.
-    optim_paras_ = parameters_to_dictionary(x)
+    optim_paras_ = parse_parameters(x)
     params_spec_ = _params_spec_from_attributes(optim_paras_)
 
     x_, crit_func_ = get_crit_func_and_initial_guess(params_spec_, options_spec, df)

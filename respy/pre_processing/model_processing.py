@@ -14,7 +14,7 @@ def process_model_spec(params_spec, options_spec):
     options_spec = _read_options_spec(options_spec)
 
     attr = _create_attribute_dictionary(options_spec)
-    optim_paras = parameters_to_dictionary(params_spec.para.to_numpy())
+    optim_paras = parse_parameters(params_spec.para.to_numpy())
 
     return attr, optim_paras
 
@@ -58,7 +58,7 @@ def _options_spec_from_attributes(attr):
 
 def _params_spec_from_attributes(optim_paras):
     csv = csv_template(optim_paras["num_types"])
-    csv["para"] = parameters_to_vector(optim_paras)
+    csv["para"] = stack_parameters(optim_paras)
     return csv
 
 
@@ -123,7 +123,7 @@ def _read_options_spec(input_):
     return options_spec
 
 
-def parameters_to_dictionary(paras_vec, paras_type="optim"):
+def parse_parameters(paras_vec, paras_type="optim"):
     """Parse the parameter vector into a dictionary of model quantities.
 
     Parameters
@@ -173,7 +173,7 @@ def parameters_to_dictionary(paras_vec, paras_type="optim"):
     return optim_paras
 
 
-def parameters_to_vector(optim_paras):
+def stack_parameters(optim_paras):
     """Stack optimization parameters from a dictionary into a vector of type 'optim'.
 
     Parameters

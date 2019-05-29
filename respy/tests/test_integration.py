@@ -8,9 +8,9 @@ from respy.likelihood import get_crit_func_and_initial_guess
 from respy.pre_processing.model_processing import _extract_cholesky
 from respy.pre_processing.model_processing import _options_spec_from_attributes
 from respy.pre_processing.model_processing import _params_spec_from_attributes
-from respy.pre_processing.model_processing import parameters_to_dictionary
-from respy.pre_processing.model_processing import parameters_to_vector
+from respy.pre_processing.model_processing import parse_parameters
 from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import stack_parameters
 from respy.shared import cholesky_to_coeffs
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
@@ -200,11 +200,11 @@ def test_invariance_to_order_of_initial_schooling_levels(seed):
 
             # There is some more work to do to update the coefficients as we distinguish
             # between the economic and optimization version of the parameters.
-            x = parameters_to_vector(optim_paras)
+            x = stack_parameters(optim_paras)
             shocks_cholesky = _extract_cholesky(x)
             shocks_coeffs = cholesky_to_coeffs(shocks_cholesky)
             x[43:53] = shocks_coeffs
-            optim_paras = parameters_to_dictionary(x, paras_type="econ")
+            optim_paras = parse_parameters(x, paras_type="econ")
 
             params_spec = _params_spec_from_attributes(optim_paras)
             options_spec = _options_spec_from_attributes(attr)

@@ -7,9 +7,9 @@ from numba import vectorize
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.data_checking import check_estimation_data
-from respy.pre_processing.model_processing import parameters_to_dictionary
-from respy.pre_processing.model_processing import parameters_to_vector
+from respy.pre_processing.model_processing import parse_parameters
 from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import stack_parameters
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.solve import solve_with_backward_induction
@@ -42,7 +42,7 @@ def get_crit_func_and_initial_guess(params_spec, options_spec, df):
 
     """
     attr, optim_paras = process_model_spec(params_spec, options_spec)
-    x = parameters_to_vector(optim_paras)
+    x = stack_parameters(optim_paras)
 
     check_estimation_data(attr, df)
 
@@ -101,7 +101,7 @@ def log_like(
         State space.
 
     """
-    optim_paras = parameters_to_dictionary(x, is_debug)
+    optim_paras = parse_parameters(x, is_debug)
 
     state_space.update_systematic_rewards(optim_paras)
 
