@@ -342,8 +342,6 @@ def solve_with_backward_induction(
 
         num_states = state_space.states_per_period[period]
 
-        # Treatment of the disturbances for the risk-only case is straightforward. Their
-        # distribution is fixed once and for all.
         base_draws_sol_period = state_space.base_draws_sol[period]
         draws_emax_risk = transform_disturbances(
             base_draws_sol_period, np.zeros(4), shocks_cholesky
@@ -681,7 +679,7 @@ class StateSpace:
     indexer : np.ndarray
         Array with shape (num_periods, num_periods, num_periods, edu_max, 4, num_types).
     covariates : np.ndarray
-        Array with shape (num_periods, 16) containing covariates of each state necessary
+        Array with shape (num_states, 16) containing covariates of each state necessary
         to calculate rewards.
     rewards : np.ndarray
         Array with shape (num_states, 9) containing rewards of each state.
