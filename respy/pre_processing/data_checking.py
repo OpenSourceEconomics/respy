@@ -1,117 +1,87 @@
 import numpy as np
 
-from respy.python.shared.shared_auxiliary import dist_class_attributes
-from respy.python.shared.shared_constants import DATA_LABELS_EST
 
+def check_estimation_data(attr, df):
+    """Check data for estimation.
 
-def check_estimation_dataset(data_frame, respy_obj):
-    """Run consistency checks on data_frame."""
-    # Distribute class attributes
-    num_periods, edu_spec, num_agents_est = dist_class_attributes(
-        respy_obj, "num_periods", "edu_spec", "num_agents_est"
-    )
+    Parameters
+    ----------
+    attr : dict
+        Dictionary containing model attributes.
+    df : pd.DataFrame
+        Data for estimation.
 
-    # Check that no variable but 'Wage' contains missings.
-    for label in DATA_LABELS_EST:
-        if label == "Wage":
-            continue
-        assert ~data_frame[label].isnull().any()
+    Raises
+    ------
+    AssertionError
+        If data has not the expected format.
 
-    # Checks for PERIODS. It can happen that the last period is deleted for all
-    # agents. Thus, this is not a strict equality for observed data.
-    # It is for simulated data.
-    dat = data_frame["Period"]
-    np.testing.assert_equal(dat.max() <= num_periods - 1, True)
+    """
+    df = df.copy()
 
-    # Checks for CHOICE
-    dat = data_frame["Choice"].isin([1, 2, 3, 4])
-    np.testing.assert_equal(dat.all(), True)
+    num_periods = attr["num_periods"]
+    edu_spec = attr["edu_spec"]
 
-    # Checks for WAGE
-    dat = data_frame["Wage"].fillna(99) > 0.00
-    np.testing.assert_equal(dat.all(), True)
+    # 1. Identifier.
 
-    # Checks for EXPERIENCE. We also know that both need to take value of zero
-    # in the very first period.
-    for label in ["Experience_A", "Experience_B"]:
-        dat = data_frame[label] >= 0.00
-        np.testing.assert_equal(dat.all(), True)
+    # 2. Period.
+    assert df.Period.le(num_periods - 1).all()
 
-        dat = data_frame[label][:, 0] == 0
-        np.testing.assert_equal(dat.all(), True)
+    # 3. Choice.
+    assert df.Choice.isin([1, 2, 3, 4]).all()
 
-    # We check individual state variables against the recorded choices
-    data_frame.groupby(level="Identifier").apply(check_state_variables)
+    # 4. Wage.
+    assert df.Wage.fillna(1).gt(0).all()
 
-    # Checks for LAGGED ACTIVITY. Just to be sure, we also construct the
-    # correct lagged activity here as well and compare it to the one provided
-    # in the dataset.
-    dat = data_frame["Lagged_Choice"].isin([1, 2, 3, 4])
-    np.testing.assert_equal(dat.all(), True)
+    # 5. Experience_A
+    assert df.Experience_A.ge(0).all()
+    assert df.Experience_A.loc[df.Period.eq(0)].eq(0).all()
 
-    dat = data_frame["Lagged_Choice"][:, 0].isin([3, 4])
-    np.testing.assert_equal(dat.all(), True)
+    # 6. Experience_B
+    assert df.Experience_B.ge(0).all()
+    assert df.Experience_B.loc[df.Period.eq(0)].eq(0).all()
 
-    # We can reconstruct the lagged choice easily in general, but the very
-    # first period is ambiguous.
-    data_frame["TEMP"] = data_frame.groupby(level="Identifier")["Choice"].shift(+1)
-    temp_initial = data_frame.loc[(slice(None), 0), "Lagged_Choice"].copy()
-    data_frame.loc[(slice(None), 0), "TEMP"] = temp_initial
-    data_frame["TEMP"] = data_frame["TEMP"].astype(int)
-    np.testing.assert_equal(
-        data_frame["TEMP"].equals(data_frame["Lagged_Choice"]), True
-    )
-    del data_frame["TEMP"]
+    # 7. Years_Schooling.
+    assert df.Years_Schooling.ge(0).all()
+    assert df.Years_Schooling.loc[df.Period.eq(0)].isin(edu_spec["start"]).all()
+    assert df.Years_Schooling.le(edu_spec["max"]).all()
 
-    # Checks for YEARS SCHOOLING. We also know that the initial years of
-    # schooling can only take values specified in the initialization file and
-    # no individual in our estimation sample is allowed to have more than the
-    # maximum number of years of education.
-    dat = data_frame["Years_Schooling"] >= 0.00
-    np.testing.assert_equal(dat.all(), True)
+    # 8. Lagged_Choice.
+    assert df.Lagged_Choice.isin([1, 2, 3, 4]).all()
+    assert df.Lagged_Choice.loc[df.Period.eq(0)].isin([3, 4]).all()
 
-    dat = data_frame["Years_Schooling"][:, 0].isin(edu_spec["start"])
-    np.testing.assert_equal(dat.all(), True)
+    # Others.
+    assert df.drop(columns="Wage").notna().all().all()
 
-    dat = data_frame["Years_Schooling"].max()
-    np.testing.assert_equal(dat <= edu_spec["max"], True)
+    # Compare Lagged_Choice and Choice for all but the first period.
+    lagged_choice = df.groupby("Identifier").Choice.transform("shift").dropna()
+    assert (df.Lagged_Choice.loc[~df.Period.eq(0)] == lagged_choice).all()
+
+    # We check individual state variables against the recorded choices.
+    df.groupby("Identifier").apply(_check_state_variables)
 
     # Check that there are no duplicated observations for any period by agent.
-    def check_unique_periods(group):
-        np.testing.assert_equal(group["Period"].duplicated().any(), False)
+    assert ~df.duplicated(subset=["Identifier", "Period"]).any()
 
-    data_frame.groupby(level="Identifier").apply(check_unique_periods)
-
-    # Check that we observe the whole sequence of observations and that they
-    # are in the right order.
-    def check_series_observations(group):
-        np.testing.assert_equal(
-            group["Period"].tolist(), list(range(group["Period"].max() + 1))
-        )
-
-    data_frame.groupby(level="Identifier").apply(check_series_observations)
-
-    # We need to ensure that the number of individuals requested for the
-    # estimation is available. We do not enforce a strict equality here as a
-    # simulated dataset is checked for its estimation suitability in
-    # general, i.e. before any constraints on initial conditions.
-    np.testing.assert_equal(data_frame["Identifier"].nunique() >= num_agents_est, True)
+    # Check that we observe the whole sequence of observations.
+    max_periods_per_ind = df.groupby("Identifier").Period.max() + 1
+    num_obs_per_ind = df.groupby("Identifier").size()
+    assert (max_periods_per_ind == num_obs_per_ind).all()
 
 
-def check_state_variables(agent):
+def _check_state_variables(agent):
     """Check that state variables in the dataset.
 
     Construct the experience and schooling levels implied by the reported
     choices and compare them to the information provided in the dataset.
 
     """
-    for index, row in agent.iterrows():
-        identifier, period = index
-        choice = row["Choice"]
+    for _, row in agent.iterrows():
+        period, choice = row.Period, row.Choice
         # We know that the level of experience is zero in the initial period
         # and we get the initial level of schooling.
         if period == 0:
-            exp_a, exp_b, edu = 0.0, 0.0, row["Years_Schooling"]
+            exp_a, exp_b, edu = 0.0, 0.0, row.Years_Schooling
         # Check statistics
         pairs = [
             (exp_a, "Experience_A"),
@@ -120,7 +90,7 @@ def check_state_variables(agent):
         ]
         for pair in pairs:
             stat, label = pair
-            np.testing.assert_equal(stat, row[label])
+            assert stat == row[label]
         # Update experience statistics.
         if choice == 1:
             exp_a += 1
@@ -130,3 +100,79 @@ def check_state_variables(agent):
             edu += 1
         else:
             pass
+
+
+def check_simulated_data(attr, optim_paras, df):
+    """Check simulated data.
+
+    This routine runs some consistency checks on the simulated dataset. Some more
+    restrictions are imposed on the simulated dataset than the observed data.
+
+    """
+    df = df.copy()
+
+    # Distribute class attributes
+    num_periods = attr["num_periods"]
+    num_types = optim_paras["num_types"]
+    edu_max = attr["edu_spec"]["max"]
+
+    # Run all tests available for the estimation data.
+    check_estimation_data(attr, df)
+
+    # 9. Types.
+    assert df.Type.max() <= num_types - 1
+    assert df.Type.notna().all()
+    assert df.groupby("Identifier").Type.nunique().eq(1).all()
+
+    # Check that there are not missing wage observations if an agent is working. Also,
+    # we check that if an agent is not working, there also is no wage observation.
+    is_working = df["Choice"].isin([1, 2])
+    assert df.Wage[is_working].notna().all()
+    assert df.Wage[~is_working].isna().all()
+
+    # Check that there are no missing observations and we follow an agent each period.
+    df.groupby("Identifier").Period.nunique().eq(num_periods).all()
+
+    # We can calculate wages with other informations in the data.
+    for choice in [1, 2]:
+        is_working = df.Choice.eq(choice)
+        df["Ex_Post_Reward"] = (
+            df[f"Systematic_Reward_{choice}"]
+            - df[f"General_Reward_{choice}"]
+            - df.Common_Reward
+        ) * df[f"Shock_Reward_{choice}"]
+
+        np.testing.assert_array_almost_equal(
+            df.Ex_Post_Reward[is_working], df.Wage[is_working]
+        )
+
+    # If agents are myopic, we can test the equality of ex-post rewards and total
+    # values.
+    if df.Discount_Rate.eq(0).all():
+        for choice in [1, 2]:
+            is_working = df.Choice.eq(choice)
+
+            ex_post_rew = f"Ex_Post_Reward_{choice}"
+            general_rew = f"General_Reward_{choice}"
+
+            df[ex_post_rew] = df.Wage + df[general_rew] + df.Common_Reward
+
+            total_rewards = df[f"Total_Reward_{choice}"].loc[is_working]
+            ex_post_reward = df[ex_post_rew].loc[is_working]
+
+            np.testing.assert_array_almost_equal(total_rewards, ex_post_reward)
+
+        for choice in [3, 4]:
+            ex_post_rew = f"Ex_Post_Reward_{choice}"
+            systematic_rew = f"Systematic_Reward_{choice}"
+            shock_rew = f"Shock_Reward_{choice}"
+
+            df[ex_post_rew] = df[systematic_rew] + df[shock_rew]
+
+            # The equality does not hold if a state is inadmissible.
+            cond = df.Years_Schooling.ne(edu_max)
+
+            total_rewards = df[f"Total_Reward_{choice}"].loc[cond]
+            ex_post_rewards = df[ex_post_rew].loc[cond]
+
+            np.testing.assert_array_almost_equal(total_rewards, ex_post_rewards)

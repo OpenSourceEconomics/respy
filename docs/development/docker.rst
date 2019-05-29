@@ -70,6 +70,23 @@ and paste the resulting link into your browser.
 
 .. warning:: On Windows you have to replace the hash or 127.0.0.1 with localhost.
 
+Copying files from container to host
+------------------------------------
+
+To keep regression tests reproducible, the regression vault is created inside the Docker
+container. To copy the vault to the host, type
+
+.. code-block:: bash
+
+    $ docker cp <container-id>:/home/ose/respy/tests/resources/regression_vault.pickle
+      /home/<host>/
+
+The container id is the name of the container which can be displayed with
+
+.. code-block:: bash
+
+    $ docker ps
+
 Reclaiming space on disk
 ------------------------
 

@@ -1,23 +1,27 @@
-import json
+"""This is the entrypoint to the respy package.
+
+Include only imports which should be available using
+
+.. code-block::
+
+    import respy as rp
+
+    rp.<func>
+
+"""
 import os
 import sys
-import warnings
 
-import pandas as pd
 import pytest
 
-from respy.clsRespy import RespyCls  # noqa: F401
-from respy.python.shared.shared_constants import IS_DEBUG
-from respy.python.shared.shared_constants import ROOT_DIR
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.config import ROOT_DIR
+from respy.likelihood import get_crit_func_and_initial_guess  # noqa: F401
+from respy.shared import get_example_model  # noqa: F401
+from respy.simulate import simulate  # noqa: F401
+from respy.solve import solve  # noqa: F401
 
-# We only maintain the code base for Python >= 3.6
+# We only maintain the code base for Python >= 3.6.
 assert sys.version_info[:2] >= (3, 6)
-
-
-# We want to turn off the nuisance warnings while in production.
-if not IS_DEBUG:
-    warnings.simplefilter(action="ignore", category=FutureWarning)
 
 __version__ = "1.2.1"
 
@@ -28,23 +32,3 @@ def test(opt=None):
     os.chdir(ROOT_DIR)
     pytest.main(opt)
     os.chdir(current_directory)
-
-
-def get_example_model(model):
-    possible_models = [
-        f"kw_data_{suffix}"
-        for suffix in [
-            "one",
-            "one_initial",
-            "one_types",
-            "two",
-            "three",
-            "reliability_short",
-        ]
-    ]
-    assert model in possible_models
-
-    options_spec = json.loads((TEST_RESOURCES_DIR / f"{model}.json").read_text())
-    params_spec = pd.read_csv(TEST_RESOURCES_DIR / f"{model}.csv")
-
-    return options_spec, params_spec

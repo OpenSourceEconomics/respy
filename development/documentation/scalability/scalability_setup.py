@@ -10,35 +10,14 @@ def main():
 
     """
     model = "kw_data_one"
-    maxfun = 100
+    maxfun = 1
 
     filepath = Path(__file__).resolve().parent / "run_single_scalability_exercise.py"
 
     # Run Python
     for num_thread in [1, 2, 4, 6, 8, 10]:
         subprocess.check_call(
-            [
-                "python",
-                str(filepath),
-                "python",
-                model,
-                str(maxfun),
-                "0",
-                str(num_thread),
-            ]
-        )
-
-    for num_proc, num_thread in [(1, 1), (1, 2), (1, 4), (1, 6), (1, 8), (1, 10)]:
-        subprocess.check_call(
-            [
-                "python",
-                str(filepath),
-                "fortran",
-                model,
-                str(maxfun),
-                str(num_proc),
-                str(num_thread),
-            ]
+            ["python", str(filepath), model, str(maxfun), "0", str(num_thread)]
         )
 
 

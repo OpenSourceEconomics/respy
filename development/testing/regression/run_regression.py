@@ -1,133 +1,150 @@
-""" This script checks the regression tests vault for any unintended changes during
-further development and refactoring efforts.
-"""
-from __future__ import print_function
-
+"""Create, run or investigate regression checks."""
 import argparse
-import multiprocessing as mp
+import os
 import pickle
+import shutil
 import socket
 from functools import partial
+from multiprocessing import Pool
 
 import numpy as np
 
-from development.modules.auxiliary_regression import check_single
-from development.modules.auxiliary_regression import create_single
-from development.modules.auxiliary_regression import get_chunks
-from development.modules.auxiliary_shared import compile_package
+import respy as rp
+from development.modules.auxiliary_shared import get_random_dirname
 from development.modules.auxiliary_shared import send_notification
-from respy.pre_processing.model_processing import _options_spec_from_attributes
-from respy.pre_processing.model_processing import _params_spec_from_attributes
-from respy.python.shared.shared_constants import DECIMALS
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
-from respy.tests.codes.auxiliary import simulate_observed
-
+from respy.config import DECIMALS
+from respy.config import TEST_RESOURCES_DIR
+from respy.config import TOL
+from respy.tests.random_model import generate_random_model
+from respy.tests.random_model import simulate_truncated_data
 
 HOSTNAME = socket.gethostname()
 
 
-def run(request, is_compile, is_background, is_strict, num_procs):
-    """ Run the regression tests.
+def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
+    """Run regression tests.
+
+    Args:
+        num_tests (int): number of tests to run. If None, all are run.
+        tests (list): list of regression tests. If None, tests are loaded from disk.
+        num_procs (int): number of processes. Default 1.
+
     """
-    if is_compile:
-        compile_package(True)
+    tests = load_regression_tests() if tests is None else tests
+    tests = tests[:num_tests] if num_tests is not None else tests
 
-    # We can set up a multiprocessing pool right away.
-    mp_pool = mp.Pool(num_procs)
-
-    # The late import is required so a potentially just compiled FORTRAN implementation
-    # is recognized. This is important for the creation of the regression vault as we
-    # want to include FORTRAN use cases.
-    from respy import RespyCls
-
-    # Process command line arguments
-    is_creation = False
-    is_investigation, is_check = False, False
-    num_tests, idx = None, None
-
-    if request[0] == "create":
-        is_creation, num_tests = True, int(request[1])
-    elif request[0] == "check":
-        is_check, num_tests = True, int(request[1])
-    elif request[0] == "investigate":
-        is_investigation, idx = True, int(request[1])
+    if num_procs == 1:
+        ret = []
+        for test in tests:
+            ret.append(check_single(test, strict=strict))
     else:
-        raise AssertionError("request in [create, check. investigate]")
-    if num_tests is not None:
-        assert num_tests > 0
-    if idx is not None:
-        assert idx >= 0
+        mp_pool = Pool(num_procs)
+        check = partial(check_single, strict=strict)
+        ret = mp_pool.map(check, tests)
 
-    if is_investigation:
-        fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
-        with open(fname, "rb") as p:
-            tests = pickle.load(p)
+    idx_failures = [i for i, x in enumerate(ret) if x is False]
+    is_failure = len(idx_failures) > 0
 
-        attr, crit_val = tests[idx]
-        params_spec = _params_spec_from_attributes(attr)
-        options_spec = _options_spec_from_attributes(attr)
+    print(f"Failures: {idx_failures}")
 
-        respy_obj = RespyCls(params_spec, options_spec)
+    send_notification("regression", is_failed=is_failure, idx_failures=idx_failures)
 
-        simulate_observed(respy_obj)
 
-        result = respy_obj.fit()[1]
-        np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
+def create_regression_tests(num_tests, num_procs=1, write_out=False):
+    """Create a regression vault.
 
-    if is_creation:
-        # We maintain the separate execution in the case of a single processor for
-        # debugging purposes. The error messages are generally much more informative.
-        if num_procs == 1:
-            tests = []
-            for idx in range(num_tests):
-                tests += [create_single(idx)]
-        else:
-            tests = mp_pool.map(create_single, range(num_tests))
+    Args:
+        num_test (int): How many tests are in the vault.
+        num_procs (int): Number of processes. Default 1.
+        write_out (bool): If True, regression tests are stored to disk, replacing
+            any existing regression tests. Be careful with this. Default False.
 
+    """
+    if num_procs == 1:
+        tests = []
+        for idx in range(num_tests):
+            tests += [create_single(idx)]
+    else:
+        with Pool(num_procs) as p:
+            tests = p.map(create_single, range(num_tests))
+
+    if write_out is True:
         with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "wb") as p:
             pickle.dump(tests, p)
-        return
+    return tests
 
-    if is_check:
-        fname = TEST_RESOURCES_DIR / "regression_vault.pickle"
-        with open(fname, "rb") as p:
-            tests = pickle.load(p)
 
-        run_single = partial(check_single, tests)
-        indices = list(range(num_tests))
+def load_regression_tests():
+    """Load regression tests from disk."""
+    with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "rb") as p:
+        tests = pickle.load(p)
+    return tests
 
-        # We maintain the separate execution in the case of a single processor for
-        # debugging purposes. The error messages are generally much more informative.
-        if num_procs == 1:
-            ret = []
-            for index in indices:
-                ret += [run_single(index)]
-                # We need an early termination if a strict test run is requested.
-                if is_strict and (False in ret):
-                    break
-        else:
-            ret = []
-            for chunk in get_chunks(indices, num_procs):
-                ret += mp_pool.map(run_single, chunk)
-                # We need an early termination if a strict test run is requested. So we
-                # check whether there are any failures in the last batch.
-                if is_strict and (False in ret):
-                    break
 
-        # This allows to call this test from another script, that runs other tests as
-        # well.
-        idx_failures = [i for i, x in enumerate(ret) if x not in [True, None]]
-        is_failure = False in ret
+def investigate_regression_test(idx):
+    """Investigate regression tests."""
+    tests = load_regression_tests()
+    attr, crit_val = tests[idx]
+    df = simulate_truncated_data(attr)
 
-        if len(idx_failures) > 0:
-            is_failure = True
+    x = rp.get_parameter_vector(attr)
+    crit_func = rp.get_crit_func_and_initial_guess(attr, df)
 
-        if not is_background:
-            send_notification(
-                "regression", is_failed=is_failure, idx_failures=idx_failures
-            )
+    result = crit_func(x)
 
-        return not is_failure
+    np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
+
+
+def check_single(test, strict=False):
+    """Check a single test."""
+    attr, crit_val = test
+
+    # We need to create an temporary directory, so the multiprocessing does not
+    # interfere with any of the files that are printed and used during the small
+    # estimation request.
+    dirname = get_random_dirname(5)
+    os.mkdir(dirname)
+    os.chdir(dirname)
+
+    df = simulate_truncated_data(attr)
+
+    x = rp.get_parameter_vector(attr)
+    crit_func = rp.get_crit_func_and_initial_guess(attr, df)
+
+    est_val = crit_func(x)
+
+    is_success = np.isclose(est_val, crit_val, rtol=TOL, atol=TOL)
+
+    if strict is True:
+        assert is_success, "Failed regression test."
+
+    # Cleanup of temporary directories.from
+    os.chdir("..")
+    shutil.rmtree(dirname)
+
+    assert is_success
+
+
+def create_single(idx):
+    """Create a single test."""
+    dirname = get_random_dirname(5)
+    os.mkdir(dirname)
+    os.chdir(dirname)
+    np.random.seed(idx)
+    param_spec, options_spec = generate_random_model()
+    attr = rp.process_model_spec(param_spec, options_spec)
+    df = simulate_truncated_data(attr)
+
+    x = rp.get_parameter_vector(attr)
+    crit_func = rp.get_crit_func_and_initial_guess(attr, df)
+
+    crit_val = crit_func(x)
+
+    if not isinstance(crit_val, float):
+        raise AssertionError(" ... value of criterion function too large.")
+    os.chdir("..")
+    shutil.rmtree(dirname)
+    return attr, crit_val
 
 
 if __name__ == "__main__":
@@ -141,22 +158,6 @@ if __name__ == "__main__":
         help="task to perform",
         required=True,
         nargs=2,
-    )
-
-    parser.add_argument(
-        "--background",
-        action="store_true",
-        dest="is_background",
-        default=False,
-        help="background process",
-    )
-
-    parser.add_argument(
-        "--compile",
-        action="store_true",
-        dest="is_compile",
-        default=False,
-        help="compile RESPY package",
     )
 
     parser.add_argument(
@@ -177,15 +178,19 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    request, is_compile = args.request, args.is_compile
-
-    if is_compile:
-        raise AssertionError(
-            "... probably not working at this point due to reload issues."
-        )
-
-    is_background = args.is_background
+    request = args.request
     is_strict = args.is_strict
     num_procs = args.num_procs
 
-    run(request, is_compile, is_background, is_strict, num_procs)
+    if request[0] == "run":
+        run_regression_tests(
+            num_tests=int(request[1]), num_procs=num_procs, strict=is_strict
+        )
+    elif request[0] == "investigate":
+        investigate_regression_test(int(request[1]))
+    elif request[0] == "create":
+        create_regression_tests(
+            num_tests=int(request[1]), num_procs=num_procs, write_out=True
+        )
+    else:
+        raise ValueError("Invalid request.")

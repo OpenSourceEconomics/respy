@@ -42,7 +42,7 @@ extensions = [
     "nbsphinx",
 ]
 
-autodoc_mock_imports = ["numba", "numpy", "pandas", "yaml", "pytest", "scipy"]
+autodoc_mock_imports = ["numba", "numpy", "pandas", "yaml", "pytest"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -65,7 +65,7 @@ else:
     todo_emit_warnings = True
 
 # Configure Sphinx' linkcheck
-linkcheck_ignore = ["https://(dx\.)?doi\.org/*.", "https://zenodo\.org/*."]
+linkcheck_ignore = [r"https://(dx\.)?doi\.org/*.", r"https://zenodo\.org/*."]
 
 # Configuration for nbsphinx
 nbsphinx_execute = "never"

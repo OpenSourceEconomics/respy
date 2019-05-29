@@ -7,20 +7,19 @@ from pathlib import Path
 
 
 def main():
-    """Run the estimation of a model using a number of threads and a maximum of function
-    evaluations.
+    """Evaluate the criterion function multiple times for a scalability report.
 
-    Currently, we circumvent the optimization by setting maxfun to 0 and just looping
-    over the estimation.
+    The criterion function is evaluated ``maxfun``-times. The number of threads used is
+    limited by environment variables. ``respy`` has to be imported after the environment
+    variables are set as Numpy, Numba and others load them at import time.
 
     """
-    version = sys.argv[1]
-    model = sys.argv[2]
-    maxfun = int(sys.argv[3])
-    num_procs = int(sys.argv[4])
-    num_threads = int(sys.argv[5])
+    model = sys.argv[1]
+    maxfun = int(sys.argv[2])
+    num_procs = int(sys.argv[3])
+    num_threads = int(sys.argv[4])
 
-    # Test commandline input
+    # Validate input.
     assert maxfun >= 0, "Maximum number of function evaluations cannot be negative."
     assert num_threads >= 1 or num_threads == -1, (
         "Use -1 to impose no restrictions on maximum number of threads or choose a "
@@ -28,26 +27,19 @@ def main():
     )
 
     # Set number of threads
-    if not num_threads == -1 and version == "python":
-        os.environ["NUMBA_NUM_THREADS"] = f"{num_threads}"
-        os.environ["MKL_NUM_THREADS"] = f"{num_threads}"
-        os.environ["OMP_NUM_THREADS"] = f"{num_threads}"
-        os.environ["NUMEXPR_NUM_THREADS"] = f"{num_threads}"
+    os.environ["NUMBA_NUM_THREADS"] = f"{num_threads}"
+    os.environ["MKL_NUM_THREADS"] = f"{num_threads}"
+    os.environ["OMP_NUM_THREADS"] = f"{num_threads}"
+    os.environ["NUMEXPR_NUM_THREADS"] = f"{num_threads}"
 
-    # Late import of respy to ensure that environment variables are read.
-    from respy import RespyCls, get_example_model
-    from respy.python.interface import respy_interface
-    from respy.fortran.interface import resfort_interface
+    # Late import of respy to ensure that environment variables are read by Numpy, etc..
+    import respy as rp
 
     # Get model
-    options_spec, params_spec = get_example_model(model)
+    options_spec, params_spec = rp.get_example_model(model)
 
     # Adjust options
-    options_spec["program"]["version"] = version
     options_spec["estimation"]["maxfun"] = 0
-    if version == "fortran":
-        options_spec["program"]["procs"] = num_procs
-        options_spec["program"]["threads"] = num_threads
 
     # Go into temporary folder
     folder = f"__{num_threads}"
@@ -58,23 +50,24 @@ def main():
     os.chdir(folder)
 
     # Initialize the class
-    respy_obj = RespyCls(params_spec, options_spec)
+    attr = rp.process_model_spec(params_spec, options_spec)
 
     # Simulate the data
-    state_space, simulated_data = respy_interface(respy_obj, "simulate")
+    state_space, simulated_data = rp.simulate(attr)
+
+    # Get the criterion function and the parameter vector.
+    crit_func = rp.get_crit_func_and_initial_guess(attr, simulated_data)
+    x = rp.get_parameter_vector(attr)
 
     # Run the estimation
     print(
-        f"Start. Program: {version}, Model: {model}, Maxfun: {maxfun}, Procs: "
-        f"{num_procs}, Threads: {num_threads}."
+        f"Start. Model: {model}, Maxfun: {maxfun}, Procs: {num_procs}, "
+        f"Threads: {num_threads}."
     )
     start = dt.datetime.now()
 
     for _ in range(maxfun):
-        if version == "python":
-            respy_interface(respy_obj, "estimate", simulated_data)
-        else:
-            resfort_interface(respy_obj, "estimate", simulated_data)
+        crit_func(x)
 
     end = dt.datetime.now()
 
@@ -82,7 +75,6 @@ def main():
 
     # Aggregate information
     output = {
-        "version": version,
         "model": model,
         "maxfun": maxfun,
         "num_procs": num_procs,

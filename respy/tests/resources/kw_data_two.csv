@@ -5,7 +5,7 @@ coeffs_common,return_col_degree,0.0,False,,,return to college degree (non pecuni
 coeffs_a,skill_price,9.21,False,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 coeffs_a,return_schooling,0.04,False,,,linear return to an additional year of schooling (wage)
 coeffs_a,exp_a,0.033,False,,,"return to experience, same sector, linear (wage)"
-coeffs_a,exp_a_square,-0.0005,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+coeffs_a,exp_a_square,-0.05,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
 coeffs_a,exp_b,0.0,False,,,"return to experience, other civilian sector, linear (wage)"
 coeffs_a,exp_b_square,-0.0,False,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
 coeffs_a,premium_hs,0.0,False,,,skill premium of having finished high school (wage)
@@ -20,9 +20,9 @@ coeffs_a,switch,0.0,False,,,reward of working in a for the first time (non pecun
 coeffs_b,skill_price,8.2,False,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 coeffs_b,return_schooling,0.08,False,,,linear return to an additional year of schooling (wage)
 coeffs_b,exp_a,0.022,False,,,"return to experience, other civilian sector, linear (wage)"
-coeffs_b,exp_a_square,-0.0005,False,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
+coeffs_b,exp_a_square,-0.05,False,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
 coeffs_b,exp_b,0.067,False,,,"return to experience, same sector, linear (wage)"
-coeffs_b,exp_b_square,-0.001,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+coeffs_b,exp_b_square,-0.1,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
 coeffs_b,premium_hs,0.0,False,,,skill premium of having finished high school (wage)
 coeffs_b,premium_col,0.0,False,,,skill premium of having finished college (wage)
 coeffs_b,age,0.0,False,,,linear age effect (wage)

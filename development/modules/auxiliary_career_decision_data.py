@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from respy.python.shared.shared_constants import TEST_RESOURCES_DIR
+from respy.config import TEST_RESOURCES_DIR
 
 
 def prepare_dataset():

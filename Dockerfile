@@ -20,6 +20,7 @@ RUN adduser --disabled-password \
 # Copy necessary content from the repository.
 COPY docs ${HOME}/docs
 COPY respy ${HOME}/respy
+COPY development ${HOME}/development
 COPY setup.py ${HOME}
 COPY README.rst ${HOME}
 COPY MANIFEST.in ${HOME}
@@ -45,7 +46,7 @@ RUN echo "conda activate ose" >> ~/.bashrc
 
 # Install current version of respy.
 SHELL ["/bin/bash", "-c"]
-RUN source activate ose && pip install ${HOME} -vvv
+RUN source activate ose && pip install -e ${HOME}
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["/bin/bash"]
