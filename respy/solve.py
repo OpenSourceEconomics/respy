@@ -660,6 +660,47 @@ def get_dummies(a):
     return np.eye(n_values)[a]
 
 
+def create_choice_covariates(covariates_df, states_df, params_spec):
+    """Create the covariates for each  choice.
+
+    Parameters
+    ----------
+    covariates_df: DataFrame
+        DataFrame with the basic covariates
+    states_df: DataFrame
+        DataFrame with the state information
+    params_spec: DataFrame
+        The parameter specification
+
+    Returns
+    -------
+    wage_covariates: list
+        List of length nchoices with covariate arrays for systematic wages
+    nonpec_covariates: list
+        List of length nchoices with covariate arrays for nonpecuniary rewards
+
+    """
+    all_data = pd.concat([covariates_df, states_df], axis=1)
+    all_data["constant"] = 1
+    all_data["exp_a_sq"] = all_data["exp_a"] ** 2 / 100
+    all_data["exp_b_sq"] = all_data["exp_b"] ** 2 / 100
+
+    wage_covariates = []
+    nonpec_covariates = []
+
+    for choice in ["a", "b", "edu", "home"]:
+        if f"wage_{choice}" in params_spec.index:
+            wage_columns = params_spec.loc[f"wage_{choice}"].index
+            wage_covariates.append(all_data[wage_columns].to_numpy())
+        else:
+            wage_covariates.append(None)
+
+        nonpec_columns = params_spec.loc[f"nonpec_{choice}"].index
+        nonpec_covariates.append(all_data[nonpec_columns].to_numpy())
+
+    return wage_covariates, nonpec_covariates
+
+
 class StateSpace:
     """Class containing all objects related to the state space of a discrete choice
     dynamic programming model.
@@ -751,7 +792,13 @@ class StateSpace:
         self.states, self.indexer = create_state_space(
             self.num_periods, self.num_types, attr["edu_spec"]["start"], self.edu_max
         )
-        self.covariates = create_covariates(self.states)
+        self.covariates = create_base_covariates(self.states)
+
+        self.states_df = pd.DataFrame(data=self.states, columns=self.states_columns)
+
+        self.covariates_df = pd.DataFrame(
+            data=self.covariates, columns=self.covariates_columns
+        )
 
         self.rewards = np.column_stack(
             (create_systematic_rewards(self.states, self.covariates, optim_paras))
@@ -1001,7 +1048,7 @@ def get_continuation_value(
             cont_value[j, i] = cont_value_
 
 
-def create_covariates(states):
+def create_base_covariates(states):
     """Create set of covariates for each state.
 
     Parameters
@@ -1021,7 +1068,7 @@ def create_covariates(states):
     not benefit from Numba anymore.
 
     >>> states, _ = create_state_space(40, 5, [10], 20)
-    >>> covariates = create_covariates(states)
+    >>> covariates = create_base_covariates(states)
     >>> assert covariates.shape == (states.shape[0], 16)
 
     """

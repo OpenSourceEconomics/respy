@@ -88,7 +88,7 @@ def investigate_regression_test(idx):
     df = simulate_truncated_data(attr)
 
     x = rp.get_parameter_vector(attr)
-    crit_func = rp.get_crit_func_and_initial_guess(attr, df)
+    crit_func = rp.get_crit_func(attr, df)
 
     result = crit_func(x)
 
@@ -108,9 +108,9 @@ def check_single(test, strict=False):
 
     df = simulate_truncated_data(param_spec, option_spec)
 
-    x, crit_func = rp.get_crit_func_and_initial_guess(param_spec, option_spec, df)
+    crit_func = rp.get_crit_func(param_spec, option_spec, df)
 
-    est_val = crit_func(x)
+    est_val = crit_func(param_spec)
 
     is_success = np.isclose(est_val, crit_val, rtol=TOL, atol=TOL)
 
@@ -133,9 +133,9 @@ def create_single(idx):
     param_spec, options_spec = generate_random_model()
     df = simulate_truncated_data(param_spec, options_spec)
 
-    x, crit_func = rp.get_crit_func_and_initial_guess(param_spec, options_spec, df)
+    crit_func = rp.get_crit_func(param_spec, options_spec, df)
 
-    crit_val = crit_func(x)
+    crit_val = crit_func(param_spec)
 
     if not isinstance(crit_val, float):
         raise AssertionError(" ... value of criterion function too large.")

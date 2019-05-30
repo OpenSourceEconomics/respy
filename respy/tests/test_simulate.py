@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 import respy as rp
-from respy.likelihood import get_crit_func_and_initial_guess
+from respy.likelihood import get_crit_func
 from respy.pre_processing.model_processing import process_model_spec
 from respy.simulate import get_continuation_value_and_ex_post_rewards
 from respy.tests.random_model import generate_random_model
@@ -54,18 +54,18 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
 
     state_space, df = rp.simulate(params_spec, options_spec)
 
-    x, crit_func = get_crit_func_and_initial_guess(params_spec, options_spec, df)
+    crit_func = get_crit_func(params_spec, options_spec, df)
 
-    likelihood = crit_func(x)
+    likelihood = crit_func(params_spec)
 
     # Get simulated data and likelihood for model with tiny delta.
     params_spec.loc["delta", "para"] = 1e-12
 
     state_space_, df_ = rp.simulate(params_spec, options_spec)
 
-    x_, crit_func_ = rp.get_crit_func_and_initial_guess(params_spec, options_spec, df_)
+    crit_func_ = rp.get_crit_func(params_spec, options_spec, df_)
 
-    likelihood_ = crit_func_(x_)
+    likelihood_ = crit_func_(params_spec)
 
     pd.testing.assert_frame_equal(
         state_space.to_frame().drop(

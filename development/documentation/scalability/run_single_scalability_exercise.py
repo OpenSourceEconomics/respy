@@ -56,7 +56,7 @@ def main():
     state_space, simulated_data = rp.simulate(attr)
 
     # Get the criterion function and the parameter vector.
-    crit_func = rp.get_crit_func_and_initial_guess(attr, simulated_data)
+    crit_func = rp.get_crit_func(attr, simulated_data)
     x = rp.get_parameter_vector(attr)
 
     # Run the estimation

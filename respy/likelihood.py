@@ -9,14 +9,13 @@ from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import parse_parameters
 from respy.pre_processing.model_processing import process_model_spec
-from respy.pre_processing.model_processing import stack_parameters
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.solve import solve_with_backward_induction
 from respy.solve import StateSpace
 
 
-def get_crit_func_and_initial_guess(params_spec, options_spec, df):
+def get_crit_func(params_spec, options_spec, df):
     """Get the criterion function.
 
     The return value is the :func:`log_like` where all arguments except the
@@ -42,7 +41,6 @@ def get_crit_func_and_initial_guess(params_spec, options_spec, df):
 
     """
     attr, optim_paras = process_model_spec(params_spec, options_spec)
-    x = stack_parameters(optim_paras)
 
     check_estimation_data(attr, df)
 
@@ -63,12 +61,11 @@ def get_crit_func_and_initial_guess(params_spec, options_spec, df):
         base_draws_est=base_draws_est,
         state_space=state_space,
     )
-
-    return x, criterion_function
+    return criterion_function
 
 
 def log_like(
-    x,
+    params,
     interpolation,
     num_points_interp,
     is_debug,
@@ -83,8 +80,8 @@ def log_like(
 
     Parameters
     ----------
-    x : np.ndarray
-        Parameter vector.
+    params : Series
+        Parameter Series
     interpolation : bool
         Indicator for the interpolation routine.
     num_points_interp : int
@@ -101,7 +98,7 @@ def log_like(
         State space.
 
     """
-    optim_paras = parse_parameters(x, is_debug)
+    optim_paras = parse_parameters(params, is_debug)
 
     state_space.update_systematic_rewards(optim_paras)
 

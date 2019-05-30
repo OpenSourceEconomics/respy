@@ -14,7 +14,7 @@ def process_model_spec(params_spec, options_spec):
     options_spec = _read_options_spec(options_spec)
 
     attr = _create_attribute_dictionary(options_spec)
-    optim_paras = parse_parameters(params_spec.para.to_numpy())
+    optim_paras = parse_parameters(params_spec)
 
     return attr, optim_paras
 
@@ -123,13 +123,13 @@ def _read_options_spec(input_):
     return options_spec
 
 
-def parse_parameters(paras_vec, paras_type="optim"):
+def parse_parameters(params, paras_type="optim"):
     """Parse the parameter vector into a dictionary of model quantities.
 
     Parameters
     ----------
-    paras_vec : np.ndarray
-        1d numpy array with the parameters
+    params : DataFrame or Series
+        DataFrame with parameter specification or 'para' column thereof
     is_debug : bool
         If true, the parameters are checked for validity
     info : ???
@@ -144,7 +144,12 @@ def parse_parameters(paras_vec, paras_type="optim"):
         aligned with Fortran, where we never have to parse 'econ' parameters.
 
     """
-    paras_vec = paras_vec.copy()
+    if isinstance(params, pd.DataFrame):
+        paras_vec = params["para"].to_numpy()
+    elif isinstance(params, pd.Series):
+        paras_vec = params.to_numpy()
+    else:
+        raise ValueError("Invalid params in parse_parameters: {}.".format(type(params)))
 
     pinfo = _paras_parsing_information(len(paras_vec))
     optim_paras = {}
