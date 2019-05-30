@@ -161,6 +161,8 @@ def simulate_data(
             )
             * draws
         )
+        rewards_systematic = state_space.rewards[ks, :4]
+        rewards_systematic[:, :2] += state_space.rewards[ks, -2:]
         # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
         wage = wages[np.arange(num_agents_sim), max_idx]
 
@@ -180,12 +182,9 @@ def simulate_data(
                 # The discount rate is included as this allows to construct the EMAX
                 # with the information provided in the simulation output.
                 total_values,
-                state_space.rewards[ks, :4],
+                rewards_systematic,
                 draws,
                 np.full(num_agents_sim, optim_paras["delta"][0]),
-                # For testing purposes, we also explicitly include the general reward
-                # component, the common component, and the immediate ex post rewards.
-                state_space.rewards[ks, 4:7],
                 rewards_ex_post,
             )
         )
@@ -318,7 +317,7 @@ def _get_random_lagged_choices(edu_spec, num_agents_sim, edu_start, seed):
 )
 def get_continuation_value_and_ex_post_rewards(
     wages,
-    rewards_systematic,
+    nonpec_rewards,
     emaxs,
     draws,
     delta,
@@ -335,7 +334,7 @@ def get_continuation_value_and_ex_post_rewards(
     ----------
     wages : np.ndarray
         Array with shape (2,).
-    rewards_systematic : np.ndarray
+    nonpec_rewards : np.ndarray
         Array with shape (4,).
     emaxs : np.ndarray
         Array with shape (4,)
@@ -372,15 +371,15 @@ def get_continuation_value_and_ex_post_rewards(
 
     """
     num_draws = draws.shape[0]
-    num_choices = rewards_systematic.shape[0]
+    num_choices = nonpec_rewards.shape[0]
     num_wages = wages.shape[0]
 
     for i in range(num_draws):
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                rew_ex = wages[j] * draws[i, j] + nonpec_rewards[j]
             else:
-                rew_ex = rewards_systematic[j] + draws[i, j]
+                rew_ex = nonpec_rewards[j] + draws[i, j]
 
             cont_value = rew_ex + delta * emaxs[j]
 

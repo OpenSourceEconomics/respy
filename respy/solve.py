@@ -227,7 +227,7 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
     return states, indexer
 
 
-def create_systematic_rewards(states, covariates, optim_paras):
+def create_reward_components(states, covariates, optim_paras):
     """Calculate systematic rewards for each state.
 
     Parameters
@@ -258,7 +258,7 @@ def create_systematic_rewards(states, covariates, optim_paras):
 
     nonpec = np.full((states.shape[0], 4), np.nan)
 
-    nonpec[:, :2] = wages + rewards_general
+    nonpec[:, :2] = rewards_general
 
     # Calculate systematic part of SCHOOL rewards
     covariates_education = np.column_stack(
@@ -278,9 +278,9 @@ def create_systematic_rewards(states, covariates, optim_paras):
 
     nonpec[:, 2:] = nonpec[:, 2:] + type_deviations
 
-    rewards_systematic = nonpec + rewards_common
+    nonpec += rewards_common
 
-    return rewards_systematic, rewards_general, wages
+    return nonpec, wages
 
 
 def solve_with_backward_induction(
@@ -765,12 +765,10 @@ class StateSpace:
     ]
 
     rewards_columns = [
-        "rewards_systematic_a",
-        "rewards_systematic_b",
-        "rewards_systematic_edu",
-        "rewards_systematic_home",
-        "rewards_general_a",
-        "rewards_general_b",
+        "nonpec_a",
+        "nonpec_b",
+        "nonpec_edu",
+        "nonpec_home",
         "wage_a",
         "wage_b",
     ]
@@ -800,7 +798,7 @@ class StateSpace:
         )
 
         self.rewards = np.column_stack(
-            (create_systematic_rewards(self.states, self.covariates, optim_paras))
+            (create_reward_components(self.states, self.covariates, optim_paras))
         )
 
         self._create_slices_by_periods(self.num_periods)
@@ -817,7 +815,7 @@ class StateSpace:
 
     def update_systematic_rewards(self, optim_paras):
         self.rewards = np.column_stack(
-            (create_systematic_rewards(self.states, self.covariates, optim_paras))
+            (create_reward_components(self.states, self.covariates, optim_paras))
         )
 
     def get_attribute_from_period(self, attr, period):
@@ -856,7 +854,7 @@ class StateSpace:
         >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
         >>> state_space = StateSpace(attr, optim_paras)
         >>> state_space.to_frame().shape
-        (18, 30)
+        (18, 28)
 
         """
         attributes = [
@@ -896,7 +894,7 @@ class StateSpace:
     target="parallel",
 )
 def construct_emax_risk(
-    wages, rewards_systematic, emaxs, draws, delta, max_education, cont_value
+    wages, nonpec_rewards, emaxs, draws, delta, max_education, cont_value
 ):
     """Simulate expected maximum utility for a given distribution of the unobservables.
 
@@ -915,7 +913,7 @@ def construct_emax_risk(
     ----------
     wages : np.ndarray
         Array with shape (2,) containing wages.
-    rewards_systematic : np.ndarray
+    nonpec_rewards : np.ndarray
         Array with shape (4,) containing systematic rewards.
     emaxs : np.ndarray
         Array with shape (4,) containing expected maximum utility for each choice in the
@@ -947,9 +945,9 @@ def construct_emax_risk(
 
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                rew_ex = wages[j] * draws[i, j] + nonpec_rewards[j]
             else:
-                rew_ex = rewards_systematic[j] + draws[i, j]
+                rew_ex = nonpec_rewards[j] + draws[i, j]
 
             emax_choice = rew_ex + delta * emaxs[j]
 
@@ -1019,7 +1017,7 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
     target="cpu",
 )
 def get_continuation_value(
-    wages, rewards_systematic, emaxs, draws, delta, max_education, cont_value
+    wages, nonpec_rewards, emaxs, draws, delta, max_education, cont_value
 ):
     """Calculate the continuation value.
 
@@ -1035,9 +1033,9 @@ def get_continuation_value(
     for i in range(num_draws):
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                rew_ex = wages[j] * draws[i, j] + nonpec_rewards[j]
             else:
-                rew_ex = rewards_systematic[j] + draws[i, j]
+                rew_ex = nonpec_rewards[j] + draws[i, j]
 
             cont_value_ = rew_ex + delta * emaxs[j]
 

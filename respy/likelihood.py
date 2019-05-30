@@ -147,7 +147,7 @@ def clip(x, minimum=None, maximum=None):
     target="parallel",
 )
 def simulate_probability_of_agents_observed_choice(
-    wages, rewards_systematic, emaxs, draws, delta, max_education, idx, tau, prob_choice
+    wages, nonpec_rewards, emaxs, draws, delta, max_education, idx, tau, prob_choice
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -159,7 +159,7 @@ def simulate_probability_of_agents_observed_choice(
     ----------
     wages : np.ndarray
         Array with shape (2,).
-    rewards_systematic : np.ndarray
+    nonpec_rewards : np.ndarray
         Array with shape (4,).
     emaxs : np.ndarray
         Array with shape (4,)
@@ -192,9 +192,9 @@ def simulate_probability_of_agents_observed_choice(
 
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
+                rew_ex = wages[j] * draws[i, j] + nonpec_rewards[j]
             else:
-                rew_ex = rewards_systematic[j] + draws[i, j]
+                rew_ex = nonpec_rewards[j] + draws[i, j]
 
             cont_value = rew_ex + delta * emaxs[j]
 
