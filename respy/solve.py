@@ -231,49 +231,28 @@ def create_reward_components(states, covariates, optim_paras):
 
     Parameters
     ----------
-    states : np.ndarray
-        Array with shape (num_states, 6).
-    covariates : np.ndarray
-        Array with shape (num_states, 16).
+    covariates : dict
+        Dictionary with covariate arrays for wage and nonpec rewards
     optim_paras : dict
         Contains parameters affected by the optimization.
 
     """
-    # Calculate common and general rewards component.
-    rewards_general = calculate_rewards_general(
-        covariates, optim_paras["coeffs_a"][12:], optim_paras["coeffs_b"][12:]
-    )
-    rewards_common = calculate_rewards_common(covariates, optim_paras["coeffs_common"])
-
-    # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards.
-    # These are defined in a general sense, where not only wages matter.
-    wages = calculate_wages_systematic(
-        states, covariates, optim_paras["coeffs_a"][:12], optim_paras["coeffs_b"][:12]
+    wage_labels = ["wage_a", "wage_b"]
+    log_wages = np.column_stack(
+        [np.dot(covariates[w], optim_paras[w]) for w in wage_labels]
     )
 
-    nonpec = np.full((states.shape[0], 4), np.nan)
-
-    nonpec[:, :2] = rewards_general
-
-    # Calculate systematic part of SCHOOL rewards
-    covariates_education = np.column_stack(
-        (np.ones(states.shape[0]), covariates[:, 9:13], states[:, 0], covariates[:, 13])
+    nonpec_labels = ["nonpec_a", "nonpec_b", "nonpec_edu", "nonpec_home"]
+    nonpec = np.column_stack(
+        [np.dot(covariates[n], optim_paras[n]) for n in nonpec_labels]
     )
 
-    nonpec[:, 2] = covariates_education.dot(optim_paras["coeffs_edu"])
-
-    # Calculate systematic part of HOME
-    covariates_home = np.column_stack((np.ones(states.shape[0]), covariates[:, 14:]))
-
-    nonpec[:, 3] = covariates_home.dot(optim_paras["coeffs_home"])
-
-    # Add the type shifts
     type_deviations = optim_paras["type_shifts"][states[:, 5]]
 
+    log_wages += type_deviations[:, :2]
     nonpec[:, 2:] += type_deviations[:, 2:]
-    wages *= np.exp(type_deviations[:, :2])
 
-    nonpec += rewards_common
+    wages = np.clip(np.exp(log_wages), 0.0, HUGE_FLOAT)
 
     return nonpec, wages
 
@@ -565,60 +544,6 @@ def check_prediction_model(predictions_diff, beta):
     assert np.all(np.isfinite(beta))
 
 
-def calculate_wages_systematic(states, covariates, coeffs_a, coeffs_b):
-    """Calculate systematic wages.
-
-    Parameters
-    ----------
-    states : np.ndarray
-        Array with shape (num_states, 5) containing state information.
-    covariates : np.ndarray
-        Array with shape (num_states, 16) containing covariates.
-    coeffs_a : np.ndarray
-        Array with shape (12) containing coefficients of occupation A.
-    coeffs_b : np.ndarray
-        Array with shape (12) containing coefficients of occupation B.
-    type_shifts : np.ndarray
-        Array with shape (2, 2).
-
-    Returns
-    -------
-    wages : np.ndarray
-        Array with shape (num_states, 2) containing systematic wages.
-
-    """
-    exp_a_sq = states[:, 1] ** 2 / 100
-    exp_b_sq = states[:, 2] ** 2 / 100
-
-    relevant_covariates = np.column_stack(
-        (
-            np.ones(states.shape[0]),
-            states[:, [3, 1]],
-            exp_a_sq,
-            states[:, 2],
-            exp_b_sq,
-            covariates[:, 9:11],
-            states[:, 0],
-            covariates[:, 13],
-        )
-    )
-
-    # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
-    wages = np.full((states.shape[0], 2), np.nan)
-
-    wages[:, 0] = np.column_stack((relevant_covariates, covariates[:, [7, 2]])).dot(
-        coeffs_a
-    )
-
-    wages[:, 1] = np.column_stack((relevant_covariates, covariates[:, [8, 3]])).dot(
-        coeffs_b
-    )
-
-    wages = np.clip(np.exp(wages), 0.0, HUGE_FLOAT)
-
-    return wages
-
-
 def create_choice_covariates(covariates_df, states_df, params_spec):
     """Create the covariates for each  choice.
 
@@ -639,25 +564,22 @@ def create_choice_covariates(covariates_df, states_df, params_spec):
         List of length nchoices with covariate arrays for nonpecuniary rewards
 
     """
-    all_data = pd.concat([covariates_df, states_df], axis=1)
+    all_data = pd.concat([covariates_df, states_df], axis=1, sort=False)
     all_data["constant"] = 1
     all_data["exp_a_sq"] = all_data["exp_a"] ** 2 / 100
     all_data["exp_b_sq"] = all_data["exp_b"] ** 2 / 100
 
-    wage_covariates = []
-    nonpec_covariates = []
+    covariates = {}
 
     for choice in ["a", "b", "edu", "home"]:
         if f"wage_{choice}" in params_spec.index:
             wage_columns = params_spec.loc[f"wage_{choice}"].index
-            wage_covariates.append(all_data[wage_columns].to_numpy())
-        else:
-            wage_covariates.append(None)
+            covariates[f"wage_{choice}"] = all_data[wage_columns].to_numpy()
 
         nonpec_columns = params_spec.loc[f"nonpec_{choice}"].index
-        nonpec_covariates.append(all_data[nonpec_columns].to_numpy())
+        covariates[f"nonpec_{choice}"] = all_data[nonpec_columns].to_numpy()
 
-    return wage_covariates, nonpec_covariates
+    return covariates
 
 
 class StateSpace:
@@ -704,7 +626,7 @@ class StateSpace:
 
     states_columns = ["period", "exp_a", "exp_b", "edu", "choice_lagged", "type"]
 
-    covariates_columns = [
+    base_covariates_columns = [
         "not_exp_a_lagged",
         "not_exp_b_lagged",
         "work_a_lagged",
@@ -749,12 +671,16 @@ class StateSpace:
         self.states, self.indexer = create_state_space(
             self.num_periods, self.num_types, attr["edu_spec"]["start"], self.edu_max
         )
-        self.covariates = create_base_covariates(self.states)
+        self.base_covariates = create_base_covariates(self.states)
 
-        self.states_df = pd.DataFrame(data=self.states, columns=self.states_columns)
+        states_df = pd.DataFrame(data=self.states, columns=self.states_columns)
 
-        self.covariates_df = pd.DataFrame(
-            data=self.covariates, columns=self.covariates_columns
+        base_covariates_df = pd.DataFrame(
+            data=self.base_covariates, columns=self.base_covariates_columns
+        )
+
+        self.covariates = create_choice_covariates(
+            base_covariates_df, states_df, params_spec
         )
 
         self.rewards = np.column_stack(
@@ -803,7 +729,12 @@ class StateSpace:
                 e.__traceback__
             )
 
-        return attribute[indices]
+        if attr == "covariates":
+            attribute = {key: val[indices] for key, val in attribute.items()}
+        else:
+            attribute = attribute[indices]
+
+        return attribute
 
     def to_frame(self):
         """Get pandas DataFrame of state space.
@@ -818,12 +749,12 @@ class StateSpace:
         """
         attributes = [
             getattr(self, i, None)
-            for i in ["states", "covariates", "rewards", "emaxs"]
+            for i in ["states", "base_covariates", "rewards", "emaxs"]
             if getattr(self, i, None) is not None
         ]
         columns = [
             item
-            for i in ["states", "covariates", "rewards", "emaxs"]
+            for i in ["states", "base_covariates", "rewards", "emaxs"]
             for item in getattr(self, i + "_columns")
             if getattr(self, i, None) is not None
         ]
@@ -1066,82 +997,6 @@ def create_base_covariates(states):
     covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
 
     return covariates
-
-
-def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
-    """Calculate general rewards.
-
-    Parameters
-    ----------
-    covariates : np.ndarray
-        Array with shape (num_states, 16) containing covariates.
-    coeffs_a : np.ndarray
-        Array with shape (3,) containing coefficients.
-    coeffs_b : np.ndarray
-        Array with shape (3,) containing coefficients.
-
-    Returns
-    -------
-    rewards_general : np.ndarray
-        Array with shape (num_states, 2) containing general rewards of occupation.
-
-    Example
-    -------
-    >>> params_spec, options_spec = generate_random_model()
-    >>> state_space = StateSpace(params_spec, options_spec)
-    >>> coeffs_a, coeffs_b = np.array([0.05, 0.6, 0.4]), np.array([0.36, 0.7, 1])
-    >>> calculate_rewards_general(
-    ...     state_space.covariates, coeffs_a, coeffs_b
-    ... ).reshape(-1)
-    array([0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45,
-           1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 0.36, 0.05, 1.36, 0.45, 1.36,
-           0.45, 1.36, 0.45, 0.36, 0.05, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45,
-           0.36, 0.05, 1.36])
-
-    """
-    num_states = covariates.shape[0]
-    rewards_general = np.full((num_states, 2), np.nan)
-
-    rewards_general[:, 0] = np.column_stack(
-        (np.ones(num_states), covariates[:, [0, 5]])
-    ).dot(coeffs_a)
-    rewards_general[:, 1] = np.column_stack(
-        (np.ones(num_states), covariates[:, [1, 6]])
-    ).dot(coeffs_b)
-
-    return rewards_general
-
-
-def calculate_rewards_common(covariates, coeffs_common):
-    """Calculate common rewards.
-
-    Covariates 9 and 10 are indicators for high school and college graduates.
-
-    Parameters
-    ----------
-    covariates : np.ndarray
-        Array with shape (num_states, 16) containing covariates.
-    coeffs_common : np.ndarray
-        Array with shape (2,) containing coefficients for high school and college
-        graduates.
-
-    Returns
-    -------
-    np.ndarray
-        Array with shape (num_states, 1) containing common rewards. Reshaping is
-        necessary to broadcast the array over rewards with shape (num_states, 4).
-
-    Example
-    -------
-    >>> params_spec, options_spec = generate_random_model()
-    >>> state_space = StateSpace(params_spec, options_spec)
-    >>> coeffs_common = np.array([0.05, 0.6])
-    >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
-    array([0.  , 0.  , 0.05, 0.05, 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.05,
-           0.05, 0.05, 0.05, 0.  , 0.  , 0.  , 0.  ])
-
-    """
-    return covariates[:, 9:11].dot(coeffs_common).reshape(-1, 1)
 
 
 def ols(y, x):

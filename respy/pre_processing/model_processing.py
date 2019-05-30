@@ -89,6 +89,7 @@ def parse_parameters(params, paras_type="optim"):
         aligned with Fortran, where we never have to parse 'econ' parameters.
 
     """
+
     if isinstance(params, pd.DataFrame):
         params = params["para"]
     elif isinstance(params, pd.Series):
@@ -101,11 +102,9 @@ def parse_parameters(params, paras_type="optim"):
     for quantity in params.index.get_level_values("category").unique():
         optim_paras[quantity] = params.loc[quantity].to_numpy()
 
-    shocks = optim_paras["shocks"]
-    dim = _get_matrix_dimension_from_num_triangular_elements(len(shocks))
-    shocks_cholesky = np.zeros((dim, dim))
-    shocks_cholesky[np.tril_indices(dim)] = shocks
-    optim_paras["shocks_cholesky"] = shocks_cholesky
+    cov = sdcorr_params_to_matrix(optim_paras["shocks"])
+    optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
+    del optim_paras["shocks"]
 
     if "type_shares" in optim_paras:
         optim_paras["type_shares"] = np.hstack(
@@ -125,29 +124,27 @@ def parse_parameters(params, paras_type="optim"):
     return optim_paras
 
 
-def _get_matrix_dimension_from_num_triangular_elements(num):
-    """Calculate the dimension of a square matrix from number of triangular elements.
-
-    Parameters
-    ----------
-    num : int
-        The number of upper or lower triangular elements in the matrix.
-
-    Example
-    -------
-    >>> _get_matrix_dimension_from_num_triangular_elements(6)
-    3
-    >>> _get_matrix_dimension_from_num_triangular_elements(10)
-    4
-
-    """
-    return int(np.sqrt(8 * num + 1) / 2 - 0.5)
-
-
 def cov_matrix_to_sdcorr_params(cov):
+    """Can be taken from estimagic once 0.0.5 is released."""
     dim = len(cov)
     sds = np.sqrt(np.diagonal(cov))
     scaling_matrix = np.diag(1 / sds)
     corr = scaling_matrix.dot(cov).dot(scaling_matrix)
     correlations = corr[np.tril_indices(dim, k=-1)]
     return np.hstack([sds, correlations])
+
+
+def sdcorr_params_to_matrix(sdcorr_params):
+    """Can be taken from estimagic once 0.0.5 is released."""
+    dim = number_of_triangular_elements_to_dimension(len(sdcorr_params))
+    diag = np.diag(sdcorr_params[:dim])
+    lower = np.zeros((dim, dim))
+    lower[np.tril_indices(dim, k=-1)] = sdcorr_params[dim:]
+    corr = np.eye(dim) + lower + lower.T
+    cov = diag.dot(corr).dot(diag)
+    return cov
+
+
+def number_of_triangular_elements_to_dimension(num):
+    """Can be taken from estimagic once 0.0.5 is released."""
+    return int(np.sqrt(8 * num + 1) / 2 - 0.5)
