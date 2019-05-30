@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from respy.pre_processing.specification_helpers import csv_template
-
 
 def process_model_spec(params_spec, options_spec):
     params_spec = _read_params_spec(params_spec)
@@ -17,49 +15,6 @@ def process_model_spec(params_spec, options_spec):
     optim_paras = parse_parameters(params_spec)
 
     return attr, optim_paras
-
-
-def write_out_model_spec(attr, optim_paras, save_path):
-    params_spec = _params_spec_from_attributes(optim_paras)
-    options_spec = _options_spec_from_attributes(attr)
-
-    params_spec.to_csv(Path(save_path).with_suffix(".csv"))
-    with open(Path(save_path).with_suffix(".json"), "w") as j:
-        json.dump(options_spec, j)
-
-
-def _options_spec_from_attributes(attr):
-    estimation = {
-        "draws": attr["num_draws_est"],
-        "seed": attr["seed_est"],
-        "tau": attr["tau"],
-    }
-
-    simulation = {"agents": attr["num_agents_sim"], "seed": attr["seed_sim"]}
-
-    program = {"debug": attr["is_debug"]}
-
-    interpolation = {"flag": attr["interpolation"], "points": attr["num_points_interp"]}
-
-    solution = {"seed": attr["seed_sol"], "draws": attr["num_draws_sol"]}
-
-    options_spec = {
-        "estimation": estimation,
-        "simulation": simulation,
-        "program": program,
-        "interpolation": interpolation,
-        "solution": solution,
-        "edu_spec": attr["edu_spec"],
-        "num_periods": attr["num_periods"],
-    }
-
-    return options_spec
-
-
-def _params_spec_from_attributes(optim_paras):
-    csv = csv_template(optim_paras["num_types"])
-    csv["para"] = stack_parameters(optim_paras)
-    return csv
 
 
 def _create_attribute_dictionary(options_spec):
@@ -176,55 +131,6 @@ def parse_parameters(params, paras_type="optim"):
     optim_paras["num_types"] = type_shifts.shape[0]
 
     return optim_paras
-
-
-def stack_parameters(optim_paras):
-    """Stack optimization parameters from a dictionary into a vector of type 'optim'.
-
-    Parameters
-    ----------
-    optim_paras : dict
-        dictionary with quantities from which the parameters can be extracted.
-    num_paras : int
-        number of parameters in the model (not only free parameters)
-    which : str
-        one of ['free', 'all'], determines whether the resulting parameter vector
-        contains only free parameters or all parameters.
-    is_debug : bool
-        If True, inputs and outputs are checked for consistency.
-
-    """
-    pinfo = _paras_parsing_information(optim_paras["num_paras"])
-    x = np.full(optim_paras["num_paras"], np.nan)
-
-    start, stop = pinfo["delta"]["start"], pinfo["delta"]["stop"]
-    x[start:stop] = optim_paras["delta"]
-
-    start, stop = (pinfo["coeffs_common"]["start"], pinfo["coeffs_common"]["stop"])
-    x[start:stop] = optim_paras["coeffs_common"]
-
-    start, stop = pinfo["coeffs_a"]["start"], pinfo["coeffs_a"]["stop"]
-    x[start:stop] = optim_paras["coeffs_a"]
-
-    start, stop = pinfo["coeffs_b"]["start"], pinfo["coeffs_b"]["stop"]
-    x[start:stop] = optim_paras["coeffs_b"]
-
-    start, stop = pinfo["coeffs_edu"]["start"], pinfo["coeffs_edu"]["stop"]
-    x[start:stop] = optim_paras["coeffs_edu"]
-
-    start, stop = pinfo["coeffs_home"]["start"], pinfo["coeffs_home"]["stop"]
-    x[start:stop] = optim_paras["coeffs_home"]
-
-    start, stop = (pinfo["shocks_coeffs"]["start"], pinfo["shocks_coeffs"]["stop"])
-    x[start:stop] = optim_paras["shocks_cholesky"][np.tril_indices(4)]
-
-    start, stop = pinfo["type_shares"]["start"], pinfo["type_shares"]["stop"]
-    x[start:stop] = optim_paras["type_shares"][2:]
-
-    start, stop = pinfo["type_shifts"]["start"], pinfo["type_shifts"]["stop"]
-    x[start:stop] = optim_paras["type_shifts"].flatten()[4:]
-
-    return x
 
 
 def _extract_type_information(x):
