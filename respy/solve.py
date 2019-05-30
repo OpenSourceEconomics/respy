@@ -249,11 +249,7 @@ def create_reward_components(states, covariates, optim_paras):
     # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards.
     # These are defined in a general sense, where not only wages matter.
     wages = calculate_wages_systematic(
-        states,
-        covariates,
-        optim_paras["coeffs_a"][:12],
-        optim_paras["coeffs_b"][:12],
-        optim_paras["type_shifts"][:, :2],
+        states, covariates, optim_paras["coeffs_a"][:12], optim_paras["coeffs_b"][:12]
     )
 
     nonpec = np.full((states.shape[0], 4), np.nan)
@@ -272,11 +268,11 @@ def create_reward_components(states, covariates, optim_paras):
 
     nonpec[:, 3] = covariates_home.dot(optim_paras["coeffs_home"])
 
-    # Add the type-specific deviation for SCHOOL and HOME.
-    type_dummies = get_dummies(states[:, 5])
-    type_deviations = type_dummies.dot(optim_paras["type_shifts"][:, 2:])
+    # Add the type shifts
+    type_deviations = optim_paras["type_shifts"][states[:, 5]]
 
-    nonpec[:, 2:] = nonpec[:, 2:] + type_deviations
+    nonpec[:, 2:] += type_deviations[:, 2:]
+    wages *= np.exp(type_deviations[:, :2])
 
     nonpec += rewards_common
 
@@ -570,7 +566,7 @@ def check_prediction_model(predictions_diff, beta):
     assert np.all(np.isfinite(beta))
 
 
-def calculate_wages_systematic(states, covariates, coeffs_a, coeffs_b, type_shifts):
+def calculate_wages_systematic(states, covariates, coeffs_a, coeffs_b):
     """Calculate systematic wages.
 
     Parameters
@@ -621,43 +617,7 @@ def calculate_wages_systematic(states, covariates, coeffs_a, coeffs_b, type_shif
 
     wages = np.clip(np.exp(wages), 0.0, HUGE_FLOAT)
 
-    # We need to add the type-specific deviations here as these are part of
-    # skill-function component.
-    type_dummies = get_dummies(states[:, 5])
-    type_deviations = type_dummies.dot(type_shifts[:, :2])
-
-    wages = wages * np.exp(type_deviations)
-
     return wages
-
-
-@njit
-def get_dummies(a):
-    """Create dummy matrix from array with indicators.
-
-    Note that, the indicators need to be counting from zero onwards.
-
-    Parameters
-    ----------
-    a : np.ndarray
-        Array with shape (n) containing k different indicators from 0 to k-1.
-
-    Returns
-    -------
-    b : np.ndarray
-        Matrix with shape (n, k) where each column is a dummy vector for type i = 0,
-        ..., k-1.
-
-    Example
-    -------
-    >>> a = np.random.randint(0, 6, 100)
-    >>> res = get_dummies(a)
-    >>> res_pandas = pd.get_dummies(a).values
-    >>> assert np.allclose(res, res_pandas)
-
-    """
-    n_values = np.max(a) + 1
-    return np.eye(n_values)[a]
 
 
 def create_choice_covariates(covariates_df, states_df, params_spec):
