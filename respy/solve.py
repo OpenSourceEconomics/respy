@@ -256,31 +256,31 @@ def create_systematic_rewards(states, covariates, optim_paras):
         optim_paras["type_shifts"][:, :2],
     )
 
-    rewards = np.full((states.shape[0], 4), np.nan)
+    nonpec = np.full((states.shape[0], 4), np.nan)
 
-    rewards[:, :2] = wages + rewards_general
+    nonpec[:, :2] = wages + rewards_general
 
     # Calculate systematic part of SCHOOL rewards
     covariates_education = np.column_stack(
         (np.ones(states.shape[0]), covariates[:, 9:13], states[:, 0], covariates[:, 13])
     )
 
-    rewards[:, 2] = covariates_education.dot(optim_paras["coeffs_edu"])
+    nonpec[:, 2] = covariates_education.dot(optim_paras["coeffs_edu"])
 
     # Calculate systematic part of HOME
     covariates_home = np.column_stack((np.ones(states.shape[0]), covariates[:, 14:]))
 
-    rewards[:, 3] = covariates_home.dot(optim_paras["coeffs_home"])
+    nonpec[:, 3] = covariates_home.dot(optim_paras["coeffs_home"])
 
     # Add the type-specific deviation for SCHOOL and HOME.
     type_dummies = get_dummies(states[:, 5])
     type_deviations = type_dummies.dot(optim_paras["type_shifts"][:, 2:])
 
-    rewards[:, 2:] = rewards[:, 2:] + type_deviations
+    nonpec[:, 2:] = nonpec[:, 2:] + type_deviations
 
-    rewards_systematic = rewards + rewards_common
+    rewards_systematic = nonpec + rewards_common
 
-    return rewards_systematic, rewards_general, rewards_common, wages
+    return rewards_systematic, rewards_general, wages
 
 
 def solve_with_backward_induction(
@@ -771,7 +771,6 @@ class StateSpace:
         "rewards_systematic_home",
         "rewards_general_a",
         "rewards_general_b",
-        "rewards_common",
         "wage_a",
         "wage_b",
     ]
@@ -857,7 +856,7 @@ class StateSpace:
         >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
         >>> state_space = StateSpace(attr, optim_paras)
         >>> state_space.to_frame().shape
-        (18, 31)
+        (18, 30)
 
         """
         attributes = [

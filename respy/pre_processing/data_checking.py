@@ -133,19 +133,6 @@ def check_simulated_data(attr, optim_paras, df):
     # Check that there are no missing observations and we follow an agent each period.
     df.groupby("Identifier").Period.nunique().eq(num_periods).all()
 
-    # We can calculate wages with other informations in the data.
-    for choice in [1, 2]:
-        is_working = df.Choice.eq(choice)
-        df["Ex_Post_Reward"] = (
-            df[f"Systematic_Reward_{choice}"]
-            - df[f"General_Reward_{choice}"]
-            - df.Common_Reward
-        ) * df[f"Shock_Reward_{choice}"]
-
-        np.testing.assert_array_almost_equal(
-            df.Ex_Post_Reward[is_working], df.Wage[is_working]
-        )
-
     # If agents are myopic, we can test the equality of ex-post rewards and total
     # values.
     if df.Discount_Rate.eq(0).all():
