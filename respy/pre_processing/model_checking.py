@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 
-from respy.config import PRINT_FLOAT
-
 
 def check_model_attributes(a):
     # Debug status
@@ -89,9 +87,9 @@ def check_model_solution(attr, optim_paras, state_space):
 
     # States and covariates have finite and nonnegative values.
     assert np.all(state_space.states >= 0)
-    assert np.all(state_space.covariates >= 0)
+    assert np.all(state_space.base_covariates >= 0)
     assert np.all(np.isfinite(state_space.states))
-    assert np.all(np.isfinite(state_space.covariates))
+    assert np.all(np.isfinite(state_space.base_covariates))
 
     # Check for duplicate rows in each period. We only have possible duplicates if there
     # are multiple initial conditions.
@@ -110,59 +108,3 @@ def check_model_solution(attr, optim_paras, state_space):
     # Check finiteness of rewards and emaxs.
     assert np.all(np.isfinite(state_space.rewards))
     assert np.all(np.isfinite(state_space.emaxs))
-
-
-def check_model_parameters(optim_paras):
-    """Check the integrity of all model parameters."""
-    # Auxiliary objects
-    num_types = len(optim_paras["type_shifts"])
-
-    # Checks for all arguments
-    keys = [
-        "coeffs_a",
-        "coeffs_b",
-        "coeffs_edu",
-        "coeffs_home",
-        "shocks_cholesky",
-        "delta",
-        "type_shares",
-        "type_shifts",
-        "coeffs_common",
-    ]
-
-    for key in keys:
-        assert isinstance(optim_paras[key], np.ndarray), key
-        assert np.all(np.isfinite(optim_paras[key]))
-        assert optim_paras[key].dtype == "float"
-        assert np.all(abs(optim_paras[key]) < PRINT_FLOAT)
-
-    # Check for discount rate
-    assert optim_paras["delta"] >= 0
-
-    # Checks for common returns
-    assert optim_paras["coeffs_common"].size == 2
-
-    # Checks for occupations
-    assert optim_paras["coeffs_a"].size == 15
-    assert optim_paras["coeffs_b"].size == 15
-    assert optim_paras["coeffs_edu"].size == 7
-    assert optim_paras["coeffs_home"].size == 3
-
-    # Checks shock matrix
-    assert optim_paras["shocks_cholesky"].shape == (4, 4)
-    np.allclose(optim_paras["shocks_cholesky"], np.tril(optim_paras["shocks_cholesky"]))
-
-    # Checks for type shares
-    assert optim_paras["type_shares"].size == num_types * 2
-
-    # Checks for type shifts
-    assert optim_paras["type_shifts"].shape == (num_types, 4)
-
-
-def _check_parameter_vector(x, a=None):
-    """Check optimization parameters."""
-    assert isinstance(x, np.ndarray)
-    assert x.dtype == np.float
-    assert np.all(np.isfinite(x))
-
-    return True

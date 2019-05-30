@@ -8,7 +8,6 @@ import yaml
 from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
 from respy.pre_processing.model_checking import check_model_attributes
-from respy.pre_processing.model_checking import check_model_parameters
 from respy.pre_processing.model_processing import process_model_spec
 from respy.shared import get_example_model
 from respy.tests.random_model import generate_random_model
@@ -42,7 +41,6 @@ def test_check_model_attributes_and_parameters(model_or_seed):
     attr, optim_paras = process_model_spec(params_spec, options_spec)
 
     check_model_attributes(attr)
-    check_model_parameters(optim_paras)
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))

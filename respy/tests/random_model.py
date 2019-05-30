@@ -4,6 +4,10 @@ import numpy as np
 from respy.config import DATA_LABELS_EST
 from respy.pre_processing.model_checking import check_model_attributes
 from respy.pre_processing.model_processing import _create_attribute_dictionary
+from respy.pre_processing.model_processing import cov_matrix_to_sdcorr_params
+from respy.pre_processing.model_processing import (
+    number_of_triangular_elements_to_dimension,
+)
 from respy.pre_processing.model_processing import process_model_spec
 from respy.pre_processing.specification_helpers import csv_template
 from respy.simulate import simulate
@@ -61,33 +65,14 @@ def generate_random_model(
 
     params.loc["delta", "para"] = 1 - np.random.uniform() if myopic is False else 0.0
 
-    shock_coeffs = params.loc["shocks"].index
-    diagonal_shock_coeffs = [
-        coeff for coeff in shock_coeffs if len(coeff.rsplit("_", 1)[1]) == 1
-    ]
-    for coeff in diagonal_shock_coeffs:
-        params.loc[("shocks", coeff), "para"] = np.random.uniform(0.05, 1)
-
-    gets_upper_bound = np.random.randint(0, 2, size=len(params)).astype(bool)
-    nr_upper = gets_upper_bound.sum()
-    params.loc[gets_upper_bound, "upper"] = params.loc[
-        gets_upper_bound, "para"
-    ] + np.random.uniform(0.1, 1, nr_upper)
-
-    gets_lower_bound = np.random.randint(0, 2, size=len(params)).astype(bool)
-    # don't replace already existing bounds
-    gets_lower_bound = np.logical_and(gets_lower_bound, params["lower"].isnull())
-    nr_lower = gets_lower_bound.sum()
-    params.loc[gets_lower_bound, "lower"] = params.loc[
-        gets_lower_bound, "para"
-    ] - np.random.uniform(0.1, 1, nr_lower)
-
-    params["fixed"] = np.random.choice([True, False], size=len(params), p=[0.1, 0.9])
-    params.loc["shocks", "fixed"] = np.random.choice([True, False])
-    if params["fixed"].to_numpy().all():
-        params.loc["coeffs_a", "fixed"] = False
-
-    params.loc["shocks", "fixed"] = False
+    num_shock_coeffs = len(params.loc["shocks"])
+    dim = number_of_triangular_elements_to_dimension(num_shock_coeffs)
+    helper = np.eye(dim) * 0.5
+    helper[np.tril_indices(dim, k=-1)] = np.random.uniform(
+        -0.05, 0.2, size=(num_shock_coeffs - dim)
+    )
+    cov = helper.dot(helper.T)
+    params.loc["shocks", "para"] = cov_matrix_to_sdcorr_params(cov)
 
     options["simulation"]["agents"] = np.random.randint(
         3, bound_constr["max_agents"] + 1
