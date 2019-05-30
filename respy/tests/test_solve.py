@@ -121,9 +121,8 @@ def test_invariance_of_solution(model_or_seed):
 def test_get_emaxs_of_subsequent_period(seed):
     """Test propagation of emaxs from last to first period."""
     params_spec, options_spec = generate_random_model()
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
 
-    state_space = StateSpace(attr, optim_paras)
+    state_space = StateSpace(params_spec, options_spec)
 
     state_space.emaxs = np.r_[
         np.zeros((state_space.states_per_period[:-1].sum(), 5)),

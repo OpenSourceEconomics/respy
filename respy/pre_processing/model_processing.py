@@ -142,3 +142,12 @@ def _get_matrix_dimension_from_num_triangular_elements(num):
 
     """
     return int(np.sqrt(8 * num + 1) / 2 - 0.5)
+
+
+def cov_matrix_to_sdcorr_params(cov):
+    dim = len(cov)
+    sds = np.sqrt(np.diagonal(cov))
+    scaling_matrix = np.diag(1 / sds)
+    corr = scaling_matrix.dot(cov).dot(scaling_matrix)
+    correlations = corr[np.tril_indices(dim, k=-1)]
+    return np.hstack([sds, correlations])

@@ -44,7 +44,7 @@ def get_crit_func(params_spec, options_spec, df):
 
     check_estimation_data(attr, df)
 
-    state_space = StateSpace(attr, optim_paras)
+    state_space = StateSpace(params_spec, options_spec)
 
     # Collect arguments for estimation.
     base_draws_est = create_base_draws(

@@ -30,7 +30,7 @@ def simulate(params_spec, options_spec):
     attr, optim_paras = process_model_spec(params_spec, options_spec)
 
     # Solve the model.
-    state_space = StateSpace(attr, optim_paras)
+    state_space = StateSpace(params_spec, options_spec)
 
     state_space = solve_with_backward_induction(
         state_space, attr["interpolation"], attr["num_points_interp"], optim_paras

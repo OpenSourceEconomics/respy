@@ -23,9 +23,8 @@ def solve(params_spec, options_spec):
         Dictionary containing model attributes which are not optimized.
 
     """
+    state_space = StateSpace(params_spec, options_spec)
     attr, optim_paras = process_model_spec(params_spec, options_spec)
-
-    state_space = StateSpace(attr, optim_paras)
 
     state_space = solve_with_backward_induction(
         state_space, attr["interpolation"], attr["num_points_interp"], optim_paras
@@ -735,7 +734,8 @@ class StateSpace:
 
     emaxs_columns = ["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
 
-    def __init__(self, attr, optim_paras):
+    def __init__(self, params_spec, options_spec):
+        attr, optim_paras = process_model_spec(params_spec, options_spec)
         # Add some arguments to the state space.
         self.edu_max = attr["edu_spec"]["max"]
         self.num_periods = attr["num_periods"]
@@ -811,8 +811,7 @@ class StateSpace:
         Example
         -------
         >>> params_spec, options_spec = generate_random_model()
-        >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
-        >>> state_space = StateSpace(attr, optim_paras)
+        >>> state_space = StateSpace(params_spec, options_spec)
         >>> state_space.to_frame().shape
         (18, 28)
 
@@ -1089,8 +1088,7 @@ def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
     Example
     -------
     >>> params_spec, options_spec = generate_random_model()
-    >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
-    >>> state_space = StateSpace(attr, optim_paras)
+    >>> state_space = StateSpace(params_spec, options_spec)
     >>> coeffs_a, coeffs_b = np.array([0.05, 0.6, 0.4]), np.array([0.36, 0.7, 1])
     >>> calculate_rewards_general(
     ...     state_space.covariates, coeffs_a, coeffs_b
@@ -1136,8 +1134,7 @@ def calculate_rewards_common(covariates, coeffs_common):
     Example
     -------
     >>> params_spec, options_spec = generate_random_model()
-    >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
-    >>> state_space = StateSpace(attr, optim_paras)
+    >>> state_space = StateSpace(params_spec, options_spec)
     >>> coeffs_common = np.array([0.05, 0.6])
     >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
     array([0.  , 0.  , 0.05, 0.05, 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.05,
