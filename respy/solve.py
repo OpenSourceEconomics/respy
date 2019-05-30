@@ -566,8 +566,8 @@ def create_choice_covariates(covariates_df, states_df, params_spec):
     """
     all_data = pd.concat([covariates_df, states_df], axis=1, sort=False)
     all_data["constant"] = 1
-    all_data["exp_a_sq"] = all_data["exp_a"] ** 2 / 100
-    all_data["exp_b_sq"] = all_data["exp_b"] ** 2 / 100
+    all_data["exp_a_square"] = all_data["exp_a"] ** 2 / 100
+    all_data["exp_b_square"] = all_data["exp_b"] ** 2 / 100
 
     covariates = {}
 

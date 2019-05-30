@@ -8,7 +8,7 @@ from respy.config import ROOT_DIR
 from respy.pre_processing.model_processing import cov_matrix_to_sdcorr_params
 
 
-@pytest.mark.parametrize("index", range(10))
+@pytest.mark.parametrize("index", range(100))
 def test_single_regression(regression_vault, index):
     """Run a single regression test."""
     test = regression_vault[index]
@@ -40,6 +40,6 @@ def test_single_regression(regression_vault, index):
     )
     new_spec.loc["shocks", "para"] = cov_matrix_to_sdcorr_params(cov)
     params_spec = new_spec
-    test = params_spec
+    test = params_spec, options_spec, crit_val
     # ==================================================================================
     check_single(test)
