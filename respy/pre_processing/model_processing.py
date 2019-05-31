@@ -1,10 +1,13 @@
 """Process model specification files or objects."""
 import json
+import warnings
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import yaml
+
+warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 
 def process_model_spec(params_spec, options_spec):

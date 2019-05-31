@@ -110,11 +110,15 @@ def test_invariance_of_solution(model_or_seed):
     state_space = solve(params_spec, options_spec)
     state_space_ = solve(params_spec, options_spec)
 
-    np.array_equal(state_space.states, state_space_.states)
-    np.array_equal(state_space.covariates, state_space_.covariates)
-    np.array_equal(state_space.rewards, state_space_.rewards)
-    np.array_equal(state_space.emaxs, state_space_.emaxs)
-    np.array_equal(state_space.base_draws_sol, state_space_.base_draws_sol)
+    np.testing.assert_array_equal(state_space.states, state_space_.states)
+    np.testing.assert_array_equal(
+        state_space.base_covariates, state_space_.base_covariates
+    )
+    np.testing.assert_array_equal(state_space.rewards, state_space_.rewards)
+    np.testing.assert_array_equal(state_space.emaxs, state_space_.emaxs)
+    np.testing.assert_array_equal(
+        state_space.base_draws_sol, state_space_.base_draws_sol
+    )
 
 
 @pytest.mark.parametrize("seed", range(10))

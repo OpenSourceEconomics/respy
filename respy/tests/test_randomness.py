@@ -18,11 +18,15 @@ def test_invariance_of_model_solution_in_solve_and_simulation(model_or_seed):
     state_space = rp.solve(params_spec, options_spec)
     state_space_, _ = rp.simulate(params_spec, options_spec)
 
-    np.array_equal(state_space.states, state_space_.states)
-    np.array_equal(state_space.covariates, state_space_.covariates)
-    np.array_equal(state_space.rewards, state_space_.rewards)
-    np.array_equal(state_space.emaxs, state_space_.emaxs)
-    np.array_equal(state_space.base_draws_sol, state_space_.base_draws_sol)
+    np.testing.assert_array_equal(state_space.states, state_space_.states)
+    np.testing.assert_array_equal(
+        state_space.base_covariates, state_space_.base_covariates
+    )
+    np.testing.assert_array_equal(state_space.rewards, state_space_.rewards)
+    np.testing.assert_array_equal(state_space.emaxs, state_space_.emaxs)
+    np.testing.assert_array_equal(
+        state_space.base_draws_sol, state_space_.base_draws_sol
+    )
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(5)))
@@ -42,8 +46,12 @@ def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
 
     state_space_ = crit_func.keywords["state_space"]
 
-    np.array_equal(state_space.states, state_space_.states)
-    np.array_equal(state_space.covariates, state_space_.covariates)
-    np.array_equal(state_space.rewards, state_space_.rewards)
-    np.array_equal(state_space.emaxs, state_space_.emaxs)
-    np.array_equal(state_space.base_draws_sol, state_space_.base_draws_sol)
+    np.testing.assert_array_equal(state_space.states, state_space_.states)
+    np.testing.assert_array_equal(
+        state_space.base_covariates, state_space_.base_covariates
+    )
+    np.testing.assert_array_equal(state_space.rewards, state_space_.rewards)
+    np.testing.assert_array_equal(state_space.emaxs, state_space_.emaxs)
+    np.testing.assert_array_equal(
+        state_space.base_draws_sol, state_space_.base_draws_sol
+    )
