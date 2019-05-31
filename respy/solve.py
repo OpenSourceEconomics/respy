@@ -582,6 +582,9 @@ def create_choice_covariates(covariates_df, states_df, params_spec):
         nonpec_columns = params_spec.loc[f"nonpec_{choice}"].index
         covariates[f"nonpec_{choice}"] = all_data[nonpec_columns].to_numpy()
 
+    for key, val in covariates.items():
+        covariates[key] = np.ascontiguousarray(val)
+
     return covariates
 
 
