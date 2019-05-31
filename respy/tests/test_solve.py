@@ -114,7 +114,9 @@ def test_invariance_of_solution(model_or_seed):
     np.testing.assert_array_equal(
         state_space.base_covariates, state_space_.base_covariates
     )
-    np.testing.assert_array_equal(state_space.rewards, state_space_.rewards)
+    np.testing.assert_array_equal(state_space.wages, state_space_.wages)
+    np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
+
     np.testing.assert_array_equal(state_space.emaxs, state_space_.emaxs)
     np.testing.assert_array_equal(
         state_space.base_draws_sol, state_space_.base_draws_sol

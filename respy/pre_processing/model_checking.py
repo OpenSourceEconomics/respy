@@ -106,5 +106,6 @@ def check_model_solution(attr, optim_paras, state_space):
     assert state_space.states.shape[0] == (state_space.indexer >= 0).sum()
 
     # Check finiteness of rewards and emaxs.
-    assert np.all(np.isfinite(state_space.rewards))
+    assert np.all(np.isfinite(state_space.wages))
+    assert np.all(np.isfinite(state_space.nonpec))
     assert np.all(np.isfinite(state_space.emaxs))

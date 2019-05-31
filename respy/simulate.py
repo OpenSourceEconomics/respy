@@ -132,8 +132,8 @@ def simulate_data(
 
         # Get total values and ex post rewards.
         total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
-            state_space.rewards[ks, -2:],
-            state_space.rewards[ks, :4],
+            state_space.wages[ks],
+            state_space.nonpec[ks],
             state_space.emaxs[ks, :4],
             draws.reshape(-1, 1, 4),
             optim_paras["delta"],
@@ -157,12 +157,12 @@ def simulate_data(
         # Record wages. Expand matrix with NaNs for choice 2 and 3 for easier indexing.
         wages = (
             np.column_stack(
-                (state_space.rewards[ks, -2:], np.full((num_agents_sim, 2), np.nan))
+                (state_space.wages[ks], np.full((num_agents_sim, 2), np.nan))
             )
             * draws
         )
-        rewards_systematic = state_space.rewards[ks, :4]
-        rewards_systematic[:, :2] += state_space.rewards[ks, -2:]
+        rewards_systematic = state_space.nonpec[ks]
+        rewards_systematic[:, :2] += state_space.wages[ks]
         # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
         wage = wages[np.arange(num_agents_sim), max_idx]
 
@@ -316,14 +316,7 @@ def _get_random_lagged_choices(edu_spec, num_agents_sim, edu_start, seed):
     target="cpu",
 )
 def get_continuation_value_and_ex_post_rewards(
-    wages,
-    nonpec_rewards,
-    emaxs,
-    draws,
-    delta,
-    max_education,
-    continuation_value,
-    rew_ex_post,
+    wages, nonpec, emaxs, draws, delta, max_education, continuation_value, rew_ex_post
 ):
     """Calculate the continuation value and ex-post rewards.
 
@@ -334,7 +327,7 @@ def get_continuation_value_and_ex_post_rewards(
     ----------
     wages : np.ndarray
         Array with shape (2,).
-    nonpec_rewards : np.ndarray
+    nonpec : np.ndarray
         Array with shape (4,).
     emaxs : np.ndarray
         Array with shape (4,)
@@ -371,15 +364,15 @@ def get_continuation_value_and_ex_post_rewards(
 
     """
     num_draws = draws.shape[0]
-    num_choices = nonpec_rewards.shape[0]
+    num_choices = nonpec.shape[0]
     num_wages = wages.shape[0]
 
     for i in range(num_draws):
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + nonpec_rewards[j]
+                rew_ex = wages[j] * draws[i, j] + nonpec[j]
             else:
-                rew_ex = nonpec_rewards[j] + draws[i, j]
+                rew_ex = nonpec[j] + draws[i, j]
 
             cont_value = rew_ex + delta * emaxs[j]
 

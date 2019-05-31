@@ -147,7 +147,7 @@ def clip(x, minimum=None, maximum=None):
     target="parallel",
 )
 def simulate_probability_of_agents_observed_choice(
-    wages, nonpec_rewards, emaxs, draws, delta, max_education, idx, tau, prob_choice
+    wages, nonpec, emaxs, draws, delta, max_education, idx, tau, prob_choice
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -159,7 +159,7 @@ def simulate_probability_of_agents_observed_choice(
     ----------
     wages : np.ndarray
         Array with shape (2,).
-    nonpec_rewards : np.ndarray
+    nonpec : np.ndarray
         Array with shape (4,).
     emaxs : np.ndarray
         Array with shape (4,)
@@ -192,9 +192,9 @@ def simulate_probability_of_agents_observed_choice(
 
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + nonpec_rewards[j]
+                rew_ex = wages[j] * draws[i, j] + nonpec[j]
             else:
-                rew_ex = nonpec_rewards[j] + draws[i, j]
+                rew_ex = nonpec[j] + draws[i, j]
 
             cont_value = rew_ex + delta * emaxs[j]
 
@@ -444,7 +444,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     wages_observed = wages_observed.repeat(state_space.num_types).reshape(
         -1, state_space.num_types
     )
-    wages_systematic = state_space.rewards[ks, -2:]
+    wages_systematic = state_space.wages[ks]
 
     # Adjust the draws to simulate the expected maximum utility and calculate the
     # probability of observing the wage.
@@ -459,8 +459,8 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
 
     # Simulate the probability of observing the choice of the individual.
     prob_choices = simulate_probability_of_agents_observed_choice(
-        state_space.rewards[ks, -2:],
-        state_space.rewards[ks, :4],
+        state_space.wages[ks],
+        state_space.nonpec[ks],
         state_space.emaxs[ks, :4],
         draws,
         optim_paras["delta"],

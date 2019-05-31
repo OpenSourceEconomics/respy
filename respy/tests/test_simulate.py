@@ -39,7 +39,8 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
 
     for period in range(state_space.num_periods):
         # Unpack necessary attributes
-        rewards_period = state_space.get_attribute_from_period("rewards", period)
+        wages = state_space.get_attribute_from_period("wages", period)
+        nonpec = state_space.get_attribute_from_period("nonpec", period)
         emaxs_period = state_space.get_attribute_from_period("emaxs", period)[:, :4]
         max_education_period = (
             state_space.get_attribute_from_period("states", period)[:, 3]
@@ -47,8 +48,8 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
         )
 
         total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
-            rewards_period[:, -2:],
-            rewards_period[:, :4],
+            wages,
+            nonpec,
             emaxs_period,
             draws,
             optim_paras["delta"],

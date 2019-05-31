@@ -254,7 +254,7 @@ def create_reward_components(states, covariates, optim_paras):
 
     wages = np.clip(np.exp(log_wages), 0.0, HUGE_FLOAT)
 
-    return nonpec, wages
+    return wages, nonpec
 
 
 def solve_with_backward_induction(
@@ -322,7 +322,8 @@ def solve_with_backward_induction(
         )
 
         # Unpack necessary attributes of the specific period.
-        rewards_period = state_space.get_attribute_from_period("rewards", period)
+        wages = state_space.get_attribute_from_period("wages", period)
+        nonpec = state_space.get_attribute_from_period("nonpec", period)
         emaxs_period = state_space.get_attribute_from_period("emaxs", period)[:, :4]
         max_education = (
             state_space.get_attribute_from_period("states", period)[:, 3]
@@ -346,13 +347,14 @@ def solve_with_backward_induction(
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
             exogenous, max_emax = get_exogenous_variables(
-                rewards_period, emaxs_period, shifts, delta, max_education
+                wages, nonpec, emaxs_period, shifts, delta, max_education
             )
 
             # Constructing the dependent variables for all states at the random subset
             # of points where the EMAX is actually calculated.
             endogenous = get_endogenous_variable(
-                rewards_period,
+                wages,
+                nonpec,
                 emaxs_period,
                 max_emax,
                 not_interpolated,
@@ -368,12 +370,7 @@ def solve_with_backward_induction(
 
         else:
             emax = construct_emax_risk(
-                rewards_period[:, -2:],
-                rewards_period[:, :4],
-                emaxs_period,
-                draws_emax_risk,
-                delta,
-                max_education,
+                wages, nonpec, emaxs_period, draws_emax_risk, delta, max_education
             )
 
         state_space.get_attribute_from_period("emaxs", period)[:, 4] = emax
@@ -416,13 +413,15 @@ def get_not_interpolated_indicator(num_points_interp, num_states, seed):
     return not_interpolated
 
 
-def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
+def get_exogenous_variables(wages, nonpec, emaxs, draws, delta, max_education):
     """Get exogenous variables for interpolation scheme.
 
     Parameters
     ----------
-    rewards : np.ndarray
-        Array with shape (num_states_in_period, 9).
+    wages : np.ndarray
+        Array with shape (num_states_in_period, 4).
+    nonpec : np.ndarray
+        Array with shape (num_states_in_period, 2).
     emaxs : np.ndarray
         Array with shape (num_states_in_period, 4).
     draws : np.ndarray
@@ -442,12 +441,7 @@ def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
 
     """
     total_values = get_continuation_value(
-        rewards[:, -2:],
-        rewards[:, :4],
-        emaxs,
-        draws.reshape(1, -1),
-        delta,
-        max_education,
+        wages, nonpec, emaxs, draws.reshape(1, -1), delta, max_education
     )
 
     max_emax = total_values.max(axis=1)
@@ -461,14 +455,23 @@ def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
 
 
 def get_endogenous_variable(
-    rewards, emaxs, max_emax, not_interpolated, draws_emax_risk, delta, max_education
+    wages,
+    nonpec,
+    emaxs,
+    max_emax,
+    not_interpolated,
+    draws_emax_risk,
+    delta,
+    max_education,
 ):
     """Construct endogenous variable for all states which are not interpolated.
 
     Parameters
     ----------
-    rewards : np.ndarray
-        Array with shape (num_states_in_period, 9)
+    wages : np.ndarray
+        Array with shape (num_states_in_period, 4).
+    nonpec : np.ndarray
+        Array with shape (num_states_in_period, 2).
     emaxs : np.ndarray
         Array with shape (num_states_in_period, 4).
     max_emax : np.ndarray
@@ -486,8 +489,8 @@ def get_endogenous_variable(
 
     """
     emax = construct_emax_risk(
-        rewards[:, -2:][not_interpolated],
-        rewards[:, :4][not_interpolated],
+        wages[not_interpolated],
+        nonpec[:, :4][not_interpolated],
         emaxs[not_interpolated],
         draws_emax_risk,
         delta,
@@ -603,8 +606,10 @@ class StateSpace:
     covariates : np.ndarray
         Array with shape (num_states, 16) containing covariates of each state necessary
         to calculate rewards.
-    rewards : np.ndarray
-        Array with shape (num_states, 9) containing rewards of each state.
+    wages : np.ndarray
+        Array with shape (num_states_in_period, 4).
+    nonpec : np.ndarray
+        Array with shape (num_states_in_period, 2).
     emaxs : np.ndarray
         Array with shape (num_states, 5) containing containing the emax of each choice
         (OCCUPATION A, OCCUPATION B, SCHOOL, HOME) of the subsequent period and the
@@ -617,8 +622,10 @@ class StateSpace:
         List of column names in ``self.states``.
     covariates_columns : list
         List of column names in ``self.covariates``.
-    rewards_columns : list
-        List of column names in ``self.rewards``.
+    wages_columns : list
+        List of column names in ``self.wages``
+    nonpec_columns : list
+        List of column names in ``self.nonpec``
     emaxs_columns : list
         List of column names in ``self.emaxs``.
 
@@ -645,15 +652,8 @@ class StateSpace:
         "is_adult",
     ]
 
-    rewards_columns = [
-        "nonpec_a",
-        "nonpec_b",
-        "nonpec_edu",
-        "nonpec_home",
-        "wage_a",
-        "wage_b",
-    ]
-
+    wages_columns = ["wage_a", "wage_b"]
+    nonpec_columns = ["nonpec_a", "nonpec_b", "nonpec_edu", "nonpec_home"]
     emaxs_columns = ["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
 
     def __init__(self, params_spec, options_spec):
@@ -683,8 +683,9 @@ class StateSpace:
             base_covariates_df, states_df, params_spec
         )
 
-        self.rewards = np.column_stack(
-            (create_reward_components(self.states, self.covariates, optim_paras))
+        # todo: do we need this here?
+        self.wages, self.nonpec = create_reward_components(
+            self.states, self.covariates, optim_paras
         )
 
         self._create_slices_by_periods(self.num_periods)
@@ -700,8 +701,8 @@ class StateSpace:
         return self.states.shape[0]
 
     def update_systematic_rewards(self, optim_paras):
-        self.rewards = np.column_stack(
-            (create_reward_components(self.states, self.covariates, optim_paras))
+        self.wages, self.nonpec = create_reward_components(
+            self.states, self.covariates, optim_paras
         )
 
     def get_attribute_from_period(self, attr, period):
@@ -729,6 +730,7 @@ class StateSpace:
                 e.__traceback__
             )
 
+        # todo: do we ever need covariates by period?
         if attr == "covariates":
             attribute = {key: val[indices] for key, val in attribute.items()}
         else:
@@ -749,12 +751,12 @@ class StateSpace:
         """
         attributes = [
             getattr(self, i, None)
-            for i in ["states", "base_covariates", "rewards", "emaxs"]
+            for i in ["states", "base_covariates", "wages", "nonpec", "emaxs"]
             if getattr(self, i, None) is not None
         ]
         columns = [
             item
-            for i in ["states", "base_covariates", "rewards", "emaxs"]
+            for i in ["states", "base_covariates", "wages", "nonpec", "emaxs"]
             for item in getattr(self, i + "_columns")
             if getattr(self, i, None) is not None
         ]
@@ -783,9 +785,7 @@ class StateSpace:
     nopython=True,
     target="parallel",
 )
-def construct_emax_risk(
-    wages, nonpec_rewards, emaxs, draws, delta, max_education, cont_value
-):
+def construct_emax_risk(wages, nonpec, emaxs, draws, delta, max_education, cont_value):
     """Simulate expected maximum utility for a given distribution of the unobservables.
 
     The function takes an agent and calculates the utility for each of the choices, the
@@ -803,8 +803,8 @@ def construct_emax_risk(
     ----------
     wages : np.ndarray
         Array with shape (2,) containing wages.
-    nonpec_rewards : np.ndarray
-        Array with shape (4,) containing systematic rewards.
+    nonpec : np.ndarray
+        Array with shape (4,) containing nonpecuniary rewards.
     emaxs : np.ndarray
         Array with shape (4,) containing expected maximum utility for each choice in the
         subsequent period.
@@ -835,9 +835,9 @@ def construct_emax_risk(
 
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + nonpec_rewards[j]
+                rew_ex = wages[j] * draws[i, j] + nonpec[j]
             else:
-                rew_ex = nonpec_rewards[j] + draws[i, j]
+                rew_ex = nonpec[j] + draws[i, j]
 
             emax_choice = rew_ex + delta * emaxs[j]
 
@@ -907,7 +907,7 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
     target="cpu",
 )
 def get_continuation_value(
-    wages, nonpec_rewards, emaxs, draws, delta, max_education, cont_value
+    wages, nonpec, emaxs, draws, delta, max_education, cont_value
 ):
     """Calculate the continuation value.
 
@@ -923,9 +923,9 @@ def get_continuation_value(
     for i in range(num_draws):
         for j in range(num_choices):
             if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + nonpec_rewards[j]
+                rew_ex = wages[j] * draws[i, j] + nonpec[j]
             else:
-                rew_ex = nonpec_rewards[j] + draws[i, j]
+                rew_ex = nonpec[j] + draws[i, j]
 
             cont_value_ = rew_ex + delta * emaxs[j]
 
