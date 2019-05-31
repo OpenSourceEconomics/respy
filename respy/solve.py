@@ -744,7 +744,7 @@ class StateSpace:
         >>> params_spec, options_spec = generate_random_model()
         >>> state_space = StateSpace(params_spec, options_spec)
         >>> state_space.to_frame().shape
-        (18, 28)
+        (12, 28)
 
         """
         attributes = [
