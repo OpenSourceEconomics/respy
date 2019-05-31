@@ -489,7 +489,7 @@ def get_endogenous_variable(
     """
     emax = construct_emax_risk(
         wages[not_interpolated],
-        nonpec[:, :4][not_interpolated],
+        nonpec[not_interpolated],
         emaxs[not_interpolated],
         draws_emax_risk,
         delta,
