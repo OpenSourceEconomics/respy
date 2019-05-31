@@ -293,12 +293,6 @@ def solve_with_backward_induction(
 
     shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
 
-    # These shifts are used to determine the expected values of the two labor market
-    # alternatives. These are log normal distributed and thus the draws cannot simply
-    # set to zero.
-    shifts = np.zeros(4)
-    shifts[:2] = np.clip(np.exp(np.diag(shocks_cov)[:2] / 2.0), 0.0, HUGE_FLOAT)
-
     for period in reversed(range(state_space.num_periods)):
 
         if period == state_space.num_periods - 1:
@@ -336,6 +330,11 @@ def solve_with_backward_induction(
         any_interpolated = (num_points_interp <= num_states) and interpolation
 
         if any_interpolated:
+            # These shifts are used to determine the expected values of the two labor
+            # market alternatives. These are log normal distributed and thus the draws
+            # cannot simply set to zero.
+            shifts = np.zeros(4)
+            shifts[:2] = np.clip(np.exp(np.diag(shocks_cov)[:2] / 2.0), 0.0, HUGE_FLOAT)
             # Get indicator for interpolation and simulation of states. The seed value
             # is the base seed plus the number of the period. Thus, not interpolated
             # states are held constant for each periods and not across periods.
@@ -686,7 +685,6 @@ class StateSpace:
             base_covariates_df, states_df, params_spec
         )
 
-        # todo: do we need this here?
         self.wages, self.nonpec = create_reward_components(
             self.states, self.covariates, optim_paras
         )
@@ -861,12 +859,6 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
 
     This function takes a parent node and looks up the utility from each of the four
     choices in the subsequent period.
-
-    Warning
-    -------
-    This function must be extremely performant as the lookup is done for each state in a
-    state space (except for states in the last period) for each evaluation of the
-    optimization of parameters.
 
     """
     for i in range(states.shape[0]):
