@@ -335,6 +335,7 @@ def solve_with_backward_induction(
             # cannot simply set to zero.
             shifts = np.zeros(4)
             shifts[:2] = np.clip(np.exp(np.diag(shocks_cov)[:2] / 2.0), 0.0, HUGE_FLOAT)
+
             # Get indicator for interpolation and simulation of states. The seed value
             # is the base seed plus the number of the period. Thus, not interpolated
             # states are held constant for each periods and not across periods.
@@ -418,25 +419,25 @@ def get_exogenous_variables(wages, nonpec, emaxs, draws, delta, max_education):
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (n_states_in_period, n_wages).
     nonpec : np.ndarray
-        Array with shape (num_states_in_period, 2).
+        Array with shape (n_states_in_period, n_choices).
     emaxs : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (n_states_in_period, n_choices).
     draws : np.ndarray
-        Array with shape (num_draws, 4).
+        Array with shape (num_draws, n_choices).
     delta : float
         Discount factor.
     max_education: np.ndarray
-        Array with shape (num_states_in_period,) containing an indicator for whether the
+        Array with shape (n_states_in_period,) containing an indicator for whether the
         state has reached maximum education.
 
     Returns
     -------
     exogenous : np.ndarray
-        Array with shape (num_states_in_period, 9).
+        Array with shape (n_states_in_period, n_choices * 2 + 1).
     max_emax : np.ndarray
-        Array with shape (num_states_in_period,) containing maximum emax.
+        Array with shape (n_states_in_period,) containing maximum emax.
 
     """
     total_values = get_continuation_value(
@@ -468,22 +469,22 @@ def get_endogenous_variable(
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (n_states_in_period, n_wages).
     nonpec : np.ndarray
-        Array with shape (num_states_in_period, 2).
+        Array with shape (n_states_in_period, n_choices).
     emaxs : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (n_states_in_period, n_choices).
     max_emax : np.ndarray
-        Array with shape (num_states_in_period,) containing maximum of exogenous emax.
+        Array with shape (n_states_in_period,) containing maximum of exogenous emax.
     not_interpolated : np.ndarray
-        Array with shape (num_states_in_period,) containing indicators for simulated
+        Array with shape (n_states_in_period,) containing indicators for simulated
         emaxs.
     draws_emax_risk : np.ndarray
-        Array with shape (num_draws, 4) containing draws.
+        Array with shape (num_draws, n_choices) containing draws.
     delta : float
         Discount factor.
     max_education: np.ndarray
-        Array with shape (num_states_in_period,) containing an indicator for whether the
+        Array with shape (n_states_in_period,) containing an indicator for whether the
         state has reached maximum education.
 
     """
@@ -513,11 +514,12 @@ def get_predictions(endogenous, exogenous, maxe, not_interpolated):
         Array with shape (num_simulated_states_in_period,) containing emax for states
         used to interpolate the rest.
     exogenous : np.ndarray
-        Array with shape (num_states_in_period, 9) containing exogenous variables.
+        Array with shape (n_states_in_period, n_choices * 2 + 1) containing exogenous
+        variables.
     maxe : np.ndarray
-        Array with shape (num_states_in_period,) containing the maximum emax.
+        Array with shape (n_states_in_period,) containing the maximum emax.
     not_interpolated : np.ndarray
-        Array with shape (num_states_in_period,) containing indicator for states which
+        Array with shape (n_states_in_period,) containing indicator for states which
         are not interpolated and used to estimate the coefficients for the
         interpolation.
 
@@ -551,22 +553,22 @@ def create_choice_covariates(covariates_df, states_df, params_spec):
 
     Parameters
     ----------
-    covariates_df: DataFrame
-        DataFrame with the basic covariates
-    states_df: DataFrame
-        DataFrame with the state information
-    params_spec: DataFrame
-        The parameter specification
+    covariates_df : pd.DataFrame
+        DataFrame with the basic covariates.
+    states_df : pd.DataFrame
+        DataFrame with the state information.
+    params_spec : pd.DataFrame
+        The parameter specification.
 
     Returns
     -------
     wage_covariates: list
-        List of length nchoices with covariate arrays for systematic wages
+        List of length nchoices with covariate arrays for systematic wages.
     nonpec_covariates: list
-        List of length nchoices with covariate arrays for nonpecuniary rewards
+        List of length nchoices with covariate arrays for nonpecuniary rewards.
 
     """
-    all_data = pd.concat([covariates_df, states_df], axis=1, sort=False)
+    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
     all_data["constant"] = 1
     all_data["exp_a_square"] = all_data["exp_a"] ** 2 / 100
     all_data["exp_b_square"] = all_data["exp_b"] ** 2 / 100
@@ -604,14 +606,15 @@ class StateSpace:
         Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
         choice_lagged and type information.
     indexer : np.ndarray
-        Array with shape (num_periods, num_periods, num_periods, edu_max, 4, num_types).
+        Array with shape (num_periods, num_periods, num_periods, edu_max, n_choices,
+        num_types).
     covariates : np.ndarray
         Array with shape (num_states, 16) containing covariates of each state necessary
         to calculate rewards.
     wages : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (n_states_in_period, n_wages).
     nonpec : np.ndarray
-        Array with shape (num_states_in_period, 2).
+        Array with shape (n_states_in_period, n_choices).
     emaxs : np.ndarray
         Array with shape (num_states, 5) containing containing the emax of each choice
         (OCCUPATION A, OCCUPATION B, SCHOOL, HOME) of the subsequent period and the
@@ -717,6 +720,11 @@ class StateSpace:
             Attribute is retrieved from this period.
 
         """
+        if attr == "covariates":
+            raise AttributeError("Attribute covariates cannot be retrieved by periods.")
+        else:
+            pass
+
         try:
             attribute = getattr(self, attr)
         except AttributeError as e:
@@ -731,13 +739,7 @@ class StateSpace:
                 e.__traceback__
             )
 
-        # todo: do we ever need covariates by period?
-        if attr == "covariates":
-            attribute = {key: val[indices] for key, val in attribute.items()}
-        else:
-            attribute = attribute[indices]
-
-        return attribute
+        return attribute[indices]
 
     def to_frame(self):
         """Get pandas DataFrame of state space.
@@ -803,14 +805,14 @@ def construct_emax_risk(wages, nonpec, emaxs, draws, delta, max_education, cont_
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (2,) containing wages.
+        Array with shape (n_wages,) containing wages.
     nonpec : np.ndarray
-        Array with shape (4,) containing nonpecuniary rewards.
+        Array with shape (n_choices,) containing non-pecuniary rewards.
     emaxs : np.ndarray
-        Array with shape (4,) containing expected maximum utility for each choice in the
-        subsequent period.
+        Array with shape (n_choices,) containing expected maximum utility for each
+        choice in the subsequent period.
     draws : np.ndarray
-        Array with shape (num_draws, 4).
+        Array with shape (num_draws, n_choices).
     delta : float
         The discount factor.
     max_education: bool

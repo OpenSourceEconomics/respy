@@ -111,7 +111,6 @@ def check_single(test, strict=False):
     crit_func = rp.get_crit_func(param_spec, option_spec, df)
 
     est_val = crit_func(param_spec)
-    print(est_val, crit_val)
     is_success = np.isclose(est_val, crit_val, rtol=TOL, atol=TOL)
 
     if strict is True:

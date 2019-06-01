@@ -98,7 +98,7 @@ def parse_parameters(params, paras_type="optim"):
     elif isinstance(params, pd.Series):
         pass
     else:
-        raise ValueError("Invalid params in parse_parameters: {}.".format(type(params)))
+        raise TypeError(f"Invalid type {type(params)} for params.")
 
     optim_paras = {}
 
@@ -107,7 +107,7 @@ def parse_parameters(params, paras_type="optim"):
 
     cov = sdcorr_params_to_matrix(optim_paras["shocks"])
     optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
-    del optim_paras["shocks"]
+    optim_paras.pop("shocks")
 
     if "type_shares" in optim_paras:
         optim_paras["type_shares"] = np.hstack(

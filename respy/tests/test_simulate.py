@@ -10,21 +10,7 @@ from respy.simulate import get_continuation_value_and_ex_post_rewards
 from respy.tests.random_model import generate_random_model
 
 
-@pytest.mark.parametrize(
-    "seed",
-    [
-        0,
-        pytest.param(1, marks=pytest.mark.xfail(reason="INADMISSIBILITY_PENALTY")),
-        2,
-        3,
-        4,
-        5,
-        6,
-        pytest.param(7, marks=pytest.mark.xfail(reason="INADMISSIBILITY_PENALTY")),
-        8,
-        pytest.param(9, marks=pytest.mark.xfail(reason="INADMISSIBILITY_PENALTY")),
-    ],
-)
+@pytest.mark.parametrize("seed", range(10))
 def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
     """Test equality of ex-post rewards and total values for myopic individuals."""
     np.random.seed(seed)
@@ -56,7 +42,12 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
             max_education_period,
         )
 
-        np.testing.assert_equal(total_values, rewards_ex_post)
+        # Only states without maximum education are tested as the inadmissibility
+        # penalty is applied to the total values of states with maximum education.
+        states_in_period = state_space.get_attribute_from_period("states", period)
+        idx = np.where(states_in_period[:, 3] != state_space.edu_max)
+
+        np.testing.assert_equal(total_values[idx], rewards_ex_post[idx])
 
 
 @pytest.mark.parametrize("seed", range(20))
