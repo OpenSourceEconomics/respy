@@ -3,6 +3,7 @@ import pandas as pd
 from numba import guvectorize
 from numba import njit
 
+from respy.config import BASE_COVARIATES
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.model_processing import process_model_spec
@@ -676,13 +677,18 @@ class StateSpace:
         self.states, self.indexer = create_state_space(
             self.num_periods, self.num_types, attr["edu_spec"]["start"], self.edu_max
         )
-        self.base_covariates = create_base_covariates(self.states)
-
         states_df = pd.DataFrame(data=self.states, columns=self.states_columns)
 
-        base_covariates_df = pd.DataFrame(
-            data=self.base_covariates, columns=self.base_covariates_columns
+        # TODO: Remove with new options_spec.
+        options_spec["covariates"] = {
+            **options_spec.get("covariates", {}),
+            **BASE_COVARIATES,
+        }
+        base_covariates_df = create_base_covariates(
+            states_df, options_spec["covariates"]
         )
+
+        self.base_covariates = base_covariates_df.to_numpy()
 
         self.covariates = create_choice_covariates(
             base_covariates_df, states_df, params_spec
@@ -740,31 +746,6 @@ class StateSpace:
             )
 
         return attribute[indices]
-
-    def to_frame(self):
-        """Get pandas DataFrame of state space.
-
-        Example
-        -------
-        >>> params_spec, options_spec = generate_random_model()
-        >>> state_space = StateSpace(params_spec, options_spec)
-        >>> state_space.to_frame().shape
-        (12, 28)
-
-        """
-        attributes = [
-            getattr(self, i, None)
-            for i in ["states", "base_covariates", "wages", "nonpec", "emaxs"]
-            if getattr(self, i, None) is not None
-        ]
-        columns = [
-            item
-            for i in ["states", "base_covariates", "wages", "nonpec", "emaxs"]
-            for item in getattr(self, i + "_columns")
-            if getattr(self, i, None) is not None
-        ]
-
-        return pd.DataFrame(np.hstack(attributes), columns=columns)
 
     def _create_slices_by_periods(self, num_periods):
         """Create slices to index all attributes in a given period.
@@ -932,7 +913,7 @@ def get_continuation_value(
             cont_value[j, i] = cont_value_
 
 
-def create_base_covariates(states):
+def create_base_covariates(states, covariates_spec):
     """Create set of covariates for each state.
 
     Parameters
@@ -940,58 +921,22 @@ def create_base_covariates(states):
     states : np.ndarray
         Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
         choice_lagged and type of each state.
+    covariates_spec : dict
+        Dictionary where keys represent covariates and values are strings which can be
+        passed to pd.eval.
 
     Returns
     -------
     covariates : np.ndarray
         Array with shape (num_states, 16) containing covariates of each state.
 
-    Examples
-    --------
-    This example is to benchmark alternative implementations, but even this version does
-    not benefit from Numba anymore.
-
-    >>> states, _ = create_state_space(40, 5, [10], 20)
-    >>> covariates = create_base_covariates(states)
-    >>> assert covariates.shape == (states.shape[0], 16)
-
     """
-    covariates = np.zeros((states.shape[0], 16), dtype=np.int8)
+    covariates = states.copy()
 
-    # Experience in A or B, but not in the last period.
-    covariates[:, 0] = np.where((states[:, 1] > 0) & (states[:, 4] != 1), 1, 0)
-    covariates[:, 1] = np.where((states[:, 2] > 0) & (states[:, 4] != 2), 1, 0)
+    for covariate, definition in covariates_spec.items():
+        covariates[covariate] = covariates.eval(definition)
 
-    # Last occupation was A, B, or education.
-    covariates[:, 2] = np.where(states[:, 4] == 1, 1, 0)
-    covariates[:, 3] = np.where(states[:, 4] == 2, 1, 0)
-    covariates[:, 4] = np.where(states[:, 4] == 3, 1, 0)
-
-    # No experience in A or B.
-    covariates[:, 5] = np.where(states[:, 1] == 0, 1, 0)
-    covariates[:, 6] = np.where(states[:, 2] == 0, 1, 0)
-
-    # Any experience in A or B.
-    covariates[:, 7] = np.where(states[:, 1] > 0, 1, 0)
-    covariates[:, 8] = np.where(states[:, 2] > 0, 1, 0)
-
-    # High school or college graduate
-    covariates[:, 9] = np.where(states[:, 3] >= 12, 1, 0)
-    covariates[:, 10] = np.where(states[:, 3] >= 16, 1, 0)
-
-    # Was not in school last period and is/is not high school graduate
-    covariates[:, 11] = np.where(
-        (covariates[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0
-    )
-    covariates[:, 12] = np.where(
-        (covariates[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0
-    )
-
-    # Define age groups minor (period < 2), young adult (2 <= period <= 4) and adult (5
-    # <= period).
-    covariates[:, 13] = np.where(states[:, 0] < 2, 1, 0)
-    covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
-    covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
+    covariates = covariates.drop(columns=states.columns).astype(float)
 
     return covariates
 

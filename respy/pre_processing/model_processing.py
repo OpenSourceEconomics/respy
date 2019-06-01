@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import yaml
 
+# from respy.config import DEFAULT_OPTIONS_SPEC
+
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 
@@ -18,6 +20,14 @@ def process_model_spec(params_spec, options_spec):
     optim_paras = parse_parameters(params_spec)
 
     return attr, optim_paras
+
+
+# def process_options_spec(options_spec):
+#     validate_options_spec(options_spec)
+
+#     options_spec = {**DEFAULT_OPTIONS_SPEC, options_spec}
+
+#     return options_spec
 
 
 def _create_attribute_dictionary(options_spec):

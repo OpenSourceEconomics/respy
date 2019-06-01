@@ -73,13 +73,5 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
 
     likelihood_ = crit_func_(params_spec)
 
-    pd.testing.assert_frame_equal(
-        state_space.to_frame().drop(
-            columns=["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
-        ),
-        state_space_.to_frame().drop(
-            columns=["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
-        ),
-    )
     pd.testing.assert_frame_equal(df, df_)
     np.testing.assert_almost_equal(likelihood, likelihood_, decimal=15)

@@ -25,6 +25,47 @@ INADMISSIBILITY_PENALTY = -400000
 
 IS_DEBUG = False
 
+DEFAULT_OPTIONS_SPEC = {
+    "education_lagged": [1],
+    "education_start": [10],
+    "education_max": [20],
+    "estimation_draws": 200,
+    "estimation_seed": 1,
+    "estimation_tau": 500,
+    "interpolation": -1,
+    "num_periods": 40,
+    "simulation_agents": 1000,
+    "simulation_seed": 2,
+    "solution_draws": 500,
+    "solution_seed": 3,
+}
+
+BASE_COVARIATES = {
+    # Experience in A or B, but not in the last period.
+    "not_exp_a_lagged": "(exp_a > 0) & (choice_lagged != 1)",
+    "not_exp_b_lagged": "(exp_b > 0) & (choice_lagged != 2)",
+    # Last occupation was A, B, or education.
+    "work_a_lagged": "choice_lagged == 1",
+    "work_b_lagged": "choice_lagged == 2",
+    "edu_lagged": "choice_lagged == 3",
+    # No experience in A or B.
+    "not_any_exp_a": "exp_a == 0",
+    "not_any_exp_b": "exp_b == 0",
+    # Any experience in A or B.
+    "any_exp_a": "exp_a > 0",
+    "any_exp_b": "exp_b > 0",
+    # High school or college graduate.
+    "hs_graduate": "edu >= 12",
+    "co_graduate": "edu >= 16",
+    # Was not in school last period and is/is not high school graduate.
+    "is_return_not_high_school": "~edu_lagged & ~hs_graduate",
+    "is_return_high_school": "~edu_lagged & hs_graduate",
+    # Define age groups.
+    "is_minor": "period < 2",
+    "is_young_adult": "2 <= period <= 4",
+    "is_adult": "5 <= period",
+}
+
 # Labels for columns in a dataset as well as the formatters.
 DATA_LABELS_EST = [
     "Identifier",

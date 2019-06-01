@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import respy as rp
 from development.testing.regression.run_regression import load_regression_tests
 from respy.pre_processing.model_processing import process_model_spec
 from respy.solve import create_state_space
@@ -16,6 +17,7 @@ def make_imports_available_in_doctest_namespaces(doctest_namespace):
     As a suggestion, we should only include imports which are very common.
 
     """
+    doctest_namespace["rp"] = rp
     doctest_namespace["pd"] = pd
     doctest_namespace["pyth_create_state_space"] = create_state_space
     doctest_namespace["StateSpace"] = StateSpace
