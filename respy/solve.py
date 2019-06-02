@@ -3,6 +3,7 @@ import pandas as pd
 from numba import guvectorize
 from numba import njit
 
+from respy.config import BASE_COVARIATES
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.model_processing import process_options
@@ -637,24 +638,7 @@ class StateSpace:
 
     states_columns = ["period", "exp_a", "exp_b", "edu", "choice_lagged", "type"]
 
-    base_covariates_columns = [
-        "not_exp_a_lagged",
-        "not_exp_b_lagged",
-        "work_a_lagged",
-        "work_b_lagged",
-        "edu_lagged",
-        "not_any_exp_a",
-        "not_any_exp_b",
-        "any_exp_a",
-        "any_exp_b",
-        "hs_graduate",
-        "co_graduate",
-        "is_return_not_high_school",
-        "is_return_high_school",
-        "is_minor",
-        "is_young_adult",
-        "is_adult",
-    ]
+    base_covariates_columns = list(BASE_COVARIATES.keys())
 
     wages_columns = ["wage_a", "wage_b"]
     nonpec_columns = ["nonpec_a", "nonpec_b", "nonpec_edu", "nonpec_home"]
