@@ -50,7 +50,7 @@ def main():
     os.chdir(folder)
 
     # Initialize the class
-    attr = rp.process_model_spec(params_spec, options_spec)
+    attr = rp.process_params(params_spec, options_spec)
 
     # Simulate the data
     state_space, simulated_data = rp.simulate(attr)

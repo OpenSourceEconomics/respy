@@ -97,7 +97,7 @@ def investigate_regression_test(idx):
 
 def check_single(test, strict=False):
     """Check a single test."""
-    param_spec, option_spec, crit_val = test
+    params, option_spec, crit_val = test
 
     # We need to create an temporary directory, so the multiprocessing does not
     # interfere with any of the files that are printed and used during the small
@@ -106,11 +106,11 @@ def check_single(test, strict=False):
     os.mkdir(dirname)
     os.chdir(dirname)
 
-    df = simulate_truncated_data(param_spec, option_spec)
+    df = simulate_truncated_data(params, option_spec)
 
-    crit_func = rp.get_crit_func(param_spec, option_spec, df)
+    crit_func = rp.get_crit_func(params, option_spec, df)
 
-    est_val = crit_func(param_spec)
+    est_val = crit_func(params)
     is_success = np.isclose(est_val, crit_val, rtol=TOL, atol=TOL)
 
     if strict is True:
@@ -129,18 +129,18 @@ def create_single(idx):
     os.mkdir(dirname)
     os.chdir(dirname)
     np.random.seed(idx)
-    param_spec, options_spec = generate_random_model()
-    df = simulate_truncated_data(param_spec, options_spec)
+    params, options = generate_random_model()
+    df = simulate_truncated_data(params, options)
 
-    crit_func = rp.get_crit_func(param_spec, options_spec, df)
+    crit_func = rp.get_crit_func(params, options, df)
 
-    crit_val = crit_func(param_spec)
+    crit_val = crit_func(params)
 
     if not isinstance(crit_val, float):
         raise AssertionError(" ... value of criterion function too large.")
     os.chdir("..")
     shutil.rmtree(dirname)
-    return param_spec, options_spec, crit_val
+    return params, options, crit_val
 
 
 if __name__ == "__main__":

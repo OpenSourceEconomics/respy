@@ -5,7 +5,7 @@ import pytest
 
 import respy as rp
 from respy.likelihood import get_crit_func
-from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import process_params
 from respy.simulate import get_continuation_value_and_ex_post_rewards
 from respy.tests.random_model import generate_random_model
 
@@ -16,12 +16,12 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
     np.random.seed(seed)
 
     # We need to simulate the model to get the emaxs and model attributes.
-    params_spec, options_spec = generate_random_model(myopic=True)
-    _, optim_paras = process_model_spec(params_spec, options_spec)
+    params, options = generate_random_model(myopic=True)
+    params, optim_paras = process_params(params)
 
     draws = np.random.randn(1, 4)
 
-    state_space, _ = rp.simulate(params_spec, options_spec)
+    state_space, _ = rp.simulate(params, options)
 
     for period in range(state_space.num_periods):
         # Unpack necessary attributes
@@ -56,22 +56,22 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
     np.random.seed(seed)
 
     # Get simulated data and likelihood for myopic model.
-    params_spec, options_spec = generate_random_model(myopic=True)
+    params, options = generate_random_model(myopic=True)
 
-    state_space, df = rp.simulate(params_spec, options_spec)
+    state_space, df = rp.simulate(params, options)
 
-    crit_func = get_crit_func(params_spec, options_spec, df)
+    crit_func = get_crit_func(params, options, df)
 
-    likelihood = crit_func(params_spec)
+    likelihood = crit_func(params)
 
     # Get simulated data and likelihood for model with tiny delta.
-    params_spec.loc["delta", "para"] = 1e-12
+    params.loc["delta", "para"] = 1e-12
 
-    state_space_, df_ = rp.simulate(params_spec, options_spec)
+    state_space_, df_ = rp.simulate(params, options)
 
-    crit_func_ = rp.get_crit_func(params_spec, options_spec, df_)
+    crit_func_ = rp.get_crit_func(params, options, df_)
 
-    likelihood_ = crit_func_(params_spec)
+    likelihood_ = crit_func_(params)
 
     pd.testing.assert_frame_equal(df, df_)
     np.testing.assert_almost_equal(likelihood, likelihood_, decimal=15)

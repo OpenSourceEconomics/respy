@@ -1,5 +1,4 @@
 """Process model specification files or objects."""
-import json
 import warnings
 from pathlib import Path
 
@@ -7,49 +6,45 @@ import numpy as np
 import pandas as pd
 import yaml
 
-# from respy.config import DEFAULT_OPTIONS_SPEC
+from respy.config import DEFAULT_OPTIONS
+from respy.pre_processing.model_checking import _validate_options
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 
-def process_model_spec(params_spec, options_spec):
-    params_spec = _read_params_spec(params_spec)
-    options_spec = _read_options_spec(options_spec)
+def process_params(params):
+    params = _read_params(params)
+    optim_paras = parse_parameters(params)
 
-    attr = _create_attribute_dictionary(options_spec)
-    optim_paras = parse_parameters(params_spec)
-
-    return attr, optim_paras
+    return params, optim_paras
 
 
-# def process_options_spec(options_spec):
-#     validate_options_spec(options_spec)
+def process_options(options):
+    options = _read_options(options)
 
-#     options_spec = {**DEFAULT_OPTIONS_SPEC, options_spec}
+    for key in DEFAULT_OPTIONS:
+        if key == "covariates":
+            options["covariates"] = {
+                **DEFAULT_OPTIONS["covariates"],
+                **options.get("covariates", {}),
+            }
+        else:
+            options[key] = options.get(key, DEFAULT_OPTIONS[key])
 
-#     return options_spec
+    _validate_options(options)
+    options = _sort_education_options(options)
 
-
-def _create_attribute_dictionary(options_spec):
-    attr = {
-        "is_debug": bool(options_spec["program"]["debug"]),
-        "interpolation": bool(options_spec["interpolation"]["flag"]),
-        "num_agents_sim": int(options_spec["simulation"]["agents"]),
-        "num_draws_sol": int(options_spec["solution"]["draws"]),
-        "num_draws_est": int(options_spec["estimation"]["draws"]),
-        "num_points_interp": int(options_spec["interpolation"]["points"]),
-        "seed_sol": int(options_spec["solution"]["seed"]),
-        "seed_est": int(options_spec["estimation"]["seed"]),
-        "seed_sim": int(options_spec["simulation"]["seed"]),
-        "tau": float(options_spec["estimation"]["tau"]),
-        "edu_spec": options_spec["edu_spec"],
-        "num_periods": int(options_spec["num_periods"]),
-    }
-
-    return attr
+    return options
 
 
-def _read_params_spec(input_):
+def _sort_education_options(o):
+    ordered_indices = np.argsort(o["education_start"])
+    for key in ["education_start", "education_share", "education_lagged"]:
+        o[key] = np.array(o[key])[ordered_indices].tolist()
+    return o
+
+
+def _read_params(input_):
     if not isinstance(input_, (Path, pd.DataFrame)):
         raise TypeError("params_spec must be Path or pd.DataFrame.")
 
@@ -63,15 +58,13 @@ def _read_params_spec(input_):
     return params_spec
 
 
-def _read_options_spec(input_):
+def _read_options(input_):
     if not isinstance(input_, (Path, dict)):
         raise TypeError("options_spec must be Path or dictionary.")
 
     if isinstance(input_, Path):
         with open(input_, "r") as file:
-            if input_.suffix == ".json":
-                options_spec = json.load(file)
-            elif input_.suffix in [".yaml", ".yml"]:
+            if input_.suffix in [".yaml", ".yml"]:
                 options_spec = yaml.safe_load(file)
             else:
                 raise NotImplementedError(f"Format {input_.suffix} is not supported.")

@@ -1,7 +1,6 @@
-import json
-
 import numpy as np
 import pandas as pd
+import yaml
 
 from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
@@ -90,7 +89,7 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
 def get_example_model(model):
     assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
 
-    options_spec = json.loads((TEST_RESOURCES_DIR / f"{model}.json").read_text())
+    options_spec = yaml.safe_load((TEST_RESOURCES_DIR / f"{model}.yaml").read_text())
     params_spec = pd.read_csv(TEST_RESOURCES_DIR / f"{model}.csv")
 
     return params_spec, options_spec

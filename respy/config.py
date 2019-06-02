@@ -25,21 +25,6 @@ INADMISSIBILITY_PENALTY = -400000
 
 IS_DEBUG = False
 
-DEFAULT_OPTIONS_SPEC = {
-    "education_lagged": [1],
-    "education_start": [10],
-    "education_max": [20],
-    "estimation_draws": 200,
-    "estimation_seed": 1,
-    "estimation_tau": 500,
-    "interpolation": -1,
-    "num_periods": 40,
-    "simulation_agents": 1000,
-    "simulation_seed": 2,
-    "solution_draws": 500,
-    "solution_seed": 3,
-}
-
 BASE_COVARIATES = {
     # Experience in A or B, but not in the last period.
     "not_exp_a_lagged": "(exp_a > 0) & (choice_lagged != 1)",
@@ -64,6 +49,23 @@ BASE_COVARIATES = {
     "is_minor": "period < 2",
     "is_young_adult": "2 <= period <= 4",
     "is_adult": "5 <= period",
+}
+
+DEFAULT_OPTIONS = {
+    "education_lagged": [1],
+    "education_start": [10],
+    "education_share": [1],
+    "education_max": 20,
+    "estimation_draws": 200,
+    "estimation_seed": 1,
+    "estimation_tau": 500,
+    "interpolation_points": -1,
+    "num_periods": 40,
+    "simulation_agents": 1000,
+    "simulation_seed": 2,
+    "solution_draws": 500,
+    "solution_seed": 3,
+    "covariates": BASE_COVARIATES,
 }
 
 # Labels for columns in a dataset as well as the formatters.

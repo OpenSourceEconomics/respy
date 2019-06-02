@@ -10,42 +10,39 @@ def test_simulation_and_estimation_with_different_models():
     # Set constraints.
     num_agents = np.random.randint(5, 100)
     constr = {
-        "simulation": {"agents": num_agents},
+        "simulation_agents": num_agents,
         "num_periods": np.random.randint(1, 4),
-        "edu_spec": {"start": [7], "max": 15, "share": [1.0]},
-        "estimation": {"agents": num_agents},
+        "education_start": [7],
+        "education_max": 15,
+        "education_share": [1.0],
     }
 
     # Simulate a dataset
-    params_spec, options_spec = generate_random_model(point_constr=constr)
-    df = simulate_truncated_data(params_spec, options_spec)
+    params, options = generate_random_model(point_constr=constr)
+    df = simulate_truncated_data(params, options)
 
     # Evaluate at different points, ensuring that the simulated dataset still fits.
-    params_spec, options_spec = generate_random_model(point_constr=constr)
-    crit_func = get_crit_func(params_spec, options_spec, df)
+    params, options = generate_random_model(point_constr=constr)
+    crit_func = get_crit_func(params, options, df)
 
-    crit_func(params_spec)
+    crit_func(params)
 
 
 def test_invariant_results_for_two_estimations():
     num_agents = np.random.randint(5, 100)
-    constr = {
-        "simulation": {"agents": num_agents},
-        "num_periods": np.random.randint(1, 4),
-        "estimation": {"agents": num_agents},
-    }
+    constr = {"simulation_agents": num_agents, "num_periods": np.random.randint(1, 4)}
 
     # Simulate a dataset.
-    params_spec, options_spec = generate_random_model(point_constr=constr)
-    df = simulate_truncated_data(params_spec, options_spec)
+    params, options = generate_random_model(point_constr=constr)
+    df = simulate_truncated_data(params, options)
 
-    crit_func = get_crit_func(params_spec, options_spec, df)
+    crit_func = get_crit_func(params, options, df)
 
     # First estimation.
-    crit_val = crit_func(params_spec)
+    crit_val = crit_func(params)
 
     # Second estimation.
-    crit_val_ = crit_func(params_spec)
+    crit_val_ = crit_func(params)
 
     assert crit_val == crit_val_
 
@@ -59,15 +56,14 @@ def test_invariance_to_initial_conditions():
     """
     num_agents = np.random.randint(5, 100)
     constr = {
-        "simulation": {"agents": num_agents},
+        "simulation_agents": num_agents,
         "num_periods": np.random.randint(1, 4),
-        "edu_spec": {"max": np.random.randint(15, 25, size=1).tolist()[0]},
-        "estimation": {"agents": num_agents},
-        "interpolation": {"flag": False},
+        "education_max": np.random.randint(15, 25, size=1).tolist()[0],
+        "interpolation_points": -1,
     }
 
-    params_spec, options_spec = generate_random_model(point_constr=constr)
-    df = simulate_truncated_data(params_spec, options_spec)
+    params, options = generate_random_model(point_constr=constr)
+    df = simulate_truncated_data(params, options)
 
     edu_start_base = np.random.randint(1, 5, size=1).tolist()[0]
 
@@ -81,8 +77,8 @@ def test_invariance_to_initial_conditions():
 
         # We always need to ensure that a weight of one is on the first level of
         # initial schooling.
-        options_spec["edu_spec"]["share"] = [1.0] + [0.0] * (num_edu_start - 1)
-        options_spec["edu_spec"]["lagged"] = edu_lagged_base[:num_edu_start]
+        options["education_share"] = [1.0] + [0.0] * (num_edu_start - 1)
+        options["education_lagged"] = edu_lagged_base[:num_edu_start]
 
         # We need to make sure that the baseline level of initial schooling is
         # always included. At the same time we cannot have any duplicates.
@@ -95,13 +91,13 @@ def test_invariance_to_initial_conditions():
         else:
             edu_start[0] = edu_start_base
 
-        options_spec["edu_spec"]["start"] = edu_start
+        options["education_start"] = edu_start
 
-        df = simulate_truncated_data(params_spec, options_spec)
+        df = simulate_truncated_data(params, options)
 
-        crit_func = get_crit_func(params_spec, options_spec, df)
+        crit_func = get_crit_func(params, options, df)
 
-        likelihood = crit_func(params_spec)
+        likelihood = crit_func(params)
 
         likelihoods.append(likelihood)
 

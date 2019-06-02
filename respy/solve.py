@@ -3,32 +3,33 @@ import pandas as pd
 from numba import guvectorize
 from numba import njit
 
-from respy.config import BASE_COVARIATES
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
-from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import process_params
 from respy.shared import create_base_draws
 from respy.shared import transform_disturbances
 
 
-def solve(params_spec, options_spec):
+def solve(params, options):
     """Solve the model.
 
     This function is a wrapper for the solution routine.
 
     Parameters
     ----------
-    params_spec : pd.DataFrame
+    params : pd.DataFrame
         DataFrame containing parameter series.
-    options_spec : dict
+    options : dict
         Dictionary containing model attributes which are not optimized.
 
     """
-    state_space = StateSpace(params_spec, options_spec)
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
+    params, optim_paras = process_params(params)
+    options = process_options(options)
 
+    state_space = StateSpace(params, options)
     state_space = solve_with_backward_induction(
-        state_space, attr["interpolation"], attr["num_points_interp"], optim_paras
+        state_space, options["interpolation_points"], optim_paras
     )
 
     return state_space
@@ -258,19 +259,17 @@ def create_reward_components(states, covariates, optim_paras):
     return wages, nonpec
 
 
-def solve_with_backward_induction(
-    state_space, interpolation, num_points_interp, optim_paras
-):
+def solve_with_backward_induction(state_space, interpolation_points, optim_paras):
     """Calculate utilities with backward induction.
 
     Parameters
     ----------
     state_space : class
         State space object.
-    interpolation : np.array
-        Flag indicating whether interpolation is used to construct the emax in a period.
-    num_points_interp : int
-        Number of states for which the emax will be interpolated.
+    interpolation_points : int
+        A value of -1 indicates that the interpolation is turned off. If the value is a
+        non-zero, positive integer, it indicates the number of states which are used to
+        interpolate all the rest.
     optim_paras : dict
         Parameters affected by optimization.
 
@@ -328,7 +327,9 @@ def solve_with_backward_induction(
         # The number of interpolation points is the same for all periods. Thus, for some
         # periods the number of interpolation points is larger than the actual number of
         # states. In that case no interpolation is needed.
-        any_interpolated = (num_points_interp <= num_states) and interpolation
+        any_interpolated = (
+            interpolation_points <= num_states and interpolation_points != -1
+        )
 
         if any_interpolated:
             # These shifts are used to determine the expected values of the two labor
@@ -341,7 +342,7 @@ def solve_with_backward_induction(
             # is the base seed plus the number of the period. Thus, not interpolated
             # states are held constant for each periods and not across periods.
             not_interpolated = get_not_interpolated_indicator(
-                num_points_interp, num_states, state_space.seed + period
+                interpolation_points, num_states, state_space.seed + period
             )
 
             # Constructing the exogenous variable for all states, including the ones
@@ -379,7 +380,7 @@ def solve_with_backward_induction(
     return state_space
 
 
-def get_not_interpolated_indicator(num_points_interp, num_states, seed):
+def get_not_interpolated_indicator(interpolation_points, num_states, seed):
     """Get indicator for states which will be not interpolated.
 
     Randomness in this function is held constant for each period but not across periods.
@@ -387,7 +388,7 @@ def get_not_interpolated_indicator(num_points_interp, num_states, seed):
 
     Parameters
     ----------
-    num_points_interp : int
+    interpolation_points : int
         Number of states which will be interpolated.
     num_states : int
         Total number of states in period.
@@ -404,7 +405,7 @@ def get_not_interpolated_indicator(num_points_interp, num_states, seed):
 
     # Drawing random interpolation indices.
     interpolation_points = np.random.choice(
-        num_states, size=num_points_interp, replace=False
+        num_states, size=interpolation_points, replace=False
     )
 
     # Constructing an indicator whether a state will be interpolated.
@@ -662,36 +663,31 @@ class StateSpace:
     nonpec_columns = ["nonpec_a", "nonpec_b", "nonpec_edu", "nonpec_home"]
     emaxs_columns = ["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
 
-    def __init__(self, params_spec, options_spec):
-        attr, optim_paras = process_model_spec(params_spec, options_spec)
+    def __init__(self, params, options):
+        params, optim_paras = process_params(params)
+        options = process_options(options)
+
         # Add some arguments to the state space.
-        self.edu_max = attr["edu_spec"]["max"]
-        self.num_periods = attr["num_periods"]
+        self.edu_max = options["education_max"]
+        self.num_periods = options["num_periods"]
         self.num_types = optim_paras["num_types"]
-        self.seed = attr["seed_sol"]
+        self.seed = options["solution_seed"]
 
         self.base_draws_sol = create_base_draws(
-            (self.num_periods, attr["num_draws_sol"], 4), self.seed
+            (self.num_periods, options["solution_draws"], 4), self.seed
         )
 
         self.states, self.indexer = create_state_space(
-            self.num_periods, self.num_types, attr["edu_spec"]["start"], self.edu_max
+            self.num_periods, self.num_types, options["education_start"], self.edu_max
         )
         states_df = pd.DataFrame(data=self.states, columns=self.states_columns)
 
-        # TODO: Remove with new options_spec.
-        options_spec["covariates"] = {
-            **options_spec.get("covariates", {}),
-            **BASE_COVARIATES,
-        }
-        base_covariates_df = create_base_covariates(
-            states_df, options_spec["covariates"]
-        )
+        base_covariates_df = create_base_covariates(states_df, options["covariates"])
 
         self.base_covariates = base_covariates_df.to_numpy()
 
         self.covariates = create_choice_covariates(
-            base_covariates_df, states_df, params_spec
+            base_covariates_df, states_df, params
         )
 
         self.wages, self.nonpec = create_reward_components(

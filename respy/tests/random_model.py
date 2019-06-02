@@ -2,13 +2,12 @@
 import numpy as np
 
 from respy.config import DATA_LABELS_EST
-from respy.pre_processing.model_checking import check_model_attributes
-from respy.pre_processing.model_processing import _create_attribute_dictionary
+from respy.config import DEFAULT_OPTIONS
+from respy.pre_processing.model_checking import _validate_options
 from respy.pre_processing.model_processing import cov_matrix_to_sdcorr_params
 from respy.pre_processing.model_processing import (
     number_of_triangular_elements_to_dimension,
 )
-from respy.pre_processing.model_processing import process_model_spec
 from respy.pre_processing.specification_helpers import csv_template
 from respy.simulate import simulate
 
@@ -46,17 +45,6 @@ def generate_random_model(
 
     bound_constr = _consolidate_bound_constraints(bound_constr)
 
-    option_categories = [
-        "edu_spec",
-        "solution",
-        "simulation",
-        "estimation",
-        "program",
-        "interpolation",
-    ]
-
-    options = {cat: {} for cat in option_categories}
-
     if num_types is None:
         num_types = np.random.randint(1, bound_constr["max_types"] + 1)
 
@@ -74,38 +62,39 @@ def generate_random_model(
     cov = helper.dot(helper.T)
     params.loc["shocks", "para"] = cov_matrix_to_sdcorr_params(cov)
 
-    options["simulation"]["agents"] = np.random.randint(
-        3, bound_constr["max_agents"] + 1
-    )
-    options["simulation"]["seed"] = np.random.randint(1, 1000)
+    options = {}
+
+    options["simulation_agents"] = np.random.randint(3, bound_constr["max_agents"] + 1)
+    options["simulation_seed"] = np.random.randint(1, 1000)
 
     options["num_periods"] = np.random.randint(1, bound_constr["max_periods"])
 
     num_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
-    options["edu_spec"]["start"] = np.random.choice(
+    options["education_start"] = np.random.choice(
         np.arange(1, 15), size=num_edu_start, replace=False
     ).tolist()
-    options["edu_spec"]["lagged"] = np.random.uniform(size=num_edu_start).tolist()
-    options["edu_spec"]["share"] = get_valid_shares(num_edu_start)
-    options["edu_spec"]["max"] = np.random.randint(
-        max(options["edu_spec"]["start"]) + 1, 30
+    options["education_lagged"] = np.random.uniform(size=num_edu_start).tolist()
+    options["education_share"] = get_valid_shares(num_edu_start)
+    options["education_max"] = np.random.randint(
+        max(options["education_start"]) + 1, 30
     )
 
-    options["solution"]["draws"] = np.random.randint(1, bound_constr["max_draws"])
-    options["solution"]["seed"] = np.random.randint(1, 10000)
+    options["solution_draws"] = np.random.randint(1, bound_constr["max_draws"])
+    options["solution_seed"] = np.random.randint(1, 10000)
 
-    options["estimation"]["draws"] = np.random.randint(1, bound_constr["max_draws"])
-    options["estimation"]["seed"] = np.random.randint(1, 10000)
-    options["estimation"]["tau"] = np.random.uniform(100, 500)
-
-    options["program"]["debug"] = True
+    options["estimation_draws"] = np.random.randint(1, bound_constr["max_draws"])
+    options["estimation_seed"] = np.random.randint(1, 10000)
+    options["estimation_tau"] = np.random.uniform(100, 500)
 
     # don't remove the seemingly redundant conversion from numpy._bool to python bool!
-    options["interpolation"]["flag"] = bool(np.random.choice([True, False]))
-    options["interpolation"]["points"] = np.random.randint(10, 100)
+    not_interpolation = np.random.choice([True, False])
+    options["interpolation_points"] = (
+        -1 if not_interpolation else np.random.randint(10, 100)
+    )
 
-    attr = _create_attribute_dictionary(options)
-    check_model_attributes(attr)
+    options = {**DEFAULT_OPTIONS, **options}
+
+    _validate_options(options)
 
     for key, value in point_constr.items():
         if isinstance(value, dict):
@@ -113,8 +102,7 @@ def generate_random_model(
         else:
             options[key] = value
 
-    attr = _create_attribute_dictionary(options)
-    check_model_attributes(attr)
+    _validate_options(options)
 
     return params, options
 
@@ -134,7 +122,7 @@ def get_valid_shares(num_groups):
     return shares
 
 
-def simulate_truncated_data(params_spec, options_spec, is_missings=True):
+def simulate_truncated_data(params, options, is_missings=True):
     """Simulate a dataset.
 
     The data can have two more properties. First, truncated history, second, missing
@@ -152,11 +140,9 @@ def simulate_truncated_data(params_spec, options_spec, is_missings=True):
         agent = agent[agent["Period"] < start_truncation]
         return agent
 
-    state_space, df = simulate(params_spec, options_spec)
+    state_space, df = simulate(params, options)
 
-    attr, _ = process_model_spec(params_spec, options_spec)
-
-    np.random.seed(attr["seed_sim"])
+    np.random.seed(options["simulation_seed"])
 
     if is_missings:
         # We truncate the histories of agents. This mimics the frequent empirical fact

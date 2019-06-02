@@ -2,68 +2,59 @@ import numpy as np
 import pandas as pd
 
 
-def check_model_attributes(a):
-    # Debug status
-    assert a["is_debug"] in [True, False]
+def _validate_options(o):
+    # Education.
+    assert isinstance(o["education_lagged"], list)
+    assert isinstance(o["education_start"], list)
+    assert isinstance(o["education_share"], list)
+    assert all(0 <= item <= 1 for item in o["education_lagged"])
+    assert all(_is_positive_integer(i) for i in o["education_start"])
+    assert all(0 <= item <= 1 for item in o["education_share"])
+    assert all(i <= o["education_max"] for i in o["education_start"])
+    np.testing.assert_almost_equal(np.sum(o["education_share"]), 1.0, decimal=4)
+    assert _is_positive_integer(o["education_max"])
 
-    # Seeds
-    for seed in [a["seed_sol"], a["seed_sim"], a["seed_est"]]:
-        assert np.isfinite(seed)
-        assert isinstance(seed, int)
-        assert seed > 0
+    # Estimation.
+    assert _is_positive_integer(o["estimation_draws"]) and o["estimation_draws"] > 0
+    assert _is_positive_integer(o["estimation_seed"])
+    assert 0 <= o["estimation_tau"]
 
-    # Number of simulated agents.
-    assert np.isfinite(a["num_agents_sim"])
-    assert isinstance(a["num_agents_sim"], int)
-    assert a["num_agents_sim"] > 0
+    # Interpolation.
+    assert (
+        _is_positive_integer(o["interpolation_points"])
+        and o["interpolation_points"] != 0
+    ) or o["interpolation_points"] == -1
 
     # Number of periods.
-    assert np.isfinite(a["num_periods"])
-    assert isinstance(a["num_periods"], int)
-    assert a["num_periods"] > 0
+    assert _is_positive_integer(o["num_periods"])
 
-    # Number of draws for Monte Carlo integration
-    assert np.isfinite(a["num_draws_sol"])
-    assert isinstance(a["num_draws_sol"], int)
-    assert a["num_draws_sol"] >= 0
+    # Simulation.
+    assert _is_positive_integer(o["simulation_agents"])
+    assert _is_positive_integer(o["simulation_seed"])
 
-    # Debugging mode
-    assert a["is_debug"] in [True, False]
+    # Solution.
+    assert _is_positive_integer(o["solution_draws"]) and o["solution_draws"] > 0
+    assert _is_positive_integer(o["solution_seed"])
 
-    # Window for smoothing parameter
-    assert isinstance(a["tau"], float)
-    assert a["tau"] > 0
-
-    # Interpolation
-    assert a["interpolation"] in [True, False]
-    assert isinstance(a["num_points_interp"], int)
-    assert a["num_points_interp"] > 0
-
-    # Simulation of S-ML
-    assert isinstance(a["num_draws_est"], int)
-    assert a["num_draws_est"] > 0
-
-    # Education
-    assert isinstance(a["edu_spec"]["max"], int)
-    assert a["edu_spec"]["max"] > 0
-    assert isinstance(a["edu_spec"]["start"], list)
-    assert len(a["edu_spec"]["start"]) == len(set(a["edu_spec"]["start"]))
-    assert all(isinstance(item, int) for item in a["edu_spec"]["start"])
-    assert all(item > 0 for item in a["edu_spec"]["start"])
-    assert all(item <= a["edu_spec"]["max"] for item in a["edu_spec"]["start"])
-    assert all(isinstance(item, float) for item in a["edu_spec"]["share"])
-    assert all(0 <= item <= 1 for item in a["edu_spec"]["lagged"])
-    assert all(0 <= item <= 1 for item in a["edu_spec"]["share"])
-    np.testing.assert_almost_equal(np.sum(a["edu_spec"]["share"]), 1.0, decimal=4)
+    # Covariates.
+    assert isinstance(o["covariates"], dict)
+    assert all(
+        isinstance(key, str) and isinstance(val, str)
+        for key, val in o["covariates"].items()
+    )
 
 
-def check_model_solution(attr, optim_paras, state_space):
+def _is_positive_integer(x):
+    return isinstance(x, (int, np.integer)) and x >= 0
+
+
+def check_model_solution(options, optim_paras, state_space):
     # Distribute class attributes
-    num_initial = len(attr["edu_spec"]["start"])
-    edu_start = attr["edu_spec"]["start"]
+    num_initial = len(options["education_start"])
+    edu_start = options["education_start"]
     edu_start_max = max(edu_start)
-    edu_max = attr["edu_spec"]["max"]
-    num_periods = attr["num_periods"]
+    edu_max = options["education_max"]
+    num_periods = options["num_periods"]
     num_types = optim_paras["num_types"]
 
     # Check period.

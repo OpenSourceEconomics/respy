@@ -7,8 +7,8 @@ import yaml
 
 from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
-from respy.pre_processing.model_checking import check_model_attributes
-from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_checking import _validate_options
+from respy.pre_processing.model_processing import process_options
 from respy.shared import get_example_model
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
@@ -31,16 +31,16 @@ def test_generate_random_model(seed):
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
-def test_check_model_attributes_and_parameters(model_or_seed):
+def test_model_options(model_or_seed):
     if isinstance(model_or_seed, str):
-        params_spec, options_spec = get_example_model(model_or_seed)
+        _, options = get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
-        params_spec, options_spec = generate_random_model()
+        _, options = generate_random_model()
 
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
+    options = process_options(options)
 
-    check_model_attributes(attr)
+    _validate_options(options)
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))

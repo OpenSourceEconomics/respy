@@ -8,14 +8,15 @@ from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import parse_parameters
-from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import process_params
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.solve import solve_with_backward_induction
 from respy.solve import StateSpace
 
 
-def get_crit_func(params_spec, options_spec, df):
+def get_crit_func(params, options, df):
     """Get the criterion function.
 
     The return value is the :func:`log_like` where all arguments except the
@@ -24,8 +25,10 @@ def get_crit_func(params_spec, options_spec, df):
 
     Parameters
     ----------
-    attr : dict
-        Dictionary containing model attributes.
+    params : pd.DataFrame
+        DataFrame containing model parameters.
+    options : dict
+        Dictionary containing model options.
     df : pd.DataFrame
         The model is fit to this dataset.
 
@@ -40,40 +43,31 @@ def get_crit_func(params_spec, options_spec, df):
         If data has not the expected format.
 
     """
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
+    params, optim_paras = process_params(params)
+    options = process_options(options)
 
-    check_estimation_data(attr, df)
+    check_estimation_data(options, df)
 
-    state_space = StateSpace(params_spec, options_spec)
+    state_space = StateSpace(params, options)
 
     # Collect arguments for estimation.
     base_draws_est = create_base_draws(
-        (attr["num_periods"], attr["num_draws_est"], 4), attr["seed_est"]
+        (options["num_periods"], options["estimation_draws"], 4),
+        options["estimation_seed"],
     )
 
     criterion_function = partial(
         log_like,
-        interpolation=attr["interpolation"],
-        num_points_interp=attr["num_points_interp"],
-        is_debug=attr["is_debug"],
+        interpolation_points=options["interpolation_points"],
         data=df,
-        tau=attr["tau"],
+        tau=options["estimation_tau"],
         base_draws_est=base_draws_est,
         state_space=state_space,
     )
     return criterion_function
 
 
-def log_like(
-    params,
-    interpolation,
-    num_points_interp,
-    is_debug,
-    data,
-    tau,
-    base_draws_est,
-    state_space,
-):
+def log_like(params, interpolation_points, data, tau, base_draws_est, state_space):
     """Criterion function for the likelihood maximization.
 
     This function calculates the average likelihood contribution of the sample.
@@ -86,8 +80,6 @@ def log_like(
         Indicator for the interpolation routine.
     num_points_interp : int
         Number
-    is_debug : bool
-        Indicator for debugging.
     data : pd.DataFrame
         The log likelihood is calculated for this data.
     tau : float
@@ -98,12 +90,12 @@ def log_like(
         State space.
 
     """
-    optim_paras = parse_parameters(params, is_debug)
+    optim_paras = parse_parameters(params)
 
     state_space.update_systematic_rewards(optim_paras)
 
     state_space = solve_with_backward_induction(
-        state_space, interpolation, num_points_interp, optim_paras
+        state_space, interpolation_points, optim_paras
     )
 
     contribs = log_like_obs(state_space, data, base_draws_est, tau, optim_paras)

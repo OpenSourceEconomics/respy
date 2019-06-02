@@ -4,9 +4,6 @@ repos:
     hooks:
     -   id: check-yaml
     -   id: check-merge-conflict
-    -   id: check-json
-    -   id: pretty-format-json
-        args: [--autofix, --no-sort-keys]
     -   id: debug-statements
 -   repo: https://github.com/asottile/reorder_python_imports
     rev: v1.4.0

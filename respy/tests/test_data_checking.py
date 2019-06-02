@@ -4,7 +4,8 @@ import pytest
 import respy as rp
 from respy.config import EXAMPLE_MODELS
 from respy.pre_processing.data_checking import check_simulated_data
-from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import process_params
 from respy.tests.random_model import generate_random_model
 
 
@@ -17,12 +18,13 @@ def test_simulated_data(model_or_seed):
 
     """
     if isinstance(model_or_seed, str):
-        params_spec, options_spec = rp.get_example_model(model_or_seed)
+        params, options = rp.get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
-        params_spec, options_spec = generate_random_model()
+        params, options = generate_random_model()
 
-    _, df = rp.simulate(params_spec, options_spec)
+    _, df = rp.simulate(params, options)
 
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
-    check_simulated_data(attr, optim_paras, df)
+    params, optim_paras = process_params(params)
+    options = process_options(options)
+    check_simulated_data(options, optim_paras, df)

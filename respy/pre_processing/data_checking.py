@@ -1,13 +1,13 @@
 import numpy as np
 
 
-def check_estimation_data(attr, df):
+def check_estimation_data(options, df):
     """Check data for estimation.
 
     Parameters
     ----------
-    attr : dict
-        Dictionary containing model attributes.
+    options : dict
+        Dictionary containing model options.
     df : pd.DataFrame
         Data for estimation.
 
@@ -19,8 +19,7 @@ def check_estimation_data(attr, df):
     """
     df = df.copy()
 
-    num_periods = attr["num_periods"]
-    edu_spec = attr["edu_spec"]
+    num_periods = options["num_periods"]
 
     # 1. Identifier.
 
@@ -43,8 +42,10 @@ def check_estimation_data(attr, df):
 
     # 7. Years_Schooling.
     assert df.Years_Schooling.ge(0).all()
-    assert df.Years_Schooling.loc[df.Period.eq(0)].isin(edu_spec["start"]).all()
-    assert df.Years_Schooling.le(edu_spec["max"]).all()
+    assert (
+        df.Years_Schooling.loc[df.Period.eq(0)].isin(options["education_start"]).all()
+    )
+    assert df.Years_Schooling.le(options["education_max"]).all()
 
     # 8. Lagged_Choice.
     assert df.Lagged_Choice.isin([1, 2, 3, 4]).all()
@@ -102,7 +103,7 @@ def _check_state_variables(agent):
             pass
 
 
-def check_simulated_data(attr, optim_paras, df):
+def check_simulated_data(options, optim_paras, df):
     """Check simulated data.
 
     This routine runs some consistency checks on the simulated dataset. Some more
@@ -112,12 +113,12 @@ def check_simulated_data(attr, optim_paras, df):
     df = df.copy()
 
     # Distribute class attributes
-    num_periods = attr["num_periods"]
+    num_periods = options["num_periods"]
     num_types = optim_paras["num_types"]
-    edu_max = attr["edu_spec"]["max"]
+    edu_max = options["education_max"]
 
     # Run all tests available for the estimation data.
-    check_estimation_data(attr, df)
+    check_estimation_data(options, df)
 
     # 9. Types.
     assert df.Type.max() <= num_types - 1

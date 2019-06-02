@@ -1,5 +1,3 @@
-import copy
-
 import numpy as np
 import pandas as pd
 from numba import guvectorize
@@ -8,7 +6,8 @@ from respy.config import DATA_FORMATS_SIM
 from respy.config import DATA_LABELS_SIM
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
-from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import process_params
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.shared import transform_disturbances
@@ -16,46 +15,39 @@ from respy.solve import solve_with_backward_induction
 from respy.solve import StateSpace
 
 
-def simulate(params_spec, options_spec):
+def simulate(params, options):
     """Simulate a data set.
 
     This function provides the interface for the simulation of a data set.
 
     Parameters
     ----------
-    attr : dict
-        Dictionary containing model attributes.
+    params : pd.DataFrame or pd.Series
+        DataFrame or Series containing parameters.
+    options : dict
+        Dictionary containing model options.
 
     """
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
+    params, optim_paras = process_params(params)
+    options = process_options(options)
 
-    # Solve the model.
-    state_space = StateSpace(params_spec, options_spec)
-
+    state_space = StateSpace(params, options)
     state_space = solve_with_backward_induction(
-        state_space, attr["interpolation"], attr["num_points_interp"], optim_paras
+        state_space, options["interpolation_points"], optim_paras
     )
 
     # Draw draws for the simulation.
     base_draws_sims = create_base_draws(
-        (attr["num_periods"], attr["num_agents_sim"], 4), attr["seed_sim"]
+        (options["num_periods"], options["simulation_agents"], 4),
+        options["simulation_seed"],
     )
 
-    simulated_data = simulate_data(
-        state_space,
-        attr["num_agents_sim"],
-        base_draws_sims,
-        attr["edu_spec"],
-        optim_paras,
-        attr["seed_sim"],
-    )
+    simulated_data = simulate_data(state_space, base_draws_sims, optim_paras, options)
 
     return state_space, simulated_data
 
 
-def simulate_data(
-    state_space, num_agents_sim, base_draws_sims, edu_spec, optim_paras, seed
-):
+def simulate_data(state_space, base_draws_sims, optim_paras, options):
     """Simulate a data set.
 
     At the beginning, agents are initialized with zero experience in occupations and
@@ -69,12 +61,12 @@ def simulate_data(
     ----------
     state_space : class
         Class of state space.
-    num_agents_sim : int
-        Number of simulated agents.
     base_draws_sims : np.ndarray
         Array with shape (num_periods, num_agents_sim, num_choices)
     optim_paras : dict
         Parameters affected by optimization.
+    options : dict
+        Dictionary containing model options.
 
     Returns
     -------
@@ -85,7 +77,7 @@ def simulate_data(
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
     base_draws_sims_transformed = np.full(
-        (state_space.num_periods, num_agents_sim, 4), np.nan
+        (state_space.num_periods, options["simulation_agents"], 4), np.nan
     )
 
     for period in range(state_space.num_periods):
@@ -94,19 +86,15 @@ def simulate_data(
         )
 
     # Create initial starting values for agents in simulation.
-    initial_education = _get_random_edu_start(edu_spec, num_agents_sim, seed)
-    initial_types = _get_random_types(
-        state_space.num_types, optim_paras, num_agents_sim, initial_education, seed
-    )
-    initial_lagged_choices = _get_random_lagged_choices(
-        edu_spec, num_agents_sim, initial_education, seed
-    )
+    initial_education = _get_random_edu_start(options)
+    initial_types = _get_random_types(initial_education, optim_paras, options)
+    initial_lagged_choices = _get_random_lagged_choices(initial_education, options)
 
     # Create a matrix of initial states of simulated agents. OCCUPATION A and OCCUPATION
     # B are set to zero.
     current_states = np.column_stack(
         (
-            np.zeros((num_agents_sim, 2)),
+            np.zeros((options["simulation_agents"], 2)),
             initial_education,
             initial_lagged_choices,
             initial_types,
@@ -119,7 +107,7 @@ def simulate_data(
 
         # Get indices which connect states in the state space and simulated agents.
         ks = state_space.indexer[
-            np.full(num_agents_sim, period),
+            np.full(options["simulation_agents"], period),
             current_states[:, 0],
             current_states[:, 1],
             current_states[:, 2],
@@ -157,20 +145,23 @@ def simulate_data(
         # Record wages. Expand matrix with NaNs for choice 2 and 3 for easier indexing.
         wages = (
             np.column_stack(
-                (state_space.wages[ks], np.full((num_agents_sim, 2), np.nan))
+                (
+                    state_space.wages[ks],
+                    np.full((options["simulation_agents"], 2), np.nan),
+                )
             )
             * draws
         )
         rewards_systematic = state_space.nonpec[ks]
         rewards_systematic[:, :2] += state_space.wages[ks]
         # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
-        wage = wages[np.arange(num_agents_sim), max_idx]
+        wage = wages[np.arange(options["simulation_agents"]), max_idx]
 
         # Record data of all agents in one period.
         rows = np.column_stack(
             (
-                np.arange(num_agents_sim),
-                np.full(num_agents_sim, period),
+                np.arange(options["simulation_agents"]),
+                np.full(options["simulation_agents"], period),
                 max_idx + 1,
                 wage,
                 # Write relevant state space for period to data frame. However, the
@@ -184,17 +175,17 @@ def simulate_data(
                 total_values,
                 rewards_systematic,
                 draws,
-                np.full(num_agents_sim, optim_paras["delta"][0]),
+                np.full(options["simulation_agents"], optim_paras["delta"][0]),
                 rewards_ex_post,
             )
         )
         data.append(rows)
 
         # Update work experiences or education and lagged choice for the next period.
-        current_states[np.arange(num_agents_sim), max_idx] = np.where(
+        current_states[np.arange(options["simulation_agents"]), max_idx] = np.where(
             max_idx <= 2,
-            current_states[np.arange(num_agents_sim), max_idx] + 1,
-            current_states[np.arange(num_agents_sim), max_idx],
+            current_states[np.arange(options["simulation_agents"]), max_idx] + 1,
+            current_states[np.arange(options["simulation_agents"]), max_idx],
         )
         current_states[:, 3] = max_idx + 1
 
@@ -207,7 +198,7 @@ def simulate_data(
     return simulated_data
 
 
-def _sort_type_info(optim_paras, num_types):
+def _sort_type_info(optim_paras):
     """We fix an order for the sampling of the types."""
     type_info = {"order": np.argsort(optim_paras["type_shares"].tolist()[0::2])}
 
@@ -216,7 +207,7 @@ def _sort_type_info(optim_paras, num_types):
     # We need to reorder the coefficients determining the type probabilities
     # accordingly.
     type_shares = []
-    for i in range(num_types):
+    for i in range(optim_paras["num_types"]):
         lower, upper = i * 2, (i + 1) * 2
         type_shares += [optim_paras["type_shares"][lower:upper].tolist()]
     type_info["shares"] = np.array(
@@ -226,37 +217,16 @@ def _sort_type_info(optim_paras, num_types):
     return type_info
 
 
-def _sort_edu_spec(edu_spec):
-    """ This function sorts the dictionary that provides the information about initial
-    education. It adjusts the order of the shares accordingly.
-    """
-    edu_start_ordered = sorted(edu_spec["start"])
-
-    edu_share_ordered = []
-    edu_lag_ordered = []
-    for start in edu_start_ordered:
-        idx = edu_spec["start"].index(start)
-        edu_share_ordered += [edu_spec["share"][idx]]
-        edu_lag_ordered += [edu_spec["lagged"][idx]]
-
-    edu_spec_ordered = copy.deepcopy(edu_spec)
-    edu_spec_ordered["start"] = edu_start_ordered
-    edu_spec_ordered["share"] = edu_share_ordered
-    edu_spec_ordered["lagged"] = edu_lag_ordered
-
-    return edu_spec_ordered
-
-
-def _get_random_types(num_types, optim_paras, num_agents_sim, edu_start, seed):
+def _get_random_types(edu_start, optim_paras, options):
     """Get random types for simulated agents."""
     # We want to ensure that the order of types in the initialization file does not
     # matter for the simulated sample.
-    type_info = _sort_type_info(optim_paras, num_types)
+    type_info = _sort_type_info(optim_paras)
 
-    np.random.seed(seed)
+    np.random.seed(options["simulation_seed"])
 
     types = []
-    for i in range(num_agents_sim):
+    for i in range(options["simulation_agents"]):
         probs = get_conditional_probabilities(
             type_info["shares"], np.array([edu_start[i]])
         )
@@ -268,20 +238,15 @@ def _get_random_types(num_types, optim_paras, num_agents_sim, edu_start, seed):
     return types
 
 
-def _get_random_edu_start(edu_spec, num_agents_sim, seed):
+def _get_random_edu_start(options):
     """Get random, initial levels of schooling for simulated agents."""
-    # We want to ensure that the order of initial schooling levels in the initialization
-    # files does not matter for the simulated sample. That is why we create an ordered
-    # version for this function.
-    edu_spec_ordered = _sort_edu_spec(edu_spec)
-
-    np.random.seed(seed)
+    np.random.seed(options["simulation_seed"])
 
     # As we do not want to be too strict at the user-level the sum of edu_spec might
     # be slightly larger than one. This needs to be corrected here.
-    probs = edu_spec_ordered["share"] / np.sum(edu_spec_ordered["share"])
+    probs = options["education_share"] / np.sum(options["education_share"])
     edu_start = np.random.choice(
-        edu_spec_ordered["start"], p=probs, size=num_agents_sim
+        options["education_start"], p=probs, size=options["simulation_agents"]
     )
 
     # If we only have one individual, we need to ensure that types are a vector.
@@ -290,14 +255,14 @@ def _get_random_edu_start(edu_spec, num_agents_sim, seed):
     return edu_start
 
 
-def _get_random_lagged_choices(edu_spec, num_agents_sim, edu_start, seed):
+def _get_random_lagged_choices(edu_start, options):
     """Get random, initial levels of lagged choices for simulated agents."""
-    np.random.seed(seed)
+    np.random.seed(options["simulation_seed"])
 
     lagged_start = []
-    for i in range(num_agents_sim):
-        idx = edu_spec["start"].index(edu_start[i])
-        probs = edu_spec["lagged"][idx], 1 - edu_spec["lagged"][idx]
+    for i in range(options["simulation_agents"]):
+        idx = options["education_start"].index(edu_start[i])
+        probs = options["education_lagged"][idx], 1 - options["education_lagged"][idx]
         lagged_start += np.random.choice([3, 4], p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that activities are a vector.
