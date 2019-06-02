@@ -49,6 +49,11 @@ BASE_COVARIATES = {
     "is_minor": "period < 2",
     "is_young_adult": "2 <= period <= 4",
     "is_adult": "5 <= period",
+    # Constant.
+    "constant": "1",
+    # Squared experience in sectors.
+    "exp_a_square": "exp_a ** 2 / 100",
+    "exp_b_square": "exp_b ** 2 / 100",
 }
 
 DEFAULT_OPTIONS = {
