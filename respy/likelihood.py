@@ -453,7 +453,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     prob_choices = simulate_probability_of_agents_observed_choice(
         state_space.wages[ks],
         state_space.nonpec[ks],
-        state_space.emaxs[ks, :4],
+        state_space.emaxs[ks],
         draws,
         optim_paras["delta"],
         state_space.states[ks, 3] >= state_space.edu_max,

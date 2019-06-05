@@ -1,10 +1,10 @@
 import numpy as np
-import pandas as pd
-import yaml
 
 from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
 from respy.config import TEST_RESOURCES_DIR
+from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import process_params
 
 
 def get_conditional_probabilities(type_shares, initial_level_of_education):
@@ -89,7 +89,7 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
 def get_example_model(model):
     assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
 
-    options_spec = yaml.safe_load((TEST_RESOURCES_DIR / f"{model}.yaml").read_text())
-    params_spec = pd.read_csv(TEST_RESOURCES_DIR / f"{model}.csv")
+    options = process_options(TEST_RESOURCES_DIR / f"{model}.yaml")
+    params, _ = process_params(TEST_RESOURCES_DIR / f"{model}.csv")
 
-    return params_spec, options_spec
+    return params, options

@@ -100,3 +100,4 @@ def check_model_solution(options, optim_paras, state_space):
     assert np.all(np.isfinite(state_space.wages))
     assert np.all(np.isfinite(state_space.nonpec))
     assert np.all(np.isfinite(state_space.emaxs))
+    assert np.all(np.isfinite(state_space.emax))

@@ -122,7 +122,7 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
         total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
             state_space.wages[ks],
             state_space.nonpec[ks],
-            state_space.emaxs[ks, :4],
+            state_space.emaxs[ks],
             draws.reshape(-1, 1, 4),
             optim_paras["delta"],
             state_space.states[ks, 3] >= state_space.edu_max,

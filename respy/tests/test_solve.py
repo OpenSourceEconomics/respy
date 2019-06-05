@@ -139,13 +139,24 @@ def test_get_emaxs_of_subsequent_period(seed):
     state_space = StateSpace(params, options)
 
     state_space.emaxs = np.r_[
-        np.zeros((state_space.states_per_period[:-1].sum(), 5)),
-        np.full((state_space.states_per_period[-1], 5), 10),
+        np.zeros((state_space.states_per_period[:-1].sum(), 4)),
+        np.ones((state_space.states_per_period[-1], 4)),
     ]
+    state_space.emax = np.r_[
+        np.zeros(state_space.states_per_period[:-1].sum()),
+        np.ones(state_space.states_per_period[-1]),
+    ]
+
     for period in reversed(range(state_space.num_periods - 1)):
         states = state_space.get_attribute_from_period("states", period)
         state_space.emaxs = get_emaxs_of_subsequent_period(
-            states, state_space.indexer, state_space.emaxs, state_space.edu_max
+            states,
+            state_space.indexer,
+            state_space.emaxs,
+            state_space.emax,
+            state_space.edu_max,
         )
-        state_space.emaxs[:, 4] = state_space.emaxs[:, :4].max()
-    assert (state_space.emaxs == 10).all()
+        state_space.emax = state_space.emaxs.max()
+
+    assert (state_space.emax == 1).all()
+    assert (state_space.emaxs == 1).all()

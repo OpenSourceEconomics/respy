@@ -229,11 +229,13 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
     return states, indexer
 
 
-def create_reward_components(states, covariates, optim_paras):
+def create_reward_components(types, covariates, optim_paras):
     """Calculate systematic rewards for each state.
 
     Parameters
     ----------
+    types : np.ndarray
+        Array with shape (n_states,) containing type information.
     covariates : dict
         Dictionary with covariate arrays for wage and nonpec rewards
     optim_paras : dict
@@ -250,7 +252,7 @@ def create_reward_components(states, covariates, optim_paras):
         [np.dot(covariates[n], optim_paras[n]) for n in nonpec_labels]
     )
 
-    type_deviations = optim_paras["type_shifts"][states[:, 5]]
+    type_deviations = optim_paras["type_shifts"][types]
 
     log_wages += type_deviations[:, :2]
     nonpec[:, 2:] += type_deviations[:, 2:]
@@ -282,7 +284,8 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
         in ``state_space.emaxs``.
 
     """
-    state_space.emaxs = np.zeros((state_space.num_states, 5))
+    state_space.emaxs = np.zeros((state_space.num_states, 4))
+    state_space.emax = np.zeros(state_space.num_states)
 
     # For myopic agents, utility of later periods does not play a role.
     if optim_paras["delta"] == 0:
@@ -306,6 +309,7 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
                 states_period,
                 state_space.indexer,
                 state_space.emaxs,
+                state_space.emax,
                 state_space.edu_max,
             )
 
@@ -319,7 +323,7 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
         # Unpack necessary attributes of the specific period.
         wages = state_space.get_attribute_from_period("wages", period)
         nonpec = state_space.get_attribute_from_period("nonpec", period)
-        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[:, :4]
+        emaxs_period = state_space.get_attribute_from_period("emaxs", period)
         max_education = (
             state_space.get_attribute_from_period("states", period)[:, 3]
             >= state_space.edu_max
@@ -376,7 +380,7 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
                 wages, nonpec, emaxs_period, draws_emax_risk, delta, max_education
             )
 
-        state_space.get_attribute_from_period("emaxs", period)[:, 4] = emax
+        state_space.get_attribute_from_period("emax", period)[:] = emax
 
     return state_space
 
@@ -428,7 +432,7 @@ def get_exogenous_variables(wages, nonpec, emaxs, draws, delta, max_education):
     emaxs : np.ndarray
         Array with shape (n_states_in_period, n_choices).
     draws : np.ndarray
-        Array with shape (num_draws, n_choices).
+        Array with shape (n_draws, n_choices).
     delta : float
         Discount factor.
     max_education: np.ndarray
@@ -672,7 +676,7 @@ class StateSpace:
         )
 
         self.wages, self.nonpec = create_reward_components(
-            self.states, self.covariates, optim_paras
+            self.states[:, 5], self.covariates, optim_paras
         )
 
         self._create_slices_by_periods(self.num_periods)
@@ -689,7 +693,7 @@ class StateSpace:
 
     def update_systematic_rewards(self, optim_paras):
         self.wages, self.nonpec = create_reward_components(
-            self.states, self.covariates, optim_paras
+            self.states[:, 5], self.covariates, optim_paras
         )
 
     def get_attribute_from_period(self, attr, period):
@@ -698,7 +702,7 @@ class StateSpace:
         Parameters
         ----------
         attr : str
-            String of attribute name (e.g. ``"covariates"``).
+            String of attribute name, e.g. ``"states"``.
         period : int
             Attribute is retrieved from this period.
 
@@ -814,7 +818,7 @@ def construct_emax_risk(wages, nonpec, emaxs, draws, delta, max_education, cont_
 
 
 @njit(nogil=True)
-def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
+def get_emaxs_of_subsequent_period(states, indexer, emaxs, emax, edu_max):
     """Get the maximum utility from the subsequent period.
 
     This function takes a parent node and looks up the utility from each of the four
@@ -828,11 +832,11 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
 
         # Working in Occupation A in period + 1
         k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
-        emaxs[k_parent, 0] = emaxs[k, 4]
+        emaxs[k_parent, 0] = emax[k]
 
         # Working in Occupation B in period +1
         k = indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
-        emaxs[k_parent, 1] = emaxs[k, 4]
+        emaxs[k_parent, 1] = emax[k]
 
         # Schooling in period + 1. Note that adding an additional year of schooling is
         # only possible for those that have strictly less than the maximum level of
@@ -843,11 +847,11 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
             emaxs[k_parent, 2] = 0.0
         else:
             k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
-            emaxs[k_parent, 2] = emaxs[k, 4]
+            emaxs[k_parent, 2] = emax[k]
 
         # Staying at home in period + 1
         k = indexer[period + 1, exp_a, exp_b, edu, 3, type_]
-        emaxs[k_parent, 3] = emaxs[k, 4]
+        emaxs[k_parent, 3] = emax[k]
 
     return emaxs
 
