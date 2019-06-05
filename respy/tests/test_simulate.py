@@ -6,7 +6,7 @@ import pytest
 import respy as rp
 from respy.likelihood import get_crit_func
 from respy.pre_processing.model_processing import process_params
-from respy.simulate import get_continuation_value_and_ex_post_rewards
+from respy.simulate import calculate_value_functions_and_flow_utilities
 from respy.tests.random_model import generate_random_model
 
 
@@ -33,7 +33,7 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
             >= state_space.edu_max
         )
 
-        total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
+        total_values, rewards_ex_post = calculate_value_functions_and_flow_utilities(
             wages,
             nonpec,
             emaxs_period,

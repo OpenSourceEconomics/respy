@@ -232,6 +232,11 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
 def create_reward_components(types, covariates, optim_paras):
     """Calculate systematic rewards for each state.
 
+    Wages are only available for some choices, i.e. n_nonpec >= n_wages. We extend the
+    array of wages with ones for the difference in dimensions, n_nonpec - n_wages. Ones
+    are necessary as it facilitates the aggregation of reward components in
+    :func:`calculate_emax_value_functions` and related functions.
+
     Parameters
     ----------
     types : np.ndarray
@@ -258,6 +263,10 @@ def create_reward_components(types, covariates, optim_paras):
     nonpec[:, 2:] += type_deviations[:, 2:]
 
     wages = np.clip(np.exp(log_wages), 0.0, HUGE_FLOAT)
+
+    # Extend wages to dimension of non-pecuniary rewards.
+    additional_dim = nonpec.shape[1] - log_wages.shape[1]
+    wages = np.column_stack((wages, np.ones((wages.shape[0], additional_dim))))
 
     return wages, nonpec
 
@@ -305,7 +314,7 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
         else:
             states_period = state_space.get_attribute_from_period("states", period)
 
-            state_space.emaxs = get_emaxs_of_subsequent_period(
+            state_space.emaxs = get_continuation_values(
                 states_period,
                 state_space.indexer,
                 state_space.emaxs,
@@ -353,13 +362,13 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
             # Constructing the exogenous variable for all states, including the ones
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
-            exogenous, max_emax = get_exogenous_variables(
+            exogenous, max_emax = calculate_exogenous_variables(
                 wages, nonpec, emaxs_period, shifts, delta, max_education
             )
 
             # Constructing the dependent variables for all states at the random subset
             # of points where the EMAX is actually calculated.
-            endogenous = get_endogenous_variable(
+            endogenous = calculate_endogenous_variables(
                 wages,
                 nonpec,
                 emaxs_period,
@@ -376,7 +385,7 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
             emax = get_predictions(endogenous, exogenous, max_emax, not_interpolated)
 
         else:
-            emax = construct_emax_risk(
+            emax = calculate_emax_value_functions(
                 wages, nonpec, emaxs_period, draws_emax_risk, delta, max_education
             )
 
@@ -420,8 +429,8 @@ def get_not_interpolated_indicator(interpolation_points, num_states, seed):
     return not_interpolated
 
 
-def get_exogenous_variables(wages, nonpec, emaxs, draws, delta, max_education):
-    """Get exogenous variables for interpolation scheme.
+def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, max_education):
+    """Calculate exogenous variables for interpolation scheme.
 
     Parameters
     ----------
@@ -444,34 +453,35 @@ def get_exogenous_variables(wages, nonpec, emaxs, draws, delta, max_education):
     exogenous : np.ndarray
         Array with shape (n_states_in_period, n_choices * 2 + 1).
     max_emax : np.ndarray
-        Array with shape (n_states_in_period,) containing maximum emax.
+        Array with shape (n_states_in_period,) containing maximum over all value
+        functions.
 
     """
-    total_values = get_continuation_value(
+    value_functions = calculate_value_functions(
         wages, nonpec, emaxs, draws.reshape(1, -1), delta, max_education
     )
 
-    max_emax = total_values.max(axis=1)
-    exogenous = max_emax - total_values.reshape(-1, 4)
+    max_value_functions = value_functions.max(axis=1)
+    exogenous = max_value_functions - value_functions.reshape(-1, 4)
 
     exogenous = np.column_stack(
         (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
     )
 
-    return exogenous, max_emax.reshape(-1)
+    return exogenous, max_value_functions.reshape(-1)
 
 
-def get_endogenous_variable(
+def calculate_endogenous_variables(
     wages,
     nonpec,
-    emaxs,
-    max_emax,
+    continuation_values,
+    max_value_functions,
     not_interpolated,
-    draws_emax_risk,
+    draws,
     delta,
     max_education,
 ):
-    """Construct endogenous variable for all states which are not interpolated.
+    """Calculate endogenous variable for all states which are not interpolated.
 
     Parameters
     ----------
@@ -479,14 +489,15 @@ def get_endogenous_variable(
         Array with shape (n_states_in_period, n_wages).
     nonpec : np.ndarray
         Array with shape (n_states_in_period, n_choices).
-    emaxs : np.ndarray
+    continuation_values : np.ndarray
         Array with shape (n_states_in_period, n_choices).
-    max_emax : np.ndarray
-        Array with shape (n_states_in_period,) containing maximum of exogenous emax.
+    max_value_functions : np.ndarray
+        Array with shape (n_states_in_period,) containing maximum over all value
+        functions.
     not_interpolated : np.ndarray
         Array with shape (n_states_in_period,) containing indicators for simulated
-        emaxs.
-    draws_emax_risk : np.ndarray
+        continuation_values.
+    draws : np.ndarray
         Array with shape (num_draws, n_choices) containing draws.
     delta : float
         Discount factor.
@@ -495,20 +506,20 @@ def get_endogenous_variable(
         state has reached maximum education.
 
     """
-    emax = construct_emax_risk(
+    emax_value_functions = calculate_emax_value_functions(
         wages[not_interpolated],
         nonpec[not_interpolated],
-        emaxs[not_interpolated],
-        draws_emax_risk,
+        continuation_values[not_interpolated],
+        draws,
         delta,
         max_education[not_interpolated],
     )
-    endogenous = emax - max_emax[not_interpolated]
+    endogenous = emax_value_functions - max_value_functions[not_interpolated]
 
     return endogenous
 
 
-def get_predictions(endogenous, exogenous, maxe, not_interpolated):
+def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated):
     """Get predictions for the emax of interpolated states.
 
     Fit an OLS regression of the exogenous variables on the endogenous variables and use
@@ -523,8 +534,9 @@ def get_predictions(endogenous, exogenous, maxe, not_interpolated):
     exogenous : np.ndarray
         Array with shape (n_states_in_period, n_choices * 2 + 1) containing exogenous
         variables.
-    maxe : np.ndarray
-        Array with shape (n_states_in_period,) containing the maximum emax.
+    max_value_functions : np.ndarray
+        Array with shape (n_states_in_period,) containing the maximum over all value
+        functions.
     not_interpolated : np.ndarray
         Array with shape (n_states_in_period,) containing indicator for states which
         are not interpolated and used to estimate the coefficients for the
@@ -540,8 +552,8 @@ def get_predictions(endogenous, exogenous, maxe, not_interpolated):
     endogenous_predicted = np.clip(endogenous_predicted, 0.00, None)
 
     # Construct predicted EMAX for all states and the
-    predictions = endogenous_predicted + maxe
-    predictions[not_interpolated] = endogenous + maxe[not_interpolated]
+    predictions = endogenous_predicted + max_value_functions
+    predictions[not_interpolated] = endogenous + max_value_functions[not_interpolated]
 
     check_prediction_model(endogenous_predicted, beta)
 
@@ -616,7 +628,8 @@ class StateSpace:
         Array with shape (num_states, 16) containing covariates of each state necessary
         to calculate rewards.
     wages : np.ndarray
-        Array with shape (n_states_in_period, n_wages).
+        Array with shape (n_states_in_period, n_choices) which contains zeros in places
+        for choices without wages.
     nonpec : np.ndarray
         Array with shape (n_states_in_period, n_choices).
     emaxs : np.ndarray
@@ -629,7 +642,7 @@ class StateSpace:
         Number of types.
     states_columns : list
         List of column names in ``self.states``.
-    covariates_columns : list
+    base_covariates_columns : list
         List of column names in ``self.covariates``.
     wages_columns : list
         List of column names in ``self.wages``
@@ -668,8 +681,6 @@ class StateSpace:
         states_df = pd.DataFrame(data=self.states, columns=self.states_columns)
 
         base_covariates_df = create_base_covariates(states_df, options["covariates"])
-
-        self.base_covariates = base_covariates_df.to_numpy()
 
         self.covariates = create_choice_covariates(
             base_covariates_df, states_df, params
@@ -750,8 +761,16 @@ class StateSpace:
     nopython=True,
     target="parallel",
 )
-def construct_emax_risk(wages, nonpec, emaxs, draws, delta, max_education, cont_value):
-    """Simulate expected maximum utility for a given distribution of the unobservables.
+def calculate_emax_value_functions(
+    wages,
+    nonpec,
+    continuation_values,
+    draws,
+    delta,
+    max_education,
+    emax_value_functions,
+):
+    r"""Calculate the expected maximum of value functions for a set of unobservables.
 
     The function takes an agent and calculates the utility for each of the choices, the
     ex-post rewards, with multiple draws from the distribution of unobservables and adds
@@ -764,13 +783,23 @@ def construct_emax_risk(wages, nonpec, emaxs, draws, delta, max_education, cont_
     points. In this setting, one wants to approximate the expected maximum utility of
     the current state.
 
+    Note that ``wages`` have the same length as ``nonpec`` despite that wages are only
+    available in some sectors. Missing sectors are filled with ones. In the case of a
+    sector with wage and without wage, flow utilities are
+
+    .. math::
+
+        \text{Flow Utility} = \text{Wage} * \epsilon + \text{Non-pecuniary}
+        \text{Flow Utility} = 1 * \epsilon + \text{Non-pecuniary}
+
+
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (n_wages,) containing wages.
+        Array with shape (n_choices,) containing wages.
     nonpec : np.ndarray
         Array with shape (n_choices,) containing non-pecuniary rewards.
-    emaxs : np.ndarray
+    continuation_values : np.ndarray
         Array with shape (n_choices,) containing expected maximum utility for each
         choice in the subsequent period.
     draws : np.ndarray
@@ -782,7 +811,7 @@ def construct_emax_risk(wages, nonpec, emaxs, draws, delta, max_education, cont_
 
     Returns
     -------
-    cont_value : float
+    emax_value_functions : float
         Expected maximum utility of an agent.
 
     .. _Monte Carlo integration:
@@ -790,39 +819,36 @@ def construct_emax_risk(wages, nonpec, emaxs, draws, delta, max_education, cont_
 
     """
     num_draws, num_choices = draws.shape
-    num_wages = wages.shape[0]
 
-    cont_value[0] = 0.0
+    emax_value_functions[0] = 0.0
 
     for i in range(num_draws):
 
-        current_max_emax = 0.0
+        max_value_functions = 0.0
 
         for j in range(num_choices):
-            if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + nonpec[j]
-            else:
-                rew_ex = nonpec[j] + draws[i, j]
-
-            emax_choice = rew_ex + delta * emaxs[j]
+            flow_utility = wages[j] * draws[i, j] + nonpec[j]
+            value_function = flow_utility + delta * continuation_values[j]
 
             if j == 2 and max_education:
-                emax_choice += INADMISSIBILITY_PENALTY
+                value_function += INADMISSIBILITY_PENALTY
 
-            if emax_choice > current_max_emax:
-                current_max_emax = emax_choice
+            if value_function > max_value_functions:
+                max_value_functions = value_function
 
-        cont_value[0] += current_max_emax
+        emax_value_functions[0] += max_value_functions
 
-    cont_value[0] /= num_draws
+    emax_value_functions[0] /= num_draws
 
 
 @njit(nogil=True)
-def get_emaxs_of_subsequent_period(states, indexer, emaxs, emax, edu_max):
+def get_continuation_values(
+    states, indexer, continuation_values, emax_value_functions, edu_max
+):
     """Get the maximum utility from the subsequent period.
 
-    This function takes a parent node and looks up the utility from each of the four
-    choices in the subsequent period.
+    This function takes a parent state and looks up the continuation value for each
+    of the four choices in the following period.
 
     """
     for i in range(states.shape[0]):
@@ -832,11 +858,11 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, emax, edu_max):
 
         # Working in Occupation A in period + 1
         k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
-        emaxs[k_parent, 0] = emax[k]
+        continuation_values[k_parent, 0] = emax_value_functions[k]
 
         # Working in Occupation B in period +1
         k = indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
-        emaxs[k_parent, 1] = emax[k]
+        continuation_values[k_parent, 1] = emax_value_functions[k]
 
         # Schooling in period + 1. Note that adding an additional year of schooling is
         # only possible for those that have strictly less than the maximum level of
@@ -844,16 +870,16 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, emax, edu_max):
         # which have reached maximum education. Incrementing education by one would
         # target an inadmissible state.
         if edu >= edu_max:
-            emaxs[k_parent, 2] = 0.0
+            continuation_values[k_parent, 2] = 0.0
         else:
             k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
-            emaxs[k_parent, 2] = emax[k]
+            continuation_values[k_parent, 2] = emax_value_functions[k]
 
         # Staying at home in period + 1
         k = indexer[period + 1, exp_a, exp_b, edu, 3, type_]
-        emaxs[k_parent, 3] = emax[k]
+        continuation_values[k_parent, 3] = emax_value_functions[k]
 
-    return emaxs
+    return continuation_values
 
 
 @guvectorize(
@@ -865,33 +891,28 @@ def get_emaxs_of_subsequent_period(states, indexer, emaxs, emax, edu_max):
     nopython=True,
     target="cpu",
 )
-def get_continuation_value(
-    wages, nonpec, emaxs, draws, delta, max_education, cont_value
+def calculate_value_functions(
+    wages, nonpec, continuation_values, draws, delta, max_education, value_functions
 ):
-    """Calculate the continuation value.
+    """Calculate choice-specific value functions.
 
     This function is a reduced version of
-    ``get_continutation_value_and_ex_post_rewards`` which does not return ex post
-    rewards. The reason is that a second return argument doubles runtime whereas it is
+    :func:`calculate_value_functions_and_flow_utilities` which does not return flow
+    utilities. The reason is that a second return argument doubles runtime whereas it is
     only needed during simulation.
 
     """
     num_draws, num_choices = draws.shape
-    num_wages = wages.shape[0]
 
     for i in range(num_draws):
         for j in range(num_choices):
-            if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + nonpec[j]
-            else:
-                rew_ex = nonpec[j] + draws[i, j]
-
-            cont_value_ = rew_ex + delta * emaxs[j]
+            flow_utility = wages[j] * draws[i, j] + nonpec[j]
+            value_function = flow_utility + delta * continuation_values[j]
 
             if j == 2 and max_education:
-                cont_value_ += INADMISSIBILITY_PENALTY
+                value_function += INADMISSIBILITY_PENALTY
 
-            cont_value[j, i] = cont_value_
+            value_functions[j, i] = value_function
 
 
 def create_base_covariates(states, covariates_spec):
@@ -923,16 +944,19 @@ def create_base_covariates(states, covariates_spec):
 
 
 def ols(y, x):
-    """Ols implementation using a pseudo inverse.
+    """Calculate OLS coefficients using a pseudo-inverse.
 
     Parameters
     ----------
-    x (ndarray): n x n matrix of independent variables.
-    y (array): n x 1 matrix with dependant variable.
+    x : np.ndarray
+        n x n matrix of independent variables.
+    y : np.ndarray
+        n x 1 matrix with dependent variable.
 
     Returns
     -------
-        beta (array): n x 1 array of estimated parameter vector
+    beta : np.ndarray
+        n x 1 array of estimated parameter vector
 
     """
     beta = np.dot(np.linalg.pinv(x.T.dot(x)), x.T.dot(y))
@@ -940,27 +964,24 @@ def ols(y, x):
 
 
 def mse(x1, x2, axis=0):
-    """mean squared error.
+    """Calculate mean squared error.
+
+    If ``x1`` and ``x2`` have different shapes, then they need to broadcast. This uses
+    ``np.asanyarray`` to convert the input. Whether this is the desired result or not
+    depends on the array subclass, for example NumPy matrices will silently produce an
+    incorrect result.
 
     Parameters
     ----------
     x1, x2 : array_like
-       The performance measure depends on the difference between these two
-       arrays.
+       The performance measure depends on the difference between these two arrays.
     axis : int
-       axis along which the summary statistic is calculated
+       Axis along which the summary statistic is calculated
 
     Returns
     -------
     mse : ndarray or float
-       mean squared error along given axis.
-
-    Notes
-    -----
-    If ``x1`` and ``x2`` have different shapes, then they need to broadcast.
-    This uses ``numpy.asanyarray`` to convert the input. Whether this is the
-    desired result or not depends on the array subclass, for example
-    numpy matrices will silently produce an incorrect result.
+       Mean squared error along given axis.
 
     """
     x1 = np.asanyarray(x1)
@@ -969,7 +990,12 @@ def mse(x1, x2, axis=0):
 
 
 def rmse(x1, x2, axis=0):
-    """root mean squared error
+    """Calculate root mean squared error.
+
+    If ``x1`` and ``x2`` have different shapes, then they need to broadcast. This uses
+    ``np.asanyarray`` to convert the input. Whether this is the desired result or not
+    depends on the array subclass, for example NumPy matrices will silently produce an
+    incorrect result.
 
     Parameters
     ----------
@@ -981,15 +1007,8 @@ def rmse(x1, x2, axis=0):
 
     Returns
     -------
-    rmse : ndarray or float
+    rmse : np.ndarray or float
        root mean squared error along given axis.
-
-    Notes
-    -----
-    If ``x1`` and ``x2`` have different shapes, then they need to broadcast.
-    This uses ``numpy.asanyarray`` to convert the input. Whether this is the
-    desired result or not depends on the array subclass, for example
-    numpy matrices will silently produce an incorrect result.
 
     """
     x1 = np.asanyarray(x1)

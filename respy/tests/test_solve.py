@@ -7,7 +7,7 @@ from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_options
 from respy.pre_processing.model_processing import process_params
 from respy.shared import get_example_model
-from respy.solve import get_emaxs_of_subsequent_period
+from respy.solve import get_continuation_values
 from respy.solve import solve
 from respy.solve import StateSpace
 from respy.tests.random_model import generate_random_model
@@ -117,9 +117,6 @@ def test_invariance_of_solution(model_or_seed):
     state_space_ = solve(params, options)
 
     np.testing.assert_array_equal(state_space.states, state_space_.states)
-    np.testing.assert_array_equal(
-        state_space.base_covariates, state_space_.base_covariates
-    )
     np.testing.assert_array_equal(state_space.wages, state_space_.wages)
     np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
 
@@ -149,7 +146,7 @@ def test_get_emaxs_of_subsequent_period(seed):
 
     for period in reversed(range(state_space.num_periods - 1)):
         states = state_space.get_attribute_from_period("states", period)
-        state_space.emaxs = get_emaxs_of_subsequent_period(
+        state_space.emaxs = get_continuation_values(
             states,
             state_space.indexer,
             state_space.emaxs,

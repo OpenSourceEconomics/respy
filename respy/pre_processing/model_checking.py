@@ -78,9 +78,7 @@ def check_model_solution(options, optim_paras, state_space):
 
     # States and covariates have finite and nonnegative values.
     assert np.all(state_space.states >= 0)
-    assert np.all(state_space.base_covariates >= 0)
     assert np.all(np.isfinite(state_space.states))
-    assert np.all(np.isfinite(state_space.base_covariates))
 
     # Check for duplicate rows in each period. We only have possible duplicates if there
     # are multiple initial conditions.

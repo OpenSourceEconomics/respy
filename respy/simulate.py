@@ -119,7 +119,7 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
         draws = base_draws_sims_transformed[period]
 
         # Get total values and ex post rewards.
-        total_values, rewards_ex_post = get_continuation_value_and_ex_post_rewards(
+        value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
             state_space.wages[ks],
             state_space.nonpec[ks],
             state_space.emaxs[ks],
@@ -127,33 +127,26 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
             optim_paras["delta"],
             state_space.states[ks, 3] >= state_space.edu_max,
         )
-        total_values = total_values.reshape(-1, 4)
-        rewards_ex_post = rewards_ex_post.reshape(-1, 4)
+        value_functions = value_functions.reshape(-1, 4)
+        flow_utilities = flow_utilities.reshape(-1, 4)
 
         # We need to ensure that no individual chooses an inadmissible state. This
-        # cannot be done directly in the get_continuation_value function as the penalty
-        # otherwise dominates the interpolation equation. The parameter
+        # cannot be done directly in the calculate_value_functions function as the
+        # penalty otherwise dominates the interpolation equation. The parameter
         # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
         # constructed cases.
-        total_values[:, 2] = np.where(
-            current_states[:, 2] >= state_space.edu_max, -HUGE_FLOAT, total_values[:, 2]
+        value_functions[:, 2] = np.where(
+            current_states[:, 2] >= state_space.edu_max,
+            -HUGE_FLOAT,
+            value_functions[:, 2],
         )
 
         # Determine optimal choice.
-        max_idx = np.argmax(total_values, axis=1)
+        max_idx = np.argmax(value_functions, axis=1)
 
         # Record wages. Expand matrix with NaNs for choice 2 and 3 for easier indexing.
-        wages = (
-            np.column_stack(
-                (
-                    state_space.wages[ks],
-                    np.full((options["simulation_agents"], 2), np.nan),
-                )
-            )
-            * draws
-        )
-        rewards_systematic = state_space.nonpec[ks]
-        rewards_systematic[:, :2] += state_space.wages[ks]
+        wages = state_space.wages[ks] * draws
+        wages[:, 2:] = np.nan
         # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
         wage = wages[np.arange(options["simulation_agents"]), max_idx]
 
@@ -172,11 +165,12 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
                 # additional information that is not available in an observed dataset.
                 # The discount rate is included as this allows to construct the EMAX
                 # with the information provided in the simulation output.
-                total_values,
-                rewards_systematic,
+                state_space.nonpec[ks],
+                state_space.wages[ks, :2],
+                flow_utilities,
+                value_functions,
                 draws,
                 np.full(options["simulation_agents"], optim_paras["delta"][0]),
-                rewards_ex_post,
             )
         )
         data.append(rows)
@@ -280,24 +274,21 @@ def _get_random_lagged_choices(edu_start, options):
     nopython=True,
     target="cpu",
 )
-def get_continuation_value_and_ex_post_rewards(
-    wages, nonpec, emaxs, draws, delta, max_education, continuation_value, rew_ex_post
+def calculate_value_functions_and_flow_utilities(
+    wages, nonpec, emaxs, draws, delta, max_education, value_functions, flow_utilities
 ):
-    """Calculate the continuation value and ex-post rewards.
-
-    This function is a generalized ufunc which is flexible in the number of individuals
-    and draws.
+    """Calculate the choice-specific value functions and flow utilities.
 
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (2,).
+        Array with shape (n_choices,).
     nonpec : np.ndarray
-        Array with shape (4,).
+        Array with shape (n_choices,).
     emaxs : np.ndarray
-        Array with shape (4,)
+        Array with shape (n_choices,)
     draws : np.ndarray
-        Array with shape (num_draws, 4)
+        Array with shape (num_draws, n_choices)
     delta : float
         Discount rate.
     max_education: bool
@@ -305,44 +296,21 @@ def get_continuation_value_and_ex_post_rewards(
 
     Returns
     -------
-    continuation_value : np.ndarray
-        Array with shape (4, num_draws).
-    rew_ex_post : np.ndarray
-        Array with shape (4, num_draws)
-
-    Examples
-    --------
-    This example is only valid to benchmark different implementations, but does not
-    represent a use case.
-
-    >>> num_states_in_period = 10000
-    >>> num_draws = 500
-
-    >>> delta = np.array(0.9)
-    >>> wages = np.random.randn(num_states_in_period, 2)
-    >>> rewards = np.random.randn(num_states_in_period, 4)
-    >>> draws = np.random.randn(num_draws, 4)
-    >>> emaxs = np.random.randn(num_states_in_period, 4)
-
-    >>> get_continuation_value(wages, rewards, draws, emaxs, delta).shape
-    (10000, 4, 500)
+    value_functions : np.ndarray
+        Array with shape (n_choices, num_draws).
+    flow_utilities : np.ndarray
+        Array with shape (n_choices, num_draws)
 
     """
-    num_draws = draws.shape[0]
-    num_choices = nonpec.shape[0]
-    num_wages = wages.shape[0]
+    num_draws, num_choices = draws.shape
 
     for i in range(num_draws):
         for j in range(num_choices):
-            if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + nonpec[j]
-            else:
-                rew_ex = nonpec[j] + draws[i, j]
-
-            cont_value = rew_ex + delta * emaxs[j]
+            rew_ex = wages[j] * draws[i, j] + nonpec[j]
+            value_function = rew_ex + delta * emaxs[j]
 
             if j == 2 and max_education:
-                cont_value += INADMISSIBILITY_PENALTY
+                value_function += INADMISSIBILITY_PENALTY
 
-            rew_ex_post[j, i] = rew_ex
-            continuation_value[j, i] = cont_value
+            flow_utilities[j, i] = rew_ex
+            value_functions[j, i] = value_function

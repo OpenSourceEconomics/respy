@@ -19,9 +19,6 @@ def test_invariance_of_model_solution_in_solve_and_simulation(model_or_seed):
     state_space_, _ = rp.simulate(params, options)
 
     np.testing.assert_array_equal(state_space.states, state_space_.states)
-    np.testing.assert_array_equal(
-        state_space.base_covariates, state_space_.base_covariates
-    )
     np.testing.assert_array_equal(state_space.wages, state_space_.wages)
     np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
 
@@ -49,9 +46,6 @@ def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     state_space_ = crit_func.keywords["state_space"]
 
     np.testing.assert_array_equal(state_space.states, state_space_.states)
-    np.testing.assert_array_equal(
-        state_space.base_covariates, state_space_.base_covariates
-    )
     np.testing.assert_array_equal(state_space.wages, state_space_.wages)
     np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
 
