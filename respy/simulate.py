@@ -5,9 +5,9 @@ from numba import guvectorize
 from respy.config import DATA_FORMATS_SIM
 from respy.config import DATA_LABELS_SIM
 from respy.config import HUGE_FLOAT
-from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.model_processing import process_options
 from respy.pre_processing.model_processing import process_params
+from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.shared import transform_disturbances
@@ -122,10 +122,10 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
         value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
             state_space.wages[ks],
             state_space.nonpec[ks],
-            state_space.emaxs[ks],
+            state_space.continuation_values[ks],
             draws.reshape(-1, 1, 4),
             optim_paras["delta"],
-            state_space.states[ks, 3] >= state_space.edu_max,
+            state_space.is_inadmissible[ks],
         )
         value_functions = value_functions.reshape(-1, 4)
         flow_utilities = flow_utilities.reshape(-1, 4)
@@ -135,10 +135,8 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
         # penalty otherwise dominates the interpolation equation. The parameter
         # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
         # constructed cases.
-        value_functions[:, 2] = np.where(
-            current_states[:, 2] >= state_space.edu_max,
-            -HUGE_FLOAT,
-            value_functions[:, 2],
+        value_functions = np.where(
+            state_space.is_inadmissible[ks], -HUGE_FLOAT, value_functions
         )
 
         # Determine optimal choice.
@@ -267,15 +265,23 @@ def _get_random_lagged_choices(edu_start, options):
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:, :], f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:, :], f8[:, :]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:, :], f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :], f8[:, :]",
     ],
-    "(m), (n), (n), (p, n), (), () -> (n, p), (n, p)",
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
+    "-> (n_choices, n_draws), (n_choices, n_draws)",
     nopython=True,
     target="cpu",
 )
 def calculate_value_functions_and_flow_utilities(
-    wages, nonpec, emaxs, draws, delta, max_education, value_functions, flow_utilities
+    wages,
+    nonpec,
+    continuation_values,
+    draws,
+    delta,
+    is_inadmissible,
+    value_functions,
+    flow_utilities,
 ):
     """Calculate the choice-specific value functions and flow utilities.
 
@@ -285,13 +291,13 @@ def calculate_value_functions_and_flow_utilities(
         Array with shape (n_choices,).
     nonpec : np.ndarray
         Array with shape (n_choices,).
-    emaxs : np.ndarray
+    continuation_values : np.ndarray
         Array with shape (n_choices,)
     draws : np.ndarray
         Array with shape (num_draws, n_choices)
     delta : float
         Discount rate.
-    max_education: bool
+    is_inadmissible: bool
         Indicator for whether the state has reached maximum education.
 
     Returns
@@ -306,11 +312,14 @@ def calculate_value_functions_and_flow_utilities(
 
     for i in range(num_draws):
         for j in range(num_choices):
-            rew_ex = wages[j] * draws[i, j] + nonpec[j]
-            value_function = rew_ex + delta * emaxs[j]
+            value_function, flow_utility = _aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpec[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
 
-            if j == 2 and max_education:
-                value_function += INADMISSIBILITY_PENALTY
-
-            flow_utilities[j, i] = rew_ex
+            flow_utilities[j, i] = flow_utility
             value_functions[j, i] = value_function

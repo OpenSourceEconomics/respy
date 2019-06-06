@@ -120,7 +120,9 @@ def test_invariance_of_solution(model_or_seed):
     np.testing.assert_array_equal(state_space.wages, state_space_.wages)
     np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
 
-    np.testing.assert_array_equal(state_space.emaxs, state_space_.emaxs)
+    np.testing.assert_array_equal(
+        state_space.continuation_values, state_space_.continuation_values
+    )
     np.testing.assert_array_equal(
         state_space.base_draws_sol, state_space_.base_draws_sol
     )
@@ -135,25 +137,25 @@ def test_get_emaxs_of_subsequent_period(seed):
 
     state_space = StateSpace(params, options)
 
-    state_space.emaxs = np.r_[
+    state_space.continuation_values = np.r_[
         np.zeros((state_space.states_per_period[:-1].sum(), 4)),
         np.ones((state_space.states_per_period[-1], 4)),
     ]
-    state_space.emax = np.r_[
+    state_space.emax_value_functions = np.r_[
         np.zeros(state_space.states_per_period[:-1].sum()),
         np.ones(state_space.states_per_period[-1]),
     ]
 
     for period in reversed(range(state_space.num_periods - 1)):
         states = state_space.get_attribute_from_period("states", period)
-        state_space.emaxs = get_continuation_values(
+        state_space.continuation_values = get_continuation_values(
             states,
             state_space.indexer,
-            state_space.emaxs,
-            state_space.emax,
-            state_space.edu_max,
+            state_space.continuation_values,
+            state_space.emax_value_functions,
+            state_space.is_inadmissible,
         )
-        state_space.emax = state_space.emaxs.max()
+        state_space.emax_value_functions = state_space.continuation_values.max()
 
-    assert (state_space.emax == 1).all()
-    assert (state_space.emaxs == 1).all()
+    assert (state_space.emax_value_functions == 1).all()
+    assert (state_space.continuation_values == 1).all()

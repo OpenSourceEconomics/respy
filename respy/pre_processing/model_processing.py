@@ -23,11 +23,8 @@ def process_options(options):
     options = _read_options(options)
 
     for key in DEFAULT_OPTIONS:
-        if key == "covariates":
-            options["covariates"] = {
-                **DEFAULT_OPTIONS["covariates"],
-                **options.get("covariates", {}),
-            }
+        if key in ["covariates", "inadmissible_states"]:
+            options[key] = {**DEFAULT_OPTIONS[key], **options.get(key, {})}
         else:
             options[key] = options.get(key, DEFAULT_OPTIONS[key])
 

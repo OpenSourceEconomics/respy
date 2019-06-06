@@ -5,9 +5,9 @@ from numba import njit
 
 from respy.config import BASE_COVARIATES
 from respy.config import HUGE_FLOAT
-from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.model_processing import process_options
 from respy.pre_processing.model_processing import process_params
+from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import transform_disturbances
 
@@ -290,11 +290,11 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
     state_space : class
         State space containing the emax of the subsequent period of each choice, columns
         0-3, as well as the maximum emax of the current period for each state, column 4,
-        in ``state_space.emaxs``.
+        in ``state_space.continuation_values``.
 
     """
-    state_space.emaxs = np.zeros((state_space.num_states, 4))
-    state_space.emax = np.zeros(state_space.num_states)
+    state_space.continuation_values = np.zeros((state_space.num_states, 4))
+    state_space.emax_value_functions = np.zeros(state_space.num_states)
 
     # For myopic agents, utility of later periods does not play a role.
     if optim_paras["delta"] == 0:
@@ -314,12 +314,12 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
         else:
             states_period = state_space.get_attribute_from_period("states", period)
 
-            state_space.emaxs = get_continuation_values(
+            state_space.continuation_values = get_continuation_values(
                 states_period,
                 state_space.indexer,
-                state_space.emaxs,
-                state_space.emax,
-                state_space.edu_max,
+                state_space.continuation_values,
+                state_space.emax_value_functions,
+                state_space.is_inadmissible,
             )
 
         num_states = state_space.states_per_period[period]
@@ -332,10 +332,11 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
         # Unpack necessary attributes of the specific period.
         wages = state_space.get_attribute_from_period("wages", period)
         nonpec = state_space.get_attribute_from_period("nonpec", period)
-        emaxs_period = state_space.get_attribute_from_period("emaxs", period)
-        max_education = (
-            state_space.get_attribute_from_period("states", period)[:, 3]
-            >= state_space.edu_max
+        emaxs_period = state_space.get_attribute_from_period(
+            "continuation_values", period
+        )
+        is_inadmissible = state_space.get_attribute_from_period(
+            "is_inadmissible", period
         )
 
         # The number of interpolation points is the same for all periods. Thus, for some
@@ -363,7 +364,7 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
             exogenous, max_emax = calculate_exogenous_variables(
-                wages, nonpec, emaxs_period, shifts, delta, max_education
+                wages, nonpec, emaxs_period, shifts, delta, is_inadmissible
             )
 
             # Constructing the dependent variables for all states at the random subset
@@ -376,7 +377,7 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
                 not_interpolated,
                 draws_emax_risk,
                 delta,
-                max_education,
+                is_inadmissible,
             )
 
             # Create prediction model based on the random subset of points where the
@@ -386,10 +387,10 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
 
         else:
             emax = calculate_emax_value_functions(
-                wages, nonpec, emaxs_period, draws_emax_risk, delta, max_education
+                wages, nonpec, emaxs_period, draws_emax_risk, delta, is_inadmissible
             )
 
-        state_space.get_attribute_from_period("emax", period)[:] = emax
+        state_space.get_attribute_from_period("emax_value_functions", period)[:] = emax
 
     return state_space
 
@@ -429,7 +430,7 @@ def get_not_interpolated_indicator(interpolation_points, num_states, seed):
     return not_interpolated
 
 
-def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, max_education):
+def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmissible):
     """Calculate exogenous variables for interpolation scheme.
 
     Parameters
@@ -444,7 +445,7 @@ def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, max_educat
         Array with shape (n_draws, n_choices).
     delta : float
         Discount factor.
-    max_education: np.ndarray
+    is_inadmissible : np.ndarray
         Array with shape (n_states_in_period,) containing an indicator for whether the
         state has reached maximum education.
 
@@ -458,7 +459,7 @@ def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, max_educat
 
     """
     value_functions = calculate_value_functions(
-        wages, nonpec, emaxs, draws.reshape(1, -1), delta, max_education
+        wages, nonpec, emaxs, draws.reshape(1, -1), delta, is_inadmissible
     )
 
     max_value_functions = value_functions.max(axis=1)
@@ -479,7 +480,7 @@ def calculate_endogenous_variables(
     not_interpolated,
     draws,
     delta,
-    max_education,
+    is_inadmissible,
 ):
     """Calculate endogenous variable for all states which are not interpolated.
 
@@ -501,7 +502,7 @@ def calculate_endogenous_variables(
         Array with shape (num_draws, n_choices) containing draws.
     delta : float
         Discount factor.
-    max_education: np.ndarray
+    is_inadmissible : np.ndarray
         Array with shape (n_states_in_period,) containing an indicator for whether the
         state has reached maximum education.
 
@@ -512,7 +513,7 @@ def calculate_endogenous_variables(
         continuation_values[not_interpolated],
         draws,
         delta,
-        max_education[not_interpolated],
+        is_inadmissible[not_interpolated],
     )
     endogenous = emax_value_functions - max_value_functions[not_interpolated]
 
@@ -649,7 +650,7 @@ class StateSpace:
     nonpec_columns : list
         List of column names in ``self.nonpec``
     emaxs_columns : list
-        List of column names in ``self.emaxs``.
+        List of column names in ``self.continuation_values``.
 
     """
 
@@ -689,6 +690,8 @@ class StateSpace:
         self.wages, self.nonpec = create_reward_components(
             self.states[:, 5], self.covariates, optim_paras
         )
+
+        self.is_inadmissible = create_inadmissible_indicator(states_df, options)
 
         self._create_slices_by_periods(self.num_periods)
 
@@ -754,10 +757,11 @@ class StateSpace:
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]",
     ],
-    "(m), (n), (n), (p, n), (), () -> ()",
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
+    "-> ()",
     nopython=True,
     target="parallel",
 )
@@ -767,7 +771,7 @@ def calculate_emax_value_functions(
     continuation_values,
     draws,
     delta,
-    max_education,
+    is_inadmissible,
     emax_value_functions,
 ):
     r"""Calculate the expected maximum of value functions for a set of unobservables.
@@ -806,7 +810,7 @@ def calculate_emax_value_functions(
         Array with shape (num_draws, n_choices).
     delta : float
         The discount factor.
-    max_education: bool
+    is_inadmissible: bool
         Indicator for whether the state has reached maximum education.
 
     Returns
@@ -827,11 +831,14 @@ def calculate_emax_value_functions(
         max_value_functions = 0.0
 
         for j in range(num_choices):
-            flow_utility = wages[j] * draws[i, j] + nonpec[j]
-            value_function = flow_utility + delta * continuation_values[j]
-
-            if j == 2 and max_education:
-                value_function += INADMISSIBILITY_PENALTY
+            value_function, _ = _aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpec[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
 
             if value_function > max_value_functions:
                 max_value_functions = value_function
@@ -843,7 +850,7 @@ def calculate_emax_value_functions(
 
 @njit(nogil=True)
 def get_continuation_values(
-    states, indexer, continuation_values, emax_value_functions, edu_max
+    states, indexer, continuation_values, emax_value_functions, is_inadmissible
 ):
     """Get the maximum utility from the subsequent period.
 
@@ -869,7 +876,7 @@ def get_continuation_values(
         # additional education allowed. This condition is necessary as there are states
         # which have reached maximum education. Incrementing education by one would
         # target an inadmissible state.
-        if edu >= edu_max:
+        if is_inadmissible[k_parent, 2]:
             continuation_values[k_parent, 2] = 0.0
         else:
             k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
@@ -884,15 +891,16 @@ def get_continuation_values(
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:, :]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :]",
     ],
-    "(m), (n), (n), (p, n), (), () -> (n, p)",
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
+    "-> (n_choices, n_draws)",
     nopython=True,
     target="cpu",
 )
 def calculate_value_functions(
-    wages, nonpec, continuation_values, draws, delta, max_education, value_functions
+    wages, nonpec, continuation_values, draws, delta, is_inadmissible, value_functions
 ):
     """Calculate choice-specific value functions.
 
@@ -906,11 +914,14 @@ def calculate_value_functions(
 
     for i in range(num_draws):
         for j in range(num_choices):
-            flow_utility = wages[j] * draws[i, j] + nonpec[j]
-            value_function = flow_utility + delta * continuation_values[j]
-
-            if j == 2 and max_education:
-                value_function += INADMISSIBILITY_PENALTY
+            value_function, _ = _aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpec[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
 
             value_functions[j, i] = value_function
 
@@ -941,6 +952,24 @@ def create_base_covariates(states, covariates_spec):
     covariates = covariates.drop(columns=states.columns).astype(float)
 
     return covariates
+
+
+def create_inadmissible_indicator(states, options):
+    df = states.copy()
+
+    # Add maximum of experiences.
+    for key in options.keys():
+        if "max" in key:
+            df[key] = options[key]
+        else:
+            pass
+
+    for column, definition in options["inadmissible_states"].items():
+        df[column] = df.eval(definition)
+
+    is_inadmissible = df[options["inadmissible_states"].keys()].to_numpy()
+
+    return is_inadmissible
 
 
 def ols(y, x):

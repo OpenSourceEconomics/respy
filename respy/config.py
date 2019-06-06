@@ -55,6 +55,19 @@ BASE_COVARIATES = {
     "exp_a_square": "exp_a ** 2 / 100",
     "exp_b_square": "exp_b ** 2 / 100",
 }
+"""dict: Dictionary containing specification of covariates.
+
+The keys of the dictionary are used as column names and must correspond to the parameter
+value in the parameter specification. The values are strings passed to ``pandas.eval``.
+"""
+
+
+BASE_RESTRICTIONS = {
+    "a": "False",
+    "b": "False",
+    "edu": "edu == education_max",
+    "home": "False",
+}
 
 DEFAULT_OPTIONS = {
     "education_lagged": [1],
@@ -71,6 +84,7 @@ DEFAULT_OPTIONS = {
     "solution_draws": 500,
     "solution_seed": 3,
     "covariates": BASE_COVARIATES,
+    "inadmissible_states": BASE_RESTRICTIONS,
 }
 
 # Labels for columns in a dataset as well as the formatters.

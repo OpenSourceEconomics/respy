@@ -5,11 +5,11 @@ from numba import guvectorize
 from numba import vectorize
 
 from respy.config import HUGE_FLOAT
-from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import parse_parameters
 from respy.pre_processing.model_processing import process_options
 from respy.pre_processing.model_processing import process_params
+from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.solve import solve_with_backward_induction
@@ -133,13 +133,22 @@ def clip(x, minimum=None, maximum=None):
 
 
 @guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1, i8, f8, f8[:]"],
-    "(m), (n), (n), (p, n), (), (), (), () -> (p)",
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
+    "() -> (n_draws)",
     nopython=True,
     target="parallel",
 )
 def simulate_probability_of_agents_observed_choice(
-    wages, nonpec, emaxs, draws, delta, max_education, idx, tau, prob_choice
+    wages,
+    nonpec,
+    continuation_values,
+    draws,
+    delta,
+    is_inadmissible,
+    idx,
+    tau,
+    prob_choice,
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -150,17 +159,18 @@ def simulate_probability_of_agents_observed_choice(
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (2,).
+        Array with shape (4,).
     nonpec : np.ndarray
         Array with shape (4,).
-    emaxs : np.ndarray
+    continuation_values : np.ndarray
         Array with shape (4,)
     draws : np.ndarray
         Array with shape (num_draws, 4)
     delta : float
         Discount rate.
-    max_education: bool
-        Indicator for whether the state has reached maximum education.
+    is_inadmissible: np.ndarray
+        Array with shape (4,) containing an indicator for each choice whether the
+        following state is inadmissible.
     idx : int
         Choice of the agent minus one to get an index.
     tau : float
@@ -174,41 +184,39 @@ def simulate_probability_of_agents_observed_choice(
 
     """
     num_draws, num_choices = draws.shape
-    num_wages = wages.shape[0]
 
-    total_values = np.zeros((num_choices, num_draws))
+    value_functions = np.zeros((num_choices, num_draws))
 
     for i in range(num_draws):
 
-        max_total_values = 0.0
+        max_value_functions = 0.0
 
         for j in range(num_choices):
-            if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + nonpec[j]
-            else:
-                rew_ex = nonpec[j] + draws[i, j]
+            value_function, _ = _aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpec[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
 
-            cont_value = rew_ex + delta * emaxs[j]
+            value_functions[j, i] = value_function
 
-            if j == 2 and max_education:
-                cont_value += INADMISSIBILITY_PENALTY
-
-            total_values[j, i] = cont_value
-
-            if cont_value > max_total_values or j == 0:
-                max_total_values = cont_value
+            if value_function > max_value_functions or j == 0:
+                max_value_functions = value_function
 
         sum_smooth_values = 0.0
 
         for j in range(num_choices):
-            val_exp = np.exp((total_values[j, i] - max_total_values) / tau)
+            val_exp = np.exp((value_functions[j, i] - max_value_functions) / tau)
 
             val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
 
-            total_values[j, i] = val_clipped
+            value_functions[j, i] = val_clipped
             sum_smooth_values += val_clipped
 
-        prob_choice[i] = total_values[idx, i] / sum_smooth_values
+        prob_choice[i] = value_functions[idx, i] / sum_smooth_values
 
 
 @vectorize(["f4(f4, f4, f4)", "f8(f8, f8, f8)"], nopython=True, target="cpu")
@@ -453,10 +461,10 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     prob_choices = simulate_probability_of_agents_observed_choice(
         state_space.wages[ks],
         state_space.nonpec[ks],
-        state_space.emaxs[ks],
+        state_space.continuation_values[ks],
         draws,
         optim_paras["delta"],
-        state_space.states[ks, 3] >= state_space.edu_max,
+        state_space.is_inadmissible[ks],
         choices - 1,
         tau,
     )

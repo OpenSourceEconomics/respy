@@ -27,19 +27,15 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
         # Unpack necessary attributes
         wages = state_space.get_attribute_from_period("wages", period)
         nonpec = state_space.get_attribute_from_period("nonpec", period)
-        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[:, :4]
-        max_education_period = (
-            state_space.get_attribute_from_period("states", period)[:, 3]
-            >= state_space.edu_max
+        emaxs_period = state_space.get_attribute_from_period(
+            "continuation_values", period
+        )[:, :4]
+        is_inadmissible = state_space.get_attribute_from_period(
+            "is_inadmissible", period
         )
 
         total_values, rewards_ex_post = calculate_value_functions_and_flow_utilities(
-            wages,
-            nonpec,
-            emaxs_period,
-            draws,
-            optim_paras["delta"],
-            max_education_period,
+            wages, nonpec, emaxs_period, draws, optim_paras["delta"], is_inadmissible
         )
 
         # Only states without maximum education are tested as the inadmissibility
