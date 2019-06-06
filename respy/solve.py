@@ -131,59 +131,59 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
                             # Loop over all admissible values for the lagged activity:
                             # (1) Occupation A, (2) Occupation B, (3) Education, and (4)
                             # Home.
-                            for choice_lagged in [1, 2, 3, 4]:
+                            for choice_lagged in range(4):
 
                                 if period > 0:
 
                                     # (0, 1) Whenever an agent has only worked in
                                     # Occupation A, then the lagged choice cannot be
                                     # anything other than one.
-                                    if choice_lagged != 1 and exp_a == period:
+                                    if choice_lagged != 0 and exp_a == period:
                                         continue
 
                                     # (0, 2) Whenever an agent has only worked in
                                     # Occupation B, then the lagged choice cannot be
                                     # anything other than two
-                                    if choice_lagged != 2 and exp_b == period:
+                                    if choice_lagged != 1 and exp_b == period:
                                         continue
 
                                     # (0, 3) Whenever an agent has only acquired
                                     # additional education, then the lagged choice
                                     # cannot be anything other than three.
-                                    if choice_lagged != 3 and edu_add == period:
+                                    if choice_lagged != 2 and edu_add == period:
                                         continue
 
                                     # (0, 4) Whenever an agent has not acquired any
                                     # additional education and we are not in the first
                                     # period, then lagged activity cannot take a value
                                     # of three.
-                                    if choice_lagged == 3 and edu_add == 0:
+                                    if choice_lagged == 2 and edu_add == 0:
                                         continue
 
                                     # (0, 5) Whenever an agent has always chosen
                                     # Occupation A, Occupation B or education, then
                                     # lagged activity cannot take a value of four.
                                     if (
-                                        choice_lagged == 4
+                                        choice_lagged == 3
                                         and exp_a + exp_b + edu_add == period
                                     ):
                                         continue
 
                                 # (2, 1) An individual that has never worked in
                                 # Occupation A cannot have that lagged activity.
-                                if choice_lagged == 1 and exp_a == 0:
+                                if choice_lagged == 0 and exp_a == 0:
                                     continue
 
                                 # (3, 1) An individual that has never worked in
                                 # Occupation B cannot have a that lagged activity.
-                                if choice_lagged == 2 and exp_b == 0:
+                                if choice_lagged == 1 and exp_b == 0:
                                     continue
 
                                 # (1, 1) In the first period individual either were in
                                 # school the previous period as well or at home. They
                                 # cannot have any work experience.
                                 if period == 0:
-                                    if choice_lagged in [1, 2]:
+                                    if choice_lagged in [0, 1]:
                                         continue
 
                                 # Continue if state still exist. This condition is only
@@ -194,7 +194,7 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
                                         exp_a,
                                         exp_b,
                                         edu_start + edu_add,
-                                        choice_lagged - 1,
+                                        choice_lagged,
                                         type_,
                                     ]
                                     != -1
@@ -207,7 +207,7 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
                                     exp_a,
                                     exp_b,
                                     edu_start + edu_add,
-                                    choice_lagged - 1,
+                                    choice_lagged,
                                     type_,
                                 ] = i
 
@@ -861,7 +861,7 @@ def get_continuation_values(
     for i in range(states.shape[0]):
         # Unpack parent state and get index.
         period, exp_a, exp_b, edu, choice_lagged, type_ = states[i]
-        k_parent = indexer[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
+        k_parent = indexer[period, exp_a, exp_b, edu, choice_lagged, type_]
 
         # Working in Occupation A in period + 1
         k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]

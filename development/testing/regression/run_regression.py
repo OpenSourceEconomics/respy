@@ -84,20 +84,19 @@ def load_regression_tests():
 def investigate_regression_test(idx):
     """Investigate regression tests."""
     tests = load_regression_tests()
-    attr, crit_val = tests[idx]
-    df = simulate_truncated_data(attr)
+    params, options, exp_val = tests[idx]
+    df = simulate_truncated_data(params, options)
 
-    x = rp.get_parameter_vector(attr)
-    crit_func = rp.get_crit_func(attr, df)
+    crit_func = rp.get_crit_func(params, options, df)
 
-    result = crit_func(x)
+    crit_val = crit_func(params)
 
-    np.testing.assert_almost_equal(result, crit_val, decimal=DECIMALS)
+    np.testing.assert_almost_equal(crit_val, exp_val, decimal=DECIMALS)
 
 
 def check_single(test, strict=False):
     """Check a single test."""
-    params, option_spec, crit_val = test
+    params, option_spec, exp_val = test
 
     # We need to create an temporary directory, so the multiprocessing does not
     # interfere with any of the files that are printed and used during the small
@@ -111,7 +110,7 @@ def check_single(test, strict=False):
     crit_func = rp.get_crit_func(params, option_spec, df)
 
     est_val = crit_func(params)
-    is_success = np.isclose(est_val, crit_val, rtol=TOL, atol=TOL)
+    is_success = np.isclose(est_val, exp_val, rtol=TOL, atol=TOL)
 
     if strict is True:
         assert is_success, "Failed regression test."

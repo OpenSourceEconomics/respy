@@ -146,7 +146,7 @@ def simulate_probability_of_agents_observed_choice(
     draws,
     delta,
     is_inadmissible,
-    idx,
+    choice,
     tau,
     prob_choice,
 ):
@@ -159,20 +159,20 @@ def simulate_probability_of_agents_observed_choice(
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (4,).
+        Array with shape (n_choices,).
     nonpec : np.ndarray
-        Array with shape (4,).
+        Array with shape (n_choices,).
     continuation_values : np.ndarray
-        Array with shape (4,)
+        Array with shape (n_choices,)
     draws : np.ndarray
-        Array with shape (num_draws, 4)
+        Array with shape (num_draws, n_choices)
     delta : float
         Discount rate.
     is_inadmissible: np.ndarray
-        Array with shape (4,) containing an indicator for each choice whether the
-        following state is inadmissible.
-    idx : int
-        Choice of the agent minus one to get an index.
+        Array with shape (n_choices,) containing an indicator for each choice whether
+        the following state is inadmissible.
+    choice : int
+        Choice of the agent.
     tau : float
         Smoothing parameter for choice probabilities.
 
@@ -203,7 +203,7 @@ def simulate_probability_of_agents_observed_choice(
 
             value_functions[j, i] = value_function
 
-            if value_function > max_value_functions or j == 0:
+            if value_function > max_value_functions:
                 max_value_functions = value_function
 
         sum_smooth_values = 0.0
@@ -216,7 +216,7 @@ def simulate_probability_of_agents_observed_choice(
             value_functions[j, i] = val_clipped
             sum_smooth_values += val_clipped
 
-        prob_choice[i] = value_functions[idx, i] / sum_smooth_values
+        prob_choice[i] = value_functions[choice, i] / sum_smooth_values
 
 
 @vectorize(["f4(f4, f4, f4)", "f8(f8, f8, f8)"], nopython=True, target="cpu")
@@ -320,20 +320,20 @@ def create_draws_and_prob_wages(
         log_wo = np.log(wage_observed)
         log_wage_observed = clip(log_wo, -HUGE_FLOAT, HUGE_FLOAT)
 
-        log_ws = np.log(wages_systematic[choice - 1])
+        log_ws = np.log(wages_systematic[choice])
         log_wage_systematic = clip(log_ws, -HUGE_FLOAT, HUGE_FLOAT)
 
         dist = log_wage_observed - log_wage_systematic
 
         # Adjust draws and prob_wages in case of OCCUPATION A.
-        if choice == 1:
+        if choice == 0:
             temp_draws[:, 0] = dist / sc[0, 0]
             temp_draws[:, 1] = draws_stan[:, 1]
 
             prob_wages[:] = normal_pdf(dist, 0.0, sc[0, 0])
 
         # Adjust draws and prob_wages in case of OCCUPATION B.
-        elif choice == 2:
+        elif choice == 1:
             temp_draws[:, 0] = draws_stan[:, 0]
             temp_draws[:, 1] = (dist - sc[1, 0] * draws_stan[:, 0]) / sc[1, 1]
 
@@ -413,7 +413,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
             "Choice",
         ]
     ].values.astype(int)
-    wages_observed = data["Wage"].values
+    wages_observed = data["Wage"].to_numpy()
 
     # Get the number of observations for each individual and an array with indices of
     # each individual's first observation. After that, extract initial education levels
@@ -435,7 +435,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (num_obs, num_types).
-    ks = state_space.indexer[periods, exp_as, exp_bs, edus, choices_lagged - 1, :]
+    ks = state_space.indexer[periods, exp_as, exp_bs, edus, choices_lagged, :]
 
     # Reshape periods, choices and wages_observed so that they match the shape (num_obs,
     # num_types) of the indexer.
@@ -465,7 +465,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
         draws,
         optim_paras["delta"],
         state_space.is_inadmissible[ks],
-        choices - 1,
+        choices,
         tau,
     )
 

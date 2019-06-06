@@ -90,8 +90,7 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
     initial_types = _get_random_types(initial_education, optim_paras, options)
     initial_lagged_choices = _get_random_lagged_choices(initial_education, options)
 
-    # Create a matrix of initial states of simulated agents. OCCUPATION A and OCCUPATION
-    # B are set to zero.
+    # Create a matrix of initial states of simulated agents.
     current_states = np.column_stack(
         (
             np.zeros((options["simulation_agents"], 2)),
@@ -111,7 +110,7 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
             current_states[:, 0],
             current_states[:, 1],
             current_states[:, 2],
-            current_states[:, 3] - 1,
+            current_states[:, 3],
             current_states[:, 4],
         ]
 
@@ -140,20 +139,20 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
         )
 
         # Determine optimal choice.
-        max_idx = np.argmax(value_functions, axis=1)
+        choice = np.argmax(value_functions, axis=1)
 
         # Record wages. Expand matrix with NaNs for choice 2 and 3 for easier indexing.
         wages = state_space.wages[ks] * draws
         wages[:, 2:] = np.nan
         # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
-        wage = wages[np.arange(options["simulation_agents"]), max_idx]
+        wage = wages[np.arange(options["simulation_agents"]), choice]
 
         # Record data of all agents in one period.
         rows = np.column_stack(
             (
                 np.arange(options["simulation_agents"]),
                 np.full(options["simulation_agents"], period),
-                max_idx + 1,
+                choice,
                 wage,
                 # Write relevant state space for period to data frame. However, the
                 # individual's type is not part of the observed dataset. This is
@@ -174,12 +173,12 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
         data.append(rows)
 
         # Update work experiences or education and lagged choice for the next period.
-        current_states[np.arange(options["simulation_agents"]), max_idx] = np.where(
-            max_idx <= 2,
-            current_states[np.arange(options["simulation_agents"]), max_idx] + 1,
-            current_states[np.arange(options["simulation_agents"]), max_idx],
+        current_states[np.arange(options["simulation_agents"]), choice] = np.where(
+            choice <= 2,
+            current_states[np.arange(options["simulation_agents"]), choice] + 1,
+            current_states[np.arange(options["simulation_agents"]), choice],
         )
-        current_states[:, 3] = max_idx + 1
+        current_states[:, 3] = choice
 
     simulated_data = (
         pd.DataFrame(data=np.vstack(data), columns=DATA_LABELS_SIM)
@@ -255,7 +254,7 @@ def _get_random_lagged_choices(edu_start, options):
     for i in range(options["simulation_agents"]):
         idx = options["education_start"].index(edu_start[i])
         probs = options["education_lagged"][idx], 1 - options["education_lagged"][idx]
-        lagged_start += np.random.choice([3, 4], p=probs, size=1).tolist()
+        lagged_start += np.random.choice([2, 3], p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that activities are a vector.
     lagged_start = np.array(lagged_start, ndmin=1)

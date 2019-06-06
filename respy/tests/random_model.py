@@ -134,9 +134,7 @@ def simulate_truncated_data(params, options, is_missings=True):
         """ We now determine the exact period from which onward the history is truncated
         and cut the simulated dataset down to size.
         """
-        start_truncation = np.random.np.random.choice(
-            range(1, agent["Period"].max() + 2)
-        )
+        start_truncation = np.random.choice(range(1, agent["Period"].max() + 2))
         agent = agent[agent["Period"] < start_truncation]
         return agent
 
@@ -153,7 +151,7 @@ def simulate_truncated_data(params, options, is_missings=True):
 
         # We also want to drop the some wage observations. Note that we might be dealing
         # with a dataset where nobody is working anyway.
-        is_working = data_subset["Choice"].isin([1, 2])
+        is_working = data_subset["Choice"].isin([0, 1])
         num_drop_wages = int(
             np.sum(is_working) * np.random.np.random.uniform(high=0.5, size=1)
         )

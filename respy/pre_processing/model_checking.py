@@ -74,7 +74,7 @@ def check_model_solution(options, optim_paras, state_space):
     assert np.all(state_space.states[:, 3] <= edu_max)
 
     # Lagged choices are always between one and four.
-    assert np.isin(state_space.states[:, 4], [1, 2, 3, 4]).all()
+    assert np.isin(state_space.states[:, 4], range(4)).all()
 
     # States and covariates have finite and nonnegative values.
     assert np.all(state_space.states >= 0)

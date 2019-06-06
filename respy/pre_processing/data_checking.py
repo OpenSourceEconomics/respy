@@ -27,7 +27,7 @@ def check_estimation_data(options, df):
     assert df.Period.le(num_periods - 1).all()
 
     # 3. Choice.
-    assert df.Choice.isin([1, 2, 3, 4]).all()
+    assert df.Choice.isin(range(4)).all()
 
     # 4. Wage.
     assert df.Wage.fillna(1).gt(0).all()
@@ -48,8 +48,8 @@ def check_estimation_data(options, df):
     assert df.Years_Schooling.le(options["education_max"]).all()
 
     # 8. Lagged_Choice.
-    assert df.Lagged_Choice.isin([1, 2, 3, 4]).all()
-    assert df.Lagged_Choice.loc[df.Period.eq(0)].isin([3, 4]).all()
+    assert df.Lagged_Choice.isin(range(4)).all()
+    assert df.Lagged_Choice.loc[df.Period.eq(0)].isin([2, 3]).all()
 
     # Others.
     assert df.drop(columns="Wage").notna().all().all()
@@ -93,11 +93,11 @@ def _check_state_variables(agent):
             stat, label = pair
             assert stat == row[label]
         # Update experience statistics.
-        if choice == 1:
+        if choice == 0:
             exp_a += 1
-        elif choice == 2:
+        elif choice == 1:
             exp_b += 1
-        elif choice == 3:
+        elif choice == 2:
             edu += 1
         else:
             pass
@@ -127,7 +127,7 @@ def check_simulated_data(options, optim_paras, df):
 
     # Check that there are not missing wage observations if an agent is working. Also,
     # we check that if an agent is not working, there also is no wage observation.
-    is_working = df["Choice"].isin([1, 2])
+    is_working = df["Choice"].isin(range(2))
     assert df.Wage[is_working].notna().all()
     assert df.Wage[~is_working].isna().all()
 
@@ -137,7 +137,7 @@ def check_simulated_data(options, optim_paras, df):
     # If agents are myopic, we can test the equality of ex-post rewards and total
     # values.
     if df.Discount_Rate.eq(0).all():
-        for choice in [1, 2]:
+        for choice in range(2):
             is_working = df.Choice.eq(choice)
 
             ex_post_rew = f"Ex_Post_Reward_{choice}"
@@ -150,7 +150,7 @@ def check_simulated_data(options, optim_paras, df):
 
             np.testing.assert_array_almost_equal(total_rewards, ex_post_reward)
 
-        for choice in [3, 4]:
+        for choice in range(2, 4):
             ex_post_rew = f"Ex_Post_Reward_{choice}"
             systematic_rew = f"Systematic_Reward_{choice}"
             shock_rew = f"Shock_Reward_{choice}"

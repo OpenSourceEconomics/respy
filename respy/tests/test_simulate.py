@@ -29,7 +29,7 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
         nonpec = state_space.get_attribute_from_period("nonpec", period)
         emaxs_period = state_space.get_attribute_from_period(
             "continuation_values", period
-        )[:, :4]
+        )
         is_inadmissible = state_space.get_attribute_from_period(
             "is_inadmissible", period
         )
@@ -70,4 +70,4 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
     likelihood_ = crit_func_(params)
 
     pd.testing.assert_frame_equal(df, df_)
-    np.testing.assert_almost_equal(likelihood, likelihood_, decimal=15)
+    np.testing.assert_almost_equal(likelihood, likelihood_, decimal=12)

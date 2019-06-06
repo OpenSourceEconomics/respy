@@ -27,12 +27,12 @@ IS_DEBUG = False
 
 BASE_COVARIATES = {
     # Experience in A or B, but not in the last period.
-    "not_exp_a_lagged": "(exp_a > 0) & (choice_lagged != 1)",
-    "not_exp_b_lagged": "(exp_b > 0) & (choice_lagged != 2)",
+    "not_exp_a_lagged": "(exp_a > 0) & (choice_lagged != 0)",
+    "not_exp_b_lagged": "(exp_b > 0) & (choice_lagged != 1)",
     # Last occupation was A, B, or education.
-    "work_a_lagged": "choice_lagged == 1",
-    "work_b_lagged": "choice_lagged == 2",
-    "edu_lagged": "choice_lagged == 3",
+    "work_a_lagged": "choice_lagged == 0",
+    "work_b_lagged": "choice_lagged == 1",
+    "edu_lagged": "choice_lagged == 2",
     # No experience in A or B.
     "not_any_exp_a": "exp_a == 0",
     "not_any_exp_b": "exp_b == 0",
@@ -102,24 +102,24 @@ DATA_LABELS_EST = [
 # There is additional information available in a simulated dataset.
 DATA_LABELS_SIM = DATA_LABELS_EST + [
     "Type",
+    "Nonpecuniary_Rewards_0",
     "Nonpecuniary_Rewards_1",
     "Nonpecuniary_Rewards_2",
     "Nonpecuniary_Rewards_3",
-    "Nonpecuniary_Rewards_4",
+    "Wages_0",
     "Wages_1",
-    "Wages_2",
+    "Flow_Utility_0",
     "Flow_Utility_1",
     "Flow_Utility_2",
     "Flow_Utility_3",
-    "Flow_Utility_4",
+    "Value_Function_0",
     "Value_Function_1",
     "Value_Function_2",
     "Value_Function_3",
-    "Value_Function_4",
+    "Shock_Reward_0",
     "Shock_Reward_1",
     "Shock_Reward_2",
     "Shock_Reward_3",
-    "Shock_Reward_4",
     "Discount_Rate",
 ]
 
