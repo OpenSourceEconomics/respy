@@ -5,18 +5,18 @@ from numba import guvectorize
 from numba import vectorize
 
 from respy.config import HUGE_FLOAT
-from respy.config import INADMISSIBILITY_PENALTY
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import parse_parameters
-from respy.pre_processing.model_processing import process_model_spec
-from respy.pre_processing.model_processing import stack_parameters
+from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import process_params
+from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.solve import solve_with_backward_induction
 from respy.solve import StateSpace
 
 
-def get_crit_func_and_initial_guess(params_spec, options_spec, df):
+def get_crit_func(params, options, df):
     """Get the criterion function.
 
     The return value is the :func:`log_like` where all arguments except the
@@ -25,8 +25,10 @@ def get_crit_func_and_initial_guess(params_spec, options_spec, df):
 
     Parameters
     ----------
-    attr : dict
-        Dictionary containing model attributes.
+    params : pd.DataFrame
+        DataFrame containing model parameters.
+    options : dict
+        Dictionary containing model options.
     df : pd.DataFrame
         The model is fit to this dataset.
 
@@ -41,56 +43,43 @@ def get_crit_func_and_initial_guess(params_spec, options_spec, df):
         If data has not the expected format.
 
     """
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
-    x = stack_parameters(optim_paras)
+    params, optim_paras = process_params(params)
+    options = process_options(options)
 
-    check_estimation_data(attr, df)
+    check_estimation_data(options, df)
 
-    state_space = StateSpace(attr, optim_paras)
+    state_space = StateSpace(params, options)
 
     # Collect arguments for estimation.
     base_draws_est = create_base_draws(
-        (attr["num_periods"], attr["num_draws_est"], 4), attr["seed_est"]
+        (options["num_periods"], options["estimation_draws"], 4),
+        options["estimation_seed"],
     )
 
     criterion_function = partial(
         log_like,
-        interpolation=attr["interpolation"],
-        num_points_interp=attr["num_points_interp"],
-        is_debug=attr["is_debug"],
+        interpolation_points=options["interpolation_points"],
         data=df,
-        tau=attr["tau"],
+        tau=options["estimation_tau"],
         base_draws_est=base_draws_est,
         state_space=state_space,
     )
+    return criterion_function
 
-    return x, criterion_function
 
-
-def log_like(
-    x,
-    interpolation,
-    num_points_interp,
-    is_debug,
-    data,
-    tau,
-    base_draws_est,
-    state_space,
-):
+def log_like(params, interpolation_points, data, tau, base_draws_est, state_space):
     """Criterion function for the likelihood maximization.
 
     This function calculates the average likelihood contribution of the sample.
 
     Parameters
     ----------
-    x : np.ndarray
-        Parameter vector.
+    params : Series
+        Parameter Series
     interpolation : bool
         Indicator for the interpolation routine.
     num_points_interp : int
         Number
-    is_debug : bool
-        Indicator for debugging.
     data : pd.DataFrame
         The log likelihood is calculated for this data.
     tau : float
@@ -101,12 +90,12 @@ def log_like(
         State space.
 
     """
-    optim_paras = parse_parameters(x, is_debug)
+    optim_paras = parse_parameters(params)
 
     state_space.update_systematic_rewards(optim_paras)
 
     state_space = solve_with_backward_induction(
-        state_space, interpolation, num_points_interp, optim_paras
+        state_space, interpolation_points, optim_paras
     )
 
     contribs = log_like_obs(state_space, data, base_draws_est, tau, optim_paras)
@@ -144,13 +133,22 @@ def clip(x, minimum=None, maximum=None):
 
 
 @guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1, i8, f8, f8[:]"],
-    "(m), (n), (n), (p, n), (), (), (), () -> (p)",
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
+    "() -> (n_draws)",
     nopython=True,
     target="parallel",
 )
 def simulate_probability_of_agents_observed_choice(
-    wages, rewards_systematic, emaxs, draws, delta, max_education, idx, tau, prob_choice
+    wages,
+    nonpec,
+    continuation_values,
+    draws,
+    delta,
+    is_inadmissible,
+    choice,
+    tau,
+    prob_choice,
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -161,19 +159,20 @@ def simulate_probability_of_agents_observed_choice(
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (2,).
-    rewards_systematic : np.ndarray
-        Array with shape (4,).
-    emaxs : np.ndarray
-        Array with shape (4,)
+        Array with shape (n_choices,).
+    nonpec : np.ndarray
+        Array with shape (n_choices,).
+    continuation_values : np.ndarray
+        Array with shape (n_choices,)
     draws : np.ndarray
-        Array with shape (num_draws, 4)
+        Array with shape (num_draws, n_choices)
     delta : float
         Discount rate.
-    max_education: bool
-        Indicator for whether the state has reached maximum education.
-    idx : int
-        Choice of the agent minus one to get an index.
+    is_inadmissible: np.ndarray
+        Array with shape (n_choices,) containing an indicator for each choice whether
+        the following state is inadmissible.
+    choice : int
+        Choice of the agent.
     tau : float
         Smoothing parameter for choice probabilities.
 
@@ -185,41 +184,39 @@ def simulate_probability_of_agents_observed_choice(
 
     """
     num_draws, num_choices = draws.shape
-    num_wages = wages.shape[0]
 
-    total_values = np.zeros((num_choices, num_draws))
+    value_functions = np.zeros((num_choices, num_draws))
 
     for i in range(num_draws):
 
-        max_total_values = 0.0
+        max_value_functions = 0.0
 
         for j in range(num_choices):
-            if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
-            else:
-                rew_ex = rewards_systematic[j] + draws[i, j]
+            value_function, _ = _aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpec[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
 
-            cont_value = rew_ex + delta * emaxs[j]
+            value_functions[j, i] = value_function
 
-            if j == 2 and max_education:
-                cont_value += INADMISSIBILITY_PENALTY
-
-            total_values[j, i] = cont_value
-
-            if cont_value > max_total_values or j == 0:
-                max_total_values = cont_value
+            if value_function > max_value_functions:
+                max_value_functions = value_function
 
         sum_smooth_values = 0.0
 
         for j in range(num_choices):
-            val_exp = np.exp((total_values[j, i] - max_total_values) / tau)
+            val_exp = np.exp((value_functions[j, i] - max_value_functions) / tau)
 
             val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
 
-            total_values[j, i] = val_clipped
+            value_functions[j, i] = val_clipped
             sum_smooth_values += val_clipped
 
-        prob_choice[i] = total_values[idx, i] / sum_smooth_values
+        prob_choice[i] = value_functions[choice, i] / sum_smooth_values
 
 
 @vectorize(["f4(f4, f4, f4)", "f8(f8, f8, f8)"], nopython=True, target="cpu")
@@ -287,7 +284,7 @@ def create_draws_and_prob_wages(
     wage_observed : float
         Agent's observed wage.
     wages_systematic : np.ndarray
-        Array with shape (2,) containing systematic wages.
+        Array with shape (n_choices,) containing systematic wages.
     period : int
         Number of period.
     base_draws_est : np.ndarray
@@ -323,20 +320,20 @@ def create_draws_and_prob_wages(
         log_wo = np.log(wage_observed)
         log_wage_observed = clip(log_wo, -HUGE_FLOAT, HUGE_FLOAT)
 
-        log_ws = np.log(wages_systematic[choice - 1])
+        log_ws = np.log(wages_systematic[choice])
         log_wage_systematic = clip(log_ws, -HUGE_FLOAT, HUGE_FLOAT)
 
         dist = log_wage_observed - log_wage_systematic
 
         # Adjust draws and prob_wages in case of OCCUPATION A.
-        if choice == 1:
+        if choice == 0:
             temp_draws[:, 0] = dist / sc[0, 0]
             temp_draws[:, 1] = draws_stan[:, 1]
 
             prob_wages[:] = normal_pdf(dist, 0.0, sc[0, 0])
 
         # Adjust draws and prob_wages in case of OCCUPATION B.
-        elif choice == 2:
+        elif choice == 1:
             temp_draws[:, 0] = draws_stan[:, 0]
             temp_draws[:, 1] = (dist - sc[1, 0] * draws_stan[:, 0]) / sc[1, 1]
 
@@ -416,7 +413,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
             "Choice",
         ]
     ].values.astype(int)
-    wages_observed = data["Wage"].values
+    wages_observed = data["Wage"].to_numpy()
 
     # Get the number of observations for each individual and an array with indices of
     # each individual's first observation. After that, extract initial education levels
@@ -438,7 +435,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (num_obs, num_types).
-    ks = state_space.indexer[periods, exp_as, exp_bs, edus, choices_lagged - 1, :]
+    ks = state_space.indexer[periods, exp_as, exp_bs, edus, choices_lagged, :]
 
     # Reshape periods, choices and wages_observed so that they match the shape (num_obs,
     # num_types) of the indexer.
@@ -447,7 +444,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     wages_observed = wages_observed.repeat(state_space.num_types).reshape(
         -1, state_space.num_types
     )
-    wages_systematic = state_space.rewards[ks, -2:]
+    wages_systematic = state_space.wages[ks]
 
     # Adjust the draws to simulate the expected maximum utility and calculate the
     # probability of observing the wage.
@@ -462,13 +459,13 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
 
     # Simulate the probability of observing the choice of the individual.
     prob_choices = simulate_probability_of_agents_observed_choice(
-        state_space.rewards[ks, -2:],
-        state_space.rewards[ks, :4],
-        state_space.emaxs[ks, :4],
+        state_space.wages[ks],
+        state_space.nonpec[ks],
+        state_space.continuation_values[ks],
         draws,
         optim_paras["delta"],
-        state_space.states[ks, 3] >= state_space.edu_max,
-        choices - 1,
+        state_space.is_inadmissible[ks],
+        choices,
         tau,
     )
 

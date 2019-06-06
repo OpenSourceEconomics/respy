@@ -14,17 +14,16 @@ def test_equality_of_full_and_interpolated_solution():
 
     """
     # Get results from full solution.
-    constr = {"interpolation": {"flag": False}}
-    params_spec, options_spec = generate_random_model(point_constr=constr)
+    constr = {"interpolation_points": -1}
+    params, options = generate_random_model(point_constr=constr)
 
-    state_space, _ = simulate(params_spec, options_spec)
-    emaxs_full = state_space.emaxs
+    state_space, _ = simulate(params, options)
+    emax_full = state_space.emax_value_functions
 
     # Get results from interpolated solution.
-    options_spec["interpolation"]["points"] = max(state_space.states_per_period)
-    options_spec["interpolation"]["flag"] = True
+    options["interpolation_points"] = max(state_space.states_per_period)
 
-    state_space, _ = simulate(params_spec, options_spec)
-    emaxs_interpolated = state_space.emaxs
+    state_space, _ = simulate(params, options)
+    emax_interpolated = state_space.emax_value_functions
 
-    np.testing.assert_array_almost_equal(emaxs_full, emaxs_interpolated)
+    np.testing.assert_array_almost_equal(emax_full, emax_interpolated)

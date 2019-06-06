@@ -4,9 +4,10 @@ from numba import njit
 
 from respy.config import EXAMPLE_MODELS
 from respy.pre_processing.model_checking import check_model_solution
-from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import process_params
 from respy.shared import get_example_model
-from respy.solve import get_emaxs_of_subsequent_period
+from respy.solve import get_continuation_values
 from respy.solve import solve
 from respy.solve import StateSpace
 from respy.tests.random_model import generate_random_model
@@ -15,16 +16,17 @@ from respy.tests.random_model import generate_random_model
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_check_solution(model_or_seed):
     if isinstance(model_or_seed, str):
-        params_spec, options_spec = get_example_model(model_or_seed)
+        params, options = get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
-        params_spec, options_spec = generate_random_model()
+        params, options = generate_random_model()
 
-    state_space = solve(params_spec, options_spec)
+    state_space = solve(params, options)
 
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
+    params, optim_paras = process_params(params)
+    options = process_options(options)
 
-    check_model_solution(attr, optim_paras, state_space)
+    check_model_solution(options, optim_paras, state_space)
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
@@ -72,12 +74,14 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
         return indicator
 
     if isinstance(model_or_seed, str):
-        params_spec, options_spec = get_example_model(model_or_seed)
+        params, options = get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
-        params_spec, options_spec = generate_random_model()
+        params, options = generate_random_model()
 
-    state_space = solve(params_spec, options_spec)
+    options = process_options(options)
+
+    state_space = solve(params, options)
 
     indicator = np.zeros(state_space.num_states)
 
@@ -102,37 +106,56 @@ def test_invariance_of_solution(model_or_seed):
 
     """
     if isinstance(model_or_seed, str):
-        params_spec, options_spec = get_example_model(model_or_seed)
+        params, options = get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
-        params_spec, options_spec = generate_random_model()
+        params, options = generate_random_model()
 
-    state_space = solve(params_spec, options_spec)
-    state_space_ = solve(params_spec, options_spec)
+    options = process_options(options)
 
-    np.array_equal(state_space.states, state_space_.states)
-    np.array_equal(state_space.covariates, state_space_.covariates)
-    np.array_equal(state_space.rewards, state_space_.rewards)
-    np.array_equal(state_space.emaxs, state_space_.emaxs)
-    np.array_equal(state_space.base_draws_sol, state_space_.base_draws_sol)
+    state_space = solve(params, options)
+    state_space_ = solve(params, options)
+
+    np.testing.assert_array_equal(state_space.states, state_space_.states)
+    np.testing.assert_array_equal(state_space.wages, state_space_.wages)
+    np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
+
+    np.testing.assert_array_equal(
+        state_space.continuation_values, state_space_.continuation_values
+    )
+    np.testing.assert_array_equal(
+        state_space.base_draws_sol, state_space_.base_draws_sol
+    )
 
 
 @pytest.mark.parametrize("seed", range(10))
 def test_get_emaxs_of_subsequent_period(seed):
     """Test propagation of emaxs from last to first period."""
-    params_spec, options_spec = generate_random_model()
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
+    params, options = generate_random_model()
 
-    state_space = StateSpace(attr, optim_paras)
+    options = process_options(options)
 
-    state_space.emaxs = np.r_[
-        np.zeros((state_space.states_per_period[:-1].sum(), 5)),
-        np.full((state_space.states_per_period[-1], 5), 10),
+    state_space = StateSpace(params, options)
+
+    state_space.continuation_values = np.r_[
+        np.zeros((state_space.states_per_period[:-1].sum(), 4)),
+        np.ones((state_space.states_per_period[-1], 4)),
     ]
+    state_space.emax_value_functions = np.r_[
+        np.zeros(state_space.states_per_period[:-1].sum()),
+        np.ones(state_space.states_per_period[-1]),
+    ]
+
     for period in reversed(range(state_space.num_periods - 1)):
         states = state_space.get_attribute_from_period("states", period)
-        state_space.emaxs = get_emaxs_of_subsequent_period(
-            states, state_space.indexer, state_space.emaxs, state_space.edu_max
+        state_space.continuation_values = get_continuation_values(
+            states,
+            state_space.indexer,
+            state_space.continuation_values,
+            state_space.emax_value_functions,
+            state_space.is_inadmissible,
         )
-        state_space.emaxs[:, 4] = state_space.emaxs[:, :4].max()
-    assert (state_space.emaxs == 10).all()
+        state_space.emax_value_functions = state_space.continuation_values.max()
+
+    assert (state_space.emax_value_functions == 1).all()
+    assert (state_space.continuation_values == 1).all()

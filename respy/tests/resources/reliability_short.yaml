@@ -1,0 +1,13 @@
+education_lagged: [0.5, 0.5, 0.5]
+education_max: 15
+education_share: [0.5, 0.4, 0.1]
+education_start: [10, 8, 13]
+estimation_draws: 200
+estimation_seed: 500
+estimation_tau: 500
+interpolation_points: -1
+num_periods: 5
+simulation_agents: 1000
+simulation_seed: 132
+solution_draws: 500
+solution_seed: 456

@@ -3,32 +3,34 @@ import pandas as pd
 from numba import guvectorize
 from numba import njit
 
+from respy.config import BASE_COVARIATES
 from respy.config import HUGE_FLOAT
-from respy.config import INADMISSIBILITY_PENALTY
-from respy.pre_processing.model_processing import process_model_spec
+from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import process_params
+from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import transform_disturbances
 
 
-def solve(params_spec, options_spec):
+def solve(params, options):
     """Solve the model.
 
     This function is a wrapper for the solution routine.
 
     Parameters
     ----------
-    params_spec : pd.DataFrame
+    params : pd.DataFrame
         DataFrame containing parameter series.
-    options_spec : dict
+    options : dict
         Dictionary containing model attributes which are not optimized.
 
     """
-    attr, optim_paras = process_model_spec(params_spec, options_spec)
+    params, optim_paras = process_params(params)
+    options = process_options(options)
 
-    state_space = StateSpace(attr, optim_paras)
-
+    state_space = StateSpace(params, options)
     state_space = solve_with_backward_induction(
-        state_space, attr["interpolation"], attr["num_points_interp"], optim_paras
+        state_space, options["interpolation_points"], optim_paras
     )
 
     return state_space
@@ -129,59 +131,59 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
                             # Loop over all admissible values for the lagged activity:
                             # (1) Occupation A, (2) Occupation B, (3) Education, and (4)
                             # Home.
-                            for choice_lagged in [1, 2, 3, 4]:
+                            for choice_lagged in range(4):
 
                                 if period > 0:
 
                                     # (0, 1) Whenever an agent has only worked in
                                     # Occupation A, then the lagged choice cannot be
                                     # anything other than one.
-                                    if choice_lagged != 1 and exp_a == period:
+                                    if choice_lagged != 0 and exp_a == period:
                                         continue
 
                                     # (0, 2) Whenever an agent has only worked in
                                     # Occupation B, then the lagged choice cannot be
                                     # anything other than two
-                                    if choice_lagged != 2 and exp_b == period:
+                                    if choice_lagged != 1 and exp_b == period:
                                         continue
 
                                     # (0, 3) Whenever an agent has only acquired
                                     # additional education, then the lagged choice
                                     # cannot be anything other than three.
-                                    if choice_lagged != 3 and edu_add == period:
+                                    if choice_lagged != 2 and edu_add == period:
                                         continue
 
                                     # (0, 4) Whenever an agent has not acquired any
                                     # additional education and we are not in the first
                                     # period, then lagged activity cannot take a value
                                     # of three.
-                                    if choice_lagged == 3 and edu_add == 0:
+                                    if choice_lagged == 2 and edu_add == 0:
                                         continue
 
                                     # (0, 5) Whenever an agent has always chosen
                                     # Occupation A, Occupation B or education, then
                                     # lagged activity cannot take a value of four.
                                     if (
-                                        choice_lagged == 4
+                                        choice_lagged == 3
                                         and exp_a + exp_b + edu_add == period
                                     ):
                                         continue
 
                                 # (2, 1) An individual that has never worked in
                                 # Occupation A cannot have that lagged activity.
-                                if choice_lagged == 1 and exp_a == 0:
+                                if choice_lagged == 0 and exp_a == 0:
                                     continue
 
                                 # (3, 1) An individual that has never worked in
                                 # Occupation B cannot have a that lagged activity.
-                                if choice_lagged == 2 and exp_b == 0:
+                                if choice_lagged == 1 and exp_b == 0:
                                     continue
 
                                 # (1, 1) In the first period individual either were in
                                 # school the previous period as well or at home. They
                                 # cannot have any work experience.
                                 if period == 0:
-                                    if choice_lagged in [1, 2]:
+                                    if choice_lagged in [0, 1]:
                                         continue
 
                                 # Continue if state still exist. This condition is only
@@ -192,7 +194,7 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
                                         exp_a,
                                         exp_b,
                                         edu_start + edu_add,
-                                        choice_lagged - 1,
+                                        choice_lagged,
                                         type_,
                                     ]
                                     != -1
@@ -205,7 +207,7 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
                                     exp_a,
                                     exp_b,
                                     edu_start + edu_add,
-                                    choice_lagged - 1,
+                                    choice_lagged,
                                     type_,
                                 ] = i
 
@@ -227,75 +229,59 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
     return states, indexer
 
 
-def create_systematic_rewards(states, covariates, optim_paras):
+def create_reward_components(types, covariates, optim_paras):
     """Calculate systematic rewards for each state.
+
+    Wages are only available for some choices, i.e. n_nonpec >= n_wages. We extend the
+    array of wages with ones for the difference in dimensions, n_nonpec - n_wages. Ones
+    are necessary as it facilitates the aggregation of reward components in
+    :func:`calculate_emax_value_functions` and related functions.
 
     Parameters
     ----------
-    states : np.ndarray
-        Array with shape (num_states, 6).
-    covariates : np.ndarray
-        Array with shape (num_states, 16).
+    types : np.ndarray
+        Array with shape (n_states,) containing type information.
+    covariates : dict
+        Dictionary with covariate arrays for wage and nonpec rewards
     optim_paras : dict
         Contains parameters affected by the optimization.
 
     """
-    # Calculate common and general rewards component.
-    rewards_general = calculate_rewards_general(
-        covariates, optim_paras["coeffs_a"][12:], optim_paras["coeffs_b"][12:]
-    )
-    rewards_common = calculate_rewards_common(covariates, optim_paras["coeffs_common"])
-
-    # Calculate the systematic part of OCCUPATION A and OCCUPATION B rewards.
-    # These are defined in a general sense, where not only wages matter.
-    wages = calculate_wages_systematic(
-        states,
-        covariates,
-        optim_paras["coeffs_a"][:12],
-        optim_paras["coeffs_b"][:12],
-        optim_paras["type_shifts"][:, :2],
+    wage_labels = ["wage_a", "wage_b"]
+    log_wages = np.column_stack(
+        [np.dot(covariates[w], optim_paras[w]) for w in wage_labels]
     )
 
-    rewards = np.full((states.shape[0], 4), np.nan)
-
-    rewards[:, :2] = wages + rewards_general
-
-    # Calculate systematic part of SCHOOL rewards
-    covariates_education = np.column_stack(
-        (np.ones(states.shape[0]), covariates[:, 9:13], states[:, 0], covariates[:, 13])
+    nonpec_labels = ["nonpec_a", "nonpec_b", "nonpec_edu", "nonpec_home"]
+    nonpec = np.column_stack(
+        [np.dot(covariates[n], optim_paras[n]) for n in nonpec_labels]
     )
 
-    rewards[:, 2] = covariates_education.dot(optim_paras["coeffs_edu"])
+    type_deviations = optim_paras["type_shifts"][types]
 
-    # Calculate systematic part of HOME
-    covariates_home = np.column_stack((np.ones(states.shape[0]), covariates[:, 14:]))
+    log_wages += type_deviations[:, :2]
+    nonpec[:, 2:] += type_deviations[:, 2:]
 
-    rewards[:, 3] = covariates_home.dot(optim_paras["coeffs_home"])
+    wages = np.clip(np.exp(log_wages), 0.0, HUGE_FLOAT)
 
-    # Add the type-specific deviation for SCHOOL and HOME.
-    type_dummies = get_dummies(states[:, 5])
-    type_deviations = type_dummies.dot(optim_paras["type_shifts"][:, 2:])
+    # Extend wages to dimension of non-pecuniary rewards.
+    additional_dim = nonpec.shape[1] - log_wages.shape[1]
+    wages = np.column_stack((wages, np.ones((wages.shape[0], additional_dim))))
 
-    rewards[:, 2:] = rewards[:, 2:] + type_deviations
-
-    rewards_systematic = rewards + rewards_common
-
-    return rewards_systematic, rewards_general, rewards_common, wages
+    return wages, nonpec
 
 
-def solve_with_backward_induction(
-    state_space, interpolation, num_points_interp, optim_paras
-):
+def solve_with_backward_induction(state_space, interpolation_points, optim_paras):
     """Calculate utilities with backward induction.
 
     Parameters
     ----------
     state_space : class
         State space object.
-    interpolation : np.array
-        Flag indicating whether interpolation is used to construct the emax in a period.
-    num_points_interp : int
-        Number of states for which the emax will be interpolated.
+    interpolation_points : int
+        A value of -1 indicates that the interpolation is turned off. If the value is a
+        non-zero, positive integer, it indicates the number of states which are used to
+        interpolate all the rest.
     optim_paras : dict
         Parameters affected by optimization.
 
@@ -304,10 +290,11 @@ def solve_with_backward_induction(
     state_space : class
         State space containing the emax of the subsequent period of each choice, columns
         0-3, as well as the maximum emax of the current period for each state, column 4,
-        in ``state_space.emaxs``.
+        in ``state_space.continuation_values``.
 
     """
-    state_space.emaxs = np.zeros((state_space.num_states, 5))
+    state_space.continuation_values = np.zeros((state_space.num_states, 4))
+    state_space.emax_value_functions = np.zeros(state_space.num_states)
 
     # For myopic agents, utility of later periods does not play a role.
     if optim_paras["delta"] == 0:
@@ -319,12 +306,6 @@ def solve_with_backward_induction(
 
     shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
 
-    # These shifts are used to determine the expected values of the two labor market
-    # alternatives. These are log normal distributed and thus the draws cannot simply
-    # set to zero.
-    shifts = np.zeros(4)
-    shifts[:2] = np.clip(np.exp(np.diag(shocks_cov)[:2] / 2.0), 0.0, HUGE_FLOAT)
-
     for period in reversed(range(state_space.num_periods)):
 
         if period == state_space.num_periods - 1:
@@ -333,60 +314,70 @@ def solve_with_backward_induction(
         else:
             states_period = state_space.get_attribute_from_period("states", period)
 
-            state_space.emaxs = get_emaxs_of_subsequent_period(
+            state_space.continuation_values = get_continuation_values(
                 states_period,
                 state_space.indexer,
-                state_space.emaxs,
-                state_space.edu_max,
+                state_space.continuation_values,
+                state_space.emax_value_functions,
+                state_space.is_inadmissible,
             )
 
         num_states = state_space.states_per_period[period]
 
-        # Treatment of the disturbances for the risk-only case is straightforward. Their
-        # distribution is fixed once and for all.
         base_draws_sol_period = state_space.base_draws_sol[period]
         draws_emax_risk = transform_disturbances(
             base_draws_sol_period, np.zeros(4), shocks_cholesky
         )
 
         # Unpack necessary attributes of the specific period.
-        rewards_period = state_space.get_attribute_from_period("rewards", period)
-        emaxs_period = state_space.get_attribute_from_period("emaxs", period)[:, :4]
-        max_education = (
-            state_space.get_attribute_from_period("states", period)[:, 3]
-            >= state_space.edu_max
+        wages = state_space.get_attribute_from_period("wages", period)
+        nonpec = state_space.get_attribute_from_period("nonpec", period)
+        emaxs_period = state_space.get_attribute_from_period(
+            "continuation_values", period
+        )
+        is_inadmissible = state_space.get_attribute_from_period(
+            "is_inadmissible", period
         )
 
         # The number of interpolation points is the same for all periods. Thus, for some
         # periods the number of interpolation points is larger than the actual number of
         # states. In that case no interpolation is needed.
-        any_interpolated = (num_points_interp <= num_states) and interpolation
+        any_interpolated = (
+            interpolation_points <= num_states and interpolation_points != -1
+        )
 
         if any_interpolated:
+            # These shifts are used to determine the expected values of the two labor
+            # market alternatives. These are log normal distributed and thus the draws
+            # cannot simply set to zero.
+            shifts = np.zeros(4)
+            shifts[:2] = np.clip(np.exp(np.diag(shocks_cov)[:2] / 2.0), 0.0, HUGE_FLOAT)
+
             # Get indicator for interpolation and simulation of states. The seed value
             # is the base seed plus the number of the period. Thus, not interpolated
             # states are held constant for each periods and not across periods.
             not_interpolated = get_not_interpolated_indicator(
-                num_points_interp, num_states, state_space.seed + period
+                interpolation_points, num_states, state_space.seed + period
             )
 
             # Constructing the exogenous variable for all states, including the ones
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
-            exogenous, max_emax = get_exogenous_variables(
-                rewards_period, emaxs_period, shifts, delta, max_education
+            exogenous, max_emax = calculate_exogenous_variables(
+                wages, nonpec, emaxs_period, shifts, delta, is_inadmissible
             )
 
             # Constructing the dependent variables for all states at the random subset
             # of points where the EMAX is actually calculated.
-            endogenous = get_endogenous_variable(
-                rewards_period,
+            endogenous = calculate_endogenous_variables(
+                wages,
+                nonpec,
                 emaxs_period,
                 max_emax,
                 not_interpolated,
                 draws_emax_risk,
                 delta,
-                max_education,
+                is_inadmissible,
             )
 
             # Create prediction model based on the random subset of points where the
@@ -395,21 +386,16 @@ def solve_with_backward_induction(
             emax = get_predictions(endogenous, exogenous, max_emax, not_interpolated)
 
         else:
-            emax = construct_emax_risk(
-                rewards_period[:, -2:],
-                rewards_period[:, :4],
-                emaxs_period,
-                draws_emax_risk,
-                delta,
-                max_education,
+            emax = calculate_emax_value_functions(
+                wages, nonpec, emaxs_period, draws_emax_risk, delta, is_inadmissible
             )
 
-        state_space.get_attribute_from_period("emaxs", period)[:, 4] = emax
+        state_space.get_attribute_from_period("emax_value_functions", period)[:] = emax
 
     return state_space
 
 
-def get_not_interpolated_indicator(num_points_interp, num_states, seed):
+def get_not_interpolated_indicator(interpolation_points, num_states, seed):
     """Get indicator for states which will be not interpolated.
 
     Randomness in this function is held constant for each period but not across periods.
@@ -417,7 +403,7 @@ def get_not_interpolated_indicator(num_points_interp, num_states, seed):
 
     Parameters
     ----------
-    num_points_interp : int
+    interpolation_points : int
         Number of states which will be interpolated.
     num_states : int
         Total number of states in period.
@@ -434,7 +420,7 @@ def get_not_interpolated_indicator(num_points_interp, num_states, seed):
 
     # Drawing random interpolation indices.
     interpolation_points = np.random.choice(
-        num_states, size=num_points_interp, replace=False
+        num_states, size=interpolation_points, replace=False
     )
 
     # Constructing an indicator whether a state will be interpolated.
@@ -444,89 +430,97 @@ def get_not_interpolated_indicator(num_points_interp, num_states, seed):
     return not_interpolated
 
 
-def get_exogenous_variables(rewards, emaxs, draws, delta, max_education):
-    """Get exogenous variables for interpolation scheme.
+def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmissible):
+    """Calculate exogenous variables for interpolation scheme.
 
     Parameters
     ----------
-    rewards : np.ndarray
-        Array with shape (num_states_in_period, 9).
+    wages : np.ndarray
+        Array with shape (n_states_in_period, n_wages).
+    nonpec : np.ndarray
+        Array with shape (n_states_in_period, n_choices).
     emaxs : np.ndarray
-        Array with shape (num_states_in_period, 4).
+        Array with shape (n_states_in_period, n_choices).
     draws : np.ndarray
-        Array with shape (num_draws, 4).
+        Array with shape (n_draws, n_choices).
     delta : float
         Discount factor.
-    max_education: np.ndarray
-        Array with shape (num_states_in_period,) containing an indicator for whether the
+    is_inadmissible : np.ndarray
+        Array with shape (n_states_in_period,) containing an indicator for whether the
         state has reached maximum education.
 
     Returns
     -------
     exogenous : np.ndarray
-        Array with shape (num_states_in_period, 9).
+        Array with shape (n_states_in_period, n_choices * 2 + 1).
     max_emax : np.ndarray
-        Array with shape (num_states_in_period,) containing maximum emax.
+        Array with shape (n_states_in_period,) containing maximum over all value
+        functions.
 
     """
-    total_values = get_continuation_value(
-        rewards[:, -2:],
-        rewards[:, :4],
-        emaxs,
-        draws.reshape(1, -1),
-        delta,
-        max_education,
+    value_functions = calculate_value_functions(
+        wages, nonpec, emaxs, draws.reshape(1, -1), delta, is_inadmissible
     )
 
-    max_emax = total_values.max(axis=1)
-    exogenous = max_emax - total_values.reshape(-1, 4)
+    max_value_functions = value_functions.max(axis=1)
+    exogenous = max_value_functions - value_functions.reshape(-1, 4)
 
     exogenous = np.column_stack(
         (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
     )
 
-    return exogenous, max_emax.reshape(-1)
+    return exogenous, max_value_functions.reshape(-1)
 
 
-def get_endogenous_variable(
-    rewards, emaxs, max_emax, not_interpolated, draws_emax_risk, delta, max_education
+def calculate_endogenous_variables(
+    wages,
+    nonpec,
+    continuation_values,
+    max_value_functions,
+    not_interpolated,
+    draws,
+    delta,
+    is_inadmissible,
 ):
-    """Construct endogenous variable for all states which are not interpolated.
+    """Calculate endogenous variable for all states which are not interpolated.
 
     Parameters
     ----------
-    rewards : np.ndarray
-        Array with shape (num_states_in_period, 9)
-    emaxs : np.ndarray
-        Array with shape (num_states_in_period, 4).
-    max_emax : np.ndarray
-        Array with shape (num_states_in_period,) containing maximum of exogenous emax.
+    wages : np.ndarray
+        Array with shape (n_states_in_period, n_wages).
+    nonpec : np.ndarray
+        Array with shape (n_states_in_period, n_choices).
+    continuation_values : np.ndarray
+        Array with shape (n_states_in_period, n_choices).
+    max_value_functions : np.ndarray
+        Array with shape (n_states_in_period,) containing maximum over all value
+        functions.
     not_interpolated : np.ndarray
-        Array with shape (num_states_in_period,) containing indicators for simulated
-        emaxs.
-    draws_emax_risk : np.ndarray
-        Array with shape (num_draws, 4) containing draws.
+        Array with shape (n_states_in_period,) containing indicators for simulated
+        continuation_values.
+    draws : np.ndarray
+        Array with shape (num_draws, n_choices) containing draws.
     delta : float
         Discount factor.
-    max_education: np.ndarray
-        Array with shape (num_states_in_period,) containing an indicator for whether the
+    is_inadmissible : np.ndarray
+        Array with shape (n_states_in_period,) containing an indicator for whether the
         state has reached maximum education.
 
     """
-    emax = construct_emax_risk(
-        rewards[:, -2:][not_interpolated],
-        rewards[:, :4][not_interpolated],
-        emaxs[not_interpolated],
-        draws_emax_risk,
+    emax_value_functions = calculate_emax_value_functions(
+        wages[not_interpolated],
+        nonpec[not_interpolated],
+        continuation_values[not_interpolated],
+        draws,
         delta,
-        max_education[not_interpolated],
+        is_inadmissible[not_interpolated],
     )
-    endogenous = emax - max_emax[not_interpolated]
+    endogenous = emax_value_functions - max_value_functions[not_interpolated]
 
     return endogenous
 
 
-def get_predictions(endogenous, exogenous, maxe, not_interpolated):
+def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated):
     """Get predictions for the emax of interpolated states.
 
     Fit an OLS regression of the exogenous variables on the endogenous variables and use
@@ -539,11 +533,13 @@ def get_predictions(endogenous, exogenous, maxe, not_interpolated):
         Array with shape (num_simulated_states_in_period,) containing emax for states
         used to interpolate the rest.
     exogenous : np.ndarray
-        Array with shape (num_states_in_period, 9) containing exogenous variables.
-    maxe : np.ndarray
-        Array with shape (num_states_in_period,) containing the maximum emax.
+        Array with shape (n_states_in_period, n_choices * 2 + 1) containing exogenous
+        variables.
+    max_value_functions : np.ndarray
+        Array with shape (n_states_in_period,) containing the maximum over all value
+        functions.
     not_interpolated : np.ndarray
-        Array with shape (num_states_in_period,) containing indicator for states which
+        Array with shape (n_states_in_period,) containing indicator for states which
         are not interpolated and used to estimate the coefficients for the
         interpolation.
 
@@ -557,8 +553,8 @@ def get_predictions(endogenous, exogenous, maxe, not_interpolated):
     endogenous_predicted = np.clip(endogenous_predicted, 0.00, None)
 
     # Construct predicted EMAX for all states and the
-    predictions = endogenous_predicted + maxe
-    predictions[not_interpolated] = endogenous + maxe[not_interpolated]
+    predictions = endogenous_predicted + max_value_functions
+    predictions[not_interpolated] = endogenous + max_value_functions[not_interpolated]
 
     check_prediction_model(endogenous_predicted, beta)
 
@@ -572,94 +568,42 @@ def check_prediction_model(predictions_diff, beta):
     assert np.all(np.isfinite(beta))
 
 
-def calculate_wages_systematic(states, covariates, coeffs_a, coeffs_b, type_shifts):
-    """Calculate systematic wages.
+def create_choice_covariates(covariates_df, states_df, params_spec):
+    """Create the covariates for each  choice.
 
     Parameters
     ----------
-    states : np.ndarray
-        Array with shape (num_states, 5) containing state information.
-    covariates : np.ndarray
-        Array with shape (num_states, 16) containing covariates.
-    coeffs_a : np.ndarray
-        Array with shape (12) containing coefficients of occupation A.
-    coeffs_b : np.ndarray
-        Array with shape (12) containing coefficients of occupation B.
-    type_shifts : np.ndarray
-        Array with shape (2, 2).
+    covariates_df : pd.DataFrame
+        DataFrame with the basic covariates.
+    states_df : pd.DataFrame
+        DataFrame with the state information.
+    params_spec : pd.DataFrame
+        The parameter specification.
 
     Returns
     -------
-    wages : np.ndarray
-        Array with shape (num_states, 2) containing systematic wages.
+    wage_covariates: list
+        List of length nchoices with covariate arrays for systematic wages.
+    nonpec_covariates: list
+        List of length nchoices with covariate arrays for nonpecuniary rewards.
 
     """
-    exp_a_sq = states[:, 1] ** 2 / 100
-    exp_b_sq = states[:, 2] ** 2 / 100
+    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
 
-    relevant_covariates = np.column_stack(
-        (
-            np.ones(states.shape[0]),
-            states[:, [3, 1]],
-            exp_a_sq,
-            states[:, 2],
-            exp_b_sq,
-            covariates[:, 9:11],
-            states[:, 0],
-            covariates[:, 13],
-        )
-    )
+    covariates = {}
 
-    # Calculate systematic part of wages in OCCUPATION A and OCCUPATION B
-    wages = np.full((states.shape[0], 2), np.nan)
+    for choice in ["a", "b", "edu", "home"]:
+        if f"wage_{choice}" in params_spec.index:
+            wage_columns = params_spec.loc[f"wage_{choice}"].index
+            covariates[f"wage_{choice}"] = all_data[wage_columns].to_numpy()
 
-    wages[:, 0] = np.column_stack((relevant_covariates, covariates[:, [7, 2]])).dot(
-        coeffs_a
-    )
+        nonpec_columns = params_spec.loc[f"nonpec_{choice}"].index
+        covariates[f"nonpec_{choice}"] = all_data[nonpec_columns].to_numpy()
 
-    wages[:, 1] = np.column_stack((relevant_covariates, covariates[:, [8, 3]])).dot(
-        coeffs_b
-    )
+    for key, val in covariates.items():
+        covariates[key] = np.ascontiguousarray(val)
 
-    wages = np.clip(np.exp(wages), 0.0, HUGE_FLOAT)
-
-    # We need to add the type-specific deviations here as these are part of
-    # skill-function component.
-    type_dummies = get_dummies(states[:, 5])
-    type_deviations = type_dummies.dot(type_shifts[:, :2])
-
-    wages = wages * np.exp(type_deviations)
-
-    return wages
-
-
-@njit
-def get_dummies(a):
-    """Create dummy matrix from array with indicators.
-
-    Note that, the indicators need to be counting from zero onwards.
-
-    Parameters
-    ----------
-    a : np.ndarray
-        Array with shape (n) containing k different indicators from 0 to k-1.
-
-    Returns
-    -------
-    b : np.ndarray
-        Matrix with shape (n, k) where each column is a dummy vector for type i = 0,
-        ..., k-1.
-
-    Example
-    -------
-    >>> a = np.random.randint(0, 6, 100)
-    >>> res = get_dummies(a)
-    >>> res_pandas = pd.get_dummies(a).values
-    >>> assert np.allclose(res, res_pandas)
-
-    """
-    n_values = np.max(a) + 1
-    return np.eye(n_values)[a]
+    return covariates
 
 
 class StateSpace:
@@ -679,12 +623,16 @@ class StateSpace:
         Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
         choice_lagged and type information.
     indexer : np.ndarray
-        Array with shape (num_periods, num_periods, num_periods, edu_max, 4, num_types).
+        Array with shape (num_periods, num_periods, num_periods, edu_max, n_choices,
+        num_types).
     covariates : np.ndarray
-        Array with shape (num_periods, 16) containing covariates of each state necessary
+        Array with shape (num_states, 16) containing covariates of each state necessary
         to calculate rewards.
-    rewards : np.ndarray
-        Array with shape (num_states, 9) containing rewards of each state.
+    wages : np.ndarray
+        Array with shape (n_states_in_period, n_choices) which contains zeros in places
+        for choices without wages.
+    nonpec : np.ndarray
+        Array with shape (n_states_in_period, n_choices).
     emaxs : np.ndarray
         Array with shape (num_states, 5) containing containing the emax of each choice
         (OCCUPATION A, OCCUPATION B, SCHOOL, HOME) of the subsequent period and the
@@ -695,69 +643,55 @@ class StateSpace:
         Number of types.
     states_columns : list
         List of column names in ``self.states``.
-    covariates_columns : list
+    base_covariates_columns : list
         List of column names in ``self.covariates``.
-    rewards_columns : list
-        List of column names in ``self.rewards``.
+    wages_columns : list
+        List of column names in ``self.wages``
+    nonpec_columns : list
+        List of column names in ``self.nonpec``
     emaxs_columns : list
-        List of column names in ``self.emaxs``.
+        List of column names in ``self.continuation_values``.
 
     """
 
     states_columns = ["period", "exp_a", "exp_b", "edu", "choice_lagged", "type"]
 
-    covariates_columns = [
-        "not_exp_a_lagged",
-        "not_exp_b_lagged",
-        "work_a_lagged",
-        "work_b_lagged",
-        "edu_lagged",
-        "not_any_exp_a",
-        "not_any_exp_b",
-        "any_exp_a",
-        "any_exp_b",
-        "hs_graduate",
-        "co_graduate",
-        "is_return_not_high_school",
-        "is_return_high_school",
-        "is_minor",
-        "is_young_adult",
-        "is_adult",
-    ]
+    base_covariates_columns = list(BASE_COVARIATES.keys())
 
-    rewards_columns = [
-        "rewards_systematic_a",
-        "rewards_systematic_b",
-        "rewards_systematic_edu",
-        "rewards_systematic_home",
-        "rewards_general_a",
-        "rewards_general_b",
-        "rewards_common",
-        "wage_a",
-        "wage_b",
-    ]
-
+    wages_columns = ["wage_a", "wage_b"]
+    nonpec_columns = ["nonpec_a", "nonpec_b", "nonpec_edu", "nonpec_home"]
     emaxs_columns = ["emax_a", "emax_b", "emax_edu", "emax_home", "emax"]
 
-    def __init__(self, attr, optim_paras):
+    def __init__(self, params, options):
+        params, optim_paras = process_params(params)
+        options = process_options(options)
+
         # Add some arguments to the state space.
-        self.edu_max = attr["edu_spec"]["max"]
-        self.num_periods = attr["num_periods"]
+        self.edu_max = options["education_max"]
+        self.num_periods = options["num_periods"]
         self.num_types = optim_paras["num_types"]
-        self.seed = attr["seed_sol"]
+        self.seed = options["solution_seed"]
 
         self.base_draws_sol = create_base_draws(
-            (self.num_periods, attr["num_draws_sol"], 4), self.seed
+            (self.num_periods, options["solution_draws"], 4), self.seed
         )
 
         self.states, self.indexer = create_state_space(
-            self.num_periods, self.num_types, attr["edu_spec"]["start"], self.edu_max
+            self.num_periods, self.num_types, options["education_start"], self.edu_max
         )
-        self.covariates = create_covariates(self.states)
+        states_df = pd.DataFrame(data=self.states, columns=self.states_columns)
 
-        self.rewards = np.column_stack(
-            (create_systematic_rewards(self.states, self.covariates, optim_paras))
+        base_covariates_df = create_base_covariates(states_df, options["covariates"])
+
+        self.covariates = create_choice_covariates(
+            base_covariates_df, states_df, params
         )
+
+        self.wages, self.nonpec = create_reward_components(
+            self.states[:, 5], self.covariates, optim_paras
+        )
+
+        self.is_inadmissible = create_inadmissible_indicator(states_df, options)
 
         self._create_slices_by_periods(self.num_periods)
 
@@ -772,8 +706,8 @@ class StateSpace:
         return self.states.shape[0]
 
     def update_systematic_rewards(self, optim_paras):
-        self.rewards = np.column_stack(
-            (create_systematic_rewards(self.states, self.covariates, optim_paras))
+        self.wages, self.nonpec = create_reward_components(
+            self.states[:, 5], self.covariates, optim_paras
         )
 
     def get_attribute_from_period(self, attr, period):
@@ -782,11 +716,16 @@ class StateSpace:
         Parameters
         ----------
         attr : str
-            String of attribute name (e.g. ``"covariates"``).
+            String of attribute name, e.g. ``"states"``.
         period : int
             Attribute is retrieved from this period.
 
         """
+        if attr == "covariates":
+            raise AttributeError("Attribute covariates cannot be retrieved by periods.")
+        else:
+            pass
+
         try:
             attribute = getattr(self, attr)
         except AttributeError as e:
@@ -803,32 +742,6 @@ class StateSpace:
 
         return attribute[indices]
 
-    def to_frame(self):
-        """Get pandas DataFrame of state space.
-
-        Example
-        -------
-        >>> params_spec, options_spec = generate_random_model()
-        >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
-        >>> state_space = StateSpace(attr, optim_paras)
-        >>> state_space.to_frame().shape
-        (18, 31)
-
-        """
-        attributes = [
-            getattr(self, i, None)
-            for i in ["states", "covariates", "rewards", "emaxs"]
-            if getattr(self, i, None) is not None
-        ]
-        columns = [
-            item
-            for i in ["states", "covariates", "rewards", "emaxs"]
-            for item in getattr(self, i + "_columns")
-            if getattr(self, i, None) is not None
-        ]
-
-        return pd.DataFrame(np.hstack(attributes), columns=columns)
-
     def _create_slices_by_periods(self, num_periods):
         """Create slices to index all attributes in a given period.
 
@@ -844,17 +757,24 @@ class StateSpace:
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]",
     ],
-    "(m), (n), (n), (p, n), (), () -> ()",
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
+    "-> ()",
     nopython=True,
     target="parallel",
 )
-def construct_emax_risk(
-    wages, rewards_systematic, emaxs, draws, delta, max_education, cont_value
+def calculate_emax_value_functions(
+    wages,
+    nonpec,
+    continuation_values,
+    draws,
+    delta,
+    is_inadmissible,
+    emax_value_functions,
 ):
-    """Simulate expected maximum utility for a given distribution of the unobservables.
+    r"""Calculate the expected maximum of value functions for a set of unobservables.
 
     The function takes an agent and calculates the utility for each of the choices, the
     ex-post rewards, with multiple draws from the distribution of unobservables and adds
@@ -867,25 +787,35 @@ def construct_emax_risk(
     points. In this setting, one wants to approximate the expected maximum utility of
     the current state.
 
+    Note that ``wages`` have the same length as ``nonpec`` despite that wages are only
+    available in some sectors. Missing sectors are filled with ones. In the case of a
+    sector with wage and without wage, flow utilities are
+
+    .. math::
+
+        \text{Flow Utility} = \text{Wage} * \epsilon + \text{Non-pecuniary}
+        \text{Flow Utility} = 1 * \epsilon + \text{Non-pecuniary}
+
+
     Parameters
     ----------
     wages : np.ndarray
-        Array with shape (2,) containing wages.
-    rewards_systematic : np.ndarray
-        Array with shape (4,) containing systematic rewards.
-    emaxs : np.ndarray
-        Array with shape (4,) containing expected maximum utility for each choice in the
-        subsequent period.
+        Array with shape (n_choices,) containing wages.
+    nonpec : np.ndarray
+        Array with shape (n_choices,) containing non-pecuniary rewards.
+    continuation_values : np.ndarray
+        Array with shape (n_choices,) containing expected maximum utility for each
+        choice in the subsequent period.
     draws : np.ndarray
-        Array with shape (num_draws, 4).
+        Array with shape (num_draws, n_choices).
     delta : float
         The discount factor.
-    max_education: bool
+    is_inadmissible: bool
         Indicator for whether the state has reached maximum education.
 
     Returns
     -------
-    cont_value : float
+    emax_value_functions : float
         Expected maximum utility of an agent.
 
     .. _Monte Carlo integration:
@@ -893,117 +823,110 @@ def construct_emax_risk(
 
     """
     num_draws, num_choices = draws.shape
-    num_wages = wages.shape[0]
 
-    cont_value[0] = 0.0
+    emax_value_functions[0] = 0.0
 
     for i in range(num_draws):
 
-        current_max_emax = 0.0
+        max_value_functions = 0.0
 
         for j in range(num_choices):
-            if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
-            else:
-                rew_ex = rewards_systematic[j] + draws[i, j]
+            value_function, _ = _aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpec[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
 
-            emax_choice = rew_ex + delta * emaxs[j]
+            if value_function > max_value_functions:
+                max_value_functions = value_function
 
-            if j == 2 and max_education:
-                emax_choice += INADMISSIBILITY_PENALTY
+        emax_value_functions[0] += max_value_functions
 
-            if emax_choice > current_max_emax:
-                current_max_emax = emax_choice
-
-        cont_value[0] += current_max_emax
-
-    cont_value[0] /= num_draws
+    emax_value_functions[0] /= num_draws
 
 
 @njit(nogil=True)
-def get_emaxs_of_subsequent_period(states, indexer, emaxs, edu_max):
+def get_continuation_values(
+    states, indexer, continuation_values, emax_value_functions, is_inadmissible
+):
     """Get the maximum utility from the subsequent period.
 
-    This function takes a parent node and looks up the utility from each of the four
-    choices in the subsequent period.
-
-    Warning
-    -------
-    This function must be extremely performant as the lookup is done for each state in a
-    state space (except for states in the last period) for each evaluation of the
-    optimization of parameters.
+    This function takes a parent state and looks up the continuation value for each
+    of the four choices in the following period.
 
     """
     for i in range(states.shape[0]):
         # Unpack parent state and get index.
         period, exp_a, exp_b, edu, choice_lagged, type_ = states[i]
-        k_parent = indexer[period, exp_a, exp_b, edu, choice_lagged - 1, type_]
+        k_parent = indexer[period, exp_a, exp_b, edu, choice_lagged, type_]
 
         # Working in Occupation A in period + 1
         k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
-        emaxs[k_parent, 0] = emaxs[k, 4]
+        continuation_values[k_parent, 0] = emax_value_functions[k]
 
         # Working in Occupation B in period +1
         k = indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
-        emaxs[k_parent, 1] = emaxs[k, 4]
+        continuation_values[k_parent, 1] = emax_value_functions[k]
 
         # Schooling in period + 1. Note that adding an additional year of schooling is
         # only possible for those that have strictly less than the maximum level of
         # additional education allowed. This condition is necessary as there are states
         # which have reached maximum education. Incrementing education by one would
         # target an inadmissible state.
-        if edu >= edu_max:
-            emaxs[k_parent, 2] = 0.0
+        if is_inadmissible[k_parent, 2]:
+            continuation_values[k_parent, 2] = 0.0
         else:
             k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
-            emaxs[k_parent, 2] = emaxs[k, 4]
+            continuation_values[k_parent, 2] = emax_value_functions[k]
 
         # Staying at home in period + 1
         k = indexer[period + 1, exp_a, exp_b, edu, 3, type_]
-        emaxs[k_parent, 3] = emaxs[k, 4]
+        continuation_values[k_parent, 3] = emax_value_functions[k]
 
-    return emaxs
+    return continuation_values
 
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, b1, f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, b1, f8[:, :]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:, :]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :]",
     ],
-    "(m), (n), (n), (p, n), (), () -> (n, p)",
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
+    "-> (n_choices, n_draws)",
     nopython=True,
     target="cpu",
 )
-def get_continuation_value(
-    wages, rewards_systematic, emaxs, draws, delta, max_education, cont_value
+def calculate_value_functions(
+    wages, nonpec, continuation_values, draws, delta, is_inadmissible, value_functions
 ):
-    """Calculate the continuation value.
+    """Calculate choice-specific value functions.
 
     This function is a reduced version of
-    ``get_continutation_value_and_ex_post_rewards`` which does not return ex post
-    rewards. The reason is that a second return argument doubles runtime whereas it is
+    :func:`calculate_value_functions_and_flow_utilities` which does not return flow
+    utilities. The reason is that a second return argument doubles runtime whereas it is
     only needed during simulation.
 
     """
     num_draws, num_choices = draws.shape
-    num_wages = wages.shape[0]
 
     for i in range(num_draws):
         for j in range(num_choices):
-            if j < num_wages:
-                rew_ex = wages[j] * draws[i, j] + rewards_systematic[j] - wages[j]
-            else:
-                rew_ex = rewards_systematic[j] + draws[i, j]
+            value_function, _ = _aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpec[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
 
-            cont_value_ = rew_ex + delta * emaxs[j]
-
-            if j == 2 and max_education:
-                cont_value_ += INADMISSIBILITY_PENALTY
-
-            cont_value[j, i] = cont_value_
+            value_functions[j, i] = value_function
 
 
-def create_covariates(states):
+def create_base_covariates(states, covariates_spec):
     """Create set of covariates for each state.
 
     Parameters
@@ -1011,151 +934,58 @@ def create_covariates(states):
     states : np.ndarray
         Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
         choice_lagged and type of each state.
+    covariates_spec : dict
+        Dictionary where keys represent covariates and values are strings which can be
+        passed to pd.eval.
 
     Returns
     -------
     covariates : np.ndarray
         Array with shape (num_states, 16) containing covariates of each state.
 
-    Examples
-    --------
-    This example is to benchmark alternative implementations, but even this version does
-    not benefit from Numba anymore.
-
-    >>> states, _ = create_state_space(40, 5, [10], 20)
-    >>> covariates = create_covariates(states)
-    >>> assert covariates.shape == (states.shape[0], 16)
-
     """
-    covariates = np.zeros((states.shape[0], 16), dtype=np.int8)
+    covariates = states.copy()
 
-    # Experience in A or B, but not in the last period.
-    covariates[:, 0] = np.where((states[:, 1] > 0) & (states[:, 4] != 1), 1, 0)
-    covariates[:, 1] = np.where((states[:, 2] > 0) & (states[:, 4] != 2), 1, 0)
+    for covariate, definition in covariates_spec.items():
+        covariates[covariate] = covariates.eval(definition)
 
-    # Last occupation was A, B, or education.
-    covariates[:, 2] = np.where(states[:, 4] == 1, 1, 0)
-    covariates[:, 3] = np.where(states[:, 4] == 2, 1, 0)
-    covariates[:, 4] = np.where(states[:, 4] == 3, 1, 0)
-
-    # No experience in A or B.
-    covariates[:, 5] = np.where(states[:, 1] == 0, 1, 0)
-    covariates[:, 6] = np.where(states[:, 2] == 0, 1, 0)
-
-    # Any experience in A or B.
-    covariates[:, 7] = np.where(states[:, 1] > 0, 1, 0)
-    covariates[:, 8] = np.where(states[:, 2] > 0, 1, 0)
-
-    # High school or college graduate
-    covariates[:, 9] = np.where(states[:, 3] >= 12, 1, 0)
-    covariates[:, 10] = np.where(states[:, 3] >= 16, 1, 0)
-
-    # Was not in school last period and is/is not high school graduate
-    covariates[:, 11] = np.where(
-        (covariates[:, 4] == 0) & (covariates[:, 9] == 0), 1, 0
-    )
-    covariates[:, 12] = np.where(
-        (covariates[:, 4] == 0) & (covariates[:, 9] == 1), 1, 0
-    )
-
-    # Define age groups minor (period < 2), young adult (2 <= period <= 4) and adult (5
-    # <= period).
-    covariates[:, 13] = np.where(states[:, 0] < 2, 1, 0)
-    covariates[:, 14] = np.where(np.isin(states[:, 0], [2, 3, 4]), 1, 0)
-    covariates[:, 15] = np.where(states[:, 0] >= 5, 1, 0)
+    covariates = covariates.drop(columns=states.columns).astype(float)
 
     return covariates
 
 
-def calculate_rewards_general(covariates, coeffs_a, coeffs_b):
-    """Calculate general rewards.
+def create_inadmissible_indicator(states, options):
+    df = states.copy()
 
-    Parameters
-    ----------
-    covariates : np.ndarray
-        Array with shape (num_states, 16) containing covariates.
-    coeffs_a : np.ndarray
-        Array with shape (3,) containing coefficients.
-    coeffs_b : np.ndarray
-        Array with shape (3,) containing coefficients.
+    # Add maximum of experiences.
+    for key in options.keys():
+        if "max" in key:
+            df[key] = options[key]
+        else:
+            pass
 
-    Returns
-    -------
-    rewards_general : np.ndarray
-        Array with shape (num_states, 2) containing general rewards of occupation.
+    for column, definition in options["inadmissible_states"].items():
+        df[column] = df.eval(definition)
 
-    Example
-    -------
-    >>> params_spec, options_spec = generate_random_model()
-    >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
-    >>> state_space = StateSpace(attr, optim_paras)
-    >>> coeffs_a, coeffs_b = np.array([0.05, 0.6, 0.4]), np.array([0.36, 0.7, 1])
-    >>> calculate_rewards_general(
-    ...     state_space.covariates, coeffs_a, coeffs_b
-    ... ).reshape(-1)
-    array([0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45,
-           1.36, 0.45, 1.36, 0.45, 1.36, 0.45, 0.36, 0.05, 1.36, 0.45, 1.36,
-           0.45, 1.36, 0.45, 0.36, 0.05, 1.36, 0.45, 1.36, 0.45, 1.36, 0.45,
-           0.36, 0.05, 1.36])
+    is_inadmissible = df[options["inadmissible_states"].keys()].to_numpy()
 
-    """
-    num_states = covariates.shape[0]
-    rewards_general = np.full((num_states, 2), np.nan)
-
-    rewards_general[:, 0] = np.column_stack(
-        (np.ones(num_states), covariates[:, [0, 5]])
-    ).dot(coeffs_a)
-    rewards_general[:, 1] = np.column_stack(
-        (np.ones(num_states), covariates[:, [1, 6]])
-    ).dot(coeffs_b)
-
-    return rewards_general
-
-
-def calculate_rewards_common(covariates, coeffs_common):
-    """Calculate common rewards.
-
-    Covariates 9 and 10 are indicators for high school and college graduates.
-
-    Parameters
-    ----------
-    covariates : np.ndarray
-        Array with shape (num_states, 16) containing covariates.
-    coeffs_common : np.ndarray
-        Array with shape (2,) containing coefficients for high school and college
-        graduates.
-
-    Returns
-    -------
-    np.ndarray
-        Array with shape (num_states, 1) containing common rewards. Reshaping is
-        necessary to broadcast the array over rewards with shape (num_states, 4).
-
-    Example
-    -------
-    >>> params_spec, options_spec = generate_random_model()
-    >>> attr, optim_paras = process_model_spec(params_spec, options_spec)
-    >>> state_space = StateSpace(attr, optim_paras)
-    >>> coeffs_common = np.array([0.05, 0.6])
-    >>> calculate_rewards_common(state_space.covariates, coeffs_common).reshape(-1)
-    array([0.  , 0.  , 0.05, 0.05, 0.  , 0.  , 0.  , 0.  , 0.  , 0.  , 0.05,
-           0.05, 0.05, 0.05, 0.  , 0.  , 0.  , 0.  ])
-
-    """
-    return covariates[:, 9:11].dot(coeffs_common).reshape(-1, 1)
+    return is_inadmissible
 
 
 def ols(y, x):
-    """Ols implementation using a pseudo inverse.
+    """Calculate OLS coefficients using a pseudo-inverse.
 
     Parameters
     ----------
-    x (ndarray): n x n matrix of independent variables.
-    y (array): n x 1 matrix with dependant variable.
+    x : np.ndarray
+        n x n matrix of independent variables.
+    y : np.ndarray
+        n x 1 matrix with dependent variable.
 
     Returns
     -------
-        beta (array): n x 1 array of estimated parameter vector
+    beta : np.ndarray
+        n x 1 array of estimated parameter vector
 
     """
     beta = np.dot(np.linalg.pinv(x.T.dot(x)), x.T.dot(y))
@@ -1163,27 +993,24 @@ def ols(y, x):
 
 
 def mse(x1, x2, axis=0):
-    """mean squared error.
+    """Calculate mean squared error.
+
+    If ``x1`` and ``x2`` have different shapes, then they need to broadcast. This uses
+    ``np.asanyarray`` to convert the input. Whether this is the desired result or not
+    depends on the array subclass, for example NumPy matrices will silently produce an
+    incorrect result.
 
     Parameters
     ----------
     x1, x2 : array_like
-       The performance measure depends on the difference between these two
-       arrays.
+       The performance measure depends on the difference between these two arrays.
     axis : int
-       axis along which the summary statistic is calculated
+       Axis along which the summary statistic is calculated
 
     Returns
     -------
     mse : ndarray or float
-       mean squared error along given axis.
-
-    Notes
-    -----
-    If ``x1`` and ``x2`` have different shapes, then they need to broadcast.
-    This uses ``numpy.asanyarray`` to convert the input. Whether this is the
-    desired result or not depends on the array subclass, for example
-    numpy matrices will silently produce an incorrect result.
+       Mean squared error along given axis.
 
     """
     x1 = np.asanyarray(x1)
@@ -1192,7 +1019,12 @@ def mse(x1, x2, axis=0):
 
 
 def rmse(x1, x2, axis=0):
-    """root mean squared error
+    """Calculate root mean squared error.
+
+    If ``x1`` and ``x2`` have different shapes, then they need to broadcast. This uses
+    ``np.asanyarray`` to convert the input. Whether this is the desired result or not
+    depends on the array subclass, for example NumPy matrices will silently produce an
+    incorrect result.
 
     Parameters
     ----------
@@ -1204,15 +1036,8 @@ def rmse(x1, x2, axis=0):
 
     Returns
     -------
-    rmse : ndarray or float
+    rmse : np.ndarray or float
        root mean squared error along given axis.
-
-    Notes
-    -----
-    If ``x1`` and ``x2`` have different shapes, then they need to broadcast.
-    This uses ``numpy.asanyarray`` to convert the input. Whether this is the
-    desired result or not depends on the array subclass, for example
-    numpy matrices will silently produce an incorrect result.
 
     """
     x1 = np.asanyarray(x1)

@@ -1,13 +1,13 @@
 import numpy as np
 
 
-def check_estimation_data(attr, df):
+def check_estimation_data(options, df):
     """Check data for estimation.
 
     Parameters
     ----------
-    attr : dict
-        Dictionary containing model attributes.
+    options : dict
+        Dictionary containing model options.
     df : pd.DataFrame
         Data for estimation.
 
@@ -19,8 +19,7 @@ def check_estimation_data(attr, df):
     """
     df = df.copy()
 
-    num_periods = attr["num_periods"]
-    edu_spec = attr["edu_spec"]
+    num_periods = options["num_periods"]
 
     # 1. Identifier.
 
@@ -28,7 +27,7 @@ def check_estimation_data(attr, df):
     assert df.Period.le(num_periods - 1).all()
 
     # 3. Choice.
-    assert df.Choice.isin([1, 2, 3, 4]).all()
+    assert df.Choice.isin(range(4)).all()
 
     # 4. Wage.
     assert df.Wage.fillna(1).gt(0).all()
@@ -43,12 +42,14 @@ def check_estimation_data(attr, df):
 
     # 7. Years_Schooling.
     assert df.Years_Schooling.ge(0).all()
-    assert df.Years_Schooling.loc[df.Period.eq(0)].isin(edu_spec["start"]).all()
-    assert df.Years_Schooling.le(edu_spec["max"]).all()
+    assert (
+        df.Years_Schooling.loc[df.Period.eq(0)].isin(options["education_start"]).all()
+    )
+    assert df.Years_Schooling.le(options["education_max"]).all()
 
     # 8. Lagged_Choice.
-    assert df.Lagged_Choice.isin([1, 2, 3, 4]).all()
-    assert df.Lagged_Choice.loc[df.Period.eq(0)].isin([3, 4]).all()
+    assert df.Lagged_Choice.isin(range(4)).all()
+    assert df.Lagged_Choice.loc[df.Period.eq(0)].isin([2, 3]).all()
 
     # Others.
     assert df.drop(columns="Wage").notna().all().all()
@@ -92,17 +93,17 @@ def _check_state_variables(agent):
             stat, label = pair
             assert stat == row[label]
         # Update experience statistics.
-        if choice == 1:
+        if choice == 0:
             exp_a += 1
-        elif choice == 2:
+        elif choice == 1:
             exp_b += 1
-        elif choice == 3:
+        elif choice == 2:
             edu += 1
         else:
             pass
 
 
-def check_simulated_data(attr, optim_paras, df):
+def check_simulated_data(options, optim_paras, df):
     """Check simulated data.
 
     This routine runs some consistency checks on the simulated dataset. Some more
@@ -112,12 +113,12 @@ def check_simulated_data(attr, optim_paras, df):
     df = df.copy()
 
     # Distribute class attributes
-    num_periods = attr["num_periods"]
+    num_periods = options["num_periods"]
     num_types = optim_paras["num_types"]
-    edu_max = attr["edu_spec"]["max"]
+    edu_max = options["education_max"]
 
     # Run all tests available for the estimation data.
-    check_estimation_data(attr, df)
+    check_estimation_data(options, df)
 
     # 9. Types.
     assert df.Type.max() <= num_types - 1
@@ -126,30 +127,17 @@ def check_simulated_data(attr, optim_paras, df):
 
     # Check that there are not missing wage observations if an agent is working. Also,
     # we check that if an agent is not working, there also is no wage observation.
-    is_working = df["Choice"].isin([1, 2])
+    is_working = df["Choice"].isin(range(2))
     assert df.Wage[is_working].notna().all()
     assert df.Wage[~is_working].isna().all()
 
     # Check that there are no missing observations and we follow an agent each period.
     df.groupby("Identifier").Period.nunique().eq(num_periods).all()
 
-    # We can calculate wages with other informations in the data.
-    for choice in [1, 2]:
-        is_working = df.Choice.eq(choice)
-        df["Ex_Post_Reward"] = (
-            df[f"Systematic_Reward_{choice}"]
-            - df[f"General_Reward_{choice}"]
-            - df.Common_Reward
-        ) * df[f"Shock_Reward_{choice}"]
-
-        np.testing.assert_array_almost_equal(
-            df.Ex_Post_Reward[is_working], df.Wage[is_working]
-        )
-
     # If agents are myopic, we can test the equality of ex-post rewards and total
     # values.
     if df.Discount_Rate.eq(0).all():
-        for choice in [1, 2]:
+        for choice in range(2):
             is_working = df.Choice.eq(choice)
 
             ex_post_rew = f"Ex_Post_Reward_{choice}"
@@ -162,7 +150,7 @@ def check_simulated_data(attr, optim_paras, df):
 
             np.testing.assert_array_almost_equal(total_rewards, ex_post_reward)
 
-        for choice in [3, 4]:
+        for choice in range(2, 4):
             ex_post_rew = f"Ex_Post_Reward_{choice}"
             systematic_rew = f"Systematic_Reward_{choice}"
             shock_rew = f"Shock_Reward_{choice}"

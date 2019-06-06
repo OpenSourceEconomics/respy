@@ -1,11 +1,25 @@
-import json
-
 import numpy as np
-import pandas as pd
+from numba import njit
 
 from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
+from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import TEST_RESOURCES_DIR
+from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import process_params
+
+
+@njit
+def _aggregate_keane_wolpin_utility(
+    wage, nonpec, continuation_value, draw, delta, is_inadmissible
+):
+    flow_utility = wage * draw + nonpec
+    value_function = flow_utility + delta * continuation_value
+
+    if is_inadmissible:
+        value_function += INADMISSIBILITY_PENALTY
+
+    return value_function, flow_utility
 
 
 def get_conditional_probabilities(type_shares, initial_level_of_education):
@@ -33,16 +47,6 @@ def get_conditional_probabilities(type_shares, initial_level_of_education):
         probs = probs.ravel()
 
     return probs
-
-
-def cholesky_to_coeffs(shocks_cholesky):
-    """Map the Cholesky factor into the coefficients from the .ini file."""
-    # TODO: Deprecated.
-    shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
-    shocks_cov[np.diag_indices(shocks_cov.shape[0])] **= 0.5
-    shocks_coeffs = shocks_cov[np.triu_indices(shocks_cov.shape[0])].tolist()
-
-    return shocks_coeffs
 
 
 def create_base_draws(shape, seed):
@@ -90,7 +94,7 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
 def get_example_model(model):
     assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
 
-    options_spec = json.loads((TEST_RESOURCES_DIR / f"{model}.json").read_text())
-    params_spec = pd.read_csv(TEST_RESOURCES_DIR / f"{model}.csv")
+    options = process_options(TEST_RESOURCES_DIR / f"{model}.yaml")
+    params, _ = process_params(TEST_RESOURCES_DIR / f"{model}.csv")
 
-    return params_spec, options_spec
+    return params, options

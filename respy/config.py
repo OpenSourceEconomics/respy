@@ -25,6 +25,68 @@ INADMISSIBILITY_PENALTY = -400000
 
 IS_DEBUG = False
 
+BASE_COVARIATES = {
+    # Experience in A or B, but not in the last period.
+    "not_exp_a_lagged": "(exp_a > 0) & (choice_lagged != 0)",
+    "not_exp_b_lagged": "(exp_b > 0) & (choice_lagged != 1)",
+    # Last occupation was A, B, or education.
+    "work_a_lagged": "choice_lagged == 0",
+    "work_b_lagged": "choice_lagged == 1",
+    "edu_lagged": "choice_lagged == 2",
+    # No experience in A or B.
+    "not_any_exp_a": "exp_a == 0",
+    "not_any_exp_b": "exp_b == 0",
+    # Any experience in A or B.
+    "any_exp_a": "exp_a > 0",
+    "any_exp_b": "exp_b > 0",
+    # High school or college graduate.
+    "hs_graduate": "edu >= 12",
+    "co_graduate": "edu >= 16",
+    # Was not in school last period and is/is not high school graduate.
+    "is_return_not_high_school": "~edu_lagged & ~hs_graduate",
+    "is_return_high_school": "~edu_lagged & hs_graduate",
+    # Define age groups.
+    "is_minor": "period < 2",
+    "is_young_adult": "2 <= period <= 4",
+    "is_adult": "5 <= period",
+    # Constant.
+    "constant": "1",
+    # Squared experience in sectors.
+    "exp_a_square": "exp_a ** 2 / 100",
+    "exp_b_square": "exp_b ** 2 / 100",
+}
+"""dict: Dictionary containing specification of covariates.
+
+The keys of the dictionary are used as column names and must correspond to the parameter
+value in the parameter specification. The values are strings passed to ``pandas.eval``.
+"""
+
+
+BASE_RESTRICTIONS = {
+    "a": "False",
+    "b": "False",
+    "edu": "edu == education_max",
+    "home": "False",
+}
+
+DEFAULT_OPTIONS = {
+    "education_lagged": [1],
+    "education_start": [10],
+    "education_share": [1],
+    "education_max": 20,
+    "estimation_draws": 200,
+    "estimation_seed": 1,
+    "estimation_tau": 500,
+    "interpolation_points": -1,
+    "num_periods": 40,
+    "simulation_agents": 1000,
+    "simulation_seed": 2,
+    "solution_draws": 500,
+    "solution_seed": 3,
+    "covariates": BASE_COVARIATES,
+    "inadmissible_states": BASE_RESTRICTIONS,
+}
+
 # Labels for columns in a dataset as well as the formatters.
 DATA_LABELS_EST = [
     "Identifier",
@@ -40,26 +102,25 @@ DATA_LABELS_EST = [
 # There is additional information available in a simulated dataset.
 DATA_LABELS_SIM = DATA_LABELS_EST + [
     "Type",
-    "Total_Reward_1",
-    "Total_Reward_2",
-    "Total_Reward_3",
-    "Total_Reward_4",
-    "Systematic_Reward_1",
-    "Systematic_Reward_2",
-    "Systematic_Reward_3",
-    "Systematic_Reward_4",
+    "Nonpecuniary_Rewards_0",
+    "Nonpecuniary_Rewards_1",
+    "Nonpecuniary_Rewards_2",
+    "Nonpecuniary_Rewards_3",
+    "Wages_0",
+    "Wages_1",
+    "Flow_Utility_0",
+    "Flow_Utility_1",
+    "Flow_Utility_2",
+    "Flow_Utility_3",
+    "Value_Function_0",
+    "Value_Function_1",
+    "Value_Function_2",
+    "Value_Function_3",
+    "Shock_Reward_0",
     "Shock_Reward_1",
     "Shock_Reward_2",
     "Shock_Reward_3",
-    "Shock_Reward_4",
     "Discount_Rate",
-    "General_Reward_1",
-    "General_Reward_2",
-    "Common_Reward",
-    "Immediate_Reward_1",
-    "Immediate_Reward_2",
-    "Immediate_Reward_3",
-    "Immediate_Reward_4",
 ]
 
 DATA_FORMATS_EST = {
