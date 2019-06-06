@@ -284,7 +284,7 @@ def create_draws_and_prob_wages(
     wage_observed : float
         Agent's observed wage.
     wages_systematic : np.ndarray
-        Array with shape (2,) containing systematic wages.
+        Array with shape (n_choices,) containing systematic wages.
     period : int
         Number of period.
     base_draws_est : np.ndarray
