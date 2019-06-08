@@ -69,6 +69,8 @@ def simulate_data(state_space, base_draws_sims, base_draws_wage, optim_paras, op
         Class of state space.
     base_draws_sims : np.ndarray
         Array with shape (num_periods, num_agents_sim, num_choices)
+    base_draws_wage : np.ndarray
+        Array with shape (num_periods, num_agents_sim, num_choices)
     optim_paras : dict
         Parameters affected by optimization.
     options : dict
@@ -90,6 +92,8 @@ def simulate_data(state_space, base_draws_sims, base_draws_wage, optim_paras, op
         base_draws_sims_transformed[period] = transform_disturbances(
             base_draws_sims[period], np.zeros(4), optim_paras["shocks_cholesky"]
         )
+
+    base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error_sd"])
 
     # Create initial starting values for agents in simulation.
     initial_education = _get_random_edu_start(options)
@@ -122,6 +126,7 @@ def simulate_data(state_space, base_draws_sims, base_draws_wage, optim_paras, op
 
         # Select relevant subset of random draws.
         draws_shock = base_draws_sims_transformed[period]
+        draws_wage = base_draws_wage_transformed[period]
 
         # Get total values and ex post rewards.
         value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
@@ -147,7 +152,7 @@ def simulate_data(state_space, base_draws_sims, base_draws_wage, optim_paras, op
         # Determine optimal choice.
         choice = np.argmax(value_functions, axis=1)
 
-        wages = state_space.wages[ks] * draws_shock
+        wages = state_space.wages[ks] * draws_shock * draws_wage
         wages[:, 2:] = np.nan
         # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
         wage = wages[np.arange(options["simulation_agents"]), choice]
