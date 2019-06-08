@@ -58,7 +58,5 @@ shocks,corr_edu_b,0,FALSE,,,correlation between the shocks in the education sect
 shocks,corr_home_a,0,FALSE,,,correlation of the shocks in the home sector and occupation a,shocks,chol_sigma_41
 shocks,corr_home_b,0,FALSE,,,correlation of the shocks in the home sector and occupation b,shocks,chol_sigma_42
 shocks,corr_home_edu,0,FALSE,,,correlation of the shocks in the home and the education sector,shocks,chol_sigma_43
-meas_error_sd,a,0.001,FALSE,0,,SD of the measurement error in wages in occupation a,,
-meas_error_sd,b,0.001,FALSE,0,,SD of the measurement error in wages occupation b,,
-meas_error_sd,edu,0.001,TRUE,0,,SD of the measruement error in wages education (will be ignored),,
-meas_error_sd,home,0.001,TRUE,0,,SD of the measurement errror in wages home (will be ignored),,
+meas_error,sd_a,0.001,FALSE,0,,SD of the measurement error in wages in occupation a,,
+meas_error,sd_b,0.001,FALSE,0,,SD of the measurement error in wages occupation b,,

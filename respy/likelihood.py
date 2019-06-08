@@ -310,7 +310,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
         base_draws_est,
         choices,
         optim_paras["shocks_cholesky"],
-        optim_paras["meas_error_sd"],
+        optim_paras["meas_error"],
         periods,
     )
 
