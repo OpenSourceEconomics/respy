@@ -76,6 +76,7 @@ def create_draws_and_prob_wages(
 
     draws = np.matmul(base_draws[periods], extended_cholcovs_t[:, 1:, 1:])
     draws += states.reshape(nobs, 1, nchoices)
+    draws[:, :2] = np.clip(np.exp(draws[:, :2]), 0.0, HUGE_FLOAT)
 
     return draws, prob_wages
 
