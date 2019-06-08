@@ -4,6 +4,7 @@ import numpy as np
 from numba import guvectorize
 from numba import vectorize
 
+from respy.conditional_draws import create_draws_and_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import parse_parameters
@@ -100,7 +101,7 @@ def log_like(params, interpolation_points, data, tau, base_draws_est, state_spac
 
     contribs = log_like_obs(state_space, data, base_draws_est, tau, optim_paras)
 
-    crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
+    crit_val = -np.mean(contribs)
 
     return crit_val
 
@@ -135,11 +136,11 @@ def clip(x, minimum=None, maximum=None):
 @guvectorize(
     ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
     "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
-    "() -> (n_draws)",
+    "() -> ()",
     nopython=True,
     target="parallel",
 )
-def simulate_probability_of_agents_observed_choice(
+def simulate_probability_of_individuals_observed_choice(
     wages,
     nonpec,
     continuation_values,
@@ -165,7 +166,7 @@ def simulate_probability_of_agents_observed_choice(
     continuation_values : np.ndarray
         Array with shape (n_choices,)
     draws : np.ndarray
-        Array with shape (num_draws, n_choices)
+        Array with shape (n_draws, n_choices)
     delta : float
         Discount rate.
     is_inadmissible: np.ndarray
@@ -178,20 +179,21 @@ def simulate_probability_of_agents_observed_choice(
 
     Returns
     -------
-    prob_choice : np.ndarray
-        Array with shape (num_draws) containing smoothed probabilities for
-        choice.
+    prob_choice : float
+        Smoothed probability of choice.
 
     """
-    num_draws, num_choices = draws.shape
+    n_draws, n_choices = draws.shape
 
-    value_functions = np.zeros((num_choices, num_draws))
+    value_functions = np.zeros((n_choices, n_draws))
 
-    for i in range(num_draws):
+    prob_choice[0] = 0.0
+
+    for i in range(n_draws):
 
         max_value_functions = 0.0
 
-        for j in range(num_choices):
+        for j in range(n_choices):
             value_function, _ = _aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],
@@ -208,7 +210,7 @@ def simulate_probability_of_agents_observed_choice(
 
         sum_smooth_values = 0.0
 
-        for j in range(num_choices):
+        for j in range(n_choices):
             val_exp = np.exp((value_functions[j, i] - max_value_functions) / tau)
 
             val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
@@ -216,157 +218,9 @@ def simulate_probability_of_agents_observed_choice(
             value_functions[j, i] = val_clipped
             sum_smooth_values += val_clipped
 
-        prob_choice[i] = value_functions[choice, i] / sum_smooth_values
+        prob_choice[0] += value_functions[choice, i] / sum_smooth_values
 
-
-@vectorize(["f4(f4, f4, f4)", "f8(f8, f8, f8)"], nopython=True, target="cpu")
-def normal_pdf(x, mu, sigma):
-    """Compute the probability of ``x`` under a normal distribution.
-
-    This implementation is faster than calling ``scipy.stats.norm.pdf``.
-
-    Parameters
-    ----------
-    x : float or np.ndarray
-        The probability is calculated for this value.
-    mu : float or np.ndarray
-        Mean of the normal distribution.
-    sigma : float or np.ndarray
-        Standard deviation of the normal distribution.
-
-    Returns
-    -------
-    probability : float
-        Probability of ``x`` under a normal distribution with mean ``mu`` and standard
-        deviation ``sigma``.
-
-    Example
-    -------
-    >>> result = normal_pdf(0)
-    >>> result
-    0.3989422804014327
-    >>> from scipy.stats import norm
-    >>> assert result == norm.pdf(0)
-
-    """
-    a = np.sqrt(2 * np.pi) * sigma
-    b = np.exp(-(x - mu) ** 2 / (2 * sigma ** 2))
-
-    probability = 1 / a * b
-
-    return probability
-
-
-@guvectorize(
-    ["f8, f8[:], i8, f8[:, :, :], i8, f8[:, :], f8[:, :], f8[:]"],
-    "(), (w), (), (i, p, n), (), (m, n) -> (p, n), (p)",
-    nopython=True,
-    target="parallel",
-)
-def create_draws_and_prob_wages(
-    wage_observed,
-    wages_systematic,
-    period,
-    base_draws_est,
-    choice,
-    sc,
-    draws,
-    prob_wages,
-):
-    """Create draws to simulate maximum utilities and create probabilities of wages.
-
-    Draws are taken from a general set of unique shocks for each period. The shocks are
-    adjusted in case the wage of an agent is available as well as the probability of the
-    wage.
-
-    Parameters
-    ----------
-    wage_observed : float
-        Agent's observed wage.
-    wages_systematic : np.ndarray
-        Array with shape (n_choices,) containing systematic wages.
-    period : int
-        Number of period.
-    base_draws_est : np.ndarray
-        Array with shape (num_periods, num_draws, num_choices) containing sets of draws
-        for all periods.
-    choice : int
-        Choice between one and four.
-    sc : np.ndarray
-        Array with shape (num_choices, num_choices).
-
-    Returns
-    -------
-    draws : np.ndarray
-        Array with shape (num_draws, num_choices) containing adjusted draws.
-    prob_wages : np.ndarray
-        Array with shape (num_draws,) containing probabilities for the observed wage.
-
-    """
-    # Create auxiliary objects
-    num_draws, num_choices = base_draws_est.shape[1:]
-    temp_draws = np.zeros((num_draws, num_choices))
-
-    # Extract relevant deviates from standard normal distribution. The same set of
-    # baseline draws are used for each agent and period.
-    draws_stan = base_draws_est[period]
-
-    has_wage = ~np.isnan(wage_observed)
-
-    # If an agent is observed working, then the the labor market shocks are observed and
-    # the conditional distribution is used to determine the choice probabilities if the
-    # wage information is available as well.
-    if has_wage:
-        log_wo = np.log(wage_observed)
-        log_wage_observed = clip(log_wo, -HUGE_FLOAT, HUGE_FLOAT)
-
-        log_ws = np.log(wages_systematic[choice])
-        log_wage_systematic = clip(log_ws, -HUGE_FLOAT, HUGE_FLOAT)
-
-        dist = log_wage_observed - log_wage_systematic
-
-        # Adjust draws and prob_wages in case of OCCUPATION A.
-        if choice == 0:
-            temp_draws[:, 0] = dist / sc[0, 0]
-            temp_draws[:, 1] = draws_stan[:, 1]
-
-            prob_wages[:] = normal_pdf(dist, 0.0, sc[0, 0])
-
-        # Adjust draws and prob_wages in case of OCCUPATION B.
-        elif choice == 1:
-            temp_draws[:, 0] = draws_stan[:, 0]
-            temp_draws[:, 1] = (dist - sc[1, 0] * draws_stan[:, 0]) / sc[1, 1]
-
-            means = sc[1, 0] * draws_stan[:, 0]
-            prob_wages[:] = normal_pdf(dist, means, sc[1, 1])
-
-        temp_draws[:, 2:] = draws_stan[:, 2:]
-
-    # If the wage is missing or an agent is pursuing SCHOOLING or HOME, the draws are
-    # not adjusted and the probability for wages is one.
-    else:
-        temp_draws[:, :] = draws_stan
-        prob_wages[:] = 1.0
-
-    # What follows is a matrix multiplication written out of the form ``a.dot(b.T). Note
-    # that the second argument corresponds to ``sc`` which is not transposed. This is
-    # done by adjusting the loops. Additionally, it incorporates the process of taking
-    # ``np.exp`` for the draws of the first two choices and clipping them.
-    k_, l_ = draws.shape
-    m_ = sc.shape[0]
-
-    for k in range(k_):
-        for m in range(m_):
-            val = 0.0
-            for l in range(l_):
-                val += temp_draws[k, l] * sc[m, l]
-            if m < 2:
-                val_exp = np.exp(val)
-                val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
-
-                draws[k, m] = val_clipped
-            else:
-                draws[k, m] = val
+    prob_choice[0] /= n_draws
 
 
 def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
@@ -385,8 +239,8 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     data : pd.DataFrame
         DataFrame with the empirical dataset.
     base_draws_est : np.ndarray
-        Array with shape (num_periods, num_draws_est, num_choices) containing i.i.d.
-        draws from standard normal distributions.
+        Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
+        standard normal distributions.
     tau : float
         Smoothing parameter for choice probabilities.
     optim_paras : dict
@@ -395,7 +249,8 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     Returns
     -------
     contribs : np.ndarray
-        Array with shape (num_agents,) containing contributions of estimated agents.
+        Array with shape (n_individuals,) containing contributions of individuals in the
+        empirical data.
 
     """
     if np.count_nonzero(optim_paras["shocks_cholesky"]) == 0:
@@ -403,7 +258,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
 
     # Convert data to np.ndarray. Separate wages from other characteristics as they need
     # to be integers.
-    agents = data[
+    individuals = data[
         [
             "Period",
             "Experience_A",
@@ -419,66 +274,69 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     # each individual's first observation. After that, extract initial education levels
     # per agent which are important for type-specific probabilities.
     num_obs_per_agent = np.bincount(data.Identifier.values)
-    idx_agents_first_observation = np.hstack((0, np.cumsum(num_obs_per_agent)[:-1]))
-    agents_initial_education_levels = agents[idx_agents_first_observation, 3]
+    idx_individuals_first_observation = np.hstack(
+        (0, np.cumsum(num_obs_per_agent)[:-1])
+    )
+    individuals_initial_education_levels = individuals[
+        idx_individuals_first_observation, 3
+    ]
 
     # Update type-specific probabilities conditional on whether the initial level of
     # education is greater than nine.
     type_shares = get_conditional_probabilities(
-        optim_paras["type_shares"], agents_initial_education_levels
+        optim_paras["type_shares"], individuals_initial_education_levels
     )
 
     # Extract observable components of the state space and agent's decision.
     periods, exp_as, exp_bs, edus, choices_lagged, choices = (
-        agents[:, i] for i in range(6)
+        individuals[:, i] for i in range(6)
     )
 
     # Get indices of states in the state space corresponding to all observations for all
-    # types. The indexer has the shape (num_obs, num_types).
+    # types. The indexer has the shape (n_obs, n_types).
     ks = state_space.indexer[periods, exp_as, exp_bs, edus, choices_lagged, :]
+    nobs, num_types = ks.shape
 
-    # Reshape periods, choices and wages_observed so that they match the shape (num_obs,
-    # num_types) of the indexer.
-    periods = state_space.states[ks, 0]
-    choices = choices.repeat(state_space.num_types).reshape(-1, state_space.num_types)
-    wages_observed = wages_observed.repeat(state_space.num_types).reshape(
-        -1, state_space.num_types
-    )
-    wages_systematic = state_space.wages[ks]
+    wages_observed = wages_observed.repeat(num_types)
+    log_wages_observed = np.clip(np.log(wages_observed), -HUGE_FLOAT, HUGE_FLOAT)
+    wages_systematic = state_space.wages[ks].reshape(nobs * num_types, -1)
+    num_choices = wages_systematic.shape[1]
+    choices = choices.repeat(num_types)
+    periods = state_space.states[ks, 0].flatten()
 
-    # Adjust the draws to simulate the expected maximum utility and calculate the
-    # probability of observing the wage.
     draws, prob_wages = create_draws_and_prob_wages(
-        wages_observed,
+        log_wages_observed,
         wages_systematic,
-        periods,
         base_draws_est,
         choices,
         optim_paras["shocks_cholesky"],
+        optim_paras["meas_error"],
+        periods,
     )
 
-    # Simulate the probability of observing the choice of the individual.
-    prob_choices = simulate_probability_of_agents_observed_choice(
+    draws = draws.reshape(nobs, num_types, -1, num_choices)
+
+    prob_choices = simulate_probability_of_individuals_observed_choice(
         state_space.wages[ks],
         state_space.nonpec[ks],
         state_space.continuation_values[ks],
         draws,
         optim_paras["delta"],
         state_space.is_inadmissible[ks],
-        choices,
+        choices.reshape(-1, num_types),
         tau,
     )
 
-    # Multiply the probability of the agent's choice with the probability of wage and
-    # average over all draws to get the probability of the observation.
-    prob_obs = (prob_choices * prob_wages).mean(axis=2)
+    prob_obs = prob_choices * prob_wages.reshape(nobs, -1)
 
     # Accumulate the likelihood of observations for each individual-type combination
     # over all periods.
-    prob_type = np.multiply.reduceat(prob_obs, idx_agents_first_observation)
+    prob_type = np.multiply.reduceat(prob_obs, idx_individuals_first_observation)
 
     # Multiply each individual-type contribution with its type-specific shares and sum
     # over types to get the likelihood contribution for each individual.
     contribs = (prob_type * type_shares).sum(axis=1)
+
+    contribs = np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT)
 
     return contribs

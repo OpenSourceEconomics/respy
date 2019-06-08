@@ -36,18 +36,24 @@ def simulate(params, options):
         state_space, options["interpolation_points"], optim_paras
     )
 
-    # Draw draws for the simulation.
-    base_draws_sims = create_base_draws(
+    base_draws_sim = create_base_draws(
         (options["num_periods"], options["simulation_agents"], 4),
         options["simulation_seed"],
     )
 
-    simulated_data = simulate_data(state_space, base_draws_sims, optim_paras, options)
+    # ``seed + 1`` ensures that draws for wages are different than for simulation.
+    base_draws_wage = create_base_draws(
+        base_draws_sim.shape, seed=options["simulation_seed"] + 1
+    )
+
+    simulated_data = simulate_data(
+        state_space, base_draws_sim, base_draws_wage, optim_paras, options
+    )
 
     return state_space, simulated_data
 
 
-def simulate_data(state_space, base_draws_sims, optim_paras, options):
+def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, options):
     """Simulate a data set.
 
     At the beginning, agents are initialized with zero experience in occupations and
@@ -61,8 +67,10 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
     ----------
     state_space : class
         Class of state space.
-    base_draws_sims : np.ndarray
-        Array with shape (num_periods, num_agents_sim, num_choices)
+    base_draws_sim : np.ndarray
+        Array with shape (n_periods, n_agents_sim, n_choices).
+    base_draws_wage : np.ndarray
+        Array with shape (n_periods, n_agents_sim, n_choices).
     optim_paras : dict
         Parameters affected by optimization.
     options : dict
@@ -76,14 +84,16 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
     """
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
-    base_draws_sims_transformed = np.full(
+    base_draws_sim_transformed = np.full(
         (state_space.num_periods, options["simulation_agents"], 4), np.nan
     )
 
     for period in range(state_space.num_periods):
-        base_draws_sims_transformed[period] = transform_disturbances(
-            base_draws_sims[period], np.zeros(4), optim_paras["shocks_cholesky"]
+        base_draws_sim_transformed[period] = transform_disturbances(
+            base_draws_sim[period], np.zeros(4), optim_paras["shocks_cholesky"]
         )
+
+    base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
     # Create initial starting values for agents in simulation.
     initial_education = _get_random_edu_start(options)
@@ -115,14 +125,15 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
         ]
 
         # Select relevant subset of random draws.
-        draws = base_draws_sims_transformed[period]
+        draws_shock = base_draws_sim_transformed[period]
+        draws_wage = base_draws_wage_transformed[period]
 
         # Get total values and ex post rewards.
         value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
             state_space.wages[ks],
             state_space.nonpec[ks],
             state_space.continuation_values[ks],
-            draws.reshape(-1, 1, 4),
+            draws_shock.reshape(-1, 1, 4),
             optim_paras["delta"],
             state_space.is_inadmissible[ks],
         )
@@ -141,11 +152,9 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
         # Determine optimal choice.
         choice = np.argmax(value_functions, axis=1)
 
-        # Record wages. Expand matrix with NaNs for choice 2 and 3 for easier indexing.
-        wages = state_space.wages[ks] * draws
+        wages = state_space.wages[ks] * draws_shock * draws_wage
         wages[:, 2:] = np.nan
-        # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
-        wage = wages[np.arange(options["simulation_agents"]), choice]
+        wage = np.choose(choice, wages.T)
 
         # Record data of all agents in one period.
         rows = np.column_stack(
@@ -166,7 +175,7 @@ def simulate_data(state_space, base_draws_sims, optim_paras, options):
                 state_space.wages[ks, :2],
                 flow_utilities,
                 value_functions,
-                draws,
+                draws_shock,
                 np.full(options["simulation_agents"], optim_paras["delta"][0]),
             )
         )

@@ -62,6 +62,10 @@ def generate_random_model(
     cov = helper.dot(helper.T)
     params.loc["shocks", "para"] = cov_matrix_to_sdcorr_params(cov)
 
+    params.loc["meas_error", "para"] = np.random.uniform(
+        low=0.001, high=0.1, size=len(params.loc["meas_error"])
+    )
+
     options = {}
 
     options["simulation_agents"] = np.random.randint(3, bound_constr["max_agents"] + 1)
