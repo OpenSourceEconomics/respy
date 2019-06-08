@@ -5,68 +5,74 @@ from respy.config import HUGE_FLOAT
 
 
 def create_draws_and_prob_wages(
-    log_wage_observed,
+    log_wages_observed,
     wages_systematic,
     base_draws,
-    choice,
+    choices,
     shocks_cholesky,
     meas_error_sds,
+    periods,
 ):
     """Evaluate likelihood of observed wages and create conditional draws.
 
+    Let nobs be the number of period-individual combinations, i.e. the number of rows
+    of the empirical dataset.
+
     Parameters
     ----------
-    wage_observed : np.array
-        1d numpy array of length nind with observed wages
+    log_wages_observed : np.array
+        1d numpy array of length nobs * num_types with observed log wages
     wages_systematic : np.array
-        2d numpy array of shape (nind, nchoices) with systematic wages. Can contain
-        np.nan or any number for non-wage sectors. The non wage sectors only have to be
-        there to not raise index errors.
+        2d numpy array of shape (nobs * num_types, nchoices) with systematic wages.
+        Can contain np.nan or any number for non-wage sectors. The non wage sectors
+        only have to be there to not raise index errors.
     base_draws : np.array
         2d numpy array of shape (ndraws, nchoices) with standard normal random
         random variables.
-    choice : np.array
-        1d numpy array of length nind with the observed choice. Will be used to select
-        columns of systematic wages. Therefore it has to be coded starting at zero.
+    choices : np.array
+        1d numpy array of length nobs * num_types with the observed choice. Will be used
+        to select columns of systematic wages. Therefore it has to be coded starting at
+        zero.
     shocks_cholesky : np.array
         1d numpy array of shape (nchoices, nchoices) with the lower triangular cholesky
         factor of the covariance matrix of the shocks.
     meas_error_sds : np.array
         1d numpy array of length (nchoices) with the standard deviations of the
         measurement errors of observed reward components.
+    periods : np.array
+        1d numpy array of length nobs * num_types with the period of the observation
 
     Returns
     -------
     draws : np.array
-        3d numpy array of shape (nind, ndraws, nchoices) with shocks drawn from a
-        multivariate normal distribution conditional on the observed wages.
+        3d numpy array of shape (nobs * num_types, ndraws, nchoices) with shocks drawn
+        from a multivariate normal distribution conditional on the observed wages.
     prob_wages : np.array
-        1d numpy array of length nind with the unconditional likelihood of the observed
-        wages, correcting for measurement error.
+        1d numpy array of length nobs * num_types with the unconditional likelihood of
+        the observed wages, correcting for measurement error.
 
 
     """
-    choice = choice.astype(np.uint16)
-    nind, nchoices = wages_systematic.shape
-    relevant_systematic_wages = wages_systematic[choice]
+    choices = choices.astype(np.uint16)
+    nobs, nchoices = wages_systematic.shape
+    relevant_systematic_wages = np.choose(choices, wages_systematic.T)
     log_wage_systematic = np.clip(
         np.log(relevant_systematic_wages), -HUGE_FLOAT, HUGE_FLOAT
     )
 
-    states = np.zeros((nind, nchoices))
-    measurements = log_wage_observed - log_wage_systematic
-    extended_cholcovs_t = np.zeros((nind, nchoices + 1, nchoices + 1))
+    states = np.zeros((nobs, nchoices))
+    measurements = log_wages_observed - log_wage_systematic
+    extended_cholcovs_t = np.zeros((nobs, nchoices + 1, nchoices + 1))
     extended_cholcovs_t[:, 1:, 1:] = shocks_cholesky.T
-    meas_sds = meas_error_sds[choice]
+    meas_sds = meas_error_sds[choices]
 
     # note: states and extended_cholcovs_t are changed inplace
     prob_wages = kalman_update(
-        states, measurements, extended_cholcovs_t, meas_sds, choice
+        states, measurements, extended_cholcovs_t, meas_sds, choices
     )
 
-    updated_cholcovs = np.transpose(extended_cholcovs_t[:, 1:, 1:], axes=(0, 2, 1))
-    draws = np.matmul(updated_cholcovs, base_draws)
-    draws += states.reshape(nind, 1, nchoices)
+    draws = np.matmul(base_draws[periods], extended_cholcovs_t[:, 1:, 1:])
+    draws += states.reshape(nobs, 1, nchoices)
 
     return draws, prob_wages
 

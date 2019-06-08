@@ -123,6 +123,7 @@ def parse_parameters(params, paras_type="optim"):
         optim_paras["type_shifts"] = np.zeros((1, 4))
 
     optim_paras["num_paras"] = len(params)
+    optim_paras["meas_error_sds"] = np.ones(4) * 0.001
 
     return optim_paras
 

@@ -5,6 +5,7 @@ from development.testing.regression.run_regression import check_single
 
 
 @pytest.mark.parametrize("index", range(10))
+@pytest.mark.xfail(reason="Breaking changes in generation of conditional draws.")
 def test_single_regression(regression_vault, index):
     """Run a single regression test."""
     test = regression_vault[index]
