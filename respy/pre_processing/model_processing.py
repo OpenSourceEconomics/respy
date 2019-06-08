@@ -122,8 +122,10 @@ def parse_parameters(params, paras_type="optim"):
         optim_paras["type_shares"] = np.zeros(2)
         optim_paras["type_shifts"] = np.zeros((1, 4))
 
+    # ignore meas error for non wage sectors
+    optim_paras["meas_error_sd"][2:] = 0.0
+
     optim_paras["num_paras"] = len(params)
-    optim_paras["meas_error_sds"] = np.ones(4) * 0.001
 
     return optim_paras
 
