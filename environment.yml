@@ -22,6 +22,6 @@ dependencies:
   - sphinx-autobuild
   - sphinx_rtd_theme
   - tox-conda
-  - scipy=1.3.0
+  - scipy=1.2.1
   - pip:
     - pre-commit
