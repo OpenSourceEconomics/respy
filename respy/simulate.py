@@ -36,24 +36,24 @@ def simulate(params, options):
         state_space, options["interpolation_points"], optim_paras
     )
 
-    # Draw draws for the simulation.
-    base_draws_sims = create_base_draws(
+    base_draws_sim = create_base_draws(
         (options["num_periods"], options["simulation_agents"], 4),
         options["simulation_seed"],
     )
 
+    # ``seed + 1`` ensures that draws for wages are different than for simulation.
     base_draws_wage = create_base_draws(
-        base_draws_sims.shape, seed=options["simulation_seed"] + 1
+        base_draws_sim.shape, seed=options["simulation_seed"] + 1
     )
 
     simulated_data = simulate_data(
-        state_space, base_draws_sims, base_draws_wage, optim_paras, options
+        state_space, base_draws_sim, base_draws_wage, optim_paras, options
     )
 
     return state_space, simulated_data
 
 
-def simulate_data(state_space, base_draws_sims, base_draws_wage, optim_paras, options):
+def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, options):
     """Simulate a data set.
 
     At the beginning, agents are initialized with zero experience in occupations and
@@ -67,8 +67,10 @@ def simulate_data(state_space, base_draws_sims, base_draws_wage, optim_paras, op
     ----------
     state_space : class
         Class of state space.
-    base_draws_sims : np.ndarray
-        Array with shape (num_periods, num_agents_sim, num_choices)
+    base_draws_sim : np.ndarray
+        Array with shape (n_periods, n_agents_sim, n_choices).
+    base_draws_wage : np.ndarray
+        Array with shape (n_periods, n_agents_sim, n_choices).
     optim_paras : dict
         Parameters affected by optimization.
     options : dict
@@ -82,13 +84,13 @@ def simulate_data(state_space, base_draws_sims, base_draws_wage, optim_paras, op
     """
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
-    base_draws_sims_transformed = np.full(
+    base_draws_sim_transformed = np.full(
         (state_space.num_periods, options["simulation_agents"], 4), np.nan
     )
 
     for period in range(state_space.num_periods):
-        base_draws_sims_transformed[period] = transform_disturbances(
-            base_draws_sims[period], np.zeros(4), optim_paras["shocks_cholesky"]
+        base_draws_sim_transformed[period] = transform_disturbances(
+            base_draws_sim[period], np.zeros(4), optim_paras["shocks_cholesky"]
         )
 
     # Create initial starting values for agents in simulation.
@@ -121,7 +123,7 @@ def simulate_data(state_space, base_draws_sims, base_draws_wage, optim_paras, op
         ]
 
         # Select relevant subset of random draws.
-        draws_shock = base_draws_sims_transformed[period]
+        draws_shock = base_draws_sim_transformed[period]
 
         # Get total values and ex post rewards.
         value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(

@@ -15,42 +15,45 @@ def create_draws_and_prob_wages(
 ):
     """Evaluate likelihood of observed wages and create conditional draws.
 
-    Let nobs be the number of period-individual combinations, i.e. the number of rows
+    Let n_obs be the number of period-individual combinations, i.e. the number of rows
     of the empirical dataset.
+
+    Note
+    ----
+    This function calls :func:`kalman_update` which changes ``states`` and
+    ``extended_cholcovs_t`` in-place.
 
     Parameters
     ----------
-    log_wages_observed : np.array
-        1d numpy array of length nobs * num_types with observed log wages
-    wages_systematic : np.array
-        2d numpy array of shape (nobs * num_types, nchoices) with systematic wages.
-        Can contain np.nan or any number for non-wage sectors. The non wage sectors
-        only have to be there to not raise index errors.
-    base_draws : np.array
-        2d numpy array of shape (ndraws, nchoices) with standard normal random
-        random variables.
-    choices : np.array
-        1d numpy array of length nobs * num_types with the observed choice. Will be used
-        to select columns of systematic wages. Therefore it has to be coded starting at
+    log_wages_observed : np.ndarray
+        Array with shape (n_obs * n_types,) containing observed log wages.
+    wages_systematic : np.ndarray
+        Array with shape (n_obs * n_types, n_choices) containing systematic wages. Can
+        contain np.nan or any number for non-wage sectors. The non wage sectors only
+        have to be there to not raise index errors.
+    base_draws : np.ndarray
+        Array with shape (n_draws, n_choices) with standard normal random variables.
+    choices : np.ndarray
+        Array with shape (n_obs * n_types,) containing observed choices. Is used to
+        select columns of systematic wages. Therefore it has to be coded starting at
         zero.
-    shocks_cholesky : np.array
-        1d numpy array of shape (nchoices, nchoices) with the lower triangular cholesky
+    shocks_cholesky : np.ndarray
+        Array with shape (n_choices, n_choices) with the lower triangular Cholesky
         factor of the covariance matrix of the shocks.
-    meas_error_sds : np.array
-        1d numpy array of length (nchoices) with the standard deviations of the
-        measurement errors of observed reward components.
-    periods : np.array
-        1d numpy array of length nobs * num_types with the period of the observation
+    meas_error_sds : np.ndarray
+        Array with shape (n_choices,) containing standard deviations of the measurement
+        errors of observed reward components.
+    periods : np.ndarray
+        Array with shape (n_obs * n_types,) containing the period of the observation.
 
     Returns
     -------
-    draws : np.array
-        3d numpy array of shape (nobs * num_types, ndraws, nchoices) with shocks drawn
+    draws : np.ndarray
+        Array with shape (n_obs * n_types, n_draws, n_choices) containing shocks drawn
         from a multivariate normal distribution conditional on the observed wages.
-    prob_wages : np.array
-        1d numpy array of length nobs * num_types with the unconditional likelihood of
+    prob_wages : np.ndarray
+        Array with shape (n_obs * n_types,) containing the unconditional likelihood of
         the observed wages, correcting for measurement error.
-
 
     """
     choices = choices.astype(np.uint16)
@@ -66,7 +69,7 @@ def create_draws_and_prob_wages(
     extended_cholcovs_t[:, 1:, 1:] = shocks_cholesky.T
     meas_sds = meas_error_sds[choices]
 
-    # note: states and extended_cholcovs_t are changed inplace
+    # Note: ``states`` and ``extended_cholcovs_t`` are changed in-place.
     prob_wages = kalman_update(
         states, measurements, extended_cholcovs_t, meas_sds, choices
     )
@@ -78,72 +81,64 @@ def create_draws_and_prob_wages(
 
 
 @guvectorize(
-    ["f8[:], f8, f8[:, :], f8, u2, f8[:]"], "(nstates), (), (m, m), () ,() -> ()"
+    ["f8[:], f8, f8[:, :], f8, u2, f8[:]"],
+    "(n_states), (), (n_choices_plus_one, n_choices_plus_one), () ,() -> ()",
 )
 def kalman_update(state, measurement, extended_cholcov_t, meas_sd, choice, prob_wage):
     """Make a Kalman update and evaluate likelihood of wages.
 
-    extended_cholcov_t  and state are changed in-place for speed reasons.
-
-    Can handle missings in the measurements.
-
-    This is a specialized Kalman filter in the following ways:
+    This function is a specialized Kalman filter in the following ways:
 
     - All measurements just measure one latent factor
     - All factor loadings are equal to 1
     - All initial states are assumed to be equal to 0
 
+    ``extended_cholcov_t`` and ``state`` are changed in-place for performance reasons.
+
+    The function can handle missings in the measurements.
 
     Parameters
     ----------
-    state : np.array
-        1d array with initial state vector
-
-    measumement : float
-        the measurement that is incorporated through the Kalman update
-
-    extended_cholcov_t : np.array
-        2d array of shape (nstates + 1, nstates + 1) that contains the transpose of the
-        cholesky factor of the state covariance matrix in the lower right block and
+    state : np.ndarray
+        Array with shape (n_choices,) containing initial state vectors.
+    measurement : float
+        The measurement that is incorporated through the Kalman update.
+    extended_cholcov_t : np.ndarray
+        Array with shape (n_states + 1, n_states + 1) that contains the transpose of the
+        Cholesky factor of the state covariance matrix in the lower right block and
         zeros everywhere else.
-
     meas_sd : float
-        The standard deviation of the measurement error
-
-    choice : np.uint16
+        The standard deviation of the measurement error.
+    choice : uint16
         Observed choice. Determines on which element of the state vector is measured
         by the measurement.
 
-
     Returns
     -------
-
     prob_wage : float
-        The likelihood of the observed wage
-
+        The likelihood of the observed wage.
 
     References
     ----------
-
     Robert Grover Brown. Introduction to Random Signals and Applied Kalman Filtering.
         Wiley and sons, 2012.
 
     """
-    # extract dimensions
+    # Extract dimensions.
     m = len(extended_cholcov_t)
     nfac = m - 1
 
-    # invariant part of the normal pdf
+    # This is the invariant part of a normal probability density function.
     invariant = 1 / (2 * np.pi) ** 0.5
 
-    # skip missing wages
+    # Skip missing wages.
     if np.isfinite(measurement):
-        # construct helper matrix for qr magic
+        # Construct helper matrix for qr magic.
         extended_cholcov_t[0, 0] = meas_sd
         for f in range(1, m):
             extended_cholcov_t[f, 0] = extended_cholcov_t[f, choice + 1]
 
-        # qr decomposition
+        # QR decomposition.
         for f in range(m):
             for g in range(m - 1, f, -1):
                 b = extended_cholcov_t[g, f]
@@ -163,12 +158,12 @@ def kalman_update(state, measurement, extended_cholcov_t, meas_sd, choice, prob_
                         extended_cholcov_t[g - 1, k_] = c_ * helper1 + s_ * helper2
                         extended_cholcov_t[g, k_] = -s_ * helper1 + c_ * helper2
 
-        # likelihood evaluation
+        # Likelihood evaluation.
         sigma = np.abs(extended_cholcov_t[0, 0])
         prob = invariant / sigma * np.exp(-measurement ** 2 / (2 * sigma ** 2))
         prob_wage[0] = prob
 
-        # state update
+        # Update the state.
         measurement /= sigma
         for f in range(nfac):
             state[f] = extended_cholcov_t[0, f + 1] * measurement

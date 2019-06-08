@@ -136,11 +136,11 @@ def clip(x, minimum=None, maximum=None):
 @guvectorize(
     ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
     "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
-    "() -> (n_draws)",
+    "() -> ()",
     nopython=True,
     target="parallel",
 )
-def simulate_probability_of_agents_observed_choice(
+def simulate_probability_of_individuals_observed_choice(
     wages,
     nonpec,
     continuation_values,
@@ -166,7 +166,7 @@ def simulate_probability_of_agents_observed_choice(
     continuation_values : np.ndarray
         Array with shape (n_choices,)
     draws : np.ndarray
-        Array with shape (num_draws, n_choices)
+        Array with shape (n_draws, n_choices)
     delta : float
         Discount rate.
     is_inadmissible: np.ndarray
@@ -179,20 +179,21 @@ def simulate_probability_of_agents_observed_choice(
 
     Returns
     -------
-    prob_choice : np.ndarray
-        Array with shape (num_draws) containing smoothed probabilities for
-        choice.
+    prob_choice : float
+        Smoothed probability of choice.
 
     """
-    num_draws, num_choices = draws.shape
+    n_draws, n_choices = draws.shape
 
-    value_functions = np.zeros((num_choices, num_draws))
+    value_functions = np.zeros((n_choices, n_draws))
 
-    for i in range(num_draws):
+    prob_choice[0] = 0.0
+
+    for i in range(n_draws):
 
         max_value_functions = 0.0
 
-        for j in range(num_choices):
+        for j in range(n_choices):
             value_function, _ = _aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],
@@ -209,7 +210,7 @@ def simulate_probability_of_agents_observed_choice(
 
         sum_smooth_values = 0.0
 
-        for j in range(num_choices):
+        for j in range(n_choices):
             val_exp = np.exp((value_functions[j, i] - max_value_functions) / tau)
 
             val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
@@ -217,7 +218,9 @@ def simulate_probability_of_agents_observed_choice(
             value_functions[j, i] = val_clipped
             sum_smooth_values += val_clipped
 
-        prob_choice[i] = value_functions[choice, i] / sum_smooth_values
+        prob_choice[0] += value_functions[choice, i] / sum_smooth_values
+
+    prob_choice[0] /= n_draws
 
 
 def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
@@ -236,8 +239,8 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     data : pd.DataFrame
         DataFrame with the empirical dataset.
     base_draws_est : np.ndarray
-        Array with shape (num_periods, num_draws_est, num_choices) containing i.i.d.
-        draws from standard normal distributions.
+        Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
+        standard normal distributions.
     tau : float
         Smoothing parameter for choice probabilities.
     optim_paras : dict
@@ -246,7 +249,8 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     Returns
     -------
     contribs : np.ndarray
-        Array with shape (num_agents,) containing contributions of estimated agents.
+        Array with shape (n_individuals,) containing contributions of individuals in the
+        empirical data.
 
     """
     if np.count_nonzero(optim_paras["shocks_cholesky"]) == 0:
@@ -254,7 +258,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
 
     # Convert data to np.ndarray. Separate wages from other characteristics as they need
     # to be integers.
-    agents = data[
+    individuals = data[
         [
             "Period",
             "Experience_A",
@@ -270,22 +274,26 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     # each individual's first observation. After that, extract initial education levels
     # per agent which are important for type-specific probabilities.
     num_obs_per_agent = np.bincount(data.Identifier.values)
-    idx_agents_first_observation = np.hstack((0, np.cumsum(num_obs_per_agent)[:-1]))
-    agents_initial_education_levels = agents[idx_agents_first_observation, 3]
+    idx_individuals_first_observation = np.hstack(
+        (0, np.cumsum(num_obs_per_agent)[:-1])
+    )
+    individuals_initial_education_levels = individuals[
+        idx_individuals_first_observation, 3
+    ]
 
     # Update type-specific probabilities conditional on whether the initial level of
     # education is greater than nine.
     type_shares = get_conditional_probabilities(
-        optim_paras["type_shares"], agents_initial_education_levels
+        optim_paras["type_shares"], individuals_initial_education_levels
     )
 
     # Extract observable components of the state space and agent's decision.
     periods, exp_as, exp_bs, edus, choices_lagged, choices = (
-        agents[:, i] for i in range(6)
+        individuals[:, i] for i in range(6)
     )
 
     # Get indices of states in the state space corresponding to all observations for all
-    # types. The indexer has the shape (num_obs, num_types).
+    # types. The indexer has the shape (n_obs, n_types).
     ks = state_space.indexer[periods, exp_as, exp_bs, edus, choices_lagged, :]
     nobs, num_types = ks.shape
 
@@ -308,8 +316,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
 
     draws = draws.reshape(nobs, num_types, -1, num_choices)
 
-    # Simulate the probability of observing the choice of the individual.
-    prob_choices = simulate_probability_of_agents_observed_choice(
+    prob_choices = simulate_probability_of_individuals_observed_choice(
         state_space.wages[ks],
         state_space.nonpec[ks],
         state_space.continuation_values[ks],
@@ -320,14 +327,11 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
         tau,
     )
 
-    # The resulting prob_choices are actually only smoothed choices per draw and
-    # have to be averaged over draws. They have the shape (nobs, num_types, ndraws)
-    prob_choices = prob_choices.mean(axis=2)
     prob_obs = prob_choices * prob_wages.reshape(nobs, -1)
 
     # Accumulate the likelihood of observations for each individual-type combination
     # over all periods.
-    prob_type = np.multiply.reduceat(prob_obs, idx_agents_first_observation)
+    prob_type = np.multiply.reduceat(prob_obs, idx_individuals_first_observation)
 
     # Multiply each individual-type contribution with its type-specific shares and sum
     # over types to get the likelihood contribution for each individual.
