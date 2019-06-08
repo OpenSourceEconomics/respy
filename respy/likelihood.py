@@ -101,7 +101,7 @@ def log_like(params, interpolation_points, data, tau, base_draws_est, state_spac
 
     contribs = log_like_obs(state_space, data, base_draws_est, tau, optim_paras)
 
-    crit_val = -np.mean(np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT))
+    crit_val = -np.mean(contribs)
 
     return crit_val
 
@@ -310,7 +310,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
         base_draws_est,
         choices,
         optim_paras["shocks_cholesky"],
-        optim_paras["meas_error_sd"],
+        optim_paras["meas_error"],
         periods,
     )
 
@@ -336,5 +336,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     # Multiply each individual-type contribution with its type-specific shares and sum
     # over types to get the likelihood contribution for each individual.
     contribs = (prob_type * type_shares).sum(axis=1)
+
+    contribs = np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT)
 
     return contribs

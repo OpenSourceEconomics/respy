@@ -93,7 +93,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
             base_draws_sim[period], np.zeros(4), optim_paras["shocks_cholesky"]
         )
 
-    base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error_sd"])
+    base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
     # Create initial starting values for agents in simulation.
     initial_education = _get_random_edu_start(options)
@@ -154,8 +154,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
         wages = state_space.wages[ks] * draws_shock * draws_wage
         wages[:, 2:] = np.nan
-        # Do not swap np.arange with : (https://stackoverflow.com/a/46425896/7523785)!
-        wage = wages[np.arange(options["simulation_agents"]), choice]
+        wage = np.choose(choice, wages.T)
 
         # Record data of all agents in one period.
         rows = np.column_stack(

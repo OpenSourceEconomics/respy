@@ -58,10 +58,8 @@ shocks,corr_edu_b,0,False,,,"Element 3,2 of cholesky factor of shock covariance 
 shocks,corr_home_a,0,False,,,"Element 4,1 of cholesky factor of shock covariance matrix"
 shocks,corr_home_b,0,False,,,"Element 4,2 of cholesky factor of shock covariance matrix"
 shocks,corr_home_edu,0,False,,,"Element 4,3 of cholesky factor of shock covariance matrix"
-meas_error_sd,a,0.001,FALSE,0,,SD of the measurement error in wages in occupation a
-meas_error_sd,b,0.001,FALSE,0,,SD of the measurement error in wages occupation b
-meas_error_sd,edu,0.001,TRUE,0,,SD of the measruement error in wages education (will be ignored)
-meas_error_sd,home,0.001,TRUE,0,,SD of the measurement errror in wages home (will be ignored)
+meas_error,sd_a,0.001,FALSE,0,,SD of the measurement error in wages in occupation a
+meas_error,sd_b,0.001,FALSE,0,,SD of the measurement error in wages occupation b
 type_shares,base_share_2,-1.6094379124,False,,,share_of_agents_of_type_2
 type_shares,ten_years_2,0,False,,,effect of more than ten years of schooling on probability of being type 2
 type_shares,base_share_3,-0.2231435513,False,,,share_of_agents_of_type_3

@@ -109,6 +109,13 @@ def parse_parameters(params, paras_type="optim"):
     optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
     optim_paras.pop("shocks")
 
+    short_meas_error = params.loc["meas_error"]
+    num_choices = cov.shape[0]
+    meas_error = params.loc["shocks"][:num_choices].copy(deep=True)
+    meas_error[:] = 0.0
+    meas_error.update(short_meas_error)
+    optim_paras["meas_error"] = meas_error.to_numpy()
+
     if "type_shares" in optim_paras:
         optim_paras["type_shares"] = np.hstack(
             [np.zeros(2), optim_paras["type_shares"]]
@@ -121,9 +128,6 @@ def parse_parameters(params, paras_type="optim"):
         optim_paras["num_types"] = 1
         optim_paras["type_shares"] = np.zeros(2)
         optim_paras["type_shifts"] = np.zeros((1, 4))
-
-    # ignore meas error for non wage sectors
-    optim_paras["meas_error_sd"][2:] = 0.0
 
     optim_paras["num_paras"] = len(params)
 
