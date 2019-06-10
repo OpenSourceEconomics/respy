@@ -59,8 +59,31 @@ BASE_COVARIATES = {
 
 The keys of the dictionary are used as column names and must correspond to the parameter
 value in the parameter specification. The values are strings passed to ``pandas.eval``.
+
 """
 
+BASE_STATE_SPACE_FILTERS = [
+    # In period 0, agents cannot choose occupation a or b.
+    "(period == 0) & ((lagged_choice == 0) | (lagged_choice == 1))",
+    # In periods > 0, if agents accumulated experience only in one sector, lagged choice
+    # cannot be different.
+    "(period > 0) & (exp_{i} - @initial_exp[{i}] == period) & (lagged_choice != {i})",
+    # In periods > 0, if agents always accumulated experience, lagged choice cannot be
+    # non-experience sector.
+    "(period > 0) & (exp_0 + exp_1 + exp_2 - @initial_exp[2] == period) "
+    "& (lagged_choice == {j})",
+    # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
+    # be school.
+    "(period > 0) & (lagged_choice == 2) & (exp_2 == @initial_exp[2])",
+    # If experience in sector 0 and 1 are zero, lagged choice cannot be this sector.
+    "(lagged_choice == 0) & (exp_0 == 0)",
+    "(lagged_choice == 1) & (exp_1 == 0)",
+]
+"""list: Contains filters for the state space.
+
+TODO: Check for collinear restrictions.
+
+"""
 
 BASE_RESTRICTIONS = {
     "a": "False",

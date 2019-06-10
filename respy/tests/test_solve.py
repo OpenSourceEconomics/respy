@@ -2,11 +2,14 @@ import numpy as np
 import pytest
 from numba import njit
 
+from respy._new_features import _create_state_space
+from respy.config import BASE_STATE_SPACE_FILTERS
 from respy.config import EXAMPLE_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_options
 from respy.pre_processing.model_processing import process_params
 from respy.shared import get_example_model
+from respy.solve import create_state_space
 from respy.solve import get_continuation_values
 from respy.solve import solve
 from respy.solve import StateSpace
@@ -159,3 +162,50 @@ def test_get_emaxs_of_subsequent_period(seed):
 
     assert (state_space.emax_value_functions == 1).all()
     assert (state_space.continuation_values == 1).all()
+
+
+@pytest.mark.wip
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+def test_state_space_vs_old_implementation(model_or_seed):
+    if isinstance(model_or_seed, str):
+        params, options = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params, options = generate_random_model()
+
+    params, optim_paras = process_params(params)
+    options = process_options(options)
+
+    # Create old state space arguments.
+    n_periods = options["num_periods"]
+    n_types = optim_paras["num_types"]
+    edu_max = options["education_max"]
+    edu_starts = options["education_start"]
+    # Create new state space arguments.
+    maximum_exp = np.array([n_periods, n_periods, edu_max])
+    minimum_exp = np.array([0, 0, edu_starts])
+    n_nonexp_choices = 1
+
+    # Get states and indexer from old state space.
+    states_old, indexer_old = create_state_space(
+        n_periods, n_types, edu_starts, edu_max
+    )
+
+    states_new, indexer_new = _create_state_space(
+        n_periods,
+        maximum_exp,
+        minimum_exp,
+        n_nonexp_choices,
+        n_types,
+        BASE_STATE_SPACE_FILTERS,
+    )
+
+    # Compare the state spaces via sets as ordering changed in some cases.
+    states_old_set = set(map(tuple, states_old))
+    states_new_set = set(map(tuple, states_new.to_numpy()))
+    assert states_old_set == states_new_set
+
+    # Compare indexers via masks for valid indices.
+    mask_old = indexer_old != -1
+    mask_new = indexer_new != -1
+    assert np.array_equal(mask_old, mask_new)
