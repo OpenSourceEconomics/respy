@@ -40,8 +40,8 @@ BASE_COVARIATES = {
     "any_exp_a": "exp_a > 0",
     "any_exp_b": "exp_b > 0",
     # High school or college graduate.
-    "hs_graduate": "edu >= 12",
-    "co_graduate": "edu >= 16",
+    "hs_graduate": "exp_edu >= 12",
+    "co_graduate": "exp_edu >= 16",
     # Was not in school last period and is/is not high school graduate.
     "is_return_not_high_school": "~edu_lagged & ~hs_graduate",
     "is_return_high_school": "~edu_lagged & hs_graduate",
@@ -88,7 +88,7 @@ TODO: Check for collinear restrictions.
 BASE_RESTRICTIONS = {
     "a": "False",
     "b": "False",
-    "edu": "edu == education_max",
+    "edu": "exp_edu == education_max",
     "home": "False",
 }
 

@@ -55,7 +55,7 @@ class StateSpace:
 
     """
 
-    states_columns = ["period", "exp_a", "exp_b", "edu", "choice_lagged", "type"]
+    states_columns = ["period", "exp_a", "exp_b", "exp_edu", "choice_lagged", "type"]
 
     wages_columns = ["wage_a", "wage_b"]
     nonpec_columns = ["nonpec_a", "nonpec_b", "nonpec_edu", "nonpec_home"]
@@ -193,11 +193,11 @@ def _create_state_space(
             columns={
                 "exp_0": "exp_a",
                 "exp_1": "exp_b",
-                "exp_2": "edu",
+                "exp_2": "exp_edu",
                 "lagged_choice": "choice_lagged",
             }
         )
-    )[["period", "exp_a", "exp_b", "edu", "choice_lagged", "type"]]
+    )[["period", "exp_a", "exp_b", "exp_edu", "choice_lagged", "type"]]
 
     indexer = _create_indexer(df, n_periods, n_nonexp_choices, n_types, maximum_exp)
 
@@ -345,7 +345,7 @@ def _create_indexer(df, n_periods, n_nonexp_choices, n_types, maximum_exp):
     indexer = np.full(shape, -1)
 
     indexer[
-        df.period, df.exp_a, df.exp_b, df.edu, df.choice_lagged, df.type
+        df.period, df.exp_a, df.exp_b, df.exp_edu, df.choice_lagged, df.type
     ] = np.arange(df.shape[0])
 
     return indexer
@@ -393,8 +393,8 @@ def _create_reward_components(types, covariates, optim_paras):
     return wages, nonpec
 
 
-def _create_choice_covariates(covariates_df, states_df, params_spec):
-    """Create the covariates for each  choice.
+def _create_choice_covariates(covariates_df, states_df, params):
+    """Create the covariates for each choice.
 
     Parameters
     ----------
@@ -402,15 +402,15 @@ def _create_choice_covariates(covariates_df, states_df, params_spec):
         DataFrame with the basic covariates.
     states_df : pd.DataFrame
         DataFrame with the state information.
-    params_spec : pd.DataFrame
+    params : pd.DataFrame or pd.Series
         The parameter specification.
 
     Returns
     -------
     wage_covariates: list
-        List of length nchoices with covariate arrays for systematic wages.
+        List of length ``n_choices`` with covariate arrays for systematic wages.
     nonpec_covariates: list
-        List of length nchoices with covariate arrays for nonpecuniary rewards.
+        List of length ``n_choices`` with covariate arrays for non-pecuniary rewards.
 
     """
     all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
@@ -418,11 +418,11 @@ def _create_choice_covariates(covariates_df, states_df, params_spec):
     covariates = {}
 
     for choice in ["a", "b", "edu", "home"]:
-        if f"wage_{choice}" in params_spec.index:
-            wage_columns = params_spec.loc[f"wage_{choice}"].index
+        if f"wage_{choice}" in params.index:
+            wage_columns = params.loc[f"wage_{choice}"].index
             covariates[f"wage_{choice}"] = all_data[wage_columns].to_numpy()
 
-        nonpec_columns = params_spec.loc[f"nonpec_{choice}"].index
+        nonpec_columns = params.loc[f"nonpec_{choice}"].index
         covariates[f"nonpec_{choice}"] = all_data[nonpec_columns].to_numpy()
 
     for key, val in covariates.items():

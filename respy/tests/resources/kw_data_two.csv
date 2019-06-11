@@ -1,7 +1,7 @@
 category,name,para,fixed,lower,upper,comment
 delta,delta,0.95,False,0.7,1,discount factor
 wage_a,constant,9.21,False,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_a,edu,0.04,False,,,linear return to an additional year of schooling (wage)
+wage_a,exp_edu,0.04,False,,,linear return to an additional year of schooling (wage)
 wage_a,exp_a,0.033,False,,,"return to experience, same sector, linear (wage)"
 wage_a,exp_a_square,-0.05,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
 wage_a,exp_b,0,False,,,"return to experience, other civilian sector, linear (wage)"
@@ -18,7 +18,7 @@ nonpec_a,not_any_exp_a,0,False,,,reward of working in a for the first time (non 
 nonpec_a,hs_graduate,0,False,,,return to high school degree (non pecuniary)
 nonpec_a,co_graduate,0,False,,,return to college degree (non pecuniary)
 wage_b,constant,8.2,False,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_b,edu,0.08,False,,,linear return to an additional year of schooling (wage)
+wage_b,exp_edu,0.08,False,,,linear return to an additional year of schooling (wage)
 wage_b,exp_a,0.022,False,,,"return to experience, other civilian sector, linear (wage)"
 wage_b,exp_a_square,-0.05,False,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
 wage_b,exp_b,0.067,False,,,"return to experience, same sector, linear (wage)"
