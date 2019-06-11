@@ -7,7 +7,6 @@ from numba import vectorize
 from respy.conditional_draws import create_draws_and_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
-from respy.pre_processing.model_processing import parse_parameters
 from respy.pre_processing.model_processing import process_options
 from respy.pre_processing.model_processing import process_params
 from respy.shared import _aggregate_keane_wolpin_utility
@@ -91,7 +90,7 @@ def log_like(params, interpolation_points, data, tau, base_draws_est, state_spac
         State space.
 
     """
-    optim_paras = parse_parameters(params)
+    params, optim_paras = process_params(params)
 
     state_space.update_systematic_rewards(optim_paras)
 

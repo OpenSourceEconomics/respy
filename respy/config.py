@@ -27,8 +27,8 @@ IS_DEBUG = False
 
 BASE_COVARIATES = {
     # Experience in A or B, but not in the last period.
-    "not_exp_a_lagged": "(exp_a > 0) & (choice_lagged != 0)",
-    "not_exp_b_lagged": "(exp_b > 0) & (choice_lagged != 1)",
+    "not_exp_a_lagged": "exp_a > 0 and choice_lagged != 0",
+    "not_exp_b_lagged": "exp_b > 0 and choice_lagged != 1",
     # Last occupation was A, B, or education.
     "work_a_lagged": "choice_lagged == 0",
     "work_b_lagged": "choice_lagged == 1",
@@ -43,8 +43,8 @@ BASE_COVARIATES = {
     "hs_graduate": "exp_edu >= 12",
     "co_graduate": "exp_edu >= 16",
     # Was not in school last period and is/is not high school graduate.
-    "is_return_not_high_school": "~edu_lagged & ~hs_graduate",
-    "is_return_high_school": "~edu_lagged & hs_graduate",
+    "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
+    "is_return_high_school": "~edu_lagged and hs_graduate",
     # Define age groups.
     "is_minor": "period < 2",
     "is_young_adult": "2 <= period <= 4",
@@ -64,20 +64,20 @@ value in the parameter specification. The values are strings passed to ``pandas.
 
 BASE_STATE_SPACE_FILTERS = [
     # In period 0, agents cannot choose occupation a or b.
-    "(period == 0) & ((lagged_choice == 0) | (lagged_choice == 1))",
+    "period == 0 and (lagged_choice == 0 or lagged_choice == 1)",
     # In periods > 0, if agents accumulated experience only in one sector, lagged choice
     # cannot be different.
-    "(period > 0) & (exp_{i} - @initial_exp[{i}] == period) & (lagged_choice != {i})",
+    "period > 0 and exp_{i} - @initial_exp[{i}] == period and lagged_choice != {i}",
     # In periods > 0, if agents always accumulated experience, lagged choice cannot be
     # non-experience sector.
-    "(period > 0) & (exp_0 + exp_1 + exp_2 - @initial_exp[2] == period) "
-    "& (lagged_choice == {j})",
+    "period > 0 and exp_0 + exp_1 + exp_2 - @initial_exp[2] == period "
+    "and lagged_choice == {j}",
     # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
     # be school.
-    "(period > 0) & (lagged_choice == 2) & (exp_2 == @initial_exp[2])",
+    "period > 0 and lagged_choice == 2 and exp_2 == @initial_exp[2]",
     # If experience in sector 0 and 1 are zero, lagged choice cannot be this sector.
-    "(lagged_choice == 0) & (exp_0 == 0)",
-    "(lagged_choice == 1) & (exp_1 == 0)",
+    "lagged_choice == 0 and exp_0 == 0",
+    "lagged_choice == 1 and exp_1 == 0",
 ]
 """list: Contains filters for the state space.
 

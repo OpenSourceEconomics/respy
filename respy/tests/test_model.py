@@ -19,13 +19,13 @@ def test_generate_random_model(seed):
     """Test if random model specifications can be simulated and processed."""
     np.random.seed(seed)
 
-    params_spec, options_spec = generate_random_model()
+    params, options = generate_random_model()
 
-    df = simulate_truncated_data(params_spec, options_spec)
+    df = simulate_truncated_data(params, options)
 
-    crit_func = get_crit_func(params_spec, options_spec, df)
+    crit_func = get_crit_func(params, options, df)
 
-    crit_val = crit_func(params_spec)
+    crit_val = crit_func(params)
 
     assert isinstance(crit_val, float)
 
@@ -46,17 +46,17 @@ def test_model_options(model_or_seed):
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_yaml_for_options(model_or_seed):
     if isinstance(model_or_seed, str):
-        params_spec, options_spec = get_example_model(model_or_seed)
+        params, options = get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
-        params_spec, options_spec = generate_random_model()
+        params, options = generate_random_model()
 
     path = np.random.choice([Path("os.yaml"), Path("os.yml")])
 
     with open(path, "w") as y:
-        yaml.dump(options_spec, y)
+        yaml.dump(options, y)
 
     with open(path, "r") as y:
-        options_spec_ = yaml.safe_load(y)
+        options_ = yaml.safe_load(y)
 
-    assert options_spec == options_spec_
+    assert options == options_

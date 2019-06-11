@@ -1,13 +1,11 @@
 """This module contains the functions for the generation of random requests."""
 import numpy as np
+from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
+from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
 
 from respy.config import DATA_LABELS_EST
 from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_checking import _validate_options
-from respy.pre_processing.model_processing import cov_matrix_to_sdcorr_params
-from respy.pre_processing.model_processing import (
-    number_of_triangular_elements_to_dimension,
-)
 from respy.pre_processing.specification_helpers import csv_template
 from respy.simulate import simulate
 
@@ -93,8 +91,6 @@ def generate_random_model(
     options["interpolation_points"] = -1
 
     options = {**DEFAULT_OPTIONS, **options}
-
-    _validate_options(options)
 
     for key, value in point_constr.items():
         if isinstance(value, dict):

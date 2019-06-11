@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
+from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_checking import _validate_options
@@ -14,7 +15,7 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 def process_params(params):
     params = _read_params(params)
-    optim_paras = parse_parameters(params)
+    optim_paras = _parse_parameters(params)
 
     return params, optim_paras
 
@@ -40,64 +41,49 @@ def _sort_education_options(options):
 
 
 def _read_params(input_):
-    if not isinstance(input_, (Path, pd.DataFrame)):
-        raise TypeError("params_spec must be Path or pd.DataFrame.")
+    input_ = pd.read_csv(input_) if isinstance(input_, Path) else input_
 
-    params_spec = pd.read_csv(input_) if isinstance(input_, Path) else input_
+    if isinstance(input_, pd.DataFrame):
+        if not input_.index.names == ["category", "name"]:
+            input_.set_index(["category", "name"], inplace=True)
+        params = input_["para"]
+    elif isinstance(input_, pd.Series):
+        params = input_
+        assert params.index.names == [
+            "category",
+            "name",
+        ], "params as pd.Series has wrong index."
+    else:
+        raise TypeError("params must be Path, pd.DataFrame or pd.Series.")
 
-    params_spec["para"] = params_spec["para"].astype(float)
-
-    if not params_spec.index.names == ["category", "name"]:
-        params_spec.set_index(["category", "name"], inplace=True)
-
-    return params_spec
+    return params
 
 
 def _read_options(input_):
     if not isinstance(input_, (Path, dict)):
-        raise TypeError("options_spec must be Path or dictionary.")
+        raise TypeError("options must be Path or dictionary.")
 
     if isinstance(input_, Path):
         with open(input_, "r") as file:
             if input_.suffix in [".yaml", ".yml"]:
-                options_spec = yaml.safe_load(file)
+                options = yaml.safe_load(file)
             else:
                 raise NotImplementedError(f"Format {input_.suffix} is not supported.")
     else:
-        options_spec = input_
+        options = input_
 
-    return options_spec
+    return options
 
 
-def parse_parameters(params, paras_type="optim"):
+def _parse_parameters(params):
     """Parse the parameter vector into a dictionary of model quantities.
 
     Parameters
     ----------
     params : DataFrame or Series
         DataFrame with parameter specification or 'para' column thereof
-    is_debug : bool
-        If true, the parameters are checked for validity
-    info : ???
-        Unknown argument.
-    paras_type : str
-        one of ['econ', 'optim']. A paras_vec of type 'econ' contains the the standard
-        deviations and covariances of the shock distribution. This is how parameters are
-        represented in the .ini file and the output of .fit(). A paras_vec of type
-        'optim' contains the elements of the cholesky factors of the covariance matrix
-        of the shock distribution. This type is used internally during the likelihood
-        estimation. The default value is 'optim' in order to make the function more
-        aligned with Fortran, where we never have to parse 'econ' parameters.
 
     """
-
-    if isinstance(params, pd.DataFrame):
-        params = params["para"]
-    elif isinstance(params, pd.Series):
-        pass
-    else:
-        raise TypeError(f"Invalid type {type(params)} for params.")
-
     optim_paras = {}
 
     for quantity in params.index.get_level_values("category").unique():
@@ -130,29 +116,3 @@ def parse_parameters(params, paras_type="optim"):
     optim_paras["num_paras"] = len(params)
 
     return optim_paras
-
-
-def cov_matrix_to_sdcorr_params(cov):
-    """Can be taken from estimagic once 0.0.5 is released."""
-    dim = len(cov)
-    sds = np.sqrt(np.diagonal(cov))
-    scaling_matrix = np.diag(1 / sds)
-    corr = scaling_matrix.dot(cov).dot(scaling_matrix)
-    correlations = corr[np.tril_indices(dim, k=-1)]
-    return np.hstack([sds, correlations])
-
-
-def sdcorr_params_to_matrix(sdcorr_params):
-    """Can be taken from estimagic once 0.0.5 is released."""
-    dim = number_of_triangular_elements_to_dimension(len(sdcorr_params))
-    diag = np.diag(sdcorr_params[:dim])
-    lower = np.zeros((dim, dim))
-    lower[np.tril_indices(dim, k=-1)] = sdcorr_params[dim:]
-    corr = np.eye(dim) + lower + lower.T
-    cov = diag.dot(corr).dot(diag)
-    return cov
-
-
-def number_of_triangular_elements_to_dimension(num):
-    """Can be taken from estimagic once 0.0.5 is released."""
-    return int(np.sqrt(8 * num + 1) / 2 - 0.5)
