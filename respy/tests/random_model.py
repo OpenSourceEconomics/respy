@@ -90,11 +90,7 @@ def generate_random_model(
     options["estimation_seed"] = np.random.randint(1, 10000)
     options["estimation_tau"] = np.random.uniform(100, 500)
 
-    # don't remove the seemingly redundant conversion from numpy._bool to python bool!
-    not_interpolation = np.random.choice([True, False])
-    options["interpolation_points"] = (
-        -1 if not_interpolation else np.random.randint(10, 100)
-    )
+    options["interpolation_points"] = -1
 
     options = {**DEFAULT_OPTIONS, **options}
 
@@ -112,8 +108,13 @@ def generate_random_model(
 
 
 def _consolidate_bound_constraints(bound_constr):
-    constr = {"max_types": 3, "max_periods": 3, "max_edu_start": 3}
-    constr.update({"max_agents": 1000, "max_draws": 100})
+    constr = {
+        "max_types": 3,
+        "max_periods": 3,
+        "max_edu_start": 3,
+        "max_agents": 1000,
+        "max_draws": 100,
+    }
     constr.update(bound_constr)
     return constr
 

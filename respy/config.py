@@ -108,6 +108,7 @@ DEFAULT_OPTIONS = {
     "solution_seed": 3,
     "covariates": BASE_COVARIATES,
     "inadmissible_states": BASE_RESTRICTIONS,
+    "state_space_filters": BASE_STATE_SPACE_FILTERS,
 }
 
 # Labels for columns in a dataset as well as the formatters.

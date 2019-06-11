@@ -14,7 +14,7 @@ from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.solve import solve_with_backward_induction
-from respy.solve import StateSpace
+from respy.state_space import StateSpace
 
 
 def get_crit_func(params, options, df):

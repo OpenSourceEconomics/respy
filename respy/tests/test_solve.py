@@ -2,17 +2,17 @@ import numpy as np
 import pytest
 from numba import njit
 
-from respy._new_features import _create_state_space
 from respy.config import BASE_STATE_SPACE_FILTERS
 from respy.config import EXAMPLE_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_options
 from respy.pre_processing.model_processing import process_params
 from respy.shared import get_example_model
-from respy.solve import create_state_space
 from respy.solve import get_continuation_values
 from respy.solve import solve
 from respy.solve import StateSpace
+from respy.state_space import _create_state_space
+from respy.tests._former_code import create_state_space
 from respy.tests.random_model import generate_random_model
 
 
@@ -132,7 +132,7 @@ def test_invariance_of_solution(model_or_seed):
 
 
 @pytest.mark.parametrize("seed", range(10))
-def test_get_emaxs_of_subsequent_period(seed):
+def test_get_continuation_values(seed):
     """Test propagation of emaxs from last to first period."""
     params, options = generate_random_model()
 

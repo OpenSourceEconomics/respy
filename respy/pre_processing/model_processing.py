@@ -23,22 +23,20 @@ def process_options(options):
     options = _read_options(options)
 
     for key in DEFAULT_OPTIONS:
-        if key in ["covariates", "inadmissible_states"]:
-            options[key] = {**DEFAULT_OPTIONS[key], **options.get(key, {})}
-        else:
-            options[key] = options.get(key, DEFAULT_OPTIONS[key])
+        options[key] = options.get(key, DEFAULT_OPTIONS[key])
 
     _validate_options(options)
+
     options = _sort_education_options(options)
 
     return options
 
 
-def _sort_education_options(o):
-    ordered_indices = np.argsort(o["education_start"])
+def _sort_education_options(options):
+    ordered_indices = np.argsort(options["education_start"])
     for key in ["education_start", "education_share", "education_lagged"]:
-        o[key] = np.array(o[key])[ordered_indices].tolist()
-    return o
+        options[key] = np.array(options[key])[ordered_indices].tolist()
+    return options
 
 
 def _read_params(input_):

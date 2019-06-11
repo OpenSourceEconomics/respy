@@ -9,7 +9,7 @@ documented.
 likelihood
 ----------
 
-Routines under ``likelihood`` use the seed specified in the ``options_spec`` under
+Routines under :mod:`likelihood` use the seed specified in the ``options_spec`` under
 ``{"estimation": {"seed"}}`` to control randomness. In ``respy`` it is called
 ``attr["seed_est"]`` or abbreviated with ``seed`` if no ambiguity exist. It is used to
 create the draws to simulate the probability of observed wages.
@@ -25,18 +25,17 @@ solution, simulation, and estimation, to generate random draws.
 solve
 -----
 
-Routines under ``solve`` use the seed specified in the ``options_spec`` under
+Routines under :mod:`solve` use the seed specified in the ``options_spec`` under
 ``{"solution": {"seed"}}`` to control randomness. In ``respy`` it is called
 ``attr["seed_sol"]`` or abbreviated with ``seed`` if no ambiguity exist. Apart from the
 draws, :func:`solve` relies on the following function.
 
 .. autofunction:: respy.solve.get_not_interpolated_indicator
 
-
 simulate
 --------
 
-Routines under ``simulate`` use the seed specified in the ``options_spec`` under
+Routines under :mod:`simulate` use the seed specified in the ``options_spec`` under
 ``{"simulation": {"seed"}}`` to control randomness. In ``respy`` it is called
 ``attr["seed_sim"]`` or abbreviated with ``seed`` if no ambiguity exist.Apart from the
 draws, :func:`simulate` relies on the following three functions to generate starting
