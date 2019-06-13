@@ -293,8 +293,6 @@ def _filter_state_space(df, options):
         else:
             df[col.format(next(counter))] = df.eval(definition)
 
-    breakpoint()
-
     df = df[~df.filter(like="_restriction_").any(axis="columns")]
     df = df.drop(columns=df.filter(like="_restriction").columns.tolist())
 
