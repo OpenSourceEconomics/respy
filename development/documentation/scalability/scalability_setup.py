@@ -17,7 +17,7 @@ def main():
     # Run Python
     for num_thread in [1, 2, 4, 6, 8, 10]:
         subprocess.check_call(
-            ["python", str(filepath), model, str(maxfun), "0", str(num_thread)]
+            ["python", str(filepath), model, str(maxfun), str(num_thread)]
         )
 
 

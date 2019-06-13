@@ -1,5 +1,6 @@
 """Process model specification files or objects."""
 import collections
+import re
 import warnings
 from pathlib import Path
 
@@ -217,3 +218,16 @@ def save_options(options, path):
 
     with open(path, "w") as file:
         yaml.dump(options, file)
+
+
+def _infer_sectors_with_experience(params, options):
+    covariates = options["covariates"]
+    parameters = params.index.get_level_values(1)
+
+    used_covariates = [cov for cov in covariates if cov in parameters]
+
+    matches = []
+    for cov in used_covariates:
+        matches += re.findall(r"exp_([A-Za-z]*)", covariates[cov])
+
+    return sorted(list(set(matches)))

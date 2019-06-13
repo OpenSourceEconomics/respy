@@ -82,7 +82,7 @@ class StateSpace:
         )
 
         self.wages, self.nonpec = _create_reward_components(
-            self.states[:, 5], self.covariates, optim_paras, options
+            self.states[:, -1], self.covariates, optim_paras, options
         )
 
         self.is_inadmissible = _create_is_inadmissible_indicator(states_df, options)
@@ -101,7 +101,7 @@ class StateSpace:
 
     def update_systematic_rewards(self, optim_paras, options):
         self.wages, self.nonpec = _create_reward_components(
-            self.states[:, 5], self.covariates, optim_paras, options
+            self.states[:, -1], self.covariates, optim_paras, options
         )
 
     def get_attribute_from_period(self, attr, period):
@@ -218,7 +218,7 @@ def _create_core_state_space_per_period(
     but moving to the next choice which accumulates experience.
 
     """
-    experiences = [0] * len(additional_exp) if experiences is None else experiences
+    experiences = experiences if experiences is not None else [0] * len(additional_exp)
 
     # Return experiences combined with lagged choices and types.
     for type_ in range(n_types):

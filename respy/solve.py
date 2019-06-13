@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 from numba import guvectorize
 from numba import njit
@@ -227,7 +229,7 @@ def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmis
     )
 
     max_value_functions = value_functions.max(axis=1)
-    exogenous = max_value_functions - value_functions.reshape(-1, 4)
+    exogenous = max_value_functions - value_functions.reshape(-1, wages.shape[1])
 
     exogenous = np.column_stack(
         (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
@@ -320,16 +322,10 @@ def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated
     predictions = endogenous_predicted + max_value_functions
     predictions[not_interpolated] = endogenous + max_value_functions[not_interpolated]
 
-    check_prediction_model(endogenous_predicted, beta)
+    if not np.all(np.isfinite(beta)):
+        warnings.warn("OLS coefficients in the interpolation are not finite.")
 
     return predictions
-
-
-def check_prediction_model(predictions_diff, beta):
-    """Perform some basic consistency checks for the prediction model."""
-    assert np.all(predictions_diff >= 0.00)
-    assert beta.shape == (9,)
-    assert np.all(np.isfinite(beta))
 
 
 @guvectorize(

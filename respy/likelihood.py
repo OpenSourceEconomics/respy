@@ -274,13 +274,13 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_obs, n_types).
     ks = state_space.indexer[(periods,) + exps + (lagged_choices,)]
-    nobs, num_types = ks.shape
+    n_obs, n_types = ks.shape
 
-    wages_observed = wages_observed.repeat(num_types)
+    wages_observed = wages_observed.repeat(n_types)
     log_wages_observed = np.clip(np.log(wages_observed), -HUGE_FLOAT, HUGE_FLOAT)
-    wages_systematic = state_space.wages[ks].reshape(nobs * num_types, -1)
+    wages_systematic = state_space.wages[ks].reshape(n_obs * n_types, -1)
     num_choices = wages_systematic.shape[1]
-    choices = choices.repeat(num_types)
+    choices = choices.repeat(n_types)
     periods = state_space.states[ks, 0].flatten()
 
     draws, prob_wages = create_draws_and_prob_wages(
@@ -293,7 +293,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
         periods,
     )
 
-    draws = draws.reshape(nobs, num_types, -1, num_choices)
+    draws = draws.reshape(n_obs, n_types, -1, num_choices)
 
     prob_choices = simulate_probability_of_individuals_observed_choice(
         state_space.wages[ks],
@@ -302,11 +302,11 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
         draws,
         optim_paras["delta"],
         state_space.is_inadmissible[ks],
-        choices.reshape(-1, num_types),
+        choices.reshape(-1, n_types),
         tau,
     )
 
-    prob_obs = prob_choices * prob_wages.reshape(nobs, -1)
+    prob_obs = prob_choices * prob_wages.reshape(n_obs, -1)
 
     # Accumulate the likelihood of observations for each individual-type combination
     # over all periods.

@@ -34,7 +34,7 @@ def simulate(params, options):
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     base_draws_sim = create_base_draws(
-        (options["num_periods"], options["simulation_agents"], 4),
+        (options["num_periods"], options["simulation_agents"], len(options["choices"])),
         options["simulation_seed"],
     )
 
@@ -79,15 +79,18 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         Dataset of simulated agents.
 
     """
+    n_choices = len(options["choices"])
+    n_wages = len(options["choices_w_wage"])
+
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
     base_draws_sim_transformed = np.full(
-        (state_space.num_periods, options["simulation_agents"], 4), np.nan
+        (state_space.num_periods, options["simulation_agents"], n_choices), np.nan
     )
 
     for period in range(state_space.num_periods):
         base_draws_sim_transformed[period] = transform_disturbances(
-            base_draws_sim[period], np.zeros(4), optim_paras["shocks_cholesky"]
+            base_draws_sim[period], np.zeros(n_choices), optim_paras["shocks_cholesky"]
         )
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
@@ -121,12 +124,12 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
             state_space.wages[ks],
             state_space.nonpec[ks],
             state_space.continuation_values[ks],
-            draws_shock.reshape(-1, 1, 4),
+            draws_shock.reshape(-1, 1, n_choices),
             optim_paras["delta"],
             state_space.is_inadmissible[ks],
         )
-        value_functions = value_functions.reshape(-1, 4)
-        flow_utilities = flow_utilities.reshape(-1, 4)
+        value_functions = value_functions.reshape(-1, n_choices)
+        flow_utilities = flow_utilities.reshape(-1, n_choices)
 
         # We need to ensure that no individual chooses an inadmissible state. This
         # cannot be done directly in the calculate_value_functions function as the
@@ -141,7 +144,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         choice = np.argmax(value_functions, axis=1)
 
         wages = state_space.wages[ks] * draws_shock * draws_wage
-        wages[:, 2:] = np.nan
+        wages[:, n_wages:] = np.nan
         wage = np.choose(choice, wages.T)
 
         # Record data of all agents in one period.
@@ -160,7 +163,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
                 # The discount rate is included as this allows to construct the EMAX
                 # with the information provided in the simulation output.
                 state_space.nonpec[ks],
-                state_space.wages[ks, :2],
+                state_space.wages[ks, :n_wages],
                 flow_utilities,
                 value_functions,
                 draws_shock,
@@ -169,13 +172,14 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         )
         data.append(rows)
 
-        # Update work experiences or education and lagged choice for the next period.
+        # Update work experiences.
         current_states[np.arange(options["simulation_agents"]), choice] = np.where(
             choice <= len(options["choices_w_exp"]),
             current_states[np.arange(options["simulation_agents"]), choice] + 1,
             current_states[np.arange(options["simulation_agents"]), choice],
         )
-        current_states[:, 3] = choice
+        # Update lagged choices.
+        current_states[:, -2] = choice
 
     simulated_data = _process_simulated_data(data, options)
 
