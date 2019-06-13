@@ -188,19 +188,9 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
 def _sort_type_info(optim_paras):
     """We fix an order for the sampling of the types."""
-    type_info = {"order": np.argsort(optim_paras["type_shares"].tolist()[0::2])}
-
-    # We simply fix the order by the size of the intercepts.
-
-    # We need to reorder the coefficients determining the type probabilities
-    # accordingly.
-    type_shares = []
-    for i in range(optim_paras["num_types"]):
-        lower, upper = i * 2, (i + 1) * 2
-        type_shares += [optim_paras["type_shares"][lower:upper].tolist()]
-    type_info["shares"] = np.array(
-        [type_shares[i] for i in type_info["order"]]
-    ).flatten()
+    type_shares = optim_paras["type_shares"].reshape(-1, 2)
+    order = np.argsort(type_shares[:, 0])
+    type_info = {"shares": type_shares[order].flatten(), "order": order}
 
     return type_info
 
