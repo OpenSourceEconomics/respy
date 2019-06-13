@@ -12,9 +12,9 @@ def test_simulation_and_estimation_with_different_models():
     constr = {
         "simulation_agents": num_agents,
         "num_periods": np.random.randint(1, 4),
-        "education_start": [7],
-        "education_max": 15,
-        "education_share": [1.0],
+        "sectors": {
+            "edu": {"start": [7], "max": 15, "share": [1.0], "has_experience": True}
+        },
     }
 
     # Simulate a dataset
@@ -58,18 +58,21 @@ def test_invariance_to_initial_conditions():
     constr = {
         "simulation_agents": num_agents,
         "num_periods": np.random.randint(1, 4),
-        "education_max": np.random.randint(15, 25, size=1).tolist()[0],
+        "sectors": {
+            "edu": {"max": np.random.randint(15, 25, size=1)[0], "has_experience": True}
+        },
         "interpolation_points": -1,
     }
 
     params, options = generate_random_model(point_constr=constr)
+
     df = simulate_truncated_data(params, options)
 
-    edu_start_base = np.random.randint(1, 5, size=1).tolist()[0]
+    edu_start_base = np.random.randint(1, 5, size=1)[0]
 
     # We need to ensure that the initial lagged activity always has the same
     # distribution.
-    edu_lagged_base = np.random.uniform(size=5).tolist()
+    edu_lagged_base = np.random.uniform(size=5)
 
     likelihoods = []
 
@@ -77,21 +80,19 @@ def test_invariance_to_initial_conditions():
 
         # We always need to ensure that a weight of one is on the first level of
         # initial schooling.
-        options["education_share"] = [1.0] + [0.0] * (num_edu_start - 1)
-        options["education_lagged"] = edu_lagged_base[:num_edu_start]
+        options["sectors"]["edu"]["share"] = [1.0] + [0.0] * (num_edu_start - 1)
+        options["sectors"]["edu"]["lagged"] = edu_lagged_base[:num_edu_start]
 
         # We need to make sure that the baseline level of initial schooling is
         # always included. At the same time we cannot have any duplicates.
-        edu_start = np.random.choice(
-            range(1, 10), size=num_edu_start, replace=False
-        ).tolist()
+        edu_start = np.random.choice(range(1, 10), size=num_edu_start, replace=False)
         if edu_start_base in edu_start:
-            edu_start.remove(edu_start_base)
-            edu_start.insert(0, edu_start_base)
+            edu_start = edu_start[edu_start != edu_start_base]
+            edu_start = np.append(edu_start_base, edu_start)
         else:
             edu_start[0] = edu_start_base
 
-        options["education_start"] = edu_start
+        options["sectors"]["edu"]["start"] = edu_start
 
         df = simulate_truncated_data(params, options)
 

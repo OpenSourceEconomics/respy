@@ -9,6 +9,7 @@ from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
 from respy.pre_processing.model_checking import _validate_options
 from respy.pre_processing.model_processing import process_options
+from respy.pre_processing.model_processing import save_options
 from respy.shared import get_example_model
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
@@ -53,8 +54,7 @@ def test_yaml_for_options(model_or_seed):
 
     path = np.random.choice([Path("os.yaml"), Path("os.yml")])
 
-    with open(path, "w") as y:
-        yaml.dump(options, y)
+    save_options(options, path)
 
     with open(path, "r") as y:
         options_ = yaml.safe_load(y)

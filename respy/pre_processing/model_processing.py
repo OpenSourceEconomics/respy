@@ -1,4 +1,5 @@
 """Process model specification files or objects."""
+import collections
 import warnings
 from pathlib import Path
 
@@ -26,17 +27,14 @@ def process_options(options):
     for key in DEFAULT_OPTIONS:
         options[key] = options.get(key, DEFAULT_OPTIONS[key])
 
+    options = _process_sectors(options)
+
+    options = _process_experience_distributions(options)
+
+    options = _process_inadmissible_states(options)
+
     _validate_options(options)
 
-    options = _sort_education_options(options)
-
-    return options
-
-
-def _sort_education_options(options):
-    ordered_indices = np.argsort(options["education_start"])
-    for key in ["education_start", "education_share", "education_lagged"]:
-        options[key] = np.array(options[key])[ordered_indices].tolist()
     return options
 
 
@@ -71,6 +69,92 @@ def _read_options(input_):
                 raise NotImplementedError(f"Format {input_.suffix} is not supported.")
     else:
         options = input_
+
+    return options
+
+
+def _process_sectors(o):
+    sectors = o["sectors"]
+
+    # Sectors can be separated in sectors with experience and wage, with experience but
+    # without wage and without experience and wage. This distinction is used to create a
+    # unique ordering of sectors.
+    choices_w_exp_w_wage = sorted(
+        sec
+        for sec in sectors
+        if sectors[sec].get("has_experience", False)
+        and sectors[sec].get("has_wage", False)
+    )
+    choices_w_exp_wo_wage = sorted(
+        sec
+        for sec in sectors
+        if sectors[sec].get("has_experience", False)
+        and not sectors[sec].get("has_wage", False)
+    )
+    choices_wo_exp_wo_wage = sorted(
+        sec
+        for sec in sectors
+        if not sectors[sec].get("has_experience", False)
+        and not sectors[sec].get("has_wage", False)
+    )
+
+    o["choices"] = choices_w_exp_w_wage + choices_w_exp_wo_wage + choices_wo_exp_wo_wage
+
+    o["choices_w_exp"] = choices_w_exp_w_wage + choices_w_exp_wo_wage
+    o["choices_wo_exp"] = choices_wo_exp_wo_wage
+
+    o["choices_w_wage"] = choices_w_exp_w_wage
+    o["choices_wo_wage"] = choices_w_exp_wo_wage + choices_wo_exp_wo_wage
+
+    o["maximum_exp"] = np.array(
+        [sectors[sec].get("max", o["num_periods"] - 1) for sec in o["choices_w_exp"]]
+    )
+
+    return o
+
+
+def _process_experience_distributions(options):
+    """Process initial experience distributions.
+
+    A sector might have information on the distribution of initial experiences which is
+    used at the beginning of the simulation to determine the starting points of agents.
+    This function makes the model invariant to the order or misspecified probabilities.
+
+    - ``"start"`` determines initial experience levels. Default is to start with zero
+      experience.
+    - ``"share"`` determines the share of each initial experience level in the starting
+      population. Default is a uniform distribution over all initial experience levels.
+    - ``"lagged"`` determines the share of the population with this initial experience
+      to have this sector as an initial lagged choice. Default is a probability of zero.
+
+    """
+    sectors = options["sectors"]
+    for sec in options["choices_w_exp"]:
+        start = np.array(sectors[sec].get("start", [0]))
+        ordered_indices = np.argsort(start)
+        n_init_val = ordered_indices.shape[0]
+        sectors[sec]["start"] = start[ordered_indices]
+        for key in ["share", "lagged"]:
+            default = (
+                np.ones(n_init_val) / n_init_val
+                if key == "share"
+                else np.zeros(n_init_val)
+            )
+            val = np.array(sectors[sec].get(key, default))[ordered_indices]
+            # Smooth probabilities so that the sum equals one.
+            sectors[sec][key] = val / val.sum() if key == "share" else val
+
+        sectors[sec]["max"] = sectors[sec].get("max", options["num_periods"] - 1)
+
+    return options
+
+
+def _process_inadmissible_states(options):
+    for sector in options["choices"]:
+        if sector in options["inadmissible_states"]:
+            pass
+        else:
+            options["inadmissible_states"][sector] = "False"
 
     return options
 
@@ -116,3 +200,20 @@ def _parse_parameters(params):
     optim_paras["num_paras"] = len(params)
 
     return optim_paras
+
+
+def save_options(options, path):
+    def _numpy_to_list(d):
+        for key, value in d.items():
+            if isinstance(value, collections.Mapping):
+                d[key] = _numpy_to_list(d[key])
+            if isinstance(value, np.ndarray):
+                d[key] = value.tolist()
+            else:
+                d[key] = value
+        return d
+
+    options = _numpy_to_list(options)
+
+    with open(path, "w") as file:
+        yaml.dump(options, file)

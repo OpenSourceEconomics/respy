@@ -2,12 +2,11 @@ import numpy as np
 import pandas as pd
 from numba import guvectorize
 
-from respy.config import DATA_FORMATS_SIM
-from respy.config import DATA_LABELS_SIM
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_options
 from respy.pre_processing.model_processing import process_params
 from respy.shared import _aggregate_keane_wolpin_utility
+from respy.shared import _generate_column_labels_simulation
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.shared import transform_disturbances
@@ -32,9 +31,7 @@ def simulate(params, options):
     options = process_options(options)
 
     state_space = StateSpace(params, options)
-    state_space = solve_with_backward_induction(
-        state_space, options["interpolation_points"], optim_paras
-    )
+    state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     base_draws_sim = create_base_draws(
         (options["num_periods"], options["simulation_agents"], 4),
@@ -183,17 +180,13 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
         # Update work experiences or education and lagged choice for the next period.
         current_states[np.arange(options["simulation_agents"]), choice] = np.where(
-            choice <= 2,
+            choice <= len(options["choices_w_exp"]),
             current_states[np.arange(options["simulation_agents"]), choice] + 1,
             current_states[np.arange(options["simulation_agents"]), choice],
         )
         current_states[:, 3] = choice
 
-    simulated_data = (
-        pd.DataFrame(data=np.vstack(data), columns=DATA_LABELS_SIM)
-        .astype(DATA_FORMATS_SIM)
-        .sort_values(["Identifier", "Period"])
-    )
+    simulated_data = _process_simulated_data(data, options)
 
     return simulated_data
 
@@ -242,15 +235,11 @@ def _get_random_edu_start(options):
     """Get random, initial levels of schooling for simulated agents."""
     np.random.seed(options["simulation_seed"])
 
-    # As we do not want to be too strict at the user-level the sum of edu_spec might
-    # be slightly larger than one. This needs to be corrected here.
-    probs = options["education_share"] / np.sum(options["education_share"])
     edu_start = np.random.choice(
-        options["education_start"], p=probs, size=options["simulation_agents"]
+        options["sectors"]["edu"]["start"],
+        p=options["sectors"]["edu"]["share"],
+        size=options["simulation_agents"],
     )
-
-    # If we only have one individual, we need to ensure that types are a vector.
-    edu_start = np.array(edu_start, ndmin=1)
 
     return edu_start
 
@@ -261,8 +250,11 @@ def _get_random_lagged_choices(edu_start, options):
 
     lagged_start = []
     for i in range(options["simulation_agents"]):
-        idx = options["education_start"].index(edu_start[i])
-        probs = options["education_lagged"][idx], 1 - options["education_lagged"][idx]
+        idx = np.where(options["sectors"]["edu"]["start"] == edu_start[i])[0][0]
+        probs = (
+            options["sectors"]["edu"]["lagged"][idx],
+            1 - options["sectors"]["edu"]["lagged"][idx],
+        )
         lagged_start += np.random.choice([2, 3], p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that activities are a vector.
@@ -331,3 +323,25 @@ def calculate_value_functions_and_flow_utilities(
 
             flow_utilities[j, i] = flow_utility
             value_functions[j, i] = value_function
+
+
+def _process_simulated_data(data, options):
+    labels, dtypes = _generate_column_labels_simulation(options)
+
+    df = (
+        pd.DataFrame(data=np.vstack(data), columns=labels)
+        .astype(dtypes)
+        .sort_values(["Identifier", "Period"])
+        .reset_index(drop=True)
+    )
+
+    code_to_sector = {i: sec for i, sec in enumerate(options["choices"])}
+
+    df.Choice = df.Choice.cat.set_categories(code_to_sector).cat.rename_categories(
+        code_to_sector
+    )
+    df.Lagged_Choice = df.Lagged_Choice.cat.set_categories(
+        code_to_sector
+    ).cat.rename_categories(code_to_sector)
+
+    return df

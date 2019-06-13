@@ -18,6 +18,7 @@ def check_estimation_data(options, df):
 
     """
     df = df.copy()
+    sectors = options["sectors"]
 
     num_periods = options["num_periods"]
 
@@ -27,36 +28,28 @@ def check_estimation_data(options, df):
     assert df.Period.le(num_periods - 1).all()
 
     # 3. Choice.
-    assert df.Choice.isin(range(4)).all()
+    assert df.Choice.isin(options["choices"]).all()
 
     # 4. Wage.
     assert df.Wage.fillna(1).gt(0).all()
 
-    # 5. Experience_A
-    assert df.Experience_A.ge(0).all()
-    assert df.Experience_A.loc[df.Period.eq(0)].eq(0).all()
-
-    # 6. Experience_B
-    assert df.Experience_B.ge(0).all()
-    assert df.Experience_B.loc[df.Period.eq(0)].eq(0).all()
-
-    # 7. Years_Schooling.
-    assert df.Years_Schooling.ge(0).all()
-    assert (
-        df.Years_Schooling.loc[df.Period.eq(0)].isin(options["education_start"]).all()
-    )
-    assert df.Years_Schooling.le(options["education_max"]).all()
+    for sec in options["choices_w_exp"]:
+        assert df[f"Experience_{sec.title()}"].ge(sectors[sec]["start"].min()).all()
+        assert df[f"Experience_{sec.title()}"].le(sectors[sec]["max"]).all()
 
     # 8. Lagged_Choice.
-    assert df.Lagged_Choice.isin(range(4)).all()
-    assert df.Lagged_Choice.loc[df.Period.eq(0)].isin([2, 3]).all()
+    assert df.Lagged_Choice.isin(options["choices"]).all()
+    # TODO: Check that lagged choices are only those with key lagged.
 
     # Others.
     assert df.drop(columns="Wage").notna().all().all()
 
-    # Compare Lagged_Choice and Choice for all but the first period.
-    lagged_choice = df.groupby("Identifier").Choice.transform("shift").dropna()
-    assert (df.Lagged_Choice.loc[~df.Period.eq(0)] == lagged_choice).all()
+    if options["num_periods"] > 1:
+        # Compare Lagged_Choice and Choice for all but the first period.
+        lagged_choice = df.groupby("Identifier").Choice.transform("shift").dropna()
+        assert (
+            df.Lagged_Choice.loc[~df.Period.eq(0)].cat.codes == lagged_choice.cat.codes
+        ).all()
 
     # We check individual state variables against the recorded choices.
     df.groupby("Identifier").apply(_check_state_variables)
@@ -82,22 +75,22 @@ def _check_state_variables(agent):
         # We know that the level of experience is zero in the initial period
         # and we get the initial level of schooling.
         if period == 0:
-            exp_a, exp_b, edu = 0.0, 0.0, row.Years_Schooling
+            exp_a, exp_b, edu = 0.0, 0.0, row.Experience_Edu
         # Check statistics
         pairs = [
             (exp_a, "Experience_A"),
             (exp_b, "Experience_B"),
-            (edu, "Years_Schooling"),
+            (edu, "Experience_Edu"),
         ]
         for pair in pairs:
             stat, label = pair
             assert stat == row[label]
         # Update experience statistics.
-        if choice == 0:
+        if choice == "a":
             exp_a += 1
-        elif choice == 1:
+        elif choice == "b":
             exp_b += 1
-        elif choice == 2:
+        elif choice == "edu":
             edu += 1
         else:
             pass
@@ -115,7 +108,7 @@ def check_simulated_data(options, optim_paras, df):
     # Distribute class attributes
     num_periods = options["num_periods"]
     num_types = optim_paras["num_types"]
-    edu_max = options["education_max"]
+    edu_max = options["sectors"]["edu"]["max"]
 
     # Run all tests available for the estimation data.
     check_estimation_data(options, df)
@@ -127,7 +120,7 @@ def check_simulated_data(options, optim_paras, df):
 
     # Check that there are not missing wage observations if an agent is working. Also,
     # we check that if an agent is not working, there also is no wage observation.
-    is_working = df["Choice"].isin(range(2))
+    is_working = df["Choice"].isin(options["choices_w_wage"])
     assert df.Wage[is_working].notna().all()
     assert df.Wage[~is_working].isna().all()
 
@@ -137,30 +130,30 @@ def check_simulated_data(options, optim_paras, df):
     # If agents are myopic, we can test the equality of ex-post rewards and total
     # values.
     if df.Discount_Rate.eq(0).all():
-        for choice in range(2):
+        for choice in options["choices_w_wage"]:
             is_working = df.Choice.eq(choice)
 
-            ex_post_rew = f"Ex_Post_Reward_{choice}"
-            general_rew = f"General_Reward_{choice}"
+            fu_lab = f"Flow_Utility_{choice}"
+            nonpec_lab = f"Nonpecuniary_Reward_{choice}"
 
-            df[ex_post_rew] = df.Wage + df[general_rew] + df.Common_Reward
+            df[fu_lab] = df.Wage + df[nonpec_lab]
 
-            total_rewards = df[f"Total_Reward_{choice}"].loc[is_working]
-            ex_post_reward = df[ex_post_rew].loc[is_working]
+            value_function = df[f"Value_Function_{choice}"].loc[is_working]
+            flow_utility = df[fu_lab].loc[is_working]
 
-            np.testing.assert_array_almost_equal(total_rewards, ex_post_reward)
+            np.testing.assert_array_almost_equal(value_function, flow_utility)
 
-        for choice in range(2, 4):
-            ex_post_rew = f"Ex_Post_Reward_{choice}"
-            systematic_rew = f"Systematic_Reward_{choice}"
+        for choice in options["choices_wo_wage"]:
+            fu_lab = f"Flow_Utility_{choice}"
+            nonpec_lab = f"Nonpecuniary_Reward_{choice}"
             shock_rew = f"Shock_Reward_{choice}"
 
-            df[ex_post_rew] = df[systematic_rew] + df[shock_rew]
+            df[fu_lab] = df[nonpec_lab] + df[shock_rew]
 
             # The equality does not hold if a state is inadmissible.
             cond = df.Years_Schooling.ne(edu_max)
 
-            total_rewards = df[f"Total_Reward_{choice}"].loc[cond]
-            ex_post_rewards = df[ex_post_rew].loc[cond]
+            value_function = df[f"Value_Function_{choice}"].loc[cond]
+            flow_utility = df[fu_lab].loc[cond]
 
-            np.testing.assert_array_almost_equal(total_rewards, ex_post_rewards)
+            np.testing.assert_array_almost_equal(value_function, flow_utility)

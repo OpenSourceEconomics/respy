@@ -34,16 +34,13 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
             "is_inadmissible", period
         )
 
-        total_values, rewards_ex_post = calculate_value_functions_and_flow_utilities(
+        value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
             wages, nonpec, emaxs_period, draws, optim_paras["delta"], is_inadmissible
         )
 
-        # Only states without maximum education are tested as the inadmissibility
-        # penalty is applied to the total values of states with maximum education.
-        states_in_period = state_space.get_attribute_from_period("states", period)
-        idx = np.where(states_in_period[:, 3] != state_space.edu_max)
-
-        np.testing.assert_equal(total_values[idx], rewards_ex_post[idx])
+        np.testing.assert_equal(
+            value_functions[~is_inadmissible], flow_utilities[~is_inadmissible]
+        )
 
 
 @pytest.mark.parametrize("seed", range(20))

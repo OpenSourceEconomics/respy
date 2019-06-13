@@ -1,12 +1,13 @@
 """This module contains the functions for the generation of random requests."""
+import collections
+
 import numpy as np
 from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
 from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
 
-from respy.config import DATA_LABELS_EST
 from respy.config import DEFAULT_OPTIONS
-from respy.pre_processing.model_checking import _validate_options
 from respy.pre_processing.specification_helpers import csv_template
+from respy.shared import _generate_column_labels_estimation
 from respy.simulate import simulate
 
 
@@ -71,14 +72,21 @@ def generate_random_model(
 
     options["num_periods"] = np.random.randint(1, bound_constr["max_periods"])
 
+    options["sectors"] = {
+        "a": {"has_experience": True, "has_wage": True},
+        "b": {"has_experience": True, "has_wage": True},
+        "edu": {"has_experience": True},
+        "home": {},
+    }
+
     num_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
-    options["education_start"] = np.random.choice(
+    options["sectors"]["edu"]["start"] = np.random.choice(
         np.arange(1, 15), size=num_edu_start, replace=False
     ).tolist()
-    options["education_lagged"] = np.random.uniform(size=num_edu_start).tolist()
-    options["education_share"] = get_valid_shares(num_edu_start)
-    options["education_max"] = np.random.randint(
-        max(options["education_start"]) + 1, 30
+    options["sectors"]["edu"]["lagged"] = np.random.uniform(size=num_edu_start).tolist()
+    options["sectors"]["edu"]["share"] = get_valid_shares(num_edu_start)
+    options["sectors"]["edu"]["max"] = np.random.randint(
+        max(options["sectors"]["edu"]["start"]) + 1, 30
     )
 
     options["solution_draws"] = np.random.randint(1, bound_constr["max_draws"])
@@ -92,13 +100,7 @@ def generate_random_model(
 
     options = {**DEFAULT_OPTIONS, **options}
 
-    for key, value in point_constr.items():
-        if isinstance(value, dict):
-            options[key].update(value)
-        else:
-            options[key] = value
-
-    _validate_options(options)
+    options = _update_dict_w_dict(options, point_constr)
 
     return params, options
 
@@ -152,7 +154,7 @@ def simulate_truncated_data(params, options, is_missings=True):
 
         # We also want to drop the some wage observations. Note that we might be dealing
         # with a dataset where nobody is working anyway.
-        is_working = data_subset["Choice"].isin([0, 1])
+        is_working = data_subset["Choice"].isin(options["choices_w_wage"])
         num_drop_wages = int(
             np.sum(is_working) * np.random.np.random.uniform(high=0.5, size=1)
         )
@@ -166,6 +168,16 @@ def simulate_truncated_data(params, options, is_missings=True):
         data_subset = df
 
     # We can restrict the information to observed entities only.
-    data_subset = data_subset[DATA_LABELS_EST]
+    labels, _ = _generate_column_labels_estimation(options)
+    data_subset = data_subset[labels]
 
     return data_subset
+
+
+def _update_dict_w_dict(d, u):
+    for key, value in u.items():
+        if isinstance(value, collections.Mapping):
+            d[key] = _update_dict_w_dict(d.get(key, {}), value)
+        else:
+            d[key] = value
+    return d

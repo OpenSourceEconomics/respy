@@ -2,6 +2,7 @@ import numpy as np
 from numba import guvectorize
 from numba import njit
 
+from respy._numba import index_tuple_for_array
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_options
 from respy.pre_processing.model_processing import process_params
@@ -27,14 +28,12 @@ def solve(params, options):
     options = process_options(options)
 
     state_space = StateSpace(params, options)
-    state_space = solve_with_backward_induction(
-        state_space, options["interpolation_points"], optim_paras
-    )
+    state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     return state_space
 
 
-def solve_with_backward_induction(state_space, interpolation_points, optim_paras):
+def solve_with_backward_induction(state_space, optim_paras, options):
     """Calculate utilities with backward induction.
 
     Parameters
@@ -56,7 +55,9 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
         in ``state_space.continuation_values``.
 
     """
-    state_space.continuation_values = np.zeros((state_space.num_states, 4))
+    n_choices = len(options["sectors"])
+
+    state_space.continuation_values = np.zeros((state_space.num_states, n_choices))
     state_space.emax_value_functions = np.zeros(state_space.num_states)
 
     # For myopic agents, utility of later periods does not play a role.
@@ -89,7 +90,7 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
 
         base_draws_sol_period = state_space.base_draws_sol[period]
         draws_emax_risk = transform_disturbances(
-            base_draws_sol_period, np.zeros(4), shocks_cholesky
+            base_draws_sol_period, np.zeros(n_choices), shocks_cholesky
         )
 
         # Unpack necessary attributes of the specific period.
@@ -106,21 +107,25 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
         # periods the number of interpolation points is larger than the actual number of
         # states. In that case no interpolation is needed.
         any_interpolated = (
-            interpolation_points <= num_states and interpolation_points != -1
+            options["interpolation_points"] <= num_states
+            and options["interpolation_points"] != -1
         )
 
         if any_interpolated:
             # These shifts are used to determine the expected values of the two labor
             # market alternatives. These are log normal distributed and thus the draws
             # cannot simply set to zero.
-            shifts = np.zeros(4)
-            shifts[:2] = np.clip(np.exp(np.diag(shocks_cov)[:2] / 2.0), 0.0, HUGE_FLOAT)
+            shifts = np.zeros(n_choices)
+            n_choices_w_wage = len(options["choices_w_wage"])
+            shifts[:n_choices_w_wage] = np.clip(
+                np.exp(np.diag(shocks_cov)[:n_choices_w_wage] / 2.0), 0.0, HUGE_FLOAT
+            )
 
             # Get indicator for interpolation and simulation of states. The seed value
             # is the base seed plus the number of the period. Thus, not interpolated
             # states are held constant for each periods and not across periods.
             not_interpolated = get_not_interpolated_indicator(
-                interpolation_points, num_states, state_space.seed + period
+                options["interpolation_points"], num_states, state_space.seed + period
             )
 
             # Constructing the exogenous variable for all states, including the ones
@@ -158,7 +163,7 @@ def solve_with_backward_induction(state_space, interpolation_points, optim_paras
     return state_space
 
 
-def get_not_interpolated_indicator(interpolation_points, num_states, seed):
+def get_not_interpolated_indicator(interpolation_points, n_states, seed):
     """Get indicator for states which will be not interpolated.
 
     Randomness in this function is held constant for each period but not across periods.
@@ -168,7 +173,7 @@ def get_not_interpolated_indicator(interpolation_points, num_states, seed):
     ----------
     interpolation_points : int
         Number of states which will be interpolated.
-    num_states : int
+    n_states : int
         Total number of states in period.
     seed : int
         Seed to set randomness.
@@ -176,19 +181,15 @@ def get_not_interpolated_indicator(interpolation_points, num_states, seed):
     Returns
     -------
     not_interpolated : np.ndarray
-        Array of shape (num_states,) indicating states which will not be interpolated.
+        Array of shape (n_states,) indicating states which will not be interpolated.
 
     """
     np.random.seed(seed)
 
-    # Drawing random interpolation indices.
-    interpolation_points = np.random.choice(
-        num_states, size=interpolation_points, replace=False
-    )
+    indices = np.random.choice(n_states, size=interpolation_points, replace=False)
 
-    # Constructing an indicator whether a state will be interpolated.
-    not_interpolated = np.full(num_states, False)
-    not_interpolated[interpolation_points] = True
+    not_interpolated = np.full(n_states, False)
+    not_interpolated[indices] = True
 
     return not_interpolated
 
@@ -424,7 +425,7 @@ def calculate_emax_value_functions(
     emax_value_functions[0] /= num_draws
 
 
-@njit(nogil=True)
+@njit
 def get_continuation_values(
     states, indexer, continuation_values, emax_value_functions, is_inadmissible
 ):
@@ -434,33 +435,29 @@ def get_continuation_values(
     of the four choices in the following period.
 
     """
+    n_choices_w_exp = states.shape[1] - 3
+    n_choices = continuation_values.shape[1]
+
     for i in range(states.shape[0]):
-        # Unpack parent state and get index.
-        period, exp_a, exp_b, edu, choice_lagged, type_ = states[i]
-        k_parent = indexer[period, exp_a, exp_b, edu, choice_lagged, type_]
 
-        # Working in Occupation A in period + 1
-        k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
-        continuation_values[k_parent, 0] = emax_value_functions[k]
+        k_parent = indexer[index_tuple_for_array(indexer, states[i])]
 
-        # Working in Occupation B in period +1
-        k = indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
-        continuation_values[k_parent, 1] = emax_value_functions[k]
+        for n in range(n_choices):
+            if is_inadmissible[k_parent, n]:
+                continuation_values[k_parent, n] = 0.0
+            else:
+                child = states[i].copy()
+                # Change to future period.
+                child[0] += 1
 
-        # Schooling in period + 1. Note that adding an additional year of schooling is
-        # only possible for those that have strictly less than the maximum level of
-        # additional education allowed. This condition is necessary as there are states
-        # which have reached maximum education. Incrementing education by one would
-        # target an inadmissible state.
-        if is_inadmissible[k_parent, 2]:
-            continuation_values[k_parent, 2] = 0.0
-        else:
-            k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
-            continuation_values[k_parent, 2] = emax_value_functions[k]
+                if n < n_choices_w_exp:
+                    child[n + 1] += 1
 
-        # Staying at home in period + 1
-        k = indexer[period + 1, exp_a, exp_b, edu, 3, type_]
-        continuation_values[k_parent, 3] = emax_value_functions[k]
+                # Change lagged choice.
+                child[-2] = n
+
+                k = indexer[index_tuple_for_array(indexer, child)]
+                continuation_values[k_parent, n] = emax_value_functions[k]
 
     return continuation_values
 

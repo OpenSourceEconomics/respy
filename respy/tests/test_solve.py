@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from numba import njit
 
-from respy.config import BASE_STATE_SPACE_FILTERS
+from respy._numba import index_tuple_for_array
 from respy.config import EXAMPLE_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_options
@@ -46,33 +46,29 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     """
 
     @njit
-    def traverse_forward(states, indexer, indicator, edu_max):
+    def traverse_forward(states, indexer, indicator, is_inadmissible):
+        n_choices_w_exp = states.shape[1] - 3
+        n_choices = is_inadmissible.shape[1]
+
         for i in range(states.shape[0]):
-            # Unpack parent state and get index.
-            period, exp_a, exp_b, edu, choice_lagged, type_ = states[i]
 
-            # Working in Occupation A in period + 1
-            k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
-            indicator[k] = 1
+            k_parent = indexer[index_tuple_for_array(indexer, states[i])]
 
-            # Working in Occupation B in period +1
-            k = indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
-            indicator[k] = 1
+            for n in range(n_choices):
+                if is_inadmissible[k_parent, n]:
+                    pass
+                else:
+                    child = states[i].copy()
+                    # Change to future period.
+                    child[0] += 1
 
-            # Schooling in period + 1. Note that adding an additional year of schooling
-            # is only possible for those that have strictly less than the maximum level
-            # of additional education allowed. This condition is necessary as there are
-            # states which have reached maximum education. Incrementing education by one
-            # would target an inadmissible state.
-            if edu >= edu_max:
-                pass
-            else:
-                k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
-                indicator[k] = 1
+                    if n < n_choices_w_exp:
+                        child[n + 1] += 1
 
-            # Staying at home in period + 1
-            k = indexer[period + 1, exp_a, exp_b, edu, 3, type_]
-            indicator[k] = 1
+                    child[-2] = n
+
+                    k = indexer[index_tuple_for_array(indexer, child)]
+                    indicator[k] = 1
 
         return indicator
 
@@ -92,7 +88,7 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
         states = state_space.get_attribute_from_period("states", period)
 
         indicator = traverse_forward(
-            states, state_space.indexer, indicator, state_space.edu_max
+            states, state_space.indexer, indicator, state_space.is_inadmissible
         )
 
     # Restrict indicator to states of the second period as the first is never indexed.
@@ -131,18 +127,22 @@ def test_invariance_of_solution(model_or_seed):
     )
 
 
-@pytest.mark.parametrize("seed", range(10))
-def test_get_continuation_values(seed):
+@pytest.mark.parametrize("model_or_seed", range(10))
+def test_get_continuation_values(model_or_seed):
     """Test propagation of emaxs from last to first period."""
-    params, options = generate_random_model()
+    if isinstance(model_or_seed, str):
+        params, options = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params, options = generate_random_model()
 
     options = process_options(options)
 
     state_space = StateSpace(params, options)
 
     state_space.continuation_values = np.r_[
-        np.zeros((state_space.states_per_period[:-1].sum(), 4)),
-        np.ones((state_space.states_per_period[-1], 4)),
+        np.zeros((state_space.states_per_period[:-1].sum(), len(options["sectors"]))),
+        np.ones((state_space.states_per_period[-1], len(options["sectors"]))),
     ]
     state_space.emax_value_functions = np.r_[
         np.zeros(state_space.states_per_period[:-1].sum()),
@@ -158,10 +158,10 @@ def test_get_continuation_values(seed):
             state_space.emax_value_functions,
             state_space.is_inadmissible,
         )
-        state_space.emax_value_functions = state_space.continuation_values.max()
+        state_space.emax_value_functions = state_space.continuation_values.max(axis=1)
 
     assert (state_space.emax_value_functions == 1).all()
-    assert (state_space.continuation_values == 1).all()
+    assert state_space.continuation_values.mean() >= 0.95
 
 
 @pytest.mark.wip
@@ -179,25 +179,17 @@ def test_state_space_vs_old_implementation(model_or_seed):
     # Create old state space arguments.
     n_periods = options["num_periods"]
     n_types = optim_paras["num_types"]
-    edu_max = options["education_max"]
-    edu_starts = options["education_start"]
-    # Create new state space arguments.
-    maximum_exp = np.array([n_periods, n_periods, edu_max])
-    minimum_exp = np.array([0, 0, edu_starts])
-    n_nonexp_choices = 1
+    edu_max = options["sectors"]["edu"]["max"]
+    edu_starts = options["sectors"]["edu"]["start"]
 
     # Get states and indexer from old state space.
     states_old, indexer_old = create_state_space(
         n_periods, n_types, edu_starts, edu_max
     )
 
-    states_new, indexer_new = _create_state_space(
-        n_periods,
-        maximum_exp,
-        minimum_exp,
-        n_nonexp_choices,
-        n_types,
-        BASE_STATE_SPACE_FILTERS,
+    states_new, indexer_new = _create_state_space(options, n_types)
+    states_new.lagged_choice = states_new.lagged_choice.replace(
+        {sec: i for i, sec in enumerate(options["choices"])}
     )
 
     # Compare the state spaces via sets as ordering changed in some cases.

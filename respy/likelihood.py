@@ -48,26 +48,27 @@ def get_crit_func(params, options, df):
 
     check_estimation_data(options, df)
 
+    df = _process_estimation_data(df, options)
+
     state_space = StateSpace(params, options)
 
     # Collect arguments for estimation.
     base_draws_est = create_base_draws(
-        (options["num_periods"], options["estimation_draws"], 4),
+        (options["num_periods"], options["estimation_draws"], len(options["sectors"])),
         options["estimation_seed"],
     )
 
     criterion_function = partial(
         log_like,
-        interpolation_points=options["interpolation_points"],
         data=df,
-        tau=options["estimation_tau"],
         base_draws_est=base_draws_est,
         state_space=state_space,
+        options=options,
     )
     return criterion_function
 
 
-def log_like(params, interpolation_points, data, tau, base_draws_est, state_space):
+def log_like(params, data, base_draws_est, state_space, options):
     """Criterion function for the likelihood maximization.
 
     This function calculates the average likelihood contribution of the sample.
@@ -76,29 +77,25 @@ def log_like(params, interpolation_points, data, tau, base_draws_est, state_spac
     ----------
     params : Series
         Parameter Series
-    interpolation : bool
-        Indicator for the interpolation routine.
-    num_points_interp : int
-        Number
     data : pd.DataFrame
         The log likelihood is calculated for this data.
-    tau : float
-        Smoothing parameter.
     base_draws_est : np.ndarray
         Set of draws to calculate the probability of observed wages.
     state_space : class
         State space.
+    options : dict
+        Contains model options.
 
     """
     params, optim_paras = process_params(params)
 
-    state_space.update_systematic_rewards(optim_paras)
+    state_space.update_systematic_rewards(optim_paras, options)
 
-    state_space = solve_with_backward_induction(
-        state_space, interpolation_points, optim_paras
+    state_space = solve_with_backward_induction(state_space, optim_paras, options)
+
+    contribs = log_like_obs(
+        state_space, data, base_draws_est, options["estimation_tau"], optim_paras
     )
-
-    contribs = log_like_obs(state_space, data, base_draws_est, tau, optim_paras)
 
     crit_val = -np.mean(contribs)
 
@@ -222,7 +219,7 @@ def simulate_probability_of_individuals_observed_choice(
     prob_choice[0] /= n_draws
 
 
-def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
+def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
     """Calculate the likelihood contribution of each individual in the sample.
 
     The function calculates all likelihood contributions for all observations in the
@@ -235,7 +232,7 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     ----------
     state_space : class
         Class of state space.
-    data : pd.DataFrame
+    df : pd.DataFrame
         DataFrame with the empirical dataset.
     base_draws_est : np.ndarray
         Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
@@ -252,33 +249,21 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
         empirical data.
 
     """
-    if np.count_nonzero(optim_paras["shocks_cholesky"]) == 0:
-        return np.ones(data.Identifier.unique().shape[0])
-
-    # Convert data to np.ndarray. Separate wages from other characteristics as they need
-    # to be integers.
-    individuals = data[
-        [
-            "Period",
-            "Experience_A",
-            "Experience_B",
-            "Years_Schooling",
-            "Lagged_Choice",
-            "Choice",
-        ]
-    ].values.astype(int)
-    wages_observed = data["Wage"].to_numpy()
+    # Convert data to NumPy arrays.
+    periods = df.Period.to_numpy()
+    lagged_choices = df.Lagged_Choice.to_numpy()
+    choices = df.Choice.to_numpy()
+    exps = tuple(df[col].to_numpy() for col in df.filter(like="Experience_").columns)
+    wages_observed = df["Wage"].to_numpy()
 
     # Get the number of observations for each individual and an array with indices of
     # each individual's first observation. After that, extract initial education levels
     # per agent which are important for type-specific probabilities.
-    num_obs_per_agent = np.bincount(data.Identifier.values)
+    num_obs_per_agent = np.bincount(df.Identifier.to_numpy())
     idx_individuals_first_observation = np.hstack(
         (0, np.cumsum(num_obs_per_agent)[:-1])
     )
-    individuals_initial_education_levels = individuals[
-        idx_individuals_first_observation, 3
-    ]
+    individuals_initial_education_levels = exps[2][idx_individuals_first_observation]
 
     # Update type-specific probabilities conditional on whether the initial level of
     # education is greater than nine.
@@ -286,14 +271,9 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
         optim_paras["type_shares"], individuals_initial_education_levels
     )
 
-    # Extract observable components of the state space and agent's decision.
-    periods, exp_as, exp_bs, edus, choices_lagged, choices = (
-        individuals[:, i] for i in range(6)
-    )
-
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_obs, n_types).
-    ks = state_space.indexer[periods, exp_as, exp_bs, edus, choices_lagged, :]
+    ks = state_space.indexer[(periods,) + exps + (lagged_choices,)]
     nobs, num_types = ks.shape
 
     wages_observed = wages_observed.repeat(num_types)
@@ -339,3 +319,18 @@ def log_like_obs(state_space, data, base_draws_est, tau, optim_paras):
     contribs = np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT)
 
     return contribs
+
+
+def _process_estimation_data(df, options):
+    df = df.sort_values(["Identifier", "Period"])
+
+    # Recode choices to model codes. It is not possible to use ``.cat.codes`` because
+    # the codes might be in a different order than for the model required which is
+    # choices_w_exp_w_wag, choices_w_exp_wo_wage, choices_wo_exp_wo_wage.
+    choices_to_codes = {sec: i for i, sec in enumerate(options["choices"])}
+    df.Choice = df.Choice.cat.rename_categories(choices_to_codes).astype(int)
+    df.Lagged_Choice = df.Lagged_Choice.cat.rename_categories(choices_to_codes).astype(
+        int
+    )
+
+    return df

@@ -1,7 +1,17 @@
-education_lagged: [0.5, 0.5, 0.5]
-education_max: 15
-education_share: [0.5, 0.4, 0.1]
-education_start: [10, 8, 13]
+sectors:
+  a:
+    has_experience: true
+    has_wage: true
+  b:
+    has_experience: true
+    has_wage: true
+  edu:
+    has_experience: true
+    max: 15
+    start: [10, 8, 13]
+    lagged: [0.5, 0.5, 0.5]
+    share: [0.5, 0.4, 0.1]
+  home: {}
 estimation_draws: 200
 estimation_seed: 500
 estimation_tau: 500
