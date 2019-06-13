@@ -93,19 +93,14 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
     # Create initial starting values for agents in simulation.
-    initial_education = _get_random_edu_start(options)
-    initial_types = _get_random_types(initial_education, optim_paras, options)
-    initial_lagged_choices = _get_random_lagged_choices(initial_education, options)
+    container = ()
+    for choice in options["choices_w_exp"]:
+        container += (_get_random_initial_experience(choice, options),)
+    container += (_get_random_lagged_choices(container[2], options),)
+    container += (_get_random_types(container[2], optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
-    current_states = np.column_stack(
-        (
-            np.zeros((options["simulation_agents"], 2)),
-            initial_education,
-            initial_lagged_choices,
-            initial_types,
-        )
-    ).astype(np.uint8)
+    current_states = np.column_stack(container).astype(np.uint8)
 
     data = []
 
@@ -113,12 +108,8 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
         # Get indices which connect states in the state space and simulated agents.
         ks = state_space.indexer[
-            np.full(options["simulation_agents"], period),
-            current_states[:, 0],
-            current_states[:, 1],
-            current_states[:, 2],
-            current_states[:, 3],
-            current_states[:, 4],
+            (np.full(options["simulation_agents"], period),)
+            + tuple(current_states[:, i] for i in range(current_states.shape[1]))
         ]
 
         # Select relevant subset of random draws.
@@ -231,17 +222,17 @@ def _get_random_types(edu_start, optim_paras, options):
     return types
 
 
-def _get_random_edu_start(options):
+def _get_random_initial_experience(choice, options):
     """Get random, initial levels of schooling for simulated agents."""
     np.random.seed(options["simulation_seed"])
 
-    edu_start = np.random.choice(
-        options["sectors"]["edu"]["start"],
-        p=options["sectors"]["edu"]["share"],
+    initial_experience = np.random.choice(
+        options["sectors"][choice]["start"],
+        p=options["sectors"][choice]["share"],
         size=options["simulation_agents"],
     )
 
-    return edu_start
+    return initial_experience
 
 
 def _get_random_lagged_choices(edu_start, options):
