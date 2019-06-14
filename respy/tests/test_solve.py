@@ -162,7 +162,6 @@ def test_get_continuation_values(model_or_seed):
     assert state_space.continuation_values.mean() >= 0.95
 
 
-@pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_state_space_vs_old_implementation(model_or_seed):
     if isinstance(model_or_seed, str):
