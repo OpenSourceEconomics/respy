@@ -232,6 +232,8 @@ def _get_random_lagged_choices(edu_start, options):
     """Get random, initial levels of lagged choices for simulated agents."""
     np.random.seed(options["simulation_seed"])
 
+    choices = [options["choices"].index("edu"), options["choices"].index("home")]
+
     lagged_start = []
     for i in range(options["simulation_agents"]):
         idx = np.where(options["sectors"]["edu"]["start"] == edu_start[i])[0][0]
@@ -239,7 +241,7 @@ def _get_random_lagged_choices(edu_start, options):
             options["sectors"]["edu"]["lagged"][idx],
             1 - options["sectors"]["edu"]["lagged"][idx],
         )
-        lagged_start += np.random.choice([2, 3], p=probs, size=1).tolist()
+        lagged_start += np.random.choice(choices, p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that activities are a vector.
     lagged_start = np.array(lagged_start, ndmin=1)
