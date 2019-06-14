@@ -39,7 +39,6 @@ def check_estimation_data(options, df):
 
     # 8. Lagged_Choice.
     assert df.Lagged_Choice.isin(options["choices"]).all()
-    # TODO: Check that lagged choices are only those with key lagged.
 
     # Others.
     assert df.drop(columns="Wage").notna().all().all()
@@ -59,8 +58,8 @@ def check_estimation_data(options, df):
 
     # Check that we observe the whole sequence of observations.
     max_periods_per_ind = df.groupby("Identifier").Period.max() + 1
-    num_obs_per_ind = df.groupby("Identifier").size()
-    assert (max_periods_per_ind == num_obs_per_ind).all()
+    n_obs_per_ind = df.groupby("Identifier").size()
+    assert (max_periods_per_ind == n_obs_per_ind).all()
 
 
 def _check_state_variables(agent):

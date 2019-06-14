@@ -262,7 +262,7 @@ def calculate_endogenous_variables(
         Array with shape (n_states_in_period,) containing indicators for simulated
         continuation_values.
     draws : np.ndarray
-        Array with shape (num_draws, n_choices) containing draws.
+        Array with shape (n_draws, n_choices) containing draws.
     delta : float
         Discount factor.
     is_inadmissible : np.ndarray
@@ -377,7 +377,7 @@ def calculate_emax_value_functions(
         Array with shape (n_choices,) containing expected maximum utility for each
         choice in the subsequent period.
     draws : np.ndarray
-        Array with shape (num_draws, n_choices).
+        Array with shape (n_draws, n_choices).
     delta : float
         The discount factor.
     is_inadmissible: np.ndarray
@@ -393,15 +393,15 @@ def calculate_emax_value_functions(
         https://en.wikipedia.org/wiki/Monte_Carlo_integration
 
     """
-    num_draws, num_choices = draws.shape
+    n_draws, n_choices = draws.shape
 
     emax_value_functions[0] = 0.0
 
-    for i in range(num_draws):
+    for i in range(n_draws):
 
         max_value_functions = 0.0
 
-        for j in range(num_choices):
+        for j in range(n_choices):
             value_function, _ = _aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],
@@ -416,7 +416,7 @@ def calculate_emax_value_functions(
 
         emax_value_functions[0] += max_value_functions
 
-    emax_value_functions[0] /= num_draws
+    emax_value_functions[0] /= n_draws
 
 
 @njit
@@ -477,10 +477,10 @@ def calculate_value_functions(
     only needed during simulation.
 
     """
-    num_draws, num_choices = draws.shape
+    n_draws, n_choices = draws.shape
 
-    for i in range(num_draws):
-        for j in range(num_choices):
+    for i in range(n_draws):
+        for j in range(n_choices):
             value_function, _ = _aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],

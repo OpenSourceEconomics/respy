@@ -257,16 +257,14 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
     # Get the number of observations for each individual and an array with indices of
     # each individual's first observation. After that, extract initial education levels
     # per agent which are important for type-specific probabilities.
-    num_obs_per_agent = np.bincount(df.Identifier.to_numpy())
-    idx_individuals_first_observation = np.hstack(
-        (0, np.cumsum(num_obs_per_agent)[:-1])
-    )
-    individuals_initial_education_levels = exps[2][idx_individuals_first_observation]
+    n_obs_per_indiv = np.bincount(df.Identifier.to_numpy())
+    idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
+    indiv_initial_exp_edu = exps[2][idx_indiv_first_obs]
 
     # Update type-specific probabilities conditional on whether the initial level of
     # education is greater than nine.
     type_shares = get_conditional_probabilities(
-        optim_paras["type_shares"], individuals_initial_education_levels
+        optim_paras["type_shares"], indiv_initial_exp_edu
     )
 
     # Get indices of states in the state space corresponding to all observations for all
@@ -277,7 +275,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
     wages_observed = wages_observed.repeat(n_types)
     log_wages_observed = np.clip(np.log(wages_observed), -HUGE_FLOAT, HUGE_FLOAT)
     wages_systematic = state_space.wages[ks].reshape(n_obs * n_types, -1)
-    num_choices = wages_systematic.shape[1]
+    n_choices = wages_systematic.shape[1]
     choices = choices.repeat(n_types)
     periods = state_space.states[ks, 0].flatten()
 
@@ -291,7 +289,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
         periods,
     )
 
-    draws = draws.reshape(n_obs, n_types, -1, num_choices)
+    draws = draws.reshape(n_obs, n_types, -1, n_choices)
 
     prob_choices = simulate_probability_of_individuals_observed_choice(
         state_space.wages[ks],
@@ -308,7 +306,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
 
     # Accumulate the likelihood of observations for each individual-type combination
     # over all periods.
-    prob_type = np.multiply.reduceat(prob_obs, idx_individuals_first_observation)
+    prob_type = np.multiply.reduceat(prob_obs, idx_indiv_first_obs)
 
     # Multiply each individual-type contribution with its type-specific shares and sum
     # over types to get the likelihood contribution for each individual.

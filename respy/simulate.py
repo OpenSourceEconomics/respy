@@ -280,7 +280,7 @@ def calculate_value_functions_and_flow_utilities(
     continuation_values : np.ndarray
         Array with shape (n_choices,)
     draws : np.ndarray
-        Array with shape (num_draws, n_choices)
+        Array with shape (n_draws, n_choices)
     delta : float
         Discount rate.
     is_inadmissible: np.ndarray
@@ -290,15 +290,15 @@ def calculate_value_functions_and_flow_utilities(
     Returns
     -------
     value_functions : np.ndarray
-        Array with shape (n_choices, num_draws).
+        Array with shape (n_choices, n_draws).
     flow_utilities : np.ndarray
-        Array with shape (n_choices, num_draws)
+        Array with shape (n_choices, n_draws)
 
     """
-    num_draws, num_choices = draws.shape
+    n_draws, n_choices = draws.shape
 
-    for i in range(num_draws):
-        for j in range(num_choices):
+    for i in range(n_draws):
+        for j in range(n_choices):
             value_function, flow_utility = _aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],

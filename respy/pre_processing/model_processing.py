@@ -168,8 +168,8 @@ def _parse_parameters(params):
     optim_paras.pop("shocks")
 
     short_meas_error = params.loc["meas_error"]
-    num_choices = cov.shape[0]
-    meas_error = params.loc["shocks"][:num_choices].copy(deep=True)
+    n_choices = cov.shape[0]
+    meas_error = params.loc["shocks"][:n_choices].copy(deep=True)
     meas_error[:] = 0.0
     meas_error.update(short_meas_error)
     optim_paras["meas_error"] = meas_error.to_numpy()

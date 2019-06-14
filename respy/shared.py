@@ -33,7 +33,7 @@ def get_conditional_probabilities(type_shares, initial_level_of_education):
     type_shares : np.ndarray
         Undocumented parameter.
     initial_level_of_education : np.ndarray
-        Array with shape (num_obs,) containing initial levels of education.
+        Array with shape (n_obs,) containing initial levels of education.
 
     """
     type_shares = type_shares.reshape(-1, 2)
@@ -66,7 +66,7 @@ def create_base_draws(shape, seed):
     Returns
     -------
     draws : np.array
-        Draws with shape (n_periods, num_draws)
+        Draws with shape (n_periods, n_draws)
 
     """
     # Control randomness by setting seed value

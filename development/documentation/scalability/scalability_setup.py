@@ -15,9 +15,9 @@ def main():
     filepath = Path(__file__).resolve().parent / "run_single_scalability_exercise.py"
 
     # Run Python
-    for num_thread in [1, 2, 4, 6, 8, 10]:
+    for n_threads in [1, 2, 4, 6, 8, 10]:
         subprocess.check_call(
-            ["python", str(filepath), model, str(maxfun), str(num_thread)]
+            ["python", str(filepath), model, str(maxfun), str(n_threads)]
         )
 
 

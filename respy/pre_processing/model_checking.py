@@ -61,7 +61,7 @@ def _is_nonnegative_integer(x):
 def check_model_solution(options, state_space):
     # Distribute class attributes
     edu_start = options["sectors"]["edu"]["start"]
-    num_initial = len(edu_start)
+    n_initial_exp_edu = len(edu_start)
     edu_start_max = max(edu_start)
     edu_max = options["sectors"]["edu"]["max"]
     n_periods = options["n_periods"]
@@ -95,11 +95,9 @@ def check_model_solution(options, state_space):
     assert not pd.DataFrame(state_space.states).duplicated().any()
 
     # Check the number of states in the first time period.
-    num_states_start = n_types * num_initial * 2
-    assert (
-        state_space.get_attribute_from_period("states", 0).shape[0] == num_states_start
-    )
-    assert np.sum(state_space.indexer[0] >= 0) == num_states_start
+    n_states_start = n_types * n_initial_exp_edu * 2
+    assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
+    assert np.sum(state_space.indexer[0] >= 0) == n_states_start
 
     # Check that we have as many indices as states.
     assert state_space.states.shape[0] == (state_space.indexer >= 0).sum()
@@ -120,11 +118,9 @@ def check_model_solution(options, state_space):
     assert not pd.DataFrame(state_space.states).duplicated().any()
 
     # Check the number of states in the first time period.
-    num_states_start = n_types * num_initial * 2
-    assert (
-        state_space.get_attribute_from_period("states", 0).shape[0] == num_states_start
-    )
-    assert np.sum(state_space.indexer[0] >= 0) == num_states_start
+    n_states_start = n_types * n_initial_exp_edu * 2
+    assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
+    assert np.sum(state_space.indexer[0] >= 0) == n_states_start
     # Check that we have as many indices as states.
     assert state_space.states.shape[0] == (state_space.indexer >= 0).sum()
 

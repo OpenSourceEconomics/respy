@@ -77,25 +77,15 @@ BASE_STATE_SPACE_FILTERS = [
     "lagged_choice == 'a' and exp_a == 0",
     "lagged_choice == 'b' and exp_b == 0",
 ]
-"""list: Contains filters for the state space.
-
-TODO: Check for collinear restrictions.
-
-"""
+"""list: Contains filters for the state space."""
 
 BASE_RESTRICTIONS = {"edu": "exp_edu == @max_exp_edu"}
 
 DEFAULT_OPTIONS = {
     "sectors": {
-        "a": {"has_experience": True},
-        "b": {"has_experience": True},
-        "edu": {
-            "has_experience": True,
-            "max": 20,
-            "start": [10],
-            "lagged": [1],
-            "share": [1],
-        },
+        "a": {},
+        "b": {},
+        "edu": {"max": 20, "start": [10], "lagged": [1], "share": [1]},
         "home": {},
     },
     "estimation_draws": 200,
