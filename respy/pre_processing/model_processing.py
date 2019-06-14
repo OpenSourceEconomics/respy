@@ -71,7 +71,7 @@ def _read_params(input_):
 
 def _read_options(input_):
     if not isinstance(input_, (Path, dict)):
-        raise TypeError("options must be Path or dictionary.")
+        raise TypeError("options must be pathlib.Path or dictionary.")
 
     if isinstance(input_, Path):
         with open(input_, "r") as file:

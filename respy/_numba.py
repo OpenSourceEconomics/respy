@@ -4,7 +4,7 @@ from numba.extending import intrinsic
 
 
 @intrinsic
-def index_tuple_for_array(tyctx, array, indexer_array):
+def array_to_tuple(tyctx, array, indexer_array):
     """Converts a an array to a tuple for indexing.
 
     This function is taken from

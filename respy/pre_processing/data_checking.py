@@ -76,6 +76,8 @@ def _check_state_variables(agent):
         # and we get the initial level of schooling.
         if period == 0:
             exp_a, exp_b, edu = 0.0, 0.0, row.Experience_Edu
+        else:
+            pass
         # Check statistics
         pairs = [
             (exp_a, "Experience_A"),

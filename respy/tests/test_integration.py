@@ -66,7 +66,7 @@ def test_invariance_to_initial_conditions():
 
     params, options = generate_random_model(point_constr=constr)
 
-    df = simulate_truncated_data(params, options)
+    _ = simulate_truncated_data(params, options)
 
     edu_start_base = np.random.randint(1, 5, size=1)[0]
 

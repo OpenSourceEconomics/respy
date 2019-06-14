@@ -4,7 +4,7 @@ import numpy as np
 from numba import guvectorize
 from numba import njit
 
-from respy._numba import index_tuple_for_array
+from respy._numba import array_to_tuple
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
@@ -40,12 +40,10 @@ def solve_with_backward_induction(state_space, optim_paras, options):
     ----------
     state_space : class
         State space object.
-    interpolation_points : int
-        A value of -1 indicates that the interpolation is turned off. If the value is a
-        non-zero, positive integer, it indicates the number of states which are used to
-        interpolate all the rest.
     optim_paras : dict
         Parameters affected by optimization.
+    options : dict
+        Dictionary containing optimization independent model options.
 
     Returns
     -------
@@ -382,8 +380,9 @@ def calculate_emax_value_functions(
         Array with shape (num_draws, n_choices).
     delta : float
         The discount factor.
-    is_inadmissible: bool
-        Indicator for whether the state has reached maximum education.
+    is_inadmissible: np.ndarray
+        Array with shape (n_choices,) containing indicator for whether the following
+        state is inadmissible.
 
     Returns
     -------
@@ -435,7 +434,7 @@ def get_continuation_values(
 
     for i in range(states.shape[0]):
 
-        k_parent = indexer[index_tuple_for_array(indexer, states[i])]
+        k_parent = indexer[array_to_tuple(indexer, states[i])]
 
         for n in range(n_choices):
             if is_inadmissible[k_parent, n]:
@@ -451,7 +450,7 @@ def get_continuation_values(
                 # Change lagged choice.
                 child[-2] = n
 
-                k = indexer[index_tuple_for_array(indexer, child)]
+                k = indexer[array_to_tuple(indexer, child)]
                 continuation_values[k_parent, n] = emax_value_functions[k]
 
     return continuation_values

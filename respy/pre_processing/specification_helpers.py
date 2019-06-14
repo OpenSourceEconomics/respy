@@ -33,7 +33,7 @@ def csv_template(n_types=1, save_path=None, initialize_coeffs=True):
 
 
 def _base_template():
-    base_template = pd.read_csv(ROOT_DIR / "pre_processing" / "base_spec.csv")
+    base_template = pd.read_csv(ROOT_DIR / "pre_processing" / "base_params.csv")
     base_template.set_index(["category", "name"], inplace=True)
     return base_template
 

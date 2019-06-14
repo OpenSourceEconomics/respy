@@ -281,8 +281,9 @@ def calculate_value_functions_and_flow_utilities(
         Array with shape (num_draws, n_choices)
     delta : float
         Discount rate.
-    is_inadmissible: bool
-        Indicator for whether the state has reached maximum education.
+    is_inadmissible: np.ndarray
+        Array with shape (n_choices,) containing indicator for whether the following
+        state is inadmissible.
 
     Returns
     -------

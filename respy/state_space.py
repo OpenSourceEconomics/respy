@@ -364,10 +364,8 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
 
     Returns
     -------
-    wage_covariates: list
-        List of length ``n_choices`` with covariate arrays for systematic wages.
-    nonpec_covariates: list
-        List of length ``n_choices`` with covariate arrays for non-pecuniary rewards.
+    covariates : dict
+        Dictionary where values are the wage or non-pecuniary covariates for choices.
 
     """
     all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
@@ -393,17 +391,16 @@ def _create_base_covariates(states, covariates_spec):
 
     Parameters
     ----------
-    states : np.ndarray
-        Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
-        choice_lagged and type of each state.
+    states : pd.DataFrame
+        DataFrame with shape (n_states, n_choices_w_exp + 3) containing period,
+        experiences, choice_lagged and type of each state.
     covariates_spec : dict
-        Dictionary where keys represent covariates and values are strings which can be
-        passed to pd.eval.
+        Keys represent covariates and values are strings passed to ``df.eval``.
 
     Returns
     -------
-    covariates : np.ndarray
-        Array with shape (num_states, 16) containing covariates of each state.
+    covariates : pd.DataFrame
+        DataFrame with shape (n_states, n_covariates).
 
     """
     covariates = states.copy()

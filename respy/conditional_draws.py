@@ -57,15 +57,15 @@ def create_draws_and_prob_wages(
 
     """
     choices = choices.astype(np.uint16)
-    nobs, nchoices = wages_systematic.shape
+    n_obs, n_choices = wages_systematic.shape
     relevant_systematic_wages = np.choose(choices, wages_systematic.T)
     log_wage_systematic = np.clip(
         np.log(relevant_systematic_wages), -HUGE_FLOAT, HUGE_FLOAT
     )
 
-    states = np.zeros((nobs, nchoices))
+    states = np.zeros((n_obs, n_choices))
     measurements = log_wages_observed - log_wage_systematic
-    extended_cholcovs_t = np.zeros((nobs, nchoices + 1, nchoices + 1))
+    extended_cholcovs_t = np.zeros((n_obs, n_choices + 1, n_choices + 1))
     extended_cholcovs_t[:, 1:, 1:] = shocks_cholesky.T
     meas_sds = meas_error_sds[choices]
 
@@ -75,7 +75,7 @@ def create_draws_and_prob_wages(
     )
 
     draws = np.matmul(base_draws[periods], extended_cholcovs_t[:, 1:, 1:])
-    draws += states.reshape(nobs, 1, nchoices)
+    draws += states.reshape(n_obs, 1, n_choices)
     draws[:, :2] = np.clip(np.exp(draws[:, :2]), 0.0, HUGE_FLOAT)
 
     return draws, prob_wages

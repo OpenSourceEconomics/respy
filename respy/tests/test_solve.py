@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from numba import njit
 
-from respy._numba import index_tuple_for_array
+from respy._numba import array_to_tuple
 from respy.config import EXAMPLE_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
@@ -44,19 +44,19 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     """
 
     @njit
-    def traverse_forward(states, indexer, indicator, is_inadmissible):
-        n_choices_w_exp = states.shape[1] - 3
+    def traverse_forward(states_, indexer, indicator_, is_inadmissible):
+        n_choices_w_exp = states_.shape[1] - 3
         n_choices = is_inadmissible.shape[1]
 
-        for i in range(states.shape[0]):
+        for i in range(states_.shape[0]):
 
-            k_parent = indexer[index_tuple_for_array(indexer, states[i])]
+            k_parent = indexer[array_to_tuple(indexer, states_[i])]
 
             for n in range(n_choices):
                 if is_inadmissible[k_parent, n]:
                     pass
                 else:
-                    child = states[i].copy()
+                    child = states_[i].copy()
                     # Change to future period.
                     child[0] += 1
 
@@ -65,10 +65,10 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
 
                     child[-2] = n
 
-                    k = indexer[index_tuple_for_array(indexer, child)]
-                    indicator[k] = 1
+                    k = indexer[array_to_tuple(indexer, child)]
+                    indicator_[k] = 1
 
-        return indicator
+        return indicator_
 
     if isinstance(model_or_seed, str):
         params, options = get_example_model(model_or_seed)

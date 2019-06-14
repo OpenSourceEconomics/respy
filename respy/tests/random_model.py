@@ -26,9 +26,6 @@ def generate_random_model(
         keys ["max_types", "max_periods", "max_edu_start", "max_agents", "max_draws"]
     n_types : int
         fix number of unobserved types.
-    file_path : str
-        save path for the output. The extensions .csv and .json are appended
-        automatically.
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
 
@@ -52,11 +49,11 @@ def generate_random_model(
 
     params.loc["delta", "para"] = 1 - np.random.uniform() if myopic is False else 0.0
 
-    num_shock_coeffs = len(params.loc["shocks"])
-    dim = number_of_triangular_elements_to_dimension(num_shock_coeffs)
+    n_shock_coeffs = len(params.loc["shocks"])
+    dim = number_of_triangular_elements_to_dimension(n_shock_coeffs)
     helper = np.eye(dim) * 0.5
     helper[np.tril_indices(dim, k=-1)] = np.random.uniform(
-        -0.05, 0.2, size=(num_shock_coeffs - dim)
+        -0.05, 0.2, size=(n_shock_coeffs - dim)
     )
     cov = helper.dot(helper.T)
     params.loc["shocks", "para"] = cov_matrix_to_sdcorr_params(cov)
@@ -65,26 +62,19 @@ def generate_random_model(
         low=0.001, high=0.1, size=len(params.loc["meas_error"])
     )
 
-    options = {}
-
-    options["simulation_agents"] = np.random.randint(3, bound_constr["max_agents"] + 1)
-    options["simulation_seed"] = np.random.randint(1, 1000)
-
-    options["n_periods"] = np.random.randint(1, bound_constr["max_periods"])
-
-    options["sectors"] = {
-        "a": {"has_experience": True, "has_wage": True},
-        "b": {"has_experience": True, "has_wage": True},
-        "edu": {"has_experience": True},
-        "home": {},
+    options = {
+        "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
+        "simulation_seed": np.random.randint(1, 1000),
+        "n_periods": np.random.randint(1, bound_constr["max_periods"]),
+        "sectors": {"a": {}, "b": {}, "edu": {}, "home": {}},
     }
 
-    num_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
+    n_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
     options["sectors"]["edu"]["start"] = np.random.choice(
-        np.arange(1, 15), size=num_edu_start, replace=False
+        np.arange(1, 15), size=n_edu_start, replace=False
     ).tolist()
-    options["sectors"]["edu"]["lagged"] = np.random.uniform(size=num_edu_start).tolist()
-    options["sectors"]["edu"]["share"] = get_valid_shares(num_edu_start)
+    options["sectors"]["edu"]["lagged"] = np.random.uniform(size=n_edu_start)
+    options["sectors"]["edu"]["share"] = get_valid_shares(n_edu_start)
     options["sectors"]["edu"]["max"] = np.random.randint(
         max(options["sectors"]["edu"]["start"]) + 1, 30
     )
