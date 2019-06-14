@@ -1,12 +1,7 @@
 sectors:
-  a:
-    has_experience: true
-    has_wage: true
-  b:
-    has_experience: true
-    has_wage: true
+  a: {}
+  b: {}
   edu:
-    has_experience: true
     max: 15
     start: [10, 8, 13]
     lagged: [0.5, 0.5, 0.5]
@@ -16,7 +11,7 @@ estimation_draws: 200
 estimation_seed: 500
 estimation_tau: 500
 interpolation_points: -1
-num_periods: 5
+n_periods: 5
 simulation_agents: 1000
 simulation_seed: 132
 solution_draws: 500

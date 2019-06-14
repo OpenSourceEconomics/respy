@@ -20,12 +20,12 @@ def check_estimation_data(options, df):
     df = df.copy()
     sectors = options["sectors"]
 
-    num_periods = options["num_periods"]
+    n_periods = options["n_periods"]
 
     # 1. Identifier.
 
     # 2. Period.
-    assert df.Period.le(num_periods - 1).all()
+    assert df.Period.le(n_periods - 1).all()
 
     # 3. Choice.
     assert df.Choice.isin(options["choices"]).all()
@@ -44,7 +44,7 @@ def check_estimation_data(options, df):
     # Others.
     assert df.drop(columns="Wage").notna().all().all()
 
-    if options["num_periods"] > 1:
+    if options["n_periods"] > 1:
         # Compare Lagged_Choice and Choice for all but the first period.
         lagged_choice = df.groupby("Identifier").Choice.transform("shift").dropna()
         assert (
@@ -96,7 +96,7 @@ def _check_state_variables(agent):
             pass
 
 
-def check_simulated_data(options, optim_paras, df):
+def check_simulated_data(options, df):
     """Check simulated data.
 
     This routine runs some consistency checks on the simulated dataset. Some more
@@ -106,15 +106,15 @@ def check_simulated_data(options, optim_paras, df):
     df = df.copy()
 
     # Distribute class attributes
-    num_periods = options["num_periods"]
-    num_types = optim_paras["num_types"]
+    n_periods = options["n_periods"]
+    n_types = options["n_types"]
     edu_max = options["sectors"]["edu"]["max"]
 
     # Run all tests available for the estimation data.
     check_estimation_data(options, df)
 
     # 9. Types.
-    assert df.Type.max() <= num_types - 1
+    assert df.Type.max() <= n_types - 1
     assert df.Type.notna().all()
     assert df.groupby("Identifier").Type.nunique().eq(1).all()
 
@@ -125,7 +125,7 @@ def check_simulated_data(options, optim_paras, df):
     assert df.Wage[~is_working].isna().all()
 
     # Check that there are no missing observations and we follow an agent each period.
-    df.groupby("Identifier").Period.nunique().eq(num_periods).all()
+    df.groupby("Identifier").Period.nunique().eq(n_periods).all()
 
     # If agents are myopic, we can test the equality of ex-post rewards and total
     # values.
@@ -143,17 +143,18 @@ def check_simulated_data(options, optim_paras, df):
 
             np.testing.assert_array_almost_equal(value_function, flow_utility)
 
-        for choice in options["choices_wo_wage"]:
-            fu_lab = f"Flow_Utility_{choice}"
-            nonpec_lab = f"Nonpecuniary_Reward_{choice}"
-            shock_rew = f"Shock_Reward_{choice}"
+        for choice in options["choices"]:
+            if choice not in options["choices_w_wage"]:
+                fu_lab = f"Flow_Utility_{choice}"
+                nonpec_lab = f"Nonpecuniary_Reward_{choice}"
+                shock_rew = f"Shock_Reward_{choice}"
 
-            df[fu_lab] = df[nonpec_lab] + df[shock_rew]
+                df[fu_lab] = df[nonpec_lab] + df[shock_rew]
 
-            # The equality does not hold if a state is inadmissible.
-            cond = df.Years_Schooling.ne(edu_max)
+                # The equality does not hold if a state is inadmissible.
+                cond = df.Years_Schooling.ne(edu_max)
 
-            value_function = df[f"Value_Function_{choice}"].loc[cond]
-            flow_utility = df[fu_lab].loc[cond]
+                value_function = df[f"Value_Function_{choice}"].loc[cond]
+                flow_utility = df[fu_lab].loc[cond]
 
-            np.testing.assert_array_almost_equal(value_function, flow_utility)
+                np.testing.assert_array_almost_equal(value_function, flow_utility)

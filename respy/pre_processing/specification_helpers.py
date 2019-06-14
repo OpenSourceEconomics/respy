@@ -4,12 +4,12 @@ import pandas as pd
 from respy.config import ROOT_DIR
 
 
-def csv_template(num_types=1, save_path=None, initialize_coeffs=True):
+def csv_template(n_types=1, save_path=None, initialize_coeffs=True):
     """Creates a template for the parameter specification.
 
     Parameters
     ----------
-    num_types : `int`, optional
+    n_types : `int`, optional
         Number of types in the model. Default is one.
     save_path : str, pathlib.Path, optional
         The template is saved to this path. Default is ``None``.
@@ -18,11 +18,11 @@ def csv_template(num_types=1, save_path=None, initialize_coeffs=True):
 
     """
     template = _base_template()
-    if num_types > 1:
+    if n_types > 1:
         to_concat = [
             template,
-            _type_share_template(num_types),
-            _type_shift_template(num_types),
+            _type_share_template(n_types),
+            _type_shift_template(n_types),
         ]
         template = pd.concat(to_concat, axis=0, sort=False)
     if initialize_coeffs is False:
@@ -38,15 +38,15 @@ def _base_template():
     return base_template
 
 
-def _type_share_template(num_types):
-    assert num_types > 1
-    types = list(range(1, num_types + 1))
+def _type_share_template(n_types):
+    assert n_types > 1
+    types = list(range(1, n_types + 1))
     to_concat = []
     for typ in types[1:]:
         # add the type share coefficients
         ind = ("type_shares", "base_share_{}".format(typ))
         comment = "share_of_agents_of_type_{}".format(typ)
-        dat = [1 / num_types, False, np.nan, np.nan, comment]
+        dat = [1 / n_types, False, np.nan, np.nan, comment]
         to_concat.append(_base_row(index_tuple=ind, data=dat))
         ind = ("type_shares", "ten_years_{}".format(typ))
         comment = (
@@ -59,9 +59,9 @@ def _type_share_template(num_types):
     return pd.concat(to_concat, axis=0, sort=False)
 
 
-def _type_shift_template(num_types):
-    assert num_types > 1
-    types = list(range(1, num_types + 1))
+def _type_shift_template(n_types):
+    assert n_types > 1
+    types = list(range(1, n_types + 1))
     to_concat = []
     for typ in types[1:]:
         for sector in ["occ_a", "occ_b", "edu", "home"]:

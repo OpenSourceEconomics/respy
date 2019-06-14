@@ -4,7 +4,7 @@ from numba.extending import intrinsic
 
 
 @intrinsic
-def index_tuple_for_array(tyctx, ary, idxary):
+def index_tuple_for_array(tyctx, array, indexer_array):
     """Converts a an array to a tuple for indexing.
 
     This function is taken from
@@ -13,17 +13,17 @@ def index_tuple_for_array(tyctx, ary, idxary):
 
     Parameters
     ----------
-    ary : np.ndarray
+    array : np.ndarray
         Array for which the indexer is used.
-    idxarray : np.ndarray
+    indexer_array : np.ndarray
         Array which should be converted to a tuple.
 
     """
 
     # This is the typing level. Setup the type and constant information here.
-    tuple_size = ary.ndim
+    tuple_size = array.ndim
     typed_tuple = types.UniTuple(dtype=types.intp, count=tuple_size)
-    function_signature = typed_tuple(ary, idxary)
+    function_signature = typed_tuple(array, indexer_array)
 
     def codegen(cgctx, builder, signature, args):
         # This is the implementation defined using LLVM builder
@@ -37,7 +37,9 @@ def index_tuple_for_array(tyctx, ary, idxary):
                 raise IndexError("index array size mismatch")
 
         # Compile and call array_checker.
-        cgctx.compile_internal(builder, array_checker, types.none(idxary), [idxaryval])
+        cgctx.compile_internal(
+            builder, array_checker, types.none(indexer_array), [idxaryval]
+        )
 
         def array_indexer(a, i):
             return a[i]
@@ -49,7 +51,7 @@ def index_tuple_for_array(tyctx, ary, idxary):
             data = cgctx.compile_internal(
                 builder,
                 array_indexer,
-                idxary.dtype(idxary, types.intp),
+                indexer_array.dtype(indexer_array, types.intp),
                 [idxaryval, dataidx],
             )
             tup = builder.insert_value(tup, data, i)

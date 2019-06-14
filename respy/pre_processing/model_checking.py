@@ -29,7 +29,7 @@ def _validate_options(o):
     )
 
     # Number of periods.
-    assert _is_positive_nonzero_integer(o["num_periods"])
+    assert _is_positive_nonzero_integer(o["n_periods"])
 
     # Simulation.
     assert _is_positive_nonzero_integer(o["simulation_agents"])
@@ -58,17 +58,17 @@ def _is_nonnegative_integer(x):
     return isinstance(x, (int, np.integer)) and x >= 0
 
 
-def check_model_solution(options, optim_paras, state_space):
+def check_model_solution(options, state_space):
     # Distribute class attributes
     edu_start = options["sectors"]["edu"]["start"]
     num_initial = len(edu_start)
     edu_start_max = max(edu_start)
     edu_max = options["sectors"]["edu"]["max"]
-    num_periods = options["num_periods"]
-    num_types = optim_paras["num_types"]
+    n_periods = options["n_periods"]
+    n_types = options["n_types"]
 
     # Check period.
-    assert np.all(np.isin(state_space.states[:, 0], range(num_periods)))
+    assert np.all(np.isin(state_space.states[:, 0], range(n_periods)))
 
     # The sum of years of experiences cannot be larger than constraint time.
     assert np.all(
@@ -77,8 +77,8 @@ def check_model_solution(options, optim_paras, state_space):
     )
 
     # Sector experience cannot exceed the time frame.
-    assert np.all(state_space.states[:, 1] <= num_periods)
-    assert np.all(state_space.states[:, 2] <= num_periods)
+    assert np.all(state_space.states[:, 1] <= n_periods)
+    assert np.all(state_space.states[:, 2] <= n_periods)
 
     # The maximum of education years is never larger than ``edu_max``.
     assert np.all(state_space.states[:, 3] <= edu_max)
@@ -95,7 +95,7 @@ def check_model_solution(options, optim_paras, state_space):
     assert not pd.DataFrame(state_space.states).duplicated().any()
 
     # Check the number of states in the first time period.
-    num_states_start = num_types * num_initial * 2
+    num_states_start = n_types * num_initial * 2
     assert (
         state_space.get_attribute_from_period("states", 0).shape[0] == num_states_start
     )
@@ -120,7 +120,7 @@ def check_model_solution(options, optim_paras, state_space):
     assert not pd.DataFrame(state_space.states).duplicated().any()
 
     # Check the number of states in the first time period.
-    num_states_start = num_types * num_initial * 2
+    num_states_start = n_types * num_initial * 2
     assert (
         state_space.get_attribute_from_period("states", 0).shape[0] == num_states_start
     )

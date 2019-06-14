@@ -102,7 +102,7 @@ DEFAULT_OPTIONS = {
     "estimation_seed": 1,
     "estimation_tau": 500,
     "interpolation_points": -1,
-    "num_periods": 40,
+    "n_periods": 40,
     "simulation_agents": 1000,
     "simulation_seed": 2,
     "solution_draws": 500,

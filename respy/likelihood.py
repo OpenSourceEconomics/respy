@@ -7,8 +7,7 @@ from numba import vectorize
 from respy.conditional_draws import create_draws_and_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
-from respy.pre_processing.model_processing import process_options
-from respy.pre_processing.model_processing import process_params
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
@@ -43,8 +42,7 @@ def get_crit_func(params, options, df):
         If data has not the expected format.
 
     """
-    params, optim_paras = process_params(params)
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     check_estimation_data(options, df)
 
@@ -54,7 +52,7 @@ def get_crit_func(params, options, df):
 
     # Collect arguments for estimation.
     base_draws_est = create_base_draws(
-        (options["num_periods"], options["estimation_draws"], len(options["sectors"])),
+        (options["n_periods"], options["estimation_draws"], len(options["sectors"])),
         options["estimation_seed"],
     )
 
@@ -87,7 +85,7 @@ def log_like(params, data, base_draws_est, state_space, options):
         Contains model options.
 
     """
-    params, optim_paras = process_params(params)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space.update_systematic_rewards(optim_paras, options)
 

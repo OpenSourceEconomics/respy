@@ -6,8 +6,7 @@ from numba import njit
 
 from respy._numba import index_tuple_for_array
 from respy.config import HUGE_FLOAT
-from respy.pre_processing.model_processing import process_options
-from respy.pre_processing.model_processing import process_params
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import transform_disturbances
 from respy.state_space import StateSpace
@@ -26,8 +25,7 @@ def solve(params, options):
         Dictionary containing model attributes which are not optimized.
 
     """
-    params, optim_paras = process_params(params)
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = StateSpace(params, options)
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
@@ -58,6 +56,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     """
     n_choices = len(options["sectors"])
+    n_periods = options["n_periods"]
 
     state_space.continuation_values = np.zeros((state_space.num_states, n_choices))
     state_space.emax_value_functions = np.zeros(state_space.num_states)
@@ -72,9 +71,9 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
 
-    for period in reversed(range(state_space.num_periods)):
+    for period in reversed(range(n_periods)):
 
-        if period == state_space.num_periods - 1:
+        if period == n_periods - 1:
             pass
 
         else:

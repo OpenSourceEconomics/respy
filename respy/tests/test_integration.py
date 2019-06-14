@@ -11,7 +11,7 @@ def test_simulation_and_estimation_with_different_models():
     num_agents = np.random.randint(5, 100)
     constr = {
         "simulation_agents": num_agents,
-        "num_periods": np.random.randint(1, 4),
+        "n_periods": np.random.randint(1, 4),
         "sectors": {
             "edu": {"start": [7], "max": 15, "share": [1.0], "has_experience": True}
         },
@@ -30,7 +30,7 @@ def test_simulation_and_estimation_with_different_models():
 
 def test_invariant_results_for_two_estimations():
     num_agents = np.random.randint(5, 100)
-    constr = {"simulation_agents": num_agents, "num_periods": np.random.randint(1, 4)}
+    constr = {"simulation_agents": num_agents, "n_periods": np.random.randint(1, 4)}
 
     # Simulate a dataset.
     params, options = generate_random_model(point_constr=constr)
@@ -57,7 +57,7 @@ def test_invariance_to_initial_conditions():
     num_agents = np.random.randint(5, 100)
     constr = {
         "simulation_agents": num_agents,
-        "num_periods": np.random.randint(1, 4),
+        "n_periods": np.random.randint(1, 4),
         "sectors": {
             "edu": {"max": np.random.randint(15, 25, size=1)[0], "has_experience": True}
         },

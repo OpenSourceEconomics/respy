@@ -4,30 +4,27 @@ import numpy as np
 import pandas as pd
 
 from respy.config import HUGE_FLOAT
-from respy.pre_processing.model_processing import process_options
-from respy.pre_processing.model_processing import process_params
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_base_draws
 
 
 class StateSpace:
-    """Class containing all objects related to the state space of a discrete choice
-    dynamic programming model.
+    """The state space of a discrete choice dynamic programming model.
 
     Parameters
     ----------
-    attr : dict
-        Dictionary containing model attributes.
-    optim_paras : dict
-        Dictionary containing parameters affected by optimization.
+    params : pd.Series or pd.DataFrame
+        Contains parameters affected by optimization.
+    options : dict
+        Dictionary containing optimization independent model options.
 
     Attributes
     ----------
     states : np.ndarray
         Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
-        choice_lagged and type information.
+        lagged_choice and type information.
     indexer : np.ndarray
-        Array with shape (num_periods, num_periods, num_periods, edu_max, n_choices,
-        num_types).
+        Array with shape (n_periods, n_periods, n_periods, edu_max, n_choices, n_types).
     covariates : np.ndarray
         Array with shape (num_states, 16) containing covariates of each state necessary
         to calculate rewards.
@@ -36,40 +33,29 @@ class StateSpace:
         for choices without wages.
     nonpec : np.ndarray
         Array with shape (n_states_in_period, n_choices).
-    emaxs : np.ndarray
-        Array with shape (num_states, 5) containing containing the emax of each choice
-        (OCCUPATION A, OCCUPATION B, SCHOOL, HOME) of the subsequent period and the
-        simulated or interpolated maximum of the current period.
-    num_periods : int
-        Number of periods.
-    num_types : int
-        Number of types.
-    states_columns : list
-        List of column names in ``self.states``.
-    wages_columns : list
-        List of column names in ``self.wages``
-    nonpec_columns : list
-        List of column names in ``self.nonpec``
-    emaxs_columns : list
-        List of column names in ``self.continuation_values``.
+    continuation_values : np.ndarray
+        Array with shape (n_states, n_choices + 3) containing containing the emax of
+        each choice of the subsequent period and the simulated or interpolated maximum
+        of the current period.
+    emax_value_functions : np.ndarray
+        Array with shape (n_states, 1) containing the expected maximum of
+        choice-specific value functions.
 
     """
 
     def __init__(self, params, options):
-        params, optim_paras = process_params(params)
-        options = process_options(options)
+        params, optim_paras, options = process_params_and_options(params, options)
 
         # Add some arguments to the state space.
-        self.num_periods = options["num_periods"]
-        self.num_types = optim_paras["num_types"]
+        n_periods = options["n_periods"]
+        n_types = options["n_types"]
         self.seed = options["solution_seed"]
 
         self.base_draws_sol = create_base_draws(
-            (self.num_periods, options["solution_draws"], len(options["sectors"])),
-            self.seed,
+            (n_periods, options["solution_draws"], len(options["sectors"])), self.seed
         )
 
-        states_df, self.indexer = _create_state_space(options, self.num_types)
+        states_df, self.indexer = _create_state_space(options, n_types)
 
         _states_df = states_df.copy()
         _states_df.lagged_choice = _states_df.lagged_choice.cat.codes
@@ -87,7 +73,7 @@ class StateSpace:
 
         self.is_inadmissible = _create_is_inadmissible_indicator(states_df, options)
 
-        self._create_slices_by_periods()
+        self._create_slices_by_periods(n_periods)
 
     @property
     def states_per_period(self):
@@ -136,7 +122,7 @@ class StateSpace:
 
         return attribute[indices]
 
-    def _create_slices_by_periods(self):
+    def _create_slices_by_periods(self, n_periods):
         """Create slices to index all attributes in a given period.
 
         It is important that the returned objects are not fancy indices. Fancy indexing
@@ -144,7 +130,7 @@ class StateSpace:
 
         """
         self.slices_by_periods = []
-        for i in range(self.num_periods):
+        for i in range(n_periods):
             idx_start, idx_end = np.where(self.states[:, 0] == i)[0][[0, -1]]
             self.slices_by_periods.append(slice(idx_start, idx_end + 1))
 
@@ -195,7 +181,7 @@ def _create_core_state_space(options, n_types):
     additional_exp = options["maximum_exp"] - minimal_initial_experience
 
     data = []
-    for period in range(options["num_periods"]):
+    for period in range(options["n_periods"]):
         data += list(
             _create_core_state_space_per_period(
                 period, additional_exp, n_types, options
@@ -304,7 +290,7 @@ def _create_indexer(df, n_types, options):
     n_nonexp_choices = len(options["choices_wo_exp"])
 
     shape = (
-        (options["num_periods"],)
+        (options["n_periods"],)
         + tuple(options["maximum_exp"] + 1)
         + (n_exp_choices + n_nonexp_choices, n_types)
     )

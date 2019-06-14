@@ -12,7 +12,7 @@ from respy.simulate import simulate
 
 
 def generate_random_model(
-    point_constr=None, bound_constr=None, num_types=None, myopic=False
+    point_constr=None, bound_constr=None, n_types=None, myopic=False
 ):
     """Generate a random model specification.
 
@@ -24,7 +24,7 @@ def generate_random_model(
     bound_constr : dict
         Upper bounds for some options to keep computation time reasonable. Can have the
         keys ["max_types", "max_periods", "max_edu_start", "max_agents", "max_draws"]
-    num_types : int
+    n_types : int
         fix number of unobserved types.
     file_path : str
         save path for the output. The extensions .csv and .json are appended
@@ -44,10 +44,10 @@ def generate_random_model(
 
     bound_constr = _consolidate_bound_constraints(bound_constr)
 
-    if num_types is None:
-        num_types = np.random.randint(1, bound_constr["max_types"] + 1)
+    if n_types is None:
+        n_types = np.random.randint(1, bound_constr["max_types"] + 1)
 
-    params = csv_template(num_types=num_types, initialize_coeffs=False)
+    params = csv_template(n_types=n_types, initialize_coeffs=False)
     params["para"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
     params.loc["delta", "para"] = 1 - np.random.uniform() if myopic is False else 0.0
@@ -70,7 +70,7 @@ def generate_random_model(
     options["simulation_agents"] = np.random.randint(3, bound_constr["max_agents"] + 1)
     options["simulation_seed"] = np.random.randint(1, 1000)
 
-    options["num_periods"] = np.random.randint(1, bound_constr["max_periods"])
+    options["n_periods"] = np.random.randint(1, bound_constr["max_periods"])
 
     options["sectors"] = {
         "a": {"has_experience": True, "has_wage": True},

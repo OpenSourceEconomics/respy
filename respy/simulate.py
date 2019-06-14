@@ -3,8 +3,7 @@ import pandas as pd
 from numba import guvectorize
 
 from respy.config import HUGE_FLOAT
-from respy.pre_processing.model_processing import process_options
-from respy.pre_processing.model_processing import process_params
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import _generate_column_labels_simulation
 from respy.shared import create_base_draws
@@ -27,14 +26,13 @@ def simulate(params, options):
         Dictionary containing model options.
 
     """
-    params, optim_paras = process_params(params)
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = StateSpace(params, options)
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     base_draws_sim = create_base_draws(
-        (options["num_periods"], options["simulation_agents"], len(options["choices"])),
+        (options["n_periods"], options["simulation_agents"], len(options["choices"])),
         options["simulation_seed"],
     )
 
@@ -80,15 +78,16 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     """
     n_choices = len(options["choices"])
+    n_periods = options["n_periods"]
     n_wages = len(options["choices_w_wage"])
 
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
     base_draws_sim_transformed = np.full(
-        (state_space.num_periods, options["simulation_agents"], n_choices), np.nan
+        (n_periods, options["simulation_agents"], n_choices), np.nan
     )
 
-    for period in range(state_space.num_periods):
+    for period in range(n_periods):
         base_draws_sim_transformed[period] = transform_disturbances(
             base_draws_sim[period], np.zeros(n_choices), optim_paras["shocks_cholesky"]
         )
@@ -107,7 +106,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     data = []
 
-    for period in range(state_space.num_periods):
+    for period in range(n_periods):
 
         # Get indices which connect states in the state space and simulated agents.
         ks = state_space.indexer[

@@ -5,8 +5,7 @@ from numba import njit
 from respy._numba import index_tuple_for_array
 from respy.config import EXAMPLE_MODELS
 from respy.pre_processing.model_checking import check_model_solution
-from respy.pre_processing.model_processing import process_options
-from respy.pre_processing.model_processing import process_params
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import get_example_model
 from respy.solve import get_continuation_values
 from respy.solve import solve
@@ -26,10 +25,9 @@ def test_check_solution(model_or_seed):
 
     state_space = solve(params, options)
 
-    params, optim_paras = process_params(params)
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
-    check_model_solution(options, optim_paras, state_space)
+    check_model_solution(options, state_space)
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
@@ -78,13 +76,13 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
         np.random.seed(model_or_seed)
         params, options = generate_random_model()
 
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = solve(params, options)
 
     indicator = np.zeros(state_space.num_states)
 
-    for period in range(state_space.num_periods - 1):
+    for period in range(options["n_periods"] - 1):
         states = state_space.get_attribute_from_period("states", period)
 
         indicator = traverse_forward(
@@ -110,7 +108,7 @@ def test_invariance_of_solution(model_or_seed):
         np.random.seed(model_or_seed)
         params, options = generate_random_model()
 
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = solve(params, options)
     state_space_ = solve(params, options)
@@ -136,7 +134,7 @@ def test_get_continuation_values(model_or_seed):
         np.random.seed(model_or_seed)
         params, options = generate_random_model()
 
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = StateSpace(params, options)
 
@@ -149,7 +147,7 @@ def test_get_continuation_values(model_or_seed):
         np.ones(state_space.states_per_period[-1]),
     ]
 
-    for period in reversed(range(state_space.num_periods - 1)):
+    for period in reversed(range(options["n_periods"] - 1)):
         states = state_space.get_attribute_from_period("states", period)
         state_space.continuation_values = get_continuation_values(
             states,
@@ -173,12 +171,11 @@ def test_state_space_vs_old_implementation(model_or_seed):
         np.random.seed(model_or_seed)
         params, options = generate_random_model()
 
-    params, optim_paras = process_params(params)
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     # Create old state space arguments.
-    n_periods = options["num_periods"]
-    n_types = optim_paras["num_types"]
+    n_periods = options["n_periods"]
+    n_types = options["n_types"]
     edu_max = options["sectors"]["edu"]["max"]
     edu_starts = options["sectors"]["edu"]["start"]
 

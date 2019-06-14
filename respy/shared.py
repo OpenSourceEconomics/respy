@@ -1,12 +1,12 @@
 import numpy as np
+import pandas as pd
+import yaml
 from numba import njit
 
 from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import TEST_RESOURCES_DIR
-from respy.pre_processing.model_processing import process_options
-from respy.pre_processing.model_processing import process_params
 
 
 @njit
@@ -66,7 +66,7 @@ def create_base_draws(shape, seed):
     Returns
     -------
     draws : np.array
-        Draws with shape (num_periods, num_draws)
+        Draws with shape (n_periods, num_draws)
 
     """
     # Control randomness by setting seed value
@@ -94,8 +94,8 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
 def get_example_model(model):
     assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
 
-    options = process_options(TEST_RESOURCES_DIR / f"{model}.yaml")
-    params, _ = process_params(TEST_RESOURCES_DIR / f"{model}.csv")
+    options = yaml.safe_load((TEST_RESOURCES_DIR / f"{model}.yaml").read_text())
+    params = pd.read_csv(TEST_RESOURCES_DIR / f"{model}.csv")
 
     return params, options
 

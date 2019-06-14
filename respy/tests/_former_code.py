@@ -3,7 +3,7 @@ from numba import njit
 
 
 @njit
-def create_state_space(num_periods, num_types, edu_starts, edu_max):
+def create_state_space(n_periods, n_types, edu_starts, edu_max):
     """Create the state space.
 
     The state space consists of all admissible combinations of the following elements:
@@ -26,9 +26,9 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
 
     Parameters
     ----------
-    num_periods : int
+    n_periods : int
         Number of periods in the state space.
-    num_types : int
+    n_types : int
         Number of types of agents.
     edu_starts : List[int]
         Contains levels of initial education.
@@ -47,11 +47,11 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
 
     Examples
     --------
-    >>> num_periods = 40
-    >>> num_types = 1
+    >>> n_periods = 40
+    >>> n_types = 1
     >>> edu_starts, edu_max = [10], 20
     >>> states, indexer = create_state_space(
-    ...     num_periods, num_types, edu_starts, edu_max
+    ...     n_periods, n_types, edu_starts, edu_max
     ... )
     >>> states.shape
     (317367, 6)
@@ -61,17 +61,17 @@ def create_state_space(num_periods, num_types, edu_starts, edu_max):
     """
     data = []
 
-    shape = (num_periods, num_periods, num_periods, edu_max + 1, 4, num_types)
+    shape = (n_periods, n_periods, n_periods, edu_max + 1, 4, n_types)
     indexer = np.full(shape, -1, dtype=np.int32)
 
     # Initialize counter
     i = 0
 
     # Construct state space by periods
-    for period in range(num_periods):
+    for period in range(n_periods):
 
         # Loop over all unobserved types
-        for type_ in range(num_types):
+        for type_ in range(n_types):
 
             # Loop overall all initial levels of schooling
             for edu_start in edu_starts:
