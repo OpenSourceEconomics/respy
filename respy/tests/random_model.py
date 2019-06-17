@@ -90,7 +90,7 @@ def generate_random_model(
 
     options = {**DEFAULT_OPTIONS, **options}
 
-    options = _update_dict_w_dict(options, point_constr)
+    options = _update_nested_dictionary(options, point_constr)
 
     return params, options
 
@@ -164,10 +164,19 @@ def simulate_truncated_data(params, options, is_missings=True):
     return data_subset
 
 
-def _update_dict_w_dict(d, u):
-    for key, value in u.items():
+def _update_nested_dictionary(dict_, other):
+    """Update a nested dictionary with another dictionary.
+
+    The basic ``.update()`` method of dictionaries adds non-existing keys or replaces
+    existing keys which works fine for unnested dictionaries. For nested dictionaries,
+    levels under the current level are not updated but overwritten. This function
+    recursively loops over keys and values and inserts the value if it is not a
+    dictionary. If it is a dictionary, it applies the same process again.
+
+    """
+    for key, value in other.items():
         if isinstance(value, collections.Mapping):
-            d[key] = _update_dict_w_dict(d.get(key, {}), value)
+            dict_[key] = _update_nested_dictionary(dict_.get(key, {}), value)
         else:
-            d[key] = value
-    return d
+            dict_[key] = value
+    return dict_
