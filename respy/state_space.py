@@ -189,6 +189,14 @@ def _create_state_space(options, n_types):
       only duplicate the existing state space and can be taken into account in a later
       stage of the process.
 
+    See also
+    --------
+    _create_core_state_space
+    _create_core_state_space_per_period
+    _filter_core_state_space
+    _add_initial_experiences_to_core_state_space
+    _create_state_space_indexer
+
     """
     data = _create_core_state_space(options, n_types)
 
@@ -203,11 +211,13 @@ def _create_state_space(options, n_types):
         codes_to_choices
     )
 
-    df = _adjust_state_space_with_different_starting_experiences(df, options)
+    df = _filter_core_state_space(df, options)
+
+    df = _add_initial_experiences_to_core_state_space(df, options)
 
     df = df.sort_values("period").reset_index(drop=True)
 
-    indexer = _create_indexer(df, n_types, options)
+    indexer = _create_state_space_indexer(df, n_types, options)
 
     return df, indexer
 
@@ -218,7 +228,11 @@ def _create_core_state_space(options, n_types):
     The core state space abstracts from initial experiences and uses the maximum range
     between initial experiences and maximum experiences to cover the whole range. The
     combinations of initial experiences are applied later in
-    :ref:`_adjust_state_space_with_different_starting_experiences`.
+    :ref:`_add_initial_experiences_to_core_state_space`.
+
+    See also
+    --------
+    create_core_state_space_per_period
 
     """
     minimal_initial_experience = np.array(
@@ -274,43 +288,14 @@ def _create_core_state_space_per_period(
             )
 
 
-def _adjust_state_space_with_different_starting_experiences(df, options):
-    # Create combinations of starting values
-    initial_experiences_combinations = itertools.product(
-        *[options["sectors"][sec]["start"] for sec in options["choices_w_exp"]]
-    )
-
-    exp_cols = df.filter(like="exp_").columns.tolist()
-
-    container = []
-
-    for initial_exp in initial_experiences_combinations:
-        df_ = df.copy()
-
-        # Add initial experiences.
-        df_[exp_cols] += initial_exp
-
-        # Check that max_experience is still fulfilled.
-        df_ = df_.loc[
-            df_[exp_cols].le(options["maximum_exp"]).all(axis="columns")
-        ].copy()
-
-        df_ = _filter_state_space(df_, options)
-
-        container.append(df_)
-
-    df = pd.concat(container, axis="rows", sort=False).drop_duplicates()
-
-    return df
-
-
-def _filter_state_space(df, options):
+def _filter_core_state_space(df, options):
+    """Applies filters to the core state space."""
     col = "_restriction_{}"
 
-    # Restriction counter
+    # Restriction counter.
     counter = itertools.count()
 
-    for definition in options["state_space_filters"]:
+    for definition in options["core_state_space_filters"]:
 
         # If "{i}" is in definition, loop over choices with experiences.
         if "{i}" in definition:
@@ -331,7 +316,44 @@ def _filter_state_space(df, options):
     return df
 
 
-def _create_indexer(df, n_types, options):
+def _add_initial_experiences_to_core_state_space(df, options):
+    """Add initial experiences to core state space.
+
+    As the core state space abstracts from differences in initial experiences, this
+    function loops through all combinations from initial experiences and adds them to
+    existing experiences. After that, we need to check whether the maximum in
+    experiences is still binding.
+
+    """
+    # Create combinations of starting values
+    initial_experiences_combinations = itertools.product(
+        *[options["sectors"][sec]["start"] for sec in options["choices_w_exp"]]
+    )
+
+    exp_cols = df.filter(like="exp_").columns.tolist()
+
+    container = []
+
+    for initial_exp in initial_experiences_combinations:
+        df_ = df.copy()
+
+        # Add initial experiences.
+        df_[exp_cols] += initial_exp
+
+        # Check that max_experience is still fulfilled.
+        df_ = df_.loc[
+            df_[exp_cols].le(options["maximum_exp"]).all(axis="columns")
+        ].copy()
+
+        container.append(df_)
+
+    df = pd.concat(container, axis="rows", sort=False).drop_duplicates()
+
+    return df
+
+
+def _create_state_space_indexer(df, n_types, options):
+    """Create the indexer for the state space."""
     n_exp_choices = len(options["choices_w_exp"])
     n_nonexp_choices = len(options["choices_wo_exp"])
 

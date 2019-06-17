@@ -60,26 +60,36 @@ value in the parameter specification. The values are strings passed to ``pd.eval
 
 """
 
-BASE_STATE_SPACE_FILTERS = [
+BASE_CORE_STATE_SPACE_FILTERS = [
     # In period 0, agents cannot choose occupation a or b.
     "period == 0 and (lagged_choice == 'a' or lagged_choice == 'b')",
     # In periods > 0, if agents accumulated experience only in one sector, lagged choice
     # cannot be different.
-    "period > 0 and exp_{i} - exp_{i}.min() == period and lagged_choice != '{i}'",
+    "period > 0 and exp_{i} == period and lagged_choice != '{i}'",
     # In periods > 0, if agents always accumulated experience, lagged choice cannot be
     # non-experience sector.
-    "period > 0 and exp_a + exp_b + exp_edu - exp_a.min() - exp_b.min() "
-    "- exp_edu.min() == period and lagged_choice == '{j}'",
+    "period > 0 and exp_a + exp_b + exp_edu == period and lagged_choice == '{j}'",
     # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
     # be school.
-    "period > 0 and lagged_choice == 'edu' and exp_edu == exp_edu.min()",
+    "period > 0 and lagged_choice == 'edu' and exp_edu == 0",
     # If experience in sector 0 and 1 are zero, lagged choice cannot be this sector.
     "lagged_choice == 'a' and exp_a == 0",
     "lagged_choice == 'b' and exp_b == 0",
 ]
-"""list: Contains filters for the state space."""
+"""list: Contains filters for the state space.
 
-BASE_RESTRICTIONS = {"edu": "exp_edu == @max_exp_edu"}
+These formulas are applied to the core state space which abstracts from initial
+experiences and uses only the maximum range between initial experiences and maximum
+experiences.
+
+See also
+--------
+_filter_core_state_space : Filters the core state space.
+_create_core_state_space : Creates the core state space.
+
+"""
+
+BASE_INADMISSIBLE_STATES = {"edu": "exp_edu == @max_exp_edu"}
 
 DEFAULT_OPTIONS = {
     "sectors": {
@@ -98,8 +108,8 @@ DEFAULT_OPTIONS = {
     "solution_draws": 500,
     "solution_seed": 3,
     "covariates": BASE_COVARIATES,
-    "inadmissible_states": BASE_RESTRICTIONS,
-    "state_space_filters": BASE_STATE_SPACE_FILTERS,
+    "inadmissible_states": BASE_INADMISSIBLE_STATES,
+    "core_state_space_filters": BASE_CORE_STATE_SPACE_FILTERS,
 }
 
 EXAMPLE_MODELS = [
