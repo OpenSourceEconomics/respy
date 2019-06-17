@@ -138,12 +138,56 @@ class StateSpace:
 def _create_state_space(options, n_types):
     """Create the state space.
 
-    This process involves two steps. First, the core state space is created which
-    abstracts from different initial experiences and instead uses the minimum initial
-    experience per choice.
+    The state space of the model are all feasible combinations of the period,
+    experiences, lagged choices and types.
+
+    Creating the state space involves two steps. First, the core state space is created
+    which abstracts from levels of initial experiences and instead uses the minimum
+    initial experience per choice.
 
     Secondly, the state space is adjusted by all combinations of initial experiences and
     also filtered, excluding invalid states.
+
+    Notes
+    -----
+    Here are some details on the implementation.
+
+    - In the process of creating this function, we came up with several different ideas.
+      Basically, there two fringe cases to find all valid states in the state space.
+      First, all combinations of state attributes are created. Then, only valid states
+      are selected. The problem with this approach is that the state space is extremely
+      sparse. The number of combinations created by using ``itertools.product`` or
+      ``np.meshgrid`` is much higher than the number of valid states. Because of that,
+      we ran into memory or runtime problems which seemed unsolvable.
+
+      The second approach is more similar to the actual process were states are created
+      by incrementing experiences from period to period. In an extreme case, a function
+      mimics an agent in one period and recursively creates updates of itself in future
+      periods. Using this approach, we ran into the Python recursion limit and runtime
+      problems, but it might be feasible.
+
+      These two approaches build the frame for thinking about a solution to this problem
+      where filtering is, first, applied after creating a massive amount of candidate
+      states, or, secondly, before creating states. A practical solution must take into
+      account that some restrictions to the state space are more important than others
+      and should be applied earlier. Others can be delayed.
+
+      As a compromise, we built on the former approach in :ref:`create_state_space`
+      which loops over choices and possible experience values. Thus, it incorporates
+      some fundamental restrictions like time limits and needs less filtering.
+
+    - The former implementation, :ref:`create_state_space`, had four hard-coded choices
+      and a loop for every choice with experience accumulation. Thus, this function is
+      useless if the model requires additional or less choices. For each number of
+      choices with and without experience, a new function had to be programmed. The
+      following approach uses the same loops over choices with experiences, but they are
+      dynamically created by the recursive function
+      :ref:`_create_core_state_space_per_period`.
+
+    - There are characteristics of the state space which are independent from all other
+      state space attributes like types (and almost lagged choices). These attributes
+      only duplicate the existing state space and can be taken into account in a later
+      stage of the process.
 
     """
     data = _create_core_state_space(options, n_types)
@@ -172,7 +216,9 @@ def _create_core_state_space(options, n_types):
     """Create the core state space.
 
     The core state space abstracts from initial experiences and uses the maximum range
-    between initial experiences and maximum experiences.
+    between initial experiences and maximum experiences to cover the whole range. The
+    combinations of initial experiences are applied later in
+    :ref:`_adjust_state_space_with_different_starting_experiences`.
 
     """
     minimal_initial_experience = np.array(

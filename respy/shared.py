@@ -101,9 +101,11 @@ def get_example_model(model):
 
 
 def _generate_column_labels_estimation(options):
-    pre = ["Identifier", "Period", "Choice", "Wage"]
-    exp_labs = [f"Experience_{sec.title()}" for sec in options["choices_w_exp"]]
-    labels = pre + exp_labs + ["Lagged_Choice"]
+    labels = (
+        ["Identifier", "Period", "Choice", "Wage"]
+        + [f"Experience_{sec.title()}" for sec in options["choices_w_exp"]]
+        + ["Lagged_Choice"]
+    )
 
     dtypes = {}
     for label in labels:
@@ -119,12 +121,16 @@ def _generate_column_labels_estimation(options):
 
 def _generate_column_labels_simulation(options):
     est_lab, est_dtypes = _generate_column_labels_estimation(options)
-    nonpec = [f"Nonpecuniary_Reward_{sec.title()}" for sec in options["choices"]]
-    wage = [f"Wages_{sec.title()}" for sec in options["choices_w_wage"]]
-    fu = [f"Flow_Utility_{sec.title()}" for sec in options["choices"]]
-    vf = [f"Value_Function_{sec.title()}" for sec in options["choices"]]
-    shock = [f"Shock_Reward_{sec.title()}" for sec in options["choices"]]
-    labels = est_lab + ["Type"] + nonpec + wage + fu + vf + shock + ["Discount_Rate"]
+    labels = (
+        est_lab
+        + ["Type"]
+        + [f"Nonpecuniary_Reward_{sec.title()}" for sec in options["choices"]]
+        + [f"Wages_{sec.title()}" for sec in options["choices_w_wage"]]
+        + [f"Flow_Utility_{sec.title()}" for sec in options["choices"]]
+        + [f"Value_Function_{sec.title()}" for sec in options["choices"]]
+        + [f"Shock_Reward_{sec.title()}" for sec in options["choices"]]
+        + ["Discount_Rate"]
+    )
 
     dtypes = {col: (int if col == "Type" else float) for col in labels}
     dtypes = {**dtypes, **est_dtypes}

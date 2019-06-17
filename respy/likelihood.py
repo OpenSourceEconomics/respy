@@ -251,7 +251,9 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
     periods = df.Period.to_numpy()
     lagged_choices = df.Lagged_Choice.to_numpy()
     choices = df.Choice.to_numpy()
-    exps = tuple(df[col].to_numpy() for col in df.filter(like="Experience_").columns)
+    experiences = tuple(
+        df[col].to_numpy() for col in df.filter(like="Experience_").columns
+    )
     wages_observed = df["Wage"].to_numpy()
 
     # Get the number of observations for each individual and an array with indices of
@@ -259,7 +261,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
     # per agent which are important for type-specific probabilities.
     n_obs_per_indiv = np.bincount(df.Identifier.to_numpy())
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
-    indiv_initial_exp_edu = exps[2][idx_indiv_first_obs]
+    indiv_initial_exp_edu = df.Experience_Edu.to_numpy()[idx_indiv_first_obs]
 
     # Update type-specific probabilities conditional on whether the initial level of
     # education is greater than nine.
@@ -269,7 +271,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_obs, n_types).
-    ks = state_space.indexer[(periods,) + exps + (lagged_choices,)]
+    ks = state_space.indexer[(periods,) + experiences + (lagged_choices,)]
     n_obs, n_types = ks.shape
 
     wages_observed = wages_observed.repeat(n_types)

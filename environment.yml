@@ -9,7 +9,7 @@ dependencies:
   - pip=19.0.3
   - codecov
   - doc8
-  - estimagic>=0.0.5
+  - estimagic>=0.0.6
   - jupyterlab
   - matplotlib>=3.0.0
   - nbsphinx=0.4.2
