@@ -53,7 +53,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
         in ``state_space.continuation_values``.
 
     """
-    n_choices = len(options["sectors"])
+    n_choices = len(options["choices"])
     n_periods = options["n_periods"]
 
     state_space.continuation_values = np.zeros((state_space.num_states, n_choices))
@@ -358,8 +358,8 @@ def calculate_emax_value_functions(
     the current state.
 
     Note that ``wages`` have the same length as ``nonpec`` despite that wages are only
-    available in some sectors. Missing sectors are filled with ones. In the case of a
-    sector with wage and without wage, flow utilities are
+    available in some choices. Missing choices are filled with ones. In the case of a
+    choice with wage and without wage, flow utilities are
 
     .. math::
 

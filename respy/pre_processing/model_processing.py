@@ -36,12 +36,12 @@ def process_options(options, params, optim_paras):
         options[key] = options.get(key, DEFAULT_OPTIONS[key])
 
     options["n_types"] = optim_paras["type_shifts"].shape[0]
-    options["choices_w_exp"] = _infer_sectors_with_experience(params, options)
-    options["choices_w_wage"] = _infer_sectors_with_wage(params)
+    options["choices_w_exp"] = _infer_choices_with_experience(params, options)
+    options["choices_w_wage"] = _infer_choices_with_wage(params)
 
     options = _process_choices(options)
 
-    options = _process_sectors_w_experiences(options)
+    options = _process_choices_with_experience(options)
 
     options = _process_inadmissible_states(options)
 
@@ -85,26 +85,32 @@ def _read_options(input_):
     return options
 
 
-def _process_choices(o):
-    # Sectors can be separated in sectors with experience and wage, with experience but
+def _process_choices(options):
+    # Choices can be separated in choices with experience and wage, with experience but
     # without wage and without experience and wage. This distinction is used to create a
-    # unique ordering of sectors.
+    # unique ordering of choices. Within each group, we order alphabetically.
     choices_w_exp_wo_wage = sorted(
-        list(set(o["choices_w_exp"]) - set(o["choices_w_wage"]))
+        list(set(options["choices_w_exp"]) - set(options["choices_w_wage"]))
     )
-    choices_wo_exp_wo_wage = sorted(list(set(o["sectors"]) - set(o["choices_w_exp"])))
+    choices_wo_exp_wo_wage = sorted(
+        list(set(options["choices"]) - set(options["choices_w_exp"]))
+    )
 
-    o["choices"] = o["choices_w_wage"] + choices_w_exp_wo_wage + choices_wo_exp_wo_wage
-    o["choices_wo_exp"] = choices_wo_exp_wo_wage
-    o["choices_wo_wage"] = choices_w_exp_wo_wage + choices_wo_exp_wo_wage
+    options["choices_wo_exp"] = choices_wo_exp_wo_wage
+    options["choices_wo_wage"] = choices_w_exp_wo_wage + choices_wo_exp_wo_wage
 
-    return o
+    # We apply the aforementioned order to ``options["choices"]``. As dictionaries are
+    # insertion ordered since Python 3.6+, it is recreated.
+    order = options["choices_w_wage"] + choices_w_exp_wo_wage + choices_wo_exp_wo_wage
+    options["choices"] = {key: options["choices"][key] for key in order}
+
+    return options
 
 
-def _process_sectors_w_experiences(o):
+def _process_choices_with_experience(o):
     """Process initial experience distributions.
 
-    A sector might have information on the distribution of initial experiences which is
+    A choice might have information on the distribution of initial experiences which is
     used at the beginning of the simulation to determine the starting points of agents.
     This function makes the model invariant to the order or misspecified probabilities.
 
@@ -113,38 +119,40 @@ def _process_sectors_w_experiences(o):
     - ``"share"`` determines the share of each initial experience level in the starting
       population. Default is a uniform distribution over all initial experience levels.
     - ``"lagged"`` determines the share of the population with this initial experience
-      to have this sector as an initial lagged choice. Default is a probability of zero.
+      to have this choice as an initial lagged choice. Default is a probability of zero.
 
     """
-    sectors = o["sectors"]
-    for sec in o["choices_w_exp"]:
-        start = np.array(sectors[sec].get("start", [0]))
+    choices = o["choices"]
+    for choice in o["choices_w_exp"]:
+        start = np.array(choices[choice].get("start", [0]))
         ordered_indices = np.argsort(start)
-        n_init_val = ordered_indices.shape[0]
-        sectors[sec]["start"] = start[ordered_indices]
-        for key in ["share", "lagged"]:
+        n_edu_starts = start.shape[0]
+        choices[choice]["start"] = start[ordered_indices]
+        for key in ["lagged", "share"]:
             default = (
-                np.ones(n_init_val) / n_init_val
+                np.ones(n_edu_starts) / n_edu_starts
                 if key == "share"
-                else np.zeros(n_init_val)
+                else np.zeros(n_edu_starts)
             )
-            val = np.array(sectors[sec].get(key, default))[ordered_indices]
+            val = np.array(choices[choice].get(key, default))[ordered_indices]
             # Smooth probabilities so that the sum equals one.
-            sectors[sec][key] = val / val.sum() if key == "share" else val
+            choices[choice][key] = val / val.sum() if key == "share" else val
 
-        sectors[sec]["max"] = sectors[sec].get("max", o["n_periods"] - 1)
+        choices[choice]["max"] = choices[choice].get("max", o["n_periods"] - 1)
 
-    o["maximum_exp"] = np.array([sectors[sec]["max"] for sec in o["choices_w_exp"]])
+    o["maximum_exp"] = np.array(
+        [choices[choice]["max"] for choice in o["choices_w_exp"]]
+    )
 
     return o
 
 
 def _process_inadmissible_states(options):
-    for sector in options["choices"]:
-        if sector in options["inadmissible_states"]:
+    for choice in options["choices"]:
+        if choice in options["inadmissible_states"]:
             pass
         else:
-            options["inadmissible_states"][sector] = "False"
+            options["inadmissible_states"][choice] = "False"
 
     return options
 
@@ -205,7 +213,7 @@ def save_options(options, path):
         yaml.dump(options, file)
 
 
-def _infer_sectors_with_experience(params, options):
+def _infer_choices_with_experience(params, options):
     covariates = options["covariates"]
     parameters = params.index.get_level_values(1)
 
@@ -218,7 +226,7 @@ def _infer_sectors_with_experience(params, options):
     return sorted(list(set(matches)))
 
 
-def _infer_sectors_with_wage(params):
+def _infer_choices_with_wage(params):
     return sorted(
         i[5:] for i in params.index.get_level_values(0).unique() if "wage_" in i
     )

@@ -52,7 +52,7 @@ class StateSpace:
         self.seed = options["solution_seed"]
 
         self.base_draws_sol = create_base_draws(
-            (n_periods, options["solution_draws"], len(options["sectors"])), self.seed
+            (n_periods, options["solution_draws"], len(options["choices"])), self.seed
         )
 
         states_df, self.indexer = _create_state_space(options, n_types)
@@ -200,13 +200,13 @@ def _create_state_space(options, n_types):
     """
     data = _create_core_state_space(options, n_types)
 
-    exp_cols = [f"exp_{sector}" for sector in options["choices_w_exp"]]
+    exp_cols = [f"exp_{choice}" for choice in options["choices_w_exp"]]
 
     df = pd.DataFrame.from_records(
         data, columns=["period"] + exp_cols + ["lagged_choice", "type"]
     )
 
-    codes_to_choices = {i: sec for i, sec in enumerate(options["choices"])}
+    codes_to_choices = {i: choice for i, choice in enumerate(options["choices"])}
     df.lagged_choice = df.lagged_choice.astype("category").cat.rename_categories(
         codes_to_choices
     )
@@ -236,7 +236,10 @@ def _create_core_state_space(options, n_types):
 
     """
     minimal_initial_experience = np.array(
-        [np.min(options["sectors"][sec]["start"]) for sec in options["choices_w_exp"]]
+        [
+            np.min(options["choices"][choice]["start"])
+            for choice in options["choices_w_exp"]
+        ]
     )
     additional_exp = options["maximum_exp"] - minimal_initial_experience
 
@@ -327,7 +330,7 @@ def _add_initial_experiences_to_core_state_space(df, options):
     """
     # Create combinations of starting values
     initial_experiences_combinations = itertools.product(
-        *[options["sectors"][sec]["start"] for sec in options["choices_w_exp"]]
+        *[options["choices"][choice]["start"] for choice in options["choices_w_exp"]]
     )
 
     exp_cols = df.filter(like="exp_").columns.tolist()
@@ -392,12 +395,12 @@ def _create_reward_components(types, covariates, optim_paras, options):
         Contains parameters affected by the optimization.
 
     """
-    wage_labels = [f"wage_{sec}" for sec in options["choices_w_wage"]]
+    wage_labels = [f"wage_{choice}" for choice in options["choices_w_wage"]]
     log_wages = np.column_stack(
         [np.dot(covariates[w], optim_paras[w]) for w in wage_labels]
     )
 
-    nonpec_labels = [f"nonpec_{sec}" for sec in options["sectors"]]
+    nonpec_labels = [f"nonpec_{choice}" for choice in options["choices"]]
     nonpec = np.column_stack(
         [np.dot(covariates[n], optim_paras[n]) for n in nonpec_labels]
     )
@@ -440,7 +443,7 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
 
     covariates = {}
 
-    for choice in options["sectors"]:
+    for choice in options["choices"]:
         if f"wage_{choice}" in params.index:
             wage_columns = params.loc[f"wage_{choice}"].index
             covariates[f"wage_{choice}"] = all_data[wage_columns].to_numpy()
@@ -482,10 +485,10 @@ def _create_base_covariates(states, covariates_spec):
 
 
 def _create_is_inadmissible_indicator(states, options):
-    # Make maximum experience for each sector available as local variable.
+    # Make maximum experience for each choice available as local variable.
     locals_ = {
-        f"max_exp_{sec}": options["sectors"][sec]["max"]
-        for sec in options["choices_w_exp"]
+        f"max_exp_{choice}": options["choices"][choice]["max"]
+        for choice in options["choices_w_exp"]
     }
 
     df = states.copy()

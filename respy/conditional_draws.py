@@ -29,7 +29,7 @@ def create_draws_and_prob_wages(
         Array with shape (n_obs * n_types,) containing observed log wages.
     wages_systematic : np.ndarray
         Array with shape (n_obs * n_types, n_choices) containing systematic wages. Can
-        contain np.nan or any number for non-wage sectors. The non wage sectors only
+        contain np.nan or any number for non-wage choices. The non-wage choices only
         have to be there to not raise index errors.
     base_draws : np.ndarray
         Array with shape (n_draws, n_choices) with standard normal random variables.

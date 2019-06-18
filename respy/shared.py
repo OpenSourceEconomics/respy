@@ -103,7 +103,7 @@ def get_example_model(model):
 def _generate_column_labels_estimation(options):
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
-        + [f"Experience_{sec.title()}" for sec in options["choices_w_exp"]]
+        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
         + ["Lagged_Choice"]
     )
 
@@ -124,11 +124,11 @@ def _generate_column_labels_simulation(options):
     labels = (
         est_lab
         + ["Type"]
-        + [f"Nonpecuniary_Reward_{sec.title()}" for sec in options["choices"]]
-        + [f"Wages_{sec.title()}" for sec in options["choices_w_wage"]]
-        + [f"Flow_Utility_{sec.title()}" for sec in options["choices"]]
-        + [f"Value_Function_{sec.title()}" for sec in options["choices"]]
-        + [f"Shock_Reward_{sec.title()}" for sec in options["choices"]]
+        + [f"Nonpecuniary_Reward_{choice.title()}" for choice in options["choices"]]
+        + [f"Wages_{choice.title()}" for choice in options["choices_w_wage"]]
+        + [f"Flow_Utility_{choice.title()}" for choice in options["choices"]]
+        + [f"Value_Function_{choice.title()}" for choice in options["choices"]]
+        + [f"Shock_Reward_{choice.title()}" for choice in options["choices"]]
         + ["Discount_Rate"]
     )
 

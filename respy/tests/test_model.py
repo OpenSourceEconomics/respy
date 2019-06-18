@@ -63,7 +63,7 @@ def test_yaml_for_options(model_or_seed):
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
-def test_invariance_to_order_of_initial_schooling_leves(model_or_seed):
+def test_invariance_to_order_of_initial_schooling_levels(model_or_seed):
     bound_constr = {"max_edu_start": 10}
 
     if isinstance(model_or_seed, str):
@@ -73,16 +73,40 @@ def test_invariance_to_order_of_initial_schooling_leves(model_or_seed):
         params, options = generate_random_model(bound_constr=bound_constr)
 
     shuffled_options = options.copy()
-    n_init_levels = len(options["sectors"]["edu"]["start"])
+    n_init_levels = len(options["choices"]["edu"]["start"])
 
     shuffled_order = np.random.choice(n_init_levels, size=n_init_levels, replace=False)
 
     for label in ["start", "lagged", "share"]:
-        shuffled_options["sectors"]["edu"][label] = np.array(
-            shuffled_options["sectors"]["edu"].pop(label)
+        shuffled_options["choices"]["edu"][label] = np.array(
+            shuffled_options["choices"]["edu"].pop(label)
         )[shuffled_order]
 
     _, _, options = process_params_and_options(params, options)
     _, _, shuffled_options = process_params_and_options(params, options)
 
     assert options == shuffled_options
+
+
+@pytest.mark.wip
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+def test_invariance_to_order_of_choices(model_or_seed):
+    if isinstance(model_or_seed, str):
+        params, options = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params, options = generate_random_model()
+
+    shuffled_choices = list(options["choices"].keys())
+    np.random.shuffle(shuffled_choices)
+
+    shuffled_options = options.copy()
+    shuffled_options["choices"] = {
+        choice: shuffled_options["choices"].get(choice, {})
+        for choice in shuffled_choices
+    }
+
+    _, _, options = process_params_and_options(params, options)
+    _, _, shuffled_options = process_params_and_options(params, shuffled_options)
+
+    assert list(options["choices"]) == list(shuffled_options["choices"])

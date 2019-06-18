@@ -18,7 +18,7 @@ def check_estimation_data(options, df):
 
     """
     df = df.copy()
-    sectors = options["sectors"]
+    choices = options["choices"]
 
     n_periods = options["n_periods"]
 
@@ -33,9 +33,11 @@ def check_estimation_data(options, df):
     # 4. Wage.
     assert df.Wage.fillna(1).gt(0).all()
 
-    for sec in options["choices_w_exp"]:
-        assert df[f"Experience_{sec.title()}"].ge(sectors[sec]["start"].min()).all()
-        assert df[f"Experience_{sec.title()}"].le(sectors[sec]["max"]).all()
+    for choice in options["choices_w_exp"]:
+        assert (
+            df[f"Experience_{choice.title()}"].ge(choices[choice]["start"].min()).all()
+        )
+        assert df[f"Experience_{choice.title()}"].le(choices[choice]["max"]).all()
 
     # 8. Lagged_Choice.
     assert df.Lagged_Choice.isin(options["choices"]).all()
@@ -109,7 +111,7 @@ def check_simulated_data(options, df):
     # Distribute class attributes
     n_periods = options["n_periods"]
     n_types = options["n_types"]
-    edu_max = options["sectors"]["edu"]["max"]  # noqa: F841
+    edu_max = options["choices"]["edu"]["max"]  # noqa: F841
 
     # Run all tests available for the estimation data.
     check_estimation_data(options, df)

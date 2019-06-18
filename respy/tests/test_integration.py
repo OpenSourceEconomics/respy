@@ -12,7 +12,7 @@ def test_simulation_and_estimation_with_different_models():
     constr = {
         "simulation_agents": num_agents,
         "n_periods": np.random.randint(1, 4),
-        "sectors": {
+        "choices": {
             "edu": {"start": [7], "max": 15, "share": [1.0], "has_experience": True}
         },
     }

@@ -220,8 +220,8 @@ def _get_random_initial_experience(choice, options):
     np.random.seed(options["simulation_seed"])
 
     initial_experience = np.random.choice(
-        options["sectors"][choice]["start"],
-        p=options["sectors"][choice]["share"],
+        options["choices"][choice]["start"],
+        p=options["choices"][choice]["share"],
         size=options["simulation_agents"],
     )
 
@@ -232,14 +232,17 @@ def _get_random_lagged_choices(edu_start, options):
     """Get random, initial levels of lagged choices for simulated agents."""
     np.random.seed(options["simulation_seed"])
 
-    choices = [options["choices"].index("edu"), options["choices"].index("home")]
+    choices = [
+        list(options["choices"]).index("edu"),
+        list(options["choices"]).index("home"),
+    ]
 
     lagged_start = []
     for i in range(options["simulation_agents"]):
-        idx = np.where(options["sectors"]["edu"]["start"] == edu_start[i])[0][0]
+        idx = np.where(options["choices"]["edu"]["start"] == edu_start[i])[0][0]
         probs = (
-            options["sectors"]["edu"]["lagged"][idx],
-            1 - options["sectors"]["edu"]["lagged"][idx],
+            options["choices"]["edu"]["lagged"][idx],
+            1 - options["choices"]["edu"]["lagged"][idx],
         )
         lagged_start += np.random.choice(choices, p=probs, size=1).tolist()
 
@@ -322,13 +325,13 @@ def _process_simulated_data(data, options):
         .reset_index(drop=True)
     )
 
-    code_to_sector = {i: sec for i, sec in enumerate(options["choices"])}
+    code_to_choice = {i: choice for i, choice in enumerate(options["choices"])}
 
-    df.Choice = df.Choice.cat.set_categories(code_to_sector).cat.rename_categories(
-        code_to_sector
+    df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
+        code_to_choice
     )
     df.Lagged_Choice = df.Lagged_Choice.cat.set_categories(
-        code_to_sector
-    ).cat.rename_categories(code_to_sector)
+        code_to_choice
+    ).cat.rename_categories(code_to_choice)
 
     return df

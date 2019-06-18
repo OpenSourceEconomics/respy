@@ -66,17 +66,17 @@ def generate_random_model(
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
         "simulation_seed": np.random.randint(1, 1000),
         "n_periods": np.random.randint(1, bound_constr["max_periods"]),
-        "sectors": {"a": {}, "b": {}, "edu": {}, "home": {}},
+        "choices": {"a": {}, "b": {}, "edu": {}, "home": {}},
     }
 
     n_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
-    options["sectors"]["edu"]["start"] = np.random.choice(
+    options["choices"]["edu"]["start"] = np.random.choice(
         np.arange(1, 15), size=n_edu_start, replace=False
     ).tolist()
-    options["sectors"]["edu"]["lagged"] = np.random.uniform(size=n_edu_start)
-    options["sectors"]["edu"]["share"] = get_valid_shares(n_edu_start)
-    options["sectors"]["edu"]["max"] = np.random.randint(
-        max(options["sectors"]["edu"]["start"]) + 1, 30
+    options["choices"]["edu"]["lagged"] = np.random.uniform(size=n_edu_start)
+    options["choices"]["edu"]["share"] = get_valid_shares(n_edu_start)
+    options["choices"]["edu"]["max"] = np.random.randint(
+        max(options["choices"]["edu"]["start"]) + 1, 30
     )
 
     options["solution_draws"] = np.random.randint(1, bound_constr["max_draws"])

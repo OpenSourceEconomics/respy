@@ -4,17 +4,17 @@ import pandas as pd
 
 def _validate_options(o):
     # Choices with experience.
-    sectors = o["sectors"]
-    for sec in o["choices_w_exp"]:
-        assert isinstance(sectors[sec]["lagged"], np.ndarray)
-        assert isinstance(sectors[sec]["share"], np.ndarray)
-        assert isinstance(sectors[sec]["start"], np.ndarray)
-        assert all(0 <= item <= 1 for item in sectors[sec]["lagged"])
-        assert all(0 <= item <= 1 for item in sectors[sec]["share"])
-        assert np.isclose(sectors[sec]["share"].sum(), 1)
-        assert all(_is_nonnegative_integer(i) for i in sectors[sec]["start"])
-        assert _is_nonnegative_integer(sectors[sec]["max"])
-        assert all(i <= sectors[sec]["max"] for i in sectors[sec]["start"])
+    choices = o["choices"]
+    for choice in o["choices_w_exp"]:
+        assert isinstance(choices[choice]["lagged"], np.ndarray)
+        assert isinstance(choices[choice]["share"], np.ndarray)
+        assert isinstance(choices[choice]["start"], np.ndarray)
+        assert all(0 <= item <= 1 for item in choices[choice]["lagged"])
+        assert all(0 <= item <= 1 for item in choices[choice]["share"])
+        assert np.isclose(choices[choice]["share"].sum(), 1)
+        assert all(_is_nonnegative_integer(i) for i in choices[choice]["start"])
+        assert _is_nonnegative_integer(choices[choice]["max"])
+        assert all(i <= choices[choice]["max"] for i in choices[choice]["start"])
 
     # Estimation.
     assert _is_positive_nonzero_integer(o["estimation_draws"])
@@ -46,8 +46,8 @@ def _validate_options(o):
         for key, val in o["covariates"].items()
     )
 
-    # Every sector must have a restriction.
-    assert all(i in o["inadmissible_states"] for i in o["sectors"])
+    # Every choice must have a restriction.
+    assert all(i in o["inadmissible_states"] for i in o["choices"])
 
 
 def _is_positive_nonzero_integer(x):
@@ -60,10 +60,10 @@ def _is_nonnegative_integer(x):
 
 def check_model_solution(options, state_space):
     # Distribute class attributes
-    edu_start = options["sectors"]["edu"]["start"]
+    edu_start = options["choices"]["edu"]["start"]
     n_initial_exp_edu = len(edu_start)
     edu_start_max = max(edu_start)
-    edu_max = options["sectors"]["edu"]["max"]
+    edu_max = options["choices"]["edu"]["max"]
     n_periods = options["n_periods"]
     n_types = options["n_types"]
 
@@ -76,7 +76,7 @@ def check_model_solution(options, state_space):
         <= (state_space.states[:, 0] + edu_start_max)
     )
 
-    # Sector experience cannot exceed the time frame.
+    # Choice experience cannot exceed the time frame.
     assert np.all(state_space.states[:, 1] <= n_periods)
     assert np.all(state_space.states[:, 2] <= n_periods)
 

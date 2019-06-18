@@ -52,7 +52,7 @@ def get_crit_func(params, options, df):
 
     # Collect arguments for estimation.
     base_draws_est = create_base_draws(
-        (options["n_periods"], options["estimation_draws"], len(options["sectors"])),
+        (options["n_periods"], options["estimation_draws"], len(options["choices"])),
         options["estimation_seed"],
     )
 
@@ -325,7 +325,7 @@ def _process_estimation_data(df, options):
     # Recode choices to model codes. It is not possible to use ``.cat.codes`` because
     # the codes might be in a different order than for the model required which is
     # choices_w_exp_w_wag, choices_w_exp_wo_wage, choices_wo_exp_wo_wage.
-    choices_to_codes = {sec: i for i, sec in enumerate(options["choices"])}
+    choices_to_codes = {choice: i for i, choice in enumerate(options["choices"])}
     df.Choice = df.Choice.cat.rename_categories(choices_to_codes).astype(int)
     df.Lagged_Choice = df.Lagged_Choice.cat.rename_categories(choices_to_codes).astype(
         int

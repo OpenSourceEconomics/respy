@@ -139,8 +139,8 @@ def test_get_continuation_values(model_or_seed):
     state_space = StateSpace(params, options)
 
     state_space.continuation_values = np.r_[
-        np.zeros((state_space.states_per_period[:-1].sum(), len(options["sectors"]))),
-        np.ones((state_space.states_per_period[-1], len(options["sectors"]))),
+        np.zeros((state_space.states_per_period[:-1].sum(), len(options["choices"]))),
+        np.ones((state_space.states_per_period[-1], len(options["choices"]))),
     ]
     state_space.emax_value_functions = np.r_[
         np.zeros(state_space.states_per_period[:-1].sum()),
@@ -175,8 +175,8 @@ def test_state_space_vs_old_implementation(model_or_seed):
     # Create old state space arguments.
     n_periods = options["n_periods"]
     n_types = options["n_types"]
-    edu_max = options["sectors"]["edu"]["max"]
-    edu_starts = options["sectors"]["edu"]["start"]
+    edu_max = options["choices"]["edu"]["max"]
+    edu_starts = options["choices"]["edu"]["start"]
 
     # Get states and indexer from old state space.
     states_old, indexer_old = create_state_space(
@@ -185,7 +185,7 @@ def test_state_space_vs_old_implementation(model_or_seed):
 
     states_new, indexer_new = _create_state_space(options, n_types)
     states_new.lagged_choice = states_new.lagged_choice.replace(
-        {sec: i for i, sec in enumerate(options["choices"])}
+        {choice: i for i, choice in enumerate(options["choices"])}
     )
 
     # Compare the state spaces via sets as ordering changed in some cases.
