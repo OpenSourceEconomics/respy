@@ -17,7 +17,13 @@ if: type != push OR tag IS present OR branch = master
 
 env:
     - PYTHON_VERSION=3.6
+      TEST=pytest
     - PYTHON_VERSION=3.7
+      TEST=pytest
+    - PYTHON_VERSION=3.6
+      TEST=linting
+    - PYTHON_VERSION=3.6
+      TEST=sphinx
 
 install:
     # Install and configure conda
@@ -34,7 +40,7 @@ install:
     - pip install tox-conda
 
 script:
-    - tox
+    - tox -e $TEST
 
 deploy:
     provider: pypi
