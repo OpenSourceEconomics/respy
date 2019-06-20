@@ -19,7 +19,6 @@ def array_to_tuple(tyctx, array, indexer_array):
         Array which should be converted to a tuple.
 
     """
-
     # This is the typing level. Setup the type and constant information here.
     tuple_size = array.ndim
     typed_tuple = types.UniTuple(dtype=types.intp, count=tuple_size)

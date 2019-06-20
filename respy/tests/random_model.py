@@ -6,6 +6,7 @@ from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
 from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
 
 from respy.config import DEFAULT_OPTIONS
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
 from respy.shared import _generate_column_labels_estimation
 from respy.simulate import simulate
@@ -131,6 +132,7 @@ def simulate_truncated_data(params, options, is_missings=True):
         agent = agent[agent["Period"] < start_truncation]
         return agent
 
+    _, _, options = process_params_and_options(params, options)
     state_space, df = simulate(params, options)
 
     np.random.seed(options["simulation_seed"])

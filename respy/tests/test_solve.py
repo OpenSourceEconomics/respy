@@ -80,7 +80,7 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
 
     state_space = solve(params, options)
 
-    indicator = np.zeros(state_space.num_states)
+    indicator = np.zeros(state_space.states.shape[0])
 
     for period in range(options["n_periods"] - 1):
         states = state_space.get_attribute_from_period("states", period)
@@ -90,7 +90,8 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
         )
 
     # Restrict indicator to states of the second period as the first is never indexed.
-    indicator = indicator[state_space.states_per_period[0] :]
+    n_states_first_period = state_space.get_attribute_from_period("states", 0).shape[0]
+    indicator = indicator[n_states_first_period:]
 
     assert (indicator == 1).all()
 
@@ -138,13 +139,17 @@ def test_get_continuation_values(model_or_seed):
 
     state_space = StateSpace(params, options)
 
+    n_states_last_period = state_space.get_attribute_from_period(
+        "states", options["n_periods"] - 1
+    ).shape[0]
+    n_states_but_last_period = state_space.states.shape[0] - n_states_last_period
+
     state_space.continuation_values = np.r_[
-        np.zeros((state_space.states_per_period[:-1].sum(), len(options["choices"]))),
-        np.ones((state_space.states_per_period[-1], len(options["choices"]))),
+        np.zeros((n_states_but_last_period, len(options["choices"]))),
+        np.ones((n_states_last_period, len(options["choices"]))),
     ]
     state_space.emax_value_functions = np.r_[
-        np.zeros(state_space.states_per_period[:-1].sum()),
-        np.ones(state_space.states_per_period[-1]),
+        np.zeros(n_states_but_last_period), np.ones(n_states_last_period)
     ]
 
     for period in reversed(range(options["n_periods"] - 1)):

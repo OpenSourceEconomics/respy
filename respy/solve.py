@@ -55,9 +55,10 @@ def solve_with_backward_induction(state_space, optim_paras, options):
     """
     n_choices = len(options["choices"])
     n_periods = options["n_periods"]
+    n_states = state_space.states.shape[0]
 
-    state_space.continuation_values = np.zeros((state_space.num_states, n_choices))
-    state_space.emax_value_functions = np.zeros(state_space.num_states)
+    state_space.continuation_values = np.zeros((n_states, n_choices))
+    state_space.emax_value_functions = np.zeros(n_states)
 
     # For myopic agents, utility of later periods does not play a role.
     if optim_paras["delta"] == 0:
@@ -75,17 +76,19 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             pass
 
         else:
-            states_period = state_space.get_attribute_from_period("states", period)
+            states_in_period = state_space.get_attribute_from_period("states", period)
 
             state_space.continuation_values = get_continuation_values(
-                states_period,
+                states_in_period,
                 state_space.indexer,
                 state_space.continuation_values,
                 state_space.emax_value_functions,
                 state_space.is_inadmissible,
             )
 
-        num_states = state_space.states_per_period[period]
+        n_states_in_period = state_space.get_attribute_from_period(
+            "states", period
+        ).shape[0]
 
         base_draws_sol_period = state_space.base_draws_sol[period]
         draws_emax_risk = transform_disturbances(
@@ -106,7 +109,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
         # periods the number of interpolation points is larger than the actual number of
         # states. In that case no interpolation is needed.
         any_interpolated = (
-            options["interpolation_points"] <= num_states
+            options["interpolation_points"] <= n_states_in_period
             and options["interpolation_points"] != -1
         )
 
@@ -124,7 +127,9 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             # is the base seed plus the number of the period. Thus, not interpolated
             # states are held constant for each periods and not across periods.
             not_interpolated = get_not_interpolated_indicator(
-                options["interpolation_points"], num_states, state_space.seed + period
+                options["interpolation_points"],
+                n_states_in_period,
+                state_space.seed + period,
             )
 
             # Constructing the exogenous variable for all states, including the ones

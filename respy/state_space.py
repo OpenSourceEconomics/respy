@@ -75,16 +75,6 @@ class StateSpace:
 
         self._create_slices_by_periods(n_periods)
 
-    @property
-    def states_per_period(self):
-        """Get a list of states per period starting from the first period."""
-        return np.array([len(range(i.start, i.stop)) for i in self.slices_by_periods])
-
-    @property
-    def num_states(self):
-        """Get the total number states in the state space."""
-        return self.states.shape[0]
-
     def update_systematic_rewards(self, optim_paras, options):
         self.wages, self.nonpec = _create_reward_components(
             self.states[:, -1], self.covariates, optim_paras, options
@@ -233,7 +223,7 @@ def _create_core_state_space(options, n_types):
 
     See also
     --------
-    create_core_state_space_per_period
+    _create_core_state_space_per_period
 
     """
     minimal_initial_experience = np.array(
@@ -355,6 +345,10 @@ def _add_initial_experiences_to_core_state_space(df, options):
         *[options["choices"][choice]["start"] for choice in options["choices_w_exp"]]
     )
 
+    maximum_exp = np.array(
+        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]]
+    )
+
     exp_cols = df.filter(like="exp_").columns.tolist()
 
     container = []
@@ -366,9 +360,7 @@ def _add_initial_experiences_to_core_state_space(df, options):
         df_[exp_cols] += initial_exp
 
         # Check that max_experience is still fulfilled.
-        df_ = df_.loc[
-            df_[exp_cols].le(options["maximum_exp"]).all(axis="columns")
-        ].copy()
+        df_ = df_.loc[df_[exp_cols].le(maximum_exp).all(axis="columns")].copy()
 
         container.append(df_)
 
@@ -381,10 +373,13 @@ def _create_state_space_indexer(df, n_types, options):
     """Create the indexer for the state space."""
     n_exp_choices = len(options["choices_w_exp"])
     n_nonexp_choices = len(options["choices_wo_exp"])
+    maximum_exp = np.array(
+        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]]
+    )
 
     shape = (
         (options["n_periods"],)
-        + tuple(options["maximum_exp"] + 1)
+        + tuple(maximum_exp + 1)
         + (n_exp_choices + n_nonexp_choices, n_types)
     )
     indexer = np.full(shape, -1)
@@ -409,7 +404,7 @@ def _create_reward_components(types, covariates, optim_paras, options):
 
     Parameters
     ----------
-    types : np.ndarray
+    types : numpy.ndarray
         Array with shape (n_states,) containing type information.
     covariates : dict
         Dictionary with covariate arrays for wage and nonpec rewards.
@@ -446,11 +441,11 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
 
     Parameters
     ----------
-    covariates_df : pd.DataFrame
+    covariates_df : pandas.DataFrame
         DataFrame with the basic covariates.
-    states_df : pd.DataFrame
+    states_df : pandas.DataFrame
         DataFrame with the state information.
-    params : pd.DataFrame or pd.Series
+    params : pandas.DataFrame or pandas.Series
         The parameter specification.
     options : dict
         Contains model options.
