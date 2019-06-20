@@ -7,14 +7,14 @@
 # the tarball.
 
 include CHANGES.rst
+include CITATION
+include Dockerfile
 include LICENSE
 include README.rst
+include tox.ini
 include *.sh
 include *.yaml
 include *.yml
-include CITATION
-include Dockerfile
-include tox.ini
 
 graft docs
 graft respy

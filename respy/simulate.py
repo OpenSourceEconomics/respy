@@ -20,7 +20,7 @@ def simulate(params, options):
 
     Parameters
     ----------
-    params : pd.DataFrame or pd.Series
+    params : pandas.DataFrame or pandas.Series
         DataFrame or Series containing parameters.
     options : dict
         Dictionary containing model options.
@@ -60,11 +60,11 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     Parameters
     ----------
-    state_space : class
+    state_space : :class:`~respy.state_space.StateSpace`
         Class of state space.
-    base_draws_sim : np.ndarray
+    base_draws_sim : numpy.ndarray
         Array with shape (n_periods, n_agents_sim, n_choices).
-    base_draws_wage : np.ndarray
+    base_draws_wage : numpy.ndarray
         Array with shape (n_periods, n_agents_sim, n_choices).
     optim_paras : dict
         Parameters affected by optimization.
@@ -73,7 +73,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     Returns
     -------
-    simulated_data : pd.DataFrame
+    simulated_data : pandas.DataFrame
         Dataset of simulated agents.
 
     """
@@ -276,25 +276,25 @@ def calculate_value_functions_and_flow_utilities(
 
     Parameters
     ----------
-    wages : np.ndarray
+    wages : numpy.ndarray
         Array with shape (n_choices,).
-    nonpec : np.ndarray
+    nonpec : numpy.ndarray
         Array with shape (n_choices,).
-    continuation_values : np.ndarray
+    continuation_values : numpy.ndarray
         Array with shape (n_choices,)
-    draws : np.ndarray
+    draws : numpy.ndarray
         Array with shape (n_draws, n_choices)
     delta : float
         Discount rate.
-    is_inadmissible: np.ndarray
+    is_inadmissible: numpy.ndarray
         Array with shape (n_choices,) containing indicator for whether the following
         state is inadmissible.
 
     Returns
     -------
-    value_functions : np.ndarray
+    value_functions : numpy.ndarray
         Array with shape (n_choices, n_draws).
-    flow_utilities : np.ndarray
+    flow_utilities : numpy.ndarray
         Array with shape (n_choices, n_draws)
 
     """

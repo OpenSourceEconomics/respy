@@ -60,11 +60,11 @@ Options specification
 ---------------------
 
 In addition to the model parameters, other model options are kept in another
-specification file in the ``json`` format.
+specification file in the ``yaml`` format.
 
-.. literalinclude:: ../../respy/tests/resources/kw_data_one_types_initial.json
-    :language: json
-    :name: kw_data_one_types_initial.json
+.. literalinclude:: ../../respy/tests/resources/kw_data_one_types_initial.yaml
+    :language: yaml
+    :name: kw_data_one_types_initial.yaml
 
 Covariates, state space filters and inadmissible states
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

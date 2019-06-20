@@ -19,7 +19,7 @@ def solve(params, options):
 
     Parameters
     ----------
-    params : pd.DataFrame
+    params : pandas.DataFrame
         DataFrame containing parameter series.
     options : dict
         Dictionary containing model attributes which are not optimized.
@@ -38,7 +38,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     Parameters
     ----------
-    state_space : class
+    state_space : :class:`StateSpace`
         State space object.
     optim_paras : dict
         Parameters affected by optimization.
@@ -47,7 +47,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     Returns
     -------
-    state_space : class
+    state_space : :class:`StateSpace`
         State space containing the emax of the subsequent period of each choice, columns
         0-3, as well as the maximum emax of the current period for each state, column 4,
         in ``state_space.continuation_values``.
@@ -179,7 +179,7 @@ def get_not_interpolated_indicator(interpolation_points, n_states, seed):
 
     Returns
     -------
-    not_interpolated : np.ndarray
+    not_interpolated : numpy.ndarray
         Array of shape (n_states,) indicating states which will not be interpolated.
 
     """
@@ -198,25 +198,25 @@ def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmis
 
     Parameters
     ----------
-    wages : np.ndarray
+    wages : numpy.ndarray
         Array with shape (n_states_in_period, n_wages).
-    nonpec : np.ndarray
+    nonpec : numpy.ndarray
         Array with shape (n_states_in_period, n_choices).
-    emaxs : np.ndarray
+    emaxs : numpy.ndarray
         Array with shape (n_states_in_period, n_choices).
-    draws : np.ndarray
+    draws : numpy.ndarray
         Array with shape (n_draws, n_choices).
     delta : float
         Discount factor.
-    is_inadmissible : np.ndarray
+    is_inadmissible : numpy.ndarray
         Array with shape (n_states_in_period,) containing an indicator for whether the
         state has reached maximum education.
 
     Returns
     -------
-    exogenous : np.ndarray
+    exogenous : numpy.ndarray
         Array with shape (n_states_in_period, n_choices * 2 + 1).
-    max_emax : np.ndarray
+    max_emax : numpy.ndarray
         Array with shape (n_states_in_period,) containing maximum over all value
         functions.
 
@@ -249,23 +249,23 @@ def calculate_endogenous_variables(
 
     Parameters
     ----------
-    wages : np.ndarray
+    wages : numpy.ndarray
         Array with shape (n_states_in_period, n_wages).
-    nonpec : np.ndarray
+    nonpec : numpy.ndarray
         Array with shape (n_states_in_period, n_choices).
-    continuation_values : np.ndarray
+    continuation_values : numpy.ndarray
         Array with shape (n_states_in_period, n_choices).
-    max_value_functions : np.ndarray
+    max_value_functions : numpy.ndarray
         Array with shape (n_states_in_period,) containing maximum over all value
         functions.
-    not_interpolated : np.ndarray
+    not_interpolated : numpy.ndarray
         Array with shape (n_states_in_period,) containing indicators for simulated
         continuation_values.
-    draws : np.ndarray
+    draws : numpy.ndarray
         Array with shape (n_draws, n_choices) containing draws.
     delta : float
         Discount factor.
-    is_inadmissible : np.ndarray
+    is_inadmissible : numpy.ndarray
         Array with shape (n_states_in_period,) containing an indicator for whether the
         state has reached maximum education.
 
@@ -292,16 +292,16 @@ def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated
 
     Parameters
     ----------
-    endogenous : np.ndarray
+    endogenous : numpy.ndarray
         Array with shape (num_simulated_states_in_period,) containing emax for states
         used to interpolate the rest.
-    exogenous : np.ndarray
+    exogenous : numpy.ndarray
         Array with shape (n_states_in_period, n_choices * 2 + 1) containing exogenous
         variables.
-    max_value_functions : np.ndarray
+    max_value_functions : numpy.ndarray
         Array with shape (n_states_in_period,) containing the maximum over all value
         functions.
-    not_interpolated : np.ndarray
+    not_interpolated : numpy.ndarray
         Array with shape (n_states_in_period,) containing indicator for states which
         are not interpolated and used to estimate the coefficients for the
         interpolation.
@@ -369,18 +369,18 @@ def calculate_emax_value_functions(
 
     Parameters
     ----------
-    wages : np.ndarray
+    wages : numpy.ndarray
         Array with shape (n_choices,) containing wages.
-    nonpec : np.ndarray
+    nonpec : numpy.ndarray
         Array with shape (n_choices,) containing non-pecuniary rewards.
-    continuation_values : np.ndarray
+    continuation_values : numpy.ndarray
         Array with shape (n_choices,) containing expected maximum utility for each
         choice in the subsequent period.
-    draws : np.ndarray
+    draws : numpy.ndarray
         Array with shape (n_draws, n_choices).
     delta : float
         The discount factor.
-    is_inadmissible: np.ndarray
+    is_inadmissible: numpy.ndarray
         Array with shape (n_choices,) containing indicator for whether the following
         state is inadmissible.
 
@@ -498,14 +498,14 @@ def ols(y, x):
 
     Parameters
     ----------
-    x : np.ndarray
+    x : numpy.ndarray
         n x n matrix of independent variables.
-    y : np.ndarray
+    y : numpy.ndarray
         n x 1 matrix with dependent variable.
 
     Returns
     -------
-    beta : np.ndarray
+    beta : numpy.ndarray
         n x 1 array of estimated parameter vector
 
     """
@@ -517,9 +517,9 @@ def mse(x1, x2, axis=0):
     """Calculate mean squared error.
 
     If ``x1`` and ``x2`` have different shapes, then they need to broadcast. This uses
-    ``np.asanyarray`` to convert the input. Whether this is the desired result or not
-    depends on the array subclass, for example NumPy matrices will silently produce an
-    incorrect result.
+    :func:`numpy.asanyarray` to convert the input. Whether this is the desired result or
+    not depends on the array subclass, for example NumPy matrices will silently
+    produce an incorrect result.
 
     Parameters
     ----------
@@ -530,7 +530,7 @@ def mse(x1, x2, axis=0):
 
     Returns
     -------
-    mse : ndarray or float
+    mse : numpy.ndarray or float
        Mean squared error along given axis.
 
     """
@@ -543,22 +543,21 @@ def rmse(x1, x2, axis=0):
     """Calculate root mean squared error.
 
     If ``x1`` and ``x2`` have different shapes, then they need to broadcast. This uses
-    ``np.asanyarray`` to convert the input. Whether this is the desired result or not
-    depends on the array subclass, for example NumPy matrices will silently produce an
-    incorrect result.
+    :func:`numpy.asanyarray` to convert the input. Whether this is the desired result or
+    not depends on the array subclass, for example NumPy matrices will silently
+    produce an incorrect result.
 
     Parameters
     ----------
     x1, x2 : array_like
-       The performance measure depends on the difference between these two
-       arrays.
+       The performance measure depends on the difference between these two arrays.
     axis : int
-       axis along which the summary statistic is calculated
+       Axis along which the summary statistic is calculated.
 
     Returns
     -------
-    rmse : np.ndarray or float
-       root mean squared error along given axis.
+    rmse : numpy.ndarray or float
+       Root mean squared error along given axis.
 
     """
     x1 = np.asanyarray(x1)

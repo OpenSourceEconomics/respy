@@ -13,31 +13,31 @@ class StateSpace:
 
     Parameters
     ----------
-    params : pd.Series or pd.DataFrame
+    params : pandas.Series or pandas.DataFrame
         Contains parameters affected by optimization.
     options : dict
         Dictionary containing optimization independent model options.
 
     Attributes
     ----------
-    states : np.ndarray
-        Array with shape (num_states, 6) containing period, exp_a, exp_b, edu,
+    states : numpy.ndarray
+        Array with shape (num_states, n_choices + 3) containing period, experiences,
         lagged_choice and type information.
-    indexer : np.ndarray
+    indexer : numpy.ndarray
         Array with shape (n_periods, n_periods, n_periods, edu_max, n_choices, n_types).
-    covariates : np.ndarray
-        Array with shape (num_states, 16) containing covariates of each state necessary
-        to calculate rewards.
-    wages : np.ndarray
+    covariates : numpy.ndarray
+        Array with shape (num_states, n_covariates) containing covariates of each state
+        necessary to calculate rewards.
+    wages : numpy.ndarray
         Array with shape (n_states_in_period, n_choices) which contains zeros in places
         for choices without wages.
-    nonpec : np.ndarray
+    nonpec : numpy.ndarray
         Array with shape (n_states_in_period, n_choices).
-    continuation_values : np.ndarray
+    continuation_values : numpy.ndarray
         Array with shape (n_states, n_choices + 3) containing containing the emax of
         each choice of the subsequent period and the simulated or interpolated maximum
         of the current period.
-    emax_value_functions : np.ndarray
+    emax_value_functions : numpy.ndarray
         Array with shape (n_states, 1) containing the expected maximum of
         choice-specific value functions.
 
@@ -96,7 +96,8 @@ class StateSpace:
         Parameters
         ----------
         attr : str
-            String of attribute name, e.g. ``"states"``.
+            String of attribute name, e.g. ``"states"`` to retrieve
+            :attr:`~respy.state_space.StateSpace.states`.
         period : int
             Attribute is retrieved from this period.
 
@@ -265,6 +266,23 @@ def _create_core_state_space_per_period(
     Secondly, if there exists a choice with experience in ``additional_exp[pos]``, loop
     over all admissible experiences, update the state and pass it to the same function,
     but moving to the next choice which accumulates experience.
+
+    Parameters
+    ----------
+    period : int
+        Number of period.
+    additional_exp : numpy.ndarray
+        Array with shape (n_choices_w_exp,) containing integers representing the
+        additional experience per choice which is admissible. This is the difference
+        between the maximum experience and minimum of initial experience per choice.
+    n_types : int
+        Number of types.
+    experiences : None or numpy.ndarray, default None
+        Array with shape (n_choices_w_exp,) which contains current experience of state.
+    pos : int, default 0
+        Index for current choice with experience. If index is valid for array
+        ``experiences``, then loop over all admissible experience levels of this choice.
+        Otherwise, ``experiences[pos]`` would lead to an :exc:`IndexError`.
 
     """
     experiences = experiences if experiences is not None else [0] * len(additional_exp)
@@ -462,7 +480,7 @@ def _create_base_covariates(states, covariates_spec):
 
     Parameters
     ----------
-    states : pd.DataFrame
+    states : pandas.DataFrame
         DataFrame with shape (n_states, n_choices_w_exp + 3) containing period,
         experiences, choice_lagged and type of each state.
     covariates_spec : dict
@@ -470,7 +488,7 @@ def _create_base_covariates(states, covariates_spec):
 
     Returns
     -------
-    covariates : pd.DataFrame
+    covariates : pandas.DataFrame
         DataFrame with shape (n_states, n_covariates).
 
     """

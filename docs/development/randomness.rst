@@ -9,39 +9,36 @@ documented.
 likelihood
 ----------
 
-Routines under :mod:`likelihood` use the seed specified in the ``options_spec`` under
-``{"estimation": {"seed"}}`` to control randomness. In ``respy`` it is called
-``attr["seed_est"]`` or abbreviated with ``seed`` if no ambiguity exist. It is used to
-create the draws to simulate the probability of observed wages.
+Routines under :mod:`respy.likelihood` use the seed specified under
+``options["estimation_seed"]`` to control randomness. It is used to create the draws to
+simulate the probability of observed wages.
 
 shared
 ------
 
-The function :func:`create_multivariate_standard_normal_draws` is used in all parts,
-solution, simulation, and estimation, to generate random draws.
+The function :func:`respy.shared.create_base_draws` is used in all parts, solution,
+simulation, and estimation, to generate random draws.
 
-.. autofunction:: respy.shared.create_multivariate_standard_normal_draws
+.. autofunction:: respy.shared.create_base_draws
 
 solve
 -----
 
-Routines under :mod:`solve` use the seed specified in the ``options_spec`` under
-``{"solution": {"seed"}}`` to control randomness. In ``respy`` it is called
-``attr["seed_sol"]`` or abbreviated with ``seed`` if no ambiguity exist. Apart from the
-draws, :func:`solve` relies on the following function.
+Routines under :mod:`respy.solve` use the seed specified in the
+``options["solution_seed"]`` to control randomness. Apart from the draws,
+:func:`respy.solve.solve` relies on the following function.
 
 .. autofunction:: respy.solve.get_not_interpolated_indicator
 
 simulate
 --------
 
-Routines under :mod:`simulate` use the seed specified in the ``options_spec`` under
-``{"simulation": {"seed"}}`` to control randomness. In ``respy`` it is called
-``attr["seed_sim"]`` or abbreviated with ``seed`` if no ambiguity exist.Apart from the
-draws, :func:`simulate` relies on the following three functions to generate starting
-values for simulated agents.
+Routines under :mod:`respy.simulate` use the seed specified in the
+``options["simulation_seed"]`` to control randomness. Apart from the draws,
+:func:`respy.simulate.simulate` relies on the following three functions to generate
+starting values for simulated agents.
 
-.. autofunction:: respy.simulate._get_random_edu_start
+.. autofunction:: respy.simulate._get_random_initial_experience
 
 .. autofunction:: respy.simulate._get_random_types
 

@@ -24,16 +24,16 @@ def get_crit_func(params, options, df):
 
     Parameters
     ----------
-    params : pd.DataFrame
+    params : pandas.DataFrame
         DataFrame containing model parameters.
     options : dict
         Dictionary containing model options.
-    df : pd.DataFrame
+    df : pandas.DataFrame
         The model is fit to this dataset.
 
     Returns
     -------
-    criterion_function : func
+    criterion_function : :func:`log_like`
         Criterion function where all arguments except the parameter vector are set.
 
     Raises
@@ -73,13 +73,13 @@ def log_like(params, data, base_draws_est, state_space, options):
 
     Parameters
     ----------
-    params : Series
+    params : pandas.Series
         Parameter Series
-    data : pd.DataFrame
+    data : pandas.DataFrame
         The log likelihood is calculated for this data.
-    base_draws_est : np.ndarray
+    base_draws_est : numpy.ndarray
         Set of draws to calculate the probability of observed wages.
-    state_space : class
+    state_space : :class:`~respy.state_space.StateSpace`
         State space.
     options : dict
         Contains model options.
@@ -153,17 +153,17 @@ def simulate_probability_of_individuals_observed_choice(
 
     Parameters
     ----------
-    wages : np.ndarray
+    wages : numpy.ndarray
         Array with shape (n_choices,).
-    nonpec : np.ndarray
+    nonpec : numpy.ndarray
         Array with shape (n_choices,).
-    continuation_values : np.ndarray
+    continuation_values : numpy.ndarray
         Array with shape (n_choices,)
-    draws : np.ndarray
+    draws : numpy.ndarray
         Array with shape (n_draws, n_choices)
     delta : float
         Discount rate.
-    is_inadmissible: np.ndarray
+    is_inadmissible: numpy.ndarray
         Array with shape (n_choices,) containing an indicator for each choice whether
         the following state is inadmissible.
     choice : int
@@ -232,7 +232,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
         Class of state space.
     df : pd.DataFrame
         DataFrame with the empirical dataset.
-    base_draws_est : np.ndarray
+    base_draws_est : numpy.ndarray
         Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
         standard normal distributions.
     tau : float
@@ -242,7 +242,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
 
     Returns
     -------
-    contribs : np.ndarray
+    contribs : numpy.ndarray
         Array with shape (n_individuals,) containing contributions of individuals in the
         empirical data.
 

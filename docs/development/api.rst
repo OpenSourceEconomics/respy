@@ -14,7 +14,7 @@ likelihood
 ----------
 
 .. automodule:: respy.likelihood
-    :members: log_likelihood, get_parameter_vector, get_criterion_function
+    :members: log_like, get_crit_func
 
 
 shared
@@ -38,10 +38,8 @@ solve
     :members: solve
 
 
-pre_processing
---------------
+state_space
+-----------
 
-.. automodule:: respy.pre_processing.model_processing
-    :members: process_model_spec
-
-.. automodule:: respy.pre_processing.model_checking
+.. automodule:: respy.state_space
+    :members: StateSpace

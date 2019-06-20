@@ -15,4 +15,4 @@ help:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 livehtml:
-	sphinx-autobuild -b html -i "*.respy.*" -i "**.ipynb_checkpoints" 	$(SPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
+	sphinx-autobuild -b html -i "*.respy.*" -i "**.ipynb_checkpoints" $(SPHINXOPTS) $(SOURCEDIR) $(BUILDDIR)/html
