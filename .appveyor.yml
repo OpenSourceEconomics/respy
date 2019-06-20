@@ -17,7 +17,7 @@ image: Visual Studio 2017
 environment:
   matrix:
       - MINICONDA: "C:\\Miniconda36-x64"
-      - MINICONDA: "C:\\Miniconda37-x64"
+      # - MINICONDA: "C:\\Miniconda37-x64"
 
 install:
   # If there is a newer build queued for the same PR, cancel this one. The AppVeyor
