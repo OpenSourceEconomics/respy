@@ -6,6 +6,11 @@ def _validate_options(o):
     # Choices with experience.
     choices = o["choices"]
     for choice in o["choices_w_exp"]:
+        assert (
+            len(choices[choice]["lagged"])
+            == len(choices[choice]["share"])
+            == len(choices[choice]["start"])
+        )
         assert isinstance(choices[choice]["lagged"], np.ndarray)
         assert isinstance(choices[choice]["share"], np.ndarray)
         assert isinstance(choices[choice]["start"], np.ndarray)

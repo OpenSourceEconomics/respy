@@ -242,7 +242,11 @@ def _create_core_state_space(options, n_types):
             for choice in options["choices_w_exp"]
         ]
     )
-    additional_exp = options["maximum_exp"] - minimal_initial_experience
+    maximum_exp = np.array(
+        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]]
+    )
+
+    additional_exp = maximum_exp - minimal_initial_experience
 
     data = []
     for period in range(options["n_periods"]):

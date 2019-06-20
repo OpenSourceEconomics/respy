@@ -1,5 +1,4 @@
 """Process model specification files or objects."""
-import collections
 import re
 import warnings
 from pathlib import Path
@@ -16,38 +15,37 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 
 def process_params_and_options(params, options):
-    params, optim_paras = process_params(params)
-    options = process_options(options, params, optim_paras)
+    params, optim_paras = _process_params(params)
 
-    return params, optim_paras, options
+    n_types = optim_paras["type_shifts"].shape[0]
+    extended_options = _process_options(options, params, n_types)
+
+    return params, optim_paras, extended_options
 
 
-def process_params(params):
+def _process_params(params):
     params = _read_params(params)
     optim_paras = _parse_parameters(params)
 
     return params, optim_paras
 
 
-def process_options(options, params, optim_paras):
+def _process_options(options, params, n_types):
     options = _read_options(options)
 
-    for key in DEFAULT_OPTIONS:
-        options[key] = options.get(key, DEFAULT_OPTIONS[key])
+    extended_options = {**DEFAULT_OPTIONS, **options}
+    extended_options["n_types"] = n_types
+    extended_options["choices_w_exp"] = _infer_choices_with_experience(
+        params, extended_options
+    )
+    extended_options["choices_w_wage"] = _infer_choices_with_wage(params)
+    extended_options = _order_choices(extended_options)
+    extended_options = _set_defaults_for_choices_with_experience(extended_options)
+    extended_options = _set_defaults_for_inadmissible_states(extended_options)
 
-    options["n_types"] = optim_paras["type_shifts"].shape[0]
-    options["choices_w_exp"] = _infer_choices_with_experience(params, options)
-    options["choices_w_wage"] = _infer_choices_with_wage(params)
+    _validate_options(extended_options)
 
-    options = _process_choices(options)
-
-    options = _process_choices_with_experience(options)
-
-    options = _process_inadmissible_states(options)
-
-    _validate_options(options)
-
-    return options
+    return extended_options
 
 
 def _read_params(input_):
@@ -85,10 +83,15 @@ def _read_options(input_):
     return options
 
 
-def _process_choices(options):
-    # Choices can be separated in choices with experience and wage, with experience but
-    # without wage and without experience and wage. This distinction is used to create a
-    # unique ordering of choices. Within each group, we order alphabetically.
+def _order_choices(options):
+    """Define unique order of choices.
+
+    This function defines a unique order of choices. Choices can be separated in choices
+    with experience and wage, with experience but without wage and without experience
+    and wage. This distinction is used to create a unique ordering of choices. Within
+    each group, we order alphabetically. Then, the order is applied to ``options``.
+
+    """
     choices_w_exp_wo_wage = sorted(
         list(set(options["choices_w_exp"]) - set(options["choices_w_wage"]))
     )
@@ -99,15 +102,14 @@ def _process_choices(options):
     options["choices_wo_exp"] = choices_wo_exp_wo_wage
     options["choices_wo_wage"] = choices_w_exp_wo_wage + choices_wo_exp_wo_wage
 
-    # We apply the aforementioned order to ``options["choices"]``. As dictionaries are
-    # insertion ordered since Python 3.6+, it is recreated.
+    # Dictionaries are insertion ordered since Python 3.6+.
     order = options["choices_w_wage"] + choices_w_exp_wo_wage + choices_wo_exp_wo_wage
     options["choices"] = {key: options["choices"][key] for key in order}
 
     return options
 
 
-def _process_choices_with_experience(o):
+def _set_defaults_for_choices_with_experience(options):
     """Process initial experience distributions.
 
     A choice might have information on the distribution of initial experiences which is
@@ -122,32 +124,29 @@ def _process_choices_with_experience(o):
       to have this choice as an initial lagged choice. Default is a probability of zero.
 
     """
-    choices = o["choices"]
-    for choice in o["choices_w_exp"]:
-        start = np.array(choices[choice].get("start", [0]))
-        ordered_indices = np.argsort(start)
-        n_edu_starts = start.shape[0]
-        choices[choice]["start"] = start[ordered_indices]
-        for key in ["lagged", "share"]:
-            default = (
-                np.ones(n_edu_starts) / n_edu_starts
-                if key == "share"
-                else np.zeros(n_edu_starts)
-            )
-            val = np.array(choices[choice].get(key, default))[ordered_indices]
-            # Smooth probabilities so that the sum equals one.
-            choices[choice][key] = val / val.sum() if key == "share" else val
+    choices = options["choices"]
 
-        choices[choice]["max"] = choices[choice].get("max", o["n_periods"] - 1)
+    for choice in options["choices_w_exp"]:
 
-    o["maximum_exp"] = np.array(
-        [choices[choice]["max"] for choice in o["choices_w_exp"]]
-    )
+        starts = np.array(choices[choice].get("start", [0]))
+        ordered_indices = np.argsort(starts)
+        choices[choice]["start"] = starts[ordered_indices]
 
-    return o
+        n_starts = starts.shape[0]
+
+        lagged = np.array(choices[choice].get("lagged", np.zeros(n_starts)))
+        choices[choice]["lagged"] = lagged[ordered_indices]
+
+        shares = np.array(choices[choice].get("share", np.ones(n_starts)))
+        shares /= shares.sum()
+        choices[choice]["share"] = shares[ordered_indices]
+
+        choices[choice]["max"] = choices[choice].get("max", options["n_periods"] - 1)
+
+    return options
 
 
-def _process_inadmissible_states(options):
+def _set_defaults_for_inadmissible_states(options):
     for choice in options["choices"]:
         if choice in options["inadmissible_states"]:
             pass
@@ -194,23 +193,6 @@ def _parse_parameters(params):
         optim_paras["type_shifts"] = np.zeros((1, 4))
 
     return optim_paras
-
-
-def save_options(options, path):
-    def _numpy_to_list(d):
-        for key, value in d.items():
-            if isinstance(value, collections.Mapping):
-                d[key] = _numpy_to_list(d[key])
-            if isinstance(value, np.ndarray):
-                d[key] = value.tolist()
-            else:
-                d[key] = value
-        return d
-
-    options = _numpy_to_list(options)
-
-    with open(path, "w") as file:
-        yaml.dump(options, file)
 
 
 def _infer_choices_with_experience(params, options):
