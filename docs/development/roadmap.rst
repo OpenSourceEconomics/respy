@@ -71,6 +71,9 @@ or even fully) neglect some relevant features, which could tilt
 their choices. This may imply that a considerable share of the
 US labor force is misallocated.
 
+For more information check out the :download:`full description
+<../_static/thesis_proposals/Sparsity_and_human_capital.pdf>`
+
 Salience Theory and Human Capital Investment
 --------------------------------------------
 
@@ -80,6 +83,11 @@ out” relative to the alternative choices. A potential application of
 salience theory is human capital investment, since young individuals
 could attach disproportionately high attention to professions with
 salient returns, which could tilt their choices.
+
+
+For more information check out the :download:`full description
+<../_static/thesis_proposals/Salience_and_human_capital.pdf>`
+
 
 
 
