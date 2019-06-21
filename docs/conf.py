@@ -32,17 +32,27 @@ master_doc = "index"
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
     "sphinx.ext.ifconfig",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
-    "sphinx.ext.napoleon",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "nbsphinx",
+    "numpydoc",
 ]
 
-autodoc_mock_imports = ["numba", "numpy", "pandas", "yaml", "pytest"]
+nitpicky = True
+
+autodoc_mock_imports = ["estimagic", "numba", "numpy", "pandas", "pytest", "yaml"]
+
+intersphinx_mapping = {
+    "numpy": ("https://docs.scipy.org/doc/numpy", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "python": ("https://docs.python.org/3.6", None),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -71,9 +81,17 @@ linkcheck_ignore = [r"https://(dx\.)?doi\.org/*.", r"https://zenodo\.org/*."]
 nbsphinx_execute = "never"
 nbsphinx_allow_errors = False
 
+# Configuration for numpydoc
+numpydoc_xref_param_type = True
+numpydoc_xref_ignore = {"type", "optional", "default"}
+
+# Configuration for autodoc
+autosummary_generate = True
+
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "sphinx_rtd_theme"
+html_theme_path = ["_themes"]
+html_theme = "nature_with_gtoc"

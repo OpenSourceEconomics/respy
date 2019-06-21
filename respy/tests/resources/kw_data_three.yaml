@@ -1,12 +1,17 @@
-education_lagged: [1]
-education_max: 20
-education_share: [1]
-education_start: [10]
+choices:
+  a: {}
+  b: {}
+  edu:
+    max: 20
+    start: [10]
+    lagged: [1]
+    share: [1]
+  home: {}
 estimation_draws: 200
 estimation_seed: 500
 estimation_tau: 500
 interpolation_points: -1
-num_periods: 40
+n_periods: 40
 simulation_agents: 1000
 simulation_seed: 132
 solution_draws: 500

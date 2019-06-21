@@ -3,38 +3,46 @@ import pandas as pd
 
 
 def _validate_options(o):
-    # Education.
-    assert isinstance(o["education_lagged"], list)
-    assert isinstance(o["education_start"], list)
-    assert isinstance(o["education_share"], list)
-    assert all(0 <= item <= 1 for item in o["education_lagged"])
-    assert all(_is_positive_integer(i) for i in o["education_start"])
-    assert all(0 <= item <= 1 for item in o["education_share"])
-    assert all(i <= o["education_max"] for i in o["education_start"])
-    np.testing.assert_almost_equal(np.sum(o["education_share"]), 1.0, decimal=4)
-    assert _is_positive_integer(o["education_max"])
+    # Choices with experience.
+    choices = o["choices"]
+    for choice in o["choices_w_exp"]:
+        assert (
+            len(choices[choice]["lagged"])
+            == len(choices[choice]["share"])
+            == len(choices[choice]["start"])
+        )
+        assert isinstance(choices[choice]["lagged"], np.ndarray)
+        assert isinstance(choices[choice]["share"], np.ndarray)
+        assert isinstance(choices[choice]["start"], np.ndarray)
+        assert all(0 <= item <= 1 for item in choices[choice]["lagged"])
+        assert all(0 <= item <= 1 for item in choices[choice]["share"])
+        assert np.isclose(choices[choice]["share"].sum(), 1)
+        assert all(_is_nonnegative_integer(i) for i in choices[choice]["start"])
+        assert _is_nonnegative_integer(choices[choice]["max"])
+        assert all(i <= choices[choice]["max"] for i in choices[choice]["start"])
 
     # Estimation.
-    assert _is_positive_integer(o["estimation_draws"]) and o["estimation_draws"] > 0
-    assert _is_positive_integer(o["estimation_seed"])
+    assert _is_positive_nonzero_integer(o["estimation_draws"])
+
+    assert _is_positive_nonzero_integer(o["estimation_seed"])
     assert 0 <= o["estimation_tau"]
 
     # Interpolation.
     assert (
-        _is_positive_integer(o["interpolation_points"])
-        and o["interpolation_points"] != 0
-    ) or o["interpolation_points"] == -1
+        _is_positive_nonzero_integer(o["interpolation_points"])
+        or o["interpolation_points"] == -1
+    )
 
     # Number of periods.
-    assert _is_positive_integer(o["num_periods"])
+    assert _is_positive_nonzero_integer(o["n_periods"])
 
     # Simulation.
-    assert _is_positive_integer(o["simulation_agents"])
-    assert _is_positive_integer(o["simulation_seed"])
+    assert _is_positive_nonzero_integer(o["simulation_agents"])
+    assert _is_positive_nonzero_integer(o["simulation_seed"])
 
     # Solution.
-    assert _is_positive_integer(o["solution_draws"]) and o["solution_draws"] > 0
-    assert _is_positive_integer(o["solution_seed"])
+    assert _is_positive_nonzero_integer(o["solution_draws"])
+    assert _is_positive_nonzero_integer(o["solution_seed"])
 
     # Covariates.
     assert isinstance(o["covariates"], dict)
@@ -43,22 +51,29 @@ def _validate_options(o):
         for key, val in o["covariates"].items()
     )
 
+    # Every choice must have a restriction.
+    assert all(i in o["inadmissible_states"] for i in o["choices"])
 
-def _is_positive_integer(x):
+
+def _is_positive_nonzero_integer(x):
+    return isinstance(x, (int, np.integer)) and x > 0
+
+
+def _is_nonnegative_integer(x):
     return isinstance(x, (int, np.integer)) and x >= 0
 
 
-def check_model_solution(options, optim_paras, state_space):
+def check_model_solution(options, state_space):
     # Distribute class attributes
-    num_initial = len(options["education_start"])
-    edu_start = options["education_start"]
+    edu_start = options["choices"]["edu"]["start"]
+    n_initial_exp_edu = len(edu_start)
     edu_start_max = max(edu_start)
-    edu_max = options["education_max"]
-    num_periods = options["num_periods"]
-    num_types = optim_paras["num_types"]
+    edu_max = options["choices"]["edu"]["max"]
+    n_periods = options["n_periods"]
+    n_types = options["n_types"]
 
     # Check period.
-    assert np.all(np.isin(state_space.states[:, 0], range(num_periods)))
+    assert np.all(np.isin(state_space.states[:, 0], range(n_periods)))
 
     # The sum of years of experiences cannot be larger than constraint time.
     assert np.all(
@@ -66,9 +81,9 @@ def check_model_solution(options, optim_paras, state_space):
         <= (state_space.states[:, 0] + edu_start_max)
     )
 
-    # Sector experience cannot exceed the time frame.
-    assert np.all(state_space.states[:, 1] <= num_periods)
-    assert np.all(state_space.states[:, 2] <= num_periods)
+    # Choice experience cannot exceed the time frame.
+    assert np.all(state_space.states[:, 1] <= n_periods)
+    assert np.all(state_space.states[:, 2] <= n_periods)
 
     # The maximum of education years is never larger than ``edu_max``.
     assert np.all(state_space.states[:, 3] <= edu_max)
@@ -85,12 +100,32 @@ def check_model_solution(options, optim_paras, state_space):
     assert not pd.DataFrame(state_space.states).duplicated().any()
 
     # Check the number of states in the first time period.
-    num_states_start = num_types * num_initial * 2
-    assert (
-        state_space.get_attribute_from_period("states", 0).shape[0] == num_states_start
-    )
-    assert np.sum(state_space.indexer[0] >= 0) == num_states_start
+    n_states_start = n_types * n_initial_exp_edu * 2
+    assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
+    assert np.sum(state_space.indexer[0] >= 0) == n_states_start
 
+    # Check that we have as many indices as states.
+    assert state_space.states.shape[0] == (state_space.indexer >= 0).sum()
+
+    # Check finiteness of rewards and emaxs.
+    assert np.all(np.isfinite(state_space.wages))
+    assert np.all(np.isfinite(state_space.nonpec))
+    assert np.all(np.isfinite(state_space.continuation_values))
+    assert np.all(np.isfinite(state_space.emax_value_functions))
+
+    assert np.isin(state_space.states[:, 4], range(4)).all()
+
+    # States and covariates have finite and nonnegative values.
+    assert np.all(state_space.states >= 0)
+    assert np.all(np.isfinite(state_space.states))
+    # Check for duplicate rows in each period. We only have possible duplicates if there
+    # are multiple initial conditions.
+    assert not pd.DataFrame(state_space.states).duplicated().any()
+
+    # Check the number of states in the first time period.
+    n_states_start = n_types * n_initial_exp_edu * 2
+    assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
+    assert np.sum(state_space.indexer[0] >= 0) == n_states_start
     # Check that we have as many indices as states.
     assert state_space.states.shape[0] == (state_space.indexer >= 0).sum()
 

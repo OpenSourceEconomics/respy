@@ -18,51 +18,11 @@ baseline model presented in:
 .. image:: https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Getting Started
-   :hidden:
+    :maxdepth: 2
 
-   getting_started/introduction
-   getting_started/installation
-   getting_started/tutorial-model.ipynb
-   getting_started/tutorial-simulation.ipynb
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Economics
-   :hidden:
-
-   economics/economic-model
-   economics/solution-and-estimation
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Software
-   :hidden:
-
-   software/model-specification
-   software/numerical-methods
-   software/reliability
-   software/scalability.ipynb
-   software/software-engineering
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Development
-   :hidden:
-
-   development/docker
-   development/releases
-   development/roadmap
-   development/api
-   development/randomness
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Additional Information
-   :hidden:
-
-   additional_information/contributing
-   additional_information/credits
-   additional_information/changes
-   additional_information/bibliography
+    getting_started/index
+    economics/index
+    software/index
+    development/index
+    api
+    additional_information/index

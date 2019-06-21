@@ -49,15 +49,15 @@ def run_robustness_test(seed, is_investigation):
     else:
         max_periods = 10
 
-    num_periods = np.random.randint(1, max_periods)
+    n_periods = np.random.randint(1, max_periods)
     agents = np.random.randint(500, 1372 + 1)
     edu_start = np.random.choice(range(7, 12))
 
     constr = {
-        "num_periods": num_periods,
+        "n_periods": n_periods,
         "edu_spec": {
             "start": [int(edu_start)],
-            "max": np.random.randint(edu_start + num_periods, 30),
+            "max": np.random.randint(edu_start + n_periods, 30),
         },
         "estimation": {
             "file": "career_data.respy.dat",

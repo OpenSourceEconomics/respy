@@ -60,74 +60,28 @@ Options specification
 ---------------------
 
 In addition to the model parameters, other model options are kept in another
-specification file in the ``json`` format.
+specification file in the ``yaml`` format.
 
-.. literalinclude:: ../../respy/tests/resources/kw_data_one_types_initial.json
-    :language: json
-    :name: kw_data_one_types_initial.json
+.. literalinclude:: ../../respy/tests/resources/kw_data_one_types_initial.yaml
+    :language: yaml
+    :name: kw_data_one_types_initial.yaml
 
-Note that in order to implement the model based on agents with different initial levels
-of schooling the three integer values - start, share, and lagged - have to be specified
-together as a block.
+Covariates, state space filters and inadmissible states
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**SOLUTION**
+Part of ``respy``'s flexibility comes from using formulas to specify model components.
+The following components rely on formulas which are passed to ``df.eval`` to customize
+the model.
 
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-draws       int         number of draws for :math:`E\max`
-store       bool        persistent storage of results
-seed        int         random seed for :math:`E\max`
-=======     ======      ==========================
+- covariates
+- State space filters
+- state space restrictions
 
-**SIMULATION**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-agents      int         number of simulated agents
-file        str         file to print simulated sample
-seed        int         random seed for agent experience
-=======     ======      ==========================
-
-**ESTIMATION**
-
-==========      ======      ==========================
-Key             Value       Interpretation
-==========      ======      ==========================
-agents          int         number of agents to read from sample
-draws           int         number of draws for choice probabilities
-file            str         file to read observed sample
-maxfun          int         maximum number of function evaluations
-optimizer       str         optimizer to use
-seed            int         random seed for choice probability
-tau             float       scale parameter for function smoothing
-==========      ======      ==========================
-
-
-The computed derivatives are calculated numerically and are used in the standard error
-calculation.
-
-**PROGRAM**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-debug       bool        debug mode
-procs       int         number of processors
-threads     int         number of threads
-version     str         program version
-=======     ======      ==========================
-
-**INTERPOLATION**
-
-=======     ======      ==========================
-Key         Value       Interpretation
-=======     ======      ==========================
-flag        bool        flag to use interpolation
-points      int         number of interpolation points
-=======     ======      ==========================
-
+For an introduction to ``df.eval`` see the `official pandas documentation
+<https://pandas.pydata.org/pandas-docs/stable/reference/api/
+pandas.DataFrame.eval.html>`_ or this `post on StackOverflow
+<https://stackoverflow.com/a/53779987>`_. Note the difference in implementations between
+``df.eval`` (used here) and ``pd.eval``.
 
 Helper functions
 ----------------

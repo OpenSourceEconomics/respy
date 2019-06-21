@@ -16,58 +16,50 @@ def main():
     """
     model = sys.argv[1]
     maxfun = int(sys.argv[2])
-    num_procs = int(sys.argv[3])
-    num_threads = int(sys.argv[4])
+    n_threads = int(sys.argv[3])
 
     # Validate input.
     assert maxfun >= 0, "Maximum number of function evaluations cannot be negative."
-    assert num_threads >= 1 or num_threads == -1, (
+    assert n_threads >= 1 or n_threads == -1, (
         "Use -1 to impose no restrictions on maximum number of threads or choose a "
         "number higher than zero."
     )
 
     # Set number of threads
-    os.environ["NUMBA_NUM_THREADS"] = f"{num_threads}"
-    os.environ["MKL_NUM_THREADS"] = f"{num_threads}"
-    os.environ["OMP_NUM_THREADS"] = f"{num_threads}"
-    os.environ["NUMEXPR_NUM_THREADS"] = f"{num_threads}"
+    os.environ["NUMBA_NUM_THREADS"] = f"{n_threads}"
+    os.environ["MKL_NUM_THREADS"] = f"{n_threads}"
+    os.environ["OMP_NUM_THREADS"] = f"{n_threads}"
+    os.environ["NUMEXPR_NUM_THREADS"] = f"{n_threads}"
 
     # Late import of respy to ensure that environment variables are read by Numpy, etc..
     import respy as rp
 
     # Get model
-    options_spec, params_spec = rp.get_example_model(model)
+    options, params = rp.get_example_model(model)
 
     # Adjust options
-    options_spec["estimation"]["maxfun"] = 0
+    options["estimation"]["maxfun"] = 0
 
     # Go into temporary folder
-    folder = f"__{num_threads}"
+    folder = f"__{n_threads}"
     if Path(folder).exists():
         shutil.rmtree(folder)
 
     Path(folder).mkdir()
     os.chdir(folder)
 
-    # Initialize the class
-    attr = rp.process_params(params_spec, options_spec)
-
     # Simulate the data
-    state_space, simulated_data = rp.simulate(attr)
+    state_space, simulated_data = rp.simulate(params, options)
 
     # Get the criterion function and the parameter vector.
-    crit_func = rp.get_crit_func(attr, simulated_data)
-    x = rp.get_parameter_vector(attr)
+    crit_func = rp.get_crit_func(params, options, simulated_data)
 
     # Run the estimation
-    print(
-        f"Start. Model: {model}, Maxfun: {maxfun}, Procs: {num_procs}, "
-        f"Threads: {num_threads}."
-    )
+    print(f"Start. Model: {model}, Maxfun: {maxfun}, Threads: {n_threads}.")
     start = dt.datetime.now()
 
     for _ in range(maxfun):
-        crit_func(x)
+        crit_func(params)
 
     end = dt.datetime.now()
 
@@ -77,8 +69,7 @@ def main():
     output = {
         "model": model,
         "maxfun": maxfun,
-        "num_procs": num_procs,
-        "num_threads": num_threads,
+        "n_threads": n_threads,
         "start": str(start),
         "end": str(end),
         "duration": str(end - start),

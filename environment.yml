@@ -3,25 +3,27 @@ channels:
   - defaults
   - numba
   - conda-forge
+  - janosg
 dependencies:
   - python=3.7.3
   - pip=19.0.3
-  - pandas=0.24.2
-  - nbsphinx=0.4.2
-  - numba=0.43.1
   - codecov
   - doc8
+  - estimagic>=0.0.6
   - jupyterlab
   - matplotlib>=3.0.0
+  - nbsphinx=0.4.2
+  - numba=0.43.1
+  - numpydoc
+  - pandas=0.24.2
   - pyaml
   - pytest
   - pytest-cov
   - pytest-xdist
   - restructuredtext_lint
+  - scipy=1.2.1
   - Sphinx>=2.0.0
   - sphinx-autobuild
-  - sphinx_rtd_theme
   - tox-conda
-  - scipy=1.2.1
   - pip:
     - pre-commit

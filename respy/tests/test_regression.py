@@ -8,4 +8,4 @@ from development.testing.regression.run_regression import check_single
 def test_single_regression(regression_vault, index):
     """Run a single regression test."""
     test = regression_vault[index]
-    check_single(test)
+    assert check_single(test)

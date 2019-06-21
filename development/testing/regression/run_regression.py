@@ -24,10 +24,14 @@ HOSTNAME = socket.gethostname()
 def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
     """Run regression tests.
 
-    Args:
-        num_tests (int): number of tests to run. If None, all are run.
-        tests (list): list of regression tests. If None, tests are loaded from disk.
-        num_procs (int): number of processes. Default 1.
+    Parameters
+    ----------
+    num_tests : int
+        Number of tests to run. If None, all are run.
+    tests : list
+        List of regression tests. If None, tests are loaded from disk.
+    num_procs : int
+        Number of processes. Default 1.
 
     """
     tests = load_regression_tests() if tests is None else tests
@@ -42,7 +46,7 @@ def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
         check = partial(check_single, strict=strict)
         ret = mp_pool.map(check, tests)
 
-    idx_failures = [i for i, x in enumerate(ret) if x is False]
+    idx_failures = [i for i, x in enumerate(ret) if not x]
     is_failure = len(idx_failures) > 0
 
     print(f"Failures: {idx_failures}")
@@ -53,11 +57,15 @@ def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
 def create_regression_tests(num_tests, num_procs=1, write_out=False):
     """Create a regression vault.
 
-    Args:
-        num_test (int): How many tests are in the vault.
-        num_procs (int): Number of processes. Default 1.
-        write_out (bool): If True, regression tests are stored to disk, replacing
-            any existing regression tests. Be careful with this. Default False.
+    Parameters
+    ----------
+    num_test : int
+        How many tests are in the vault.
+    num_procs : int
+        Number of processes. Default 1.
+    write_out : bool
+        If True, regression tests are stored to disk, replacing any existing regression
+        tests. Be careful with this. Default False.
 
     """
     if num_procs == 1:
@@ -85,6 +93,7 @@ def investigate_regression_test(idx):
     """Investigate regression tests."""
     tests = load_regression_tests()
     params, options, exp_val = tests[idx]
+
     df = simulate_truncated_data(params, options)
 
     crit_func = rp.get_crit_func(params, options, df)
@@ -119,7 +128,7 @@ def check_single(test, strict=False):
     os.chdir("..")
     shutil.rmtree(dirname)
 
-    assert is_success
+    return is_success
 
 
 def create_single(idx):

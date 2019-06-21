@@ -102,29 +102,3 @@ not accidentally delete valuable information.
 
 But even if you reclaim disk space with the above commands, Docker seems to reserve more
 and more space without freeing it. A restart after the pruning solves this.
-
-mybinder.org
-------------
-
-We use mybinder.org to provide interactive versions of our documentation and to offer an
-easy way to explore the package. But, mybinder also recognizes the ``Dockerfile`` and
-integrates it into its build step. Therefore, the ``Dockerfile`` includes some more
-instruction which are necessary for mybinder, but are also best-practices. To debug the
-current ``Dockerfile`` we can rely on ``repo2docker`` which builds the docker image on
-mybinder and runs the notebook.
-
-Install the package with
-
-.. code-block:: bash
-
-    $ pip install jupyter-repo2docker
-
-Then, walk into the root directory of the repository of respy and hit
-
-.. code-block:: bash
-
-    repo2docker .
-
-This will build a Docker container and launch Jupyter notebook in the same environment
-which is available on mybinder.org. Check for memory errors or other problems which do
-not appear on your machine but on-line.

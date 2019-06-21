@@ -42,6 +42,6 @@ install:
   - pip install tox-conda
 
   # Run tests
-  - tox
+  - tox -e pytest
 
 build: false

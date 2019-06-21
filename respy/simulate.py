@@ -2,17 +2,15 @@ import numpy as np
 import pandas as pd
 from numba import guvectorize
 
-from respy.config import DATA_FORMATS_SIM
-from respy.config import DATA_LABELS_SIM
 from respy.config import HUGE_FLOAT
-from respy.pre_processing.model_processing import process_options
-from respy.pre_processing.model_processing import process_params
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
+from respy.shared import _generate_column_labels_simulation
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.shared import transform_disturbances
 from respy.solve import solve_with_backward_induction
-from respy.solve import StateSpace
+from respy.state_space import StateSpace
 
 
 def simulate(params, options):
@@ -22,22 +20,19 @@ def simulate(params, options):
 
     Parameters
     ----------
-    params : pd.DataFrame or pd.Series
+    params : pandas.DataFrame or pandas.Series
         DataFrame or Series containing parameters.
     options : dict
         Dictionary containing model options.
 
     """
-    params, optim_paras = process_params(params)
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = StateSpace(params, options)
-    state_space = solve_with_backward_induction(
-        state_space, options["interpolation_points"], optim_paras
-    )
+    state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     base_draws_sim = create_base_draws(
-        (options["num_periods"], options["simulation_agents"], 4),
+        (options["n_periods"], options["simulation_agents"], len(options["choices"])),
         options["simulation_seed"],
     )
 
@@ -65,11 +60,11 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     Parameters
     ----------
-    state_space : class
+    state_space : :class:`~respy.state_space.StateSpace`
         Class of state space.
-    base_draws_sim : np.ndarray
+    base_draws_sim : numpy.ndarray
         Array with shape (n_periods, n_agents_sim, n_choices).
-    base_draws_wage : np.ndarray
+    base_draws_wage : numpy.ndarray
         Array with shape (n_periods, n_agents_sim, n_choices).
     optim_paras : dict
         Parameters affected by optimization.
@@ -78,50 +73,45 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     Returns
     -------
-    simulated_data : pd.DataFrame
+    simulated_data : pandas.DataFrame
         Dataset of simulated agents.
 
     """
+    n_choices = len(options["choices"])
+    n_periods = options["n_periods"]
+    n_wages = len(options["choices_w_wage"])
+
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
     base_draws_sim_transformed = np.full(
-        (state_space.num_periods, options["simulation_agents"], 4), np.nan
+        (n_periods, options["simulation_agents"], n_choices), np.nan
     )
 
-    for period in range(state_space.num_periods):
+    for period in range(n_periods):
         base_draws_sim_transformed[period] = transform_disturbances(
-            base_draws_sim[period], np.zeros(4), optim_paras["shocks_cholesky"]
+            base_draws_sim[period], np.zeros(n_choices), optim_paras["shocks_cholesky"]
         )
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
     # Create initial starting values for agents in simulation.
-    initial_education = _get_random_edu_start(options)
-    initial_types = _get_random_types(initial_education, optim_paras, options)
-    initial_lagged_choices = _get_random_lagged_choices(initial_education, options)
+    container = ()
+    for choice in options["choices_w_exp"]:
+        container += (_get_random_initial_experience(choice, options),)
+    container += (_get_random_lagged_choices(container[2], options),)
+    container += (_get_random_types(container[2], optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
-    current_states = np.column_stack(
-        (
-            np.zeros((options["simulation_agents"], 2)),
-            initial_education,
-            initial_lagged_choices,
-            initial_types,
-        )
-    ).astype(np.uint8)
+    current_states = np.column_stack(container).astype(np.uint8)
 
     data = []
 
-    for period in range(state_space.num_periods):
+    for period in range(n_periods):
 
         # Get indices which connect states in the state space and simulated agents.
         ks = state_space.indexer[
-            np.full(options["simulation_agents"], period),
-            current_states[:, 0],
-            current_states[:, 1],
-            current_states[:, 2],
-            current_states[:, 3],
-            current_states[:, 4],
+            (np.full(options["simulation_agents"], period),)
+            + tuple(current_states[:, i] for i in range(current_states.shape[1]))
         ]
 
         # Select relevant subset of random draws.
@@ -133,12 +123,12 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
             state_space.wages[ks],
             state_space.nonpec[ks],
             state_space.continuation_values[ks],
-            draws_shock.reshape(-1, 1, 4),
+            draws_shock.reshape(-1, 1, n_choices),
             optim_paras["delta"],
             state_space.is_inadmissible[ks],
         )
-        value_functions = value_functions.reshape(-1, 4)
-        flow_utilities = flow_utilities.reshape(-1, 4)
+        value_functions = value_functions.reshape(-1, n_choices)
+        flow_utilities = flow_utilities.reshape(-1, n_choices)
 
         # We need to ensure that no individual chooses an inadmissible state. This
         # cannot be done directly in the calculate_value_functions function as the
@@ -153,7 +143,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         choice = np.argmax(value_functions, axis=1)
 
         wages = state_space.wages[ks] * draws_shock * draws_wage
-        wages[:, 2:] = np.nan
+        wages[:, n_wages:] = np.nan
         wage = np.choose(choice, wages.T)
 
         # Record data of all agents in one period.
@@ -172,7 +162,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
                 # The discount rate is included as this allows to construct the EMAX
                 # with the information provided in the simulation output.
                 state_space.nonpec[ks],
-                state_space.wages[ks, :2],
+                state_space.wages[ks, :n_wages],
                 flow_utilities,
                 value_functions,
                 draws_shock,
@@ -181,38 +171,25 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         )
         data.append(rows)
 
-        # Update work experiences or education and lagged choice for the next period.
+        # Update work experiences.
         current_states[np.arange(options["simulation_agents"]), choice] = np.where(
-            choice <= 2,
+            choice <= len(options["choices_w_exp"]),
             current_states[np.arange(options["simulation_agents"]), choice] + 1,
             current_states[np.arange(options["simulation_agents"]), choice],
         )
-        current_states[:, 3] = choice
+        # Update lagged choices.
+        current_states[:, -2] = choice
 
-    simulated_data = (
-        pd.DataFrame(data=np.vstack(data), columns=DATA_LABELS_SIM)
-        .astype(DATA_FORMATS_SIM)
-        .sort_values(["Identifier", "Period"])
-    )
+    simulated_data = _process_simulated_data(data, options)
 
     return simulated_data
 
 
 def _sort_type_info(optim_paras):
     """We fix an order for the sampling of the types."""
-    type_info = {"order": np.argsort(optim_paras["type_shares"].tolist()[0::2])}
-
-    # We simply fix the order by the size of the intercepts.
-
-    # We need to reorder the coefficients determining the type probabilities
-    # accordingly.
-    type_shares = []
-    for i in range(optim_paras["num_types"]):
-        lower, upper = i * 2, (i + 1) * 2
-        type_shares += [optim_paras["type_shares"][lower:upper].tolist()]
-    type_info["shares"] = np.array(
-        [type_shares[i] for i in type_info["order"]]
-    ).flatten()
+    type_shares = optim_paras["type_shares"].reshape(-1, 2)
+    order = np.argsort(type_shares[:, 0])
+    type_info = {"shares": type_shares[order].flatten(), "order": order}
 
     return type_info
 
@@ -238,32 +215,36 @@ def _get_random_types(edu_start, optim_paras, options):
     return types
 
 
-def _get_random_edu_start(options):
+def _get_random_initial_experience(choice, options):
     """Get random, initial levels of schooling for simulated agents."""
     np.random.seed(options["simulation_seed"])
 
-    # As we do not want to be too strict at the user-level the sum of edu_spec might
-    # be slightly larger than one. This needs to be corrected here.
-    probs = options["education_share"] / np.sum(options["education_share"])
-    edu_start = np.random.choice(
-        options["education_start"], p=probs, size=options["simulation_agents"]
+    initial_experience = np.random.choice(
+        options["choices"][choice]["start"],
+        p=options["choices"][choice]["share"],
+        size=options["simulation_agents"],
     )
 
-    # If we only have one individual, we need to ensure that types are a vector.
-    edu_start = np.array(edu_start, ndmin=1)
-
-    return edu_start
+    return initial_experience
 
 
 def _get_random_lagged_choices(edu_start, options):
     """Get random, initial levels of lagged choices for simulated agents."""
     np.random.seed(options["simulation_seed"])
 
+    choices = [
+        list(options["choices"]).index("edu"),
+        list(options["choices"]).index("home"),
+    ]
+
     lagged_start = []
     for i in range(options["simulation_agents"]):
-        idx = options["education_start"].index(edu_start[i])
-        probs = options["education_lagged"][idx], 1 - options["education_lagged"][idx]
-        lagged_start += np.random.choice([2, 3], p=probs, size=1).tolist()
+        idx = np.where(options["choices"]["edu"]["start"] == edu_start[i])[0][0]
+        probs = (
+            options["choices"]["edu"]["lagged"][idx],
+            1 - options["choices"]["edu"]["lagged"][idx],
+        )
+        lagged_start += np.random.choice(choices, p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that activities are a vector.
     lagged_start = np.array(lagged_start, ndmin=1)
@@ -295,31 +276,32 @@ def calculate_value_functions_and_flow_utilities(
 
     Parameters
     ----------
-    wages : np.ndarray
+    wages : numpy.ndarray
         Array with shape (n_choices,).
-    nonpec : np.ndarray
+    nonpec : numpy.ndarray
         Array with shape (n_choices,).
-    continuation_values : np.ndarray
+    continuation_values : numpy.ndarray
         Array with shape (n_choices,)
-    draws : np.ndarray
-        Array with shape (num_draws, n_choices)
+    draws : numpy.ndarray
+        Array with shape (n_draws, n_choices)
     delta : float
         Discount rate.
-    is_inadmissible: bool
-        Indicator for whether the state has reached maximum education.
+    is_inadmissible: numpy.ndarray
+        Array with shape (n_choices,) containing indicator for whether the following
+        state is inadmissible.
 
     Returns
     -------
-    value_functions : np.ndarray
-        Array with shape (n_choices, num_draws).
-    flow_utilities : np.ndarray
-        Array with shape (n_choices, num_draws)
+    value_functions : numpy.ndarray
+        Array with shape (n_choices, n_draws).
+    flow_utilities : numpy.ndarray
+        Array with shape (n_choices, n_draws).
 
     """
-    num_draws, num_choices = draws.shape
+    n_draws, n_choices = draws.shape
 
-    for i in range(num_draws):
-        for j in range(num_choices):
+    for i in range(n_draws):
+        for j in range(n_choices):
             value_function, flow_utility = _aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],
@@ -331,3 +313,31 @@ def calculate_value_functions_and_flow_utilities(
 
             flow_utilities[j, i] = flow_utility
             value_functions[j, i] = value_function
+
+
+def _convert_choice_variables_from_codes_to_categorical(df, options):
+    code_to_choice = {i: choice for i, choice in enumerate(options["choices"])}
+
+    df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
+        code_to_choice
+    )
+    df.Lagged_Choice = df.Lagged_Choice.cat.set_categories(
+        code_to_choice
+    ).cat.rename_categories(code_to_choice)
+
+    return df
+
+
+def _process_simulated_data(data, options):
+    labels, dtypes = _generate_column_labels_simulation(options)
+
+    df = (
+        pd.DataFrame(data=np.vstack(data), columns=labels)
+        .astype(dtypes)
+        .sort_values(["Identifier", "Period"])
+        .reset_index(drop=True)
+    )
+
+    df = _convert_choice_variables_from_codes_to_categorical(df, options)
+
+    return df

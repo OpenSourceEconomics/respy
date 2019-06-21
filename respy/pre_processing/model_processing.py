@@ -1,10 +1,12 @@
 """Process model specification files or objects."""
+import re
 import warnings
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import yaml
+from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_checking import _validate_options
@@ -12,94 +14,157 @@ from respy.pre_processing.model_checking import _validate_options
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 
-def process_params(params):
+def process_params_and_options(params, options):
+    params, optim_paras = _process_params(params)
+
+    n_types = optim_paras["type_shifts"].shape[0]
+    extended_options = _process_options(options, params, n_types)
+
+    return params, optim_paras, extended_options
+
+
+def _process_params(params):
     params = _read_params(params)
-    optim_paras = parse_parameters(params)
+    optim_paras = _parse_parameters(params)
 
     return params, optim_paras
 
 
-def process_options(options):
+def _process_options(options, params, n_types):
     options = _read_options(options)
 
-    for key in DEFAULT_OPTIONS:
-        if key in ["covariates", "inadmissible_states"]:
-            options[key] = {**DEFAULT_OPTIONS[key], **options.get(key, {})}
-        else:
-            options[key] = options.get(key, DEFAULT_OPTIONS[key])
+    extended_options = {**DEFAULT_OPTIONS, **options}
+    extended_options["n_types"] = n_types
+    extended_options["choices_w_exp"] = _infer_choices_with_experience(
+        params, extended_options
+    )
+    extended_options["choices_w_wage"] = _infer_choices_with_wage(params)
+    extended_options = _order_choices(extended_options)
+    extended_options = _set_defaults_for_choices_with_experience(extended_options)
+    extended_options = _set_defaults_for_inadmissible_states(extended_options)
 
-    _validate_options(options)
-    options = _sort_education_options(options)
+    _validate_options(extended_options)
 
-    return options
-
-
-def _sort_education_options(o):
-    ordered_indices = np.argsort(o["education_start"])
-    for key in ["education_start", "education_share", "education_lagged"]:
-        o[key] = np.array(o[key])[ordered_indices].tolist()
-    return o
+    return extended_options
 
 
 def _read_params(input_):
-    if not isinstance(input_, (Path, pd.DataFrame)):
-        raise TypeError("params_spec must be Path or pd.DataFrame.")
+    input_ = pd.read_csv(input_) if isinstance(input_, Path) else input_
 
-    params_spec = pd.read_csv(input_) if isinstance(input_, Path) else input_
+    if isinstance(input_, pd.DataFrame):
+        if not input_.index.names == ["category", "name"]:
+            input_.set_index(["category", "name"], inplace=True)
+        params = input_["para"]
+    elif isinstance(input_, pd.Series):
+        params = input_
+        assert params.index.names == [
+            "category",
+            "name",
+        ], "params as pd.Series has wrong index."
+    else:
+        raise TypeError("params must be Path, pd.DataFrame or pd.Series.")
 
-    params_spec["para"] = params_spec["para"].astype(float)
-
-    if not params_spec.index.names == ["category", "name"]:
-        params_spec.set_index(["category", "name"], inplace=True)
-
-    return params_spec
+    return params
 
 
 def _read_options(input_):
     if not isinstance(input_, (Path, dict)):
-        raise TypeError("options_spec must be Path or dictionary.")
+        raise TypeError("options must be pathlib.Path or dictionary.")
 
     if isinstance(input_, Path):
         with open(input_, "r") as file:
             if input_.suffix in [".yaml", ".yml"]:
-                options_spec = yaml.safe_load(file)
+                options = yaml.safe_load(file)
             else:
                 raise NotImplementedError(f"Format {input_.suffix} is not supported.")
     else:
-        options_spec = input_
+        options = input_
 
-    return options_spec
+    return options
 
 
-def parse_parameters(params, paras_type="optim"):
+def _order_choices(options):
+    """Define unique order of choices.
+
+    This function defines a unique order of choices. Choices can be separated in choices
+    with experience and wage, with experience but without wage and without experience
+    and wage. This distinction is used to create a unique ordering of choices. Within
+    each group, we order alphabetically. Then, the order is applied to ``options``.
+
+    """
+    choices_w_exp_wo_wage = sorted(
+        list(set(options["choices_w_exp"]) - set(options["choices_w_wage"]))
+    )
+    choices_wo_exp_wo_wage = sorted(
+        list(set(options["choices"]) - set(options["choices_w_exp"]))
+    )
+
+    options["choices_wo_exp"] = choices_wo_exp_wo_wage
+    options["choices_wo_wage"] = choices_w_exp_wo_wage + choices_wo_exp_wo_wage
+
+    # Dictionaries are insertion ordered since Python 3.6+.
+    order = options["choices_w_wage"] + choices_w_exp_wo_wage + choices_wo_exp_wo_wage
+    options["choices"] = {key: options["choices"][key] for key in order}
+
+    return options
+
+
+def _set_defaults_for_choices_with_experience(options):
+    """Process initial experience distributions.
+
+    A choice might have information on the distribution of initial experiences which is
+    used at the beginning of the simulation to determine the starting points of agents.
+    This function makes the model invariant to the order or misspecified probabilities.
+
+    - ``"start"`` determines initial experience levels. Default is to start with zero
+      experience.
+    - ``"share"`` determines the share of each initial experience level in the starting
+      population. Default is a uniform distribution over all initial experience levels.
+    - ``"lagged"`` determines the share of the population with this initial experience
+      to have this choice as an initial lagged choice. Default is a probability of zero.
+
+    """
+    choices = options["choices"]
+
+    for choice in options["choices_w_exp"]:
+
+        starts = np.array(choices[choice].get("start", [0]))
+        ordered_indices = np.argsort(starts)
+        choices[choice]["start"] = starts[ordered_indices]
+
+        n_starts = starts.shape[0]
+
+        lagged = np.array(choices[choice].get("lagged", np.zeros(n_starts)))
+        choices[choice]["lagged"] = lagged[ordered_indices]
+
+        shares = np.array(choices[choice].get("share", np.ones(n_starts)))
+        shares = shares / shares.sum()
+        choices[choice]["share"] = shares[ordered_indices]
+
+        choices[choice]["max"] = choices[choice].get("max", options["n_periods"] - 1)
+
+    return options
+
+
+def _set_defaults_for_inadmissible_states(options):
+    for choice in options["choices"]:
+        if choice in options["inadmissible_states"]:
+            pass
+        else:
+            options["inadmissible_states"][choice] = "False"
+
+    return options
+
+
+def _parse_parameters(params):
     """Parse the parameter vector into a dictionary of model quantities.
 
     Parameters
     ----------
     params : DataFrame or Series
         DataFrame with parameter specification or 'para' column thereof
-    is_debug : bool
-        If true, the parameters are checked for validity
-    info : ???
-        Unknown argument.
-    paras_type : str
-        one of ['econ', 'optim']. A paras_vec of type 'econ' contains the the standard
-        deviations and covariances of the shock distribution. This is how parameters are
-        represented in the .ini file and the output of .fit(). A paras_vec of type
-        'optim' contains the elements of the cholesky factors of the covariance matrix
-        of the shock distribution. This type is used internally during the likelihood
-        estimation. The default value is 'optim' in order to make the function more
-        aligned with Fortran, where we never have to parse 'econ' parameters.
 
     """
-
-    if isinstance(params, pd.DataFrame):
-        params = params["para"]
-    elif isinstance(params, pd.Series):
-        pass
-    else:
-        raise TypeError(f"Invalid type {type(params)} for params.")
-
     optim_paras = {}
 
     for quantity in params.index.get_level_values("category").unique():
@@ -110,8 +175,8 @@ def parse_parameters(params, paras_type="optim"):
     optim_paras.pop("shocks")
 
     short_meas_error = params.loc["meas_error"]
-    num_choices = cov.shape[0]
-    meas_error = params.loc["shocks"][:num_choices].copy(deep=True)
+    n_choices = cov.shape[0]
+    meas_error = params.loc["shocks"][:n_choices].copy(deep=True)
     meas_error[:] = 0.0
     meas_error.update(short_meas_error)
     optim_paras["meas_error"] = meas_error.to_numpy()
@@ -123,38 +188,27 @@ def parse_parameters(params, paras_type="optim"):
         optim_paras["type_shifts"] = np.vstack(
             [np.zeros(4), optim_paras["type_shift"].reshape(-1, 4)]
         )
-        optim_paras["num_types"] = optim_paras["type_shifts"].shape[0]
     else:
-        optim_paras["num_types"] = 1
         optim_paras["type_shares"] = np.zeros(2)
         optim_paras["type_shifts"] = np.zeros((1, 4))
-
-    optim_paras["num_paras"] = len(params)
 
     return optim_paras
 
 
-def cov_matrix_to_sdcorr_params(cov):
-    """Can be taken from estimagic once 0.0.5 is released."""
-    dim = len(cov)
-    sds = np.sqrt(np.diagonal(cov))
-    scaling_matrix = np.diag(1 / sds)
-    corr = scaling_matrix.dot(cov).dot(scaling_matrix)
-    correlations = corr[np.tril_indices(dim, k=-1)]
-    return np.hstack([sds, correlations])
+def _infer_choices_with_experience(params, options):
+    covariates = options["covariates"]
+    parameters = params.index.get_level_values(1)
+
+    used_covariates = [cov for cov in covariates if cov in parameters]
+
+    matches = []
+    for cov in used_covariates:
+        matches += re.findall(r"exp_([A-Za-z]*)", covariates[cov])
+
+    return sorted(list(set(matches)))
 
 
-def sdcorr_params_to_matrix(sdcorr_params):
-    """Can be taken from estimagic once 0.0.5 is released."""
-    dim = number_of_triangular_elements_to_dimension(len(sdcorr_params))
-    diag = np.diag(sdcorr_params[:dim])
-    lower = np.zeros((dim, dim))
-    lower[np.tril_indices(dim, k=-1)] = sdcorr_params[dim:]
-    corr = np.eye(dim) + lower + lower.T
-    cov = diag.dot(corr).dot(diag)
-    return cov
-
-
-def number_of_triangular_elements_to_dimension(num):
-    """Can be taken from estimagic once 0.0.5 is released."""
-    return int(np.sqrt(8 * num + 1) / 2 - 0.5)
+def _infer_choices_with_wage(params):
+    return sorted(
+        i[5:] for i in params.index.get_level_values(0).unique() if "wage_" in i
+    )

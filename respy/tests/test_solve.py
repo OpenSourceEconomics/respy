@@ -2,14 +2,16 @@ import numpy as np
 import pytest
 from numba import njit
 
+from respy._numba import array_to_tuple
 from respy.config import EXAMPLE_MODELS
 from respy.pre_processing.model_checking import check_model_solution
-from respy.pre_processing.model_processing import process_options
-from respy.pre_processing.model_processing import process_params
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import get_example_model
 from respy.solve import get_continuation_values
 from respy.solve import solve
 from respy.solve import StateSpace
+from respy.state_space import _create_state_space
+from respy.tests._former_code import create_state_space
 from respy.tests.random_model import generate_random_model
 
 
@@ -23,10 +25,9 @@ def test_check_solution(model_or_seed):
 
     state_space = solve(params, options)
 
-    params, optim_paras = process_params(params)
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
-    check_model_solution(options, optim_paras, state_space)
+    check_model_solution(options, state_space)
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
@@ -43,35 +44,31 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     """
 
     @njit
-    def traverse_forward(states, indexer, indicator, edu_max):
-        for i in range(states.shape[0]):
-            # Unpack parent state and get index.
-            period, exp_a, exp_b, edu, choice_lagged, type_ = states[i]
+    def traverse_forward(states_, indexer, indicator_, is_inadmissible):
+        n_choices_w_exp = states_.shape[1] - 3
+        n_choices = is_inadmissible.shape[1]
 
-            # Working in Occupation A in period + 1
-            k = indexer[period + 1, exp_a + 1, exp_b, edu, 0, type_]
-            indicator[k] = 1
+        for i in range(states_.shape[0]):
 
-            # Working in Occupation B in period +1
-            k = indexer[period + 1, exp_a, exp_b + 1, edu, 1, type_]
-            indicator[k] = 1
+            k_parent = indexer[array_to_tuple(indexer, states_[i])]
 
-            # Schooling in period + 1. Note that adding an additional year of schooling
-            # is only possible for those that have strictly less than the maximum level
-            # of additional education allowed. This condition is necessary as there are
-            # states which have reached maximum education. Incrementing education by one
-            # would target an inadmissible state.
-            if edu >= edu_max:
-                pass
-            else:
-                k = indexer[period + 1, exp_a, exp_b, edu + 1, 2, type_]
-                indicator[k] = 1
+            for n in range(n_choices):
+                if is_inadmissible[k_parent, n]:
+                    pass
+                else:
+                    child = states_[i].copy()
+                    # Change to future period.
+                    child[0] += 1
 
-            # Staying at home in period + 1
-            k = indexer[period + 1, exp_a, exp_b, edu, 3, type_]
-            indicator[k] = 1
+                    if n < n_choices_w_exp:
+                        child[n + 1] += 1
 
-        return indicator
+                    child[-2] = n
+
+                    k = indexer[array_to_tuple(indexer, child)]
+                    indicator_[k] = 1
+
+        return indicator_
 
     if isinstance(model_or_seed, str):
         params, options = get_example_model(model_or_seed)
@@ -79,21 +76,22 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
         np.random.seed(model_or_seed)
         params, options = generate_random_model()
 
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = solve(params, options)
 
-    indicator = np.zeros(state_space.num_states)
+    indicator = np.zeros(state_space.states.shape[0])
 
-    for period in range(state_space.num_periods - 1):
+    for period in range(options["n_periods"] - 1):
         states = state_space.get_attribute_from_period("states", period)
 
         indicator = traverse_forward(
-            states, state_space.indexer, indicator, state_space.edu_max
+            states, state_space.indexer, indicator, state_space.is_inadmissible
         )
 
     # Restrict indicator to states of the second period as the first is never indexed.
-    indicator = indicator[state_space.states_per_period[0] :]
+    n_states_first_period = state_space.get_attribute_from_period("states", 0).shape[0]
+    indicator = indicator[n_states_first_period:]
 
     assert (indicator == 1).all()
 
@@ -111,7 +109,7 @@ def test_invariance_of_solution(model_or_seed):
         np.random.seed(model_or_seed)
         params, options = generate_random_model()
 
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = solve(params, options)
     state_space_ = solve(params, options)
@@ -128,25 +126,33 @@ def test_invariance_of_solution(model_or_seed):
     )
 
 
-@pytest.mark.parametrize("seed", range(10))
-def test_get_emaxs_of_subsequent_period(seed):
+@pytest.mark.parametrize("model_or_seed", range(10))
+def test_get_continuation_values(model_or_seed):
     """Test propagation of emaxs from last to first period."""
-    params, options = generate_random_model()
+    if isinstance(model_or_seed, str):
+        params, options = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params, options = generate_random_model()
 
-    options = process_options(options)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = StateSpace(params, options)
 
+    n_states_last_period = state_space.get_attribute_from_period(
+        "states", options["n_periods"] - 1
+    ).shape[0]
+    n_states_but_last_period = state_space.states.shape[0] - n_states_last_period
+
     state_space.continuation_values = np.r_[
-        np.zeros((state_space.states_per_period[:-1].sum(), 4)),
-        np.ones((state_space.states_per_period[-1], 4)),
+        np.zeros((n_states_but_last_period, len(options["choices"]))),
+        np.ones((n_states_last_period, len(options["choices"]))),
     ]
     state_space.emax_value_functions = np.r_[
-        np.zeros(state_space.states_per_period[:-1].sum()),
-        np.ones(state_space.states_per_period[-1]),
+        np.zeros(n_states_but_last_period), np.ones(n_states_last_period)
     ]
 
-    for period in reversed(range(state_space.num_periods - 1)):
+    for period in reversed(range(options["n_periods"] - 1)):
         states = state_space.get_attribute_from_period("states", period)
         state_space.continuation_values = get_continuation_values(
             states,
@@ -155,7 +161,44 @@ def test_get_emaxs_of_subsequent_period(seed):
             state_space.emax_value_functions,
             state_space.is_inadmissible,
         )
-        state_space.emax_value_functions = state_space.continuation_values.max()
+        state_space.emax_value_functions = state_space.continuation_values.max(axis=1)
 
     assert (state_space.emax_value_functions == 1).all()
-    assert (state_space.continuation_values == 1).all()
+    assert state_space.continuation_values.mean() >= 0.95
+
+
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+def test_state_space_vs_old_implementation(model_or_seed):
+    if isinstance(model_or_seed, str):
+        params, options = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params, options = generate_random_model()
+
+    params, optim_paras, options = process_params_and_options(params, options)
+
+    # Create old state space arguments.
+    n_periods = options["n_periods"]
+    n_types = options["n_types"]
+    edu_max = options["choices"]["edu"]["max"]
+    edu_starts = options["choices"]["edu"]["start"]
+
+    # Get states and indexer from old state space.
+    states_old, indexer_old = create_state_space(
+        n_periods, n_types, edu_starts, edu_max
+    )
+
+    states_new, indexer_new = _create_state_space(options, n_types)
+    states_new.lagged_choice = states_new.lagged_choice.replace(
+        {choice: i for i, choice in enumerate(options["choices"])}
+    )
+
+    # Compare the state spaces via sets as ordering changed in some cases.
+    states_old_set = set(map(tuple, states_old))
+    states_new_set = set(map(tuple, states_new.to_numpy()))
+    assert states_old_set == states_new_set
+
+    # Compare indexers via masks for valid indices.
+    mask_old = indexer_old != -1
+    mask_new = indexer_new != -1
+    assert np.array_equal(mask_old, mask_new)

@@ -1,7 +1,7 @@
 category,name,para,fixed,lower,upper,comment,old_category,old_name
 delta,delta,0.9363,FALSE,0,1,discount factor,delta,delta
 wage_a,constant,8.937,FALSE,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage),coeffs_a,skill_price
-wage_a,edu,0.07,FALSE,,,linear return to an additional year of schooling (wage),coeffs_a,return_schooling
+wage_a,exp_edu,0.07,FALSE,,,linear return to an additional year of schooling (wage),coeffs_a,return_schooling
 wage_a,exp_a,0.027,FALSE,,,"return to experience, same sector, linear (wage)",coeffs_a,exp_a
 wage_a,exp_a_square,-0.0429,FALSE,,,"return to experience, same sector, quadratic (divided by 100) (wage)",coeffs_a,exp_a_square
 wage_a,exp_b,0.0225,FALSE,,,"return to experience, other civilian sector, linear (wage)",coeffs_a,exp_b
@@ -18,7 +18,7 @@ nonpec_a,not_any_exp_a,-2759,FALSE,,,reward of working in a for the first time (
 nonpec_a,hs_graduate,804,FALSE,,,return to high school degree (non pecuniary),coeffs_common,return_hs_degree
 nonpec_a,co_graduate,2005,FALSE,,,return to college degree (non pecuniary),coeffs_common,return_col_degree
 wage_b,constant,8.8811,FALSE,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage),coeffs_b,skill_price
-wage_b,edu,0.024,FALSE,,,linear return to an additional year of schooling (wage),coeffs_b,return_schooling
+wage_b,exp_edu,0.024,FALSE,,,linear return to an additional year of schooling (wage),coeffs_b,return_schooling
 wage_b,exp_a,0.0191,FALSE,,,"return to experience, other civilian sector, linear (wage)",coeffs_b,exp_a
 wage_b,exp_a_square,0,TRUE,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)",coeffs_b,exp_a_square
 wage_b,exp_b,0.0464,FALSE,,,"return to experience, same sector, linear (wage)",coeffs_b,exp_b

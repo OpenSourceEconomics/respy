@@ -25,47 +25,47 @@ def create_draws_and_prob_wages(
 
     Parameters
     ----------
-    log_wages_observed : np.ndarray
+    log_wages_observed : numpy.ndarray
         Array with shape (n_obs * n_types,) containing observed log wages.
-    wages_systematic : np.ndarray
+    wages_systematic : numpy.ndarray
         Array with shape (n_obs * n_types, n_choices) containing systematic wages. Can
-        contain np.nan or any number for non-wage sectors. The non wage sectors only
+        contain numpy.nan or any number for non-wage choices. The non-wage choices only
         have to be there to not raise index errors.
-    base_draws : np.ndarray
+    base_draws : numpy.ndarray
         Array with shape (n_draws, n_choices) with standard normal random variables.
-    choices : np.ndarray
+    choices : numpy.ndarray
         Array with shape (n_obs * n_types,) containing observed choices. Is used to
         select columns of systematic wages. Therefore it has to be coded starting at
         zero.
-    shocks_cholesky : np.ndarray
+    shocks_cholesky : numpy.ndarray
         Array with shape (n_choices, n_choices) with the lower triangular Cholesky
         factor of the covariance matrix of the shocks.
-    meas_error_sds : np.ndarray
+    meas_error_sds : numpy.ndarray
         Array with shape (n_choices,) containing standard deviations of the measurement
         errors of observed reward components.
-    periods : np.ndarray
+    periods : numpy.ndarray
         Array with shape (n_obs * n_types,) containing the period of the observation.
 
     Returns
     -------
-    draws : np.ndarray
+    draws : numpy.ndarray
         Array with shape (n_obs * n_types, n_draws, n_choices) containing shocks drawn
         from a multivariate normal distribution conditional on the observed wages.
-    prob_wages : np.ndarray
+    prob_wages : numpy.ndarray
         Array with shape (n_obs * n_types,) containing the unconditional likelihood of
         the observed wages, correcting for measurement error.
 
     """
     choices = choices.astype(np.uint16)
-    nobs, nchoices = wages_systematic.shape
+    n_obs, n_choices = wages_systematic.shape
     relevant_systematic_wages = np.choose(choices, wages_systematic.T)
     log_wage_systematic = np.clip(
         np.log(relevant_systematic_wages), -HUGE_FLOAT, HUGE_FLOAT
     )
 
-    states = np.zeros((nobs, nchoices))
+    states = np.zeros((n_obs, n_choices))
     measurements = log_wages_observed - log_wage_systematic
-    extended_cholcovs_t = np.zeros((nobs, nchoices + 1, nchoices + 1))
+    extended_cholcovs_t = np.zeros((n_obs, n_choices + 1, n_choices + 1))
     extended_cholcovs_t[:, 1:, 1:] = shocks_cholesky.T
     meas_sds = meas_error_sds[choices]
 
@@ -75,7 +75,7 @@ def create_draws_and_prob_wages(
     )
 
     draws = np.matmul(base_draws[periods], extended_cholcovs_t[:, 1:, 1:])
-    draws += states.reshape(nobs, 1, nchoices)
+    draws += states.reshape(n_obs, 1, n_choices)
     draws[:, :2] = np.clip(np.exp(draws[:, :2]), 0.0, HUGE_FLOAT)
 
     return draws, prob_wages
@@ -100,17 +100,17 @@ def kalman_update(state, measurement, extended_cholcov_t, meas_sd, choice, prob_
 
     Parameters
     ----------
-    state : np.ndarray
+    state : numpy.ndarray
         Array with shape (n_choices,) containing initial state vectors.
     measurement : float
         The measurement that is incorporated through the Kalman update.
-    extended_cholcov_t : np.ndarray
+    extended_cholcov_t : numpy.ndarray
         Array with shape (n_states + 1, n_states + 1) that contains the transpose of the
         Cholesky factor of the state covariance matrix in the lower right block and
         zeros everywhere else.
     meas_sd : float
         The standard deviation of the measurement error.
-    choice : uint16
+    choice : numpy.uint16
         Observed choice. Determines on which element of the state vector is measured
         by the measurement.
 

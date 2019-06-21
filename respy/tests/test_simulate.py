@@ -5,7 +5,7 @@ import pytest
 
 import respy as rp
 from respy.likelihood import get_crit_func
-from respy.pre_processing.model_processing import process_params
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.simulate import calculate_value_functions_and_flow_utilities
 from respy.tests.random_model import generate_random_model
 
@@ -17,13 +17,13 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
 
     # We need to simulate the model to get the emaxs and model attributes.
     params, options = generate_random_model(myopic=True)
-    params, optim_paras = process_params(params)
+    params, optim_paras, options = process_params_and_options(params, options)
 
     draws = np.random.randn(1, 4)
 
     state_space, _ = rp.simulate(params, options)
 
-    for period in range(state_space.num_periods):
+    for period in range(options["n_periods"]):
         # Unpack necessary attributes
         wages = state_space.get_attribute_from_period("wages", period)
         nonpec = state_space.get_attribute_from_period("nonpec", period)
@@ -34,16 +34,13 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
             "is_inadmissible", period
         )
 
-        total_values, rewards_ex_post = calculate_value_functions_and_flow_utilities(
+        value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
             wages, nonpec, emaxs_period, draws, optim_paras["delta"], is_inadmissible
         )
 
-        # Only states without maximum education are tested as the inadmissibility
-        # penalty is applied to the total values of states with maximum education.
-        states_in_period = state_space.get_attribute_from_period("states", period)
-        idx = np.where(states_in_period[:, 3] != state_space.edu_max)
-
-        np.testing.assert_equal(total_values[idx], rewards_ex_post[idx])
+        np.testing.assert_equal(
+            value_functions[~is_inadmissible], flow_utilities[~is_inadmissible]
+        )
 
 
 @pytest.mark.parametrize("seed", range(20))

@@ -1,12 +1,13 @@
 import numpy as np
+import pandas as pd
+import yaml
 from numba import njit
+from numba import vectorize
 
 from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import TEST_RESOURCES_DIR
-from respy.pre_processing.model_processing import process_options
-from respy.pre_processing.model_processing import process_params
 
 
 @njit
@@ -30,10 +31,10 @@ def get_conditional_probabilities(type_shares, initial_level_of_education):
 
     Parameters
     ----------
-    type_shares : np.ndarray
+    type_shares : numpy.ndarray
         Undocumented parameter.
-    initial_level_of_education : np.ndarray
-        Array with shape (num_obs,) containing initial levels of education.
+    initial_level_of_education : numpy.ndarray
+        Array with shape (n_obs,) containing initial levels of education.
 
     """
     type_shares = type_shares.reshape(-1, 2)
@@ -58,15 +59,15 @@ def create_base_draws(shape, seed):
 
     Parameters
     ----------
-    shape : Tuple[int]
+    shape : tuple(int)
         Tuple representing the shape of the resulting array.
     seed : int
         Seed to control randomness.
 
     Returns
     -------
-    draws : np.array
-        Draws with shape (num_periods, num_draws)
+    draws : numpy.ndarray
+        Draws with shape (n_periods, n_draws)
 
     """
     # Control randomness by setting seed value
@@ -94,7 +95,72 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky):
 def get_example_model(model):
     assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
 
-    options = process_options(TEST_RESOURCES_DIR / f"{model}.yaml")
-    params, _ = process_params(TEST_RESOURCES_DIR / f"{model}.csv")
+    options = yaml.safe_load((TEST_RESOURCES_DIR / f"{model}.yaml").read_text())
+    params = pd.read_csv(TEST_RESOURCES_DIR / f"{model}.csv")
 
     return params, options
+
+
+def _generate_column_labels_estimation(options):
+    labels = (
+        ["Identifier", "Period", "Choice", "Wage"]
+        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
+        + ["Lagged_Choice"]
+    )
+
+    dtypes = {}
+    for label in labels:
+        if label == "Wage":
+            dtypes[label] = float
+        elif "Choice" in label:
+            dtypes[label] = "category"
+        else:
+            dtypes[label] = int
+
+    return labels, dtypes
+
+
+def _generate_column_labels_simulation(options):
+    est_lab, est_dtypes = _generate_column_labels_estimation(options)
+    labels = (
+        est_lab
+        + ["Type"]
+        + [f"Nonpecuniary_Reward_{choice.title()}" for choice in options["choices"]]
+        + [f"Wages_{choice.title()}" for choice in options["choices_w_wage"]]
+        + [f"Flow_Utility_{choice.title()}" for choice in options["choices"]]
+        + [f"Value_Function_{choice.title()}" for choice in options["choices"]]
+        + [f"Shock_Reward_{choice.title()}" for choice in options["choices"]]
+        + ["Discount_Rate"]
+    )
+
+    dtypes = {col: (int if col == "Type" else float) for col in labels}
+    dtypes = {**dtypes, **est_dtypes}
+
+    return labels, dtypes
+
+
+@vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
+def clip(x, minimum=None, maximum=None):
+    """Clip (limit) input value.
+
+    Parameters
+    ----------
+    x : float
+        Value to be clipped.
+    minimum : float
+        Lower limit.
+    maximum : float
+        Upper limit.
+
+    Returns
+    -------
+    float
+        Clipped value.
+
+    """
+    if minimum is not None and x < minimum:
+        return minimum
+    elif maximum is not None and x > maximum:
+        return maximum
+    else:
+        return x

@@ -1,19 +1,19 @@
 """This module contains the functions for the generation of random requests."""
-import numpy as np
+import collections
 
-from respy.config import DATA_LABELS_EST
+import numpy as np
+from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
+from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
+
 from respy.config import DEFAULT_OPTIONS
-from respy.pre_processing.model_checking import _validate_options
-from respy.pre_processing.model_processing import cov_matrix_to_sdcorr_params
-from respy.pre_processing.model_processing import (
-    number_of_triangular_elements_to_dimension,
-)
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
+from respy.shared import _generate_column_labels_estimation
 from respy.simulate import simulate
 
 
 def generate_random_model(
-    point_constr=None, bound_constr=None, num_types=None, myopic=False
+    point_constr=None, bound_constr=None, n_types=None, myopic=False
 ):
     """Generate a random model specification.
 
@@ -25,11 +25,8 @@ def generate_random_model(
     bound_constr : dict
         Upper bounds for some options to keep computation time reasonable. Can have the
         keys ["max_types", "max_periods", "max_edu_start", "max_agents", "max_draws"]
-    num_types : int
+    n_types : int
         fix number of unobserved types.
-    file_path : str
-        save path for the output. The extensions .csv and .json are appended
-        automatically.
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
 
@@ -45,19 +42,19 @@ def generate_random_model(
 
     bound_constr = _consolidate_bound_constraints(bound_constr)
 
-    if num_types is None:
-        num_types = np.random.randint(1, bound_constr["max_types"] + 1)
+    if n_types is None:
+        n_types = np.random.randint(1, bound_constr["max_types"] + 1)
 
-    params = csv_template(num_types=num_types, initialize_coeffs=False)
+    params = csv_template(n_types=n_types, initialize_coeffs=False)
     params["para"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
     params.loc["delta", "para"] = 1 - np.random.uniform() if myopic is False else 0.0
 
-    num_shock_coeffs = len(params.loc["shocks"])
-    dim = number_of_triangular_elements_to_dimension(num_shock_coeffs)
+    n_shock_coeffs = len(params.loc["shocks"])
+    dim = number_of_triangular_elements_to_dimension(n_shock_coeffs)
     helper = np.eye(dim) * 0.5
     helper[np.tril_indices(dim, k=-1)] = np.random.uniform(
-        -0.05, 0.2, size=(num_shock_coeffs - dim)
+        -0.05, 0.2, size=(n_shock_coeffs - dim)
     )
     cov = helper.dot(helper.T)
     params.loc["shocks", "para"] = cov_matrix_to_sdcorr_params(cov)
@@ -66,21 +63,21 @@ def generate_random_model(
         low=0.001, high=0.1, size=len(params.loc["meas_error"])
     )
 
-    options = {}
+    options = {
+        "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
+        "simulation_seed": np.random.randint(1, 1000),
+        "n_periods": np.random.randint(1, bound_constr["max_periods"]),
+        "choices": {"a": {}, "b": {}, "edu": {}, "home": {}},
+    }
 
-    options["simulation_agents"] = np.random.randint(3, bound_constr["max_agents"] + 1)
-    options["simulation_seed"] = np.random.randint(1, 1000)
-
-    options["num_periods"] = np.random.randint(1, bound_constr["max_periods"])
-
-    num_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
-    options["education_start"] = np.random.choice(
-        np.arange(1, 15), size=num_edu_start, replace=False
+    n_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
+    options["choices"]["edu"]["start"] = np.random.choice(
+        np.arange(1, 15), size=n_edu_start, replace=False
     ).tolist()
-    options["education_lagged"] = np.random.uniform(size=num_edu_start).tolist()
-    options["education_share"] = get_valid_shares(num_edu_start)
-    options["education_max"] = np.random.randint(
-        max(options["education_start"]) + 1, 30
+    options["choices"]["edu"]["lagged"] = np.random.uniform(size=n_edu_start)
+    options["choices"]["edu"]["share"] = get_valid_shares(n_edu_start)
+    options["choices"]["edu"]["max"] = np.random.randint(
+        max(options["choices"]["edu"]["start"]) + 1, 30
     )
 
     options["solution_draws"] = np.random.randint(1, bound_constr["max_draws"])
@@ -90,30 +87,23 @@ def generate_random_model(
     options["estimation_seed"] = np.random.randint(1, 10000)
     options["estimation_tau"] = np.random.uniform(100, 500)
 
-    # don't remove the seemingly redundant conversion from numpy._bool to python bool!
-    not_interpolation = np.random.choice([True, False])
-    options["interpolation_points"] = (
-        -1 if not_interpolation else np.random.randint(10, 100)
-    )
+    options["interpolation_points"] = -1
 
     options = {**DEFAULT_OPTIONS, **options}
 
-    _validate_options(options)
-
-    for key, value in point_constr.items():
-        if isinstance(value, dict):
-            options[key].update(value)
-        else:
-            options[key] = value
-
-    _validate_options(options)
+    options = _update_nested_dictionary(options, point_constr)
 
     return params, options
 
 
 def _consolidate_bound_constraints(bound_constr):
-    constr = {"max_types": 3, "max_periods": 3, "max_edu_start": 3}
-    constr.update({"max_agents": 1000, "max_draws": 100})
+    constr = {
+        "max_types": 3,
+        "max_periods": 3,
+        "max_edu_start": 3,
+        "max_agents": 1000,
+        "max_draws": 100,
+    }
     constr.update(bound_constr)
     return constr
 
@@ -142,6 +132,7 @@ def simulate_truncated_data(params, options, is_missings=True):
         agent = agent[agent["Period"] < start_truncation]
         return agent
 
+    _, _, options = process_params_and_options(params, options)
     state_space, df = simulate(params, options)
 
     np.random.seed(options["simulation_seed"])
@@ -155,7 +146,7 @@ def simulate_truncated_data(params, options, is_missings=True):
 
         # We also want to drop the some wage observations. Note that we might be dealing
         # with a dataset where nobody is working anyway.
-        is_working = data_subset["Choice"].isin([0, 1])
+        is_working = data_subset["Choice"].isin(options["choices_w_wage"])
         num_drop_wages = int(
             np.sum(is_working) * np.random.np.random.uniform(high=0.5, size=1)
         )
@@ -169,6 +160,25 @@ def simulate_truncated_data(params, options, is_missings=True):
         data_subset = df
 
     # We can restrict the information to observed entities only.
-    data_subset = data_subset[DATA_LABELS_EST]
+    labels, _ = _generate_column_labels_estimation(options)
+    data_subset = data_subset[labels]
 
     return data_subset
+
+
+def _update_nested_dictionary(dict_, other):
+    """Update a nested dictionary with another dictionary.
+
+    The basic ``.update()`` method of dictionaries adds non-existing keys or replaces
+    existing keys which works fine for unnested dictionaries. For nested dictionaries,
+    levels under the current level are not updated but overwritten. This function
+    recursively loops over keys and values and inserts the value if it is not a
+    dictionary. If it is a dictionary, it applies the same process again.
+
+    """
+    for key, value in other.items():
+        if isinstance(value, collections.Mapping):
+            dict_[key] = _update_nested_dictionary(dict_.get(key, {}), value)
+        else:
+            dict_[key] = value
+    return dict_
