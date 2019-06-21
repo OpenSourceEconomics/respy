@@ -53,6 +53,36 @@ estimation. This could be combined with having a dataset simulated that does not
 to the CCP model and the respy model.
 
 
+Estimate a model by Approximate Bayesian Computation
+----------------------------------------------------
+
+Use the `ABCpy package <https://arxiv.org/pdf/1711.04694.pdf>`_ and respy's simulation capabilities to estimate the model via approximate bayesian computation. Compare it against other estimation methods in terms of computational burden and precision of the estimates.
+
+
+Sparse Maximization and Human Capital Investment
+------------------------------------------------
+
+Gabaix (2014) proposes a fully tractable, unifying theory of
+limited attention in decision-making. The idea is that the
+decision-maker pays less or no attention to some features of the
+situation. A potential application of sparse maximization is human
+capital investment, since young individuals could (partially
+or even fully) neglect some relevant features, which could tilt
+their choices. This may imply that a considerable share of the
+US labor force is misallocated.
+
+Salience Theory and Human Capital Investment
+--------------------------------------------
+
+Bordalo, Gennaioli and Shleifer (2013) propose a unifying theory of
+salience in decisionmaking. An attribute is salient when it “stands
+out” relative to the alternative choices. A potential application of
+salience theory is human capital investment, since young individuals
+could attach disproportionately high attention to professions with
+salient returns, which could tilt their choices.
+
+
+
 Software Engineering
 ====================
 
