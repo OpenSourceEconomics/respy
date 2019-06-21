@@ -37,11 +37,11 @@ def create_state_space(n_periods, n_types, edu_starts, edu_max):
 
     Returns
     -------
-    states : np.ndarray
-        Array with shape (num_states, 6) containing period, experience in OCCUPATION A,
+    states : numpy.ndarray
+        Array with shape (n_states, 6) containing period, experience in OCCUPATION A,
         experience in OCCUPATION B, years of schooling, the lagged choice and the type
         of the agent.
-    indexer : np.ndarray
+    indexer : numpy.ndarray
         A matrix where each dimension represents a characteristic of the state space.
         Switching from one state is possible via incrementing appropriate indices by 1.
 

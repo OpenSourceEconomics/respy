@@ -2,13 +2,13 @@ from functools import partial
 
 import numpy as np
 from numba import guvectorize
-from numba import vectorize
 
 from respy.conditional_draws import create_draws_and_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
+from respy.shared import clip
 from respy.shared import create_base_draws
 from respy.shared import get_conditional_probabilities
 from respy.solve import solve_with_backward_induction
@@ -18,9 +18,9 @@ from respy.state_space import StateSpace
 def get_crit_func(params, options, df):
     """Get the criterion function.
 
-    The return value is the :func:`log_like` where all arguments except the
-    parameter vector are fixed with ``functools.partial``. Thus, the function can be
-    passed directly into any optimization algorithm.
+    The return value is the :func:`log_like` where all arguments except the parameter
+    vector are fixed with :func:`functools.partial`. Thus, the function can be passed
+    directly into any optimization algorithm.
 
     Parameters
     ----------
@@ -46,7 +46,9 @@ def get_crit_func(params, options, df):
 
     check_estimation_data(options, df)
 
-    df = _process_estimation_data(df, options)
+    df = df.sort_values(["Identifier", "Period"])
+
+    df = _convert_choice_variables_from_categorical_to_codes(df, options)
 
     state_space = StateSpace(params, options)
 
@@ -98,33 +100,6 @@ def log_like(params, data, base_draws_est, state_space, options):
     crit_val = -np.mean(contribs)
 
     return crit_val
-
-
-@vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
-def clip(x, minimum=None, maximum=None):
-    """Clip (limit) input value.
-
-    Parameters
-    ----------
-    x : float
-        Value to be clipped.
-    minimum : float
-        Lower limit.
-    maximum : float
-        Upper limit.
-
-    Returns
-    -------
-    float
-        Clipped value.
-
-    """
-    if minimum is not None and x < minimum:
-        return minimum
-    elif maximum is not None and x > maximum:
-        return maximum
-    else:
-        return x
 
 
 @guvectorize(
@@ -228,9 +203,9 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
 
     Parameters
     ----------
-    state_space : class
+    state_space : :class:`~respy.state_space.StateSpace`
         Class of state space.
-    df : pd.DataFrame
+    df : pandas.DataFrame
         DataFrame with the empirical dataset.
     base_draws_est : numpy.ndarray
         Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
@@ -319,9 +294,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
     return contribs
 
 
-def _process_estimation_data(df, options):
-    df = df.sort_values(["Identifier", "Period"])
-
+def _convert_choice_variables_from_categorical_to_codes(df, options):
     # Recode choices to model codes. It is not possible to use ``.cat.codes`` because
     # the codes might be in a different order than for the model required which is
     # choices_w_exp_w_wag, choices_w_exp_wo_wage, choices_wo_exp_wo_wage.

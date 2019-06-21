@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import yaml
 from numba import njit
+from numba import vectorize
 
 from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
@@ -136,3 +137,30 @@ def _generate_column_labels_simulation(options):
     dtypes = {**dtypes, **est_dtypes}
 
     return labels, dtypes
+
+
+@vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
+def clip(x, minimum=None, maximum=None):
+    """Clip (limit) input value.
+
+    Parameters
+    ----------
+    x : float
+        Value to be clipped.
+    minimum : float
+        Lower limit.
+    maximum : float
+        Upper limit.
+
+    Returns
+    -------
+    float
+        Clipped value.
+
+    """
+    if minimum is not None and x < minimum:
+        return minimum
+    elif maximum is not None and x > maximum:
+        return maximum
+    else:
+        return x

@@ -2,3 +2,9 @@
 div.prompt {
     display: none;
 }
+
+
+/* Set background color to Tableau blue. */
+div.related {
+    background-color: #4e79a7;
+}

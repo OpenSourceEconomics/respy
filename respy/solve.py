@@ -15,7 +15,9 @@ from respy.state_space import StateSpace
 def solve(params, options):
     """Solve the model.
 
-    This function is a wrapper for the solution routine.
+    This function takes a model specification and returns the state space of the model
+    along with components of the solution such as covariates, non-pecuniary rewards,
+    wages, continuation values and value functions as attributes of the class.
 
     Parameters
     ----------
@@ -23,6 +25,11 @@ def solve(params, options):
         DataFrame containing parameter series.
     options : dict
         Dictionary containing model attributes which are not optimized.
+
+    Returns
+    -------
+    state_space : :class:`~respy.state_space.StateSpace`
+        State space of the model which is already solved via backward-induction.
 
     """
     params, optim_paras, options = process_params_and_options(params, options)
@@ -38,16 +45,16 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     Parameters
     ----------
-    state_space : :class:`StateSpace`
-        State space object.
+    state_space : :class:`~respy.state_space.StateSpace`
+        State space of the model which is not solved yet.
     optim_paras : dict
-        Parameters affected by optimization.
+        Parsed model parameters affected by the optimization.
     options : dict
-        Dictionary containing optimization independent model options.
+        Optimization independent model options.
 
     Returns
     -------
-    state_space : :class:`StateSpace`
+    state_space : :class:`~respy.state_space.StateSpace`
         State space containing the emax of the subsequent period of each choice, columns
         0-3, as well as the maximum emax of the current period for each state, column 4,
         in ``state_space.continuation_values``.

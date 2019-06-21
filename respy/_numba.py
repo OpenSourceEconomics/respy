@@ -5,7 +5,7 @@ from numba.extending import intrinsic
 
 @intrinsic
 def array_to_tuple(tyctx, array, indexer_array):
-    """Converts a an array to a tuple for indexing.
+    """Converts an array to a tuple for indexing.
 
     This function is taken from
     https://gist.github.com/sklam/830fe01343ba95828c3b24c391855c86 to create tuple from
@@ -13,9 +13,9 @@ def array_to_tuple(tyctx, array, indexer_array):
 
     Parameters
     ----------
-    array : np.ndarray
+    array : numpy.ndarray
         Array for which the indexer is used.
-    indexer_array : np.ndarray
+    indexer_array : numpy.ndarray
         Array which should be converted to a tuple.
 
     """

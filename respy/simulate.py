@@ -295,7 +295,7 @@ def calculate_value_functions_and_flow_utilities(
     value_functions : numpy.ndarray
         Array with shape (n_choices, n_draws).
     flow_utilities : numpy.ndarray
-        Array with shape (n_choices, n_draws)
+        Array with shape (n_choices, n_draws).
 
     """
     n_draws, n_choices = draws.shape
@@ -315,6 +315,19 @@ def calculate_value_functions_and_flow_utilities(
             value_functions[j, i] = value_function
 
 
+def _convert_choice_variables_from_codes_to_categorical(df, options):
+    code_to_choice = {i: choice for i, choice in enumerate(options["choices"])}
+
+    df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
+        code_to_choice
+    )
+    df.Lagged_Choice = df.Lagged_Choice.cat.set_categories(
+        code_to_choice
+    ).cat.rename_categories(code_to_choice)
+
+    return df
+
+
 def _process_simulated_data(data, options):
     labels, dtypes = _generate_column_labels_simulation(options)
 
@@ -325,13 +338,6 @@ def _process_simulated_data(data, options):
         .reset_index(drop=True)
     )
 
-    code_to_choice = {i: choice for i, choice in enumerate(options["choices"])}
-
-    df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
-        code_to_choice
-    )
-    df.Lagged_Choice = df.Lagged_Choice.cat.set_categories(
-        code_to_choice
-    ).cat.rename_categories(code_to_choice)
+    df = _convert_choice_variables_from_codes_to_categorical(df, options)
 
     return df

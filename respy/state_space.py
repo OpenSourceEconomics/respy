@@ -21,12 +21,12 @@ class StateSpace:
     Attributes
     ----------
     states : numpy.ndarray
-        Array with shape (num_states, n_choices + 3) containing period, experiences,
+        Array with shape (n_states, n_choices + 3) containing period, experiences,
         lagged_choice and type information.
     indexer : numpy.ndarray
         Array with shape (n_periods, n_periods, n_periods, edu_max, n_choices, n_types).
     covariates : numpy.ndarray
-        Array with shape (num_states, n_covariates) containing covariates of each state
+        Array with shape (n_states, n_covariates) containing covariates of each state
         necessary to calculate rewards.
     wages : numpy.ndarray
         Array with shape (n_states_in_period, n_choices) which contains zeros in places
@@ -86,8 +86,7 @@ class StateSpace:
         Parameters
         ----------
         attr : str
-            String of attribute name, e.g. ``"states"`` to retrieve
-            :attr:`~respy.state_space.StateSpace.states`.
+            Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
         period : int
             Attribute is retrieved from this period.
 
@@ -163,17 +162,18 @@ def _create_state_space(options, n_types):
       account that some restrictions to the state space are more important than others
       and should be applied earlier. Others can be delayed.
 
-      As a compromise, we built on the former approach in :ref:`create_state_space`
-      which loops over choices and possible experience values. Thus, it incorporates
-      some fundamental restrictions like time limits and needs less filtering.
+      As a compromise, we built on the former approach in
+      :func:`~respy.tests._former_code.create_state_space` which loops over choices and
+      possible experience values. Thus, it incorporates some fundamental restrictions
+      like time limits and needs less filtering.
 
-    - The former implementation, :ref:`create_state_space`, had four hard-coded choices
-      and a loop for every choice with experience accumulation. Thus, this function is
-      useless if the model requires additional or less choices. For each number of
-      choices with and without experience, a new function had to be programmed. The
-      following approach uses the same loops over choices with experiences, but they are
-      dynamically created by the recursive function
-      :ref:`_create_core_state_space_per_period`.
+    - The former implementation, :func:`~respy.tests._former_code.create_state_space`,
+      had four hard-coded choices and a loop for every choice with experience
+      accumulation. Thus, this function is useless if the model requires additional or
+      less choices. For each number of choices with and without experience, a new
+      function had to be programmed. The following approach uses the same loops over
+      choices with experiences, but they are dynamically created by the recursive
+      function :func:`_create_core_state_space_per_period`.
 
     - There are characteristics of the state space which are independent from all other
       state space attributes like types (and almost lagged choices). These attributes
@@ -219,7 +219,7 @@ def _create_core_state_space(options, n_types):
     The core state space abstracts from initial experiences and uses the maximum range
     between initial experiences and maximum experiences to cover the whole range. The
     combinations of initial experiences are applied later in
-    :ref:`_add_initial_experiences_to_core_state_space`.
+    :func:`_add_initial_experiences_to_core_state_space`.
 
     See also
     --------

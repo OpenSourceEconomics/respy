@@ -75,8 +75,8 @@ experiences.
 
 See also
 --------
-_filter_core_state_space : Filters the core state space.
-_create_core_state_space : Creates the core state space.
+respy.state_space._filter_core_state_space : Filters the core state space.
+respy.state_space._create_core_state_space : Creates the core state space.
 
 """
 
