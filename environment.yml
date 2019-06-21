@@ -14,6 +14,7 @@ dependencies:
   - matplotlib>=3.0.0
   - nbsphinx=0.4.2
   - numba=0.43.1
+  - numpydoc
   - pandas=0.24.2
   - pyaml
   - pytest
@@ -23,7 +24,6 @@ dependencies:
   - scipy=1.2.1
   - Sphinx>=2.0.0
   - sphinx-autobuild
-  - sphinx_rtd_theme
   - tox-conda
   - pip:
     - pre-commit
