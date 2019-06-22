@@ -7,7 +7,6 @@ Roadmap
 We aim for improvements to ``respy`` in three domains: Economics, Software Engineering,
 and Numerical Methods.
 
-
 Economics and Statistics
 ========================
 
@@ -24,8 +23,8 @@ a fifth choice (the military sector).
 Explore Simulation Based Estimation
 -----------------------------------
 
-We want to add simulation based estimation to respy and compare the accuracy of
-parameters estimated with maximum likelihood and simulation based methods. As respy
+We want to add simulation based estimation to ``respy`` and compare the accuracy of
+parameters estimated with maximum likelihood and simulation based methods. As ``respy``
 already has the ability to simulate data, it would be very simple to implement method of
 simulated moments or indirect inference estimation.
 
@@ -50,15 +49,47 @@ Estimate a model by CCP
 
 Implement estimation by CCP and outline the trade-offs and discuss the validity of
 estimation. This could be combined with having a dataset simulated that does not conform
-to the CCP model and the respy model.
+to the CCP model and the ``respy`` model.
 
+Estimate a model by Approximate Bayesian Computation
+----------------------------------------------------
+
+Use the `ABCpy package <https://arxiv.org/pdf/1711.04694.pdf>`_ and ``respy``'s
+simulation capabilities to estimate the model via approximate Bayesian computation.
+Compare it against other estimation methods in terms of computational burden and
+precision of the estimates.
+
+Sparse Maximization and Human Capital Investment
+------------------------------------------------
+
+Gabaix (2014) proposes a fully tractable, unifying theory of limited attention in
+decision-making. The idea is that the decision-maker pays less or no attention to some
+features of the situation. A potential application of sparse maximization is human
+capital investment, since young individuals could (partially or even fully) neglect some
+relevant features, which could tilt their choices. This may imply that a considerable
+share of the US labor force is miss-allocated.
+
+For more information check out the :download:`full description
+<../_static/thesis_proposals/Sparsity_and_human_capital.pdf>`
+
+Salience Theory and Human Capital Investment
+--------------------------------------------
+
+Bordalo, Gennaioli and Shleifer (2013) propose a unifying theory of salience in
+decision-making. An attribute is salient when it “stands out” relative to the
+alternative choices. A potential application of salience theory is human capital
+investment, since young individuals could attach disproportionately high attention to
+professions with salient returns, which could tilt their choices.
+
+For more information check out the :download:`full description
+<../_static/thesis_proposals/Salience_and_human_capital.pdf>`
 
 Software Engineering
 ====================
 
-* research the *hypothesis* package to replace the hand-crafted property-based testing
-  routines
-
+* research the `hypothesis
+  <https://github.com/HypothesisWorks/hypothesis/tree/master/hypothesis-python>`_
+  package to replace the hand-crafted property-based testing routines.
 
 Numerical Methods
 =================
