@@ -1,0 +1,22 @@
+jobs:
+- job:
+  displayName: ubuntu-16.04
+  pool:
+    vmImage: "ubuntu-16.04"
+  strategy:
+    matrix:
+      Python36:
+        python.version: "3.6"
+      Python37:
+        python.version: "3.7"
+
+  steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
+  - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda
+    displayName: Create Anaconda environment
+
+  - bash: |
+      source activate respy
+      tox -e pytest
