@@ -19,7 +19,7 @@ jobs:
 
   - bash: |
       source activate respy
-      tox -e pytest
+      tox
 
 - job:
   displayName: vs2017-win2016
@@ -33,14 +33,14 @@ jobs:
         python.version: "3.7"
 
   steps:
-  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
 
-  - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
+  - powershell: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
     displayName: Create Anaconda environment
 
-  - bash: |
-      source activate respy
+  - powershell: |
+      call activate respy
       tox -e pytest
 
 - job:

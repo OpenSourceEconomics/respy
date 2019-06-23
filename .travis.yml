@@ -15,23 +15,13 @@ python: 3.6
 # tags.
 if: type != push OR tag IS present OR branch = master
 
-env:
-    - PYTHON_VERSION=3.6
-      TEST=pytest
-    - PYTHON_VERSION=3.7
-      TEST=pytest
-    - PYTHON_VERSION=3.6
-      TEST=linting
-    - PYTHON_VERSION=3.6
-      TEST=sphinx
-
 install:
     # Install and configure conda
     - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - bash miniconda.sh -b -p /home/travis/miniconda
     - export PATH=/home/travis/miniconda/bin:$PATH
     - conda config --set always_yes yes --set changeps1 no
-    - conda install python=$PYTHON_VERSION
+    - conda install python=3.6
     - conda info -a
 
     # Install respy
@@ -40,7 +30,7 @@ install:
     - pip install tox-conda
 
 script:
-    - tox -e $TEST
+    - tox
 
 deploy:
     provider: pypi
@@ -50,4 +40,4 @@ deploy:
     distributions: "sdist"
     on:
         tags: true
-        condition: "$PYTHON_VERSION = 3.6"
+        repo: OpenSourceEconomics/respy
