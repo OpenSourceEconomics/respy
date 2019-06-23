@@ -10,10 +10,8 @@ language: python
 
 python: 3.6
 
-# The tests run only if it is an PR or if a tag is pushed. This should prevent duplicate
-# builds with pr and push. We cannot disable push as it also disables deployment via
-# tags.
-if: type != push OR tag IS present OR branch = master
+# The build will only run if a tag is pushed starting with v.
+if: tag =~ ^v
 
 install:
     # Install and configure conda
