@@ -1,6 +1,6 @@
 jobs:
 - job:
-  displayName: ubuntu-16.04
+  displayName: Linux
   pool:
     vmImage: "ubuntu-16.04"
   strategy:
@@ -44,51 +44,7 @@ jobs:
       tox -e pytest
 
 - job:
-  displayName: vs2017-win2016
-  pool:
-    vmImage: "vs2017-win2016"
-  strategy:
-    matrix:
-      Python36:
-        python.version: "3.6"
-      # Python37:
-      #   python.version: "3.7"
-
-  steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
-
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda -c conda-forge
-    displayName: Create Anaconda environment
-
-  - script: |
-      call activate respy
-      tox -e pytest
-
-- job:
-  displayName: vs2015-win2012r2
-  pool:
-    vmImage: "vs2015-win2012r2"
-  strategy:
-    matrix:
-      Python36:
-        python.version: "3.6"
-      # Python37:
-      #   python.version: "3.7"
-
-  steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
-
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda -c conda-forge
-    displayName: Create Anaconda environment
-
-  - script: |
-      call activate respy
-      tox -e pytest
-
-- job:
-  displayName: macOS-10.13
+  displayName: MacOS
   pool:
     vmImage: "macOS-10.13"
   strategy:
