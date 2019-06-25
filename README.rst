@@ -8,8 +8,8 @@ respy
 .. image:: https://travis-ci.org/OpenSourceEconomics/respy.svg?branch=master
     :target: https://travis-ci.org/OpenSourceEconomics/respy
 
-.. image:: https://ci.appveyor.com/api/projects/status/760nqwfsua0ej5u1/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/OpenSourceEconomics/respy
+.. image:: https://dev.azure.com/OpenSourceEconomics/respy/_apis/build/status/OpenSourceEconomics.respy?branchName=master
+    :target: https://dev.azure.com/OpenSourceEconomics/respy/_build/latest?definitionId=1&branchName=master
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/python/black
