@@ -10,6 +10,19 @@ releases are available on `PyPI <https://pypi.org/project/respy/>`_.
 
 - `#177 <https://github.com/OpenSourceEconomics/respy/pull/177>`_ removes all Fortran
   files and ensures that all tests still run through.
+- `#193 <https://github.com/OpenSourceEconomics/respy/pull/193>`_ continues on the
+  removal of Fortran.
+- `#199 <https://github.com/OpenSourceEconomics/respy/pull/199>`_ makes the reward
+  components modular.
+- `#200 <https://github.com/OpenSourceEconomics/respy/pull/200>`_ implements the Kalman
+  filter which allows to estimate measurement error in wages.
+- `#201 <https://github.com/OpenSourceEconomics/respy/pull/201>`_ implements a flexible
+  state space which is first and foremost flexible in the number of choices with
+  experience and wages, but open to be extended.
+- `#205 <https://github.com/OpenSourceEconomics/respy/pull/205>`_ implements Azure
+  Pipelines as the major CI, but we still rely on Travis-CI for deploying the package to
+  PyPI.
+
 
 1.2.1 - 2019-05-19
 ------------------
