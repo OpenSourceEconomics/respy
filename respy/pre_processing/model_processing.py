@@ -35,11 +35,7 @@ def _process_options(options, params, n_types):
 
     extended_options = {**DEFAULT_OPTIONS, **options}
     extended_options["n_types"] = n_types
-    extended_options["choices_w_exp"] = _infer_choices_with_experience(
-        params, extended_options
-    )
-    extended_options["choices_w_wage"] = _infer_choices_with_wage(params)
-    extended_options = _order_choices(extended_options)
+    extended_options = _order_choices(extended_options, params)
     extended_options = _set_defaults_for_choices_with_experience(extended_options)
     extended_options = _set_defaults_for_inadmissible_states(extended_options)
 
@@ -83,7 +79,7 @@ def _read_options(input_):
     return options
 
 
-def _order_choices(options):
+def _order_choices(options, params):
     """Define unique order of choices.
 
     This function defines a unique order of choices. Choices can be separated in choices
@@ -92,11 +88,15 @@ def _order_choices(options):
     each group, we order alphabetically. Then, the order is applied to ``options``.
 
     """
+    all_choices = _infer_choices(params)
+    options["choices_w_exp"] = _infer_choices_with_experience(params, options)
+    options["choices_w_wage"] = _infer_choices_with_wage(params)
+
     choices_w_exp_wo_wage = sorted(
         list(set(options["choices_w_exp"]) - set(options["choices_w_wage"]))
     )
     choices_wo_exp_wo_wage = sorted(
-        list(set(options["choices"]) - set(options["choices_w_exp"]))
+        list(set(all_choices) - set(options["choices_w_exp"]))
     )
 
     options["choices_wo_exp"] = choices_wo_exp_wo_wage
@@ -104,7 +104,7 @@ def _order_choices(options):
 
     # Dictionaries are insertion ordered since Python 3.6+.
     order = options["choices_w_wage"] + choices_w_exp_wo_wage + choices_wo_exp_wo_wage
-    options["choices"] = {key: options["choices"][key] for key in order}
+    options["choices"] = {key: options["choices"].get(key, {}) for key in order}
 
     return options
 
@@ -181,16 +181,18 @@ def _parse_parameters(params):
     meas_error.update(short_meas_error)
     optim_paras["meas_error"] = meas_error.to_numpy()
 
+    n_choices = len(_infer_choices(params))
+
     if "type_shares" in optim_paras:
         optim_paras["type_shares"] = np.hstack(
             [np.zeros(2), optim_paras["type_shares"]]
         )
         optim_paras["type_shifts"] = np.vstack(
-            [np.zeros(4), optim_paras["type_shift"].reshape(-1, 4)]
+            [np.zeros(n_choices), optim_paras["type_shift"].reshape(-1, n_choices)]
         )
     else:
         optim_paras["type_shares"] = np.zeros(2)
-        optim_paras["type_shifts"] = np.zeros((1, 4))
+        optim_paras["type_shifts"] = np.zeros((1, n_choices))
 
     return optim_paras
 
@@ -211,4 +213,10 @@ def _infer_choices_with_experience(params, options):
 def _infer_choices_with_wage(params):
     return sorted(
         i[5:] for i in params.index.get_level_values(0).unique() if "wage_" in i
+    )
+
+
+def _infer_choices(params):
+    return sorted(
+        i[7:] for i in params.index.get_level_values(0).unique() if "nonpec_" in i
     )
