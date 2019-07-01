@@ -67,7 +67,7 @@ def generate_random_model(
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
         "simulation_seed": np.random.randint(1, 1000),
         "n_periods": np.random.randint(1, bound_constr["max_periods"]),
-        "choices": {"a": {}, "b": {}, "edu": {}, "home": {}},
+        "choices": {"edu": {}},
     }
 
     n_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)

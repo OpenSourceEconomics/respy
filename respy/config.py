@@ -83,12 +83,7 @@ respy.state_space._create_core_state_space : Creates the core state space.
 BASE_INADMISSIBLE_STATES = {"edu": "exp_edu == @max_exp_edu"}
 
 DEFAULT_OPTIONS = {
-    "choices": {
-        "a": {},
-        "b": {},
-        "edu": {"max": 20, "start": [10], "lagged": [1], "share": [1]},
-        "home": {},
-    },
+    "choices": {"edu": {"max": 20, "start": [10], "lagged": [1], "share": [1]}},
     "estimation_draws": 200,
     "estimation_seed": 1,
     "estimation_tau": 500,
