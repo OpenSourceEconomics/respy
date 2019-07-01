@@ -1,0 +1,82 @@
+category,name,para,lower,upper,comment
+delta,delta,0.9363,0,1,discount factor
+wage_a,constant,8.937,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_a,exp_edu,0.07,,,linear return to an additional year of schooling (wage)
+wage_a,exp_a,0.027,,,"return to experience, same sector, linear (wage)"
+wage_a,exp_a_square,-0.0429,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+wage_a,exp_b,0.0225,,,"return to experience, other civilian sector, linear (wage)"
+wage_a,exp_military,0.0131,,,return to military experience
+wage_a,hs_graduate,-0.0036,,,skill premium of having finished high school (wage)
+wage_a,co_graduate,0.0023,,,skill premium of having finished college (wage)
+wage_a,period,0.0102,,,linear age effect (wage)
+wage_a,is_minor,-0.15,,,effect of being a minor (wage)
+wage_a,any_exp_a,0.1885,,,gain of having worked in the same occupation at least once before (wage)
+wage_a,work_a_lagged,0.3054,,,gain of remaining in the same occupation as previous period (wage)
+nonpec_a,constant,-2543,,,constant (non pecuniary)
+nonpec_a,not_exp_a_lagged,-1182,,,reward of switching to a from other occupation (non pecuniary)
+nonpec_a,not_any_exp_a,-2759,,,reward of working in a for the first time (non pecuniary)
+nonpec_a,hs_graduate,804,,,return to high school degree (non pecuniary)
+nonpec_a,co_graduate,2005,,,return to college degree (non pecuniary)
+nonpec_a,military_dropout,-1525,,,effect of leaving the military early (after one year)
+wage_b,constant,8.8811,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_b,exp_edu,0.024,,,linear return to an additional year of schooling (wage)
+wage_b,exp_a,0.0191,,,"return to experience, other civilian sector, linear (wage)"
+wage_b,exp_b,0.0464,,,"return to experience, same sector, linear (wage)"
+wage_b,exp_b_square,-0.0759,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+wage_b,exp_military,0.0174,,,return to military experience
+wage_b,hs_graduate,0.0058,,,skill premium of having finished high school (wage)
+wage_b,co_graduate,0.0058,,,skill premium of having finished college (wage)
+wage_b,period,0.0114,,,linear age effect (wage)
+wage_b,is_minor,0.1433,,,effect of being a minor (wage)
+wage_b,any_exp_b,0.202,,,gain of having worked in the same occupation at least once before (wage)
+wage_b,work_b_lagged,0.0964,,,gain of remaining in the same occupation as previous period (wage)
+nonpec_b,constant,-3157,,,constant (non pecuniary)
+nonpec_b,not_exp_b_lagged,-1647,,,reward of switching to a from other occupation (non pecuniary)
+nonpec_b,not_any_exp_b,-494,,,reward of working in a for the first time (non pecuniary)
+nonpec_b,hs_graduate,804,,,return to high school degree (non pecuniary)
+nonpec_b,co_graduate,2005,,,return to college degree (non pecuniary)
+nonpec_a,military_dropout,-1525,,,effect of leaving the military early (after one year)
+nonpec_edu,constant,11031,,,consumption value of school attendance for type 1
+nonpec_edu,hs_graduate,804,,,consumption value of college
+nonpec_edu,co_graduate,2005,,,consumption value of graduate school
+nonpec_edu,is_return_not_high_school,-10700,,,reward for going back to college
+nonpec_edu,is_return_high_school,-23283,,,reward for going back to high school
+nonpec_edu,period,-1502,,,linear age effect
+nonpec_edu,is_minor,3632,,,effect of being a minor
+nonpec_edu,hs_graduate,804,,,return to high school degree (non pecuniary)
+nonpec_edu,co_graduate,2005,,,return to college degree (non pecuniary)
+nonpec_edu,military_dropout,-1525,,,effect of leaving the military early (after one year)
+nonpec_home,constant,20242,,,mean value of non-market alternative for type 1
+nonpec_home,is_young_adult,-1027,,,additional value of staying home if aged 18-20
+nonpec_home,is_adult,-1805,,,additional value of staying home if 21 or older
+nonpec_home,hs_graduate,804,,,return to high school degree (non pecuniary)
+nonpec_home,co_graduate,2005,,,return to college degree (non pecuniary)
+nonpec_home,military_dropout,-1525,,,effect of leaving the military early (after one year)
+wage_military,constant,8.54,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_military,exp_edu,0.0582,,,linear return to an additional year of schooling (wage)
+wage_military,exp_military,0.0454,,,"return to experience, same sector, linear (wage)"
+wage_military,exp_military_squared,-0.0479,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+wage_military,any_exp_military,0.0753,,,return to having any military experience
+wage_military,period,0.0106,,,linear age effect
+wage_military,is_minor,-0.2539,,,effect of being a minor
+nonpec_military,not_any_exp_military,-560,,,reward of being in the military sector for the first time (non pecuniary)
+nonpec_military,hs_graduate,804,,,return to high school degree (non pecuniary)
+nonpec_military,co_graduate,2005,,,return to college degree (non pecuniary)
+shocks,sd_a,0.3864,0,,standard deviation of the shock in occupation a
+shocks,sd_b,0.3823,0,,standard deviation of the shock in occupation b
+shocks,sd_edu,12821,0,,standard deviation of the shocks in the education sector
+shocks,sd_home,9350,0,,standard deviation of the shock in the home sector
+shocks,sd_military,0.2426,0,,standard deviation of the shock in the military sector
+shocks,corr_a_b,0.1226,,,correlation between the shocks in occupation a and b
+shocks,corr_edu_a,0,,,correlation between the shocks in the education sector and occupation a
+shocks,corr_edu_b,0,,,correlation between the shocks in the education sector and occupation b
+shocks,corr_home_a,0,,,correlation of the shocks in the home sector and occupation a
+shocks,corr_home_b,0,,,correlation of the shocks in the home sector and occupation b
+shocks,corr_home_edu,0,,,correlation of the shocks in the home and the education sector
+shocks,corr_military_a,0,,,correlation of the shocks in the military sector and occupation a
+shocks,corr_military_b,0,,,correlation of the shocks in the military sector and occupation b
+shocks,corr_military_edu,0,,,correlation of the shocks in the military sector and education
+shocks,corr_military_home,0,,,correlation of the shocks in the military sector and home
+meas_error,sd_a,0.001,0,,SD of the measurement error in wages in occupation a
+meas_error,sd_b,0.001,0,,SD of the measurement error in wages occupation b
+meas_error,sd_military,0.001,0,,SD of the measurement error in wages in military sector
