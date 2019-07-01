@@ -15,7 +15,7 @@ PRINT_FLOAT = 1e10
 # Number of decimals that are compared for tests This is currently only used in
 # regression tests.
 DECIMALS = 6
-# Some assert fucntions take rtol instead of decimals
+# Some assert functions take rtol instead of decimals
 TOL = 10 ** -DECIMALS
 
 # Interpolation
