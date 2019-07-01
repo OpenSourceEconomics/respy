@@ -90,7 +90,7 @@ def _order_choices(options, params):
     """
     all_choices = _infer_choices(params)
     options["choices_w_exp"] = _infer_choices_with_experience(params, options)
-    options["choices_w_wage"] = _infer_choices_with_wage(params)
+    options["choices_w_wage"] = _infer_choices_with_prefix(params, "wage_")
 
     choices_w_exp_wo_wage = sorted(
         list(set(options["choices_w_exp"]) - set(options["choices_w_wage"]))
@@ -210,13 +210,16 @@ def _infer_choices_with_experience(params, options):
     return sorted(list(set(matches)))
 
 
-def _infer_choices_with_wage(params):
+def _infer_choices_with_prefix(params, prefix):
     return sorted(
-        i[5:] for i in params.index.get_level_values(0).unique() if "wage_" in i
+        i[len(prefix) :]
+        for i in params.index.get_level_values(0).unique()
+        if prefix in i
     )
 
 
 def _infer_choices(params):
-    return sorted(
-        i[7:] for i in params.index.get_level_values(0).unique() if "nonpec_" in i
-    )
+    choices_w_wage = _infer_choices_with_prefix(params, "wage_")
+    choices_w_nonpec = _infer_choices_with_prefix(params, "nonpec_")
+
+    return list(set(choices_w_wage) | set(choices_w_nonpec))

@@ -417,15 +417,23 @@ def _create_reward_components(types, covariates, optim_paras, options):
         [np.dot(covariates[w], optim_paras[w]) for w in wage_labels]
     )
 
+    n_states = covariates["nonpec_edu"].shape[0]
+
     nonpec_labels = [f"nonpec_{choice}" for choice in options["choices"]]
     nonpec = np.column_stack(
-        [np.dot(covariates[n], optim_paras[n]) for n in nonpec_labels]
+        [
+            np.zeros(n_states)
+            if n not in optim_paras
+            else np.dot(covariates[n], optim_paras[n])
+            for n in nonpec_labels
+        ]
     )
 
+    n_wages = len(options["choices_w_wage"])
     type_deviations = optim_paras["type_shifts"][types]
 
-    log_wages += type_deviations[:, :2]
-    nonpec[:, 2:] += type_deviations[:, 2:]
+    log_wages += type_deviations[:, :n_wages]
+    nonpec[:, n_wages:] += type_deviations[:, n_wages:]
 
     wages = np.clip(np.exp(log_wages), 0.0, HUGE_FLOAT)
 
@@ -465,8 +473,9 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
             wage_columns = params.loc[f"wage_{choice}"].index
             covariates[f"wage_{choice}"] = all_data[wage_columns].to_numpy()
 
-        nonpec_columns = params.loc[f"nonpec_{choice}"].index
-        covariates[f"nonpec_{choice}"] = all_data[nonpec_columns].to_numpy()
+        if f"nonpec_{choice}" in params.index:
+            nonpec_columns = params.loc[f"nonpec_{choice}"].index
+            covariates[f"nonpec_{choice}"] = all_data[nonpec_columns].to_numpy()
 
     for key, val in covariates.items():
         covariates[key] = np.ascontiguousarray(val)
