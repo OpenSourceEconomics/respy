@@ -4,6 +4,8 @@ from numba import njit
 
 from respy._numba import array_to_tuple
 from respy.config import EXAMPLE_MODELS
+from respy.config import KEANE_WOLPIN_1994_MODELS
+from respy.config import KEANE_WOLPIN_1997_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import get_example_model
@@ -11,7 +13,8 @@ from respy.solve import get_continuation_values
 from respy.solve import solve
 from respy.solve import StateSpace
 from respy.state_space import _create_state_space
-from respy.tests._former_code import create_state_space
+from respy.tests._former_code import _create_state_space_kw94
+from respy.tests._former_code import _create_state_space_kw97
 from respy.tests.random_model import generate_random_model
 
 
@@ -167,8 +170,9 @@ def test_get_continuation_values(model_or_seed):
     assert state_space.continuation_values.mean() >= 0.95
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
-def test_state_space_vs_old_implementation(model_or_seed):
+@pytest.mark.wip
+@pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS + list(range(10)))
+def test_create_state_space_vs_specialized_kw94(model_or_seed):
     if isinstance(model_or_seed, str):
         params, options = get_example_model(model_or_seed)
     else:
@@ -184,11 +188,52 @@ def test_state_space_vs_old_implementation(model_or_seed):
     edu_starts = options["choices"]["edu"]["start"]
 
     # Get states and indexer from old state space.
-    states_old, indexer_old = create_state_space(
+    states_old, indexer_old = _create_state_space_kw94(
         n_periods, n_types, edu_starts, edu_max
     )
 
-    states_new, indexer_new = _create_state_space(options, n_types)
+    states_new, indexer_new = _create_state_space(options)
+    states_new.lagged_choice = states_new.lagged_choice.replace(
+        {choice: i for i, choice in enumerate(options["choices"])}
+    )
+
+    # Compare the state spaces via sets as ordering changed in some cases.
+    states_old_set = set(map(tuple, states_old))
+    states_new_set = set(map(tuple, states_new.to_numpy()))
+    assert states_old_set == states_new_set
+
+    # Compare indexers via masks for valid indices.
+    mask_old = indexer_old != -1
+    mask_new = indexer_new != -1
+    assert np.array_equal(mask_old, mask_new)
+
+
+@pytest.mark.wip
+@pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1997_MODELS)
+def test_create_state_space_vs_specialized_kw97(model_or_seed):
+    if isinstance(model_or_seed, str):
+        params, options = get_example_model(model_or_seed)
+    else:
+        np.random.seed(model_or_seed)
+        params, options = generate_random_model()
+
+    # Reduce runtime
+    options["n_periods"] = 10 if options["n_periods"] > 10 else options["n_periods"]
+
+    params, optim_paras, options = process_params_and_options(params, options)
+
+    # Create old state space arguments.
+    n_periods = options["n_periods"]
+    n_types = options["n_types"]
+    edu_max = options["choices"]["edu"]["max"]
+    edu_starts = options["choices"]["edu"]["start"]
+
+    # Get states and indexer from old state space.
+    states_old, indexer_old = _create_state_space_kw97(
+        n_periods, n_types, edu_starts, edu_max
+    )
+
+    states_new, indexer_new = _create_state_space(options)
     states_new.lagged_choice = states_new.lagged_choice.replace(
         {choice: i for i, choice in enumerate(options["choices"])}
     )

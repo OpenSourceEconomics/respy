@@ -29,8 +29,8 @@ Optimization
 ^^^^^^^^^^^^
 
 The estimation of the model involves the minimization of the simulated negative
-log-likelihood of the sample. We use `estimagic <https://github.com/janosg/estimagic>`_
-for this task.
+log-likelihood of the sample. We use `estimagic
+<https://github.com/OpenSourceEconomics/estimagic>`_ for this task.
 
 Function Approximation
 ^^^^^^^^^^^^^^^^^^^^^^

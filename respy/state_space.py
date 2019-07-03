@@ -125,7 +125,7 @@ class StateSpace:
             self.slices_by_periods.append(slice(idx_start, idx_end + 1))
 
 
-def _create_state_space(options, n_types):
+def _create_state_space(options):
     """Create the state space.
 
     The state space of the model are all feasible combinations of the period,
@@ -163,17 +163,18 @@ def _create_state_space(options, n_types):
       and should be applied earlier. Others can be delayed.
 
       As a compromise, we built on the former approach in
-      :func:`~respy.tests._former_code.create_state_space` which loops over choices and
-      possible experience values. Thus, it incorporates some fundamental restrictions
-      like time limits and needs less filtering.
+      :func:`~respy.tests._former_code._create_state_space_kw94` which loops over
+      choices and possible experience values. Thus, it incorporates some fundamental
+      restrictions like time limits and needs less filtering.
 
-    - The former implementation, :func:`~respy.tests._former_code.create_state_space`,
-      had four hard-coded choices and a loop for every choice with experience
-      accumulation. Thus, this function is useless if the model requires additional or
-      less choices. For each number of choices with and without experience, a new
-      function had to be programmed. The following approach uses the same loops over
-      choices with experiences, but they are dynamically created by the recursive
-      function :func:`_create_core_state_space_per_period`.
+    - The former implementation,
+      :func:`~respy.tests._former_code._create_state_space_kw94`, had four hard-coded
+      choices and a loop for every choice with experience accumulation. Thus, this
+      function is useless if the model requires additional or less choices. For each
+      number of choices with and without experience, a new function had to be
+      programmed. The following approach uses the same loops over choices with
+      experiences, but they are dynamically created by the recursive function
+      :func:`_create_core_state_space_per_period`.
 
     - There are characteristics of the state space which are independent from all other
       state space attributes like types (and almost lagged choices). These attributes
@@ -189,31 +190,26 @@ def _create_state_space(options, n_types):
     _create_state_space_indexer
 
     """
-    data = _create_core_state_space(options, n_types)
+    df = _create_core_state_space(options)
 
-    exp_cols = [f"exp_{choice}" for choice in options["choices_w_exp"]]
-
-    df = pd.DataFrame.from_records(
-        data, columns=["period"] + exp_cols + ["lagged_choice", "type"]
-    )
-
-    codes_to_choices = {i: choice for i, choice in enumerate(options["choices"])}
-    df.lagged_choice = df.lagged_choice.astype("category").cat.rename_categories(
-        codes_to_choices
-    )
+    df = _add_lagged_choice_to_core_state_space(df, options)
 
     df = _filter_core_state_space(df, options)
 
     df = _add_initial_experiences_to_core_state_space(df, options)
 
+    df = _add_types_to_state_space(df, options["n_types"])
+
     df = df.sort_values("period").reset_index(drop=True)
 
-    indexer = _create_state_space_indexer(df, n_types, options)
+    indexer = _create_state_space_indexer(df, options)
+
+    df.lagged_choice = pd.Categorical(df.lagged_choice, categories=options["choices"])
 
     return df, indexer
 
 
-def _create_core_state_space(options, n_types):
+def _create_core_state_space(options):
     """Create the core state space.
 
     The core state space abstracts from initial experiences and uses the maximum range
@@ -230,27 +226,37 @@ def _create_core_state_space(options, n_types):
         [
             np.min(options["choices"][choice]["start"])
             for choice in options["choices_w_exp"]
-        ]
+        ],
+        dtype=np.uint8,
     )
     maximum_exp = np.array(
-        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]]
+        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]],
+        dtype=np.uint8,
     )
 
     additional_exp = maximum_exp - minimal_initial_experience
 
-    data = []
-    for period in range(options["n_periods"]):
-        data += list(
-            _create_core_state_space_per_period(
-                period, additional_exp, n_types, options
-            )
-        )
+    exp_cols = [f"exp_{choice}" for choice in options["choices_w_exp"]]
 
-    return data
+    container = []
+    for period in np.arange(options["n_periods"], dtype=np.uint8):
+        data = _create_core_state_space_per_period(
+            period,
+            additional_exp,
+            options,
+            np.zeros(len(options["choices_w_exp"]), dtype=np.uint8),
+        )
+        df_ = pd.DataFrame.from_records(data, columns=exp_cols)
+        df_.insert(0, "period", period)
+        container.append(df_)
+
+    df = pd.concat(container, axis="rows", sort=False)
+
+    return df
 
 
 def _create_core_state_space_per_period(
-    period, additional_exp, n_types, options, experiences=None, pos=0
+    period, additional_exp, options, experiences, pos=0
 ):
     """Create core state space per period.
 
@@ -269,8 +275,6 @@ def _create_core_state_space_per_period(
         Array with shape (n_choices_w_exp,) containing integers representing the
         additional experience per choice which is admissible. This is the difference
         between the maximum experience and minimum of initial experience per choice.
-    n_types : int
-        Number of types.
     experiences : None or numpy.ndarray, default None
         Array with shape (n_choices_w_exp,) which contains current experience of state.
     pos : int, default 0
@@ -279,54 +283,74 @@ def _create_core_state_space_per_period(
         Otherwise, ``experiences[pos]`` would lead to an :exc:`IndexError`.
 
     """
-    experiences = experiences if experiences is not None else [0] * len(additional_exp)
-
     # Return experiences combined with lagged choices and types.
-    for type_ in range(n_types):
-        for choice in options["choices"]:
-            yield [period] + experiences + [choice, type_]
+    yield experiences
 
     # Check if there is an additional choice left to start another loop.
-    if pos < len(experiences):
+    if pos < experiences.shape[0]:
         # Upper bound of additional experience is given by the remaining time or the
         # maximum experience which can be accumulated in experience[pos].
-        remaining_time = period - np.sum(experiences)
+        remaining_time = period - experiences.sum()
         max_experience = additional_exp[pos]
 
         # +1 is necessary so that the remaining time or max_experience is exhausted.
-        for i in range(min(remaining_time, max_experience) + 1):
+        for i in np.arange(min(remaining_time, max_experience) + 1, dtype=np.uint8):
             # Update experiences and call the same function with the next choice.
             updated_experiences = experiences.copy()
             updated_experiences[pos] += i
             yield from _create_core_state_space_per_period(
-                period, additional_exp, n_types, options, updated_experiences, pos + 1
+                period, additional_exp, options, updated_experiences, pos + 1
             )
 
 
+def _add_lagged_choice_to_core_state_space(df, options):
+    container = []
+    for choice in options["choices"]:
+        df_ = df.copy()
+        df_["lagged_choice"] = choice
+        container.append(df_)
+
+    df = pd.concat(container, axis="rows", sort=False)
+
+    return df
+
+
 def _filter_core_state_space(df, options):
-    """Applies filters to the core state space."""
-    col = "_restriction_{}"
+    """Applies filters to the core state space.
 
-    # Restriction counter.
-    counter = itertools.count()
+    Sometimes, we want to apply filters to a group of choices. Thus, use the following
+    shortcuts.
 
+    - ``i`` is replaced with every choice with experience.
+    - ``j`` is replaced with every choice without experience.
+    - ``k`` is replaced with every choice with a wage.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Contains the core state space.
+    options : dict
+        Contains model options and the filters to reduce the core state space.
+
+    """
     for definition in options["core_state_space_filters"]:
-
         # If "{i}" is in definition, loop over choices with experiences.
         if "{i}" in definition:
             for i in options["choices_w_exp"]:
-                df[col.format(next(counter))] = df.eval(definition.format(i=i))
+                df = df.loc[~df.eval(definition.format(i=i))]
 
         # If "{j}" is in definition, loop over choices without experiences.
         elif "{j}" in definition:
             for j in options["choices_wo_exp"]:
-                df[col.format(next(counter))] = df.eval(definition.format(j=j))
+                df = df.loc[~df.eval(definition.format(j=j))]
+
+        # If "{k}" is in definition, loop over choices with wage.
+        elif "{k}" in definition:
+            for k in options["choices_w_wage"]:
+                df = df.loc[~df.eval(definition.format(k=k))]
 
         else:
-            df[col.format(next(counter))] = df.eval(definition)
-
-    df = df[~df.filter(like="_restriction_").any(axis="columns")]
-    df = df.drop(columns=df.filter(like="_restriction").columns.tolist())
+            df = df.loc[~df.eval(definition)]
 
     return df
 
@@ -369,7 +393,19 @@ def _add_initial_experiences_to_core_state_space(df, options):
     return df
 
 
-def _create_state_space_indexer(df, n_types, options):
+def _add_types_to_state_space(df, n_types):
+    container = []
+    for i in range(n_types):
+        df_ = df.copy()
+        df_["type"] = i
+        container.append(df_)
+
+    df = pd.concat(container, axis="rows", sort=False)
+
+    return df
+
+
+def _create_state_space_indexer(df, options):
     """Create the indexer for the state space."""
     n_exp_choices = len(options["choices_w_exp"])
     n_nonexp_choices = len(options["choices_wo_exp"])
@@ -380,14 +416,16 @@ def _create_state_space_indexer(df, n_types, options):
     shape = (
         (options["n_periods"],)
         + tuple(maximum_exp + 1)
-        + (n_exp_choices + n_nonexp_choices, n_types)
+        + (n_exp_choices + n_nonexp_choices, options["n_types"])
     )
-    indexer = np.full(shape, -1)
+    indexer = np.full(shape, -1, dtype=np.int32)
+
+    choice_to_code = {choice: i for i, choice in enumerate(options["choices"])}
 
     idx = (
         (df.period,)
         + tuple(df[f"exp_{i}"] for i in options["choices_w_exp"])
-        + (df.lagged_choice.cat.codes, df.type)
+        + (df.lagged_choice.replace(choice_to_code), df.type)
     )
     indexer[idx] = np.arange(df.shape[0])
 

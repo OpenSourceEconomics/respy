@@ -25,7 +25,7 @@ shocks,sd_mil,0.1259,False,,,"Element 3,3 of cholesky factor of shock covariance
 shocks,sd_edu,2312,False,,,"Element 4,4 of cholesky factor of shock covariance matrix"
 shocks,sd_home,13394,False,,,"Element 5,5 of cholesky factor of shock covariance matrix"
 shocks,corr_b_a,-0.3806,False,,,"Element 2,1 of cholesky factor of shock covariance matrix"
-shocks,corr_mila,-0.3688,False,,,"Element 3,1 of cholesky factor of shock covariance matrix"
+shocks,corr_mil_a,-0.3688,False,,,"Element 3,1 of cholesky factor of shock covariance matrix"
 shocks,corr_mil_b,0.4120,False,,,"Element 3,2 of cholesky factor of shock covariance matrix"
 shocks,corr_edu_a,0,False,,,"Element 4,1 of cholesky factor of shock covariance matrix"
 shocks,corr_edu_b,0,False,,,"Element 4,2 of cholesky factor of shock covariance matrix"

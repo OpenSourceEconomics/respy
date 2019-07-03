@@ -31,8 +31,10 @@ BASE_COVARIATES = {
     "edu_lagged": "lagged_choice == 'edu'",
     "not_any_exp_a": "exp_a == 0",
     "not_any_exp_b": "exp_b == 0",
+    "not_any_exp_mil": "exp_mil == 0",
     "any_exp_a": "exp_a > 0",
     "any_exp_b": "exp_b > 0",
+    "any_exp_mil": "exp_mil > 0",
     "hs_graduate": "exp_edu >= 12",
     "co_graduate": "exp_edu >= 16",
     "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
@@ -43,6 +45,8 @@ BASE_COVARIATES = {
     "constant": "1",
     "exp_a_square": "exp_a ** 2 / 100",
     "exp_b_square": "exp_b ** 2 / 100",
+    "exp_mil_square": "exp_mil ** 2 / 100",
+    "mil_dropout": "exp_mil == 1",
 }
 """dict: Dictionary containing specification of covariates.
 
@@ -52,8 +56,6 @@ value in the parameter specification. The values are strings passed to ``pd.eval
 """
 
 BASE_CORE_STATE_SPACE_FILTERS = [
-    # In period 0, agents cannot choose occupation a or b.
-    "period == 0 and (lagged_choice == 'a' or lagged_choice == 'b')",
     # In periods > 0, if agents accumulated experience only in one choice, lagged choice
     # cannot be different.
     "period > 0 and exp_{i} == period and lagged_choice != '{i}'",
@@ -64,8 +66,9 @@ BASE_CORE_STATE_SPACE_FILTERS = [
     # be school.
     "period > 0 and lagged_choice == 'edu' and exp_edu == 0",
     # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
-    "lagged_choice == 'a' and exp_a == 0",
-    "lagged_choice == 'b' and exp_b == 0",
+    "lagged_choice == '{k}' and exp_{k} == 0",
+    # In period 0, agents cannot choose occupation a or b.
+    "period == 0 and lagged_choice == '{k}'",
 ]
 """list: Contains filters for the state space.
 
@@ -98,7 +101,11 @@ DEFAULT_OPTIONS = {
     "core_state_space_filters": BASE_CORE_STATE_SPACE_FILTERS,
 }
 
-EXAMPLE_MODELS = [
+KEANE_WOLPIN_1994_MODELS = [
     f"kw_data_{suffix}"
     for suffix in ["one", "one_initial", "one_types", "two", "three"]
 ] + ["reliability_short"]
+
+KEANE_WOLPIN_1997_MODELS = ["kw_97_base", "kw_97_extended"]
+
+EXAMPLE_MODELS = KEANE_WOLPIN_1994_MODELS + KEANE_WOLPIN_1997_MODELS
