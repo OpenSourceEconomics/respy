@@ -1,6 +1,7 @@
-from respy.tests.random_model import generate_random_model
-from respy.shared import get_example_model
 import numpy as np
+
+from respy.shared import get_example_model
+from respy.tests.random_model import generate_random_model
 
 
 def process_model_or_seed(model_or_seed):
