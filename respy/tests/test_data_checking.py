@@ -1,11 +1,10 @@
-import numpy as np
 import pytest
 
 import respy as rp
 from respy.config import EXAMPLE_MODELS
 from respy.pre_processing.data_checking import check_simulated_data
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.tests.random_model import generate_random_model
+from respy.tests.utils import process_model_or_seed
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
@@ -16,11 +15,7 @@ def test_simulated_data(model_or_seed):
     focus on a subset of the data.
 
     """
-    if isinstance(model_or_seed, str):
-        params, options = rp.get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params, options = generate_random_model()
+    params, options = process_model_or_seed(model_or_seed)
 
     _, df = rp.simulate(params, options)
 

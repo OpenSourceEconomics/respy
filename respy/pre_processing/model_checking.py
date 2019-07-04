@@ -68,7 +68,6 @@ def check_model_solution(options, state_space):
     edu_start = options["choices"]["edu"]["start"]
     n_initial_exp_edu = len(edu_start)
     edu_start_max = max(edu_start)
-    edu_max = options["choices"]["edu"]["max"]
     n_periods = options["n_periods"]
     n_types = options["n_types"]
 
@@ -77,19 +76,17 @@ def check_model_solution(options, state_space):
 
     # The sum of years of experiences cannot be larger than constraint time.
     assert np.all(
-        state_space.states[:, 1:4].sum(axis=1)
+        state_space.states[:, 1 : len(options["choices_w_exp"]) + 1].sum(axis=1)
         <= (state_space.states[:, 0] + edu_start_max)
     )
 
     # Choice experience cannot exceed the time frame.
-    assert np.all(state_space.states[:, 1] <= n_periods)
-    assert np.all(state_space.states[:, 2] <= n_periods)
-
-    # The maximum of education years is never larger than ``edu_max``.
-    assert np.all(state_space.states[:, 3] <= edu_max)
+    for choice in options["choices_w_exp"]:
+        idx = list(options["choices"]).index(choice) + 1
+        assert np.all(state_space.states[:, idx] <= options["choices"][choice]["max"])
 
     # Lagged choices are always between one and four.
-    assert np.isin(state_space.states[:, 4], range(4)).all()
+    assert np.isin(state_space.states[:, -2], range(len(options["choices"]))).all()
 
     # States and covariates have finite and nonnegative values.
     assert np.all(state_space.states >= 0)
@@ -104,28 +101,6 @@ def check_model_solution(options, state_space):
     assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
     assert np.sum(state_space.indexer[0] >= 0) == n_states_start
 
-    # Check that we have as many indices as states.
-    assert state_space.states.shape[0] == (state_space.indexer >= 0).sum()
-
-    # Check finiteness of rewards and emaxs.
-    assert np.all(np.isfinite(state_space.wages))
-    assert np.all(np.isfinite(state_space.nonpec))
-    assert np.all(np.isfinite(state_space.continuation_values))
-    assert np.all(np.isfinite(state_space.emax_value_functions))
-
-    assert np.isin(state_space.states[:, 4], range(4)).all()
-
-    # States and covariates have finite and nonnegative values.
-    assert np.all(state_space.states >= 0)
-    assert np.all(np.isfinite(state_space.states))
-    # Check for duplicate rows in each period. We only have possible duplicates if there
-    # are multiple initial conditions.
-    assert not pd.DataFrame(state_space.states).duplicated().any()
-
-    # Check the number of states in the first time period.
-    n_states_start = n_types * n_initial_exp_edu * 2
-    assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
-    assert np.sum(state_space.indexer[0] >= 0) == n_states_start
     # Check that we have as many indices as states.
     assert state_space.states.shape[0] == (state_space.indexer >= 0).sum()
 

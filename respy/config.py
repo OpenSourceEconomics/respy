@@ -31,10 +31,8 @@ BASE_COVARIATES = {
     "edu_lagged": "lagged_choice == 'edu'",
     "not_any_exp_a": "exp_a == 0",
     "not_any_exp_b": "exp_b == 0",
-    "not_any_exp_mil": "exp_mil == 0",
     "any_exp_a": "exp_a > 0",
     "any_exp_b": "exp_b > 0",
-    "any_exp_mil": "exp_mil > 0",
     "hs_graduate": "exp_edu >= 12",
     "co_graduate": "exp_edu >= 16",
     "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
@@ -45,8 +43,6 @@ BASE_COVARIATES = {
     "constant": "1",
     "exp_a_square": "exp_a ** 2 / 100",
     "exp_b_square": "exp_b ** 2 / 100",
-    "exp_mil_square": "exp_mil ** 2 / 100",
-    "mil_dropout": "exp_mil == 1",
 }
 """dict: Dictionary containing specification of covariates.
 

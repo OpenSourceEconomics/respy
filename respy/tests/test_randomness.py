@@ -4,16 +4,12 @@ import pytest
 
 import respy as rp
 from respy.config import EXAMPLE_MODELS
-from respy.tests.random_model import generate_random_model
+from respy.tests.utils import process_model_or_seed
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(5)))
 def test_invariance_of_model_solution_in_solve_and_simulation(model_or_seed):
-    if isinstance(model_or_seed, str):
-        params, options = rp.get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params, options = generate_random_model()
+    params, options = process_model_or_seed(model_or_seed)
 
     state_space = rp.solve(params, options)
     state_space_, _ = rp.simulate(params, options)
@@ -32,11 +28,7 @@ def test_invariance_of_model_solution_in_solve_and_simulation(model_or_seed):
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(5)))
 def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
-    if isinstance(model_or_seed, str):
-        params, options = rp.get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params, options = generate_random_model()
+    params, options = process_model_or_seed(model_or_seed)
 
     state_space = rp.solve(params, options)
 

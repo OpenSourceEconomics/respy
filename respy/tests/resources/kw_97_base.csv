@@ -1,60 +1,60 @@
-category,name,para,fixed,lower,upper,comment
-delta,delta,0.787,False,0.7,1,discount factor
-wage_a,constant,8.8043,False,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_a,exp_edu,0.0938,False,,,linear return to an additional year of schooling (wage)
-wage_a,exp_a,0.1170,False,,,"return to experience, same sector, linear (wage)"
-wage_a,exp_a_square,-0.0461,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_a,exp_b,0.0748,False,,,"return to experience, other civilian sector, linear (wage)"
-wage_a,exp_mil,0.0077,False,,,"return to experience, military sector, linear (wage)"
-wage_b,constant,8.9156,False,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_b,exp_edu,0.0189,False,,,linear return to an additional year of schooling (wage)
-wage_b,exp_a,0.0674,False,,,"return to experience, other civilian sector, linear (wage)"
-wage_b,exp_b,01424.,False,,,"return to experience, same sector, linear (wage)"
-wage_b,exp_b_square,-0.1774,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_b,exp_mil,0.1021,False,,,"return to experience, military sector, linear (wage)"
-wage_mil,exp_edu,0.0443,False,,,linear return to an additional year of schooling (wage)
-wage_mil,exp_mil,0.3391,False,,,"return to experience, same sector, linear (wage)"
-wage_mil,exp_mil_square,-2.99,False,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
-nonpec_edu,constant,43948,False,,,consumption value of school attendance for type 1
-nonpec_edu,net_college_tuition,-2983,False,,,reward for going back to college
-nonpec_edu,net_graduate_school_tuition,-26357,False,,,reward for going back to graduate school
-nonpec_home,constant,16887,False,,,mean value of non-market alternative for type 1
-shocks,sd_a,0.3301,False,,,"Element 1,1 of cholesky factor of shock covariance matrix"
-shocks,sd_b,0.3329,False,,,"Element 2,2 of cholesky factor of shock covariance matrix"
-shocks,sd_mil,0.1259,False,,,"Element 3,3 of cholesky factor of shock covariance matrix"
-shocks,sd_edu,2312,False,,,"Element 4,4 of cholesky factor of shock covariance matrix"
-shocks,sd_home,13394,False,,,"Element 5,5 of cholesky factor of shock covariance matrix"
-shocks,corr_b_a,-0.3806,False,,,"Element 2,1 of cholesky factor of shock covariance matrix"
-shocks,corr_mil_a,-0.3688,False,,,"Element 3,1 of cholesky factor of shock covariance matrix"
-shocks,corr_mil_b,0.4120,False,,,"Element 3,2 of cholesky factor of shock covariance matrix"
-shocks,corr_edu_a,0,False,,,"Element 4,1 of cholesky factor of shock covariance matrix"
-shocks,corr_edu_b,0,False,,,"Element 4,2 of cholesky factor of shock covariance matrix"
-shocks,corr_edu_mil,0,False,,,"Element 4,3 of cholesky factor of shock covariance matrix"
-shocks,corr_home_a,0,False,,,"Element 5,1 of cholesky factor of shock covariance matrix"
-shocks,corr_home_b,0,False,,,"Element 5,2 of cholesky factor of shock covariance matrix"
-shocks,corr_home_mil,0,False,,,"Element 5,3 of cholesky factor of shock covariance matrix"
-shocks,corr_home_edu,0,False,,,"Element 5,4 of cholesky factor of shock covariance matrix"
-meas_error,sd_a,0.4133,FALSE,0,,SD of the measurement error in wages in occupation a
-meas_error,sd_b,0.3089,FALSE,0,,SD of the measurement error in wages occupation b
-meas_error,sd_mil,0.1259,FALSE,0,,SD of the measurement error in wages occupation mil
-type_shares,base_share_2,-1.6094379124,False,,,share_of_agents_of_type_2
-type_shares,ten_years_2,0,False,,,effect of more than ten years of schooling on probability of being type 2
-type_shares,base_share_3,-0.2231435513,False,,,share_of_agents_of_type_3
-type_shares,ten_years_3,0,False,,,effect of more than ten years of schooling on probability of being type 3
-type_shares,base_share_4,-0.2231435513,False,,,share_of_agents_of_type_4
-type_shares,ten_years_4,0,False,,,effect of more than ten years of schooling on probability of being type 4
-type_shift,type_2_in_a,-0.0668,False,,,deviation for type 2 from type 1 in a
-type_shift,type_2_in_b,0.2996,False,,,deviation for type 2 from type 1 in b
-type_shift,type_2_in_mil,0,False,,,deviation for type 2 from type 1 in mil
-type_shift,type_2_in_edu,-26352,False,,,deviation for type 2 from type 1 in edu
-type_shift,type_2_in_home,215,False,,,deviation for type 2 from type 1 in home
-type_shift,type_3_in_a,-0.4221,False,,,deviation for type 3 from type 1 in a
-type_shift,type_3_in_b,-0.1223,False,,,deviation for type 3 from type 1 in b
-type_shift,type_3_in_mil,0,False,,,deviation for type 3 from type 1 in mil
-type_shift,type_3_in_edu,-30541,False,,,deviation for type 3 from type 1 in edu
-type_shift,type_3_in_home,-16966,False,,,deviation for type 3 from type 1 in home
-type_shift,type_4_in_a,-0.4998,False,,,deviation for type 4 from type 1 in a
-type_shift,type_4_in_b,0.0756,False,,,deviation for type 4 from type 1 in b
-type_shift,type_4_in_mil,0,False,,,deviation for type 4 from type 1 in mil
-type_shift,type_4_in_edu,226,False,,,deviation for type 4 from type 1 in edu
-type_shift,type_4_in_home,-13128,False,,,deviation for type 4 from type 1 in home
+category,name,para,lower,upper,comment
+delta,delta,0.787,0.7,1,discount factor
+wage_a,constant,8.8043,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_a,exp_edu,0.0938,,,linear return to an additional year of schooling (wage)
+wage_a,exp_a,0.1170,,,"return to experience, same sector, linear (wage)"
+wage_a,exp_a_square,-0.0461,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+wage_a,exp_b,0.0748,,,"return to experience, other civilian sector, linear (wage)"
+wage_a,exp_mil,0.0077,,,"return to experience, military sector, linear (wage)"
+wage_b,constant,8.9156,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_b,exp_edu,0.0189,,,linear return to an additional year of schooling (wage)
+wage_b,exp_a,0.0674,,,"return to experience, other civilian sector, linear (wage)"
+wage_b,exp_b,01424.,,,"return to experience, same sector, linear (wage)"
+wage_b,exp_b_square,-0.1774,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+wage_b,exp_mil,0.1021,,,"return to experience, military sector, linear (wage)"
+wage_mil,exp_edu,0.0443,,,linear return to an additional year of schooling (wage)
+wage_mil,exp_mil,0.3391,,,"return to experience, same sector, linear (wage)"
+wage_mil,exp_mil_square,-2.99,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+nonpec_edu,constant,43948,,,consumption value of school attendance for type 1
+nonpec_edu,hs_graduate,-2983,,,consumption value of college
+nonpec_edu,co_graduate,-26357,,,consumption value of graduate school
+nonpec_home,constant,16887,,,mean value of non-market alternative for type 1
+shocks,sd_a,0.3301,,,standard deviation of the shock in occupation a
+shocks,sd_b,0.3329,,,standard deviation of the shock in occupation b
+shocks,sd_mil,0.1259,,,standard deviation of the shock in occupation military
+shocks,sd_edu,2312,,,standard deviation of the shock in the education sector
+shocks,sd_home,13394,,,standard deviation of the shock in the home sector
+shocks,corr_b_a,-0.3806,,,correlation between the shocks in occupation a and b
+shocks,corr_mil_a,-0.3688,,,correlation between the shocks in military and a
+shocks,corr_mil_b,0.4120,,,correlation between the shocks in military and b
+shocks,corr_edu_a,0,,,correlation between the shocks in the education sector and a
+shocks,corr_edu_b,0,,,correlation between the shocks in the education sector and b
+shocks,corr_edu_mil,0,,,correlation between the shocks in the education sector and military
+shocks,corr_home_a,0,,,correlation between the shocks in home sector and a
+shocks,corr_home_b,0,,,correlation between the shocks in home sector and b
+shocks,corr_home_mil,0,,,correlation between the shocks in home sector and military
+shocks,corr_home_edu,0,,,correlation between the shocks in home sector and education
+meas_error,sd_a,0.4133,0,,SD of the measurement error in wages in occupation a
+meas_error,sd_b,0.3089,0,,SD of the measurement error in wages occupation b
+meas_error,sd_mil,0.1259,0,,SD of the measurement error in wages occupation mil
+type_shares,base_share_2,-1.6094379124,,,share_of_agents_of_type_2
+type_shares,ten_years_2,0,,,effect of more than ten years of schooling on probability of being type 2
+type_shares,base_share_3,-0.2231435513,,,share_of_agents_of_type_3
+type_shares,ten_years_3,0,,,effect of more than ten years of schooling on probability of being type 3
+type_shares,base_share_4,-0.2231435513,,,share_of_agents_of_type_4
+type_shares,ten_years_4,0,,,effect of more than ten years of schooling on probability of being type 4
+type_shift,type_2_in_a,-0.0668,,,deviation for type 2 from type 1 in a
+type_shift,type_2_in_b,0.2996,,,deviation for type 2 from type 1 in b
+type_shift,type_2_in_mil,0,,,deviation for type 2 from type 1 in mil
+type_shift,type_2_in_edu,-26352,,,deviation for type 2 from type 1 in edu
+type_shift,type_2_in_home,215,,,deviation for type 2 from type 1 in home
+type_shift,type_3_in_a,-0.4221,,,deviation for type 3 from type 1 in a
+type_shift,type_3_in_b,-0.1223,,,deviation for type 3 from type 1 in b
+type_shift,type_3_in_mil,0,,,deviation for type 3 from type 1 in mil
+type_shift,type_3_in_edu,-30541,,,deviation for type 3 from type 1 in edu
+type_shift,type_3_in_home,-16966,,,deviation for type 3 from type 1 in home
+type_shift,type_4_in_a,-0.4998,,,deviation for type 4 from type 1 in a
+type_shift,type_4_in_b,0.0756,,,deviation for type 4 from type 1 in b
+type_shift,type_4_in_mil,0,,,deviation for type 4 from type 1 in mil
+type_shift,type_4_in_edu,226,,,deviation for type 4 from type 1 in edu
+type_shift,type_4_in_home,-13128,,,deviation for type 4 from type 1 in home

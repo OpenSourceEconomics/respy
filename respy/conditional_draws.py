@@ -12,6 +12,7 @@ def create_draws_and_prob_wages(
     shocks_cholesky,
     meas_error_sds,
     periods,
+    n_wages,
 ):
     """Evaluate likelihood of observed wages and create conditional draws.
 
@@ -83,7 +84,7 @@ def create_draws_and_prob_wages(
 
 @guvectorize(
     ["f8[:], f8, f8[:, :], f8, u2, f8[:]"],
-    "(n_states), (), (n_choices_plus_one, n_choices_plus_one), () ,() -> ()",
+    "(n_states), (), (n_choices_plus_one, n_choices_plus_one), (), () -> ()",
 )
 def kalman_update(state, measurement, extended_cholcov_t, meas_sd, choice, prob_wage):
     """Make a Kalman update and evaluate likelihood of wages.

@@ -35,16 +35,24 @@ nonpec_b,not_exp_b_lagged,-1647,,,reward of switching to a from other occupation
 nonpec_b,not_any_exp_b,-494,,,reward of working in a for the first time (non pecuniary)
 nonpec_b,hs_graduate,804,,,return to high school degree (non pecuniary)
 nonpec_b,co_graduate,2005,,,return to college degree (non pecuniary)
-nonpec_a,mil_dropout,-1525,,,effect of leaving the military early (after one year)
+nonpec_b,mil_dropout,-1525,,,effect of leaving the military early (after one year)
+wage_mil,constant,8.54,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_mil,exp_edu,0.0582,,,linear return to an additional year of schooling (wage)
+wage_mil,exp_mil,0.0454,,,"return to experience, same sector, linear (wage)"
+wage_mil,exp_mil_square,-0.0479,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
+wage_mil,any_exp_mil,0.0753,,,return to having any military experience
+wage_mil,period,0.0106,,,linear age effect
+wage_mil,is_minor,-0.2539,,,effect of being a minor
+nonpec_mil,not_any_exp_mil,-560,,,reward of being in the military sector for the first time (non pecuniary)
+nonpec_mil,hs_graduate,804,,,return to high school degree (non pecuniary)
+nonpec_mil,co_graduate,2005,,,return to college degree (non pecuniary)
 nonpec_edu,constant,11031,,,consumption value of school attendance for type 1
-nonpec_edu,hs_graduate,804,,,consumption value of college
-nonpec_edu,co_graduate,2005,,,consumption value of graduate school
 nonpec_edu,is_return_not_high_school,-10700,,,reward for going back to college
 nonpec_edu,is_return_high_school,-23283,,,reward for going back to high school
 nonpec_edu,period,-1502,,,linear age effect
 nonpec_edu,is_minor,3632,,,effect of being a minor
-nonpec_edu,hs_graduate,804,,,return to high school degree (non pecuniary)
-nonpec_edu,co_graduate,2005,,,return to college degree (non pecuniary)
+nonpec_edu,hs_graduate,-3364,,,return to high school degree (non pecuniary)
+nonpec_edu,co_graduate,-5025,,,return to college degree (non pecuniary)
 nonpec_edu,mil_dropout,-1525,,,effect of leaving the military early (after one year)
 nonpec_home,constant,20242,,,mean value of non-market alternative for type 1
 nonpec_home,is_young_adult,-1027,,,additional value of staying home if aged 18-20
@@ -52,31 +60,42 @@ nonpec_home,is_adult,-1805,,,additional value of staying home if 21 or older
 nonpec_home,hs_graduate,804,,,return to high school degree (non pecuniary)
 nonpec_home,co_graduate,2005,,,return to college degree (non pecuniary)
 nonpec_home,mil_dropout,-1525,,,effect of leaving the military early (after one year)
-wage_mil,constant,8.54,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_mil,exp_edu,0.0582,,,linear return to an additional year of schooling (wage)
-wage_mil,exp_mil,0.0454,,,"return to experience, same sector, linear (wage)"
-wage_mil,exp_mil_squared,-0.0479,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_mil,any_exp_mil,0.0753,,,return to having any military experience
-wage_mil,period,0.0106,,,linear age effect
-wage_mil,is_minor,-0.2539,,,effect of being a minor
-nonpec_mil,not_any_exp_mil,-560,,,reward of being in the military sector for the first time (non pecuniary)
-nonpec_mil,hs_graduate,804,,,return to high school degree (non pecuniary)
-nonpec_mil,co_graduate,2005,,,return to college degree (non pecuniary)
 shocks,sd_a,0.3864,0,,standard deviation of the shock in occupation a
 shocks,sd_b,0.3823,0,,standard deviation of the shock in occupation b
+shocks,sd_mil,0.2426,0,,standard deviation of the shock in the military sector
 shocks,sd_edu,12821,0,,standard deviation of the shocks in the education sector
 shocks,sd_home,9350,0,,standard deviation of the shock in the home sector
-shocks,sd_mil,0.2426,0,,standard deviation of the shock in the military sector
-shocks,corr_a_b,0.1226,,,correlation between the shocks in occupation a and b
-shocks,corr_edu_a,0,,,correlation between the shocks in the education sector and occupation a
-shocks,corr_edu_b,0,,,correlation between the shocks in the education sector and occupation b
-shocks,corr_home_a,0,,,correlation of the shocks in the home sector and occupation a
-shocks,corr_home_b,0,,,correlation of the shocks in the home sector and occupation b
-shocks,corr_home_edu,0,,,correlation of the shocks in the home and the education sector
+shocks,corr_b_a,0.1226,,,correlation between the shocks in occupation a and b
 shocks,corr_mil_a,0,,,correlation of the shocks in the military sector and occupation a
 shocks,corr_mil_b,0,,,correlation of the shocks in the military sector and occupation b
-shocks,corr_mil_edu,0,,,correlation of the shocks in the military sector and education
-shocks,corr_mil_home,0,,,correlation of the shocks in the military sector and home
-meas_error,sd_a,0.001,0,,SD of the measurement error in wages in occupation a
-meas_error,sd_b,0.001,0,,SD of the measurement error in wages occupation b
-meas_error,sd_mil,0.001,0,,SD of the measurement error in wages in military sector
+shocks,corr_edu_a,0,,,correlation between the shocks in the education sector and occupation a
+shocks,corr_edu_b,0,,,correlation between the shocks in the education sector and occupation b
+shocks,corr_edu_mil,0,,,correlation of the shocks in the military sector and education
+shocks,corr_home_a,0,,,correlation of the shocks in the home sector and occupation a
+shocks,corr_home_b,0,,,correlation of the shocks in the home sector and occupation b
+shocks,corr_home_mil,0,,,correlation of the shocks in the military sector and home
+shocks,corr_home_edu,0,,,correlation of the shocks in the home and the education sector
+meas_error,sd_a,0.2415,0,,SD of the measurement error in wages in occupation a
+meas_error,sd_b,0.1942,0,,SD of the measurement error in wages occupation b
+meas_error,sd_mil,0.2063,0,,SD of the measurement error in wages in military sector
+type_shares,base_share_2,-1.6094379124,,,share_of_agents_of_type_2
+type_shares,ten_years_2,0,,,effect of more than ten years of schooling on probability of being type 2
+type_shares,base_share_3,-0.2231435513,,,share_of_agents_of_type_3
+type_shares,ten_years_3,0,,,effect of more than ten years of schooling on probability of being type 3
+type_shares,base_share_4,-0.2231435513,,,share_of_agents_of_type_4
+type_shares,ten_years_4,0,,,effect of more than ten years of schooling on probability of being type 4
+type_shift,type_2_in_a,-0.0872,,,deviation for type 2 from type 1 in a
+type_shift,type_2_in_b,0.305,,,deviation for type 2 from type 1 in b
+type_shift,type_2_in_mil,0,,,deviation for type 2 from type 1 in mil
+type_shift,type_2_in_edu,-5346,,,deviation for type 2 from type 1 in edu
+type_shift,type_2_in_home,-2135,,,deviation for type 2 from type 1 in home
+type_shift,type_3_in_a,-0.6091,,,deviation for type 3 from type 1 in a
+type_shift,type_3_in_b,-0.2118,,,deviation for type 3 from type 1 in b
+type_shift,type_3_in_mil,0,,,deviation for type 3 from type 1 in mil
+type_shift,type_3_in_edu,-8900,,,deviation for type 3 from type 1 in edu
+type_shift,type_3_in_home,-14678,,,deviation for type 3 from type 1 in home
+type_shift,type_4_in_a,-0.52,,,deviation for type 4 from type 1 in a
+type_shift,type_4_in_b,-0.0547,,,deviation for type 4 from type 1 in b
+type_shift,type_4_in_mil,0,,,deviation for type 4 from type 1 in mil
+type_shift,type_4_in_edu,-1469,,,deviation for type 4 from type 1 in edu
+type_shift,type_4_in_home,-2912,,,deviation for type 4 from type 1 in home

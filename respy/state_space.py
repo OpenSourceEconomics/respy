@@ -46,16 +46,12 @@ class StateSpace:
     def __init__(self, params, options):
         params, optim_paras, options = process_params_and_options(params, options)
 
-        # Add some arguments to the state space.
-        n_periods = options["n_periods"]
-        n_types = options["n_types"]
-        self.seed = options["solution_seed"]
-
         self.base_draws_sol = create_base_draws(
-            (n_periods, options["solution_draws"], len(options["choices"])), self.seed
+            (options["n_periods"], options["solution_draws"], len(options["choices"])),
+            options["solution_seed"],
         )
 
-        states_df, self.indexer = _create_state_space(options, n_types)
+        states_df, self.indexer = _create_state_space(options)
 
         _states_df = states_df.copy()
         _states_df.lagged_choice = _states_df.lagged_choice.cat.codes
@@ -73,7 +69,7 @@ class StateSpace:
 
         self.is_inadmissible = _create_is_inadmissible_indicator(states_df, options)
 
-        self._create_slices_by_periods(n_periods)
+        self._create_slices_by_periods(options["n_periods"])
 
     def update_systematic_rewards(self, optim_paras, options):
         self.wages, self.nonpec = _create_reward_components(
@@ -560,6 +556,7 @@ def _create_is_inadmissible_indicator(states, options):
     for column, definition in options["inadmissible_states"].items():
         df[column] = df.eval(definition, local_dict=locals_)
 
+    # Sort and convert to NumPy array.
     is_inadmissible = df[options["choices"]].to_numpy()
 
     return is_inadmissible

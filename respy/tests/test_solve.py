@@ -8,23 +8,18 @@ from respy.config import KEANE_WOLPIN_1994_MODELS
 from respy.config import KEANE_WOLPIN_1997_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import get_example_model
 from respy.solve import get_continuation_values
 from respy.solve import solve
 from respy.solve import StateSpace
 from respy.state_space import _create_state_space
 from respy.tests._former_code import _create_state_space_kw94
 from respy.tests._former_code import _create_state_space_kw97
-from respy.tests.random_model import generate_random_model
+from respy.tests.utils import process_model_or_seed
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_check_solution(model_or_seed):
-    if isinstance(model_or_seed, str):
-        params, options = get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params, options = generate_random_model()
+    params, options = process_model_or_seed(model_or_seed)
 
     state_space = solve(params, options)
 
@@ -73,11 +68,7 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
 
         return indicator_
 
-    if isinstance(model_or_seed, str):
-        params, options = get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params, options = generate_random_model()
+    params, options = process_model_or_seed(model_or_seed)
 
     params, optim_paras, options = process_params_and_options(params, options)
 
@@ -106,11 +97,7 @@ def test_invariance_of_solution(model_or_seed):
     We run solve two times and check whether all attributes of the state space match.
 
     """
-    if isinstance(model_or_seed, str):
-        params, options = get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params, options = generate_random_model()
+    params, options = process_model_or_seed(model_or_seed)
 
     params, optim_paras, options = process_params_and_options(params, options)
 
@@ -132,11 +119,7 @@ def test_invariance_of_solution(model_or_seed):
 @pytest.mark.parametrize("model_or_seed", range(10))
 def test_get_continuation_values(model_or_seed):
     """Test propagation of emaxs from last to first period."""
-    if isinstance(model_or_seed, str):
-        params, options = get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params, options = generate_random_model()
+    params, options = process_model_or_seed(model_or_seed)
 
     params, optim_paras, options = process_params_and_options(params, options)
 
@@ -173,11 +156,7 @@ def test_get_continuation_values(model_or_seed):
 @pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS + list(range(10)))
 def test_create_state_space_vs_specialized_kw94(model_or_seed):
-    if isinstance(model_or_seed, str):
-        params, options = get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params, options = generate_random_model()
+    params, options = process_model_or_seed(model_or_seed)
 
     params, optim_paras, options = process_params_and_options(params, options)
 
@@ -211,11 +190,7 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
 @pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1997_MODELS)
 def test_create_state_space_vs_specialized_kw97(model_or_seed):
-    if isinstance(model_or_seed, str):
-        params, options = get_example_model(model_or_seed)
-    else:
-        np.random.seed(model_or_seed)
-        params, options = generate_random_model()
+    params, options = process_model_or_seed(model_or_seed)
 
     # Reduce runtime
     options["n_periods"] = 10 if options["n_periods"] > 10 else options["n_periods"]

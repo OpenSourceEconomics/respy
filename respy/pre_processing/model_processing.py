@@ -163,8 +163,8 @@ def _parse_parameters(params):
 
     Parameters
     ----------
-    params : DataFrame or Series
-        DataFrame with parameter specification or 'para' column thereof
+    params : pandas.DataFrame or pandas.Series
+        Contains model parameters in column ``"para"``.
 
     """
     optim_paras = {}

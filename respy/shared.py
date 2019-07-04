@@ -79,14 +79,14 @@ def create_base_draws(shape, seed):
     return draws
 
 
-def transform_disturbances(draws, shocks_mean, shocks_cholesky):
+def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
     """Transform the standard normal deviates to the relevant distribution."""
     draws_transformed = draws.dot(shocks_cholesky.T)
 
     draws_transformed += shocks_mean
 
-    draws_transformed[:, :2] = np.clip(
-        np.exp(draws_transformed[:, :2]), 0.0, HUGE_FLOAT
+    draws_transformed[:, :n_wages] = np.clip(
+        np.exp(draws_transformed[:, :n_wages]), 0.0, HUGE_FLOAT
     )
 
     return draws_transformed
@@ -126,7 +126,7 @@ def _generate_column_labels_simulation(options):
         est_lab
         + ["Type"]
         + [f"Nonpecuniary_Reward_{choice.title()}" for choice in options["choices"]]
-        + [f"Wages_{choice.title()}" for choice in options["choices_w_wage"]]
+        + [f"Wage_{choice.title()}" for choice in options["choices_w_wage"]]
         + [f"Flow_Utility_{choice.title()}" for choice in options["choices"]]
         + [f"Value_Function_{choice.title()}" for choice in options["choices"]]
         + [f"Shock_Reward_{choice.title()}" for choice in options["choices"]]
