@@ -153,7 +153,6 @@ def test_get_continuation_values(model_or_seed):
     assert state_space.continuation_values.mean() >= 0.95
 
 
-@pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS + list(range(10)))
 def test_create_state_space_vs_specialized_kw94(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
@@ -187,7 +186,6 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
     assert np.array_equal(mask_old, mask_new)
 
 
-@pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1997_MODELS)
 def test_create_state_space_vs_specialized_kw97(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)

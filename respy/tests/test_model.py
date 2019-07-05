@@ -63,7 +63,6 @@ def test_invariance_to_order_of_initial_schooling_levels(model_or_seed):
     assert options == shuffled_options
 
 
-@pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_invariance_to_order_of_choices(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
