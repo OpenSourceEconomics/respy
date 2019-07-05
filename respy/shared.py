@@ -96,7 +96,9 @@ def get_example_model(model):
     assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
 
     options = yaml.safe_load((TEST_RESOURCES_DIR / f"{model}.yaml").read_text())
-    params = pd.read_csv(TEST_RESOURCES_DIR / f"{model}.csv")
+    params = pd.read_csv(
+        TEST_RESOURCES_DIR / f"{model}.csv", index_col=["category", "name"]
+    )
 
     return params, options
 
