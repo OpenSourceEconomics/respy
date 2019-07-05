@@ -9,9 +9,10 @@ wage_a,exp_mil,0.0077,,,"return to experience, military sector, linear (wage)"
 wage_b,constant,8.9156,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_b,exp_edu,0.0189,,,linear return to an additional year of schooling (wage)
 wage_b,exp_a,0.0674,,,"return to experience, other civilian sector, linear (wage)"
-wage_b,exp_b,01424.,,,"return to experience, same sector, linear (wage)"
+wage_b,exp_b,0.1424,,,"return to experience, same sector, linear (wage)"
 wage_b,exp_b_square,-0.1774,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
 wage_b,exp_mil,0.1021,,,"return to experience, military sector, linear (wage)"
+wage_mil,constant,8.4704,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_mil,exp_edu,0.0443,,,linear return to an additional year of schooling (wage)
 wage_mil,exp_mil,0.3391,,,"return to experience, same sector, linear (wage)"
 wage_mil,exp_mil_square,-2.99,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
@@ -21,7 +22,7 @@ nonpec_edu,co_graduate,-26357,,,consumption value of graduate school
 nonpec_home,constant,16887,,,mean value of non-market alternative for type 1
 shocks,sd_a,0.3301,,,standard deviation of the shock in occupation a
 shocks,sd_b,0.3329,,,standard deviation of the shock in occupation b
-shocks,sd_mil,0.1259,,,standard deviation of the shock in occupation military
+shocks,sd_mil,0.3308,,,standard deviation of the shock in occupation military
 shocks,sd_edu,2312,,,standard deviation of the shock in the education sector
 shocks,sd_home,13394,,,standard deviation of the shock in the home sector
 shocks,corr_b_a,-0.3806,,,correlation between the shocks in occupation a and b
