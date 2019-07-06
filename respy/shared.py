@@ -23,25 +23,30 @@ def _aggregate_keane_wolpin_utility(
     return value_function, flow_utility
 
 
-def get_conditional_probabilities(type_shares, initial_level_of_education):
-    """Calculate the conditional choice probabilities.
+def predict_multinomial_logit(type_proportions, initial_level_of_education):
+    """Predict probabilities based on a multinomial logit regression.
 
-    The calculation is based on the multinomial logit model for one particular initial
-    condition.
+    The function is used to predict the probability for all types based on the initial
+    characteristics of an individual.
 
     Parameters
     ----------
-    type_shares : numpy.ndarray
-        Undocumented parameter.
+    type_proportions : numpy.ndarray
+        Parameters to predict probabilities.
     initial_level_of_education : numpy.ndarray
         Array with shape (n_obs,) containing initial levels of education.
 
+    Returns
+    -------
+    probs : numpy.ndarray
+        Array with shape (n_obs, n_types) containing the probabilities for
+
     """
-    type_shares = type_shares.reshape(-1, 2)
+    type_proportions = type_proportions.reshape(-1, 2)
     covariates = np.column_stack(
         (initial_level_of_education <= 9, 9 < initial_level_of_education)
     )
-    probs = np.exp(covariates.dot(type_shares.T))
+    probs = np.exp(covariates.dot(type_proportions.T))
     probs /= probs.sum(axis=1, keepdims=True)
 
     if initial_level_of_education.shape[0] == 1:

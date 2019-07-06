@@ -10,7 +10,7 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import clip
 from respy.shared import create_base_draws
-from respy.shared import get_conditional_probabilities
+from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -52,7 +52,6 @@ def get_crit_func(params, options, df):
 
     state_space = StateSpace(params, options)
 
-    # Collect arguments for estimation.
     base_draws_est = create_base_draws(
         (options["n_periods"], options["estimation_draws"], len(options["choices"])),
         options["estimation_seed"],
@@ -235,9 +234,9 @@ def log_like_obs(state_space, df, base_draws_est, optim_paras, options):
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
     indiv_initial_exp_edu = df.Experience_Edu.to_numpy()[idx_indiv_first_obs]
 
-    # Update type-specific probabilities conditional on whether the initial level of
-    # education is greater than nine.
-    type_probabilities = get_conditional_probabilities(
+    # Calculate the probabilities for all types based on an individual's initial
+    # characteristics.
+    type_probabilities = predict_multinomial_logit(
         optim_paras["type_shares"], indiv_initial_exp_edu
     )
 

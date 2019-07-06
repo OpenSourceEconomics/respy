@@ -7,7 +7,7 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import _generate_column_labels_simulation
 from respy.shared import create_base_draws
-from respy.shared import get_conditional_probabilities
+from respy.shared import predict_multinomial_logit
 from respy.shared import transform_disturbances
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -209,9 +209,7 @@ def _get_random_types(edu_start, optim_paras, options):
 
     types = []
     for i in range(options["simulation_agents"]):
-        probs = get_conditional_probabilities(
-            type_info["shares"], np.array([edu_start[i]])
-        )
+        probs = predict_multinomial_logit(type_info["shares"], np.array([edu_start[i]]))
         types += np.random.choice(type_info["order"], p=probs, size=1).tolist()
 
     # If we only have one individual, we need to ensure that types are a vector.
