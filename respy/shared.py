@@ -39,7 +39,7 @@ def get_conditional_probabilities(type_shares, initial_level_of_education):
     """
     type_shares = type_shares.reshape(-1, 2)
     covariates = np.column_stack(
-        (np.ones(initial_level_of_education.shape[0]), initial_level_of_education > 9)
+        (initial_level_of_education <= 9, 9 < initial_level_of_education)
     )
     probs = np.exp(covariates.dot(type_shares.T))
     probs /= probs.sum(axis=1, keepdims=True)
