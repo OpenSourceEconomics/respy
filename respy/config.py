@@ -15,7 +15,7 @@ PRINT_FLOAT = 1e10
 # Number of decimals that are compared for tests This is currently only used in
 # regression tests.
 DECIMALS = 6
-# Some assert fucntions take rtol instead of decimals
+# Some assert functions take rtol instead of decimals
 TOL = 10 ** -DECIMALS
 
 # Interpolation
@@ -52,8 +52,6 @@ value in the parameter specification. The values are strings passed to ``pd.eval
 """
 
 BASE_CORE_STATE_SPACE_FILTERS = [
-    # In period 0, agents cannot choose occupation a or b.
-    "period == 0 and (lagged_choice == 'a' or lagged_choice == 'b')",
     # In periods > 0, if agents accumulated experience only in one choice, lagged choice
     # cannot be different.
     "period > 0 and exp_{i} == period and lagged_choice != '{i}'",
@@ -64,8 +62,9 @@ BASE_CORE_STATE_SPACE_FILTERS = [
     # be school.
     "period > 0 and lagged_choice == 'edu' and exp_edu == 0",
     # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
-    "lagged_choice == 'a' and exp_a == 0",
-    "lagged_choice == 'b' and exp_b == 0",
+    "lagged_choice == '{k}' and exp_{k} == 0",
+    # In period 0, agents cannot choose occupation a or b.
+    "period == 0 and lagged_choice == '{k}'",
 ]
 """list: Contains filters for the state space.
 
@@ -98,7 +97,11 @@ DEFAULT_OPTIONS = {
     "core_state_space_filters": BASE_CORE_STATE_SPACE_FILTERS,
 }
 
-EXAMPLE_MODELS = [
+KEANE_WOLPIN_1994_MODELS = [
     f"kw_data_{suffix}"
     for suffix in ["one", "one_initial", "one_types", "two", "three"]
 ] + ["reliability_short"]
+
+KEANE_WOLPIN_1997_MODELS = ["kw_97_base", "kw_97_extended"]
+
+EXAMPLE_MODELS = KEANE_WOLPIN_1994_MODELS + KEANE_WOLPIN_1997_MODELS

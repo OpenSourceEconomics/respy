@@ -89,7 +89,10 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     for period in range(n_periods):
         base_draws_sim_transformed[period] = transform_disturbances(
-            base_draws_sim[period], np.zeros(n_choices), optim_paras["shocks_cholesky"]
+            base_draws_sim[period],
+            np.zeros(n_choices),
+            optim_paras["shocks_cholesky"],
+            n_wages,
         )
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
@@ -98,8 +101,10 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     container = ()
     for choice in options["choices_w_exp"]:
         container += (_get_random_initial_experience(choice, options),)
-    container += (_get_random_lagged_choices(container[2], options),)
-    container += (_get_random_types(container[2], optim_paras, options),)
+
+    edu_idx = list(options["choices_w_exp"]).index("edu")
+    container += (_get_random_lagged_choices(container[edu_idx], options),)
+    container += (_get_random_types(container[edu_idx], optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
     current_states = np.column_stack(container).astype(np.uint8)

@@ -88,22 +88,24 @@ def _order_choices(options, params):
     each group, we order alphabetically. Then, the order is applied to ``options``.
 
     """
-    all_choices = _infer_choices(params)
-    options["choices_w_exp"] = _infer_choices_with_experience(params, options)
-    options["choices_w_wage"] = _infer_choices_with_wage(params)
+    choices = set(_infer_choices(params))
+    choices_w_exp = set(_infer_choices_with_experience(params, options))
+    choices_w_wage = set(_infer_choices_with_prefix(params, "wage_"))
+    choices_w_exp_wo_wage = choices_w_exp - choices_w_wage
+    choices_wo_exp_wo_wage = choices - choices_w_exp
 
-    choices_w_exp_wo_wage = sorted(
-        list(set(options["choices_w_exp"]) - set(options["choices_w_wage"]))
+    options["choices_w_wage"] = sorted(choices_w_wage)
+    options["choices_w_exp"] = sorted(choices_w_wage) + sorted(
+        choices_w_exp - choices_w_wage
     )
-    choices_wo_exp_wo_wage = sorted(
-        list(set(all_choices) - set(options["choices_w_exp"]))
-    )
-
-    options["choices_wo_exp"] = choices_wo_exp_wo_wage
-    options["choices_wo_wage"] = choices_w_exp_wo_wage + choices_wo_exp_wo_wage
+    options["choices_wo_exp"] = sorted(choices_wo_exp_wo_wage)
 
     # Dictionaries are insertion ordered since Python 3.6+.
-    order = options["choices_w_wage"] + choices_w_exp_wo_wage + choices_wo_exp_wo_wage
+    order = (
+        options["choices_w_wage"]
+        + sorted(choices_w_exp_wo_wage)
+        + sorted(choices_wo_exp_wo_wage)
+    )
     options["choices"] = {key: options["choices"].get(key, {}) for key in order}
 
     return options
@@ -161,8 +163,8 @@ def _parse_parameters(params):
 
     Parameters
     ----------
-    params : DataFrame or Series
-        DataFrame with parameter specification or 'para' column thereof
+    params : pandas.DataFrame or pandas.Series
+        Contains model parameters in column ``"para"``.
 
     """
     optim_paras = {}
@@ -204,19 +206,24 @@ def _infer_choices_with_experience(params, options):
     used_covariates = [cov for cov in covariates if cov in parameters]
 
     matches = []
+    for param in parameters:
+        matches += re.findall(r"exp_([A-Za-z]*)", param)
     for cov in used_covariates:
         matches += re.findall(r"exp_([A-Za-z]*)", covariates[cov])
 
     return sorted(list(set(matches)))
 
 
-def _infer_choices_with_wage(params):
+def _infer_choices_with_prefix(params, prefix):
     return sorted(
-        i[5:] for i in params.index.get_level_values(0).unique() if "wage_" in i
+        i[len(prefix) :]
+        for i in params.index.get_level_values(0).unique()
+        if prefix in i
     )
 
 
 def _infer_choices(params):
-    return sorted(
-        i[7:] for i in params.index.get_level_values(0).unique() if "nonpec_" in i
-    )
+    choices_w_wage = _infer_choices_with_prefix(params, "wage_")
+    choices_w_nonpec = _infer_choices_with_prefix(params, "nonpec_")
+
+    return list(set(choices_w_wage) | set(choices_w_nonpec))

@@ -93,9 +93,7 @@ def log_like(params, data, base_draws_est, state_space, options):
 
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
-    contribs = log_like_obs(
-        state_space, data, base_draws_est, options["estimation_tau"], optim_paras
-    )
+    contribs = log_like_obs(state_space, data, base_draws_est, optim_paras, options)
 
     crit_val = -np.mean(contribs)
 
@@ -192,7 +190,7 @@ def simulate_probability_of_individuals_observed_choice(
     prob_choice[0] /= n_draws
 
 
-def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
+def log_like_obs(state_space, df, base_draws_est, optim_paras, options):
     """Calculate the likelihood contribution of each individual in the sample.
 
     The function calculates all likelihood contributions for all observations in the
@@ -210,10 +208,9 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
     base_draws_est : numpy.ndarray
         Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
         standard normal distributions.
-    tau : float
-        Smoothing parameter for choice probabilities.
     optim_paras : dict
         Dictionary with quantities that were extracted from the parameter vector.
+    options : dict
 
     Returns
     -------
@@ -264,6 +261,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
         optim_paras["shocks_cholesky"],
         optim_paras["meas_error"],
         periods,
+        len(options["choices_w_wage"]),
     )
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
@@ -276,7 +274,7 @@ def log_like_obs(state_space, df, base_draws_est, tau, optim_paras):
         optim_paras["delta"],
         state_space.is_inadmissible[ks],
         choices.reshape(-1, n_types),
-        tau,
+        options["estimation_tau"],
     )
 
     prob_obs = prob_choices * prob_wages.reshape(n_obs, -1)
@@ -299,9 +297,7 @@ def _convert_choice_variables_from_categorical_to_codes(df, options):
     # the codes might be in a different order than for the model required which is
     # choices_w_exp_w_wag, choices_w_exp_wo_wage, choices_wo_exp_wo_wage.
     choices_to_codes = {choice: i for i, choice in enumerate(options["choices"])}
-    df.Choice = df.Choice.cat.rename_categories(choices_to_codes).astype(int)
-    df.Lagged_Choice = df.Lagged_Choice.cat.rename_categories(choices_to_codes).astype(
-        int
-    )
+    df.Choice = df.Choice.replace(choices_to_codes).astype(int)
+    df.Lagged_Choice = df.Lagged_Choice.replace(choices_to_codes).astype(int)
 
     return df

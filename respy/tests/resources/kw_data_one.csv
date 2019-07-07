@@ -58,5 +58,5 @@ shocks,corr_edu_b,0,False,,,"Element 3,2 of cholesky factor of shock covariance 
 shocks,corr_home_a,0,False,,,"Element 4,1 of cholesky factor of shock covariance matrix"
 shocks,corr_home_b,0,False,,,"Element 4,2 of cholesky factor of shock covariance matrix"
 shocks,corr_home_edu,0,False,,,"Element 4,3 of cholesky factor of shock covariance matrix"
-meas_error,sd_a,0.001,FALSE,0,,SD of the measurement error in wages in occupation a
-meas_error,sd_b,0.001,FALSE,0,,SD of the measurement error in wages occupation b
+meas_error,sd_a,3,FALSE,0,,SD of the measurement error in wages in occupation a
+meas_error,sd_b,3,FALSE,0,,SD of the measurement error in wages occupation b

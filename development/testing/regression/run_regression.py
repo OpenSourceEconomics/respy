@@ -107,13 +107,6 @@ def check_single(test, strict=False):
     """Check a single test."""
     params, option_spec, exp_val = test
 
-    # We need to create an temporary directory, so the multiprocessing does not
-    # interfere with any of the files that are printed and used during the small
-    # estimation request.
-    dirname = get_random_dirname(5)
-    os.mkdir(dirname)
-    os.chdir(dirname)
-
     df = simulate_truncated_data(params, option_spec)
 
     crit_func = rp.get_crit_func(params, option_spec, df)
@@ -123,10 +116,6 @@ def check_single(test, strict=False):
 
     if strict is True:
         assert is_success, "Failed regression test."
-
-    # Cleanup of temporary directories.from
-    os.chdir("..")
-    shutil.rmtree(dirname)
 
     return is_success
 

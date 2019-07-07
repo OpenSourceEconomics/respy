@@ -35,6 +35,7 @@ def solve(params, options):
     params, optim_paras, options = process_params_and_options(params, options)
 
     state_space = StateSpace(params, options)
+
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     return state_space
@@ -61,6 +62,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     """
     n_choices = len(options["choices"])
+    n_wages = len(options["choices_w_wage"])
     n_periods = options["n_periods"]
     n_states = state_space.states.shape[0]
 
@@ -99,7 +101,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
         base_draws_sol_period = state_space.base_draws_sol[period]
         draws_emax_risk = transform_disturbances(
-            base_draws_sol_period, np.zeros(n_choices), shocks_cholesky
+            base_draws_sol_period, np.zeros(n_choices), shocks_cholesky, n_wages
         )
 
         # Unpack necessary attributes of the specific period.
@@ -136,7 +138,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             not_interpolated = get_not_interpolated_indicator(
                 options["interpolation_points"],
                 n_states_in_period,
-                state_space.seed + period,
+                options["solution_seed"] + period,
             )
 
             # Constructing the exogenous variable for all states, including the ones

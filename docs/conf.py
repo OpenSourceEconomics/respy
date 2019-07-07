@@ -75,7 +75,11 @@ else:
     todo_emit_warnings = True
 
 # Configure Sphinx' linkcheck
-linkcheck_ignore = [r"https://(dx\.)?doi\.org/*.", r"https://zenodo\.org/*."]
+linkcheck_ignore = [
+    r"http://cscubs\.cs\.uni-bonn\.de/*.",
+    r"https://(dx\.)?doi\.org/*.",
+    r"https://zenodo\.org/*.",
+]
 
 # Configuration for nbsphinx
 nbsphinx_execute = "never"
