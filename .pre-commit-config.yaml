@@ -29,7 +29,7 @@ repos:
         additional_dependencies: [
             flake8-bugbear, flake8-builtins, flake8-comprehensions, flake8-docstrings,
             flake8-eradicate, flake8-print, flake8-rst-docstrings, flake8-todo,
-            pep8-naming, pydocstyle:3.0.0,
+            pep8-naming, pydocstyle==3.0.0,
         ]
         files: 'respy/.*'  # We start with a subfolder and extend the scope later.
 -   repo: local
