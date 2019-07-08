@@ -14,9 +14,9 @@ def _validate_params(params):
     if types:
         # Ensure that parameters to predict type probabilities have the same ordering
         # for every type.
-        covariates = params.loc[types[0]].get_level_values(0)
+        covariates = params.loc[types[0]].index.get_level_values(0)
         for type_ in types[1:]:
-            assert all(covariates == params.loc[type_].get_level_values(0))
+            assert all(covariates == params.loc[type_].index.get_level_values(0))
 
         # TODO: Ensure that type shifts are correctly ordered.
 
