@@ -71,7 +71,13 @@ class StateSpace:
 
         self._create_slices_by_periods(options["n_periods"])
 
-    def update_systematic_rewards(self, optim_paras, options):
+    def update_wages_and_nonpecuniary_rewards(self, optim_paras, options):
+        """Update wages and non-pecuniary rewards.
+
+        During the estimation, the rewards need to be updated according to the new
+        parameters whereas the covariates stay the same.
+
+        """
         self.wages, self.nonpec = _create_reward_components(
             self.states[:, -1], self.covariates, optim_paras, options
         )
@@ -464,7 +470,7 @@ def _create_reward_components(types, covariates, optim_paras, options):
     )
 
     n_wages = len(options["choices_w_wage"])
-    type_deviations = optim_paras["type_shifts"][types]
+    type_deviations = optim_paras["type_shift"][types]
 
     log_wages += type_deviations[:, :n_wages]
     nonpec[:, n_wages:] += type_deviations[:, n_wages:]

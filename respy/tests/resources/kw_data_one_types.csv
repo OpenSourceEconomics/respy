@@ -60,10 +60,6 @@ shocks,corr_home_b,0,False,,,"Element 4,2 of cholesky factor of shock covariance
 shocks,corr_home_edu,0,False,,,"Element 4,3 of cholesky factor of shock covariance matrix"
 meas_error,sd_a,0.001,FALSE,0,,SD of the measurement error in wages in occupation a
 meas_error,sd_b,0.001,FALSE,0,,SD of the measurement error in wages occupation b
-type_shares,up_to_nine_years_edu_2,-1.6094379124,False,,,effect of up to nine years of schooling on probability of being type 2
-type_shares,at_least_ten_years_edu_2,0,False,,,effect of at least ten years of schooling on probability of being type 2
-type_shares,up_to_nine_years_edu_3,-0.2231435513,False,,,effect of up to nine years of schooling on probability of being type 3
-type_shares,at_least_ten_years_edu_3,0,False,,,effect of at least ten years of schooling on probability of being type 3
 type_shift,type_2_in_occ_a,0.1,False,,,deviation for type 2 from type 1 in occ_a
 type_shift,type_2_in_occ_b,-0.15,False,,,deviation for type 2 from type 1 in occ_b
 type_shift,type_2_in_edu,-1000,False,,,deviation for type 2 from type 1 in edu
@@ -72,3 +68,7 @@ type_shift,type_3_in_occ_a,-0.1,False,,,deviation for type 3 from type 1 in occ_
 type_shift,type_3_in_occ_b,0.15,False,,,deviation for type 3 from type 1 in occ_b
 type_shift,type_3_in_edu,1000,False,,,deviation for type 3 from type 1 in edu
 type_shift,type_3_in_home,-1000,False,,,deviation for type 3 from type 1 in home
+type_2,up_to_nine_years_edu,-1.6094379124,,,,effect of up to nine years of schooling on probability of being type 2
+type_2,at_least_ten_years_edu,0.0,,,,effect of at least ten years of schooling on probability of being type 2
+type_3,up_to_nine_years_edu,-0.2231435513,,,,effect of up to nine years of schooling on probability of being type 3
+type_3,at_least_ten_years_edu,0.0,,,,effect of at least ten years of schooling on probability of being type 3

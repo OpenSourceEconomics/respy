@@ -2,6 +2,25 @@ import numpy as np
 import pandas as pd
 
 
+def _validate_params(params):
+    # TODO: Ensure that the shock matrix is correctly ordered.
+
+    types = sorted(
+        params.index.get_level_values(0)
+        .str.extract(r"(\btype_[0-9]+\b)")[0]
+        .dropna()
+        .unique()
+    )
+    if types:
+        # Ensure that parameters to predict type probabilities have the same ordering
+        # for every type.
+        covariates = params.loc[types[0]].get_level_values(0)
+        for type_ in types[1:]:
+            assert all(covariates == params.loc[type_].get_level_values(0))
+
+        # TODO: Ensure that type shifts are correctly ordered.
+
+
 def _validate_options(o):
     # Choices with experience.
     choices = o["choices"]

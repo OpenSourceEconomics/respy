@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import yaml
+from numba import guvectorize
 from numba import njit
 from numba import vectorize
 
@@ -23,36 +24,53 @@ def _aggregate_keane_wolpin_utility(
     return value_function, flow_utility
 
 
-def predict_multinomial_logit(type_proportions, initial_level_of_education):
+@guvectorize(
+    ["f8[:, :], f8[:], f8[:]"],
+    "(n_types, n_covariates), (n_covariates) -> (n_types)",
+    nopython=True,
+    target="parallel",
+)
+def predict_multinomial_logit(type_proportions, type_covariates, probs):
     """Predict probabilities based on a multinomial logit regression.
 
     The function is used to predict the probability for all types based on the initial
-    characteristics of an individual.
+    characteristics of an individual. This is necessary to sample initial types in the
+    simulation and to weight the probability of an observation by types in the
+    estimation.
+
+    The `multinomial logit model
+    <https://en.wikipedia.org/wiki/Multinomial_logistic_regression>`_  predicts the
+    probability that an individual belongs to a certain type. The sum over all
+    type-probabilities is one.
 
     Parameters
     ----------
     type_proportions : numpy.ndarray
-        Parameters to predict probabilities.
-    initial_level_of_education : numpy.ndarray
-        Array with shape (n_obs,) containing initial levels of education.
+        Array with shape (n_types, n_type_covariates) containing parameters to predict
+        type probabilities.
+    type_covariates : numpy.ndarray
+        Array with shape (n_type_covariates,) containing type covariates.
 
     Returns
     -------
     probs : numpy.ndarray
-        Array with shape (n_obs, n_types) containing the probabilities for
+        Array with shape (n_types,) containing the probabilities for each type.
 
     """
-    type_proportions = type_proportions.reshape(-1, 2)
-    covariates = np.column_stack(
-        (initial_level_of_education <= 9, 9 < initial_level_of_education)
-    )
-    probs = np.exp(covariates.dot(type_proportions.T))
-    probs /= probs.sum(axis=1, keepdims=True)
+    n_types, n_covariates = type_proportions.shape
 
-    if initial_level_of_education.shape[0] == 1:
-        probs = probs.ravel()
+    denominator = 0
 
-    return probs
+    for type_ in range(n_types):
+        prob_type = 0
+        for cov in range(n_covariates):
+            prob_type += type_proportions[type_, cov] * type_covariates[cov]
+
+        exp_prob_type = np.exp(prob_type)
+        probs[type_] = exp_prob_type
+        denominator += exp_prob_type
+
+    probs /= denominator
 
 
 def create_base_draws(shape, seed):

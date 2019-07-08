@@ -3,6 +3,7 @@ import pandas as pd
 from numba import guvectorize
 
 from respy.config import HUGE_FLOAT
+from respy.likelihood import _create_type_covariates
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import _generate_column_labels_simulation
@@ -104,7 +105,11 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     edu_idx = list(options["choices_w_exp"]).index("edu")
     container += (_get_random_lagged_choices(container[edu_idx], options),)
-    container += (_get_random_types(container[edu_idx], optim_paras, options),)
+    states_wo_types = pd.DataFrame(
+        np.column_stack(container),
+        columns=[f"exp_{i}" for i in options["choices_w_exp"]] + ["lagged_choice"],
+    ).assign(period=0)
+    container += (_get_random_types(states_wo_types, optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
     current_states = np.column_stack(container).astype(np.uint8)
@@ -192,28 +197,34 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
 def _sort_type_info(optim_paras):
     """We fix an order for the sampling of the types."""
-    type_shares = optim_paras["type_shares"].reshape(-1, 2)
+    type_shares = optim_paras["type_shares"]
     order = np.argsort(type_shares[:, 0])
-    type_info = {"shares": type_shares[order].flatten(), "order": order}
+    type_info = {"shares": type_shares[order], "order": order}
 
     return type_info
 
 
-def _get_random_types(edu_start, optim_paras, options):
+def _get_random_types(states, optim_paras, options):
     """Get random types for simulated agents."""
-    # We want to ensure that the order of types in the initialization file does not
-    # matter for the simulated sample.
-    type_info = _sort_type_info(optim_paras)
+    if options["n_types"] == 1:
+        types = np.zeros(options["simulation_agents"])
 
-    np.random.seed(options["simulation_seed"])
+    else:
+        # We want to ensure that the order of types in the initialization file does not
+        # matter for the simulated sample.
+        type_info = _sort_type_info(optim_paras)
 
-    types = []
-    for i in range(options["simulation_agents"]):
-        probs = predict_multinomial_logit(type_info["shares"], np.array([edu_start[i]]))
-        types += np.random.choice(type_info["order"], p=probs, size=1).tolist()
+        type_covariates = _create_type_covariates(states, options)
 
-    # If we only have one individual, we need to ensure that types are a vector.
-    types = np.array(types, ndmin=1)
+        np.random.seed(options["simulation_seed"])
+
+        types = []
+        for i in range(options["simulation_agents"]):
+            probs = predict_multinomial_logit(type_info["shares"], type_covariates[i])
+            types += np.random.choice(type_info["order"], p=probs, size=1).tolist()
+
+        # If we only have one individual, we need to ensure that types are a vector.
+        types = np.array(types, ndmin=1)
 
     return types
 

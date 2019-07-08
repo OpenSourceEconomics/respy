@@ -10,6 +10,7 @@ from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_checking import _validate_options
+from respy.pre_processing.model_checking import _validate_params
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
@@ -17,24 +18,28 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 def process_params_and_options(params, options):
     params, optim_paras = _process_params(params)
 
-    n_types = optim_paras["type_shifts"].shape[0]
-    extended_options = _process_options(options, params, n_types)
+    options["n_types"] = optim_paras["type_shift"].shape[0]
+    if options["n_types"] > 1:
+        options["type_covariates"] = (
+            params.loc["type_2"].index.get_level_values(0).tolist()
+        )
+    extended_options = _process_options(options, params)
 
     return params, optim_paras, extended_options
 
 
 def _process_params(params):
     params = _read_params(params)
+    _validate_params(params)
     optim_paras = _parse_parameters(params)
 
     return params, optim_paras
 
 
-def _process_options(options, params, n_types):
+def _process_options(options, params):
     options = _read_options(options)
 
     extended_options = {**DEFAULT_OPTIONS, **options}
-    extended_options["n_types"] = n_types
     extended_options = _order_choices(extended_options, params)
     extended_options = _set_defaults_for_choices_with_experience(extended_options)
     extended_options = _set_defaults_for_inadmissible_states(extended_options)
@@ -183,20 +188,35 @@ def _parse_parameters(params):
     meas_error.update(short_meas_error)
     optim_paras["meas_error"] = meas_error.to_numpy()
 
-    n_choices = len(_infer_choices(params))
+    if "type_shift" in optim_paras:
+        types = _infer_types(params)
+        n_type_covariates = params.loc[types[0]].shape[0]
 
-    if "type_shares" in optim_paras:
-        optim_paras["type_shares"] = np.hstack(
-            [np.zeros(2), optim_paras["type_shares"]]
+        optim_paras["type_shares"] = np.vstack(
+            (
+                np.zeros(n_type_covariates),
+                params.loc[types].to_numpy().reshape(len(types), n_type_covariates),
+            )
         )
-        optim_paras["type_shifts"] = np.vstack(
-            [np.zeros(n_choices), optim_paras["type_shift"].reshape(-1, n_choices)]
+        optim_paras["type_shift"] = np.vstack(
+            (
+                np.zeros(n_choices),
+                optim_paras["type_shift"].reshape(len(types), n_choices),
+            )
         )
     else:
-        optim_paras["type_shares"] = np.zeros(2)
-        optim_paras["type_shifts"] = np.zeros((1, n_choices))
+        optim_paras["type_shift"] = np.zeros((1, n_choices))
 
     return optim_paras
+
+
+def _infer_types(params):
+    return sorted(
+        params.index.get_level_values(0)
+        .str.extract(r"(\btype_[0-9]+\b)")[0]
+        .dropna()
+        .unique()
+    )
 
 
 def _infer_choices_with_experience(params, options):
