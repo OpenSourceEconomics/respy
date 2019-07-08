@@ -2,8 +2,35 @@ import numpy as np
 import pandas as pd
 
 
-def _validate_params(params):
-    # TODO: Ensure that the shock matrix is correctly ordered.
+def _validate_params(params, options):
+    params = params.copy().to_frame()
+    n_choices = len(options["choices"])
+    choices = list(options["choices"])
+
+    # Ensure that standard deviations are in the same order as choices.
+    sd_ordering = (
+        params.query("category == 'shocks' and name.str.startswith('sd_')")
+        .index.get_level_values(1)
+        .str.replace("sd_", "")
+    )
+    assert (sd_ordering == choices).all()
+
+    # Ensure that correlation is in the same order as choices. The first index level
+    # needs to start with one occurrence of the second choice, then two occurrences of
+    # the third choice, and so on.
+    corr_idx = (
+        params.query("category == 'shocks' and name.str.startswith('corr_')")
+        .index.get_level_values(1)
+        .to_series()
+        .str.split("_", expand=True)
+    )
+    expected = np.repeat(choices[1:], np.arange(1, n_choices))
+    assert (corr_idx[1] == expected).all()
+
+    # The second level starts with the first choice, then the first two choices follow,
+    # and so on.
+    expected = [choice for max_ in range(1, n_choices) for choice in choices[:max_]]
+    assert (corr_idx[2] == expected).all()
 
     types = sorted(
         params.index.get_level_values(0)
@@ -12,13 +39,23 @@ def _validate_params(params):
         .unique()
     )
     if types:
+        n_types = len(types) + 1
         # Ensure that parameters to predict type probabilities have the same ordering
         # for every type.
         covariates = params.loc[types[0]].index.get_level_values(0)
         for type_ in types[1:]:
             assert all(covariates == params.loc[type_].index.get_level_values(0))
 
-        # TODO: Ensure that type shifts are correctly ordered.
+        # Ensure that the type shifts are ordered by type number and choices.
+        type_shift_idx = (
+            params.loc["type_shift"].reset_index().name.str.split("_", expand=True)
+        )
+
+        expected = [
+            val for type_ in range(2, n_types + 1) for val in [type_] * n_choices
+        ]
+        assert (type_shift_idx[1].astype(float) == expected).all()
+        assert (type_shift_idx[3] == np.tile(np.array(choices), n_types - 1)).all()
 
 
 def _validate_options(o):

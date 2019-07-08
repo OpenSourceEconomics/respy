@@ -25,12 +25,14 @@ def process_params_and_options(params, options):
         )
     extended_options = _process_options(options, params)
 
+    _validate_params(params, extended_options)
+    _validate_options(extended_options)
+
     return params, optim_paras, extended_options
 
 
 def _process_params(params):
     params = _read_params(params)
-    _validate_params(params)
     optim_paras = _parse_parameters(params)
 
     return params, optim_paras
@@ -43,8 +45,6 @@ def _process_options(options, params):
     extended_options = _order_choices(extended_options, params)
     extended_options = _set_defaults_for_choices_with_experience(extended_options)
     extended_options = _set_defaults_for_inadmissible_states(extended_options)
-
-    _validate_options(extended_options)
 
     return extended_options
 
