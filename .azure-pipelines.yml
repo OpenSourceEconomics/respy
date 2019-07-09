@@ -66,14 +66,14 @@ jobs:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH.
 
-  - bash: conda update conda --yes --quiet
-    displayName: Update conda.
-
   # On Hosted macOS, the agent user doesn't have ownership of Miniconda's installation
   # directory. We need to take ownership if we want to update conda or install packages
   # globally.
   - bash: sudo chown -R $USER $CONDA
     displayName: Take ownership of conda installation
+
+  - bash: conda update conda --yes --quiet
+    displayName: Update conda.
 
    - bash: conda install --yes --quiet --name respy python=$PYTHON_VERSION numpy mkl codecov estimagic numba pandas scipy pyaml pytest pytest-cov -c defaults -c numba -c janosg -c conda-forge
      displayName: Install Anaconda environment.
