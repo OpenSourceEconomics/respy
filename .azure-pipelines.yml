@@ -75,7 +75,7 @@ jobs:
   - bash: conda update conda --yes --quiet
     displayName: Update conda.
 
-  - bash: conda install --yes --quiet --name respy python=$PYTHON_VERSION numpy mkl codecov estimagic numba pandas scipy pyaml pytest pytest-cov -c defaults -c numba -c janosg -c conda-forge
+  - bash: conda install --yes --quiet python=$PYTHON_VERSION numpy mkl codecov estimagic numba pandas scipy pyaml pytest pytest-cov -c defaults -c numba -c janosg -c conda-forge
     displayName: Install Anaconda environment.
 
   - bash: pytest
