@@ -75,6 +75,10 @@ jobs:
   - bash: conda update conda --yes --quiet
     displayName: Update conda.
 
+  - bash: conda info -a
+
+  - bash: conda list
+
   - bash: conda install --yes --quiet python=$PYTHON_VERSION numpy>=0.16.4 codecov estimagic>=0.0.6 numba>=0.43 pandas>=0.24 scipy>=1.2.1 pyaml pytest pytest-cov -c defaults -c numba -c janosg -c conda-forge
     displayName: Install Anaconda environment.
 
