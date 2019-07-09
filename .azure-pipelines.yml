@@ -1,10 +1,60 @@
 pr: none
 
 jobs:
+# - job:
+#   displayName: Linux
+#   pool:
+#     vmImage: "ubuntu-16.04"
+#   strategy:
+#     matrix:
+#       Python36:
+#         python.version: "3.6"
+#       Python37:
+#         python.version: "3.7"
+
+#   steps:
+#   - bash: echo "##vso[task.prependpath]$CONDA/bin"
+#     displayName: Add conda to PATH.
+
+#   - bash: conda update conda --yes --quiet
+#     displayName: Update conda.
+
+#   - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
+#     displayName: Create Anaconda environment.
+
+#   - bash: |
+#       source activate respy
+#       tox
+
+# - job:
+#   displayName: Windows
+#   pool:
+#     vmImage: "windows-2019"
+#   strategy:
+#     matrix:
+#       Python36:
+#         python.version: "3.6"
+#       Python37:
+#         python.version: "3.7"
+
+#   steps:
+#   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+#     displayName: Add conda to PATH.
+
+#   - powershell: conda update conda --yes --quiet
+#     displayName: Update conda.
+
+#   - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION numpy mkl tox-conda -c defaults -c conda-forge
+#     displayName: Create Anaconda environment.
+
+#   - script: |
+#       call activate respy
+#       tox -e pytest
+
 - job:
-  displayName: Linux
+  displayName: MacOS
   pool:
-    vmImage: "ubuntu-16.04"
+    vmImage: "macOS-10.13"
   strategy:
     matrix:
       Python36:
@@ -12,35 +62,20 @@ jobs:
       Python37:
         python.version: "3.7"
 
-  steps:
+   steps:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
-    displayName: Add conda to PATH
+    displayName: Add conda to PATH.
 
-  - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
-    displayName: Create Anaconda environment
+  - bash: conda update conda --yes --quiet
+    displayName: Update conda.
 
-  - bash: |
-      source activate respy
-      tox
+  # On Hosted macOS, the agent user doesn't have ownership of Miniconda's installation
+  # directory. We need to take ownership if we want to update conda or install packages
+  # globally.
+  - bash: sudo chown -R $USER $CONDA
+    displayName: Take ownership of conda installation
 
-- job:
-  displayName: Windows
-  pool:
-    vmImage: "windows-2019"
-  strategy:
-    matrix:
-      Python36:
-        python.version: "3.6"
-      Python37:
-        python.version: "3.7"
+   - bash: conda install --yes --quiet --name respy python=$PYTHON_VERSION numpy mkl codecov estimagic numba pandas scipy pyaml pytest pytest-cov -c defaults -c numba -c janosg -c conda-forge
+     displayName: Install Anaconda environment.
 
-  steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
-
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION numpy mkl tox-conda -c defaults -c conda-forge
-    displayName: Create Anaconda environment
-
-  - script: |
-      call activate respy
-      tox -e pytest
+   - bash: pytest
