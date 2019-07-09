@@ -62,7 +62,7 @@ jobs:
       Python37:
         python.version: "3.7"
 
-   steps:
+  steps:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH.
 
@@ -75,7 +75,7 @@ jobs:
   - bash: conda update conda --yes --quiet
     displayName: Update conda.
 
-   - bash: conda install --yes --quiet --name respy python=$PYTHON_VERSION numpy mkl codecov estimagic numba pandas scipy pyaml pytest pytest-cov -c defaults -c numba -c janosg -c conda-forge
-     displayName: Install Anaconda environment.
+  - bash: conda install --yes --quiet --name respy python=$PYTHON_VERSION numpy mkl codecov estimagic numba pandas scipy pyaml pytest pytest-cov -c defaults -c numba -c janosg -c conda-forge
+    displayName: Install Anaconda environment.
 
-   - bash: pytest
+  - bash: pytest
