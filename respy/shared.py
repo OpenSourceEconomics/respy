@@ -26,11 +26,11 @@ def _aggregate_keane_wolpin_utility(
 
 @guvectorize(
     ["f8[:, :], f8[:], f8[:]"],
-    "(n_types, n_covariates), (n_covariates) -> (n_types)",
+    "(n_classes, n_covariates), (n_covariates) -> (n_classes)",
     nopython=True,
     target="parallel",
 )
-def predict_multinomial_logit(type_proportions, type_covariates, probs):
+def predict_multinomial_logit(coefficients, covariates, probs):
     """Predict probabilities based on a multinomial logit regression.
 
     The function is used to predict the probability for all types based on the initial
@@ -45,26 +45,25 @@ def predict_multinomial_logit(type_proportions, type_covariates, probs):
 
     Parameters
     ----------
-    type_proportions : numpy.ndarray
-        Array with shape (n_types, n_type_covariates) containing parameters to predict
-        type probabilities.
-    type_covariates : numpy.ndarray
-        Array with shape (n_type_covariates,) containing type covariates.
+    coefficients : numpy.ndarray
+        Array with shape (n_classes, n_covariates).
+    covariates : numpy.ndarray
+        Array with shape (n_covariates,).
 
     Returns
     -------
     probs : numpy.ndarray
-        Array with shape (n_types,) containing the probabilities for each type.
+        Array with shape (n_classes,) containing the probabilities for each type.
 
     """
-    n_types, n_covariates = type_proportions.shape
+    n_classes, n_covariates = coefficients.shape
 
     denominator = 0
 
-    for type_ in range(n_types):
+    for type_ in range(n_classes):
         prob_type = 0
         for cov in range(n_covariates):
-            prob_type += type_proportions[type_, cov] * type_covariates[cov]
+            prob_type += coefficients[type_, cov] * covariates[cov]
 
         exp_prob_type = np.exp(prob_type)
         probs[type_] = exp_prob_type
