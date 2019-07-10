@@ -110,7 +110,6 @@ def check_single(test, strict=False):
     df = simulate_truncated_data(params, option_spec)
 
     crit_func = rp.get_crit_func(params, option_spec, df)
-
     est_val = crit_func(params)
 
     is_success = np.isclose(est_val, exp_val, rtol=TOL, atol=TOL)

@@ -286,12 +286,11 @@ def log_like_obs(
 
     # Calculate the probabilities for all types based on an individual's initial
     # characteristics.
-    if n_types == 1:
-        type_probabilities = np.ones((n_obs_per_indiv.shape[0], 1))
-    else:
-        type_probabilities = predict_multinomial_logit(
-            optim_paras["type_prob"], type_covariates
-        )
+    type_probabilities = (
+        predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
+        if n_types > 1
+        else 1
+    )
 
     # Multiply each individual-type contribution with its type-specific shares and sum
     # over types to get the likelihood contribution for each individual.
@@ -306,7 +305,8 @@ def _convert_choice_variables_from_categorical_to_codes(df, options):
     """Recode choices to choice codes in the model.
 
     We cannot use ``.cat.codes`` because order might be different. The model requires an
-    order of choices_w_exp_w_wag, choices_w_exp_wo_wage, choices_wo_exp_wo_wage.
+    order of ``choices_w_exp_w_wag``, ``choices_w_exp_wo_wage``,
+    ``choices_wo_exp_wo_wage``.
 
     See also
     --------
