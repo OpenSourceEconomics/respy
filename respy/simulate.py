@@ -197,9 +197,9 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
 def _sort_type_info(optim_paras):
     """We fix an order for the sampling of the types."""
-    type_shares = optim_paras["type_shares"]
-    order = np.argsort(type_shares[:, 0])
-    type_info = {"shares": type_shares[order], "order": order}
+    type_prob_coeffs = optim_paras["type_prob"]
+    order = np.argsort(type_prob_coeffs[:, 0])
+    type_info = {"type_prob": type_prob_coeffs[order], "order": order}
 
     return type_info
 
@@ -220,7 +220,9 @@ def _get_random_types(states, optim_paras, options):
 
         types = []
         for i in range(options["simulation_agents"]):
-            probs = predict_multinomial_logit(type_info["shares"], type_covariates[i])
+            probs = predict_multinomial_logit(
+                type_info["type_prob"], type_covariates[i]
+            )
             types += np.random.choice(type_info["order"], p=probs, size=1).tolist()
 
         # If we only have one individual, we need to ensure that types are a vector.

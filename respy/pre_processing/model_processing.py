@@ -192,7 +192,7 @@ def _parse_parameters(params):
         types = _infer_types(params)
         n_type_covariates = params.loc[types[0]].shape[0]
 
-        optim_paras["type_shares"] = np.vstack(
+        optim_paras["type_prob"] = np.vstack(
             (
                 np.zeros(n_type_covariates),
                 params.loc[types].to_numpy().reshape(len(types), n_type_covariates),

@@ -297,7 +297,7 @@ def log_like_obs(
         type_probabilities = np.ones((n_obs_per_indiv.shape[0], 1))
     else:
         type_probabilities = predict_multinomial_logit(
-            optim_paras["type_shares"], type_covariates
+            optim_paras["type_prob"], type_covariates
         )
 
     # Multiply each individual-type contribution with its type-specific shares and sum

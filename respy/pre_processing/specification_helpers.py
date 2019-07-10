@@ -21,7 +21,7 @@ def csv_template(n_types=1, save_path=None, initialize_coeffs=True):
     if n_types > 1:
         to_concat = [
             template,
-            _type_share_template(n_types),
+            _type_prob_template(n_types),
             _type_shift_template(n_types),
         ]
         template = pd.concat(to_concat, axis=0, sort=False)
@@ -38,7 +38,7 @@ def _base_template():
     return base_template
 
 
-def _type_share_template(n_types):
+def _type_prob_template(n_types):
     to_concat = []
     for typ in range(2, n_types + 1):
         # add the type share coefficients
