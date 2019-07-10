@@ -4,15 +4,15 @@ import pandas as pd
 from respy.config import ROOT_DIR
 
 
-def csv_template(n_types=1, save_path=None, initialize_coeffs=True):
+def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
     """Creates a template for the parameter specification.
 
     Parameters
     ----------
     n_types : int, optional
         Number of types in the model. Default is one.
-    save_path : str, pathlib.Path, optional
-        The template is saved to this path. Default is ``None``.
+    n_type_covariates : int, optional
+        Number of covariates to predict type probabilities. Can be two or three.
     initialize_coeffs : bool, optional
         Whether coefficients are initialized with values or not. Default is ``True``.
 
@@ -21,14 +21,13 @@ def csv_template(n_types=1, save_path=None, initialize_coeffs=True):
     if n_types > 1:
         to_concat = [
             template,
-            _type_prob_template(n_types),
+            _type_prob_template(n_types, n_type_covariates),
             _type_shift_template(n_types),
         ]
         template = pd.concat(to_concat, axis=0, sort=False)
     if initialize_coeffs is False:
         template["para"] = np.nan
-    if save_path is not None:
-        template.to_csv(save_path)
+
     return template
 
 
@@ -38,10 +37,17 @@ def _base_template():
     return base_template
 
 
-def _type_prob_template(n_types):
+def _type_prob_template(n_types, n_type_covariates):
     to_concat = []
     for typ in range(2, n_types + 1):
-        # add the type share coefficients
+        if n_type_covariates == 3:
+            ind = (f"type_{typ}", "constant")
+            comment = f"constant effect on probability of being type {typ}"
+            dat = [0, False, np.nan, np.nan, comment]
+            to_concat.append(_base_row(index_tuple=ind, data=dat))
+        else:
+            pass
+
         ind = (f"type_{typ}", "up_to_nine_years_edu")
         comment = (
             "effect of up to nine years of schooling on probability of being "
@@ -49,6 +55,7 @@ def _type_prob_template(n_types):
         )
         dat = [1 / n_types, False, np.nan, np.nan, comment]
         to_concat.append(_base_row(index_tuple=ind, data=dat))
+
         ind = (f"type_{typ}", "at_least_ten_years_edu")
         comment = (
             "effect of at least ten years of schooling on probability of being "

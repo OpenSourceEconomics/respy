@@ -44,8 +44,11 @@ def generate_random_model(
 
     if n_types is None:
         n_types = np.random.randint(1, bound_constr["max_types"] + 1)
+        n_type_covariates = np.random.randint(2, 4)
 
-    params = csv_template(n_types=n_types, initialize_coeffs=False)
+    params = csv_template(
+        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
+    )
     params["para"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
     params.loc["delta", "para"] = 1 - np.random.uniform() if myopic is False else 0.0
@@ -75,7 +78,7 @@ def generate_random_model(
         np.arange(1, 15), size=n_edu_start, replace=False
     ).tolist()
     options["choices"]["edu"]["lagged"] = np.random.uniform(size=n_edu_start)
-    options["choices"]["edu"]["share"] = get_valid_shares(n_edu_start)
+    options["choices"]["edu"]["share"] = _get_initial_shares(n_edu_start)
     options["choices"]["edu"]["max"] = np.random.randint(
         max(options["choices"]["edu"]["start"]) + 1, 30
     )
@@ -108,7 +111,7 @@ def _consolidate_bound_constraints(bound_constr):
     return constr
 
 
-def get_valid_shares(num_groups):
+def _get_initial_shares(num_groups):
     """We simply need a valid request for the shares of types summing to one."""
     shares = np.random.np.random.uniform(size=num_groups)
     shares = shares / np.sum(shares)
