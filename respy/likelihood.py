@@ -6,7 +6,7 @@ from numba import guvectorize
 
 from respy.conditional_draws import create_draws_and_prob_wages
 from respy.config import HUGE_FLOAT
-from respy.pre_processing.data_checking import check_estimation_data
+from respy.pre_processing.data_checking import _check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import _aggregate_keane_wolpin_utility
 from respy.shared import clip
@@ -46,16 +46,9 @@ def get_crit_func(params, options, df):
     """
     params, optim_paras, options = process_params_and_options(params, options)
 
-    check_estimation_data(options, df)
+    _check_estimation_data(df, options)
 
-    df = df.sort_values(["Identifier", "Period"])[
-        ["Identifier", "Period"]
-        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
-        + ["Lagged_Choice", "Choice", "Wage"]
-    ]
-    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
-
-    df = _convert_choice_variables_from_categorical_to_codes(df, options)
+    df = _process_estimation_data(df, options)
 
     state_space = StateSpace(params, options)
 
@@ -340,3 +333,16 @@ def _create_type_covariates(df, options):
     all_data = pd.concat([covariates, df], axis="columns", sort=False)
 
     return all_data[options["type_covariates"]].to_numpy()
+
+
+def _process_estimation_data(df, options):
+    df = df.sort_values(["Identifier", "Period"])[
+        ["Identifier", "Period"]
+        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
+        + ["Lagged_Choice", "Choice", "Wage"]
+    ]
+    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
+
+    df = _convert_choice_variables_from_categorical_to_codes(df, options)
+
+    return df

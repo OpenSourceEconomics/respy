@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def check_estimation_data(options, df):
+def _check_estimation_data(df, options):
     """Check data for estimation.
 
     Parameters
@@ -99,7 +99,7 @@ def _check_state_variables(agent):
             pass
 
 
-def check_simulated_data(options, df):
+def _check_simulated_data(options, df):
     """Check simulated data.
 
     This routine runs some consistency checks on the simulated dataset. Some more
@@ -114,7 +114,7 @@ def check_simulated_data(options, df):
     edu_max = options["choices"]["edu"]["max"]  # noqa: F841
 
     # Run all tests available for the estimation data.
-    check_estimation_data(options, df)
+    _check_estimation_data(df, options)
 
     # 9. Types.
     assert df.Type.max() <= n_types - 1

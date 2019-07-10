@@ -2,7 +2,7 @@ import pytest
 
 import respy as rp
 from respy.config import EXAMPLE_MODELS
-from respy.pre_processing.data_checking import check_simulated_data
+from respy.pre_processing.data_checking import _check_simulated_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.tests.utils import process_model_or_seed
 
@@ -20,4 +20,4 @@ def test_simulated_data(model_or_seed):
     _, df = rp.simulate(params, options)
 
     _, _, options = process_params_and_options(params, options)
-    check_simulated_data(options, df)
+    _check_simulated_data(options, df)
