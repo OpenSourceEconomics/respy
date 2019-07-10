@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-import respy.pre_processing.model_processing as rp_mp
+from respy.pre_processing import model_processing as rp_mp
 
 
 def _validate_params(params, options):
