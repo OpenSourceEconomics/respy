@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+import respy.pre_processing.model_processing as rp_mp
+
 
 def _validate_params(params, options):
     params = params.copy().to_frame()
@@ -15,29 +17,24 @@ def _validate_params(params, options):
     )
     assert (sd_ordering == choices).all()
 
-    # Ensure that correlation is in the same order as choices. The first index level
-    # needs to start with one occurrence of the second choice, then two occurrences of
-    # the third choice, and so on.
+    # Ensure that correlation is in the same order as choices. We use the two labels in
+    # the parameter name which is something like ``"corr_x_y"``. The first label needs
+    # to start with one occurrence of the second choice, then two occurrences of the
+    # third choice, and so on as it represents the lower triangular of a matrix.
     corr_idx = (
-        params.query("category == 'shocks' and name.str.startswith('corr_')")
-        .index.get_level_values(1)
-        .to_series()
-        .str.split("_", expand=True)
+        params.reset_index()
+        .query("category == 'shocks' and name.str.startswith('corr_')")
+        .name.str.split("_", expand=True)
     )
     expected = np.repeat(choices[1:], np.arange(1, n_choices))
     assert (corr_idx[1] == expected).all()
 
-    # The second level starts with the first choice, then the first two choices follow,
-    # and so on.
+    # The second label starts with the first choice, then the first two choices, and so
+    # on.
     expected = [choice for max_ in range(1, n_choices) for choice in choices[:max_]]
     assert (corr_idx[2] == expected).all()
 
-    types = sorted(
-        params.index.get_level_values(0)
-        .str.extract(r"(\btype_[0-9]+\b)")[0]
-        .dropna()
-        .unique()
-    )
+    types = rp_mp._infer_types(params)
     if types:
         n_types = len(types) + 1
         # Ensure that parameters to predict type probabilities have the same ordering
