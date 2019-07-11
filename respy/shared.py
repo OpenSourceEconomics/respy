@@ -201,6 +201,8 @@ def random_choice(choices, probabilities):
 
     Example
     -------
+    Here is an example with non-zero probabilities.
+
     >>> n_samples = 100_000
     >>> choices = np.array([0, 1, 2])
     >>> p = np.array([0.15, 0.35, 0.5])
@@ -208,6 +210,15 @@ def random_choice(choices, probabilities):
     >>> choices = random_choice(choices, ps)
     >>> np.round(np.bincount(choices), decimals=-3) / n_samples
     array([0.15, 0.35, 0.5 ])
+
+    Here is an example where one choice has probability zero.
+
+    >>> p = np.array([0.4, 0, 0.6])
+    >>> ps = np.tile(p, (n_samples, 1))
+    >>> choices = random_choice(choices, ps)
+    >>> np.round(np.bincount(choices), decimals=-3) / n_samples
+    array([0.4, 0. , 0.6])
+    >>> assert np.bincount(choices)[1] == 0
 
     """
     cumulative_distribution = probabilities.cumsum(axis=1)
