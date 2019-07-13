@@ -9,8 +9,8 @@ import yaml
 from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
-from respy.pre_processing.model_checking import _validate_params
 from respy.pre_processing.model_checking import validate_options
+from respy.pre_processing.model_checking import validate_params
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
@@ -25,7 +25,7 @@ def process_params_and_options(params, options):
         )
     extended_options = _process_options(options, params)
 
-    _validate_params(params, extended_options)
+    validate_params(params, extended_options)
     validate_options(extended_options)
 
     return params, optim_paras, extended_options

@@ -4,7 +4,7 @@ import pandas as pd
 from respy.pre_processing import model_processing as rp_mp
 
 
-def _validate_params(params, options):
+def validate_params(params, options):
     params = params.copy().to_frame()
     n_choices = len(options["choices"])
     choices = list(options["choices"])
