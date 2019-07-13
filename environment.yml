@@ -26,4 +26,5 @@ dependencies:
   - sphinx-autobuild
   - tox-conda
   - pip:
+    - notifiers
     - pre-commit
