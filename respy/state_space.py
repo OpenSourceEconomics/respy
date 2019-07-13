@@ -57,7 +57,7 @@ class StateSpace:
         _states_df.lagged_choice = _states_df.lagged_choice.cat.codes
         self.states = _states_df.to_numpy()
 
-        base_covariates_df = _create_base_covariates(states_df, options["covariates"])
+        base_covariates_df = create_base_covariates(states_df, options["covariates"])
 
         self.covariates = _create_choice_covariates(
             base_covariates_df, states_df, params, options
@@ -523,7 +523,7 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
     return covariates
 
 
-def _create_base_covariates(states, covariates_spec):
+def create_base_covariates(states, covariates_spec):
     """Create set of covariates for each state.
 
     Parameters

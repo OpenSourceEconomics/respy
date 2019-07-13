@@ -9,8 +9,8 @@ import yaml
 from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
-from respy.pre_processing.model_checking import _validate_options
 from respy.pre_processing.model_checking import _validate_params
+from respy.pre_processing.model_checking import validate_options
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
@@ -26,7 +26,7 @@ def process_params_and_options(params, options):
     extended_options = _process_options(options, params)
 
     _validate_params(params, extended_options)
-    _validate_options(extended_options)
+    validate_options(extended_options)
 
     return params, optim_paras, extended_options
 
@@ -189,7 +189,7 @@ def _parse_parameters(params):
     optim_paras["meas_error"] = meas_error.to_numpy()
 
     if "type_shift" in optim_paras:
-        types = _infer_types(params)
+        types = infer_types(params)
         n_type_covariates = params.loc[types[0]].shape[0]
 
         optim_paras["type_prob"] = np.vstack(
@@ -210,7 +210,7 @@ def _parse_parameters(params):
     return optim_paras
 
 
-def _infer_types(params):
+def infer_types(params):
     return sorted(
         params.index.get_level_values(0)
         .str.extract(r"(\btype_[0-9]+\b)")[0]

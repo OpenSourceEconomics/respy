@@ -7,7 +7,7 @@ from numba import njit
 from respy._numba import array_to_tuple
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import _aggregate_keane_wolpin_utility
+from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import transform_disturbances
 from respy.state_space import StateSpace
 
@@ -416,7 +416,7 @@ def calculate_emax_value_functions(
         max_value_functions = 0.0
 
         for j in range(n_choices):
-            value_function, _ = _aggregate_keane_wolpin_utility(
+            value_function, _ = aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],
                 continuation_values[j],
@@ -495,7 +495,7 @@ def calculate_value_functions(
 
     for i in range(n_draws):
         for j in range(n_choices):
-            value_function, _ = _aggregate_keane_wolpin_utility(
+            value_function, _ = aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],
                 continuation_values[j],

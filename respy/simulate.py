@@ -3,11 +3,11 @@ import pandas as pd
 from numba import guvectorize
 
 from respy.config import HUGE_FLOAT
-from respy.likelihood import _create_type_covariates
+from respy.likelihood import create_type_covariates
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import _aggregate_keane_wolpin_utility
-from respy.shared import _generate_column_labels_simulation
+from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
+from respy.shared import generate_column_labels_simulation
 from respy.shared import predict_multinomial_logit
 from respy.shared import transform_disturbances
 from respy.solve import solve_with_backward_induction
@@ -214,7 +214,7 @@ def _get_random_types(states, optim_paras, options):
         # matter for the simulated sample.
         type_info = _sort_type_info(optim_paras)
 
-        type_covariates = _create_type_covariates(states, options)
+        type_covariates = create_type_covariates(states, options)
 
         np.random.seed(options["simulation_seed"])
 
@@ -318,7 +318,7 @@ def calculate_value_functions_and_flow_utilities(
 
     for i in range(n_draws):
         for j in range(n_choices):
-            value_function, flow_utility = _aggregate_keane_wolpin_utility(
+            value_function, flow_utility = aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],
                 continuation_values[j],
@@ -345,7 +345,7 @@ def _convert_choice_variables_from_codes_to_categorical(df, options):
 
 
 def _process_simulated_data(data, options):
-    labels, dtypes = _generate_column_labels_simulation(options)
+    labels, dtypes = generate_column_labels_simulation(options)
 
     df = (
         pd.DataFrame(data=np.vstack(data), columns=labels)

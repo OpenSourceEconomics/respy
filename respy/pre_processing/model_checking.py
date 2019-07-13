@@ -34,7 +34,7 @@ def _validate_params(params, options):
     expected = [choice for max_ in range(1, n_choices) for choice in choices[:max_]]
     assert (corr_idx[2] == expected).all()
 
-    types = rp_mp._infer_types(params)
+    types = rp_mp.infer_types(params)
     if types:
         n_types = len(types) + 1
         # Ensure that parameters to predict type probabilities have the same ordering
@@ -55,7 +55,7 @@ def _validate_params(params, options):
         assert (type_shift_idx[3] == np.tile(np.array(choices), n_types - 1)).all()
 
 
-def _validate_options(o):
+def validate_options(o):
     # Choices with experience.
     choices = o["choices"]
     for choice in o["choices_w_exp"]:

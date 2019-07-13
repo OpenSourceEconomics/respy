@@ -12,7 +12,7 @@ from respy.config import TEST_RESOURCES_DIR
 
 
 @njit
-def _aggregate_keane_wolpin_utility(
+def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
     flow_utility = wage * draw + nonpec
@@ -125,7 +125,7 @@ def get_example_model(model):
     return params, options
 
 
-def _generate_column_labels_estimation(options):
+def generate_column_labels_estimation(options):
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
         + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
@@ -144,8 +144,8 @@ def _generate_column_labels_estimation(options):
     return labels, dtypes
 
 
-def _generate_column_labels_simulation(options):
-    est_lab, est_dtypes = _generate_column_labels_estimation(options)
+def generate_column_labels_simulation(options):
+    est_lab, est_dtypes = generate_column_labels_estimation(options)
     labels = (
         est_lab
         + ["Type"]
@@ -222,6 +222,10 @@ def random_choice(choices, probabilities):
 
     """
     cumulative_distribution = probabilities.cumsum(axis=1)
+
+    if not (cumulative_distribution[:, -1] == 1).all():
+        raise ValueError("Probabilities do not sum to one.")
+
     u = np.random.rand(cumulative_distribution.shape[0], 1)
     indices = (u < cumulative_distribution).argmax(axis=1)
 

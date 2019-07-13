@@ -6,14 +6,14 @@ from numba import guvectorize
 
 from respy.conditional_draws import create_draws_and_prob_wages
 from respy.config import HUGE_FLOAT
-from respy.pre_processing.data_checking import _check_estimation_data
+from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import _aggregate_keane_wolpin_utility
+from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import clip
 from respy.shared import create_base_draws
 from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
-from respy.state_space import _create_base_covariates
+from respy.state_space import create_base_covariates
 from respy.state_space import StateSpace
 
 
@@ -46,7 +46,7 @@ def get_crit_func(params, options, df):
     """
     params, optim_paras, options = process_params_and_options(params, options)
 
-    _check_estimation_data(df, options)
+    check_estimation_data(df, options)
 
     df = _process_estimation_data(df, options)
 
@@ -60,7 +60,7 @@ def get_crit_func(params, options, df):
     # For the type covariates, we only need the first observation of each individual.
     states = df.copy().groupby("identifier").first()
     type_covariates = (
-        _create_type_covariates(states, options) if options["n_types"] > 1 else None
+        create_type_covariates(states, options) if options["n_types"] > 1 else None
     )
 
     criterion_function = partial(
@@ -169,7 +169,7 @@ def simulate_probability_of_individuals_observed_choice(
         max_value_functions = 0.0
 
         for j in range(n_choices):
-            value_function, _ = _aggregate_keane_wolpin_utility(
+            value_function, _ = aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],
                 continuation_values[j],
@@ -314,13 +314,13 @@ def _convert_choice_variables_from_categorical_to_codes(df, options):
 
     """
     choices_to_codes = {choice: i for i, choice in enumerate(options["choices"])}
-    df.choice = df.choice.replace(choices_to_codes).astype(int)
-    df.lagged_choice = df.lagged_choice.replace(choices_to_codes).astype(int)
+    df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
+    df.lagged_choice = df.lagged_choice.replace(choices_to_codes).astype(np.uint8)
 
     return df
 
 
-def _create_type_covariates(df, options):
+def create_type_covariates(df, options):
     """Create covariates to predict type probabilities.
 
     In the simulation, the covariates are needed to predict type probabilities and
@@ -328,7 +328,7 @@ def _create_type_covariates(df, options):
     to weight the probability of observations by type probabilities.
 
     """
-    covariates = _create_base_covariates(df, options["covariates"])
+    covariates = create_base_covariates(df, options["covariates"])
 
     all_data = pd.concat([covariates, df], axis="columns", sort=False)
 
