@@ -63,9 +63,10 @@ def _create_kw_1997():
 
     df["Lagged_Choice"] = df.groupby("Identifier").Choice.shift(1)
 
+    options["choices_w_exp"] = ["a", "b", "mil", "edu"]
     labels, _ = _generate_column_labels_estimation(options)
 
-    df = df.assign(Period=df.Age - 16).drop(columns="Age").loc[labels]
+    df = df.assign(Period=df.Age - 16).drop(columns="Age").loc[:, labels]
 
     return df
 
