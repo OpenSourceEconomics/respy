@@ -1,17 +1,15 @@
 """Create, run or investigate regression checks."""
-import argparse
 import os
 import pickle
-import shutil
 import socket
 from functools import partial
 from multiprocessing import Pool
 
+import click
 import numpy as np
 
 import respy as rp
-from development.modules.auxiliary_shared import get_random_dirname
-from development.modules.auxiliary_shared import send_notification
+from development.testing.notifications import send_notification
 from respy.config import DECIMALS
 from respy.config import TEST_RESOURCES_DIR
 from respy.config import TOL
@@ -21,7 +19,10 @@ from respy.tests.random_model import simulate_truncated_data
 HOSTNAME = socket.gethostname()
 
 
-def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
+
+def run_regression_tests(num_tests=None, num_procs=1, strict=False):
     """Run regression tests.
 
     Parameters
@@ -34,7 +35,7 @@ def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
         Number of processes. Default 1.
 
     """
-    tests = load_regression_tests() if tests is None else tests
+    tests = load_regression_tests()
     tests = tests[:num_tests] if num_tests is not None else tests
 
     if num_procs == 1:
@@ -49,7 +50,10 @@ def run_regression_tests(num_tests=None, tests=None, num_procs=1, strict=False):
     idx_failures = [i for i, x in enumerate(ret) if not x]
     is_failure = len(idx_failures) > 0
 
-    print(f"Failures: {idx_failures}")
+    if idx_failures:
+        click.secho(f"Failures: {idx_failures}", fg="red")
+    else:
+        click.secho(f"Tests succeeded.", fg="green")
 
     send_notification("regression", is_failed=is_failure, idx_failures=idx_failures)
 
@@ -122,9 +126,6 @@ def check_single(test, strict=False):
 
 def create_single(idx):
     """Create a single test."""
-    dirname = get_random_dirname(5)
-    os.mkdir(dirname)
-    os.chdir(dirname)
     np.random.seed(idx)
     params, options = generate_random_model()
     df = simulate_truncated_data(params, options)
@@ -136,54 +137,39 @@ def create_single(idx):
     if not isinstance(crit_val, float):
         raise AssertionError(" ... value of criterion function too large.")
     os.chdir("..")
-    shutil.rmtree(dirname)
+
     return params, options, crit_val
 
 
+@click.group(context_settings=CONTEXT_SETTINGS)
+def cli():
+    """CLI manager for regression tests."""
+    pass
+
+
+@cli.command()
+@click.option("-n", "--number", default=None, help="Number of regression tests.")
+@click.option("-s", "--strict", default=False, help="Immediate termination on failure.")
+@click.option("-p", "--parallel", default=1, help="Number of parallel tests.")
+def run(ctx, number, strict, parallel):
+    """Run a number of regression tests."""
+    run_regression_tests(num_tests=number, strict=strict, num_procs=parallel)
+
+
+@cli.command()
+@click.option("-n", "--number", required=True, help="Number of single regression test.")
+def investigate(number):
+    """Investigate a single regression test."""
+    investigate_regression_test(number)
+
+
+@cli.command()
+@click.option("-n", "--number", required=True, help="Number of regression tests.")
+@click.option("-p", "--parallel", default=1, help="Number of parallel tests.")
+def create(number, parallel):
+    """Create a new collection of regression tests."""
+    create_regression_tests(num_tests=number, procs=parallel, write_out=True)
+
+
 if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(description="Create or check regression vault")
-
-    parser.add_argument(
-        "--request",
-        action="store",
-        dest="request",
-        help="task to perform",
-        required=True,
-        nargs=2,
-    )
-
-    parser.add_argument(
-        "--strict",
-        action="store_true",
-        dest="is_strict",
-        default=False,
-        help="immediate termination if failure",
-    )
-
-    parser.add_argument(
-        "--procs",
-        action="store",
-        dest="num_procs",
-        default=1,
-        type=int,
-        help="number of processors",
-    )
-
-    args = parser.parse_args()
-    request = args.request
-    is_strict = args.is_strict
-    num_procs = args.num_procs
-
-    if request[0] == "run":
-        run_regression_tests(
-            num_tests=int(request[1]), num_procs=num_procs, strict=is_strict
-        )
-    elif request[0] == "investigate":
-        investigate_regression_test(int(request[1]))
-    elif request[0] == "create":
-        create_regression_tests(
-            num_tests=int(request[1]), num_procs=num_procs, write_out=True
-        )
-    else:
-        raise ValueError("Invalid request.")
+    cli()

@@ -31,7 +31,6 @@ repos:
             flake8-eradicate, flake8-print, flake8-rst-docstrings, flake8-todo,
             pep8-naming,
         ]
-        files: 'respy/.*'  # We start with a subfolder and extend the scope later.
 -   repo: local
     hooks:
     -   id: doc8
@@ -44,10 +43,10 @@ repos:
         language: system
         files: '(README.rst)'
         name: restructuredtext-lint - Is the README PyPi-compliant?
-# -   repo: https://notabug.org/mjakob/pre-commit-check-manifest
-#     rev: v0.1.0
-#     hooks:
-#     -   id: check-manifest
+-   repo: https://github.com/mgedmin/check-manifest
+    rev: "0.39"
+    hooks:
+    -   id: check-manifest
 -   repo: meta
     hooks:
     -   id: check-hooks-apply

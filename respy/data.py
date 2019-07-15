@@ -2,6 +2,17 @@ import numpy as np
 import pandas as pd
 
 from respy.config import TEST_RESOURCES_DIR
+from respy.shared import _generate_column_labels_estimation
+
+
+def get_example_data(model):
+    df = _create_kw_1997()
+    if model == "kw_1997":
+        return df
+    elif model == "kw_1994":
+        return _convert_kw1997_to_kw1994(df)
+    else:
+        raise NotImplementedError("Data not available.")
 
 
 def _create_working_experience(df, options):
@@ -16,7 +27,13 @@ def _create_working_experience(df, options):
     return df
 
 
-def create_kw1997():
+def _create_kw_1997():
+    """Create data for Keane and Wolpin (1997).
+
+    The data includes individuals labor market history and accumulated experiences in
+    white-collar, blue-collar occupations, military and schooling.
+
+    """
     columns = ["Identifier", "Age", "Experience_Edu", "Choice", "Wage"]
     dtypes = {
         "Identifier": np.int,
@@ -45,19 +62,20 @@ def create_kw1997():
     df = _create_working_experience(df, options)
 
     df["Lagged_Choice"] = df.groupby("Identifier").Choice.shift(1)
-    df["Period"] = df.Age - 16
 
-    df = df.drop(columns="Age")
+    labels, _ = _generate_column_labels_estimation(options)
 
-    df = df.set_index(["Identifier", "Period"])
+    df = df.assign(Period=df.Age - 16).drop(columns="Age").loc[labels]
 
     return df
 
 
-def remove_military_history(df):
+def _convert_kw1997_to_kw1994(df):
     """Convert data to be used with Keane and Wolpin (1994).
 
-    The history of individuals is truncated the first time they enter the military.
+    The model in Keane and Wolpin (1994) does not include military as an occupational
+    choice. Thus, the history of individuals is truncated the first time they enter the
+    military.
 
     """
     # Create indicator if an individual entered the military and from thereon.
@@ -70,5 +88,10 @@ def remove_military_history(df):
     # Remove military as choice.
     df.Choice = df.Choice.cat.remove_unused_categories()
     df.Lagged_Choice = df.Lagged_Choice.cat.remove_unused_categories()
+
+    options = {"choices_w_exp": ["a", "b", "edu"]}
+    labels, _ = _generate_column_labels_estimation(options)
+
+    df = df.reset_index(drop=True).loc[labels]
 
     return df
