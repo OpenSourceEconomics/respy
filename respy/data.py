@@ -93,6 +93,6 @@ def _convert_kw1997_to_kw1994(df):
     options = {"choices_w_exp": ["a", "b", "edu"]}
     labels, _ = _generate_column_labels_estimation(options)
 
-    df = df.reset_index(drop=True).loc[labels]
+    df = df.reset_index(drop=True).loc[:, labels]
 
     return df
