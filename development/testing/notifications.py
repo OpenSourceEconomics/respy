@@ -10,22 +10,9 @@ import notifiers
 RECIPIENTS = {"socrates": "janos.gabler@gmail.com", "abacus": "tobiasraabe@uni-bonn.de"}
 
 
-def send_notification(which, is_failed, idx_failures):
+def send_notification(subject, message):
     """Send notification."""
     hostname = socket.gethostname()
-
-    if which == "regression":
-        subject = " RESPY: Regression Testing"
-        if is_failed:
-            message = (
-                f"Failure during regression testing @{hostname} for test(s): "
-                f"{idx_failures}."
-            )
-        else:
-            message = f"Regression testing is completed on @{hostname}."
-
-    else:
-        raise AssertionError
 
     recipient = RECIPIENTS.get(hostname, "eisenhauer@policy-lab.org")
 

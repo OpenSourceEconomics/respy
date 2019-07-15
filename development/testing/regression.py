@@ -1,5 +1,4 @@
 """Create, run or investigate regression checks."""
-import os
 import pickle
 import socket
 from functools import partial
@@ -16,10 +15,22 @@ from respy.config import TOL
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
 
-HOSTNAME = socket.gethostname()
-
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
+
+def _prepare_message(idx_failures):
+    hostname = socket.gethostname()
+    subject = " RESPY: Regression Testing"
+    if idx_failures:
+        message = (
+            f"Failure during regression testing @{hostname} for test(s): "
+            f"{idx_failures}."
+        )
+    else:
+        message = f"Regression testing is completed on @{hostname}."
+
+    return subject, message
 
 
 def run_regression_tests(num_tests=None, num_procs=1, strict=False):
@@ -48,14 +59,14 @@ def run_regression_tests(num_tests=None, num_procs=1, strict=False):
         ret = mp_pool.map(check, tests)
 
     idx_failures = [i for i, x in enumerate(ret) if not x]
-    is_failure = len(idx_failures) > 0
 
     if idx_failures:
         click.secho(f"Failures: {idx_failures}", fg="red")
     else:
         click.secho(f"Tests succeeded.", fg="green")
 
-    send_notification("regression", is_failed=is_failure, idx_failures=idx_failures)
+    subject, message = _prepare_message(idx_failures)
+    send_notification(subject, message)
 
 
 def create_regression_tests(num_tests, num_procs=1, write_out=False):
@@ -65,9 +76,9 @@ def create_regression_tests(num_tests, num_procs=1, write_out=False):
     ----------
     num_test : int
         How many tests are in the vault.
-    num_procs : int
-        Number of processes. Default 1.
-    write_out : bool
+    num_procs : int, default 1
+        Number of processes.
+    write_out : bool, default False
         If True, regression tests are stored to disk, replacing any existing regression
         tests. Be careful with this. Default False.
 
@@ -75,7 +86,7 @@ def create_regression_tests(num_tests, num_procs=1, write_out=False):
     if num_procs == 1:
         tests = []
         for idx in range(num_tests):
-            tests += [create_single(idx)]
+            tests.append(create_single(idx))
     else:
         with Pool(num_procs) as p:
             tests = p.map(create_single, range(num_tests))
@@ -90,6 +101,7 @@ def load_regression_tests():
     """Load regression tests from disk."""
     with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "rb") as p:
         tests = pickle.load(p)
+
     return tests
 
 
@@ -101,7 +113,6 @@ def investigate_regression_test(idx):
     df = simulate_truncated_data(params, options)
 
     crit_func = rp.get_crit_func(params, options, df)
-
     crit_val = crit_func(params)
 
     np.testing.assert_almost_equal(crit_val, exp_val, decimal=DECIMALS)
@@ -114,8 +125,8 @@ def check_single(test, strict=False):
     df = simulate_truncated_data(params, option_spec)
 
     crit_func = rp.get_crit_func(params, option_spec, df)
-
     est_val = crit_func(params)
+
     is_success = np.isclose(est_val, exp_val, rtol=TOL, atol=TOL)
 
     if strict is True:
@@ -127,16 +138,15 @@ def check_single(test, strict=False):
 def create_single(idx):
     """Create a single test."""
     np.random.seed(idx)
+
     params, options = generate_random_model()
     df = simulate_truncated_data(params, options)
 
     crit_func = rp.get_crit_func(params, options, df)
-
     crit_val = crit_func(params)
 
     if not isinstance(crit_val, float):
         raise AssertionError(" ... value of criterion function too large.")
-    os.chdir("..")
 
     return params, options, crit_val
 
@@ -148,27 +158,27 @@ def cli():
 
 
 @cli.command()
-@click.option("-n", "--number", default=None, help="Number of regression tests.")
-@click.option("-s", "--strict", default=False, help="Immediate termination on failure.")
-@click.option("-p", "--parallel", default=1, help="Number of parallel tests.")
-def run(ctx, number, strict, parallel):
+@click.argument("number_of_tests", type=int)
+@click.option("--strict", is_flag=True, help="Immediate termination on failure.")
+@click.option("-p", "--parallel", default=1, type=int, help="Number of parallel tests.")
+def run(number_of_test, strict, parallel):
     """Run a number of regression tests."""
-    run_regression_tests(num_tests=number, strict=strict, num_procs=parallel)
+    run_regression_tests(num_tests=number_of_test, strict=strict, num_procs=parallel)
 
 
 @cli.command()
-@click.option("-n", "--number", required=True, help="Number of single regression test.")
-def investigate(number):
+@click.argument("number_of_test", type=int)
+def investigate(number_of_test):
     """Investigate a single regression test."""
-    investigate_regression_test(number)
+    investigate_regression_test(number_of_test)
 
 
 @cli.command()
-@click.option("-n", "--number", required=True, help="Number of regression tests.")
-@click.option("-p", "--parallel", default=1, help="Number of parallel tests.")
-def create(number, parallel):
+@click.argument("number_of_tests", type=int)
+@click.option("-p", "--parallel", default=1, type=int, help="Number of parallel tests.")
+def create(number_of_test, parallel):
     """Create a new collection of regression tests."""
-    create_regression_tests(num_tests=number, procs=parallel, write_out=True)
+    create_regression_tests(num_tests=number_of_test, procs=parallel, write_out=True)
 
 
 if __name__ == "__main__":
