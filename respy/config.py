@@ -44,7 +44,7 @@ BASE_COVARIATES = {
     "exp_a_square": "exp_a ** 2 / 100",
     "exp_b_square": "exp_b ** 2 / 100",
     "up_to_nine_years_edu": "exp_edu <= 9",
-    "at_least_ten_years_edu": "10 <= exp_edu",
+    "at_least_ten_years_edu": "exp_edu >= 10",
 }
 """dict: Dictionary containing specification of covariates.
 

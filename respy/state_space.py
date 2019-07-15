@@ -71,7 +71,7 @@ class StateSpace:
 
         self._create_slices_by_periods(options["n_periods"])
 
-    def update_wages_and_nonpecuniary_rewards(self, optim_paras, options):
+    def update_systematic_rewards(self, optim_paras, options):
         """Update wages and non-pecuniary rewards.
 
         During the estimation, the rewards need to be updated according to the new

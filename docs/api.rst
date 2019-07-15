@@ -12,7 +12,7 @@ state_space
 
     StateSpace
     StateSpace.get_attribute_from_period
-    StateSpace.update_wages_and_nonpecuniary_rewards
+    StateSpace.update_systematic_rewards
 
 solve
 -----

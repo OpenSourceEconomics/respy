@@ -95,7 +95,7 @@ def log_like(params, data, base_draws_est, state_space, type_covariates, options
     """
     params, optim_paras, options = process_params_and_options(params, options)
 
-    state_space.update_wages_and_nonpecuniary_rewards(optim_paras, options)
+    state_space.update_systematic_rewards(optim_paras, options)
 
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
