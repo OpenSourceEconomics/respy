@@ -222,11 +222,18 @@ def random_choice(choices, probabilities):
 
     """
     cumulative_distribution = probabilities.cumsum(axis=1)
+    # Probabilities often do not sum to one but 0.99999999999999999.
+    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], 15)
 
     if not (cumulative_distribution[:, -1] == 1).all():
         raise ValueError("Probabilities do not sum to one.")
 
     u = np.random.rand(cumulative_distribution.shape[0], 1)
+
+    # Note that :func:`np.argmax` returns the first index for multiple maximum values.
     indices = (u < cumulative_distribution).argmax(axis=1)
+
+    if isinstance(choices, int):
+        choices = np.arange(choices)
 
     return choices[indices]

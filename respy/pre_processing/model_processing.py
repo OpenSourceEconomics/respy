@@ -20,8 +20,8 @@ def process_params_and_options(params, options):
 
     options["n_types"] = optim_paras["type_shift"].shape[0]
     if options["n_types"] > 1:
-        options["type_covariates"] = (
-            params.loc["type_2"].index.get_level_values(0).tolist()
+        options["type_covariates"] = sorted(
+            params.loc["type_2"].index.get_level_values(0)
         )
     extended_options = _process_options(options, params)
 
@@ -50,7 +50,7 @@ def _process_options(options, params):
 
 
 def _read_params(input_):
-    input_ = pd.read_csv(input_) if isinstance(input_, Path) else input_
+    input_ = pd.read_csv(input_) if isinstance(input_, Path) else input_.copy()
 
     if isinstance(input_, pd.DataFrame):
         if not input_.index.names == ["category", "name"]:
@@ -195,7 +195,10 @@ def _parse_parameters(params):
         optim_paras["type_prob"] = np.vstack(
             (
                 np.zeros(n_type_covariates),
-                params.loc[types].to_numpy().reshape(len(types), n_type_covariates),
+                params.loc[types]
+                .sort_index()
+                .to_numpy()
+                .reshape(len(types), n_type_covariates),
             )
         )
         optim_paras["type_shift"] = np.vstack(

@@ -9,6 +9,7 @@ from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import generate_column_labels_simulation
 from respy.shared import predict_multinomial_logit
+from respy.shared import random_choice
 from respy.shared import transform_disturbances
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -195,38 +196,17 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     return simulated_data
 
 
-def _sort_type_info(optim_paras):
-    """We fix an order for the sampling of the types."""
-    type_prob_coeffs = optim_paras["type_prob"]
-    order = np.argsort(type_prob_coeffs[:, 0])
-    type_info = {"type_prob": type_prob_coeffs[order], "order": order}
-
-    return type_info
-
-
 def _get_random_types(states, optim_paras, options):
     """Get random types for simulated agents."""
     if options["n_types"] == 1:
         types = np.zeros(options["simulation_agents"])
-
     else:
-        # We want to ensure that the order of types in the initialization file does not
-        # matter for the simulated sample.
-        type_info = _sort_type_info(optim_paras)
-
         type_covariates = create_type_covariates(states, options)
 
         np.random.seed(options["simulation_seed"])
 
-        types = []
-        for i in range(options["simulation_agents"]):
-            probs = predict_multinomial_logit(
-                type_info["type_prob"], type_covariates[i]
-            )
-            types += np.random.choice(type_info["order"], p=probs, size=1).tolist()
-
-        # If we only have one individual, we need to ensure that types are a vector.
-        types = np.array(types, ndmin=1)
+        probs = predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
+        types = random_choice(options["n_types"], probs)
 
     return types
 
