@@ -31,8 +31,8 @@ jobs:
     matrix:
       Python36:
         python.version: "3.6"
-      # Python37:
-      #   python.version: "3.7"
+      Python37:
+        python.version: "3.7"
 
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
