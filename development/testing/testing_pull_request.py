@@ -8,7 +8,6 @@ import respy as rp
 
 
 def run_pull_request_tests():
-    # Determine whether to do a long or short run.
     is_short_run = socket.gethostname() in ["abacus", "socrates"]
 
     click.secho("Starting pytest", fg="green")
