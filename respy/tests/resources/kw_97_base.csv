@@ -38,12 +38,6 @@ shocks,corr_home_edu,0,,,correlation between the shocks in home sector and educa
 meas_error,sd_a,0.4133,0,,SD of the measurement error in wages in occupation a
 meas_error,sd_b,0.3089,0,,SD of the measurement error in wages occupation b
 meas_error,sd_mil,0.1259,0,,SD of the measurement error in wages occupation mil
-type_shares,base_share_2,0.2396,,,share_of_agents_of_type_2
-type_shares,ten_years_2,0.4409,,,effect of more than ten years of schooling on probability of being type 2
-type_shares,base_share_3,0.5015,,,share_of_agents_of_type_3
-type_shares,ten_years_3,0.4876,,,effect of more than ten years of schooling on probability of being type 3
-type_shares,base_share_4,0.0838,,,share_of_agents_of_type_4
-type_shares,ten_years_4,0.0329,,,effect of more than ten years of schooling on probability of being type 4
 type_shift,type_2_in_a,-0.0668,,,deviation for type 2 from type 1 in a
 type_shift,type_2_in_b,0.2996,,,deviation for type 2 from type 1 in b
 type_shift,type_2_in_mil,0,,,deviation for type 2 from type 1 in mil
@@ -59,3 +53,9 @@ type_shift,type_4_in_b,0.0756,,,deviation for type 4 from type 1 in b
 type_shift,type_4_in_mil,0,,,deviation for type 4 from type 1 in mil
 type_shift,type_4_in_edu,226,,,deviation for type 4 from type 1 in edu
 type_shift,type_4_in_home,-13128,,,deviation for type 4 from type 1 in home
+type_2,up_to_nine_years_edu,0.2396,,,effect of up to nine years of schooling on probability of being type 2
+type_2,at_least_ten_years_edu,0.4409,,,effect of at least ten years of schooling on probability of being type 2
+type_3,up_to_nine_years_edu,0.5015,,,effect of up to nine years of schooling on probability of being type 3
+type_3,at_least_ten_years_edu,0.4876,,,effect of at least ten years of schooling on probability of being type 3
+type_4,up_to_nine_years_edu,0.0838,,,effect of up to nine years of schooling on probability of being type 4
+type_4,at_least_ten_years_edu,0.0329,,,effect of at least ten years of schooling on probability of being type 4

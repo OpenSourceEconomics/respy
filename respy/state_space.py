@@ -57,7 +57,7 @@ class StateSpace:
         _states_df.lagged_choice = _states_df.lagged_choice.cat.codes
         self.states = _states_df.to_numpy()
 
-        base_covariates_df = _create_base_covariates(states_df, options["covariates"])
+        base_covariates_df = create_base_covariates(states_df, options["covariates"])
 
         self.covariates = _create_choice_covariates(
             base_covariates_df, states_df, params, options
@@ -72,6 +72,12 @@ class StateSpace:
         self._create_slices_by_periods(options["n_periods"])
 
     def update_systematic_rewards(self, optim_paras, options):
+        """Update wages and non-pecuniary rewards.
+
+        During the estimation, the rewards need to be updated according to the new
+        parameters whereas the covariates stay the same.
+
+        """
         self.wages, self.nonpec = _create_reward_components(
             self.states[:, -1], self.covariates, optim_paras, options
         )
@@ -464,7 +470,7 @@ def _create_reward_components(types, covariates, optim_paras, options):
     )
 
     n_wages = len(options["choices_w_wage"])
-    type_deviations = optim_paras["type_shifts"][types]
+    type_deviations = optim_paras["type_shift"][types]
 
     log_wages += type_deviations[:, :n_wages]
     nonpec[:, n_wages:] += type_deviations[:, n_wages:]
@@ -517,7 +523,7 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
     return covariates
 
 
-def _create_base_covariates(states, covariates_spec):
+def create_base_covariates(states, covariates_spec):
     """Create set of covariates for each state.
 
     Parameters

@@ -52,7 +52,7 @@ shocks,sd_a,0.3864,FALSE,0,,standard deviation of the shock in occupation a,shoc
 shocks,sd_b,0.3823,FALSE,0,,standard deviation of the shock in occupation b,shocks,chol_sigma_2
 shocks,sd_edu,12821,FALSE,0,,standard deviation of the shocks in the education sector,shocks,chol_sigma_3
 shocks,sd_home,9350,FALSE,0,,standard deviation of the shock in the home sector,shocks,chol_sigma_4
-shocks,corr_a_b,0.1226,FALSE,,,correlation between the shocks in occupation a and b,shocks,chol_sigma_21
+shocks,corr_b_a,0.1226,FALSE,,,correlation between the shocks in occupation a and b,shocks,chol_sigma_21
 shocks,corr_edu_a,0,FALSE,,,correlation between the shocks in the education sector and occupation a,shocks,chol_sigma_31
 shocks,corr_edu_b,0,FALSE,,,correlation between the shocks in the education sector and occupation b,shocks,chol_sigma_32
 shocks,corr_home_a,0,FALSE,,,correlation of the shocks in the home sector and occupation a,shocks,chol_sigma_41

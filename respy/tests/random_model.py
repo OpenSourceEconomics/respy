@@ -8,12 +8,16 @@ from estimagic.optimization.utilities import number_of_triangular_elements_to_di
 from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
-from respy.shared import _generate_column_labels_estimation
+from respy.shared import generate_column_labels_estimation
 from respy.simulate import simulate
 
 
 def generate_random_model(
-    point_constr=None, bound_constr=None, n_types=None, myopic=False
+    point_constr=None,
+    bound_constr=None,
+    n_types=None,
+    n_type_covariates=None,
+    myopic=False,
 ):
     """Generate a random model specification.
 
@@ -26,14 +30,13 @@ def generate_random_model(
         Upper bounds for some options to keep computation time reasonable. Can have the
         keys ["max_types", "max_periods", "max_edu_start", "max_agents", "max_draws"]
     n_types : int
-        fix number of unobserved types.
+        Number of unobserved types.
+    n_type_covariates :
+        Number of covariates to calculate type probabilities.
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
 
     """
-    # potential conversions from numpy._bool to python bool. Don't remove!
-    myopic = bool(myopic)
-
     point_constr = {} if point_constr is None else point_constr
     bound_constr = {} if bound_constr is None else bound_constr
 
@@ -44,8 +47,12 @@ def generate_random_model(
 
     if n_types is None:
         n_types = np.random.randint(1, bound_constr["max_types"] + 1)
+    if n_type_covariates is None:
+        n_type_covariates = np.random.randint(2, 4)
 
-    params = csv_template(n_types=n_types, initialize_coeffs=False)
+    params = csv_template(
+        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
+    )
     params["para"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
     params.loc["delta", "para"] = 1 - np.random.uniform() if myopic is False else 0.0
@@ -75,7 +82,7 @@ def generate_random_model(
         np.arange(1, 15), size=n_edu_start, replace=False
     ).tolist()
     options["choices"]["edu"]["lagged"] = np.random.uniform(size=n_edu_start)
-    options["choices"]["edu"]["share"] = get_valid_shares(n_edu_start)
+    options["choices"]["edu"]["share"] = _get_initial_shares(n_edu_start)
     options["choices"]["edu"]["max"] = np.random.randint(
         max(options["choices"]["edu"]["start"]) + 1, 30
     )
@@ -108,7 +115,7 @@ def _consolidate_bound_constraints(bound_constr):
     return constr
 
 
-def get_valid_shares(num_groups):
+def _get_initial_shares(num_groups):
     """We simply need a valid request for the shares of types summing to one."""
     shares = np.random.np.random.uniform(size=num_groups)
     shares = shares / np.sum(shares)
@@ -160,7 +167,7 @@ def simulate_truncated_data(params, options, is_missings=True):
         data_subset = df
 
     # We can restrict the information to observed entities only.
-    labels, _ = _generate_column_labels_estimation(options)
+    labels, _ = generate_column_labels_estimation(options)
     data_subset = data_subset[labels]
 
     return data_subset

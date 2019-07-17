@@ -1,17 +1,19 @@
 from functools import partial
 
 import numpy as np
+import pandas as pd
 from numba import guvectorize
 
 from respy.conditional_draws import create_draws_and_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import _aggregate_keane_wolpin_utility
+from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import clip
 from respy.shared import create_base_draws
-from respy.shared import get_conditional_probabilities
+from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
+from respy.state_space import create_base_covariates
 from respy.state_space import StateSpace
 
 
@@ -44,18 +46,21 @@ def get_crit_func(params, options, df):
     """
     params, optim_paras, options = process_params_and_options(params, options)
 
-    check_estimation_data(options, df)
+    check_estimation_data(df, options)
 
-    df = df.sort_values(["Identifier", "Period"])
-
-    df = _convert_choice_variables_from_categorical_to_codes(df, options)
+    df = _process_estimation_data(df, options)
 
     state_space = StateSpace(params, options)
 
-    # Collect arguments for estimation.
     base_draws_est = create_base_draws(
         (options["n_periods"], options["estimation_draws"], len(options["choices"])),
         options["estimation_seed"],
+    )
+
+    # For the type covariates, we only need the first observation of each individual.
+    states = df.copy().groupby("identifier").first()
+    type_covariates = (
+        create_type_covariates(states, options) if options["n_types"] > 1 else None
     )
 
     criterion_function = partial(
@@ -63,12 +68,13 @@ def get_crit_func(params, options, df):
         data=df,
         base_draws_est=base_draws_est,
         state_space=state_space,
+        type_covariates=type_covariates,
         options=options,
     )
     return criterion_function
 
 
-def log_like(params, data, base_draws_est, state_space, options):
+def log_like(params, data, base_draws_est, state_space, type_covariates, options):
     """Criterion function for the likelihood maximization.
 
     This function calculates the average likelihood contribution of the sample.
@@ -93,7 +99,9 @@ def log_like(params, data, base_draws_est, state_space, options):
 
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
-    contribs = log_like_obs(state_space, data, base_draws_est, optim_paras, options)
+    contribs = log_like_obs(
+        state_space, data, base_draws_est, type_covariates, optim_paras, options
+    )
 
     crit_val = -np.mean(contribs)
 
@@ -161,7 +169,7 @@ def simulate_probability_of_individuals_observed_choice(
         max_value_functions = 0.0
 
         for j in range(n_choices):
-            value_function, _ = _aggregate_keane_wolpin_utility(
+            value_function, _ = aggregate_keane_wolpin_utility(
                 wages[j],
                 nonpec[j],
                 continuation_values[j],
@@ -190,7 +198,9 @@ def simulate_probability_of_individuals_observed_choice(
     prob_choice[0] /= n_draws
 
 
-def log_like_obs(state_space, df, base_draws_est, optim_paras, options):
+def log_like_obs(
+    state_space, df, base_draws_est, type_covariates, optim_paras, options
+):
     """Calculate the likelihood contribution of each individual in the sample.
 
     The function calculates all likelihood contributions for all observations in the
@@ -220,26 +230,17 @@ def log_like_obs(state_space, df, base_draws_est, optim_paras, options):
 
     """
     # Convert data to NumPy arrays.
-    periods = df.Period.to_numpy()
-    lagged_choices = df.Lagged_Choice.to_numpy()
-    choices = df.Choice.to_numpy()
-    experiences = tuple(
-        df[col].to_numpy() for col in df.filter(like="Experience_").columns
-    )
-    wages_observed = df["Wage"].to_numpy()
+    periods = df.period.to_numpy()
+    lagged_choices = df.lagged_choice.to_numpy()
+    choices = df.choice.to_numpy()
+    experiences = tuple(df[col].to_numpy() for col in df.filter(like="exp_").columns)
+    wages_observed = df.wage.to_numpy()
 
     # Get the number of observations for each individual and an array with indices of
     # each individual's first observation. After that, extract initial education levels
     # per agent which are important for type-specific probabilities.
-    n_obs_per_indiv = np.bincount(df.Identifier.to_numpy())
+    n_obs_per_indiv = np.bincount(df.identifier.to_numpy())
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
-    indiv_initial_exp_edu = df.Experience_Edu.to_numpy()[idx_indiv_first_obs]
-
-    # Update type-specific probabilities conditional on whether the initial level of
-    # education is greater than nine.
-    type_shares = get_conditional_probabilities(
-        optim_paras["type_shares"], indiv_initial_exp_edu
-    )
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_obs, n_types).
@@ -283,9 +284,17 @@ def log_like_obs(state_space, df, base_draws_est, optim_paras, options):
     # over all periods.
     prob_type = np.multiply.reduceat(prob_obs, idx_indiv_first_obs)
 
+    # Calculate the probabilities for all types based on an individual's initial
+    # characteristics.
+    type_probabilities = (
+        predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
+        if n_types > 1
+        else 1
+    )
+
     # Multiply each individual-type contribution with its type-specific shares and sum
     # over types to get the likelihood contribution for each individual.
-    contribs = (prob_type * type_shares).sum(axis=1)
+    contribs = (prob_type * type_probabilities).sum(axis=1)
 
     contribs = np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT)
 
@@ -293,11 +302,47 @@ def log_like_obs(state_space, df, base_draws_est, optim_paras, options):
 
 
 def _convert_choice_variables_from_categorical_to_codes(df, options):
-    # Recode choices to model codes. It is not possible to use ``.cat.codes`` because
-    # the codes might be in a different order than for the model required which is
-    # choices_w_exp_w_wag, choices_w_exp_wo_wage, choices_wo_exp_wo_wage.
+    """Recode choices to choice codes in the model.
+
+    We cannot use ``.cat.codes`` because order might be different. The model requires an
+    order of ``choices_w_exp_w_wag``, ``choices_w_exp_wo_wage``,
+    ``choices_wo_exp_wo_wage``.
+
+    See also
+    --------
+    respy.pre_processing.model_processing._order_choices
+
+    """
     choices_to_codes = {choice: i for i, choice in enumerate(options["choices"])}
-    df.Choice = df.Choice.replace(choices_to_codes).astype(int)
-    df.Lagged_Choice = df.Lagged_Choice.replace(choices_to_codes).astype(int)
+    df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
+    df.lagged_choice = df.lagged_choice.replace(choices_to_codes).astype(np.uint8)
+
+    return df
+
+
+def create_type_covariates(df, options):
+    """Create covariates to predict type probabilities.
+
+    In the simulation, the covariates are needed to predict type probabilities and
+    assign types to simulated individuals. In the estimation, covariates are necessary
+    to weight the probability of observations by type probabilities.
+
+    """
+    covariates = create_base_covariates(df, options["covariates"])
+
+    all_data = pd.concat([covariates, df], axis="columns", sort=False)
+
+    return all_data[options["type_covariates"]].to_numpy()
+
+
+def _process_estimation_data(df, options):
+    df = df.sort_values(["Identifier", "Period"])[
+        ["Identifier", "Period"]
+        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
+        + ["Lagged_Choice", "Choice", "Wage"]
+    ]
+    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
+
+    df = _convert_choice_variables_from_categorical_to_codes(df, options)
 
     return df

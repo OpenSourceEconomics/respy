@@ -14,10 +14,13 @@ jobs:
 
   steps:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
-    displayName: Add conda to PATH
+    displayName: Add conda to PATH.
+
+  - bash: conda update conda --yes --quiet
+    displayName: Update conda.
 
   - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
-    displayName: Create Anaconda environment
+    displayName: Create Anaconda environment.
 
   - bash: |
       source activate respy
@@ -36,10 +39,13 @@ jobs:
 
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
+    displayName: Add conda to PATH.
 
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda numpy mkl -c defaults -c conda-forge
-    displayName: Create Anaconda environment
+  - powershell: conda update conda --yes --quiet
+    displayName: Update conda.
+
+  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION numpy mkl tox-conda -c defaults -c conda-forge
+    displayName: Create Anaconda environment.
 
   - script: |
       call activate respy

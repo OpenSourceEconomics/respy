@@ -1,8 +1,61 @@
 import numpy as np
 import pandas as pd
 
+from respy.pre_processing import model_processing as rp_mp
 
-def _validate_options(o):
+
+def validate_params(params, options):
+    params = params.copy().to_frame()
+    n_choices = len(options["choices"])
+    choices = list(options["choices"])
+
+    # Ensure that standard deviations are in the same order as choices.
+    sd_ordering = (
+        params.query("category == 'shocks' and name.str.startswith('sd_')")
+        .index.get_level_values(1)
+        .str.replace("sd_", "")
+    )
+    assert (sd_ordering == choices).all()
+
+    # Ensure that correlation is in the same order as choices. We use the two labels in
+    # the parameter name which is something like ``"corr_x_y"``. The first label needs
+    # to start with one occurrence of the second choice, then two occurrences of the
+    # third choice, and so on as it represents the lower triangular of a matrix.
+    corr_idx = (
+        params.reset_index()
+        .query("category == 'shocks' and name.str.startswith('corr_')")
+        .name.str.split("_", expand=True)
+    )
+    expected = np.repeat(choices[1:], np.arange(1, n_choices))
+    assert (corr_idx[1] == expected).all()
+
+    # The second label starts with the first choice, then the first two choices, and so
+    # on.
+    expected = [choice for max_ in range(1, n_choices) for choice in choices[:max_]]
+    assert (corr_idx[2] == expected).all()
+
+    types = rp_mp.infer_types(params)
+    if types:
+        n_types = len(types) + 1
+        # Ensure that parameters to predict type probabilities have the same ordering
+        # for every type.
+        covariates = params.loc[types[0]].index.get_level_values(0)
+        for type_ in types[1:]:
+            assert all(covariates == params.loc[type_].index.get_level_values(0))
+
+        # Ensure that the type shifts are ordered by type number and choices.
+        type_shift_idx = (
+            params.loc["type_shift"].reset_index().name.str.split("_", expand=True)
+        )
+
+        expected = [
+            val for type_ in range(2, n_types + 1) for val in [type_] * n_choices
+        ]
+        assert (type_shift_idx[1].astype(float) == expected).all()
+        assert (type_shift_idx[3] == np.tile(np.array(choices), n_types - 1)).all()
+
+
+def validate_options(o):
     # Choices with experience.
     choices = o["choices"]
     for choice in o["choices_w_exp"]:
