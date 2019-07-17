@@ -31,14 +31,14 @@ jobs:
     matrix:
       Python36:
         python.version: "3.6"
-      # Python37:
-      #   python.version: "3.7"
+      Python37:
+        python.version: "3.7"
 
   steps:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
 
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda -c conda-forge
+  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda numpy mkl -c defaults -c conda-forge
     displayName: Create Anaconda environment
 
   - script: |
