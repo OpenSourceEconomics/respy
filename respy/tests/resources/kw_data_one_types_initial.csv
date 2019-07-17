@@ -52,7 +52,7 @@ shocks,sd_a,0.2,False,,,"Element 1,1 of cholesky factor of shock covariance matr
 shocks,sd_b,0.25,False,,,"Element 2,2 of cholesky factor of shock covariance matrix"
 shocks,sd_edu,1500,False,,,"Element 3,3 of cholesky factor of shock covariance matrix"
 shocks,sd_home,1500,False,,,"Element 4,4 of cholesky factor of shock covariance matrix"
-shocks,corr_a_b,0,False,,,"Element 2,1 of cholesky factor of shock covariance matrix"
+shocks,corr_b_a,0,False,,,"Element 2,1 of cholesky factor of shock covariance matrix"
 shocks,corr_edu_a,0,False,,,"Element 3,1 of cholesky factor of shock covariance matrix"
 shocks,corr_edu_b,0,False,,,"Element 3,2 of cholesky factor of shock covariance matrix"
 shocks,corr_home_a,0,False,,,"Element 4,1 of cholesky factor of shock covariance matrix"
@@ -60,15 +60,15 @@ shocks,corr_home_b,0,False,,,"Element 4,2 of cholesky factor of shock covariance
 shocks,corr_home_edu,0,False,,,"Element 4,3 of cholesky factor of shock covariance matrix"
 meas_error,sd_a,0.001,FALSE,0,,SD of the measurement error in wages in occupation a
 meas_error,sd_b,0.001,FALSE,0,,SD of the measurement error in wages occupation b
-type_shares,base_share_2,-1.6094379124,False,,,share_of_agents_of_type_2
-type_shares,ten_years_2,0,False,,,effect of more than ten years of schooling on probability of being type 2
-type_shares,base_share_3,-0.2231435513,False,,,share_of_agents_of_type_3
-type_shares,ten_years_3,0,False,,,effect of more than ten years of schooling on probability of being type 3
-type_shift,type_2_in_occ_a,0.1,False,,,deviation for type 2 from type 1 in occ_a
-type_shift,type_2_in_occ_b,-0.15,False,,,deviation for type 2 from type 1 in occ_b
+type_shares,up_to_nine_years_edu_2,-1.6094379124,False,,,effect of up to nine years of schooling on probability of being type 2
+type_shares,at_least_ten_years_edu_2,0,False,,,effect of at least ten years of schooling on probability of being type 2
+type_shares,up_to_nine_years_edu_3,-0.2231435513,False,,,effect of up to nine years of schooling on probability of being type 3
+type_shares,at_least_ten_years_edu_3,0,False,,,effect of at least ten years of schooling on probability of being type 3
+type_shift,type_2_in_a,0.1,False,,,deviation for type 2 from type 1 in occ_a
+type_shift,type_2_in_b,-0.15,False,,,deviation for type 2 from type 1 in occ_b
 type_shift,type_2_in_edu,-1000,False,,,deviation for type 2 from type 1 in edu
 type_shift,type_2_in_home,1000,False,,,deviation for type 2 from type 1 in home
-type_shift,type_3_in_occ_a,-0.1,False,,,deviation for type 3 from type 1 in occ_a
-type_shift,type_3_in_occ_b,0.15,False,,,deviation for type 3 from type 1 in occ_b
+type_shift,type_3_in_a,-0.1,False,,,deviation for type 3 from type 1 in occ_a
+type_shift,type_3_in_b,0.15,False,,,deviation for type 3 from type 1 in occ_b
 type_shift,type_3_in_edu,1000,False,,,deviation for type 3 from type 1 in edu
 type_shift,type_3_in_home,-1000,False,,,deviation for type 3 from type 1 in home

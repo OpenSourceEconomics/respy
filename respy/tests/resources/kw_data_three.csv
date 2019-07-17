@@ -52,7 +52,7 @@ shocks,sd_a,1,False,,,"Element 1,1 of cholesky factor of shock covariance matrix
 shocks,sd_b,1,False,,,"Element 2,2 of cholesky factor of shock covariance matrix"
 shocks,sd_edu,7000,False,,,"Element 3,3 of cholesky factor of shock covariance matrix"
 shocks,sd_home,8500,False,,,"Element 4,4 of cholesky factor of shock covariance matrix"
-shocks,corr_a_b,0.5,False,,,"Element 2,1 of cholesky factor of shock covariance matrix"
+shocks,corr_b_a,0.5,False,,,"Element 2,1 of cholesky factor of shock covariance matrix"
 shocks,corr_edu_a,0,False,,,"Element 3,1 of cholesky factor of shock covariance matrix"
 shocks,corr_edu_b,0,False,,,"Element 3,2 of cholesky factor of shock covariance matrix"
 shocks,corr_home_a,0,False,,,"Element 4,1 of cholesky factor of shock covariance matrix"

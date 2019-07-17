@@ -51,3 +51,5 @@ covariates:
   "exp_b_square": "exp_b ** 2 / 100"
   "exp_mil_square": "exp_mil ** 2 / 100"
   "mil_dropout": "exp_mil == 1"
+  "up_to_nine_years_edu": "exp_edu <= 9"
+  "at_least_ten_years_edu": "10 <= exp_edu"

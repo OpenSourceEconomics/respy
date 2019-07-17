@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import yaml
+from numba import guvectorize
 from numba import njit
 from numba import vectorize
 
@@ -11,7 +12,7 @@ from respy.config import TEST_RESOURCES_DIR
 
 
 @njit
-def _aggregate_keane_wolpin_utility(
+def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
     flow_utility = wage * draw + nonpec
@@ -23,31 +24,52 @@ def _aggregate_keane_wolpin_utility(
     return value_function, flow_utility
 
 
-def get_conditional_probabilities(type_shares, initial_level_of_education):
-    """Calculate the conditional choice probabilities.
+@guvectorize(
+    ["f8[:, :], f8[:], f8[:]"],
+    "(n_classes, n_covariates), (n_covariates) -> (n_classes)",
+    nopython=True,
+    target="parallel",
+)
+def predict_multinomial_logit(coefficients, covariates, probs):
+    """Predict probabilities based on a multinomial logit regression.
 
-    The calculation is based on the multinomial logit model for one particular initial
-    condition.
+    The function is used to predict the probability for all types based on the initial
+    characteristics of an individual. This is necessary to sample initial types in the
+    simulation and to weight the probability of an observation by types in the
+    estimation.
+
+    The `multinomial logit model
+    <https://en.wikipedia.org/wiki/Multinomial_logistic_regression>`_  predicts the
+    probability that an individual belongs to a certain type. The sum over all
+    type-probabilities is one.
 
     Parameters
     ----------
-    type_shares : numpy.ndarray
-        Undocumented parameter.
-    initial_level_of_education : numpy.ndarray
-        Array with shape (n_obs,) containing initial levels of education.
+    coefficients : numpy.ndarray
+        Array with shape (n_classes, n_covariates).
+    covariates : numpy.ndarray
+        Array with shape (n_covariates,).
+
+    Returns
+    -------
+    probs : numpy.ndarray
+        Array with shape (n_classes,) containing the probabilities for each type.
 
     """
-    type_shares = type_shares.reshape(-1, 2)
-    covariates = np.column_stack(
-        (np.ones(initial_level_of_education.shape[0]), initial_level_of_education > 9)
-    )
-    probs = np.exp(covariates.dot(type_shares.T))
-    probs /= probs.sum(axis=1, keepdims=True)
+    n_classes, n_covariates = coefficients.shape
 
-    if initial_level_of_education.shape[0] == 1:
-        probs = probs.ravel()
+    denominator = 0
 
-    return probs
+    for type_ in range(n_classes):
+        prob_type = 0
+        for cov in range(n_covariates):
+            prob_type += coefficients[type_, cov] * covariates[cov]
+
+        exp_prob_type = np.exp(prob_type)
+        probs[type_] = exp_prob_type
+        denominator += exp_prob_type
+
+    probs /= denominator
 
 
 def create_base_draws(shape, seed):
@@ -103,7 +125,7 @@ def get_example_model(model):
     return params, options
 
 
-def _generate_column_labels_estimation(options):
+def generate_column_labels_estimation(options):
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
         + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
@@ -122,8 +144,8 @@ def _generate_column_labels_estimation(options):
     return labels, dtypes
 
 
-def _generate_column_labels_simulation(options):
-    est_lab, est_dtypes = _generate_column_labels_estimation(options)
+def generate_column_labels_simulation(options):
+    est_lab, est_dtypes = generate_column_labels_estimation(options)
     labels = (
         est_lab
         + ["Type"]
@@ -166,3 +188,52 @@ def clip(x, minimum=None, maximum=None):
         return maximum
     else:
         return x
+
+
+def random_choice(choices, probabilities):
+    """Return elements of choices for a two-dimensional array of probabilities.
+
+    It is assumed that probabilities are ordered (n_samples, n_choices).
+
+    The function is taken from this `StackOverflow post
+    <https://stackoverflow.com/questions/40474436>`_ as a workaround for
+    :func:`np.random.choice` as it can only handle one-dimensional probabilities.
+
+    Example
+    -------
+    Here is an example with non-zero probabilities.
+
+    >>> n_samples = 100_000
+    >>> choices = np.array([0, 1, 2])
+    >>> p = np.array([0.15, 0.35, 0.5])
+    >>> ps = np.tile(p, (n_samples, 1))
+    >>> choices = random_choice(choices, ps)
+    >>> np.round(np.bincount(choices), decimals=-3) / n_samples
+    array([0.15, 0.35, 0.5 ])
+
+    Here is an example where one choice has probability zero.
+
+    >>> p = np.array([0.4, 0, 0.6])
+    >>> ps = np.tile(p, (n_samples, 1))
+    >>> choices = random_choice(choices, ps)
+    >>> np.round(np.bincount(choices), decimals=-3) / n_samples
+    array([0.4, 0. , 0.6])
+    >>> assert np.bincount(choices)[1] == 0
+
+    """
+    cumulative_distribution = probabilities.cumsum(axis=1)
+    # Probabilities often do not sum to one but 0.99999999999999999.
+    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], 15)
+
+    if not (cumulative_distribution[:, -1] == 1).all():
+        raise ValueError("Probabilities do not sum to one.")
+
+    u = np.random.rand(cumulative_distribution.shape[0], 1)
+
+    # Note that :func:`np.argmax` returns the first index for multiple maximum values.
+    indices = (u < cumulative_distribution).argmax(axis=1)
+
+    if isinstance(choices, int):
+        choices = np.arange(choices)
+
+    return choices[indices]
