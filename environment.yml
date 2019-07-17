@@ -1,9 +1,9 @@
 name: respy
 channels:
-  - defaults
   - numba
-  - janosg
+  - defaults
   - conda-forge
+  - janosg
 dependencies:
   - python=3.7.3
   - pip=19.0.3
