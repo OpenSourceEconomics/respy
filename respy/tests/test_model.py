@@ -85,9 +85,20 @@ def test_invariance_to_order_of_choices(model_or_seed):
 @pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_sorting_of_type_probability_parameters(model_or_seed):
-    params, options = process_model_or_seed(model_or_seed)
+    # Set configuration for random models.
+    n_types = np.random.randint(2, 5)
+    n_type_covariates = np.random.randint(2, 4)
+
+    params, options = process_model_or_seed(
+        model_or_seed, n_types=n_types, n_type_covariates=n_type_covariates
+    )
 
     params, optim_paras, options = process_params_and_options(params, options)
+
+    # Update variables if not a random model, but an example model is tested.
+    if isinstance(model_or_seed, str):
+        n_types = options["n_types"]
+        n_type_covariates = None if n_types == 1 else len(options["type_covariates"])
 
     if options["n_types"] > 1:
         # Resort type probability parameters.
@@ -97,32 +108,3 @@ def test_sorting_of_type_probability_parameters(model_or_seed):
         _, optim_paras_, _ = process_params_and_options(params, options)
 
         assert (optim_paras["type_prob"] == optim_paras_["type_prob"]).all()
-
-
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
-def test_sorting_of_type_covariates(model_or_seed):
-    # Set configuration for random models.
-    n_types = np.random.randint(2, 5)
-    n_type_covariates = np.random.randint(2, 4)
-
-    params, options = process_model_or_seed(
-        model_or_seed, n_types=n_types, n_type_covariates=n_type_covariates
-    )
-
-    _, optim_paras, options = process_params_and_options(params, options)
-
-    # Update variables if not a random model, but an example model is tested.
-    if isinstance(model_or_seed, str):
-        n_types = options["n_types"]
-        n_type_covariates = None if n_types == 1 else len(options["type_covariates"])
-
-    # Tests only make sense for ``n_types > 1`` which is not true for all examples.
-    if options["n_types"] > 1:
-        assert n_types == options["n_types"]
-        assert n_type_covariates == len(options["type_covariates"])
-
-        for i in range(2, n_types):
-            type_prob_in_params = params.loc[f"type_{i}"].sort_index().para.to_numpy()
-            assert (type_prob_in_params == optim_paras["type_prob"][i - 1]).all()
-    else:
-        pass
