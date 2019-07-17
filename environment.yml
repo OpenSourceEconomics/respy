@@ -15,6 +15,7 @@ dependencies:
   - matplotlib>=3.0.0
   - mkl
   - nbsphinx=0.4.2
+  - notifiers
   - numba=0.43.1
   - numpydoc
   - pandas=0.24.2
