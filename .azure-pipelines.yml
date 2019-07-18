@@ -53,7 +53,16 @@ jobs:
   - powershell: |
       cmd.exe /c $env:Conda\Scripts\activate.bat
       $env:Path = "$env:CONDA\condabin;" + $env:Path
+      conda info -a
       conda activate respy
+      conda info -a
+
+  - powershell: |
+      cmd.exe /c $env:Conda\Scripts\activate.bat
+      $env:Path = "$env:CONDA\condabin;" + $env:Path
+      conda info -a
+      conda activate respy
+      conda info -a
       tox -e pytest
 
 - job:
