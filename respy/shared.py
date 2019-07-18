@@ -128,7 +128,7 @@ def get_example_model(model):
     if "kw_97" in model:
         df = rp_data.create_kw_97()
     elif "kw_94" in model:
-        df = rp_data.create_kw_94(rp_data.create_kw_97)
+        df = rp_data.create_kw_94()
     else:
         df = None
         warnings.warn(f"No data available for model '{model}'.", category=UserWarning)

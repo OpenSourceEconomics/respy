@@ -61,7 +61,7 @@ def create_kw_97():
     return df
 
 
-def create_kw_94(df):
+def create_kw_94():
     """Convert data to be used with Keane and Wolpin (1994).
 
     The model in Keane and Wolpin (1994) does not include military as an occupational
