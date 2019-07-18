@@ -1,5 +1,6 @@
 name: respy
 channels:
+  - numba
   - defaults
   - conda-forge
   - janosg
