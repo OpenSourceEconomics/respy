@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-import respy.shared as rp_shared
+from respy import shared as rp_shared
 from respy.config import TEST_RESOURCES_DIR
 
 

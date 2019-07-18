@@ -7,7 +7,7 @@ from numba import guvectorize
 from numba import njit
 from numba import vectorize
 
-import respy.data as rp_data
+from respy import data as rp_data
 from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
