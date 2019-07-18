@@ -50,8 +50,10 @@ jobs:
       conda create --yes --quiet --name respy python=$env:PYTHON_VERSION numpy mkl tox-conda -c defaults -c conda-forge
     displayName: Create Anaconda environment.
 
-  - script: |
-      call activate respy
+  - powershell: |
+      cmd.exe /c $env:Conda\Scripts\activate.bat
+      $env:Path = "$env:CONDA\condabin;" + $env:Path
+      conda activate respy
       tox -e pytest
 
 - job:
