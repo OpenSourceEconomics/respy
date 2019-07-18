@@ -38,31 +38,15 @@ jobs:
         python.version: "3.7"
 
   steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+  - powershell: |
+      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH.
 
-  - powershell: conda update conda --yes --quiet
-    displayName: Update conda.
-
-  - powershell: |
-      cmd.exe /c $env:Conda\Scripts\activate.bat
-      $env:Path = "$env:CONDA\condabin;" + $env:Path
-      conda create --yes --quiet --name respy python=$env:PYTHON_VERSION numpy mkl tox-conda -c defaults -c conda-forge
+  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION numpy mkl tox-conda -c defaults -c conda-forge
     displayName: Create Anaconda environment.
 
-  - powershell: |
-      cmd.exe /c $env:Conda\Scripts\activate.bat
-      $env:Path = "$env:CONDA\condabin;" + $env:Path
-      conda info -a
-      conda activate respy
-      conda info -a
-
-  - powershell: |
-      cmd.exe /c $env:Conda\Scripts\activate.bat
-      $env:Path = "$env:CONDA\condabin;" + $env:Path
-      conda info -a
-      conda activate respy
-      conda info -a
+  - script: |
+      call activate respy
       tox -e pytest
 
 - job:
