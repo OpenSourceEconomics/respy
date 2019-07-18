@@ -21,7 +21,7 @@ CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 def _prepare_message(idx_failures):
     hostname = socket.gethostname()
-    subject = " RESPY: Regression Testing"
+    subject = " respy: Regression Testing"
     if idx_failures:
         message = (
             f"Failure during regression testing @{hostname} for test(s): "
@@ -161,9 +161,9 @@ def cli():
 @click.argument("number_of_tests", type=int)
 @click.option("--strict", is_flag=True, help="Immediate termination on failure.")
 @click.option("-p", "--parallel", default=1, type=int, help="Number of parallel tests.")
-def run(number_of_test, strict, parallel):
+def run(number_of_tests, strict, parallel):
     """Run a number of regression tests."""
-    run_regression_tests(num_tests=number_of_test, strict=strict, num_procs=parallel)
+    run_regression_tests(num_tests=number_of_tests, strict=strict, num_procs=parallel)
 
 
 @cli.command()

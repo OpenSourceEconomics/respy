@@ -42,7 +42,7 @@ def test_invariance_to_order_of_initial_schooling_levels(model_or_seed):
     bound_constr = {"max_edu_start": 10}
 
     if isinstance(model_or_seed, str):
-        params, options = get_example_model(model_or_seed)
+        params, options, _ = get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
         params, options = generate_random_model(bound_constr=bound_constr)

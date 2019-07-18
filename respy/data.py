@@ -2,17 +2,7 @@ import numpy as np
 import pandas as pd
 
 from respy.config import TEST_RESOURCES_DIR
-from respy.shared import _generate_column_labels_estimation
-
-
-def get_example_data(model):
-    df = _create_kw_1997()
-    if model == "kw_1997":
-        return df
-    elif model == "kw_1994":
-        return _convert_kw1997_to_kw1994(df)
-    else:
-        raise NotImplementedError("Data not available.")
+import respy.shared as rp_shared
 
 
 def _create_working_experience(df, options):
@@ -27,7 +17,7 @@ def _create_working_experience(df, options):
     return df
 
 
-def _create_kw_1997():
+def create_kw_97():
     """Create data for Keane and Wolpin (1997).
 
     The data includes individuals labor market history and accumulated experiences in
@@ -64,14 +54,14 @@ def _create_kw_1997():
     df["Lagged_Choice"] = df.groupby("Identifier").Choice.shift(1)
 
     options["choices_w_exp"] = ["a", "b", "mil", "edu"]
-    labels, _ = _generate_column_labels_estimation(options)
+    labels, _ = rp_shared.generate_column_labels_estimation(options)
 
     df = df.assign(Period=df.Age - 16).drop(columns="Age").loc[:, labels]
 
     return df
 
 
-def _convert_kw1997_to_kw1994(df):
+def create_kw_94(df):
     """Convert data to be used with Keane and Wolpin (1994).
 
     The model in Keane and Wolpin (1994) does not include military as an occupational
@@ -79,6 +69,7 @@ def _convert_kw1997_to_kw1994(df):
     military.
 
     """
+    df = create_kw_97()
     # Create indicator if an individual entered the military and from thereon.
     df["Entered_Military"] = df.Choice.eq("mil")
     df.Entered_Military = df.groupby("Identifier").Entered_Military.cumsum()
@@ -91,7 +82,7 @@ def _convert_kw1997_to_kw1994(df):
     df.Lagged_Choice = df.Lagged_Choice.cat.remove_unused_categories()
 
     options = {"choices_w_exp": ["a", "b", "edu"]}
-    labels, _ = _generate_column_labels_estimation(options)
+    labels, _ = rp_shared.generate_column_labels_estimation(options)
 
     df = df.reset_index(drop=True).loc[:, labels]
 

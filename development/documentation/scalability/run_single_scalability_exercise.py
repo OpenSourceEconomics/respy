@@ -33,7 +33,7 @@ def main():
     import respy as rp
 
     # Get model
-    options, params = rp.get_example_model(model)
+    options, params, _ = rp.get_example_model(model)
 
     # Simulate the data
     state_space, simulated_data = rp.simulate(params, options)

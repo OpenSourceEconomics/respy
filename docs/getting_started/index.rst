@@ -8,5 +8,5 @@ Getting Started
    introduction
    installation
    tutorial-model.ipynb
-   tutorial-kw1994-simulation.ipynb
-   tutorial-kw1997-simulation.ipynb
+   tutorial-kw-94-simulation.ipynb
+   tutorial-kw-97-simulation.ipynb

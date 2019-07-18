@@ -1,6 +1,5 @@
 name: respy
 channels:
-  - numba
   - defaults
   - conda-forge
   - janosg
@@ -28,5 +27,5 @@ dependencies:
   - sphinx-autobuild
   - tox-conda
   - pip:
-    - notifiers
+    - apprise
     - pre-commit

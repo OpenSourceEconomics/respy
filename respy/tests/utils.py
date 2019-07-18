@@ -6,7 +6,7 @@ from respy.tests.random_model import generate_random_model
 
 def process_model_or_seed(model_or_seed, **kwargs):
     if isinstance(model_or_seed, str):
-        params, options = get_example_model(model_or_seed)
+        params, options, _ = get_example_model(model_or_seed)
     else:
         np.random.seed(model_or_seed)
         params, options = generate_random_model(**kwargs)

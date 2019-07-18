@@ -15,7 +15,6 @@ import sys
 import pytest
 
 from respy.config import ROOT_DIR
-from respy.data import get_example_data  # noqa: F401
 from respy.likelihood import get_crit_func  # noqa: F401
 from respy.shared import get_example_model  # noqa: F401
 from respy.simulate import simulate  # noqa: F401
