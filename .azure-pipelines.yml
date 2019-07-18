@@ -13,7 +13,7 @@ jobs:
         python.version: "3.7"
 
   steps:
-  - bash: echo "##vso[task.prependpath]$CONDA/condabin"
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH.
 
   - bash: conda update conda --yes --quiet
@@ -23,7 +23,7 @@ jobs:
     displayName: Create Anaconda environment.
 
   - bash: |
-      conda activate respy
+      source activate respy
       tox
 
 - job:
@@ -38,17 +38,21 @@ jobs:
         python.version: "3.7"
 
   steps:
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\condabin"
+  - powershell: |
+      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+      Write-Host "##vso[task.prependpath]$env:CONDA\condabin"
     displayName: Add conda to PATH.
 
   - powershell: conda update conda --yes --quiet
     displayName: Update conda.
 
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION numpy mkl tox-conda -c defaults -c conda-forge
+  - powershell: |
+
+      conda create --yes --quiet --name respy python=$env:PYTHON_VERSION numpy mkl tox-conda -c defaults -c conda-forge
     displayName: Create Anaconda environment.
 
   - script: |
-      conda activate respy
+      call activate respy
       tox -e pytest
 
 - job:
@@ -63,7 +67,7 @@ jobs:
         python.version: "3.7"
 
   steps:
-  - bash: echo "##vso[task.prependpath]$CONDA/condabin"
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH
 
   # On Hosted macOS, the agent user doesn't have ownership of Miniconda's installation
@@ -76,5 +80,5 @@ jobs:
     displayName: Create Anaconda environment
 
   - bash: |
-      conda activate respy
+      source activate respy
       tox -e pytest
