@@ -1,15 +1,17 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 import yaml
 from numba import guvectorize
 from numba import njit
 from numba import vectorize
-import warnings
+
+import respy.data as rp_data
 from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import TEST_RESOURCES_DIR
-import respy.data as rp_data
 
 
 @njit

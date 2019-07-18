@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from respy.config import TEST_RESOURCES_DIR
 import respy.shared as rp_shared
+from respy.config import TEST_RESOURCES_DIR
 
 
 def _create_working_experience(df, options):

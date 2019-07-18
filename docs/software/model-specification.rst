@@ -23,8 +23,8 @@ value. ``fixed`` indicates whether the parameter is held constant during optimiz
 in conjunction with a constrained optimizer. In this example the discount factor is
 bounded between 0.7 and 1.0. ``comment`` contains a short description of the parameter.
 
-.. csv-table:: kw_data_one_types_initial.csv
-    :file: ../../respy/tests/resources/kw_data_one_types_initial.csv
+.. csv-table:: kw_94_one_types_initial.csv
+    :file: ../../respy/tests/resources/kw_94_one_types_initial.csv
     :header-rows: 1
 
 In alignment to Keane and Wolpin (1994), the error terms of the model are set to follow
@@ -62,9 +62,9 @@ Options specification
 In addition to the model parameters, other model options are kept in another
 specification file in the ``yaml`` format.
 
-.. literalinclude:: ../../respy/tests/resources/kw_data_one_types_initial.yaml
+.. literalinclude:: ../../respy/tests/resources/kw_94_one_types_initial.yaml
     :language: yaml
-    :name: kw_data_one_types_initial.yaml
+    :name: kw_94_one_types_initial.yaml
 
 Covariates, state space filters and inadmissible states
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

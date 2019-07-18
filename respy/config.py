@@ -100,8 +100,7 @@ DEFAULT_OPTIONS = {
 }
 
 KEANE_WOLPIN_1994_MODELS = [
-    f"kw_94_{suffix}"
-    for suffix in ["one", "one_initial", "one_types", "two", "three"]
+    f"kw_94_{suffix}" for suffix in ["one", "one_initial", "one_types", "two", "three"]
 ] + ["kw_94_reliability_short"]
 
 KEANE_WOLPIN_1997_MODELS = ["kw_97_base", "kw_97_extended"]
