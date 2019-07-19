@@ -26,7 +26,7 @@ def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
         ]
         template = pd.concat(to_concat, axis=0, sort=False)
     if initialize_coeffs is False:
-        template["para"] = np.nan
+        template["value"] = np.nan
 
     return template
 
@@ -80,6 +80,6 @@ def _type_shift_template(n_types):
 
 def _base_row(index_tuple, data):
     ind = pd.MultiIndex.from_tuples([index_tuple], names=["category", "name"])
-    cols = ["para", "fixed", "lower", "upper", "comment"]
+    cols = ["value", "fixed", "lower", "upper", "comment"]
     df = pd.DataFrame(index=ind, columns=cols, data=[data])
     return df

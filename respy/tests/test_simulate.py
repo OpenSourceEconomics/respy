@@ -58,7 +58,7 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
     likelihood = crit_func(params)
 
     # Get simulated data and likelihood for model with tiny delta.
-    params.loc["delta", "para"] = 1e-12
+    params.loc["delta", "value"] = 1e-12
 
     state_space_, df_ = rp.simulate(params, options)
 

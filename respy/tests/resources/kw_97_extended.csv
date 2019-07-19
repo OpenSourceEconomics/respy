@@ -1,4 +1,4 @@
-category,name,para,lower,upper,comment
+category,name,value,lower,upper,comment
 delta,delta,0.9363,0,1,discount factor
 wage_a,constant,8.937,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_a,exp_edu,0.07,,,linear return to an additional year of schooling (wage)

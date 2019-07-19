@@ -1,4 +1,4 @@
-category,name,para,fixed,lower,upper,comment,old_category,old_name
+category,name,value,fixed,lower,upper,comment,old_category,old_name
 delta,delta,0.9363,FALSE,0,1,discount factor,delta,delta
 wage_a,constant,8.937,FALSE,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage),coeffs_a,skill_price
 wage_a,exp_edu,0.07,FALSE,,,linear return to an additional year of schooling (wage),coeffs_a,return_schooling
@@ -35,8 +35,6 @@ nonpec_b,not_any_exp_b,-494,FALSE,,,reward of working in a for the first time (n
 nonpec_b,hs_graduate,804,FALSE,,,return to high school degree (non pecuniary),coeffs_common,return_hs_degree
 nonpec_b,co_graduate,2005,FALSE,,,return to college degree (non pecuniary),coeffs_common,return_col_degree
 nonpec_edu,constant,11031,FALSE,,,consumption value of school attendance for type 1,coeffs_edu,constant
-nonpec_edu,hs_graduate,804,FALSE,,,consumption value of college,coeffs_edu,value_col
-nonpec_edu,co_graduate,2005,FALSE,,,consumption value of graduate school,coeffs_edu,value_grad
 nonpec_edu,is_return_not_high_school,-10700,FALSE,,,reward for going back to college,coeffs_edu,reenroll_col
 nonpec_edu,is_return_high_school,-23283,FALSE,,,reward for going back to high school,coeffs_edu,reenroll_hs
 nonpec_edu,period,-1502,FALSE,,,linear age effect,coeffs_edu,age

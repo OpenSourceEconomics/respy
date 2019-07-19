@@ -55,7 +55,7 @@ def _read_params(input_):
     if isinstance(input_, pd.DataFrame):
         if not input_.index.names == ["category", "name"]:
             input_.set_index(["category", "name"], inplace=True)
-        params = input_["para"]
+        params = input_["value"]
     elif isinstance(input_, pd.Series):
         params = input_
         assert params.index.names == [
@@ -169,7 +169,7 @@ def _parse_parameters(params):
     Parameters
     ----------
     params : pandas.DataFrame or pandas.Series
-        Contains model parameters in column ``"para"``.
+        Contains model parameters in column ``"value"``.
 
     """
     optim_paras = {}

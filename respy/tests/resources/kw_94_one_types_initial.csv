@@ -1,4 +1,4 @@
-category,name,para,fixed,lower,upper,comment
+category,name,value,fixed,lower,upper,comment
 delta,delta,0.95,False,0.7,1,discount factor
 wage_a,constant,9.21,False,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_a,exp_edu,0.038,False,,,linear return to an additional year of schooling (wage)
@@ -35,8 +35,6 @@ nonpec_b,not_any_exp_b,0,False,,,reward of working in a for the first time (non 
 nonpec_b,hs_graduate,0,False,,,return to high school degree (non pecuniary)
 nonpec_b,co_graduate,0,False,,,return to college degree (non pecuniary)
 nonpec_edu,constant,0,False,,,consumption value of school attendance for type 1
-nonpec_edu,hs_graduate,0,False,,,consumption value of college
-nonpec_edu,co_graduate,0,False,,,consumption value of graduate school
 nonpec_edu,is_return_not_high_school,-4000,False,,,reward for going back to college
 nonpec_edu,is_return_high_school,-4000,False,,,reward for going back to high school
 nonpec_edu,period,0,False,,,linear age effect
@@ -58,8 +56,8 @@ shocks,corr_edu_b,0,False,,,"Element 3,2 of cholesky factor of shock covariance 
 shocks,corr_home_a,0,False,,,"Element 4,1 of cholesky factor of shock covariance matrix"
 shocks,corr_home_b,0,False,,,"Element 4,2 of cholesky factor of shock covariance matrix"
 shocks,corr_home_edu,0,False,,,"Element 4,3 of cholesky factor of shock covariance matrix"
-meas_error,sd_a,0.001,FALSE,0,,SD of the measurement error in wages in occupation a
-meas_error,sd_b,0.001,FALSE,0,,SD of the measurement error in wages occupation b
+meas_error,sd_a,3,FALSE,0,,SD of the measurement error in wages in occupation a
+meas_error,sd_b,3,FALSE,0,,SD of the measurement error in wages occupation b
 type_shares,up_to_nine_years_edu_2,-1.6094379124,False,,,effect of up to nine years of schooling on probability of being type 2
 type_shares,at_least_ten_years_edu_2,0,False,,,effect of at least ten years of schooling on probability of being type 2
 type_shares,up_to_nine_years_edu_3,-0.2231435513,False,,,effect of up to nine years of schooling on probability of being type 3
