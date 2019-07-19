@@ -4,7 +4,7 @@
 Roadmap
 =======
 
-We aim for improvements to ``respy`` in three domains: Economics, Software Engineering,
+We aim for improvements to ``respy`` in Economics, Software Engineering,
 and Numerical Methods.
 
 Economics and Statistics
@@ -13,12 +13,6 @@ Economics and Statistics
 All topics listed here can be tackled as part of a bachelor or master thesis. If you are
 interested, please contact us!
 
-Support Keane and Wolpin (1997)
--------------------------------
-
-We want to support the full model of `Keane and Wolpin (1997)
-<https://doi.org/10.1086/262080>`_. This is almost completed. We just need to implement
-a fifth choice (the military sector).
 
 Explore Simulation Based Estimation
 -----------------------------------
@@ -26,23 +20,13 @@ Explore Simulation Based Estimation
 We want to add simulation based estimation to ``respy`` and compare the accuracy of
 parameters estimated with maximum likelihood and simulation based methods. As ``respy``
 already has the ability to simulate data, it would be very simple to implement method of
-simulated moments or indirect inference estimation.
+simulated moments or indirect inference estimation. As part of this project, we could
+also experiments with approaches that make the criterion function smooth and therefore
+allow the use of fast optimizers. A starting point could be :download:`this paper
+<../_static/thesis_proposals/smooth_simulated_moments.pdf>`
 
-Benchmark Different Optimizers
-------------------------------
 
-Explore the speed and reliability of local and global optimizers for maximum likelihood
-estimation of the model. The results should be transferable to other estimation problems
-with a noisy criterion function.
 
-Improve the Likelihood Estimation
----------------------------------
-
-We suspect that the generation of multivariate normal shocks in KW94 is flawed. We want
-to derive a numerically robust method for correct sampling from a multivariate normal
-distribution. Compare the precision of estimates with the old and new methods on
-simulated samples. This is especially interesting for students who want to deeply
-understand estimation of structural models with maximum likelihood.
 
 Estimate a model by CCP
 -----------------------
@@ -84,16 +68,34 @@ professions with salient returns, which could tilt their choices.
 For more information check out the :download:`full description
 <../_static/thesis_proposals/Salience_and_human_capital.pdf>`
 
-Software Engineering
-====================
-
-* research the `hypothesis
-  <https://github.com/HypothesisWorks/hypothesis/tree/master/hypothesis-python>`_
-  package to replace the hand-crafted property-based testing routines.
 
 Numerical Methods
 =================
 
-* link the package to optimization toolkits such as *TAO* or *HOPSPACK*
-* implement additional integration strategies following `Skrainka and Judd (2011)
-  <https://dx.doi.org/10.2139/ssrn.1870703>`_
+Improve numerical integration
+-----------------------------
+
+We use numerical integration to calculate value functions and choice probabilities
+in the maximum likelihood estimation. Currently we use a smoothed monte-carlo
+integration for both. For a thesis a student could explore how the accurracy and
+speed of the integrals changes with the following strategies:
+
+- Use a GHK simulator instead of current monte-carlo integration
+- Use gaussian quadrature for choice probabilities
+- Allow for restrictions on the correlation structure of the shocks that make it
+    possible to reduce the dimensionality of the integrals.
+
+Starting points are the following papers:
+
+
+- `Skrainka and Judd (2011) <https://dx.doi.org/10.2139/ssrn.1870703>`_
+- :download:`Dunnet (1989)<../_static/thesis_proposals/dunnet1989.pdf>`
+
+
+Benchmark Different Optimizers
+------------------------------
+
+Explore the speed and reliability of local and global optimizers for maximum likelihood
+estimation of the model. The results should be transferable to other estimation problems
+with a noisy criterion function. Most relevant optimizers should already be implemented
+in estimagic. Otherwise they can be added easily.
