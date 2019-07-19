@@ -53,9 +53,9 @@ def generate_random_model(
     params = csv_template(
         n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
     )
-    params["para"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
+    params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
-    params.loc["delta", "para"] = 1 - np.random.uniform() if myopic is False else 0.0
+    params.loc["delta", "value"] = 1 - np.random.uniform() if myopic is False else 0.0
 
     n_shock_coeffs = len(params.loc["shocks"])
     dim = number_of_triangular_elements_to_dimension(n_shock_coeffs)
@@ -64,9 +64,9 @@ def generate_random_model(
         -0.05, 0.2, size=(n_shock_coeffs - dim)
     )
     cov = helper.dot(helper.T)
-    params.loc["shocks", "para"] = cov_matrix_to_sdcorr_params(cov)
+    params.loc["shocks", "value"] = cov_matrix_to_sdcorr_params(cov)
 
-    params.loc["meas_error", "para"] = np.random.uniform(
+    params.loc["meas_error", "value"] = np.random.uniform(
         low=0.001, high=0.1, size=len(params.loc["meas_error"])
     )
 
