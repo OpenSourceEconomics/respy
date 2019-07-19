@@ -71,8 +71,8 @@ def _type_shift_template(n_types):
     to_concat = []
     for type_ in range(2, n_types + 1):
         for choice in ["a", "b", "edu", "home"]:
-            ind = ("type_shift", "type_{}_in_{}".format(type_, choice))
-            comment = "deviation for type {} from type 1 in {}".format(type_, choice)
+            ind = ("type_shift", f"type_{type_}_in_{choice}")
+            comment = f"deviation for type {type_} from type 1 in {choice}"
             dat = [0, False, np.nan, np.nan, comment]
             to_concat.append(_base_row(index_tuple=ind, data=dat))
     return pd.concat(to_concat, axis=0, sort=False)
