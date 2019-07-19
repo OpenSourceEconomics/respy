@@ -9,7 +9,6 @@ from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import generate_column_labels_simulation
 from respy.shared import predict_multinomial_logit
-from respy.shared import random_choice
 from respy.shared import transform_disturbances
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -206,7 +205,7 @@ def _get_random_types(states, optim_paras, options):
         np.random.seed(options["simulation_seed"])
 
         probs = predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
-        types = random_choice(options["n_types"], probs)
+        types = _random_choice(options["n_types"], probs)
 
     return types
 
@@ -337,3 +336,52 @@ def _process_simulated_data(data, options):
     df = _convert_choice_variables_from_codes_to_categorical(df, options)
 
     return df
+
+
+def _random_choice(choices, probabilities):
+    """Return elements of choices for a two-dimensional array of probabilities.
+
+    It is assumed that probabilities are ordered (n_samples, n_choices).
+
+    The function is taken from this `StackOverflow post
+    <https://stackoverflow.com/questions/40474436>`_ as a workaround for
+    :func:`np.random.choice` as it can only handle one-dimensional probabilities.
+
+    Example
+    -------
+    Here is an example with non-zero probabilities.
+
+    >>> n_samples = 100_000
+    >>> choices = np.array([0, 1, 2])
+    >>> p = np.array([0.15, 0.35, 0.5])
+    >>> ps = np.tile(p, (n_samples, 1))
+    >>> choices = _random_choice(choices, ps)
+    >>> np.round(np.bincount(choices), decimals=-3) / n_samples
+    array([0.15, 0.35, 0.5 ])
+
+    Here is an example where one choice has probability zero.
+
+    >>> p = np.array([0.4, 0, 0.6])
+    >>> ps = np.tile(p, (n_samples, 1))
+    >>> choices = _random_choice(choices, ps)
+    >>> np.round(np.bincount(choices), decimals=-3) / n_samples
+    array([0.4, 0. , 0.6])
+    >>> assert np.bincount(choices)[1] == 0
+
+    """
+    cumulative_distribution = probabilities.cumsum(axis=1)
+    # Probabilities often do not sum to one but 0.99999999999999999.
+    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], 15)
+
+    if not (cumulative_distribution[:, -1] == 1).all():
+        raise ValueError("Probabilities do not sum to one.")
+
+    u = np.random.rand(cumulative_distribution.shape[0], 1)
+
+    # Note that :func:`np.argmax` returns the first index for multiple maximum values.
+    indices = (u < cumulative_distribution).argmax(axis=1)
+
+    if isinstance(choices, int):
+        choices = np.arange(choices)
+
+    return choices[indices]

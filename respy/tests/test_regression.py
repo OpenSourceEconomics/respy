@@ -1,7 +1,7 @@
 """Run a few regression tests."""
 import pytest
 
-from development.testing.regression.run_regression import check_single
+from development.testing.regression import check_single
 
 
 @pytest.mark.parametrize("index", range(10))

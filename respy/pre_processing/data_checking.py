@@ -17,7 +17,7 @@ def check_estimation_data(df, options):
         If data has not the expected format.
 
     """
-    df = df.copy()
+    df = df.reset_index()
     choices = options["choices"]
 
     n_periods = options["n_periods"]

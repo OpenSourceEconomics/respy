@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "respy"
-copyright = "2015-2019, Philipp Eisenhauer"
+copyright = "2015-2019, Philipp Eisenhauer"  # noqa: A001
 author = "Philipp Eisenhauer"
 
 # The short X.Y version.

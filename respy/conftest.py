@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from development.testing.regression.run_regression import load_regression_tests
+from development.testing.regression import load_regression_tests
 
 
 @pytest.fixture(scope="function", autouse=True)

@@ -1,9 +1,7 @@
 import datetime as dt
 import json
 import os
-import shutil
 import sys
-from pathlib import Path
 
 
 def main():
@@ -35,18 +33,7 @@ def main():
     import respy as rp
 
     # Get model
-    options, params = rp.get_example_model(model)
-
-    # Adjust options
-    options["estimation"]["maxfun"] = 0
-
-    # Go into temporary folder
-    folder = f"__{n_threads}"
-    if Path(folder).exists():
-        shutil.rmtree(folder)
-
-    Path(folder).mkdir()
-    os.chdir(folder)
+    options, params, _ = rp.get_example_model(model)
 
     # Simulate the data
     state_space, simulated_data = rp.simulate(params, options)
@@ -55,15 +42,12 @@ def main():
     crit_func = rp.get_crit_func(params, options, simulated_data)
 
     # Run the estimation
-    print(f"Start. Model: {model}, Maxfun: {maxfun}, Threads: {n_threads}.")
     start = dt.datetime.now()
 
     for _ in range(maxfun):
         crit_func(params)
 
     end = dt.datetime.now()
-
-    print(f"End. Duration: {end - start} seconds.")
 
     # Aggregate information
     output = {
@@ -74,10 +58,6 @@ def main():
         "end": str(end),
         "duration": str(end - start),
     }
-
-    # Step out of temp folder and delete it
-    os.chdir("..")
-    shutil.rmtree(folder)
 
     # Save time to file
     with open("scalability_results.txt", "a+") as file:
