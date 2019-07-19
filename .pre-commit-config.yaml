@@ -5,6 +5,11 @@ repos:
     -   id: check-yaml
     -   id: check-merge-conflict
     -   id: debug-statements
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v1.21.0
+    hooks:
+    -   id: pyupgrade
+        args: [--py36-plus]
 -   repo: https://github.com/asottile/reorder_python_imports
     rev: v1.4.0
     hooks:
