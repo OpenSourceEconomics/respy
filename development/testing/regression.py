@@ -130,7 +130,7 @@ def check_single(test, strict=False):
     # the negative sign is because before using estimagic we
     # returned the negative log likelihood and I did not want to make
     # new regression test.
-    is_success = np.isclose(est_val, - exp_val, rtol=TOL, atol=TOL)
+    is_success = np.isclose(est_val, -exp_val, rtol=TOL, atol=TOL)
 
     if strict is True:
         assert is_success, "Failed regression test."
