@@ -103,7 +103,7 @@ def log_like(params, data, base_draws_est, state_space, type_covariates, options
         state_space, data, base_draws_est, type_covariates, optim_paras, options
     )
 
-    crit_val = -np.mean(contribs)
+    crit_val = np.mean(contribs)
 
     return crit_val
 

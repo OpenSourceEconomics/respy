@@ -10,7 +10,7 @@ dependencies:
   - click
   - codecov
   - doc8
-  - estimagic>=0.0.6
+  - estimagic>=0.0.9
   - jupyterlab
   - matplotlib>=3.0.0
   - mkl
