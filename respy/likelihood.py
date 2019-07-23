@@ -1,3 +1,4 @@
+import warnings
 from functools import partial
 
 import numpy as np
@@ -45,6 +46,8 @@ def get_crit_func(params, options, df):
 
     """
     params, optim_paras, options = process_params_and_options(params, options)
+
+    options = _adjust_options(options, df)
 
     check_estimation_data(df, options)
 
@@ -346,3 +349,34 @@ def _process_estimation_data(df, options):
     df = _convert_choice_variables_from_categorical_to_codes(df, options)
 
     return df
+
+
+def _adjust_options(options, df):
+    for choice in options["choices_w_exp"]:
+        init_exp_data = np.sort(
+            df.loc[df.Period.eq(0), f"Experience_{choice.title()}"].unique()
+        )
+        init_exp_options = options["choices"][choice]["start"]
+        if not (init_exp_data == init_exp_options).all():
+            warnings.warn(
+                f"The initial experience for choice '{choice}' differ between data, "
+                f"{init_exp_data}, and options, {init_exp_options}. The options are "
+                "adjusted.",
+                category=UserWarning,
+            )
+            options["choices"][choice]["start"] = init_exp_data
+            options["choices"][choice].pop("share")
+            options["choices"][choice].pop("lagged")
+
+        max_exp_data = df[f"Experience_{choice.title()}"].max()
+        max_exp_options = options["choices"][choice]["max"]
+        if not max_exp_data == max_exp_options:
+            warnings.warn(
+                f"The maximum experience for choice '{choice}' differ between data, "
+                f"{max_exp_data}, and options, {max_exp_options}. The options are "
+                "adjusted.",
+                category=UserWarning,
+            )
+            options["choices"][choice]["max"] = max_exp_data
+
+    return options

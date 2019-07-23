@@ -10,9 +10,13 @@ def _create_working_experience(df, options):
         df[f"Experience_{choice.title()}"] = df.Choice.eq(choice)
         df[f"Experience_{choice.title()}"] = (
             df.groupby("Identifier")[f"Experience_{choice.title()}"]
-            .cumsum()
+            .shift()
+            .fillna(0)
             .astype(np.uint8)
         )
+        df[f"Experience_{choice.title()}"] = df.groupby("Identifier")[
+            f"Experience_{choice.title()}"
+        ].cumsum()
 
     return df
 
