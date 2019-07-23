@@ -73,7 +73,7 @@ def slow_kalman_update(states, root_covs, measurements, loadings, meas_sd):
     kalman_gains = r[:, 0, 1:] / root_sigmas.reshape(nobs, 1)
     states[:] += kalman_gains * residuals.reshape(nobs, 1)
 
-    probs = norm.pdf(residuals, scale=np.abs(r[:, 0, 0]))
+    probs = norm.logpdf(residuals, scale=np.abs(r[:, 0, 0]))
 
     return states, root_covs, probs
 

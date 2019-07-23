@@ -258,7 +258,7 @@ def log_like_obs(
     choices = choices.repeat(n_types)
     periods = state_space.states[ks, 0].flatten()
 
-    draws, prob_wages = create_draws_and_prob_wages(
+    draws, log_prob_wages = create_draws_and_prob_wages(
         log_wages_observed,
         wages_systematic,
         base_draws_est,
@@ -282,7 +282,7 @@ def log_like_obs(
         options["estimation_tau"],
     )
 
-    log_prob_wages = np.log(prob_wages).reshape(n_obs, n_types)
+    log_prob_wages = log_prob_wages.reshape(n_obs, n_types)
     log_prob_choices = np.log(prob_choices)
 
     log_prob_obs = log_prob_wages + log_prob_choices
@@ -371,7 +371,7 @@ def old_log_like_obs(
     choices = choices.repeat(n_types)
     periods = state_space.states[ks, 0].flatten()
 
-    draws, prob_wages = create_draws_and_prob_wages(
+    draws, log_prob_wages = create_draws_and_prob_wages(
         log_wages_observed,
         wages_systematic,
         base_draws_est,
@@ -394,6 +394,8 @@ def old_log_like_obs(
         choices.reshape(-1, n_types),
         options["estimation_tau"],
     )
+
+    prob_wages = np.exp(log_prob_wages)
 
     prob_obs = prob_choices * prob_wages.reshape(n_obs, -1)
 
