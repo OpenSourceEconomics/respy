@@ -207,6 +207,120 @@ def log_like_obs(
     """Calculate the likelihood contribution of each individual in the sample.
 
     The function calculates all likelihood contributions for all observations in the
+    data which means all individual-period-type combinations.
+
+    Then, likelihoods are accumulated within each individual and type over all periods.
+    After that, the result is multiplied with the type-specific shares which yields the
+    contribution to the likelihood for each individual.
+
+    Parameters
+    ----------
+    state_space : :class:`~respy.state_space.StateSpace`
+        Class of state space.
+    df : pandas.DataFrame
+        DataFrame with the empirical dataset.
+    base_draws_est : numpy.ndarray
+        Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
+        standard normal distributions.
+    optim_paras : dict
+        Dictionary with quantities that were extracted from the parameter vector.
+    options : dict
+
+    Returns
+    -------
+    contribs : numpy.ndarray
+        Array with shape (n_individuals,) containing contributions of individuals in the
+        empirical data.
+
+    """
+    # Convert data to NumPy arrays.
+    periods = df.period.to_numpy()
+    lagged_choices = df.lagged_choice.to_numpy()
+    choices = df.choice.to_numpy()
+    experiences = tuple(df[col].to_numpy() for col in df.filter(like="exp_").columns)
+    wages_observed = df.wage.to_numpy()
+
+    # Get the number of observations for each individual and an array with indices of
+    # each individual's first observation. After that, extract initial education levels
+    # per agent which are important for type-specific probabilities.
+    n_obs_per_indiv = np.bincount(df.identifier.to_numpy())
+    idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
+
+    # Get indices of states in the state space corresponding to all observations for all
+    # types. The indexer has the shape (n_obs, n_types).
+    ks = state_space.indexer[(periods,) + experiences + (lagged_choices,)]
+    n_obs, n_types = ks.shape
+
+    wages_observed = wages_observed.repeat(n_types)
+    log_wages_observed = np.clip(np.log(wages_observed), -HUGE_FLOAT, HUGE_FLOAT)
+    wages_systematic = state_space.wages[ks].reshape(n_obs * n_types, -1)
+    n_choices = wages_systematic.shape[1]
+    choices = choices.repeat(n_types)
+    periods = state_space.states[ks, 0].flatten()
+
+    draws, prob_wages = create_draws_and_prob_wages(
+        log_wages_observed,
+        wages_systematic,
+        base_draws_est,
+        choices,
+        optim_paras["shocks_cholesky"],
+        optim_paras["meas_error"],
+        periods,
+        len(options["choices_w_wage"]),
+    )
+
+    draws = draws.reshape(n_obs, n_types, -1, n_choices)
+
+    prob_choices = simulate_probability_of_individuals_observed_choice(
+        state_space.wages[ks],
+        state_space.nonpec[ks],
+        state_space.continuation_values[ks],
+        draws,
+        optim_paras["delta"],
+        state_space.is_inadmissible[ks],
+        choices.reshape(-1, n_types),
+        options["estimation_tau"],
+    )
+
+    log_prob_wages = np.log(prob_wages).reshape(n_obs, n_types)
+    log_prob_choices = np.log(prob_choices)
+
+    log_prob_obs = log_prob_wages + log_prob_choices
+
+    # accumulate the log likelihood of observations for each individual-type combination
+    log_prob_type = np.add.reduceat(log_prob_obs, idx_indiv_first_obs)
+
+    if n_types >= 2:
+        type_probabilities = predict_multinomial_logit(
+            optim_paras["type_prob"], type_covariates
+        )
+        log_type_probabilities = np.log(type_probabilities)
+        weighted_log_prob_type = log_prob_type + log_type_probabilities
+
+        # The following is equivalent to:
+        # writing contribs = np.log(np.exp(weighted_log_prob_type).sum(axis=1))
+        # but avoids overflows and underflows
+
+        minimal_m = -700 - weighted_log_prob_type.min(axis=1)
+        maximal_m = 700 - weighted_log_prob_type.max(axis=1)
+        valid = minimal_m <= maximal_m
+        m = np.where(valid, (minimal_m + maximal_m) / 2, np.nan).reshape(-1, 1)
+        contribs = np.log(np.exp(weighted_log_prob_type + m).sum(axis=1)) - m
+        contribs[~valid] = -HUGE_FLOAT
+    else:
+        contribs = log_prob_type.flatten()
+
+    contribs = np.clip(contribs, -HUGE_FLOAT, HUGE_FLOAT)
+
+    return contribs
+
+
+def old_log_like_obs(
+    state_space, df, base_draws_est, type_covariates, optim_paras, options
+):
+    """Calculate the likelihood contribution of each individual in the sample.
+
+    The function calculates all likelihood contributions for all observations in the
     data which means all individual-period-type combinations. Then, likelihoods are
     accumulated within each individual and type over all periods. After that, the result
     is multiplied with the type-specific shares which yields the contribution to the
