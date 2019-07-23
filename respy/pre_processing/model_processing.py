@@ -1,4 +1,5 @@
 """Process model specification files or objects."""
+import copy
 import re
 import warnings
 from pathlib import Path
@@ -18,11 +19,6 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 def process_params_and_options(params, options):
     params, optim_paras = _process_params(params)
 
-    options["n_types"] = optim_paras["type_shift"].shape[0]
-    if options["n_types"] > 1:
-        options["type_covariates"] = sorted(
-            params.loc["type_2"].index.get_level_values(0)
-        )
     extended_options = _process_options(options, params)
 
     validate_params(params, extended_options)
@@ -40,6 +36,12 @@ def _process_params(params):
 
 def _process_options(options, params):
     options = _read_options(options)
+
+    options["n_types"] = len(infer_types(params)) + 1
+    if options["n_types"] > 1:
+        options["type_covariates"] = sorted(
+            params.loc["type_2"].index.get_level_values(0)
+        )
 
     extended_options = {**DEFAULT_OPTIONS, **options}
     extended_options = _order_choices(extended_options, params)
@@ -79,7 +81,7 @@ def _read_options(input_):
             else:
                 raise NotImplementedError(f"Format {input_.suffix} is not supported.")
     else:
-        options = input_
+        options = copy.deepcopy(input_)
 
     return options
 
