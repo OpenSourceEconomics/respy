@@ -18,10 +18,18 @@ from respy.state_space import create_base_covariates
 from respy.state_space import StateSpace
 
 
-def get_crit_func(params, options, df):
+def get_crit_func(params, options, df, version="log_like"):
     """Get the criterion function.
 
-    The return value is the :func:`log_like` where all arguments except the parameter
+    The return value is one of the likelihood functions in respy where all arguments
+    except the parameter vetcor are fixed with :func:`functools.partial`. Thus the
+    function can be directly passed into an optimizer or a function for taking
+    numerical derivatives.
+
+    By default we return the :func*`log_like`. Other versions can be requested via
+    the version argument.
+
+    the :func:`log_like` where all arguments except the parameter
     vector are fixed with :func:`functools.partial`. Thus, the function can be passed
     directly into any optimization algorithm.
 
@@ -33,6 +41,8 @@ def get_crit_func(params, options, df):
         Dictionary containing model options.
     df : pandas.DataFrame
         The model is fit to this dataset.
+    version : str
+        Can take the values "log_like"(default)
 
     Returns
     -------
@@ -66,14 +76,21 @@ def get_crit_func(params, options, df):
         create_type_covariates(states, options) if options["n_types"] > 1 else None
     )
 
+    if version == "log_like":
+        unpartialed = log_like
+    else:
+        raise ValueError("version has to be 'log_like'.")
+
     criterion_function = partial(
-        log_like,
+        unpartialed,
         data=df,
         base_draws_est=base_draws_est,
         state_space=state_space,
         type_covariates=type_covariates,
         options=options,
     )
+
+    criterion_function.__name__ = version
     return criterion_function
 
 
@@ -289,7 +306,6 @@ def log_like_obs(
 
     # accumulate the log likelihood of observations for each individual-type combination
     log_prob_type = np.add.reduceat(log_prob_obs, idx_indiv_first_obs)
-
     if n_types >= 2:
         type_probabilities = predict_multinomial_logit(
             optim_paras["type_prob"], type_covariates
@@ -311,111 +327,6 @@ def log_like_obs(
         contribs = log_prob_type.flatten()
 
     contribs = np.clip(contribs, -HUGE_FLOAT, HUGE_FLOAT)
-
-    return contribs
-
-
-def old_log_like_obs(
-    state_space, df, base_draws_est, type_covariates, optim_paras, options
-):
-    """Calculate the likelihood contribution of each individual in the sample.
-
-    The function calculates all likelihood contributions for all observations in the
-    data which means all individual-period-type combinations. Then, likelihoods are
-    accumulated within each individual and type over all periods. After that, the result
-    is multiplied with the type-specific shares which yields the contribution to the
-    likelihood for each individual.
-
-    Parameters
-    ----------
-    state_space : :class:`~respy.state_space.StateSpace`
-        Class of state space.
-    df : pandas.DataFrame
-        DataFrame with the empirical dataset.
-    base_draws_est : numpy.ndarray
-        Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
-        standard normal distributions.
-    optim_paras : dict
-        Dictionary with quantities that were extracted from the parameter vector.
-    options : dict
-
-    Returns
-    -------
-    contribs : numpy.ndarray
-        Array with shape (n_individuals,) containing contributions of individuals in the
-        empirical data.
-
-    """
-    # Convert data to NumPy arrays.
-    periods = df.period.to_numpy()
-    lagged_choices = df.lagged_choice.to_numpy()
-    choices = df.choice.to_numpy()
-    experiences = tuple(df[col].to_numpy() for col in df.filter(like="exp_").columns)
-    wages_observed = df.wage.to_numpy()
-
-    # Get the number of observations for each individual and an array with indices of
-    # each individual's first observation. After that, extract initial education levels
-    # per agent which are important for type-specific probabilities.
-    n_obs_per_indiv = np.bincount(df.identifier.to_numpy())
-    idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
-
-    # Get indices of states in the state space corresponding to all observations for all
-    # types. The indexer has the shape (n_obs, n_types).
-    ks = state_space.indexer[(periods,) + experiences + (lagged_choices,)]
-    n_obs, n_types = ks.shape
-
-    wages_observed = wages_observed.repeat(n_types)
-    log_wages_observed = np.clip(np.log(wages_observed), -HUGE_FLOAT, HUGE_FLOAT)
-    wages_systematic = state_space.wages[ks].reshape(n_obs * n_types, -1)
-    n_choices = wages_systematic.shape[1]
-    choices = choices.repeat(n_types)
-    periods = state_space.states[ks, 0].flatten()
-
-    draws, log_prob_wages = create_draws_and_prob_wages(
-        log_wages_observed,
-        wages_systematic,
-        base_draws_est,
-        choices,
-        optim_paras["shocks_cholesky"],
-        optim_paras["meas_error"],
-        periods,
-        len(options["choices_w_wage"]),
-    )
-
-    draws = draws.reshape(n_obs, n_types, -1, n_choices)
-
-    prob_choices = simulate_probability_of_individuals_observed_choice(
-        state_space.wages[ks],
-        state_space.nonpec[ks],
-        state_space.continuation_values[ks],
-        draws,
-        optim_paras["delta"],
-        state_space.is_inadmissible[ks],
-        choices.reshape(-1, n_types),
-        options["estimation_tau"],
-    )
-
-    prob_wages = np.exp(log_prob_wages)
-
-    prob_obs = prob_choices * prob_wages.reshape(n_obs, -1)
-
-    # Accumulate the likelihood of observations for each individual-type combination
-    # over all periods.
-    prob_type = np.multiply.reduceat(prob_obs, idx_indiv_first_obs)
-
-    # Calculate the probabilities for all types based on an individual's initial
-    # characteristics.
-    type_probabilities = (
-        predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
-        if n_types > 1
-        else 1
-    )
-
-    # Multiply each individual-type contribution with its type-specific shares and sum
-    # over types to get the likelihood contribution for each individual.
-    contribs = (prob_type * type_probabilities).sum(axis=1)
-
-    contribs = np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT)
 
     return contribs
 
