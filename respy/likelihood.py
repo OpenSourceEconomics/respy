@@ -158,7 +158,7 @@ def log_like_obs(params, data, base_draws_est, state_space, type_covariates, opt
     nopython=True,
     target="parallel",
 )
-def simulate_probability_of_individuals_observed_choice(
+def simulate_log_probability_of_individuals_observed_choice(
     wages,
     nonpec,
     continuation_values,
@@ -167,7 +167,7 @@ def simulate_probability_of_individuals_observed_choice(
     is_inadmissible,
     choice,
     tau,
-    prob_choice,
+    log_prob_choice,
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -197,15 +197,15 @@ def simulate_probability_of_individuals_observed_choice(
 
     Returns
     -------
-    prob_choice : float
-        Smoothed probability of choice.
+    log_prob_choice : float
+        Smoothed log probability of choice.
 
     """
     n_draws, n_choices = draws.shape
 
     value_functions = np.zeros((n_choices, n_draws))
 
-    prob_choice[0] = 0.0
+    prob_choice = 0.0
 
     for i in range(n_draws):
 
@@ -236,9 +236,11 @@ def simulate_probability_of_individuals_observed_choice(
             value_functions[j, i] = val_clipped
             sum_smooth_values += val_clipped
 
-        prob_choice[0] += value_functions[choice, i] / sum_smooth_values
+        prob_choice += value_functions[choice, i] / sum_smooth_values
 
-    prob_choice[0] /= n_draws
+    prob_choice /= n_draws
+
+    log_prob_choice[0] = np.log(prob_choice)
 
 
 def _internal_log_like_obs(
@@ -311,7 +313,7 @@ def _internal_log_like_obs(
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
 
-    prob_choices = simulate_probability_of_individuals_observed_choice(
+    log_prob_choices = simulate_log_probability_of_individuals_observed_choice(
         state_space.wages[ks],
         state_space.nonpec[ks],
         state_space.continuation_values[ks],
@@ -323,7 +325,6 @@ def _internal_log_like_obs(
     )
 
     log_prob_wages = log_prob_wages.reshape(n_obs, n_types)
-    log_prob_choices = np.log(prob_choices)
 
     log_prob_obs = log_prob_wages + log_prob_choices
 
