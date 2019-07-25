@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from numba import guvectorize
 
-from respy.conditional_draws import create_draws_and_prob_wages
+from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
@@ -300,7 +300,7 @@ def _internal_log_like_obs(
     choices = choices.repeat(n_types)
     periods = state_space.states[ks, 0].flatten()
 
-    draws, log_prob_wages = create_draws_and_prob_wages(
+    draws, log_prob_wages = create_draws_and_log_prob_wages(
         log_wages_observed,
         wages_systematic,
         base_draws_est,

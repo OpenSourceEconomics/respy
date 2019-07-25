@@ -4,7 +4,7 @@ from numba import guvectorize
 from respy.config import HUGE_FLOAT
 
 
-def create_draws_and_prob_wages(
+def create_draws_and_log_prob_wages(
     log_wages_observed,
     wages_systematic,
     base_draws,
@@ -53,8 +53,8 @@ def create_draws_and_prob_wages(
         Array with shape (n_obs * n_types, n_draws, n_choices) containing shocks drawn
         from a multivariate normal distribution conditional on the observed wages.
     log_prob_wages : numpy.ndarray
-        Array with shape (n_obs * n_types,) containing the unconditional likelihood of
-        the observed wages, correcting for measurement error.
+        Array with shape (n_obs * n_types,) containing the unconditional log likelihood
+        of the observed wages, correcting for measurement error.
 
     """
     choices = choices.astype(np.uint16)
