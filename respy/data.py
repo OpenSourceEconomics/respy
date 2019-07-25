@@ -90,4 +90,7 @@ def create_kw_94():
 
     df = df.reset_index(drop=True).loc[:, labels]
 
+    # reset the Identifier such that it starts at 0 and always increments by 1
+    df["Identifier"] = pd.Categorical(df["Identifier"]).codes
+
     return df

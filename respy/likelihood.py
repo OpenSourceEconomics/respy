@@ -22,17 +22,13 @@ from respy.state_space import StateSpace
 def get_crit_func(params, options, df, version="log_like"):
     """Get the criterion function.
 
-    The return value is one of the likelihood functions in respy where all arguments
-    except the parameter vetcor are fixed with :func:`functools.partial`. Thus the
+    Return v version of the likelihood functions in respy where all arguments
+    except the parameter vector are fixed with :func:`functools.partial`. Thus the
     function can be directly passed into an optimizer or a function for taking
     numerical derivatives.
 
     By default we return the :func*`log_like`. Other versions can be requested via
     the version argument.
-
-    the :func:`log_like` where all arguments except the parameter
-    vector are fixed with :func:`functools.partial`. Thus, the function can be passed
-    directly into any optimization algorithm.
 
     Parameters
     ----------
@@ -79,8 +75,10 @@ def get_crit_func(params, options, df, version="log_like"):
 
     if version == "log_like":
         unpartialed = log_like
+    elif version == "log_like_obs":
+        unpartialed = log_like_obs
     else:
-        raise ValueError("version has to be 'log_like'.")
+        raise ValueError("version has to be 'log_like' or 'log_like_obs'.")
 
     criterion_function = partial(
         unpartialed,
@@ -91,11 +89,37 @@ def get_crit_func(params, options, df, version="log_like"):
         options=options,
     )
 
+    # this will be relevant for estimagic topography plots
     criterion_function.__name__ = version
     return criterion_function
 
 
 def log_like(params, data, base_draws_est, state_space, type_covariates, options):
+    """Criterion function for the likelihood maximization.
+
+    This function calculates the average likelihood contribution of the sample.
+
+    Parameters
+    ----------
+    params : pandas.Series
+        Parameter Series
+    data : pandas.DataFrame
+        The log likelihood is calculated for this data.
+    base_draws_est : numpy.ndarray
+        Set of draws to calculate the probability of observed wages.
+    state_space : :class:`~respy.state_space.StateSpace`
+        State space.
+    options : dict
+        Contains model options.
+
+    """
+    contribs = log_like_obs(
+        params, data, base_draws_est, state_space, type_covariates, options
+    )
+    return contribs.mean()
+
+
+def log_like_obs(params, data, base_draws_est, state_space, type_covariates, options):
     """Criterion function for the likelihood maximization.
 
     This function calculates the average likelihood contribution of the sample.
@@ -120,13 +144,11 @@ def log_like(params, data, base_draws_est, state_space, type_covariates, options
 
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
-    contribs = log_like_obs(
+    contribs = _internal_log_like_obs(
         state_space, data, base_draws_est, type_covariates, optim_paras, options
     )
 
-    crit_val = np.mean(contribs)
-
-    return crit_val
+    return contribs
 
 
 @guvectorize(
@@ -219,7 +241,7 @@ def simulate_probability_of_individuals_observed_choice(
     prob_choice[0] /= n_draws
 
 
-def log_like_obs(
+def _internal_log_like_obs(
     state_space, df, base_draws_est, type_covariates, optim_paras, options
 ):
     """Calculate the likelihood contribution of each individual in the sample.
