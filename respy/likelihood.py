@@ -12,6 +12,7 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import clip
 from respy.shared import create_base_draws
+from respy.shared import downcast_to_smallest_dtype
 from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
 from respy.state_space import create_base_covariates
@@ -362,7 +363,9 @@ def create_type_covariates(df, options):
 
     all_data = pd.concat([covariates, df], axis="columns", sort=False)
 
-    return all_data[options["type_covariates"]].to_numpy()
+    all_data = all_data[options["type_covariates"]].apply(downcast_to_smallest_dtype)
+
+    return all_data.to_numpy()
 
 
 def _process_estimation_data(df, options):

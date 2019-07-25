@@ -6,6 +6,7 @@ import pandas as pd
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_base_draws
+from respy.shared import downcast_to_smallest_dtype
 
 
 class StateSpace:
@@ -55,7 +56,8 @@ class StateSpace:
 
         _states_df = states_df.copy()
         _states_df.lagged_choice = _states_df.lagged_choice.cat.codes
-        self.states = _states_df.to_numpy()
+        # States must be int64 as :func:`array_to_tuple` does only work with int64.
+        self.states = _states_df.to_numpy(dtype="int64")
 
         base_covariates_df = create_base_covariates(states_df, options["covariates"])
 
@@ -504,7 +506,9 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
         Dictionary where values are the wage or non-pecuniary covariates for choices.
 
     """
-    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
+    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False).apply(
+        downcast_to_smallest_dtype
+    )
 
     covariates = {}
 
@@ -545,7 +549,7 @@ def create_base_covariates(states, covariates_spec):
     for covariate, definition in covariates_spec.items():
         covariates[covariate] = covariates.eval(definition)
 
-    covariates = covariates.drop(columns=states.columns).astype(float)
+    covariates = covariates.drop(columns=states.columns)
 
     return covariates
 
@@ -562,7 +566,6 @@ def _create_is_inadmissible_indicator(states, options):
     for column, definition in options["inadmissible_states"].items():
         df[column] = df.eval(definition, local_dict=locals_)
 
-    # Sort and convert to NumPy array.
     is_inadmissible = df[options["choices"]].to_numpy()
 
     return is_inadmissible
