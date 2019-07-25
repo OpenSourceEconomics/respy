@@ -22,6 +22,10 @@ def check_estimation_data(df, options):
     n_periods = options["n_periods"]
 
     # 1. Identifier.
+    # It is assumed in the likelihood function that Identifier starts at 0 and
+    # increments in steps of one.
+    unique = df["Identifier"].unique()
+    assert (unique == np.arange(len(unique))).all()
 
     # 2. Period.
     assert df.Period.le(n_periods - 1).all()
