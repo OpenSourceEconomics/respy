@@ -54,7 +54,7 @@ def get_crit_func(params, options, df, version="log_like"):
     """
     params, optim_paras, options = process_params_and_options(params, options)
 
-    options = _adjust_options(options, df)
+    options = _adjust_options_for_estimation(options, df)
 
     check_estimation_data(df, options)
 
@@ -403,8 +403,17 @@ def _process_estimation_data(df, options):
     return df
 
 
-def _adjust_options(options, df):
+def _adjust_options_for_estimation(options, df):
+    """Adjust options for estimation.
+
+    There are some option values which are necessary for the simulation, but they can be
+    directly inferred from the data for estimation. A warning is raised for the user
+    which can be suppressed by adjusting the options.
+
+    """
     for choice in options["choices_w_exp"]:
+
+        # Adjust initial experience levels for all choices with experiences.
         init_exp_data = np.sort(
             df.loc[df.Period.eq(0), f"Experience_{choice.title()}"].unique()
         )
@@ -420,6 +429,7 @@ def _adjust_options(options, df):
             options["choices"][choice].pop("share")
             options["choices"][choice].pop("lagged")
 
+        # Adjust the number of periods.
         if not options["n_periods"] == df.Period.max() + 1:
             warnings.warn(
                 f"The number of periods differ between data, {df.Period.max()}, and "
