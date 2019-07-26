@@ -199,3 +199,32 @@ def clip(x, minimum=None, maximum=None):
         return maximum
     else:
         return x
+
+
+def downcast_to_smallest_dtype(series):
+    # We can skip integer as "unsigned" and "signed" will find the same dtypes.
+    _downcast_options = ["unsigned", "signed", "float"]
+
+    if series.dtype.name == "category":
+        min_dtype = "category"
+
+    elif series.dtype == np.bool:
+        min_dtype = np.dtype("uint8")
+
+    else:
+        min_dtype = np.dtype("float64")
+
+        for dc_opt in _downcast_options:
+            dtype = pd.to_numeric(series, downcast=dc_opt).dtype
+
+            if dtype.itemsize == 1 and dtype.name.startswith("u"):
+                min_dtype = dtype
+                break
+            elif dtype.itemsize == min_dtype.itemsize and dtype.name.startswith("u"):
+                min_dtype = dtype
+            elif dtype.itemsize < min_dtype.itemsize:
+                min_dtype = dtype
+            else:
+                pass
+
+    return series.astype(min_dtype)

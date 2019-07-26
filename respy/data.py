@@ -10,9 +10,13 @@ def _create_working_experience(df, options):
         df[f"Experience_{choice.title()}"] = df.Choice.eq(choice)
         df[f"Experience_{choice.title()}"] = (
             df.groupby("Identifier")[f"Experience_{choice.title()}"]
-            .cumsum()
+            .shift()
+            .fillna(0)
             .astype(np.uint8)
         )
+        df[f"Experience_{choice.title()}"] = df.groupby("Identifier")[
+            f"Experience_{choice.title()}"
+        ].cumsum()
 
     return df
 
@@ -85,5 +89,8 @@ def create_kw_94():
     labels, _ = rp_shared.generate_column_labels_estimation(options)
 
     df = df.reset_index(drop=True).loc[:, labels]
+
+    # reset the Identifier such that it starts at 0 and always increments by 1
+    df["Identifier"] = pd.Categorical(df["Identifier"]).codes
 
     return df

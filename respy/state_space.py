@@ -6,6 +6,7 @@ import pandas as pd
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_base_draws
+from respy.shared import downcast_to_smallest_dtype
 
 
 class StateSpace:
@@ -55,9 +56,11 @@ class StateSpace:
 
         _states_df = states_df.copy()
         _states_df.lagged_choice = _states_df.lagged_choice.cat.codes
+        _states_df = _states_df.apply(downcast_to_smallest_dtype)
         self.states = _states_df.to_numpy()
 
         base_covariates_df = create_base_covariates(states_df, options["covariates"])
+        base_covariates_df = base_covariates_df.apply(downcast_to_smallest_dtype)
 
         self.covariates = _create_choice_covariates(
             base_covariates_df, states_df, params, options
@@ -545,7 +548,7 @@ def create_base_covariates(states, covariates_spec):
     for covariate, definition in covariates_spec.items():
         covariates[covariate] = covariates.eval(definition)
 
-    covariates = covariates.drop(columns=states.columns).astype(float)
+    covariates = covariates.drop(columns=states.columns)
 
     return covariates
 
@@ -562,7 +565,6 @@ def _create_is_inadmissible_indicator(states, options):
     for column, definition in options["inadmissible_states"].items():
         df[column] = df.eval(definition, local_dict=locals_)
 
-    # Sort and convert to NumPy array.
     is_inadmissible = df[options["choices"]].to_numpy()
 
     return is_inadmissible

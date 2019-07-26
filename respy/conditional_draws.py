@@ -4,7 +4,7 @@ from numba import guvectorize
 from respy.config import HUGE_FLOAT
 
 
-def create_draws_and_prob_wages(
+def create_draws_and_log_prob_wages(
     log_wages_observed,
     wages_systematic,
     base_draws,
@@ -52,9 +52,9 @@ def create_draws_and_prob_wages(
     draws : numpy.ndarray
         Array with shape (n_obs * n_types, n_draws, n_choices) containing shocks drawn
         from a multivariate normal distribution conditional on the observed wages.
-    prob_wages : numpy.ndarray
-        Array with shape (n_obs * n_types,) containing the unconditional likelihood of
-        the observed wages, correcting for measurement error.
+    log_prob_wages : numpy.ndarray
+        Array with shape (n_obs * n_types,) containing the unconditional log likelihood
+        of the observed wages, correcting for measurement error.
 
     """
     choices = choices.astype(np.uint16)
@@ -71,7 +71,7 @@ def create_draws_and_prob_wages(
     meas_sds = meas_error_sds[choices]
 
     # Note: ``states`` and ``extended_cholcovs_t`` are changed in-place.
-    prob_wages = kalman_update(
+    log_prob_wages = kalman_update(
         states, measurements, extended_cholcovs_t, meas_sds, choices
     )
 
@@ -79,15 +79,17 @@ def create_draws_and_prob_wages(
     draws += states.reshape(n_obs, 1, n_choices)
     draws[:, :n_wages] = np.clip(np.exp(draws[:, :n_wages]), 0.0, HUGE_FLOAT)
 
-    return draws, prob_wages
+    return draws, log_prob_wages
 
 
 @guvectorize(
     ["f8[:], f8, f8[:, :], f8, u2, f8[:]"],
     "(n_states), (), (n_choices_plus_one, n_choices_plus_one), (), () -> ()",
 )
-def kalman_update(state, measurement, extended_cholcov_t, meas_sd, choice, prob_wage):
-    """Make a Kalman update and evaluate likelihood of wages.
+def kalman_update(
+    state, measurement, extended_cholcov_t, meas_sd, choice, log_prob_wage
+):
+    """Make a Kalman update and evaluate log likelihood of wages.
 
     This function is a specialized Kalman filter in the following ways:
 
@@ -117,8 +119,8 @@ def kalman_update(state, measurement, extended_cholcov_t, meas_sd, choice, prob_
 
     Returns
     -------
-    prob_wage : float
-        The likelihood of the observed wage.
+    log_prob_wage : float
+        The log likelihood of the observed wage.
 
     References
     ----------
@@ -131,7 +133,7 @@ def kalman_update(state, measurement, extended_cholcov_t, meas_sd, choice, prob_
     nfac = m - 1
 
     # This is the invariant part of a normal probability density function.
-    invariant = 1 / (2 * np.pi) ** 0.5
+    invariant = np.log(1 / (2 * np.pi) ** 0.5)
 
     # Skip missing wages.
     if np.isfinite(measurement):
@@ -162,12 +164,12 @@ def kalman_update(state, measurement, extended_cholcov_t, meas_sd, choice, prob_
 
         # Likelihood evaluation.
         sigma = np.abs(extended_cholcov_t[0, 0])
-        prob = invariant / sigma * np.exp(-measurement ** 2 / (2 * sigma ** 2))
-        prob_wage[0] = prob
+        prob = invariant - np.log(sigma) - measurement ** 2 / (2 * sigma ** 2)
+        log_prob_wage[0] = prob
 
         # Update the state.
         measurement /= sigma
         for f in range(nfac):
             state[f] = extended_cholcov_t[0, f + 1] * measurement
     else:
-        prob_wage[0] = 1.0
+        log_prob_wage[0] = 0

@@ -1,6 +1,7 @@
 """Test model generation."""
 import numpy as np
 import pytest
+from deepdiff import DeepDiff
 
 from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
@@ -60,7 +61,7 @@ def test_invariance_to_order_of_initial_schooling_levels(model_or_seed):
     _, _, options = process_params_and_options(params, options)
     _, _, shuffled_options = process_params_and_options(params, options)
 
-    assert options == shuffled_options
+    assert not DeepDiff(options, shuffled_options)
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))

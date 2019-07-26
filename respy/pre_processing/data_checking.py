@@ -18,11 +18,14 @@ def check_estimation_data(df, options):
 
     """
     df = df.reset_index()
-    choices = options["choices"]
 
     n_periods = options["n_periods"]
 
     # 1. Identifier.
+    # It is assumed in the likelihood function that Identifier starts at 0 and
+    # increments in steps of one.
+    unique = df["Identifier"].unique()
+    assert (unique == np.arange(len(unique))).all()
 
     # 2. Period.
     assert df.Period.le(n_periods - 1).all()
@@ -32,12 +35,6 @@ def check_estimation_data(df, options):
 
     # 4. Wage.
     assert df.Wage.fillna(1).gt(0).all()
-
-    for choice in options["choices_w_exp"]:
-        assert (
-            df[f"Experience_{choice.title()}"].ge(choices[choice]["start"].min()).all()
-        )
-        assert df[f"Experience_{choice.title()}"].le(choices[choice]["max"]).all()
 
     # 8. Lagged_Choice.
     assert df.Lagged_Choice.isin(options["choices"]).all()
@@ -53,7 +50,7 @@ def check_estimation_data(df, options):
         ).all()
 
     # We check individual state variables against the recorded choices.
-    df.groupby("Identifier").apply(_check_state_variables)
+    df.groupby("Identifier").apply(_check_state_variables, options=options)
 
     # Check that there are no duplicated observations for any period by agent.
     assert ~df.duplicated(subset=["Identifier", "Period"]).any()
@@ -64,39 +61,22 @@ def check_estimation_data(df, options):
     assert (max_periods_per_ind == n_obs_per_ind).all()
 
 
-def _check_state_variables(agent):
+def _check_state_variables(agent, options):
     """Check that state variables in the dataset.
 
     Construct the experience and schooling levels implied by the reported
     choices and compare them to the information provided in the dataset.
 
     """
+    experiences = agent.iloc[0].filter(like="Experience_").to_numpy()
+
     for _, row in agent.iterrows():
-        period, choice = row.Period, row.Choice
-        # We know that the level of experience is zero in the initial period
-        # and we get the initial level of schooling.
-        if period == 0:
-            exp_a, exp_b, edu = 0.0, 0.0, row.Experience_Edu
-        else:
-            pass
-        # Check statistics
-        pairs = [
-            (exp_a, "Experience_A"),
-            (exp_b, "Experience_B"),
-            (edu, "Experience_Edu"),
-        ]
-        for pair in pairs:
-            stat, label = pair
-            assert stat == row[label]
-        # Update experience statistics.
-        if choice == "a":
-            exp_a += 1
-        elif choice == "b":
-            exp_b += 1
-        elif choice == "edu":
-            edu += 1
-        else:
-            pass
+
+        assert (experiences == row.filter(like="Experience_").to_numpy()).all()
+
+        if row.Choice in options["choices_w_exp"]:
+            index_of_choice = options["choices_w_exp"].index(row.Choice)
+            experiences[index_of_choice] += 1
 
 
 def check_simulated_data(options, df):

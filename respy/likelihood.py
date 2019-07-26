@@ -1,28 +1,34 @@
+import warnings
 from functools import partial
 
 import numpy as np
 import pandas as pd
 from numba import guvectorize
 
-from respy.conditional_draws import create_draws_and_prob_wages
+from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import clip
 from respy.shared import create_base_draws
+from respy.shared import downcast_to_smallest_dtype
 from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
 from respy.state_space import create_base_covariates
 from respy.state_space import StateSpace
 
 
-def get_crit_func(params, options, df):
+def get_crit_func(params, options, df, version="log_like"):
     """Get the criterion function.
 
-    The return value is the :func:`log_like` where all arguments except the parameter
-    vector are fixed with :func:`functools.partial`. Thus, the function can be passed
-    directly into any optimization algorithm.
+    Return v version of the likelihood functions in respy where all arguments
+    except the parameter vector are fixed with :func:`functools.partial`. Thus the
+    function can be directly passed into an optimizer or a function for taking
+    numerical derivatives.
+
+    By default we return the :func*`log_like`. Other versions can be requested via
+    the version argument.
 
     Parameters
     ----------
@@ -32,10 +38,12 @@ def get_crit_func(params, options, df):
         Dictionary containing model options.
     df : pandas.DataFrame
         The model is fit to this dataset.
+    version : str, default "log_like"
+        Can take the values "log_like"(default) and "log_like_obs".
 
     Returns
     -------
-    criterion_function : :func:`log_like`
+    criterion_function : :func:`log_like` or :func:`log_like_obs`
         Criterion function where all arguments except the parameter vector are set.
 
     Raises
@@ -45,6 +53,8 @@ def get_crit_func(params, options, df):
 
     """
     params, optim_paras, options = process_params_and_options(params, options)
+
+    options = _adjust_options_for_estimation(options, df)
 
     check_estimation_data(df, options)
 
@@ -63,14 +73,24 @@ def get_crit_func(params, options, df):
         create_type_covariates(states, options) if options["n_types"] > 1 else None
     )
 
+    if version == "log_like":
+        unpartialed = log_like
+    elif version == "log_like_obs":
+        unpartialed = log_like_obs
+    else:
+        raise ValueError("version has to be 'log_like' or 'log_like_obs'.")
+
     criterion_function = partial(
-        log_like,
+        unpartialed,
         data=df,
         base_draws_est=base_draws_est,
         state_space=state_space,
         type_covariates=type_covariates,
         options=options,
     )
+
+    # this will be relevant for estimagic topography plots
+    criterion_function.__name__ = version
     return criterion_function
 
 
@@ -93,19 +113,42 @@ def log_like(params, data, base_draws_est, state_space, type_covariates, options
         Contains model options.
 
     """
+    contribs = log_like_obs(
+        params, data, base_draws_est, state_space, type_covariates, options
+    )
+    return contribs.mean()
+
+
+def log_like_obs(params, data, base_draws_est, state_space, type_covariates, options):
+    """Criterion function for the likelihood maximization.
+
+    This function calculates the likelihood contributions of the sample.
+
+    Parameters
+    ----------
+    params : pandas.Series
+        Parameter Series
+    data : pandas.DataFrame
+        The log likelihood is calculated for this data.
+    base_draws_est : numpy.ndarray
+        Set of draws to calculate the probability of observed wages.
+    state_space : :class:`~respy.state_space.StateSpace`
+        State space.
+    options : dict
+        Contains model options.
+
+    """
     params, optim_paras, options = process_params_and_options(params, options)
 
     state_space.update_systematic_rewards(optim_paras, options)
 
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
-    contribs = log_like_obs(
+    contribs = _internal_log_like_obs(
         state_space, data, base_draws_est, type_covariates, optim_paras, options
     )
 
-    crit_val = -np.mean(contribs)
-
-    return crit_val
+    return contribs
 
 
 @guvectorize(
@@ -115,7 +158,7 @@ def log_like(params, data, base_draws_est, state_space, type_covariates, options
     nopython=True,
     target="parallel",
 )
-def simulate_probability_of_individuals_observed_choice(
+def simulate_log_probability_of_individuals_observed_choice(
     wages,
     nonpec,
     continuation_values,
@@ -124,7 +167,7 @@ def simulate_probability_of_individuals_observed_choice(
     is_inadmissible,
     choice,
     tau,
-    prob_choice,
+    log_prob_choice,
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -154,15 +197,15 @@ def simulate_probability_of_individuals_observed_choice(
 
     Returns
     -------
-    prob_choice : float
-        Smoothed probability of choice.
+    log_prob_choice : float
+        Smoothed log probability of choice.
 
     """
     n_draws, n_choices = draws.shape
 
     value_functions = np.zeros((n_choices, n_draws))
 
-    prob_choice[0] = 0.0
+    prob_choice = 0.0
 
     for i in range(n_draws):
 
@@ -193,21 +236,24 @@ def simulate_probability_of_individuals_observed_choice(
             value_functions[j, i] = val_clipped
             sum_smooth_values += val_clipped
 
-        prob_choice[0] += value_functions[choice, i] / sum_smooth_values
+        prob_choice += value_functions[choice, i] / sum_smooth_values
 
-    prob_choice[0] /= n_draws
+    prob_choice /= n_draws
+
+    log_prob_choice[0] = np.log(prob_choice)
 
 
-def log_like_obs(
+def _internal_log_like_obs(
     state_space, df, base_draws_est, type_covariates, optim_paras, options
 ):
     """Calculate the likelihood contribution of each individual in the sample.
 
     The function calculates all likelihood contributions for all observations in the
-    data which means all individual-period-type combinations. Then, likelihoods are
-    accumulated within each individual and type over all periods. After that, the result
-    is multiplied with the type-specific shares which yields the contribution to the
-    likelihood for each individual.
+    data which means all individual-period-type combinations.
+
+    Then, likelihoods are accumulated within each individual and type over all periods.
+    After that, the result is multiplied with the type-specific shares which yields the
+    contribution to the likelihood for each individual.
 
     Parameters
     ----------
@@ -254,7 +300,7 @@ def log_like_obs(
     choices = choices.repeat(n_types)
     periods = state_space.states[ks, 0].flatten()
 
-    draws, prob_wages = create_draws_and_prob_wages(
+    draws, wage_loglikes = create_draws_and_log_prob_wages(
         log_wages_observed,
         wages_systematic,
         base_draws_est,
@@ -267,7 +313,7 @@ def log_like_obs(
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
 
-    prob_choices = simulate_probability_of_individuals_observed_choice(
+    choice_loglikes = simulate_log_probability_of_individuals_observed_choice(
         state_space.wages[ks],
         state_space.nonpec[ks],
         state_space.continuation_values[ks],
@@ -278,25 +324,31 @@ def log_like_obs(
         options["estimation_tau"],
     )
 
-    prob_obs = prob_choices * prob_wages.reshape(n_obs, -1)
+    wage_loglikes = wage_loglikes.reshape(n_obs, n_types)
 
-    # Accumulate the likelihood of observations for each individual-type combination
-    # over all periods.
-    prob_type = np.multiply.reduceat(prob_obs, idx_indiv_first_obs)
+    per_period_loglikes = wage_loglikes + choice_loglikes
 
-    # Calculate the probabilities for all types based on an individual's initial
-    # characteristics.
-    type_probabilities = (
-        predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
-        if n_types > 1
-        else 1
-    )
+    per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
+    if n_types >= 2:
+        type_probabilities = predict_multinomial_logit(
+            optim_paras["type_prob"], type_covariates
+        )
+        log_type_probabilities = np.log(type_probabilities)
+        weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
-    # Multiply each individual-type contribution with its type-specific shares and sum
-    # over types to get the likelihood contribution for each individual.
-    contribs = (prob_type * type_probabilities).sum(axis=1)
+        # The following is equivalent to:
+        # writing contribs = np.log(np.exp(weighted_loglikes).sum(axis=1))
+        # but avoids overflows and underflows
+        minimal_m = -700 - weighted_loglikes.min(axis=1)
+        maximal_m = 700 - weighted_loglikes.max(axis=1)
+        valid = minimal_m <= maximal_m
+        m = np.where(valid, (minimal_m + maximal_m) / 2, np.nan).reshape(-1, 1)
+        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m
+        contribs[~valid] = -HUGE_FLOAT
+    else:
+        contribs = per_individual_loglikes.flatten()
 
-    contribs = np.clip(np.log(contribs), -HUGE_FLOAT, HUGE_FLOAT)
+    contribs = np.clip(contribs, -HUGE_FLOAT, HUGE_FLOAT)
 
     return contribs
 
@@ -332,7 +384,9 @@ def create_type_covariates(df, options):
 
     all_data = pd.concat([covariates, df], axis="columns", sort=False)
 
-    return all_data[options["type_covariates"]].to_numpy()
+    all_data = all_data[options["type_covariates"]].apply(downcast_to_smallest_dtype)
+
+    return all_data.to_numpy()
 
 
 def _process_estimation_data(df, options):
@@ -346,3 +400,41 @@ def _process_estimation_data(df, options):
     df = _convert_choice_variables_from_categorical_to_codes(df, options)
 
     return df
+
+
+def _adjust_options_for_estimation(options, df):
+    """Adjust options for estimation.
+
+    There are some option values which are necessary for the simulation, but they can be
+    directly inferred from the data for estimation. A warning is raised for the user
+    which can be suppressed by adjusting the options.
+
+    """
+    for choice in options["choices_w_exp"]:
+
+        # Adjust initial experience levels for all choices with experiences.
+        init_exp_data = np.sort(
+            df.loc[df.Period.eq(0), f"Experience_{choice.title()}"].unique()
+        )
+        init_exp_options = options["choices"][choice]["start"]
+        if not np.array_equal(init_exp_data, init_exp_options):
+            warnings.warn(
+                f"The initial experience for choice '{choice}' differs between data, "
+                f"{init_exp_data}, and options, {init_exp_options}. The options are "
+                "ignored.",
+                category=UserWarning,
+            )
+            options["choices"][choice]["start"] = init_exp_data
+            options["choices"][choice].pop("share")
+            options["choices"][choice].pop("lagged")
+
+        # Adjust the number of periods.
+        if not options["n_periods"] == df.Period.max() + 1:
+            warnings.warn(
+                f"The number of periods differs between data, {df.Period.max()}, and "
+                f"options, {options['n_periods']}. The options are ingored.",
+                category=UserWarning,
+            )
+            options["n_periods"] = df.Period.max() + 1
+
+    return options
