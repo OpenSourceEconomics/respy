@@ -21,7 +21,8 @@ def array_to_tuple(tyctx, array, indexer_array):
     """
     # This is the typing level. Setup the type and constant information here.
     tuple_size = array.ndim
-    typed_tuple = types.UniTuple(dtype=types.intp, count=tuple_size)
+    tuple_type = indexer_array.dtype
+    typed_tuple = types.UniTuple(dtype=tuple_type, count=tuple_size)
     function_signature = typed_tuple(array, indexer_array)
 
     def codegen(cgctx, builder, signature, args):
