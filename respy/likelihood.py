@@ -329,6 +329,7 @@ def _internal_log_like_obs(
     per_period_loglikes = wage_loglikes + choice_loglikes
 
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
+
     if n_types >= 2:
         type_probabilities = predict_multinomial_logit(
             optim_paras["type_prob"], type_covariates
@@ -343,7 +344,7 @@ def _internal_log_like_obs(
         maximal_m = 700 - weighted_loglikes.max(axis=1)
         valid = minimal_m <= maximal_m
         m = np.where(valid, (minimal_m + maximal_m) / 2, np.nan).reshape(-1, 1)
-        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m
+        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m.flatten()
         contribs[~valid] = -HUGE_FLOAT
     else:
         contribs = per_individual_loglikes.flatten()
