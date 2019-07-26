@@ -343,7 +343,7 @@ def _internal_log_like_obs(
         maximal_m = 700 - weighted_loglikes.max(axis=1)
         valid = minimal_m <= maximal_m
         m = np.where(valid, (minimal_m + maximal_m) / 2, np.nan).reshape(-1, 1)
-        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m
+        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m.flatten()
         contribs[~valid] = -HUGE_FLOAT
     else:
         contribs = per_individual_loglikes.flatten()
