@@ -122,7 +122,7 @@ def log_like(params, data, base_draws_est, state_space, type_covariates, options
 def log_like_obs(params, data, base_draws_est, state_space, type_covariates, options):
     """Criterion function for the likelihood maximization.
 
-    This function calculates the average likelihood contribution of the sample.
+    This function calculates the likelihood contributions of the sample.
 
     Parameters
     ----------
