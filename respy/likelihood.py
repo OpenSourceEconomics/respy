@@ -39,7 +39,7 @@ def get_crit_func(params, options, df, version="log_like"):
     df : pandas.DataFrame
         The model is fit to this dataset.
     version : str, default "log_like"
-        Can take the values "log_like"(default).
+        Can take the values "log_like"(default) and "log_like_obs".
 
     Returns
     -------
@@ -122,7 +122,7 @@ def log_like(params, data, base_draws_est, state_space, type_covariates, options
 def log_like_obs(params, data, base_draws_est, state_space, type_covariates, options):
     """Criterion function for the likelihood maximization.
 
-    This function calculates the average likelihood contribution of the sample.
+    This function calculates the likelihood contributions of the sample.
 
     Parameters
     ----------
@@ -300,7 +300,7 @@ def _internal_log_like_obs(
     choices = choices.repeat(n_types)
     periods = state_space.states[ks, 0].flatten()
 
-    draws, log_prob_wages = create_draws_and_log_prob_wages(
+    draws, wage_loglikes = create_draws_and_log_prob_wages(
         log_wages_observed,
         wages_systematic,
         base_draws_est,
@@ -313,7 +313,7 @@ def _internal_log_like_obs(
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
 
-    log_prob_choices = simulate_log_probability_of_individuals_observed_choice(
+    choice_loglikes = simulate_log_probability_of_individuals_observed_choice(
         state_space.wages[ks],
         state_space.nonpec[ks],
         state_space.continuation_values[ks],
@@ -324,31 +324,29 @@ def _internal_log_like_obs(
         options["estimation_tau"],
     )
 
-    log_prob_wages = log_prob_wages.reshape(n_obs, n_types)
+    wage_loglikes = wage_loglikes.reshape(n_obs, n_types)
 
-    log_prob_obs = log_prob_wages + log_prob_choices
+    per_period_loglikes = wage_loglikes + choice_loglikes
 
-    # accumulate the log likelihood of observations for each individual-type combination
-    log_prob_type = np.add.reduceat(log_prob_obs, idx_indiv_first_obs)
+    per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
     if n_types >= 2:
         type_probabilities = predict_multinomial_logit(
             optim_paras["type_prob"], type_covariates
         )
         log_type_probabilities = np.log(type_probabilities)
-        weighted_log_prob_type = log_prob_type + log_type_probabilities
+        weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
         # The following is equivalent to:
-        # writing contribs = np.log(np.exp(weighted_log_prob_type).sum(axis=1))
+        # writing contribs = np.log(np.exp(weighted_loglikes).sum(axis=1))
         # but avoids overflows and underflows
-
-        minimal_m = -700 - weighted_log_prob_type.min(axis=1)
-        maximal_m = 700 - weighted_log_prob_type.max(axis=1)
+        minimal_m = -700 - weighted_loglikes.min(axis=1)
+        maximal_m = 700 - weighted_loglikes.max(axis=1)
         valid = minimal_m <= maximal_m
         m = np.where(valid, (minimal_m + maximal_m) / 2, np.nan).reshape(-1, 1)
-        contribs = np.log(np.exp(weighted_log_prob_type + m).sum(axis=1)) - m
+        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m
         contribs[~valid] = -HUGE_FLOAT
     else:
-        contribs = log_prob_type.flatten()
+        contribs = per_individual_loglikes.flatten()
 
     contribs = np.clip(contribs, -HUGE_FLOAT, HUGE_FLOAT)
 
