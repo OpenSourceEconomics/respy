@@ -421,9 +421,9 @@ def _adjust_options_for_estimation(options, df):
         init_exp_options = options["choices"][choice]["start"]
         if not np.array_equal(init_exp_data, init_exp_options):
             warnings.warn(
-                f"The initial experience for choice '{choice}' differ between data, "
+                f"The initial experience for choice '{choice}' differs between data, "
                 f"{init_exp_data}, and options, {init_exp_options}. The options are "
-                "adjusted.",
+                "ignored.",
                 category=UserWarning,
             )
             options["choices"][choice]["start"] = init_exp_data
@@ -433,8 +433,8 @@ def _adjust_options_for_estimation(options, df):
         # Adjust the number of periods.
         if not options["n_periods"] == df.Period.max() + 1:
             warnings.warn(
-                f"The number of periods differ between data, {df.Period.max()}, and "
-                f"options, {options['n_periods']}. The options are adjusted.",
+                f"The number of periods differs between data, {df.Period.max()}, and "
+                f"options, {options['n_periods']}. The options are ingored.",
                 category=UserWarning,
             )
             options["n_periods"] = df.Period.max() + 1
