@@ -17,6 +17,8 @@ def test_simulated_data(model_or_seed):
     """
     params, options = process_model_or_seed(model_or_seed)
 
+    options["n_periods"] = 10
+
     _, df = rp.simulate(params, options)
 
     _, _, options = process_params_and_options(params, options)

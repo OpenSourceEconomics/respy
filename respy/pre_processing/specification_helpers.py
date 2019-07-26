@@ -43,7 +43,7 @@ def _type_prob_template(n_types, n_type_covariates):
         if n_type_covariates == 3:
             ind = (f"type_{type_}", "constant")
             comment = f"constant effect on probability of being type {type_}"
-            dat = [0, False, np.nan, np.nan, comment]
+            dat = [0, np.nan, np.nan, comment]
             to_concat.append(_base_row(index_tuple=ind, data=dat))
         else:
             pass
@@ -53,7 +53,7 @@ def _type_prob_template(n_types, n_type_covariates):
             "effect of up to nine years of schooling on probability of being "
             f"type {type_}"
         )
-        dat = [1 / n_types, False, np.nan, np.nan, comment]
+        dat = [1 / n_types, np.nan, np.nan, comment]
         to_concat.append(_base_row(index_tuple=ind, data=dat))
 
         ind = (f"type_{type_}", "at_least_ten_years_edu")
@@ -61,7 +61,7 @@ def _type_prob_template(n_types, n_type_covariates):
             "effect of at least ten years of schooling on probability of being "
             f"type {type_}"
         )
-        dat = [0, False, np.nan, np.nan, comment]
+        dat = [0, np.nan, np.nan, comment]
         to_concat.append(_base_row(index_tuple=ind, data=dat))
 
     return pd.concat(to_concat, axis=0, sort=False)
@@ -73,13 +73,13 @@ def _type_shift_template(n_types):
         for choice in ["a", "b", "edu", "home"]:
             ind = ("type_shift", f"type_{type_}_in_{choice}")
             comment = f"deviation for type {type_} from type 1 in {choice}"
-            dat = [0, False, np.nan, np.nan, comment]
+            dat = [0, np.nan, np.nan, comment]
             to_concat.append(_base_row(index_tuple=ind, data=dat))
     return pd.concat(to_concat, axis=0, sort=False)
 
 
 def _base_row(index_tuple, data):
     ind = pd.MultiIndex.from_tuples([index_tuple], names=["category", "name"])
-    cols = ["value", "fixed", "lower", "upper", "comment"]
+    cols = ["value", "lower", "upper", "comment"]
     df = pd.DataFrame(index=ind, columns=cols, data=[data])
     return df

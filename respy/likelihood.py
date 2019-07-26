@@ -38,12 +38,12 @@ def get_crit_func(params, options, df, version="log_like"):
         Dictionary containing model options.
     df : pandas.DataFrame
         The model is fit to this dataset.
-    version : str
-        Can take the values "log_like"(default)
+    version : str, default "log_like"
+        Can take the values "log_like"(default).
 
     Returns
     -------
-    criterion_function : :func:`log_like`
+    criterion_function : :func:`log_like` or :func:`log_like_obs`
         Criterion function where all arguments except the parameter vector are set.
 
     Raises
