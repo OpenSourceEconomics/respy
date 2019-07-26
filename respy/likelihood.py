@@ -39,7 +39,7 @@ def get_crit_func(params, options, df, version="log_like"):
     df : pandas.DataFrame
         The model is fit to this dataset.
     version : str, default "log_like"
-        Can take the values "log_like"(default).
+        Can take the values "log_like"(default) and "log_like_obs".
 
     Returns
     -------
