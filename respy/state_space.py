@@ -57,7 +57,6 @@ class StateSpace:
         _states_df = states_df.copy()
         _states_df.lagged_choice = _states_df.lagged_choice.cat.codes
         _states_df = _states_df.apply(downcast_to_smallest_dtype)
-        # States must be int64 as :func:`array_to_tuple` does only work with int64.
         self.states = _states_df.to_numpy()
 
         base_covariates_df = create_base_covariates(states_df, options["covariates"])
