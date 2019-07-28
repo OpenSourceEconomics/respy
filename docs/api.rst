@@ -32,6 +32,7 @@ simulate
 .. autosummary::
     :toctree: _generated/
 
+    get_simulate_func
     simulate
 
 likelihood
