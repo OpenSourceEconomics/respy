@@ -9,7 +9,7 @@ from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
 from respy.shared import generate_column_labels_estimation
-from respy.simulate import simulate
+from respy.simulate import get_simulate_func
 
 
 def generate_random_model(
@@ -140,7 +140,8 @@ def simulate_truncated_data(params, options, is_missings=True):
         return agent
 
     _, _, options = process_params_and_options(params, options)
-    state_space, df = simulate(params, options)
+    simulate = get_simulate_func(params, options)
+    df = simulate(params)
 
     np.random.seed(options["simulation_seed"])
 

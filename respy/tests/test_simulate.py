@@ -21,7 +21,7 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
 
     draws = np.random.randn(1, 4)
 
-    state_space, _ = rp.simulate(params, options)
+    state_space = rp.solve(params, options)
 
     for period in range(options["n_periods"]):
         # Unpack necessary attributes
@@ -45,25 +45,24 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
 
 @pytest.mark.parametrize("seed", range(20))
 def test_equality_for_myopic_agents_and_tiny_delta(seed):
-    """Test equality of simulated data and likelihood myopic agents and tiny delta."""
+    """Test equality of simulated data and likelihood with myopia and tiny delta."""
     np.random.seed(seed)
 
     # Get simulated data and likelihood for myopic model.
     params, options = generate_random_model(myopic=True)
 
-    state_space, df = rp.simulate(params, options)
+    simulate = rp.get_simulate_func(params, options)
+    df = simulate(params)
 
     crit_func = get_crit_func(params, options, df)
-
     likelihood = crit_func(params)
 
     # Get simulated data and likelihood for model with tiny delta.
     params.loc["delta", "value"] = 1e-12
 
-    state_space_, df_ = rp.simulate(params, options)
+    df_ = simulate(params)
 
     crit_func_ = rp.get_crit_func(params, options, df_)
-
     likelihood_ = crit_func_(params)
 
     pd.testing.assert_frame_equal(df, df_)
