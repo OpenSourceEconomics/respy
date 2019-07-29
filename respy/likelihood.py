@@ -27,8 +27,8 @@ def get_crit_func(params, options, df, version="log_like"):
     function can be directly passed into an optimizer or a function for taking
     numerical derivatives.
 
-    By default we return the :func:`log_like`. Other versions can be requested via
-    the version argument.
+    By default we return :func:`log_like`. Other versions can be requested via the
+    version argument.
 
     Parameters
     ----------
@@ -43,7 +43,7 @@ def get_crit_func(params, options, df, version="log_like"):
 
     Returns
     -------
-    criterion_function : :func:`log_like` or :func:`log_like_obs`
+    criterion_function : :func:`log_like`
         Criterion function where all arguments except the parameter vector are set.
 
     Raises
