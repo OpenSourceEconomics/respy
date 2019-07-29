@@ -44,8 +44,6 @@ extensions = [
     "numpydoc",
 ]
 
-nitpicky = True
-
 autodoc_mock_imports = ["estimagic", "numba", "numpy", "pandas", "pytest", "yaml"]
 
 intersphinx_mapping = {
