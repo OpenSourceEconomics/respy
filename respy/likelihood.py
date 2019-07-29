@@ -22,7 +22,7 @@ from respy.state_space import StateSpace
 def get_crit_func(params, options, df, version="log_like"):
     """Get the criterion function.
 
-    Return v version of the likelihood functions in respy where all arguments
+    Return a version of the likelihood functions in respy where all arguments
     except the parameter vector are fixed with :func:`functools.partial`. Thus the
     function can be directly passed into an optimizer or a function for taking
     numerical derivatives.

@@ -17,15 +17,11 @@ from respy.state_space import StateSpace
 
 
 def get_simulate_func(params, options):
-    """Get the criterion function.
+    """Get the simulation function.
 
-    Return v version of the likelihood functions in respy where all arguments
-    except the parameter vector are fixed with :func:`functools.partial`. Thus the
-    function can be directly passed into an optimizer or a function for taking
-    numerical derivatives.
-
-    By default we return the :func*`log_like`. Other versions can be requested via
-    the version argument.
+    Return :func:`simulate` where all arguments except the parameter vector are fixed
+    with :func:`functools.partial`. Thus the function can be directly passed into an
+    optimizer for estimation with simulated method of moments.
 
     Parameters
     ----------
