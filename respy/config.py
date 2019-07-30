@@ -99,10 +99,7 @@ DEFAULT_OPTIONS = {
     "core_state_space_filters": BASE_CORE_STATE_SPACE_FILTERS,
 }
 
-KEANE_WOLPIN_1994_MODELS = [
-    f"kw_94_{suffix}" for suffix in ["one", "one_initial", "one_types", "two", "three"]
-] + ["kw_94_reliability_short"]
-
+KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]
 KEANE_WOLPIN_1997_MODELS = ["kw_97_base", "kw_97_extended"]
 
 EXAMPLE_MODELS = KEANE_WOLPIN_1994_MODELS + KEANE_WOLPIN_1997_MODELS

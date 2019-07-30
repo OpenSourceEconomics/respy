@@ -1,6 +1,6 @@
 category,name,value,lower,upper,comment
 delta,delta,0.95,0.7,1.0,discount factor
-wage_a,constant,8.0,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_a,constant,2.0794,,,log of skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_a,exp_edu,0.07,,,linear return to an additional year of schooling (wage)
 wage_a,exp_a,0.055,,,"return to experience, same sector, linear (wage)"
 wage_a,exp_a_square,0.0,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
@@ -17,7 +17,7 @@ nonpec_a,not_exp_a_lagged,0.0,,,reward of switching to a from other occupation (
 nonpec_a,not_any_exp_a,0.0,,,reward of working in a for the first time (non pecuniary)
 nonpec_a,hs_graduate,0.0,,,return to high school degree (non pecuniary)
 nonpec_a,co_graduate,0.0,,,return to college degree (non pecuniary)
-wage_b,constant,7.9,,,skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_b,constant,2.0669,,,log of skill rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_b,exp_edu,0.07,,,linear return to an additional year of schooling (wage)
 wage_b,exp_a,0.055,,,"return to experience, other civilian sector, linear (wage)"
 wage_b,exp_a_square,0.0,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"

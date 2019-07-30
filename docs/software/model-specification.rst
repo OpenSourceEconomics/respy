@@ -9,8 +9,8 @@ chosen parameters. As soon as the estimation procedure is invoked, the values sp
 in the model specification are used as starting values for the optimization.
 
 The model is specified in two separate files as we differentiate between the parameters
-of the model and other options. As an example we take the first parametrization of Keane
-and Wolpin (1994).
+of the model and other options. As an example we take the base model of Keane and Wolpin
+(1997).
 
 
 Parameter specification
@@ -23,8 +23,8 @@ value. ``fixed`` indicates whether the parameter is held constant during optimiz
 in conjunction with a constrained optimizer. In this example the discount factor is
 bounded between 0.7 and 1.0. ``comment`` contains a short description of the parameter.
 
-.. csv-table:: kw_94_one_types_initial.csv
-    :file: ../../respy/tests/resources/kw_94_one_types_initial.csv
+.. csv-table:: kw_97_base.csv
+    :file: ../../respy/tests/resources/kw_97_base.csv
     :header-rows: 1
 
 In alignment to Keane and Wolpin (1994), the error terms of the model are set to follow
@@ -62,9 +62,9 @@ Options specification
 In addition to the model parameters, other model options are kept in another
 specification file in the ``yaml`` format.
 
-.. literalinclude:: ../../respy/tests/resources/kw_94_one_types_initial.yaml
+.. literalinclude:: ../../respy/tests/resources/kw_97_base.yaml
     :language: yaml
-    :name: kw_94_one_types_initial.yaml
+    :name: kw_97_base.yaml
 
 Covariates, state space filters and inadmissible states
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,9 +73,9 @@ Part of ``respy``'s flexibility comes from using formulas to specify model compo
 The following components rely on formulas which are passed to ``df.eval`` to customize
 the model.
 
-- covariates
-- State space filters
-- state space restrictions
+- covariates for the reward functions or type probabilities
+- filters for the state space which delete impossible states
+- restrictions which prevent access to inadmissible states
 
 For an introduction to ``df.eval`` see the `official pandas documentation
 <https://pandas.pydata.org/pandas-docs/stable/reference/api/
@@ -129,12 +129,3 @@ ID.     Priod     Choice      Earnings       Exp_A     Exp_B     sch_y    choice
 2       1         4           0              0         0         10       0
 2       1         4           0              0         0         10       0
 ===     ======    ======      =========      ======    ======    =====    ===========
-
-Datasets for respy are stored in simple text files, where columns are separated by
-spaces. The easiest way to write such a text file in Python is to create a pandas
-DataFrame with all relevant columns and then storing it in the following way:
-
-.. code-block:: python
-
-    with open("my_data.respy.dat", "w") as file:
-        df.to_string(file, index=False, header=True, na_rep=".")
