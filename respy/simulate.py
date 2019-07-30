@@ -1,3 +1,5 @@
+import functools
+
 import numpy as np
 import pandas as pd
 from numba import guvectorize
@@ -14,7 +16,52 @@ from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
 
-def simulate(params, options):
+def get_simulate_func(params, options):
+    """Get the simulation function.
+
+    Return :func:`simulate` where all arguments except the parameter vector are fixed
+    with :func:`functools.partial`. Thus the function can be directly passed into an
+    optimizer for estimation with simulated method of moments.
+
+    Parameters
+    ----------
+    params : pandas.DataFrame
+        DataFrame containing model parameters.
+    options : dict
+        Dictionary containing model options.
+
+    Returns
+    -------
+    simulate_function : :func:`simulate`
+        Simulation function where all arguments except the parameter vector are set.
+
+    """
+    params, optim_paras, options = process_params_and_options(params, options)
+
+    state_space = StateSpace(params, options)
+
+    base_draws_sim = create_base_draws(
+        (options["n_periods"], options["simulation_agents"], len(options["choices"])),
+        options["simulation_seed"],
+    )
+
+    # ``seed + 1`` ensures that draws for wages are different than for simulation.
+    base_draws_wage = create_base_draws(
+        base_draws_sim.shape, seed=options["simulation_seed"] + 1
+    )
+
+    simulate_function = functools.partial(
+        simulate,
+        base_draws_sim=base_draws_sim,
+        base_draws_wage=base_draws_wage,
+        state_space=state_space,
+        options=options,
+    )
+
+    return simulate_function
+
+
+def simulate(params, base_draws_sim, base_draws_wage, state_space, options):
     """Simulate a data set.
 
     This function provides the interface for the simulation of a data set.
@@ -29,24 +76,15 @@ def simulate(params, options):
     """
     params, optim_paras, options = process_params_and_options(params, options)
 
-    state_space = StateSpace(params, options)
+    state_space.update_systematic_rewards(optim_paras, options)
+
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
-
-    base_draws_sim = create_base_draws(
-        (options["n_periods"], options["simulation_agents"], len(options["choices"])),
-        options["simulation_seed"],
-    )
-
-    # ``seed + 1`` ensures that draws for wages are different than for simulation.
-    base_draws_wage = create_base_draws(
-        base_draws_sim.shape, seed=options["simulation_seed"] + 1
-    )
 
     simulated_data = simulate_data(
         state_space, base_draws_sim, base_draws_wage, optim_paras, options
     )
 
-    return state_space, simulated_data
+    return simulated_data
 
 
 def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, options):

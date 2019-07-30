@@ -36,10 +36,11 @@ def main():
     options, params, _ = rp.get_example_model(model)
 
     # Simulate the data
-    state_space, simulated_data = rp.simulate(params, options)
+    simulate = rp.get_simulate_func(params, options)
+    df = simulate(params)
 
     # Get the criterion function and the parameter vector.
-    crit_func = rp.get_crit_func(params, options, simulated_data)
+    crit_func = rp.get_crit_func(params, options, df)
 
     # Run the estimation
     start = dt.datetime.now()

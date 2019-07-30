@@ -22,13 +22,13 @@ from respy.state_space import StateSpace
 def get_crit_func(params, options, df, version="log_like"):
     """Get the criterion function.
 
-    Return v version of the likelihood functions in respy where all arguments
+    Return a version of the likelihood functions in respy where all arguments
     except the parameter vector are fixed with :func:`functools.partial`. Thus the
     function can be directly passed into an optimizer or a function for taking
     numerical derivatives.
 
-    By default we return the :func*`log_like`. Other versions can be requested via
-    the version argument.
+    By default we return :func:`log_like`. Other versions can be requested via the
+    version argument.
 
     Parameters
     ----------
@@ -39,11 +39,11 @@ def get_crit_func(params, options, df, version="log_like"):
     df : pandas.DataFrame
         The model is fit to this dataset.
     version : str, default "log_like"
-        Can take the values "log_like"(default) and "log_like_obs".
+        Can take the values "log_like" and "log_like_obs".
 
     Returns
     -------
-    criterion_function : :func:`log_like` or :func:`log_like_obs`
+    criterion_function : :func:`log_like`
         Criterion function where all arguments except the parameter vector are set.
 
     Raises

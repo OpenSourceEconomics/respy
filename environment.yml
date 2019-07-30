@@ -6,7 +6,7 @@ channels:
   - janosg
 dependencies:
   - python=3.7.3
-  - pip=19.0.3
+  - pip
   - click
   - codecov
   - doc8
@@ -16,15 +16,15 @@ dependencies:
   - matplotlib>=3.0.0
   - mkl
   - nbsphinx=0.4.2
-  - numba=0.43.1
+  - numba>=0.43.1
   - numpydoc
-  - pandas=0.24.2
+  - pandas>=0.24
   - pyaml
   - pytest
   - pytest-cov
   - pytest-xdist
   - restructuredtext_lint
-  - scipy=1.2.1
+  - scipy>=1.2.1
   - Sphinx>=2.0.0
   - sphinx-autobuild
   - tox-conda

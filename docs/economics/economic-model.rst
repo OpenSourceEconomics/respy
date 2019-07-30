@@ -143,7 +143,7 @@ Furthermore, Keane & Wolpin (1997) only allow for a second degree polynomial fun
 for the same sector experience. Respy allows for both civilian sectors (occupation A and
 B) to have quadratic effects on wages in both sectors.
 
-.. include:: occ-a-params.rst
+.. include:: ./occ-a-params.rst
 
 Occupation B
 ^^^^^^^^^^^^
@@ -173,7 +173,7 @@ They evolve according to the following law:
 
 The same comments as for occupation A apply.
 
-.. include:: occ-b-params.rst
+.. include:: ./occ-b-params.rst
 
 Occupation C
 ^^^^^^^^^^^^
@@ -214,7 +214,7 @@ evolve according to the following law:
     \cdot x_3^2(a) + \\ & e_{3,4} \cdot 1[x_3 > 0] + e_{3,5}(a) + e_{3, 6} \cdot 1[a <
     18]\}
 
-.. include:: occ-c-params.rst
+.. include:: ./occ-c-params.rst
 
 Note that the coefficients of the skill technology function are identified by the wage
 data separately from the other coefficients. Thus, both a constant factor (:math:`r_3
@@ -226,7 +226,7 @@ only be estimated jointly.
 
     In the text of the paper it appears that there is a cost of leaving the military
     sector prematurely that is effective in all sectors but the military
-    (:math:`\beta_3`. The result table  (Table 7), however, suggests that a similar
+    (:math:`\beta_3`). The result table  (Table 7), however, suggests that a similar
     channel was captured by a benefit of not leaving the military sector prematurely
     that is only effective in the military sector. We implement this second version.
 
@@ -251,14 +251,14 @@ The instantaneous utility of schooling is:
 
 **Education Sector Parameters**
 
-.. include:: occ-edu-params.rst
+.. include:: ./occ-edu-params.rst
 
 There are no skills in education that evolve over time. However, each type has a
 different base endowment :math:`e_{4, k}(a_0)` that affects how much utility this type
 derives from going to school.
 
 Home Sector
-************
+***********
 
 The instantaneous utility of staying home is:
 
@@ -270,7 +270,7 @@ The instantaneous utility of staying home is:
 
 **Home Sector Parameters**
 
-.. include:: occ-home-params.rst
+.. include:: ./occ-home-params.rst
 
 There are no skills in home production that evolve over time. However, each type has a
 different base endowment :math:`e_{5, k}(a_0)` that affects how much utility this type
@@ -278,7 +278,7 @@ derives from staying home.
 
 
 The Role of Shocks in the Model
----------------------------------
+-------------------------------
 
 The :math:`\epsilon_{m}(a)` are alternative-specific shocks to occupational
 productivity, to the consumption value of schooling, and to the value of non-market
