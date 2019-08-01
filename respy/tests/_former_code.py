@@ -49,7 +49,7 @@ def _create_state_space_kw94(n_periods, n_types, edu_starts, edu_max):
     --------
     >>> n_periods = 40
     >>> n_types = 1
-    >>> edu_starts, edu_max = [10], 20
+    >>> edu_starts, edu_max = np.array([10]), 20
     >>> states, indexer = _create_state_space_kw94(
     ...     n_periods, n_types, edu_starts, edu_max
     ... )
@@ -242,7 +242,7 @@ def _create_state_space_kw97(n_periods, n_types, edu_starts, edu_max):
     --------
     >>> n_periods = 40
     >>> n_types = 1
-    >>> edu_starts, edu_max = [10], 20
+    >>> edu_starts, edu_max = np.array([10]), 20
     >>> states, indexer = _create_state_space_kw94(
     ...     n_periods, n_types, edu_starts, edu_max
     ... )

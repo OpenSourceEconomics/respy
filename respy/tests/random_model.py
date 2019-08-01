@@ -82,7 +82,7 @@ def generate_random_model(
     n_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
     options["choices"]["edu"]["start"] = np.random.choice(
         np.arange(1, 15), size=n_edu_start, replace=False
-    ).tolist()
+    )
     options["choices"]["edu"]["lagged"] = np.random.uniform(size=n_edu_start)
     options["choices"]["edu"]["share"] = _get_initial_shares(n_edu_start)
     options["choices"]["edu"]["max"] = np.random.randint(
@@ -114,14 +114,15 @@ def _consolidate_bound_constraints(bound_constr):
         "max_draws": 100,
     }
     constr.update(bound_constr)
+
     return constr
 
 
 def _get_initial_shares(num_groups):
     """We simply need a valid request for the shares of types summing to one."""
-    shares = np.random.np.random.uniform(size=num_groups)
-    shares = shares / np.sum(shares)
-    shares = shares.tolist()
+    shares = np.random.uniform(size=num_groups)
+    shares = shares / shares.sum()
+
     return shares
 
 
@@ -137,12 +138,13 @@ def simulate_truncated_data(params, options, is_missings=True):
         """ We now determine the exact period from which onward the history is truncated
         and cut the simulated dataset down to size.
         """
-        # See https://github.com/OpenSourceEconomics/respy/pull/225 for details.
+        # For more details on this hacky solution see
+        # https://github.com/OpenSourceEconomics/respy/pull/225#issuecomment-517254853.
         if (
             version.parse(pd.__version__) >= version.parse("0.25.0")
             and agent.index[0] == 0
         ):
-            np.random.choice(range(1, agent["Period"].max() + 2))
+            _ = np.random.choice(range(1, agent["Period"].max() + 2))
 
         start_truncation = np.random.choice(range(1, agent["Period"].max() + 2))
         agent = agent[agent["Period"].lt(start_truncation)]
@@ -172,7 +174,7 @@ def simulate_truncated_data(params, options, is_missings=True):
             indices = data_subset["Wage"][is_working].index
             index_missing = np.random.choice(indices, num_drop_wages, replace=False)
 
-            data_subset.loc[index_missing, "Wage"] = None
+            data_subset.loc[index_missing, "Wage"] = np.nan
         else:
             pass
     else:
