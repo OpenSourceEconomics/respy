@@ -1,7 +1,6 @@
 """Create, run or investigate regression checks."""
 import pickle
 import socket
-from functools import partial
 from multiprocessing import Pool
 
 import click
@@ -55,8 +54,7 @@ def run_regression_tests(num_tests=None, num_procs=1, strict=False):
             ret.append(check_single(test, strict=strict))
     else:
         mp_pool = Pool(num_procs)
-        check = partial(check_single, strict=strict)
-        ret = mp_pool.map(check, tests)
+        ret = mp_pool.map(check_single, tests, kwargs={"strict": strict})
 
     idx_failures = [i for i, x in enumerate(ret) if not x]
 
