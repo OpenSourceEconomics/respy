@@ -2,10 +2,8 @@
 import collections
 
 import numpy as np
-import pandas as pd
 from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
 from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
-from packaging import version
 
 from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_processing import process_params_and_options
@@ -127,30 +125,12 @@ def _get_initial_shares(num_groups):
 
 
 def simulate_truncated_data(params, options, is_missings=True):
-    """Simulate a dataset.
+    """Simulate a (truncated) dataset.
 
     The data can have two more properties. First, truncated history, second, missing
     wages.
 
     """
-
-    def drop_agents_obs(agent):
-        """ We now determine the exact period from which onward the history is truncated
-        and cut the simulated dataset down to size.
-        """
-        # For more details on this hacky solution see
-        # https://github.com/OpenSourceEconomics/respy/pull/225#issuecomment-517254853.
-        if (
-            version.parse(pd.__version__) >= version.parse("0.25.0")
-            and agent.index[0] == 0
-        ):
-            _ = np.random.choice(range(1, agent["Period"].max() + 2))
-
-        start_truncation = np.random.choice(range(1, agent["Period"].max() + 2))
-        agent = agent[agent["Period"].lt(start_truncation)]
-
-        return agent
-
     _, _, options = process_params_and_options(params, options)
 
     simulate = get_simulate_func(params, options)
@@ -159,16 +139,17 @@ def simulate_truncated_data(params, options, is_missings=True):
     np.random.seed(options["simulation_seed"])
 
     if is_missings:
-        # We truncate the histories of agents. This mimics the frequent empirical fact
-        # that we loose track of more and more agents over time.
-        data_subset = (
-            df.groupby("Identifier").apply(drop_agents_obs).reset_index(drop=True)
+        # Truncate the histories of agents. This mimics the effect of attrition.
+        # Histories can be truncated after the first period or not at all. So, all
+        # individuals have at least one observation.
+        period_of_truncation = df.groupby("Identifier").Period.transform(
+            lambda x: np.random.choice(x.max() + 1) + 1
         )
+        data_subset = df.loc[df.Period.lt(period_of_truncation)].copy()
 
-        # We also want to drop the some wage observations. Note that we might be dealing
-        # with a dataset where nobody is working anyway.
+        # Add some missings to wage data.
         is_working = data_subset["Choice"].isin(options["choices_w_wage"])
-        num_drop_wages = int(np.sum(is_working) * np.random.uniform(high=0.5))
+        num_drop_wages = int(is_working.sum() * np.random.uniform(high=0.5))
 
         if num_drop_wages > 0:
             indices = data_subset["Wage"][is_working].index

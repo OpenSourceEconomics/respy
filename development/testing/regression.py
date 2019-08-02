@@ -67,7 +67,7 @@ def run_regression_tests(num_tests=None, num_procs=1, strict=False):
     send_notification(subject, message)
 
 
-def create_regression_tests(num_tests, num_procs=1, write_out=False):
+def create_regression_tests(num_tests, num_procs=1):
     """Create a regression vault.
 
     Parameters
@@ -76,9 +76,6 @@ def create_regression_tests(num_tests, num_procs=1, write_out=False):
         How many tests are in the vault.
     num_procs : int, default 1
         Number of processes.
-    write_out : bool, default False
-        If True, regression tests are stored to disk, replacing any existing regression
-        tests. Be careful with this. Default False.
 
     """
     if num_procs == 1:
@@ -89,10 +86,8 @@ def create_regression_tests(num_tests, num_procs=1, write_out=False):
         with Pool(num_procs) as p:
             tests = p.map(create_single, range(num_tests))
 
-    if write_out is True:
-        with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "wb") as p:
-            pickle.dump(tests, p)
-    return tests
+    with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "wb") as p:
+        pickle.dump(tests, p)
 
 
 def load_regression_tests():
@@ -177,9 +172,9 @@ def investigate(number_of_test):
 @cli.command()
 @click.argument("number_of_tests", type=int)
 @click.option("-p", "--parallel", default=1, type=int, help="Number of parallel tests.")
-def create(number_of_test, parallel):
+def create(number_of_tests, parallel):
     """Create a new collection of regression tests."""
-    create_regression_tests(num_tests=number_of_test, procs=parallel, write_out=True)
+    create_regression_tests(num_tests=number_of_tests, num_procs=parallel)
 
 
 if __name__ == "__main__":
