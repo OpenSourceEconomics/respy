@@ -32,6 +32,15 @@ def _prepare_message(idx_failures):
     return subject, message
 
 
+def _calc_crit_val(params, options):
+    df = simulate_truncated_data(params, options)
+
+    crit_func = rp.get_crit_func(params, options, df)
+    crit_val = crit_func(params)
+
+    return crit_val
+
+
 def run_regression_tests(num_tests=None, num_procs=1, strict=False):
     """Run regression tests.
 
@@ -103,22 +112,16 @@ def investigate_regression_test(idx):
     tests = load_regression_tests()
     params, options, exp_val = tests[idx]
 
-    df = simulate_truncated_data(params, options)
-
-    crit_func = rp.get_crit_func(params, options, df)
-    crit_val = crit_func(params)
+    crit_val = _calc_crit_val(params, options)
 
     np.testing.assert_almost_equal(crit_val, exp_val, decimal=DECIMALS)
 
 
 def check_single(test, strict=False):
     """Check a single test."""
-    params, option_spec, exp_val = test
+    params, options, exp_val = test
 
-    df = simulate_truncated_data(params, option_spec)
-
-    crit_func = rp.get_crit_func(params, option_spec, df)
-    est_val = crit_func(params)
+    est_val = _calc_crit_val(params, options)
 
     is_success = np.isclose(est_val, exp_val, rtol=TOL, atol=TOL)
 
@@ -133,10 +136,8 @@ def create_single(idx):
     np.random.seed(idx)
 
     params, options = generate_random_model()
-    df = simulate_truncated_data(params, options)
 
-    crit_func = rp.get_crit_func(params, options, df)
-    crit_val = crit_func(params)
+    crit_val = _calc_crit_val(params, options)
 
     if not isinstance(crit_val, float):
         raise AssertionError(" ... value of criterion function too large.")
