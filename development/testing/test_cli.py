@@ -6,20 +6,20 @@ from testing.regression import run
 
 def test_investigate():
     runner = CliRunner()
-    result = runner.invoke(investigate, ["0"])
+    result = runner.invoke(investigate, [0])
 
     assert result.exit_code == 0
 
 
 def test_run():
     runner = CliRunner()
-    result = runner.invoke(run, ["0", "--no-notification"])
+    result = runner.invoke(run, [0, "--no-notification"])
 
     assert result.exit_code == 0
 
 
 def test_create():
     runner = CliRunner()
-    result = runner.invoke(create, ["1", "--no-save"])
+    result = runner.invoke(create, [1, "--no-save"])
 
     assert result.exit_code == 0

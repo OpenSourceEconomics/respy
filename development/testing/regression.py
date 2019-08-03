@@ -5,6 +5,7 @@ import socket
 from multiprocessing import Pool
 
 import click
+import mkl
 import numpy as np
 
 import respy as rp
@@ -55,10 +56,11 @@ def run_regression_tests(n_tests, n_processes, strict, notification):
 
     """
     tests = load_regression_tests()
-    tests = tests[:n_tests]
+    tests = tests[: n_tests + 1]
 
     check_single_ = functools.partial(check_single, strict=strict)
     with Pool(n_processes) as p:
+        mkl.set_num_threads(1) if n_processes > 1 else None
         ret = p.map(check_single_, tests)
 
     idx_failures = [i for i, x in enumerate(ret) if not x]
