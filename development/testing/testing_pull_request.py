@@ -20,7 +20,7 @@ def run_pull_request_tests():
     runner = CliRunner()
 
     click.secho("Starting regression test.", fg="green")
-    runner.invoke(run, [str(n_tests), "--strict", "-p", "1"])
+    runner.invoke(run, [str(n_tests), "--strict"])
     click.secho("Stopping regression test.", fg="green")
 
 

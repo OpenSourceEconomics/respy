@@ -25,6 +25,7 @@ jobs:
   - bash: |
       source activate respy
       tox
+    displayName: Run all tests.
 
 - job:
   displayName: Windows
@@ -42,12 +43,13 @@ jobs:
       Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH.
 
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda -c defaults -c conda-forge
+  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda -c conda-forge
     displayName: Create Anaconda environment.
 
   - script: |
       call activate respy
       tox -e pytest
+    displayName: Run pytest.
 
 - job:
   displayName: MacOS
@@ -81,3 +83,4 @@ jobs:
   - bash: |
       source activate respy
       tox -e pytest
+    displayName: Run pytest.
