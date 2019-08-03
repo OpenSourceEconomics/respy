@@ -2,7 +2,8 @@
 import socket
 
 import click
-from regression import run_regression_tests
+from click.testing import CliRunner
+from testing.regression import run
 
 import respy as rp
 
@@ -14,10 +15,12 @@ def run_pull_request_tests():
     rp.test()
     click.secho("Stopping pytest", fg="green")
 
-    num_tests = 50 if is_short_run else 1000
+    n_tests = 50 if is_short_run else 1000
+
+    runner = CliRunner()
 
     click.secho("Starting regression test.", fg="green")
-    run_regression_tests(num_tests=num_tests, num_procs=1, strict=True)
+    runner.invoke(run, [str(n_tests), "--strict", "-p", "1"])
     click.secho("Stopping regression test.", fg="green")
 
 
