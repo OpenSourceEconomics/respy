@@ -1,11 +1,8 @@
 """Create, run or investigate regression checks."""
-import functools
 import pickle
 import socket
-from multiprocessing import Pool
 
 import click
-import mkl
 import numpy as np
 
 import respy as rp
@@ -42,28 +39,24 @@ def calc_crit_val(params, options):
     return crit_val
 
 
-def run_regression_tests(n_tests, n_processes, strict, notification):
+def run_regression_tests(n_tests, strict, notification):
     """Run regression tests.
 
     Parameters
     ----------
     n_tests : int
         Number of tests to run. If None, all are run.
-    tests : list
-        List of regression tests. If None, tests are loaded from disk.
-    n_processes : int
-        Number of processes. Default 1.
+    strict : bool, default False
+        Early failure on error.
+    notification : bool, default True
+        Send notification with test report.
 
     """
     tests = load_regression_tests()
     tests = tests[: n_tests + 1]
 
-    check_single_ = functools.partial(check_single, strict=strict)
-    with Pool(n_processes) as p:
-        mkl.set_num_threads(1) if n_processes > 1 else None
-        ret = p.map(check_single_, tests)
-
-    idx_failures = [i for i, x in enumerate(ret) if not x]
+    results = [_check_single(test, strict) for test in tests]
+    idx_failures = [i for i, x in enumerate(results) if not x]
 
     if idx_failures:
         click.secho(f"Failures: {idx_failures}", fg="red")
@@ -76,19 +69,18 @@ def run_regression_tests(n_tests, n_processes, strict, notification):
         send_notification(subject, message)
 
 
-def create_regression_tests(n_tests, n_processes, save):
+def create_regression_tests(n_tests, save):
     """Create a regression vault.
 
     Parameters
     ----------
     n_tests : int
         How many tests are in the vault.
-    n_processes : int, default 1
-        Number of processes.
+    save : bool, default True
+        Flag for saving new tests to disk.
 
     """
-    with Pool(n_processes) as p:
-        tests = p.map(create_single, range(n_tests))
+    tests = [_create_single(i) for i in range(n_tests)]
 
     if save:
         with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "wb") as p:
@@ -113,7 +105,7 @@ def investigate_regression_test(idx):
     assert np.isclose(crit_val, exp_val, rtol=TOL, atol=TOL)
 
 
-def check_single(test, strict):
+def _check_single(test, strict):
     """Check a single test."""
     params, options, exp_val = test
 
@@ -127,7 +119,7 @@ def check_single(test, strict):
     return is_success
 
 
-def create_single(idx):
+def _create_single(idx):
     """Create a single test."""
     np.random.seed(idx)
 
@@ -151,14 +143,10 @@ def cli():
 @click.argument("number_of_tests", type=int)
 @click.option("--strict", is_flag=True, help="Immediate termination on failure.")
 @click.option("--notification/--no-notification", default=True, help="Send report.")
-@click.option("-p", "--processes", default=1, type=int, help="Number of processes.")
-def run(number_of_tests, strict, processes, notification):
+def run(number_of_tests, strict, notification):
     """Run a number of regression tests."""
     run_regression_tests(
-        n_tests=number_of_tests,
-        strict=strict,
-        n_processes=processes,
-        notification=notification,
+        n_tests=number_of_tests, strict=strict, notification=notification
     )
 
 
@@ -171,11 +159,10 @@ def investigate(number_of_test):
 
 @cli.command()
 @click.argument("number_of_tests", type=int)
-@click.option("-p", "--processes", default=1, type=int, help="Number of processes.")
 @click.option("--save/--no-save", default=True, help="Saves new tests on disk.")
-def create(number_of_tests, processes, save):
+def create(number_of_tests, save):
     """Create a new collection of regression tests."""
-    create_regression_tests(n_tests=number_of_tests, n_processes=processes, save=save)
+    create_regression_tests(n_tests=number_of_tests, save=save)
 
 
 if __name__ == "__main__":
