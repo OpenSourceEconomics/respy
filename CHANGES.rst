@@ -19,10 +19,27 @@ releases are available on `PyPI <https://pypi.org/project/respy/>`_.
 - `#201 <https://github.com/OpenSourceEconomics/respy/pull/201>`_ implements a flexible
   state space which is first and foremost flexible in the number of choices with
   experience and wages, but open to be extended.
+- `#204 <https://github.com/OpenSourceEconomics/respy/pull/204>`_ adds more thesis
+  proposals.
 - `#205 <https://github.com/OpenSourceEconomics/respy/pull/205>`_ implements Azure
   Pipelines as the major CI, but we still rely on Travis-CI for deploying the package to
   PyPI.
-
+- `#206 <https://github.com/OpenSourceEconomics/respy/pull/206>`_ prepares estimation
+  with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_
+- `#208 <https://github.com/OpenSourceEconomics/respy/pull/208>`_ implements parsing of
+  choices from data frame.
+- `#209 <https://github.com/OpenSourceEconomics/respy/pull/209>`_ adds parameterizations
+  of Keane and Wolpin (1997). Special thanks to `janosg <https://github.com/janosg>`_
+  who implemented an adaptive rescaling step within the likelihood aggregation which
+  prevents under- and overflows in the contributions.
+- `#211 <https://github.com/OpenSourceEconomics/respy/pull/211>`_ generalizes the
+  construction of type probabilities with arbitrary covariates.
+- `#221 <https://github.com/OpenSourceEconomics/respy/pull/221>`_ implements a new
+  interface for the simulation which is similar to the estimation and reduces runtime
+  for multiple simulations by a factor of four.
+- `#223 <https://github.com/OpenSourceEconomics/respy/pull/223>`_ logs rental prices in
+  parameterizations. The parameters of wage components correspond to the ``ln(wage)``
+  equation.
 
 1.2.1 - 2019-05-19
 ------------------

@@ -4,7 +4,7 @@ jobs:
 - job:
   displayName: Linux
   pool:
-    vmImage: "ubuntu-16.04"
+    vmImage: "ubuntu-latest"
   strategy:
     matrix:
       Python36:
@@ -25,11 +25,12 @@ jobs:
   - bash: |
       source activate respy
       tox
+    displayName: Run all tests.
 
 - job:
   displayName: Windows
   pool:
-    vmImage: "windows-2019"
+    vmImage: "windows-latest"
   strategy:
     matrix:
       Python36:
@@ -42,17 +43,18 @@ jobs:
       Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH.
 
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION numpy mkl tox-conda -c defaults -c conda-forge
+  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda -c conda-forge
     displayName: Create Anaconda environment.
 
   - script: |
       call activate respy
       tox -e pytest
+    displayName: Run pytest.
 
 - job:
   displayName: MacOS
   pool:
-    vmImage: "macOS-10.13"
+    vmImage: "macOS-latest"
   strategy:
     matrix:
       Python36:
@@ -70,9 +72,15 @@ jobs:
   - bash: sudo chown -R $USER $CONDA
     displayName: Take ownership of conda installation
 
+  - bash: |
+      conda clean --index-cache --yes
+      conda clean --all --yes
+    displayName: Reset index-cache and clean conda.
+
   - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
     displayName: Create Anaconda environment
 
   - bash: |
       source activate respy
       tox -e pytest
+    displayName: Run pytest.

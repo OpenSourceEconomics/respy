@@ -80,7 +80,7 @@ def generate_random_model(
     n_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
     options["choices"]["edu"]["start"] = np.random.choice(
         np.arange(1, 15), size=n_edu_start, replace=False
-    ).tolist()
+    )
     options["choices"]["edu"]["lagged"] = np.random.uniform(size=n_edu_start)
     options["choices"]["edu"]["share"] = _get_initial_shares(n_edu_start)
     options["choices"]["edu"]["max"] = np.random.randint(
@@ -112,56 +112,50 @@ def _consolidate_bound_constraints(bound_constr):
         "max_draws": 100,
     }
     constr.update(bound_constr)
+
     return constr
 
 
 def _get_initial_shares(num_groups):
     """We simply need a valid request for the shares of types summing to one."""
-    shares = np.random.np.random.uniform(size=num_groups)
-    shares = shares / np.sum(shares)
-    shares = shares.tolist()
+    shares = np.random.uniform(size=num_groups)
+    shares = shares / shares.sum()
+
     return shares
 
 
 def simulate_truncated_data(params, options, is_missings=True):
-    """Simulate a dataset.
+    """Simulate a (truncated) dataset.
 
     The data can have two more properties. First, truncated history, second, missing
     wages.
 
     """
-
-    def drop_agents_obs(agent):
-        """ We now determine the exact period from which onward the history is truncated
-        and cut the simulated dataset down to size.
-        """
-        start_truncation = np.random.choice(range(1, agent["Period"].max() + 2))
-        agent = agent[agent["Period"] < start_truncation]
-        return agent
-
     _, _, options = process_params_and_options(params, options)
+
     simulate = get_simulate_func(params, options)
     df = simulate(params)
 
     np.random.seed(options["simulation_seed"])
 
     if is_missings:
-        # We truncate the histories of agents. This mimics the frequent empirical fact
-        # that we loose track of more and more agents over time.
-        data_subset = (
-            df.groupby("Identifier").apply(drop_agents_obs).reset_index(drop=True)
+        # Truncate the histories of agents. This mimics the effect of attrition.
+        # Histories can be truncated after the first period or not at all. So, all
+        # individuals have at least one observation.
+        period_of_truncation = df.groupby("Identifier").Period.transform(
+            lambda x: np.random.choice(x.max() + 1) + 1
         )
+        data_subset = df.loc[df.Period.lt(period_of_truncation)].copy()
 
-        # We also want to drop the some wage observations. Note that we might be dealing
-        # with a dataset where nobody is working anyway.
+        # Add some missings to wage data.
         is_working = data_subset["Choice"].isin(options["choices_w_wage"])
-        num_drop_wages = int(
-            np.sum(is_working) * np.random.np.random.uniform(high=0.5, size=1)
-        )
+        num_drop_wages = int(is_working.sum() * np.random.uniform(high=0.5))
+
         if num_drop_wages > 0:
             indices = data_subset["Wage"][is_working].index
-            index_missing = np.random.np.random.choice(indices, num_drop_wages, False)
-            data_subset.loc[index_missing, "Wage"] = None
+            index_missing = np.random.choice(indices, num_drop_wages, replace=False)
+
+            data_subset.loc[index_missing, "Wage"] = np.nan
         else:
             pass
     else:

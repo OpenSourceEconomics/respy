@@ -1,15 +1,12 @@
 """Create, run or investigate regression checks."""
 import pickle
 import socket
-from functools import partial
-from multiprocessing import Pool
 
 import click
 import numpy as np
 
 import respy as rp
 from development.testing.notifications import send_notification
-from respy.config import DECIMALS
 from respy.config import TEST_RESOURCES_DIR
 from respy.config import TOL
 from respy.tests.random_model import generate_random_model
@@ -33,32 +30,33 @@ def _prepare_message(idx_failures):
     return subject, message
 
 
-def run_regression_tests(num_tests=None, num_procs=1, strict=False):
+def calc_crit_val(params, options):
+    df = simulate_truncated_data(params, options)
+
+    crit_func = rp.get_crit_func(params, options, df)
+    crit_val = crit_func(params)
+
+    return crit_val
+
+
+def run_regression_tests(n_tests, strict, notification):
     """Run regression tests.
 
     Parameters
     ----------
-    num_tests : int
+    n_tests : int
         Number of tests to run. If None, all are run.
-    tests : list
-        List of regression tests. If None, tests are loaded from disk.
-    num_procs : int
-        Number of processes. Default 1.
+    strict : bool, default False
+        Early failure on error.
+    notification : bool, default True
+        Send notification with test report.
 
     """
     tests = load_regression_tests()
-    tests = tests[:num_tests] if num_tests is not None else tests
+    tests = tests[: n_tests + 1]
 
-    if num_procs == 1:
-        ret = []
-        for test in tests:
-            ret.append(check_single(test, strict=strict))
-    else:
-        mp_pool = Pool(num_procs)
-        check = partial(check_single, strict=strict)
-        ret = mp_pool.map(check, tests)
-
-    idx_failures = [i for i, x in enumerate(ret) if not x]
+    results = [_check_single(test, strict) for test in tests]
+    idx_failures = [i for i, x in enumerate(results) if not x]
 
     if idx_failures:
         click.secho(f"Failures: {idx_failures}", fg="red")
@@ -66,35 +64,27 @@ def run_regression_tests(num_tests=None, num_procs=1, strict=False):
         click.secho(f"Tests succeeded.", fg="green")
 
     subject, message = _prepare_message(idx_failures)
-    send_notification(subject, message)
+
+    if notification:
+        send_notification(subject, message)
 
 
-def create_regression_tests(num_tests, num_procs=1, write_out=False):
+def create_regression_tests(n_tests, save):
     """Create a regression vault.
 
     Parameters
     ----------
-    num_test : int
+    n_tests : int
         How many tests are in the vault.
-    num_procs : int, default 1
-        Number of processes.
-    write_out : bool, default False
-        If True, regression tests are stored to disk, replacing any existing regression
-        tests. Be careful with this. Default False.
+    save : bool, default True
+        Flag for saving new tests to disk.
 
     """
-    if num_procs == 1:
-        tests = []
-        for idx in range(num_tests):
-            tests.append(create_single(idx))
-    else:
-        with Pool(num_procs) as p:
-            tests = p.map(create_single, range(num_tests))
+    tests = [_create_single(i) for i in range(n_tests)]
 
-    if write_out is True:
+    if save:
         with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "wb") as p:
             pickle.dump(tests, p)
-    return tests
 
 
 def load_regression_tests():
@@ -110,27 +100,18 @@ def investigate_regression_test(idx):
     tests = load_regression_tests()
     params, options, exp_val = tests[idx]
 
-    df = simulate_truncated_data(params, options)
+    crit_val = calc_crit_val(params, options)
 
-    crit_func = rp.get_crit_func(params, options, df)
-    crit_val = crit_func(params)
-
-    np.testing.assert_almost_equal(crit_val, exp_val, decimal=DECIMALS)
+    assert np.isclose(crit_val, exp_val, rtol=TOL, atol=TOL)
 
 
-def check_single(test, strict=False):
+def _check_single(test, strict):
     """Check a single test."""
-    params, option_spec, exp_val = test
+    params, options, exp_val = test
 
-    df = simulate_truncated_data(params, option_spec)
+    crit_val = calc_crit_val(params, options)
 
-    crit_func = rp.get_crit_func(params, option_spec, df)
-    est_val = crit_func(params)
-
-    # the negative sign is because before using estimagic we
-    # returned the negative log likelihood and I did not want to make
-    # new regression test.
-    is_success = np.isclose(est_val, -exp_val, rtol=TOL, atol=TOL)
+    is_success = np.isclose(crit_val, exp_val, rtol=TOL, atol=TOL)
 
     if strict is True:
         assert is_success, "Failed regression test."
@@ -138,15 +119,13 @@ def check_single(test, strict=False):
     return is_success
 
 
-def create_single(idx):
+def _create_single(idx):
     """Create a single test."""
     np.random.seed(idx)
 
     params, options = generate_random_model()
-    df = simulate_truncated_data(params, options)
 
-    crit_func = rp.get_crit_func(params, options, df)
-    crit_val = crit_func(params)
+    crit_val = calc_crit_val(params, options)
 
     if not isinstance(crit_val, float):
         raise AssertionError(" ... value of criterion function too large.")
@@ -163,10 +142,12 @@ def cli():
 @cli.command()
 @click.argument("number_of_tests", type=int)
 @click.option("--strict", is_flag=True, help="Immediate termination on failure.")
-@click.option("-p", "--parallel", default=1, type=int, help="Number of parallel tests.")
-def run(number_of_tests, strict, parallel):
+@click.option("--notification/--no-notification", default=True, help="Send report.")
+def run(number_of_tests, strict, notification):
     """Run a number of regression tests."""
-    run_regression_tests(num_tests=number_of_tests, strict=strict, num_procs=parallel)
+    run_regression_tests(
+        n_tests=number_of_tests, strict=strict, notification=notification
+    )
 
 
 @cli.command()
@@ -178,10 +159,10 @@ def investigate(number_of_test):
 
 @cli.command()
 @click.argument("number_of_tests", type=int)
-@click.option("-p", "--parallel", default=1, type=int, help="Number of parallel tests.")
-def create(number_of_test, parallel):
+@click.option("--save/--no-save", default=True, help="Saves new tests on disk.")
+def create(number_of_tests, save):
     """Create a new collection of regression tests."""
-    create_regression_tests(num_tests=number_of_test, procs=parallel, write_out=True)
+    create_regression_tests(n_tests=number_of_tests, save=save)
 
 
 if __name__ == "__main__":
