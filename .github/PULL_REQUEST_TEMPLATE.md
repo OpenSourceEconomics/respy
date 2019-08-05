@@ -12,4 +12,5 @@ What is your solution?
 
 ### Todo
 
+- [ ] Review whether the documentation needs to be updated.
 - [ ] Document PR in CHANGES.rst.
