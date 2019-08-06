@@ -74,10 +74,10 @@ probabilities in the maximum likelihood estimation. Currently we use a smoothed
 Monte-Carlo integration for both. For a thesis a student could explore how the
 accuracy and speed of the integrals changes with the following strategies:
 
-- Use a GHK simulator instead of current Monte-Carlo integration Use Gaussian
-  quadrature for choice probabilities Allow for restrictions on the correlation
-  structure of the shocks that make it possible to reduce the dimensionality of
-  the integrals.
+- Use a GHK simulator instead of current Monte-Carlo integration.
+- Use Gaussian quadrature for choice probabilities.
+- Allow for restrictions on the correlation structure of the shocks that make 
+  it possible to reduce the dimensionality of the integrals.
 
 Starting points are the following papers:
 
@@ -98,4 +98,4 @@ Approximate Dynamic Programming (ADP)
 
 We want to explore the usefulness of ADP techniques for solving large scale
 structural economic models. The seminal references is `Powell (2011)
-<http://adp.princeton.edu/3>`_
+<http://adp.princeton.edu/3>`_.
