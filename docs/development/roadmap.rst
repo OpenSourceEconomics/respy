@@ -84,7 +84,7 @@ speed of the integrals changes with the following strategies:
 Starting points are the following papers:
 
 - `Skrainka and Judd (2011) <https://dx.doi.org/10.2139/ssrn.1870703>`_
-- `Dunnet (1989) <https://doi.org/10.2307/2347754>`
+- `Dunnet (1989) <https://doi.org/10.2307/2347754>`_
 
 
 Benchmark Different Optimizers
