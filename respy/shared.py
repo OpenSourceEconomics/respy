@@ -159,6 +159,7 @@ def generate_column_labels_simulation(options):
     est_lab, est_dtypes = generate_column_labels_estimation(options)
     labels = (
         est_lab
+        + [observable.title() for observable in options["observables"]]
         + ["Type"]
         + [f"Nonpecuniary_Reward_{choice.title()}" for choice in options["choices"]]
         + [f"Wage_{choice.title()}" for choice in options["choices_w_wage"]]

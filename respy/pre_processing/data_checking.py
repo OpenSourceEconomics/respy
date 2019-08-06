@@ -39,6 +39,10 @@ def check_estimation_data(df, options):
     # 8. Lagged_Choice.
     assert df.Lagged_Choice.isin(options["choices"]).all()
 
+    # Observable characteristics.
+    for observable in options["observables"]:
+        assert df[observable.title()].max() + 1 == options["observables"][observable]
+
     # Others.
     assert df.drop(columns="Wage").notna().all().all()
 

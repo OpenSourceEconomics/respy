@@ -203,6 +203,8 @@ def _create_state_space(options):
 
     df = _add_initial_experiences_to_core_state_space(df, options)
 
+    df = _add_observables_to_state_space(df, options)
+
     df = _add_types_to_state_space(df, options["n_types"])
 
     df = df.sort_values("period").reset_index(drop=True)
@@ -398,6 +400,23 @@ def _add_initial_experiences_to_core_state_space(df, options):
     return df
 
 
+def _add_observables_to_state_space(df, options):
+    container = []
+
+    for observable in options["observables"]:
+        for level in range(options["observables"][observable]):
+            df_ = df.copy()
+
+            # Add columns with observable level.
+            df_[observable] = level
+
+            container.append(df_)
+
+        df = pd.concat(container, axis="rows", sort=False)
+
+    return df
+
+
 def _add_types_to_state_space(df, n_types):
     container = []
     for i in range(n_types):
@@ -421,7 +440,9 @@ def _create_state_space_indexer(df, options):
     shape = (
         (options["n_periods"],)
         + tuple(maximum_exp + 1)
-        + (n_exp_choices + n_nonexp_choices, options["n_types"])
+        + (n_exp_choices + n_nonexp_choices,)
+        + tuple(options["observables"].values())
+        + (options["n_types"],)
     )
     indexer = np.full(shape, -1, dtype=np.int32)
 
@@ -430,8 +451,12 @@ def _create_state_space_indexer(df, options):
     idx = (
         (df.period,)
         + tuple(df[f"exp_{i}"] for i in options["choices_w_exp"])
-        + (df.lagged_choice.replace(choice_to_code), df.type)
+        + (df.lagged_choice.replace(choice_to_code),)
     )
+    if "observables" in options:
+        idx += tuple(df[observable.lower()] for observable in options["observables"])
+    idx += (df.type,)
+
     indexer[idx] = np.arange(df.shape[0])
 
     return indexer

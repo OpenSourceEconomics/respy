@@ -97,6 +97,7 @@ DEFAULT_OPTIONS = {
     "covariates": BASE_COVARIATES,
     "inadmissible_states": BASE_INADMISSIBLE_STATES,
     "core_state_space_filters": BASE_CORE_STATE_SPACE_FILTERS,
+    "observables": {},
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]

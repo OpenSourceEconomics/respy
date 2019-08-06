@@ -280,6 +280,9 @@ def _internal_log_like_obs(
     lagged_choices = df.lagged_choice.to_numpy()
     choices = df.choice.to_numpy()
     experiences = tuple(df[col].to_numpy() for col in df.filter(like="exp_").columns)
+    observables = tuple(
+        df[observable].to_numpy() for observable in options["observables"]
+    )
     wages_observed = df.wage.to_numpy()
 
     # Get the number of observations for each individual and an array with indices of
@@ -290,7 +293,7 @@ def _internal_log_like_obs(
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_obs, n_types).
-    ks = state_space.indexer[(periods,) + experiences + (lagged_choices,)]
+    ks = state_space.indexer[(periods,) + experiences + (lagged_choices,) + observables]
     n_obs, n_types = ks.shape
 
     wages_observed = wages_observed.repeat(n_types)
@@ -393,6 +396,7 @@ def _process_estimation_data(df, options):
     df = df.sort_values(["Identifier", "Period"])[
         ["Identifier", "Period"]
         + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
+        + [observable.title() for observable in options["observables"]]
         + ["Lagged_Choice", "Choice", "Wage"]
     ]
     df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())

@@ -462,7 +462,7 @@ def get_continuation_values(
                     child[n + 1] += 1
 
                 # Change lagged choice.
-                child[-2] = n
+                child[n_choices_w_exp + 1] = n
 
                 k = indexer[array_to_tuple(indexer, child)]
                 continuation_values[k_parent, n] = emax_value_functions[k]

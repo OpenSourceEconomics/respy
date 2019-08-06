@@ -119,6 +119,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     n_choices = len(options["choices"])
     n_periods = options["n_periods"]
     n_wages = len(options["choices_w_wage"])
+    n_experiences = len(options["choices_w_exp"])
 
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
@@ -141,11 +142,16 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     for choice in options["choices_w_exp"]:
         container += (_get_random_initial_experience(choice, options),)
 
-    edu_idx = list(options["choices_w_exp"]).index("edu")
-    container += (_get_random_lagged_choices(container[edu_idx], options),)
+    container += (_get_random_lagged_choices(container, options),)
+
+    for observable in options["observables"]:
+        container += (_get_random_initial_observable(observable, options, optim_paras),)
+
     states_wo_types = pd.DataFrame(
         np.column_stack(container),
-        columns=[f"exp_{i}" for i in options["choices_w_exp"]] + ["lagged_choice"],
+        columns=[f"exp_{i}" for i in options["choices_w_exp"]]
+        + ["lagged_choice"]
+        + [obs for obs in options["observables"]],
     ).assign(period=0)
     container += (_get_random_types(states_wo_types, optim_paras, options),)
 
@@ -226,7 +232,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
             current_states[np.arange(options["simulation_agents"]), choice],
         )
         # Update lagged choices.
-        current_states[:, -2] = choice
+        current_states[:, n_experiences] = choice
 
     simulated_data = _process_simulated_data(data, options)
 
@@ -240,9 +246,9 @@ def _get_random_types(states, optim_paras, options):
     else:
         type_covariates = create_type_covariates(states, options)
 
-        np.random.seed(options["simulation_seed"])
-
         probs = predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
+
+        np.random.seed(options["simulation_seed"])
         types = _random_choice(options["n_types"], probs)
 
     return types
@@ -261,8 +267,10 @@ def _get_random_initial_experience(choice, options):
     return initial_experience
 
 
-def _get_random_lagged_choices(edu_start, options):
+def _get_random_lagged_choices(container, options):
     """Get random, initial levels of lagged choices for simulated agents."""
+    edu_start = container[list(options["choices"]).index("edu")]
+
     np.random.seed(options["simulation_seed"])
 
     choices = [
@@ -283,6 +291,17 @@ def _get_random_lagged_choices(edu_start, options):
     lagged_start = np.array(lagged_start, ndmin=1)
 
     return lagged_start
+
+
+def _get_random_initial_observable(observable, options, optim_paras):
+    np.random.seed(options["simulation_seed"])
+
+    probs = optim_paras[observable]
+    probs = probs / probs.sum()
+
+    return np.random.choice(
+        options["observables"][observable], size=options["simulation_agents"], p=probs
+    )
 
 
 @guvectorize(
