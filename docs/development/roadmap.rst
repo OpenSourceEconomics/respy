@@ -13,7 +13,6 @@ Economics and Statistics
 All topics listed here can be tackled as part of a bachelor or master thesis. If you are
 interested, please contact us!
 
-
 Explore Simulation Based Estimation
 -----------------------------------
 
@@ -22,11 +21,8 @@ parameters estimated with maximum likelihood and simulation based methods. As ``
 already has the ability to simulate data, it would be very simple to implement method of
 simulated moments or indirect inference estimation. As part of this project, we could
 also experiments with approaches that make the criterion function smooth and therefore
-allow the use of fast optimizers. A starting point could be :download:`this paper
-<../_static/thesis_proposals/smooth_simulated_moments.pdf>`
-
-
-
+allow the use of fast optimizers. A starting point could be `Frazier, Oka and Zhu (2019)
+<https://doi.org/10.1016/j.jeconom.2019.06.003>`_
 
 Estimate a model by CCP
 -----------------------
@@ -87,9 +83,8 @@ speed of the integrals changes with the following strategies:
 
 Starting points are the following papers:
 
-
 - `Skrainka and Judd (2011) <https://dx.doi.org/10.2139/ssrn.1870703>`_
-- :download:`Dunnet (1989)<../_static/thesis_proposals/dunnet1989.pdf>`
+- `Dunnet (1989) <https://doi.org/10.2307/2347754>`
 
 
 Benchmark Different Optimizers
