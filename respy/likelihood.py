@@ -428,13 +428,4 @@ def _adjust_options_for_estimation(options, df):
             options["choices"][choice].pop("share")
             options["choices"][choice].pop("lagged")
 
-        # Adjust the number of periods.
-        if not options["n_periods"] == df.Period.max() + 1:
-            warnings.warn(
-                f"The number of periods differs between data, {df.Period.max()}, and "
-                f"options, {options['n_periods']}. The options are ingored.",
-                category=UserWarning,
-            )
-            options["n_periods"] = df.Period.max() + 1
-
     return options
