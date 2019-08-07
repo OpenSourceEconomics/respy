@@ -147,7 +147,13 @@ def _set_defaults_for_choices_with_experience(options):
         choices[choice]["lagged"] = lagged[ordered_indices]
 
         shares = np.array(choices[choice].get("share", np.ones(n_starts)))
-        shares = shares / shares.sum()
+        if shares.sum() != 1:
+            warnings.warn(
+                f"The shares of initial experiences for choice '{choice}' do not sum to"
+                "one. Shares are divided by their sum for normalization.",
+                category=UserWarning,
+            )
+            shares = shares / shares.sum()
         choices[choice]["share"] = shares[ordered_indices]
 
         choices[choice]["max"] = choices[choice].get("max", options["n_periods"] - 1)

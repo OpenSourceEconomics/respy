@@ -1,9 +1,9 @@
 choices:
   edu:
     max: 20
-    start: [7]
-    lagged: [1]
-    share: [1]
+    start: [7, 8, 9, 10, 11]
+    lagged: [1, 1, 1, 1, 1]
+    share: [0.0095, 0.0422, 0.2017, 0.6715, 0.075]
 estimation_draws: 200
 estimation_seed: 500
 estimation_tau: 500
