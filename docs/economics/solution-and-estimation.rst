@@ -41,7 +41,13 @@ partly uncertain due to the unknown realization of the shocks:
 
      E\max(S(t)) =\hspace{11cm}
 
-    \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}\max\{R_1(t), ..., R_K(t)\}f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t),
+    \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}\max\{R_1(t) + \delta E[V(S(t+1) | S(t), d_1(t) = 1]
+
+    , ...,
+
+    R_K(t) + \delta E[V(S(t+1) | S(t), d_K(t) = 1]\}
+
+    f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t),
 
 where :math:`f_{\epsilon}` is the joint density of the uncertain component of the
 rewards in :math:`t` not known at :math:`t - 1`. With all ingredients at hand, the
