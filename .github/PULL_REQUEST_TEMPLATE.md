@@ -1,8 +1,8 @@
-### Current Behavior
+### Current behavior
 
 What is the current state?
 
-### Desired Bahavior
+### Desired behavior
 
 What do you want to achieve?
 
