@@ -63,11 +63,11 @@ def validate_options(o):
         assert _is_nonnegative_integer(choices[choice]["max"])
         assert all(i <= choices[choice]["max"] for i in choices[choice]["start"])
 
-    for key in o:
-        if "draws" in key:
-            assert _is_positive_nonzero_integer(o[key])
-        elif "seed" in key:
-            assert _is_nonnegative_integer(o[key])
+    for option, value in o.items():
+        if "draws" in option:
+            assert _is_positive_nonzero_integer(value)
+        elif "seed" in option:
+            assert _is_nonnegative_integer(value)
 
     assert 0 < o["estimation_tau"]
 
