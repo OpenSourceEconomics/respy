@@ -94,6 +94,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
                 state_space.continuation_values,
                 state_space.emax_value_functions,
                 state_space.is_inadmissible,
+                len(options["choices_w_exp"]),
             )
 
         n_states_in_period = state_space.get_attribute_from_period(
@@ -442,16 +443,14 @@ def get_continuation_values(
     continuation_values,
     emax_value_functions,
     is_inadmissible,
+    n_choices_w_exp,
 ):
     """Get the continuation value from the following future period.
 
     This function takes a state at time :math:`t` and looks up the continuation
     values for each of the choices in the future period :math:`t + 1`.
 
-    TODO: Pass n_choices_w_exp to the function.
-
     """
-    n_choices_w_exp = states.shape[1] - 3
     n_choices = continuation_values.shape[1]
 
     for i in range(states.shape[0]):
