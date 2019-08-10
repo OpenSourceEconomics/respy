@@ -411,7 +411,18 @@ def _add_types_to_state_space(df, n_types):
 
 
 def _create_state_space_indexer(df, options):
-    """Create the indexer for the state space."""
+    """Create the indexer for the state space.
+
+    The indexer consists of sub indexers for each period. This is much more
+    memory-efficient than having a single indexer. For more information see the
+    references section.
+
+    References
+    ----------
+    - https://github.com/OpenSourceEconomics/respy/pull/236
+    - https://github.com/OpenSourceEconomics/respy/pull/237
+
+    """
     n_exp_choices = len(options["choices_w_exp"])
     n_nonexp_choices = len(options["choices_wo_exp"])
     choices = options["choices"]
