@@ -454,6 +454,9 @@ def _process_estimation_data(df, state_space, options):
     All necessary objects for :func:`_internal_log_like_obs` dependent on the data are
     produced.
 
+    Some objects have to be repeated for each type which is a desirable format for the
+    estimation where every observations is weighted by type probabilities.
+
     Parameters
     ----------
     df : pandas.DataFrame
@@ -511,25 +514,27 @@ def _process_estimation_data(df, state_space, options):
     ks = np.row_stack(ks)
 
     # The indexer is now sorted in period-individual pairs whereas the estimation needs
-    # individual-period pairs. Thus, we number
+    # individual-period pairs. Sort it!
     period_indices = (
         df.sort_values(["period", "identifier"])
-        .assign(_index=np.arange(df.shape[0]))
-        .sort_values(["identifier", "period"])["_index"]
+        .assign(__index__=np.arange(df.shape[0]))
+        .sort_values(["identifier", "period"])["__index__"]
         .to_numpy()
     )
     ks = ks[period_indices]
 
-    # Get an array of indices for the first observation of each individual. This is used
-    # in :func:`_internal_log_like_obs` to aggregate probabilities of the individual
-    # over all periods.
+    # Get an array of positions of the first observation for each individual. This is
+    # used in :func:`_internal_log_like_obs` to aggregate probabilities of the
+    # individual over all periods.
     n_obs_per_indiv = np.bincount(df.identifier.to_numpy())
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
-    log_wages_observed = np.clip(
-        np.log(df.wage.to_numpy()), -HUGE_FLOAT, HUGE_FLOAT
-    ).repeat(options["n_types"])
+    log_wages_observed = (
+        np.log(df.wage.to_numpy())
+        .clip(-HUGE_FLOAT, HUGE_FLOAT)
+        .repeat(options["n_types"])
+    )
 
     # For the estimation, choices are needed with shape (n_observations, n_types).
     choices = df.choice.to_numpy().repeat(options["n_types"])
@@ -557,7 +562,7 @@ def _adjust_options_for_estimation(options, df):
         init_exp_data = np.sort(
             df.loc[df.Period.eq(0), f"Experience_{choice.title()}"].unique()
         )
-        init_exp_options = options["choices"][choice]["start"].astype(np.uint8)
+        init_exp_options = options["choices"][choice]["start"]
         if not np.array_equal(init_exp_data, init_exp_options):
             warnings.warn(
                 f"The initial experience for choice '{choice}' differs between data, "

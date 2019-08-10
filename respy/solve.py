@@ -458,17 +458,21 @@ def get_continuation_values(
         k_current = indexer_current[array_to_tuple(indexer_current, states[i, 1:])]
 
         for n in range(n_choices):
+            # Check if the state in the future is admissible.
             if is_inadmissible[k_current, n]:
                 continuation_values[k_current, n] = 0
             else:
+                # Cut off the period which is not necessary for the indexer.
                 child = states[i, 1:].copy()
 
+                # Increment experience if it is a choice with experience accumulation.
                 if n < n_choices_w_exp:
                     child[n] += 1
 
                 # Change lagged choice.
                 child[n_choices_w_exp] = n
 
+                # Get the position of the continuation value.
                 k_future = indexer_future[array_to_tuple(indexer_future, child)]
                 continuation_values[k_current, n] = emax_value_functions[k_future]
 
