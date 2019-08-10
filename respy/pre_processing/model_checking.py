@@ -56,31 +56,21 @@ def validate_params(params, options):
 
 
 def validate_options(o):
-    # Choices with experience.
     choices = o["choices"]
     for choice in o["choices_w_exp"]:
-        assert (
-            len(choices[choice]["lagged"])
-            == len(choices[choice]["share"])
-            == len(choices[choice]["start"])
-        )
-        assert isinstance(choices[choice]["lagged"], np.ndarray)
-        assert isinstance(choices[choice]["share"], np.ndarray)
-        assert isinstance(choices[choice]["start"], np.ndarray)
         assert all(0 <= item <= 1 for item in choices[choice]["lagged"])
-        assert all(0 <= item <= 1 for item in choices[choice]["share"])
-        assert np.isclose(choices[choice]["share"].sum(), 1)
         assert all(_is_nonnegative_integer(i) for i in choices[choice]["start"])
         assert _is_nonnegative_integer(choices[choice]["max"])
         assert all(i <= choices[choice]["max"] for i in choices[choice]["start"])
 
-    # Estimation.
-    assert _is_positive_nonzero_integer(o["estimation_draws"])
+    for key in o:
+        if "draws" in key:
+            assert _is_positive_nonzero_integer(o[key])
+        elif "seed" in key:
+            assert _is_nonnegative_integer(o[key])
 
-    assert _is_positive_nonzero_integer(o["estimation_seed"])
-    assert 0 <= o["estimation_tau"]
+    assert 0 < o["estimation_tau"]
 
-    # Interpolation.
     assert (
         _is_positive_nonzero_integer(o["interpolation_points"])
         or o["interpolation_points"] == -1
@@ -89,23 +79,14 @@ def validate_options(o):
     # Number of periods.
     assert _is_positive_nonzero_integer(o["n_periods"])
 
-    # Simulation.
-    assert _is_positive_nonzero_integer(o["simulation_agents"])
-    assert _is_positive_nonzero_integer(o["simulation_seed"])
-
-    # Solution.
-    assert _is_positive_nonzero_integer(o["solution_draws"])
-    assert _is_positive_nonzero_integer(o["solution_seed"])
-
     # Covariates.
-    assert isinstance(o["covariates"], dict)
     assert all(
         isinstance(key, str) and isinstance(val, str)
         for key, val in o["covariates"].items()
     )
 
     # Every choice must have a restriction.
-    assert all(i in o["inadmissible_states"] for i in o["choices"])
+    assert all(choice in o["inadmissible_states"] for choice in o["choices"])
 
 
 def _is_positive_nonzero_integer(x):
