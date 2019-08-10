@@ -449,6 +449,38 @@ def create_type_covariates(df, options):
 
 
 def _process_estimation_data(df, state_space, options):
+    """Process estimation data.
+
+    All necessary objects for :func:`_internal_log_like_obs` dependent on the data are
+    produced.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame which contains the data used for estimation. The DataFrame
+        contains individual identifiers, periods, experiences, lagged choices, choices
+        in current period, the wage and other observed data.
+    state_space : ~respy.state_space.StateSpace
+    options : dict
+
+    Returns
+    -------
+    choices : numpy.ndarray
+        Array with shape (n_observations, n_types) where information is only repeated
+        over the second axis.
+    idx_indiv_first_obs : numpy.ndarray
+        Array with shape (n_individuals,) containing indices for the first observations
+        of each individual.
+    ks : numpy.ndarray
+        Array with shape (n_observations, n_types) containing indices for states which
+        correspond to observations.
+    log_wages_observed : numpy.ndarray
+        Array with shape (n_observations, n_types) containing clipped log wages.
+    type_covariates : numpy.ndarray
+        Array with shape (n_individuals, n_type_covariates) containing covariates to
+        predict probabilities for each type.
+
+    """
     df = df.sort_values(["Identifier", "Period"])[
         ["Identifier", "Period"]
         + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
@@ -495,8 +527,9 @@ def _process_estimation_data(df, state_space, options):
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
-    wages_observed = df.wage.to_numpy().repeat(options["n_types"])
-    log_wages_observed = np.clip(np.log(wages_observed), -HUGE_FLOAT, HUGE_FLOAT)
+    log_wages_observed = np.clip(
+        np.log(df.wage.to_numpy()), -HUGE_FLOAT, HUGE_FLOAT
+    ).repeat(options["n_types"])
 
     # For the estimation, choices are needed with shape (n_observations, n_types).
     choices = df.choice.to_numpy().repeat(options["n_types"])
