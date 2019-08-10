@@ -155,7 +155,8 @@ def check_model_solution(options, state_space):
     assert np.sum(state_space.indexer[0] >= 0) == n_states_start
 
     # Check that we have as many indices as states.
-    assert state_space.states.shape[0] == (state_space.indexer >= 0).sum()
+    n_valid_indices = sum((indexer >= 0).sum() for indexer in state_space.indexer)
+    assert state_space.states.shape[0] == n_valid_indices
 
     # Check finiteness of rewards and emaxs.
     assert np.all(np.isfinite(state_space.wages))

@@ -157,9 +157,8 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     for period in range(n_periods):
 
         # Get indices which connect states in the state space and simulated agents.
-        ks = state_space.indexer[
-            (np.full(options["simulation_agents"], period),)
-            + tuple(current_states[:, i] for i in range(current_states.shape[1]))
+        ks = state_space.indexer[period][
+            tuple(current_states[:, i] for i in range(current_states.shape[1]))
         ]
 
         # Select relevant subset of random draws.
@@ -226,7 +225,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
             current_states[np.arange(options["simulation_agents"]), choice],
         )
         # Update lagged choices.
-        current_states[:, -2] = choice
+        current_states[:, len(options["choices_w_exp"])] = choice
 
     simulated_data = _process_simulated_data(data, options)
 

@@ -45,28 +45,28 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     """
 
     @njit
-    def traverse_forward(states_, indexer, indicator_, is_inadmissible):
+    def traverse_forward(
+        states_, indexer_current, indexer_future, indicator_, is_inadmissible
+    ):
         n_choices_w_exp = states_.shape[1] - 3
         n_choices = is_inadmissible.shape[1]
 
         for i in range(states_.shape[0]):
 
-            k_parent = indexer[array_to_tuple(indexer, states_[i])]
+            k_parent = indexer_current[array_to_tuple(indexer_current, states_[i, 1:])]
 
             for n in range(n_choices):
                 if is_inadmissible[k_parent, n]:
                     pass
                 else:
-                    child = states_[i].copy()
-                    # Change to future period.
-                    child[0] += 1
+                    child = states_[i, 1:].copy()
 
                     if n < n_choices_w_exp:
-                        child[n + 1] += 1
+                        child[n] += 1
 
-                    child[-2] = n
+                    child[n_choices_w_exp] = n
 
-                    k = indexer[array_to_tuple(indexer, child)]
+                    k = indexer_future[array_to_tuple(indexer_future, child)]
                     indicator_[k] = 1
 
         return indicator_
@@ -83,7 +83,11 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
         states = state_space.get_attribute_from_period("states", period)
 
         indicator = traverse_forward(
-            states, state_space.indexer, indicator, state_space.is_inadmissible
+            states,
+            state_space.indexer[period],
+            state_space.indexer[period + 1],
+            indicator,
+            state_space.is_inadmissible,
         )
 
     # Restrict indicator to states of the second period as the first is never indexed.
@@ -145,7 +149,8 @@ def test_get_continuation_values(model_or_seed):
         states = state_space.get_attribute_from_period("states", period)
         state_space.continuation_values = get_continuation_values(
             states,
-            state_space.indexer,
+            state_space.indexer[period],
+            state_space.indexer[period + 1],
             state_space.continuation_values,
             state_space.emax_value_functions,
             state_space.is_inadmissible,
@@ -184,9 +189,10 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
     assert states_old_set == states_new_set
 
     # Compare indexers via masks for valid indices.
-    mask_old = indexer_old != -1
-    mask_new = indexer_new != -1
-    assert np.array_equal(mask_old, mask_new)
+    for period in range(n_periods):
+        mask_old = indexer_old[period] != -1
+        mask_new = indexer_new[period] != -1
+        assert np.array_equal(mask_old, mask_new)
 
 
 @pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1997_MODELS)
@@ -220,9 +226,10 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
     assert states_old_set == states_new_set
 
     # Compare indexers via masks for valid indices.
-    mask_old = indexer_old != -1
-    mask_new = indexer_new != -1
-    assert np.array_equal(mask_old, mask_new)
+    for period in range(n_periods):
+        mask_old = indexer_old[period] != -1
+        mask_new = indexer_new[period] != -1
+        assert np.array_equal(mask_old, mask_new)
 
 
 @pytest.mark.parametrize("seed", range(10))
