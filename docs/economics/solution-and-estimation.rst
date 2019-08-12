@@ -40,7 +40,7 @@ partly uncertain due to the unknown realization of the shocks:
 
 .. math::
 
-E\max(S(t)) =\hspace{11cm}
+E\max(S(t)) = \\
 
     \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}\max\{R_1(t), ..., R_K(t)\}f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t),
 
