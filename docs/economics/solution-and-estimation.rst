@@ -29,11 +29,11 @@ obeys the Bellman equation (Bellman, 1957) and is thus amenable to a backward re
 
 Assuming continued optimal behavior, the expected future value of state :math:`S(t + 1)`
 for all :math:`K` alternatives given today's state :math:`S(t)` and choice :math:`d_k(t)
-= 1`, :math:`E\max_k(S(t + 1))` for short, can be calculated:
+= 1`, :math:`E{\max}_k(S(t + 1))` for short, can be calculated:
 
 .. math::
 
-    E\max_k(S(t + 1)) = E\left[V(S(t + 1), t + 1) \mid| S(t), d_k(t) = 1\right].
+    E{\max}_k(S(t + 1)) = E\left[V(S(t + 1), t + 1) \mid S(t), d_k(t) = 1\right].
 
 This requires the evaluation of a :math:`K` - dimensional integral as future rewards are
 partly uncertain due to the unknown realization of the shocks:
