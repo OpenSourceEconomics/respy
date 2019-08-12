@@ -40,17 +40,17 @@ partly uncertain due to the unknown realization of the shocks:
 
 .. math::
 
-E\max(S(t)) = \\
+  \begin{align}
 
-    \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}\max\{R_1(t), ..., R_K(t)\}f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t),
+      E\max(S(t)) &= \\
+        \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}\max\{R_1(t), ..., R_K(t)\}f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t),
 
-    E\max(S(t)) &= \int_{\epsilon_1(t)} \dots \int_{\epsilon_K(t)} \max\{ \\
+      E\max(S(t)) &= \int_{\epsilon_1(t)} \dots \int_{\epsilon_K(t)} \max\{ \\
                 &R_1(t) + \delta E\max_1(S(t+1)), \\
                 &\dots, \\
-                &R_K(t) + \delta E\max_K(S(t+1))\\
-    \} f_\epsilon(
-        \epsilon_1(t), \dots ,&\epsilon_K(t)
-    ) d\epsilon_1(t) \dots d\epsilon_K(t)
+                &R_K(t) + \delta E\max_K(S(t+1)) \\
+                \} f_\epsilon(\epsilon_1(t), \dots , \epsilon_K(t)) d\epsilon_1(t) \dots d\epsilon_K(t)
+    \end{align}
 
 where :math:`f_{\epsilon}` is the joint density of the uncertain component of the
 rewards in :math:`t` not known at :math:`t - 1`. With all ingredients at hand, the
