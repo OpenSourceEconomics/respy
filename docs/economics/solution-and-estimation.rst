@@ -41,10 +41,8 @@ partly uncertain due to the unknown realization of the shocks:
 .. math::
 
   \begin{align}
-
       E\max(S(t)) &= \\
         \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}\max\{R_1(t), ..., R_K(t)\}f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t),
-
       E\max(S(t)) &= \int_{\epsilon_1(t)} \dots \int_{\epsilon_K(t)} \max\{ \\
                 &R_1(t) + \delta E\max_1(S(t+1)), \\
                 &\dots, \\
