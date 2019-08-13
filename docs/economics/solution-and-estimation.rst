@@ -29,26 +29,15 @@ obeys the Bellman equation (Bellman, 1957) and is thus amenable to a backward re
 
 Assuming continued optimal behavior, the expected future value of state :math:`S(t + 1)`
 for all :math:`K` alternatives given today's state :math:`S(t)` and choice :math:`d_k(t)
-= 1`, :math:`E{\max}_k(S(t + 1))` for short, can be calculated:
+= 1`, :math:`E{\max}(S(t + 1), t)` for short, can be calculated:
 
 .. math::
 
-    E{\max}_k(S(t + 1)) = E\left[V(S(t + 1), t + 1) \mid S(t), d_k(t) = 1\right].
+    E{\max}(S(t + 1), t) = E\left[V(S(t + 1), t + 1) \mid S(t), d_k(t) = 1\right].
 
 This requires the evaluation of a :math:`K` - dimensional integral as future rewards are
-partly uncertain due to the unknown realization of the shocks:
-
-.. math::
-
-  \begin{align}
-      E\max(S(t)) & = \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}\max\{R_1(t), ..., R_K(t)\}f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t)\\
-        &= \int_{\epsilon_1(t)} \dots \int_{\epsilon_K(t)} \max\{R_1(t) + \delta E{\max}_1(S(t+1)), \dots , R_K(t) + \delta E{\max}_K(S(t+1))\}
-        \\[-15em] & \hspace{3.2cm} f_\epsilon(\epsilon_1(t), \dots , \epsilon_K(t)) d\epsilon_1(t) \dots d\epsilon_K(t)
-    \end{align}
-
-where :math:`f_{\epsilon}` is the joint density of the uncertain component of the
-rewards in :math:`t` not known at :math:`t - 1`. With all ingredients at hand, the
-solution of the model by backward induction is straightforward.
+partly uncertain due to the unknown realization of the shocks. With all ingredients at
+hand, the solution of the model by backward induction is straightforward.
 
 Estimation
 ----------
