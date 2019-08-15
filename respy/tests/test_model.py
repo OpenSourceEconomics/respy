@@ -83,7 +83,6 @@ def test_invariance_to_order_of_choices(model_or_seed):
     assert list(options["choices"]) == list(shuffled_options["choices"])
 
 
-@pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_sorting_of_type_probability_parameters(model_or_seed):
     # Set configuration for random models.

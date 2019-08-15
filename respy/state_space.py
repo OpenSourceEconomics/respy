@@ -197,7 +197,8 @@ def _create_state_space(options):
     """
     df = _create_core_state_space(options)
 
-    df = _add_lagged_choice_to_core_state_space(df, options)
+    if options["n_lagged_choices"]:
+        df = _add_lagged_choice_to_core_state_space(df, options)
 
     df = _filter_core_state_space(df, options)
 
@@ -310,10 +311,11 @@ def _create_core_state_space_per_period(
 
 def _add_lagged_choice_to_core_state_space(df, options):
     container = []
-    for choice in options["choices"]:
-        df_ = df.copy()
-        df_["lagged_choice"] = choice
-        container.append(df_)
+    for lag in range(1, options["n_lagged_choices"] + 1):
+        for choice in options["choices"]:
+            df_ = df.copy()
+            df_[f"lagged_choice_{lag}"] = choice
+            container.append(df_)
 
     df = pd.concat(container, axis="rows", sort=False)
 

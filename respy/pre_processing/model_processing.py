@@ -43,6 +43,8 @@ def _process_options(options, params):
             params.loc["type_2"].index.get_level_values(0)
         )
 
+    options["n_lagged_choices"] = _infer_number_of_lagged_choices(options, params)
+
     extended_options = {**DEFAULT_OPTIONS, **options}
     extended_options = _order_choices(extended_options, params)
     extended_options = _set_defaults_for_choices_with_experience(extended_options)
@@ -252,3 +254,32 @@ def _infer_choices(params):
     choices_w_nonpec = _infer_choices_with_prefix(params, "nonpec_")
 
     return list(set(choices_w_wage) | set(choices_w_nonpec))
+
+
+def _infer_number_of_lagged_choices(options, params):
+    """Infer the maximum lag of choices.
+
+    Example
+    -------
+    >>> index = pd.MultiIndex.from_tuples([("name", "covariate")])
+    >>> params = pd.DataFrame(index=index)
+    >>> options = {"covariates": {"covariate": "lagged_choice_2 + lagged_choice_1"}}
+    >>> _infer_number_of_lagged_choices(options, params)
+    2
+
+    """
+    covariates = options["covariates"]
+    parameters = params.index.get_level_values(1)
+
+    used_covariates = [cov for cov in covariates if cov in parameters]
+
+    matches = []
+    for cov in used_covariates:
+        matches += re.findall(r"lagged_choice_([0-9]+)", covariates[cov])
+
+    if matches:
+        n_lagged_choices = pd.to_numeric(matches).max()
+    else:
+        n_lagged_choices = 0
+
+    return n_lagged_choices
