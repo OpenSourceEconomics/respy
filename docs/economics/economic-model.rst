@@ -58,8 +58,7 @@ m                 sectors                            1: white-collar, 2: blue-co
                                                      3: military, 4: school, 5: home
 k                 endowment type                     k = 1, 2, 3, 4 in the extended KW
                                                      model
-a                 age /period from :math:`a_0` to A  from 16 to 65 in the extended KW
-                                                     model
+a                 age / period from :math:`a_0` to A from 16 to 65
 ================= ================================== ==========================
 
 Each of the five sectors is associated with a reward. The rewards depend on the
@@ -75,8 +74,7 @@ Notation          Interpretation                           Additional Informatio
 :math:`S_{a_0}`   state space at model start               :math:`S(16)` in the paper,
                                                            contains the type of the
                                                            individual
-a                 age                                      from 16 to 65 in the extended
-                                                           KW model
+a                 age                                      from 16 to 65
 g                 schooling                                years of schooling
 x                 work experience                          vector: one value for
                                                            white-collar, blue-collar and
@@ -89,14 +87,14 @@ x                 work experience                          vector: one value for
 
 **Other Notation**
 
-================= ===================================== ==========================
-Notation          Interpretation                        Additional Information
-================= ===================================== ==========================
-:math:`d_m(a)`    dummy if sector m was chosen at age a
-:math:`1[]`       indicator function                    1 if statement in [] is true,
-                                                        0 else
-================= ===================================== ==========================
-
++----------------+-----------------------------+------------------------------+
+|    Notation    |        Interpretation       |    Additional Information    |
++================+=============================+==============================+
+| :math:`d_m(a)` | dummy if sector :math:`m`   |                              |
+|                | was chosen at age :math:`a` |                              |
++----------------+-----------------------------+------------------------------+
+| :math:`1[]`    | indicator function          | 1 if statement in [] is true |
++----------------+-----------------------------+------------------------------+
 
 The Reward Functions and Their Parameters
 ------------------------------------------
