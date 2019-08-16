@@ -34,6 +34,9 @@ def get_example_model(model, with_data=True):
         df = (simulate(params),)
     else:
         df = ()
-        warnings.warn(f"No data available for model '{model}'.", category=UserWarning)
+        if with_data:
+            warnings.warn(
+                f"No data available for model '{model}'.", category=UserWarning
+            )
 
     return (params, options) + df
