@@ -3,8 +3,6 @@ import json
 import os
 import sys
 
-import respy.interface
-
 
 def main():
     """Evaluate the criterion function multiple times for a scalability report.
@@ -35,7 +33,7 @@ def main():
     import respy as rp
 
     # Get model
-    options, params = respy.interface.get_example_model(model, with_data=False)
+    options, params = rp.get_example_model(model, with_data=False)
 
     # Simulate the data
     simulate = rp.get_simulate_func(params, options)
