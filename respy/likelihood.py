@@ -2,7 +2,6 @@ import warnings
 from functools import partial
 
 import numpy as np
-import pandas as pd
 from numba import guvectorize
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
@@ -12,10 +11,9 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import clip
 from respy.shared import create_base_draws
-from respy.shared import downcast_to_smallest_dtype
+from respy.shared import create_type_covariates
 from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
-from respy.state_space import create_base_covariates
 from respy.state_space import StateSpace
 
 
@@ -370,23 +368,6 @@ def _convert_choice_variables_from_categorical_to_codes(df, options):
     df.lagged_choice = df.lagged_choice.replace(choices_to_codes).astype(np.uint8)
 
     return df
-
-
-def create_type_covariates(df, options):
-    """Create covariates to predict type probabilities.
-
-    In the simulation, the covariates are needed to predict type probabilities and
-    assign types to simulated individuals. In the estimation, covariates are necessary
-    to weight the probability of observations by type probabilities.
-
-    """
-    covariates = create_base_covariates(df, options["covariates"])
-
-    all_data = pd.concat([covariates, df], axis="columns", sort=False)
-
-    all_data = all_data[options["type_covariates"]].apply(downcast_to_smallest_dtype)
-
-    return all_data.to_numpy()
 
 
 def _process_estimation_data(df, options):
