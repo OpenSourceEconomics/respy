@@ -455,12 +455,12 @@ def get_continuation_values(
 
     for i in range(states.shape[0]):
 
-        k_current = indexer_current[array_to_tuple(indexer_current, states[i, 1:])]
+        idx_current = indexer_current[array_to_tuple(indexer_current, states[i, 1:])]
 
         for n in range(n_choices):
             # Check if the state in the future is admissible.
-            if is_inadmissible[k_current, n]:
-                continuation_values[k_current, n] = 0
+            if is_inadmissible[idx_current, n]:
+                continuation_values[idx_current, n] = 0
             else:
                 # Cut off the period which is not necessary for the indexer.
                 child = states[i, 1:].copy()
@@ -473,8 +473,8 @@ def get_continuation_values(
                 child[n_choices_w_exp] = n
 
                 # Get the position of the continuation value.
-                k_future = indexer_future[array_to_tuple(indexer_future, child)]
-                continuation_values[k_current, n] = emax_value_functions[k_future]
+                idx_future = indexer_future[array_to_tuple(indexer_future, child)]
+                continuation_values[idx_current, n] = emax_value_functions[idx_future]
 
     return continuation_values
 

@@ -157,7 +157,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     for period in range(n_periods):
 
         # Get indices which connect states in the state space and simulated agents.
-        ks = state_space.indexer[period][
+        indices = state_space.indexer[period][
             tuple(current_states[:, i] for i in range(current_states.shape[1]))
         ]
 
@@ -167,12 +167,12 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
         # Get total values and ex post rewards.
         value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
-            state_space.wages[ks],
-            state_space.nonpec[ks],
-            state_space.continuation_values[ks],
+            state_space.wages[indices],
+            state_space.nonpec[indices],
+            state_space.continuation_values[indices],
             draws_shock.reshape(-1, 1, n_choices),
             optim_paras["delta"],
-            state_space.is_inadmissible[ks],
+            state_space.is_inadmissible[indices],
         )
         value_functions = value_functions.reshape(-1, n_choices)
         flow_utilities = flow_utilities.reshape(-1, n_choices)
@@ -183,13 +183,13 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
         # constructed cases.
         value_functions = np.where(
-            state_space.is_inadmissible[ks], -HUGE_FLOAT, value_functions
+            state_space.is_inadmissible[indices], -HUGE_FLOAT, value_functions
         )
 
         # Determine optimal choice.
         choice = np.argmax(value_functions, axis=1)
 
-        wages = state_space.wages[ks] * draws_shock * draws_wage
+        wages = state_space.wages[indices] * draws_shock * draws_wage
         wages[:, n_wages:] = np.nan
         wage = np.choose(choice, wages.T)
 
@@ -208,8 +208,8 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
                 # additional information that is not available in an observed dataset.
                 # The discount rate is included as this allows to construct the EMAX
                 # with the information provided in the simulation output.
-                state_space.nonpec[ks],
-                state_space.wages[ks, :n_wages],
+                state_space.nonpec[indices],
+                state_space.wages[indices, :n_wages],
                 flow_utilities,
                 value_functions,
                 draws_shock,
