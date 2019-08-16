@@ -1,3 +1,9 @@
+"""Contains functions which are shared across other modules.
+
+This module should only import from other packages or modules of respy which also do not
+import from respy itself. This is to prevent circular imports.
+
+"""
 import numpy as np
 import pandas as pd
 from numba import guvectorize
