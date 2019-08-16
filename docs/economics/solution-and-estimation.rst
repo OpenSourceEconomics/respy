@@ -20,32 +20,24 @@ obeys the Bellman equation (Bellman, 1957) and is thus amenable to a backward re
 .. math::
 
     \begin{align}
-        V_k(S(t),t) = \begin{cases} R_k(S(t)) + \delta E\left[V(S(t + 1), t + 1) \mid
-        S(t), d_k(t) = 1\right] &\text{if } t < T \\
-        R_k(S(t)) &\text{if } t = T.
+        V_k(S(t),t) = \begin{cases}
+            R_k(S(t)) + \delta E\left[V(S(t + 1), t + 1) \mid
+                S(t), d_k(t) = 1\right] &\text{if } t < T \\
+            R_k(S(t)) &\text{if } t = T.
         \end{cases}
     \end{align}
 
 Assuming continued optimal behavior, the expected future value of state :math:`S(t + 1)`
 for all :math:`K` alternatives given today's state :math:`S(t)` and choice :math:`d_k(t)
-= 1`, :math:`E\max(S(t + 1))` for short, can be calculated:
+= 1`, :math:`E{\max}(S(t + 1), t)` for short, can be calculated:
 
 .. math::
 
-    E\max(S(t + 1)) = E\left[V(S(t + 1), t + 1) \mid S(t), d_k(t) = 1\right].
+    E{\max}(S(t + 1), t) = E\left[V(S(t + 1), t + 1) \mid S(t), d_k(t) = 1\right].
 
 This requires the evaluation of a :math:`K` - dimensional integral as future rewards are
-partly uncertain due to the unknown realization of the shocks:
-
-.. math::
-
-     E\max(S(t)) =\hspace{11cm}
-
-    \int_{\epsilon_1(t)} ... \int_{\epsilon_K(t)}\max\{R_1(t), ..., R_K(t)\}f_{\epsilon}(\epsilon_1(t), ... ,\epsilon_K(t))d\epsilon_1(t) ... d\epsilon_K(t),
-
-where :math:`f_{\epsilon}` is the joint density of the uncertain component of the
-rewards in :math:`t` not known at :math:`t - 1`. With all ingredients at hand, the
-solution of the model by backward induction is straightforward.
+partly uncertain due to the unknown realization of the shocks. With all ingredients at
+hand, the solution of the model by backward induction is straightforward.
 
 Estimation
 ----------
