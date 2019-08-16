@@ -150,7 +150,7 @@ def _set_defaults_for_choices_with_experience(options):
         if shares.sum() != 1:
             warnings.warn(
                 f"The shares of initial experiences for choice '{choice}' do not sum to"
-                "one. Shares are divided by their sum for normalization.",
+                " one. Shares are divided by their sum for normalization.",
                 category=UserWarning,
             )
             shares = shares / shares.sum()
