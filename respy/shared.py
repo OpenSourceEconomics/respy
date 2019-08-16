@@ -12,6 +12,7 @@ from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import TEST_RESOURCES_DIR
+from respy.simulate import get_simulate_func
 
 
 @njit
@@ -128,7 +129,8 @@ def get_example_model(model):
     if "kw_97" in model:
         df = rp_data.create_kw_97()
     elif "kw_94" in model:
-        df = rp_data.create_kw_94()
+        simulate = get_simulate_func(params, options)
+        df = simulate(params)
     else:
         df = None
         warnings.warn(f"No data available for model '{model}'.", category=UserWarning)
