@@ -33,7 +33,7 @@ def main():
     import respy as rp
 
     # Get model
-    options, params, _ = rp.get_example_model(model)
+    options, params = rp.get_example_model(model, with_data=False)
 
     # Simulate the data
     simulate = rp.get_simulate_func(params, options)

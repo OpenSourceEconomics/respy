@@ -2,6 +2,16 @@
 API
 ===
 
+interface
+---------
+
+.. currentmodule:: respy.interface
+
+.. autosummary::
+    :toctree: _generated/
+
+    get_example_model
+
 state_space
 -----------
 
