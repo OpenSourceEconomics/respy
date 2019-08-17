@@ -5,10 +5,10 @@ import pandas as pd
 from numba import guvectorize
 
 from respy.config import HUGE_FLOAT
-from respy.likelihood import create_type_covariates
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
+from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_simulation
 from respy.shared import predict_multinomial_logit
 from respy.shared import transform_disturbances
