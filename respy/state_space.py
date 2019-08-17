@@ -5,6 +5,7 @@ import pandas as pd
 
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
+from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import downcast_to_smallest_dtype
 
@@ -543,33 +544,6 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
 
     for key, val in covariates.items():
         covariates[key] = np.ascontiguousarray(val)
-
-    return covariates
-
-
-def create_base_covariates(states, covariates_spec):
-    """Create set of covariates for each state.
-
-    Parameters
-    ----------
-    states : pandas.DataFrame
-        DataFrame with shape (n_states, n_choices_w_exp + 3) containing period,
-        experiences, choice_lagged and type of each state.
-    covariates_spec : dict
-        Keys represent covariates and values are strings passed to ``df.eval``.
-
-    Returns
-    -------
-    covariates : pandas.DataFrame
-        DataFrame with shape (n_states, n_covariates).
-
-    """
-    covariates = states.copy()
-
-    for covariate, definition in covariates_spec.items():
-        covariates[covariate] = covariates.eval(definition)
-
-    covariates = covariates.drop(columns=states.columns)
 
     return covariates
 
