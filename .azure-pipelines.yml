@@ -43,6 +43,9 @@ jobs:
       Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH.
 
+  - powershell: conda update conda --yes --quiet
+    displayName: Update conda.
+
   - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda -c conda-forge
     displayName: Create Anaconda environment.
 
@@ -71,6 +74,9 @@ jobs:
 #   # globally.
 #   - bash: sudo chown -R $USER $CONDA
 #     displayName: Take ownership of conda installation
+
+#   - bash: conda update conda --yes --quiet
+#     displayName: Update conda.
 
 #   - bash: |
 #       conda clean --index-cache --yes

@@ -412,28 +412,49 @@ def _add_types_to_state_space(df, n_types):
 
 
 def _create_state_space_indexer(df, options):
-    """Create the indexer for the state space."""
+    """Create the indexer for the state space.
+
+    The indexer consists of sub indexers for each period. This is much more
+    memory-efficient than having a single indexer. For more information see the
+    references section.
+
+    References
+    ----------
+    - https://github.com/OpenSourceEconomics/respy/pull/236
+    - https://github.com/OpenSourceEconomics/respy/pull/237
+
+    """
     n_exp_choices = len(options["choices_w_exp"])
     n_nonexp_choices = len(options["choices_wo_exp"])
-    maximum_exp = np.array(
-        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]]
-    )
+    choices = options["choices"]
 
-    shape = (
-        (options["n_periods"],)
-        + tuple(maximum_exp + 1)
-        + (n_exp_choices + n_nonexp_choices, options["n_types"])
-    )
-    indexer = np.full(shape, -1, dtype=np.int32)
+    max_initial_experience = np.array(
+        [choices[choice]["start"].max() for choice in options["choices_w_exp"]]
+    ).astype(np.uint8)
+    max_experience = [choices[choice]["max"] for choice in options["choices_w_exp"]]
 
     choice_to_code = {choice: i for i, choice in enumerate(options["choices"])}
 
-    idx = (
-        (df.period,)
-        + tuple(df[f"exp_{i}"] for i in options["choices_w_exp"])
-        + (df.lagged_choice.replace(choice_to_code), df.type)
-    )
-    indexer[idx] = np.arange(df.shape[0])
+    indexer = []
+    count_states = 0
+
+    for period in range(options["n_periods"]):
+        shape = tuple(
+            np.minimum(max_initial_experience + period, max_experience) + 1
+        ) + (n_exp_choices + n_nonexp_choices, options["n_types"])
+        sub_indexer = np.full(shape, -1, dtype=np.int32)
+
+        sub_df = df.loc[df.period.eq(period)]
+        n_states = sub_df.shape[0]
+
+        indices = tuple(sub_df[f"exp_{i}"] for i in options["choices_w_exp"]) + (
+            sub_df.lagged_choice.replace(choice_to_code),
+            sub_df.type,
+        )
+        sub_indexer[indices] = np.arange(count_states, count_states + n_states)
+        indexer.append(sub_indexer)
+
+        count_states += n_states
 
     return indexer
 
