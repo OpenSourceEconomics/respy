@@ -30,7 +30,7 @@ def _create_state_space_kw94(n_periods, n_types, edu_starts, edu_max):
         Number of periods in the state space.
     n_types : int
         Number of types of agents.
-    edu_starts : List[int]
+    edu_starts : numpy.ndarray
         Contains levels of initial education.
     edu_max : int
         Maximum level of education which can be obtained by an agent.
@@ -55,20 +55,27 @@ def _create_state_space_kw94(n_periods, n_types, edu_starts, edu_max):
     ... )
     >>> states.shape
     (317367, 6)
-    >>> indexer.shape
-    (40, 40, 40, 21, 4, 1)
+    >>> len(indexer)
+    40
+    >>> indexer[-1].shape
+    (40, 40, 21, 4, 1)
 
     """
     data = []
-
-    shape = (n_periods, n_periods, n_periods, edu_max + 1, 4, n_types)
-    indexer = np.full(shape, -1, dtype=np.int32)
+    indexer = []
 
     # Initialize counter
     i = 0
 
     # Construct state space by periods
     for period in range(n_periods):
+
+        # Build periodic indexer.
+        max_edu_starts = max(edu_starts)
+        dim_edu = min(max_edu_starts + period, edu_max) + 1
+        shape = (period + 1, period + 1, dim_edu, 4, n_types)
+        sub_indexer = np.full(shape, -1, dtype=np.int32)
+        indexer.append(sub_indexer)
 
         # Loop over all unobserved types
         for type_ in range(n_types):
@@ -155,8 +162,7 @@ def _create_state_space_kw94(n_periods, n_types, edu_starts, edu_max):
                                 # Continue if state still exist. This condition is only
                                 # triggered by multiple initial levels of education.
                                 if (
-                                    indexer[
-                                        period,
+                                    indexer[period][
                                         exp_a,
                                         exp_b,
                                         edu_start + edu_add,
@@ -168,8 +174,7 @@ def _create_state_space_kw94(n_periods, n_types, edu_starts, edu_max):
                                     continue
 
                                 # Collect mapping of state space to array index.
-                                indexer[
-                                    period,
+                                indexer[period][
                                     exp_a,
                                     exp_b,
                                     edu_start + edu_add,
@@ -223,7 +228,7 @@ def _create_state_space_kw97(n_periods, n_types, edu_starts, edu_max):
         Number of periods in the state space.
     n_types : int
         Number of types of agents.
-    edu_starts : List[int]
+    edu_starts : numpy.ndarray
         Contains levels of initial education.
     edu_max : int
         Maximum level of education which can be obtained by an agent.
@@ -231,7 +236,7 @@ def _create_state_space_kw97(n_periods, n_types, edu_starts, edu_max):
     Returns
     -------
     states : numpy.ndarray
-        Array with shape (n_states, 6) containing period, experience in OCCUPATION A,
+        Array with shape (n_states, 7) containing period, experience in OCCUPATION A,
         experience in OCCUPATION B, years of schooling, the lagged choice and the type
         of the agent.
     indexer : numpy.ndarray
@@ -243,25 +248,32 @@ def _create_state_space_kw97(n_periods, n_types, edu_starts, edu_max):
     >>> n_periods = 40
     >>> n_types = 1
     >>> edu_starts, edu_max = np.array([10]), 20
-    >>> states, indexer = _create_state_space_kw94(
+    >>> states, indexer = _create_state_space_kw97(
     ...     n_periods, n_types, edu_starts, edu_max
     ... )
     >>> states.shape
-    (317367, 6)
-    >>> indexer.shape
-    (40, 40, 40, 21, 4, 1)
+    (3770152, 7)
+    >>> len(indexer)
+    40
+    >>> indexer[-1].shape
+    (40, 40, 40, 21, 5, 1)
 
     """
     data = []
-
-    shape = (n_periods, n_periods, n_periods, n_periods, edu_max + 1, 5, n_types)
-    indexer = np.full(shape, -1, dtype=np.int32)
+    indexer = []
 
     # Initialize counter
     i = 0
 
     # Construct state space by periods
     for period in range(n_periods):
+
+        # Build periodic indexer.
+        max_edu_starts = max(edu_starts)
+        dim_edu = min(max_edu_starts + period, edu_max) + 1
+        shape = (period + 1, period + 1, period + 1, dim_edu, 5, n_types)
+        sub_indexer = np.full(shape, -1, dtype=np.int32)
+        indexer.append(sub_indexer)
 
         # Loop over all unobserved types
         for type_ in range(n_types):
@@ -367,8 +379,7 @@ def _create_state_space_kw97(n_periods, n_types, edu_starts, edu_max):
                                     # only triggered by multiple initial levels of
                                     # education.
                                     if (
-                                        indexer[
-                                            period,
+                                        indexer[period][
                                             exp_a,
                                             exp_b,
                                             exp_mil,
@@ -381,8 +392,7 @@ def _create_state_space_kw97(n_periods, n_types, edu_starts, edu_max):
                                         continue
 
                                     # Collect mapping of state space to array index.
-                                    indexer[
-                                        period,
+                                    indexer[period][
                                         exp_a,
                                         exp_b,
                                         exp_mil,

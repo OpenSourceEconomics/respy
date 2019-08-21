@@ -1,17 +1,17 @@
-import warnings
+"""Contains functions which are shared across other modules.
 
+This module should only import from other packages or modules of respy which also do not
+import from respy itself. This is to prevent circular imports.
+
+"""
 import numpy as np
 import pandas as pd
-import yaml
 from numba import guvectorize
 from numba import njit
 from numba import vectorize
 
-from respy import data as rp_data
-from respy.config import EXAMPLE_MODELS
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
-from respy.config import TEST_RESOURCES_DIR
 
 
 @njit
@@ -117,25 +117,6 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
     return draws_transformed
 
 
-def get_example_model(model):
-    assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
-
-    options = yaml.safe_load((TEST_RESOURCES_DIR / f"{model}.yaml").read_text())
-    params = pd.read_csv(
-        TEST_RESOURCES_DIR / f"{model}.csv", index_col=["category", "name"]
-    )
-
-    if "kw_97" in model:
-        df = rp_data.create_kw_97()
-    elif "kw_94" in model:
-        df = rp_data.create_kw_94()
-    else:
-        df = None
-        warnings.warn(f"No data available for model '{model}'.", category=UserWarning)
-
-    return params, options, df
-
-
 def generate_column_labels_estimation(options):
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
@@ -228,3 +209,47 @@ def downcast_to_smallest_dtype(series):
                 pass
 
     return series.astype(min_dtype)
+
+
+def create_type_covariates(df, options):
+    """Create covariates to predict type probabilities.
+
+    In the simulation, the covariates are needed to predict type probabilities and
+    assign types to simulated individuals. In the estimation, covariates are necessary
+    to weight the probability of observations by type probabilities.
+
+    """
+    covariates = create_base_covariates(df, options["covariates"])
+
+    all_data = pd.concat([covariates, df], axis="columns", sort=False)
+
+    all_data = all_data[options["type_covariates"]].apply(downcast_to_smallest_dtype)
+
+    return all_data.to_numpy()
+
+
+def create_base_covariates(states, covariates_spec):
+    """Create set of covariates for each state.
+
+    Parameters
+    ----------
+    states : pandas.DataFrame
+        DataFrame with shape (n_states, n_choices_w_exp + 3) containing period,
+        experiences, choice_lagged and type of each state.
+    covariates_spec : dict
+        Keys represent covariates and values are strings passed to ``df.eval``.
+
+    Returns
+    -------
+    covariates : pandas.DataFrame
+        DataFrame with shape (n_states, n_covariates).
+
+    """
+    covariates = states.copy()
+
+    for covariate, definition in covariates_spec.items():
+        covariates[covariate] = covariates.eval(definition)
+
+    covariates = covariates.drop(columns=states.columns)
+
+    return covariates

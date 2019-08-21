@@ -3,11 +3,11 @@ import numpy as np
 import pytest
 from deepdiff import DeepDiff
 
+from respy import get_example_model
 from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
 from respy.pre_processing.model_checking import validate_options
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import get_example_model
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
 from respy.tests.utils import process_model_or_seed
@@ -43,7 +43,7 @@ def test_invariance_to_order_of_initial_schooling_levels(model_or_seed):
     bound_constr = {"max_edu_start": 10}
 
     if isinstance(model_or_seed, str):
-        params, options, _ = get_example_model(model_or_seed)
+        params, options = get_example_model(model_or_seed, with_data=False)
     else:
         np.random.seed(model_or_seed)
         params, options = generate_random_model(bound_constr=bound_constr)
