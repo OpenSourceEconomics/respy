@@ -1,27 +1,39 @@
-======================       ===========================================================
-Notation                      Interpretation
-======================       ===========================================================
-.                             **coefficients of the skill technology function**
-:math:`ln(r_2)`               skill rental price if the base skill endowment of type 1
-                              (e_{21}(16)) is normalized to 0.
-:math:`e_{2,11}`              linear return to an additional year of schooling
-:math:`e_{2,8}`               return to experience, other civilian sector, linear
-not present in KW 97          return to experience, other civilian sector, quadratic,
-                              (divided by 100)
-:math:`e_{2,2}`               return to experience, same sector, linear
-:math:`e_{2,3}`               return to experience, same sector, quadratic,
-                              (divided by 100)
-:math:`e_{2,12}`              skill premium of having finished high school
-:math:`e_{2,13}`              skill premium of having finished college
-:math:`e_{2,5}`               linear age effect
-:math:`e_{2,6}`               effect of being a minor
-:math:`e_{2,4}`               gain from having worked in the occupation at least once
-                              before
-:math:`e_{2,7}`               gain from remaining in the same occupation as in previous
-                              period
++----------------------+-----------------------------------------------------------+
+|       Notation       |                       Interpretation                      |
++======================+===========================================================+
+| :math:`ln(r_2)`      | log skill rental price if the base skill endowment of     |
+|                      | type 1 (e_{21}(16)) is normalized to 0.                   |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,11}`     | linear return to an additional year of schooling          |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,8}`      | return to experience, other civilian sector, linear       |
++----------------------+-----------------------------------------------------------+
+| not present in KW 97 | return to experience, other civilian sector, quadratic,   |
+|                      | (divided by 100)                                          |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,2}`      | return to experience, same sector, linear                 |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,3}`      | return to experience, same sector, quadratic,             |
+|                      | (divided by 100)                                          |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,12}`     | skill premium of having finished high school              |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,13}`     | skill premium of having finished college                  |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,5}`      | linear age effect                                         |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,6}`      | effect of being a minor                                   |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,4}`      | gain from having worked in the occupation at least once   |
+|                      | before                                                    |
++----------------------+-----------------------------------------------------------+
+| :math:`e_{2,7}`      | gain from remaining in the same occupation as in previous |
+|                      | period                                                    |
++----------------------+-----------------------------------------------------------+
+| :math:`\alpha_2`     | constant                                                  |
++----------------------+-----------------------------------------------------------+
+| :math:`c_{2,1}`      | reward of switching to B from other occupation            |
++----------------------+-----------------------------------------------------------+
+| :math:`c_{2,2}`      | reward of working in B for the first time                 |
++----------------------+-----------------------------------------------------------+
 
-.                             **other coefficients of the reward function**
-:math:`\alpha_2`              constant
-:math:`c_{2,1}`               reward of switching to B from other occupation
-:math:`c_{2,2}`               reward of working in B for the first time
-======================       ===========================================================

@@ -5,6 +5,7 @@ import pandas as pd
 
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
+from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import downcast_to_smallest_dtype
 
@@ -430,34 +431,57 @@ def _add_types_to_state_space(df, n_types):
 
 
 def _create_state_space_indexer(df, options):
-    """Create the indexer for the state space."""
+    """Create the indexer for the state space.
+
+    The indexer consists of sub indexers for each period. This is much more
+    memory-efficient than having a single indexer. For more information see the
+    references section.
+
+    References
+    ----------
+    - https://github.com/OpenSourceEconomics/respy/pull/236
+    - https://github.com/OpenSourceEconomics/respy/pull/237
+
+    """
     n_exp_choices = len(options["choices_w_exp"])
     n_nonexp_choices = len(options["choices_wo_exp"])
-    maximum_exp = np.array(
-        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]]
-    )
+    choices = options["choices"]
 
-    shape = (
-        (options["n_periods"],)
-        + tuple(maximum_exp + 1)
-        + (n_exp_choices + n_nonexp_choices,)
-        + tuple(options["observables"].values())
-        + (options["n_types"],)
-    )
-    indexer = np.full(shape, -1, dtype=np.int32)
+    max_initial_experience = np.array(
+        [choices[choice]["start"].max() for choice in options["choices_w_exp"]]
+    ).astype(np.uint8)
+    max_experience = [choices[choice]["max"] for choice in options["choices_w_exp"]]
 
     choice_to_code = {choice: i for i, choice in enumerate(options["choices"])}
 
-    idx = (
-        (df.period,)
-        + tuple(df[f"exp_{i}"] for i in options["choices_w_exp"])
-        + (df.lagged_choice.replace(choice_to_code),)
-    )
-    if "observables" in options:
-        idx += tuple(df[observable.lower()] for observable in options["observables"])
-    idx += (df.type,)
+    indexer = []
+    count_states = 0
 
-    indexer[idx] = np.arange(df.shape[0])
+    for period in range(options["n_periods"]):
+        shape = (
+            tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
+            + (n_exp_choices + n_nonexp_choices,)
+            + tuple(options["observables"].values())
+            + (options["n_types"],)
+        )
+        sub_indexer = np.full(shape, -1, dtype=np.int32)
+
+        sub_df = df.loc[df.period.eq(period)]
+        n_states = sub_df.shape[0]
+
+        indices = tuple(sub_df[f"exp_{i}"] for i in options["choices_w_exp"]) + (
+            sub_df.lagged_choice.replace(choice_to_code),
+        )
+        if "observables" in options:
+            indices += tuple(
+                df[observable.lower()] for observable in options["observables"]
+            )
+        indices += (sub_df.type,)
+
+        sub_indexer[indices] = np.arange(count_states, count_states + n_states)
+        indexer.append(sub_indexer)
+
+        count_states += n_states
 
     return indexer
 
@@ -547,33 +571,6 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
 
     for key, val in covariates.items():
         covariates[key] = np.ascontiguousarray(val)
-
-    return covariates
-
-
-def create_base_covariates(states, covariates_spec):
-    """Create set of covariates for each state.
-
-    Parameters
-    ----------
-    states : pandas.DataFrame
-        DataFrame with shape (n_states, n_choices_w_exp + 3) containing period,
-        experiences, choice_lagged and type of each state.
-    covariates_spec : dict
-        Keys represent covariates and values are strings passed to ``df.eval``.
-
-    Returns
-    -------
-    covariates : pandas.DataFrame
-        DataFrame with shape (n_states, n_covariates).
-
-    """
-    covariates = states.copy()
-
-    for covariate, definition in covariates_spec.items():
-        covariates[covariate] = covariates.eval(definition)
-
-    covariates = covariates.drop(columns=states.columns)
 
     return covariates
 

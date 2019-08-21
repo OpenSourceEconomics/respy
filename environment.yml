@@ -5,7 +5,7 @@ channels:
   - conda-forge
   - janosg
 dependencies:
-  - python=3.7.3
+  - python=3.7
   - pip
   - click
   - codecov
@@ -13,10 +13,10 @@ dependencies:
   - deepdiff
   - estimagic>=0.0.9
   - jupyterlab
-  - matplotlib>=3.0.0
+  - matplotlib
   - mkl
   - nbsphinx=0.4.2
-  - numba>=0.43.1
+  - numba
   - numpydoc
   - pandas>=0.24
   - pyaml
@@ -24,8 +24,8 @@ dependencies:
   - pytest-cov
   - pytest-xdist
   - restructuredtext_lint
-  - scipy>=1.2.1
-  - Sphinx>=2.0.0
+  - scipy
+  - Sphinx
   - sphinx-autobuild
   - tox-conda
   - pip:
