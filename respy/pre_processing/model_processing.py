@@ -43,9 +43,10 @@ def _process_options(options, params):
             params.loc["type_2"].index.get_level_values(0)
         )
 
-    options["n_lagged_choices"] = _infer_number_of_lagged_choices(options, params)
-
     extended_options = {**DEFAULT_OPTIONS, **options}
+    extended_options["n_lagged_choices"] = _infer_number_of_lagged_choices(
+        extended_options, params
+    )
     extended_options = _order_choices(extended_options, params)
     extended_options = _set_defaults_for_choices_with_experience(extended_options)
     extended_options = _set_defaults_for_inadmissible_states(extended_options)
@@ -185,6 +186,8 @@ def _parse_parameters(params):
     optim_paras = {}
 
     for quantity in params.index.get_level_values("category").unique():
+        # TODO: Scalars should be scalars not one dim arrays.
+        # optim_paras[quant] = quant[0] if quant.shape == (1,) else quant
         optim_paras[quantity] = params.loc[quantity].to_numpy()
 
     cov = sdcorr_params_to_matrix(optim_paras["shocks"])
@@ -280,12 +283,15 @@ def _infer_number_of_lagged_choices(options, params):
     used_covariates = [cov for cov in covariates if cov in parameters]
 
     matches = []
+
+    # Look in covariates for lagged choices.
     for cov in used_covariates:
         matches += re.findall(r"lagged_choice_([0-9]+)", covariates[cov])
 
-    if matches:
-        n_lagged_choices = pd.to_numeric(matches).max()
-    else:
-        n_lagged_choices = 0
+    # Look in state space filters for lagged choices.
+    for filter_ in options["core_state_space_filters"]:
+        matches += re.findall(r"lagged_choice_([0-9]+)", filter_)
+
+    n_lagged_choices = 0 if not matches else pd.to_numeric(matches).max()
 
     return n_lagged_choices

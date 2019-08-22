@@ -119,11 +119,14 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     n_choices = len(options["choices"])
     n_periods = options["n_periods"]
     n_wages = len(options["choices_w_wage"])
+    n_choices_w_exp = len(options["choices_w_exp"])
+    n_lagged_choices = options["n_lagged_choices"]
+    n_simulation_agents = options["simulation_agents"]
 
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
     base_draws_sim_transformed = np.full(
-        (n_periods, options["simulation_agents"], n_choices), np.nan
+        (n_periods, n_simulation_agents, n_choices), np.nan
     )
 
     for period in range(n_periods):
@@ -141,11 +144,13 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     for choice in options["choices_w_exp"]:
         container += (_get_random_initial_experience(choice, options),)
 
-    edu_idx = list(options["choices_w_exp"]).index("edu")
-    container += (_get_random_lagged_choices(container[edu_idx], options),)
+    if n_lagged_choices:
+        edu_idx = list(options["choices_w_exp"]).index("edu")
+        container += (_get_random_lagged_choices(container[edu_idx], options),)
     states_wo_types = pd.DataFrame(
         np.column_stack(container),
-        columns=[f"exp_{i}" for i in options["choices_w_exp"]] + ["lagged_choice"],
+        columns=[f"exp_{i}" for i in options["choices_w_exp"]]
+        + [f"lagged_choice_{i}" for i in range(1, n_lagged_choices)],
     ).assign(period=0)
     container += (_get_random_types(states_wo_types, optim_paras, options),)
 
@@ -196,8 +201,8 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         # Record data of all agents in one period.
         rows = np.column_stack(
             (
-                np.arange(options["simulation_agents"]),
-                np.full(options["simulation_agents"], period),
+                np.arange(n_simulation_agents),
+                np.full(n_simulation_agents, period),
                 choice,
                 wage,
                 # Write relevant state space for period to data frame. However, the
@@ -213,19 +218,29 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
                 flow_utilities,
                 value_functions,
                 draws_shock,
-                np.full(options["simulation_agents"], optim_paras["delta"][0]),
+                np.full(n_simulation_agents, optim_paras["delta"][0]),
             )
         )
         data.append(rows)
 
         # Update work experiences.
-        current_states[np.arange(options["simulation_agents"]), choice] = np.where(
-            choice <= len(options["choices_w_exp"]),
-            current_states[np.arange(options["simulation_agents"]), choice] + 1,
-            current_states[np.arange(options["simulation_agents"]), choice],
+        current_states[np.arange(n_simulation_agents), choice] = np.where(
+            choice <= n_choices_w_exp,
+            current_states[np.arange(n_simulation_agents), choice] + 1,
+            current_states[np.arange(n_simulation_agents), choice],
         )
-        # Update lagged choices.
-        current_states[:, len(options["choices_w_exp"])] = choice
+
+        assert (current_states[:, -1] == container[-1]).all()
+
+        # Update lagged choices by shifting all lags by one and inserting choice in the
+        # first position.
+        if n_lagged_choices:
+            current_states[
+                :, n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
+            ] = current_states[
+                :, n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
+            ]
+            current_states[:, n_choices_w_exp] = choice
 
     simulated_data = _process_simulated_data(data, options)
 

@@ -155,6 +155,7 @@ def test_get_continuation_values(model_or_seed):
             state_space.emax_value_functions,
             state_space.is_inadmissible,
             len(options["choices_w_exp"]),
+            options["n_lagged_choices"],
         )
         state_space.emax_value_functions = state_space.continuation_values.max(axis=1)
 
