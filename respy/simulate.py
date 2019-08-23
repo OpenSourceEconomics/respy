@@ -150,7 +150,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     states_wo_types = pd.DataFrame(
         np.column_stack(container),
         columns=[f"exp_{i}" for i in options["choices_w_exp"]]
-        + [f"lagged_choice_{i}" for i in range(1, n_lagged_choices)],
+        + [f"lagged_choice_{i}" for i in range(1, n_lagged_choices + 1)],
     ).assign(period=0)
     container += (_get_random_types(states_wo_types, optim_paras, options),)
 
@@ -218,14 +218,14 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
                 flow_utilities,
                 value_functions,
                 draws_shock,
-                np.full(n_simulation_agents, optim_paras["delta"][0]),
+                np.full(n_simulation_agents, optim_paras["delta"]),
             )
         )
         data.append(rows)
 
         # Update work experiences.
         current_states[np.arange(n_simulation_agents), choice] = np.where(
-            choice <= n_choices_w_exp,
+            choice < n_choices_w_exp,
             current_states[np.arange(n_simulation_agents), choice] + 1,
             current_states[np.arange(n_simulation_agents), choice],
         )
@@ -368,9 +368,12 @@ def _convert_choice_variables_from_codes_to_categorical(df, options):
     df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
         code_to_choice
     )
-    df.Lagged_Choice = df.Lagged_Choice.cat.set_categories(
-        code_to_choice
-    ).cat.rename_categories(code_to_choice)
+    for i in range(1, options["n_lagged_choices"] + 1):
+        df[f"Lagged_Choice_{i}"] = (
+            df[f"Lagged_Choice_{i}"]
+            .cat.set_categories(code_to_choice)
+            .cat.rename_categories(code_to_choice)
+        )
 
     return df
 

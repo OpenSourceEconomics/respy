@@ -119,8 +119,18 @@ def check_model_solution(options, state_space):
         idx = list(options["choices"]).index(choice) + 1
         assert np.all(state_space.states[:, idx] <= options["choices"][choice]["max"])
 
-    # Lagged choices are always between one and four.
-    assert np.isin(state_space.states[:, -2], range(len(options["choices"]))).all()
+    # Lagged choices are always in ``range(n_choices)``.
+    if options["n_lagged_choices"]:
+        assert np.isin(
+            state_space.states[
+                :,
+                len(options["choices_w_exp"])
+                + 1 : len(options["choices_w_exp"])
+                + options["n_lagged_choices"]
+                + 1,
+            ],
+            range(len(options["choices"])),
+        ).all()
 
     # States and covariates have finite and nonnegative values.
     assert np.all(state_space.states >= 0)
@@ -131,7 +141,7 @@ def check_model_solution(options, state_space):
     assert not pd.DataFrame(state_space.states).duplicated().any()
 
     # Check the number of states in the first time period.
-    n_states_start = n_types * n_initial_exp_edu * 2
+    n_states_start = n_types * n_initial_exp_edu * (options["n_lagged_choices"] + 1)
     assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
     assert np.sum(state_space.indexer[0] >= 0) == n_states_start
 

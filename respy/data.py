@@ -3,6 +3,7 @@ import pandas as pd
 
 from respy import shared as rp_shared
 from respy.config import TEST_RESOURCES_DIR
+from respy.pre_processing.model_processing import process_params_and_options
 
 
 def _create_working_experience(df, options):
@@ -21,13 +22,15 @@ def _create_working_experience(df, options):
     return df
 
 
-def create_kw_97():
+def create_kw_97(params, options):
     """Create data for Keane and Wolpin (1997).
 
     The data includes individuals labor market history and accumulated experiences in
     white-collar, blue-collar occupations, military and schooling.
 
     """
+    _, _, options = process_params_and_options(params, options)
+
     columns = ["Identifier", "Age", "Experience_Edu", "Choice", "Wage"]
     dtypes = {
         "Identifier": np.int,
@@ -52,12 +55,10 @@ def create_kw_97():
         codes_to_choices
     )
 
-    options = {"choices_w_wage": ["a", "b", "mil"]}
     df = _create_working_experience(df, options)
 
     df["Lagged_Choice"] = df.groupby("Identifier").Choice.shift(1)
 
-    options["choices_w_exp"] = ["a", "b", "mil", "edu"]
     labels, _ = rp_shared.generate_column_labels_estimation(options)
 
     df = df.assign(Period=df.Age - 16).drop(columns="Age").loc[:, labels]
@@ -65,7 +66,7 @@ def create_kw_97():
     return df
 
 
-def create_kw_94():
+def create_kw_94(params, options):
     """Convert data to be used with Keane and Wolpin (1994).
 
     The model in Keane and Wolpin (1994) does not include military as an occupational
@@ -73,7 +74,9 @@ def create_kw_94():
     military.
 
     """
-    df = create_kw_97()
+    _, _, options = process_params_and_options(params, options)
+
+    df = create_kw_97(options)
     # Create indicator if an individual entered the military and from thereon.
     df["Entered_Military"] = df.Choice.eq("mil")
     df.Entered_Military = df.groupby("Identifier").Entered_Military.cumsum()
@@ -85,7 +88,6 @@ def create_kw_94():
     df.Choice = df.Choice.cat.remove_unused_categories()
     df.Lagged_Choice = df.Lagged_Choice.cat.remove_unused_categories()
 
-    options = {"choices_w_exp": ["a", "b", "edu"]}
     labels, _ = rp_shared.generate_column_labels_estimation(options)
 
     df = df.reset_index(drop=True).loc[:, labels]

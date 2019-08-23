@@ -15,7 +15,8 @@ from respy.solve import solve
 from respy.solve import StateSpace
 from respy.state_space import _create_state_space
 from respy.tests._former_code import _create_state_space_kw94
-from respy.tests._former_code import _create_state_space_kw97
+from respy.tests._former_code import _create_state_space_kw97_base
+from respy.tests._former_code import _create_state_space_kw97_extended
 from respy.tests.random_model import generate_random_model
 from respy.tests.utils import process_model_or_seed
 
@@ -46,9 +47,14 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
 
     @njit
     def traverse_forward(
-        states_, indexer_current, indexer_future, indicator_, is_inadmissible
+        states_,
+        indexer_current,
+        indexer_future,
+        indicator_,
+        is_inadmissible,
+        n_choices_w_exp,
+        n_lagged_choices,
     ):
-        n_choices_w_exp = states_.shape[1] - 3
         n_choices = is_inadmissible.shape[1]
 
         for i in range(states_.shape[0]):
@@ -64,7 +70,13 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
                     if n < n_choices_w_exp:
                         child[n] += 1
 
-                    child[n_choices_w_exp] = n
+                    if n_lagged_choices:
+                        child[
+                            n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
+                        ] = child[
+                            n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
+                        ]
+                        child[n_choices_w_exp] = n
 
                     k = indexer_future[array_to_tuple(indexer_future, child)]
                     indicator_[k] = 1
@@ -88,6 +100,8 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
             state_space.indexer[period + 1],
             indicator,
             state_space.is_inadmissible,
+            len(options["choices_w_exp"]),
+            options["n_lagged_choices"],
         )
 
     # Restrict indicator to states of the second period as the first is never indexed.
@@ -181,9 +195,11 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
     )
 
     states_new, indexer_new = _create_state_space(options)
-    states_new.lagged_choice = states_new.lagged_choice.replace(
-        {choice: i for i, choice in enumerate(options["choices"])}
-    )
+
+    for i in range(1, options["n_lagged_choices"] + 1):
+        states_new[f"lagged_choice_{i}"] = states_new[f"lagged_choice_{i}"].replace(
+            {choice: i for i, choice in enumerate(options["choices"])}
+        )
 
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))
@@ -213,14 +229,21 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
     edu_starts = options["choices"]["edu"]["start"]
 
     # Get states and indexer from old state space.
-    states_old, indexer_old = _create_state_space_kw97(
-        n_periods, n_types, edu_starts, edu_max
-    )
+    if model_or_seed == "kw_97_base":
+        states_old, indexer_old = _create_state_space_kw97_base(
+            n_periods, n_types, edu_starts, edu_max
+        )
+    else:
+        states_old, indexer_old = _create_state_space_kw97_extended(
+            n_periods, n_types, edu_starts, edu_max
+        )
 
     states_new, indexer_new = _create_state_space(options)
-    states_new.lagged_choice = states_new.lagged_choice.replace(
-        {choice: i for i, choice in enumerate(options["choices"])}
-    )
+
+    for i in range(1, options["n_lagged_choices"] + 1):
+        states_new[f"lagged_choice_{i}"] = states_new[f"lagged_choice_{i}"].replace(
+            {choice: i for i, choice in enumerate(options["choices"])}
+        )
 
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))

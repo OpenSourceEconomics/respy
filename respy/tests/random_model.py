@@ -12,6 +12,31 @@ from respy.shared import generate_column_labels_estimation
 from respy.simulate import get_simulate_func
 
 
+_BASE_CORE_STATE_SPACE_FILTERS = [
+    # In periods > 0, if agents accumulated experience only in one choice, lagged choice
+    # cannot be different.
+    "period > 0 and exp_{i} == period and lagged_choice_1 != '{i}'",
+    # In periods > 0, if agents always accumulated experience, lagged choice cannot be
+    # non-experience choice.
+    "period > 0 and exp_a + exp_b + exp_edu == period and lagged_choice_1 == '{j}'",
+    # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
+    # be school.
+    "period > 0 and lagged_choice_1 == 'edu' and exp_edu == 0",
+    # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
+    "lagged_choice_1 == '{k}' and exp_{k} == 0",
+    # In period 0, agents cannot choose occupation a or b.
+    "period == 0 and lagged_choice_1 == '{k}'",
+]
+"""list: List of core state space filters.
+
+.. deprecated::
+
+    This variable must be removed if generate_random_model is rewritten such that
+    functions for each replicable paper are written.
+
+"""
+
+
 def generate_random_model(
     point_constr=None,
     bound_constr=None,
@@ -96,7 +121,11 @@ def generate_random_model(
 
     options["interpolation_points"] = -1
 
-    options = {**DEFAULT_OPTIONS, **options}
+    options = {
+        **DEFAULT_OPTIONS,
+        **options,
+        "core_state_space_filters": _BASE_CORE_STATE_SPACE_FILTERS,
+    }
 
     options = _update_nested_dictionary(options, point_constr)
 

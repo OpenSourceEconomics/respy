@@ -12,6 +12,7 @@ from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import clip
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
+from respy.shared import generate_column_labels_estimation
 from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -424,7 +425,10 @@ def _convert_choice_variables_from_categorical_to_codes(df, options):
     """
     choices_to_codes = {choice: i for i, choice in enumerate(options["choices"])}
     df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
-    df.lagged_choice = df.lagged_choice.replace(choices_to_codes).astype(np.uint8)
+    for i in range(1, options["n_lagged_choices"] + 1):
+        df[f"lagged_choice_{i}"] = (
+            df[f"lagged_choice_{i}"].replace(choices_to_codes).astype(np.uint8)
+        )
 
     return df
 
@@ -465,13 +469,10 @@ def _process_estimation_data(df, state_space, options):
         predict probabilities for each type.
 
     """
-    df = df.sort_values(["Identifier", "Period"])[
-        ["Identifier", "Period"]
-        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
-        + ["Lagged_Choice", "Choice", "Wage"]
-    ]
-    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
+    labels, _ = generate_column_labels_estimation(options)
 
+    df = df.sort_values(["Identifier", "Period"])[labels]
+    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
     df = _convert_choice_variables_from_categorical_to_codes(df, options)
 
     # Get indices of states in the state space corresponding to all observations for all
@@ -484,10 +485,13 @@ def _process_estimation_data(df, state_space, options):
         period_experience = tuple(
             period_df[col].to_numpy() for col in period_df.filter(like="exp_").columns
         )
-        period_lagged_choice = period_df.lagged_choice.to_numpy()
+        period_lagged_choice = tuple(
+            period_df[f"lagged_choice_{i}"].to_numpy()
+            for i in range(1, options["n_lagged_choices"] + 1)
+        )
 
         period_indices = state_space.indexer[period][
-            period_experience + (period_lagged_choice,)
+            period_experience + period_lagged_choice
         ]
 
         indices += (period_indices,)

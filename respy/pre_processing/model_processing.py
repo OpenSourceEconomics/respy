@@ -186,9 +186,9 @@ def _parse_parameters(params):
     optim_paras = {}
 
     for quantity in params.index.get_level_values("category").unique():
-        # TODO: Scalars should be scalars not one dim arrays.
-        # optim_paras[quant] = quant[0] if quant.shape == (1,) else quant
-        optim_paras[quantity] = params.loc[quantity].to_numpy()
+        quant = params.loc[quantity].to_numpy()
+        # Scalars should be scalars, not one-dimensional arrays.
+        optim_paras[quantity] = quant[0] if quant.shape == (1,) else quant
 
     cov = sdcorr_params_to_matrix(optim_paras["shocks"])
     optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
@@ -272,7 +272,10 @@ def _infer_number_of_lagged_choices(options, params):
     -------
     >>> index = pd.MultiIndex.from_tuples([("name", "covariate")])
     >>> params = pd.DataFrame(index=index)
-    >>> options = {"covariates": {"covariate": "lagged_choice_2 + lagged_choice_1"}}
+    >>> options = {
+    ...     "covariates": {"covariate": "lagged_choice_2 + lagged_choice_1"},
+    ...     "core_state_space_filters": [],
+    ... }
     >>> _infer_number_of_lagged_choices(options, params)
     2
 
