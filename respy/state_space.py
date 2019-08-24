@@ -325,7 +325,7 @@ def _add_lagged_choice_to_core_state_space(df, options):
             df_[f"lagged_choice_{lag}"] = choice
             container.append(df_)
 
-    df = pd.concat(container, axis="rows", sort=False)
+    df = pd.concat(container, axis="rows", sort=False) if container else df
 
     return df
 
