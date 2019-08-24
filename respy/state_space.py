@@ -203,8 +203,7 @@ def _create_state_space(options):
     """
     df = _create_core_state_space(options)
 
-    if options["n_lagged_choices"]:
-        df = _add_lagged_choice_to_core_state_space(df, options)
+    df = _add_lagged_choice_to_core_state_space(df, options)
 
     df = _filter_core_state_space(df, options)
 

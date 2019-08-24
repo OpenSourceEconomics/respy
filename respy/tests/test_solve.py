@@ -61,14 +61,14 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
 
             k_parent = indexer_current[array_to_tuple(indexer_current, states_[i, 1:])]
 
-            for n in range(n_choices):
-                if is_inadmissible[k_parent, n]:
+            for choice in range(n_choices):
+                if is_inadmissible[k_parent, choice]:
                     pass
                 else:
                     child = states_[i, 1:].copy()
 
-                    if n < n_choices_w_exp:
-                        child[n] += 1
+                    if choice < n_choices_w_exp:
+                        child[choice] += 1
 
                     if n_lagged_choices:
                         child[
@@ -76,7 +76,7 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
                         ] = child[
                             n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
                         ]
-                        child[n_choices_w_exp] = n
+                        child[n_choices_w_exp] = choice
 
                     k = indexer_future[array_to_tuple(indexer_future, child)]
                     indicator_[k] = 1

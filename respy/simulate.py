@@ -230,8 +230,6 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
             current_states[np.arange(n_simulation_agents), choice],
         )
 
-        assert (current_states[:, -1] == container[-1]).all()
-
         # Update lagged choices by shifting all lags by one and inserting choice in the
         # first position.
         if n_lagged_choices:

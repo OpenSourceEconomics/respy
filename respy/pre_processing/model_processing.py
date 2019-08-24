@@ -268,6 +268,12 @@ def _infer_choices(params):
 def _infer_number_of_lagged_choices(options, params):
     """Infer the maximum lag of choices.
 
+    Notes
+    -----
+    Once, the probability parameter for lagged choices are moved to the parameters
+    (https://github.com/OpenSourceEconomics/respy/issues/212) this function should also
+    infer from ``params``.
+
     Example
     -------
     >>> index = pd.MultiIndex.from_tuples([("name", "covariate")])

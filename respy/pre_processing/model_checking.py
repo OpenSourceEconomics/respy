@@ -104,13 +104,14 @@ def check_model_solution(options, state_space):
     edu_start_max = max(edu_start)
     n_periods = options["n_periods"]
     n_types = options["n_types"]
+    n_choices_w_exp = len(options["choices_w_exp"])
 
     # Check period.
     assert np.all(np.isin(state_space.states[:, 0], range(n_periods)))
 
     # The sum of years of experiences cannot be larger than constraint time.
     assert np.all(
-        state_space.states[:, 1 : len(options["choices_w_exp"]) + 1].sum(axis=1)
+        state_space.states[:, 1 : n_choices_w_exp + 1].sum(axis=1)
         <= (state_space.states[:, 0] + edu_start_max)
     )
 
@@ -124,10 +125,7 @@ def check_model_solution(options, state_space):
         assert np.isin(
             state_space.states[
                 :,
-                len(options["choices_w_exp"])
-                + 1 : len(options["choices_w_exp"])
-                + options["n_lagged_choices"]
-                + 1,
+                n_choices_w_exp + 1 : n_choices_w_exp + options["n_lagged_choices"] + 1,
             ],
             range(len(options["choices"])),
         ).all()
