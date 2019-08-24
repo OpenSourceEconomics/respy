@@ -1,8 +1,10 @@
 import itertools
 
+import numba as nb
 import numpy as np
 import pandas as pd
 
+from respy._numba import array_to_tuple
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_base_covariates
@@ -79,6 +81,8 @@ class StateSpace:
         self.is_inadmissible = _create_is_inadmissible_indicator(states_df, options)
 
         self._create_slices_by_periods(options["n_periods"])
+
+        self.indices_of_child_states = _get_indices_of_child_states(self, options)
 
     def update_systematic_rewards(self, optim_paras, options):
         """Update wages and non-pecuniary rewards.
@@ -578,3 +582,89 @@ def _create_is_inadmissible_indicator(states, options):
     is_inadmissible = df[options["choices"]].to_numpy()
 
     return is_inadmissible
+
+
+def _get_indices_of_child_states(state_space, options):
+    """Get for each parent state the indices of child states.
+
+    During the backward induction the ``emax_value_function`` in the next period need to
+    be collected as ``continuation_values`` of the current period. As the indices for
+    child states never change, these indices can be precomputed and added to the
+    state_space.
+
+    """
+
+    @nb.njit
+    def _insert_indices_of_child_states(
+        indices,
+        states,
+        indexer_current,
+        indexer_future,
+        is_inadmissible,
+        n_choices_w_exp,
+        n_lagged_choices,
+    ):
+        """Collect indices of child states for each parent state."""
+        n_choices = is_inadmissible.shape[1]
+
+        for i in range(states.shape[0]):
+
+            idx_current = indexer_current[
+                array_to_tuple(indexer_current, states[i, 1:])
+            ]
+
+            for choice in range(n_choices):
+                # Check if the state in the future is admissible.
+                if is_inadmissible[idx_current, choice]:
+                    continue
+                else:
+                    # Cut off the period which is not necessary for the indexer.
+                    child = states[i, 1:].copy()
+
+                    # Increment experience if it is a choice with experience
+                    # accumulation.
+                    if choice < n_choices_w_exp:
+                        child[choice] += 1
+
+                    # Change lagged choice by shifting all existing lagged choices by
+                    # one period and inserting the current choice in first position.
+                    if n_lagged_choices:
+                        child[
+                            n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
+                        ] = child[
+                            n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
+                        ]
+                        child[n_choices_w_exp] = choice
+
+                    # Get the position of the continuation value.
+                    idx_future = indexer_future[array_to_tuple(indexer_future, child)]
+                    indices[idx_current, choice] = idx_future
+
+        return indices
+
+    dtype = state_space.indexer[0].dtype
+
+    n_choices = len(options["choices"])
+    n_periods = options["n_periods"]
+    n_states_but_last_period = (state_space.states[:, 0] <= n_periods - 2).sum()
+
+    indices = np.full((n_states_but_last_period, n_choices), -1, dtype=dtype)
+
+    for period in reversed(range(n_periods)):
+
+        if period == n_periods - 1:
+            pass
+        else:
+            states_in_period = state_space.get_attribute_from_period("states", period)
+
+            indices = _insert_indices_of_child_states(
+                indices,
+                states_in_period,
+                state_space.indexer[period],
+                state_space.indexer[period + 1],
+                state_space.is_inadmissible,
+                len(options["choices_w_exp"]),
+                options["n_lagged_choices"],
+            )
+
+    return indices

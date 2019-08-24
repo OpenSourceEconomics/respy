@@ -85,18 +85,14 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             pass
 
         else:
-            states_in_period = state_space.get_attribute_from_period("states", period)
-
-            state_space.continuation_values = get_continuation_values(
-                states_in_period,
-                state_space.indexer[period],
-                state_space.indexer[period + 1],
-                state_space.continuation_values,
-                state_space.emax_value_functions,
-                state_space.is_inadmissible,
-                len(options["choices_w_exp"]),
-                options["n_lagged_choices"],
+            child_state_indices = state_space.get_attribute_from_period(
+                "indices_of_child_states", period
             )
+            cont_values = state_space.emax_value_functions[child_state_indices]
+            cont_values = np.where(child_state_indices >= 0, cont_values, 0)
+            state_space.get_attribute_from_period("continuation_values", period)[
+                :
+            ] = cont_values
 
         n_states_in_period = state_space.get_attribute_from_period(
             "states", period
