@@ -64,7 +64,6 @@ def solve_with_backward_induction(state_space, optim_paras, options):
     n_periods = options["n_periods"]
     n_states = state_space.states.shape[0]
 
-    state_space.continuation_values = np.zeros((n_states, n_choices))
     state_space.emax_value_functions = np.zeros(n_states)
 
     # For myopic agents, utility of later periods does not play a role.
@@ -80,17 +79,21 @@ def solve_with_backward_induction(state_space, optim_paras, options):
     for period in reversed(range(n_periods)):
 
         if period == n_periods - 1:
-            pass
+            n_states_first_period = state_space.get_attribute_from_period(
+                "states", period
+            ).shape[0]
+            continuation_values = np.zeros((n_states_first_period, n_choices))
 
         else:
+            # Get continuation values by indexing emax_value_functions from child
+            # states.
             child_state_indices = state_space.get_attribute_from_period(
                 "indices_of_child_states", period
             )
-            cont_values = state_space.emax_value_functions[child_state_indices]
-            cont_values = np.where(child_state_indices >= 0, cont_values, 0)
-            state_space.get_attribute_from_period("continuation_values", period)[
-                :
-            ] = cont_values
+            continuation_values = state_space.emax_value_functions[child_state_indices]
+            continuation_values = np.where(
+                child_state_indices >= 0, continuation_values, 0
+            )
 
         n_states_in_period = state_space.get_attribute_from_period(
             "states", period
@@ -104,9 +107,6 @@ def solve_with_backward_induction(state_space, optim_paras, options):
         # Unpack necessary attributes of the specific period.
         wages = state_space.get_attribute_from_period("wages", period)
         nonpec = state_space.get_attribute_from_period("nonpec", period)
-        emaxs_period = state_space.get_attribute_from_period(
-            "continuation_values", period
-        )
         is_inadmissible = state_space.get_attribute_from_period(
             "is_inadmissible", period
         )
@@ -142,7 +142,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
             exogenous, max_emax = calculate_exogenous_variables(
-                wages, nonpec, emaxs_period, shifts, delta, is_inadmissible
+                wages, nonpec, continuation_values, shifts, delta, is_inadmissible
             )
 
             # Constructing the dependent variables for all states at the random subset
@@ -150,7 +150,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             endogenous = calculate_endogenous_variables(
                 wages,
                 nonpec,
-                emaxs_period,
+                continuation_values,
                 max_emax,
                 not_interpolated,
                 draws_emax_risk,
@@ -165,7 +165,12 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
         else:
             emax = calculate_emax_value_functions(
-                wages, nonpec, emaxs_period, draws_emax_risk, delta, is_inadmissible
+                wages,
+                nonpec,
+                continuation_values,
+                draws_emax_risk,
+                delta,
+                is_inadmissible,
             )
 
         state_space.get_attribute_from_period("emax_value_functions", period)[:] = emax

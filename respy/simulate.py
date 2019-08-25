@@ -166,6 +166,19 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
             tuple(current_states[:, i] for i in range(current_states.shape[1]))
         ]
 
+        # Get continuation values.
+        if period == n_periods - 1:
+            n_states = state_space.states.shape[0]
+            continuation_values = np.zeros((n_states, n_choices))
+        else:
+            child_state_indices = state_space.get_attribute_from_period(
+                "indices_of_child_states", period
+            )
+            continuation_values = state_space.emax_value_functions[child_state_indices]
+            continuation_values = np.where(
+                child_state_indices >= 0, continuation_values, 0
+            )
+
         # Select relevant subset of random draws.
         draws_shock = base_draws_sim_transformed[period]
         draws_wage = base_draws_wage_transformed[period]
@@ -174,7 +187,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
             state_space.wages[indices],
             state_space.nonpec[indices],
-            state_space.continuation_values[indices],
+            continuation_values[indices],
             draws_shock.reshape(-1, 1, n_choices),
             optim_paras["delta"],
             state_space.is_inadmissible[indices],
