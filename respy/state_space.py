@@ -142,9 +142,13 @@ class StateSpace:
     def get_continuation_values(self, period):
         """Return the continuation values for a given period.
 
-        If the last model period is selected, return a matrix of zeros. In any other
-        period, use the precomputed ``indices_of_child_states`` to select continuation
-        values from ``emax_value_functions``.
+        If the last period is selected, return a matrix of zeros. In any other period,
+        use the precomputed ``indices_of_child_states`` to select continuation values
+        from ``emax_value_functions``.
+
+        Indices may contain ``-1`` as an identifier for invalid states. In this case,
+        the last value of ``emax_value_functions`` is taken which is why all entries in
+        ``continuation_values`` where ``indices == -1`` need to be replaced with zeros.
 
         """
         n_periods = len(self.indexer)
@@ -607,12 +611,11 @@ def _create_is_inadmissible_indicator(states, options):
 
 
 def _get_indices_of_child_states(state_space, options):
-    """Get for each parent state the indices of child states.
+    """For each parent state get the indices of child states.
 
-    During the backward induction the ``emax_value_function`` in the next period need to
-    be collected as ``continuation_values`` of the current period. As the indices for
-    child states never change, these indices can be precomputed and added to the
-    state_space.
+    During the backward induction, the ``emax_value_functions`` in the future period
+    serve as the ``continuation_values`` of the current period. As the indices for child
+    states never change, these indices can be precomputed and added to the state_space.
 
     Actually, the indices of the child states do not have to cover the last period, but
     it makes the code prettier and reduces the need to expand the indices in the
