@@ -139,6 +139,28 @@ class StateSpace:
             idx_start, idx_end = np.where(self.states[:, 0] == i)[0][[0, -1]]
             self.slices_by_periods.append(slice(idx_start, idx_end + 1))
 
+    def get_continuation_values(self, period):
+        """Return the continuation values for a given period.
+
+        If the last model period is selected, return a matrix of zeros. In any other
+        period, use the precomputed ``indices_of_child_states`` to select continuation
+        values from ``emax_value_functions``.
+
+        """
+        n_periods = len(self.indexer)
+
+        if period == n_periods - 1:
+            last_slice = self.slices_by_periods[-1]
+            n_states_last_period = len(range(last_slice.start, last_slice.stop))
+            n_choices = self.is_inadmissible.shape[1]
+            continuation_values = np.zeros((n_states_last_period, n_choices))
+        else:
+            indices = self.get_attribute_from_period("indices_of_child_states", period)
+            continuation_values = self.emax_value_functions[indices]
+            continuation_values = np.where(indices >= 0, continuation_values, 0)
+
+        return continuation_values
+
 
 def _create_state_space(options):
     """Create the state space.
@@ -592,6 +614,10 @@ def _get_indices_of_child_states(state_space, options):
     child states never change, these indices can be precomputed and added to the
     state_space.
 
+    Actually, the indices of the child states do not have to cover the last period, but
+    it makes the code prettier and reduces the need to expand the indices in the
+    estimation.
+
     """
 
     @nb.njit
@@ -646,9 +672,9 @@ def _get_indices_of_child_states(state_space, options):
 
     n_choices = len(options["choices"])
     n_periods = options["n_periods"]
-    n_states_but_last_period = (state_space.states[:, 0] <= n_periods - 2).sum()
+    n_states = state_space.states.shape[0]
 
-    indices = np.full((n_states_but_last_period, n_choices), -1, dtype=dtype)
+    indices = np.full((n_states, n_choices), -1, dtype=dtype)
 
     for period in reversed(range(n_periods)):
 

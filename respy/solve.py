@@ -54,9 +54,6 @@ def solve_with_backward_induction(state_space, optim_paras, options):
     Returns
     -------
     state_space : :class:`~respy.state_space.StateSpace`
-        State space containing the emax of the subsequent period of each choice, columns
-        0-3, as well as the maximum emax of the current period for each state, column 4,
-        in ``state_space.continuation_values``.
 
     """
     n_choices = len(options["choices"])
@@ -78,22 +75,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     for period in reversed(range(n_periods)):
 
-        if period == n_periods - 1:
-            n_states_first_period = state_space.get_attribute_from_period(
-                "states", period
-            ).shape[0]
-            continuation_values = np.zeros((n_states_first_period, n_choices))
-
-        else:
-            # Get continuation values by indexing emax_value_functions from child
-            # states.
-            child_state_indices = state_space.get_attribute_from_period(
-                "indices_of_child_states", period
-            )
-            continuation_values = state_space.emax_value_functions[child_state_indices]
-            continuation_values = np.where(
-                child_state_indices >= 0, continuation_values, 0
-            )
+        continuation_values = state_space.get_continuation_values(period)
 
         n_states_in_period = state_space.get_attribute_from_period(
             "states", period

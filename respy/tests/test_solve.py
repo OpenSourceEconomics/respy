@@ -126,9 +126,8 @@ def test_invariance_of_solution(model_or_seed):
     np.testing.assert_array_equal(state_space.states, state_space_.states)
     np.testing.assert_array_equal(state_space.wages, state_space_.wages)
     np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
-
     np.testing.assert_array_equal(
-        state_space.continuation_values, state_space_.continuation_values
+        state_space.emax_value_functions, state_space_.emax_value_functions
     )
     np.testing.assert_array_equal(
         state_space.base_draws_sol, state_space_.base_draws_sol
@@ -231,15 +230,18 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
     for period in range(options["n_periods"]):
         wages = state_space.get_attribute_from_period("wages", period)
         nonpec = state_space.get_attribute_from_period("nonpec", period)
-        emaxs_period = state_space.get_attribute_from_period(
-            "continuation_values", period
-        )
+        continuation_values = state_space.get_continuation_values(period)
         is_inadmissible = state_space.get_attribute_from_period(
             "is_inadmissible", period
         )
 
         value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
-            wages, nonpec, emaxs_period, draws, optim_paras["delta"], is_inadmissible
+            wages,
+            nonpec,
+            continuation_values,
+            draws,
+            optim_paras["delta"],
+            is_inadmissible,
         )
 
         np.testing.assert_equal(

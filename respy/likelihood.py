@@ -371,21 +371,17 @@ def _internal_log_like_obs(
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
 
-    # Get continuation values.
-    child_indices = state_space.indices_of_child_states
-    continuation_values = state_space.emax_value_functions[child_indices]
-    continuation_values = np.where(child_indices >= 0, continuation_values, 0)
-    n_states_last_period = state_space.get_attribute_from_period(
-        "states", periods.max()
-    ).shape[0]
-    continuation_values = np.row_stack(
-        (continuation_values, np.zeros((n_states_last_period, n_choices)))
-    )
+    # Get continuation values. The problem is that we only need a subset of continuation
+    # values defined in ``indices``. To not create the complete matrix of continuation
+    # values, select only necessary continuation value indices.
+    selected_indices = state_space.indices_of_child_states[indices]
+    continuation_values = state_space.emax_value_functions[selected_indices]
+    continuation_values = np.where(selected_indices >= 0, continuation_values, 0)
 
     choice_loglikes = simulate_log_probability_of_individuals_observed_choice(
         state_space.wages[indices],
         state_space.nonpec[indices],
-        continuation_values[indices],
+        continuation_values,
         draws,
         optim_paras["delta"],
         state_space.is_inadmissible[indices],

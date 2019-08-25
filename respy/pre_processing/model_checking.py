@@ -150,5 +150,4 @@ def check_model_solution(options, state_space):
     # Check finiteness of rewards and emaxs.
     assert np.all(np.isfinite(state_space.wages))
     assert np.all(np.isfinite(state_space.nonpec))
-    assert np.all(np.isfinite(state_space.continuation_values))
     assert np.all(np.isfinite(state_space.emax_value_functions))
