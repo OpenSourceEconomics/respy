@@ -2,9 +2,7 @@ import warnings
 
 import numpy as np
 from numba import guvectorize
-from numba import njit
 
-from respy._numba import array_to_tuple
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
@@ -430,58 +428,6 @@ def calculate_emax_value_functions(
         emax_value_functions[0] += max_value_functions
 
     emax_value_functions[0] /= n_draws
-
-
-@njit
-def get_continuation_values(
-    states,
-    indexer_current,
-    indexer_future,
-    continuation_values,
-    emax_value_functions,
-    is_inadmissible,
-    n_choices_w_exp,
-    n_lagged_choices,
-):
-    """Get the continuation value from the following future period.
-
-    This function takes a state at time :math:`t` and looks up the continuation
-    values for each of the choices in the future period :math:`t + 1`.
-
-    """
-    n_choices = continuation_values.shape[1]
-
-    for i in range(states.shape[0]):
-
-        idx_current = indexer_current[array_to_tuple(indexer_current, states[i, 1:])]
-
-        for choice in range(n_choices):
-            # Check if the state in the future is admissible.
-            if is_inadmissible[idx_current, choice]:
-                continuation_values[idx_current, choice] = 0
-            else:
-                # Cut off the period which is not necessary for the indexer.
-                child = states[i, 1:].copy()
-
-                # Increment experience if it is a choice with experience accumulation.
-                if choice < n_choices_w_exp:
-                    child[choice] += 1
-
-                # Change lagged choice by shifting all existing lagged choices by one
-                # period and inserting the current choice in first position.
-                if n_lagged_choices:
-                    child[
-                        n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
-                    ] = child[n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1]
-                    child[n_choices_w_exp] = choice
-
-                # Get the position of the continuation value.
-                idx_future = indexer_future[array_to_tuple(indexer_future, child)]
-                continuation_values[idx_current, choice] = emax_value_functions[
-                    idx_future
-                ]
-
-    return continuation_values
 
 
 @guvectorize(

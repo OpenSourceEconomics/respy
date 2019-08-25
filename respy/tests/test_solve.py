@@ -10,9 +10,7 @@ from respy.config import KEANE_WOLPIN_1997_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.simulate import calculate_value_functions_and_flow_utilities
-from respy.solve import get_continuation_values
 from respy.solve import solve
-from respy.solve import StateSpace
 from respy.state_space import _create_state_space
 from respy.tests._former_code import _create_state_space_kw94
 from respy.tests._former_code import _create_state_space_kw97_base
@@ -135,46 +133,6 @@ def test_invariance_of_solution(model_or_seed):
     np.testing.assert_array_equal(
         state_space.base_draws_sol, state_space_.base_draws_sol
     )
-
-
-@pytest.mark.parametrize("model_or_seed", range(10))
-def test_get_continuation_values(model_or_seed):
-    """Test propagation of emaxs from last to first period."""
-    params, options = process_model_or_seed(model_or_seed)
-
-    params, optim_paras, options = process_params_and_options(params, options)
-
-    state_space = StateSpace(params, options)
-
-    n_states_last_period = state_space.get_attribute_from_period(
-        "states", options["n_periods"] - 1
-    ).shape[0]
-    n_states_but_last_period = state_space.states.shape[0] - n_states_last_period
-
-    state_space.continuation_values = np.r_[
-        np.zeros((n_states_but_last_period, len(options["choices"]))),
-        np.ones((n_states_last_period, len(options["choices"]))),
-    ]
-    state_space.emax_value_functions = np.r_[
-        np.zeros(n_states_but_last_period), np.ones(n_states_last_period)
-    ]
-
-    for period in reversed(range(options["n_periods"] - 1)):
-        states = state_space.get_attribute_from_period("states", period)
-        state_space.continuation_values = get_continuation_values(
-            states,
-            state_space.indexer[period],
-            state_space.indexer[period + 1],
-            state_space.continuation_values,
-            state_space.emax_value_functions,
-            state_space.is_inadmissible,
-            len(options["choices_w_exp"]),
-            options["n_lagged_choices"],
-        )
-        state_space.emax_value_functions = state_space.continuation_values.max(axis=1)
-
-    assert (state_space.emax_value_functions == 1).all()
-    assert state_space.continuation_values.mean() >= 0.95
 
 
 @pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS + list(range(10)))
