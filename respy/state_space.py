@@ -622,55 +622,6 @@ def _get_indices_of_child_states(state_space, options):
     estimation.
 
     """
-
-    @nb.njit
-    def _insert_indices_of_child_states(
-        indices,
-        states,
-        indexer_current,
-        indexer_future,
-        is_inadmissible,
-        n_choices_w_exp,
-        n_lagged_choices,
-    ):
-        """Collect indices of child states for each parent state."""
-        n_choices = is_inadmissible.shape[1]
-
-        for i in range(states.shape[0]):
-
-            idx_current = indexer_current[
-                array_to_tuple(indexer_current, states[i, 1:])
-            ]
-
-            for choice in range(n_choices):
-                # Check if the state in the future is admissible.
-                if is_inadmissible[idx_current, choice]:
-                    continue
-                else:
-                    # Cut off the period which is not necessary for the indexer.
-                    child = states[i, 1:].copy()
-
-                    # Increment experience if it is a choice with experience
-                    # accumulation.
-                    if choice < n_choices_w_exp:
-                        child[choice] += 1
-
-                    # Change lagged choice by shifting all existing lagged choices by
-                    # one period and inserting the current choice in first position.
-                    if n_lagged_choices:
-                        child[
-                            n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
-                        ] = child[
-                            n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
-                        ]
-                        child[n_choices_w_exp] = choice
-
-                    # Get the position of the continuation value.
-                    idx_future = indexer_future[array_to_tuple(indexer_future, child)]
-                    indices[idx_current, choice] = idx_future
-
-        return indices
-
     dtype = state_space.indexer[0].dtype
 
     n_choices = len(options["choices"])
@@ -679,21 +630,64 @@ def _get_indices_of_child_states(state_space, options):
 
     indices = np.full((n_states, n_choices), -1, dtype=dtype)
 
-    for period in reversed(range(n_periods)):
+    # Skip the last period which does not have child states.
+    for period in reversed(range(n_periods - 1)):
 
-        if period == n_periods - 1:
-            pass
-        else:
-            states_in_period = state_space.get_attribute_from_period("states", period)
+        states_in_period = state_space.get_attribute_from_period("states", period)
 
-            indices = _insert_indices_of_child_states(
-                indices,
-                states_in_period,
-                state_space.indexer[period],
-                state_space.indexer[period + 1],
-                state_space.is_inadmissible,
-                len(options["choices_w_exp"]),
-                options["n_lagged_choices"],
-            )
+        indices = _insert_indices_of_child_states(
+            indices,
+            states_in_period,
+            state_space.indexer[period],
+            state_space.indexer[period + 1],
+            state_space.is_inadmissible,
+            len(options["choices_w_exp"]),
+            options["n_lagged_choices"],
+        )
+
+    return indices
+
+
+@nb.njit
+def _insert_indices_of_child_states(
+    indices,
+    states,
+    indexer_current,
+    indexer_future,
+    is_inadmissible,
+    n_choices_w_exp,
+    n_lagged_choices,
+):
+    """Collect indices of child states for each parent state."""
+    n_choices = is_inadmissible.shape[1]
+
+    for i in range(states.shape[0]):
+
+        idx_current = indexer_current[array_to_tuple(indexer_current, states[i, 1:])]
+
+        for choice in range(n_choices):
+            # Check if the state in the future is admissible.
+            if is_inadmissible[idx_current, choice]:
+                continue
+            else:
+                # Cut off the period which is not necessary for the indexer.
+                child = states[i, 1:].copy()
+
+                # Increment experience if it is a choice with experience
+                # accumulation.
+                if choice < n_choices_w_exp:
+                    child[choice] += 1
+
+                # Change lagged choice by shifting all existing lagged choices by
+                # one period and inserting the current choice in first position.
+                if n_lagged_choices:
+                    child[
+                        n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
+                    ] = child[n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1]
+                    child[n_choices_w_exp] = choice
+
+                # Get the position of the continuation value.
+                idx_future = indexer_future[array_to_tuple(indexer_future, child)]
+                indices[idx_current, choice] = idx_future
 
     return indices

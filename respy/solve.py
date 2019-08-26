@@ -75,12 +75,6 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     for period in reversed(range(n_periods)):
 
-        continuation_values = state_space.get_continuation_values(period)
-
-        n_states_in_period = state_space.get_attribute_from_period(
-            "states", period
-        ).shape[0]
-
         base_draws_sol_period = state_space.base_draws_sol[period]
         draws_emax_risk = transform_disturbances(
             base_draws_sol_period, np.zeros(n_choices), shocks_cholesky, n_wages
@@ -92,6 +86,9 @@ def solve_with_backward_induction(state_space, optim_paras, options):
         is_inadmissible = state_space.get_attribute_from_period(
             "is_inadmissible", period
         )
+        continuation_values = state_space.get_continuation_values(period)
+
+        n_states_in_period = wages.shape[0]
 
         # The number of interpolation points is the same for all periods. Thus, for some
         # periods the number of interpolation points is larger than the actual number of
@@ -102,9 +99,9 @@ def solve_with_backward_induction(state_space, optim_paras, options):
         )
 
         if any_interpolated:
-            # These shifts are used to determine the expected values of the two labor
-            # market alternatives. These are log normal distributed and thus the draws
-            # cannot simply set to zero.
+            # These shifts are used to determine the expected values of the working
+            # alternatives. These are log normal distributed and thus the draws cannot
+            # simply set to zero, but :math:`E(X) = \exp\{\mu + \frac{\sigma^2}{2}\}`.
             shifts = np.zeros(n_choices)
             n_choices_w_wage = len(options["choices_w_wage"])
             shifts[:n_choices_w_wage] = np.clip(
