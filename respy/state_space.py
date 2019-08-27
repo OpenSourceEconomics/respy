@@ -474,7 +474,7 @@ def _create_state_space_indexer(df, options):
         )
         if "observables" in options:
             indices += tuple(
-                df[observable.lower()] for observable in options["observables"]
+                sub_df[observable.lower()] for observable in options["observables"]
             )
         indices += (sub_df.type,)
 
