@@ -6,4 +6,3 @@ axes.axisbelow : True       # Draw axis grid lines and ticks below patches (True
 legend.framealpha : 1       # Legend patch transparency.
 legend.scatterpoints : 3    # Number of scatter points in legend.
 figure.autolayout : true
-grid.linewidth : 1.2    # in points
