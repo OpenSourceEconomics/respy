@@ -1,15 +1,9 @@
 lines.linewidth : 3         # line width in points
-font.size : 16
+font.size : 12
 axes.axisbelow : True       # Draw axis grid lines and ticks below patches (True); above
                             # patches but below lines ('line'); or above all (False).
                             # Forces grid lines below figures.
 legend.framealpha : 1       # Legend patch transparency.
 legend.scatterpoints : 3    # Number of scatter points in legend.
-figure.figsize : 12.8, 8    # Figure size in inches. Align with golden ratio ~1.6.
 figure.autolayout : true
-xtick.labelsize : 20
-ytick.labelsize : 20
-axes.labelsize: 24
-axes.titlesize : 24
-legend.fontsize: 24
 grid.linewidth : 1.2    # in points
