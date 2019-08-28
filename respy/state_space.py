@@ -527,7 +527,7 @@ def _create_reward_components(types, covariates, optim_paras, options):
         [np.dot(covariates[w], optim_paras[w]) for w in wage_labels]
     )
 
-    n_states = covariates["nonpec_edu"].shape[0]
+    n_states = types.shape[0]
 
     nonpec_labels = [f"nonpec_{choice}" for choice in options["choices"]]
     nonpec = np.column_stack(

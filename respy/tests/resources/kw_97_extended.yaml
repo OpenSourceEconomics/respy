@@ -53,3 +53,5 @@ covariates:
   "mil_dropout": "exp_mil == 1"
   "up_to_nine_years_edu": "exp_edu <= 9"
   "at_least_ten_years_edu": "10 <= exp_edu"
+inadmissible_states:
+  edu: "exp_edu == @max_exp_edu"

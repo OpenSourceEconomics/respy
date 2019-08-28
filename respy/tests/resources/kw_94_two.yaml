@@ -27,3 +27,5 @@ core_state_space_filters:
   - "lagged_choice_1 == '{k}' and exp_{k} == 0"
   # In period 0, agents cannot choose occupation a or b or mil.
   - "period == 0 and lagged_choice_1 == '{k}'"
+inadmissible_states:
+  edu: "exp_edu == @max_exp_edu"

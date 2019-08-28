@@ -295,7 +295,7 @@ def _infer_number_of_lagged_choices(options, params):
 
     # Look in covariates for lagged choices.
     for cov in used_covariates:
-        matches += re.findall(r"lagged_choice_([0-9]+)", covariates[cov])
+        matches += re.findall(r"lagged_choice_([0-9]+)", str(covariates[cov]))
 
     # Look in state space filters for lagged choices.
     for filter_ in options["core_state_space_filters"]:

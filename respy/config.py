@@ -53,8 +53,6 @@ value in the parameter specification. The values are strings passed to ``pd.eval
 
 """
 
-BASE_INADMISSIBLE_STATES = {"edu": "exp_edu == @max_exp_edu"}
-
 DEFAULT_OPTIONS = {
     "choices": {"edu": {"max": 20, "start": [10], "lagged": [1], "share": [1]}},
     "estimation_draws": 200,
@@ -67,7 +65,7 @@ DEFAULT_OPTIONS = {
     "solution_draws": 500,
     "solution_seed": 3,
     "covariates": BASE_COVARIATES,
-    "inadmissible_states": BASE_INADMISSIBLE_STATES,
+    "inadmissible_states": {},
     "core_state_space_filters": [],
 }
 
