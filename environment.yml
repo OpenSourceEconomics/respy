@@ -25,6 +25,7 @@ dependencies:
   - pytest-xdist
   - restructuredtext_lint
   - scipy
+  - seaborn
   - Sphinx
   - sphinx-autobuild
   - tox-conda
