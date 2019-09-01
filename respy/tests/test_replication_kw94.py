@@ -47,3 +47,4 @@ def test_table_6_exact_solution_row_mean_and_sd():
     kw.loc['std'] = [0.18, 0.94, 0.89, 0.22, 0.53, 0.43, 0.20, 0.18, 0.10]
     
     np.testing.assert_allclose(rp_replication, kw, rtol=0.02, atol=0)
+    
