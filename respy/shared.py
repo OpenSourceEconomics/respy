@@ -121,7 +121,7 @@ def generate_column_labels_estimation(options):
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
         + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
-        + ["Lagged_Choice"]
+        + [f"Lagged_Choice_{i}" for i in range(1, options["n_lagged_choices"] + 1)]
     )
 
     dtypes = {}

@@ -56,7 +56,12 @@ class StateSpace:
         states_df, self.indexer = _create_state_space(options)
 
         _states_df = states_df.copy()
-        _states_df.lagged_choice = _states_df.lagged_choice.cat.codes
+
+        for i in range(1, options["n_lagged_choices"] + 1):
+            _states_df[f"lagged_choice_{i}"] = _states_df[
+                f"lagged_choice_{i}"
+            ].cat.codes
+
         _states_df = _states_df.apply(downcast_to_smallest_dtype)
         self.states = _states_df.to_numpy()
 
@@ -210,7 +215,10 @@ def _create_state_space(options):
 
     indexer = _create_state_space_indexer(df, options)
 
-    df.lagged_choice = pd.Categorical(df.lagged_choice, categories=options["choices"])
+    for i in range(1, options["n_lagged_choices"] + 1):
+        df[f"lagged_choice_{i}"] = pd.Categorical(
+            df[f"lagged_choice_{i}"], categories=options["choices"]
+        )
 
     return df, indexer
 
@@ -311,12 +319,13 @@ def _create_core_state_space_per_period(
 
 def _add_lagged_choice_to_core_state_space(df, options):
     container = []
-    for choice in options["choices"]:
-        df_ = df.copy()
-        df_["lagged_choice"] = choice
-        container.append(df_)
+    for lag in range(1, options["n_lagged_choices"] + 1):
+        for choice in options["choices"]:
+            df_ = df.copy()
+            df_[f"lagged_choice_{lag}"] = choice
+            container.append(df_)
 
-    df = pd.concat(container, axis="rows", sort=False)
+    df = pd.concat(container, axis="rows", sort=False) if container else df
 
     return df
 
@@ -439,17 +448,23 @@ def _create_state_space_indexer(df, options):
     count_states = 0
 
     for period in range(options["n_periods"]):
-        shape = tuple(
-            np.minimum(max_initial_experience + period, max_experience) + 1
-        ) + (n_exp_choices + n_nonexp_choices, options["n_types"])
+        shape = (
+            tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
+            + (n_exp_choices + n_nonexp_choices,) * options["n_lagged_choices"]
+            + (options["n_types"],)
+        )
         sub_indexer = np.full(shape, -1, dtype=np.int32)
 
         sub_df = df.loc[df.period.eq(period)]
         n_states = sub_df.shape[0]
 
-        indices = tuple(sub_df[f"exp_{i}"] for i in options["choices_w_exp"]) + (
-            sub_df.lagged_choice.replace(choice_to_code),
-            sub_df.type,
+        indices = (
+            tuple(sub_df[f"exp_{i}"] for i in options["choices_w_exp"])
+            + tuple(
+                sub_df[f"lagged_choice_{i}"].replace(choice_to_code)
+                for i in range(1, options["n_lagged_choices"] + 1)
+            )
+            + (sub_df.type,)
         )
         sub_indexer[indices] = np.arange(count_states, count_states + n_states)
         indexer.append(sub_indexer)

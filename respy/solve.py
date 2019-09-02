@@ -95,6 +95,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
                 state_space.emax_value_functions,
                 state_space.is_inadmissible,
                 len(options["choices_w_exp"]),
+                options["n_lagged_choices"],
             )
 
         n_states_in_period = state_space.get_attribute_from_period(
@@ -444,6 +445,7 @@ def get_continuation_values(
     emax_value_functions,
     is_inadmissible,
     n_choices_w_exp,
+    n_lagged_choices,
 ):
     """Get the continuation value from the following future period.
 
@@ -457,24 +459,31 @@ def get_continuation_values(
 
         idx_current = indexer_current[array_to_tuple(indexer_current, states[i, 1:])]
 
-        for n in range(n_choices):
+        for choice in range(n_choices):
             # Check if the state in the future is admissible.
-            if is_inadmissible[idx_current, n]:
-                continuation_values[idx_current, n] = 0
+            if is_inadmissible[idx_current, choice]:
+                continuation_values[idx_current, choice] = 0
             else:
                 # Cut off the period which is not necessary for the indexer.
                 child = states[i, 1:].copy()
 
                 # Increment experience if it is a choice with experience accumulation.
-                if n < n_choices_w_exp:
-                    child[n] += 1
+                if choice < n_choices_w_exp:
+                    child[choice] += 1
 
-                # Change lagged choice.
-                child[n_choices_w_exp] = n
+                # Change lagged choice by shifting all existing lagged choices by one
+                # period and inserting the current choice in first position.
+                if n_lagged_choices:
+                    child[
+                        n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
+                    ] = child[n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1]
+                    child[n_choices_w_exp] = choice
 
                 # Get the position of the continuation value.
                 idx_future = indexer_future[array_to_tuple(indexer_future, child)]
-                continuation_values[idx_current, n] = emax_value_functions[idx_future]
+                continuation_values[idx_current, choice] = emax_value_functions[
+                    idx_future
+                ]
 
     return continuation_values
 

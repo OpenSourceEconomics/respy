@@ -16,23 +16,23 @@ solution_seed: 456
 core_state_space_filters:
   # In periods > 0, if agents accumulated experience only in one choice, lagged choice
   # cannot be different.
-  - "period > 0 and exp_{i} == period and lagged_choice != '{i}'"
+  - "period > 0 and exp_{i} == period and lagged_choice_1 != '{i}'"
   # In periods > 0, if agents always accumulated experience, lagged choice cannot be
   # non-experience choice.
-  - "period > 0 and exp_a + exp_b + exp_mil + exp_edu == period and lagged_choice == '{j}'"
+  - "period > 0 and exp_a + exp_b + exp_mil + exp_edu == period and lagged_choice_1 == '{j}'"
   # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
   # be school.
-  - "period > 0 and lagged_choice == 'edu' and exp_edu == 0"
+  - "period > 0 and lagged_choice_1 == 'edu' and exp_edu == 0"
   # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
-  - "lagged_choice == '{k}' and exp_{k} == 0"
+  - "lagged_choice_1 == '{k}' and exp_{k} == 0"
   # In period 0, agents cannot choose occupation a or b or mil.
-  - "period == 0 and lagged_choice == '{k}'"
+  - "period == 0 and lagged_choice_1 == '{k}'"
 covariates:
-  "not_exp_a_lagged": "exp_a > 0 and lagged_choice != 'a'"
-  "not_exp_b_lagged": "exp_b > 0 and lagged_choice != 'b'"
-  "work_a_lagged": "lagged_choice == 'a'"
-  "work_b_lagged": "lagged_choice == 'b'"
-  "edu_lagged": "lagged_choice == 'edu'"
+  "not_exp_a_lagged": "exp_a > 0 and lagged_choice_1 != 'a'"
+  "not_exp_b_lagged": "exp_b > 0 and lagged_choice_1 != 'b'"
+  "work_a_lagged": "lagged_choice_1 == 'a'"
+  "work_b_lagged": "lagged_choice_1 == 'b'"
+  "edu_lagged": "lagged_choice_1 == 'edu'"
   "not_any_exp_a": "exp_a == 0"
   "not_any_exp_b": "exp_b == 0"
   "not_any_exp_mil": "exp_mil == 0"
