@@ -44,6 +44,9 @@ def _process_options(options, params):
         )
 
     extended_options = {**DEFAULT_OPTIONS, **options}
+    extended_options["n_lagged_choices"] = _infer_number_of_lagged_choices(
+        extended_options, params
+    )
     extended_options = _order_choices(extended_options, params)
     extended_options = _set_defaults_for_choices_with_experience(extended_options)
     extended_options = _set_defaults_for_inadmissible_states(extended_options)
@@ -183,7 +186,9 @@ def _parse_parameters(params):
     optim_paras = {}
 
     for quantity in params.index.get_level_values("category").unique():
-        optim_paras[quantity] = params.loc[quantity].to_numpy()
+        quant = params.loc[quantity].to_numpy()
+        # Scalars should be scalars, not one-dimensional arrays.
+        optim_paras[quantity] = quant[0] if quant.shape == (1,) else quant
 
     cov = sdcorr_params_to_matrix(optim_paras["shocks"])
     optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
@@ -258,3 +263,44 @@ def _infer_choices(params):
     choices_w_nonpec = _infer_choices_with_prefix(params, "nonpec_")
 
     return list(set(choices_w_wage) | set(choices_w_nonpec))
+
+
+def _infer_number_of_lagged_choices(options, params):
+    """Infer the maximum lag of choices.
+
+    Notes
+    -----
+    Once, the probability parameter for lagged choices are moved to the parameters
+    (https://github.com/OpenSourceEconomics/respy/issues/212) this function should also
+    infer from ``params``.
+
+    Example
+    -------
+    >>> index = pd.MultiIndex.from_tuples([("name", "covariate")])
+    >>> params = pd.DataFrame(index=index)
+    >>> options = {
+    ...     "covariates": {"covariate": "lagged_choice_2 + lagged_choice_1"},
+    ...     "core_state_space_filters": [],
+    ... }
+    >>> _infer_number_of_lagged_choices(options, params)
+    2
+
+    """
+    covariates = options["covariates"]
+    parameters = params.index.get_level_values(1)
+
+    used_covariates = [cov for cov in covariates if cov in parameters]
+
+    matches = []
+
+    # Look in covariates for lagged choices.
+    for cov in used_covariates:
+        matches += re.findall(r"lagged_choice_([0-9]+)", covariates[cov])
+
+    # Look in state space filters for lagged choices.
+    for filter_ in options["core_state_space_filters"]:
+        matches += re.findall(r"lagged_choice_([0-9]+)", filter_)
+
+    n_lagged_choices = 0 if not matches else pd.to_numeric(matches).max()
+
+    return n_lagged_choices

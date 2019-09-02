@@ -104,13 +104,14 @@ def check_model_solution(options, state_space):
     edu_start_max = max(edu_start)
     n_periods = options["n_periods"]
     n_types = options["n_types"]
+    n_choices_w_exp = len(options["choices_w_exp"])
 
     # Check period.
     assert np.all(np.isin(state_space.states[:, 0], range(n_periods)))
 
     # The sum of years of experiences cannot be larger than constraint time.
     assert np.all(
-        state_space.states[:, 1 : len(options["choices_w_exp"]) + 1].sum(axis=1)
+        state_space.states[:, 1 : n_choices_w_exp + 1].sum(axis=1)
         <= (state_space.states[:, 0] + edu_start_max)
     )
 
@@ -119,8 +120,15 @@ def check_model_solution(options, state_space):
         idx = list(options["choices"]).index(choice) + 1
         assert np.all(state_space.states[:, idx] <= options["choices"][choice]["max"])
 
-    # Lagged choices are always between one and four.
-    assert np.isin(state_space.states[:, -2], range(len(options["choices"]))).all()
+    # Lagged choices are always in ``range(n_choices)``.
+    if options["n_lagged_choices"]:
+        assert np.isin(
+            state_space.states[
+                :,
+                n_choices_w_exp + 1 : n_choices_w_exp + options["n_lagged_choices"] + 1,
+            ],
+            range(len(options["choices"])),
+        ).all()
 
     # States and covariates have finite and nonnegative values.
     assert np.all(state_space.states >= 0)
@@ -131,7 +139,7 @@ def check_model_solution(options, state_space):
     assert not pd.DataFrame(state_space.states).duplicated().any()
 
     # Check the number of states in the first time period.
-    n_states_start = n_types * n_initial_exp_edu * 2
+    n_states_start = n_types * n_initial_exp_edu * (options["n_lagged_choices"] + 1)
     assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
     assert np.sum(state_space.indexer[0] >= 0) == n_states_start
 
@@ -142,5 +150,4 @@ def check_model_solution(options, state_space):
     # Check finiteness of rewards and emaxs.
     assert np.all(np.isfinite(state_space.wages))
     assert np.all(np.isfinite(state_space.nonpec))
-    assert np.all(np.isfinite(state_space.continuation_values))
     assert np.all(np.isfinite(state_space.emax_value_functions))

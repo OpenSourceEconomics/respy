@@ -37,17 +37,22 @@ def check_estimation_data(df, options):
     assert df.Wage.fillna(1).gt(0).all()
 
     # 8. Lagged_Choice.
-    assert df.Lagged_Choice.isin(options["choices"]).all()
+    for i in range(1, options["n_lagged_choices"] + 1):
+        assert df[f"Lagged_Choice_{i}"].isin(options["choices"]).all()
+
+    if options["n_periods"] > 1 and options["n_lagged_choices"] > 0:
+        choices = ["Choice"] + [
+            f"Lagged_Choice_{i}" for i in range(1, options["n_lagged_choices"] + 1)
+        ][:-1]
+
+        for i in range(len(choices) - 1):
+            lc = df.groupby("Identifier")[choices[i]].transform("shift").dropna()
+            assert (
+                df[choices[i + 1]].loc[~df.Period.le(i)].cat.codes == lc.cat.codes
+            ).all()
 
     # Others.
     assert df.drop(columns="Wage").notna().all().all()
-
-    if options["n_periods"] > 1:
-        # Compare Lagged_Choice and Choice for all but the first period.
-        lagged_choice = df.groupby("Identifier").Choice.transform("shift").dropna()
-        assert (
-            df.Lagged_Choice.loc[~df.Period.eq(0)].cat.codes == lagged_choice.cat.codes
-        ).all()
 
     # We check individual state variables against the recorded choices.
     df.groupby("Identifier").apply(_check_state_variables, options=options)
