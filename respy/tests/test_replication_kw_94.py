@@ -1,72 +1,88 @@
-"""Tests whether respy replicates results in Keane and Wolpin(1994)."""
+"""Test replication of key results of Keane and Wolpin (1994).
+
+References
+----------
+Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete Choice
+Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence
+<https://doi.org/10.2307/2109768>`__. *The Review of Economics and Statistics*, 76(4):
+648-672.
+
+Keane, M. P. and  Wolpin, K. I. (1994b). `The Solution and Estimation of Discrete Choice
+Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence
+<https://www.minneapolisfed.org/research/staff-reports/the-solution-and-
+estimation-of-discrete-choice-dynamic-programming-models-by-simulation-and-
+interpolation-monte-carlo-evidence>`_. *Federal Reserve Bank of Minneapolis*, No. 181.
+
+"""
 import numpy as np
 import pandas as pd
 import pytest
 
 import respy as rp
+from respy.config import TEST_RESOURCES_DIR
 
 
-@pytest.mark.xfail
+@pytest.mark.xfail(reason="Still investigating why replication fails.")
 def test_table_6_exact_solution_row_mean_and_sd():
-    """
-    Tests whether respy replicates the Exact Solution row in table 6.
-    In explicit, the mean effects and its standard deviation of a
-    500, 1000, and 2000 dollar tuition fee on years of schooling and of
-    experience in occupation 1 and occupation 2 based on 40 samples of
-    100 persons using true paramter values are tested.
+    """Replicate the first two rows of Table 6 in Keane and Wolpin (1994).
+
+    In more detail, the mean effects and the standard deviations of a 500, 1000, and
+    2000 dollar tuition subsidy on years of schooling and of experience in occupation a
+    and occupation b based on 40 samples of 100 individuals using true parameters are
+    tested.
 
     """
-
     # Initialize the respective simulate function.
     params, options = rp.get_example_model("kw_94_one", with_data=False)
     options["simulation_agents"] = 4000
     simulate = rp.get_simulate_func(params, options)
 
-    # Specifiy the three different Data Sets.
+    # Specify the three different data sets.
     models = np.repeat(["one", "two", "three"], 2)
     tuition_subsidies = [0, 500, 0, 1000, 0, 2000]
 
-    # Generate the 3*2 Data Sets as list of DataFrames by simulating with
-    # respective tuition subsidy.
+    # Generate the 3 * 2 data sets as list of DataFrames by simulating with respective
+    # tuition subsidy.
     data_frames = []
     for model, tuition_subsidy in zip(models, tuition_subsidies):
         params, _ = rp.get_example_model(f"kw_94_{model}", with_data=False)
         params.loc[("nonpec_edu", "hs_graduate"), "value"] += tuition_subsidy
         data_frames.append(simulate(params))
 
-    # Calculate the statistics based on 40 bootstrap samples á 100 agents.
+    columns = ["Bootstrap_Sample", "Experience_Edu", "Experience_A", "Experience_B"]
+
+    # Calculate the statistics based on 40 bootstrap samples á 100 individuals.
     bootstrapped_statistics = []
-    for i, title in zip(
-        range(0, 6, 2), ["Data Set One", "Data Set Two", "Data Set Three"]
-    ):
+    for i, title in zip(range(0, 6, 2), ["kw_94_one", "kw_94_two", "kw_94_three"]):
+        # Select sample with and without tuition subsidy.
         df_wo_ts = data_frames[i]
         df_w_ts = data_frames[i + 1]
+
+        # Assign bootstrap sample number.
         df_wo_ts["Bootstrap_Sample"] = pd.cut(
             df_wo_ts.Identifier, bins=40, labels=np.arange(1, 41)
         )
         df_w_ts["Bootstrap_Sample"] = pd.cut(
             df_w_ts.Identifier, bins=40, labels=np.arange(1, 41)
         )
+
+        # Calculate mean experiences.
         mean_exp_wo_ts = (
-            df_wo_ts.loc[
-                df_wo_ts.Period.eq(39),
-                ["Bootstrap_Sample", "Experience_Edu", "Experience_A", "Experience_B"],
-            ]
+            df_wo_ts.loc[df_wo_ts.Period.eq(39), columns]
             .groupby("Bootstrap_Sample")
             .mean()
         )
         mean_exp_w_ts = (
-            df_w_ts.loc[
-                df_w_ts.Period.eq(39),
-                ["Bootstrap_Sample", "Experience_Edu", "Experience_A", "Experience_B"],
-            ]
+            df_w_ts.loc[df_w_ts.Period.eq(39), columns]
             .groupby("Bootstrap_Sample")
             .mean()
         )
-        diff = mean_exp_w_ts - mean_exp_wo_ts
-        diff["Data"] = title
+
+        # Calculate bootstrap statistics.
         diff = (
-            diff.reset_index()
+            mean_exp_w_ts.subtract(mean_exp_wo_ts)
+            .assign(Data=title)
+            .reset_index()
             .set_index(["Data", "Bootstrap_Sample"])
             .stack()
             .unstack([0, 2])
@@ -77,9 +93,36 @@ def test_table_6_exact_solution_row_mean_and_sd():
         [bs.agg(["mean", "std"]) for bs in bootstrapped_statistics], axis=1
     )
 
-    # Expected values are taken from csv in ..\resources.
-    kw = pd.DataFrame(rp_replication, copy=True)
-    kw_94_table_6 = pd.read_csv(r"resources/kw_94_table_6.csv", sep=";")
-    kw.loc[["mean", "std"], :] = kw_94_table_6.iloc[1:3, 1:].astype(float).to_numpy()
+    # Expected values are taken from csv of table 6.
+    kw_94_table_6 = pd.read_csv(
+        TEST_RESOURCES_DIR / "kw_94_table_6.csv", index_col=0, header=[0, 1], nrows=2
+    )
 
-    np.testing.assert_allclose(rp_replication, kw, rtol=0.02, atol=0)
+    np.testing.assert_allclose(rp_replication, kw_94_table_6, rtol=0.02, atol=0)
+
+
+@pytest.mark.xfail(reason="Still investigating why replication fails.")
+@pytest.mark.parametrize(
+    "model, table",
+    zip(
+        [f"kw_94_{model}" for model in ["one", "two", "three"]],
+        [f"kw_94_wp_table_2_{i}.csv" for i in range(1, 4)],
+    ),
+)
+def test_replication_of_choice_probabilities(model, table):
+    """Replicate choice probabilities in Tables 2.1-2.3. in Keane and Wolpin (1994b).
+
+    For each of the three parameterizations a data set is simulated and the choice
+    probabilities for each period are compared to the numbers in the paper.
+
+    """
+    # Get choice probabilities from paper.
+    expected = pd.read_csv(TEST_RESOURCES_DIR / table, index_col="period")
+
+    # Simulate data for choice probabilities.
+    _, _, df = rp.get_example_model(model)
+    result = (
+        df.groupby("Period").Choice.value_counts(normalize=True).unstack().fillna(0)
+    )
+
+    np.testing.assert_allclose(expected, result, rtol=0.02)
