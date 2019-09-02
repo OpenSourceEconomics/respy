@@ -147,6 +147,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
     if n_lagged_choices:
         edu_idx = list(options["choices_w_exp"]).index("edu")
         container += (_get_random_lagged_choices(container[edu_idx], options),)
+
     states_wo_types = pd.DataFrame(
         np.column_stack(container),
         columns=[f"exp_{i}" for i in options["choices_w_exp"]]
@@ -166,6 +167,11 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
             tuple(current_states[:, i] for i in range(current_states.shape[1]))
         ]
 
+        # Get continuation values. Indices work on the complete state space whereas
+        # continuation values are period-specific. Make them period-specific.
+        continuation_values = state_space.get_continuation_values(period)
+        cont_indices = indices - state_space.slices_by_periods[period].start
+
         # Select relevant subset of random draws.
         draws_shock = base_draws_sim_transformed[period]
         draws_wage = base_draws_wage_transformed[period]
@@ -174,7 +180,7 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
             state_space.wages[indices],
             state_space.nonpec[indices],
-            state_space.continuation_values[indices],
+            continuation_values[cont_indices],
             draws_shock.reshape(-1, 1, n_choices),
             optim_paras["delta"],
             state_space.is_inadmissible[indices],
