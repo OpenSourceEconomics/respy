@@ -18,7 +18,7 @@ def test_table_6_exact_solution_row_mean_and_sd():
     """
 
     # Initialize the respective simulate function.
-    params, options, _ = rp.get_example_model("kw_94_one")
+    params, options = rp.get_example_model("kw_94_one", with_data=False)
     options["simulation_agents"] = 4000
     simulate = rp.get_simulate_func(params, options)
 
@@ -30,7 +30,7 @@ def test_table_6_exact_solution_row_mean_and_sd():
     # respective tuition subsidy.
     data_frames = []
     for model, tuition_subsidy in zip(models, tuition_subsidies):
-        params, _, _ = rp.get_example_model(f"kw_94_{model}")
+        params, _ = rp.get_example_model(f"kw_94_{model}", with_data=False)
         params.loc[("nonpec_edu", "hs_graduate"), "value"] += tuition_subsidy
         data_frames.append(simulate(params))
 
