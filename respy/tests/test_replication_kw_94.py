@@ -2,8 +2,8 @@
 
 import numpy as np
 import pandas as pd
-import respy as rp
 import pytest
+import respy as rp
 
 
 @pytest.mark.xfail
@@ -33,7 +33,7 @@ def test_table_6_exact_solution_row_mean_and_sd():
         params, _, _ = rp.get_example_model(f"kw_94_{model}", with_data=False)
         params.loc[("nonpec_edu", "hs_graduate"), "value"] += tuition_subsidy
         data_frames.append(simulate(params))
-        
+
     # Calculate the statistics based on 40 bootstrap samples á 100 agents.
     bootstrapped_statistics = []
     for i, title in zip(range(0, 6, 2), ["Data Set One", "Data Set Two", "Data Set Three"]):
