@@ -1,4 +1,4 @@
-"""Test whether respy replicates results in Keane/Wolpin(1994)"""
+"""Tests whether respy replicates results in Keane and Wolpin(1994)."""
 
 import numpy as np
 import pandas as pd
@@ -8,24 +8,33 @@ import pytest
 
 @pytest.mark.xfail
 def test_table_6_exact_solution_row_mean_and_sd():
-    """Test whether respy replicates the Exact Solution row in table 6"""
-    # Initialize the respective simulate function
-    params, options, _ = rp.get_example_model("kw_94_one")
+    """
+    Tests whether respy replicates the Exact Solution row in table 6.
+    In explicit, the mean effects and its standard deviation of a
+    500, 1000, and 2000 dollar tuition fee on years of schooling and of
+    experience in occupation 1 and occupation 2 based on 40 samples of
+    100 persons using true paramter values are tested.
+
+    """
+
+    # Initialize the respective simulate function.
+    params, options, _ = rp.get_example_model("kw_94_one", with_data=False)
     options["simulation_agents"] = 4000
     simulate = rp.get_simulate_func(params, options)
     
-    # Specifiy the three different Data Sets
+    # Specifiy the three different Data Sets.
     models = np.repeat(["one", "two", "three"], 2)
     tuition_subsidies = [0, 500, 0, 1000, 0, 2000]
     
     # Generate the 3*2 Data Sets as list of DataFrames by simulating with
-    # respective tuitin subsidy
+    # respective tuition subsidy.
     data_frames = []
     for model, tuition_subsidy in zip(models, tuition_subsidies):
-        params, _, _ = rp.get_example_model(f"kw_94_{model}")
+        params, _, _ = rp.get_example_model(f"kw_94_{model}", with_data=False)
         params.loc[("nonpec_edu", "hs_graduate"), "value"] += tuition_subsidy
         data_frames.append(simulate(params))
-    # Calucate the statistics based on 40 bootstrap samples á 100 agents
+        
+    # Calculate the statistics based on 40 bootstrap samples á 100 agents.
     bootstrapped_statistics = []
     for i, title in zip(range(0, 6, 2), ["Data Set One", "Data Set Two", "Data Set Three"]):
         df_wo_ts = data_frames[i]
@@ -41,7 +50,7 @@ def test_table_6_exact_solution_row_mean_and_sd():
     
     rp_replication = pd.concat([bs.agg(["mean", "std"]) for bs in bootstrapped_statistics], axis=1)
     
-    # expected values copied from page 668 in Keane/Wolpin(1994)
+    # Expected values are copied from page 668 in Keane/Wolpin(1994).
     kw = pd.DataFrame(rp_replication, copy=True)
     kw.loc['mean'] = [1.44, -3.43, 2.19, 1.12, -2.71, 2.08, 1.67, -1.27, -0.236]
     kw.loc['std'] = [0.18, 0.94, 0.89, 0.22, 0.53, 0.43, 0.20, 0.18, 0.10]
