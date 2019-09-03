@@ -194,8 +194,9 @@ def _parse_parameters(params):
     optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
     optim_paras.pop("shocks")
 
-    short_meas_error = params.loc["meas_error"]
     n_choices = cov.shape[0]
+
+    short_meas_error = params.loc["meas_error"]
     meas_error = params.loc["shocks"][:n_choices].copy(deep=True)
     meas_error[:] = 0.0
     meas_error.update(short_meas_error)

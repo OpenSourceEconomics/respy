@@ -507,10 +507,13 @@ def _create_state_space_indexer(df, options):
 def _create_reward_components(types, covariates, optim_paras, options):
     """Calculate systematic rewards for each state.
 
-    Wages are only available for some choices, i.e. n_nonpec >= n_wages. We extend the
-    array of wages with ones for the difference in dimensions, n_nonpec - n_wages. Ones
-    are necessary as it facilitates the aggregation of reward components in
-    :func:`calculate_emax_value_functions` and related functions.
+    Wages are only available for some choices. For all other choices, we extend the
+    array of wages with ones. This is because in Keane and Wolpin (1994, 1997) shocks
+    enter the wage component of working alternatives multiplicatively and the
+    non-pecuniary component for non-working alternatives additively. If wages are one
+    for the latter, we can also multiply the shocks to the wage component for
+    non-working alternatives. The aggregation of reward components can be found in the
+    utility function :func:`aggregate_keane_wolpin_utility`.
 
     Parameters
     ----------
@@ -522,36 +525,44 @@ def _create_reward_components(types, covariates, optim_paras, options):
         Contains parameters affected by the optimization.
 
     """
-    wage_labels = [f"wage_{choice}" for choice in options["choices_w_wage"]]
-    log_wages = np.column_stack(
-        [np.dot(covariates[w], optim_paras[w]) for w in wage_labels]
-    )
-
     n_states = types.shape[0]
 
-    nonpec_labels = [f"nonpec_{choice}" for choice in options["choices"]]
-    nonpec = np.column_stack(
-        [
-            np.zeros(n_states)
-            if n not in optim_paras
-            else np.dot(covariates[n], optim_paras[n])
-            for n in nonpec_labels
-        ]
-    )
+    log_wages = []
+    nonpecs = []
+
+    for choice in options["choices"]:
+        # Wages are either a dot product of wage parameters and covariates or set to one
+        # for choices without wages. See the function docstring for more information.
+        label = f"wage_{choice}"
+        if label in optim_paras:
+            log_wages.append(np.dot(covariates[label], optim_paras[label]))
+        else:
+            log_wages.append(np.ones(n_states))
+
+        # Non-pecuniary rewards are either a dot product of parameters and covariates or
+        # set to zero.
+        label = f"nonpec_{choice}"
+        if label in optim_paras:
+            nonpecs.append(np.dot(covariates[label], optim_paras[label]))
+        else:
+            nonpecs.append(np.zeros(n_states))
+
+    log_wages = np.column_stack(log_wages)
+    nonpecs = np.column_stack(nonpecs)
 
     n_wages = len(options["choices_w_wage"])
     type_deviations = optim_paras["type_shift"][types]
 
-    log_wages += type_deviations[:, :n_wages]
-    nonpec[:, n_wages:] += type_deviations[:, n_wages:]
+    # Type deviations enter the log wage equation additively for working alternatives
+    # and the non-pecuniary rewards for non-working alternatives.
+    log_wages[:, :n_wages] += type_deviations[:, :n_wages]
+    nonpecs[:, n_wages:] += type_deviations[:, n_wages:]
 
-    wages = np.clip(np.exp(log_wages), 0.0, HUGE_FLOAT)
+    # Turn log wages to wages by taking the exponential for all working alternatives.
+    wages = log_wages
+    wages[:, :n_wages] = np.clip(np.exp(log_wages[:, :n_wages]), 0.0, HUGE_FLOAT)
 
-    # Extend wages to dimension of non-pecuniary rewards.
-    additional_dim = nonpec.shape[1] - log_wages.shape[1]
-    wages = np.column_stack((wages, np.ones((wages.shape[0], additional_dim))))
-
-    return wages, nonpec
+    return wages, nonpecs
 
 
 def _create_choice_covariates(covariates_df, states_df, params, options):

@@ -18,6 +18,12 @@ from respy.config import INADMISSIBILITY_PENALTY
 def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
+    """Calculate the utility in Keane and Wolpin (1994, 1997).
+
+    Note that wages are set to one for non-working alternatives. Thus, shocks enter the
+    utility multiplicatively for working and additively for non-working alternatives.
+
+    """
     flow_utility = wage * draw + nonpec
     value_function = flow_utility + delta * continuation_value
 
