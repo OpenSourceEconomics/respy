@@ -54,39 +54,39 @@ jobs:
       tox -e pytest
     displayName: Run pytest.
 
-# - job:
-#   displayName: MacOS
-#   pool:
-#     vmImage: "macOS-latest"
-#   strategy:
-#     matrix:
-#       Python36:
-#         python.version: "3.6"
-#       Python37:
-#         python.version: "3.7"
+- job:
+  displayName: MacOS
+  pool:
+    vmImage: "macOS-latest"
+  strategy:
+    matrix:
+      Python36:
+        python.version: "3.6"
+      Python37:
+        python.version: "3.7"
 
-#   steps:
-#   - bash: echo "##vso[task.prependpath]$CONDA/bin"
-#     displayName: Add conda to PATH
+  steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
 
-#   # On Hosted macOS, the agent user doesn't have ownership of Miniconda's installation
-#   # directory. We need to take ownership if we want to update conda or install packages
-#   # globally.
-#   - bash: sudo chown -R $USER $CONDA
-#     displayName: Take ownership of conda installation
+  # On Hosted macOS, the agent user doesn't have ownership of Miniconda's installation
+  # directory. We need to take ownership if we want to update conda or install packages
+  # globally.
+  - bash: sudo chown -R $USER $CONDA
+    displayName: Take ownership of conda installation
 
-#   - bash: conda update conda --yes --quiet
-#     displayName: Update conda.
+  - bash: conda update conda --yes --quiet
+    displayName: Update conda.
 
-#   - bash: |
-#       conda clean --index-cache --yes
-#       conda clean --all --yes
-#     displayName: Reset index-cache and clean conda.
+  - bash: |
+      conda clean --index-cache --yes
+      conda clean --all --yes
+    displayName: Reset index-cache and clean conda.
 
-#   - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
-#     displayName: Create Anaconda environment
+  - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
+    displayName: Create Anaconda environment
 
-#   - bash: |
-#       source activate respy
-#       tox -e pytest
-#     displayName: Run pytest.
+  - bash: |
+      source activate respy
+      tox -e pytest
+    displayName: Run pytest.
