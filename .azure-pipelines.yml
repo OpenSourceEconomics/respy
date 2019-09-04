@@ -39,8 +39,7 @@ jobs:
         python.version: "3.7"
 
   steps:
-  - powershell: |
-      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH.
 
   - powershell: conda update conda --yes --quiet
