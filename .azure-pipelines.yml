@@ -46,12 +46,7 @@ jobs:
   - powershell: conda update conda --yes --quiet
     displayName: Update conda.
 
-  - bash: |
-      conda clean --index-cache --yes
-      conda clean --all --yes
-    displayName: Reset index-cache and clean conda.
-
-  - powershell: conda env create
+  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda numpy scipy -c conda-forge
     displayName: Create Anaconda environment.
 
   - script: |
