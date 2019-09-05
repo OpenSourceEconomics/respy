@@ -48,7 +48,9 @@ def _process_options(options, params):
         extended_options, params
     )
     extended_options = _order_choices(extended_options, params)
-    extended_options = _set_defaults_for_choices_with_experience(extended_options)
+    extended_options = _set_defaults_for_choices_with_experience(
+        extended_options, params
+    )
     extended_options = _set_defaults_for_inadmissible_states(extended_options)
 
     return extended_options
@@ -121,7 +123,7 @@ def _order_choices(options, params):
     return options
 
 
-def _set_defaults_for_choices_with_experience(options):
+def _set_defaults_for_choices_with_experience(options, params):
     """Process initial experience distributions.
 
     A choice might have information on the distribution of initial experiences which is
@@ -140,7 +142,16 @@ def _set_defaults_for_choices_with_experience(options):
 
     for choice in options["choices_w_exp"]:
 
-        starts = np.array(choices[choice].get("start", [0]))
+        if f"initial_{choice}" in params.index.get_level_values(0):
+            starts = (
+                params.loc[f"initial_{choice}"]
+                .index.get_level_values(0)
+                .astype(int)
+                .to_numpy()
+            )
+        else:
+            starts = np.zeros(1)
+
         ordered_indices = np.argsort(starts)
         choices[choice]["start"] = starts[ordered_indices]
 
@@ -247,14 +258,15 @@ def _infer_choices_with_experience(params, options):
     for cov in used_covariates:
         matches += re.findall(r"exp_([A-Za-z]*)", covariates[cov])
 
-    return sorted(list(set(matches)))
+    return sorted(set(matches))
 
 
 def _infer_choices_with_prefix(params, prefix):
-    return sorted(
-        i[len(prefix) :]
-        for i in params.index.get_level_values(0).unique()
-        if prefix in i
+    return (
+        params.index.get_level_values(0)
+        .str.extract(fr"{prefix}([A-Za-z]+)", expand=False)
+        .dropna()
+        .unique()
     )
 
 
@@ -266,13 +278,15 @@ def _infer_choices(params):
 
 
 def _infer_number_of_lagged_choices(options, params):
-    """Infer the maximum lag of choices.
+    """Infer the number of lagged choices from covariates.
 
-    Notes
-    -----
-    Once, the probability parameter for lagged choices are moved to the parameters
-    (https://github.com/OpenSourceEconomics/respy/issues/212) this function should also
-    infer from ``params``.
+    Warning
+    -------
+    UserWarning
+        If not enough lagged choices are specified in params and the model can only be
+        used for estimation.
+    UserWarning
+        If the model contains superfluous definitions of lagged choices.
 
     Example
     -------
@@ -286,21 +300,48 @@ def _infer_number_of_lagged_choices(options, params):
     2
 
     """
+    regex_pattern = r"lagged_choice_([0-9]+)"
+
+    # First, infer the number of lags from all used covariates.
     covariates = options["covariates"]
     parameters = params.index.get_level_values(1)
-
     used_covariates = [cov for cov in covariates if cov in parameters]
 
     matches = []
-
-    # Look in covariates for lagged choices.
     for cov in used_covariates:
-        matches += re.findall(r"lagged_choice_([0-9]+)", covariates[cov])
-
-    # Look in state space filters for lagged choices.
-    for filter_ in options["core_state_space_filters"]:
-        matches += re.findall(r"lagged_choice_([0-9]+)", filter_)
+        matches += re.findall(regex_pattern, covariates[cov])
 
     n_lagged_choices = 0 if not matches else pd.to_numeric(matches).max()
+
+    # Second, infer the number of lags defined in params.
+    matches_params = (
+        params.index.get_level_values(0)
+        .str.extract(regex_pattern, expand=False)
+        .dropna()
+        .unique()
+    )
+
+    lc_params = np.zeros(1) if not matches_params else pd.to_numeric(matches_params)
+    n_lc_params = lc_params.max()
+    undefined_lags = set(range(1, n_lagged_choices + 1)) - set(lc_params)
+
+    # Check whether there is a discrepancy between the maximum number of lags specified
+    # in covariates and filters or params.
+    if n_lagged_choices > n_lc_params or undefined_lags:
+        warnings.warn(
+            "The distribution of initial lagged choices is insufficient specified in "
+            "params. This model cannot be used for simulation, only for estimation.",
+            category=UserWarning,
+        )
+    elif n_lagged_choices < n_lc_params:
+        warnings.warn(
+            "The model contains superfluous information on lagged choices. The "
+            f"covariates and filters require {n_lagged_choices} lagged choices whereas "
+            f"{n_lc_params} lags are specified in params. Ignore superfluous lags in "
+            "params.",
+            category=UserWarning,
+        )
+    else:
+        pass
 
     return n_lagged_choices

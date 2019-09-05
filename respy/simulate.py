@@ -304,10 +304,7 @@ def _get_random_lagged_choices(edu_start, options):
 
 
 @guvectorize(
-    [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:, :], f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :], f8[:, :]",
-    ],
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :], f8[:, :]"],
     "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
     "-> (n_choices, n_draws), (n_choices, n_draws)",
     nopython=True,
