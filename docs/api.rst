@@ -22,6 +22,7 @@ state_space
 
     StateSpace
     StateSpace.get_attribute_from_period
+    StateSpace.get_continuation_values
     StateSpace.update_systematic_rewards
 
 solve

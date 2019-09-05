@@ -19,9 +19,8 @@ def test_invariance_of_model_solution_in_solve_and_simulation(model_or_seed):
     np.testing.assert_array_equal(state_space.states, state_space_.states)
     np.testing.assert_array_equal(state_space.wages, state_space_.wages)
     np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
-
     np.testing.assert_array_equal(
-        state_space.continuation_values, state_space_.continuation_values
+        state_space.emax_value_functions, state_space_.emax_value_functions
     )
     np.testing.assert_array_equal(
         state_space.base_draws_sol, state_space_.base_draws_sol
@@ -47,9 +46,8 @@ def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     np.testing.assert_array_equal(state_space.states, state_space_.states)
     np.testing.assert_array_equal(state_space.wages, state_space_.wages)
     np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
-
     np.testing.assert_array_equal(
-        state_space.continuation_values, state_space_.continuation_values
+        state_space.emax_value_functions, state_space_.emax_value_functions
     )
     np.testing.assert_array_equal(
         state_space.base_draws_sol, state_space_.base_draws_sol

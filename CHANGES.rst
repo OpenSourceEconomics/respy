@@ -40,6 +40,8 @@ releases are available on `PyPI <https://pypi.org/project/respy/>`_.
 - `#223 <https://github.com/OpenSourceEconomics/respy/pull/223>`_ logs rental prices in
   parameterizations. The parameters of wage components correspond to the ``ln(wage)``
   equation.
+- `#236 <https://github.com/OpenSourceEconomics/respy/pull/236>`_ implements a periodic
+  indexer.
 
 1.2.1 - 2019-05-19
 ------------------

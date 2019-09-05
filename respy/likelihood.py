@@ -12,6 +12,7 @@ from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import clip
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
+from respy.shared import generate_column_labels_estimation
 from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -54,21 +55,21 @@ def get_crit_func(params, options, df, version="log_like"):
 
     options = _adjust_options_for_estimation(options, df)
 
+    state_space = StateSpace(params, options)
+
     check_estimation_data(df, options)
 
-    df = _process_estimation_data(df, options)
-
-    state_space = StateSpace(params, options)
+    (
+        choices,
+        idx_indiv_first_obs,
+        indices,
+        log_wages_observed,
+        type_covariates,
+    ) = _process_estimation_data(df, state_space, options)
 
     base_draws_est = create_base_draws(
         (options["n_periods"], options["estimation_draws"], len(options["choices"])),
         options["estimation_seed"],
-    )
-
-    # For the type covariates, we only need the first observation of each individual.
-    states = df.copy().groupby("identifier").first()
-    type_covariates = (
-        create_type_covariates(states, options) if options["n_types"] > 1 else None
     )
 
     if version == "log_like":
@@ -80,7 +81,10 @@ def get_crit_func(params, options, df, version="log_like"):
 
     criterion_function = partial(
         unpartialed,
-        data=df,
+        choices=choices,
+        idx_indiv_first_obs=idx_indiv_first_obs,
+        indices=indices,
+        log_wages_observed=log_wages_observed,
         base_draws_est=base_draws_est,
         state_space=state_space,
         type_covariates=type_covariates,
@@ -92,7 +96,17 @@ def get_crit_func(params, options, df, version="log_like"):
     return criterion_function
 
 
-def log_like(params, data, base_draws_est, state_space, type_covariates, options):
+def log_like(
+    params,
+    choices,
+    idx_indiv_first_obs,
+    indices,
+    log_wages_observed,
+    base_draws_est,
+    state_space,
+    type_covariates,
+    options,
+):
     """Criterion function for the likelihood maximization.
 
     This function calculates the average likelihood contribution of the sample.
@@ -101,8 +115,18 @@ def log_like(params, data, base_draws_est, state_space, type_covariates, options
     ----------
     params : pandas.Series
         Parameter Series
-    data : pandas.DataFrame
-        The log likelihood is calculated for this data.
+    choices : numpy.ndarray
+        Array with shape (n_observations, n_types) containing choices for each
+        individual-period pair.
+    idx_indiv_first_obs : numpy.ndarray
+        Array with shape (n_individuals,) containing indices for the first observation
+        of each individual in the data. This is used to aggregate probabilities of the
+        individual over all periods.
+    indices : numpy.ndarray
+        Array with shape (n_observations, n_types) containing indices to map each
+        observation to its correponding state for each type.
+    log_wages_observed : numpy.ndarray
+        Array with shape (n_observations, n_types) containing observed log wages.
     base_draws_est : numpy.ndarray
         Set of draws to calculate the probability of observed wages.
     state_space : :class:`~respy.state_space.StateSpace`
@@ -112,12 +136,31 @@ def log_like(params, data, base_draws_est, state_space, type_covariates, options
 
     """
     contribs = log_like_obs(
-        params, data, base_draws_est, state_space, type_covariates, options
+        params,
+        choices,
+        idx_indiv_first_obs,
+        indices,
+        log_wages_observed,
+        base_draws_est,
+        state_space,
+        type_covariates,
+        options,
     )
+
     return contribs.mean()
 
 
-def log_like_obs(params, data, base_draws_est, state_space, type_covariates, options):
+def log_like_obs(
+    params,
+    choices,
+    idx_indiv_first_obs,
+    indices,
+    log_wages_observed,
+    base_draws_est,
+    state_space,
+    type_covariates,
+    options,
+):
     """Criterion function for the likelihood maximization.
 
     This function calculates the likelihood contributions of the sample.
@@ -126,8 +169,18 @@ def log_like_obs(params, data, base_draws_est, state_space, type_covariates, opt
     ----------
     params : pandas.Series
         Parameter Series
-    data : pandas.DataFrame
-        The log likelihood is calculated for this data.
+    choices : numpy.ndarray
+        Array with shape (n_observations, n_types) containing choices for each
+        individual-period pair.
+    idx_indiv_first_obs : numpy.ndarray
+        Array with shape (n_individuals,) containing indices for the first observation
+        of each individual in the data. This is used to aggregate probabilities of the
+        individual over all periods.
+    indices : numpy.ndarray
+        Array with shape (n_observations, n_types) containing indices to map each
+        observation to its correponding state for each type.
+    log_wages_observed : numpy.ndarray
+        Array with shape (n_observations, n_types) containing observed log wages.
     base_draws_est : numpy.ndarray
         Set of draws to calculate the probability of observed wages.
     state_space : :class:`~respy.state_space.StateSpace`
@@ -143,7 +196,15 @@ def log_like_obs(params, data, base_draws_est, state_space, type_covariates, opt
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     contribs = _internal_log_like_obs(
-        state_space, data, base_draws_est, type_covariates, optim_paras, options
+        state_space,
+        choices,
+        idx_indiv_first_obs,
+        indices,
+        log_wages_observed,
+        base_draws_est,
+        type_covariates,
+        optim_paras,
+        options,
     )
 
     return contribs
@@ -242,7 +303,15 @@ def simulate_log_probability_of_individuals_observed_choice(
 
 
 def _internal_log_like_obs(
-    state_space, df, base_draws_est, type_covariates, optim_paras, options
+    state_space,
+    choices,
+    idx_indiv_first_obs,
+    indices,
+    log_wages_observed,
+    base_draws_est,
+    type_covariates,
+    optim_paras,
+    options,
 ):
     """Calculate the likelihood contribution of each individual in the sample.
 
@@ -257,8 +326,18 @@ def _internal_log_like_obs(
     ----------
     state_space : :class:`~respy.state_space.StateSpace`
         Class of state space.
-    df : pandas.DataFrame
-        DataFrame with the empirical dataset.
+    choices : numpy.ndarray
+        Array with shape (n_observations, n_types) containing choices for each
+        individual-period pair.
+    idx_indiv_first_obs : numpy.ndarray
+        Array with shape (n_individuals,) containing indices for the first observation
+        of each individual in the data. This is used to aggregate probabilities of the
+        individual over all periods.
+    indices : numpy.ndarray
+        Array with shape (n_observations, n_types) containing indices to map each
+        observation to its correponding state for each type.
+    log_wages_observed : numpy.ndarray
+        Array with shape (n_observations, n_types) containing observed log wages.
     base_draws_est : numpy.ndarray
         Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
         standard normal distributions.
@@ -273,30 +352,11 @@ def _internal_log_like_obs(
         empirical data.
 
     """
-    # Convert data to NumPy arrays.
-    periods = df.period.to_numpy()
-    lagged_choices = df.lagged_choice.to_numpy()
-    choices = df.choice.to_numpy()
-    experiences = tuple(df[col].to_numpy() for col in df.filter(like="exp_").columns)
-    wages_observed = df.wage.to_numpy()
+    n_obs, n_types = indices.shape
+    n_choices = len(options["choices"])
 
-    # Get the number of observations for each individual and an array with indices of
-    # each individual's first observation. After that, extract initial education levels
-    # per agent which are important for type-specific probabilities.
-    n_obs_per_indiv = np.bincount(df.identifier.to_numpy())
-    idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
-
-    # Get indices of states in the state space corresponding to all observations for all
-    # types. The indexer has the shape (n_obs, n_types).
-    ks = state_space.indexer[(periods,) + experiences + (lagged_choices,)]
-    n_obs, n_types = ks.shape
-
-    wages_observed = wages_observed.repeat(n_types)
-    log_wages_observed = np.clip(np.log(wages_observed), -HUGE_FLOAT, HUGE_FLOAT)
-    wages_systematic = state_space.wages[ks].reshape(n_obs * n_types, -1)
-    n_choices = wages_systematic.shape[1]
-    choices = choices.repeat(n_types)
-    periods = state_space.states[ks, 0].flatten()
+    wages_systematic = state_space.wages[indices].reshape(n_obs * n_types, -1)
+    periods = state_space.states[indices, 0].flatten()
 
     draws, wage_loglikes = create_draws_and_log_prob_wages(
         log_wages_observed,
@@ -311,13 +371,20 @@ def _internal_log_like_obs(
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
 
+    # Get continuation values. The problem is that we only need a subset of continuation
+    # values defined in ``indices``. To not create the complete matrix of continuation
+    # values, select only necessary continuation value indices.
+    selected_indices = state_space.indices_of_child_states[indices]
+    continuation_values = state_space.emax_value_functions[selected_indices]
+    continuation_values = np.where(selected_indices >= 0, continuation_values, 0)
+
     choice_loglikes = simulate_log_probability_of_individuals_observed_choice(
-        state_space.wages[ks],
-        state_space.nonpec[ks],
-        state_space.continuation_values[ks],
+        state_space.wages[indices],
+        state_space.nonpec[indices],
+        continuation_values,
         draws,
         optim_paras["delta"],
-        state_space.is_inadmissible[ks],
+        state_space.is_inadmissible[indices],
         choices.reshape(-1, n_types),
         options["estimation_tau"],
     )
@@ -365,22 +432,112 @@ def _convert_choice_variables_from_categorical_to_codes(df, options):
     """
     choices_to_codes = {choice: i for i, choice in enumerate(options["choices"])}
     df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
-    df.lagged_choice = df.lagged_choice.replace(choices_to_codes).astype(np.uint8)
+    for i in range(1, options["n_lagged_choices"] + 1):
+        df[f"lagged_choice_{i}"] = (
+            df[f"lagged_choice_{i}"].replace(choices_to_codes).astype(np.uint8)
+        )
 
     return df
 
 
-def _process_estimation_data(df, options):
-    df = df.sort_values(["Identifier", "Period"])[
-        ["Identifier", "Period"]
-        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
-        + ["Lagged_Choice", "Choice", "Wage"]
-    ]
-    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
+def _process_estimation_data(df, state_space, options):
+    """Process estimation data.
 
+    All necessary objects for :func:`_internal_log_like_obs` dependent on the data are
+    produced.
+
+    Some objects have to be repeated for each type which is a desirable format for the
+    estimation where every observations is weighted by type probabilities.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame which contains the data used for estimation. The DataFrame
+        contains individual identifiers, periods, experiences, lagged choices, choices
+        in current period, the wage and other observed data.
+    state_space : ~respy.state_space.StateSpace
+    options : dict
+
+    Returns
+    -------
+    choices : numpy.ndarray
+        Array with shape (n_observations, n_types) where information is only repeated
+        over the second axis.
+    idx_indiv_first_obs : numpy.ndarray
+        Array with shape (n_individuals,) containing indices for the first observations
+        of each individual.
+    indices : numpy.ndarray
+        Array with shape (n_observations, n_types) containing indices for states which
+        correspond to observations.
+    log_wages_observed : numpy.ndarray
+        Array with shape (n_observations, n_types) containing clipped log wages.
+    type_covariates : numpy.ndarray
+        Array with shape (n_individuals, n_type_covariates) containing covariates to
+        predict probabilities for each type.
+
+    """
+    labels, _ = generate_column_labels_estimation(options)
+
+    df = df.sort_values(["Identifier", "Period"])[labels]
+    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
     df = _convert_choice_variables_from_categorical_to_codes(df, options)
 
-    return df
+    # Get indices of states in the state space corresponding to all observations for all
+    # types. The indexer has the shape (n_observations, n_types).
+    indices = ()
+
+    for period in range(df.period.max() + 1):
+        period_df = df.loc[df.period.eq(period)]
+
+        period_experience = tuple(
+            period_df[col].to_numpy() for col in period_df.filter(like="exp_").columns
+        )
+        period_lagged_choice = tuple(
+            period_df[f"lagged_choice_{i}"].to_numpy()
+            for i in range(1, options["n_lagged_choices"] + 1)
+        )
+
+        period_indices = state_space.indexer[period][
+            period_experience + period_lagged_choice
+        ]
+
+        indices += (period_indices,)
+
+    indices = np.row_stack(indices)
+
+    # The indexer is now sorted in period-individual pairs whereas the estimation needs
+    # individual-period pairs. Sort it!
+    indices_to_reorder = (
+        df.sort_values(["period", "identifier"])
+        .assign(__index__=np.arange(df.shape[0]))
+        .sort_values(["identifier", "period"])["__index__"]
+        .to_numpy()
+    )
+    indices = indices[indices_to_reorder]
+
+    # Get an array of positions of the first observation for each individual. This is
+    # used in :func:`_internal_log_like_obs` to aggregate probabilities of the
+    # individual over all periods.
+    n_obs_per_indiv = np.bincount(df.identifier.to_numpy())
+    idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
+
+    # For the estimation, log wages are needed with shape (n_observations, n_types).
+    log_wages_observed = (
+        np.log(df.wage.to_numpy())
+        .clip(-HUGE_FLOAT, HUGE_FLOAT)
+        .repeat(options["n_types"])
+    )
+
+    # For the estimation, choices are needed with shape (n_observations, n_types).
+    choices = df.choice.to_numpy().repeat(options["n_types"])
+
+    # For the type covariates, we only need the first observation of each individual.
+    states = df.groupby("identifier").first()
+    type_covariates = (
+        create_type_covariates(states, options) if options["n_types"] > 1 else None
+    )
+
+    return choices, idx_indiv_first_obs, indices, log_wages_observed, type_covariates
 
 
 def _adjust_options_for_estimation(options, df):

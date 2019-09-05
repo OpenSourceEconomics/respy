@@ -1,8 +1,10 @@
 import itertools
 
+import numba as nb
 import numpy as np
 import pandas as pd
 
+from respy._numba import array_to_tuple
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_base_covariates
@@ -56,7 +58,12 @@ class StateSpace:
         states_df, self.indexer = _create_state_space(options)
 
         _states_df = states_df.copy()
-        _states_df.lagged_choice = _states_df.lagged_choice.cat.codes
+
+        for i in range(1, options["n_lagged_choices"] + 1):
+            _states_df[f"lagged_choice_{i}"] = _states_df[
+                f"lagged_choice_{i}"
+            ].cat.codes
+
         _states_df = _states_df.apply(downcast_to_smallest_dtype)
         self.states = _states_df.to_numpy()
 
@@ -74,6 +81,8 @@ class StateSpace:
         self.is_inadmissible = _create_is_inadmissible_indicator(states_df, options)
 
         self._create_slices_by_periods(options["n_periods"])
+
+        self.indices_of_child_states = _get_indices_of_child_states(self, options)
 
     def update_systematic_rewards(self, optim_paras, options):
         """Update wages and non-pecuniary rewards.
@@ -129,6 +138,32 @@ class StateSpace:
         for i in range(n_periods):
             idx_start, idx_end = np.where(self.states[:, 0] == i)[0][[0, -1]]
             self.slices_by_periods.append(slice(idx_start, idx_end + 1))
+
+    def get_continuation_values(self, period):
+        """Return the continuation values for a given period.
+
+        If the last period is selected, return a matrix of zeros. In any other period,
+        use the precomputed ``indices_of_child_states`` to select continuation values
+        from ``emax_value_functions``.
+
+        Indices may contain ``-1`` as an identifier for invalid states. In this case,
+        the last value of ``emax_value_functions`` is taken which is why all entries in
+        ``continuation_values`` where ``indices == -1`` need to be replaced with zeros.
+
+        """
+        n_periods = len(self.indexer)
+
+        if period == n_periods - 1:
+            last_slice = self.slices_by_periods[-1]
+            n_states_last_period = len(range(last_slice.start, last_slice.stop))
+            n_choices = self.is_inadmissible.shape[1]
+            continuation_values = np.zeros((n_states_last_period, n_choices))
+        else:
+            indices = self.get_attribute_from_period("indices_of_child_states", period)
+            continuation_values = self.emax_value_functions[indices]
+            continuation_values = np.where(indices >= 0, continuation_values, 0)
+
+        return continuation_values
 
 
 def _create_state_space(options):
@@ -210,7 +245,10 @@ def _create_state_space(options):
 
     indexer = _create_state_space_indexer(df, options)
 
-    df.lagged_choice = pd.Categorical(df.lagged_choice, categories=options["choices"])
+    for i in range(1, options["n_lagged_choices"] + 1):
+        df[f"lagged_choice_{i}"] = pd.Categorical(
+            df[f"lagged_choice_{i}"], categories=options["choices"]
+        )
 
     return df, indexer
 
@@ -311,12 +349,13 @@ def _create_core_state_space_per_period(
 
 def _add_lagged_choice_to_core_state_space(df, options):
     container = []
-    for choice in options["choices"]:
-        df_ = df.copy()
-        df_["lagged_choice"] = choice
-        container.append(df_)
+    for lag in range(1, options["n_lagged_choices"] + 1):
+        for choice in options["choices"]:
+            df_ = df.copy()
+            df_[f"lagged_choice_{lag}"] = choice
+            container.append(df_)
 
-    df = pd.concat(container, axis="rows", sort=False)
+    df = pd.concat(container, axis="rows", sort=False) if container else df
 
     return df
 
@@ -412,28 +451,55 @@ def _add_types_to_state_space(df, n_types):
 
 
 def _create_state_space_indexer(df, options):
-    """Create the indexer for the state space."""
+    """Create the indexer for the state space.
+
+    The indexer consists of sub indexers for each period. This is much more
+    memory-efficient than having a single indexer. For more information see the
+    references section.
+
+    References
+    ----------
+    - https://github.com/OpenSourceEconomics/respy/pull/236
+    - https://github.com/OpenSourceEconomics/respy/pull/237
+
+    """
     n_exp_choices = len(options["choices_w_exp"])
     n_nonexp_choices = len(options["choices_wo_exp"])
-    maximum_exp = np.array(
-        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]]
-    )
+    choices = options["choices"]
 
-    shape = (
-        (options["n_periods"],)
-        + tuple(maximum_exp + 1)
-        + (n_exp_choices + n_nonexp_choices, options["n_types"])
-    )
-    indexer = np.full(shape, -1, dtype=np.int32)
+    max_initial_experience = np.array(
+        [choices[choice]["start"].max() for choice in options["choices_w_exp"]]
+    ).astype(np.uint8)
+    max_experience = [choices[choice]["max"] for choice in options["choices_w_exp"]]
 
     choice_to_code = {choice: i for i, choice in enumerate(options["choices"])}
 
-    idx = (
-        (df.period,)
-        + tuple(df[f"exp_{i}"] for i in options["choices_w_exp"])
-        + (df.lagged_choice.replace(choice_to_code), df.type)
-    )
-    indexer[idx] = np.arange(df.shape[0])
+    indexer = []
+    count_states = 0
+
+    for period in range(options["n_periods"]):
+        shape = (
+            tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
+            + (n_exp_choices + n_nonexp_choices,) * options["n_lagged_choices"]
+            + (options["n_types"],)
+        )
+        sub_indexer = np.full(shape, -1, dtype=np.int32)
+
+        sub_df = df.loc[df.period.eq(period)]
+        n_states = sub_df.shape[0]
+
+        indices = (
+            tuple(sub_df[f"exp_{i}"] for i in options["choices_w_exp"])
+            + tuple(
+                sub_df[f"lagged_choice_{i}"].replace(choice_to_code)
+                for i in range(1, options["n_lagged_choices"] + 1)
+            )
+            + (sub_df.type,)
+        )
+        sub_indexer[indices] = np.arange(count_states, count_states + n_states)
+        indexer.append(sub_indexer)
+
+        count_states += n_states
 
     return indexer
 
@@ -542,3 +608,86 @@ def _create_is_inadmissible_indicator(states, options):
     is_inadmissible = df[options["choices"]].to_numpy()
 
     return is_inadmissible
+
+
+def _get_indices_of_child_states(state_space, options):
+    """For each parent state get the indices of child states.
+
+    During the backward induction, the ``emax_value_functions`` in the future period
+    serve as the ``continuation_values`` of the current period. As the indices for child
+    states never change, these indices can be precomputed and added to the state_space.
+
+    Actually, the indices of the child states do not have to cover the last period, but
+    it makes the code prettier and reduces the need to expand the indices in the
+    estimation.
+
+    """
+    dtype = state_space.indexer[0].dtype
+
+    n_choices = len(options["choices"])
+    n_periods = options["n_periods"]
+    n_states = state_space.states.shape[0]
+
+    indices = np.full((n_states, n_choices), -1, dtype=dtype)
+
+    # Skip the last period which does not have child states.
+    for period in reversed(range(n_periods - 1)):
+
+        states_in_period = state_space.get_attribute_from_period("states", period)
+
+        indices = _insert_indices_of_child_states(
+            indices,
+            states_in_period,
+            state_space.indexer[period],
+            state_space.indexer[period + 1],
+            state_space.is_inadmissible,
+            len(options["choices_w_exp"]),
+            options["n_lagged_choices"],
+        )
+
+    return indices
+
+
+@nb.njit
+def _insert_indices_of_child_states(
+    indices,
+    states,
+    indexer_current,
+    indexer_future,
+    is_inadmissible,
+    n_choices_w_exp,
+    n_lagged_choices,
+):
+    """Collect indices of child states for each parent state."""
+    n_choices = is_inadmissible.shape[1]
+
+    for i in range(states.shape[0]):
+
+        idx_current = indexer_current[array_to_tuple(indexer_current, states[i, 1:])]
+
+        for choice in range(n_choices):
+            # Check if the state in the future is admissible.
+            if is_inadmissible[idx_current, choice]:
+                continue
+            else:
+                # Cut off the period which is not necessary for the indexer.
+                child = states[i, 1:].copy()
+
+                # Increment experience if it is a choice with experience
+                # accumulation.
+                if choice < n_choices_w_exp:
+                    child[choice] += 1
+
+                # Change lagged choice by shifting all existing lagged choices by
+                # one period and inserting the current choice in first position.
+                if n_lagged_choices:
+                    child[
+                        n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
+                    ] = child[n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1]
+                    child[n_choices_w_exp] = choice
+
+                # Get the position of the continuation value.
+                idx_future = indexer_future[array_to_tuple(indexer_future, child)]
+                indices[idx_current, choice] = idx_future
+
+    return indices

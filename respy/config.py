@@ -24,11 +24,11 @@ INADMISSIBILITY_PENALTY = -400000
 IS_DEBUG = False
 
 BASE_COVARIATES = {
-    "not_exp_a_lagged": "exp_a > 0 and lagged_choice != 'a'",
-    "not_exp_b_lagged": "exp_b > 0 and lagged_choice != 'b'",
-    "work_a_lagged": "lagged_choice == 'a'",
-    "work_b_lagged": "lagged_choice == 'b'",
-    "edu_lagged": "lagged_choice == 'edu'",
+    "not_exp_a_lagged": "exp_a > 0 and lagged_choice_1 != 'a'",
+    "not_exp_b_lagged": "exp_b > 0 and lagged_choice_1 != 'b'",
+    "work_a_lagged": "lagged_choice_1 == 'a'",
+    "work_b_lagged": "lagged_choice_1 == 'b'",
+    "edu_lagged": "lagged_choice_1 == 'edu'",
     "not_any_exp_a": "exp_a == 0",
     "not_any_exp_b": "exp_b == 0",
     "any_exp_a": "exp_a > 0",
@@ -53,34 +53,6 @@ value in the parameter specification. The values are strings passed to ``pd.eval
 
 """
 
-BASE_CORE_STATE_SPACE_FILTERS = [
-    # In periods > 0, if agents accumulated experience only in one choice, lagged choice
-    # cannot be different.
-    "period > 0 and exp_{i} == period and lagged_choice != '{i}'",
-    # In periods > 0, if agents always accumulated experience, lagged choice cannot be
-    # non-experience choice.
-    "period > 0 and exp_a + exp_b + exp_edu == period and lagged_choice == '{j}'",
-    # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
-    # be school.
-    "period > 0 and lagged_choice == 'edu' and exp_edu == 0",
-    # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
-    "lagged_choice == '{k}' and exp_{k} == 0",
-    # In period 0, agents cannot choose occupation a or b.
-    "period == 0 and lagged_choice == '{k}'",
-]
-"""list: Contains filters for the state space.
-
-These formulas are applied to the core state space which abstracts from initial
-experiences and uses only the maximum range between initial experiences and maximum
-experiences.
-
-See also
---------
-respy.state_space._filter_core_state_space : Filters the core state space.
-respy.state_space._create_core_state_space : Creates the core state space.
-
-"""
-
 BASE_INADMISSIBLE_STATES = {"edu": "exp_edu == @max_exp_edu"}
 
 DEFAULT_OPTIONS = {
@@ -96,7 +68,7 @@ DEFAULT_OPTIONS = {
     "solution_seed": 3,
     "covariates": BASE_COVARIATES,
     "inadmissible_states": BASE_INADMISSIBLE_STATES,
-    "core_state_space_filters": BASE_CORE_STATE_SPACE_FILTERS,
+    "core_state_space_filters": [],
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]

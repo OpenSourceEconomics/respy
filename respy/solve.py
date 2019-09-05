@@ -2,9 +2,7 @@ import warnings
 
 import numpy as np
 from numba import guvectorize
-from numba import njit
 
-from respy._numba import array_to_tuple
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
@@ -56,9 +54,6 @@ def solve_with_backward_induction(state_space, optim_paras, options):
     Returns
     -------
     state_space : :class:`~respy.state_space.StateSpace`
-        State space containing the emax of the subsequent period of each choice, columns
-        0-3, as well as the maximum emax of the current period for each state, column 4,
-        in ``state_space.continuation_values``.
 
     """
     n_choices = len(options["choices"])
@@ -66,7 +61,6 @@ def solve_with_backward_induction(state_space, optim_paras, options):
     n_periods = options["n_periods"]
     n_states = state_space.states.shape[0]
 
-    state_space.continuation_values = np.zeros((n_states, n_choices))
     state_space.emax_value_functions = np.zeros(n_states)
 
     # For myopic agents, utility of later periods does not play a role.
@@ -81,24 +75,6 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     for period in reversed(range(n_periods)):
 
-        if period == n_periods - 1:
-            pass
-
-        else:
-            states_in_period = state_space.get_attribute_from_period("states", period)
-
-            state_space.continuation_values = get_continuation_values(
-                states_in_period,
-                state_space.indexer,
-                state_space.continuation_values,
-                state_space.emax_value_functions,
-                state_space.is_inadmissible,
-            )
-
-        n_states_in_period = state_space.get_attribute_from_period(
-            "states", period
-        ).shape[0]
-
         base_draws_sol_period = state_space.base_draws_sol[period]
         draws_emax_risk = transform_disturbances(
             base_draws_sol_period, np.zeros(n_choices), shocks_cholesky, n_wages
@@ -107,12 +83,12 @@ def solve_with_backward_induction(state_space, optim_paras, options):
         # Unpack necessary attributes of the specific period.
         wages = state_space.get_attribute_from_period("wages", period)
         nonpec = state_space.get_attribute_from_period("nonpec", period)
-        emaxs_period = state_space.get_attribute_from_period(
-            "continuation_values", period
-        )
         is_inadmissible = state_space.get_attribute_from_period(
             "is_inadmissible", period
         )
+        continuation_values = state_space.get_continuation_values(period)
+
+        n_states_in_period = wages.shape[0]
 
         # The number of interpolation points is the same for all periods. Thus, for some
         # periods the number of interpolation points is larger than the actual number of
@@ -123,9 +99,9 @@ def solve_with_backward_induction(state_space, optim_paras, options):
         )
 
         if any_interpolated:
-            # These shifts are used to determine the expected values of the two labor
-            # market alternatives. These are log normal distributed and thus the draws
-            # cannot simply set to zero.
+            # These shifts are used to determine the expected values of the working
+            # alternatives. These are log normal distributed and thus the draws cannot
+            # simply set to zero, but :math:`E(X) = \exp\{\mu + \frac{\sigma^2}{2}\}`.
             shifts = np.zeros(n_choices)
             n_choices_w_wage = len(options["choices_w_wage"])
             shifts[:n_choices_w_wage] = np.clip(
@@ -145,7 +121,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             # where simulation will take place. All information will be used in either
             # the construction of the prediction model or the prediction step.
             exogenous, max_emax = calculate_exogenous_variables(
-                wages, nonpec, emaxs_period, shifts, delta, is_inadmissible
+                wages, nonpec, continuation_values, shifts, delta, is_inadmissible
             )
 
             # Constructing the dependent variables for all states at the random subset
@@ -153,7 +129,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             endogenous = calculate_endogenous_variables(
                 wages,
                 nonpec,
-                emaxs_period,
+                continuation_values,
                 max_emax,
                 not_interpolated,
                 draws_emax_risk,
@@ -168,7 +144,12 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
         else:
             emax = calculate_emax_value_functions(
-                wages, nonpec, emaxs_period, draws_emax_risk, delta, is_inadmissible
+                wages,
+                nonpec,
+                continuation_values,
+                draws_emax_risk,
+                delta,
+                is_inadmissible,
             )
 
         state_space.get_attribute_from_period("emax_value_functions", period)[:] = emax
@@ -431,43 +412,6 @@ def calculate_emax_value_functions(
         emax_value_functions[0] += max_value_functions
 
     emax_value_functions[0] /= n_draws
-
-
-@njit
-def get_continuation_values(
-    states, indexer, continuation_values, emax_value_functions, is_inadmissible
-):
-    """Get the maximum utility from the subsequent period.
-
-    This function takes a parent state and looks up the continuation value for each
-    of the four choices in the following period.
-
-    """
-    n_choices_w_exp = states.shape[1] - 3
-    n_choices = continuation_values.shape[1]
-
-    for i in range(states.shape[0]):
-
-        k_parent = indexer[array_to_tuple(indexer, states[i])]
-
-        for n in range(n_choices):
-            if is_inadmissible[k_parent, n]:
-                continuation_values[k_parent, n] = 0.0
-            else:
-                child = states[i].copy()
-                # Change to future period.
-                child[0] += 1
-
-                if n < n_choices_w_exp:
-                    child[n + 1] += 1
-
-                # Change lagged choice.
-                child[-2] = n
-
-                k = indexer[array_to_tuple(indexer, child)]
-                continuation_values[k_parent, n] = emax_value_functions[k]
-
-    return continuation_values
 
 
 @guvectorize(
