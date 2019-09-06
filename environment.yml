@@ -1,7 +1,5 @@
 name: respy
 channels:
-  - numba
-  - defaults
   - conda-forge
   - janosg
 dependencies:
@@ -9,6 +7,7 @@ dependencies:
   - pip
   - click
   - codecov
+  - conda-build
   - doc8
   - deepdiff
   - estimagic>=0.0.9
@@ -25,7 +24,7 @@ dependencies:
   - pytest-xdist
   - restructuredtext_lint
   - scipy
-  - Sphinx
+  - sphinx
   - sphinx-autobuild
   - tox-conda
   - pip:
