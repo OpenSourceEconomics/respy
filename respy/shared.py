@@ -75,7 +75,7 @@ def predict_multinomial_logit(coefficients, covariates, probs):
     probs /= denominator
 
 
-def create_base_draws(shape, seed):
+def create_base_draws(shape, seed, method="random"):
     """Create the relevant set of draws.
 
     Handle special case of zero variances as this case is useful for testing.
@@ -98,8 +98,15 @@ def create_base_draws(shape, seed):
     # Control randomness by setting seed value
     np.random.seed(seed)
 
-    # Draw random deviates from a standard normal distribution.
-    draws = np.random.standard_normal(shape)
+    if method == "random":
+        # Draw random deviates from a standard normal distribution.
+        draws = np.random.standard_normal(shape)
+    elif method == "r2":
+        pass
+    elif method == "sobol":
+        pass
+    else:
+        raise NotImplementedError
 
     return draws
 

@@ -53,6 +53,7 @@ class StateSpace:
         self.base_draws_sol = create_base_draws(
             (options["n_periods"], options["solution_draws"], len(options["choices"])),
             options["solution_seed"],
+            options.get("method_draws", "random"),
         )
 
         states_df, self.indexer = _create_state_space(options)
