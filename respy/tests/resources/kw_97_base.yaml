@@ -14,11 +14,11 @@ simulation_seed: 132
 solution_draws: 500
 solution_seed: 456
 covariates:
-  "hs_graduate": "exp_edu >= 12"
-  "co_graduate": "exp_edu >= 16"
-  "constant": "1"
-  "exp_a_square": "exp_a ** 2 / 100"
-  "exp_b_square": "exp_b ** 2 / 100"
-  "exp_mil_square": "exp_mil ** 2 / 100"
-  "up_to_nine_years_edu": "exp_edu <= 9"
-  "at_least_ten_years_edu": "10 <= exp_edu"
+  hs_graduate: exp_edu >= 12
+  co_graduate: exp_edu >= 16
+  constant: "1"
+  exp_a_square: exp_a ** 2 / 100
+  exp_b_square: exp_b ** 2 / 100
+  exp_mil_square: exp_mil ** 2 / 100
+  up_to_nine_years_edu: exp_edu <= 9
+  at_least_ten_years_edu: 10 <= exp_edu
