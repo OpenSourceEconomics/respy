@@ -82,6 +82,9 @@ def create_base_draws(shape, seed, method="random"):
     The draws are from a standard normal distribution and transformed later in
     the code.
 
+    ## TO DO: we have to determine which shapes can be passed
+    ## I.e. (number draws, dimensions)
+
     Parameters
     ----------
     shape : tuple(int)
@@ -102,9 +105,21 @@ def create_base_draws(shape, seed, method="random"):
         # Draw random deviates from a standard normal distribution.
         draws = np.random.standard_normal(shape)
     elif method == "r2":
-        pass
+        g = phi(shape(d))
+        alpha = np.zeros(shape(d))
+        for j in range(shape(d)):
+            alpha[j] = pow(1/g, j+1) %1
+            r2_seq = np.zeros((shape(N),shape(d)))
+        for i in range(shape(N)):
+            r2_seq[i] = (start + alpha * (i+1)) %1
+        draws = scipy.stats.norm.ppf(r2_seq).T
     elif method == "sobol":
-        pass
+        mean_uni = [0 for i in range(D)]
+        cov_uni = [[0 for i in range(D)] for i in range(D)]
+        for i in range(D):
+            cov_uni[i][i] = 1
+        distribution = cp.MvNormal(loc=mean_uni, scale=cov_uni)
+        draws = distribution.sample(num_points, rule="S")
     else:
         raise NotImplementedError
 
