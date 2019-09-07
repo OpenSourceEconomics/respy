@@ -117,8 +117,8 @@ def create_base_draws(shape, seed, method="random"):
         distribution = cp.MvNormal(loc=np.zeros(shape[2], int), scale = np.diag(np.ones(shape[2], int)))
         draws = (distribution.sample(shape[0] * shape[1], rule = "S").T).reshape(shape)
     elif method == "halton":
-        distribution = cp.MvNormal(loc=np.zeros(shape[2], int), scale = np.diag(ones(shape[2], int)))
-        draws = (distriubtion.sample(shape[0] * shape[1], rule = "H").T).reshape(shape)
+        distribution = cp.MvNormal(loc=np.zeros(shape[2], int), scale = np.diag(np.ones(shape[2], int)))
+        draws = (distribution.sample(shape[0] * shape[1], rule = "H").T).reshape(shape)
         # Comments: num_points: shape[0] * shape[1]
         # Comments: dimension D: shape[2] (which is the number of choices)
         # for rules, see ChaospyPackage https://www.sciencedirect.com/science/article/pii/S1877750315300119
