@@ -280,6 +280,15 @@ def _infer_choices(params):
 def _infer_number_of_lagged_choices(options, params):
     """Infer the number of lagged choices from covariates.
 
+    Lagged choices can only influence behavior of individuals through covariates of the
+    utility function. Thus, check the covariates for any patterns like
+    ``"lagged_choice_[0-9]+"``.
+
+    Then, compare the number of lags required by covariates with the information on
+    lagged choices in the parameter specification. For the estimation, there does not
+    have to be any information on lagged choices. For the simulation, we need parameters
+    to define the probability of a choice being the lagged choice.
+
     Warning
     -------
     UserWarning
