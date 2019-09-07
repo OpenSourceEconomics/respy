@@ -9,6 +9,8 @@ import pandas as pd
 from numba import guvectorize
 from numba import njit
 from numba import vectorize
+import scipy
+import chaospy as cp
 
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
@@ -82,9 +84,6 @@ def create_base_draws(shape, seed, method="random"):
     The draws are from a standard normal distribution and transformed later in
     the code.
 
-    ## TO DO: we have to determine which shapes can be passed
-    ## I.e. (number draws, dimensions)
-
     Parameters
     ----------
     shape : tuple(int)
@@ -105,25 +104,35 @@ def create_base_draws(shape, seed, method="random"):
         # Draw random deviates from a standard normal distribution.
         draws = np.random.standard_normal(shape)
     elif method == "r2":
-        g = phi(shape(d))
-        alpha = np.zeros(shape(d))
-        for j in range(shape(d)):
-            alpha[j] = pow(1/g, j+1) %1
-            r2_seq = np.zeros((shape(N),shape(d)))
-        for i in range(shape(N)):
-            r2_seq[i] = (start + alpha * (i+1)) %1
-        draws = scipy.stats.norm.ppf(r2_seq).T
+        g = phi(shape[2])
+        alpha = (1 / g) ** np.arange(1, shape[2] + 1) % 1
+        #for j in range(shape[2]):
+        #    alpha[j] = (1/g) ** (j+1) % 1
+        r2_seq = (0.5 + alpha * np.arange(1, shape[0] * shape[1] + 1).reshape(-1, 1)) % 1
+        # r2_seq = np.zeros((shape[0] * shape[1], shape[2]))
+        #for i in range(shape[0] * shape[1]):
+        #    r2_seq[i] = (0.5 + alpha * (i+1)) %1
+        draws = scipy.stats.norm.ppf(r2_seq).reshape(shape)
     elif method == "sobol":
-        mean_uni = [0 for i in range(D)]
-        cov_uni = [[0 for i in range(D)] for i in range(D)]
-        for i in range(D):
-            cov_uni[i][i] = 1
-        distribution = cp.MvNormal(loc=mean_uni, scale=cov_uni)
-        draws = distribution.sample(num_points, rule="S")
+        distribution = cp.MvNormal(loc=np.zeros(shape[2], int), scale = np.diag(np.ones(shape[2], int)))
+        draws = (distribution.sample(shape[0] * shape[1], rule = "S").T).reshape(shape)
+    elif method == "halton":
+        distribution = cp.MvNormal(loc=np.zeros(shape[2], int), scale = np.diag(ones(shape[2], int)))
+        draws = (distriubtion.sample(shape[0] * shape[1], rule = "H").T).reshape(shape)
+        # Comments: num_points: shape[0] * shape[1]
+        # Comments: dimension D: shape[2] (which is the number of choices)
+        # for rules, see ChaospyPackage https://www.sciencedirect.com/science/article/pii/S1877750315300119
     else:
         raise NotImplementedError
 
     return draws
+
+
+def phi(d):
+    x = 2
+    for i in range(100):
+        x = pow(1 + x, 1/(d+1))
+    return x
 
 
 def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):

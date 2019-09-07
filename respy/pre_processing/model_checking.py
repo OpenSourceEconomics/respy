@@ -64,7 +64,7 @@ def validate_options(o):
         assert all(i <= choices[choice]["max"] for i in choices[choice]["start"])
 
     for option, value in o.items():
-        if "draws" in option:
+        if "draws" in option and "method" not in option:
             assert _is_positive_nonzero_integer(value)
         elif "seed" in option:
             assert _is_nonnegative_integer(value)
