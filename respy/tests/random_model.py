@@ -37,6 +37,39 @@ _BASE_CORE_STATE_SPACE_FILTERS = [
 """
 
 
+_BASE_COVARIATES = {
+    "not_exp_a_lagged": "exp_a > 0 and lagged_choice_1 != 'a'",
+    "not_exp_b_lagged": "exp_b > 0 and lagged_choice_1 != 'b'",
+    "work_a_lagged": "lagged_choice_1 == 'a'",
+    "work_b_lagged": "lagged_choice_1 == 'b'",
+    "edu_lagged": "lagged_choice_1 == 'edu'",
+    "not_any_exp_a": "exp_a == 0",
+    "not_any_exp_b": "exp_b == 0",
+    "any_exp_a": "exp_a > 0",
+    "any_exp_b": "exp_b > 0",
+    "hs_graduate": "exp_edu >= 12",
+    "co_graduate": "exp_edu >= 16",
+    "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
+    "is_return_high_school": "~edu_lagged and hs_graduate",
+    "is_minor": "period < 2",
+    "is_young_adult": "2 <= period <= 4",
+    "is_adult": "5 <= period",
+    "constant": "1",
+    "exp_a_square": "exp_a ** 2 / 100",
+    "exp_b_square": "exp_b ** 2 / 100",
+    "up_to_nine_years_edu": "exp_edu <= 9",
+    "at_least_ten_years_edu": "exp_edu >= 10",
+}
+"""dict: Dictionary containing specification of covariates.
+
+.. deprecated::
+
+    This variable must be removed if generate_random_model is rewritten such that
+    functions for each replicable paper are written.
+
+"""
+
+
 def generate_random_model(
     point_constr=None,
     bound_constr=None,
@@ -125,6 +158,7 @@ def generate_random_model(
         **DEFAULT_OPTIONS,
         **options,
         "core_state_space_filters": _BASE_CORE_STATE_SPACE_FILTERS,
+        "covariates": _BASE_COVARIATES,
     }
 
     options = _update_nested_dictionary(options, point_constr)
