@@ -27,6 +27,10 @@ dependencies:
   - sphinx
   - sphinx-autobuild
   - tox-conda
+  - conda-build
+  - anaconda-client
+  - conda-verify
+
   - pip:
     - apprise
     - pre-commit

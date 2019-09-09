@@ -6,7 +6,6 @@ import click
 import numpy as np
 
 import respy as rp
-from development.testing.notifications import send_notification
 from respy.config import TEST_RESOURCES_DIR
 from respy.config import TOL
 from respy.tests.random_model import generate_random_model
@@ -66,6 +65,8 @@ def run_regression_tests(n_tests, strict, notification):
     subject, message = _prepare_message(idx_failures)
 
     if notification:
+        from development.testing.notifications import send_notification
+
         send_notification(subject, message)
 
 

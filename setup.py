@@ -18,7 +18,7 @@ PROJECT_URLS = {
 
 setup(
     name="respy",
-    version="2.0.0-dev",
+    version="2.0.0",
     description=DESCRIPTION,
     long_description=DESCRIPTION + "\n\n" + README,
     long_description_content_type="text/x-rst",
@@ -27,7 +27,7 @@ setup(
     python_requires=">=3.6.0",
     url="https://respy.readthedocs.io/en/latest/",
     project_urls=PROJECT_URLS,
-    packages=find_packages(),
+    packages=find_packages() + ["development.testing"],
     license="MIT",
     keywords=["Economics", " Dynamic Discrete Choice Model"],
     classifiers=[
@@ -37,7 +37,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
-    install_requires=["numba>=0.43", "pandas>=0.24", "pytest>=4.0", "pyaml"],
     platforms="any",
     include_package_data=True,
     zip_safe=False,
