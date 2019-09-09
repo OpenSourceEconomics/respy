@@ -51,10 +51,10 @@ shocks_sdcorr,sd_b,0.3823,standard deviation of the shock in occupation b,shocks
 shocks_sdcorr,sd_edu,12821.0,standard deviation of the shocks in the education sector,shocks,chol_sigma_3
 shocks_sdcorr,sd_home,9350.0,standard deviation of the shock in the home sector,shocks,chol_sigma_4
 shocks_sdcorr,corr_b_a,0.1226,correlation between the shocks in occupation a and b,shocks,chol_sigma_21
-shocks_sdcorr,corr_edu_acorrelation between the shocks in the education sector and occupation a,shocks,chol_sigma_31
-shocks_sdcorr,corr_edu_bcorrelation between the shocks in the education sector and occupation b,shocks,chol_sigma_32
-shocks_sdcorr,corr_home_acorrelation of the shocks in the home sector and occupation a,shocks,chol_sigma_41
-shocks_sdcorr,corr_home_bcorrelation of the shocks in the home sector and occupation b,shocks,chol_sigma_42
-shocks_sdcorr,corr_home_educorrelation of the shocks in the home and the education sector,shocks,chol_sigma_43
+shocks_sdcorr,corr_edu_a,correlation between the shocks in the education sector and occupation a,shocks,chol_sigma_31
+shocks_sdcorr,corr_edu_b,correlation between the shocks in the education sector and occupation b,shocks,chol_sigma_32
+shocks_sdcorr,corr_home_a,correlation of the shocks in the home sector and occupation a,shocks,chol_sigma_41
+shocks_sdcorr,corr_home_b,correlation of the shocks in the home sector and occupation b,shocks,chol_sigma_42
+shocks_sdcorr,corr_home_edu,correlation of the shocks in the home and the education sector,shocks,chol_sigma_43
 meas_error,sd_a,0.001,SD of the measurement error in wages in occupation a,,
 meas_error,sd_b,0.001,SD of the measurement error in wages occupation b,,

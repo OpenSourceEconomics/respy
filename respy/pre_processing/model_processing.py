@@ -7,7 +7,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
-from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
+from estimagic.optimization.utilities import chol_params_to_lower_triangular_matrix
+from estimagic.optimization.utilities import cov_params_to_matrix
+from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_checking import validate_options
@@ -195,16 +197,17 @@ def _sort_shocks_sdcorr(optim_paras, params):
     TODO: rewrite to sort shocks like sds first and then tril.
 
     """
-    shocks_flat = []
+    sds_flat = []
+    corrs_flat = []
 
     for i, c_1 in enumerate(optim_paras["choices"]):
         for c_2 in list(optim_paras["choices"])[: i + 1]:
             if c_1 == c_2:
-                shocks_flat.append(params.get(f"sd_{c_1}", 0))
+                sds_flat.append(params.loc[f"sd_{c_1}"])
             else:
-                shocks_flat.append(params.get(f"corr_{c_2}_{c_1}", 0))
+                corrs_flat.append(params.loc[f"corr_{c_1}_{c_2}"])
 
-    return shocks_flat
+    return sds_flat + corrs_flat
 
 
 def _sort_shocks_cov_chol(optim_paras, params):
@@ -386,27 +389,3 @@ def _parse_lagged_choices(optim_paras, options, params):
         optim_paras[match] = params.loc[match]
 
     return optim_paras
-
-
-def chol_params_to_lower_triangular_matrix(params):
-    dim = number_of_triangular_elements_to_dimension(len(params))
-    mat = np.zeros((dim, dim))
-    mat[np.tril_indices(dim)] = params
-
-    return mat
-
-
-def cov_params_to_matrix(params):
-    mat = chol_params_to_lower_triangular_matrix(params)
-    mat += np.tril(mat, k=-1).T
-
-    return mat
-
-
-def sdcorr_params_to_matrix(params):
-    corr = cov_params_to_matrix(params)
-    sd = np.diag(np.diag(corr))
-    corr[np.diag_indices(corr.shape[0])] = 1
-    cov = sd @ corr @ sd
-
-    return cov

@@ -148,7 +148,9 @@ def generate_random_model(
     n_lagged_choices = 1
     if n_lagged_choices:
         params = pd.concat(
-            [params, lagged_choices_template(n_lagged_choices)], axis=0, sort=False
+            [params, lagged_choices_template(n_lagged_choices, edu_starts)],
+            axis=0,
+            sort=False,
         )
 
     options = {

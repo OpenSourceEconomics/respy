@@ -534,7 +534,7 @@ def _create_reward_components(types, covariates, optim_paras):
         [np.dot(covariates[w], optim_paras[w]) for w in wage_labels]
     )
 
-    n_states = covariates["nonpec_edu"].shape[0]
+    n_states = types.shape[0]
 
     nonpec_labels = [f"nonpec_{choice}" for choice in optim_paras["choices"]]
     nonpec = np.column_stack(
@@ -601,9 +601,15 @@ def _create_choice_covariates(covariates_df, states_df, optim_paras):
 def _create_is_inadmissible_indicator(states, optim_paras, options):
     df = states.copy()
 
-    # Apply the maximum experience as a default constraint.
+    # Apply the maximum experience as a default constraint only if its not the last
+    # period.
+    # TODO: Nicer solution.
     for choice in optim_paras["choices_w_exp"]:
-        max_exp = optim_paras["choices"][choice]["max"]
+        max_exp = (
+            optim_paras["choices"][choice]["max"]
+            if optim_paras["choices"][choice]["max"] != optim_paras["n_periods"] - 1
+            else optim_paras["n_periods"]
+        )
         df[choice] = df.eval(f"exp_{choice} == {max_exp}")
 
     # Apply no constraint for choices without experience.
