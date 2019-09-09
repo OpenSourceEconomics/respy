@@ -19,11 +19,11 @@ repos:
     hooks:
     -   id: reorder-python-imports
         types: [python]
-# -   repo: https://github.com/python/black
-#     rev: 19.3b0
-#     hooks:
-#     -   id: black
-#         types: [python]
+-   repo: https://github.com/python/black
+    rev: 19.3b0
+    hooks:
+    -   id: black
+        types: [python]
 -   repo: https://github.com/asottile/blacken-docs
     rev: v1.3.0
     hooks:
