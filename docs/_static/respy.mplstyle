@@ -3,6 +3,6 @@ font.size : 12
 axes.axisbelow : True       # Draw axis grid lines and ticks below patches (True); above
                             # patches but below lines ('line'); or above all (False).
                             # Forces grid lines below figures.
-legend.framealpha : 1       # Legend patch transparency.
+legend.frameon : False      # Legend patch transparency.
 legend.scatterpoints : 3    # Number of scatter points in legend.
-figure.autolayout : true
+figure.autolayout : true    # Same as plt.tight_layout().

@@ -2,12 +2,17 @@
 import collections
 
 import numpy as np
+import pandas as pd
 from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
 from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
 
 from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
+from respy.pre_processing.specification_helpers import (
+    initial_and_max_experience_template,
+)
+from respy.pre_processing.specification_helpers import lagged_choices_template
 from respy.shared import generate_column_labels_estimation
 from respy.simulate import get_simulate_func
 
@@ -28,6 +33,39 @@ _BASE_CORE_STATE_SPACE_FILTERS = [
     "period == 0 and lagged_choice_1 == '{k}'",
 ]
 """list: List of core state space filters.
+
+.. deprecated::
+
+    This variable must be removed if generate_random_model is rewritten such that
+    functions for each replicable paper are written.
+
+"""
+
+
+_BASE_COVARIATES = {
+    "not_exp_a_lagged": "exp_a > 0 and lagged_choice_1 != 'a'",
+    "not_exp_b_lagged": "exp_b > 0 and lagged_choice_1 != 'b'",
+    "work_a_lagged": "lagged_choice_1 == 'a'",
+    "work_b_lagged": "lagged_choice_1 == 'b'",
+    "edu_lagged": "lagged_choice_1 == 'edu'",
+    "not_any_exp_a": "exp_a == 0",
+    "not_any_exp_b": "exp_b == 0",
+    "any_exp_a": "exp_a > 0",
+    "any_exp_b": "exp_b > 0",
+    "hs_graduate": "exp_edu >= 12",
+    "co_graduate": "exp_edu >= 16",
+    "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
+    "is_return_high_school": "~edu_lagged and hs_graduate",
+    "is_minor": "period < 2",
+    "is_young_adult": "2 <= period <= 4",
+    "is_adult": "5 <= period",
+    "constant": "1",
+    "exp_a_square": "exp_a ** 2 / 100",
+    "exp_b_square": "exp_b ** 2 / 100",
+    "up_to_nine_years_edu": "exp_edu <= 9",
+    "at_least_ten_years_edu": "exp_edu >= 10",
+}
+"""dict: Dictionary containing specification of covariates.
 
 .. deprecated::
 
@@ -82,41 +120,48 @@ def generate_random_model(
 
     params.loc["delta", "value"] = 1 - np.random.uniform() if myopic is False else 0.0
 
-    n_shock_coeffs = len(params.loc["shocks"])
+    n_shock_coeffs = len(params.loc["shocks_sdcorr"])
     dim = number_of_triangular_elements_to_dimension(n_shock_coeffs)
     helper = np.eye(dim) * 0.5
     helper[np.tril_indices(dim, k=-1)] = np.random.uniform(
         -0.05, 0.2, size=(n_shock_coeffs - dim)
     )
     cov = helper.dot(helper.T)
-    params.loc["shocks", "value"] = cov_matrix_to_sdcorr_params(cov)
+    params.loc["shocks_sdcorr", "value"] = cov_matrix_to_sdcorr_params(cov)
 
     params.loc["meas_error", "value"] = np.random.uniform(
         low=0.001, high=0.1, size=len(params.loc["meas_error"])
     )
 
+    n_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
+    edu_starts = point_constr.pop(
+        "edu_start", np.random.choice(np.arange(1, 15), size=n_edu_start, replace=False)
+    )
+    edu_shares = point_constr.pop("edu_share", _get_initial_shares(n_edu_start))
+    edu_max = point_constr.pop("edu_max", np.random.randint(max(edu_starts) + 1, 30))
+    params = pd.concat(
+        [params, initial_and_max_experience_template(edu_starts, edu_shares, edu_max)],
+        axis=0,
+        sort=False,
+    )
+
+    n_lagged_choices = 1
+    if n_lagged_choices:
+        params = pd.concat(
+            [params, lagged_choices_template(n_lagged_choices)], axis=0, sort=False
+        )
+
     options = {
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
-        "simulation_seed": np.random.randint(1, 1000),
+        "simulation_seed": np.random.randint(1, 1_000),
         "n_periods": np.random.randint(1, bound_constr["max_periods"]),
-        "choices": {"edu": {}},
     }
 
-    n_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
-    options["choices"]["edu"]["start"] = np.random.choice(
-        np.arange(1, 15), size=n_edu_start, replace=False
-    )
-    options["choices"]["edu"]["lagged"] = np.random.uniform(size=n_edu_start)
-    options["choices"]["edu"]["share"] = _get_initial_shares(n_edu_start)
-    options["choices"]["edu"]["max"] = np.random.randint(
-        max(options["choices"]["edu"]["start"]) + 1, 30
-    )
-
     options["solution_draws"] = np.random.randint(1, bound_constr["max_draws"])
-    options["solution_seed"] = np.random.randint(1, 10000)
+    options["solution_seed"] = np.random.randint(1, 10_000)
 
     options["estimation_draws"] = np.random.randint(1, bound_constr["max_draws"])
-    options["estimation_seed"] = np.random.randint(1, 10000)
+    options["estimation_seed"] = np.random.randint(1, 10_000)
     options["estimation_tau"] = np.random.uniform(100, 500)
 
     options["interpolation_points"] = -1
@@ -125,6 +170,7 @@ def generate_random_model(
         **DEFAULT_OPTIONS,
         **options,
         "core_state_space_filters": _BASE_CORE_STATE_SPACE_FILTERS,
+        "covariates": _BASE_COVARIATES,
     }
 
     options = _update_nested_dictionary(options, point_constr)
@@ -160,7 +206,7 @@ def simulate_truncated_data(params, options, is_missings=True):
     wages.
 
     """
-    _, _, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
     simulate = get_simulate_func(params, options)
     df = simulate(params)
@@ -177,7 +223,7 @@ def simulate_truncated_data(params, options, is_missings=True):
         data_subset = df.loc[df.Period.lt(period_of_truncation)].copy()
 
         # Add some missings to wage data.
-        is_working = data_subset["Choice"].isin(options["choices_w_wage"])
+        is_working = data_subset["Choice"].isin(optim_paras["choices_w_wage"])
         num_drop_wages = int(is_working.sum() * np.random.uniform(high=0.5))
 
         if num_drop_wages > 0:
@@ -191,7 +237,7 @@ def simulate_truncated_data(params, options, is_missings=True):
         data_subset = df
 
     # We can restrict the information to observed entities only.
-    labels, _ = generate_column_labels_estimation(options)
+    labels, _ = generate_column_labels_estimation(optim_paras)
     data_subset = data_subset[labels]
 
     return data_subset

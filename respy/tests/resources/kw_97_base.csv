@@ -20,21 +20,21 @@ nonpec_edu,constant,43948,,,consumption value of school attendance for type 1
 nonpec_edu,hs_graduate,-2983,,,consumption value of college
 nonpec_edu,co_graduate,-26357,,,consumption value of graduate school
 nonpec_home,constant,16887,,,mean value of non-market alternative for type 1
-shocks,sd_a,0.3301,,,standard deviation of the shock in occupation a
-shocks,sd_b,0.3329,,,standard deviation of the shock in occupation b
-shocks,sd_mil,0.3308,,,standard deviation of the shock in occupation military
-shocks,sd_edu,2312,,,standard deviation of the shock in the education sector
-shocks,sd_home,13394,,,standard deviation of the shock in the home sector
-shocks,corr_b_a,-0.3806,,,correlation between the shocks in occupation a and b
-shocks,corr_mil_a,-0.3688,,,correlation between the shocks in military and a
-shocks,corr_mil_b,0.4120,,,correlation between the shocks in military and b
-shocks,corr_edu_a,0,,,correlation between the shocks in the education sector and a
-shocks,corr_edu_b,0,,,correlation between the shocks in the education sector and b
-shocks,corr_edu_mil,0,,,correlation between the shocks in the education sector and military
-shocks,corr_home_a,0,,,correlation between the shocks in home sector and a
-shocks,corr_home_b,0,,,correlation between the shocks in home sector and b
-shocks,corr_home_mil,0,,,correlation between the shocks in home sector and military
-shocks,corr_home_edu,0,,,correlation between the shocks in home sector and education
+shocks_sdcorr,sd_a,0.3301,,,standard deviation of the shock in occupation a
+shocks_sdcorr,sd_b,0.3329,,,standard deviation of the shock in occupation b
+shocks_sdcorr,sd_mil,0.3308,,,standard deviation of the shock in occupation military
+shocks_sdcorr,sd_edu,2312,,,standard deviation of the shock in the education sector
+shocks_sdcorr,sd_home,13394,,,standard deviation of the shock in the home sector
+shocks_sdcorr,corr_b_a,-0.3806,,,correlation between the shocks in occupation a and b
+shocks_sdcorr,corr_mil_a,-0.3688,,,correlation between the shocks in military and a
+shocks_sdcorr,corr_mil_b,0.4120,,,correlation between the shocks in military and b
+shocks_sdcorr,corr_edu_a,0,,,correlation between the shocks in the education sector and a
+shocks_sdcorr,corr_edu_b,0,,,correlation between the shocks in the education sector and b
+shocks_sdcorr,corr_edu_mil,0,,,correlation between the shocks in the education sector and military
+shocks_sdcorr,corr_home_a,0,,,correlation between the shocks in home sector and a
+shocks_sdcorr,corr_home_b,0,,,correlation between the shocks in home sector and b
+shocks_sdcorr,corr_home_mil,0,,,correlation between the shocks in home sector and military
+shocks_sdcorr,corr_home_edu,0,,,correlation between the shocks in home sector and education
 meas_error,sd_a,0.4133,0,,SD of the measurement error in wages in occupation a
 meas_error,sd_b,0.3089,0,,SD of the measurement error in wages occupation b
 meas_error,sd_mil,0.1259,0,,SD of the measurement error in wages occupation mil
@@ -59,3 +59,11 @@ type_3,up_to_nine_years_edu,0.5015,,,effect of up to nine years of schooling on 
 type_3,at_least_ten_years_edu,0.4876,,,effect of at least ten years of schooling on probability of being type 3
 type_4,up_to_nine_years_edu,0.0838,,,effect of up to nine years of schooling on probability of being type 4
 type_4,at_least_ten_years_edu,0.0329,,,effect of at least ten years of schooling on probability of being type 4
+lagged_choice_1_home,up_to_nine_years_edu,1,Probability that the first lagged choice is home given covariate up_to_nine_years_edu (simulation only)
+lagged_choice_1_edu,at_least_ten_years_edu,1,Probability that the first lagged choice is education given covariate at_least_ten_years_edu (simulation only)
+initial_exp_edu,7,0.0095,Probability that the initial level of education is 7
+initial_exp_edu,8,0.0422,Probability that the initial level of education is 8
+initial_exp_edu,9,0.2017,Probability that the initial level of education is 9
+initial_exp_edu,10,0.6715,Probability that the initial level of education is 10
+initial_exp_edu,11,0.075,Probability that the initial level of education is 11
+maximum_exp,edu,20,"Maximum level of experience for education (optional, reduces computation complexity)"

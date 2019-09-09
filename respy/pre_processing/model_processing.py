@@ -7,53 +7,38 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import yaml
-from estimagic.optimization.utilities import sdcorr_params_to_matrix
+from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
 
 from respy.config import DEFAULT_OPTIONS
 from respy.pre_processing.model_checking import validate_options
-from respy.pre_processing.model_checking import validate_params
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 
 def process_params_and_options(params, options):
-    params, optim_paras = _process_params(params)
-
-    extended_options = _process_options(options, params)
-
-    validate_params(params, extended_options)
-    validate_options(extended_options)
-
-    return params, optim_paras, extended_options
-
-
-def _process_params(params):
-    params = _read_params(params)
-    optim_paras = _parse_parameters(params)
-
-    return params, optim_paras
-
-
-def _process_options(options, params):
     options = _read_options(options)
+    validate_options(options)
 
-    options["n_types"] = len(infer_types(params)) + 1
-    if options["n_types"] > 1:
-        options["type_covariates"] = sorted(
-            params.loc["type_2"].index.get_level_values(0)
-        )
+    options = {**DEFAULT_OPTIONS, **options}
 
-    extended_options = {**DEFAULT_OPTIONS, **options}
-    extended_options["n_lagged_choices"] = _infer_number_of_lagged_choices(
-        extended_options, params
-    )
-    extended_options = _order_choices(extended_options, params)
-    extended_options = _set_defaults_for_choices_with_experience(
-        extended_options, params
-    )
-    extended_options = _set_defaults_for_inadmissible_states(extended_options)
+    params = _read_params(params)
+    optim_paras = _parse_parameters(params, options)
 
-    return extended_options
+    optim_paras["n_periods"] = options["n_periods"]
+
+    return optim_paras, options
+
+
+def _read_options(input_):
+    if not isinstance(input_, (Path, dict)):
+        raise TypeError("options must be pathlib.Path or dictionary.")
+
+    if isinstance(input_, Path):
+        options = yaml.safe_load(input_.read_text())
+    else:
+        options = copy.deepcopy(input_)
+
+    return options
 
 
 def _read_params(input_):
@@ -75,23 +60,30 @@ def _read_params(input_):
     return params
 
 
-def _read_options(input_):
-    if not isinstance(input_, (Path, dict)):
-        raise TypeError("options must be pathlib.Path or dictionary.")
+def _parse_parameters(params, options):
+    """Parse the parameter vector into a dictionary of model quantities.
 
-    if isinstance(input_, Path):
-        with open(input_, "r") as file:
-            if input_.suffix in [".yaml", ".yml"]:
-                options = yaml.safe_load(file)
-            else:
-                raise NotImplementedError(f"Format {input_.suffix} is not supported.")
-    else:
-        options = copy.deepcopy(input_)
+    Parameters
+    ----------
+    params : pandas.DataFrame or pandas.Series
+        Contains model parameters in column ``"value"``.
 
-    return options
+    """
+    optim_paras = {}
+
+    optim_paras["delta"] = params.loc[("delta", "delta")]
+    optim_paras = _parse_choices(optim_paras, params, options)
+    optim_paras = _parse_choice_parameters(optim_paras, params)
+    optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
+    optim_paras = _parse_shocks(optim_paras, params)
+    optim_paras = _parse_measurement_errors(optim_paras, params)
+    optim_paras = _parse_types(optim_paras, params)
+    optim_paras = _parse_lagged_choices(optim_paras, options, params)
+
+    return optim_paras
 
 
-def _order_choices(options, params):
+def _parse_choices(optim_paras, params, options):
     """Define unique order of choices.
 
     This function defines a unique order of choices. Choices can be separated in choices
@@ -100,30 +92,41 @@ def _order_choices(options, params):
     each group, we order alphabetically. Then, the order is applied to ``options``.
 
     """
-    choices = set(_infer_choices(params))
     choices_w_exp = set(_infer_choices_with_experience(params, options))
     choices_w_wage = set(_infer_choices_with_prefix(params, "wage_"))
+    choices_w_nonpec = set(_infer_choices_with_prefix(params, "nonpec_"))
     choices_w_exp_wo_wage = choices_w_exp - choices_w_wage
-    choices_wo_exp_wo_wage = choices - choices_w_exp
+    choices_wo_exp_wo_wage = choices_w_nonpec - choices_w_exp
 
-    options["choices_w_wage"] = sorted(choices_w_wage)
-    options["choices_w_exp"] = sorted(choices_w_wage) + sorted(
+    optim_paras["choices_w_wage"] = sorted(choices_w_wage)
+    optim_paras["choices_w_exp"] = sorted(choices_w_wage) + sorted(
         choices_w_exp - choices_w_wage
     )
-    options["choices_wo_exp"] = sorted(choices_wo_exp_wo_wage)
+    optim_paras["choices_wo_exp"] = sorted(choices_wo_exp_wo_wage)
 
     # Dictionaries are insertion ordered since Python 3.6+.
-    order = (
-        options["choices_w_wage"]
+    choices = (
+        optim_paras["choices_w_wage"]
         + sorted(choices_w_exp_wo_wage)
         + sorted(choices_wo_exp_wo_wage)
     )
-    options["choices"] = {key: options["choices"].get(key, {}) for key in order}
+    optim_paras["choices"] = {choice: {} for choice in choices}
 
-    return options
+    return optim_paras
 
 
-def _set_defaults_for_choices_with_experience(options, params):
+def _parse_choice_parameters(optim_paras, params):
+    """Parse utility parameters for choices."""
+    for choice in optim_paras["choices"]:
+        if f"wage_{choice}" in params.index:
+            optim_paras[f"wage_{choice}"] = params.loc[f"wage_{choice}"]
+        if f"nonpec_{choice}" in params.index:
+            optim_paras[f"nonpec_{choice}"] = params.loc[f"nonpec_{choice}"]
+
+    return optim_paras
+
+
+def _parse_initial_and_max_experience(optim_paras, params, options):
     """Process initial experience distributions.
 
     A choice might have information on the distribution of initial experiences which is
@@ -138,83 +141,105 @@ def _set_defaults_for_choices_with_experience(options, params):
       to have this choice as an initial lagged choice. Default is a probability of zero.
 
     """
-    choices = options["choices"]
-
-    for choice in options["choices_w_exp"]:
-
-        if f"initial_{choice}" in params.index.get_level_values(0):
-            starts = (
-                params.loc[f"initial_{choice}"]
-                .index.get_level_values(0)
-                .astype(int)
-                .to_numpy()
-            )
+    for choice in optim_paras["choices_w_exp"]:
+        if f"initial_exp_{choice}" in params.index:
+            starts_and_shares = params.loc[f"initial_exp_{choice}"].sort_index()
+            starts = starts_and_shares.index.to_numpy().astype(np.uint8)
+            shares = starts_and_shares.to_numpy()
+            order = np.argsort(params.loc[f"initial_exp_{choice}"].index)
+            optim_paras["choices"][choice]["order"] = order
+            if shares.sum() != 1:
+                warnings.warn(
+                    f"The shares of initial experiences for choice '{choice}' do not "
+                    "sum to one. Shares are divided by their sum for normalization.",
+                    category=UserWarning,
+                )
+                shares = shares / shares.sum()
         else:
-            starts = np.zeros(1)
+            starts = np.zeros(1, dtype=np.uint8)
+            shares = np.ones(1, dtype=np.uint8)
 
-        ordered_indices = np.argsort(starts)
-        choices[choice]["start"] = starts[ordered_indices]
+        max_ = int(params.get(("maximum_exp", choice), options["n_periods"] - 1))
 
-        n_starts = starts.shape[0]
+        optim_paras["choices"][choice]["start"] = starts
+        optim_paras["choices"][choice]["share"] = shares
+        optim_paras["choices"][choice]["max"] = max_
 
-        lagged = np.array(choices[choice].get("lagged", np.zeros(n_starts)))
-        choices[choice]["lagged"] = lagged[ordered_indices]
-
-        shares = np.array(choices[choice].get("share", np.ones(n_starts)))
-        if shares.sum() != 1:
-            warnings.warn(
-                f"The shares of initial experiences for choice '{choice}' do not sum to"
-                " one. Shares are divided by their sum for normalization.",
-                category=UserWarning,
-            )
-            shares = shares / shares.sum()
-        choices[choice]["share"] = shares[ordered_indices]
-
-        choices[choice]["max"] = choices[choice].get("max", options["n_periods"] - 1)
-
-    return options
+    return optim_paras
 
 
-def _set_defaults_for_inadmissible_states(options):
-    for choice in options["choices"]:
-        if choice in options["inadmissible_states"]:
-            pass
-        else:
-            options["inadmissible_states"][choice] = "False"
+def _parse_shocks(optim_paras, params):
+    """Parse the shock parameters and create the Cholesky factor."""
+    if "shocks_sdcorr" in params.index:
+        sorted_shocks = _sort_shocks_sdcorr(optim_paras, params.loc["shocks_sdcorr"])
+        cov = sdcorr_params_to_matrix(sorted_shocks)
+        optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
+    elif "shocks_cov" in params.index:
+        sorted_shocks = _sort_shocks_cov_chol(optim_paras, params.loc["shocks_cov"])
+        cov = cov_params_to_matrix(sorted_shocks)
+        optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
+    elif "shocks_chol" in params.index:
+        sorted_shocks = _sort_shocks_cov_chol(optim_paras, params.loc["shocks_chol"])
+        optim_paras["shocks_cholesky"] = chol_params_to_lower_triangular_matrix(
+            sorted_shocks
+        )
+    else:
+        raise NotImplementedError
 
-    return options
+    return optim_paras
 
 
-def _parse_parameters(params):
-    """Parse the parameter vector into a dictionary of model quantities.
+def _sort_shocks_sdcorr(optim_paras, params):
+    """Sorts the shocks to satisfy :func:`np.tril_indices`.
 
-    Parameters
-    ----------
-    params : pandas.DataFrame or pandas.Series
-        Contains model parameters in column ``"value"``.
+    TODO: rewrite to sort shocks like sds first and then tril.
 
     """
-    optim_paras = {}
+    shocks_flat = []
 
-    for quantity in params.index.get_level_values("category").unique():
-        quant = params.loc[quantity].to_numpy()
-        # Scalars should be scalars, not one-dimensional arrays.
-        optim_paras[quantity] = quant[0] if quant.shape == (1,) else quant
+    for i, c_1 in enumerate(optim_paras["choices"]):
+        for c_2 in list(optim_paras["choices"])[: i + 1]:
+            if c_1 == c_2:
+                shocks_flat.append(params.get(f"sd_{c_1}", 0))
+            else:
+                shocks_flat.append(params.get(f"corr_{c_2}_{c_1}", 0))
 
-    cov = sdcorr_params_to_matrix(optim_paras["shocks"])
-    optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
-    optim_paras.pop("shocks")
+    return shocks_flat
 
-    short_meas_error = params.loc["meas_error"]
-    n_choices = cov.shape[0]
-    meas_error = params.loc["shocks"][:n_choices].copy(deep=True)
-    meas_error[:] = 0.0
-    meas_error.update(short_meas_error)
-    optim_paras["meas_error"] = meas_error.to_numpy()
 
-    if "type_shift" in optim_paras:
+def _sort_shocks_cov_chol(optim_paras, params):
+    raise NotImplementedError
+
+
+def _parse_measurement_errors(optim_paras, params):
+    """Parse correctly sorted measurement errors."""
+    meas_error = np.zeros(len(optim_paras["choices"]))
+
+    labels = [f"sd_{choice}" for choice in optim_paras["choices_w_wage"]]
+    meas_error[: len(labels)] = params.loc["meas_error"].loc[labels].to_numpy()
+    optim_paras["meas_error"] = meas_error
+
+    return optim_paras
+
+
+def _parse_types(optim_paras, params):
+    """Parse type shifts and type parameters.
+
+    It is not explicitly enforced that all types have the same covariates, but it is
+    implicitly enforced that the parameters form a valid matrix.
+
+    TODO: Is type covariates necessary?
+
+    """
+    n_choices = len(optim_paras["choices"])
+
+    if "type_shift" in params.index:
         types = infer_types(params)
-        n_type_covariates = params.loc[types[0]].shape[0]
+        n_types = len(types) + 1
+        optim_paras["type_covariates"] = (
+            params.loc[types[0]].sort_index().index.to_list()
+        )
+        n_type_covariates = len(optim_paras["type_covariates"])
 
         optim_paras["type_prob"] = np.vstack(
             (
@@ -225,14 +250,18 @@ def _parse_parameters(params):
                 .reshape(len(types), n_type_covariates),
             )
         )
-        optim_paras["type_shift"] = np.vstack(
-            (
-                np.zeros(n_choices),
-                optim_paras["type_shift"].reshape(len(types), n_choices),
-            )
-        )
+
+        type_shifts = np.zeros((n_types, n_choices))
+        for type_ in range(2, n_types + 1):
+            for i, choice in enumerate(optim_paras["choices"]):
+                type_shifts[type_ - 1, i] = params.loc[
+                    ("type_shift", f"type_{type_}_in_{choice}")
+                ]
+        optim_paras["type_shift"] = type_shifts
     else:
         optim_paras["type_shift"] = np.zeros((1, n_choices))
+
+    optim_paras["n_types"] = optim_paras["type_shift"].shape[0]
 
     return optim_paras
 
@@ -254,7 +283,7 @@ def _infer_choices_with_experience(params, options):
 
     matches = []
     for param in parameters:
-        matches += re.findall(r"exp_([A-Za-z]*)", param)
+        matches += re.findall(r"exp_([A-Za-z]*)", str(param))
     for cov in used_covariates:
         matches += re.findall(r"exp_([A-Za-z]*)", covariates[cov])
 
@@ -270,15 +299,8 @@ def _infer_choices_with_prefix(params, prefix):
     )
 
 
-def _infer_choices(params):
-    choices_w_wage = _infer_choices_with_prefix(params, "wage_")
-    choices_w_nonpec = _infer_choices_with_prefix(params, "nonpec_")
-
-    return list(set(choices_w_wage) | set(choices_w_nonpec))
-
-
-def _infer_number_of_lagged_choices(options, params):
-    """Infer the number of lagged choices from covariates.
+def _parse_lagged_choices(optim_paras, options, params):
+    """Parse lagged choices from covariates and params.
 
     Lagged choices can only influence behavior of individuals through covariates of the
     utility function. Thus, check the covariates for any patterns like
@@ -299,14 +321,15 @@ def _infer_number_of_lagged_choices(options, params):
 
     Example
     -------
-    >>> index = pd.MultiIndex.from_tuples([("name", "covariate")])
-    >>> params = pd.DataFrame(index=index)
+    >>> optim_paras = {}
     >>> options = {
     ...     "covariates": {"covariate": "lagged_choice_2 + lagged_choice_1"},
     ...     "core_state_space_filters": [],
     ... }
-    >>> _infer_number_of_lagged_choices(options, params)
-    2
+    >>> index = pd.MultiIndex.from_tuples([("name", "covariate")])
+    >>> params = pd.DataFrame(index=index)
+    >>> _parse_lagged_choices(optim_paras, options, params)
+    {'n_lagged_choices': 2}
 
     """
     regex_pattern = r"lagged_choice_([0-9]+)"
@@ -328,6 +351,7 @@ def _infer_number_of_lagged_choices(options, params):
         .str.extract(regex_pattern, expand=False)
         .dropna()
         .unique()
+        .tolist()
     )
 
     lc_params = np.zeros(1) if not matches_params else pd.to_numeric(matches_params)
@@ -353,4 +377,36 @@ def _infer_number_of_lagged_choices(options, params):
     else:
         pass
 
-    return n_lagged_choices
+    optim_paras["n_lagged_choices"] = n_lagged_choices
+
+    # Add existing lagged choice parameters to ``optim_paras``.
+    for match in (
+        params.filter(like="lagged_choice_", axis=0).index.get_level_values(0).unique()
+    ):
+        optim_paras[match] = params.loc[match]
+
+    return optim_paras
+
+
+def chol_params_to_lower_triangular_matrix(params):
+    dim = number_of_triangular_elements_to_dimension(len(params))
+    mat = np.zeros((dim, dim))
+    mat[np.tril_indices(dim)] = params
+
+    return mat
+
+
+def cov_params_to_matrix(params):
+    mat = chol_params_to_lower_triangular_matrix(params)
+    mat += np.tril(mat, k=-1).T
+
+    return mat
+
+
+def sdcorr_params_to_matrix(params):
+    corr = cov_params_to_matrix(params)
+    sd = np.diag(np.diag(corr))
+    corr[np.diag_indices(corr.shape[0])] = 1
+    cov = sd @ corr @ sd
+
+    return cov

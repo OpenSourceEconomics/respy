@@ -8,6 +8,6 @@ Getting Started
    introduction
    installation
    tutorial.ipynb
-   tutorial-kw-94-simulation.ipynb
-   tutorial-kw-97-simulation.ipynb
    tutorial-lagged-choices.ipynb
+   keane-and-wolpin-1994.ipynb
+   keane-and-wolpin-1997.ipynb

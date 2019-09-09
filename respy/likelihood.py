@@ -51,13 +51,13 @@ def get_crit_func(params, options, df, version="log_like"):
         If data has not the expected format.
 
     """
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
-    options = _adjust_options_for_estimation(options, df)
+    optim_paras = _adjust_optim_paras_for_estimation(optim_paras, df)
 
-    state_space = StateSpace(params, options)
+    state_space = StateSpace(optim_paras, options)
 
-    check_estimation_data(df, options)
+    check_estimation_data(df, optim_paras)
 
     (
         choices,
@@ -65,10 +65,14 @@ def get_crit_func(params, options, df, version="log_like"):
         indices,
         log_wages_observed,
         type_covariates,
-    ) = _process_estimation_data(df, state_space, options)
+    ) = _process_estimation_data(df, state_space, optim_paras, options)
 
     base_draws_est = create_base_draws(
-        (options["n_periods"], options["estimation_draws"], len(options["choices"])),
+        (
+            options["n_periods"],
+            options["estimation_draws"],
+            len(optim_paras["choices"]),
+        ),
         options["estimation_seed"],
     )
 
@@ -189,9 +193,9 @@ def log_like_obs(
         Contains model options.
 
     """
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
-    state_space.update_systematic_rewards(optim_paras, options)
+    state_space.update_systematic_rewards(optim_paras)
 
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
@@ -353,7 +357,7 @@ def _internal_log_like_obs(
 
     """
     n_obs, n_types = indices.shape
-    n_choices = len(options["choices"])
+    n_choices = len(optim_paras["choices"])
 
     wages_systematic = state_space.wages[indices].reshape(n_obs * n_types, -1)
     periods = state_space.states[indices, 0].flatten()
@@ -366,7 +370,7 @@ def _internal_log_like_obs(
         optim_paras["shocks_cholesky"],
         optim_paras["meas_error"],
         periods,
-        len(options["choices_w_wage"]),
+        len(optim_paras["choices_w_wage"]),
     )
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
@@ -440,7 +444,7 @@ def _convert_choice_variables_from_categorical_to_codes(df, options):
     return df
 
 
-def _process_estimation_data(df, state_space, options):
+def _process_estimation_data(df, state_space, optim_paras, options):
     """Process estimation data.
 
     All necessary objects for :func:`_internal_log_like_obs` dependent on the data are
@@ -456,7 +460,7 @@ def _process_estimation_data(df, state_space, options):
         contains individual identifiers, periods, experiences, lagged choices, choices
         in current period, the wage and other observed data.
     state_space : ~respy.state_space.StateSpace
-    options : dict
+    optim_paras : dict
 
     Returns
     -------
@@ -476,11 +480,11 @@ def _process_estimation_data(df, state_space, options):
         predict probabilities for each type.
 
     """
-    labels, _ = generate_column_labels_estimation(options)
+    labels, _ = generate_column_labels_estimation(optim_paras)
 
     df = df.sort_values(["Identifier", "Period"])[labels]
     df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
-    df = _convert_choice_variables_from_categorical_to_codes(df, options)
+    df = _convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations, n_types).
@@ -494,7 +498,7 @@ def _process_estimation_data(df, state_space, options):
         )
         period_lagged_choice = tuple(
             period_df[f"lagged_choice_{i}"].to_numpy()
-            for i in range(1, options["n_lagged_choices"] + 1)
+            for i in range(1, optim_paras["n_lagged_choices"] + 1)
         )
 
         period_indices = state_space.indexer[period][
@@ -525,45 +529,51 @@ def _process_estimation_data(df, state_space, options):
     log_wages_observed = (
         np.log(df.wage.to_numpy())
         .clip(-HUGE_FLOAT, HUGE_FLOAT)
-        .repeat(options["n_types"])
+        .repeat(optim_paras["n_types"])
     )
 
     # For the estimation, choices are needed with shape (n_observations, n_types).
-    choices = df.choice.to_numpy().repeat(options["n_types"])
+    choices = df.choice.to_numpy().repeat(optim_paras["n_types"])
 
     # For the type covariates, we only need the first observation of each individual.
     states = df.groupby("identifier").first()
     type_covariates = (
-        create_type_covariates(states, options) if options["n_types"] > 1 else None
+        create_type_covariates(states, optim_paras, options)
+        if optim_paras["n_types"] > 1
+        else None
     )
 
     return choices, idx_indiv_first_obs, indices, log_wages_observed, type_covariates
 
 
-def _adjust_options_for_estimation(options, df):
-    """Adjust options for estimation.
+def _adjust_optim_paras_for_estimation(optim_paras, df):
+    """Adjust optim_paras for estimation.
 
     There are some option values which are necessary for the simulation, but they can be
     directly inferred from the data for estimation. A warning is raised for the user
-    which can be suppressed by adjusting the options.
+    which can be suppressed by adjusting the optim_paras.
 
     """
-    for choice in options["choices_w_exp"]:
+    for choice in optim_paras["choices_w_exp"]:
 
         # Adjust initial experience levels for all choices with experiences.
         init_exp_data = np.sort(
             df.loc[df.Period.eq(0), f"Experience_{choice.title()}"].unique()
         )
-        init_exp_options = options["choices"][choice]["start"]
+        init_exp_options = optim_paras["choices"][choice]["start"]
         if not np.array_equal(init_exp_data, init_exp_options):
             warnings.warn(
                 f"The initial experience for choice '{choice}' differs between data, "
-                f"{init_exp_data}, and options, {init_exp_options}. The options are "
-                "ignored.",
+                f"{init_exp_data}, and optim_paras, {init_exp_options}. The optim_paras"
+                " are ignored.",
                 category=UserWarning,
             )
-            options["choices"][choice]["start"] = init_exp_data
-            options["choices"][choice].pop("share")
-            options["choices"][choice].pop("lagged")
+            optim_paras["choices"][choice]["start"] = init_exp_data
+            optim_paras["choices"][choice].pop("share")
+            optim_paras = {
+                k: v
+                for k, v in optim_paras.items()
+                if not k.startswith("lagged_choice_")
+            }
 
-    return options
+    return optim_paras

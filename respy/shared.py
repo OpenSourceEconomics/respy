@@ -117,11 +117,11 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
     return draws_transformed
 
 
-def generate_column_labels_estimation(options):
+def generate_column_labels_estimation(optim_paras):
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
-        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
-        + [f"Lagged_Choice_{i}" for i in range(1, options["n_lagged_choices"] + 1)]
+        + [f"Experience_{choice.title()}" for choice in optim_paras["choices_w_exp"]]
+        + [f"Lagged_Choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
     )
 
     dtypes = {}
@@ -136,16 +136,16 @@ def generate_column_labels_estimation(options):
     return labels, dtypes
 
 
-def generate_column_labels_simulation(options):
-    est_lab, est_dtypes = generate_column_labels_estimation(options)
+def generate_column_labels_simulation(optim_paras):
+    est_lab, est_dtypes = generate_column_labels_estimation(optim_paras)
     labels = (
         est_lab
         + ["Type"]
-        + [f"Nonpecuniary_Reward_{choice.title()}" for choice in options["choices"]]
-        + [f"Wage_{choice.title()}" for choice in options["choices_w_wage"]]
-        + [f"Flow_Utility_{choice.title()}" for choice in options["choices"]]
-        + [f"Value_Function_{choice.title()}" for choice in options["choices"]]
-        + [f"Shock_Reward_{choice.title()}" for choice in options["choices"]]
+        + [f"Nonpecuniary_Reward_{choice.title()}" for choice in optim_paras["choices"]]
+        + [f"Wage_{choice.title()}" for choice in optim_paras["choices_w_wage"]]
+        + [f"Flow_Utility_{choice.title()}" for choice in optim_paras["choices"]]
+        + [f"Value_Function_{choice.title()}" for choice in optim_paras["choices"]]
+        + [f"Shock_Reward_{choice.title()}" for choice in optim_paras["choices"]]
         + ["Discount_Rate"]
     )
 
@@ -211,7 +211,7 @@ def downcast_to_smallest_dtype(series):
     return series.astype(min_dtype)
 
 
-def create_type_covariates(df, options):
+def create_type_covariates(df, optim_paras, options):
     """Create covariates to predict type probabilities.
 
     In the simulation, the covariates are needed to predict type probabilities and
@@ -223,7 +223,9 @@ def create_type_covariates(df, options):
 
     all_data = pd.concat([covariates, df], axis="columns", sort=False)
 
-    all_data = all_data[options["type_covariates"]].apply(downcast_to_smallest_dtype)
+    all_data = all_data[optim_paras["type_covariates"]].apply(
+        downcast_to_smallest_dtype
+    )
 
     return all_data.to_numpy()
 

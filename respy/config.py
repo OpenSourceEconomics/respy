@@ -23,39 +23,6 @@ INADMISSIBILITY_PENALTY = -400000
 
 IS_DEBUG = False
 
-BASE_COVARIATES = {
-    "not_exp_a_lagged": "exp_a > 0 and lagged_choice_1 != 'a'",
-    "not_exp_b_lagged": "exp_b > 0 and lagged_choice_1 != 'b'",
-    "work_a_lagged": "lagged_choice_1 == 'a'",
-    "work_b_lagged": "lagged_choice_1 == 'b'",
-    "edu_lagged": "lagged_choice_1 == 'edu'",
-    "not_any_exp_a": "exp_a == 0",
-    "not_any_exp_b": "exp_b == 0",
-    "any_exp_a": "exp_a > 0",
-    "any_exp_b": "exp_b > 0",
-    "hs_graduate": "exp_edu >= 12",
-    "co_graduate": "exp_edu >= 16",
-    "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
-    "is_return_high_school": "~edu_lagged and hs_graduate",
-    "is_minor": "period < 2",
-    "is_young_adult": "2 <= period <= 4",
-    "is_adult": "5 <= period",
-    "constant": "1",
-    "exp_a_square": "exp_a ** 2 / 100",
-    "exp_b_square": "exp_b ** 2 / 100",
-    "up_to_nine_years_edu": "exp_edu <= 9",
-    "at_least_ten_years_edu": "exp_edu >= 10",
-    "edu_ten": "exp_edu == 10",
-}
-"""dict: Dictionary containing specification of covariates.
-
-The keys of the dictionary are used as column names and must correspond to the parameter
-value in the parameter specification. The values are strings passed to ``pd.eval``.
-
-"""
-
-BASE_INADMISSIBLE_STATES = {"edu": "exp_edu == @max_exp_edu"}
-
 DEFAULT_OPTIONS = {
     "choices": {"edu": {"max": 20, "start": [10], "lagged": [1], "share": [1]}},
     "estimation_draws": 200,
@@ -67,9 +34,8 @@ DEFAULT_OPTIONS = {
     "simulation_seed": 2,
     "solution_draws": 500,
     "solution_seed": 3,
-    "covariates": BASE_COVARIATES,
-    "inadmissible_states": BASE_INADMISSIBLE_STATES,
     "core_state_space_filters": [],
+    "inadmissible_states": {},
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]
