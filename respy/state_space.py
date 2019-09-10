@@ -602,15 +602,15 @@ def _create_is_inadmissible_indicator(states, optim_paras, options):
     df = states.copy()
 
     # Apply the maximum experience as a default constraint only if its not the last
-    # period.
-    # TODO: Nicer solution.
+    # period. Otherwise, it is unconstrained.
     for choice in optim_paras["choices_w_exp"]:
-        max_exp = (
-            optim_paras["choices"][choice]["max"]
-            if optim_paras["choices"][choice]["max"] != optim_paras["n_periods"] - 1
-            else optim_paras["n_periods"]
+        max_exp = optim_paras["choices"][choice]["max"]
+        formula = (
+            f"exp_{choice} == {max_exp}"
+            if max_exp != optim_paras["n_periods"] - 1
+            else "False"
         )
-        df[choice] = df.eval(f"exp_{choice} == {max_exp}")
+        df[choice] = df.eval(formula)
 
     # Apply no constraint for choices without experience.
     for choice in optim_paras["choices_wo_exp"]:

@@ -118,16 +118,12 @@ def _parse_choice_parameters(optim_paras, params):
 
 
 def _parse_initial_and_max_experience(optim_paras, params, options):
-    """Process initial experience distributions.
+    """Process initial experience distributions and maximum experience.
 
-    A choice might have information on the distribution of initial experiences which is
-    used at the beginning of the simulation to determine the starting points of agents.
-    This function makes the model invariant to the order or misspecified probabilities.
-
-    - ``"start"`` determines initial experience levels. Default is to start with zero
-      experience.
-    - ``"share"`` determines the share of each initial experience level in the starting
-      population. Default is a uniform distribution over all initial experience levels.
+    Each choice with experience accumulation has to be defined in three ways. First, a
+    set of initial experience values, second, the share of the initial experience levels
+    in the population and the maximum of accumulated experience. The defaults are zero
+    experience with no upper limit.
 
     """
     for choice in optim_paras["choices_w_exp"]:
@@ -231,7 +227,16 @@ def _sort_shocks_cov_chol(optim_paras, params, type_):
                 lower_triangular_flat.append(params.loc[f"{label}_{c_1}"])
             else:
                 label = "cov" if type_ == "cov" else "chol"
-                lower_triangular_flat.append(params.loc[f"{label}_{c_1}_{c_2}"])
+                # The order in which choices are mentioned in the labels is not clear.
+                # Check both combinations.
+                if f"{label}_{c_1}_{c_2}" in params.index:
+                    lower_triangular_flat.append(params.loc[f"{label}_{c_1}_{c_2}"])
+                elif f"{label}_{c_2}_{c_1}" in params.index:
+                    lower_triangular_flat.append(params.loc[f"{label}_{c_2}_{c_1}"])
+                else:
+                    raise ValueError(
+                        f"Shock matrix has no entry for choice {c_1} and {c_2}"
+                    )
 
     return lower_triangular_flat
 
@@ -253,8 +258,6 @@ def _parse_types(optim_paras, params):
     It is not explicitly enforced that all types have the same covariates, but it is
     implicitly enforced that the parameters form a valid matrix.
 
-    TODO: Rewrite such that type parameters are passed and later matched to covariates.
-
     """
     n_choices = len(optim_paras["choices"])
 
@@ -272,7 +275,7 @@ def _parse_types(optim_paras, params):
                 params.loc[types]
                 .sort_index()
                 .to_numpy()
-                .reshape(len(types), n_type_covariates),
+                .reshape(n_types - 1, n_type_covariates),
             )
         )
 
@@ -305,12 +308,9 @@ def _infer_number_of_types(params):
 
     """
     return (
-        len(
-            params.index.get_level_values(0)
-            .str.extract(r"(\btype_[0-9]+\b)", expand=False)
-            .dropna()
-            .unique()
-        )
+        params.index.get_level_values(0)
+        .str.extract(r"(\btype_[0-9]+\b)", expand=False)
+        .nunique()
         + 1
     )
 
@@ -346,7 +346,7 @@ def _infer_choices_with_prefix(params, prefix):
 
     Example
     -------
-    >>> params = pd.Series(index=["wage_b", "wage_white_collar", "wage_a", "wage_a"])
+    >>> params = pd.Series(index=["wage_b", "wage_white_collar", "wage_a", "nonpec_c"])
     >>> _infer_choices_with_prefix(params, "wage")
     ['a', 'b', 'white_collar']
 
@@ -406,12 +406,11 @@ def _parse_lagged_choices(optim_paras, options, params):
     n_lagged_choices = 0 if not matches else pd.to_numeric(matches).max()
 
     # Second, infer the number of lags defined in params.
-    matches_params = (
+    matches_params = list(
         params.index.get_level_values(0)
         .str.extract(regex_pattern, expand=False)
         .dropna()
         .unique()
-        .tolist()
     )
 
     lc_params = np.zeros(1) if not matches_params else pd.to_numeric(matches_params)
