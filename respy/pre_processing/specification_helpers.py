@@ -92,23 +92,29 @@ def initial_and_max_experience_template(edu_starts, edu_shares, edu_max):
     return pd.concat(to_concat, axis=0, sort=False)
 
 
-def lagged_choices_template(n_lagged_choices, edu_starts):
+def lagged_choices_probs_template(n_lagged_choices, choices):
     to_concat = []
     for i in range(1, n_lagged_choices + 1):
-        ind = (f"lagged_choice_{i}_edu", "up_to_nine_years_edu")
-        dat = [1, ""]
-        to_concat.append(_base_row(ind, dat))
-        ind = (f"lagged_choice_{i}_home", "up_to_nine_years_edu")
-        dat = [0, ""]
-        to_concat.append(_base_row(ind, dat))
-        ind = (f"lagged_choice_{i}_edu", "at_least_ten_years_edu")
-        dat = [0, ""]
-        to_concat.append(_base_row(ind, dat))
-        ind = (f"lagged_choice_{i}_home", "at_least_ten_years_edu")
-        dat = [1, ""]
-        to_concat.append(_base_row(ind, dat))
+        probs = np.random.uniform(size=len(choices))
+        probs /= probs.sum()
+        for j, choice in enumerate(choices):
+            ind = (f"lagged_choice_{i}_{choice}", "constant")
+            dat = [probs[j], f"Probability of choice {choice} being lagged choice {i}"]
+            to_concat.append(_base_row(ind, dat))
 
     return pd.concat(to_concat, axis=0, sort=False)
+
+
+def lagged_choices_covariates_template(n_lagged_choices, choices):
+    return {
+        "not_exp_a_lagged": "exp_a > 0 and lagged_choice_1 != 'a'",
+        "not_exp_b_lagged": "exp_b > 0 and lagged_choice_1 != 'b'",
+        "work_a_lagged": "lagged_choice_1 == 'a'",
+        "work_b_lagged": "lagged_choice_1 == 'b'",
+        "edu_lagged": "lagged_choice_1 == 'edu'",
+        "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
+        "is_return_high_school": "~edu_lagged and hs_graduate",
+    }
 
 
 def _base_row(index_tuple, data):

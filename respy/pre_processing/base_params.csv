@@ -11,9 +11,7 @@ wage_a,co_graduate,0.0023,skill premium of having finished college (wage),coeffs
 wage_a,period,0.0102,linear age effect (wage),coeffs_a,age
 wage_a,is_minor,-0.15,effect of being a minor (wage),coeffs_a,minor
 wage_a,any_exp_a,0.1885,gain of having worked in the same occupation at least once before (wage),coeffs_a,not_first
-wage_a,work_a_lagged,0.3054,gain of remaining in the same occupation as previous period (wage),coeffs_a,no_switch
 nonpec_a,constant,-2543.0,constant (non pecuniary),coeffs_a,constant
-nonpec_a,not_exp_a_lagged,-1182.0,reward of switching to a from other occupation (non pecuniary),coeffs_a,first
 nonpec_a,not_any_exp_a,-2759.0,reward of working in a for the first time (non pecuniary),coeffs_a,switch
 nonpec_a,hs_graduate,804.0,return to high school degree (non pecuniary),coeffs_common,return_hs_degree
 nonpec_a,co_graduate,2005.0,return to college degree (non pecuniary),coeffs_common,return_col_degree
@@ -28,15 +26,11 @@ wage_b,co_graduate,0.0058,skill premium of having finished college (wage),coeffs
 wage_b,period,0.0114,linear age effect (wage),coeffs_b,age
 wage_b,is_minor,0.1433,effect of being a minor (wage),coeffs_b,minor
 wage_b,any_exp_b,0.202,gain of having worked in the same occupation at least once before (wage),coeffs_b,not_first
-wage_b,work_b_lagged,0.0964,gain of remaining in the same occupation as previous period (wage),coeffs_b,no_switch
 nonpec_b,constant,-3157.0,constant (non pecuniary),coeffs_b,constant
-nonpec_b,not_exp_b_lagged,-1647.0,reward of switching to a from other occupation (non pecuniary),coeffs_b,first
 nonpec_b,not_any_exp_b,-494.0,reward of working in a for the first time (non pecuniary),coeffs_b,switch
 nonpec_b,hs_graduate,804.0,return to high school degree (non pecuniary),coeffs_common,return_hs_degree
 nonpec_b,co_graduate,2005.0,return to college degree (non pecuniary),coeffs_common,return_col_degree
 nonpec_edu,constant,11031.0,consumption value of school attendance for type 1,coeffs_edu,constant
-nonpec_edu,is_return_not_high_school,-10700.0,reward for going back to college,coeffs_edu,reenroll_col
-nonpec_edu,is_return_high_school,-23283.0,reward for going back to high school,coeffs_edu,reenroll_hs
 nonpec_edu,period,-1502.0,linear age effect,coeffs_edu,age
 nonpec_edu,is_minor,3632.0,effect of being a minor,coeffs_edu,minor
 nonpec_edu,hs_graduate,804.0,return to high school degree (non pecuniary),coeffs_common,return_hs_degree

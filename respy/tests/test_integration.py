@@ -1,12 +1,10 @@
 import numpy as np
-import pytest
 
 from respy.likelihood import get_crit_func
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
 
 
-@pytest.mark.wip
 def test_simulation_and_estimation_with_different_models():
     """Test the evaluation of the criterion function not at the true parameters."""
     # Set constraints.
@@ -17,6 +15,7 @@ def test_simulation_and_estimation_with_different_models():
         "edu_max": 15,
         "edu_start": [7],
         "edu_share": [1],
+        "n_lagged_choices": np.random.choice(2),
     }
 
     # Simulate a dataset
@@ -32,7 +31,11 @@ def test_simulation_and_estimation_with_different_models():
 
 def test_invariant_results_for_two_estimations():
     num_agents = np.random.randint(5, 100)
-    constr = {"simulation_agents": num_agents, "n_periods": np.random.randint(1, 4)}
+    constr = {
+        "simulation_agents": num_agents,
+        "n_periods": np.random.randint(1, 4),
+        "n_lagged_choices": np.random.choice(2),
+    }
 
     # Simulate a dataset.
     params, options = generate_random_model(point_constr=constr)

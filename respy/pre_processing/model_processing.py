@@ -166,11 +166,15 @@ def _parse_shocks(optim_paras, params):
         cov = sdcorr_params_to_matrix(sorted_shocks)
         optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
     elif "shocks_cov" in params.index:
-        sorted_shocks = _sort_shocks_cov_chol(optim_paras, params.loc["shocks_cov"])
+        sorted_shocks = _sort_shocks_cov_chol(
+            optim_paras, params.loc["shocks_cov"], "cov"
+        )
         cov = cov_params_to_matrix(sorted_shocks)
         optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
     elif "shocks_chol" in params.index:
-        sorted_shocks = _sort_shocks_cov_chol(optim_paras, params.loc["shocks_chol"])
+        sorted_shocks = _sort_shocks_cov_chol(
+            optim_paras, params.loc["shocks_chol"], "chol"
+        )
         optim_paras["shocks_cholesky"] = chol_params_to_lower_triangular_matrix(
             sorted_shocks
         )
@@ -209,7 +213,7 @@ def _sort_shocks_sdcorr(optim_paras, params):
     return sds_flat + corrs_flat
 
 
-def _sort_shocks_cov_chol(optim_paras, params):
+def _sort_shocks_cov_chol(optim_paras, params, type_):
     """Sort shocks of the covariance matrix or the Cholesky factor.
 
     To fit :func:`estimagic.optimization.utilities.cov_params_to_matrix` and
@@ -223,9 +227,11 @@ def _sort_shocks_cov_chol(optim_paras, params):
     for i, c_1 in enumerate(optim_paras["choices"]):
         for c_2 in list(optim_paras["choices"])[: i + 1]:
             if c_1 == c_2:
-                lower_triangular_flat.append(params.loc[f"var_{c_1}"])
+                label = "var" if type_ == "cov" else "chol"
+                lower_triangular_flat.append(params.loc[f"{label}_{c_1}"])
             else:
-                lower_triangular_flat.append(params.loc[f"cov_{c_1}_{c_2}"])
+                label = "cov" if type_ == "cov" else "chol"
+                lower_triangular_flat.append(params.loc[f"{label}_{c_1}_{c_2}"])
 
     return lower_triangular_flat
 

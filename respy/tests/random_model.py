@@ -7,12 +7,16 @@ from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
 from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
 
 from respy.config import DEFAULT_OPTIONS
+from respy.config import ROOT_DIR
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
 from respy.pre_processing.specification_helpers import (
     initial_and_max_experience_template,
 )
-from respy.pre_processing.specification_helpers import lagged_choices_template
+from respy.pre_processing.specification_helpers import (
+    lagged_choices_covariates_template,
+)
+from respy.pre_processing.specification_helpers import lagged_choices_probs_template
 from respy.shared import generate_column_labels_estimation
 from respy.simulate import get_simulate_func
 
@@ -43,19 +47,12 @@ _BASE_CORE_STATE_SPACE_FILTERS = [
 
 
 _BASE_COVARIATES = {
-    "not_exp_a_lagged": "exp_a > 0 and lagged_choice_1 != 'a'",
-    "not_exp_b_lagged": "exp_b > 0 and lagged_choice_1 != 'b'",
-    "work_a_lagged": "lagged_choice_1 == 'a'",
-    "work_b_lagged": "lagged_choice_1 == 'b'",
-    "edu_lagged": "lagged_choice_1 == 'edu'",
     "not_any_exp_a": "exp_a == 0",
     "not_any_exp_b": "exp_b == 0",
     "any_exp_a": "exp_a > 0",
     "any_exp_b": "exp_b > 0",
     "hs_graduate": "exp_edu >= 12",
     "co_graduate": "exp_edu >= 16",
-    "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
-    "is_return_high_school": "~edu_lagged and hs_graduate",
     "is_minor": "period < 2",
     "is_young_adult": "2 <= period <= 4",
     "is_adult": "5 <= period",
@@ -134,24 +131,31 @@ def generate_random_model(
     )
 
     n_edu_start = np.random.randint(1, bound_constr["max_edu_start"] + 1)
-    edu_starts = point_constr.pop(
+    edu_starts = point_constr.get(
         "edu_start", np.random.choice(np.arange(1, 15), size=n_edu_start, replace=False)
     )
-    edu_shares = point_constr.pop("edu_share", _get_initial_shares(n_edu_start))
-    edu_max = point_constr.pop("edu_max", np.random.randint(max(edu_starts) + 1, 30))
+    edu_shares = point_constr.get("edu_share", _get_initial_shares(n_edu_start))
+    edu_max = point_constr.get("edu_max", np.random.randint(max(edu_starts) + 1, 30))
     params = pd.concat(
         [params, initial_and_max_experience_template(edu_starts, edu_shares, edu_max)],
         axis=0,
         sort=False,
     )
 
-    n_lagged_choices = 1
+    n_lagged_choices = point_constr.get("n_lagged_choices", np.random.choice(2))
     if n_lagged_choices:
-        params = pd.concat(
-            [params, lagged_choices_template(n_lagged_choices, edu_starts)],
-            axis=0,
-            sort=False,
+        choices = ["a", "b", "edu", "home"]
+        lc_probs_params = lagged_choices_probs_template(n_lagged_choices, choices)
+        lc_params = pd.read_csv(
+            ROOT_DIR / "pre_processing" / "lagged_choice_params.csv"
         )
+        lc_params.set_index(["category", "name"], inplace=True)
+        params = pd.concat([params, lc_probs_params, lc_params], axis=0, sort=False)
+        lc_covariates = lagged_choices_covariates_template(n_lagged_choices, choices)
+        filters = _BASE_CORE_STATE_SPACE_FILTERS
+    else:
+        lc_covariates = {}
+        filters = []
 
     options = {
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
@@ -171,8 +175,8 @@ def generate_random_model(
     options = {
         **DEFAULT_OPTIONS,
         **options,
-        "core_state_space_filters": _BASE_CORE_STATE_SPACE_FILTERS,
-        "covariates": _BASE_COVARIATES,
+        "core_state_space_filters": filters,
+        "covariates": {**_BASE_COVARIATES, **lc_covariates},
     }
 
     options = _update_nested_dictionary(options, point_constr)
