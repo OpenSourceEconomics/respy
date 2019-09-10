@@ -19,9 +19,8 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 def process_params_and_options(params, options):
     options = _read_options(options)
-    validate_options(options)
-
     options = {**DEFAULT_OPTIONS, **options}
+    validate_options(options)
 
     params = _read_params(params)
     optim_paras = _parse_parameters(params, options)
@@ -63,14 +62,7 @@ def _read_params(input_):
 
 
 def _parse_parameters(params, options):
-    """Parse the parameter vector into a dictionary of model quantities.
-
-    Parameters
-    ----------
-    params : pandas.DataFrame or pandas.Series
-        Contains model parameters in column ``"value"``.
-
-    """
+    """Parse the parameter vector into a dictionary of model quantities."""
     optim_paras = {}
 
     optim_paras["delta"] = params.loc[("delta", "delta")]
@@ -91,28 +83,24 @@ def _parse_choices(optim_paras, params, options):
     This function defines a unique order of choices. Choices can be separated in choices
     with experience and wage, with experience but without wage and without experience
     and wage. This distinction is used to create a unique ordering of choices. Within
-    each group, we order alphabetically. Then, the order is applied to ``options``.
+    each group, we order alphabetically. Then, the order is applied to ``optim_paras``.
 
     """
     choices_w_exp = set(_infer_choices_with_experience(params, options))
-    choices_w_wage = set(_infer_choices_with_prefix(params, "wage_"))
-    choices_w_nonpec = set(_infer_choices_with_prefix(params, "nonpec_"))
+    choices_w_wage = set(_infer_choices_with_prefix(params, "wage"))
+    choices_w_nonpec = set(_infer_choices_with_prefix(params, "nonpec"))
     choices_w_exp_wo_wage = choices_w_exp - choices_w_wage
     choices_wo_exp_wo_wage = choices_w_nonpec - choices_w_exp
 
     optim_paras["choices_w_wage"] = sorted(choices_w_wage)
     optim_paras["choices_w_exp"] = sorted(choices_w_wage) + sorted(
-        choices_w_exp - choices_w_wage
+        choices_w_exp_wo_wage
     )
     optim_paras["choices_wo_exp"] = sorted(choices_wo_exp_wo_wage)
 
     # Dictionaries are insertion ordered since Python 3.6+.
-    choices = (
-        optim_paras["choices_w_wage"]
-        + sorted(choices_w_exp_wo_wage)
-        + sorted(choices_wo_exp_wo_wage)
-    )
-    optim_paras["choices"] = {choice: {} for choice in choices}
+    order = optim_paras["choices_w_exp"] + optim_paras["choices_wo_exp"]
+    optim_paras["choices"] = {choice: {} for choice in order}
 
     return optim_paras
 
@@ -139,8 +127,6 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
       experience.
     - ``"share"`` determines the share of each initial experience level in the starting
       population. Default is a uniform distribution over all initial experience levels.
-    - ``"lagged"`` determines the share of the population with this initial experience
-      to have this choice as an initial lagged choice. Default is a probability of zero.
 
     """
     for choice in optim_paras["choices_w_exp"]:
@@ -194,9 +180,10 @@ def _parse_shocks(optim_paras, params):
 
 
 def _sort_shocks_sdcorr(optim_paras, params):
-    """Sorts the shocks to satisfy :func:`np.tril_indices`.
+    """Sort shocks of the standard deviation/correlation matrix.
 
-    TODO: rewrite to sort shocks like sds first and then tril.
+    To fit :func:`estimagic.optimization.utilities.sdcorr_params_to_matrix`, standard
+    deviations have to precede the elements of the remaining lower triangular matrix.
 
     """
     sds_flat = []
@@ -213,7 +200,24 @@ def _sort_shocks_sdcorr(optim_paras, params):
 
 
 def _sort_shocks_cov_chol(optim_paras, params):
-    raise NotImplementedError
+    """Sort shocks of the covariance matrix or the Cholesky factor.
+
+    To fit :func:`estimagic.optimization.utilities.cov_params_to_matrix` and
+    :func:`estimagic.optimization.utilties.chol_params_to_lower_triangular_matrix`
+    shocks have to be sorted like the lower triangular matrix or
+    :func:`np.tril_indices(dim)`.
+
+    """
+    lower_triangular_flat = []
+
+    for i, c_1 in enumerate(optim_paras["choices"]):
+        for c_2 in list(optim_paras["choices"])[: i + 1]:
+            if c_1 == c_2:
+                lower_triangular_flat.append(params.loc[f"var_{c_1}"])
+            else:
+                lower_triangular_flat.append(params.loc[f"cov_{c_1}_{c_2}"])
+
+    return lower_triangular_flat
 
 
 def _parse_measurement_errors(optim_paras, params):
@@ -233,14 +237,14 @@ def _parse_types(optim_paras, params):
     It is not explicitly enforced that all types have the same covariates, but it is
     implicitly enforced that the parameters form a valid matrix.
 
-    TODO: Is type covariates necessary?
+    TODO: Rewrite such that type parameters are passed and later matched to covariates.
 
     """
     n_choices = len(optim_paras["choices"])
 
     if "type_shift" in params.index:
-        types = infer_types(params)
-        n_types = len(types) + 1
+        n_types = _infer_number_of_types(params)
+        types = [f"type_{i}" for i in range(1, n_types + 1)]
         optim_paras["type_covariates"] = (
             params.loc[types[0]].sort_index().index.to_list()
         )
@@ -271,16 +275,42 @@ def _parse_types(optim_paras, params):
     return optim_paras
 
 
-def infer_types(params):
-    return sorted(
-        params.index.get_level_values(0)
-        .str.extract(r"(\btype_[0-9]+\b)")[0]
-        .dropna()
-        .unique()
+def _infer_number_of_types(params):
+    """Infer the number of types from parameters.
+
+    Examples
+    --------
+    >>> params = pd.DataFrame(index=["type_3", "type_2"])
+    >>> _infer_number_of_types(params)
+    3
+    >>> params = pd.DataFrame(index=["type_2", "type_3_asds", "type_423_"])
+    >>> _infer_number_of_types(params)
+    2
+
+    """
+    return (
+        len(
+            params.index.get_level_values(0)
+            .str.extract(r"(\btype_[0-9]+\b)", expand=False)
+            .dropna()
+            .unique()
+        )
+        + 1
     )
 
 
 def _infer_choices_with_experience(params, options):
+    """Infer choices with experiences.
+
+    Example
+    -------
+    >>> options = {"covariates": {"a": "exp_white_collar + exp_a", "b": "exp_b >= 2"}}
+    >>> index = pd.MultiIndex.from_product([["category"], ["a", "b"]])
+    >>> params = pd.Series(index=index)
+    >>> _infer_choices_with_experience(params, options)
+    ['a', 'b', 'white_collar']
+
+    """
     covariates = options["covariates"]
     parameters = params.index.get_level_values(1)
 
@@ -288,17 +318,26 @@ def _infer_choices_with_experience(params, options):
 
     matches = []
     for param in parameters:
-        matches += re.findall(r"exp_([A-Za-z]*)", str(param))
+        matches += re.findall(r"\bexp_([A-Za-z_]+)\b", str(param))
     for cov in used_covariates:
-        matches += re.findall(r"exp_([A-Za-z]*)", covariates[cov])
+        matches += re.findall(r"\bexp_([A-Za-z_]+)\b", covariates[cov])
 
     return sorted(set(matches))
 
 
 def _infer_choices_with_prefix(params, prefix):
-    return (
+    """Infer choices with prefix.
+
+    Example
+    -------
+    >>> params = pd.Series(index=["wage_b", "wage_white_collar", "wage_a", "wage_a"])
+    >>> _infer_choices_with_prefix(params, "wage")
+    ['a', 'b', 'white_collar']
+
+    """
+    return sorted(
         params.index.get_level_values(0)
-        .str.extract(fr"{prefix}([A-Za-z]+)", expand=False)
+        .str.extract(fr"\b{prefix}_([A-Za-z_]+)\b", expand=False)
         .dropna()
         .unique()
     )
@@ -367,7 +406,7 @@ def _parse_lagged_choices(optim_paras, options, params):
     # in covariates and filters or params.
     if n_lagged_choices > n_lc_params or undefined_lags:
         warnings.warn(
-            "The distribution of initial lagged choices is insufficient specified in "
+            "The distribution of initial lagged choices is insufficiently specified in "
             "params. This model cannot be used for simulation, only for estimation.",
             category=UserWarning,
         )

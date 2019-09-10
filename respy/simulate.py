@@ -21,8 +21,8 @@ def get_simulate_func(params, options):
     """Get the simulation function.
 
     Return :func:`simulate` where all arguments except the parameter vector are fixed
-    with :func:`functools.partial`. Thus the function can be directly passed into an
-    optimizer for estimation with simulated method of moments.
+    with :func:`functools.partial`. Thus, the function can be directly passed into an
+    optimizer for estimation with simulated method of moments or other techniques.
 
     Parameters
     ----------
@@ -69,9 +69,22 @@ def simulate(params, base_draws_sim, base_draws_wage, state_space, options):
     Parameters
     ----------
     params : pandas.DataFrame or pandas.Series
-        DataFrame or Series containing parameters.
+        Contains parameters.
+    base_draws_sim : np.ndarray
+        Array with shape (n_periods, n_individuals, n_choices) to provide a unique set
+        of shocks for each individual in each period.
+    base_draws_wage : np.ndarray
+        Array with shape (n_periods, n_individuals, n_choices) to provide a unique set
+        of wage measurement errors for each individual in each period.
+    state_space : :class:`~respy.state_space.StateSpace`
+        State space of the model.
     options : dict
         Dictionary containing model options.
+
+    Returns
+    -------
+    simulated_data : pandas.DataFrame
+        DataFrame of simulated individuals.
 
     """
     optim_paras, options = process_params_and_options(params, options)
@@ -80,40 +93,27 @@ def simulate(params, base_draws_sim, base_draws_wage, state_space, options):
 
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
-    simulated_data = simulate_data(
+    simulated_data = _simulate_data(
         state_space, base_draws_sim, base_draws_wage, optim_paras, options
     )
 
     return simulated_data
 
 
-def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, options):
+def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, options):
     """Simulate a data set.
 
-    At the beginning, agents are initialized with zero experience in occupations and
-    random values for years of education, lagged choices and types. Then, each simulated
-    agent in each period is paired with its corresponding state in the state space. We
-    recalculate utilities for each choice as the agents experience different shocks in
-    the simulation. In the end, observed and unobserved information is recorded in the
-    simulated dataset.
-
-    Parameters
-    ----------
-    state_space : :class:`~respy.state_space.StateSpace`
-        Class of state space.
-    base_draws_sim : numpy.ndarray
-        Array with shape (n_periods, n_agents_sim, n_choices).
-    base_draws_wage : numpy.ndarray
-        Array with shape (n_periods, n_agents_sim, n_choices).
-    optim_paras : dict
-        Parameters affected by optimization.
-    options : dict
-        Dictionary containing model options.
+    At the beginning, individuals are initialized with zero experience in occupations
+    and random values for years of education, lagged choices and types. Then, each
+    simulated agent in each period is paired with its corresponding state in the state
+    space. We recalculate utilities for each choice as the individuals experience
+    different shocks in the simulation. In the end, observed and unobserved information
+    is recorded in a DataFrame.
 
     Returns
     -------
     simulated_data : pandas.DataFrame
-        Dataset of simulated agents.
+        Dataset of simulated individuals.
 
     """
     n_choices = len(optim_paras["choices"])
@@ -280,7 +280,34 @@ def _get_random_initial_experience(choice, optim_paras, options):
 
 
 def _get_random_lagged_choices(states_df, optim_paras, options, lag):
-    """Get random, initial levels of lagged choices for simulated agents."""
+    """Get random, initial levels of lagged choices for simulated agents.
+
+    For a given lagged choice, compute the covariates. Then, calculate the probabilities
+    for each choice being the lagged choice. At last, take the probabilities to draw for
+    each individual the lagged choice.
+
+    Note that lagged choices are added to ``states_df`` in-place so that later lagged
+    choices can be conditioned on earlier lagged choices. E.g., having ``lagged_choice_2
+    == "edu"`` makes ``lagged_choice_1 == "edu"`` more likely.
+
+    Parameters
+    ----------
+    states_df : pandas.DataFrame
+        DataFrame containing the period, initial experiences and previous lagged
+        choices, but not types.
+    optim_paras : dict
+        Dictionary of model parameters.
+    options : dict
+        Dictionary of model options.
+    lag : int
+        Number of lag.
+
+    Returns
+    -------
+    choices : np.ndarray
+        Array with shape (n_individuals,) containing lagged choices.
+
+    """
     covariates_df = create_base_covariates(
         states_df, options["covariates"], raise_errors=False
     )
@@ -303,14 +330,14 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
 
     np.random.seed(options["simulation_seed"])
 
-    choices = _random_choice(len(optim_paras["choices"]), probabilities)
+    lagged_choices = _random_choice(len(optim_paras["choices"]), probabilities)
 
     # Add lagged choices to DataFrame and convert them to labels.
-    states_df[f"lagged_choice_{lag}"] = pd.Series(choices).replace(
+    states_df[f"lagged_choice_{lag}"] = pd.Series(lagged_choices).replace(
         dict(enumerate(optim_paras["choices"]))
     )
 
-    return choices
+    return lagged_choices
 
 
 @guvectorize(

@@ -236,8 +236,7 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     Parameters
     ----------
     states : pandas.DataFrame
-        DataFrame with shape (n_states, n_choices_w_exp + 3) containing period,
-        experiences, choice_lagged and type of each state.
+        DataFrame with some, not all state space dimensions like period, experiences.
     covariates_spec : dict
         Keys represent covariates and values are strings passed to ``df.eval``.
     raise_errors : bool
@@ -249,6 +248,11 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     -------
     covariates : pandas.DataFrame
         DataFrame with shape (n_states, n_covariates).
+
+    Raises
+    ------
+    pd.core.computation.ops.UndefinedVariableError
+        If a necessary variable is not found in the data.
 
     """
     covariates = states.copy()

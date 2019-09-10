@@ -16,8 +16,8 @@ class StateSpace:
 
     Parameters
     ----------
-    params : pandas.Series or pandas.DataFrame
-        Contains parameters affected by optimization.
+    optim_paras : dict
+        Dictionary containing model parameters.
     options : dict
         Dictionary containing optimization independent model options.
 

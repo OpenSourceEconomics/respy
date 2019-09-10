@@ -214,98 +214,6 @@ def log_like_obs(
     return contribs
 
 
-@guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
-    "() -> ()",
-    nopython=True,
-    target="parallel",
-)
-def simulate_log_probability_of_individuals_observed_choice(
-    wages,
-    nonpec,
-    continuation_values,
-    draws,
-    delta,
-    is_inadmissible,
-    choice,
-    tau,
-    log_prob_choice,
-):
-    """Simulate the probability of observing the agent's choice.
-
-    The probability is simulated by iterating over a distribution of unobservables.
-    First, the utility of each choice is computed. Then, the probability of observing
-    the choice of the agent given the maximum utility from all choices is computed.
-
-    Parameters
-    ----------
-    wages : numpy.ndarray
-        Array with shape (n_choices,).
-    nonpec : numpy.ndarray
-        Array with shape (n_choices,).
-    continuation_values : numpy.ndarray
-        Array with shape (n_choices,)
-    draws : numpy.ndarray
-        Array with shape (n_draws, n_choices)
-    delta : float
-        Discount rate.
-    is_inadmissible: numpy.ndarray
-        Array with shape (n_choices,) containing an indicator for each choice whether
-        the following state is inadmissible.
-    choice : int
-        Choice of the agent.
-    tau : float
-        Smoothing parameter for choice probabilities.
-
-    Returns
-    -------
-    log_prob_choice : float
-        Smoothed log probability of choice.
-
-    """
-    n_draws, n_choices = draws.shape
-
-    value_functions = np.zeros((n_choices, n_draws))
-
-    prob_choice = 0.0
-
-    for i in range(n_draws):
-
-        max_value_functions = 0.0
-
-        for j in range(n_choices):
-            value_function, _ = aggregate_keane_wolpin_utility(
-                wages[j],
-                nonpec[j],
-                continuation_values[j],
-                draws[i, j],
-                delta,
-                is_inadmissible[j],
-            )
-
-            value_functions[j, i] = value_function
-
-            if value_function > max_value_functions:
-                max_value_functions = value_function
-
-        sum_smooth_values = 0.0
-
-        for j in range(n_choices):
-            val_exp = np.exp((value_functions[j, i] - max_value_functions) / tau)
-
-            val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
-
-            value_functions[j, i] = val_clipped
-            sum_smooth_values += val_clipped
-
-        prob_choice += value_functions[choice, i] / sum_smooth_values
-
-    prob_choice /= n_draws
-
-    log_prob_choice[0] = np.log(prob_choice)
-
-
 def _internal_log_like_obs(
     state_space,
     choices,
@@ -420,6 +328,98 @@ def _internal_log_like_obs(
     contribs = np.clip(contribs, -HUGE_FLOAT, HUGE_FLOAT)
 
     return contribs
+
+
+@guvectorize(
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
+    "() -> ()",
+    nopython=True,
+    target="parallel",
+)
+def simulate_log_probability_of_individuals_observed_choice(
+    wages,
+    nonpec,
+    continuation_values,
+    draws,
+    delta,
+    is_inadmissible,
+    choice,
+    tau,
+    log_prob_choice,
+):
+    """Simulate the probability of observing the agent's choice.
+
+    The probability is simulated by iterating over a distribution of unobservables.
+    First, the utility of each choice is computed. Then, the probability of observing
+    the choice of the agent given the maximum utility from all choices is computed.
+
+    Parameters
+    ----------
+    wages : numpy.ndarray
+        Array with shape (n_choices,).
+    nonpec : numpy.ndarray
+        Array with shape (n_choices,).
+    continuation_values : numpy.ndarray
+        Array with shape (n_choices,)
+    draws : numpy.ndarray
+        Array with shape (n_draws, n_choices)
+    delta : float
+        Discount rate.
+    is_inadmissible: numpy.ndarray
+        Array with shape (n_choices,) containing an indicator for each choice whether
+        the following state is inadmissible.
+    choice : int
+        Choice of the agent.
+    tau : float
+        Smoothing parameter for choice probabilities.
+
+    Returns
+    -------
+    log_prob_choice : float
+        Smoothed log probability of choice.
+
+    """
+    n_draws, n_choices = draws.shape
+
+    value_functions = np.zeros((n_choices, n_draws))
+
+    prob_choice = 0.0
+
+    for i in range(n_draws):
+
+        max_value_functions = 0.0
+
+        for j in range(n_choices):
+            value_function, _ = aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpec[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
+
+            value_functions[j, i] = value_function
+
+            if value_function > max_value_functions:
+                max_value_functions = value_function
+
+        sum_smooth_values = 0.0
+
+        for j in range(n_choices):
+            val_exp = np.exp((value_functions[j, i] - max_value_functions) / tau)
+
+            val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
+
+            value_functions[j, i] = val_clipped
+            sum_smooth_values += val_clipped
+
+        prob_choice += value_functions[choice, i] / sum_smooth_values
+
+    prob_choice /= n_draws
+
+    log_prob_choice[0] = np.log(prob_choice)
 
 
 def _convert_choice_variables_from_categorical_to_codes(df, options):
