@@ -36,9 +36,13 @@ def _is_nonnegative_integer(x):
 
 def check_model_solution(optim_paras, options, state_space):
     # Distribute class attributes
-    edu_start = optim_paras["choices"]["edu"]["start"]
-    n_initial_exp_edu = len(edu_start)
-    edu_start_max = max(edu_start)
+    choices = optim_paras["choices"]
+    max_initial_experience = np.array(
+        [choices[choice]["start"].max() for choice in optim_paras["choices_w_exp"]]
+    )
+    n_initial_exp_comb = np.prod(
+        [choices[choice]["start"].shape[0] for choice in optim_paras["choices_w_exp"]]
+    )
     n_periods = options["n_periods"]
     n_types = optim_paras["n_types"]
     n_choices_w_exp = len(optim_paras["choices_w_exp"])
@@ -49,15 +53,13 @@ def check_model_solution(optim_paras, options, state_space):
     # The sum of years of experiences cannot be larger than constraint time.
     assert np.all(
         state_space.states[:, 1 : n_choices_w_exp + 1].sum(axis=1)
-        <= (state_space.states[:, 0] + edu_start_max)
+        <= (state_space.states[:, 0] + max_initial_experience.sum())
     )
 
     # Choice experience cannot exceed the time frame.
     for choice in optim_paras["choices_w_exp"]:
-        idx = list(optim_paras["choices"]).index(choice) + 1
-        assert np.all(
-            state_space.states[:, idx] <= optim_paras["choices"][choice]["max"]
-        )
+        idx = list(choices).index(choice) + 1
+        assert np.all(state_space.states[:, idx] <= choices[choice]["max"])
 
     # Lagged choices are always in ``range(n_choices)``.
     if optim_paras["n_lagged_choices"]:
@@ -69,7 +71,7 @@ def check_model_solution(optim_paras, options, state_space):
                 + optim_paras["n_lagged_choices"]
                 + 1,
             ],
-            range(len(optim_paras["choices"])),
+            range(len(choices)),
         ).all()
 
     # States and covariates have finite and nonnegative values.
@@ -81,7 +83,9 @@ def check_model_solution(optim_paras, options, state_space):
     assert not pd.DataFrame(state_space.states).duplicated().any()
 
     # Check the number of states in the first time period.
-    n_states_start = n_types * n_initial_exp_edu * (optim_paras["n_lagged_choices"] + 1)
+    n_states_start = (
+        n_types * n_initial_exp_comb * (optim_paras["n_lagged_choices"] + 1)
+    )
     assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
     assert np.sum(state_space.indexer[0] >= 0) == n_states_start
 

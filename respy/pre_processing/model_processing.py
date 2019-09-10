@@ -90,7 +90,7 @@ def _parse_choices(optim_paras, params, options):
     choices_w_exp_fuzzy = set(_infer_choices_with_experience(params, options))
     choices_w_wage = set(_infer_choices_with_prefix(params, "wage"))
     choices_w_nonpec = set(_infer_choices_with_prefix(params, "nonpec"))
-    choices_w_exp_wo_wage = choices_w_exp_fuzzy & choices_w_nonpec
+    choices_w_exp_wo_wage = (choices_w_exp_fuzzy & choices_w_nonpec) - choices_w_wage
     choices_wo_exp_wo_wage = choices_w_nonpec - choices_w_exp_fuzzy
 
     optim_paras["choices_w_wage"] = sorted(choices_w_wage)

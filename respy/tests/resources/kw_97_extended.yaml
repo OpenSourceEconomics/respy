@@ -23,16 +23,16 @@ core_state_space_filters:
   - period == 0 and lagged_choice_1 == '{k}'
 covariates:
   not_exp_white_collar_lagged: exp_white_collar > 0 and lagged_choice_1 != 'white_collar'
-  not_exp_b_lagged: exp_blue_collar > 0 and lagged_choice_1 != 'blue_collar'
+  not_exp_blue_collar_lagged: exp_blue_collar > 0 and lagged_choice_1 != 'blue_collar'
   work_white_collar_lagged: lagged_choice_1 == 'white_collar'
-  work_b_lagged: lagged_choice_1 == 'blue_collar'
+  work_blue_collar_lagged: lagged_choice_1 == 'blue_collar'
   school_lagged: lagged_choice_1 == 'school'
-  not_any_exp_a: exp_white_collar == 0
-  not_any_exp_b: exp_blue_collar == 0
-  not_any_exp_mil: exp_military == 0
-  any_exp_a: exp_white_collar > 0
-  any_exp_b: exp_blue_collar > 0
-  any_exp_mil: exp_military > 0
+  not_any_exp_white_collar: exp_white_collar == 0
+  not_any_exp_blue_collar: exp_blue_collar == 0
+  not_any_exp_military: exp_military == 0
+  any_exp_white_collar: exp_white_collar > 0
+  any_exp_blue_collar: exp_blue_collar > 0
+  any_exp_military: exp_military > 0
   hs_graduate: exp_school >= 12
   co_graduate: exp_school >= 16
   is_return_not_high_school: ~school_lagged and ~hs_graduate
@@ -42,8 +42,8 @@ covariates:
   is_adult: 5 <= period
   constant: "1"
   exp_white_collar_square: exp_white_collar ** 2 / 100
-  exp_b_square: exp_blue_collar ** 2 / 100
-  exp_mil_square: exp_military ** 2 / 100
-  mil_dropout: exp_military == 1
+  exp_blue_collar_square: exp_blue_collar ** 2 / 100
+  exp_military_square: exp_military ** 2 / 100
+  military_dropout: exp_military == 1
   up_to_nine_years_school: exp_school <= 9
   at_least_ten_years_school: 10 <= exp_school

@@ -4,7 +4,7 @@ wage_white_collar,constant,8.937,log of rental price if the base skill endowment
 wage_white_collar,exp_school,0.07,linear return to an additional year of schooling (wage)
 wage_white_collar,exp_white_collar,0.027,"return to experience, same sector, linear (wage)"
 wage_white_collar,exp_white_collar_square,-0.0429,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_white_collar,exp_blu_collar,0.0225,"return to experience, other civilian sector, linear (wage)"
+wage_white_collar,exp_blue_collar,0.0225,"return to experience, other civilian sector, linear (wage)"
 wage_white_collar,exp_military,0.0131,return to mil experience
 wage_white_collar,hs_graduate,-0.0036,skill premium of having finished high school (wage)
 wage_white_collar,co_graduate,0.0023,skill premium of having finished college (wage)

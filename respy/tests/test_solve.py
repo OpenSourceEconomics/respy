@@ -148,8 +148,8 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
     # Create old state space arguments.
     n_periods = options["n_periods"]
     n_types = optim_paras["n_types"]
-    edu_max = optim_paras["choices"]["edu"]["max"]
-    edu_starts = optim_paras["choices"]["edu"]["start"]
+    edu_max = optim_paras["choices"]["school"]["max"]
+    edu_starts = optim_paras["choices"]["school"]["start"]
 
     # Get states and indexer from old state space.
     if model_or_seed == "kw_97_base":

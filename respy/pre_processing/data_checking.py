@@ -96,7 +96,6 @@ def check_simulated_data(optim_paras, df):
     # Distribute class attributes
     n_periods = optim_paras["n_periods"]
     n_types = optim_paras["n_types"]
-    edu_max = optim_paras["choices"]["edu"]["max"]  # noqa: F841
 
     # Run all tests available for the estimation data.
     check_estimation_data(df, optim_paras)
@@ -114,33 +113,3 @@ def check_simulated_data(optim_paras, df):
 
     # Check that there are no missing observations and we follow an agent each period.
     df.groupby("Identifier").Period.nunique().eq(n_periods).all()
-
-    # If agents are myopic, we can test the equality of ex-post rewards and total
-    # values.
-    if df.Discount_Rate.eq(0).all():
-        for choice in optim_paras["choices"]:
-            if choice in optim_paras["choices_w_wage"]:
-                fu_lab = f"Flow_Utility_{choice}"
-                nonpec_lab = f"Nonpecuniary_Reward_{choice}"
-
-                df[fu_lab] = df.Wage + df[nonpec_lab]
-
-                is_working = "Choice == @choice"
-                value_function = df[f"Value_Function_{choice}"].query(is_working)
-                flow_utility = df[fu_lab].query(is_working)
-
-                np.testing.assert_array_almost_equal(value_function, flow_utility)
-
-            else:
-                fu_lab = f"Flow_Utility_{choice}"
-                nonpec_lab = f"Nonpecuniary_Reward_{choice}"
-                shock_rew = f"Shock_Reward_{choice}"
-
-                df[fu_lab] = df[nonpec_lab] + df[shock_rew]
-
-                # The equality does not hold if a state is inadmissible.
-                not_max_education = "Years_Schooling != @edu_max"
-                value_function = df[f"Value_Function_{choice}"].query(not_max_education)
-                flow_utility = df[fu_lab].query(not_max_education)
-
-                np.testing.assert_array_almost_equal(value_function, flow_utility)
