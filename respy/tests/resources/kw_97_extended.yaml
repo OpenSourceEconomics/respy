@@ -1,9 +1,3 @@
-choices:
-  edu:
-    max: 20
-    start: [7, 8, 9, 10, 11]
-    lagged: [0, 0, 0, 1, 1]
-    share: [0.0095, 0.0422, 0.2017, 0.6715, 0.075]
 estimation_draws: 200
 estimation_seed: 500
 estimation_tau: 500
@@ -16,42 +10,40 @@ solution_seed: 456
 core_state_space_filters:
   # In periods > 0, if agents accumulated experience only in one choice, lagged choice
   # cannot be different.
-  - "period > 0 and exp_{i} == period and lagged_choice_1 != '{i}'"
+  - period > 0 and exp_{i} == period and lagged_choice_1 != '{i}'
   # In periods > 0, if agents always accumulated experience, lagged choice cannot be
   # non-experience choice.
-  - "period > 0 and exp_a + exp_b + exp_mil + exp_edu == period and lagged_choice_1 == '{j}'"
+  - period > 0 and exp_white_collar + exp_blue_collar + exp_military + exp_school == period and lagged_choice_1 == '{j}'
   # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
   # be school.
-  - "period > 0 and lagged_choice_1 == 'edu' and exp_edu == 0"
+  - period > 0 and lagged_choice_1 == 'school' and exp_school == 0
   # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
-  - "lagged_choice_1 == '{k}' and exp_{k} == 0"
+  - lagged_choice_1 == '{k}' and exp_{k} == 0
   # In period 0, agents cannot choose occupation a or b or mil.
-  - "period == 0 and lagged_choice_1 == '{k}'"
+  - period == 0 and lagged_choice_1 == '{k}'
 covariates:
-  "not_exp_a_lagged": "exp_a > 0 and lagged_choice_1 != 'a'"
-  "not_exp_b_lagged": "exp_b > 0 and lagged_choice_1 != 'b'"
-  "work_a_lagged": "lagged_choice_1 == 'a'"
-  "work_b_lagged": "lagged_choice_1 == 'b'"
-  "edu_lagged": "lagged_choice_1 == 'edu'"
-  "not_any_exp_a": "exp_a == 0"
-  "not_any_exp_b": "exp_b == 0"
-  "not_any_exp_mil": "exp_mil == 0"
-  "any_exp_a": "exp_a > 0"
-  "any_exp_b": "exp_b > 0"
-  "any_exp_mil": "exp_mil > 0"
-  "hs_graduate": "exp_edu >= 12"
-  "co_graduate": "exp_edu >= 16"
-  "is_return_not_high_school": "~edu_lagged and ~hs_graduate"
-  "is_return_high_school": "~edu_lagged and hs_graduate"
-  "is_minor": "period < 2"
-  "is_young_adult": "2 <= period <= 4"
-  "is_adult": "5 <= period"
-  "constant": "1"
-  "exp_a_square": "exp_a ** 2 / 100"
-  "exp_b_square": "exp_b ** 2 / 100"
-  "exp_mil_square": "exp_mil ** 2 / 100"
-  "mil_dropout": "exp_mil == 1"
-  "up_to_nine_years_edu": "exp_edu <= 9"
-  "at_least_ten_years_edu": "10 <= exp_edu"
-inadmissible_states:
-  edu: "exp_edu == @max_exp_edu"
+  not_exp_white_collar_lagged: exp_white_collar > 0 and lagged_choice_1 != 'white_collar'
+  not_exp_blue_collar_lagged: exp_blue_collar > 0 and lagged_choice_1 != 'blue_collar'
+  work_white_collar_lagged: lagged_choice_1 == 'white_collar'
+  work_blue_collar_lagged: lagged_choice_1 == 'blue_collar'
+  school_lagged: lagged_choice_1 == 'school'
+  not_any_exp_white_collar: exp_white_collar == 0
+  not_any_exp_blue_collar: exp_blue_collar == 0
+  not_any_exp_military: exp_military == 0
+  any_exp_white_collar: exp_white_collar > 0
+  any_exp_blue_collar: exp_blue_collar > 0
+  any_exp_military: exp_military > 0
+  hs_graduate: exp_school >= 12
+  co_graduate: exp_school >= 16
+  is_return_not_high_school: ~school_lagged and ~hs_graduate
+  is_return_high_school: ~school_lagged and hs_graduate
+  is_minor: period < 2
+  is_young_adult: 2 <= period <= 4
+  is_adult: 5 <= period
+  constant: "1"
+  exp_white_collar_square: exp_white_collar ** 2 / 100
+  exp_blue_collar_square: exp_blue_collar ** 2 / 100
+  exp_military_square: exp_military ** 2 / 100
+  military_dropout: exp_military == 1
+  up_to_nine_years_school: exp_school <= 9
+  at_least_ten_years_school: 10 <= exp_school
