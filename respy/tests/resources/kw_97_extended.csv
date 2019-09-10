@@ -1,109 +1,109 @@
-category,name,value,lower,upper,comment
-delta,delta,0.9363,0,1,discount factor
-wage_a,constant,8.937,,,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_a,exp_edu,0.07,,,linear return to an additional year of schooling (wage)
-wage_a,exp_a,0.027,,,"return to experience, same sector, linear (wage)"
-wage_a,exp_a_square,-0.0429,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_a,exp_b,0.0225,,,"return to experience, other civilian sector, linear (wage)"
-wage_a,exp_mil,0.0131,,,return to mil experience
-wage_a,hs_graduate,-0.0036,,,skill premium of having finished high school (wage)
-wage_a,co_graduate,0.0023,,,skill premium of having finished college (wage)
-wage_a,period,0.0102,,,linear age effect (wage)
-wage_a,is_minor,-0.15,,,effect of being a minor (wage)
-wage_a,any_exp_a,0.1885,,,gain of having worked in the same occupation at least once before (wage)
-wage_a,work_a_lagged,0.3054,,,gain of remaining in the same occupation as previous period (wage)
-nonpec_a,constant,-2543,,,constant (non pecuniary)
-nonpec_a,not_exp_a_lagged,-1182,,,reward of switching to a from other occupation (non pecuniary)
-nonpec_a,not_any_exp_a,-2759,,,reward of working in a for the first time (non pecuniary)
-nonpec_a,hs_graduate,804,,,return to high school degree (non pecuniary)
-nonpec_a,co_graduate,2005,,,return to college degree (non pecuniary)
-nonpec_a,mil_dropout,-1525,,,effect of leaving the military early (after one year)
-wage_b,constant,8.8811,,,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_b,exp_edu,0.024,,,linear return to an additional year of schooling (wage)
-wage_b,exp_a,0.0191,,,"return to experience, other civilian sector, linear (wage)"
-wage_b,exp_b,0.0464,,,"return to experience, same sector, linear (wage)"
-wage_b,exp_b_square,-0.0759,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_b,exp_mil,0.0174,,,return to military experience
-wage_b,hs_graduate,0.0058,,,skill premium of having finished high school (wage)
-wage_b,co_graduate,0.0058,,,skill premium of having finished college (wage)
-wage_b,period,0.0114,,,linear age effect (wage)
-wage_b,is_minor,0.1433,,,effect of being a minor (wage)
-wage_b,any_exp_b,0.202,,,gain of having worked in the same occupation at least once before (wage)
-wage_b,work_b_lagged,0.0964,,,gain of remaining in the same occupation as previous period (wage)
-nonpec_b,constant,-3157,,,constant (non pecuniary)
-nonpec_b,not_exp_b_lagged,-1647,,,reward of switching to a from other occupation (non pecuniary)
-nonpec_b,not_any_exp_b,-494,,,reward of working in a for the first time (non pecuniary)
-nonpec_b,hs_graduate,804,,,return to high school degree (non pecuniary)
-nonpec_b,co_graduate,2005,,,return to college degree (non pecuniary)
-nonpec_b,mil_dropout,-1525,,,effect of leaving the military early (after one year)
-wage_mil,constant,8.54,,,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_mil,exp_edu,0.0582,,,linear return to an additional year of schooling (wage)
-wage_mil,exp_mil,0.0454,,,"return to experience, same sector, linear (wage)"
-wage_mil,exp_mil_square,-0.0479,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_mil,any_exp_mil,0.0753,,,return to having any military experience
-wage_mil,period,0.0106,,,linear age effect
-wage_mil,is_minor,-0.2539,,,effect of being a minor
-nonpec_mil,not_any_exp_mil,-560,,,reward of being in the military sector for the first time (non pecuniary)
-nonpec_mil,hs_graduate,804,,,return to high school degree (non pecuniary)
-nonpec_mil,co_graduate,2005,,,return to college degree (non pecuniary)
-nonpec_edu,constant,11031,,,consumption value of school attendance for type 1
-nonpec_edu,is_return_not_high_school,-10700,,,reward for going back to college
-nonpec_edu,is_return_high_school,-23283,,,reward for going back to high school
-nonpec_edu,period,-1502,,,linear age effect
-nonpec_edu,is_minor,3632,,,effect of being a minor
-nonpec_edu,hs_graduate,-3364,,,return to high school degree (non pecuniary)
-nonpec_edu,co_graduate,-5025,,,return to college degree (non pecuniary)
-nonpec_edu,mil_dropout,-1525,,,effect of leaving the military early (after one year)
-nonpec_home,constant,20242,,,mean value of non-market alternative for type 1
-nonpec_home,is_young_adult,-1027,,,additional value of staying home if aged 18-20
-nonpec_home,is_adult,-1805,,,additional value of staying home if 21 or older
-nonpec_home,hs_graduate,804,,,return to high school degree (non pecuniary)
-nonpec_home,co_graduate,2005,,,return to college degree (non pecuniary)
-nonpec_home,mil_dropout,-1525,,,effect of leaving the military early (after one year)
-shocks_sdcorr,sd_a,0.3864,0,,standard deviation of the shock in occupation a
-shocks_sdcorr,sd_b,0.3823,0,,standard deviation of the shock in occupation b
-shocks_sdcorr,sd_mil,0.2426,0,,standard deviation of the shock in the military sector
-shocks_sdcorr,sd_edu,12821,0,,standard deviation of the shocks in the education sector
-shocks_sdcorr,sd_home,9350,0,,standard deviation of the shock in the home sector
-shocks_sdcorr,corr_b_a,0.1226,,,correlation between the shocks in occupation a and b
-shocks_sdcorr,corr_mil_a,0,,,correlation of the shocks in the military sector and occupation a
-shocks_sdcorr,corr_mil_b,0,,,correlation of the shocks in the military sector and occupation b
-shocks_sdcorr,corr_edu_a,0,,,correlation between the shocks in the education sector and occupation a
-shocks_sdcorr,corr_edu_b,0,,,correlation between the shocks in the education sector and occupation b
-shocks_sdcorr,corr_edu_mil,0,,,correlation of the shocks in the military sector and education
-shocks_sdcorr,corr_home_a,0,,,correlation of the shocks in the home sector and occupation a
-shocks_sdcorr,corr_home_b,0,,,correlation of the shocks in the home sector and occupation b
-shocks_sdcorr,corr_home_mil,0,,,correlation of the shocks in the military sector and home
-shocks_sdcorr,corr_home_edu,0,,,correlation of the shocks in the home and the education sector
-meas_error,sd_a,0.2415,0,,SD of the measurement error in wages in occupation a
-meas_error,sd_b,0.1942,0,,SD of the measurement error in wages occupation b
-meas_error,sd_mil,0.2063,0,,SD of the measurement error in wages in military sector
-type_shift,type_2_in_a,-0.0872,,,deviation for type 2 from type 1 in a
-type_shift,type_2_in_b,0.305,,,deviation for type 2 from type 1 in b
-type_shift,type_2_in_mil,0,,,deviation for type 2 from type 1 in mil
-type_shift,type_2_in_edu,-5346,,,deviation for type 2 from type 1 in edu
-type_shift,type_2_in_home,-2135,,,deviation for type 2 from type 1 in home
-type_shift,type_3_in_a,-0.6091,,,deviation for type 3 from type 1 in a
-type_shift,type_3_in_b,-0.2118,,,deviation for type 3 from type 1 in b
-type_shift,type_3_in_mil,0,,,deviation for type 3 from type 1 in mil
-type_shift,type_3_in_edu,-8900,,,deviation for type 3 from type 1 in edu
-type_shift,type_3_in_home,-14678,,,deviation for type 3 from type 1 in home
-type_shift,type_4_in_a,-0.52,,,deviation for type 4 from type 1 in a
-type_shift,type_4_in_b,-0.0547,,,deviation for type 4 from type 1 in b
-type_shift,type_4_in_mil,0,,,deviation for type 4 from type 1 in mil
-type_shift,type_4_in_edu,-1469,,,deviation for type 4 from type 1 in edu
-type_shift,type_4_in_home,-2912,,,deviation for type 4 from type 1 in home
-type_2,up_to_nine_years_edu,0.1987,,,effect of up to nine years of schooling on probability of being type 2
-type_2,at_least_ten_years_edu,0.2335,,,effect of at least ten years of schooling on probability of being type 2
-type_3,up_to_nine_years_edu,0.4066,,,effect of up to nine years of schooling on probability of being type 3
-type_3,at_least_ten_years_edu,0.3734,,,effect of at least ten years of schooling on probability of being type 3
-type_4,up_to_nine_years_edu,0.3456,,,effect of up to nine years of schooling on probability of being type 4
-type_4,at_least_ten_years_edu,0.1588,,,effect of at least ten years of schooling on probability of being type 4
-lagged_choice_1_home,up_to_nine_years_edu,1,Probability that the first lagged choice is home given covariate up_to_nine_years_edu (simulation only)
-lagged_choice_1_edu,at_least_ten_years_edu,1,Probability that the first lagged choice is education given covariate at_least_ten_years_edu (simulation only)
-initial_exp_edu,7,0.0095,Probability that the initial level of education is 7
-initial_exp_edu,8,0.0422,Probability that the initial level of education is 8
-initial_exp_edu,9,0.2017,Probability that the initial level of education is 9
-initial_exp_edu,10,0.6715,Probability that the initial level of education is 10
-initial_exp_edu,11,0.075,Probability that the initial level of education is 11
-maximum_exp,edu,20,"Maximum level of experience for education (optional, reduces computation complexity)"
+category,name,value,comment
+delta,delta,0.9363,discount factor
+wage_white_collar,constant,8.937,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_white_collar,exp_school,0.07,linear return to an additional year of schooling (wage)
+wage_white_collar,exp_white_collar,0.027,"return to experience, same sector, linear (wage)"
+wage_white_collar,exp_white_collar_square,-0.0429,"return to experience, same sector, quadratic (divided by 100) (wage)"
+wage_white_collar,exp_blu_collar,0.0225,"return to experience, other civilian sector, linear (wage)"
+wage_white_collar,exp_military,0.0131,return to mil experience
+wage_white_collar,hs_graduate,-0.0036,skill premium of having finished high school (wage)
+wage_white_collar,co_graduate,0.0023,skill premium of having finished college (wage)
+wage_white_collar,period,0.0102,linear age effect (wage)
+wage_white_collar,is_minor,-0.15,effect of being a minor (wage)
+wage_white_collar,any_exp_white_collar,0.1885,gain of having worked in the same occupation at least once before (wage)
+wage_white_collar,work_white_collar_lagged,0.3054,gain of remaining in the same occupation as previous period (wage)
+nonpec_white_collar,constant,-2543,constant (non pecuniary)
+nonpec_white_collar,not_exp_white_collar_lagged,-1182,reward of switching to a from other occupation (non pecuniary)
+nonpec_white_collar,not_any_exp_white_collar,-2759,reward of working in a for the first time (non pecuniary)
+nonpec_white_collar,hs_graduate,804,return to high school degree (non pecuniary)
+nonpec_white_collar,co_graduate,2005,return to college degree (non pecuniary)
+nonpec_white_collar,military_dropout,-1525,effect of leaving the military early (after one year)
+wage_blue_collar,constant,8.8811,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_blue_collar,exp_school,0.024,linear return to an additional year of schooling (wage)
+wage_blue_collar,exp_white_collar,0.0191,"return to experience, other civilian sector, linear (wage)"
+wage_blue_collar,exp_blue_collar,0.0464,"return to experience, same sector, linear (wage)"
+wage_blue_collar,exp_blue_collar_square,-0.0759,"return to experience, same sector, quadratic (divided by 100) (wage)"
+wage_blue_collar,exp_military,0.0174,return to military experience
+wage_blue_collar,hs_graduate,0.0058,skill premium of having finished high school (wage)
+wage_blue_collar,co_graduate,0.0058,skill premium of having finished college (wage)
+wage_blue_collar,period,0.0114,linear age effect (wage)
+wage_blue_collar,is_minor,0.1433,effect of being a minor (wage)
+wage_blue_collar,any_exp_blue_collar,0.202,gain of having worked in the same occupation at least once before (wage)
+wage_blue_collar,work_blue_collar_lagged,0.0964,gain of remaining in the same occupation as previous period (wage)
+nonpec_blue_collar,constant,-3157,constant (non pecuniary)
+nonpec_blue_collar,not_exp_blue_collar_lagged,-1647,reward of switching to a from other occupation (non pecuniary)
+nonpec_blue_collar,not_any_exp_blue_collar,-494,reward of working in a for the first time (non pecuniary)
+nonpec_blue_collar,hs_graduate,804,return to high school degree (non pecuniary)
+nonpec_blue_collar,co_graduate,2005,return to college degree (non pecuniary)
+nonpec_blue_collar,military_dropout,-1525,effect of leaving the military early (after one year)
+wage_military,constant,8.54,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_military,exp_school,0.0582,linear return to an additional year of schooling (wage)
+wage_military,exp_military,0.0454,"return to experience, same sector, linear (wage)"
+wage_military,exp_military_square,-0.0479,"return to experience, same sector, quadratic (divided by 100) (wage)"
+wage_military,any_exp_military,0.0753,return to having any military experience
+wage_military,period,0.0106,linear age effect
+wage_military,is_minor,-0.2539,effect of being a minor
+nonpec_military,not_any_exp_military,-560,reward of being in the military sector for the first time (non pecuniary)
+nonpec_military,hs_graduate,804,return to high school degree (non pecuniary)
+nonpec_military,co_graduate,2005,return to college degree (non pecuniary)
+nonpec_school,constant,11031,consumption value of school attendance for type 1
+nonpec_school,is_return_not_high_school,-10700,reward for going back to college
+nonpec_school,is_return_high_school,-23283,reward for going back to high school
+nonpec_school,period,-1502,linear age effect
+nonpec_school,is_minor,3632,effect of being a minor
+nonpec_school,hs_graduate,-3364,return to high school degree (non pecuniary)
+nonpec_school,co_graduate,-5025,return to college degree (non pecuniary)
+nonpec_school,military_dropout,-1525,effect of leaving the military early (after one year)
+nonpec_home,constant,20242,mean value of non-market alternative for type 1
+nonpec_home,is_young_adult,-1027,additional value of staying home if aged 18-20
+nonpec_home,is_adult,-1805,additional value of staying home if 21 or older
+nonpec_home,hs_graduate,804,return to high school degree (non pecuniary)
+nonpec_home,co_graduate,2005,return to college degree (non pecuniary)
+nonpec_home,military_dropout,-1525,effect of leaving the military early (after one year)
+shocks_sdcorr,sd_white_collar,0.3864,standard deviation of the shock in occupation a
+shocks_sdcorr,sd_blue_collar,0.3823,standard deviation of the shock in occupation b
+shocks_sdcorr,sd_military,0.2426,standard deviation of the shock in the military sector
+shocks_sdcorr,sd_school,12821,standard deviation of the shocks in the education sector
+shocks_sdcorr,sd_home,9350,standard deviation of the shock in the home sector
+shocks_sdcorr,corr_blue_collar_white_collar,0.1226,correlation between the shocks in occupation a and b
+shocks_sdcorr,corr_military_white_collar,0,correlation of the shocks in the military sector and occupation a
+shocks_sdcorr,corr_military_blue_collar,0,correlation of the shocks in the military sector and occupation b
+shocks_sdcorr,corr_school_white_collar,0,correlation between the shocks in the education sector and occupation a
+shocks_sdcorr,corr_school_blue_collar,0,correlation between the shocks in the education sector and occupation b
+shocks_sdcorr,corr_school_military,0,correlation of the shocks in the military sector and education
+shocks_sdcorr,corr_home_white_collar,0,correlation of the shocks in the home sector and occupation a
+shocks_sdcorr,corr_home_blue_collar,0,correlation of the shocks in the home sector and occupation b
+shocks_sdcorr,corr_home_military,0,correlation of the shocks in the military sector and home
+shocks_sdcorr,corr_home_school,0,correlation of the shocks in the home and the education sector
+meas_error,sd_white_collar,0.2415,SD of the measurement error in wages in occupation a
+meas_error,sd_blue_collar,0.1942,SD of the measurement error in wages occupation b
+meas_error,sd_military,0.2063,SD of the measurement error in wages in military sector
+type_shift,type_2_in_white_collar,-0.0872,deviation for type 2 from type 1 in a
+type_shift,type_2_in_blue_collar,0.305,deviation for type 2 from type 1 in b
+type_shift,type_2_in_military,0,deviation for type 2 from type 1 in mil
+type_shift,type_2_in_school,-5346,deviation for type 2 from type 1 in edu
+type_shift,type_2_in_home,-2135,deviation for type 2 from type 1 in home
+type_shift,type_3_in_white_collar,-0.6091,deviation for type 3 from type 1 in a
+type_shift,type_3_in_blue_collar,-0.2118,deviation for type 3 from type 1 in b
+type_shift,type_3_in_military,0,deviation for type 3 from type 1 in mil
+type_shift,type_3_in_school,-8900,deviation for type 3 from type 1 in edu
+type_shift,type_3_in_home,-14678,deviation for type 3 from type 1 in home
+type_shift,type_4_in_white_collar,-0.52,deviation for type 4 from type 1 in a
+type_shift,type_4_in_blue_collar,-0.0547,deviation for type 4 from type 1 in b
+type_shift,type_4_in_military,0,deviation for type 4 from type 1 in mil
+type_shift,type_4_in_school,-1469,deviation for type 4 from type 1 in edu
+type_shift,type_4_in_home,-2912,deviation for type 4 from type 1 in home
+type_2,up_to_nine_years_school,0.1987,effect of up to nine years of schooling on probability of being type 2
+type_2,at_least_ten_years_school,0.2335,effect of at least ten years of schooling on probability of being type 2
+type_3,up_to_nine_years_school,0.4066,effect of up to nine years of schooling on probability of being type 3
+type_3,at_least_ten_years_school,0.3734,effect of at least ten years of schooling on probability of being type 3
+type_4,up_to_nine_years_school,0.3456,effect of up to nine years of schooling on probability of being type 4
+type_4,at_least_ten_years_school,0.1588,effect of at least ten years of schooling on probability of being type 4
+lagged_choice_1_home,up_to_nine_years_school,1,Probability that the first lagged choice is home given covariate up_to_nine_years_school (simulation only)
+lagged_choice_1_school,at_least_ten_years_school,1,Probability that the first lagged choice is education given covariate at_least_ten_years_school (simulation only)
+initial_exp_school,7,0.0095,Probability that the initial level of education is 7
+initial_exp_school,8,0.0422,Probability that the initial level of education is 8
+initial_exp_school,9,0.2017,Probability that the initial level of education is 9
+initial_exp_school,10,0.6715,Probability that the initial level of education is 10
+initial_exp_school,11,0.075,Probability that the initial level of education is 11
+maximum_exp,school,20,"Maximum level of experience for education (optional, reduces computation complexity)"

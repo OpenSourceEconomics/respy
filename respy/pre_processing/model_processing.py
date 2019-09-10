@@ -86,11 +86,12 @@ def _parse_choices(optim_paras, params, options):
     each group, we order alphabetically. Then, the order is applied to ``optim_paras``.
 
     """
-    choices_w_exp = set(_infer_choices_with_experience(params, options))
+    # Be careful with ``choices_w_exp_fuzzy`` as it contains some erroneous elements.
+    choices_w_exp_fuzzy = set(_infer_choices_with_experience(params, options))
     choices_w_wage = set(_infer_choices_with_prefix(params, "wage"))
     choices_w_nonpec = set(_infer_choices_with_prefix(params, "nonpec"))
-    choices_w_exp_wo_wage = choices_w_exp - choices_w_wage
-    choices_wo_exp_wo_wage = choices_w_nonpec - choices_w_exp
+    choices_w_exp_wo_wage = choices_w_exp_fuzzy & choices_w_nonpec
+    choices_wo_exp_wo_wage = choices_w_nonpec - choices_w_exp_fuzzy
 
     optim_paras["choices_w_wage"] = sorted(choices_w_wage)
     optim_paras["choices_w_exp"] = sorted(choices_w_wage) + sorted(
@@ -194,7 +195,16 @@ def _sort_shocks_sdcorr(optim_paras, params):
             if c_1 == c_2:
                 sds_flat.append(params.loc[f"sd_{c_1}"])
             else:
-                corrs_flat.append(params.loc[f"corr_{c_1}_{c_2}"])
+                # The order in which choices are mentioned in the labels is not clear.
+                # Check both combinations.
+                if f"corr_{c_1}_{c_2}" in params.index:
+                    corrs_flat.append(params.loc[f"corr_{c_1}_{c_2}"])
+                elif f"corr_{c_2}_{c_1}" in params.index:
+                    corrs_flat.append(params.loc[f"corr_{c_2}_{c_1}"])
+                else:
+                    raise ValueError(
+                        f"Shock matrix has no entry for choice {c_1} and {c_2}"
+                    )
 
     return sds_flat + corrs_flat
 
@@ -244,7 +254,7 @@ def _parse_types(optim_paras, params):
 
     if "type_shift" in params.index:
         n_types = _infer_number_of_types(params)
-        types = [f"type_{i}" for i in range(1, n_types + 1)]
+        types = [f"type_{i}" for i in range(2, n_types + 1)]
         optim_paras["type_covariates"] = (
             params.loc[types[0]].sort_index().index.to_list()
         )
