@@ -230,7 +230,7 @@ def create_type_covariates(df, optim_paras, options):
     return all_data.to_numpy()
 
 
-def create_base_covariates(states, covariates_spec):
+def create_base_covariates(states, covariates_spec, raise_errors=True):
     """Create set of covariates for each state.
 
     Parameters
@@ -240,6 +240,10 @@ def create_base_covariates(states, covariates_spec):
         experiences, choice_lagged and type of each state.
     covariates_spec : dict
         Keys represent covariates and values are strings passed to ``df.eval``.
+    raise_errors : bool
+        Whether to raise errors if a variable was not found. This option is necessary
+        for, e.g., :func:`~respy.simulate._get_random_lagged_choices` where not all
+        necessary variables exist and it is not clear how to exclude them easily.
 
     Returns
     -------
@@ -250,7 +254,13 @@ def create_base_covariates(states, covariates_spec):
     covariates = states.copy()
 
     for covariate, definition in covariates_spec.items():
-        covariates[covariate] = covariates.eval(definition)
+        try:
+            covariates[covariate] = covariates.eval(definition)
+        except pd.core.computation.ops.UndefinedVariableError as e:
+            if raise_errors:
+                raise e
+            else:
+                pass
 
     covariates = covariates.drop(columns=states.columns)
 

@@ -59,8 +59,6 @@ type_3,up_to_nine_years_edu,0.5015,,,effect of up to nine years of schooling on 
 type_3,at_least_ten_years_edu,0.4876,,,effect of at least ten years of schooling on probability of being type 3
 type_4,up_to_nine_years_edu,0.0838,,,effect of up to nine years of schooling on probability of being type 4
 type_4,at_least_ten_years_edu,0.0329,,,effect of at least ten years of schooling on probability of being type 4
-lagged_choice_1_home,up_to_nine_years_edu,1,Probability that the first lagged choice is home given covariate up_to_nine_years_edu (simulation only)
-lagged_choice_1_edu,at_least_ten_years_edu,1,Probability that the first lagged choice is education given covariate at_least_ten_years_edu (simulation only)
 initial_exp_edu,7,0.0095,Probability that the initial level of education is 7
 initial_exp_edu,8,0.0422,Probability that the initial level of education is 8
 initial_exp_edu,9,0.2017,Probability that the initial level of education is 9

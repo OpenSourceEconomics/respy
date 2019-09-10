@@ -145,11 +145,13 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
     """
     for choice in optim_paras["choices_w_exp"]:
         if f"initial_exp_{choice}" in params.index:
-            starts_and_shares = params.loc[f"initial_exp_{choice}"].sort_index()
-            starts = starts_and_shares.index.to_numpy().astype(np.uint8)
+            # Take starts and shares and convert index to numeric or sorting will fail.
+            # Maybe waiting on https://github.com/pandas-dev/pandas/pull/27237.
+            starts_and_shares = params.loc[f"initial_exp_{choice}"].copy()
+            starts_and_shares.index = starts_and_shares.index.astype(np.uint8)
+            starts_and_shares.sort_index(inplace=True)
+            starts = starts_and_shares.index.to_numpy()
             shares = starts_and_shares.to_numpy()
-            order = np.argsort(params.loc[f"initial_exp_{choice}"].index)
-            optim_paras["choices"][choice]["order"] = order
             if shares.sum() != 1:
                 warnings.warn(
                     f"The shares of initial experiences for choice '{choice}' do not "

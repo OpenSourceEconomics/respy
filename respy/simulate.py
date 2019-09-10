@@ -7,6 +7,7 @@ from numba import guvectorize
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_simulation
@@ -138,23 +139,21 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
-    # Create initial starting values for agents in simulation.
+    # Create initial experiences, lagged choices and types for agents in simulation.
     container = ()
     for choice in optim_paras["choices_w_exp"]:
         container += (_get_random_initial_experience(choice, optim_paras, options),)
 
-    if n_lagged_choices:
-        edu_idx = list(optim_paras["choices_w_exp"]).index("edu")
-        container += (
-            _get_random_lagged_choices(container[edu_idx], optim_paras, options),
-        )
-
-    states_wo_types = pd.DataFrame(
+    # Create a DataFrame to match columns to covariates. Is changed in-place.
+    states_df = pd.DataFrame(
         np.column_stack(container),
-        columns=[f"exp_{i}" for i in optim_paras["choices_w_exp"]]
-        + [f"lagged_choice_{i}" for i in range(1, n_lagged_choices + 1)],
+        columns=[f"exp_{i}" for i in optim_paras["choices_w_exp"]],
     ).assign(period=0)
-    container += (_get_random_types(states_wo_types, optim_paras, options),)
+
+    for lag in reversed(range(1, n_lagged_choices + 1)):
+        container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
+
+    container += (_get_random_types(states_df, optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
     current_states = np.column_stack(container).astype(np.uint8)
@@ -280,31 +279,38 @@ def _get_random_initial_experience(choice, optim_paras, options):
     return initial_experience
 
 
-def _get_random_lagged_choices(edu_start, optim_paras, options):
+def _get_random_lagged_choices(states_df, optim_paras, options, lag):
     """Get random, initial levels of lagged choices for simulated agents."""
+    covariates_df = create_base_covariates(
+        states_df, options["covariates"], raise_errors=False
+    )
+
+    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
+
+    probabilities = ()
+
+    for choice in optim_paras["choices"]:
+        lc = f"lagged_choice_{lag}_{choice}"
+        if lc in optim_paras:
+            labels = optim_paras[lc].index
+            prob = np.dot(all_data[labels], optim_paras[lc])
+        else:
+            prob = np.zeros(options["simulation_agents"])
+
+        probabilities += (prob,)
+
+    probabilities = np.column_stack(probabilities)
+
     np.random.seed(options["simulation_seed"])
 
-    choices = [
-        list(optim_paras["choices"]).index("edu"),
-        list(optim_paras["choices"]).index("home"),
-    ]
+    choices = _random_choice(len(optim_paras["choices"]), probabilities)
 
-    order = optim_paras["choices"]["edu"]["order"]
+    # Add lagged choices to DataFrame and convert them to labels.
+    states_df[f"lagged_choice_{lag}"] = pd.Series(choices).replace(
+        dict(enumerate(optim_paras["choices"]))
+    )
 
-    lagged_start = []
-    for i in range(options["simulation_agents"]):
-        idx = optim_paras["choices"]["edu"]["start"].tolist().index(edu_start[i])
-
-        probs = (
-            optim_paras["lagged_choice_1_edu"][order][idx],
-            1 - optim_paras["lagged_choice_1_edu"][order][idx],
-        )
-        lagged_start += np.random.choice(choices, p=probs, size=1).tolist()
-
-    # If we only have one individual, we need to ensure that activities are a vector.
-    lagged_start = np.array(lagged_start, ndmin=1)
-
-    return lagged_start
+    return choices
 
 
 @guvectorize(
@@ -368,7 +374,7 @@ def calculate_value_functions_and_flow_utilities(
 
 
 def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
-    code_to_choice = {i: choice for i, choice in enumerate(optim_paras["choices"])}
+    code_to_choice = dict(enumerate(optim_paras["choices"]))
 
     df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
         code_to_choice

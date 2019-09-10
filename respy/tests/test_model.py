@@ -51,7 +51,9 @@ def test_sorting_of_type_probability_parameters(model_or_seed):
     # Update variables if not a random model, but an example model is tested.
     if isinstance(model_or_seed, str):
         n_types = optim_paras["n_types"]
-        n_type_covariates = None if n_types == 1 else len(options["type_covariates"])
+        n_type_covariates = (
+            None if n_types == 1 else len(optim_paras["type_covariates"])
+        )
 
     if optim_paras["n_types"] > 1:
         # Resort type probability parameters.

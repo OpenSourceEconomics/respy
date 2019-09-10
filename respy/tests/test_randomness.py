@@ -39,7 +39,7 @@ def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     state_space = simulate.keywords["state_space"]
 
     crit_func = rp.get_crit_func(params, options, df)
-    crit_func(params)
+    _ = crit_func(params)
 
     state_space_ = crit_func.keywords["state_space"]
 

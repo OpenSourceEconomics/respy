@@ -95,11 +95,17 @@ def initial_and_max_experience_template(edu_starts, edu_shares, edu_max):
 def lagged_choices_template(n_lagged_choices, edu_starts):
     to_concat = []
     for i in range(1, n_lagged_choices + 1):
-        ind = (f"lagged_choice_{i}_edu", "up_to_nine_years_of_edu")
+        ind = (f"lagged_choice_{i}_edu", "up_to_nine_years_edu")
         dat = [1, ""]
+        to_concat.append(_base_row(ind, dat))
+        ind = (f"lagged_choice_{i}_home", "up_to_nine_years_edu")
+        dat = [0, ""]
         to_concat.append(_base_row(ind, dat))
         ind = (f"lagged_choice_{i}_edu", "at_least_ten_years_edu")
         dat = [0, ""]
+        to_concat.append(_base_row(ind, dat))
+        ind = (f"lagged_choice_{i}_home", "at_least_ten_years_edu")
+        dat = [1, ""]
         to_concat.append(_base_row(ind, dat))
 
     return pd.concat(to_concat, axis=0, sort=False)
