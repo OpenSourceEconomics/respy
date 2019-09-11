@@ -6,7 +6,6 @@ import pandas as pd
 
 from respy._numba import array_to_tuple
 from respy.config import HUGE_FLOAT
-from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import downcast_to_smallest_dtype
@@ -17,8 +16,8 @@ class StateSpace:
 
     Parameters
     ----------
-    params : pandas.Series or pandas.DataFrame
-        Contains parameters affected by optimization.
+    optim_paras : dict
+        Dictionary containing model parameters.
     options : dict
         Dictionary containing optimization independent model options.
 
@@ -47,19 +46,21 @@ class StateSpace:
 
     """
 
-    def __init__(self, params, options):
-        params, optim_paras, options = process_params_and_options(params, options)
-
+    def __init__(self, optim_paras, options):
         self.base_draws_sol = create_base_draws(
-            (options["n_periods"], options["solution_draws"], len(options["choices"])),
+            (
+                options["n_periods"],
+                options["solution_draws"],
+                len(optim_paras["choices"]),
+            ),
             options["solution_seed"],
         )
 
-        states_df, self.indexer = _create_state_space(options)
+        states_df, self.indexer = _create_state_space(optim_paras, options)
 
         _states_df = states_df.copy()
 
-        for i in range(1, options["n_lagged_choices"] + 1):
+        for i in range(1, optim_paras["n_lagged_choices"] + 1):
             _states_df[f"lagged_choice_{i}"] = _states_df[
                 f"lagged_choice_{i}"
             ].cat.codes
@@ -71,20 +72,22 @@ class StateSpace:
         base_covariates_df = base_covariates_df.apply(downcast_to_smallest_dtype)
 
         self.covariates = _create_choice_covariates(
-            base_covariates_df, states_df, params, options
+            base_covariates_df, states_df, optim_paras
         )
 
         self.wages, self.nonpec = _create_reward_components(
-            self.states[:, -1], self.covariates, optim_paras, options
+            self.states[:, -1], self.covariates, optim_paras
         )
 
-        self.is_inadmissible = _create_is_inadmissible_indicator(states_df, options)
+        self.is_inadmissible = _create_is_inadmissible_indicator(
+            states_df, optim_paras, options
+        )
 
         self._create_slices_by_periods(options["n_periods"])
 
-        self.indices_of_child_states = _get_indices_of_child_states(self, options)
+        self.indices_of_child_states = _get_indices_of_child_states(self, optim_paras)
 
-    def update_systematic_rewards(self, optim_paras, options):
+    def update_systematic_rewards(self, optim_paras):
         """Update wages and non-pecuniary rewards.
 
         During the estimation, the rewards need to be updated according to the new
@@ -92,7 +95,7 @@ class StateSpace:
 
         """
         self.wages, self.nonpec = _create_reward_components(
-            self.states[:, -1], self.covariates, optim_paras, options
+            self.states[:, -1], self.covariates, optim_paras
         )
 
     def get_attribute_from_period(self, attr, period):
@@ -166,7 +169,7 @@ class StateSpace:
         return continuation_values
 
 
-def _create_state_space(options):
+def _create_state_space(optim_paras, options):
     """Create the state space.
 
     The state space of the model are all feasible combinations of the period,
@@ -231,29 +234,29 @@ def _create_state_space(options):
     _create_state_space_indexer
 
     """
-    df = _create_core_state_space(options)
+    df = _create_core_state_space(optim_paras)
 
-    df = _add_lagged_choice_to_core_state_space(df, options)
+    df = _add_lagged_choice_to_core_state_space(df, optim_paras)
 
-    df = _filter_core_state_space(df, options)
+    df = _filter_core_state_space(df, optim_paras, options)
 
-    df = _add_initial_experiences_to_core_state_space(df, options)
+    df = _add_initial_experiences_to_core_state_space(df, optim_paras)
 
-    df = _add_types_to_state_space(df, options["n_types"])
+    df = _add_types_to_state_space(df, optim_paras["n_types"])
 
     df = df.sort_values("period").reset_index(drop=True)
 
-    indexer = _create_state_space_indexer(df, options)
+    indexer = _create_state_space_indexer(df, optim_paras)
 
-    for i in range(1, options["n_lagged_choices"] + 1):
+    for i in range(1, optim_paras["n_lagged_choices"] + 1):
         df[f"lagged_choice_{i}"] = pd.Categorical(
-            df[f"lagged_choice_{i}"], categories=options["choices"]
+            df[f"lagged_choice_{i}"], categories=optim_paras["choices"]
         )
 
     return df, indexer
 
 
-def _create_core_state_space(options):
+def _create_core_state_space(optim_paras):
     """Create the core state space.
 
     The core state space abstracts from initial experiences and uses the maximum range
@@ -268,27 +271,30 @@ def _create_core_state_space(options):
     """
     minimal_initial_experience = np.array(
         [
-            np.min(options["choices"][choice]["start"])
-            for choice in options["choices_w_exp"]
+            np.min(optim_paras["choices"][choice]["start"])
+            for choice in optim_paras["choices_w_exp"]
         ],
         dtype=np.uint8,
     )
     maximum_exp = np.array(
-        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]],
+        [
+            optim_paras["choices"][choice]["max"]
+            for choice in optim_paras["choices_w_exp"]
+        ],
         dtype=np.uint8,
     )
 
     additional_exp = maximum_exp - minimal_initial_experience
 
-    exp_cols = [f"exp_{choice}" for choice in options["choices_w_exp"]]
+    exp_cols = [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
 
     container = []
-    for period in np.arange(options["n_periods"], dtype=np.uint8):
+    for period in np.arange(optim_paras["n_periods"], dtype=np.uint8):
         data = _create_core_state_space_per_period(
             period,
             additional_exp,
-            options,
-            np.zeros(len(options["choices_w_exp"]), dtype=np.uint8),
+            optim_paras,
+            np.zeros(len(optim_paras["choices_w_exp"]), dtype=np.uint8),
         )
         df_ = pd.DataFrame.from_records(data, columns=exp_cols)
         df_.insert(0, "period", period)
@@ -300,7 +306,7 @@ def _create_core_state_space(options):
 
 
 def _create_core_state_space_per_period(
-    period, additional_exp, options, experiences, pos=0
+    period, additional_exp, optim_paras, experiences, pos=0
 ):
     """Create core state space per period.
 
@@ -343,14 +349,14 @@ def _create_core_state_space_per_period(
             updated_experiences = experiences.copy()
             updated_experiences[pos] += i
             yield from _create_core_state_space_per_period(
-                period, additional_exp, options, updated_experiences, pos + 1
+                period, additional_exp, optim_paras, updated_experiences, pos + 1
             )
 
 
-def _add_lagged_choice_to_core_state_space(df, options):
+def _add_lagged_choice_to_core_state_space(df, optim_paras):
     container = []
-    for lag in range(1, options["n_lagged_choices"] + 1):
-        for choice in options["choices"]:
+    for lag in range(1, optim_paras["n_lagged_choices"] + 1):
+        for choice in optim_paras["choices"]:
             df_ = df.copy()
             df_[f"lagged_choice_{lag}"] = choice
             container.append(df_)
@@ -360,7 +366,7 @@ def _add_lagged_choice_to_core_state_space(df, options):
     return df
 
 
-def _filter_core_state_space(df, options):
+def _filter_core_state_space(df, optim_paras, options):
     """Applies filters to the core state space.
 
     Sometimes, we want to apply filters to a group of choices. Thus, use the following
@@ -374,24 +380,24 @@ def _filter_core_state_space(df, options):
     ----------
     df : pandas.DataFrame
         Contains the core state space.
-    options : dict
-        Contains model options and the filters to reduce the core state space.
+    optim_paras : dict
+        Contains model optim_paras and the filters to reduce the core state space.
 
     """
     for definition in options["core_state_space_filters"]:
         # If "{i}" is in definition, loop over choices with experiences.
         if "{i}" in definition:
-            for i in options["choices_w_exp"]:
+            for i in optim_paras["choices_w_exp"]:
                 df = df.loc[~df.eval(definition.format(i=i))]
 
         # If "{j}" is in definition, loop over choices without experiences.
         elif "{j}" in definition:
-            for j in options["choices_wo_exp"]:
+            for j in optim_paras["choices_wo_exp"]:
                 df = df.loc[~df.eval(definition.format(j=j))]
 
         # If "{k}" is in definition, loop over choices with wage.
         elif "{k}" in definition:
-            for k in options["choices_w_wage"]:
+            for k in optim_paras["choices_w_wage"]:
                 df = df.loc[~df.eval(definition.format(k=k))]
 
         else:
@@ -400,7 +406,7 @@ def _filter_core_state_space(df, options):
     return df
 
 
-def _add_initial_experiences_to_core_state_space(df, options):
+def _add_initial_experiences_to_core_state_space(df, optim_paras):
     """Add initial experiences to core state space.
 
     As the core state space abstracts from differences in initial experiences, this
@@ -409,13 +415,14 @@ def _add_initial_experiences_to_core_state_space(df, options):
     experiences is still binding.
 
     """
+    choices = optim_paras["choices"]
     # Create combinations of starting values
     initial_experiences_combinations = itertools.product(
-        *[options["choices"][choice]["start"] for choice in options["choices_w_exp"]]
+        *[choices[choice]["start"] for choice in optim_paras["choices_w_exp"]]
     )
 
     maximum_exp = np.array(
-        [options["choices"][choice]["max"] for choice in options["choices_w_exp"]]
+        [choices[choice]["max"] for choice in optim_paras["choices_w_exp"]]
     )
 
     exp_cols = df.filter(like="exp_").columns.tolist()
@@ -450,7 +457,7 @@ def _add_types_to_state_space(df, n_types):
     return df
 
 
-def _create_state_space_indexer(df, options):
+def _create_state_space_indexer(df, optim_paras):
     """Create the indexer for the state space.
 
     The indexer consists of sub indexers for each period. This is much more
@@ -463,25 +470,25 @@ def _create_state_space_indexer(df, options):
     - https://github.com/OpenSourceEconomics/respy/pull/237
 
     """
-    n_exp_choices = len(options["choices_w_exp"])
-    n_nonexp_choices = len(options["choices_wo_exp"])
-    choices = options["choices"]
+    n_exp_choices = len(optim_paras["choices_w_exp"])
+    n_nonexp_choices = len(optim_paras["choices_wo_exp"])
+    choices = optim_paras["choices"]
 
     max_initial_experience = np.array(
-        [choices[choice]["start"].max() for choice in options["choices_w_exp"]]
+        [choices[choice]["start"].max() for choice in optim_paras["choices_w_exp"]]
     ).astype(np.uint8)
-    max_experience = [choices[choice]["max"] for choice in options["choices_w_exp"]]
+    max_experience = [choices[choice]["max"] for choice in optim_paras["choices_w_exp"]]
 
-    choice_to_code = {choice: i for i, choice in enumerate(options["choices"])}
+    choice_to_code = {choice: i for i, choice in enumerate(optim_paras["choices"])}
 
     indexer = []
     count_states = 0
 
-    for period in range(options["n_periods"]):
+    for period in range(optim_paras["n_periods"]):
         shape = (
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
-            + (n_exp_choices + n_nonexp_choices,) * options["n_lagged_choices"]
-            + (options["n_types"],)
+            + (n_exp_choices + n_nonexp_choices,) * optim_paras["n_lagged_choices"]
+            + (optim_paras["n_types"],)
         )
         sub_indexer = np.full(shape, -1, dtype=np.int32)
 
@@ -489,10 +496,10 @@ def _create_state_space_indexer(df, options):
         n_states = sub_df.shape[0]
 
         indices = (
-            tuple(sub_df[f"exp_{i}"] for i in options["choices_w_exp"])
+            tuple(sub_df[f"exp_{i}"] for i in optim_paras["choices_w_exp"])
             + tuple(
                 sub_df[f"lagged_choice_{i}"].replace(choice_to_code)
-                for i in range(1, options["n_lagged_choices"] + 1)
+                for i in range(1, optim_paras["n_lagged_choices"] + 1)
             )
             + (sub_df.type,)
         )
@@ -504,7 +511,7 @@ def _create_state_space_indexer(df, options):
     return indexer
 
 
-def _create_reward_components(types, covariates, optim_paras, options):
+def _create_reward_components(types, covariates, optim_paras):
     """Calculate systematic rewards for each state.
 
     Wages are only available for some choices, i.e. n_nonpec >= n_wages. We extend the
@@ -522,14 +529,14 @@ def _create_reward_components(types, covariates, optim_paras, options):
         Contains parameters affected by the optimization.
 
     """
-    wage_labels = [f"wage_{choice}" for choice in options["choices_w_wage"]]
+    wage_labels = [f"wage_{choice}" for choice in optim_paras["choices_w_wage"]]
     log_wages = np.column_stack(
         [np.dot(covariates[w], optim_paras[w]) for w in wage_labels]
     )
 
-    n_states = covariates["nonpec_edu"].shape[0]
+    n_states = types.shape[0]
 
-    nonpec_labels = [f"nonpec_{choice}" for choice in options["choices"]]
+    nonpec_labels = [f"nonpec_{choice}" for choice in optim_paras["choices"]]
     nonpec = np.column_stack(
         [
             np.zeros(n_states)
@@ -539,7 +546,7 @@ def _create_reward_components(types, covariates, optim_paras, options):
         ]
     )
 
-    n_wages = len(options["choices_w_wage"])
+    n_wages = len(optim_paras["choices_w_wage"])
     type_deviations = optim_paras["type_shift"][types]
 
     log_wages += type_deviations[:, :n_wages]
@@ -554,7 +561,7 @@ def _create_reward_components(types, covariates, optim_paras, options):
     return wages, nonpec
 
 
-def _create_choice_covariates(covariates_df, states_df, params, options):
+def _create_choice_covariates(covariates_df, states_df, optim_paras):
     """Create the covariates for each choice.
 
     Parameters
@@ -563,10 +570,8 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
         DataFrame with the basic covariates.
     states_df : pandas.DataFrame
         DataFrame with the state information.
-    params : pandas.DataFrame or pandas.Series
-        The parameter specification.
-    options : dict
-        Contains model options.
+    optim_paras : dict
+        Dictionary of parsed parameters.
 
     Returns
     -------
@@ -578,13 +583,13 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
 
     covariates = {}
 
-    for choice in options["choices"]:
-        if f"wage_{choice}" in params.index:
-            wage_columns = params.loc[f"wage_{choice}"].index
+    for choice in optim_paras["choices"]:
+        if f"wage_{choice}" in optim_paras:
+            wage_columns = optim_paras[f"wage_{choice}"].index
             covariates[f"wage_{choice}"] = all_data[wage_columns].to_numpy()
 
-        if f"nonpec_{choice}" in params.index:
-            nonpec_columns = params.loc[f"nonpec_{choice}"].index
+        if f"nonpec_{choice}" in optim_paras:
+            nonpec_columns = optim_paras[f"nonpec_{choice}"].index
             covariates[f"nonpec_{choice}"] = all_data[nonpec_columns].to_numpy()
 
     for key, val in covariates.items():
@@ -593,24 +598,35 @@ def _create_choice_covariates(covariates_df, states_df, params, options):
     return covariates
 
 
-def _create_is_inadmissible_indicator(states, options):
-    # Make maximum experience for each choice available as local variable.
-    locals_ = {
-        f"max_exp_{choice}": options["choices"][choice]["max"]
-        for choice in options["choices_w_exp"]
-    }
-
+def _create_is_inadmissible_indicator(states, optim_paras, options):
     df = states.copy()
 
-    for column, definition in options["inadmissible_states"].items():
-        df[column] = df.eval(definition, local_dict=locals_)
+    # Apply the maximum experience as a default constraint only if its not the last
+    # period. Otherwise, it is unconstrained.
+    for choice in optim_paras["choices_w_exp"]:
+        max_exp = optim_paras["choices"][choice]["max"]
+        formula = (
+            f"exp_{choice} == {max_exp}"
+            if max_exp != optim_paras["n_periods"] - 1
+            else "False"
+        )
+        df[choice] = df.eval(formula)
 
-    is_inadmissible = df[options["choices"]].to_numpy()
+    # Apply no constraint for choices without experience.
+    for choice in optim_paras["choices_wo_exp"]:
+        df[choice] = df.eval("False")
+
+    # Apply user-defined constraints
+    for choice in optim_paras["choices"]:
+        for formula in options["inadmissible_states"].get(choice, []):
+            df[choice] |= df.eval(formula)
+
+    is_inadmissible = df[optim_paras["choices"]].to_numpy()
 
     return is_inadmissible
 
 
-def _get_indices_of_child_states(state_space, options):
+def _get_indices_of_child_states(state_space, optim_paras):
     """For each parent state get the indices of child states.
 
     During the backward induction, the ``emax_value_functions`` in the future period
@@ -624,8 +640,8 @@ def _get_indices_of_child_states(state_space, options):
     """
     dtype = state_space.indexer[0].dtype
 
-    n_choices = len(options["choices"])
-    n_periods = options["n_periods"]
+    n_choices = len(optim_paras["choices"])
+    n_periods = optim_paras["n_periods"]
     n_states = state_space.states.shape[0]
 
     indices = np.full((n_states, n_choices), -1, dtype=dtype)
@@ -641,8 +657,8 @@ def _get_indices_of_child_states(state_space, options):
             state_space.indexer[period],
             state_space.indexer[period + 1],
             state_space.is_inadmissible,
-            len(options["choices_w_exp"]),
-            options["n_lagged_choices"],
+            len(optim_paras["choices_w_exp"]),
+            optim_paras["n_lagged_choices"],
         )
 
     return indices
