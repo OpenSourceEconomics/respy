@@ -9,6 +9,7 @@ import pandas as pd
 import yaml
 from estimagic.optimization.utilities import chol_params_to_lower_triangular_matrix
 from estimagic.optimization.utilities import cov_params_to_matrix
+from estimagic.optimization.utilities import robust_cholesky
 from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
@@ -83,10 +84,11 @@ def _parse_choices(optim_paras, params, options):
     This function defines a unique order of choices. Choices can be separated in choices
     with experience and wage, with experience but without wage and without experience
     and wage. This distinction is used to create a unique ordering of choices. Within
-    each group, we order alphabetically. Then, the order is applied to ``optim_paras``.
+    each group, we order alphabetically.
 
     """
-    # Be careful with ``choices_w_exp_fuzzy`` as it contains some erroneous elements.
+    # Be careful with ``choices_w_exp_fuzzy`` as it contains some erroneous elements,
+    # e.g., ``"a_squared"`` from the covariate ``"exp_a_squared"``.
     choices_w_exp_fuzzy = set(_infer_choices_with_experience(params, options))
     choices_w_wage = set(_infer_choices_with_prefix(params, "wage"))
     choices_w_nonpec = set(_infer_choices_with_prefix(params, "nonpec"))
@@ -157,16 +159,18 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
 
 def _parse_shocks(optim_paras, params):
     """Parse the shock parameters and create the Cholesky factor."""
-    if "shocks_sdcorr" in params.index:
+    if sum(f"shocks_{i}" in params.index for i in ["sdcorr", "cov", "chol"]) >= 2:
+        raise ValueError("It is not allowed to define multiple shock matrices.")
+    elif "shocks_sdcorr" in params.index:
         sorted_shocks = _sort_shocks_sdcorr(optim_paras, params.loc["shocks_sdcorr"])
         cov = sdcorr_params_to_matrix(sorted_shocks)
-        optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
+        optim_paras["shocks_cholesky"] = robust_cholesky(cov)
     elif "shocks_cov" in params.index:
         sorted_shocks = _sort_shocks_cov_chol(
             optim_paras, params.loc["shocks_cov"], "cov"
         )
         cov = cov_params_to_matrix(sorted_shocks)
-        optim_paras["shocks_cholesky"] = np.linalg.cholesky(cov)
+        optim_paras["shocks_cholesky"] = robust_cholesky(cov)
     elif "shocks_chol" in params.index:
         sorted_shocks = _sort_shocks_cov_chol(
             optim_paras, params.loc["shocks_chol"], "chol"
