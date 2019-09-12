@@ -15,7 +15,7 @@ wage_b,exp_a_square,-0.0005,"return to other sector, quadratic experience"
 nonpec_edu,constant,5000,constant reward for choosing education
 nonpec_edu,at_least_twelve_exp_edu,-5000,"reward for going to college (tuition, etc.)"
 nonpec_edu,not_edu_last_period,-15000,reward for going back to school
-nonpec_home,constant,14750,constant reward of non-market alternative
+nonpec_home,constant,14500,constant reward of non-market alternative
 shocks_sdcorr,sd_a,0.4,"Element 1,1 of standard-deviation/correlation matrix"
 shocks_sdcorr,sd_b,0.5,"Element 2,2 of standard-deviation/correlation matrix"
 shocks_sdcorr,sd_edu,6000,"Element 3,3 of standard-deviation/correlation matrix"
