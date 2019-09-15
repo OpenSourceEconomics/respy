@@ -249,8 +249,12 @@ def _parse_measurement_errors(optim_paras, params):
     """Parse correctly sorted measurement errors."""
     meas_error = np.zeros(len(optim_paras["choices"]))
 
-    labels = [f"sd_{choice}" for choice in optim_paras["choices_w_wage"]]
-    meas_error[: len(labels)] = params.loc["meas_error"].loc[labels].to_numpy()
+    if "meas_error" in params.index:
+        labels = [f"sd_{choice}" for choice in optim_paras["choices_w_wage"]]
+        meas_error[: len(labels)] = params.loc["meas_error"].loc[labels].to_numpy()
+    else:
+        meas_error[: len(optim_paras["choices_w_wage"])] = 1e-6
+
     optim_paras["meas_error"] = meas_error
 
     return optim_paras
