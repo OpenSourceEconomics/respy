@@ -9,8 +9,7 @@ dependencies:
   - codecov
   - conda-build
   - doc8
-  - deepdiff
-  - estimagic>=0.0.9
+  - estimagic>=0.0.14
   - jupyterlab
   - matplotlib
   - mkl

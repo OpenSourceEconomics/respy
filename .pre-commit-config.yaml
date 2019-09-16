@@ -18,18 +18,15 @@ repos:
     rev: v1.6.1
     hooks:
     -   id: reorder-python-imports
-        types: [python]
 -   repo: https://github.com/python/black
     rev: 19.3b0
     hooks:
     -   id: black
-        types: [python]
 -   repo: https://github.com/asottile/blacken-docs
     rev: v1.3.0
     hooks:
     -   id: blacken-docs
         additional_dependencies: [black]
-        types: [rst]
 -   repo: https://gitlab.com/pycqa/flake8
     rev: 3.7.8
     hooks:
@@ -40,13 +37,12 @@ repos:
             flake8-eradicate, flake8-print, flake8-rst-docstrings, flake8-todo,
             pep8-naming, pydocstyle<4.0,
         ]
+-   repo: https://github.com/PyCQA/doc8
+    rev: 0.8.1rc2
+    hooks:
+        -   id: doc8
 -   repo: local
     hooks:
-    -   id: doc8
-        entry: doc8
-        language: system
-        types: [rst]
-        name: doc8 - Lint the documentation.
     -   id: restructuredtext-lint
         entry: rst-lint
         language: system
