@@ -100,7 +100,7 @@ lagged_choice_1_home,up_to_nine_years_school,1,Probability that the first lagged
 lagged_choice_1_school,at_least_ten_years_school,1,Probability that the first lagged choice is education given covariate at_least_ten_years_school (simulation only)
 initial_exp_school,7,0.0095,Probability that the initial level of education is 7
 initial_exp_school,8,0.0422,Probability that the initial level of education is 8
-initial_exp_school,9,0.2017,Probability that the initial level of education is 9
+initial_exp_school,9,0.2018,Probability that the initial level of education is 9
 initial_exp_school,10,0.6715,Probability that the initial level of education is 10
 initial_exp_school,11,0.075,Probability that the initial level of education is 11
 maximum_exp,school,20,"Maximum level of experience for education (optional, reduces computation complexity)"
