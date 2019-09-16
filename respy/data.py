@@ -31,18 +31,18 @@ def create_kw_97(params, options):
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    columns = ["Identifier", "Age", "Experience_Edu", "Choice", "Wage"]
     dtypes = {
         "Identifier": np.int,
         "Age": np.uint8,
-        "Experience_Edu": np.uint8,
+        "Experience_School": np.uint8,
         "Choice": "category",
+        "Wage": np.float,
     }
 
     df = pd.read_csv(
         TEST_RESOURCES_DIR / "KW_97.raw",
         sep=r"\s+",
-        names=columns,
+        names=dtypes,
         dtype=dtypes,
         na_values=".",
         float_precision="high",
@@ -64,9 +64,10 @@ def create_kw_97(params, options):
     df = _create_working_experience(df, optim_paras)
 
     df["Lagged_Choice_1"] = df.groupby("Identifier").Choice.shift(1)
+    df["Period"] = df.Age - 16
 
     labels, _ = rp_shared.generate_column_labels_estimation(optim_paras)
 
-    df = df.assign(Period=df.Age - 16).drop(columns="Age").loc[:, labels]
+    df = df[labels]
 
     return df
