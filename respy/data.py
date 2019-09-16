@@ -6,8 +6,8 @@ from respy.config import TEST_RESOURCES_DIR
 from respy.pre_processing.model_processing import process_params_and_options
 
 
-def _create_working_experience(df, options):
-    for choice in options["choices_w_wage"]:
+def _create_working_experience(df, optim_paras):
+    for choice in optim_paras["choices_w_wage"]:
         df[f"Experience_{choice.title()}"] = df.Choice.eq(choice)
         df[f"Experience_{choice.title()}"] = (
             df.groupby("Identifier")[f"Experience_{choice.title()}"]
@@ -29,7 +29,7 @@ def create_kw_97(params, options):
     white-collar, blue-collar occupations, military and schooling.
 
     """
-    _, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
     columns = ["Identifier", "Age", "Experience_Edu", "Choice", "Wage"]
     dtypes = {
@@ -50,16 +50,22 @@ def create_kw_97(params, options):
 
     df.Identifier = df.groupby("Identifier").ngroup().astype(np.uint16)
 
-    codes_to_choices = {"3": "a", "4": "b", "5": "mil", "1": "edu", "2": "home"}
+    codes_to_choices = {
+        "3": "white_collar",
+        "4": "blue_collar",
+        "5": "military",
+        "1": "school",
+        "2": "home",
+    }
     df.Choice = df.Choice.cat.set_categories(codes_to_choices).cat.rename_categories(
         codes_to_choices
     )
 
-    df = _create_working_experience(df, options)
+    df = _create_working_experience(df, optim_paras)
 
     df["Lagged_Choice_1"] = df.groupby("Identifier").Choice.shift(1)
 
-    labels, _ = rp_shared.generate_column_labels_estimation(options)
+    labels, _ = rp_shared.generate_column_labels_estimation(optim_paras)
 
     df = df.assign(Period=df.Age - 16).drop(columns="Age").loc[:, labels]
 
