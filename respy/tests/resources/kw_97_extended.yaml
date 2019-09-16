@@ -44,6 +44,6 @@ covariates:
   exp_white_collar_square: exp_white_collar ** 2 / 100
   exp_blue_collar_square: exp_blue_collar ** 2 / 100
   exp_military_square: exp_military ** 2 / 100
-  military_dropout: exp_military == 1
+  at_least_one_exp_military: exp_military == 1
   up_to_nine_years_school: exp_school <= 9
   at_least_ten_years_school: 10 <= exp_school

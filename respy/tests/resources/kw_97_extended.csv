@@ -17,7 +17,6 @@ nonpec_white_collar,not_exp_white_collar_lagged,-1182,reward of switching to a f
 nonpec_white_collar,not_any_exp_white_collar,-2759,reward of working in a for the first time (non pecuniary)
 nonpec_white_collar,hs_graduate,804,return to high school degree (non pecuniary)
 nonpec_white_collar,co_graduate,2005,return to college degree (non pecuniary)
-nonpec_white_collar,military_dropout,-1525,effect of leaving the military early (after one year)
 wage_blue_collar,constant,8.8811,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_blue_collar,exp_school,0.024,linear return to an additional year of schooling (wage)
 wage_blue_collar,exp_white_collar,0.0191,"return to experience, other civilian sector, linear (wage)"
@@ -35,7 +34,6 @@ nonpec_blue_collar,not_exp_blue_collar_lagged,-1647,reward of switching to a fro
 nonpec_blue_collar,not_any_exp_blue_collar,-494,reward of working in a for the first time (non pecuniary)
 nonpec_blue_collar,hs_graduate,804,return to high school degree (non pecuniary)
 nonpec_blue_collar,co_graduate,2005,return to college degree (non pecuniary)
-nonpec_blue_collar,military_dropout,-1525,effect of leaving the military early (after one year)
 wage_military,constant,8.54,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_military,exp_school,0.0582,linear return to an additional year of schooling (wage)
 wage_military,exp_military,0.0454,"return to experience, same sector, linear (wage)"
@@ -46,6 +44,7 @@ wage_military,is_minor,-0.2539,effect of being a minor
 nonpec_military,not_any_exp_military,-560,reward of being in the military sector for the first time (non pecuniary)
 nonpec_military,hs_graduate,804,return to high school degree (non pecuniary)
 nonpec_military,co_graduate,2005,return to college degree (non pecuniary)
+nonpec_military,at_least_one_exp_military,1525,benefit of continuing a military career
 nonpec_school,constant,11031,consumption value of school attendance for type 1
 nonpec_school,is_return_not_high_school,-10700,reward for going back to college
 nonpec_school,is_return_high_school,-23283,reward for going back to high school
@@ -53,13 +52,11 @@ nonpec_school,period,-1502,linear age effect
 nonpec_school,is_minor,3632,effect of being a minor
 nonpec_school,hs_graduate,-3364,return to high school degree (non pecuniary)
 nonpec_school,co_graduate,-5025,return to college degree (non pecuniary)
-nonpec_school,military_dropout,-1525,effect of leaving the military early (after one year)
 nonpec_home,constant,20242,mean value of non-market alternative for type 1
 nonpec_home,is_young_adult,-1027,additional value of staying home if aged 18-20
 nonpec_home,is_adult,-1805,additional value of staying home if 21 or older
 nonpec_home,hs_graduate,804,return to high school degree (non pecuniary)
 nonpec_home,co_graduate,2005,return to college degree (non pecuniary)
-nonpec_home,military_dropout,-1525,effect of leaving the military early (after one year)
 shocks_sdcorr,sd_white_collar,0.3864,standard deviation of the shock in occupation a
 shocks_sdcorr,sd_blue_collar,0.3823,standard deviation of the shock in occupation b
 shocks_sdcorr,sd_military,0.2426,standard deviation of the shock in the military sector
