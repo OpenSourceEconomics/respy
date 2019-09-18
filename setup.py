@@ -18,7 +18,7 @@ PROJECT_URLS = {
 
 setup(
     name="respy",
-    version="2.0.0",
+    version="2.0.0dev0",
     description=DESCRIPTION,
     long_description=DESCRIPTION + "\n\n" + README,
     long_description_content_type="text/x-rst",
@@ -29,7 +29,7 @@ setup(
     project_urls=PROJECT_URLS,
     packages=find_packages() + ["development.testing"],
     license="MIT",
-    keywords=["Economics", " Dynamic Discrete Choice Model"],
+    keywords=["Economics", " Discrete Choice Dynamic Programming Model"],
     classifiers=[
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",

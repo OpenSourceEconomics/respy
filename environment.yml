@@ -29,7 +29,6 @@ dependencies:
   - conda-build
   - anaconda-client
   - conda-verify
-
   - pip:
     - apprise
     - pre-commit
