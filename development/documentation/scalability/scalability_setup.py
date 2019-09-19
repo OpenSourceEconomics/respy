@@ -9,13 +9,13 @@ def main():
     function evaluations.
 
     """
-    model = "kw_97_base"
+    model = "kw_97_basic"
     maxfun = 3
 
     filepath = Path(__file__).resolve().parent / "run_single_scalability_exercise.py"
 
     # Run Python
-    for n_threads in [2, 4, 6, 8, 10, 12, 14]:
+    for n_threads in [10, 20]:
         subprocess.check_call(
             ["python", str(filepath), model, str(maxfun), str(n_threads)]
         )

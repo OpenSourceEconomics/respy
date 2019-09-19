@@ -39,6 +39,6 @@ DEFAULT_OPTIONS = {
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]
-KEANE_WOLPIN_1997_MODELS = ["kw_97_base", "kw_97_extended"]
+KEANE_WOLPIN_1997_MODELS = ["kw_97_basic", "kw_97_extended"]
 
 EXAMPLE_MODELS = KEANE_WOLPIN_1994_MODELS + KEANE_WOLPIN_1997_MODELS
