@@ -24,7 +24,7 @@ in conjunction with a constrained optimizer. In this example the discount factor
 bounded between 0.7 and 1.0. ``comment`` contains a short description of the parameter.
 
 .. csv-table:: kw_97_base.csv
-    :file: ../../respy/tests/resources/kw_97_base.csv
+    :file: ../../respy/tests/resources/kw_97_basic.csv
     :header-rows: 1
 
 In alignment to Keane and Wolpin (1994), the error terms of the model are set to follow
