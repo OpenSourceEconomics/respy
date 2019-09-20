@@ -90,12 +90,12 @@ type_shift,type_4_in_blue_collar,-0.0547,deviation for type 4 from type 1 in b
 type_shift,type_4_in_military,0,deviation for type 4 from type 1 in mil
 type_shift,type_4_in_school,-1469,deviation for type 4 from type 1 in edu
 type_shift,type_4_in_home,-2912,deviation for type 4 from type 1 in home
-type_2,up_to_nine_years_school,0.1987,effect of up to nine years of schooling on probability of being type 2
-type_2,at_least_ten_years_school,0.2335,effect of at least ten years of schooling on probability of being type 2
-type_3,up_to_nine_years_school,0.4066,effect of up to nine years of schooling on probability of being type 3
-type_3,at_least_ten_years_school,0.3734,effect of at least ten years of schooling on probability of being type 3
-type_4,up_to_nine_years_school,0.3456,effect of up to nine years of schooling on probability of being type 4
-type_4,at_least_ten_years_school,0.1588,effect of at least ten years of schooling on probability of being type 4
+type_2,up_to_nine_years_school,1.3979,effect of up to nine years of schooling on probability of being type 2
+type_2,at_least_ten_years_school,-0.0034,effect of at least ten years of schooling on probability of being type 2
+type_3,up_to_nine_years_school,2.114,effect of up to nine years of schooling on probability of being type 3
+type_3,at_least_ten_years_school,0.466,effect of at least ten years of schooling on probability of being type 3
+type_4,up_to_nine_years_school,1.9514,effect of up to nine years of schooling on probability of being type 4
+type_4,at_least_ten_years_school,-0.389,effect of at least ten years of schooling on probability of being type 4
 lagged_choice_1_home,up_to_nine_years_school,1,Probability that the first lagged choice is home given covariate up_to_nine_years_school (simulation only)
 lagged_choice_1_school,at_least_ten_years_school,1,Probability that the first lagged choice is education given covariate at_least_ten_years_school (simulation only)
 initial_exp_school,7,0.0095,Probability that the initial level of education is 7

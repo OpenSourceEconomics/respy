@@ -53,12 +53,12 @@ type_shift,type_4_in_blue_collar,0.0756,deviation for type 4 from type 1 in b
 type_shift,type_4_in_military,0,deviation for type 4 from type 1 in mil
 type_shift,type_4_in_school,226,deviation for type 4 from type 1 in edu
 type_shift,type_4_in_home,-13128,deviation for type 4 from type 1 in home
-type_2,up_to_nine_years_school,0.2396,effect of up to nine years of schooling on probability of being type 2
-type_2,at_least_ten_years_school,0.4409,effect of at least ten years of schooling on probability of being type 2
-type_3,up_to_nine_years_school,0.5015,effect of up to nine years of schooling on probability of being type 3
-type_3,at_least_ten_years_school,0.4876,effect of at least ten years of schooling on probability of being type 3
-type_4,up_to_nine_years_school,0.0838,effect of up to nine years of schooling on probability of being type 4
-type_4,at_least_ten_years_school,0.0329,effect of at least ten years of schooling on probability of being type 4
+type_2,up_to_nine_years_school,0.313614,effect of up to nine years of schooling on probability of being type 2
+type_2,at_least_ten_years_school,2.43557,effect of at least ten years of schooling on probability of being type 2
+type_3,up_to_nine_years_school,1.05225,effect of up to nine years of schooling on probability of being type 3
+type_3,at_least_ten_years_school,2.53624,effect of at least ten years of schooling on probability of being type 3
+type_4,up_to_nine_years_school,-0.736924,effect of up to nine years of schooling on probability of being type 4
+type_4,at_least_ten_years_school,-0.15978,effect of at least ten years of schooling on probability of being type 4
 initial_exp_school,7,0.0095,Probability that the initial level of school is 7
 initial_exp_school,8,0.0422,Probability that the initial level of school is 8
 initial_exp_school,9,0.2018,Probability that the initial level of school is 9
