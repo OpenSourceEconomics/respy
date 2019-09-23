@@ -1,5 +1,6 @@
 """Process model specification files or objects."""
 import copy
+import itertools
 import re
 import warnings
 from pathlib import Path
@@ -21,6 +22,7 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 def process_params_and_options(params, options):
     options = _read_options(options)
     options = {**DEFAULT_OPTIONS, **options}
+    options = _convert_seeds_to_counters(options)
     validate_options(options)
 
     params = _read_params(params)
@@ -39,6 +41,14 @@ def _read_options(input_):
         options = yaml.safe_load(input_.read_text())
     else:
         options = copy.deepcopy(input_)
+
+    return options
+
+
+def _convert_seeds_to_counters(options):
+    seeds = [key for key in options if key.endswith("seed")]
+    for seed in seeds:
+        options[f"{seed}_counter"] = itertools.count(options[seed])
 
     return options
 

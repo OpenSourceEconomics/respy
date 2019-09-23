@@ -46,9 +46,8 @@ def get_simulate_func(params, options):
         options["simulation_agents"],
         len(optim_paras["choices"]),
     )
-    base_draws_sim = create_base_draws(shape, options["simulation_seed"])
-    # ``seed + 1`` ensures that draws for wages are different than for simulation.
-    base_draws_wage = create_base_draws(shape, options["simulation_seed"] + 1)
+    base_draws_sim = create_base_draws(shape, next(options["simulation_seed_counter"]))
+    base_draws_wage = create_base_draws(shape, next(options["simulation_seed_counter"]))
 
     simulate_function = functools.partial(
         simulate,
@@ -258,7 +257,7 @@ def _get_random_types(states, optim_paras, options):
     else:
         type_covariates = create_type_covariates(states, optim_paras, options)
 
-        np.random.seed(options["simulation_seed"])
+        np.random.seed(next(options["simulation_seed_counter"]))
 
         probs = predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
         types = _random_choice(optim_paras["n_types"], probs)
@@ -268,7 +267,7 @@ def _get_random_types(states, optim_paras, options):
 
 def _get_random_initial_experience(choice, optim_paras, options):
     """Get random, initial levels of schooling for simulated agents."""
-    np.random.seed(options["simulation_seed"])
+    np.random.seed(next(options["simulation_seed_counter"]))
 
     initial_experience = np.random.choice(
         optim_paras["choices"][choice]["start"],
@@ -328,7 +327,7 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
 
     probabilities = np.column_stack(probabilities)
 
-    np.random.seed(options["simulation_seed"])
+    np.random.seed(next(options["simulation_seed_counter"]))
 
     lagged_choices = _random_choice(len(optim_paras["choices"]), probabilities)
 
