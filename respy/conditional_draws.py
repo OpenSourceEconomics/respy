@@ -79,7 +79,7 @@ def create_draws_and_log_prob_wages(
     else:
         updated_chols = update_cholcov(shocks_cholesky, n_wages)
 
-    chol_indices = np.where(np.isfinite(log_wage_systematic), choices, n_wages + 1)
+    chol_indices = np.where(np.isfinite(log_wages_observed), choices, n_wages)
     draws = calculate_conditional_draws(
         base_draws[periods], updated_means, updated_chols, chol_indices
     )
