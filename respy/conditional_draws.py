@@ -1,4 +1,5 @@
 import numpy as np
+from estimagic.optimization.utilities import robust_cholesky
 from numba import guvectorize
 
 from respy.config import HUGE_FLOAT
@@ -10,19 +11,14 @@ def create_draws_and_log_prob_wages(
     base_draws,
     choices,
     shocks_cholesky,
-    meas_error_sds,
     periods,
     n_wages,
+    meas_sds=None,
 ):
     """Evaluate likelihood of observed wages and create conditional draws.
 
     Let n_obs be the number of period-individual combinations, i.e. the number of rows
     of the empirical dataset.
-
-    Note
-    ----
-    This function calls :func:`kalman_update` which changes ``states`` and
-    ``extended_cholcovs_t`` in-place.
 
     Parameters
     ----------
@@ -41,8 +37,8 @@ def create_draws_and_log_prob_wages(
     shocks_cholesky : numpy.ndarray
         Array with shape (n_choices, n_choices) with the lower triangular Cholesky
         factor of the covariance matrix of the shocks.
-    meas_error_sds : numpy.ndarray
-        Array with shape (n_choices,) containing standard deviations of the measurement
+    meas_sds : numpy.ndarray
+        Array with shape (n_wages,) containing standard deviations of the measurement
         errors of observed reward components.
     periods : numpy.ndarray
         Array with shape (n_obs * n_types,) containing the period of the observation.
@@ -57,70 +53,107 @@ def create_draws_and_log_prob_wages(
         of the observed wages, correcting for measurement error.
 
     """
-    choices = choices.astype(np.uint16)
+    if meas_sds is None:
+        meas_sds = np.zeros(n_wages)
+        meas_error = False
+    else:
+        meas_sds = meas_sds[:n_wages]
+        meas_error = True
+
     n_obs, n_choices = wages_systematic.shape
+
+    choices = choices.astype(np.uint16)
     relevant_systematic_wages = np.choose(choices, wages_systematic.T)
     log_wage_systematic = np.clip(
         np.log(relevant_systematic_wages), -HUGE_FLOAT, HUGE_FLOAT
     )
+    observed_shocks = log_wages_observed - log_wage_systematic
+    cov = shocks_cholesky @ shocks_cholesky.T
 
-    states = np.zeros((n_obs, n_choices))
-    measurements = log_wages_observed - log_wage_systematic
-    extended_cholcovs_t = np.zeros((n_obs, n_choices + 1, n_choices + 1))
-    extended_cholcovs_t[:, 1:, 1:] = shocks_cholesky.T
-    meas_sds = meas_error_sds[choices]
-
-    # Note: ``states`` and ``extended_cholcovs_t`` are changed in-place.
-    log_prob_wages = kalman_update(
-        states, measurements, extended_cholcovs_t, meas_sds, choices
+    updated_means, log_prob_wages = update_mean_and_evaluate_likelihood(
+        observed_shocks, cov, choices, meas_sds
     )
 
-    draws = np.matmul(base_draws[periods], extended_cholcovs_t[:, 1:, 1:])
-    draws += states.reshape(n_obs, 1, n_choices)
-    draws[:, :n_wages] = np.clip(np.exp(draws[:, :n_wages]), 0.0, HUGE_FLOAT)
+    if meas_error:
+        updated_chols = update_cholcov_with_measurement_error(shocks_cholesky, meas_sds)
+    else:
+        updated_chols = update_cholcov(shocks_cholesky, n_wages)
+
+    chol_indices = np.where(np.isfinite(log_wage_systematic), choices, n_wages + 1)
+    draws = calculate_conditional_draws(
+        base_draws[periods], updated_means, updated_chols, chol_indices
+    )
 
     return draws, log_prob_wages
 
 
 @guvectorize(
-    ["f8[:], f8, f8[:, :], f8, u2, f8[:]"],
-    "(n_states), (), (n_choices_plus_one, n_choices_plus_one), (), () -> ()",
+    ["f8, f8[:, :], u2, f8[:], f8[:], f8[:]"],
+    "(), (n_choices, n_choices), (), (n_wages) -> (n_choices), ()",
+    nopython=True,
 )
-def kalman_update(
-    state, measurement, extended_cholcov_t, meas_sd, choice, log_prob_wage
+def update_mean_and_evaluate_likelihood(
+    shock, cov, choice, meas_sds, updated_mean, loglike
 ):
-    """Make a Kalman update and evaluate log likelihood of wages.
+    """Update mean and evaluate likelihood.
 
-    This function is a specialized Kalman filter in the following ways:
-
-    - All measurements just measure one latent factor
-    - All factor loadings are equal to 1
-    - All initial states are assumed to be equal to 0
-
-    ``extended_cholcov_t`` and ``state`` are changed in-place for performance reasons.
-
-    The function can handle missings in the measurements.
+    Calculate the conditional mean of shocks after observing one shock
+    and evaluate the likelihood of the observed shock.
 
     Parameters
     ----------
-    state : numpy.ndarray
-        Array with shape (n_choices,) containing initial state vectors.
-    measurement : float
-        The measurement that is incorporated through the Kalman update.
-    extended_cholcov_t : numpy.ndarray
-        Array with shape (n_states + 1, n_states + 1) that contains the transpose of the
-        Cholesky factor of the state covariance matrix in the lower right block and
-        zeros everywhere else.
-    meas_sd : float
-        The standard deviation of the measurement error.
-    choice : numpy.uint16
-        Observed choice. Determines on which element of the state vector is measured
-        by the measurement.
+    shock : float
+        The observed shock. NaN for individuals where no shock was observed.
+
 
     Returns
     -------
-    log_prob_wage : float
-        The log likelihood of the observed wage.
+    updated_mean : np.ndarray
+        Conditional mean of shocks, given the observed shock. Contains the observed
+        shock in the corresponding position even in the degenerate case of no
+        measurement error. Has length n_choices.
+    loglike : float
+        log likelihood of observing the observed shock. 0 if no shock was observed.
+
+
+    """
+    dim = len(cov)
+    invariant = np.log(1 / (2 * np.pi) ** 0.5)
+
+    if np.isfinite(shock):
+        sigma_squared = cov[choice, choice] + meas_sds[choice] ** 2
+        sigma = np.sqrt(sigma_squared)
+        for i in range(dim):
+            updated_mean[i] = cov[choice, i] * shock / sigma_squared
+        loglike[0] = invariant - np.log(sigma) - shock ** 2 / (2 * sigma_squared)
+    else:
+        for i in range(dim):
+            updated_mean[i] = 0
+        loglike[0] = 0
+
+
+def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds):
+    """Make a Kalman covariance updated for all possible cases.
+
+    Parameters
+    ----------
+    shocks_cholesky : numpy.ndarray
+        cholesky factor of the covariance matrix before updating. Has
+        dimension (n_choices, n_choices)
+
+    meas_sds: numpy.ndarray
+        the standard deviations of the measurement errors. Has length n_wages.
+
+    Returns
+    -------
+    updated_chols : numpy.ndarray
+        Array of (shape n_wages + 1, n_choices, n_choices) with the cholesky factors
+        of the updated covariance matrices for each possible observed shock. The
+        last element corresponds to not observing any shock.
+
+
+    We use a square-root implementation of the Kalman filter to avoid taking any
+    Cholesky decompositions which could fail due to numerical error.
 
     References
     ----------
@@ -128,48 +161,91 @@ def kalman_update(
         Wiley and sons, 2012.
 
     """
-    # Extract dimensions.
-    m = len(extended_cholcov_t)
-    nfac = m - 1
+    n_wages = len(meas_sds)
+    n_choices = len(shocks_cholesky)
 
-    # This is the invariant part of a normal probability density function.
-    invariant = np.log(1 / (2 * np.pi) ** 0.5)
+    updated_chols = np.zeros((n_wages + 1, n_choices, n_choices))
 
-    # Skip missing wages.
-    if np.isfinite(measurement):
-        # Construct helper matrix for qr magic.
-        extended_cholcov_t[0, 0] = meas_sd
-        for f in range(1, m):
-            extended_cholcov_t[f, 0] = extended_cholcov_t[f, choice + 1]
+    for choice in range(n_wages):
+        extended_cholcov_t = np.zeros((n_choices + 1, n_choices + 1))
+        extended_cholcov_t[1:, 1:] = shocks_cholesky.T
+        extended_cholcov_t[0, 0] = meas_sds[choice]
+        extended_cholcov_t[1:, 0] = shocks_cholesky.T[:, choice]
+        r = np.linalg.qr(extended_cholcov_t, mode="r")
+        updated_chols[choice] = r[1:, 1:].T
 
-        # QR decomposition.
-        for f in range(m):
-            for g in range(m - 1, f, -1):
-                b = extended_cholcov_t[g, f]
-                if b != 0.0:
-                    a = extended_cholcov_t[g - 1, f]
-                    if abs(b) > abs(a):
-                        r_ = a / b
-                        s_ = 1 / (1 + r_ ** 2) ** 0.5
-                        c_ = s_ * r_
-                    else:
-                        r_ = b / a
-                        c_ = 1 / (1 + r_ ** 2) ** 0.5
-                        s_ = c_ * r_
-                    for k_ in range(m):
-                        helper1 = extended_cholcov_t[g - 1, k_]
-                        helper2 = extended_cholcov_t[g, k_]
-                        extended_cholcov_t[g - 1, k_] = c_ * helper1 + s_ * helper2
-                        extended_cholcov_t[g, k_] = -s_ * helper1 + c_ * helper2
+    updated_chols[-1] = shocks_cholesky
+    return updated_chols
 
-        # Likelihood evaluation.
-        sigma = np.abs(extended_cholcov_t[0, 0])
-        prob = invariant - np.log(sigma) - measurement ** 2 / (2 * sigma ** 2)
-        log_prob_wage[0] = prob
 
-        # Update the state.
-        measurement /= sigma
-        for f in range(nfac):
-            state[f] = extended_cholcov_t[0, f + 1] * measurement
-    else:
-        log_prob_wage[0] = 0
+def update_cholcov(shocks_cholesky, n_wages):
+    """Calculate cholesky factors of conditional covs for all possible cases.
+
+    Parameters
+    ----------
+    shocks_cholesky : numpy.ndarray
+        cholesky factor of the covariance matrix before updating. Has
+        dimension (n_choices, n_choices)
+
+    Returns
+    -------
+    updated_chols : numpy.ndarray
+        Array of (shape n_wages + 1, n_choices, n_choices) with the cholesky factors
+        of the updated covariance matrices for each possible observed shock. The
+        last element corresponds to not observing any shock.
+
+    """
+    n_choices = len(shocks_cholesky)
+    cov = shocks_cholesky @ shocks_cholesky.T
+
+    updated_chols = np.zeros((n_wages + 1, n_choices, n_choices))
+
+    for choice in range(n_choices):
+        reduced_cov = np.delete(np.delete(cov, choice, axis=1), choice, axis=0)
+        choice_var = cov[choice, choice]
+
+        f = np.delete(cov[choice], choice)
+
+        updated_reduced_cov = reduced_cov - np.outer(f, f) / choice_var
+        updated_reduced_chol = robust_cholesky(updated_reduced_cov)
+
+        updated_chols[choice, :choice, :choice] = updated_reduced_chol[:choice, :choice]
+        updated_chols[choice, :choice, choice + 1 :] = updated_reduced_chol[
+            :choice, choice:
+        ]
+        updated_chols[choice, choice + 1 :, :choice] = updated_reduced_chol[
+            choice:, :choice
+        ]
+        updated_chols[choice, choice + 1 :, choice + 1 :] = updated_reduced_chol[
+            choice:, choice:
+        ]
+
+    updated_chols[-1] = shocks_cholesky
+
+    return updated_chols
+
+
+@guvectorize(
+    ["f8[:, :], f8[:], f8[:, :, :], u2, f8[:, :]"],
+    "(n_draws, n_choices), (n_choices), (n_wages_plus_one, n_choices, n_choices), () "
+    "-> (n_draws, n_choices)",
+)
+def calculate_conditional_draws(
+    draws, updated_mean, updated_chols, chol_index, conditional_draw
+):
+    """Calculate the conditional draws from base draws, updated means and updated chols.
+
+    """
+    n_draws, n_choices = draws.shape
+    n_wages = len(updated_chols) - 1
+
+    for d in range(n_draws):
+        for i in range(n_choices):
+            cd = updated_mean[i]
+            for j in range(i + 1):
+                cd += draws[d, j] * updated_chols[chol_index, i, j]
+            if i < n_wages:
+                cd = np.exp(cd)
+                if cd > HUGE_FLOAT:
+                    cd = HUGE_FLOAT
+            conditional_draw[d, i] = cd

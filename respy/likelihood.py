@@ -276,9 +276,9 @@ def _internal_log_like_obs(
         base_draws_est,
         choices,
         optim_paras["shocks_cholesky"],
-        optim_paras["meas_error"],
         periods,
         len(optim_paras["choices_w_wage"]),
+        optim_paras["meas_error"],
     )
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
