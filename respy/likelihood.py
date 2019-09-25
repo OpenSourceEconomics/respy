@@ -279,6 +279,7 @@ def _internal_log_like_obs(
         periods,
         len(optim_paras["choices_w_wage"]),
         optim_paras["meas_error"],
+        optim_paras["is_meas_error"],
     )
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
