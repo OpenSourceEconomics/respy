@@ -10,7 +10,7 @@ def validate_options(o):
             assert _is_positive_nonzero_integer(value)
         elif option.endswith("_seed"):
             assert _is_nonnegative_integer(value)
-        elif option.endswith("_seed_counter"):
+        elif option.endswith("_seed_startup") or option.endswith("_seed_iteration"):
             assert isinstance(value, itertools.count)
         else:
             pass
