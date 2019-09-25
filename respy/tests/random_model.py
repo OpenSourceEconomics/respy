@@ -212,12 +212,12 @@ def simulate_truncated_data(params, options, is_missings=True):
     wages.
 
     """
-    optim_paras, options = process_params_and_options(params, options)
+    optim_paras, _ = process_params_and_options(params, options)
 
     simulate = get_simulate_func(params, options)
     df = simulate(params)
 
-    np.random.seed(next(options["simulation_seed_counter"]))
+    np.random.seed(options["simulation_seed"])
 
     if is_missings:
         # Truncate the histories of agents. This mimics the effect of attrition.

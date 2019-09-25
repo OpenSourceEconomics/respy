@@ -73,7 +73,7 @@ def get_crit_func(params, options, df, version="log_like"):
             options["estimation_draws"],
             len(optim_paras["choices"]),
         ),
-        next(options["estimation_seed_counter"]),
+        next(options["estimation_seed_startup"]),
     )
 
     if version == "log_like":

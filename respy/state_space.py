@@ -53,7 +53,7 @@ class StateSpace:
                 options["solution_draws"],
                 len(optim_paras["choices"]),
             ),
-            next(options["solution_seed_counter"]),
+            next(options["solution_seed_startup"]),
         )
 
         states_df, self.indexer = _create_state_space(optim_paras, options)

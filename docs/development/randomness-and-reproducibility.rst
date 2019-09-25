@@ -1,26 +1,36 @@
+.. _randomness-and-reproducibility:
+
 Randomness and Reproducibility
 ==============================
 
 ``respy`` embraces randomness to study individual behavior under risk. At the same time,
-it is crucial to make results reproducible. To build a reproducible model, users must
-define three seeds for the solution, simulation and estimation of the model in the
-options.
+it is crucial to make results reproducible for research. To build a reproducible model,
+users must define three seeds for the solution, simulation and estimation of the model
+in the options. This allows to study the impact of randomness for each of the components
+independently.
 
 .. code-block:: python
 
     options = {"solution_seed": 1, "simulation_seed": 2, "estimation_seed": 3}
 
-Each of the seeds starts a sequence of seeds which incrementally increases by one. Thus,
-the same seed is never used again and the same randomness is never used twice, but
-randomness is still controlled and reproducible. (The need for seed sequences became
-apparent in `#268 <https://github.com/OpenSourceEconomics/respy/pull/268>`_.)
+.. warning::
 
-As a general rule, models are reproducible with ``respy`` as long as only model
-parameters are changed, e.g. utility or type parameters, but the structure of the model
-stays the same. The following list includes example of structural changes to the model.
+    Do not use the same seed twice.
+
+The seeds for the solution, simulation and estimation are used to draw a 3-, 5- and
+7-digit seed sequence [#f1]_. The first 100 seeds in the sequences are reserved for
+randomness in the startup of functions like :func:`~respy.simulate.simulate` or
+:func:`~respy.likelihood.log_like`, e.g., to create draws from a uniform distribution.
+All other seeds are used during the iterations of those functions and reset to the
+initial value at the begin of every iteration.
+
+As a general rule, models in ``respy`` are reproducible or use the same randomness as
+long as only model parameters are changed, e.g. utility or type shifts, but the
+structure of the model stays the same. The following list includes example of structural
+changes to the model.
 
 - Changing the choice set (forms of renaming, removing choices).
-- Changing the initial conditions (experiences, lagged choices).
+- Changing the initial conditions (experiences, lagged choices, type probabilities).
 - Changing the Monte Carlo integrations (sequence, number of draws).
 - Using interpolation and changing the number of non-interpolated states.
 - Removing states from the state space via filters.
@@ -97,3 +107,9 @@ in the sequence initialized by ``options["simulation_seed"]``.
     :toctree: ../generated/
 
     simulate_truncated_data
+
+
+.. rubric:: Footnotes
+
+.. [#f1] The need for seed sequences became apparent in `#268
+         <https://github.com/OpenSourceEconomics/respy/pull/268>`_.
