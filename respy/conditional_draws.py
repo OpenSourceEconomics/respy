@@ -73,7 +73,8 @@ def create_draws_and_log_prob_wages(
     )
 
     if is_meas_error:
-        updated_chols = update_cholcov_with_measurement_error(shocks_cholesky, meas_sds)
+        updated_chols = update_cholcov_with_measurement_error(
+            shocks_cholesky, meas_sds, n_wages)
     else:
         updated_chols = update_cholcov(shocks_cholesky, n_wages)
 
