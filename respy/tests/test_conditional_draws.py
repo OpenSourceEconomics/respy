@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal as aaae
 
-from respy.conditional_draws import calculate_conditional_draws2
+from respy.conditional_draws import calculate_conditional_draws
 from respy.conditional_draws import update_cholcov
 from respy.conditional_draws import update_cholcov_with_measurement_error
 from respy.conditional_draws import update_mean_and_evaluate_likelihood
@@ -70,7 +70,7 @@ def test_calculate_conditional_draws():
     updated_chols = np.zeros((3, 3, 3))
     updated_chols[1] = np.array([[1, 0, 0], [2, 3, 0], [4, 5, 6]])
 
-    calculated = calculate_conditional_draws2(
+    calculated = calculate_conditional_draws(
         draws, updated_mean, updated_chols, 1, HUGE_FLOAT
     )[0]
     expected = np.array([1.64872127, 0.36787944, 5])
