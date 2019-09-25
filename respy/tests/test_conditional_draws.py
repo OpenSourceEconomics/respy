@@ -22,21 +22,19 @@ def kalman_results():
 
 @pytest.mark.parametrize("i", range(20))
 def test_update_and_evaluate_likelihood(i, kalman_results):
-    fix = kalman_results
-    inp = fix["mean"][i]["input"]
+    inp = kalman_results["mean"][i]["input"]
     calculated_mean, calculated_like = update_mean_and_evaluate_likelihood(*inp)
-    expected_mean = fix["mean"][i]["output_mean"]
-    expected_like = fix["mean"][i]["output_loglike"]
+    expected_mean = kalman_results["mean"][i]["output_mean"]
+    expected_like = kalman_results["mean"][i]["output_loglike"]
     aaae(calculated_mean, expected_mean)
     aaae(calculated_like, expected_like)
 
 
 @pytest.mark.parametrize("i", range(10))
 def test_update_cholcovs_with_error(i, kalman_results):
-    fix = kalman_results
-    inp = fix["cov_error"][i]["input"]
+    inp = kalman_results["cov_error"][i]["input"]
     calculated_chol = update_cholcov_with_measurement_error(**inp)
-    expected_chol = fix["cov_error"][i]["output"]
+    expected_chol = kalman_results["cov_error"][i]["output"]
 
     calculated_cov = np.matmul(
         calculated_chol, np.transpose(calculated_chol, axes=(0, 2, 1))
