@@ -4,14 +4,16 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal as aaae
 
-from respy.conditional_draws import calculate_conditional_draws
+from respy.conditional_draws import calculate_conditional_draws2
 from respy.conditional_draws import update_cholcov
 from respy.conditional_draws import update_cholcov_with_measurement_error
 from respy.conditional_draws import update_mean_and_evaluate_likelihood
+from respy.config import HUGE_FLOAT
 from respy.config import TEST_RESOURCES_DIR
 
 
 def fixture():
+    """The inputs and outputs were generated using a well tested Kalman filter."""
     with open(TEST_RESOURCES_DIR / "conditional_draws_fixture.pickle", "rb") as p:
         fix = pickle.load(p)
     return fix
@@ -32,9 +34,15 @@ def test_update_and_evaluate_likelihood(i):
 def test_update_cholcovs_with_error(i):
     fix = fixture()
     inp = fix["cov_error"][i]["input"]
-    calculated = update_cholcov_with_measurement_error(**inp)
-    expected = fix["cov_error"][i]["output"]
-    aaae(calculated, expected)
+    calculated_chol = update_cholcov_with_measurement_error(**inp)
+    expected_chol = fix["cov_error"][i]["output"]
+
+    calculated_cov = np.matmul(
+        calculated_chol, np.transpose(calculated_chol, axes=(0, 2, 1))
+    )
+    expected_cov = np.matmul(expected_chol, np.transpose(expected_chol, axes=(0, 2, 1)))
+
+    aaae(calculated_cov, expected_cov)
 
 
 def test_update_cholcovs():
@@ -61,7 +69,9 @@ def test_calculate_conditional_draws():
     updated_chols = np.zeros((3, 3, 3))
     updated_chols[1] = np.array([[1, 0, 0], [2, 3, 0], [4, 5, 6]])
 
-    calculated = calculate_conditional_draws(draws, updated_mean, updated_chols, 1)[0]
+    calculated = calculate_conditional_draws2(
+        draws, updated_mean, updated_chols, 1, HUGE_FLOAT
+    )[0]
     expected = np.array([1.64872127, 0.36787944, 5])
 
     aaae(calculated, expected)
