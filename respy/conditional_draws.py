@@ -58,8 +58,6 @@ def create_draws_and_log_prob_wages(
         of the observed wages, correcting for measurement error if necessary.
 
     """
-    meas_sds = meas_sds[:n_wages]
-
     n_obs, n_choices = wages_systematic.shape
 
     choices = choices.astype(np.uint16)
@@ -109,7 +107,7 @@ def update_mean_and_evaluate_likelihood(
     choice : int
         The observed choice
     meas_sds : np.ndarray
-        1d array of length n_wages with standard errors of measurement errors.
+        1d array of length n_choices with standard errors of measurement errors.
 
     Returns
     -------
@@ -136,7 +134,7 @@ def update_mean_and_evaluate_likelihood(
         loglike[0] = 0
 
 
-def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds):
+def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds, n_wages):
     """Make a Kalman covariance updated for all possible cases.
 
     Parameters
@@ -147,6 +145,9 @@ def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds):
 
     meas_sds: numpy.ndarray
         the standard deviations of the measurement errors. Has length n_wages.
+
+    n_wages : int
+        number of wage sectors.
 
     Returns
     -------
@@ -165,7 +166,6 @@ def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds):
         Wiley and sons, 2012.
 
     """
-    n_wages = len(meas_sds)
     n_choices = len(shocks_cholesky)
 
     updated_chols = np.zeros((n_wages + 1, n_choices, n_choices))
