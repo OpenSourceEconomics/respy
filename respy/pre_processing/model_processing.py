@@ -260,7 +260,8 @@ def _parse_measurement_errors(optim_paras, params):
         labels = [f"sd_{choice}" for choice in optim_paras["choices_w_wage"]]
         assert set(params.loc["meas_error"].index) == set(labels), (
             "Standard deviations of measurement error have to be provided for all or "
-            "none of the choices with wages."
+            "none of the choices with wages. There can't be standard deviations of "
+            "measurement errors for choices without wage."
         )
         meas_error[: len(labels)] = params.loc["meas_error"].loc[labels].to_numpy()
     else:

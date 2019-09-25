@@ -12,7 +12,8 @@ from respy.config import HUGE_FLOAT
 from respy.config import TEST_RESOURCES_DIR
 
 
-def fixture():
+@pytest.fixture
+def kalman_results():
     """The inputs and outputs were generated using a well tested Kalman filter."""
     with open(TEST_RESOURCES_DIR / "conditional_draws_fixture.pickle", "rb") as p:
         fix = pickle.load(p)
@@ -20,8 +21,8 @@ def fixture():
 
 
 @pytest.mark.parametrize("i", range(20))
-def test_update_and_evaluate_likelihood(i):
-    fix = fixture()
+def test_update_and_evaluate_likelihood(i, kalman_results):
+    fix = kalman_results
     inp = fix["mean"][i]["input"]
     calculated_mean, calculated_like = update_mean_and_evaluate_likelihood(*inp)
     expected_mean = fix["mean"][i]["output_mean"]
@@ -31,8 +32,8 @@ def test_update_and_evaluate_likelihood(i):
 
 
 @pytest.mark.parametrize("i", range(10))
-def test_update_cholcovs_with_error(i):
-    fix = fixture()
+def test_update_cholcovs_with_error(i, kalman_results):
+    fix = kalman_results
     inp = fix["cov_error"][i]["input"]
     calculated_chol = update_cholcov_with_measurement_error(**inp)
     expected_chol = fix["cov_error"][i]["output"]

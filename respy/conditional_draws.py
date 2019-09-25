@@ -74,7 +74,8 @@ def create_draws_and_log_prob_wages(
 
     if is_meas_error:
         updated_chols = update_cholcov_with_measurement_error(
-            shocks_cholesky, meas_sds, n_wages)
+            shocks_cholesky, meas_sds, n_wages
+        )
     else:
         updated_chols = update_cholcov(shocks_cholesky, n_wages)
 
@@ -120,17 +121,17 @@ def update_mean_and_evaluate_likelihood(
         log likelihood of observing the observed shock. 0 if no shock was observed.
 
     """
-    dim = len(cov)
+    n_choices = len(cov)
     invariant = np.log(1 / (2 * np.pi) ** 0.5)
 
     if np.isfinite(shock):
         sigma_squared = cov[choice, choice] + meas_sds[choice] ** 2
         sigma = np.sqrt(sigma_squared)
-        for i in range(dim):
+        for i in range(n_choices):
             updated_mean[i] = cov[choice, i] * shock / sigma_squared
         loglike[0] = invariant - np.log(sigma) - shock ** 2 / (2 * sigma_squared)
     else:
-        for i in range(dim):
+        for i in range(n_choices):
             updated_mean[i] = 0
         loglike[0] = 0
 
@@ -171,11 +172,11 @@ def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds, n_wages):
 
     updated_chols = np.zeros((n_wages + 1, n_choices, n_choices))
 
-    for choice in range(n_wages):
+    for i in range(n_wages):
         extended_cholcov_t = np.zeros((n_choices + 1, n_choices + 1))
         extended_cholcov_t[1:, 1:] = shocks_cholesky.T
-        extended_cholcov_t[0, 0] = meas_sds[choice]
-        extended_cholcov_t[1:, 0] = shocks_cholesky.T[:, choice]
+        extended_cholcov_t[0, 0] = meas_sds[i]
+        extended_cholcov_t[1:, 0] = shocks_cholesky.T[:, i]
 
         m = n_choices + 1
         for f in range(m):
@@ -197,7 +198,7 @@ def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds, n_wages):
                         extended_cholcov_t[g - 1, k_] = c_ * helper1 + s_ * helper2
                         extended_cholcov_t[g, k_] = -s_ * helper1 + c_ * helper2
 
-        updated_chols[choice] = extended_cholcov_t[1:, 1:].T
+        updated_chols[i] = extended_cholcov_t[1:, 1:].T
     updated_chols[-1] = shocks_cholesky
     return updated_chols
 
@@ -226,25 +227,19 @@ def update_cholcov(shocks_cholesky, n_wages):
 
     updated_chols = np.zeros((n_wages + 1, n_choices, n_choices))
 
-    for choice in range(n_choices):
-        reduced_cov = np.delete(np.delete(cov, choice, axis=1), choice, axis=0)
-        choice_var = cov[choice, choice]
+    for i in range(n_choices):
+        reduced_cov = np.delete(np.delete(cov, i, axis=1), i, axis=0)
+        choice_var = cov[i, i]
 
-        f = np.delete(cov[choice], choice)
+        f = np.delete(cov[i], i)
 
         updated_reduced_cov = reduced_cov - np.outer(f, f) / choice_var
         updated_reduced_chol = robust_cholesky(updated_reduced_cov)
 
-        updated_chols[choice, :choice, :choice] = updated_reduced_chol[:choice, :choice]
-        updated_chols[choice, :choice, choice + 1 :] = updated_reduced_chol[
-            :choice, choice:
-        ]
-        updated_chols[choice, choice + 1 :, :choice] = updated_reduced_chol[
-            choice:, :choice
-        ]
-        updated_chols[choice, choice + 1 :, choice + 1 :] = updated_reduced_chol[
-            choice:, choice:
-        ]
+        updated_chols[i, :i, :i] = updated_reduced_chol[:i, :i]
+        updated_chols[i, :i, i + 1 :] = updated_reduced_chol[:i, i:]
+        updated_chols[i, i + 1 :, :i] = updated_reduced_chol[i:, :i]
+        updated_chols[i, i + 1 :, i + 1 :] = updated_reduced_chol[i:, i:]
 
     updated_chols[-1] = shocks_cholesky
 
