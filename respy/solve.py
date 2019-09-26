@@ -113,7 +113,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             not_interpolated = get_not_interpolated_indicator(
                 options["interpolation_points"],
                 n_states_in_period,
-                options["solution_seed"] + period,
+                next(options["solution_seed_iteration"]),
             )
 
             # Constructing the exogenous variable for all states, including the ones
