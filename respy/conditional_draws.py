@@ -206,7 +206,7 @@ def update_cholcov(shocks_cholesky, n_wages):
 
     updated_chols = np.zeros((n_wages + 1, n_choices, n_choices))
 
-    for i in range(n_choices):
+    for i in range(n_wages):
         reduced_cov = np.delete(np.delete(cov, i, axis=1), i, axis=0)
         choice_var = cov[i, i]
 
