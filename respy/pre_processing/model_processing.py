@@ -246,14 +246,26 @@ def _sort_shocks_cov_chol(optim_paras, params, type_):
 
 
 def _parse_measurement_errors(optim_paras, params):
-    """Parse correctly sorted measurement errors."""
+    """Parse correctly sorted measurement errors.
+
+    optim_paras["is_meas_error"] is only False if there are no meas_error sds in params,
+    not if they are all zero. Otherwise we would introduce a kink into the likelihood
+    function.
+
+    """
     meas_error = np.zeros(len(optim_paras["choices"]))
 
     if "meas_error" in params.index:
+        optim_paras["is_meas_error"] = True
         labels = [f"sd_{choice}" for choice in optim_paras["choices_w_wage"]]
+        assert set(params.loc["meas_error"].index) == set(labels), (
+            "Standard deviations of measurement error have to be provided for all or "
+            "none of the choices with wages. There can't be standard deviations of "
+            "measurement errors for choices without wage."
+        )
         meas_error[: len(labels)] = params.loc["meas_error"].loc[labels].to_numpy()
     else:
-        meas_error[: len(optim_paras["choices_w_wage"])] = 1e-6
+        optim_paras["is_meas_error"] = False
 
     optim_paras["meas_error"] = meas_error
 
