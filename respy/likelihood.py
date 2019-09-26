@@ -68,11 +68,7 @@ def get_crit_func(params, options, df, version="log_like"):
     ) = _process_estimation_data(df, state_space, optim_paras, options)
 
     base_draws_est = create_base_draws(
-        (
-            options["n_periods"],
-            options["estimation_draws"],
-            len(optim_paras["choices"]),
-        ),
+        (len(choices), options["estimation_draws"], len(optim_paras["choices"])),
         next(options["estimation_seed_startup"]),
     )
 
@@ -120,7 +116,7 @@ def log_like(
     params : pandas.Series
         Parameter Series
     choices : numpy.ndarray
-        Array with shape (n_observations, n_types) containing choices for each
+        Array with shape (n_observations * n_types) containing choices for each
         individual-period pair.
     idx_indiv_first_obs : numpy.ndarray
         Array with shape (n_individuals,) containing indices for the first observation
@@ -174,7 +170,7 @@ def log_like_obs(
     params : pandas.Series
         Parameter Series
     choices : numpy.ndarray
-        Array with shape (n_observations, n_types) containing choices for each
+        Array with shape (n_observations * n_types) containing choices for each
         individual-period pair.
     idx_indiv_first_obs : numpy.ndarray
         Array with shape (n_individuals,) containing indices for the first observation
@@ -239,7 +235,7 @@ def _internal_log_like_obs(
     state_space : :class:`~respy.state_space.StateSpace`
         Class of state space.
     choices : numpy.ndarray
-        Array with shape (n_observations, n_types) containing choices for each
+        Array with shape (n_observations * n_types) containing choices for each
         individual-period pair.
     idx_indiv_first_obs : numpy.ndarray
         Array with shape (n_individuals,) containing indices for the first observation
@@ -268,7 +264,6 @@ def _internal_log_like_obs(
     n_choices = len(optim_paras["choices"])
 
     wages_systematic = state_space.wages[indices].reshape(n_obs * n_types, -1)
-    periods = state_space.states[indices, 0].flatten()
 
     draws, wage_loglikes = create_draws_and_log_prob_wages(
         log_wages_observed,
@@ -276,9 +271,9 @@ def _internal_log_like_obs(
         base_draws_est,
         choices,
         optim_paras["shocks_cholesky"],
-        optim_paras["meas_error"],
-        periods,
         len(optim_paras["choices_w_wage"]),
+        optim_paras["meas_error"],
+        optim_paras["is_meas_error"],
     )
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
@@ -532,7 +527,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         .repeat(optim_paras["n_types"])
     )
 
-    # For the estimation, choices are needed with shape (n_observations, n_types).
+    # For the estimation, choices are needed with shape (n_observations * n_types).
     choices = df.choice.to_numpy().repeat(optim_paras["n_types"])
 
     # For the type covariates, we only need the first observation of each individual.
