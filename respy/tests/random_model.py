@@ -212,7 +212,7 @@ def simulate_truncated_data(params, options, is_missings=True):
     wages.
 
     """
-    optim_paras, options = process_params_and_options(params, options)
+    optim_paras, _ = process_params_and_options(params, options)
 
     simulate = get_simulate_func(params, options)
     df = simulate(params)
