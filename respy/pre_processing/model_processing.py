@@ -460,44 +460,6 @@ def _parse_lagged_choices(optim_paras, options, params):
     for cov in used_covariates:
         matches += re.findall(regex_pattern, covariates[cov])
 
-<<<<<<< HEAD
-    return list(set(choices_w_wage) | set(choices_w_nonpec))
-
-
-def _determine_observables_included_in_state_space(options, params):
-    covariates_params = set()
-
-    # Parse covariates from parameters.
-    for choice in options["choices"]:
-        covariates_params |= set(
-            params.loc[f"nonpec_{choice}"].index.get_level_values(0)
-        )
-        if choice in options["choices_w_wage"]:
-            covariates_params |= set(
-                params.loc[f"wage_{choice}"].index.get_level_values(0)
-            )
-
-    # Parse covariates from options
-    for cov in options["covariates"]:
-        covariates_params |= set(
-            re.findall(r"(\b[^>=0-9*/]+\b)", options["covariates"][cov])
-        )
-
-    # Remove coviariates
-    state_space_components = (
-        covariates_params
-        - set(options["covariates"])
-        - {f"exp_{choice}" for choice in options["choices_w_exp"]}
-    )
-
-    # TODO: Remove when lagged choices are only created if in covariates
-    state_space_components -= set("lagged_choice")
-
-    # Sort and convert to list
-    observables = sorted(state_space_components)
-
-    return observables
-=======
     n_lagged_choices = 0 if not matches else pd.to_numeric(matches).max()
 
     # Second, infer the number of lags defined in params.
@@ -540,4 +502,37 @@ def _determine_observables_included_in_state_space(options, params):
         optim_paras[match] = params.loc[match]
 
     return optim_paras
->>>>>>> develop
+
+def _determine_observables_included_in_state_space(options, params):
+    covariates_params = set()
+
+    # Parse covariates from parameters.
+    for choice in options["choices"]:
+        covariates_params |= set(
+            params.loc[f"nonpec_{choice}"].index.get_level_values(0)
+        )
+        if choice in options["choices_w_wage"]:
+            covariates_params |= set(
+                params.loc[f"wage_{choice}"].index.get_level_values(0)
+            )
+
+    # Parse covariates from options
+    for cov in options["covariates"]:
+        covariates_params |= set(
+            re.findall(r"(\b[^>=0-9*/]+\b)", options["covariates"][cov])
+        )
+
+    # Remove coviariates
+    state_space_components = (
+        covariates_params
+        - set(options["covariates"])
+        - {f"exp_{choice}" for choice in options["choices_w_exp"]}
+    )
+
+    # TODO: Remove when lagged choices are only created if in covariates
+    state_space_components -= set("lagged_choice")
+
+    # Sort and convert to list
+    observables = sorted(state_space_components)
+
+    return observables
