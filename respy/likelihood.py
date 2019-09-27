@@ -475,18 +475,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         predict probabilities for each type.
 
     """
-<<<<<<< HEAD
-    df = df.sort_values(["Identifier", "Period"])[
-        ["Identifier", "Period"]
-        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
-        + [observable.title() for observable in options["observables"]]
-        + ["Lagged_Choice", "Choice", "Wage"]
-    ]
-    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
-=======
     labels, _ = generate_column_labels_estimation(optim_paras)
->>>>>>> develop
-
     df = df.sort_values(["Identifier", "Period"])[labels]
     df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
     df = _convert_choice_variables_from_categorical_to_codes(df, optim_paras)
@@ -501,23 +490,17 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         period_experience = tuple(
             period_df[col].to_numpy() for col in period_df.filter(like="exp_").columns
         )
-<<<<<<< HEAD
-        period_lagged_choice = period_df.lagged_choice.to_numpy()
+        period_lagged_choice = tuple(
+            period_df[f"lagged_choice_{i}"].to_numpy()
+            for i in range(1, optim_paras["n_lagged_choices"] + 1)
+        )
         period_observables = tuple(
             period_df[observable].to_numpy() for observable in options["observables"]
         )
 
         period_indices = state_space.indexer[period][
-            period_experience + (period_lagged_choice,) + period_observables
-=======
-        period_lagged_choice = tuple(
-            period_df[f"lagged_choice_{i}"].to_numpy()
-            for i in range(1, optim_paras["n_lagged_choices"] + 1)
-        )
+            period_experience + period_lagged_choice + period_observables
 
-        period_indices = state_space.indexer[period][
-            period_experience + period_lagged_choice
->>>>>>> develop
         ]
 
         indices += (period_indices,)
