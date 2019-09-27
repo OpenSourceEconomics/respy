@@ -250,7 +250,7 @@ def _create_state_space(optim_paras, options):
 
     df = df.sort_values("period").reset_index(drop=True)
 
-    indexer = _create_state_space_indexer(df, optim_paras, options)
+    indexer = _create_state_space_indexer(df, optim_paras)
 
     for i in range(1, optim_paras["n_lagged_choices"] + 1):
         df[f"lagged_choice_{i}"] = pd.Categorical(
