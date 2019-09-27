@@ -245,12 +245,12 @@ def _create_state_space(optim_paras, options):
 
     df = _add_observables_to_state_space(df, options)
 
-    df = _add_types_to_state_space(df, options["n_types"])
+    df = _add_types_to_state_space(df, optim_paras["n_types"])
 
 
     df = df.sort_values("period").reset_index(drop=True)
 
-    indexer = _create_state_space_indexer(df, optim_paras)
+    indexer = _create_state_space_indexer(df, optim_paras, options)
 
     for i in range(1, optim_paras["n_lagged_choices"] + 1):
         df[f"lagged_choice_{i}"] = pd.Categorical(
@@ -478,7 +478,7 @@ def _add_types_to_state_space(df, n_types):
     return df
 
 
-def _create_state_space_indexer(df, optim_paras):
+def _create_state_space_indexer(df, optim_paras, options):
     """Create the indexer for the state space.
 
     The indexer consists of sub indexers for each period. This is much more
@@ -510,7 +510,7 @@ def _create_state_space_indexer(df, optim_paras):
         shape = (
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
             + (n_exp_choices + n_nonexp_choices,)* optim_paras["n_lagged_choices"]
-            + tuple(optim_paras["observables"].values())
+            + tuple(options["observables"].values())
             + (optim_paras["n_types"],)
         )
         sub_indexer = np.full(shape, -1, dtype=np.int32)
@@ -528,11 +528,11 @@ def _create_state_space_indexer(df, optim_paras):
             + (sub_df.type,)
 
         )
-        if "observables" in optim_paras:
+        if "observables" in options:
             indices += tuple(
-                sub_df[observable.lower()] for observable in optim_paras["observables"]
+                sub_df[observable.lower()] for observable in options["observables"]
             )
-        indices += (sub_df.type,)
+
 
         sub_indexer[indices] = np.arange(count_states, count_states + n_states)
         indexer.append(sub_indexer)
