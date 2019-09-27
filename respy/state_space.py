@@ -243,7 +243,7 @@ def _create_state_space(optim_paras, options):
     df = _add_initial_experiences_to_core_state_space(df, optim_paras)
 
 
-    df = _add_observables_to_state_space(df, options)
+    df = _add_observables_to_state_space(df, optim_paras)
 
     df = _add_types_to_state_space(df, optim_paras["n_types"])
 
@@ -449,11 +449,11 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
     return df
 
 
-def _add_observables_to_state_space(df, options):
+def _add_observables_to_state_space(df, optim_paras):
     container = []
 
-    for observable in options["observables"]:
-        for level in range(options["observables"][observable]):
+    for observable in optim_paras["observables"]:
+        for level in range(optim_paras["observables"][observable]):
             df_ = df.copy()
 
             # Add columns with observable level.
@@ -478,7 +478,7 @@ def _add_types_to_state_space(df, n_types):
     return df
 
 
-def _create_state_space_indexer(df, optim_paras, options):
+def _create_state_space_indexer(df, optim_paras):
     """Create the indexer for the state space.
 
     The indexer consists of sub indexers for each period. This is much more
@@ -510,7 +510,7 @@ def _create_state_space_indexer(df, optim_paras, options):
         shape = (
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
             + (n_exp_choices + n_nonexp_choices,)* optim_paras["n_lagged_choices"]
-            + tuple(options["observables"].values())
+            + tuple(optim_paras["observables"].values())
             + (optim_paras["n_types"],)
         )
         sub_indexer = np.full(shape, -1, dtype=np.int32)
@@ -528,9 +528,9 @@ def _create_state_space_indexer(df, optim_paras, options):
             + (sub_df.type,)
 
         )
-        if "observables" in options:
+        if "observables" in optim_paras:
             indices += tuple(
-                sub_df[observable.lower()] for observable in options["observables"]
+                sub_df[observable.lower()] for observable in optim_paras["observables"]
             )
 
 

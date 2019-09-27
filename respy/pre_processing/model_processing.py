@@ -104,6 +104,7 @@ def _parse_parameters(params, options):
     optim_paras = {}
 
     optim_paras["delta"] = params.loc[("delta", "delta")]
+    optim_paras["observables"] = options["observables"]
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
     optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
