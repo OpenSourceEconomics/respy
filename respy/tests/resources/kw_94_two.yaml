@@ -1,9 +1,3 @@
-choices:
-  edu:
-    max: 20
-    start: [10]
-    lagged: [1]
-    share: [1]
 estimation_draws: 200
 estimation_seed: 500
 estimation_tau: 500
@@ -13,3 +7,24 @@ simulation_agents: 1000
 simulation_seed: 132
 solution_draws: 500
 solution_seed: 456
+core_state_space_filters:
+  # In periods > 0, if agents accumulated experience only in one choice, lagged choice
+  # cannot be different.
+  - "period > 0 and exp_{i} == period and lagged_choice_1 != '{i}'"
+  # In periods > 0, if agents always accumulated experience, lagged choice cannot be
+  # non-experience choice.
+  - "period > 0 and exp_a + exp_b + exp_edu == period and lagged_choice_1 == '{j}'"
+  # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
+  # be school.
+  - "period > 0 and lagged_choice_1 == 'edu' and exp_edu == 0"
+  # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
+  - "lagged_choice_1 == '{k}' and exp_{k} == 0"
+  # In period 0, agents cannot choose occupation a or b or mil.
+  - "period == 0 and lagged_choice_1 == '{k}'"
+covariates:
+  constant: "1"
+  exp_a_square: exp_a ** 2
+  exp_b_square: exp_b ** 2
+  at_least_twelve_exp_edu: exp_edu >= 12
+  not_edu_last_period: lagged_choice_1 != 'edu'
+  edu_ten: exp_edu == 10

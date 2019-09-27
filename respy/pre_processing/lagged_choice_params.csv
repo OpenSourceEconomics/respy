@@ -1,0 +1,7 @@
+category,name,value,comment,old_category,old_name
+wage_a,work_a_lagged,0.3054,gain of remaining in the same occupation as previous period (wage),coeffs_a,no_switch
+nonpec_a,not_exp_a_lagged,-1182.0,reward of switching to a from other occupation (non pecuniary),coeffs_a,first
+wage_b,work_b_lagged,0.0964,gain of remaining in the same occupation as previous period (wage),coeffs_b,no_switch
+nonpec_b,not_exp_b_lagged,-1647.0,reward of switching to a from other occupation (non pecuniary),coeffs_b,first
+nonpec_edu,is_return_not_high_school,-10700.0,reward for going back to college,coeffs_edu,reenroll_col
+nonpec_edu,is_return_high_school,-23283.0,reward for going back to high school,coeffs_edu,reenroll_hs

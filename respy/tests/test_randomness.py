@@ -19,9 +19,8 @@ def test_invariance_of_model_solution_in_solve_and_simulation(model_or_seed):
     np.testing.assert_array_equal(state_space.states, state_space_.states)
     np.testing.assert_array_equal(state_space.wages, state_space_.wages)
     np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
-
     np.testing.assert_array_equal(
-        state_space.continuation_values, state_space_.continuation_values
+        state_space.emax_value_functions, state_space_.emax_value_functions
     )
     np.testing.assert_array_equal(
         state_space.base_draws_sol, state_space_.base_draws_sol
@@ -40,16 +39,15 @@ def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     state_space = simulate.keywords["state_space"]
 
     crit_func = rp.get_crit_func(params, options, df)
-    crit_func(params)
+    _ = crit_func(params)
 
     state_space_ = crit_func.keywords["state_space"]
 
     np.testing.assert_array_equal(state_space.states, state_space_.states)
     np.testing.assert_array_equal(state_space.wages, state_space_.wages)
     np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
-
     np.testing.assert_array_equal(
-        state_space.continuation_values, state_space_.continuation_values
+        state_space.emax_value_functions, state_space_.emax_value_functions
     )
     np.testing.assert_array_equal(
         state_space.base_draws_sol, state_space_.base_draws_sol
