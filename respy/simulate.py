@@ -149,21 +149,19 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     states_df = pd.DataFrame(
         np.column_stack(container),
         columns=[f"exp_{i}" for i in optim_paras["choices_w_exp"]]
-                + [obs for obs in options["observables"]]
     ).assign(period=0)
-
-    for observable in options["observables"].keys():
-        container += (_get_random_initial_observable(observable, options, optim_paras),)
 
     for lag in reversed(range(1, n_lagged_choices + 1)):
         container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
-
+    for observable in options["observables"].keys():
+        container += (_get_random_initial_observable(observable, options, optim_paras),)
 
 
     container += (_get_random_types(states_df, optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
     current_states = np.column_stack(container).astype(np.uint8)
+    print(current_states)
 
     data = []
 
@@ -353,7 +351,7 @@ def _get_random_initial_observable(observable, options, optim_paras):
     probs = probs / probs.sum()
 
     return np.random.choice(
-        np.arange(options["observables"][observable], size=options["simulation_agents"]), p=probs
+        np.arange(options["observables"][observable]), size=options["simulation_agents"], p=probs
     )
 
 
