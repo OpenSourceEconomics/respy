@@ -162,6 +162,7 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
     # Create a matrix of initial states of simulated agents.
     current_states = np.column_stack(container).astype(np.uint8)
+    print(current_states)
 
     data = []
 
@@ -349,6 +350,7 @@ def _get_random_initial_observable(states_df, observable, options, optim_paras):
 
     probs = optim_paras[observable]
     probs = probs / probs.sum()
+
 
     obs = np.random.choice(
         np.arange(options["observables"][observable]), size=options["simulation_agents"], p=probs
