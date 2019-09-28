@@ -190,7 +190,7 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
     params, options = generate_random_model(myopic=True)
     optim_paras, options = process_params_and_options(params, options)
 
-    draws = np.random.randn(1, 4)
+    draws = np.random.randn(4)
 
     state_space = rp.solve(params, options)
 
