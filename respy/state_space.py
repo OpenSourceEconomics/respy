@@ -525,14 +525,14 @@ def _create_state_space_indexer(df, optim_paras):
                 sub_df[f"lagged_choice_{i}"].replace(choice_to_code)
                 for i in range(1, optim_paras["n_lagged_choices"] + 1)
             )
-            + (sub_df.type,)
+
 
         )
         if "observables" in optim_paras:
             indices += tuple(
                 sub_df[observable.lower()] for observable in optim_paras["observables"]
             )
-
+        indices = indices + (sub_df.type,)
 
         sub_indexer[indices] = np.arange(count_states, count_states + n_states)
         indexer.append(sub_indexer)

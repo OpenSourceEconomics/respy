@@ -112,7 +112,7 @@ def _parse_parameters(params, options):
     optim_paras = _parse_measurement_errors(optim_paras, params)
     optim_paras = _parse_types(optim_paras, params)
     optim_paras = _parse_lagged_choices(optim_paras, options, params)
-
+    optim_paras = _parse_observables(params, optim_paras)
     return optim_paras
 
 
@@ -503,6 +503,14 @@ def _parse_lagged_choices(optim_paras, options, params):
         optim_paras[match] = params.loc[match]
 
     return optim_paras
+
+def _parse_observables(params, optim_paras):
+    for x in optim_paras["observables"].keys():
+        optim_paras[x] = params.loc[x,"value"].to_numpy()
+    return optim_paras
+
+
+
 
 def _determine_observables_included_in_state_space(options, params):
     covariates_params = set()
