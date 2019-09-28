@@ -506,10 +506,9 @@ def _parse_lagged_choices(optim_paras, options, params):
 
 def _parse_observables(params, optim_paras):
     for x in optim_paras["observables"].keys():
-        optim_paras[x] = params.loc[x,"value"].to_numpy()
+        keys = [y for y in params.index if x == y[0]]
+        optim_paras[x] = params.loc[keys].to_numpy()
     return optim_paras
-
-
 
 
 def _determine_observables_included_in_state_space(options, params):

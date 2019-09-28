@@ -143,8 +143,7 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     container = ()
     for choice in optim_paras["choices_w_exp"]:
         container += (_get_random_initial_experience(choice, optim_paras, options),)
-    for observable in options["observables"]:
-        container += (_get_random_initial_observable(observable, options, optim_paras),)
+
 
     # Create a DataFrame to match columns to covariates. Is changed in-place.
     states_df = pd.DataFrame(
@@ -153,8 +152,13 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
                 + [obs for obs in options["observables"]]
     ).assign(period=0)
 
+    for observable in options["observables"].keys():
+        container += (_get_random_initial_observable(observable, options, optim_paras),)
+
     for lag in reversed(range(1, n_lagged_choices + 1)):
         container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
+
+
 
     container += (_get_random_types(states_df, optim_paras, options),)
 
@@ -349,7 +353,7 @@ def _get_random_initial_observable(observable, options, optim_paras):
     probs = probs / probs.sum()
 
     return np.random.choice(
-        options["observables"][observable], size=options["simulation_agents"], p=probs
+        np.arange(options["observables"][observable], size=options["simulation_agents"]), p=probs
     )
 
 
