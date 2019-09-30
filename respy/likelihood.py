@@ -69,7 +69,7 @@ def get_crit_func(params, options, df, version="log_like"):
 
     base_draws_est = create_base_draws(
         (len(choices), options["estimation_draws"], len(optim_paras["choices"])),
-        options["estimation_seed"],
+        next(options["estimation_seed_startup"]),
     )
 
     if version == "log_like":

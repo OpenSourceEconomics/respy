@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 import pandas as pd
 
@@ -6,8 +8,12 @@ def validate_options(o):
     for option, value in o.items():
         if "draws" in option:
             assert _is_positive_nonzero_integer(value)
-        elif "seed" in option:
+        elif option.endswith("_seed"):
             assert _is_nonnegative_integer(value)
+        elif option.endswith("_seed_startup") or option.endswith("_seed_iteration"):
+            assert isinstance(value, itertools.count)
+        else:
+            pass
 
     assert 0 < o["estimation_tau"]
 
