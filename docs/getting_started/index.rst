@@ -7,8 +7,7 @@ Getting Started
 
    introduction
    installation
-   tutorial.ipynb
    robinson-crusoe.ipynb
-   tutorial-lagged-choices.ipynb
    keane-and-wolpin-1994.ipynb
    keane-and-wolpin-1997.ipynb
+   tutorial-lagged-choices.ipynb
