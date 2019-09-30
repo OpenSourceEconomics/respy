@@ -30,3 +30,16 @@ This comprises but is not limited to the following Models:
     Statistics, 76(4): 648-672.
 
 - A cool Robinson-Crusoe model that you'll find after the installation instructions.
+
+
+Contact and Credits
+===================
+
+
+If you have any questions or comments, please do not hesitate to contact us via filing
+an issue on Github or directly via email.
+
+``respy`` was originally written as a mix of Python and Fortran by
+`Philipp Eisenhauer <https://github.com/peisenha>`_. It was then rewritten
+by `Tobias Raabe <https://github.com/tobiasraabe>`_ and
+`Janos Gabler <https://github.com/janosg>`_ as a pure Python package.
