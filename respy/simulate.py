@@ -353,7 +353,7 @@ def _get_random_initial_observable(states_df, observable, options, optim_paras):
     probs = probs / probs.sum()
     obs = np.random.choice(
         np.arange(optim_paras["observable_specification"][observable]),
-        size=optim_paras["simulation_agents"], p=probs
+        size=options["simulation_agents"], p=probs
     )
     states_df[observable] = obs
     return obs
