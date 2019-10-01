@@ -153,7 +153,7 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     for lag in reversed(range(1, n_lagged_choices + 1)):
         container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
 
-    for observable in options["observables"].keys():
+    for observable in optim_paras["observable_specification"].keys():
         container += (
         _get_random_initial_observable(states_df, observable, options, optim_paras),)
 
