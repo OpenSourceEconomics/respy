@@ -77,6 +77,8 @@ def generate_random_model(
     bound_constr=None,
     n_types=None,
     n_type_covariates=None,
+    n_observables=None,
+    n_observable_levels = None,
     myopic=False,
 ):
     """Generate a random model specification.
@@ -93,6 +95,11 @@ def generate_random_model(
         Number of unobserved types.
     n_type_covariates :
         Number of covariates to calculate type probabilities.
+    n_observables: int
+        Number of observable values
+    n_observable_levels: list
+       List containing the levels for each of the observables
+
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
 
@@ -156,7 +163,6 @@ def generate_random_model(
     else:
         lc_covariates = {}
         filters = []
-
     options = {
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
         "simulation_seed": np.random.randint(1, 1_000),
