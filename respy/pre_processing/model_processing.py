@@ -512,7 +512,7 @@ def _parse_lagged_choices(optim_paras, options, params):
 
     return optim_paras
 
-def _parse_observables(params, optim_paras):
+def _parse_observables(optim_paras, params):
     for x in optim_paras["observables"].keys():
         keys = [y for y in params.index if x == y[0]]
         optim_paras[x] = params.loc[keys].to_numpy()
