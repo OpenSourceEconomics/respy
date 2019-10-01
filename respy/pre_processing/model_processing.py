@@ -146,10 +146,10 @@ def _parse_choices(optim_paras, params, options):
     return optim_paras
 
 def _parse_observables(optim_paras, params):
-    if "observable" in params.index.get_level_values(0):
-        obs = [x[1][:-2] for x in params.index if "observable" in x[0]]
-        optim_paras["observable_levels"] = {x:obs.count(x) for x in set(obs)}
-        optim_paras["observable"] = sorted(params["observable"])
+    if "observables" in params.index.get_level_values(0):
+        obs = [x[1][:-2] for x in params.index if "observables" in x[0]]
+        optim_paras["observable_specification"] = {x:obs.count(x) for x in set(obs)}
+        optim_paras["observables"] = sorted(params["observables"])
 
     return optim_paras
 
