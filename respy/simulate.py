@@ -144,7 +144,6 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     for choice in optim_paras["choices_w_exp"]:
         container += (_get_random_initial_experience(choice, optim_paras, options),)
 
-
     # Create a DataFrame to match columns to covariates. Is changed in-place.
     states_df = pd.DataFrame(
         np.column_stack(container),
@@ -154,9 +153,8 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     for lag in reversed(range(1, n_lagged_choices + 1)):
         container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
 
-    for observable in options["observables"].keys():
+    for observable in options["observable_specification"].keys():
         container += (_get_random_initial_observable(states_df, observable, options, optim_paras),)
-
 
     container += (_get_random_types(states_df, optim_paras, options),)
 
@@ -246,10 +244,10 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
         # first position.
         if n_lagged_choices:
             current_states[
-                :, n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
+            :, n_choices_w_exp + 1: n_choices_w_exp + n_lagged_choices
             ] = current_states[
-                :, n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
-            ]
+                :, n_choices_w_exp: n_choices_w_exp + n_lagged_choices - 1
+                ]
             current_states[:, n_choices_w_exp] = choice
 
     simulated_data = _process_simulated_data(data, optim_paras)
@@ -282,6 +280,7 @@ def _get_random_initial_experience(choice, optim_paras, options):
     )
 
     return initial_experience
+
 
 def _get_random_lagged_choices(states_df, optim_paras, options, lag):
     """Get random, initial levels of lagged choices for simulated agents.
@@ -348,12 +347,12 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
 def _get_random_initial_observable(states_df, observable, options, optim_paras):
     np.random.seed(options["simulation_seed"])
 
-    probs = optim_paras[observable]
+    probs = np.array([optim_paras.loc["{}_{}".format(observable, x)] for x in
+                      range(optim_paras["observable_specification"][observable])])
     probs = probs / probs.sum()
 
-
     obs = np.random.choice(
-        np.arange(options["observables"][observable]), size=options["simulation_agents"], p=probs
+        np.arange(optim_paras["observable"][observable]), size=options["simulation_agents"], p=probs
     )
     states_df[observable] = obs
     return obs
@@ -367,14 +366,14 @@ def _get_random_initial_observable(states_df, observable, options, optim_paras):
     target="cpu",
 )
 def calculate_value_functions_and_flow_utilities(
-    wages,
-    nonpec,
-    continuation_values,
-    draws,
-    delta,
-    is_inadmissible,
-    value_functions,
-    flow_utilities,
+        wages,
+        nonpec,
+        continuation_values,
+        draws,
+        delta,
+        is_inadmissible,
+        value_functions,
+        flow_utilities,
 ):
     """Calculate the choice-specific value functions and flow utilities.
 
@@ -428,8 +427,8 @@ def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
     for i in range(1, optim_paras["n_lagged_choices"] + 1):
         df[f"Lagged_Choice_{i}"] = (
             df[f"Lagged_Choice_{i}"]
-            .cat.set_categories(code_to_choice)
-            .cat.rename_categories(code_to_choice)
+                .cat.set_categories(code_to_choice)
+                .cat.rename_categories(code_to_choice)
         )
 
     return df
@@ -440,9 +439,9 @@ def _process_simulated_data(data, optim_paras):
 
     df = (
         pd.DataFrame(data=np.vstack(data), columns=labels)
-        .astype(dtypes)
-        .sort_values(["Identifier", "Period"])
-        .reset_index(drop=True)
+            .astype(dtypes)
+            .sort_values(["Identifier", "Period"])
+            .reset_index(drop=True)
     )
 
     df = _convert_choice_variables_from_codes_to_categorical(df, optim_paras)
