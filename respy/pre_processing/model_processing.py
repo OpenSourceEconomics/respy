@@ -148,7 +148,7 @@ def _parse_observables(optim_paras, params):
     if "observables" in params.index.get_level_values(0):
         obs = [x[1][:-2] for x in params.index if "observables" in x[0]]
         optim_paras["observable_specification"] = {x:obs.count(x) for x in set(obs)}
-        optim_paras["observables"] = sorted(params["observables"])
+        optim_paras["observables"] = params["observables"]
 
     return optim_paras
 
