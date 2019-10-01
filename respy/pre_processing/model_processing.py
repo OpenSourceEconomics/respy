@@ -104,7 +104,7 @@ def _parse_parameters(params, options):
     optim_paras = {}
 
     optim_paras["delta"] = params.loc[("delta", "delta")]
-    optim_paras["observables"] = options["observables"]
+    optim_paras = _parse_observables(optim_paras, params, options)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
     optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
@@ -142,6 +142,14 @@ def _parse_choices(optim_paras, params, options):
     # Dictionaries are insertion ordered since Python 3.6+.
     order = optim_paras["choices_w_exp"] + optim_paras["choices_wo_exp"]
     optim_paras["choices"] = {choice: {} for choice in order}
+
+    return optim_paras
+
+def _parse_observables(optim_paras, params):
+    if "observable" in params.index.get_level_values(0):
+        obs = [x[1][:-2] for x in params.index if "observable" in x[0]]
+        optim_paras["observable_levels"] = {x:obs.count(x) for x in set(obs)}
+        optim_paras["observable"] = sorted(params["observable"])
 
     return optim_paras
 
