@@ -452,8 +452,8 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
 def _add_observables_to_state_space(df, optim_paras):
     container = []
 
-    for observable in optim_paras["observables"]:
-        for level in range(optim_paras["observables"][observable]):
+    for observable in optim_paras["observable_specification"].keys():
+        for level in range(optim_paras["observable_specification"][observable]):
             df_ = df.copy()
 
             # Add columns with observable level.
