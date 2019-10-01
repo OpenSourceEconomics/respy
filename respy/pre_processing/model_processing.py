@@ -112,7 +112,6 @@ def _parse_parameters(params, options):
     optim_paras = _parse_measurement_errors(optim_paras, params)
     optim_paras = _parse_types(optim_paras, params)
     optim_paras = _parse_lagged_choices(optim_paras, options, params)
-    optim_paras = _parse_observables(params, optim_paras)
     return optim_paras
 
 
