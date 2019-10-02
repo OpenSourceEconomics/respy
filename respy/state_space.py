@@ -451,19 +451,17 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
 
 def _add_observables_to_state_space(df, optim_paras):
     container = []
-    if "observable" not in optim_paras.keys():
-        return df
-    else:
-        for observable in optim_paras["observables"].keys():
-            for level in range(len(optim_paras["observables"][observable])):
-                df_ = df.copy()
 
-                # Add columns with observable level.
-                df_[observable] = level
+    for observable in optim_paras["observables"].keys():
+        for level in range(len(optim_paras["observables"][observable])):
+            df_ = df.copy()
 
-                container.append(df_)
+            # Add columns with observable level.
+            df_[observable] = level
 
-            df = pd.concat(container, axis="rows", sort=False)
+            container.append(df_)
+
+        df = pd.concat(container, axis="rows", sort=False)
 
     return df
 
@@ -512,7 +510,7 @@ def _create_state_space_indexer(df, optim_paras):
         shape = (
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
             + (n_exp_choices + n_nonexp_choices,)* optim_paras["n_lagged_choices"]
-            + tuple(len(x) for x in optim_paras["observables"].values())
+            + tuple((len(x) for x in optim_paras["observables"].values())
             + (optim_paras["n_types"],)
         )
         sub_indexer = np.full(shape, -1, dtype=np.int32)
