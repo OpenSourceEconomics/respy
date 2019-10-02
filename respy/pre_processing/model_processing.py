@@ -149,7 +149,7 @@ def _parse_observables(optim_paras, params):
     if "observables" in params.index.get_level_values(0):
         obs = [x[1][:-2] for x in params.index if "observables" in x[0]]
         optim_paras["observables"] = {
-            x: np.array([params.loc[("observables", "{}_{}".format(x, y)), "value"] for y in range(obs.count(x))]) for x
+            x: np.array([params.loc[("observables", "{}_{}".format(x, y))] for y in range(obs.count(x))]) for x
             in set(obs)}
     return optim_paras
 
