@@ -244,6 +244,7 @@ def _create_state_space(optim_paras, options):
 
 
     df = _add_observables_to_state_space(df, optim_paras)
+    print(df)
 
     df = _add_types_to_state_space(df, optim_paras["n_types"])
 
@@ -455,6 +456,7 @@ def _add_observables_to_state_space(df, optim_paras):
     for observable in optim_paras["observables"].keys():
         for level in range(len(optim_paras["observables"][observable])):
             df_ = df.copy()
+            print(level)
 
             # Add columns with observable level.
             df_[observable] = level
@@ -462,6 +464,7 @@ def _add_observables_to_state_space(df, optim_paras):
             container.append(df_)
 
         df = pd.concat(container, axis="rows", sort=False)
+
 
     return df
 
@@ -532,6 +535,7 @@ def _create_state_space_indexer(df, optim_paras):
             indices += tuple(
                 sub_df[observable.lower()] for observable in optim_paras["observables"].keys()
             )
+
         indices = indices + (sub_df.type,)
 
         sub_indexer[indices] = np.arange(count_states, count_states + n_states)

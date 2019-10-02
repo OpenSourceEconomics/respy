@@ -141,5 +141,4 @@ def _observable_template(observables):
             ind = (f"observables", "{}observable_{}".format(x,y))
             dat = [probs[y], f"Probability of observable {x} being level choice {y}"]
             to_concat.append(_base_row(ind, dat))
-
     return pd.concat(to_concat, axis=0, sort=False)

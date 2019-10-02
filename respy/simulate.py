@@ -162,8 +162,6 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
     # Create a matrix of initial states of simulated agents.
     current_states = np.column_stack(container).astype(np.uint8)
-    print(current_states)
-
     data = []
 
     for period in range(n_periods):
