@@ -4,7 +4,7 @@ import pandas as pd
 from respy.config import ROOT_DIR
 
 
-def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
+def csv_template(n_types, n_type_covariates, observables, initialize_coeffs=True):
     """Creates a template for the parameter specification.
 
     Parameters
@@ -25,8 +25,17 @@ def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
             _type_shift_template(n_types),
         ]
         template = pd.concat(to_concat, axis=0, sort=False)
+
+    if observables is not False:
+        to_concat = [
+            template,
+            _observable_template(observables)
+        ]
+        template = pd.concat(to_concat, axis=0, sort=False)
+
     if initialize_coeffs is False:
         template["value"] = np.nan
+
 
     return template
 
@@ -122,3 +131,15 @@ def _base_row(index_tuple, data):
     cols = ["value", "comment"]
     df = pd.DataFrame(index=ind, columns=cols, data=[data])
     return df
+
+def _observable_template(observables):
+    to_concat = []
+    for x in range(len(observables)):
+        probs = np.random.uniform(size=observables[x])
+        probs /= probs.sum()
+        for y in range(observables[x]):
+            ind = (f"observables", "{}observable_{}".format(x,y))
+            dat = [probs[y], f"Probability of observable {x} being level choice {y}"]
+            to_concat.append(_base_row(ind, dat))
+
+    return pd.concat(to_concat, axis=0, sort=False)

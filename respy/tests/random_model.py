@@ -77,8 +77,7 @@ def generate_random_model(
     bound_constr=None,
     n_types=None,
     n_type_covariates=None,
-    n_observables=None,
-    n_observable_levels = None,
+    observables=None,
     myopic=False,
 ):
     """Generate a random model specification.
@@ -116,9 +115,19 @@ def generate_random_model(
         n_types = np.random.randint(1, bound_constr["max_types"] + 1)
     if n_type_covariates is None:
         n_type_covariates = np.random.randint(2, 4)
+    if observables is None:
+        n_obs = np.random.randint(0,3)
+        if n_obs == 0:
+            observables = False
+        else:
+            observables = np.random.randint(4, size = n__obs)
+
+
+
+
 
     params = csv_template(
-        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
+        n_types=n_types, n_type_covariates=n_type_covariates, observables = observables, initialize_coeffs=False
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
