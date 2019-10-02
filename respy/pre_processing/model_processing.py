@@ -104,7 +104,7 @@ def _parse_parameters(params, options):
     optim_paras = {}
 
     optim_paras["delta"] = params.loc[("delta", "delta")]
-    optim_paras = _parse_observables(optim_paras, params, options)
+    optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
     optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
@@ -112,7 +112,6 @@ def _parse_parameters(params, options):
     optim_paras = _parse_measurement_errors(optim_paras, params)
     optim_paras = _parse_types(optim_paras, params)
     optim_paras = _parse_lagged_choices(optim_paras, options, params)
-    optim_paras = _parse_observables(params, optim_paras)
     return optim_paras
 
 
@@ -146,10 +145,10 @@ def _parse_choices(optim_paras, params, options):
     return optim_paras
 
 def _parse_observables(optim_paras, params):
-    if "observable" in params.index.get_level_values(0):
-        obs = [x[1][:-2] for x in params.index if "observable" in x[0]]
-        optim_paras["observable_levels"] = {x:obs.count(x) for x in set(obs)}
-        optim_paras["observable"] = sorted(params["observable"])
+    if "observables" in params.index.get_level_values(0):
+        obs = [x[1][:-2] for x in params.index if "observables" in x[0]]
+        optim_paras["observable_specification"] = {x:obs.count(x) for x in set(obs)}
+        optim_paras["observables"] = params["observables"]
 
     return optim_paras
 
@@ -511,13 +510,6 @@ def _parse_lagged_choices(optim_paras, options, params):
         optim_paras[match] = params.loc[match]
 
     return optim_paras
-
-def _parse_observables(params, optim_paras):
-    for x in optim_paras["observables"].keys():
-        keys = [y for y in params.index if x == y[0]]
-        optim_paras[x] = params.loc[keys].to_numpy()
-    return optim_paras
-
 
 def _determine_observables_included_in_state_space(options, params):
     covariates_params = set()

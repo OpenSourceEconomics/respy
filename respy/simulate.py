@@ -153,8 +153,10 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     for lag in reversed(range(1, n_lagged_choices + 1)):
         container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
 
+
     for observable in options["observable_specification"].keys():
         container += (_get_random_initial_observable(states_df, observable, options, optim_paras),)
+
 
     container += (_get_random_types(states_df, optim_paras, options),)
 
@@ -345,14 +347,14 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
 
 
 def _get_random_initial_observable(states_df, observable, options, optim_paras):
-    np.random.seed(options["simulation_seed"])
+    np.random.seed(next(options["simulation_seed_iteration"]))
 
-    probs = np.array([optim_paras.loc["{}_{}".format(observable, x)] for x in
-                      range(optim_paras["observable_specification"][observable])])
+    probs = np.array([optim_paras["observables"]["{}_{}".format(observable, x)] for x in
+             range(optim_paras["observable_specification"][observable])])
     probs = probs / probs.sum()
-
     obs = np.random.choice(
-        np.arange(optim_paras["observable"][observable]), size=options["simulation_agents"], p=probs
+        np.arange(optim_paras["observable_specification"][observable]),
+        size=options["simulation_agents"], p=probs
     )
     states_df[observable] = obs
     return obs
