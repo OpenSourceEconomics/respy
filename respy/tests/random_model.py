@@ -120,7 +120,7 @@ def generate_random_model(
         if n_obs == 0:
             observables = False
         else:
-            observables = np.random.randint(4, size = n__obs)
+            observables = np.random.randint(4, size = n_obs)
 
 
 
