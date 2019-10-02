@@ -154,7 +154,7 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
         container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
 
 
-    for observable in options["observable_specification"].keys():
+    for observable in optim_paras["observable_specification"].keys():
         container += (_get_random_initial_observable(states_df, observable, options, optim_paras),)
 
 
