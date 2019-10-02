@@ -348,7 +348,7 @@ def _get_random_initial_observable(states_df, observable, options, optim_paras):
     np.random.seed(next(options["simulation_seed_iteration"]))
 
     probs = optim_paras["observables"][observable]
-    probs = probs / probs.sum()
+    print(probs)
     obs = np.random.choice(
         np.arange(len(probs)),
         size=options["simulation_agents"], p=probs

@@ -16,7 +16,7 @@ from respy.pre_processing.specification_helpers import (
 from respy.pre_processing.specification_helpers import (
     lagged_choices_covariates_template,
 )
-from respy.pre_processing.specification_helpers import lagged_choices_probs_template
+from respy.pre_processing.specification_helpers import lagged_choices_probs_template, observable_template
 from respy.shared import generate_column_labels_estimation
 from respy.simulate import get_simulate_func
 
@@ -122,15 +122,17 @@ def generate_random_model(
         else:
             observables = np.random.randint(1, 4, size = n_obs)
 
-
-
-
-
     params = csv_template(
         n_types=n_types, n_type_covariates=n_type_covariates, observables = observables, initialize_coeffs=False
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
+    if observables is not False:
+        to_concat = [
+            params,
+            observable_template(observables)
+        ]
+        template = pd.concat(to_concat, axis=0, sort=False)
     params.loc["delta", "value"] = 1 - np.random.uniform() if myopic is False else 0.0
 
     n_shock_coeffs = len(params.loc["shocks_sdcorr"])

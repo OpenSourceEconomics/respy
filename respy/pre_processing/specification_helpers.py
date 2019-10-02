@@ -26,13 +26,6 @@ def csv_template(n_types, n_type_covariates, observables, initialize_coeffs=True
         ]
         template = pd.concat(to_concat, axis=0, sort=False)
 
-    if observables is not False:
-        to_concat = [
-            template,
-            _observable_template(observables)
-        ]
-        template = pd.concat(to_concat, axis=0, sort=False)
-
     if initialize_coeffs is False:
         template["value"] = np.nan
 
@@ -132,7 +125,7 @@ def _base_row(index_tuple, data):
     df = pd.DataFrame(index=ind, columns=cols, data=[data])
     return df
 
-def _observable_template(observables):
+def observable_template(observables):
     to_concat = []
     for x in range(len(observables)):
         probs = np.random.uniform(size=observables[x])
@@ -140,5 +133,6 @@ def _observable_template(observables):
         for y in range(observables[x]):
             ind = (f"observables", "{}observable_{}".format(x,y))
             dat = [probs[y], f"Probability of observable {x} being level choice {y}"]
+            print(dat)
             to_concat.append(_base_row(ind, dat))
     return pd.concat(to_concat, axis=0, sort=False)
