@@ -4,7 +4,7 @@ import pandas as pd
 from respy.config import ROOT_DIR
 
 
-def csv_template(n_types, n_type_covariates, observables, initialize_coeffs=True):
+def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
     """Creates a template for the parameter specification.
 
     Parameters

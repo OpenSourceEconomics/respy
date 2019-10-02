@@ -94,10 +94,8 @@ def generate_random_model(
         Number of unobserved types.
     n_type_covariates :
         Number of covariates to calculate type probabilities.
-    n_observables: int
-        Number of observable values
-    n_observable_levels: list
-       List containing the levels for each of the observables
+    n_observables: list
+        list containing the level of individual observables
 
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
@@ -123,7 +121,7 @@ def generate_random_model(
             observables = np.random.randint(1, 4, size = n_obs)
 
     params = csv_template(
-        n_types=n_types, n_type_covariates=n_type_covariates, observables = observables, initialize_coeffs=False
+        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
@@ -132,7 +130,8 @@ def generate_random_model(
             params,
             observable_template(observables)
         ]
-        template = pd.concat(to_concat, axis=0, sort=False)
+        params = pd.concat(to_concat, axis=0, sort=False)
+
     params.loc["delta", "value"] = 1 - np.random.uniform() if myopic is False else 0.0
 
     n_shock_coeffs = len(params.loc["shocks_sdcorr"])
