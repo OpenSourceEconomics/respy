@@ -127,7 +127,7 @@ def _base_row(index_tuple, data):
 
 def observable_template(observables):
     to_concat = []
-    for x in range(len(observables)):
+    for x, _ in enumerate(observables):
         probs = np.random.uniform(size=observables[x])
         probs /= probs.sum()
         for y in range(observables[x]):
