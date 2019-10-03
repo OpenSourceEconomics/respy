@@ -506,7 +506,7 @@ def _create_state_space_indexer(df, optim_paras):
         shape = (
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
             + (n_exp_choices + n_nonexp_choices,) * optim_paras["n_lagged_choices"]
-            + tuple((len(x) for x in optim_paras["observables"].values()))
+            + tuple(len(x) for x in optim_paras["observables"].values())
             + (optim_paras["n_types"],)
         )
         sub_indexer = np.full(shape, -1, dtype=np.int32)

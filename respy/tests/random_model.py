@@ -16,10 +16,8 @@ from respy.pre_processing.specification_helpers import (
 from respy.pre_processing.specification_helpers import (
     lagged_choices_covariates_template,
 )
-from respy.pre_processing.specification_helpers import (
-    lagged_choices_probs_template,
-    observable_prob_template,
-)
+from respy.pre_processing.specification_helpers import lagged_choices_probs_template
+from respy.pre_processing.specification_helpers import observable_prob_template
 from respy.shared import generate_column_labels_estimation
 from respy.simulate import get_simulate_func
 

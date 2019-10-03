@@ -5,8 +5,8 @@ import pytest
 
 import respy as rp
 from respy.likelihood import get_crit_func
-from respy.tests.random_model import generate_random_model
 from respy.pre_processing.specification_helpers import generate_obs_labels
+from respy.tests.random_model import generate_random_model
 
 
 @pytest.mark.parametrize("seed", range(20))

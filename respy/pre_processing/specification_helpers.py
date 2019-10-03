@@ -1,6 +1,7 @@
+import itertools
+
 import numpy as np
 import pandas as pd
-import itertools
 
 from respy.config import ROOT_DIR
 
@@ -143,9 +144,9 @@ def observable_prob_template(observables):
 
 
 def observable_coeffs_template(observables, template):
-    index = set(
-        [x for x in template.index.get_level_values(0) if "nonpec" in x or "wage" in x]
-    )
+    index = {
+        x for x in template.index.get_level_values(0) if "nonpec" in x or "wage" in x
+    }
     labels = generate_obs_labels(observables, index)
     to_concat = []
     for y in labels:
