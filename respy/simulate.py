@@ -494,6 +494,3 @@ def _random_choice(choices, probabilities):
         choices = np.arange(choices)
 
     return choices[indices]
-
-def test_observables():
-    pass

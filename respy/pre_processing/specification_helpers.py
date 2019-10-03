@@ -29,7 +29,7 @@ def csv_template(n_types, n_type_covariates, observables, initialize_coeffs=True
 
     if observables is not False:
         to_concat = [template,
-                     _observable_coeffs_template(observables, template)]
+                     observable_coeffs_template(observables, template)]
         template = pd.concat(to_concat, axis=0, sort=False)
 
     if initialize_coeffs is False:
@@ -142,16 +142,16 @@ def observable_prob_template(observables):
             to_concat.append(_base_row(ind, dat))
     return pd.concat(to_concat, axis=0, sort=False)
 
-def _observable_coeffs_template(observables, template):
+def observable_coeffs_template(observables, template):
     index = set([x for x in template.index.get_level_values(0) if "nonpec" in x or "wage" in x])
-    labels = _generate_obs_labels(observables, index)
+    labels = generate_obs_labels(observables, index)
     to_concat = []
     for y in labels:
         dat = [0,f"effect of {y[1]}"]
         to_concat.append(_base_row(y, dat))
     return pd.concat(to_concat, axis=0, sort=False)
 
-def _generate_obs_labels(observables, index):
+def generate_obs_labels(observables, index):
     names = []
     for x, _ in enumerate(observables):
         for y in range(observables[x]):
