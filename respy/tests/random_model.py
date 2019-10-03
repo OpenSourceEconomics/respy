@@ -16,7 +16,7 @@ from respy.pre_processing.specification_helpers import (
 from respy.pre_processing.specification_helpers import (
     lagged_choices_covariates_template,
 )
-from respy.pre_processing.specification_helpers import lagged_choices_probs_template, observable_template
+from respy.pre_processing.specification_helpers import lagged_choices_probs_template, observable_prob_template
 from respy.shared import generate_column_labels_estimation
 from respy.simulate import get_simulate_func
 
@@ -121,14 +121,14 @@ def generate_random_model(
             observables = np.random.randint(1, 4, size = n_obs)
 
     params = csv_template(
-        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
+        n_types=n_types, n_type_covariates=n_type_covariates, observables = observables, initialize_coeffs=False
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
     if observables is not False:
         to_concat = [
             params,
-            observable_template(observables)
+            observable_prob_template(observables)
         ]
         params = pd.concat(to_concat, axis=0, sort=False)
 
@@ -179,6 +179,12 @@ def generate_random_model(
         "n_periods": np.random.randint(1, bound_constr["max_periods"]),
     }
 
+    if observables is not False:
+        indices = [x[1] for x in params.index if x[0] == "observables"]
+        observable_covariates = {x:f"{x[:-2]} == {x[-1]}" for x in indices}
+    else:
+        observable_covariates = {}
+
     options["solution_draws"] = np.random.randint(1, bound_constr["max_draws"])
     options["solution_seed"] = np.random.randint(1, 10_000)
 
@@ -192,11 +198,12 @@ def generate_random_model(
         **DEFAULT_OPTIONS,
         **options,
         "core_state_space_filters": filters,
-        "covariates": {**_BASE_COVARIATES, **lc_covariates},
+        "covariates": {**_BASE_COVARIATES, **lc_covariates, **observable_covariates},
     }
 
-    options = _update_nested_dictionary(options, point_constr)
 
+
+    options = _update_nested_dictionary(options, point_constr)
     return params, options
 
 

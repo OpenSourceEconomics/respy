@@ -244,7 +244,6 @@ def _create_state_space(optim_paras, options):
 
 
     df = _add_observables_to_state_space(df, optim_paras)
-    print(df)
 
     df = _add_types_to_state_space(df, optim_paras["n_types"])
 

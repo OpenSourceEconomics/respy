@@ -153,7 +153,6 @@ def _parse_observables(optim_paras, params):
             in set(obs)}
     else:
         optim_paras["observables"] = {}
-    print(optim_paras["observables"])
     return optim_paras
 
 
