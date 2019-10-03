@@ -69,7 +69,7 @@ def _create_internal_seeds_from_user_seeds(options):
         warnings.warn("All seeds should be different.", category=UserWarning)
 
     for seed, start, end in zip(
-            seeds, [100, 10_000, 1_000_000], [1_000, 100_000, 10_000_000]
+        seeds, [100, 10_000, 1_000_000], [1_000, 100_000, 10_000_000]
     ):
         np.random.seed(options[seed])
         seed_startup = np.random.randint(start, end)
@@ -149,8 +149,11 @@ def _parse_observables(optim_paras, params):
     if "observables" in params.index.get_level_values(0):
         obs = [x[1][:-2] for x in params.index if "observables" in x[0]]
         optim_paras["observables"] = {
-            x: np.array([params.loc[("observables", "{}_{}".format(x, y))] for y in range(obs.count(x))]) for x
-            in set(obs)}
+            x: np.array(
+                [params.loc[(f"observables", f"{x}_{y}")] for y in range(obs.count(x))]
+            )
+            for x in set(obs)
+        }
     else:
         optim_paras["observables"] = {}
     return optim_paras
@@ -341,9 +344,9 @@ def _parse_types(optim_paras, params):
             (
                 np.zeros(n_type_covariates),
                 params.loc[types]
-                    .sort_index()
-                    .to_numpy()
-                    .reshape(n_types - 1, n_type_covariates),
+                .sort_index()
+                .to_numpy()
+                .reshape(n_types - 1, n_type_covariates),
             )
         )
 
@@ -376,10 +379,10 @@ def _infer_number_of_types(params):
 
     """
     return (
-            params.index.get_level_values(0)
-            .str.extract(r"(\btype_[0-9]+\b)", expand=False)
-            .nunique()
-            + 1
+        params.index.get_level_values(0)
+        .str.extract(r"(\btype_[0-9]+\b)", expand=False)
+        .nunique()
+        + 1
     )
 
 
@@ -421,9 +424,9 @@ def _infer_choices_with_prefix(params, prefix):
     """
     return sorted(
         params.index.get_level_values(0)
-            .str.extract(fr"\b{prefix}_([A-Za-z_]+)\b", expand=False)
-            .dropna()
-            .unique()
+        .str.extract(fr"\b{prefix}_([A-Za-z_]+)\b", expand=False)
+        .dropna()
+        .unique()
     )
 
 
@@ -476,9 +479,9 @@ def _parse_lagged_choices(optim_paras, options, params):
     # Second, infer the number of lags defined in params.
     matches_params = list(
         params.index.get_level_values(0)
-            .str.extract(regex_pattern, expand=False)
-            .dropna()
-            .unique()
+        .str.extract(regex_pattern, expand=False)
+        .dropna()
+        .unique()
     )
 
     lc_params = np.zeros(1) if not matches_params else pd.to_numeric(matches_params)
@@ -508,7 +511,7 @@ def _parse_lagged_choices(optim_paras, options, params):
 
     # Add existing lagged choice parameters to ``optim_paras``.
     for match in (
-            params.filter(like="lagged_choice_", axis=0).index.get_level_values(0).unique()
+        params.filter(like="lagged_choice_", axis=0).index.get_level_values(0).unique()
     ):
         optim_paras[match] = params.loc[match]
 
@@ -536,9 +539,9 @@ def _determine_observables_included_in_state_space(options, params):
 
     # Remove coviariates
     state_space_components = (
-            covariates_params
-            - set(options["covariates"])
-            - {f"exp_{choice}" for choice in options["choices_w_exp"]}
+        covariates_params
+        - set(options["covariates"])
+        - {f"exp_{choice}" for choice in options["choices_w_exp"]}
     )
 
     # TODO: Remove when lagged choices are only created if in covariates

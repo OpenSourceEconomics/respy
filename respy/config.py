@@ -39,7 +39,6 @@ DEFAULT_OPTIONS = {
     "observables": {},
     "core_state_space_filters": [],
     "inadmissible_states": {},
-
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]

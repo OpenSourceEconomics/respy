@@ -28,13 +28,11 @@ def csv_template(n_types, n_type_covariates, observables, initialize_coeffs=True
         template = pd.concat(to_concat, axis=0, sort=False)
 
     if observables is not False:
-        to_concat = [template,
-                     observable_coeffs_template(observables, template)]
+        to_concat = [template, observable_coeffs_template(observables, template)]
         template = pd.concat(to_concat, axis=0, sort=False)
 
     if initialize_coeffs is False:
         template["value"] = np.nan
-
 
     return template
 
@@ -131,6 +129,7 @@ def _base_row(index_tuple, data):
     df = pd.DataFrame(index=ind, columns=cols, data=[data])
     return df
 
+
 def observable_prob_template(observables):
     to_concat = []
     for x, _ in enumerate(observables):
@@ -142,14 +141,18 @@ def observable_prob_template(observables):
             to_concat.append(_base_row(ind, dat))
     return pd.concat(to_concat, axis=0, sort=False)
 
+
 def observable_coeffs_template(observables, template):
-    index = set([x for x in template.index.get_level_values(0) if "nonpec" in x or "wage" in x])
+    index = set(
+        [x for x in template.index.get_level_values(0) if "nonpec" in x or "wage" in x]
+    )
     labels = generate_obs_labels(observables, index)
     to_concat = []
     for y in labels:
-        dat = [0,f"effect of {y[1]}"]
+        dat = [0, f"effect of {y[1]}"]
         to_concat.append(_base_row(y, dat))
     return pd.concat(to_concat, axis=0, sort=False)
+
 
 def generate_obs_labels(observables, index):
     names = []

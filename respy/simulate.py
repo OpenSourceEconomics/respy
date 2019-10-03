@@ -147,16 +147,16 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     # Create a DataFrame to match columns to covariates. Is changed in-place.
     states_df = pd.DataFrame(
         np.column_stack(container),
-        columns=[f"exp_{i}" for i in optim_paras["choices_w_exp"]]
+        columns=[f"exp_{i}" for i in optim_paras["choices_w_exp"]],
     ).assign(period=0)
 
     for lag in reversed(range(1, n_lagged_choices + 1)):
         container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
 
-
     for observable in optim_paras["observables"].keys():
-        container += (_get_random_initial_observable(states_df, observable, options, optim_paras),)
-
+        container += (
+            _get_random_initial_observable(states_df, observable, options, optim_paras),
+        )
 
     container += (_get_random_types(states_df, optim_paras, options),)
 
@@ -244,10 +244,10 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
         # first position.
         if n_lagged_choices:
             current_states[
-            :, n_choices_w_exp + 1: n_choices_w_exp + n_lagged_choices
+                :, n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
             ] = current_states[
-                :, n_choices_w_exp: n_choices_w_exp + n_lagged_choices - 1
-                ]
+                :, n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
+            ]
             current_states[:, n_choices_w_exp] = choice
 
     simulated_data = _process_simulated_data(data, optim_paras)
@@ -349,8 +349,7 @@ def _get_random_initial_observable(states_df, observable, options, optim_paras):
 
     probs = optim_paras["observables"][observable]
     obs = np.random.choice(
-        np.arange(len(probs)),
-        size=options["simulation_agents"], p=probs
+        np.arange(len(probs)), size=options["simulation_agents"], p=probs
     )
     states_df[observable] = obs
     return obs
@@ -364,14 +363,14 @@ def _get_random_initial_observable(states_df, observable, options, optim_paras):
     target="cpu",
 )
 def calculate_value_functions_and_flow_utilities(
-        wages,
-        nonpec,
-        continuation_values,
-        draws,
-        delta,
-        is_inadmissible,
-        value_functions,
-        flow_utilities,
+    wages,
+    nonpec,
+    continuation_values,
+    draws,
+    delta,
+    is_inadmissible,
+    value_functions,
+    flow_utilities,
 ):
     """Calculate the choice-specific value functions and flow utilities.
 
@@ -425,8 +424,8 @@ def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
     for i in range(1, optim_paras["n_lagged_choices"] + 1):
         df[f"Lagged_Choice_{i}"] = (
             df[f"Lagged_Choice_{i}"]
-                .cat.set_categories(code_to_choice)
-                .cat.rename_categories(code_to_choice)
+            .cat.set_categories(code_to_choice)
+            .cat.rename_categories(code_to_choice)
         )
 
     return df
@@ -437,9 +436,9 @@ def _process_simulated_data(data, optim_paras):
 
     df = (
         pd.DataFrame(data=np.vstack(data), columns=labels)
-            .astype(dtypes)
-            .sort_values(["Identifier", "Period"])
-            .reset_index(drop=True)
+        .astype(dtypes)
+        .sort_values(["Identifier", "Period"])
+        .reset_index(drop=True)
     )
 
     df = _convert_choice_variables_from_codes_to_categorical(df, optim_paras)
