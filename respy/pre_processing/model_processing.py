@@ -516,4 +516,3 @@ def _parse_lagged_choices(optim_paras, options, params):
         optim_paras[match] = params.loc[match]
 
     return optim_paras
-
