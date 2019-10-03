@@ -1,5 +1,6 @@
 """Process model specification files or objects."""
 import copy
+import itertools
 import re
 import warnings
 from pathlib import Path
@@ -13,6 +14,7 @@ from estimagic.optimization.utilities import robust_cholesky
 from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
+from respy.config import SEED_STARTUP_ITERATION_GAP
 from respy.pre_processing.model_checking import validate_options
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
@@ -21,6 +23,7 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 def process_params_and_options(params, options):
     options = _read_options(options)
     options = {**DEFAULT_OPTIONS, **options}
+    options = _create_internal_seeds_from_user_seeds(options)
     validate_options(options)
 
     params = _read_params(params)
@@ -39,6 +42,40 @@ def _read_options(input_):
         options = yaml.safe_load(input_.read_text())
     else:
         options = copy.deepcopy(input_)
+
+    return options
+
+
+def _create_internal_seeds_from_user_seeds(options):
+    """Create internal seeds from user input.
+
+    Instead of reusing the same seed, we use sequences of seeds incrementing by one. It
+    ensures that we do not accidentally draw the same randomness twice.
+
+    Furthermore, we need to sets of seeds. The first set is for building
+    :func:`~respy.simulate.simulate` or :func:`~respy.likelihood.log_like` where
+    ``"startup"`` seeds are used to generate the draws. The second set is for the
+    iterations and has to be reset to the initial value at the beginning of every
+    iteration.
+
+    See :ref:`randomness-and-reproducibility` for more information.
+
+    """
+
+    seeds = [f"{key}_seed" for key in ["solution", "simulation", "estimation"]]
+
+    # Check that two seeds are not equal. Otherwise, raise warning.
+    if (np.bincount([options[seed] for seed in seeds]) > 1).any():
+        warnings.warn("All seeds should be different.", category=UserWarning)
+
+    for seed, start, end in zip(
+        seeds, [100, 10_000, 1_000_000], [1_000, 100_000, 10_000_000]
+    ):
+        np.random.seed(options[seed])
+        seed_startup = np.random.randint(start, end)
+        options[f"{seed}_startup"] = itertools.count(seed_startup)
+        seed_iteration = seed_startup + SEED_STARTUP_ITERATION_GAP
+        options[f"{seed}_iteration"] = itertools.count(seed_iteration)
 
     return options
 
@@ -246,11 +283,27 @@ def _sort_shocks_cov_chol(optim_paras, params, type_):
 
 
 def _parse_measurement_errors(optim_paras, params):
-    """Parse correctly sorted measurement errors."""
+    """Parse correctly sorted measurement errors.
+
+    optim_paras["is_meas_error"] is only False if there are no meas_error sds in params,
+    not if they are all zero. Otherwise we would introduce a kink into the likelihood
+    function.
+
+    """
     meas_error = np.zeros(len(optim_paras["choices"]))
 
-    labels = [f"sd_{choice}" for choice in optim_paras["choices_w_wage"]]
-    meas_error[: len(labels)] = params.loc["meas_error"].loc[labels].to_numpy()
+    if "meas_error" in params.index:
+        optim_paras["is_meas_error"] = True
+        labels = [f"sd_{choice}" for choice in optim_paras["choices_w_wage"]]
+        assert set(params.loc["meas_error"].index) == set(labels), (
+            "Standard deviations of measurement error have to be provided for all or "
+            "none of the choices with wages. There can't be standard deviations of "
+            "measurement errors for choices without wage."
+        )
+        meas_error[: len(labels)] = params.loc["meas_error"].loc[labels].to_numpy()
+    else:
+        optim_paras["is_meas_error"] = False
+
     optim_paras["meas_error"] = meas_error
 
     return optim_paras

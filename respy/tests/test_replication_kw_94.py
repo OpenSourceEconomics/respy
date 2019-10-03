@@ -10,6 +10,7 @@ For [2]_, we test the following replications:
 
 References
 ----------
+
 .. [1] Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete
        Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo
        Evidence <https://doi.org/10.2307/2109768>`__. *The Review of Economics and
@@ -40,11 +41,6 @@ def test_table_6_exact_solution_row_mean_and_sd():
     tested.
 
     """
-    # Initialize the respective simulate function.
-    params, options = rp.get_example_model("kw_94_one", with_data=False)
-    options["simulation_agents"] = 4000
-    simulate = rp.get_simulate_func(params, options)
-
     # Specify the three different data sets.
     models = np.repeat(["one", "two", "three"], 2)
     tuition_subsidies = [0, 500, 0, 1000, 0, 2000]
@@ -53,7 +49,9 @@ def test_table_6_exact_solution_row_mean_and_sd():
     # tuition subsidy.
     data_frames = []
     for model, subsidy in zip(models, tuition_subsidies):
-        params, _ = rp.get_example_model(f"kw_94_{model}", with_data=False)
+        params, options = rp.get_example_model(f"kw_94_{model}", with_data=False)
+        options["simulation_agents"] = 4000
+        simulate = rp.get_simulate_func(params, options)
         params.loc[("nonpec_edu", "at_least_twelve_exp_edu"), "value"] += subsidy
         data_frames.append(simulate(params))
 
