@@ -476,6 +476,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
 
     """
     labels, _ = generate_column_labels_estimation(optim_paras)
+
     df = df.sort_values(["Identifier", "Period"])[labels]
     df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
     df = _convert_choice_variables_from_categorical_to_codes(df, optim_paras)

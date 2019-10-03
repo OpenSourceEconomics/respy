@@ -115,7 +115,6 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
         Dataset of simulated individuals.
 
     """
-
     n_choices = len(optim_paras["choices"])
     n_periods = optim_paras["n_periods"]
     n_wages = len(optim_paras["choices_w_wage"])
@@ -157,7 +156,6 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
         container += (
             _get_random_initial_observable(states_df, observable, options, optim_paras),
         )
-
     container += (_get_random_types(states_df, optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
@@ -284,7 +282,6 @@ def _get_random_initial_experience(choice, optim_paras, options):
 
 def _get_random_lagged_choices(states_df, optim_paras, options, lag):
     """Get random, initial levels of lagged choices for simulated agents.
-
 
     For a given lagged choice, compute the covariates. Then, calculate the probabilities
     for each choice being the lagged choice. At last, take the probabilities to draw for

@@ -174,6 +174,7 @@ def generate_random_model(
     else:
         lc_covariates = {}
         filters = []
+
     options = {
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
         "simulation_seed": np.random.randint(1, 1_000),
@@ -203,6 +204,7 @@ def generate_random_model(
     }
 
     options = _update_nested_dictionary(options, point_constr)
+
     return params, options
 
 
