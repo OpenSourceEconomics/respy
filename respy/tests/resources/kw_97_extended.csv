@@ -44,7 +44,7 @@ wage_military,is_minor,-0.2539,effect of being a minor
 nonpec_military,not_any_exp_military,-560,reward of being in the military sector for the first time (non pecuniary)
 nonpec_military,hs_graduate,804,return to high school degree (non pecuniary)
 nonpec_military,co_graduate,2005,return to college degree (non pecuniary)
-nonpec_military,at_least_one_exp_military,1525,benefit of continuing a military career
+nonpec_military,one_exp_military,1525,benefit of continuing a military career
 nonpec_school,constant,11031,consumption value of school attendance for type 1
 nonpec_school,is_return_not_high_school,-10700,reward for going back to college
 nonpec_school,is_return_high_school,-23283,reward for going back to high school
