@@ -1,4 +1,0 @@
-Here we want to include a reading list containing the relevant 
-literature which is necessary to understand discrete choice dynamic
-programming models in general and the specific models from keane and
-wolpin.  
