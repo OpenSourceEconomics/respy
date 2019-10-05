@@ -147,6 +147,9 @@ def _parse_choices(optim_paras, params, options):
 
 
 def _parse_observables(optim_paras, params):
+    """
+    Get all observables and their respective levels by examining the observable indices in the params df
+    """
     if "observables" in params.index.get_level_values(0):
         obs = [x[1][:-2] for x in params.index if "observables" in x[0]]
         optim_paras["observables"] = {

@@ -147,6 +147,7 @@ def observable_coeffs_template(observables, template):
     index = {
         x for x in template.index.get_level_values(0) if "nonpec" in x or "wage" in x
     }
+
     labels = generate_obs_labels(observables, index)
     to_concat = []
     for y in labels:

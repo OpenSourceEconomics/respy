@@ -122,7 +122,7 @@ def generate_column_labels_estimation(optim_paras):
         ["Identifier", "Period", "Choice", "Wage"]
         + [f"Experience_{choice.title()}" for choice in optim_paras["choices_w_exp"]]
         + [f"Lagged_Choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
-        + [observable.capitalize() for observable in optim_paras["observables"].keys()]
+        + [observable.title() for observable in optim_paras["observables"].keys()]
     )
 
     dtypes = {}

@@ -182,8 +182,8 @@ def generate_random_model(
     }
 
     if observables is not False:
-        indices = [x[1] for x in params.index if x[0] == "observables"]
-        observable_covariates = {x: f"{x[:-2]} == {x[-1]}" for x in indices}
+        indices = params.loc["observables", :].index.get_level_values(0).to_list()
+        observable_covariates = { x: f'{"_".join(x.split("_")[:-1])} == {x.split("_")[-1]}' for x in indices}
     else:
         observable_covariates = {}
 
