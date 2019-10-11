@@ -1,40 +1,45 @@
 Introduction
 ==============
 
-``respy`` is a research tool. It provides the computational support for several research
-projects that analyze the economics driving agents' educational and occupational choices
-over their life cycle within the framework of a finite-horizon discrete choice dynamic
+``respy`` is a tool to solve, simulate and estimate structural econometric models.
+It provides the computational support for several research projects that analyze
+the economics driving agents' educational and occupational choices over their life
+cycle within the framework of a finite-horizon discrete choice dynamic
 programming model.
 
-Here is some of the recent work:
+While written in pure python, it's speed can rival Fortran implementations of
+similar models. This is due to a heavy use of `numba <http://numba.pydata.org/>`_,
+a just in time compiler for Python.
 
-* Eisenhauer, P. (2019). `The Approximate Solution of Finite-Horizon Discrete Choice
-  Dynamic Programming Models: Revisiting Keane & Wolpin (1994)
-  <https://doi.org/10.1002/jae.2648>`_. *Journal of Applied Econometrics, 34* (1),
-  149-154.
+``respy`` is under ongoing development. We add new features every week and try to
+make it more flexible and easier to use without sacrificing execution speed.
 
-      The estimation of finite-horizon discrete choice dynamic programming models is
-      computationally expensive. This limits their realism and impedes verification and
-      validation efforts. Keane & Wolpin (1994) propose an interpolation method that
-      ameliorates the computational burden but introduces approximation error. I
-      describe their approach in detail, successfully recompute their original quality
-      diagnostics, and provide some additional insights that underscore the trade-off
-      between computation time and the accuracy of estimation results.
+The goal is to make it possible to solve, simulate and estimate all models that
+have been classified as the Keane-Wolpin-Eckstein branch of structural econometrics
+in a `survey <https://www.sciencedirect.com/science/article/pii/S0304407609001985>`_
+by Aguirregabiria and Mira. And we are almost there!
 
-* Eisenhauer, P. (2018). `Robust human capital investment under risk and ambiguity
-  <https://github.com/peisenha/peisenha.github.io/blob/master/material/
-  eisenhauer-robust.pdf>`_. *Revise and resubmit at the Journal of Econometrics*.
+This comprises but is not limited to the following Models:
 
-      I instill a fear of model misspecification into the agents of a finite-horizon
-      discrete choice dynamic programming model. Agents are ambiguity averse and seek
-      robust decisions for a variety of alternative models. I study the implications for
-      agents’ decisions and the design and impact of alternative policies.
+- Keane, M. P. & Wopin, W. I. `(1997) <https://www.jstor.org/stable/10.1086/262080>`_.
+    The career Decisions of Young Men, Journal of Political Economy, 105(3): 473-552.
 
-We provide the package and its documentation to ensure the recomputability,
-transparency, and extensibility of this research. We also hope to showcase how software
-engineering practices can help in achieving these goals.
+- Keane, M. P. & Wopin, W. I. `(1994) <https://www.jstor.org/stable/2109768>`_.
+    The Solution and Estimation of Discrete Choice Dynamic Programming Models by
+    Simulation and Interpolation: Monte Carlo Evidence, The Review of Economics and
+    Statistics, 76(4): 648-672.
 
-For an almost non-technical introduction to the package see the :download:`paper
-<../_static/cscubs-2019/paper.pdf>` or the :download:`presentation
-<../_static/cscubs-2019/presentation.pdf>` we contributed to `CSCBUS 2019
-<http://cscubs.cs.uni-bonn.de/2019>`_.
+- A cool Robinson-Crusoe model that you'll find after the installation instructions.
+
+
+Contact and Credits
+===================
+
+
+If you have any questions or comments, please do not hesitate to contact us via filing
+an issue on Github or directly via email.
+
+``respy`` was originally written as a mix of Python and Fortran by
+`Philipp Eisenhauer <https://github.com/peisenha>`_. It was then rewritten
+by `Tobias Raabe <https://github.com/tobiasraabe>`_ and
+`Janos Gabler <https://github.com/janosg>`_ as a pure Python package.
