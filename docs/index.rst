@@ -21,6 +21,8 @@ baseline model presented in:
     :maxdepth: 2
 
     getting_started/index
+    tutorials/index
+    replications/index
     economics/index
     software/index
     development/index
