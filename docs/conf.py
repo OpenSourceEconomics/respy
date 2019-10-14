@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "respy"
-copyright = "2015-2019, Philipp Eisenhauer"  # noqa: A001
-author = "Philipp Eisenhauer"
+copyright = "2015-2019, respy-dev"  # noqa: A001
+author = "respy Development Team"
 
 # The short X.Y version.
 version = "2.0"
