@@ -12,7 +12,7 @@ from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_simulation
 from respy.shared import predict_multinomial_logit
-from respy.shared import transform_disturbances
+from respy.shared import transform_shocks_with_cholesky_factor
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -122,19 +122,9 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     n_lagged_choices = optim_paras["n_lagged_choices"]
     n_simulation_agents = options["simulation_agents"]
 
-    # Standard deviates transformed to the distributions relevant for the agents actual
-    # decision making as traversing the tree.
-    base_draws_sim_transformed = np.full(
-        (n_periods, n_simulation_agents, n_choices), np.nan
+    base_draws_sim_transformed = transform_shocks_with_cholesky_factor(
+        base_draws_sim, optim_paras["shocks_cholesky"], n_wages
     )
-
-    for period in range(n_periods):
-        base_draws_sim_transformed[period] = transform_disturbances(
-            base_draws_sim[period],
-            np.zeros(n_choices),
-            optim_paras["shocks_cholesky"],
-            n_wages,
-        )
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
