@@ -2,7 +2,7 @@ Recommended Reading
 ===================
 
 To gain a deeper understanding of the underlying economic model and the mathematical
-methods used for solving and estimating this model, as well as obtaining a small
+methods used for solving and estimating this model as well as obtaining a small
 overview of the relevant literature we suggest the following supplementary material
 depending on your current state of prior knowledge. 
 
