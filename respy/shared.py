@@ -121,7 +121,7 @@ def transform_shocks_with_cholesky_factor(draws, shocks_cholesky, n_wages):
     draws_transformed = draws.dot(shocks_cholesky.T)
 
     draws_transformed[:, :, :n_wages] = np.clip(
-        np.exp(draws_transformed[:, :, :n_wages]), 0.0, HUGE_FLOAT
+        np.exp(draws_transformed[:, :, :n_wages]), 0, HUGE_FLOAT
     )
 
     return draws_transformed

@@ -42,13 +42,17 @@ def get_simulate_func(params, options, df=None):
     """
     optim_paras, options = process_params_and_options(params, options)
 
+    if df is not None:
+        options["simulation_agents"] = df.Identifier.nunique()
+        options["n_periods"] = df.Period.max() + 1
+
     state_space = StateSpace(optim_paras, options)
 
-    n_individuals = (
-        options["simulation_agents"] if df is None else df.Identifier.unique().shape[0]
+    shape = (
+        options["n_periods"],
+        options["simulation_agents"],
+        len(optim_paras["choices"]),
     )
-
-    shape = (options["n_periods"], n_individuals, len(optim_paras["choices"]))
     base_draws_sim = create_base_draws(shape, next(options["simulation_seed_startup"]))
     base_draws_wage = create_base_draws(shape, next(options["simulation_seed_startup"]))
 
@@ -113,14 +117,12 @@ def simulate(params, base_draws_sim, base_draws_wage, state_space, options, df):
 def _n_step_ahead_simulation(
     state_space, base_draws_sim, base_draws_wage, optim_paras, options
 ):
-    """Simulate a data set.
+    """Perform a n-step-ahead simulation.
 
-    At the beginning, individuals are initialized with zero experience in occupations
-    and random values for years of education, lagged choices and types. Then, each
-    simulated agent in each period is paired with its corresponding state in the state
-    space. We recalculate utilities for each choice as the individuals experience
-    different shocks in the simulation. In the end, observed and unobserved information
-    is recorded in a DataFrame.
+    This technique samples a number of individuals from the initial conditions and
+    simulates their wages and choices over a given number of periods.
+
+    The initial conditions are experiences, previous choices and the types.
 
     Returns
     -------
@@ -204,7 +206,28 @@ def _n_step_ahead_simulation(
 def _one_step_ahead_simulation(
     df, state_space, base_draws_sim, base_draws_wage, optim_paras, options
 ):
-    n_periods = df.Period.max() + 1
+    """Perform one-step-ahead simulation.
+
+    This technique takes the data and simulates wages and choices for every
+    individual-period observation. The resulting data can be compared with the real data
+    to measure the within-sample fit.
+
+    Note that the type of an individual is unknown to the researcher and not included in
+    the data. Thus, types are assigned based on covariates of individuals in the initial
+    period.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Panel data on individuals.
+
+    Returns
+    -------
+    simulated_data : pandas.DataFrame
+        Panel data on individuals with simulated wages and choices.
+
+    """
+    n_periods = options["n_periods"]
     n_wages = len(optim_paras["choices_w_wage"])
 
     base_draws_sim_transformed = transform_shocks_with_cholesky_factor(
@@ -262,6 +285,12 @@ def _simulate_single_period(
     optim_paras,
     options,
 ):
+    """Simulate individuals in a single period.
+
+    This function takes a set of states and simulates wages, choices and other
+    information.
+
+    """
     n_choices = len(optim_paras["choices"])
     n_wages = len(optim_paras["choices_w_wage"])
     n_individuals = current_states.shape[0]
