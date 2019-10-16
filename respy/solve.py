@@ -30,10 +30,9 @@ def solve(params, options):
         State space of the model which is already solved via backward-induction.
 
     """
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
-    state_space = StateSpace(params, options)
-
+    state_space = StateSpace(optim_paras, options)
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     return state_space
@@ -56,9 +55,9 @@ def solve_with_backward_induction(state_space, optim_paras, options):
     state_space : :class:`~respy.state_space.StateSpace`
 
     """
-    n_choices = len(options["choices"])
-    n_wages = len(options["choices_w_wage"])
-    n_periods = options["n_periods"]
+    n_choices = len(optim_paras["choices"])
+    n_wages = len(optim_paras["choices_w_wage"])
+    n_periods = optim_paras["n_periods"]
     n_states = state_space.states.shape[0]
 
     state_space.emax_value_functions = np.zeros(n_states)
@@ -103,7 +102,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             # alternatives. These are log normal distributed and thus the draws cannot
             # simply set to zero, but :math:`E(X) = \exp\{\mu + \frac{\sigma^2}{2}\}`.
             shifts = np.zeros(n_choices)
-            n_choices_w_wage = len(options["choices_w_wage"])
+            n_choices_w_wage = len(optim_paras["choices_w_wage"])
             shifts[:n_choices_w_wage] = np.clip(
                 np.exp(np.diag(shocks_cov)[:n_choices_w_wage] / 2.0), 0.0, HUGE_FLOAT
             )
@@ -114,7 +113,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             not_interpolated = get_not_interpolated_indicator(
                 options["interpolation_points"],
                 n_states_in_period,
-                options["solution_seed"] + period,
+                next(options["solution_seed_iteration"]),
             )
 
             # Constructing the exogenous variable for all states, including the ones

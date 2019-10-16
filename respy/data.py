@@ -29,7 +29,7 @@ def create_kw_97(params, options):
     white-collar, blue-collar occupations, military and schooling.
 
     """
-    _, _, options = process_params_and_options(params, options)
+    _, options = process_params_and_options(params, options)
 
     columns = ["Identifier", "Age", "Experience_Edu", "Choice", "Wage"]
     dtypes = {

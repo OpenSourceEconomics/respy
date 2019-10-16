@@ -21,9 +21,9 @@ TOL = 10 ** -DECIMALS
 # Interpolation
 INADMISSIBILITY_PENALTY = -400000
 
-IS_DEBUG = False
+SEED_STARTUP_ITERATION_GAP = 100
 
-BASE_INADMISSIBLE_STATES = {"edu": "exp_edu == @max_exp_edu"}
+IS_DEBUG = False
 
 DEFAULT_OPTIONS = {
     "choices": {"edu": {"max": 20, "start": [10], "lagged": [1], "share": [1]}},
@@ -36,9 +36,8 @@ DEFAULT_OPTIONS = {
     "simulation_seed": 2,
     "solution_draws": 500,
     "solution_seed": 3,
-    "covariates": {},
-    "inadmissible_states": BASE_INADMISSIBLE_STATES,
     "core_state_space_filters": [],
+    "inadmissible_states": {},
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]
