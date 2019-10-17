@@ -44,7 +44,6 @@ def get_simulate_func(params, options, df=None):
 
     if df is not None:
         options["simulation_agents"] = df.Identifier.nunique()
-        options["n_periods"] = df.Period.max() + 1
 
     state_space = StateSpace(optim_paras, options)
 
@@ -227,7 +226,7 @@ def _one_step_ahead_simulation(
         Panel data on individuals with simulated wages and choices.
 
     """
-    n_periods = options["n_periods"]
+    n_periods = df.Period.max() + 1
     n_wages = len(optim_paras["choices_w_wage"])
 
     base_draws_sim_transformed = transform_shocks_with_cholesky_factor(
