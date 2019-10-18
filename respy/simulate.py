@@ -237,7 +237,7 @@ def _one_step_ahead_simulation(
 
     state_cols = (
         [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
-        + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"])]
+        + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
         + ["type"]
     )
 
