@@ -96,7 +96,18 @@ def update_mean_and_evaluate_likelihood(
     Calculate the conditional mean of shocks after observing one shock
     and evaluate the likelihood of the observed shock.
 
-    The mean is updated by the "Sequences of Conditional Distributions" explained in [1]
+    The mean is updated by the "Sequences of Conditional Distributions" explained in
+    [1]_. Consider the following sequence of correlated normal random variables whose
+    mean is adapted by the following formula:
+
+    .. math::
+
+        X_1 &\sim \mathcal{N}(0, \sigma_{11}) \\
+        X_2 &\sim \mathcal{N}(
+            \sigma_{12} \frac{X_1}{\sigma_{11}},
+            \sigma_{22} - \frac{\sigma^2_{12}}{\sigma_{11}}
+        ) \\
+        \dots
 
     For the probability of the observed wage, recognize that wages are log-normally
     distributed. Thus, the following formula applies [2]_ [3]_:
