@@ -1,5 +1,8 @@
+Quickstart
+==========
+
 Installation
-============
+------------
 
 The ``respy`` package can be conveniently installed from the `Python Package Index
 <https://pypi.org/>`_ (PyPI) or directly from its source files. We currently support
@@ -7,7 +10,7 @@ only Python 3.6+. We develop the package mainly on Linux systems, but the test b
 ensures compatibility with Windows and MacOS.
 
 Python Package Index
---------------------
+^^^^^^^^^^^^^^^^^^^^
 
 You can install the stable version of the package the usual way.
 
@@ -20,7 +23,7 @@ constraints, we also maintain scalar and parallel Fortran implementations. If ad
 requirements are met, both are installed automatically.
 
 Source Files
-------------
+^^^^^^^^^^^^
 
 You can download the sources directly from our `GitHub repository
 <https://github.com/OpenSourceEconomics/respy>`_.
@@ -37,7 +40,7 @@ straightforward.
    $ pip install -e .
 
 Test Suite
-----------
+^^^^^^^^^^
 
 Please make sure that the package is working properly by running our test suite using
 ``pytest``.
