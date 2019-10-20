@@ -17,7 +17,10 @@ jobs:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH.
 
-  - bash: conda update conda --yes --quiet
+  - bash: |
+      pip uninstall -y setuptools
+      conda install setuptools --yes --quiet
+      conda update conda --yes --quiet
     displayName: Update conda.
 
   - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
