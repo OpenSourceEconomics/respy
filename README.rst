@@ -14,14 +14,7 @@ respy
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/python/black
 
-``respy``  is an open-source Python package for the simulation and estimation of a
-prototypical finite-horizon discrete choice dynamic programming model. We build on the
-baseline model presented in:
-
-    Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete
-    Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo
-    Evidence <https://doi.org/10.2307/2109768>`_. *The Review of Economics and
-    Statistics*, 76(4): 648-672.
+``respy`` is a tool to solve, simulate, and estimate structural econometric models. It provides the computational support for several research projects that analyze the economics driving agents' educational and occupational choices over their life cycle within the framework of a finite-horizon discrete choice dynamic programming model.
 
 Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for
 details.
