@@ -379,11 +379,11 @@ def simulate_log_probability_of_individuals_observed_choice(
 
     value_functions = np.zeros((n_draws, n_choices))
 
-    prob_choice = 0.0
+    prob_choice = 0
 
     for i in range(n_draws):
 
-        max_value_functions = 0.0
+        max_value_functions = 0
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
@@ -400,12 +400,12 @@ def simulate_log_probability_of_individuals_observed_choice(
             if value_function > max_value_functions:
                 max_value_functions = value_function
 
-        sum_smooth_values = 0.0
+        sum_smooth_values = 0
 
         for j in range(n_choices):
             val_exp = np.exp((value_functions[i, j] - max_value_functions) / tau)
 
-            val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
+            val_clipped = clip(val_exp, 0, HUGE_FLOAT)
 
             value_functions[i, j] = val_clipped
             sum_smooth_values += val_clipped
