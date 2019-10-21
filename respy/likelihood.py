@@ -1,8 +1,8 @@
 import warnings
 from functools import partial
 
+import numba as nb
 import numpy as np
-from numba import guvectorize
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
@@ -325,7 +325,7 @@ def _internal_log_like_obs(
     return contribs
 
 
-@guvectorize(
+@nb.guvectorize(
     ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
     "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
     "() -> ()",
@@ -377,7 +377,7 @@ def simulate_log_probability_of_individuals_observed_choice(
     """
     n_draws, n_choices = draws.shape
 
-    value_functions = np.zeros((n_choices, n_draws))
+    value_functions = np.zeros((n_draws, n_choices))
 
     prob_choice = 0.0
 
@@ -395,7 +395,7 @@ def simulate_log_probability_of_individuals_observed_choice(
                 is_inadmissible[j],
             )
 
-            value_functions[j, i] = value_function
+            value_functions[i, j] = value_function
 
             if value_function > max_value_functions:
                 max_value_functions = value_function
@@ -403,14 +403,14 @@ def simulate_log_probability_of_individuals_observed_choice(
         sum_smooth_values = 0.0
 
         for j in range(n_choices):
-            val_exp = np.exp((value_functions[j, i] - max_value_functions) / tau)
+            val_exp = np.exp((value_functions[i, j] - max_value_functions) / tau)
 
             val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
 
-            value_functions[j, i] = val_clipped
+            value_functions[i, j] = val_clipped
             sum_smooth_values += val_clipped
 
-        prob_choice += value_functions[choice, i] / sum_smooth_values
+        prob_choice += value_functions[i, choice] / sum_smooth_values
 
     prob_choice /= n_draws
 
