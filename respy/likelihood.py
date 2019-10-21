@@ -325,13 +325,47 @@ def _internal_log_like_obs(
 
 
 @nb.njit
-def log_softmax(x, k=1):
-    """https://www.johndcook.com/blog/2010/01/13/soft-maximum/."""
-    max_x = np.max(x)
-    smoothed_difference = (x - max_x) / k
-    log_sum_exp = np.log(np.sum(np.exp(smoothed_difference)))
+def log_softmax_i(x, i, k=1):
+    """Calculate log probability of a soft maximum for index ``i``.
 
-    return smoothed_difference - log_sum_exp
+    The log softmax function is essentially
+
+    .. math::
+
+        log_softmax_i = log(softmax(x_i))
+
+    This function is superior to the naive implementation as takes advantage of the log
+    and uses the fact that the softmax function is shift-invariant. Integrating the log
+    in the softmax function yields
+
+    .. math::
+
+        log_softmax_i = x_i - max(x) - log(sum(exp(x - max(x))))
+
+    The second property ensures that overflows and underflows in the exponential
+    function cannot happen as ``exp(x - max(x)) = exp(0) = 1`` at its highest value and
+    ``exp(-inf) = 0`` at its lowest value. Only infinite inputs can cause an invalid
+    output.
+
+    The smoothing parameter controls the smoothness of the function. For ``k`` close to
+    1, the function is more similar to ``max(x)`` and the derivatives of the functions
+    grow to infinity. As ``k`` grows, the smoothed maximum is bigger than the actual
+    maximum and derivatives diminish. See [1]_ for more information on the smoothing
+    factor ``k``. Note that the post covers the inverse of the smoothing factor in this
+    function. It is also covered in [2]_ as the kernel-smoothing choice probability
+    simulator.
+
+    .. [1] https://www.johndcook.com/blog/2010/01/13/soft-maximum
+    .. [2] McFadden, D. (1989). A method of simulated moments for estimation of discrete
+           response models without numerical integration. Econometrica: Journal of the
+           Econometric Society, 995-1026.
+
+    """
+    max_x = np.max(x)
+    smoothed_differences = (x - max_x) / k
+    log_sum_exp = np.log(np.sum(np.exp(smoothed_differences)))
+
+    return smoothed_differences[i] - log_sum_exp
 
 
 @nb.guvectorize(
@@ -404,9 +438,7 @@ def simulate_log_probability_of_individuals_observed_choice(
 
             value_functions[j] = value_function
 
-        lpcs = log_softmax(value_functions, tau)
-
-        log_prob_choice_ += lpcs[choice]
+        log_prob_choice_ += log_softmax_i(value_functions, choice, tau)
 
     log_prob_choice_ /= n_draws
 
