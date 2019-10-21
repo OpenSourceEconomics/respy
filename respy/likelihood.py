@@ -360,12 +360,28 @@ def log_softmax_i(x, i, k=1):
            response models without numerical integration. Econometrica: Journal of the
            Econometric Society, 995-1026.
 
+    Parameters
+    ----------
+    x : np.ndarray
+        Array with shape (n,) containing the values for which a smoothed maximum should
+        be computed.
+    i : int
+        Index for which the log probability should be computed.
+    k : float
+        Smoothing parameter to control the size of derivatives.
+
+    Returns
+    -------
+    log_probability : float
+        Log probability for input value ``i``.
+
     """
     max_x = np.max(x)
     smoothed_differences = (x - max_x) / k
     log_sum_exp = np.log(np.sum(np.exp(smoothed_differences)))
+    log_probability = smoothed_differences[i] - log_sum_exp
 
-    return smoothed_differences[i] - log_sum_exp
+    return log_probability
 
 
 @nb.guvectorize(
