@@ -325,11 +325,13 @@ def _internal_log_like_obs(
 
 
 @nb.njit
-def log_softmax(x):
+def log_softmax(x, k=1):
+    """https://www.johndcook.com/blog/2010/01/13/soft-maximum/."""
     max_x = np.max(x)
-    log_sum_exp = np.log(np.sum(np.exp(x - max_x)))
+    smoothed_difference = (x - max_x) / k
+    log_sum_exp = np.log(np.sum(np.exp(smoothed_difference)))
 
-    return x - max_x - log_sum_exp
+    return smoothed_difference - log_sum_exp
 
 
 @nb.guvectorize(
@@ -390,8 +392,6 @@ def simulate_log_probability_of_individuals_observed_choice(
 
     for i in range(n_draws):
 
-        max_value_functions = 0
-
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
                 wages[j],
@@ -404,27 +404,9 @@ def simulate_log_probability_of_individuals_observed_choice(
 
             value_functions[j] = value_function
 
-            if value_function > max_value_functions:
-                max_value_functions = value_function
+        lpcs = log_softmax(value_functions, tau)
 
-        log_sum_exp = 0
-
-        for j in range(n_choices):
-            value = (value_functions[j] - max_value_functions) / tau
-
-            value_functions[j] = value
-
-            val_clipped = np.exp(value)
-            log_sum_exp += val_clipped
-
-        log_sum_exp = np.log(log_sum_exp)
-
-        lpc = value_functions[choice] - log_sum_exp
-
-        # lpcs = log_softmax(value_functions[i])  # noqa: E800
-        # lpc = lpcs[choice]  # noqa: E800
-
-        log_prob_choice_ += lpc
+        log_prob_choice_ += lpcs[choice]
 
     log_prob_choice_ /= n_draws
 
