@@ -9,7 +9,6 @@ from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
-from respy.shared import clip
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_estimation
@@ -325,6 +324,14 @@ def _internal_log_like_obs(
     return contribs
 
 
+@nb.njit
+def log_softmax(x):
+    max_x = np.max(x)
+    log_sum_exp = np.log(np.sum(np.exp(x - max_x)))
+
+    return x - max_x - log_sum_exp
+
+
 @nb.guvectorize(
     ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
     "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
@@ -377,9 +384,9 @@ def simulate_log_probability_of_individuals_observed_choice(
     """
     n_draws, n_choices = draws.shape
 
-    value_functions = np.zeros((n_draws, n_choices))
+    value_functions = np.zeros(n_choices)
 
-    prob_choice = 0
+    log_prob_choice_ = 0
 
     for i in range(n_draws):
 
@@ -395,26 +402,33 @@ def simulate_log_probability_of_individuals_observed_choice(
                 is_inadmissible[j],
             )
 
-            value_functions[i, j] = value_function
+            value_functions[j] = value_function
 
             if value_function > max_value_functions:
                 max_value_functions = value_function
 
-        sum_smooth_values = 0
+        log_sum_exp = 0
 
         for j in range(n_choices):
-            val_exp = np.exp((value_functions[i, j] - max_value_functions) / tau)
+            value = (value_functions[j] - max_value_functions) / tau
 
-            val_clipped = clip(val_exp, 0, HUGE_FLOAT)
+            value_functions[j] = value
 
-            value_functions[i, j] = val_clipped
-            sum_smooth_values += val_clipped
+            val_clipped = np.exp(value)
+            log_sum_exp += val_clipped
 
-        prob_choice += value_functions[i, choice] / sum_smooth_values
+        log_sum_exp = np.log(log_sum_exp)
 
-    prob_choice /= n_draws
+        lpc = value_functions[choice] - log_sum_exp
 
-    log_prob_choice[0] = np.log(prob_choice)
+        # lpcs = log_softmax(value_functions[i])  # noqa: E800
+        # lpc = lpcs[choice]  # noqa: E800
+
+        log_prob_choice_ += lpc
+
+    log_prob_choice_ /= n_draws
+
+    log_prob_choice[0] = log_prob_choice_
 
 
 def _convert_choice_variables_from_categorical_to_codes(df, options):
