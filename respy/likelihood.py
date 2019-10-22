@@ -325,7 +325,7 @@ def _internal_log_like_obs(
 
 
 @nb.njit
-def log_softmax_i(x, i, k=1):
+def log_softmax_i(x, i, tau=1):
     """Calculate log probability of a soft maximum for index ``i``.
 
     The log softmax function is essentially
@@ -347,13 +347,14 @@ def log_softmax_i(x, i, k=1):
     ``exp(-inf) = 0`` at its lowest value. Only infinite inputs can cause an invalid
     output.
 
-    The smoothing parameter controls the smoothness of the function. For ``k`` close to
-    1, the function is more similar to ``max(x)`` and the derivatives of the functions
-    grow to infinity. As ``k`` grows, the smoothed maximum is bigger than the actual
-    maximum and derivatives diminish. See [1]_ for more information on the smoothing
-    factor ``k``. Note that the post covers the inverse of the smoothing factor in this
-    function. It is also covered in [2]_ as the kernel-smoothing choice probability
-    simulator.
+    The temperature parameter ``tau`` controls the smoothness of the function. For
+    ``tau`` close to 1, the function is more similar to ``max(x)`` and the derivatives
+    of the functions grow to infinity. As ``tau`` grows, the smoothed maximum is bigger
+    than the actual maximum and derivatives diminish. See [1]_ for more information on
+    the smoothing factor ``tau``. Note that the post covers the inverse of the smoothing
+    factor in this function. It is also covered in [2]_ as the kernel-smoothing choice
+    probability simulator. In reinforcement learning and statistical mechanics the
+    function is known as the Boltzmann exploration.
 
     .. [1] https://www.johndcook.com/blog/2010/01/13/soft-maximum
     .. [2] McFadden, D. (1989). A method of simulated moments for estimation of discrete
@@ -367,7 +368,7 @@ def log_softmax_i(x, i, k=1):
         be computed.
     i : int
         Index for which the log probability should be computed.
-    k : float
+    tau : float
         Smoothing parameter to control the size of derivatives.
 
     Returns
@@ -377,7 +378,7 @@ def log_softmax_i(x, i, k=1):
 
     """
     max_x = np.max(x)
-    smoothed_differences = (x - max_x) / k
+    smoothed_differences = (x - max_x) / tau
     log_sum_exp = np.log(np.sum(np.exp(smoothed_differences)))
     log_probability = smoothed_differences[i] - log_sum_exp
 
