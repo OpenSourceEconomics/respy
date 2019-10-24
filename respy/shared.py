@@ -18,13 +18,45 @@ from respy.config import INADMISSIBILITY_PENALTY
 def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
+    """Calculate the utility of Keane and Wolpin models.
+
+    Note that the function works for working and non-working alternatives as wages are
+    set to one for non-working alternatives such that the draws enter the utility
+    function additively.
+
+    Parameters
+    ----------
+    wage : float
+        Value of the wage component. Note that for non-working alternatives this value
+        is actually zero, but to simplify computations it is set to one.
+    nonpec : float
+        Value of the non-pecuniary component.
+    continuation_value : float
+        Value of the continuation value which is the expected present-value of the
+        following state.
+    draw : float
+        The shock which enters the enters the reward of working alternatives
+        multiplicatively and of non-working alternatives additively.
+    delta : float
+        The discount factor to calculate the present value of continuation values.
+    is_inadmissible : float
+        An indicator for whether the choice is in the current choice set.
+
+    Returns
+    -------
+    alternative_specific_value_function : float
+        The expected present value of an alternative.
+    flow_utility : float
+        The immediate reward of an alternative.
+
+    """
     flow_utility = wage * draw + nonpec
-    value_function = flow_utility + delta * continuation_value
+    alternative_specific_value_function = flow_utility + delta * continuation_value
 
     if is_inadmissible:
-        value_function += INADMISSIBILITY_PENALTY
+        alternative_specific_value_function += INADMISSIBILITY_PENALTY
 
-    return value_function, flow_utility
+    return alternative_specific_value_function, flow_utility
 
 
 @guvectorize(

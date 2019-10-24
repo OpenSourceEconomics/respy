@@ -449,62 +449,30 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
 
 
 @guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:], f8, b1[:], f8[:], f8[:]"],
-    "(n_choices), (n_choices), (n_choices), (n_choices), (), (n_choices) "
-    "-> (n_choices), (n_choices)",
+    ["f8, f8, f8, f8, f8, b1, f8[:], f8[:]"],
+    "(), (), (), (), (), () -> (), ()",
     nopython=True,
     target="cpu",
 )
 def calculate_value_functions_and_flow_utilities(
-    wages,
+    wage,
     nonpec,
-    continuation_values,
-    draws,
+    continuation_value,
+    draw,
     delta,
     is_inadmissible,
-    value_functions,
-    flow_utilities,
+    value_function,
+    flow_utility,
 ):
     """Calculate the choice-specific value functions and flow utilities.
 
-    Parameters
-    ----------
-    wages : numpy.ndarray
-        Array with shape (n_choices,).
-    nonpec : numpy.ndarray
-        Array with shape (n_choices,).
-    continuation_values : numpy.ndarray
-        Array with shape (n_choices,).
-    draws : numpy.ndarray
-        Array with shape (n_choices).
-    delta : float
-        Discount rate.
-    is_inadmissible: numpy.ndarray
-        Array with shape (n_choices,) containing indicator for whether the following
-        state is inadmissible.
-
-    Returns
-    -------
-    value_functions : numpy.ndarray
-        Array with shape (n_choices).
-    flow_utilities : numpy.ndarray
-        Array with shape (n_choices).
+    This function uses :func:`numba.guvectorize` instead of :func:`numba.vectorize`
+    because the latter does not support multiple return values.
 
     """
-    n_choices = draws.shape[0]
-
-    for i in range(n_choices):
-        value_function, flow_utility = aggregate_keane_wolpin_utility(
-            wages[i],
-            nonpec[i],
-            continuation_values[i],
-            draws[i],
-            delta,
-            is_inadmissible[i],
-        )
-
-        flow_utilities[i] = flow_utility
-        value_functions[i] = value_function
+    value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
+        wage, nonpec, continuation_value, draw, delta, is_inadmissible
+    )
 
 
 def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
