@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from numba import guvectorize
 
-from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import convert_choice_variables_from_categorical_to_codes
@@ -317,17 +316,15 @@ def _simulate_single_period(
         state_space.is_inadmissible[indices],
     )
 
-    # We need to ensure that no individual chooses an inadmissible state. This
-    # cannot be done directly in the calculate_value_functions function as the
-    # penalty otherwise dominates the interpolation equation. The parameter
-    # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
-    # constructed cases.
+    # We need to ensure that no individual chooses an inadmissible state. Thus, set
+    # value functions to NaN. This cannot be done in
+    # :func:`aggregate_keane_wolpin_utility` as the interpolation requires a mild
+    # penalty.
     value_functions = np.where(
-        state_space.is_inadmissible[indices], -HUGE_FLOAT, value_functions
+        state_space.is_inadmissible[indices], np.nan, value_functions
     )
 
-    # Determine optimal choice.
-    choice = np.argmax(value_functions, axis=1)
+    choice = np.nanargmax(value_functions, axis=1)
 
     wages = state_space.wages[indices] * draws_shock * draws_wage
     wages[:, n_wages:] = np.nan
@@ -536,7 +533,6 @@ def _random_choice(choices, probabilities):
     >>> choices = _random_choice(choices, ps)
     >>> np.round(np.bincount(choices), decimals=-3) / n_samples
     array([0.4, 0. , 0.6])
-    >>> assert np.bincount(choices)[1] == 0
 
     """
     cumulative_distribution = probabilities.cumsum(axis=1)

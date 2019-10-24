@@ -1,5 +1,7 @@
 import numpy as np
 
+from respy.shared import generate_column_labels_estimation
+
 
 def check_estimation_data(df, optim_paras):
     """Check data for estimation.
@@ -17,7 +19,9 @@ def check_estimation_data(df, optim_paras):
         If data has not the expected format.
 
     """
-    df = df.reset_index()
+    # Make sure all columns are available.
+    labels, _ = generate_column_labels_estimation(optim_paras)
+    df = df[labels].reset_index(drop=True)
 
     n_periods = optim_paras["n_periods"]
 
