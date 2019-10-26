@@ -6,6 +6,7 @@ Getting Started
    :maxdepth: 1
 
    introduction
+   recommended-reading
    installation
    tutorial.ipynb
    tutorial-lagged-choices.ipynb
