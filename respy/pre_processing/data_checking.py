@@ -53,7 +53,7 @@ def check_estimation_data(df, optim_paras):
 
     # Observable characteristics.
     for observable in optim_paras["observables"]:
-        assert df[observable.capitalize()].max() + 1 == len(
+        assert df[observable.title()].max() + 1 == len(
             optim_paras["observables"][observable]
         )
 

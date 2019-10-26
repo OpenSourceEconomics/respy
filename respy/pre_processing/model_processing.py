@@ -157,6 +157,7 @@ def _parse_observables(optim_paras, params):
         }
     else:
         optim_paras["observables"] = {}
+
     return optim_paras
 
 
