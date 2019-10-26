@@ -148,13 +148,20 @@ def _parse_choices(optim_paras, params, options):
 
 def _parse_observables(optim_paras, params):
     if "observables" in params.index.get_level_values(0):
-        obs = [x[1][:-2] for x in params.index if "observables" in x[0]]
-        optim_paras["observables"] = {
-            x: np.array(
-                [params.loc[(f"observables", f"{x}_{y}")] for y in range(obs.count(x))]
-            )
-            for x in set(obs)
-        }
+        observables = params.loc["observables"]
+        counts = observables.index.str.extract(
+            r"\b([a-z_]+)_[0-9]+\b", expand=False
+        ).value_counts()
+        for name, count in counts.items():
+            shares = [observables.loc[f"{name}_{value}"] for value in range(count)]
+            if np.sum(shares) != 1:
+                warnings.warn(
+                    f"The shares of observable '{name}' do not sum to one. Shares are "
+                    "divided by their sum for normalization.",
+                    category=UserWarning,
+                )
+                shares = shares / np.sum(shares)
+            optim_paras["observables"] = {name: shares}
     else:
         optim_paras["observables"] = {}
 
