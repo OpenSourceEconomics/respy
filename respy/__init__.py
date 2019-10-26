@@ -17,6 +17,7 @@ import pytest
 from respy.config import ROOT_DIR
 from respy.interface import get_example_model  # noqa: F401
 from respy.likelihood import get_crit_func  # noqa: F401
+from respy.method_of_simulated_moments import get_msm_func  # noqa: F401
 from respy.simulate import get_simulate_func  # noqa: F401
 from respy.solve import solve  # noqa: F401
 
