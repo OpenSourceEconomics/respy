@@ -271,7 +271,7 @@ def _create_core_state_space(optim_paras):
     """
     minimal_initial_experience = np.array(
         [
-            np.min(optim_paras["choices"][choice]["start"])
+            np.min(list(optim_paras["choices"][choice]["start"]))
             for choice in optim_paras["choices_w_exp"]
         ],
         dtype=np.uint8,
@@ -475,7 +475,10 @@ def _create_state_space_indexer(df, optim_paras):
     choices = optim_paras["choices"]
 
     max_initial_experience = np.array(
-        [choices[choice]["start"].max() for choice in optim_paras["choices_w_exp"]]
+        [
+            np.max(list(choices[choice]["start"]))
+            for choice in optim_paras["choices_w_exp"]
+        ]
     ).astype(np.uint8)
     max_experience = [choices[choice]["max"] for choice in optim_paras["choices_w_exp"]]
 

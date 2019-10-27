@@ -81,7 +81,7 @@ def _type_shift_template(n_types):
 def initial_and_max_experience_template(edu_starts, edu_shares, edu_max):
     to_concat = []
     for start, share in zip(edu_starts, edu_shares):
-        ind = ("initial_exp_edu", start)
+        ind = (f"initial_exp_edu_{start}", "probability")
         dat = [share, f"Probability that the initial level of education is {start}."]
         to_concat.append(_base_row(ind, dat))
 

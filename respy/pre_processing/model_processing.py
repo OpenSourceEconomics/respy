@@ -12,6 +12,8 @@ from estimagic.optimization.utilities import chol_params_to_lower_triangular_mat
 from estimagic.optimization.utilities import cov_params_to_matrix
 from estimagic.optimization.utilities import robust_cholesky
 from estimagic.optimization.utilities import sdcorr_params_to_matrix
+from scipy.optimize import fsolve
+from scipy.special import softmax
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import SEED_STARTUP_ITERATION_GAP
@@ -166,29 +168,45 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
 
     """
     for choice in optim_paras["choices_w_exp"]:
-        if f"initial_exp_{choice}" in params.index:
-            # Take starts and shares and convert index to numeric or sorting will fail.
-            # Maybe waiting on https://github.com/pandas-dev/pandas/pull/27237.
-            starts_and_shares = params.loc[f"initial_exp_{choice}"].copy()
-            starts_and_shares.index = starts_and_shares.index.astype(np.uint8)
-            starts_and_shares.sort_index(inplace=True)
-            starts = starts_and_shares.index.to_numpy()
-            shares = starts_and_shares.to_numpy()
-            if shares.sum() != 1:
-                warnings.warn(
-                    f"The shares of initial experiences for choice '{choice}' do not "
-                    "sum to one. Shares are divided by their sum for normalization.",
-                    category=UserWarning,
-                )
-                shares = shares / shares.sum()
+        sub = params.filter(like=f"initial_exp_{choice}", axis=0).sort_index()
+
+        if sub.shape[0]:
+            levels = (
+                sub.index.get_level_values(0)
+                .str.extract(fr"initial_exp_{choice}_([0-9]+)", expand=False)
+                .astype(int)
+                .sort_values()
+                .tolist()
+            )
+
+            # It is allowed to specify the shares of initial experiences as
+            # probabilities. Then, the probabilities are replaced with the appropriate
+            # coefficients to recover the probabilities with a softmax function.
+            is_probability = (sub.index.get_level_values(1) == "probability").all()
+            as_many_levels_as_probabilities = len(levels) == sub.shape[0]
+            if is_probability and as_many_levels_as_probabilities:
+                if sub.sum() != 1:
+                    sub[:] = sub / sub.sum()
+                    warnings.warn(
+                        "The probabilities over different initial experiences for "
+                        f"choice '{choice}' do not sum to one. Divide by sum for "
+                        "normalization.",
+                        category=UserWarning,
+                    )
+                coeffs = calculate_softmax_coefficients(sub)
+                sub[:] = coeffs
+                sub = sub.rename(index={"probability": "constant"}, level=1)
+
+            optim_paras["choices"][choice]["start"] = {}
+            for level in levels:
+                coeffs = sub.loc[f"initial_exp_{choice}_{level}"]
+                optim_paras["choices"][choice]["start"][level] = coeffs
         else:
-            starts = np.zeros(1, dtype=np.uint8)
-            shares = np.ones(1, dtype=np.uint8)
+            optim_paras["choices"][choice]["start"] = {
+                0: pd.Series(index=["constant"], data=1)
+            }
 
         max_ = int(params.get(("maximum_exp", choice), options["n_periods"] - 1))
-
-        optim_paras["choices"][choice]["start"] = starts
-        optim_paras["choices"][choice]["share"] = shares
         optim_paras["choices"][choice]["max"] = max_
 
     return optim_paras
@@ -502,3 +520,17 @@ def _parse_lagged_choices(optim_paras, options, params):
         optim_paras[match] = params.loc[match]
 
     return optim_paras
+
+
+def calculate_softmax_coefficients(implied_probabilities):
+    def calculate_softmax_error(x, expected):
+        result = softmax(x)
+        return expected - result
+
+    x = fsolve(
+        calculate_softmax_error,
+        x0=np.zeros(len(implied_probabilities)),
+        args=implied_probabilities,
+    )
+
+    return x

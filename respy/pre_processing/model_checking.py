@@ -44,10 +44,13 @@ def check_model_solution(optim_paras, options, state_space):
     # Distribute class attributes
     choices = optim_paras["choices"]
     max_initial_experience = np.array(
-        [choices[choice]["start"].max() for choice in optim_paras["choices_w_exp"]]
+        [
+            np.max(list(choices[choice]["start"]))
+            for choice in optim_paras["choices_w_exp"]
+        ]
     )
     n_initial_exp_comb = np.prod(
-        [choices[choice]["start"].shape[0] for choice in optim_paras["choices_w_exp"]]
+        [len(choices[choice]["start"]) for choice in optim_paras["choices_w_exp"]]
     )
     n_periods = options["n_periods"]
     n_types = optim_paras["n_types"]
