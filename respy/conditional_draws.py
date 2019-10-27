@@ -91,30 +91,54 @@ def create_draws_and_log_prob_wages(
 def update_mean_and_evaluate_likelihood(
     log_wage_observed, log_wage_systematic, cov, choice, meas_sds, updated_mean, loglike
 ):
-    """Update mean and evaluate likelihood.
+    r"""Update mean and evaluate likelihood.
 
     Calculate the conditional mean of shocks after observing one shock
     and evaluate the likelihood of the observed shock.
 
-    For the probability of the observed wage, recognize that they are log-normally
-    distributed. Thus, the following formula applies [1]_:
+    The mean is updated by the "Sequences of Conditional Distributions" explained in
+    [1]_. Consider the following sequence of correlated normal random variables whose
+    mean is adapted by the following formula:
 
     .. math::
 
-        f_W(w) = \frac{1}{w} \\cdot \frac{1}{\\sigma \\sqrt{2 \\pi}} \\exp \\left(
-            - \frac{(\\ln(w) - \\ln(w(s_t, a_t)))^2}{2 \\sigma^2}
+        X_1 &\sim \mathcal{N}(0, \sigma_{11}) \\
+        X_2 &\sim \mathcal{N}(
+            \sigma_{12} \frac{X_1}{\sigma_{11}},
+            \sigma_{22} - \frac{\sigma^2_{12}}{\sigma_{11}}
+        ) \\
+        \dots
+
+    For the probability of the observed wage, recognize that wages are log-normally
+    distributed. Thus, the following formula applies [2]_ [3]_:
+
+    .. math::
+
+        f_W(w_{it}) = \frac{1}{w_{it}} \cdot \frac{1}{\sigma \sqrt{2 \pi}} \exp \left(
+            - \frac{(\ln(w_{it}) - \ln(w(s^-_t, a_t)))^2}{2 \sigma^2}
         \right)
+
+    where :math:`i` is the individual, :math:`t` is the period, :math:`f_W` is the
+    probability density function of the wage, :math:`w_{it}` is the observed wage,
+    :math:`\sigma` is the standard deviation of the wage shock, :math:`s^-_t` is the
+    state without the shocks, :math:`a_t` is the choice and :math:`w(s^-_t, a_t)` is the
+    non-stochastic wage implied by the model for choice :math:`a_t`.
 
     Parameters
     ----------
-    shock : float
-        The observed shock. NaN for individuals where no shock was observed.
+    log_wage_observed : float
+        Log of the observed wage of the individual. Can be ``np.nan`` if no wage was
+        observed for a working alternative or the individual chose a non-working
+        alternative.
+    log_wage_systematic : float
+        Log of the implied wage for the choice by the model. This term is computed by
+        the wage equation without the choice-specific shock.
     cov : np.ndarray
-        Unconditional covariance matrix of the shocks
+        Unconditional covariance matrix of the shocks.
     choice : int
-        The observed choice
+        The observed choice.
     meas_sds : np.ndarray
-        1d array of length n_choices with standard errors of measurement errors.
+        Array with shape (n_choices,) containing standard errors of measurement errors.
 
     Returns
     -------
@@ -127,10 +151,15 @@ def update_mean_and_evaluate_likelihood(
 
     References
     ----------
-    .. [1] Johnson, Norman L.; Kotz, Samuel; Balakrishnan, N. (1994), "14: Lognormal
-       Distributions", Continuous univariate distributions. Vol. 1, Wiley Series in
-       Probability and Mathematical Statistics: Applied Probability and Statistics (2nd
-       ed.)
+    .. [1] Gentle, J. E. (2009). Computational statistics (Vol. 308). New York:
+           Springer.
+    .. [2] Johnson, Norman L.; Kotz, Samuel; Balakrishnan, N. (1994), "14: Lognormal
+           Distributions", Continuous univariate distributions. Vol. 1, Wiley Series in
+           Probability and Mathematical Statistics: Applied Probability and Statistics
+           (2nd ed.)
+    .. [3] Keane, M. P., Wolpin, K. I., & Todd, P. (2011). Handbook of Labor Economics,
+           volume 4, chapter The Structural Estimation of Behavioral Models: Discrete
+           Choice Dynamic Programming Methods and Applications.
 
     """
     n_choices = len(cov)
