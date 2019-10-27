@@ -147,10 +147,12 @@ def _parse_choices(optim_paras, params, options):
 
 
 def _parse_observables(optim_paras, params):
+    optim_paras["observables"] = {}
+
     if "observables" in params.index.get_level_values(0):
         observables = params.loc["observables"]
         counts = observables.index.str.extract(
-            r"\b([a-z_]+)_[0-9]+\b", expand=False
+            r"\b([a-z0-9_]+)_[0-9]+\b", expand=False
         ).value_counts()
         for name, count in counts.items():
             shares = [observables.loc[f"{name}_{value}"] for value in range(count)]
@@ -161,9 +163,7 @@ def _parse_observables(optim_paras, params):
                     category=UserWarning,
                 )
                 shares = shares / np.sum(shares)
-            optim_paras["observables"] = {name: shares}
-    else:
-        optim_paras["observables"] = {}
+            optim_paras["observables"][name] = shares
 
     return optim_paras
 

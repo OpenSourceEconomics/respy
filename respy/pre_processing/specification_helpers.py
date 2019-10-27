@@ -128,18 +128,21 @@ def _base_row(index_tuple, data):
     ind = pd.MultiIndex.from_tuples([index_tuple], names=["category", "name"])
     cols = ["value", "comment"]
     df = pd.DataFrame(index=ind, columns=cols, data=[data])
+
     return df
 
 
 def observable_prob_template(observables):
     to_concat = []
-    for x, _ in enumerate(observables):
-        probs = np.random.uniform(size=observables[x])
+    for i in range(len(observables)):
+        probs = np.random.uniform(size=observables[i])
         probs /= probs.sum()
-        for y in range(observables[x]):
-            ind = (f"observables", f"observable_{x}_{y}")
-            dat = [probs[y], f"Probability of observable {x} being level choice {y}"]
+
+        for j in range(observables[i]):
+            ind = (f"observables", f"observable_{i}_{j}")
+            dat = [probs[j], f"Probability of observable {i} being level choice {j}"]
             to_concat.append(_base_row(ind, dat))
+
     return pd.concat(to_concat, axis=0, sort=False)
 
 

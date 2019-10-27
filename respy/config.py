@@ -36,7 +36,6 @@ DEFAULT_OPTIONS = {
     "simulation_seed": 2,
     "solution_draws": 500,
     "solution_seed": 3,
-    "observables": {},
     "core_state_space_filters": [],
     "inadmissible_states": {},
 }
