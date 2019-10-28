@@ -4,6 +4,7 @@ from functools import partial
 import numpy as np
 from numba import guvectorize
 from scipy.special import logsumexp
+from scipy.special import softmax
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
@@ -14,7 +15,6 @@ from respy.shared import clip
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_estimation
-from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -303,9 +303,9 @@ def _internal_log_like_obs(
 
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
     if n_types >= 2:
-        type_probabilities = predict_multinomial_logit(
-            optim_paras["type_prob"], type_covariates
-        )
+        z = np.dot(type_covariates, optim_paras["type_prob"].T)
+        type_probabilities = softmax(z, axis=1)
+
         log_type_probabilities = np.log(type_probabilities)
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
