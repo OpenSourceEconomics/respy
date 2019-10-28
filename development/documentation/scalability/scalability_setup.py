@@ -9,7 +9,7 @@ def main():
     function evaluations.
 
     """
-    model = "kw_97_base"
+    model = "kw_97_basic"
     maxfun = 3
 
     filepath = Path(__file__).resolve().parent / "run_single_scalability_exercise.py"
