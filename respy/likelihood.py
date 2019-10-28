@@ -3,8 +3,6 @@ from functools import partial
 
 import numba as nb
 import numpy as np
-
-from numba import guvectorize
 from scipy.special import logsumexp
 from scipy.special import softmax
 
