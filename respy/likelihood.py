@@ -4,6 +4,10 @@ from functools import partial
 import numba as nb
 import numpy as np
 
+from numba import guvectorize
+from scipy.special import logsumexp
+from scipy.special import softmax
+
 from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
@@ -12,7 +16,6 @@ from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_estimation
-from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -301,21 +304,13 @@ def _internal_log_like_obs(
 
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
     if n_types >= 2:
-        type_probabilities = predict_multinomial_logit(
-            optim_paras["type_prob"], type_covariates
-        )
+        z = np.dot(type_covariates, optim_paras["type_prob"].T)
+        type_probabilities = softmax(z, axis=1)
+
         log_type_probabilities = np.log(type_probabilities)
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
-        # The following is equivalent to:
-        # writing contribs = np.log(np.exp(weighted_loglikes).sum(axis=1))
-        # but avoids overflows and underflows
-        minimal_m = -700 - weighted_loglikes.min(axis=1)
-        maximal_m = 700 - weighted_loglikes.max(axis=1)
-        valid = minimal_m <= maximal_m
-        m = np.where(valid, (minimal_m + maximal_m) / 2, np.nan).reshape(-1, 1)
-        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m.flatten()
-        contribs[~valid] = -HUGE_FLOAT
+        contribs = logsumexp(weighted_loglikes, axis=1)
     else:
         contribs = per_individual_loglikes.flatten()
 
