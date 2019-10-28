@@ -1,0 +1,6 @@
+,age,white,black
+less_than_twelve_years_school,23,0.24,0.359
+twelve_years_school,23,0.362,0.377
+between_thirteen_and_fifteen_years_school,23,0.187,0.196
+at_least_sixteen_years_school,23,0.213,0.068
+mean_years_school,23,12.7,11.9
