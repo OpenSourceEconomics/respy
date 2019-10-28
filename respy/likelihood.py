@@ -3,8 +3,8 @@ from functools import partial
 
 import numpy as np
 from numba import guvectorize
-from scipy.special import softmax
 from scipy.special import logsumexp
+from scipy.special import softmax
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
