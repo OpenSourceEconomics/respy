@@ -40,12 +40,7 @@ def create_kw_97(params, options):
     }
 
     df = pd.read_csv(
-        TEST_RESOURCES_DIR / "KW_97.raw",
-        sep=r"\s+",
-        names=dtypes,
-        dtype=dtypes,
-        na_values=".",
-        float_precision="high",
+        TEST_RESOURCES_DIR / "kw_97_data.csv", dtype=dtypes, float_precision="high"
     )
 
     df.Identifier = df.groupby("Identifier").ngroup().astype(np.uint16)
