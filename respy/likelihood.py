@@ -4,6 +4,7 @@ from functools import partial
 import numpy as np
 from numba import guvectorize
 from scipy.special import softmax
+from scipy.special import logsumexp
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
@@ -308,15 +309,7 @@ def _internal_log_like_obs(
         log_type_probabilities = np.log(type_probabilities)
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
-        # The following is equivalent to:
-        # writing contribs = np.log(np.exp(weighted_loglikes).sum(axis=1))
-        # but avoids overflows and underflows
-        minimal_m = -700 - weighted_loglikes.min(axis=1)
-        maximal_m = 700 - weighted_loglikes.max(axis=1)
-        valid = minimal_m <= maximal_m
-        m = np.where(valid, (minimal_m + maximal_m) / 2, np.nan).reshape(-1, 1)
-        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m.flatten()
-        contribs[~valid] = -HUGE_FLOAT
+        contribs = logsumexp(weighted_loglikes, axis=1)
     else:
         contribs = per_individual_loglikes.flatten()
 
