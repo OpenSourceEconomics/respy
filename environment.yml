@@ -11,6 +11,7 @@ dependencies:
   - doc8
   - estimagic>=0.0.14
   - jupyterlab
+  - line_profiler
   - matplotlib
   - mkl
   - nbsphinx=0.4.2
@@ -23,6 +24,7 @@ dependencies:
   - pytest-xdist
   - restructuredtext_lint
   - scipy
+  - snakeviz
   - sphinx
   - sphinx-autobuild
   - tox-conda
