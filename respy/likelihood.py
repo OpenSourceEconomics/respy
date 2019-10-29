@@ -55,9 +55,9 @@ def get_crit_func(params, options, df, version="log_like"):
 
     optim_paras = _adjust_optim_paras_for_estimation(optim_paras, df)
 
-    state_space = StateSpace(optim_paras, options)
-
     check_estimation_data(df, optim_paras)
+
+    state_space = StateSpace(optim_paras, options)
 
     (
         choices,

@@ -18,6 +18,7 @@ dependencies:
   - numba
   - numpydoc
   - pandas>=0.24
+  - pdbpp
   - pyaml
   - pytest
   - pytest-cov
