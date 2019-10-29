@@ -309,7 +309,7 @@ def _internal_log_like_obs(
         z = np.dot(type_covariates, optim_paras["type_prob"].T)
         type_probabilities = softmax(z, axis=1)
 
-        type_probabilities = np.clip(type_probabilities, 1 / MIN_FLOAT, MAX_FLOAT)
+        type_probabilities = np.clip(type_probabilities, 1 / MAX_FLOAT, MAX_FLOAT)
         log_type_probabilities = np.log(type_probabilities)
 
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
@@ -566,7 +566,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
     log_wages_observed = np.log(
-        np.clip(df.wage.to_numpy(), 1 / MIN_FLOAT, MAX_FLOAT).repeat(
+        np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT).repeat(
             optim_paras["n_types"]
         )
     )
