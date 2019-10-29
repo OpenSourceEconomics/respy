@@ -3,8 +3,7 @@ from estimagic.optimization.utilities import robust_cholesky
 from numba import guvectorize
 
 from respy.config import MAX_FLOAT
-from respy.config import MAX_LOG_FLOAT
-from respy.config import MIN_LOG_FLOAT
+from respy.config import MIN_FLOAT
 
 
 def create_draws_and_log_prob_wages(
@@ -61,8 +60,8 @@ def create_draws_and_log_prob_wages(
 
     choices = choices.astype(np.uint16)
     relevant_systematic_wages = np.choose(choices, wages_systematic.T)
-    log_wage_systematic = np.clip(
-        np.log(relevant_systematic_wages), MIN_LOG_FLOAT, MAX_LOG_FLOAT
+    log_wage_systematic = np.log(
+        np.clip(relevant_systematic_wages, 1 / MIN_FLOAT, MAX_FLOAT)
     )
     cov = shocks_cholesky @ shocks_cholesky.T
 

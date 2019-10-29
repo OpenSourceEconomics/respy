@@ -307,7 +307,7 @@ def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated
     # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994),
     # negative predictions are truncated to zero.
     endogenous_predicted = exogenous.dot(beta)
-    endogenous_predicted = np.clip(endogenous_predicted, 0, None)
+    endogenous_predicted = np.clip(endogenous_predicted, 0, MAX_FLOAT)
 
     # Construct predicted EMAX for all states and the
     predictions = endogenous_predicted + max_value_functions
