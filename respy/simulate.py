@@ -118,7 +118,6 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     # Start simulation.
-    n_periods = optim_paras["n_periods"]
     n_wages = len(optim_paras["choices_w_wage"])
     n_choices_w_exp = len(optim_paras["choices_w_exp"])
     n_lagged_choices = optim_paras["n_lagged_choices"]
@@ -132,6 +131,7 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     # If no data is passed or if only one observation for each individual is passed,
     # perform n-step-ahead simulation. Else perform one-step-ahead simulation.
     is_n_step_ahead = df is None or df.Identifier.duplicated().sum() == 0
+    n_periods = options["n_periods"] if is_n_step_ahead else df.Period.max() + 1
 
     # Create DataFrame if it is not available. Otherwise, sort it and rename columns.
     if df is None:
