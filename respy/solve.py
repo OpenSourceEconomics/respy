@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 from numba import guvectorize
+from robupy.auxiliary import get_worst_case_probs
 
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
@@ -68,6 +69,8 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     # Unpack arguments.
     delta = optim_paras["delta"]
+    eta = optim_paras["eta"]
+
     shocks_cholesky = optim_paras["shocks_cholesky"]
 
     shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
@@ -133,6 +136,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
                 not_interpolated,
                 draws_emax_risk,
                 delta,
+                eta,
                 is_inadmissible,
             )
 
@@ -148,6 +152,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
                 continuation_values,
                 draws_emax_risk,
                 delta,
+                eta,
                 is_inadmissible,
             )
 
@@ -237,6 +242,7 @@ def calculate_endogenous_variables(
     not_interpolated,
     draws,
     delta,
+    eta,
     is_inadmissible,
 ):
     """Calculate endogenous variable for all states which are not interpolated.
@@ -270,6 +276,7 @@ def calculate_endogenous_variables(
         continuation_values[not_interpolated],
         draws,
         delta,
+        eta,
         is_inadmissible[not_interpolated],
     )
     endogenous = emax_value_functions - max_value_functions[not_interpolated]
@@ -321,10 +328,10 @@ def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated
 
 @guvectorize(
     [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]",
+        "f4[:], f4[:], f4[:], f4[:, :], f4, f4, b1[:], f4[:]",
+        "f8[:], f8[:], f8[:], f8[:, :], f8, f8, b1[:], f8[:]",
     ],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (), (n_choices) "
     "-> ()",
     nopython=True,
     target="parallel",
@@ -335,6 +342,7 @@ def calculate_emax_value_functions(
     continuation_values,
     draws,
     delta,
+    eta,
     is_inadmissible,
     emax_value_functions,
 ):
@@ -342,9 +350,9 @@ def calculate_emax_value_functions(
 
     The function takes an agent and calculates the utility for each of the choices, the
     ex-post rewards, with multiple draws from the distribution of unobservables and adds
-    the discounted expected maximum utility of subsequent periods resulting from
-    choices. Averaging over all maximum utilities yields the expected maximum utility of
-    this state.
+    the discounted expected maximum utility under a worst case scenario of subsequent periods
+    resulting from choices. Averaging over all maximum utilities yields the expected maximum
+    utility of this state.
 
     The underlying process in this function is called `Monte Carlo integration`_. The
     goal is to approximate an integral by evaluating the integrand at randomly chosen
@@ -374,6 +382,8 @@ def calculate_emax_value_functions(
         Array with shape (n_draws, n_choices).
     delta : float
         The discount factor.
+    eta : float
+        The size of the ambiguity set.
     is_inadmissible: numpy.ndarray
         Array with shape (n_choices,) containing indicator for whether the following
         state is inadmissible.
@@ -388,6 +398,8 @@ def calculate_emax_value_functions(
 
     """
     n_draws, n_choices = draws.shape
+
+    v = np.repeat(np.nan, n_draws)
 
     emax_value_functions[0] = 0.0
 
@@ -408,9 +420,16 @@ def calculate_emax_value_functions(
             if value_function > max_value_functions:
                 max_value_functions = value_function
 
-        emax_value_functions[0] += max_value_functions
+        v[i] = max_value_functions
 
-    emax_value_functions[0] /= n_draws
+    if eta > 0:
+        q = np.repeat(1.0 / n_draws, n_draws)
+        p = get_worst_case_probs(v, q, eta)
+        emax = np.dot(v, p)
+    else:
+        emax = np.mean(v)
+
+    emax_value_functions[0] = emax
 
 
 @guvectorize(
