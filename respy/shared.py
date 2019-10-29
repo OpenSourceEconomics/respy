@@ -9,8 +9,8 @@ import pandas as pd
 from numba import njit
 from numba import vectorize
 
-from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
+from respy.config import MAX_FLOAT
 
 
 @njit
@@ -62,7 +62,7 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
     draws_transformed += shocks_mean
 
     draws_transformed[:, :n_wages] = np.clip(
-        np.exp(draws_transformed[:, :n_wages]), 0.0, HUGE_FLOAT
+        np.exp(draws_transformed[:, :n_wages]), 0, MAX_FLOAT
     )
 
     return draws_transformed

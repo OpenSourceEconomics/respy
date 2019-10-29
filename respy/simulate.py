@@ -5,7 +5,7 @@ import pandas as pd
 from numba import guvectorize
 from scipy.special import softmax
 
-from respy.config import HUGE_FLOAT
+from respy.config import MIN_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import create_base_covariates
@@ -193,7 +193,7 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
         # INADMISSIBILITY_PENALTY is a compromise. It is only relevant in very
         # constructed cases.
         value_functions = np.where(
-            state_space.is_inadmissible[indices], -HUGE_FLOAT, value_functions
+            state_space.is_inadmissible[indices], MIN_FLOAT, value_functions
         )
 
         # Determine optimal choice.

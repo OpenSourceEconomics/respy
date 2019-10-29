@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 
 from respy._numba import array_to_tuple
-from respy.config import HUGE_FLOAT
+from respy.config import MAX_LOG_FLOAT
+from respy.config import MIN_LOG_FLOAT
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import downcast_to_smallest_dtype
@@ -552,7 +553,7 @@ def _create_reward_components(types, covariates, optim_paras):
     log_wages += type_deviations[:, :n_wages]
     nonpec[:, n_wages:] += type_deviations[:, n_wages:]
 
-    wages = np.clip(np.exp(log_wages), 0.0, HUGE_FLOAT)
+    wages = np.exp(np.clip(log_wages, MIN_LOG_FLOAT, MAX_LOG_FLOAT))
 
     # Extend wages to dimension of non-pecuniary rewards.
     additional_dim = nonpec.shape[1] - log_wages.shape[1]

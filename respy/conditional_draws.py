@@ -2,7 +2,9 @@ import numpy as np
 from estimagic.optimization.utilities import robust_cholesky
 from numba import guvectorize
 
-from respy.config import HUGE_FLOAT
+from respy.config import MAX_FLOAT
+from respy.config import MAX_LOG_FLOAT
+from respy.config import MIN_LOG_FLOAT
 
 
 def create_draws_and_log_prob_wages(
@@ -60,7 +62,7 @@ def create_draws_and_log_prob_wages(
     choices = choices.astype(np.uint16)
     relevant_systematic_wages = np.choose(choices, wages_systematic.T)
     log_wage_systematic = np.clip(
-        np.log(relevant_systematic_wages), -HUGE_FLOAT, HUGE_FLOAT
+        np.log(relevant_systematic_wages), MIN_LOG_FLOAT, MAX_LOG_FLOAT
     )
     cov = shocks_cholesky @ shocks_cholesky.T
 
@@ -77,7 +79,7 @@ def create_draws_and_log_prob_wages(
 
     chol_indices = np.where(np.isfinite(log_wage_observed), choices, n_wages)
     draws = calculate_conditional_draws(
-        base_draws, updated_means, updated_chols, chol_indices, HUGE_FLOAT
+        base_draws, updated_means, updated_chols, chol_indices, MAX_FLOAT
     )
 
     return draws, log_prob_wages
@@ -282,7 +284,7 @@ def update_cholcov(shocks_cholesky, n_wages):
     nopython=True,
 )
 def calculate_conditional_draws(
-    base_draws, updated_mean, updated_chols, chol_index, huge_float, conditional_draw
+    base_draws, updated_mean, updated_chols, chol_index, max_float, conditional_draw
 ):
     """Calculate the conditional draws from base draws, updated means and updated chols.
 
@@ -299,7 +301,7 @@ def calculate_conditional_draws(
         observed shock.
     chol_index : float
         index of the relevant updated cholesky factor
-    huge_float : float
+    max_float : float
         value at which exponentials are clipped.
 
     Returns
@@ -318,8 +320,8 @@ def calculate_conditional_draws(
                 cd += base_draws[d, j] * updated_chols[chol_index, i, j]
             if i < n_wages:
                 cd = np.exp(cd)
-                if cd > huge_float:
-                    cd = huge_float
+                if cd > max_float:
+                    cd = max_float
             conditional_draw[d, i] = cd
 
 

@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 from numba import guvectorize
 
-from respy.config import HUGE_FLOAT
+from respy.config import MAX_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import transform_disturbances
@@ -104,7 +104,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             shifts = np.zeros(n_choices)
             n_choices_w_wage = len(optim_paras["choices_w_wage"])
             shifts[:n_choices_w_wage] = np.clip(
-                np.exp(np.diag(shocks_cov)[:n_choices_w_wage] / 2.0), 0.0, HUGE_FLOAT
+                np.exp(np.diag(shocks_cov)[:n_choices_w_wage] / 2), 0, MAX_FLOAT
             )
 
             # Get indicator for interpolation and simulation of states. The seed value
@@ -307,7 +307,7 @@ def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated
     # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994),
     # negative predictions are truncated to zero.
     endogenous_predicted = exogenous.dot(beta)
-    endogenous_predicted = np.clip(endogenous_predicted, 0.00, None)
+    endogenous_predicted = np.clip(endogenous_predicted, 0, None)
 
     # Construct predicted EMAX for all states and the
     predictions = endogenous_predicted + max_value_functions
@@ -389,11 +389,11 @@ def calculate_emax_value_functions(
     """
     n_draws, n_choices = draws.shape
 
-    emax_value_functions[0] = 0.0
+    emax_value_functions[0] = 0
 
     for i in range(n_draws):
 
-        max_value_functions = 0.0
+        max_value_functions = 0
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(

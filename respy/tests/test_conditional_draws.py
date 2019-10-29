@@ -8,7 +8,7 @@ from respy.conditional_draws import calculate_conditional_draws
 from respy.conditional_draws import update_cholcov
 from respy.conditional_draws import update_cholcov_with_measurement_error
 from respy.conditional_draws import update_mean_and_evaluate_likelihood
-from respy.config import HUGE_FLOAT
+from respy.config import MAX_FLOAT
 from respy.config import TEST_RESOURCES_DIR
 
 
@@ -69,7 +69,7 @@ def test_calculate_conditional_draws():
     updated_chols[1] = np.array([[1, 0, 0], [2, 3, 0], [4, 5, 6]])
 
     calculated = calculate_conditional_draws(
-        draws, updated_mean, updated_chols, 1, HUGE_FLOAT
+        draws, updated_mean, updated_chols, 1, MAX_FLOAT
     )[0]
     expected = np.array([1.64872127, 0.36787944, 5])
 

@@ -7,10 +7,14 @@ from scipy.special import logsumexp
 from scipy.special import softmax
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
-from respy.config import HUGE_FLOAT
+from respy.config import MAX_FLOAT
+from respy.config import MAX_LOG_FLOAT
+from respy.config import MIN_FLOAT
+from respy.config import MIN_LOG_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import clip
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_estimation
@@ -298,6 +302,9 @@ def _internal_log_like_obs(
 
     wage_loglikes = wage_loglikes.reshape(n_obs, n_types)
 
+    choice_loglikes = clip(choice_loglikes, MIN_FLOAT, MAX_FLOAT)
+    wage_loglikes = clip(choice_loglikes, MIN_FLOAT, MAX_FLOAT)
+
     per_period_loglikes = wage_loglikes + choice_loglikes
 
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
@@ -306,13 +313,17 @@ def _internal_log_like_obs(
         type_probabilities = softmax(z, axis=1)
 
         log_type_probabilities = np.log(type_probabilities)
+        log_type_probabilities = clip(
+            log_type_probabilities, MIN_LOG_FLOAT, MAX_LOG_FLOAT
+        )
+
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
         contribs = logsumexp(weighted_loglikes, axis=1)
     else:
         contribs = per_individual_loglikes.flatten()
 
-    contribs = np.clip(contribs, -HUGE_FLOAT, HUGE_FLOAT)
+    contribs = np.clip(contribs, MIN_LOG_FLOAT, MAX_LOG_FLOAT)
 
     return contribs
 
@@ -561,7 +572,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     # For the estimation, log wages are needed with shape (n_observations, n_types).
     log_wages_observed = (
         np.log(df.wage.to_numpy())
-        .clip(-HUGE_FLOAT, HUGE_FLOAT)
+        .clip(MIN_LOG_FLOAT, MAX_LOG_FLOAT)
         .repeat(optim_paras["n_types"])
     )
 
