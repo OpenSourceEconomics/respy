@@ -565,10 +565,9 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
-    log_wages_observed = np.log(
-        np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT).repeat(
-            optim_paras["n_types"]
-        )
+    log_wages_observed = np.repeat(
+        np.log(np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT)),
+        optim_paras["n_types"],
     )
 
     # For the estimation, choices are needed with shape (n_observations * n_types).
