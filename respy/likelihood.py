@@ -1,20 +1,20 @@
 import warnings
 from functools import partial
 
+import numba as nb
 import numpy as np
-from numba import guvectorize
+from scipy.special import logsumexp
+from scipy.special import softmax
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
-from respy.shared import clip
 from respy.shared import convert_choice_variables_from_categorical_to_codes
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_estimation
-from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -56,9 +56,9 @@ def get_crit_func(params, options, df, version="log_like"):
 
     optim_paras = _adjust_optim_paras_for_estimation(optim_paras, df)
 
-    state_space = StateSpace(optim_paras, options)
-
     check_estimation_data(df, optim_paras)
+
+    state_space = StateSpace(optim_paras, options)
 
     (
         choices,
@@ -303,21 +303,13 @@ def _internal_log_like_obs(
 
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
     if n_types >= 2:
-        type_probabilities = predict_multinomial_logit(
-            optim_paras["type_prob"], type_covariates
-        )
+        z = np.dot(type_covariates, optim_paras["type_prob"].T)
+        type_probabilities = softmax(z, axis=1)
+
         log_type_probabilities = np.log(type_probabilities)
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
-        # The following is equivalent to:
-        # writing contribs = np.log(np.exp(weighted_loglikes).sum(axis=1))
-        # but avoids overflows and underflows
-        minimal_m = -700 - weighted_loglikes.min(axis=1)
-        maximal_m = 700 - weighted_loglikes.max(axis=1)
-        valid = minimal_m <= maximal_m
-        m = np.where(valid, (minimal_m + maximal_m) / 2, np.nan).reshape(-1, 1)
-        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m.flatten()
-        contribs[~valid] = -HUGE_FLOAT
+        contribs = logsumexp(weighted_loglikes, axis=1)
     else:
         contribs = per_individual_loglikes.flatten()
 
@@ -326,7 +318,68 @@ def _internal_log_like_obs(
     return contribs
 
 
-@guvectorize(
+@nb.njit
+def log_softmax_i(x, i, tau=1):
+    """Calculate log probability of a soft maximum for index ``i``.
+
+    The log softmax function is essentially
+
+    .. math::
+
+        log_softmax_i = log(softmax(x_i))
+
+    This function is superior to the naive implementation as takes advantage of the log
+    and uses the fact that the softmax function is shift-invariant. Integrating the log
+    in the softmax function yields
+
+    .. math::
+
+        log_softmax_i = x_i - max(x) - log(sum(exp(x - max(x))))
+
+    The second property ensures that overflows and underflows in the exponential
+    function cannot happen as ``exp(x - max(x)) = exp(0) = 1`` at its highest value and
+    ``exp(-inf) = 0`` at its lowest value. Only infinite inputs can cause an invalid
+    output.
+
+    The temperature parameter ``tau`` controls the smoothness of the function. For
+    ``tau`` close to 1, the function is more similar to ``max(x)`` and the derivatives
+    of the functions grow to infinity. As ``tau`` grows, the smoothed maximum is bigger
+    than the actual maximum and derivatives diminish. See [1]_ for more information on
+    the smoothing factor ``tau``. Note that the post covers the inverse of the smoothing
+    factor in this function. It is also covered in [2]_ as the kernel-smoothing choice
+    probability simulator. In reinforcement learning and statistical mechanics the
+    function is known as the Boltzmann exploration.
+
+    .. [1] https://www.johndcook.com/blog/2010/01/13/soft-maximum
+    .. [2] McFadden, D. (1989). A method of simulated moments for estimation of discrete
+           response models without numerical integration. Econometrica: Journal of the
+           Econometric Society, 995-1026.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Array with shape (n,) containing the values for which a smoothed maximum should
+        be computed.
+    i : int
+        Index for which the log probability should be computed.
+    tau : float
+        Smoothing parameter to control the size of derivatives.
+
+    Returns
+    -------
+    log_probability : float
+        Log probability for input value ``i``.
+
+    """
+    max_x = np.max(x)
+    smoothed_differences = (x - max_x) / tau
+    log_sum_exp = np.log(np.sum(np.exp(smoothed_differences)))
+    log_probability = smoothed_differences[i] - log_sum_exp
+
+    return log_probability
+
+
+@nb.guvectorize(
     ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
     "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
     "() -> ()",
@@ -378,13 +431,11 @@ def simulate_log_probability_of_individuals_observed_choice(
     """
     n_draws, n_choices = draws.shape
 
-    value_functions = np.zeros((n_choices, n_draws))
+    value_functions = np.zeros(n_choices)
 
-    prob_choice = 0.0
+    log_prob_choice_ = 0
 
     for i in range(n_draws):
-
-        max_value_functions = 0.0
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
@@ -396,26 +447,13 @@ def simulate_log_probability_of_individuals_observed_choice(
                 is_inadmissible[j],
             )
 
-            value_functions[j, i] = value_function
+            value_functions[j] = value_function
 
-            if value_function > max_value_functions:
-                max_value_functions = value_function
+        log_prob_choice_ += log_softmax_i(value_functions, choice, tau)
 
-        sum_smooth_values = 0.0
+    log_prob_choice_ /= n_draws
 
-        for j in range(n_choices):
-            val_exp = np.exp((value_functions[j, i] - max_value_functions) / tau)
-
-            val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
-
-            value_functions[j, i] = val_clipped
-            sum_smooth_values += val_clipped
-
-        prob_choice += value_functions[choice, i] / sum_smooth_values
-
-    prob_choice /= n_draws
-
-    log_prob_choice[0] = np.log(prob_choice)
+    log_prob_choice[0] = log_prob_choice_
 
 
 def _process_estimation_data(df, state_space, optim_paras, options):

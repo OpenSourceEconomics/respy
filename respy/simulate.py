@@ -3,6 +3,7 @@ import functools
 import numpy as np
 import pandas as pd
 from numba import guvectorize
+from scipy.special import softmax
 
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
@@ -11,7 +12,6 @@ from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_simulation
-from respy.shared import predict_multinomial_logit
 from respy.shared import transform_shocks_with_cholesky_factor
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -160,7 +160,6 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
             base_draws_sim_transformed,
             base_draws_wage_transformed,
             optim_paras,
-            options,
         )
 
         data.append(rows)
@@ -243,7 +242,6 @@ def _simulate_single_period(
     base_draws_sim_transformed,
     base_draws_wage_transformed,
     optim_paras,
-    options,
 ):
     """Simulate individuals in a single period.
 
@@ -327,7 +325,8 @@ def _get_random_types(states, optim_paras, options):
 
         np.random.seed(next(options["simulation_seed_iteration"]))
 
-        probs = predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
+        z = np.dot(type_covariates, optim_paras["type_prob"].T)
+        probs = softmax(z, axis=1)
         types = _random_choice(optim_paras["n_types"], probs)
 
     types = types.astype(np.uint8)
