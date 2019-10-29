@@ -104,8 +104,8 @@ def _parse_parameters(params, options):
     optim_paras = {}
 
     optim_paras["delta"] = params.loc[("delta", "delta")]
+    optim_paras["eta"] = params.get(("eta", "eta"), 0.0)
 
-    optim_paras = _parse_ambiguity(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
     optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
@@ -113,20 +113,6 @@ def _parse_parameters(params, options):
     optim_paras = _parse_measurement_errors(optim_paras, params)
     optim_paras = _parse_types(optim_paras, params)
     optim_paras = _parse_lagged_choices(optim_paras, options, params)
-
-    return optim_paras
-
-
-def _parse_ambiguity(optim_paras, params):
-    """Determine size of ambiguity set.
-
-    This function ensures that the size of the ambiguity set is set to zero if not specified by
-    the user.
-    """
-    if "eta" in params.index:
-        optim_paras["eta"] = params.loc[("eta", "eta")]
-    else:
-        optim_paras["eta"] = 0.0
 
     return optim_paras
 
