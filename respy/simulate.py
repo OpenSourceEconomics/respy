@@ -30,7 +30,7 @@ def get_simulate_func(params, options, df=None):
         DataFrame containing model parameters.
     options : dict
         Dictionary containing model options.
-    df : pandas.DataFrame
+    df : pandas.DataFrame or None
         DataFrame containing a panel of individuals used for one-step-ahead simulation.
 
     Returns
@@ -40,9 +40,6 @@ def get_simulate_func(params, options, df=None):
 
     """
     optim_paras, options = process_params_and_options(params, options)
-
-    if df is not None:
-        options["simulation_agents"] = df.Identifier.nunique()
 
     state_space = StateSpace(optim_paras, options)
 
@@ -66,27 +63,47 @@ def get_simulate_func(params, options, df=None):
     return simulate_function
 
 
-def simulate(params, base_draws_sim, base_draws_wage, state_space, options, df):
-    """Simulate a data set.
+def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
+    """Perform a simulation.
 
-    This function provides the interface for the simulation of a data set.
+    This function performs one of three possible simulation exercises. The options are
+
+    1. *one-step-ahead simulation*: If data with multiple observations per individual is
+       passed to the function, simulate choices, wages and more for each observation.
+       This is useful to measure the within-sample fit of the model.
+
+    2. *n-step-ahead simulation with sampling from initial conditions*: If no data is
+       passed to the function, `df = None`, the first observations are sampled from the
+       initial conditions. Then, simulate choices, wages and more over the whole model
+       horizon.
+
+    3. *n-step-ahead simulation taking data as initial conditions*: If only one
+       observation per individual is supplied to the function, simulate choices, wages
+       and more from thereon over the whole model horizon.
 
     Parameters
     ----------
     params : pandas.DataFrame or pandas.Series
         Contains parameters.
+    options : dict
+        Contains model options.
+    df : pandas.DataFrame or None
+        Can be one three objects.
+
+        - :data:`None` if no data is provided. This triggers sampling from initial
+          conditions and a n-step-ahead simulation.
+        - :class:`pandas.DataFrame` containing panel data on individuals which triggers
+          a one-step-ahead simulation.
+        - :class:`pandas.DataFrame` containing only first observations which triggers a
+          n-step-ahead simulation taking the data as initial conditions.
+    state_space : :class:`~respy.state_space.StateSpace`
+        State space of the model.
     base_draws_sim : np.ndarray
         Array with shape (n_periods, n_individuals, n_choices) to provide a unique set
         of shocks for each individual in each period.
     base_draws_wage : np.ndarray
         Array with shape (n_periods, n_individuals, n_choices) to provide a unique set
         of wage measurement errors for each individual in each period.
-    state_space : :class:`~respy.state_space.StateSpace`
-        State space of the model.
-    options : dict
-        Dictionary containing model options.
-    df : pandas.DataFrame
-        DataFrame containing a panel of individuals used for one-step-ahead simulation.
 
     Returns
     -------
@@ -96,72 +113,45 @@ def simulate(params, base_draws_sim, base_draws_wage, state_space, options, df):
     """
     optim_paras, options = process_params_and_options(params, options)
 
+    # Solve the model.
     state_space.update_systematic_rewards(optim_paras)
-
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
-    if df is None:
-        simulated_data = _n_step_ahead_simulation(
-            state_space, base_draws_sim, base_draws_wage, optim_paras, options
-        )
-    else:
-        simulated_data = _one_step_ahead_simulation(
-            df, state_space, base_draws_sim, base_draws_wage, optim_paras, options
-        )
-
-    return simulated_data
-
-
-def _n_step_ahead_simulation(
-    state_space, base_draws_sim, base_draws_wage, optim_paras, options
-):
-    """Perform a n-step-ahead simulation.
-
-    This technique samples a number of individuals from the initial conditions and
-    simulates their wages and choices over a given number of periods.
-
-    The initial conditions are experiences, previous choices and the types.
-
-    Returns
-    -------
-    simulated_data : pandas.DataFrame
-        Dataset of simulated individuals.
-
-    """
+    # Start simulation.
     n_periods = optim_paras["n_periods"]
     n_wages = len(optim_paras["choices_w_wage"])
     n_choices_w_exp = len(optim_paras["choices_w_exp"])
     n_lagged_choices = optim_paras["n_lagged_choices"]
-    n_simulation_agents = options["simulation_agents"]
+    n_individuals = options["simulation_agents"]
 
     base_draws_sim_transformed = transform_shocks_with_cholesky_factor(
         base_draws_sim, optim_paras["shocks_cholesky"], n_wages
     )
-
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
-    # Create initial experiences, lagged choices and types for agents in simulation.
-    container = ()
-    for choice in optim_paras["choices_w_exp"]:
-        container += (_get_random_initial_experience(choice, optim_paras, options),)
+    # If no data is passed or if only one observation for each individual is passed,
+    # perform n-step-ahead simulation. Else perform one-step-ahead simulation.
+    is_n_step_ahead = df is None or df.Identifier.duplicated().sum() == 0
 
-    # Create a DataFrame to match columns to covariates. Is changed in-place.
-    states_df = pd.DataFrame(
-        np.column_stack(container),
-        columns=[f"exp_{choice}" for choice in optim_paras["choices_w_exp"]],
-    ).assign(period=0)
+    # Create DataFrame if it is not available. Otherwise, sort it and rename columns.
+    if df is None:
+        df = _sample_data_from_initial_conditions(optim_paras, options)
+    else:
+        df = _prepare_data(df, optim_paras, options)
 
-    for lag in reversed(range(1, n_lagged_choices + 1)):
-        container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
-
-    container += (_get_random_types(states_df, optim_paras, options),)
-
-    # Create a matrix of initial states of simulated agents.
-    current_states = np.column_stack(container).astype(np.uint8)
+    state_space_columns = (
+        [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
+        + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
+        + ["type"]
+    )
 
     data = []
 
     for period in range(n_periods):
+
+        current_states = df.loc[df.period.eq(period), state_space_columns].to_numpy(
+            dtype=np.uint32
+        )
 
         rows = _simulate_single_period(
             period,
@@ -175,103 +165,75 @@ def _n_step_ahead_simulation(
 
         data.append(rows)
 
-        choice = rows[:, 1].astype(int)
+        if is_n_step_ahead:
+            choice = rows[:, 1].astype(int)
 
-        # Update work experiences.
-        current_states[np.arange(n_simulation_agents), choice] = np.where(
-            choice < n_choices_w_exp,
-            current_states[np.arange(n_simulation_agents), choice] + 1,
-            current_states[np.arange(n_simulation_agents), choice],
-        )
+            # Update work experiences.
+            current_states[np.arange(n_individuals), choice] = np.where(
+                choice < n_choices_w_exp,
+                current_states[np.arange(n_individuals), choice] + 1,
+                current_states[np.arange(n_individuals), choice],
+            )
 
-        # Update lagged choices by shifting all lags by one and inserting choice in the
-        # first position.
-        if n_lagged_choices:
-            current_states[
-                :, n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
-            ] = current_states[
-                :, n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
-            ]
-            current_states[:, n_choices_w_exp] = choice
+            # Update lagged choices by shifting all lags by one and inserting choice in
+            # the first position.
+            if n_lagged_choices:
+                current_states[
+                    :, n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
+                ] = current_states[
+                    :, n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
+                ]
+                current_states[:, n_choices_w_exp] = choice
 
-    identifier = np.tile(np.arange(options["simulation_agents"]), options["n_periods"])
+            df = pd.DataFrame(current_states, columns=state_space_columns)
+            df.insert(0, "period", period + 1)
+
+    if is_n_step_ahead:
+        identifier = np.tile(np.arange(n_individuals), n_periods)
+    else:
+        identifier = df.identifier
 
     simulated_data = _process_simulated_data(identifier, data, optim_paras)
 
     return simulated_data
 
 
-def _one_step_ahead_simulation(
-    df, state_space, base_draws_sim, base_draws_wage, optim_paras, options
-):
-    """Perform one-step-ahead simulation.
-
-    This technique takes the data and simulates wages and choices for every
-    individual-period observation. The resulting data can be compared with the real data
-    to measure the within-sample fit.
-
-    Note that the type of an individual is unknown to the researcher and not included in
-    the data. Thus, types are assigned based on covariates of individuals in the initial
-    period.
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        Panel data on individuals.
-
-    Returns
-    -------
-    simulated_data : pandas.DataFrame
-        Panel data on individuals with simulated wages and choices.
-
-    """
-    n_periods = df.Period.max() + 1
-    n_wages = len(optim_paras["choices_w_wage"])
-
-    base_draws_sim_transformed = transform_shocks_with_cholesky_factor(
-        base_draws_sim, optim_paras["shocks_cholesky"], n_wages
+def _sample_data_from_initial_conditions(optim_paras, options):
+    """Sample initial observations from initial conditions."""
+    df = pd.DataFrame(
+        {"identifier": np.arange(options["simulation_agents"]), "period": 0}
     )
 
-    base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
+    # Create initial experiences, lagged choices and types for agents in simulation.
+    for choice in optim_paras["choices_w_exp"]:
+        df[f"exp_{choice}"] = _get_random_initial_experience(
+            choice, optim_paras, options
+        )
 
-    state_cols = (
-        [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
-        + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
-        + ["type"]
-    )
+    for lag in reversed(range(1, optim_paras["n_lagged_choices"] + 1)):
+        df[f"lagged_choice_{lag}"] = _get_random_lagged_choices(
+            df, optim_paras, options, lag
+        )
 
+    df["type"] = _get_random_types(df, optim_paras, options)
+
+    return df
+
+
+def _prepare_data(df, optim_paras, options):
+    """Prepare data for simulation."""
     df = df.rename(
         columns=lambda x: x.replace("Experience", "exp").lower()
     ).sort_values(["period", "identifier"])
-
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
+    # Assign a type to each individual which is unobserved by the researcher.
     types = _get_random_types(df.loc[df.period.eq(0)], optim_paras, options)
     df["type"] = df.identifier.replace(
         dict(zip(np.arange(df.identifier.unique().shape[0]), types))
     )
 
-    data = []
-
-    for period in range(n_periods):
-
-        current_states = df.loc[df.period.eq(period), state_cols].to_numpy()
-
-        rows = _simulate_single_period(
-            period,
-            current_states,
-            state_space,
-            base_draws_sim_transformed,
-            base_draws_wage_transformed,
-            optim_paras,
-            options,
-        )
-
-        data.append(rows)
-
-    simulated_data = _process_simulated_data(df.identifier, data, optim_paras)
-
-    return simulated_data
+    return df
 
 
 def _simulate_single_period(
@@ -367,6 +329,8 @@ def _get_random_types(states, optim_paras, options):
 
         probs = predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
         types = _random_choice(optim_paras["n_types"], probs)
+
+    types = types.astype(np.uint8)
 
     return types
 
