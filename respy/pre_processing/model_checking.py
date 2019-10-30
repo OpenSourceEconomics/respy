@@ -89,9 +89,14 @@ def check_model_solution(optim_paras, options, state_space):
     assert not pd.DataFrame(state_space.states).duplicated().any()
 
     # Check the number of states in the first time period.
-    obs_factor = np.prod([len(x) for x in optim_paras["observables"].values()])
+    obs_factor = np.prod(
+        np.array([len(x) for x in optim_paras["observables"].values()])
+    )
     n_states_start = (
-        n_types * n_initial_exp_comb * (optim_paras["n_lagged_choices"] + 1) * obs_factor
+        n_types
+        * n_initial_exp_comb
+        * (optim_paras["n_lagged_choices"] + 1)
+        * obs_factor
     )
     assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
     assert np.sum(state_space.indexer[0] >= 0) == n_states_start
