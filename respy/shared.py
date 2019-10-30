@@ -287,3 +287,7 @@ def convert_choice_variables_from_categorical_to_codes(df, optim_paras):
         )
 
     return df
+
+
+def rename_labels(x):
+    return x.replace("Experience", "exp").lower()

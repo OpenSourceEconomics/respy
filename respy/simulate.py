@@ -12,6 +12,7 @@ from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_simulation
+from respy.shared import rename_labels
 from respy.shared import transform_shocks_with_cholesky_factor
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -129,15 +130,25 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
     # If no data is passed or if only one observation for each individual is passed,
-    # perform n-step-ahead simulation. Else perform one-step-ahead simulation.
-    is_n_step_ahead = df is None or df.Identifier.duplicated().sum() == 0
-    n_periods = options["n_periods"] if is_n_step_ahead else df.Period.max() + 1
-
-    # Create DataFrame if it is not available. Otherwise, sort it and rename columns.
+    # perform n-step-ahead simulation. Else perform one-step-ahead simulation. Also, set
+    # a flag for the simulation method and adjust the number of periods.
     if df is None:
         df = _sample_data_from_initial_conditions(optim_paras, options)
+
+        is_n_step_ahead = True
+        n_periods = options["n_periods"]
+
     else:
         df = _prepare_data(df, optim_paras, options)
+
+        is_n_step_ahead = (
+            df.index.get_level_values("identifier").duplicated().sum() == 0
+        )
+        n_periods = (
+            options["n_periods"]
+            if is_n_step_ahead
+            else df.index.get_level_values("period").max() + 1
+        )
 
     state_space_columns = (
         [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
@@ -149,7 +160,7 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
 
     for period in range(n_periods):
 
-        current_states = df.loc[df.period.eq(period), state_space_columns].to_numpy(
+        current_states = df.query("period == @period")[state_space_columns].to_numpy(
             dtype=np.uint32
         )
 
@@ -190,7 +201,7 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     if is_n_step_ahead:
         identifier = np.tile(np.arange(n_individuals), n_periods)
     else:
-        identifier = df.identifier
+        identifier = df.index.get_level_values("identifier")
 
     simulated_data = _process_simulated_data(identifier, data, optim_paras)
 
@@ -199,9 +210,10 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
 
 def _sample_data_from_initial_conditions(optim_paras, options):
     """Sample initial observations from initial conditions."""
-    df = pd.DataFrame(
-        {"identifier": np.arange(options["simulation_agents"]), "period": 0}
+    index = pd.MultiIndex.from_product(
+        (np.arange(options["simulation_agents"]), [0]), names=["identifier", "period"]
     )
+    df = pd.DataFrame(index=index)
 
     # Create initial experiences, lagged choices and types for agents in simulation.
     for choice in optim_paras["choices_w_exp"]:
@@ -221,13 +233,15 @@ def _sample_data_from_initial_conditions(optim_paras, options):
 
 def _prepare_data(df, optim_paras, options):
     """Prepare data for simulation."""
-    df = df.rename(
-        columns=lambda x: x.replace("Experience", "exp").lower()
-    ).sort_values(["period", "identifier"])
+    df = df.rename(index=rename_labels, columns=rename_labels)
+    if df.index.names != ["identifier", "period"]:
+        df = df.set_index(["identifier", "period"], drop=True)
+    df = df.sort_index()
+
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
     # Assign a type to each individual which is unobserved by the researcher.
-    types = _get_random_types(df.loc[df.period.eq(0)], optim_paras, options)
+    types = _get_random_types(df.query("period == 0"), optim_paras, options)
     df["type"] = df.identifier.replace(
         dict(zip(np.arange(df.identifier.unique().shape[0]), types))
     )
@@ -460,7 +474,7 @@ def _process_simulated_data(identifier, data, optim_paras):
         )
         .astype(dtypes)
         .sort_values(["Identifier", "Period"])
-        .reset_index(drop=True)
+        .set_index(["Identifier", "Period"], drop=True)
     )
 
     df = _convert_choice_variables_from_codes_to_categorical(df, optim_paras)

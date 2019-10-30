@@ -21,7 +21,7 @@ def check_estimation_data(df, optim_paras):
     """
     # Make sure all columns are available.
     labels, _ = generate_column_labels_estimation(optim_paras)
-    df = df[labels].reset_index(drop=True)
+    df = df[labels[2:]].reset_index()
 
     n_periods = optim_paras["n_periods"]
 
@@ -98,7 +98,6 @@ def check_simulated_data(optim_paras, df):
     df = df.copy()
 
     # Distribute class attributes
-    n_periods = optim_paras["n_periods"]
     n_types = optim_paras["n_types"]
 
     # Run all tests available for the estimation data.
@@ -114,6 +113,3 @@ def check_simulated_data(optim_paras, df):
     is_working = df["Choice"].isin(optim_paras["choices_w_wage"])
     assert df.Wage[is_working].notna().all()
     assert df.Wage[~is_working].isna().all()
-
-    # Check that there are no missing observations and we follow an agent each period.
-    df.groupby("Identifier").Period.nunique().eq(n_periods).all()

@@ -15,6 +15,7 @@ from respy.shared import convert_choice_variables_from_categorical_to_codes
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_estimation
+from respy.shared import rename_labels
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -494,16 +495,17 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     """
     labels, _ = generate_column_labels_estimation(optim_paras)
 
-    df = df.sort_values(["Identifier", "Period"])[labels]
-    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
+    df = df.sort_index()[labels[2:]]
+    df = df.rename(columns=rename_labels).rename_axis(index=rename_labels)
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations, n_types).
+    n_periods = df.index.get_level_values("period").max() + 1
     indices = ()
 
-    for period in range(df.period.max() + 1):
-        period_df = df.loc[df.period.eq(period)]
+    for period in range(n_periods):
+        period_df = df.query("period == @period")
 
         period_experience = tuple(
             period_df[col].to_numpy() for col in period_df.filter(like="exp_").columns
@@ -534,7 +536,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     # Get an array of positions of the first observation for each individual. This is
     # used in :func:`_internal_log_like_obs` to aggregate probabilities of the
     # individual over all periods.
-    n_obs_per_indiv = np.bincount(df.identifier.to_numpy())
+    n_obs_per_indiv = np.bincount(df.index.get_level_values("identifier").to_numpy())
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
@@ -548,9 +550,9 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     choices = df.choice.to_numpy().repeat(optim_paras["n_types"])
 
     # For the type covariates, we only need the first observation of each individual.
-    states = df.groupby("identifier").first()
+    initial_states = df.query("period == 0")
     type_covariates = (
-        create_type_covariates(states, optim_paras, options)
+        create_type_covariates(initial_states, optim_paras, options)
         if optim_paras["n_types"] > 1
         else None
     )
@@ -570,7 +572,7 @@ def _adjust_optim_paras_for_estimation(optim_paras, df):
 
         # Adjust initial experience levels for all choices with experiences.
         init_exp_data = np.sort(
-            df.loc[df.Period.eq(0), f"Experience_{choice.title()}"].unique()
+            df.query("Period == 0")[f"Experience_{choice.title()}"].unique()
         )
         init_exp_options = optim_paras["choices"][choice]["start"]
         if not np.array_equal(init_exp_data, init_exp_options):
