@@ -138,24 +138,29 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
-    # Create initial experiences, lagged choices and types for agents in simulation.
-    container = ()
-    for choice in optim_paras["choices_w_exp"]:
-        container += (_get_random_initial_experience(choice, optim_paras, options),)
+    #Create observables for simulation and store them in an extra container that will be
+    #added to the state space container later
+    container_obs = ()
+    for observable in optim_paras["observables"].keys():
+        container_obs += (
+            _get_random_initial_observable(observable, options, optim_paras),
+        )
 
     # Create a DataFrame to match columns to covariates. Is changed in-place.
     states_df = pd.DataFrame(
-        np.column_stack(container),
-        columns=[f"exp_{i}" for i in optim_paras["choices_w_exp"]],
+        np.column_stack(container_obs),
+        columns=[x for x in optim_paras["observables"].keys()],
     ).assign(period=0)
+
+    # Create initial experiences, lagged choices and types for agents in simulation.
+    container = ()
+    for choice in optim_paras["choices_w_exp"]:
+        container += (_get_random_initial_experience(states_df, choice, optim_paras, options),)
 
     for lag in reversed(range(1, n_lagged_choices + 1)):
         container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
 
-    for observable in optim_paras["observables"].keys():
-        container += (
-            _get_random_initial_observable(states_df, observable, options, optim_paras),
-        )
+    container += container_obs
     container += (_get_random_types(states_df, optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
@@ -268,15 +273,25 @@ def _get_random_types(states, optim_paras, options):
     return types
 
 
-def _get_random_initial_experience(choice, optim_paras, options):
+def _get_random_initial_experience(states_df, choice, optim_paras, options):
     """Get random, initial levels of schooling for simulated agents."""
     np.random.seed(next(options["simulation_seed_iteration"]))
+    covariates_df = create_base_covariates(
+        states_df, options["covariates"], raise_errors=False
+    )
 
+    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
+
+    probabilities = ()
+    #Woher kommen jetzt initial probabilities
+    optim_paras[""]
     initial_experience = np.random.choice(
         optim_paras["choices"][choice]["start"],
         p=optim_paras["choices"][choice]["share"],
         size=options["simulation_agents"],
     )
+
+    states_df[f"exp_{choice}"] = initial_experience
 
     return initial_experience
 
