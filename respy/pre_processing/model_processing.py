@@ -168,34 +168,45 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
 
     """
     for choice in optim_paras["choices_w_exp"]:
-        sub = params.filter(like=f"initial_exp_{choice}", axis=0).sort_index()
+        mask = params.index.get_level_values("category").str.contains(
+            f"initial_exp_{choice}"
+        )
+        n_parameters = mask.sum()
 
-        if sub.shape[0]:
-            levels = (
-                sub.index.get_level_values(0)
+        if n_parameters:
+            # Separate subset from params.
+            sub = params.loc[mask].copy()
+            params = params.loc[~mask].copy()
+
+            levels = sorted(
+                sub.index.get_level_values("category")
                 .str.extract(fr"initial_exp_{choice}_([0-9]+)", expand=False)
                 .astype(int)
-                .sort_values()
-                .tolist()
+                .unique()
             )
+            n_probabilities = (sub.index.get_level_values(1) == "probability").sum()
 
             # It is allowed to specify the shares of initial experiences as
             # probabilities. Then, the probabilities are replaced with the appropriate
             # coefficients to recover the probabilities with a softmax function.
-            is_probability = (sub.index.get_level_values(1) == "probability").all()
-            as_many_levels_as_probabilities = len(levels) == sub.shape[0]
-            if is_probability and as_many_levels_as_probabilities:
+            if n_probabilities == len(levels) == n_parameters:
                 if sub.sum() != 1:
-                    sub[:] = sub / sub.sum()
                     warnings.warn(
-                        "The probabilities over different initial experiences for "
-                        f"choice '{choice}' do not sum to one. Divide by sum for "
-                        "normalization.",
+                        "The probabilities over initial experience levels for choice "
+                        f"'{choice}' do not sum to one.",
                         category=UserWarning,
                     )
-                coeffs = calculate_softmax_coefficients(sub)
-                sub[:] = coeffs
-                sub = sub.rename(index={"probability": "constant"}, level=1)
+                if n_probabilities > 1:
+                    coeffs = calculate_softmax_coefficients(sub)
+                    sub[:] = coeffs
+                sub = sub.rename(index={"probability": "constant"}, level="name")
+                params = params.append(sub)
+
+            elif n_probabilities > 0:
+                raise ValueError(
+                    "Cannot mix probabilities and softmax coefficients to specify the "
+                    f"distribution of initial experience levels for choice '{choice}'."
+                )
 
             optim_paras["choices"][choice]["start"] = {}
             for level in levels:
@@ -521,10 +532,15 @@ def calculate_softmax_coefficients(implied_probabilities):
         result = softmax(x)
         return expected - result
 
-    x = fsolve(
-        calculate_softmax_error,
-        x0=np.zeros(len(implied_probabilities)),
-        args=implied_probabilities,
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        x = fsolve(
+            calculate_softmax_error,
+            x0=np.zeros(len(implied_probabilities)),
+            args=implied_probabilities,
+        )
+
+    if not np.allclose(implied_probabilities, softmax(x)):
+        raise ValueError("Conversion to softmax coefficients failed.")
 
     return x
