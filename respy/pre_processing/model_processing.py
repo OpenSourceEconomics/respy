@@ -12,6 +12,8 @@ from estimagic.optimization.utilities import chol_params_to_lower_triangular_mat
 from estimagic.optimization.utilities import cov_params_to_matrix
 from estimagic.optimization.utilities import robust_cholesky
 from estimagic.optimization.utilities import sdcorr_params_to_matrix
+from scipy.optimize import fsolve
+from scipy.special import softmax
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import SEED_STARTUP_ITERATION_GAP
@@ -189,29 +191,56 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
 
     """
     for choice in optim_paras["choices_w_exp"]:
-        if f"initial_exp_{choice}" in params.index:
-            # Take starts and shares and convert index to numeric or sorting will fail.
-            # Maybe waiting on https://github.com/pandas-dev/pandas/pull/27237.
-            starts_and_shares = params.loc[f"initial_exp_{choice}"].copy()
-            starts_and_shares.index = starts_and_shares.index.astype(np.uint8)
-            starts_and_shares.sort_index(inplace=True)
-            starts = starts_and_shares.index.to_numpy()
-            shares = starts_and_shares.to_numpy()
-            if shares.sum() != 1:
-                warnings.warn(
-                    f"The shares of initial experiences for choice '{choice}' do not "
-                    "sum to one. Shares are divided by their sum for normalization.",
-                    category=UserWarning,
+        mask = params.index.get_level_values("category").str.contains(
+            f"initial_exp_{choice}"
+        )
+        n_parameters = mask.sum()
+
+        if n_parameters:
+            # Separate subset from params.
+            sub = params.loc[mask].copy()
+            params = params.loc[~mask].copy()
+
+            levels = sorted(
+                sub.index.get_level_values("category")
+                .str.extract(fr"initial_exp_{choice}_([0-9]+)", expand=False)
+                .astype(int)
+                .unique()
+            )
+            n_probabilities = (sub.index.get_level_values(1) == "probability").sum()
+
+            # It is allowed to specify the shares of initial experiences as
+            # probabilities. Then, the probabilities are replaced with the appropriate
+            # coefficients to recover the probabilities with a softmax function.
+            if n_probabilities == len(levels) == n_parameters:
+                if sub.sum() != 1:
+                    warnings.warn(
+                        "The probabilities over initial experience levels for choice "
+                        f"'{choice}' do not sum to one.",
+                        category=UserWarning,
+                    )
+                if n_probabilities > 1:
+                    coeffs = calculate_softmax_coefficients(sub)
+                    sub[:] = coeffs
+                sub = sub.rename(index={"probability": "constant"}, level="name")
+                params = params.append(sub)
+
+            elif n_probabilities > 0:
+                raise ValueError(
+                    "Cannot mix probabilities and softmax coefficients to specify the "
+                    f"distribution of initial experience levels for choice '{choice}'."
                 )
-                shares = shares / shares.sum()
+
+            optim_paras["choices"][choice]["start"] = {}
+            for level in levels:
+                coeffs = sub.loc[f"initial_exp_{choice}_{level}"]
+                optim_paras["choices"][choice]["start"][level] = coeffs
         else:
-            starts = np.zeros(1, dtype=np.uint8)
-            shares = np.ones(1, dtype=np.uint8)
+            optim_paras["choices"][choice]["start"] = {
+                0: pd.Series(index=["constant"], data=1)
+            }
 
         max_ = int(params.get(("maximum_exp", choice), options["n_periods"] - 1))
-
-        optim_paras["choices"][choice]["start"] = starts
-        optim_paras["choices"][choice]["share"] = shares
         optim_paras["choices"][choice]["max"] = max_
 
     return optim_paras
@@ -519,3 +548,22 @@ def _parse_lagged_choices(optim_paras, options, params):
         optim_paras[match] = params.loc[match]
 
     return optim_paras
+
+
+def calculate_softmax_coefficients(implied_probabilities):
+    def calculate_softmax_error(x, expected):
+        result = softmax(x)
+        return expected - result
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        x = fsolve(
+            calculate_softmax_error,
+            x0=np.zeros(len(implied_probabilities)),
+            args=implied_probabilities,
+        )
+
+    if not np.allclose(implied_probabilities, softmax(x)):
+        raise ValueError("Conversion to softmax coefficients failed.")
+
+    return x

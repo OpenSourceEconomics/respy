@@ -271,24 +271,19 @@ def _create_core_state_space(optim_paras):
     _create_core_state_space_per_period
 
     """
+    choices_w_exp = list(optim_paras["choices_w_exp"])
     minimal_initial_experience = np.array(
-        [
-            np.min(optim_paras["choices"][choice]["start"])
-            for choice in optim_paras["choices_w_exp"]
-        ],
+        [min(optim_paras["choices"][choice]["start"]) for choice in choices_w_exp],
         dtype=np.uint8,
     )
     maximum_exp = np.array(
-        [
-            optim_paras["choices"][choice]["max"]
-            for choice in optim_paras["choices_w_exp"]
-        ],
+        [optim_paras["choices"][choice]["max"] for choice in choices_w_exp],
         dtype=np.uint8,
     )
 
     additional_exp = maximum_exp - minimal_initial_experience
 
-    exp_cols = [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
+    exp_cols = [f"exp_{choice}" for choice in choices_w_exp]
 
     container = []
     for period in np.arange(optim_paras["n_periods"], dtype=np.uint8):
@@ -296,7 +291,7 @@ def _create_core_state_space(optim_paras):
             period,
             additional_exp,
             optim_paras,
-            np.zeros(len(optim_paras["choices_w_exp"]), dtype=np.uint8),
+            np.zeros(len(choices_w_exp), dtype=np.uint8),
         )
         df_ = pd.DataFrame.from_records(data, columns=exp_cols)
         df_.insert(0, "period", period)
@@ -492,7 +487,7 @@ def _create_state_space_indexer(df, optim_paras):
     choices = optim_paras["choices"]
 
     max_initial_experience = np.array(
-        [choices[choice]["start"].max() for choice in optim_paras["choices_w_exp"]]
+        [max(choices[choice]["start"]) for choice in optim_paras["choices_w_exp"]]
     ).astype(np.uint8)
     max_experience = [choices[choice]["max"] for choice in optim_paras["choices_w_exp"]]
 

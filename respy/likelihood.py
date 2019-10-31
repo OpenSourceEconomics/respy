@@ -597,16 +597,15 @@ def _adjust_optim_paras_for_estimation(optim_paras, df):
         init_exp_data = np.sort(
             df.loc[df.Period.eq(0), f"Experience_{choice.title()}"].unique()
         )
-        init_exp_options = optim_paras["choices"][choice]["start"]
-        if not np.array_equal(init_exp_data, init_exp_options):
+        init_exp_params = np.array(list(optim_paras["choices"][choice]["start"]))
+        if not np.array_equal(init_exp_data, init_exp_params):
             warnings.warn(
-                f"The initial experience for choice '{choice}' differs between data, "
-                f"{init_exp_data}, and optim_paras, {init_exp_options}. The optim_paras"
+                f"The initial experiences for choice '{choice}' differs between data, "
+                f"{init_exp_data}, and parameters, {init_exp_params}. The parameters"
                 " are ignored.",
                 category=UserWarning,
             )
             optim_paras["choices"][choice]["start"] = init_exp_data
-            optim_paras["choices"][choice].pop("share")
             optim_paras = {
                 k: v
                 for k, v in optim_paras.items()
