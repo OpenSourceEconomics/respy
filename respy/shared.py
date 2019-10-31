@@ -6,7 +6,6 @@ import from respy itself. This is to prevent circular imports.
 """
 import numpy as np
 import pandas as pd
-from numba import guvectorize
 from numba import njit
 from numba import vectorize
 
@@ -25,54 +24,6 @@ def aggregate_keane_wolpin_utility(
         value_function += INADMISSIBILITY_PENALTY
 
     return value_function, flow_utility
-
-
-@guvectorize(
-    ["f8[:, :], f8[:], f8[:]"],
-    "(n_classes, n_covariates), (n_covariates) -> (n_classes)",
-    nopython=True,
-    target="parallel",
-)
-def predict_multinomial_logit(coefficients, covariates, probs):
-    """Predict probabilities based on a multinomial logit regression.
-
-    The function is used to predict the probability for all types based on the initial
-    characteristics of an individual. This is necessary to sample initial types in the
-    simulation and to weight the probability of an observation by types in the
-    estimation.
-
-    The `multinomial logit model
-    <https://en.wikipedia.org/wiki/Multinomial_logistic_regression>`_  predicts the
-    probability that an individual belongs to a certain type. The sum over all
-    type-probabilities is one.
-
-    Parameters
-    ----------
-    coefficients : numpy.ndarray
-        Array with shape (n_classes, n_covariates).
-    covariates : numpy.ndarray
-        Array with shape (n_covariates,).
-
-    Returns
-    -------
-    probs : numpy.ndarray
-        Array with shape (n_classes,) containing the probabilities for each type.
-
-    """
-    n_classes, n_covariates = coefficients.shape
-
-    denominator = 0
-
-    for type_ in range(n_classes):
-        prob_type = 0
-        for cov in range(n_covariates):
-            prob_type += coefficients[type_, cov] * covariates[cov]
-
-        exp_prob_type = np.exp(prob_type)
-        probs[type_] = exp_prob_type
-        denominator += exp_prob_type
-
-    probs /= denominator
 
 
 def create_base_draws(shape, seed):

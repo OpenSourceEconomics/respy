@@ -112,7 +112,7 @@ def lagged_choices_probs_template(n_lagged_choices, choices):
     return pd.concat(to_concat, axis=0, sort=False)
 
 
-def lagged_choices_covariates_template(n_lagged_choices, choices):
+def lagged_choices_covariates_template():
     return {
         "not_exp_a_lagged": "exp_a > 0 and lagged_choice_1 != 'a'",
         "not_exp_b_lagged": "exp_b > 0 and lagged_choice_1 != 'b'",

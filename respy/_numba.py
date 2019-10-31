@@ -3,7 +3,7 @@ from numba import types
 from numba.extending import intrinsic
 
 
-@intrinsic
+@intrinsic  # noqa: U100
 def array_to_tuple(tyctx, array, indexer_array):
     """Converts an array to a tuple for indexing.
 
