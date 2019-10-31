@@ -150,7 +150,7 @@ def _parse_choices(optim_paras, params, options):
 
 def _parse_observables(optim_paras, params):
     """Parse the parameter vector into a dictionary of model quantities."""
-    optim_paras = {}
+    optim_paras["observables"] = {}
     if "observables" in params.index.get_level_values(0):
         observables = params.loc["observables"]
         counts = observables.index.str.extract(

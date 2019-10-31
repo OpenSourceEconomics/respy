@@ -121,6 +121,6 @@ initial_exp_school_8,black,0.08,Probability that the initial level of education 
 initial_exp_school_9,black,0.3,Probability that the initial level of education is 9
 initial_exp_school_10,black,0.52,Probability that the initial level of education is 10
 initial_exp_school_11,black,0.08,Probability that the initial level of education is 11
-maximum_exp,school_20,"Maximum level of experience for education (optional, reduces computation complexity)"
+maximum_exp,school,20,"Maximum level of experience for education (optional, reduces computation complexity)"
 observables,black_0,0.6151,Share of whites
 observables,black_1,0.3849,Share of blacks

@@ -145,6 +145,13 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
     # Create initial experiences, lagged choices and types for agents in simulation.
     container = ()
+    container_observables = ()
+
+    for observable in optim_paras["observables"].keys():
+        container_observables += (
+            _get_random_initial_observable(states_df, observable, options, optim_paras),
+        )
+
     for choice in optim_paras["choices_w_exp"]:
         container += (
             _get_random_initial_experience(choice, states_df, optim_paras, options),
@@ -153,10 +160,8 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     for lag in reversed(range(1, n_lagged_choices + 1)):
         container += (_get_random_lagged_choices(lag, states_df, optim_paras, options),)
 
-    for observable in optim_paras["observables"].keys():
-        container += (
-            _get_random_initial_observable(states_df, observable, options, optim_paras),
-        )
+    container += container_observables
+
     container += (_get_random_types(states_df, optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
