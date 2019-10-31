@@ -104,6 +104,7 @@ def _parse_parameters(params, options):
     optim_paras = {}
 
     optim_paras["delta"] = params.loc[("delta", "delta")]
+    optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
     optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
@@ -141,6 +142,28 @@ def _parse_choices(optim_paras, params, options):
     # Dictionaries are insertion ordered since Python 3.6+.
     order = optim_paras["choices_w_exp"] + optim_paras["choices_wo_exp"]
     optim_paras["choices"] = {choice: {} for choice in order}
+
+    return optim_paras
+
+
+def _parse_observables(optim_paras, params):
+    """Parse the parameter vector into a dictionary of model quantities."""
+    optim_paras = {}
+    if "observables" in params.index.get_level_values(0):
+        observables = params.loc["observables"]
+        counts = observables.index.str.extract(
+            r"\b([a-z0-9_]+)_[0-9]+\b", expand=False
+        ).value_counts()
+        for name, count in counts.items():
+            shares = [observables.loc[f"{name}_{value}"] for value in range(count)]
+            if np.sum(shares) != 1:
+                warnings.warn(
+                    f"The shares of observable '{name}' do not sum to one. Shares are "
+                    "divided by their sum for normalization.",
+                    category=UserWarning,
+                )
+                shares = shares / np.sum(shares)
+            optim_paras["observables"][name] = shares
 
     return optim_paras
 

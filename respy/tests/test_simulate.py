@@ -5,6 +5,7 @@ import pytest
 
 import respy as rp
 from respy.likelihood import get_crit_func
+from respy.pre_processing.specification_helpers import generate_obs_labels
 from respy.tests.random_model import generate_random_model
 
 
@@ -32,3 +33,42 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
 
     pd.testing.assert_frame_equal(df, df_)
     np.testing.assert_almost_equal(likelihood, likelihood_, decimal=12)
+
+
+@pytest.mark.parametrize("seed", range(20))
+def test_observables(seed):
+    np.random.seed(seed)
+
+    # Now specify a set of observables
+    observables = [np.random.randint(2, 6)]
+
+    # Get simulated data and likelihood for myopic model.
+    params, options = generate_random_model(myopic=True, observables=observables)
+
+    # Get all reward values
+    index_reward = [
+        x for x in set(params.index.get_level_values(0)) if "nonpec" in x or "wage" in x
+    ]
+
+    # Get all indices that have
+    obs_labels = generate_obs_labels(observables, index_reward)
+
+    # Set these values to zero
+    params.loc[obs_labels, "value"] = 0
+
+    # Simulate the base model
+    simulate = rp.get_simulate_func(params, options)
+    df = simulate(params)
+
+    # Put two new values into the eq
+    for x in obs_labels:
+        params.loc[x, "value"] = params.loc[(x[0], "constant"), "value"]
+
+    for x in index_reward:
+        params.loc[(x, "constant"), "value"] = 0
+
+    # Simulate the new model
+    df_ = simulate(params)
+
+    # test for equality
+    pd.testing.assert_frame_equal(df_, df)

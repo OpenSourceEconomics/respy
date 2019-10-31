@@ -152,11 +152,14 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     for lag in reversed(range(1, n_lagged_choices + 1)):
         container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
 
+    for observable in optim_paras["observables"].keys():
+        container += (
+            _get_random_initial_observable(states_df, observable, options, optim_paras),
+        )
     container += (_get_random_types(states_df, optim_paras, options),)
 
     # Create a matrix of initial states of simulated agents.
     current_states = np.column_stack(container).astype(np.uint8)
-
     data = []
 
     for period in range(n_periods):
@@ -256,7 +259,6 @@ def _get_random_types(states, optim_paras, options):
         types = np.zeros(options["simulation_agents"])
     else:
         type_covariates = create_type_covariates(states, optim_paras, options)
-
         np.random.seed(next(options["simulation_seed_iteration"]))
 
         z = np.dot(type_covariates, optim_paras["type_prob"].T)
@@ -338,6 +340,17 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
     )
 
     return lagged_choices
+
+
+def _get_random_initial_observable(states_df, observable, options, optim_paras):
+    np.random.seed(next(options["simulation_seed_iteration"]))
+
+    probs = optim_paras["observables"][observable]
+    obs = np.random.choice(
+        np.arange(len(probs)), size=options["simulation_agents"], p=probs
+    )
+    states_df[observable] = obs
+    return obs
 
 
 @guvectorize(

@@ -3,7 +3,7 @@ Getting Started
 ===============
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    introduction
    recommended-reading
@@ -12,3 +12,4 @@ Getting Started
    tutorial-lagged-choices.ipynb
    keane-and-wolpin-1994.ipynb
    keane-and-wolpin-1997.ipynb
+   tutorial-model-with-observables.ipynb

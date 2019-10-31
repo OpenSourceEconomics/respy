@@ -533,9 +533,13 @@ def _process_estimation_data(df, state_space, optim_paras, options):
             period_df[f"lagged_choice_{i}"].to_numpy()
             for i in range(1, optim_paras["n_lagged_choices"] + 1)
         )
+        period_observables = tuple(
+            period_df[observable].to_numpy()
+            for observable in optim_paras["observables"].keys()
+        )
 
         period_indices = state_space.indexer[period][
-            period_experience + period_lagged_choice
+            period_experience + period_lagged_choice + period_observables
         ]
 
         indices += (period_indices,)

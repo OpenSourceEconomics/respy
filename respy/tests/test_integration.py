@@ -19,11 +19,11 @@ def test_simulation_and_estimation_with_different_models():
     }
 
     # Simulate a dataset
-    params, options = generate_random_model(point_constr=constr)
+    params, options = generate_random_model(point_constr=constr, observables=False)
     df = simulate_truncated_data(params, options)
 
     # Evaluate at different points, ensuring that the simulated dataset still fits.
-    params, options = generate_random_model(point_constr=constr)
+    params, options = generate_random_model(point_constr=constr, observables=False)
     crit_func = get_crit_func(params, options, df)
 
     crit_func(params)
