@@ -12,7 +12,7 @@ wage_white_collar,any_exp_white_collar,0.2192,gain of having worked in the same 
 wage_white_collar,work_white_collar_lagged,0.2905,gain of remaining in the same occupation as previous period (wage)
 wage_white_collar,period,0.0107,linear age effect (wage)
 wage_white_collar,is_minor,-0.1144,effect of being a minor (wage)
-wage_white_collar,is_black,-0.0791,effect for blacks
+wage_white_collar,black,-0.0791,effect for blacks
 nonpec_white_collar,constant,-2522,constant (non pecuniary)
 nonpec_white_collar,not_exp_white_collar_lagged,-1183,reward of switching to a from other occupation (non pecuniary)
 nonpec_white_collar,not_any_exp_white_collar,-3375,reward of working in a for the first time (non pecuniary)
@@ -31,7 +31,7 @@ wage_blue_collar,any_exp_blue_collar,0.1551,gain of having worked in the same oc
 wage_blue_collar,work_blue_collar_lagged,0.2002,gain of remaining in the same occupation as previous period (wage)
 wage_blue_collar,period,0.0119,linear age effect (wage)
 wage_blue_collar,is_minor,-0.0629,effect of being a minor (wage)
-wage_blue_collar,is_black,-0.0471,effect for blacks
+wage_blue_collar,black,-0.0471,effect for blacks
 nonpec_blue_collar,constant,-3101,constant (non pecuniary)
 nonpec_blue_collar,not_exp_blue_collar_lagged,-1136,reward of switching to a from other occupation (non pecuniary)
 nonpec_blue_collar,not_any_exp_blue_collar,-580,reward of working in a for the first time (non pecuniary)
@@ -45,7 +45,7 @@ wage_military,exp_military_square,-0.0442,"return to experience, same sector, qu
 wage_military,any_exp_military,0.1651,return to having any military experience
 wage_military,period,0.0092,linear age effect
 wage_military,is_minor,-0.1372,effect of being a minor
-wage_military,is_black,-0.0727,effect for blacks
+wage_military,black,-0.0727,effect for blacks
 nonpec_military,constant,0.1388,constant (non pecuniary)
 nonpec_military,period,0.0281,age effect (non pecuniary)
 nonpec_military,not_any_exp_military,-518,reward of being in the military sector for the first time (non pecuniary)

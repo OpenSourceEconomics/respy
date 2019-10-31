@@ -287,7 +287,7 @@ def _get_random_initial_experience(choice, states_df, optim_paras, options):
 
     for level in levels:
         coefficients = optim_paras["choices"][choice]["start"][level]
-        xb = np.dot(all_data[coefficients.index], coefficients)
+        xb = np.dot(all_data[coefficients.index], coefficients).astype(np.float64)
         x_beta += (xb,)
 
     probabilities = softmax(np.column_stack(x_beta), axis=1)
