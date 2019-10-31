@@ -344,23 +344,17 @@ def _parse_types(optim_paras, params):
         )
         n_type_covariates = len(optim_paras["type_covariates"])
 
-        optim_paras["type_prob"] = np.vstack(
-            (
-                np.zeros(n_type_covariates),
-                params.loc[types]
-                .sort_index()
-                .to_numpy()
-                .reshape(n_types - 1, n_type_covariates),
-            )
-        )
+        optim_paras["type_prob"] = np.zeros((n_types, n_type_covariates))
+        for i, type_ in enumerate(types, 1):
+            for j, cov in enumerate(optim_paras["type_covariates"]):
+                optim_paras["type_prob"][i, j] = params.loc[type_, cov]
 
-        type_shifts = np.zeros((n_types, n_choices))
+        optim_paras["type_shift"] = np.zeros((n_types, n_choices))
         for type_ in range(2, n_types + 1):
             for i, choice in enumerate(optim_paras["choices"]):
-                type_shifts[type_ - 1, i] = params.loc[
-                    ("type_shift", f"type_{type_}_in_{choice}")
-                ]
-        optim_paras["type_shift"] = type_shifts
+                optim_paras["type_shift"][type_ - 1, i] = params.get(
+                    ("type_shift", f"type_{type_}_in_{choice}"), 0
+                )
     else:
         optim_paras["type_shift"] = np.zeros((1, n_choices))
 

@@ -104,7 +104,7 @@ in the sequence initialized by ``options["simulation_seed"]``.
 .. currentmodule:: respy.tests.random_model
 
 .. autosummary::
-    :toctree: ../generated/
+    :toctree: ../_generated/
 
     simulate_truncated_data
 

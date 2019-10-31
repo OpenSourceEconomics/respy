@@ -15,8 +15,8 @@ wage_white_collar,work_white_collar_lagged,0.3054,gain of remaining in the same 
 nonpec_white_collar,constant,-2543,constant (non pecuniary)
 nonpec_white_collar,not_exp_white_collar_lagged,-1182,reward of switching to a from other occupation (non pecuniary)
 nonpec_white_collar,not_any_exp_white_collar,-2759,reward of working in a for the first time (non pecuniary)
-nonpec_white_collar,hs_graduate,804,return to high school degree (non pecuniary)
-nonpec_white_collar,co_graduate,2005,return to college degree (non pecuniary)
+nonpec_white_collar,common_hs_graduate,804,common return to high school degree (non pecuniary)
+nonpec_white_collar,common_co_graduate,2005,common return to college degree (non pecuniary)
 nonpec_white_collar,military_dropout,-1525,effect of leaving the military early (after one year)
 wage_blue_collar,constant,8.8811,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_blue_collar,exp_school,0.024,linear return to an additional year of schooling (wage)
@@ -33,8 +33,8 @@ wage_blue_collar,work_blue_collar_lagged,0.0964,gain of remaining in the same oc
 nonpec_blue_collar,constant,-3157,constant (non pecuniary)
 nonpec_blue_collar,not_exp_blue_collar_lagged,-1647,reward of switching to a from other occupation (non pecuniary)
 nonpec_blue_collar,not_any_exp_blue_collar,-494,reward of working in a for the first time (non pecuniary)
-nonpec_blue_collar,hs_graduate,804,return to high school degree (non pecuniary)
-nonpec_blue_collar,co_graduate,2005,return to college degree (non pecuniary)
+nonpec_blue_collar,common_hs_graduate,804,common return to high school degree (non pecuniary)
+nonpec_blue_collar,common_co_graduate,2005,common return to college degree (non pecuniary)
 nonpec_blue_collar,military_dropout,-1525,effect of leaving the military early (after one year)
 wage_military,constant,8.54,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_military,exp_school,0.0582,linear return to an additional year of schooling (wage)
@@ -51,14 +51,16 @@ nonpec_school,is_return_not_high_school,-10700,reward for going back to college
 nonpec_school,is_return_high_school,-23283,reward for going back to high school
 nonpec_school,period,-1502,linear age effect
 nonpec_school,is_minor,3632,effect of being a minor
-nonpec_school,hs_graduate,-3364,return to high school degree (non pecuniary)
-nonpec_school,co_graduate,-5025,return to college degree (non pecuniary)
+nonpec_school,common_hs_graduate,804,common return to high school degree (non pecuniary)
+nonpec_school,common_co_graduate,2005,common return to college degree (non pecuniary)
+nonpec_school,hs_graduate,-4168,net tuition costs college (non pecuniary)
+nonpec_school,co_graduate,-7030,additional tuition costs graduate school (non pecuniary)
 nonpec_school,military_dropout,-1525,effect of leaving the military early (after one year)
 nonpec_home,constant,20242,mean value of non-market alternative for type 1
 nonpec_home,is_young_adult,-1027,additional value of staying home if aged 18-20
 nonpec_home,is_adult,-1805,additional value of staying home if 21 or older
-nonpec_home,hs_graduate,804,return to high school degree (non pecuniary)
-nonpec_home,co_graduate,2005,return to college degree (non pecuniary)
+nonpec_home,common_hs_graduate,804,common return to high school degree (non pecuniary)
+nonpec_home,common_co_graduate,2005,common return to college degree (non pecuniary)
 nonpec_home,military_dropout,-1525,effect of leaving the military early (after one year)
 shocks_sdcorr,sd_white_collar,0.3864,standard deviation of the shock in occupation a
 shocks_sdcorr,sd_blue_collar,0.3823,standard deviation of the shock in occupation b
@@ -80,25 +82,22 @@ meas_error,sd_blue_collar,0.1942,SD of the measurement error in wages occupation
 meas_error,sd_military,0.2063,SD of the measurement error in wages in military sector
 type_shift,type_2_in_white_collar,-0.0872,deviation for type 2 from type 1 in a
 type_shift,type_2_in_blue_collar,0.305,deviation for type 2 from type 1 in b
-type_shift,type_2_in_military,0,deviation for type 2 from type 1 in mil
 type_shift,type_2_in_school,-5346,deviation for type 2 from type 1 in edu
 type_shift,type_2_in_home,-2135,deviation for type 2 from type 1 in home
 type_shift,type_3_in_white_collar,-0.6091,deviation for type 3 from type 1 in a
 type_shift,type_3_in_blue_collar,-0.2118,deviation for type 3 from type 1 in b
-type_shift,type_3_in_military,0,deviation for type 3 from type 1 in mil
 type_shift,type_3_in_school,-8900,deviation for type 3 from type 1 in edu
 type_shift,type_3_in_home,-14678,deviation for type 3 from type 1 in home
 type_shift,type_4_in_white_collar,-0.52,deviation for type 4 from type 1 in a
 type_shift,type_4_in_blue_collar,-0.0547,deviation for type 4 from type 1 in b
-type_shift,type_4_in_military,0,deviation for type 4 from type 1 in mil
 type_shift,type_4_in_school,-1469,deviation for type 4 from type 1 in edu
 type_shift,type_4_in_home,-2912,deviation for type 4 from type 1 in home
-type_2,up_to_nine_years_school,0.1987,effect of up to nine years of schooling on probability of being type 2
-type_2,at_least_ten_years_school,0.2335,effect of at least ten years of schooling on probability of being type 2
-type_3,up_to_nine_years_school,0.4066,effect of up to nine years of schooling on probability of being type 3
-type_3,at_least_ten_years_school,0.3734,effect of at least ten years of schooling on probability of being type 3
-type_4,up_to_nine_years_school,0.3456,effect of up to nine years of schooling on probability of being type 4
-type_4,at_least_ten_years_school,0.1588,effect of at least ten years of schooling on probability of being type 4
+type_2,up_to_nine_years_school,1.3979,effect of up to nine years of schooling on probability of being type 2
+type_2,at_least_ten_years_school,-0.0034,effect of at least ten years of schooling on probability of being type 2
+type_3,up_to_nine_years_school,2.114,effect of up to nine years of schooling on probability of being type 3
+type_3,at_least_ten_years_school,0.466,effect of at least ten years of schooling on probability of being type 3
+type_4,up_to_nine_years_school,1.9514,effect of up to nine years of schooling on probability of being type 4
+type_4,at_least_ten_years_school,-0.389,effect of at least ten years of schooling on probability of being type 4
 lagged_choice_1_home,up_to_nine_years_school,1,Probability that the first lagged choice is home given covariate up_to_nine_years_school (simulation only)
 lagged_choice_1_school,at_least_ten_years_school,1,Probability that the first lagged choice is education given covariate at_least_ten_years_school (simulation only)
 initial_exp_school_7,probability,0.0095,Probability that the initial level of education is 7
