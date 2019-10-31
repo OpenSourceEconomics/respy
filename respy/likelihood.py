@@ -114,7 +114,7 @@ def log_like(
     Parameters
     ----------
     params : pandas.Series
-        Parameter Series
+        Parameter Series.
     choices : numpy.ndarray
         Array with shape (n_observations * n_types) containing choices for each
         individual-period pair.
