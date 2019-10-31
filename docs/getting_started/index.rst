@@ -12,4 +12,3 @@ Getting Started
    tutorial-lagged-choices.ipynb
    keane-and-wolpin-1994.ipynb
    keane-and-wolpin-1997.ipynb
-   simulated-method-of-moments.ipynb

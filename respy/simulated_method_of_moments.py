@@ -39,7 +39,7 @@ def get_smm_func(params, options, moments, calc_moments, weighting_matrix=None):
         Dictionary containing model options.
     moments : np.ndarray
         Array with shape (n_moments,) containing the moments of the actual data.
-    calc_moments : function
+    calc_moments : callable
         Function to compute the moments from the simulated data.
     weighting_matrix : np.ndarray
         Array with shape (n_moments, n_moments) which is used to weight the squared
@@ -81,14 +81,14 @@ def smm(params, options, simulate, moments, weighting_matrix, calc_moments):
         Parameter Series.
     options : dict
         Dictionary containing model options.
-    simulate : function
+    simulate : :func:`~respy.simulate.simulate`
         Function to simulate a new data set for a given set of parameters.
     moments : np.ndarray
         Array with shape (n_moments,) containing the moments from the actual data.
     weighting_matrix : np.ndarray
         Array with shape (n_moments, n_moments) which is used to weight the squared
         errors of moments.
-    calc_moments : function
+    calc_moments : callable
         Function to compute the moments from the simulated data.
 
     """
