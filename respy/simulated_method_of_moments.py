@@ -60,7 +60,6 @@ def get_smm_func(params, options, moments, calc_moments, weighting_matrix=None):
 
     smm_function = functools.partial(
         smm,
-        options=options,
         simulate=simulate,
         moments=moments,
         weighting_matrix=weighting_matrix,
@@ -70,7 +69,7 @@ def get_smm_func(params, options, moments, calc_moments, weighting_matrix=None):
     return smm_function
 
 
-def smm(params, options, simulate, moments, weighting_matrix, calc_moments):
+def smm(params, simulate, moments, weighting_matrix, calc_moments):
     """Criterion function for the estimation with SMM.
 
     This function calculates the sum of weighted squared errors of moments.
@@ -79,8 +78,6 @@ def smm(params, options, simulate, moments, weighting_matrix, calc_moments):
     ----------
     params : pandas.Series
         Parameter Series.
-    options : dict
-        Dictionary containing model options.
     simulate : :func:`~respy.simulate.simulate`
         Function to simulate a new data set for a given set of parameters.
     moments : np.ndarray
