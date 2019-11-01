@@ -29,6 +29,16 @@ KW_97_EXTENDED_CONSTRAINTS = KW_97_BASIC_CONSTRAINTS + [
     {"loc": "lagged_choice_1_home", "type": "fixed"},
 ]
 
+KW_2000_CONSTRAINTS = [
+    {"loc": "shocks_sdcorr", "type": "sdcorr"},
+    {"query": "'type' in category", "type": "fixed"},
+    {"loc": "lagged_choice_1_school", "type": "fixed"},
+    {"loc": "lagged_choice_1_home", "type": "fixed"},
+    {"query": "'initial_exp_school' in category", "type": "fixed"},
+    {"loc": "maximum_exp", "type": "fixed"},
+    {"loc": "observables", "type": "fixed"},
+]
+
 
 def get_example_model(model, with_data=True):
     """Return parameters, options and data (optional) of an example model.
@@ -70,5 +80,7 @@ def get_parameter_constraints(model):
         constraints = KW_97_BASIC_CONSTRAINTS
     elif "kw_97_extended" == model:
         constraints = KW_97_EXTENDED_CONSTRAINTS
+    elif "kw_2000" == model:
+        constraints = KW_2000_CONSTRAINTS
 
     return constraints
