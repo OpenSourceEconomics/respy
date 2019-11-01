@@ -95,4 +95,13 @@ def smm(params, simulate, moments, weighting_matrix, calc_moments):
 
     moments_error = estimated_moments - moments
 
-    return moments_error @ weighting_matrix @ moments_error
+    weighted_sum_squared_errors = moments_error @ weighting_matrix @ moments_error
+
+    with open("logging.txt", "a+") as file:
+        file.write(f"Likelihood: {weighted_sum_squared_errors}\n")
+        file.write(params.to_string())
+        file.write("\n")
+        file.write("-" * 88)
+        file.write("\n\n")
+
+    return weighted_sum_squared_errors
