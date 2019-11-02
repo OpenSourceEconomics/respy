@@ -464,7 +464,7 @@ def _process_simulated_data(data, optim_paras):
     return df
 
 
-def _random_choice(choices, probabilities):
+def _random_choice(choices, probabilities, decimals=6):
     """Return elements of choices for a two-dimensional array of probabilities.
 
     It is assumed that probabilities are ordered (n_samples, n_choices).
@@ -497,7 +497,7 @@ def _random_choice(choices, probabilities):
     """
     cumulative_distribution = probabilities.cumsum(axis=1)
     # Probabilities often do not sum to one but 0.99999999999999999.
-    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], 15)
+    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], decimals)
 
     if not (cumulative_distribution[:, -1] == 1).all():
         raise ValueError("Probabilities do not sum to one.")

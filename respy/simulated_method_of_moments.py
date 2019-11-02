@@ -93,13 +93,13 @@ def smm(params, simulate, moments, weighting_matrix, calc_moments):
 
     estimated_moments = calc_moments(df)
 
-    estimated_moments = np.clip(estimated_moments, -1e250, 1e250)
+    estimated_moments = np.clip(estimated_moments, -1e50, 1e50)
 
     moments_error = estimated_moments - moments
 
     weighted_sum_squared_errors = moments_error @ weighting_matrix @ moments_error
 
-    weighted_sum_squared_errors = np.clip(weighted_sum_squared_errors, -1e300, 1e300)
+    weighted_sum_squared_errors = np.clip(weighted_sum_squared_errors, -1e100, 1e100)
 
     with open("logging.txt", "a+") as file:
         file.write(f"Error: {weighted_sum_squared_errors}\n")
