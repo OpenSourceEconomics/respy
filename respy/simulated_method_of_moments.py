@@ -20,6 +20,8 @@ import functools
 
 import numpy as np
 
+from respy.config import MAX_FLOAT
+from respy.config import MIN_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.simulate import get_simulate_func
 
@@ -93,12 +95,18 @@ def smm(params, simulate, moments, weighting_matrix, calc_moments):
 
     estimated_moments = calc_moments(df)
 
+    estimated_moments = np.clip(estimated_moments, MIN_FLOAT, MAX_FLOAT)
+
     moments_error = estimated_moments - moments
 
     weighted_sum_squared_errors = moments_error @ weighting_matrix @ moments_error
 
+    weighted_sum_squared_errors = np.clip(
+        weighted_sum_squared_errors, MIN_FLOAT, MAX_FLOAT
+    )
+
     with open("logging.txt", "a+") as file:
-        file.write(f"Likelihood: {weighted_sum_squared_errors}\n")
+        file.write(f"Error: {weighted_sum_squared_errors}\n")
         file.write(params.to_string())
         file.write("\n")
         file.write("-" * 88)
