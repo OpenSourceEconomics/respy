@@ -337,7 +337,6 @@ def _parse_types(optim_paras, params):
                 optim_paras["type_shift"][type_ - 1, i] = params.get(
                     ("type_shift", f"type_{type_}_in_{choice}"), 0
                 )
-
     else:
         optim_paras["type_shift"] = np.zeros((1, n_choices))
 

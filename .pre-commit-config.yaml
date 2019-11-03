@@ -6,12 +6,12 @@ repos:
     -   id: check-merge-conflict
     -   id: debug-statements
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v1.24.0
+    rev: v1.25.1
     hooks:
     -   id: pyupgrade
         args: [--py36-plus]
 -   repo: https://github.com/asottile/reorder_python_imports
-    rev: v1.7.0
+    rev: v1.8.0
     hooks:
     -   id: reorder-python-imports
 -   repo: https://github.com/python/black

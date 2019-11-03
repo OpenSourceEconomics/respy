@@ -3,6 +3,7 @@ import functools
 import numpy as np
 import pandas as pd
 from numba import guvectorize
+from scipy.special import softmax
 
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
@@ -11,7 +12,6 @@ from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_simulation
-from respy.shared import predict_multinomial_logit
 from respy.shared import transform_disturbances
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -257,7 +257,8 @@ def _get_random_types(states, optim_paras, options):
 
         np.random.seed(next(options["simulation_seed_iteration"]))
 
-        probs = predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
+        z = np.dot(type_covariates, optim_paras["type_prob"].T)
+        probs = softmax(z, axis=1)
         types = _random_choice(optim_paras["n_types"], probs)
 
     return types

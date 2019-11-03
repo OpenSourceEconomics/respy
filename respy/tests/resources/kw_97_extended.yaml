@@ -35,6 +35,8 @@ covariates:
   any_exp_military: exp_military > 0
   hs_graduate: exp_school >= 12
   co_graduate: exp_school >= 16
+  common_hs_graduate: hs_graduate
+  common_co_graduate: co_graduate
   is_return_not_high_school: ~school_lagged and ~hs_graduate
   is_return_high_school: ~school_lagged and hs_graduate
   is_minor: period < 2

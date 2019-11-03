@@ -23,7 +23,7 @@ value. ``fixed`` indicates whether the parameter is held constant during optimiz
 in conjunction with a constrained optimizer. In this example the discount factor is
 bounded between 0.7 and 1.0. ``comment`` contains a short description of the parameter.
 
-.. csv-table:: kw_97_base.csv
+.. csv-table:: kw_97_basic.csv
     :file: ../../respy/tests/resources/kw_97_basic.csv
     :header-rows: 1
 
@@ -62,9 +62,9 @@ Options specification
 In addition to the model parameters, other model options are kept in another
 specification file in the ``yaml`` format.
 
-.. literalinclude:: ../../respy/tests/resources/kw_97_base.yaml
+.. literalinclude:: ../../respy/tests/resources/kw_97_basic.yaml
     :language: yaml
-    :name: kw_97_base.yaml
+    :name: kw_97_basic.yaml
 
 Covariates, state space filters and inadmissible states
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -4,7 +4,6 @@ import pytest
 import respy as rp
 
 
-@pytest.mark.wip
 @pytest.mark.parametrize(
     "model, type_proportions",
     [
