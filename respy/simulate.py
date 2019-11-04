@@ -147,10 +147,13 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
         )
 
     # Create a DataFrame to match columns to covariates. Is changed in-place.
-    states_df = pd.DataFrame(
-        np.column_stack(container_obs),
-        columns=[x for x in optim_paras["observables"].keys()],
-    ).assign(period=0)
+    if container_obs != ():
+        states_df = pd.DataFrame(
+            np.column_stack(container_obs),
+            columns=[x for x in optim_paras["observables"].keys()],
+        ).assign(period=0)
+    else:
+        states_df = pd.DataFrame().assign(period=0)
 
     # Create initial experiences, lagged choices and types for agents in simulation.
     container = ()
@@ -347,14 +350,14 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
     return lagged_choices
 
 
-def _get_random_initial_observable(states_df, observable, options, optim_paras):
+def _get_random_initial_observable(observable, options, optim_paras):
     np.random.seed(next(options["simulation_seed_iteration"]))
 
     probs = optim_paras["observables"][observable]
     obs = np.random.choice(
         np.arange(len(probs)), size=options["simulation_agents"], p=probs
     )
-    states_df[observable] = obs
+
     return obs
 
 
