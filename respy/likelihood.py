@@ -318,7 +318,7 @@ def _internal_log_like_obs(
 
 
 @nb.njit
-def log_softmax_i(x, i, tau=1):
+def softmax_i(x, i, tau=1):
     """Calculate log probability of a soft maximum for index ``i``.
 
     The log softmax function is essentially
@@ -372,10 +372,10 @@ def log_softmax_i(x, i, tau=1):
     """
     max_x = np.max(x)
     smoothed_differences = (x - max_x) / tau
-    log_sum_exp = np.log(np.sum(np.exp(smoothed_differences)))
-    log_probability = smoothed_differences[i] - log_sum_exp
+    sum_exp = np.sum(np.exp(smoothed_differences))
+    smoothed_probability = np.exp(smoothed_differences[i]) / sum_exp
 
-    return log_probability
+    return smoothed_probability
 
 
 @nb.guvectorize(
@@ -394,7 +394,7 @@ def simulate_log_probability_of_individuals_observed_choice(
     is_inadmissible,
     choice,
     tau,
-    log_prob_choice,
+    log_smoothed_probability,
 ):
     """Simulate the probability of observing the agent's choice.
 
@@ -432,7 +432,7 @@ def simulate_log_probability_of_individuals_observed_choice(
 
     value_functions = np.zeros(n_choices)
 
-    log_prob_choice_ = 0
+    smoothed_probability = 0
 
     for i in range(n_draws):
 
@@ -448,11 +448,13 @@ def simulate_log_probability_of_individuals_observed_choice(
 
             value_functions[j] = value_function
 
-        log_prob_choice_ += log_softmax_i(value_functions, choice, tau)
+        smoothed_probability += softmax_i(value_functions, choice, tau)
 
-    log_prob_choice_ /= n_draws
+    smoothed_probability /= n_draws
 
-    log_prob_choice[0] = log_prob_choice_
+    log_smoothed_probability_ = np.log(smoothed_probability)
+
+    log_smoothed_probability[0] = log_smoothed_probability_
 
 
 def _convert_choice_variables_from_categorical_to_codes(df, options):
