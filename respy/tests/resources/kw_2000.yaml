@@ -52,3 +52,4 @@ covariates:
   black_and_up_to_nine_years_school: exp_school <= 9 and black
   black_and_at_least_ten_years_school: 10 <= exp_school and black
   white: black == 0
+save_memory: false
