@@ -88,8 +88,10 @@ def test_distribution_of_observables(seed):
     simulate = rp.get_simulate_func(params, options)
     df = simulate(params)
 
-    #Check observable probabilities
+    # Check observable probabilities
     props = df["Observable_0"].value_counts(normalize=True, sort=False).values
 
-    #Check proportions
-    np.testing.assert_almost_equal(props,params.loc["observables"]["value"].values, decimal=1)
+    # Check proportions
+    np.testing.assert_almost_equal(
+        props, params.loc["observables"]["value"].values, decimal=1
+    )

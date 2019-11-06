@@ -138,8 +138,8 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
-    #Create observables for simulation and store them in an extra container that will be
-    #added to the state space container later
+    # Create observables for simulation and store them in an extra container that will be
+    # added to the state space container later
     container_obs = ()
     for observable in optim_paras["observables"].keys():
         container_obs += (
@@ -158,7 +158,9 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     # Create initial experiences, lagged choices and types for agents in simulation.
     container = ()
     for choice in optim_paras["choices_w_exp"]:
-        states_df[f"exp_{choice}"] = _get_random_initial_experience(choice, optim_paras, options)
+        states_df[f"exp_{choice}"] = _get_random_initial_experience(
+            choice, optim_paras, options
+        )
         container += (states_df[f"exp_{choice}"],)
 
     for lag in reversed(range(1, n_lagged_choices + 1)):
@@ -288,6 +290,7 @@ def _get_random_initial_experience(choice, optim_paras, options):
     )
 
     return initial_experience
+
 
 def _get_random_lagged_choices(states_df, optim_paras, options, lag):
     """Get random, initial levels of lagged choices for simulated agents.
