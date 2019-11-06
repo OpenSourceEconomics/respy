@@ -415,9 +415,8 @@ def simulate_log_probability_of_individuals_observed_choice(
     """
     n_draws, n_choices = draws.shape
 
-    value_functions = np.zeros(n_choices)
-
     smoothed_log_probabilities = np.empty(n_draws)
+    smoothed_value_functions = np.empty(n_choices)
 
     for i in range(n_draws):
 
@@ -431,10 +430,10 @@ def simulate_log_probability_of_individuals_observed_choice(
                 is_inadmissible[j],
             )
 
-            value_functions[j] = value_function / tau
+            smoothed_value_functions[j] = value_function / tau
 
-        smoothed_log_probabilities[i] = value_functions[choice] - logsumexp(
-            value_functions
+        smoothed_log_probabilities[i] = smoothed_value_functions[choice] - logsumexp(
+            smoothed_value_functions
         )
 
     smoothed_log_prob = logsumexp(smoothed_log_probabilities) - np.log(n_draws)
