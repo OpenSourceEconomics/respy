@@ -134,17 +134,26 @@ def clip(x, minimum=None, maximum=None):
         return x
 
 
-def downcast_to_smallest_dtype(series):
+def downcast_to_smallest_dtype(series, save_memory=True):
+    """Downcast series to smallest possible dtype.
+
+    This function always leaves categoricals unchanged and converts bools to the
+    smallest integer dtype. Otherwise, some NumPy arrays will have dtype `object` which
+    prevents numerical calculations.
+
+    If `save_memory = True` other dtypes are tested for lower dtypes.
+
+    """
     # We can skip integer as "unsigned" and "signed" will find the same dtypes.
     _downcast_options = ["unsigned", "signed", "float"]
 
     if series.dtype.name == "category":
-        min_dtype = "category"
+        out = series
 
     elif series.dtype == np.bool:
-        min_dtype = np.dtype("uint8")
+        out = series.astype(np.dtype("uint8"))
 
-    else:
+    elif save_memory:
         min_dtype = np.dtype("float64")
 
         for dc_opt in _downcast_options:
@@ -160,7 +169,12 @@ def downcast_to_smallest_dtype(series):
             else:
                 pass
 
-    return series.astype(min_dtype)
+        out = series.astype(min_dtype)
+
+    else:
+        out = series
+
+    return out
 
 
 def create_type_covariates(df, optim_paras, options):

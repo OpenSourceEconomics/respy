@@ -69,8 +69,10 @@ class StateSpace:
         self.states = _states_df.to_numpy()
 
         base_covariates_df = create_base_covariates(states_df, options["covariates"])
-        if options.get("save_memory", True):
-            base_covariates_df = base_covariates_df.apply(downcast_to_smallest_dtype)
+
+        base_covariates_df = base_covariates_df.apply(
+            downcast_to_smallest_dtype, args=options.get("save_memory", True)
+        )
 
         self.covariates = _create_choice_covariates(
             base_covariates_df, states_df, optim_paras
@@ -604,16 +606,12 @@ def _create_choice_covariates(covariates_df, states_df, optim_paras):
     covariates = {}
 
     for choice in optim_paras["choices"]:
-        if f"wage_{choice}" in optim_paras:
-            wage_columns = optim_paras[f"wage_{choice}"].index
-            covariates[f"wage_{choice}"] = all_data[wage_columns].to_numpy()
+        for prefix in ["wage", "nonpec"]:
+            if f"{prefix}_{choice}" in optim_paras:
+                wage_columns = optim_paras[f"{prefix}_{choice}"].index
+                covs = all_data[wage_columns].to_numpy()
 
-        if f"nonpec_{choice}" in optim_paras:
-            nonpec_columns = optim_paras[f"nonpec_{choice}"].index
-            covariates[f"nonpec_{choice}"] = all_data[nonpec_columns].to_numpy()
-
-    for key, val in covariates.items():
-        covariates[key] = np.ascontiguousarray(val)
+                covariates[f"{prefix}_{choice}"] = np.ascontiguousarray(covs)
 
     return covariates
 
