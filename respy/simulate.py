@@ -138,8 +138,8 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
-    # Create observables for simulation and store them in an extra container that will be
-    # added to the state space container later
+    # Create observables for simulation and store them in an extra container that
+    # will be added to the state space container later
     container_obs = ()
     for observable in optim_paras["observables"].keys():
         container_obs += (
