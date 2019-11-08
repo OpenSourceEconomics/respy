@@ -15,14 +15,11 @@ MIN_FLOAT = -MAX_FLOAT
 MAX_LOG_FLOAT = np.log(MAX_FLOAT)
 MIN_LOG_FLOAT = -MAX_LOG_FLOAT
 
-# Number of decimals that are compared for tests This is currently only used in
-# regression tests.
-DECIMALS = 6
 # Some assert functions take rtol instead of decimals
-TOL = 10 ** -DECIMALS
+TOL_REGRESSION_TESTS = 1e-10
 
 # Interpolation
-INADMISSIBILITY_PENALTY = -400000
+INADMISSIBILITY_PENALTY = -400_000
 
 SEED_STARTUP_ITERATION_GAP = 100
 

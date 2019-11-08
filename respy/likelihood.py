@@ -3,8 +3,7 @@ from functools import partial
 
 import numba as nb
 import numpy as np
-from scipy.special import logsumexp
-from scipy.special import softmax
+from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import MAX_FLOAT
@@ -314,14 +313,14 @@ def _internal_log_like_obs(
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
     if n_types >= 2:
         z = np.dot(type_covariates, optim_paras["type_prob"].T)
-        type_probabilities = softmax(z, axis=1)
+        type_probabilities = special.softmax(z, axis=1)
 
         type_probabilities = np.clip(type_probabilities, 1 / MAX_FLOAT, MAX_FLOAT)
         log_type_probabilities = np.log(type_probabilities)
 
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
-        contribs = logsumexp(weighted_loglikes, axis=1)
+        contribs = special.logsumexp(weighted_loglikes, axis=1)
     else:
         contribs = per_individual_loglikes.flatten()
 
@@ -331,64 +330,37 @@ def _internal_log_like_obs(
 
 
 @nb.njit
-def log_softmax_i(x, i, tau=1):
-    """Calculate log probability of a soft maximum for index ``i``.
+def logsumexp(x):
+    """Compute `logsumexp(x)` of `x`.
 
-    The log softmax function is essentially
+    The function does the same as the following code, but faster.
 
-    .. math::
+    .. code-block:: python
 
-        log_softmax_i = log(softmax(x_i))
+        max_x = np.max(x)
+        differences = x - max_x
+        log_sum_exp = max_x + np.log(np.sum(np.exp(differences)))
 
-    This function is superior to the naive implementation as takes advantage of the log
-    and uses the fact that the softmax function is shift-invariant. Integrating the log
-    in the softmax function yields
-
-    .. math::
-
-        log_softmax_i = x_i - max(x) - log(sum(exp(x - max(x))))
-
-    The second property ensures that overflows and underflows in the exponential
-    function cannot happen as ``exp(x - max(x)) = exp(0) = 1`` at its highest value and
-    ``exp(-inf) = 0`` at its lowest value. Only infinite inputs can cause an invalid
-    output.
-
-    The temperature parameter ``tau`` controls the smoothness of the function. For
-    ``tau`` close to 1, the function is more similar to ``max(x)`` and the derivatives
-    of the functions grow to infinity. As ``tau`` grows, the smoothed maximum is bigger
-    than the actual maximum and derivatives diminish. See [1]_ for more information on
-    the smoothing factor ``tau``. Note that the post covers the inverse of the smoothing
-    factor in this function. It is also covered in [2]_ as the kernel-smoothing choice
-    probability simulator. In reinforcement learning and statistical mechanics the
-    function is known as the Boltzmann exploration.
-
-    .. [1] https://www.johndcook.com/blog/2010/01/13/soft-maximum
-    .. [2] McFadden, D. (1989). A method of simulated moments for estimation of discrete
-           response models without numerical integration. Econometrica: Journal of the
-           Econometric Society, 995-1026.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Array with shape (n,) containing the values for which a smoothed maximum should
-        be computed.
-    i : int
-        Index for which the log probability should be computed.
-    tau : float
-        Smoothing parameter to control the size of derivatives.
-
-    Returns
-    -------
-    log_probability : float
-        Log probability for input value ``i``.
+    The subtraction of the maximum prevents overflows and mitigates the impact of
+    underflows.
 
     """
-    max_x = np.max(x)
-    smoothed_differences = (x - max_x) / tau
-    log_sum_exp = np.log(np.sum(np.exp(smoothed_differences)))
-    log_probability = smoothed_differences[i] - log_sum_exp
+    # Search maximum.
+    max_x = None
+    length = len(x)
+    for i in range(length):
+        if max_x is None or x[i] > max_x:
+            max_x = x[i]
 
-    return log_probability
+    # Calculate sum of exponential differences.
+    sum_exp = 0
+    for i in range(length):
+        diff = x[i] - max_x
+        sum_exp += np.exp(diff)
+
+    log_sum_exp = max_x + np.log(sum_exp)
+
+    return log_sum_exp
 
 
 @nb.guvectorize(
@@ -407,13 +379,26 @@ def simulate_log_probability_of_individuals_observed_choice(
     is_inadmissible,
     choice,
     tau,
-    log_prob_choice,
+    smoothed_log_probability,
 ):
     """Simulate the probability of observing the agent's choice.
 
     The probability is simulated by iterating over a distribution of unobservables.
     First, the utility of each choice is computed. Then, the probability of observing
     the choice of the agent given the maximum utility from all choices is computed.
+
+    The naive implementation calculates the log probability for choice `i` with the
+    softmax function.
+
+    .. math::
+
+        \\log(\text{softmax}(x)_i) = \\log\\left(
+            \frac{e^{x_i}}{\\sum^J e^{x_j}}
+        \right)
+
+    The following function is numerically more robust. The derivation with the two
+    consecutive `logsumexp` functions is included in `#278
+    <https://github.com/OpenSourceEconomics/respy/pull/288>`_.
 
     Parameters
     ----------
@@ -437,15 +422,14 @@ def simulate_log_probability_of_individuals_observed_choice(
 
     Returns
     -------
-    log_prob_choice : float
-        Smoothed log probability of choice.
+    smoothed_log_probability : float
+        Simulated Smoothed log probability of choice.
 
     """
     n_draws, n_choices = draws.shape
 
-    value_functions = np.zeros(n_choices)
-
-    log_prob_choice_ = 0
+    smoothed_log_probabilities = np.empty(n_draws)
+    smoothed_value_functions = np.empty(n_choices)
 
     for i in range(n_draws):
 
@@ -459,13 +443,15 @@ def simulate_log_probability_of_individuals_observed_choice(
                 is_inadmissible[j],
             )
 
-            value_functions[j] = value_function
+            smoothed_value_functions[j] = value_function / tau
 
-        log_prob_choice_ += log_softmax_i(value_functions, choice, tau)
+        smoothed_log_probabilities[i] = smoothed_value_functions[choice] - logsumexp(
+            smoothed_value_functions
+        )
 
-    log_prob_choice_ /= n_draws
+    smoothed_log_prob = logsumexp(smoothed_log_probabilities) - np.log(n_draws)
 
-    log_prob_choice[0] = log_prob_choice_
+    smoothed_log_probability[0] = smoothed_log_prob
 
 
 def _convert_choice_variables_from_categorical_to_codes(df, options):
