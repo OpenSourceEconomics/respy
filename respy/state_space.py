@@ -71,7 +71,7 @@ class StateSpace:
         base_covariates_df = create_base_covariates(states_df, options["covariates"])
 
         base_covariates_df = base_covariates_df.apply(
-            downcast_to_smallest_dtype, args=options.get("save_memory", True)
+            downcast_to_smallest_dtype, args=(options.get("save_memory", True),)
         )
 
         self.covariates = _create_choice_covariates(
