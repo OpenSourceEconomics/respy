@@ -148,6 +148,13 @@ def log_like(
         options,
     )
 
+    with open("logging.txt", "a+") as file:
+        file.write(f"Likelihood: {contribs.mean()}\n")
+        file.write(params.to_string())
+        file.write("\n")
+        file.write("-" * 88)
+        file.write("\n\n")
+
     return contribs.mean()
 
 
