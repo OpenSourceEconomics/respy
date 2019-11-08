@@ -12,8 +12,6 @@ from estimagic.optimization.utilities import chol_params_to_lower_triangular_mat
 from estimagic.optimization.utilities import cov_params_to_matrix
 from estimagic.optimization.utilities import robust_cholesky
 from estimagic.optimization.utilities import sdcorr_params_to_matrix
-from scipy.optimize import fsolve
-from scipy.special import softmax
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import SEED_STARTUP_ITERATION_GAP
@@ -159,14 +157,7 @@ def _parse_choice_parameters(optim_paras, params):
 
 
 def _parse_initial_and_max_experience(optim_paras, params, options):
-    """Process initial experience distributions and maximum experience.
-
-    Each choice with experience accumulation has to be defined in three ways. First, a
-    set of initial experience values, second, the share of the initial experience levels
-    in the population and the maximum of accumulated experience. The defaults are zero
-    experience with no upper limit.
-
-    """
+    """Process initial experience distributions and maximum experience."""
     for choice in optim_paras["choices_w_exp"]:
         mask = params.index.get_level_values("category").str.contains(
             f"initial_exp_{choice}"
@@ -187,18 +178,16 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
             n_probabilities = (sub.index.get_level_values(1) == "probability").sum()
 
             # It is allowed to specify the shares of initial experiences as
-            # probabilities. Then, the probabilities are replaced with the appropriate
-            # coefficients to recover the probabilities with a softmax function.
+            # probabilities. Then, the probabilities are replaced with their logs to
+            # recover the probabilities with a softmax function.
             if n_probabilities == len(levels) == n_parameters:
                 if sub.sum() != 1:
                     warnings.warn(
                         "The probabilities over initial experience levels for choice "
-                        f"'{choice}' do not sum to one.",
+                        f"'{choice}' do not sum to one. Probabilities are normalized.",
                         category=UserWarning,
                     )
-                if n_probabilities > 1:
-                    coeffs = calculate_softmax_coefficients(sub)
-                    sub[:] = coeffs
+                sub = np.log(sub)
                 sub = sub.rename(index={"probability": "constant"}, level="name")
                 params = params.append(sub)
 
@@ -214,7 +203,7 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
                 optim_paras["choices"][choice]["start"][level] = coeffs
         else:
             optim_paras["choices"][choice]["start"] = {
-                0: pd.Series(index=["constant"], data=1)
+                0: pd.Series(index=["constant"], data=0)
             }
 
         max_ = int(params.get(("maximum_exp", choice), options["n_periods"] - 1))
@@ -525,22 +514,3 @@ def _parse_lagged_choices(optim_paras, options, params):
         optim_paras[match] = params.loc[match]
 
     return optim_paras
-
-
-def calculate_softmax_coefficients(implied_probabilities):
-    def calculate_softmax_error(x, expected):
-        result = softmax(x)
-        return expected - result
-
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)
-        x = fsolve(
-            calculate_softmax_error,
-            x0=np.zeros(len(implied_probabilities)),
-            args=implied_probabilities,
-        )
-
-    if not np.allclose(implied_probabilities, softmax(x)):
-        raise ValueError("Conversion to softmax coefficients failed.")
-
-    return x
