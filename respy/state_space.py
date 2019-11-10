@@ -550,8 +550,8 @@ def _create_reward_components(types, covariates, optim_paras):
     n_wages = len(optim_paras["choices_w_wage"])
     type_deviations = optim_paras["type_shift"][types]
 
-    log_wages += type_deviations[:, :n_wages]
-    nonpec[:, n_wages:] += type_deviations[:, n_wages:]
+    log_wages = log_wages + type_deviations[:, :n_wages]
+    nonpec[:, n_wages:] = nonpec[:, n_wages:] + type_deviations[:, n_wages:]
 
     wages = np.exp(np.clip(log_wages, MIN_LOG_FLOAT, MAX_LOG_FLOAT))
 
