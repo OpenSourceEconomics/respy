@@ -6,7 +6,7 @@ from respy.config import HUGE_FLOAT
 
 
 def create_draws_and_log_prob_wages(
-    log_wages_observed,
+    log_wage_observed,
     wages_systematic,
     base_draws,
     choices,
@@ -22,7 +22,7 @@ def create_draws_and_log_prob_wages(
 
     Parameters
     ----------
-    log_wages_observed : numpy.ndarray
+    log_wage_observed : numpy.ndarray
         Array with shape (n_obs * n_types,) containing observed log wages.
     wages_systematic : numpy.ndarray
         Array with shape (n_obs * n_types, n_choices) containing systematic wages. Can
@@ -62,11 +62,10 @@ def create_draws_and_log_prob_wages(
     log_wage_systematic = np.clip(
         np.log(relevant_systematic_wages), -HUGE_FLOAT, HUGE_FLOAT
     )
-    observed_shocks = log_wages_observed - log_wage_systematic
     cov = shocks_cholesky @ shocks_cholesky.T
 
     updated_means, log_prob_wages = update_mean_and_evaluate_likelihood(
-        observed_shocks, cov, choices, meas_sds
+        log_wage_observed, log_wage_systematic, cov, choices, meas_sds
     )
 
     if is_meas_error:
@@ -76,7 +75,7 @@ def create_draws_and_log_prob_wages(
     else:
         updated_chols = update_cholcov(shocks_cholesky, n_wages)
 
-    chol_indices = np.where(np.isfinite(log_wages_observed), choices, n_wages)
+    chol_indices = np.where(np.isfinite(log_wage_observed), choices, n_wages)
     draws = calculate_conditional_draws(
         base_draws, updated_means, updated_chols, chol_indices, HUGE_FLOAT
     )
@@ -85,28 +84,61 @@ def create_draws_and_log_prob_wages(
 
 
 @guvectorize(
-    ["f8, f8[:, :], u2, f8[:], f8[:], f8[:]"],
-    "(), (n_choices, n_choices), (), (n_wages) -> (n_choices), ()",
+    ["f8, f8, f8[:, :], u2, f8[:], f8[:], f8[:]"],
+    "(), (), (n_choices, n_choices), (), (n_wages) -> (n_choices), ()",
     nopython=True,
 )
 def update_mean_and_evaluate_likelihood(
-    shock, cov, choice, meas_sds, updated_mean, loglike
+    log_wage_observed, log_wage_systematic, cov, choice, meas_sds, updated_mean, loglike
 ):
-    """Update mean and evaluate likelihood.
+    r"""Update mean and evaluate likelihood.
 
     Calculate the conditional mean of shocks after observing one shock
     and evaluate the likelihood of the observed shock.
 
+    The mean is updated by the "Sequences of Conditional Distributions" explained in
+    [1]_. Consider the following sequence of correlated normal random variables whose
+    mean is adapted by the following formula:
+
+    .. math::
+
+        X_1 &\sim \mathcal{N}(0, \sigma_{11}) \\
+        X_2 &\sim \mathcal{N}(
+            \sigma_{12} \frac{X_1}{\sigma_{11}},
+            \sigma_{22} - \frac{\sigma^2_{12}}{\sigma_{11}}
+        ) \\
+        \dots
+
+    For the probability of the observed wage, recognize that wages are log-normally
+    distributed. Thus, the following formula applies [2]_ [3]_:
+
+    .. math::
+
+        f_W(w_{it}) = \frac{1}{w_{it}} \cdot \frac{1}{\sigma \sqrt{2 \pi}} \exp \left(
+            - \frac{(\ln(w_{it}) - \ln(w(s^-_t, a_t)))^2}{2 \sigma^2}
+        \right)
+
+    where :math:`i` is the individual, :math:`t` is the period, :math:`f_W` is the
+    probability density function of the wage, :math:`w_{it}` is the observed wage,
+    :math:`\sigma` is the standard deviation of the wage shock, :math:`s^-_t` is the
+    state without the shocks, :math:`a_t` is the choice and :math:`w(s^-_t, a_t)` is the
+    non-stochastic wage implied by the model for choice :math:`a_t`.
+
     Parameters
     ----------
-    shock : float
-        The observed shock. NaN for individuals where no shock was observed.
+    log_wage_observed : float
+        Log of the observed wage of the individual. Can be ``np.nan`` if no wage was
+        observed for a working alternative or the individual chose a non-working
+        alternative.
+    log_wage_systematic : float
+        Log of the implied wage for the choice by the model. This term is computed by
+        the wage equation without the choice-specific shock.
     cov : np.ndarray
-        Unconditional covariance matrix of the shocks
+        Unconditional covariance matrix of the shocks.
     choice : int
-        The observed choice
+        The observed choice.
     meas_sds : np.ndarray
-        1d array of length n_choices with standard errors of measurement errors.
+        Array with shape (n_choices,) containing standard errors of measurement errors.
 
     Returns
     -------
@@ -117,16 +149,34 @@ def update_mean_and_evaluate_likelihood(
     loglike : float
         log likelihood of observing the observed shock. 0 if no shock was observed.
 
+    References
+    ----------
+    .. [1] Gentle, J. E. (2009). Computational statistics (Vol. 308). New York:
+           Springer.
+    .. [2] Johnson, Norman L.; Kotz, Samuel; Balakrishnan, N. (1994), "14: Lognormal
+           Distributions", Continuous univariate distributions. Vol. 1, Wiley Series in
+           Probability and Mathematical Statistics: Applied Probability and Statistics
+           (2nd ed.)
+    .. [3] Keane, M. P., Wolpin, K. I., & Todd, P. (2011). Handbook of Labor Economics,
+           volume 4, chapter The Structural Estimation of Behavioral Models: Discrete
+           Choice Dynamic Programming Methods and Applications.
+
     """
     n_choices = len(cov)
-    invariant = np.log(1 / (2 * np.pi) ** 0.5)
+    invariant = -np.log(2 * np.pi) / 2
+    shock = log_wage_observed - log_wage_systematic
 
     if np.isfinite(shock):
         sigma_squared = cov[choice, choice] + meas_sds[choice] ** 2
         sigma = np.sqrt(sigma_squared)
         for i in range(n_choices):
             updated_mean[i] = cov[choice, i] * shock / sigma_squared
-        loglike[0] = invariant - np.log(sigma) - shock ** 2 / (2 * sigma_squared)
+        loglike[0] = (
+            invariant
+            - log_wage_observed
+            - np.log(sigma)
+            - shock ** 2 / (2 * sigma_squared)
+        )
     else:
         for i in range(n_choices):
             updated_mean[i] = 0

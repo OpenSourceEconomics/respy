@@ -34,7 +34,7 @@ Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence
 of-discrete-choice-dynamic-programming-models-by-simulation-and-interpolation-monte-
 carlo-evidence>`_. *Federal Reserve Bank of Minneapolis*, No. 181.
 
-Keane, M. P. and Wolpin, K. I. (1996). `The Career Decisions of Young Men
+Keane, M. P. and Wolpin, K. I. (1997). `The Career Decisions of Young Men
 <https://doi.org/10.1086/262080>`_. *Journal of Political Economy*, 105(3): 473-522.
 
 Manski, C. and Lerman S. (1977). `The Estimation of Choice Probabilities from Choice

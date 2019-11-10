@@ -7,7 +7,7 @@ import numpy as np
 
 import respy as rp
 from respy.config import TEST_RESOURCES_DIR
-from respy.config import TOL
+from respy.config import TOL_REGRESSION_TESTS
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
 
@@ -103,7 +103,9 @@ def investigate_regression_test(idx):
 
     crit_val = calc_crit_val(params, options)
 
-    assert np.isclose(crit_val, exp_val, rtol=TOL, atol=TOL)
+    assert np.isclose(
+        crit_val, exp_val, rtol=TOL_REGRESSION_TESTS, atol=TOL_REGRESSION_TESTS
+    )
 
 
 def _check_single(test, strict):
@@ -112,7 +114,9 @@ def _check_single(test, strict):
 
     crit_val = calc_crit_val(params, options)
 
-    is_success = np.isclose(crit_val, exp_val, rtol=TOL, atol=TOL)
+    is_success = np.isclose(
+        crit_val, exp_val, rtol=TOL_REGRESSION_TESTS, atol=TOL_REGRESSION_TESTS
+    )
 
     if strict is True:
         assert is_success, "Failed regression test."

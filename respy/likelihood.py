@@ -1,19 +1,18 @@
 import warnings
 from functools import partial
 
+import numba as nb
 import numpy as np
-from numba import guvectorize
+from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
-from respy.shared import clip
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_estimation
-from respy.shared import predict_multinomial_logit
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -55,9 +54,9 @@ def get_crit_func(params, options, df, version="log_like"):
 
     optim_paras = _adjust_optim_paras_for_estimation(optim_paras, df)
 
-    state_space = StateSpace(optim_paras, options)
-
     check_estimation_data(df, optim_paras)
+
+    state_space = StateSpace(optim_paras, options)
 
     (
         choices,
@@ -302,21 +301,13 @@ def _internal_log_like_obs(
 
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
     if n_types >= 2:
-        type_probabilities = predict_multinomial_logit(
-            optim_paras["type_prob"], type_covariates
-        )
+        z = np.dot(type_covariates, optim_paras["type_prob"].T)
+        type_probabilities = special.softmax(z, axis=1)
+
         log_type_probabilities = np.log(type_probabilities)
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
-        # The following is equivalent to:
-        # writing contribs = np.log(np.exp(weighted_loglikes).sum(axis=1))
-        # but avoids overflows and underflows
-        minimal_m = -700 - weighted_loglikes.min(axis=1)
-        maximal_m = 700 - weighted_loglikes.max(axis=1)
-        valid = minimal_m <= maximal_m
-        m = np.where(valid, (minimal_m + maximal_m) / 2, np.nan).reshape(-1, 1)
-        contribs = np.log(np.exp(weighted_loglikes + m).sum(axis=1)) - m.flatten()
-        contribs[~valid] = -HUGE_FLOAT
+        contribs = special.logsumexp(weighted_loglikes, axis=1)
     else:
         contribs = per_individual_loglikes.flatten()
 
@@ -325,7 +316,41 @@ def _internal_log_like_obs(
     return contribs
 
 
-@guvectorize(
+@nb.njit
+def logsumexp(x):
+    """Compute `logsumexp(x)` of `x`.
+
+    The function does the same as the following code, but faster.
+
+    .. code-block:: python
+
+        max_x = np.max(x)
+        differences = x - max_x
+        log_sum_exp = max_x + np.log(np.sum(np.exp(differences)))
+
+    The subtraction of the maximum prevents overflows and mitigates the impact of
+    underflows.
+
+    """
+    # Search maximum.
+    max_x = None
+    length = len(x)
+    for i in range(length):
+        if max_x is None or x[i] > max_x:
+            max_x = x[i]
+
+    # Calculate sum of exponential differences.
+    sum_exp = 0
+    for i in range(length):
+        diff = x[i] - max_x
+        sum_exp += np.exp(diff)
+
+    log_sum_exp = max_x + np.log(sum_exp)
+
+    return log_sum_exp
+
+
+@nb.guvectorize(
     ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
     "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
     "() -> ()",
@@ -341,13 +366,26 @@ def simulate_log_probability_of_individuals_observed_choice(
     is_inadmissible,
     choice,
     tau,
-    log_prob_choice,
+    smoothed_log_probability,
 ):
     """Simulate the probability of observing the agent's choice.
 
     The probability is simulated by iterating over a distribution of unobservables.
     First, the utility of each choice is computed. Then, the probability of observing
     the choice of the agent given the maximum utility from all choices is computed.
+
+    The naive implementation calculates the log probability for choice `i` with the
+    softmax function.
+
+    .. math::
+
+        \\log(\text{softmax}(x)_i) = \\log\\left(
+            \frac{e^{x_i}}{\\sum^J e^{x_j}}
+        \right)
+
+    The following function is numerically more robust. The derivation with the two
+    consecutive `logsumexp` functions is included in `#278
+    <https://github.com/OpenSourceEconomics/respy/pull/288>`_.
 
     Parameters
     ----------
@@ -371,19 +409,16 @@ def simulate_log_probability_of_individuals_observed_choice(
 
     Returns
     -------
-    log_prob_choice : float
-        Smoothed log probability of choice.
+    smoothed_log_probability : float
+        Simulated Smoothed log probability of choice.
 
     """
     n_draws, n_choices = draws.shape
 
-    value_functions = np.zeros((n_choices, n_draws))
-
-    prob_choice = 0.0
+    smoothed_log_probabilities = np.empty(n_draws)
+    smoothed_value_functions = np.empty(n_choices)
 
     for i in range(n_draws):
-
-        max_value_functions = 0.0
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
@@ -395,26 +430,15 @@ def simulate_log_probability_of_individuals_observed_choice(
                 is_inadmissible[j],
             )
 
-            value_functions[j, i] = value_function
+            smoothed_value_functions[j] = value_function / tau
 
-            if value_function > max_value_functions:
-                max_value_functions = value_function
+        smoothed_log_probabilities[i] = smoothed_value_functions[choice] - logsumexp(
+            smoothed_value_functions
+        )
 
-        sum_smooth_values = 0.0
+    smoothed_log_prob = logsumexp(smoothed_log_probabilities) - np.log(n_draws)
 
-        for j in range(n_choices):
-            val_exp = np.exp((value_functions[j, i] - max_value_functions) / tau)
-
-            val_clipped = clip(val_exp, 0.0, HUGE_FLOAT)
-
-            value_functions[j, i] = val_clipped
-            sum_smooth_values += val_clipped
-
-        prob_choice += value_functions[choice, i] / sum_smooth_values
-
-    prob_choice /= n_draws
-
-    log_prob_choice[0] = np.log(prob_choice)
+    smoothed_log_probability[0] = smoothed_log_prob
 
 
 def _convert_choice_variables_from_categorical_to_codes(df, options):
