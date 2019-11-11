@@ -46,7 +46,15 @@ extensions = [
 
 nitpicky = True
 
-autodoc_mock_imports = ["estimagic", "numba", "numpy", "pandas", "pytest", "yaml"]
+autodoc_mock_imports = [
+    "estimagic",
+    "numba",
+    "numpy",
+    "pandas",
+    "pytest",
+    "scipy",
+    "yaml",
+]
 
 intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy", None),

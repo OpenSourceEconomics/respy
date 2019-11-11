@@ -151,7 +151,7 @@ def generate_random_model(
         )
         lc_params.set_index(["category", "name"], inplace=True)
         params = pd.concat([params, lc_probs_params, lc_params], axis=0, sort=False)
-        lc_covariates = lagged_choices_covariates_template(n_lagged_choices, choices)
+        lc_covariates = lagged_choices_covariates_template()
         filters = _BASE_CORE_STATE_SPACE_FILTERS
     else:
         lc_covariates = {}
