@@ -63,6 +63,6 @@ def create_kw_97(params, options):
 
     labels, _ = rp_shared.generate_column_labels_estimation(optim_paras)
 
-    df = df[labels]
+    df = df[labels].set_index(["Identifier", "Period"])
 
     return df

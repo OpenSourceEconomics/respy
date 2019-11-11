@@ -114,21 +114,6 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    # Solve the model.
-    state_space.update_systematic_rewards(optim_paras)
-    state_space = solve_with_backward_induction(state_space, optim_paras, options)
-
-    # Start simulation.
-    n_wages = len(optim_paras["choices_w_wage"])
-    n_choices_w_exp = len(optim_paras["choices_w_exp"])
-    n_lagged_choices = optim_paras["n_lagged_choices"]
-    n_individuals = options["simulation_agents"]
-
-    base_draws_sim_transformed = transform_shocks_with_cholesky_factor(
-        base_draws_sim, optim_paras["shocks_cholesky"], n_wages
-    )
-    base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
-
     # If no data is passed or if only one observation for each individual is passed,
     # perform n-step-ahead simulation. Else perform one-step-ahead simulation. Also, set
     # a flag for the simulation method and adjust the number of periods.
@@ -149,6 +134,21 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
             if is_n_step_ahead
             else df.index.get_level_values("period").max() + 1
         )
+
+    # Solve the model.
+    state_space.update_systematic_rewards(optim_paras)
+    state_space = solve_with_backward_induction(state_space, optim_paras, options)
+
+    # Start simulation.
+    n_wages = len(optim_paras["choices_w_wage"])
+    n_choices_w_exp = len(optim_paras["choices_w_exp"])
+    n_lagged_choices = optim_paras["n_lagged_choices"]
+    n_individuals = options["simulation_agents"]
+
+    base_draws_sim_transformed = transform_shocks_with_cholesky_factor(
+        base_draws_sim, optim_paras["shocks_cholesky"], n_wages
+    )
+    base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
     state_space_columns = (
         [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
@@ -233,10 +233,10 @@ def _sample_data_from_initial_conditions(optim_paras, options):
 
 def _prepare_data(df, optim_paras, options):
     """Prepare data for simulation."""
-    df = df.rename(index=rename_labels, columns=rename_labels)
-    if df.index.names != ["identifier", "period"]:
-        df = df.set_index(["identifier", "period"], drop=True)
-    df = df.sort_index()
+    if df.index.names != ["Identifier", "Period"]:
+        df = df.set_index(["Identifier", "Period"], drop=True)
+
+    df = df.rename(columns=rename_labels).rename_axis(index=rename_labels).sort_index()
 
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
