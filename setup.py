@@ -18,7 +18,7 @@ PROJECT_URLS = {
 
 setup(
     name="respy",
-    version="2.0.0dev0",
+    version="2.0.0",
     description=DESCRIPTION,
     long_description=DESCRIPTION + "\n\n" + README,
     long_description_content_type="text/x-rst",
@@ -38,6 +38,7 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     platforms="any",
+    package_data={"respy": ["tests/resources/*"]},
     include_package_data=True,
     zip_safe=False,
 )

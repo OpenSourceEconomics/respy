@@ -29,14 +29,4 @@ if __name__ == "__main__":
     all_packages = built_packages + converted_packages
     for package in all_packages:
         _, package_name = split(package)
-        run(
-            [
-                "anaconda",
-                "upload",
-                "--user",
-                "OpenSourceEconomics",
-                "--label",
-                "dev",
-                package,
-            ]
-        )
+        run(["anaconda", "upload", "--user", "OpenSourceEconomics", package])

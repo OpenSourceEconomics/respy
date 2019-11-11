@@ -10,7 +10,6 @@ source:
 build:
   number: 0
 
-
 requirements:
   build:
     - python {{ python }}
@@ -23,7 +22,6 @@ requirements:
     - pandas>=0.24
     - estimagic>=0.0.12
     - scipy
-    - deepdiff
     - mkl
     - numba>=0.42
     - pyaml
@@ -40,7 +38,6 @@ test:
     - pytest-xdist
     - codecov
     - statsmodels
-
 
 about:
   home: https://github.com/OpenSourceEconomics/respy

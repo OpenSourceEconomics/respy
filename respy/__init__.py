@@ -23,7 +23,7 @@ from respy.solve import solve  # noqa: F401
 # We only maintain the code base for Python >= 3.6.
 assert sys.version_info[:2] >= (3, 6)
 
-__version__ = "2.0.0-dev"
+__version__ = "2.0.0"
 
 
 def test(opt=None):
