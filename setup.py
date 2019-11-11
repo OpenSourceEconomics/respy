@@ -38,7 +38,13 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     platforms="any",
-    package_data={"respy": ["tests/resources/*"]},
+    package_data={
+        "respy": [
+            "tests/resources/*.csv",
+            "tests/resources/*.pickle",
+            "tests/resources/*.yaml",
+        ]
+    },
     include_package_data=True,
     zip_safe=False,
 )
