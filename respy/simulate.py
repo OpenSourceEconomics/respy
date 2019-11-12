@@ -132,7 +132,7 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
         n_periods = (
             options["n_periods"]
             if is_n_step_ahead
-            else df.index.get_level_values("period").max() + 1
+            else int(df.index.get_level_values("period").max() + 1)
         )
 
     # Solve the model.
