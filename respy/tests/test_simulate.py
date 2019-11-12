@@ -37,13 +37,21 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
 
 @pytest.mark.parametrize("seed", range(20))
 def test_observables(seed):
+    """
+    This test simulates two models. One with the observable indicators set
+    to zero.
+    The second model is obtained by assigning all observable indicators set to
+    the value of the constant and the constant set to zero thereafter.
+    The two models should be equivalent.
+    """
     np.random.seed(seed)
 
     # Now specify a set of observables
     observables = [np.random.randint(2, 6)]
+    point_constr = {"observables":observables}
 
     # Get simulated data and likelihood for myopic model.
-    params, options = generate_random_model(myopic=True, observables=observables)
+    params, options = generate_random_model(myopic=True, point_constr=point_constr)
 
     # Get all reward values
     index_reward = [
@@ -80,9 +88,10 @@ def test_distribution_of_observables(seed):
 
     # Now specify a set of observables
     observables = [np.random.randint(2, 6)]
+    point_constr = {"observables":observables}
 
     # Get simulated data and likelihood for myopic model.
-    params, options = generate_random_model(myopic=True, observables=observables)
+    params, options = generate_random_model(myopic=True, point_constr=point_constr)
 
     # Simulate the base model
     simulate = rp.get_simulate_func(params, options)

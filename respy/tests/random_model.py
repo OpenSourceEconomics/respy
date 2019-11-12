@@ -105,6 +105,11 @@ def generate_random_model(
     point_constr = {} if point_constr is None else point_constr
     bound_constr = {} if bound_constr is None else bound_constr
 
+    if "observables" in point_constr.keys():
+        observables = point_constr.pop("observables")
+    else:
+        observables = None
+
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
 
@@ -184,7 +189,7 @@ def generate_random_model(
     if observables is not False:
         indices = params.loc["observables", :].index.get_level_values(0).to_list()
         observable_covariates = {
-            x: f'{"_".join(x.split("_")[:-1])} == {x.split("_")[-1]}' for x in indices
+            x: f"{x.rsplit('_' ,1)[0]} == {x.split('_')[-1]}" for x in indices
         }
     else:
         observable_covariates = {}

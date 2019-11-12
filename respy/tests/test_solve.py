@@ -102,9 +102,10 @@ def test_invariance_of_solution(model_or_seed):
 
 @pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS + list(range(10)))
 def test_create_state_space_vs_specialized_kw94(model_or_seed):
-    point_constr = {"n_lagged_choices": 1}
+    point_constr = {"n_lagged_choices": 1,
+                    "observables":False}
     params, options = process_model_or_seed(
-        model_or_seed, point_constr=point_constr, observables=False
+        model_or_seed, point_constr=point_constr
     )
 
     optim_paras, options = process_params_and_options(params, options)
