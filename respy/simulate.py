@@ -242,8 +242,8 @@ def _prepare_data(df, optim_paras, options):
 
     # Assign a type to each individual which is unobserved by the researcher.
     types = _get_random_types(df.query("period == 0"), optim_paras, options)
-    df["type"] = df.identifier.replace(
-        dict(zip(np.arange(df.identifier.unique().shape[0]), types))
+    df["type"] = df.get_level_values("identifier").replace(
+        dict(zip(np.arange(df.get_level_values("identifier").unique().shape[0]), types))
     )
 
     return df
