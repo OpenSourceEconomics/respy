@@ -147,7 +147,7 @@ def _parse_choices(optim_paras, params, options):
 
 
 def _parse_observables(optim_paras, params):
-    """Parse the parameter vector into a dictionary of model quantities."""
+    """Parse observed variables and their levels."""
     optim_paras["observables"] = {}
     if "observables" in params.index.get_level_values(0):
         observables = params.loc["observables"]
