@@ -12,14 +12,11 @@ HUGE_FLOAT = 1e20
 TINY_FLOAT = 1e-8
 PRINT_FLOAT = 1e10
 
-# Number of decimals that are compared for tests This is currently only used in
-# regression tests.
-DECIMALS = 6
 # Some assert functions take rtol instead of decimals
-TOL = 10 ** -DECIMALS
+TOL_REGRESSION_TESTS = 1e-10
 
 # Interpolation
-INADMISSIBILITY_PENALTY = -400000
+INADMISSIBILITY_PENALTY = -400_000
 
 SEED_STARTUP_ITERATION_GAP = 100
 
