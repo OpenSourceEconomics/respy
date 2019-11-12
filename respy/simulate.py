@@ -362,14 +362,14 @@ def _get_random_lagged_choices(lag, states_df, optim_paras, options):
     return lagged_choices
 
 
-def _get_random_initial_observable(states_df, observable, options, optim_paras):
+def _get_random_initial_observable(observable, options, optim_paras):
     np.random.seed(next(options["simulation_seed_iteration"]))
 
     probs = optim_paras["observables"][observable]
     obs = np.random.choice(
         np.arange(len(probs)), size=options["simulation_agents"], p=probs
     )
-    states_df[observable] = obs
+
     return obs
 
 

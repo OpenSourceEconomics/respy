@@ -72,3 +72,26 @@ def test_observables(seed):
 
     # test for equality
     pd.testing.assert_frame_equal(df_, df)
+
+
+@pytest.mark.parametrize("seed", range(20))
+def test_distribution_of_observables(seed):
+    np.random.seed(seed)
+
+    # Now specify a set of observables
+    observables = [np.random.randint(2, 6)]
+
+    # Get simulated data and likelihood for myopic model.
+    params, options = generate_random_model(myopic=True, observables=observables)
+
+    # Simulate the base model
+    simulate = rp.get_simulate_func(params, options)
+    df = simulate(params)
+
+    # Check observable probabilities
+    props = df["Observable_0"].value_counts(normalize=True, sort=False).values
+
+    # Check proportions
+    np.testing.assert_almost_equal(
+        props, params.loc["observables"]["value"].values, decimal=1
+    )
