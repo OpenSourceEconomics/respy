@@ -78,7 +78,6 @@ def generate_random_model(
     bound_constr=None,
     n_types=None,
     n_type_covariates=None,
-    observables=None,
     myopic=False,
 ):
     """Generate a random model specification.
