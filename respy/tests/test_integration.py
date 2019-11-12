@@ -16,14 +16,15 @@ def test_simulation_and_estimation_with_different_models():
         "edu_start": [7],
         "edu_share": [1],
         "n_lagged_choices": np.random.choice(2),
+        "observables":False
     }
 
     # Simulate a dataset
-    params, options = generate_random_model(point_constr=constr.copy())
+    params, options = generate_random_model(point_constr=constr)
     df = simulate_truncated_data(params, options)
 
     # Evaluate at different points, ensuring that the simulated dataset still fits.
-    params, options = generate_random_model(point_constr=constr.copy())
+    params, options = generate_random_model(point_constr=constr)
     crit_func = get_crit_func(params, options, df)
 
     crit_func(params)

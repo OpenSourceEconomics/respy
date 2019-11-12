@@ -95,8 +95,7 @@ def generate_random_model(
         Number of unobserved types.
     n_type_covariates :
         Number of covariates to calculate type probabilities.
-    n_observables: list
-        list containing the level of individual observables
+
 
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
@@ -104,6 +103,9 @@ def generate_random_model(
     """
     point_constr = {} if point_constr is None else point_constr
     bound_constr = {} if bound_constr is None else bound_constr
+
+    #Avoid inplace change
+    point_constr = point_constr.copy()
 
     if "observables" in point_constr.keys():
         observables = point_constr.pop("observables")
