@@ -165,4 +165,5 @@ def generate_obs_labels(observables, index):
         for y in range(observables[x]):
             names.append(f"observable_{x}_{y}")
     out = list(itertools.product(index, names))
+
     return out
