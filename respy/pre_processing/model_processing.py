@@ -155,7 +155,8 @@ def _parse_observables(optim_paras, params):
             r"\b([a-z0-9_]+)_[0-9]+\b", expand=False
         ).value_counts()
         for name, count in counts.items():
-            # This line ensures that the levels of observables start at zero and increment by one.
+            # This line ensures that the levels of observables start
+            # at zero and increment by one.
             shares = [observables.loc[f"{name}_{value}"] for value in range(count)]
             if np.sum(shares) != 1:
                 warnings.warn(
