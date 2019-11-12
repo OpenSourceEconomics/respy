@@ -241,10 +241,9 @@ def _prepare_data(df, optim_paras, options):
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
     # Assign a type to each individual which is unobserved by the researcher.
+    identifier = pd.Series(df.index.get_level_values("identifier"))
     types = _get_random_types(df.query("period == 0"), optim_paras, options)
-    df["type"] = df.get_level_values("identifier").replace(
-        dict(zip(np.arange(df.get_level_values("identifier").unique().shape[0]), types))
-    )
+    df["type"] = identifier.replace(dict(zip(np.arange(identifier.nunique()), types)))
 
     return df
 
