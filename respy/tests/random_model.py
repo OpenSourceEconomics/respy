@@ -17,7 +17,8 @@ from respy.pre_processing.specification_helpers import (
     lagged_choices_covariates_template,
 )
 from respy.pre_processing.specification_helpers import lagged_choices_probs_template
-from respy.pre_processing.specification_helpers import observable_prob_template
+from respy.pre_processing.specification_helpers import observable_prob_template, \
+    observable_coeffs_template
 from respy.shared import generate_column_labels_estimation
 from respy.simulate import get_simulate_func
 
@@ -106,10 +107,8 @@ def generate_random_model(
     # Avoid inplace change
     point_constr = point_constr.copy()
 
-    if "observables" in point_constr.keys():
-        observables = point_constr.pop("observables")
-    else:
-        observables = None
+    observables = point_constr.pop("observables",None)
+
 
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
@@ -130,14 +129,9 @@ def generate_random_model(
     params = csv_template(
         n_types=n_types,
         n_type_covariates=n_type_covariates,
-        observables=observables,
         initialize_coeffs=False,
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
-
-    if observables is not False:
-        to_concat = [params, observable_prob_template(observables)]
-        params = pd.concat(to_concat, axis=0, sort=False)
 
     params.loc["delta", "value"] = 1 - np.random.uniform() if myopic is False else 0.0
 
@@ -180,6 +174,16 @@ def generate_random_model(
     else:
         lc_covariates = {}
         filters = []
+
+    if observables is not False:
+        to_concat = [
+            params,
+            observable_prob_template(observables),
+            observable_coeffs_template(observables,params)
+        ]
+        params = pd.concat(to_concat, axis=0, sort=False)
+
+
 
     options = {
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),

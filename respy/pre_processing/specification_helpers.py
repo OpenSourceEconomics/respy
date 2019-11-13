@@ -6,7 +6,7 @@ import pandas as pd
 from respy.config import ROOT_DIR
 
 
-def csv_template(n_types, n_type_covariates, observables, initialize_coeffs=True):
+def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
     """Creates a template for the parameter specification.
 
     Parameters
@@ -26,10 +26,6 @@ def csv_template(n_types, n_type_covariates, observables, initialize_coeffs=True
             _type_prob_template(n_types, n_type_covariates),
             _type_shift_template(n_types),
         ]
-        template = pd.concat(to_concat, axis=0, sort=False)
-
-    if observables is not False:
-        to_concat = [template, observable_coeffs_template(observables, template)]
         template = pd.concat(to_concat, axis=0, sort=False)
 
     if initialize_coeffs is False:
