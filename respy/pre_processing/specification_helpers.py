@@ -150,7 +150,7 @@ def observable_coeffs_template(observables, template):
     labels = generate_obs_labels(observables, index)
     to_concat = []
     for y in labels:
-        dat = [0, f"effect of {y[1]}"]
+        dat = [np.random.uniform(), f"effect of {y[1]}"]
         to_concat.append(_base_row(y, dat))
     return pd.concat(to_concat, axis=0, sort=False)
 
@@ -161,6 +161,6 @@ def generate_obs_labels(observables, index):
         for y in range(observables[x]):
             names.append(f"observable_{x}_{y}")
 
-    out = itertools.product(index, names)
+    out = list(itertools.product(index, names))
 
     return out
