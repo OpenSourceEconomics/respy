@@ -139,7 +139,9 @@ def observable_prob_template(observables):
             dat = [probs[j], f"Probability of observable {i} being level choice {j}"]
             to_concat.append(_base_row(ind, dat))
 
-    return pd.concat(to_concat, axis=0, sort=False)
+    out = pd.concat(to_concat, axis=0, sort=False)
+
+    return out
 
 
 def observable_coeffs_template(observables, template):
@@ -153,7 +155,9 @@ def observable_coeffs_template(observables, template):
         dat = [np.random.uniform(), f"effect of {y[1]}"]
         to_concat.append(_base_row(y, dat))
 
-    return pd.concat(to_concat, axis=0, sort=False)
+    out = pd.concat(to_concat, axis=0, sort=False)
+
+    return out
 
 
 def generate_obs_labels(observables, index):

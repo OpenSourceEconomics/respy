@@ -510,7 +510,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     indices = ()
 
     for period in range(df.period.max() + 1):
-        period_df = df.loc[df.period.eq(period)]
+        period_df = df.query("period == @period")
 
         period_experience = tuple(
             period_df[col].to_numpy() for col in period_df.filter(like="exp_").columns
@@ -521,7 +521,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         )
         period_observables = tuple(
             period_df[observable].to_numpy()
-            for observable in optim_paras["observables"].keys()
+            for observable in optim_paras["observables"]
         )
 
         period_indices = state_space.indexer[period][

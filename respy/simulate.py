@@ -120,13 +120,11 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     n_wages = len(optim_paras["choices_w_wage"])
     n_choices_w_exp = len(optim_paras["choices_w_exp"])
     n_lagged_choices = optim_paras["n_lagged_choices"]
-    n_simulation_agents = options["simulation_agents"]
+    n_individuals = options["simulation_agents"]
 
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
-    base_draws_sim_transformed = np.full(
-        (n_periods, n_simulation_agents, n_choices), np.nan
-    )
+    base_draws_sim_transformed = np.full((n_periods, n_individuals, n_choices), np.nan)
 
     for period in range(n_periods):
         base_draws_sim_transformed[period] = transform_disturbances(
@@ -138,10 +136,12 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
+    # Create a DataFrame to collect states.
+    states_df = pd.DataFrame({"identifier": np.arange(n_individuals)}).assign(period=0)
+
     # Create observables for simulation and store them in an extra container that
     # will be added to the state space container later
-    states_df = pd.DataFrame({"period": [0] * options["simulation_agents"]})
-    for observable in optim_paras["observables"].keys():
+    for observable in optim_paras["observables"]:
         states_df = _get_random_initial_observable(
             states_df, observable, options, optim_paras
         )
@@ -222,8 +222,8 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
         # Record data of all agents in one period.
         rows = np.column_stack(
             (
-                np.arange(n_simulation_agents),
-                np.full(n_simulation_agents, period),
+                np.arange(n_individuals),
+                np.full(n_individuals, period),
                 choice,
                 wage,
                 # Write relevant state space for period to data frame. However, the
@@ -239,16 +239,16 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
                 flow_utilities,
                 value_functions,
                 draws_shock,
-                np.full(n_simulation_agents, optim_paras["delta"]),
+                np.full(n_individuals, optim_paras["delta"]),
             )
         )
         data.append(rows)
 
         # Update work experiences.
-        current_states[np.arange(n_simulation_agents), choice] = np.where(
+        current_states[np.arange(n_individuals), choice] = np.where(
             choice < n_choices_w_exp,
-            current_states[np.arange(n_simulation_agents), choice] + 1,
-            current_states[np.arange(n_simulation_agents), choice],
+            current_states[np.arange(n_individuals), choice] + 1,
+            current_states[np.arange(n_individuals), choice],
         )
 
         # Update lagged choices by shifting all lags by one and inserting choice in the
@@ -363,9 +363,7 @@ def _get_random_initial_observable(states_df, observable, options, optim_paras):
 
     probs = optim_paras["observables"][observable]
     states_df[observable] = pd.Series(
-        np.random.choice(
-            np.arange(len(probs)), size=options["simulation_agents"], p=probs
-        )
+        np.random.choice(len(probs), size=options["simulation_agents"], p=probs)
     )
 
     return states_df
