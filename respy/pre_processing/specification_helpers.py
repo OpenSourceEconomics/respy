@@ -152,6 +152,7 @@ def observable_coeffs_template(observables, template):
     for y in labels:
         dat = [np.random.uniform(), f"effect of {y[1]}"]
         to_concat.append(_base_row(y, dat))
+        
     return pd.concat(to_concat, axis=0, sort=False)
 
 
