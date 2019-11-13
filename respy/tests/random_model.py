@@ -109,8 +109,6 @@ def generate_random_model(
     # Avoid inplace change
     point_constr = point_constr.copy()
 
-    observables = point_constr.pop("observables", None)
-
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
 
@@ -120,12 +118,6 @@ def generate_random_model(
         n_types = np.random.randint(1, bound_constr["max_types"] + 1)
     if n_type_covariates is None:
         n_type_covariates = np.random.randint(2, 4)
-    if observables is None:
-        n_obs = np.random.randint(0, 3)
-        if n_obs == 0:
-            observables = False
-        else:
-            observables = np.random.randint(1, 4, size=n_obs)
 
     params = csv_template(
         n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
@@ -173,6 +165,18 @@ def generate_random_model(
     else:
         lc_covariates = {}
         filters = []
+
+    observables = point_constr.pop("observables", None)
+
+    # Loop creates an array of numbers that
+    # show the number of observable variables and
+    # their respective number of levels
+    if observables is None:
+        n_obs = np.random.randint(0, 3)
+        if n_obs == 0:
+            observables = False
+        else:
+            observables = np.random.randint(1, 4, size=n_obs)
 
     if observables is not False:
         to_concat = [
