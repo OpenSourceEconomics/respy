@@ -8,6 +8,7 @@ from scipy.special import softmax
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import convert_choice_variables_from_categorical_to_codes
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
@@ -156,23 +157,20 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
     states_df = _get_random_types(states_df, optim_paras, options)
 
-    # We need the name of the lagged choices several times
-    lagged_choice_labels = [
-        f"lagged_choice_{lag}" for lag in reversed(range(1, n_lagged_choices + 1))
-    ]
-
-    states_df[lagged_choice_labels] = states_df[lagged_choice_labels].replace(
-        {y: x for x, y in enumerate(optim_paras["choices"])}
+    # We need to convert label-based lagged choices to codes.
+    states_df = convert_choice_variables_from_categorical_to_codes(
+        states_df, optim_paras
     )
+
     # Create a matrix of initial states of simulated agents.
     state_space_cols = (
         [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
-        + lagged_choice_labels
-        + [observable for observable in optim_paras["observables"].keys()]
+        + [f"lagged_choice_{lag}" for lag in reversed(range(1, n_lagged_choices + 1))]
+        + [observable for observable in optim_paras["observables"]]
         + ["type"]
     )
-
     current_states = states_df[state_space_cols].to_numpy(dtype=np.uint8)
+
     data = []
 
     for period in range(n_periods):

@@ -17,10 +17,8 @@ from respy.pre_processing.specification_helpers import (
     lagged_choices_covariates_template,
 )
 from respy.pre_processing.specification_helpers import lagged_choices_probs_template
-from respy.pre_processing.specification_helpers import (
-    observable_prob_template,
-    observable_coeffs_template,
-)
+from respy.pre_processing.specification_helpers import observable_coeffs_template
+from respy.pre_processing.specification_helpers import observable_prob_template
 from respy.shared import generate_column_labels_estimation
 from respy.simulate import get_simulate_func
 
@@ -167,16 +165,11 @@ def generate_random_model(
         filters = []
 
     observables = point_constr.pop("observables", None)
-
-    # Loop creates an array of numbers that
-    # show the number of observable variables and
-    # their respective number of levels
     if observables is None:
-        n_obs = np.random.randint(0, 3)
-        if n_obs == 0:
-            observables = False
-        else:
-            observables = np.random.randint(1, 4, size=n_obs)
+        n_observables = np.random.randint(0, 3)
+        observables = (
+            np.random.randint(1, 4, size=n_observables) if n_observables else False
+        )
 
     if observables is not False:
         to_concat = [
@@ -186,19 +179,16 @@ def generate_random_model(
         ]
         params = pd.concat(to_concat, axis=0, sort=False)
 
+        indices = params.loc["observables"].index.get_level_values("name")
+        observable_covs = {x: "{} == {}".format(*x.rsplit("_", 1)) for x in indices}
+    else:
+        observable_covs = {}
+
     options = {
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
         "simulation_seed": np.random.randint(1, 1_000),
         "n_periods": np.random.randint(1, bound_constr["max_periods"]),
     }
-
-    if observables is not False:
-        indices = params.loc["observables"].index.get_level_values(0)
-        observable_covariates = {
-            x: f"{x.rsplit('_' ,1)[0]} == {x.split('_')[-1]}" for x in indices
-        }
-    else:
-        observable_covariates = {}
 
     options["solution_draws"] = np.random.randint(1, bound_constr["max_draws"])
     options["solution_seed"] = np.random.randint(1, 10_000)
@@ -213,7 +203,7 @@ def generate_random_model(
         **DEFAULT_OPTIONS,
         **options,
         "core_state_space_filters": filters,
-        "covariates": {**_BASE_COVARIATES, **lc_covariates, **observable_covariates},
+        "covariates": {**_BASE_COVARIATES, **lc_covariates, **observable_covs},
     }
 
     options = _update_nested_dictionary(options, point_constr)

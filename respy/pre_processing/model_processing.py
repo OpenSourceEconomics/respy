@@ -152,9 +152,11 @@ def _parse_observables(optim_paras, params):
 
     if "observables" in params.index.get_level_values(0):
         observables = params.loc["observables"]
-        counts = observables.index.str.extract(
-            r"\b([a-z0-9_]+)_[0-9]+\b", expand=False
-        ).value_counts()
+        counts = (
+            observables.index.str.extract(r"\b([a-z0-9_]+)_[0-9]+\b", expand=False)
+            .value_counts()
+            .sort_index()
+        )
         for name, n_levels in counts.items():
             # This line ensures that the levels of observables start at zero and
             # increment by one.

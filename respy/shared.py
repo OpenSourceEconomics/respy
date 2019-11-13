@@ -221,3 +221,28 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     covariates = covariates.drop(columns=states.columns)
 
     return covariates
+
+
+def convert_choice_variables_from_categorical_to_codes(df, optim_paras):
+    """Recode choices to choice codes in the model.
+
+    We cannot use ``.cat.codes`` because order might be different. The model requires an
+    order of ``choices_w_exp_w_wag``, ``choices_w_exp_wo_wage``,
+    ``choices_wo_exp_wo_wage``.
+
+    See also
+    --------
+    respy.pre_processing.model_processing._order_choices
+
+    """
+    choices_to_codes = {choice: i for i, choice in enumerate(optim_paras["choices"])}
+
+    if "choice" in df.columns:
+        df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
+
+    for i in range(1, optim_paras["n_lagged_choices"] + 1):
+        label = f"lagged_choice_{i}"
+        if label in df.columns:
+            df[label] = df[label].replace(choices_to_codes).astype(np.uint8)
+
+    return df

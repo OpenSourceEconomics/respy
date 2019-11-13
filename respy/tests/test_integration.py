@@ -16,7 +16,6 @@ def test_simulation_and_estimation_with_different_models():
         "edu_start": [7],
         "edu_share": [1],
         "n_lagged_choices": np.random.choice(2),
-        "observables": False,
     }
 
     # Simulate a dataset

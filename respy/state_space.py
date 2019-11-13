@@ -448,12 +448,10 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
 
 
 def _add_observables_to_state_space(df, optim_paras):
-    for observable in optim_paras["observables"].keys():
+    for observable, levels in optim_paras["observables"].items():
         container = []
-        for level, _ in enumerate(optim_paras["observables"][observable]):
+        for level in range(len(levels)):
             df_ = df.copy()
-
-            # Add columns with observable level.
             df_[observable] = level
             container.append(df_)
 
@@ -510,21 +508,18 @@ def _create_state_space_indexer(df, optim_paras):
         )
         sub_indexer = np.full(shape, -1, dtype=np.int32)
 
-        sub_df = df.loc[df.period.eq(period)]
+        sub_df = df.query("period == @period")
         n_states = sub_df.shape[0]
 
-        indices = tuple(
-            sub_df[f"exp_{i}"] for i in optim_paras["choices_w_exp"]
-        ) + tuple(
-            sub_df[f"lagged_choice_{i}"].replace(choice_to_code)
-            for i in range(1, optim_paras["n_lagged_choices"] + 1)
+        indices = (
+            tuple(sub_df[f"exp_{i}"] for i in optim_paras["choices_w_exp"])
+            + tuple(
+                sub_df[f"lagged_choice_{i}"].replace(choice_to_code)
+                for i in range(1, optim_paras["n_lagged_choices"] + 1)
+            )
+            + tuple(sub_df[observable] for observable in optim_paras["observables"])
+            + (sub_df.type,)
         )
-
-        indices += tuple(
-            sub_df[observable.lower()] for observable in optim_paras["observables"]
-        )
-
-        indices = indices + (sub_df.type,)
 
         sub_indexer[indices] = np.arange(count_states, count_states + n_states)
         indexer.append(sub_indexer)
