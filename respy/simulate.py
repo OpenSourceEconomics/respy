@@ -140,37 +140,33 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
     # Create observables for simulation and store them in an extra container that
     # will be added to the state space container later
-    container_obs = ()
+    states_df = pd.DataFrame({"period": [0] * options["simulation_agents"]})
     for observable in optim_paras["observables"].keys():
-        container_obs += (
-            _get_random_initial_observable(observable, options, optim_paras),
+        states_df[observable] = _get_random_initial_observable(
+            observable, options, optim_paras
         )
 
-    # Create a DataFrame to match columns to covariates. Is changed in-place.
-    if container_obs != ():
-        states_df = pd.DataFrame(
-            np.column_stack(container_obs),
-            columns=[x for x in optim_paras["observables"].keys()],
-        ).assign(period=0)
-    else:
-        states_df = pd.DataFrame().assign(period=0)
-
     # Create initial experiences, lagged choices and types for agents in simulation.
-    container = ()
     for choice in optim_paras["choices_w_exp"]:
         states_df[f"exp_{choice}"] = _get_random_initial_experience(
             choice, optim_paras, options
         )
-        container += (states_df[f"exp_{choice}"],)
-
     for lag in reversed(range(1, n_lagged_choices + 1)):
-        container += (_get_random_lagged_choices(states_df, optim_paras, options, lag),)
+        states_df[f"lagged_choice_{lag}"] = _get_random_lagged_choices(
+            states_df, optim_paras, options, lag
+        )
 
-    container += container_obs
-    container += (_get_random_types(states_df, optim_paras, options),)
+    states_df["type"] = _get_random_types(states_df, optim_paras, options)
 
     # Create a matrix of initial states of simulated agents.
-    current_states = np.column_stack(container).astype(np.uint8)
+    state_space_cols = (
+        [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
+        + [f"lagged_choice_{lag}" for lag in reversed(range(1, n_lagged_choices + 1))]
+        + [observable for observable in optim_paras["observables"].keys()]
+        + ["type"]
+    )
+
+    current_states = states_df[state_space_cols].to_numpy(dtype=np.uint8)
     data = []
 
     for period in range(n_periods):
