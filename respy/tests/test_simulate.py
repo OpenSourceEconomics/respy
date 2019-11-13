@@ -88,9 +88,11 @@ def test_distribution_of_observables(seed):
 
     # Now specify a set of observables
     observables = [np.random.randint(2, 6)]
-    point_constr = {"observables": observables,
-                    "simulation_agents":1000,
-                    "n_periods":1}
+    point_constr = {
+        "observables": observables,
+        "simulation_agents": 1000,
+        "n_periods": 1,
+    }
 
     # Get simulated data and likelihood for myopic model.
     params, options = generate_random_model(myopic=True, point_constr=point_constr)
