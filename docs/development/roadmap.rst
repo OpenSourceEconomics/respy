@@ -29,7 +29,7 @@ CCP and the Estimation of Nonseparable Dynamic Modes
 In a recent paper `Kristensen, Nesheim, and de Paulo (2015)
 <https://www.ucl.ac.uk/~uctpand/hotzmiller-2015-11-21.pdf>`_ generalize the conditional
 choice probabilities (CCP) estimator (`Hotz, Miller (1993)
-<https://www.jstor.org/stable/2298122?>`_) to non-separable economic models. However,
+<https://www.jstor.org/stable/2298122>`_) to non-separable economic models. However,
 they are still missing an empirical application of their method as a proof of concept.
 The ``respy`` package offers a suitable starting point.
 
