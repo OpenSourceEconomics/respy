@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from respy.config import ROOT_DIR
+from respy.shared import normalize_probabilities
 
 
 def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
@@ -99,7 +100,7 @@ def lagged_choices_probs_template(n_lagged_choices, choices):
     to_concat = []
     for i in range(1, n_lagged_choices + 1):
         probs = np.random.uniform(size=len(choices))
-        probs /= probs.sum()
+        probs = normalize_probabilities(probs)
         for j, choice in enumerate(choices):
             ind = (f"lagged_choice_{i}_{choice}", "constant")
             dat = [probs[j], f"Probability of choice {choice} being lagged choice {i}"]
@@ -132,7 +133,7 @@ def observable_prob_template(observables):
     to_concat = []
     for i in range(len(observables)):
         probs = np.random.uniform(size=observables[i])
-        probs /= probs.sum()
+        probs = normalize_probabilities(probs)
 
         for j in range(observables[i]):
             ind = (f"observables", f"observable_{i}_{j}")

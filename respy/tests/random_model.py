@@ -20,6 +20,7 @@ from respy.pre_processing.specification_helpers import lagged_choices_probs_temp
 from respy.pre_processing.specification_helpers import observable_coeffs_template
 from respy.pre_processing.specification_helpers import observable_prob_template
 from respy.shared import generate_column_labels_estimation
+from respy.shared import normalize_probabilities
 from respy.simulate import get_simulate_func
 
 
@@ -104,9 +105,6 @@ def generate_random_model(
     point_constr = {} if point_constr is None else point_constr
     bound_constr = {} if bound_constr is None else bound_constr
 
-    # Avoid inplace change
-    point_constr = point_constr.copy()
-
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
 
@@ -122,7 +120,7 @@ def generate_random_model(
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
-    params.loc["delta", "value"] = 1 - np.random.uniform() if myopic is False else 0.0
+    params.loc["delta", "value"] = 1 - np.random.uniform() if myopic is False else 0
 
     n_shock_coeffs = len(params.loc["shocks_sdcorr"])
     dim = number_of_triangular_elements_to_dimension(n_shock_coeffs)
@@ -227,7 +225,7 @@ def _consolidate_bound_constraints(bound_constr):
 def _get_initial_shares(num_groups):
     """We simply need a valid request for the shares of types summing to one."""
     shares = np.random.uniform(size=num_groups)
-    shares = shares / shares.sum()
+    shares = normalize_probabilities(shares)
 
     return shares
 

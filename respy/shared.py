@@ -246,3 +246,21 @@ def convert_choice_variables_from_categorical_to_codes(df, optim_paras):
             df[label] = df[label].replace(choices_to_codes).astype(np.uint8)
 
     return df
+
+
+def normalize_probabilities(probabilities):
+    """Normalize probabilities such that their sum equals one.
+
+    Example
+    -------
+    The following `probs` do not sum to one after dividing by the sum.
+
+    >>> probs = np.array([0.3775843411510946, 0.5384246942799851, 0.6522988820635421])
+    >>> normalize_probabilities(probs)
+    array([0.24075906, 0.34331568, 0.41592526])
+
+    """
+    probabilities = probabilities / probabilities.sum()
+    probabilities[-1] = 1 - probabilities[:-1].sum()
+
+    return probabilities
