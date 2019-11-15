@@ -2,12 +2,11 @@ import functools
 
 import numpy as np
 import pandas as pd
-from numba import guvectorize
 from scipy.special import softmax
 
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
@@ -338,66 +337,6 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
     )
 
     return lagged_choices
-
-
-@guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :], f8[:, :]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
-    "-> (n_choices, n_draws), (n_choices, n_draws)",
-    nopython=True,
-    target="cpu",
-)
-def calculate_value_functions_and_flow_utilities(
-    wages,
-    nonpec,
-    continuation_values,
-    draws,
-    delta,
-    is_inadmissible,
-    value_functions,
-    flow_utilities,
-):
-    """Calculate the choice-specific value functions and flow utilities.
-
-    Parameters
-    ----------
-    wages : numpy.ndarray
-        Array with shape (n_choices,).
-    nonpec : numpy.ndarray
-        Array with shape (n_choices,).
-    continuation_values : numpy.ndarray
-        Array with shape (n_choices,)
-    draws : numpy.ndarray
-        Array with shape (n_draws, n_choices)
-    delta : float
-        Discount rate.
-    is_inadmissible: numpy.ndarray
-        Array with shape (n_choices,) containing indicator for whether the following
-        state is inadmissible.
-
-    Returns
-    -------
-    value_functions : numpy.ndarray
-        Array with shape (n_choices, n_draws).
-    flow_utilities : numpy.ndarray
-        Array with shape (n_choices, n_draws).
-
-    """
-    n_draws, n_choices = draws.shape
-
-    for i in range(n_draws):
-        for j in range(n_choices):
-            value_function, flow_utility = aggregate_keane_wolpin_utility(
-                wages[j],
-                nonpec[j],
-                continuation_values[j],
-                draws[i, j],
-                delta,
-                is_inadmissible[j],
-            )
-
-            flow_utilities[j, i] = flow_utility
-            value_functions[j, i] = value_function
 
 
 def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):

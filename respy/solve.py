@@ -1,11 +1,13 @@
 import warnings
 
+import numba as nb
 import numpy as np
-from numba import guvectorize
 
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import calculate_value_functions_and_flow_utilities
+from respy.shared import clip
 from respy.shared import transform_disturbances
 from respy.state_space import StateSpace
 
@@ -214,8 +216,10 @@ def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmis
         Array with shape (n_states_in_period,) containing maximum over all value
         functions.
 
+    TODO(tobiasraabe): If calculate value ... is simplified, remove the reshapes.
+
     """
-    value_functions = calculate_value_functions(
+    value_functions, _ = calculate_value_functions_and_flow_utilities(
         wages, nonpec, emaxs, draws.reshape(1, -1), delta, is_inadmissible
     )
 
@@ -226,7 +230,7 @@ def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmis
         (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
     )
 
-    return exogenous, max_value_functions.reshape(-1)
+    return exogenous, max_value_functions.ravel()
 
 
 def calculate_endogenous_variables(
@@ -307,7 +311,7 @@ def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated
     # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994),
     # negative predictions are truncated to zero.
     endogenous_predicted = exogenous.dot(beta)
-    endogenous_predicted = np.clip(endogenous_predicted, 0.00, None)
+    endogenous_predicted = clip(endogenous_predicted, 0)
 
     # Construct predicted EMAX for all states and the
     predictions = endogenous_predicted + max_value_functions
@@ -319,7 +323,7 @@ def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated
     return predictions
 
 
-@guvectorize(
+@nb.guvectorize(
     [
         "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:]",
         "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]",
@@ -413,43 +417,7 @@ def calculate_emax_value_functions(
     emax_value_functions[0] /= n_draws
 
 
-@guvectorize(
-    [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :]",
-    ],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
-    "-> (n_choices, n_draws)",
-    nopython=True,
-    target="cpu",
-)
-def calculate_value_functions(
-    wages, nonpec, continuation_values, draws, delta, is_inadmissible, value_functions
-):
-    """Calculate choice-specific value functions.
-
-    This function is a reduced version of
-    :func:`calculate_value_functions_and_flow_utilities` which does not return flow
-    utilities. The reason is that a second return argument doubles runtime whereas it is
-    only needed during simulation.
-
-    """
-    n_draws, n_choices = draws.shape
-
-    for i in range(n_draws):
-        for j in range(n_choices):
-            value_function, _ = aggregate_keane_wolpin_utility(
-                wages[j],
-                nonpec[j],
-                continuation_values[j],
-                draws[i, j],
-                delta,
-                is_inadmissible[j],
-            )
-
-            value_functions[j, i] = value_function
-
-
+@nb.njit
 def ols(y, x):
     """Calculate OLS coefficients using a pseudo-inverse.
 

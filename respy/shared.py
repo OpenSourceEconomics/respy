@@ -4,16 +4,16 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
+import numba as nb
 import numpy as np
 import pandas as pd
-from numba import njit
-from numba import vectorize
+from numba import guvectorize
 
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 
 
-@njit
+@nb.njit
 def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
@@ -106,31 +106,20 @@ def generate_column_labels_simulation(optim_paras):
     return labels, dtypes
 
 
-@vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
+@nb.njit
 def clip(x, minimum=None, maximum=None):
-    """Clip (limit) input value.
+    """Clip input array at minimum and maximum."""
+    out = np.empty_like(x)
 
-    Parameters
-    ----------
-    x : float
-        Value to be clipped.
-    minimum : float
-        Lower limit.
-    maximum : float
-        Upper limit.
+    for index, value in np.ndenumerate(x):
+        if minimum is not None and value < minimum:
+            out[index] = minimum
+        elif maximum is not None and value > maximum:
+            out[index] = maximum
+        else:
+            out[index] = value
 
-    Returns
-    -------
-    float
-        Clipped value.
-
-    """
-    if minimum is not None and x < minimum:
-        return minimum
-    elif maximum is not None and x > maximum:
-        return maximum
-    else:
-        return x
+    return out
 
 
 def downcast_to_smallest_dtype(series):
@@ -220,3 +209,63 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     covariates = covariates.drop(columns=states.columns)
 
     return covariates
+
+
+@guvectorize(
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :], f8[:, :]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
+    "-> (n_choices, n_draws), (n_choices, n_draws)",
+    nopython=True,
+    target="cpu",
+)
+def calculate_value_functions_and_flow_utilities(
+    wages,
+    nonpec,
+    continuation_values,
+    draws,
+    delta,
+    is_inadmissible,
+    value_functions,
+    flow_utilities,
+):
+    """Calculate the choice-specific value functions and flow utilities.
+
+    Parameters
+    ----------
+    wages : numpy.ndarray
+        Array with shape (n_choices,).
+    nonpec : numpy.ndarray
+        Array with shape (n_choices,).
+    continuation_values : numpy.ndarray
+        Array with shape (n_choices,)
+    draws : numpy.ndarray
+        Array with shape (n_draws, n_choices)
+    delta : float
+        Discount rate.
+    is_inadmissible: numpy.ndarray
+        Array with shape (n_choices,) containing indicator for whether the following
+        state is inadmissible.
+
+    Returns
+    -------
+    value_functions : numpy.ndarray
+        Array with shape (n_choices, n_draws).
+    flow_utilities : numpy.ndarray
+        Array with shape (n_choices, n_draws).
+
+    """
+    n_draws, n_choices = draws.shape
+
+    for i in range(n_draws):
+        for j in range(n_choices):
+            value_function, flow_utility = aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpec[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
+
+            flow_utilities[j, i] = flow_utility
+            value_functions[j, i] = value_function
