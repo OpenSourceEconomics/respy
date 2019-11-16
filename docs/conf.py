@@ -86,6 +86,7 @@ else:
 linkcheck_ignore = [
     r"http://cscubs\.cs\.uni-bonn\.de/*.",
     r"https://(dx\.)?doi\.org/*.",
+    r"https://jstor\.org/*.",
     r"https://zenodo\.org/*.",
 ]
 
