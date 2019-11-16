@@ -1,10 +1,12 @@
 """Test model generation."""
 import numpy as np
+import pandas as pd
 import pytest
 
 from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
 from respy.pre_processing.model_checking import validate_options
+from respy.pre_processing.model_processing import _parse_initial_and_max_experience
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
@@ -63,3 +65,38 @@ def test_sorting_of_type_probability_parameters(model_or_seed):
         optim_paras_, _ = process_params_and_options(params, options)
 
         assert (optim_paras["type_prob"] == optim_paras_["type_prob"]).all()
+
+
+@pytest.mark.wip
+def test_parse_initial_and_max_experience():
+    """Test ensures that probabilities are transformed with logs and rest passes."""
+    choices = ["a", "b"]
+
+    options = {"n_periods": 10}
+    optim_paras = {"choices_w_exp": choices, "choices": {"a": {}, "b": {}}}
+    params = pd.DataFrame(
+        {
+            "category": [
+                "initial_exp_a_0",
+                "initial_exp_a_5",
+                "initial_exp_b_0",
+                "initial_exp_b_5",
+                "maximum_exp",
+            ],
+            "name": ["probability"] * 2 + ["constant"] * 2 + ["b"],
+            "value": [2, 2, np.log(2), np.log(2), 5],
+        }
+    ).set_index(["category", "name"])["value"]
+
+    optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
+
+    assert (
+        optim_paras["choices"]["a"]["start"][0]
+        == optim_paras["choices"]["a"]["start"][5]
+    ).all()
+    assert (
+        optim_paras["choices"]["b"]["start"][0]
+        == optim_paras["choices"]["b"]["start"][5]
+    ).all()
+    assert optim_paras["choices"]["a"]["max"] == options["n_periods"] - 1
+    assert optim_paras["choices"]["b"]["max"] == 5

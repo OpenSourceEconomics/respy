@@ -16,6 +16,7 @@ from estimagic.optimization.utilities import sdcorr_params_to_matrix
 from respy.config import DEFAULT_OPTIONS
 from respy.config import SEED_STARTUP_ITERATION_GAP
 from respy.pre_processing.model_checking import validate_options
+from respy.shared import normalize_probabilities
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
@@ -104,6 +105,7 @@ def _parse_parameters(params, options):
     optim_paras = {}
 
     optim_paras["delta"] = params.loc[("delta", "delta")]
+    optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
     optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
@@ -145,6 +147,34 @@ def _parse_choices(optim_paras, params, options):
     return optim_paras
 
 
+def _parse_observables(optim_paras, params):
+    """Parse observed variables and their levels."""
+    optim_paras["observables"] = {}
+
+    if "observables" in params.index.get_level_values(0):
+        observables = params.loc["observables"]
+        counts = (
+            observables.index.str.extract(r"\b([a-z0-9_]+)_[0-9]+\b", expand=False)
+            .value_counts()
+            .sort_index()
+        )
+        for name, n_levels in counts.items():
+            # This line ensures that the levels of observables start at zero and
+            # increment by one.
+            shares = [observables.loc[f"{name}_{value}"] for value in range(n_levels)]
+
+            if np.sum(shares) != 1:
+                warnings.warn(
+                    f"The shares of observable '{name}' do not sum to one. Shares are "
+                    "divided by their sum for normalization.",
+                    category=UserWarning,
+                )
+                shares = normalize_probabilities(shares)
+            optim_paras["observables"][name] = shares
+
+    return optim_paras
+
+
 def _parse_choice_parameters(optim_paras, params):
     """Parse utility parameters for choices."""
     for choice in optim_paras["choices"]:
@@ -157,13 +187,44 @@ def _parse_choice_parameters(optim_paras, params):
 
 
 def _parse_initial_and_max_experience(optim_paras, params, options):
-    """Process initial experience distributions and maximum experience."""
+    """Process initial experience distributions and maximum experience.
+
+    Given a choice, there might be multiple experience levels. Secondly, the
+    distribution of experience levels might not follow a probability mass function, but
+    dependents on other covariates. E.g., the initial schooling levels might depend on
+    an observed variable like ability.
+
+    Thus, we allow for two different ways to specify distributions:
+
+    - If all experience levels for one choice have one entry in `params` and only have
+      `"probability"` in the `"name"` level of the index, treat parameters like a
+      probability mass function.
+    - Otherwise, we assume that the `"name"` index value corresponds to a covariate and
+      the value in `params` is a multinomial logit coefficient.
+
+    Internally, probabilities are also converted to logit coefficients to align
+    interfaces. To convert probabilities to the appropriate multinomial logit
+    coefficients, use a constant for covariates and note that the sum in the denominator
+    is equal for all probabilities and, thus, can be treated as a constant. The
+    following formula shows that the multinomial coefficients which produce the same
+    probability mass function are equal to the logs of probabilities.
+
+    .. math::
+
+        p_i      &= \frac{e^{x_i \beta_i}}{\\sum_j e^{x_j \beta_j}} \\
+                 &= \frac{e^{\beta_i}}{\\sum_j e^{\beta_j}} \\
+        log(p_i) &= \beta_i - \\log(\\sum_j e^{\beta_j}) \\
+        log(p_i) &= \beta_i - C
+
+    """
     for choice in optim_paras["choices_w_exp"]:
         mask = params.index.get_level_values("category").str.contains(
             f"initial_exp_{choice}"
         )
         n_parameters = mask.sum()
 
+        # If parameters for initial experiences are specified, the parameters can either
+        # be probabilities or multinomial logit coefficients.
         if n_parameters:
             # Separate subset from params.
             sub = params.loc[mask].copy()
@@ -179,28 +240,30 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
 
             # It is allowed to specify the shares of initial experiences as
             # probabilities. Then, the probabilities are replaced with their logs to
-            # recover the probabilities with a softmax function.
+            # recover the probabilities with a multinomial logit model.
             if n_probabilities == len(levels) == n_parameters:
                 if sub.sum() != 1:
                     warnings.warn(
                         "The probabilities over initial experience levels for choice "
-                        f"'{choice}' do not sum to one. Probabilities are normalized.",
+                        f"'{choice}' do not sum to one.",
                         category=UserWarning,
                     )
                 sub = np.log(sub)
                 sub = sub.rename(index={"probability": "constant"}, level="name")
-                params = params.append(sub)
 
             elif n_probabilities > 0:
                 raise ValueError(
-                    "Cannot mix probabilities and softmax coefficients to specify the "
-                    f"distribution of initial experience levels for choice '{choice}'."
+                    "Cannot mix probabilities and multinomial logit coefficients to "
+                    "specify the distribution of initial experience levels for choice "
+                    f"'{choice}'."
                 )
 
-            optim_paras["choices"][choice]["start"] = {}
-            for level in levels:
-                coeffs = sub.loc[f"initial_exp_{choice}_{level}"]
-                optim_paras["choices"][choice]["start"][level] = coeffs
+            # Insert parameters for every level of initial experiences.
+            optim_paras["choices"][choice]["start"] = {
+                level: sub.loc[f"initial_exp_{choice}_{level}"] for level in levels
+            }
+
+        # If no initial experience parameters are specified, start at zero.
         else:
             optim_paras["choices"][choice]["start"] = {
                 0: pd.Series(index=["constant"], data=0)
