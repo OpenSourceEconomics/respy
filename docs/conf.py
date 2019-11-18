@@ -21,10 +21,9 @@ project = "respy"
 copyright = "2015-2019, Philipp Eisenhauer"  # noqa: A001
 author = "Philipp Eisenhauer"
 
-# The short X.Y version.
-version = "2.0"
 # The full version, including alpha/beta/rc tags.
 release = "2.0.0"
+version = ".".join(release.split(".")[:2])
 
 # -- General configuration ------------------------------------------------
 
