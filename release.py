@@ -35,8 +35,8 @@ def cli(ctx):
 @cli.command()
 def clean():
     """Clean the package folder from temporary files and folders."""
-    click.secho("-" * 88 + "\n")
-    click.secho("Cleaning - Starting\n")
+    click.secho("-" * 88)
+    click.secho("Cleaning - Start\n")
     click.secho(
         "Unnecessary files in the repository can cause errors while building the\n"
         "building the package. Check for some known issues.\n"
@@ -73,7 +73,7 @@ def clean():
         click.secho(files, color="yellow")
         raise click.Abort
 
-    click.secho("Cleaning - Finished")
+    click.secho("Cleaning - End")
     click.secho("-" * 88 + "\n")
 
 
