@@ -4,12 +4,11 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
+import chaospy as cp
 import numpy as np
 import pandas as pd
 from numba import njit
 from numba import vectorize
-import scipy
-import chaospy as cp
 
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
@@ -28,12 +27,11 @@ def aggregate_keane_wolpin_utility(
     return value_function, flow_utility
 
 
-def create_base_draws(shape, seed, method):
-    """Create the relevant set of draws.
+def create_base_draws(shape, seed, sequence="random"):
+    """Create a set of draws from the standard normal distribution.
 
-    Handle special case of zero variances as this case is useful for testing.
-    The draws are from a standard normal distribution and transformed later in
-    the code.
+    The draws are either drawn randomly or from quasi-random low-discrepancy sequences,
+    Sobol or Halton.
 
     Parameters
     ----------
@@ -41,53 +39,58 @@ def create_base_draws(shape, seed, method):
         Tuple representing the shape of the resulting array.
     seed : int
         Seed to control randomness.
+    sequence : {"random", "halton", "sobol"}, default "random"
+        Name of the sequence.
 
     Returns
     -------
     draws : numpy.ndarray
-        Draws with shape (n_periods, n_draws)
+        Array with shape (n_choices, n_draws, n_choices).
+
+    See also
+    --------
+    transform_disturbances
 
     """
-    # Control randomness by setting seed value
+    n_choices = shape[2]
+    n_points = shape[0] * shape[1]
+
     np.random.seed(seed)
 
-    if method == "random":
-        # Draw random deviates from a standard normal distribution.
+    if sequence == "random":
         draws = np.random.standard_normal(shape)
-    elif method == "r2":
-        g = phi(shape[2])
-        alpha = (1 / g) ** np.arange(1, shape[2] + 1) % 1
-        #for j in range(shape[2]):
-        #    alpha[j] = (1/g) ** (j+1) % 1
-        r2_seq = (0.5 + alpha * np.arange(1, shape[0] * shape[1] + 1).reshape(-1, 1)) % 1
-        # r2_seq = np.zeros((shape[0] * shape[1], shape[2]))
-        #for i in range(shape[0] * shape[1]):
-        #    r2_seq[i] = (0.5 + alpha * (i+1)) %1
-        draws = scipy.stats.norm.ppf(r2_seq).reshape(shape)
-    elif method == "sobol":
-        distribution = cp.MvNormal(loc=np.zeros(shape[2], int), scale = np.diag(np.ones(shape[2], int)))
-        draws = (distribution.sample(shape[0] * shape[1], rule = "S").T).reshape(shape)
-    elif method == "halton":
-        distribution = cp.MvNormal(loc=np.zeros(shape[2], int), scale = np.diag(np.ones(shape[2], int)))
-        draws = (distribution.sample(shape[0] * shape[1], rule = "H").T).reshape(shape)
-        # Comments: num_points: shape[0] * shape[1]
-        # Comments: dimension D: shape[2] (which is the number of choices)
-        # for rules, see ChaospyPackage https://www.sciencedirect.com/science/article/pii/S1877750315300119
+
+    elif sequence == "halton":
+        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
+        draws = (distribution.sample(n_points, rule="H").T).reshape(shape)
+
+    elif sequence == "sobol":
+        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
+        draws = (distribution.sample(n_points, rule="S").T).reshape(shape)
+
     else:
         raise NotImplementedError
 
     return draws
 
 
-def phi(d):
-    x = 2
-    for i in range(100):
-        x = pow(1 + x, 1/(d+1))
-    return x
-
-
 def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
-    """Transform the standard normal deviates to the relevant distribution."""
+    r"""Transform standard normal draws with the Cholesky factor.
+
+    The standard normal draws are transformed to normal draws with variance-covariance
+    matrix :math:`\Sigma` by multiplication with the Cholesky factor :math:`L` where
+    :math:`L^TL = \Sigma`. See chapter 7.4 in [1]_ for more information.
+
+    References
+    ----------
+    .. [1] Gentle, J. E. (2009). Computational statistics (Vol. 308). New York:
+           Springer.
+
+    See also
+    --------
+    create_base_draws
+
+    """
     draws_transformed = draws.dot(shocks_cholesky.T)
 
     draws_transformed += shocks_mean
