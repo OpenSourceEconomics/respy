@@ -7,10 +7,6 @@ What is the new version number?
 The version number depends on the severity of the changes and adheres to `semantic
 versioning <https://semver.org/>`_. The format is x.y.z..
 
-You are also allowed to append ``-rc.1`` after the last digit to indicate the first or
-higher release candidates. Thus, you can test deployment on PyPI and release preliminary
-versions.
-
 
 How to release a new version?
 -----------------------------

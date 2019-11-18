@@ -33,4 +33,5 @@ dependencies:
   - tox-conda
   - pip:
     - apprise
+    - bump2version
     - pre-commit
