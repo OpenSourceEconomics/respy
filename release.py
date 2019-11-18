@@ -5,15 +5,68 @@ before you run the script. The steps for this are explained here:
 https://conda.io/docs/user-guide/tutorials/build-pkgs.html
 
 """
+import shutil
+import subprocess
 from os.path import join
 from os.path import split
+from pathlib import Path
 from subprocess import run
 
+import click
 from conda_build.api import build
 from conda_build.api import convert
 
 
-if __name__ == "__main__":
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
+
+TEMPORARY_FOLDERS = [
+    Path("documentation", "_build"),
+    Path("documentation", "_generated"),
+]
+
+
+@click.group(context_settings=CONTEXT_SETTINGS, chain=True, invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
+    """Build, convert and upload a conda package."""
+    ctx.invoke(clean)
+    ctx.invoke(build_convert_upload)
+
+
+@cli.command()
+def clean():
+    """Clean the package folder from temporary files and folders."""
+    click.secho(
+        "\nCleaning\n--------\n"
+        "Unnecessary files in the repository can cause errors while building the\n"
+        "building the package. Check for some known issues.\n"
+    )
+
+    # Check for environments in .tox.
+    tox_envs = list(Path(".", ".tox").glob("*"))
+    if tox_envs and click.confirm(
+        "Do you want to remove all tests environments under .tox?"
+    ):
+        for path in tox_envs:
+            run(["conda", "env", "remove", "-p", str(path)])
+        shutil.rmtree(".tox")
+
+    # Check for uncommitted and untracked files.
+    files = subprocess.run(
+        "git status --porcelain", shell=True, stdout=subprocess.PIPE
+    ).stdout.decode("utf-8")
+    if files:
+        click.secho(
+            "There are some uncommitted or untracked files. Please manually clean \n"
+            "them up or move them somewhere else before proceeding.\n",
+            color="yellow",
+        )
+        click.secho(files, color="yellow")
+        raise click.Abort
+
+
+@cli.command()
+def build_convert_upload():
     platforms = ["osx-64", "linux-32", "linux-64", "win-32", "win-64"]
     built_packages = build(".", need_source_download=False)
     converted_packages = []
@@ -30,3 +83,7 @@ if __name__ == "__main__":
     for package in all_packages:
         _, package_name = split(package)
         run(["anaconda", "upload", "--user", "OpenSourceEconomics", package])
+
+
+if __name__ == "__main__":
+    cli()
