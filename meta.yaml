@@ -37,6 +37,7 @@ test:
     - pytest-cov
     - pytest-xdist
     - codecov
+    - conda-build
     - statsmodels
 
 about:
