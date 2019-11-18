@@ -23,12 +23,15 @@ also experiments with approaches that make the criterion function smooth and the
 allow the use of fast optimizers. A starting point could be `Frazier, Oka and Zhu (2019)
 <https://doi.org/10.1016/j.jeconom.2019.06.003>`_
 
-Estimate a model by Conditional Choice Probabilities (CCP)
-----------------------------------------------------------
+CCP and the Estimation of Nonseparable Dynamic Modes
+----------------------------------------------------
 
-Implement estimation by CCP and outline the trade-offs and discuss the validity of
-estimation. This could be combined with having a dataset simulated that does not conform
-to the CCP model and the ``respy`` model.
+In a recent paper `Kristensen, Nesheim, and de Paulo (2015)
+<https://www.ucl.ac.uk/~uctpand/hotzmiller-2015-11-21.pdf>`_ generalize the conditional
+choice probabilities (CCP) estimator (`Hotz, Miller (1993)
+<https://jstor.org/stable/2298122>`_) to non-separable economic models. However,
+they are still missing an empirical application of their method as a proof of concept.
+The ``respy`` package offers a suitable starting point.
 
 Estimate a model by Approximate Bayesian Computation (ABC)
 ----------------------------------------------------------

@@ -9,21 +9,23 @@ dependencies:
   - codecov
   - conda-build
   - doc8
-  - deepdiff
-  - estimagic>=0.0.9
+  - estimagic>=0.0.14
   - jupyterlab
+  - line_profiler
   - matplotlib
   - mkl
   - nbsphinx=0.4.2
   - numba
   - numpydoc
   - pandas>=0.24
+  - pdbpp
   - pyaml
   - pytest
   - pytest-cov
   - pytest-xdist
   - restructuredtext_lint
   - scipy
+  - snakeviz
   - sphinx
   - sphinx-autobuild
   - tox-conda

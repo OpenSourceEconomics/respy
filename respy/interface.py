@@ -8,6 +8,27 @@ from respy.config import TEST_RESOURCES_DIR
 from respy.data import create_kw_97
 from respy.simulate import get_simulate_func
 
+KW_94_CONSTRAINTS = [
+    {"loc": "shocks_sdcorr", "type": "sdcorr"},
+    {"loc": "lagged_choice_1_edu", "type": "fixed"},
+    {"loc": "initial_exp_edu", "type": "fixed"},
+    {"loc": "maximum_exp", "type": "fixed"},
+]
+
+KW_97_BASIC_CONSTRAINTS = [
+    {"loc": "shocks_sdcorr", "type": "sdcorr"},
+    {"loc": "initial_exp_school", "type": "fixed"},
+    {"loc": "maximum_exp", "type": "fixed"},
+]
+
+KW_97_EXTENDED_CONSTRAINTS = KW_97_BASIC_CONSTRAINTS + [
+    {"query": "name == 'military_dropout'", "type": "equality"},
+    {"query": "name == 'common_hs_graduate'", "type": "equality"},
+    {"query": "name == 'common_co_graduate'", "type": "equality"},
+    {"loc": "lagged_choice_1_school", "type": "fixed"},
+    {"loc": "lagged_choice_1_home", "type": "fixed"},
+]
+
 
 def get_example_model(model, with_data=True):
     """Return parameters, options and data (optional) of an example model.
@@ -40,3 +61,14 @@ def get_example_model(model, with_data=True):
             )
 
     return (params, options) + df
+
+
+def get_parameter_constraints(model):
+    if "kw_94" in model:
+        constraints = KW_94_CONSTRAINTS
+    elif "kw_97_basic" == model:
+        constraints = KW_97_BASIC_CONSTRAINTS
+    elif "kw_97_extended" == model:
+        constraints = KW_97_EXTENDED_CONSTRAINTS
+
+    return constraints

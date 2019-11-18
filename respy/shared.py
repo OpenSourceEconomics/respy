@@ -6,7 +6,6 @@ import from respy itself. This is to prevent circular imports.
 """
 import numpy as np
 import pandas as pd
-from numba import guvectorize
 from numba import njit
 from numba import vectorize
 
@@ -27,55 +26,7 @@ def aggregate_keane_wolpin_utility(
     return value_function, flow_utility
 
 
-@guvectorize(
-    ["f8[:, :], f8[:], f8[:]"],
-    "(n_classes, n_covariates), (n_covariates) -> (n_classes)",
-    nopython=True,
-    target="parallel",
-)
-def predict_multinomial_logit(coefficients, covariates, probs):
-    """Predict probabilities based on a multinomial logit regression.
-
-    The function is used to predict the probability for all types based on the initial
-    characteristics of an individual. This is necessary to sample initial types in the
-    simulation and to weight the probability of an observation by types in the
-    estimation.
-
-    The `multinomial logit model
-    <https://en.wikipedia.org/wiki/Multinomial_logistic_regression>`_  predicts the
-    probability that an individual belongs to a certain type. The sum over all
-    type-probabilities is one.
-
-    Parameters
-    ----------
-    coefficients : numpy.ndarray
-        Array with shape (n_classes, n_covariates).
-    covariates : numpy.ndarray
-        Array with shape (n_covariates,).
-
-    Returns
-    -------
-    probs : numpy.ndarray
-        Array with shape (n_classes,) containing the probabilities for each type.
-
-    """
-    n_classes, n_covariates = coefficients.shape
-
-    denominator = 0
-
-    for type_ in range(n_classes):
-        prob_type = 0
-        for cov in range(n_covariates):
-            prob_type += coefficients[type_, cov] * covariates[cov]
-
-        exp_prob_type = np.exp(prob_type)
-        probs[type_] = exp_prob_type
-        denominator += exp_prob_type
-
-    probs /= denominator
-
-
-def create_base_draws(shape, seed, method="random"):
+def create_base_draws(shape, seed, method):
     """Create the relevant set of draws.
 
     Handle special case of zero variances as this case is useful for testing.
@@ -124,11 +75,12 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
     return draws_transformed
 
 
-def generate_column_labels_estimation(options):
+def generate_column_labels_estimation(optim_paras):
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
-        + [f"Experience_{choice.title()}" for choice in options["choices_w_exp"]]
-        + [f"Lagged_Choice_{i}" for i in range(1, options["n_lagged_choices"] + 1)]
+        + [f"Experience_{choice.title()}" for choice in optim_paras["choices_w_exp"]]
+        + [f"Lagged_Choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
+        + [observable.title() for observable in optim_paras["observables"]]
     )
 
     dtypes = {}
@@ -143,16 +95,16 @@ def generate_column_labels_estimation(options):
     return labels, dtypes
 
 
-def generate_column_labels_simulation(options):
-    est_lab, est_dtypes = generate_column_labels_estimation(options)
+def generate_column_labels_simulation(optim_paras):
+    est_lab, est_dtypes = generate_column_labels_estimation(optim_paras)
     labels = (
         est_lab
         + ["Type"]
-        + [f"Nonpecuniary_Reward_{choice.title()}" for choice in options["choices"]]
-        + [f"Wage_{choice.title()}" for choice in options["choices_w_wage"]]
-        + [f"Flow_Utility_{choice.title()}" for choice in options["choices"]]
-        + [f"Value_Function_{choice.title()}" for choice in options["choices"]]
-        + [f"Shock_Reward_{choice.title()}" for choice in options["choices"]]
+        + [f"Nonpecuniary_Reward_{choice.title()}" for choice in optim_paras["choices"]]
+        + [f"Wage_{choice.title()}" for choice in optim_paras["choices_w_wage"]]
+        + [f"Flow_Utility_{choice.title()}" for choice in optim_paras["choices"]]
+        + [f"Value_Function_{choice.title()}" for choice in optim_paras["choices"]]
+        + [f"Shock_Reward_{choice.title()}" for choice in optim_paras["choices"]]
         + ["Discount_Rate"]
     )
 
@@ -218,7 +170,7 @@ def downcast_to_smallest_dtype(series):
     return series.astype(min_dtype)
 
 
-def create_type_covariates(df, options):
+def create_type_covariates(df, optim_paras, options):
     """Create covariates to predict type probabilities.
 
     In the simulation, the covariates are needed to predict type probabilities and
@@ -230,33 +182,92 @@ def create_type_covariates(df, options):
 
     all_data = pd.concat([covariates, df], axis="columns", sort=False)
 
-    all_data = all_data[options["type_covariates"]].apply(downcast_to_smallest_dtype)
+    all_data = all_data[optim_paras["type_covariates"]].apply(
+        downcast_to_smallest_dtype
+    )
 
     return all_data.to_numpy()
 
 
-def create_base_covariates(states, covariates_spec):
+def create_base_covariates(states, covariates_spec, raise_errors=True):
     """Create set of covariates for each state.
 
     Parameters
     ----------
     states : pandas.DataFrame
-        DataFrame with shape (n_states, n_choices_w_exp + 3) containing period,
-        experiences, choice_lagged and type of each state.
+        DataFrame with some, not all state space dimensions like period, experiences.
     covariates_spec : dict
         Keys represent covariates and values are strings passed to ``df.eval``.
+    raise_errors : bool
+        Whether to raise errors if a variable was not found. This option is necessary
+        for, e.g., :func:`~respy.simulate._get_random_lagged_choices` where not all
+        necessary variables exist and it is not clear how to exclude them easily.
 
     Returns
     -------
     covariates : pandas.DataFrame
         DataFrame with shape (n_states, n_covariates).
 
+    Raises
+    ------
+    pd.core.computation.ops.UndefinedVariableError
+        If a necessary variable is not found in the data.
+
     """
     covariates = states.copy()
 
     for covariate, definition in covariates_spec.items():
-        covariates[covariate] = covariates.eval(definition)
+        try:
+            covariates[covariate] = covariates.eval(definition)
+        except pd.core.computation.ops.UndefinedVariableError as e:
+            if raise_errors:
+                raise e
+            else:
+                pass
 
     covariates = covariates.drop(columns=states.columns)
 
     return covariates
+
+
+def convert_choice_variables_from_categorical_to_codes(df, optim_paras):
+    """Recode choices to choice codes in the model.
+
+    We cannot use ``.cat.codes`` because order might be different. The model requires an
+    order of ``choices_w_exp_w_wag``, ``choices_w_exp_wo_wage``,
+    ``choices_wo_exp_wo_wage``.
+
+    See also
+    --------
+    respy.pre_processing.model_processing._order_choices
+
+    """
+    choices_to_codes = {choice: i for i, choice in enumerate(optim_paras["choices"])}
+
+    if "choice" in df.columns:
+        df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
+
+    for i in range(1, optim_paras["n_lagged_choices"] + 1):
+        label = f"lagged_choice_{i}"
+        if label in df.columns:
+            df[label] = df[label].replace(choices_to_codes).astype(np.uint8)
+
+    return df
+
+
+def normalize_probabilities(probabilities):
+    """Normalize probabilities such that their sum equals one.
+
+    Example
+    -------
+    The following `probs` do not sum to one after dividing by the sum.
+
+    >>> probs = np.array([0.3775843411510946, 0.5384246942799851, 0.6522988820635421])
+    >>> normalize_probabilities(probs)
+    array([0.24075906, 0.34331568, 0.41592526])
+
+    """
+    probabilities = probabilities / probabilities.sum()
+    probabilities[-1] = 1 - probabilities[:-1].sum()
+
+    return probabilities

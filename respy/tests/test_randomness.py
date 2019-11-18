@@ -11,6 +11,8 @@ from respy.tests.utils import process_model_or_seed
 def test_invariance_of_model_solution_in_solve_and_simulation(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
 
+    options["n_periods"] = 3
+
     state_space = rp.solve(params, options)
     simulate = rp.get_simulate_func(params, options)
     _ = simulate(params)
@@ -31,6 +33,8 @@ def test_invariance_of_model_solution_in_solve_and_simulation(model_or_seed):
 def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
 
+    options["n_periods"] = 5
+
     state_space = rp.solve(params, options)
 
     simulate = rp.get_simulate_func(params, options)
@@ -39,7 +43,7 @@ def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     state_space = simulate.keywords["state_space"]
 
     crit_func = rp.get_crit_func(params, options, df)
-    crit_func(params)
+    _ = crit_func(params)
 
     state_space_ = crit_func.keywords["state_space"]
 

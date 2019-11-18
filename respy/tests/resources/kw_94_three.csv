@@ -1,60 +1,31 @@
-category,name,value,lower,upper,comment
-delta,delta,0.95,0.7,1.0,discount factor
-wage_a,constant,8,,,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_a,exp_edu,0.07,,,linear return to an additional year of schooling (wage)
-wage_a,exp_a,0.055,,,"return to experience, same sector, linear (wage)"
-wage_a,exp_a_square,0.0,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_a,exp_b,0.0,,,"return to experience, other civilian sector, linear (wage)"
-wage_a,exp_b_square,0.0,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
-wage_a,hs_graduate,0.0,,,skill premium of having finished high school (wage)
-wage_a,co_graduate,0.0,,,skill premium of having finished college (wage)
-wage_a,period,0.0,,,linear age effect (wage)
-wage_a,is_minor,0.0,,,effect of being a minor (wage)
-wage_a,any_exp_a,0.0,,,gain of having worked in the same occupation at least once before (wage)
-wage_a,work_a_lagged,0.0,,,gain of remaining in the same occupation as previous period (wage)
-nonpec_a,constant,0.0,,,constant (non pecuniary)
-nonpec_a,not_exp_a_lagged,0.0,,,reward of switching to a from other occupation (non pecuniary)
-nonpec_a,not_any_exp_a,0.0,,,reward of working in a for the first time (non pecuniary)
-nonpec_a,hs_graduate,0.0,,,return to high school degree (non pecuniary)
-nonpec_a,co_graduate,0.0,,,return to college degree (non pecuniary)
-wage_b,constant,7.9,,,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
-wage_b,exp_edu,0.07,,,linear return to an additional year of schooling (wage)
-wage_b,exp_a,0.055,,,"return to experience, other civilian sector, linear (wage)"
-wage_b,exp_a_square,0.0,,,"return to experience, other civilian sector, quadratic (divided by 100) (wage)"
-wage_b,exp_b,0.06,,,"return to experience, same sector, linear (wage)"
-wage_b,exp_b_square,0.0,,,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_b,hs_graduate,0.0,,,skill premium of having finished high school (wage)
-wage_b,co_graduate,0.0,,,skill premium of having finished college (wage)
-wage_b,period,0.0,,,linear age effect (wage)
-wage_b,is_minor,0.0,,,effect of being a minor (wage)
-wage_b,any_exp_b,0.0,,,gain of having worked in the same occupation at least once before (wage)
-wage_b,work_b_lagged,0.0,,,gain of remaining in the same occupation as previous period (wage)
-nonpec_b,constant,0.0,,,constant (non pecuniary)
-nonpec_b,not_exp_b_lagged,0.0,,,reward of switching to a from other occupation (non pecuniary)
-nonpec_b,not_any_exp_b,0.0,,,reward of working in a for the first time (non pecuniary)
-nonpec_b,hs_graduate,0.0,,,return to high school degree (non pecuniary)
-nonpec_b,co_graduate,0.0,,,return to college degree (non pecuniary)
-nonpec_edu,constant,5000.0,,,consumption value of school attendance for type 1
-nonpec_edu,is_return_not_high_school,-20000.0,,,reward for going back to college
-nonpec_edu,is_return_high_school,-20000.0,,,reward for going back to high school
-nonpec_edu,period,0.0,,,linear age effect
-nonpec_edu,is_minor,0.0,,,effect of being a minor
-nonpec_edu,hs_graduate,-5000.0,,,return to high school degree (non pecuniary)
-nonpec_edu,co_graduate,0.0,,,return to college degree (non pecuniary)
-nonpec_home,constant,21500.0,,,mean value of non-market alternative for type 1
-nonpec_home,is_young_adult,0.0,,,additional value of staying home if aged 18-20
-nonpec_home,is_adult,0.0,,,additional value of staying home if 21 or older
-nonpec_home,hs_graduate,0.0,,,return to high school degree (non pecuniary)
-nonpec_home,co_graduate,0.0,,,return to college degree (non pecuniary)
-shocks,sd_a,1.0,,,"Element 1,1 of cholesky factor of shock covariance matrix"
-shocks,sd_b,1.0,,,"Element 2,2 of cholesky factor of shock covariance matrix"
-shocks,sd_edu,7000.0,,,"Element 3,3 of cholesky factor of shock covariance matrix"
-shocks,sd_home,8500.0,,,"Element 4,4 of cholesky factor of shock covariance matrix"
-shocks,corr_b_a,0.5,,,"Element 2,1 of cholesky factor of shock covariance matrix"
-shocks,corr_edu_a,0.0,,,"Element 3,1 of cholesky factor of shock covariance matrix"
-shocks,corr_edu_b,0.0,,,"Element 3,2 of cholesky factor of shock covariance matrix"
-shocks,corr_home_a,0.0,,,"Element 4,1 of cholesky factor of shock covariance matrix"
-shocks,corr_home_b,0.0,,,"Element 4,2 of cholesky factor of shock covariance matrix"
-shocks,corr_home_edu,-0.5,,,"Element 4,3 of cholesky factor of shock covariance matrix"
-meas_error,sd_a,0.001,0.0,,SD of the measurement error in wages in occupation a
-meas_error,sd_b,0.001,0.0,,SD of the measurement error in wages occupation b
+category,name,value,comment
+delta,delta,0.95,discount factor
+wage_a,constant,8,log of rental price
+wage_a,exp_edu,0.07,return to an additional year of schooling
+wage_a,exp_a,0.055,return to same sector experience
+wage_a,exp_a_square,0,"return to same sector, quadratic experience"
+wage_a,exp_b,0,return to other sector experience
+wage_a,exp_b_square,0,"return to other sector, quadratic experience"
+wage_b,constant,7.9,log of rental price
+wage_b,exp_edu,0.07,return to an additional year of schooling
+wage_b,exp_b,0.06,return to same sector experience
+wage_b,exp_b_square,0,"return to same sector, quadratic experience"
+wage_b,exp_a,0.055,return to other sector experience
+wage_b,exp_a_square,0,"return to other sector, quadratic experience"
+nonpec_edu,constant,5000,constant reward for choosing education
+nonpec_edu,at_least_twelve_exp_edu,-5000,"reward for going to college (tuition, etc.)"
+nonpec_edu,not_edu_last_period,-20000,reward for going back to school
+nonpec_home,constant,21500,constant reward of non-market alternative
+shocks_sdcorr,sd_a,1,"Element 1,1 of standard-deviation/correlation matrix"
+shocks_sdcorr,sd_b,1,"Element 2,2 of standard-deviation/correlation matrix"
+shocks_sdcorr,sd_edu,7000,"Element 3,3 of standard-deviation/correlation matrix"
+shocks_sdcorr,sd_home,8500,"Element 4,4 of standard-deviation/correlation matrix"
+shocks_sdcorr,corr_b_a,0.5,"Element 2,1 of standard-deviation/correlation matrix"
+shocks_sdcorr,corr_edu_a,0,"Element 3,1 of standard-deviation/correlation matrix"
+shocks_sdcorr,corr_edu_b,0,"Element 3,2 of standard-deviation/correlation matrix"
+shocks_sdcorr,corr_home_a,0,"Element 4,1 of standard-deviation/correlation matrix"
+shocks_sdcorr,corr_home_b,0,"Element 4,2 of standard-deviation/correlation matrix"
+shocks_sdcorr,corr_home_edu,-0.5,"Element 4,3 of standard-deviation/correlation matrix"
+lagged_choice_1_edu,edu_ten,1,Probability that the first lagged choice is education given covariate edu_ten (simulation only)
+initial_exp_edu,10,1,Probability that the initial level of education is 10
+maximum_exp,edu,20,"Maximum level of experience for education (optional, reduces computation complexity)"

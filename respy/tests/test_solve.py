@@ -23,12 +23,11 @@ def test_check_solution(model_or_seed):
 
     state_space = rp.solve(params, options)
 
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
-    check_model_solution(options, state_space)
+    check_model_solution(optim_paras, options, state_space)
 
 
-@pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     """Test for inadmissible states in the state space.
@@ -41,11 +40,11 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
 
     """
     params, options = process_model_or_seed(model_or_seed)
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
     state_space = rp.solve(params, options)
 
-    indices = np.full((state_space.states.shape[0], len(options["choices"])), -1)
+    indices = np.full((state_space.states.shape[0], len(optim_paras["choices"])), -1)
 
     for period in range(options["n_periods"] - 1):
 
@@ -64,8 +63,8 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
             state_space.indexer[period],
             state_space.indexer[period + 1],
             state_space.is_inadmissible,
-            len(options["choices_w_exp"]),
-            options["n_lagged_choices"],
+            len(optim_paras["choices_w_exp"]),
+            optim_paras["n_lagged_choices"],
         )
 
     # Take all valid indices and add the indices of the first period.
@@ -85,7 +84,7 @@ def test_invariance_of_solution(model_or_seed):
     """
     params, options = process_model_or_seed(model_or_seed)
 
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
     state_space = rp.solve(params, options)
     state_space_ = rp.solve(params, options)
@@ -103,26 +102,27 @@ def test_invariance_of_solution(model_or_seed):
 
 @pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS + list(range(10)))
 def test_create_state_space_vs_specialized_kw94(model_or_seed):
-    params, options = process_model_or_seed(model_or_seed)
+    point_constr = {"n_lagged_choices": 1, "observables": False}
+    params, options = process_model_or_seed(model_or_seed, point_constr=point_constr)
 
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
     # Create old state space arguments.
     n_periods = options["n_periods"]
-    n_types = options["n_types"]
-    edu_max = options["choices"]["edu"]["max"]
-    edu_starts = options["choices"]["edu"]["start"]
+    n_types = optim_paras["n_types"]
+    edu_max = optim_paras["choices"]["edu"]["max"]
+    edu_starts = optim_paras["choices"]["edu"]["start"]
 
     # Get states and indexer from old state space.
     states_old, indexer_old = _create_state_space_kw94(
         n_periods, n_types, edu_starts, edu_max
     )
 
-    states_new, indexer_new = _create_state_space(options)
+    states_new, indexer_new = _create_state_space(optim_paras, options)
 
-    for i in range(1, options["n_lagged_choices"] + 1):
+    for i in range(1, optim_paras["n_lagged_choices"] + 1):
         states_new[f"lagged_choice_{i}"] = states_new[f"lagged_choice_{i}"].replace(
-            {choice: i for i, choice in enumerate(options["choices"])}
+            {choice: i for i, choice in enumerate(optim_paras["choices"])}
         )
 
     # Compare the state spaces via sets as ordering changed in some cases.
@@ -144,16 +144,16 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
     # Reduce runtime
     options["n_periods"] = 10 if options["n_periods"] > 10 else options["n_periods"]
 
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
     # Create old state space arguments.
     n_periods = options["n_periods"]
-    n_types = options["n_types"]
-    edu_max = options["choices"]["edu"]["max"]
-    edu_starts = options["choices"]["edu"]["start"]
+    n_types = optim_paras["n_types"]
+    edu_max = optim_paras["choices"]["school"]["max"]
+    edu_starts = optim_paras["choices"]["school"]["start"]
 
     # Get states and indexer from old state space.
-    if model_or_seed == "kw_97_base":
+    if model_or_seed == "kw_97_basic":
         states_old, indexer_old = _create_state_space_kw97_base(
             n_periods, n_types, edu_starts, edu_max
         )
@@ -162,11 +162,11 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
             n_periods, n_types, edu_starts, edu_max
         )
 
-    states_new, indexer_new = _create_state_space(options)
+    states_new, indexer_new = _create_state_space(optim_paras, options)
 
-    for i in range(1, options["n_lagged_choices"] + 1):
+    for i in range(1, optim_paras["n_lagged_choices"] + 1):
         states_new[f"lagged_choice_{i}"] = states_new[f"lagged_choice_{i}"].replace(
-            {choice: i for i, choice in enumerate(options["choices"])}
+            {choice: i for i, choice in enumerate(optim_paras["choices"])}
         )
 
     # Compare the state spaces via sets as ordering changed in some cases.
@@ -188,7 +188,7 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
 
     # We need to simulate the model to get the emaxs and model attributes.
     params, options = generate_random_model(myopic=True)
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
     draws = np.random.randn(1, 4)
 

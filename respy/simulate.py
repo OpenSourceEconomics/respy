@@ -3,14 +3,16 @@ import functools
 import numpy as np
 import pandas as pd
 from numba import guvectorize
+from scipy.special import softmax
 
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import convert_choice_variables_from_categorical_to_codes
+from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_simulation
-from respy.shared import predict_multinomial_logit
 from respy.shared import transform_disturbances
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -20,8 +22,8 @@ def get_simulate_func(params, options):
     """Get the simulation function.
 
     Return :func:`simulate` where all arguments except the parameter vector are fixed
-    with :func:`functools.partial`. Thus the function can be directly passed into an
-    optimizer for estimation with simulated method of moments.
+    with :func:`functools.partial`. Thus, the function can be directly passed into an
+    optimizer for estimation with simulated method of moments or other techniques.
 
     Parameters
     ----------
@@ -36,19 +38,17 @@ def get_simulate_func(params, options):
         Simulation function where all arguments except the parameter vector are set.
 
     """
-    params, optim_paras, options = process_params_and_options(params, options)
+    optim_paras, options = process_params_and_options(params, options)
 
-    state_space = StateSpace(params, options)
+    state_space = StateSpace(optim_paras, options)
 
-    base_draws_sim = create_base_draws(
-        (options["n_periods"], options["simulation_agents"], len(options["choices"])),
-        options["simulation_seed"],
+    shape = (
+        options["n_periods"],
+        options["simulation_agents"],
+        len(optim_paras["choices"]),
     )
-
-    # ``seed + 1`` ensures that draws for wages are different than for simulation.
-    base_draws_wage = create_base_draws(
-        base_draws_sim.shape, seed=options["simulation_seed"] + 1
-    )
+    base_draws_sim = create_base_draws(shape, next(options["simulation_seed_startup"]))
+    base_draws_wage = create_base_draws(shape, next(options["simulation_seed_startup"]))
 
     simulate_function = functools.partial(
         simulate,
@@ -69,65 +69,63 @@ def simulate(params, base_draws_sim, base_draws_wage, state_space, options):
     Parameters
     ----------
     params : pandas.DataFrame or pandas.Series
-        DataFrame or Series containing parameters.
-    options : dict
-        Dictionary containing model options.
-
-    """
-    params, optim_paras, options = process_params_and_options(params, options)
-
-    state_space.update_systematic_rewards(optim_paras, options)
-
-    state_space = solve_with_backward_induction(state_space, optim_paras, options)
-
-    simulated_data = simulate_data(
-        state_space, base_draws_sim, base_draws_wage, optim_paras, options
-    )
-
-    return simulated_data
-
-
-def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, options):
-    """Simulate a data set.
-
-    At the beginning, agents are initialized with zero experience in occupations and
-    random values for years of education, lagged choices and types. Then, each simulated
-    agent in each period is paired with its corresponding state in the state space. We
-    recalculate utilities for each choice as the agents experience different shocks in
-    the simulation. In the end, observed and unobserved information is recorded in the
-    simulated dataset.
-
-    Parameters
-    ----------
+        Contains parameters.
+    base_draws_sim : np.ndarray
+        Array with shape (n_periods, n_individuals, n_choices) to provide a unique set
+        of shocks for each individual in each period.
+    base_draws_wage : np.ndarray
+        Array with shape (n_periods, n_individuals, n_choices) to provide a unique set
+        of wage measurement errors for each individual in each period.
     state_space : :class:`~respy.state_space.StateSpace`
-        Class of state space.
-    base_draws_sim : numpy.ndarray
-        Array with shape (n_periods, n_agents_sim, n_choices).
-    base_draws_wage : numpy.ndarray
-        Array with shape (n_periods, n_agents_sim, n_choices).
-    optim_paras : dict
-        Parameters affected by optimization.
+        State space of the model.
     options : dict
         Dictionary containing model options.
 
     Returns
     -------
     simulated_data : pandas.DataFrame
-        Dataset of simulated agents.
+        DataFrame of simulated individuals.
 
     """
-    n_choices = len(options["choices"])
-    n_periods = options["n_periods"]
-    n_wages = len(options["choices_w_wage"])
-    n_choices_w_exp = len(options["choices_w_exp"])
-    n_lagged_choices = options["n_lagged_choices"]
-    n_simulation_agents = options["simulation_agents"]
+    optim_paras, options = process_params_and_options(params, options)
+
+    state_space.update_systematic_rewards(optim_paras)
+
+    state_space = solve_with_backward_induction(state_space, optim_paras, options)
+
+    simulated_data = _simulate_data(
+        state_space, base_draws_sim, base_draws_wage, optim_paras, options
+    )
+
+    return simulated_data
+
+
+def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, options):
+    """Simulate a data set.
+
+    At the beginning, individuals are initialized with zero experience in occupations
+    and random values for years of education, lagged choices and types. Then, each
+    simulated agent in each period is paired with its corresponding state in the state
+    space. We recalculate utilities for each choice as the individuals experience
+    different shocks in the simulation. In the end, observed and unobserved information
+    is recorded in a DataFrame.
+
+    Returns
+    -------
+    simulated_data : pandas.DataFrame
+        Dataset of simulated individuals.
+
+    """
+    n_choices = len(optim_paras["choices"])
+    n_periods = optim_paras["n_periods"]
+    n_wages = len(optim_paras["choices_w_wage"])
+    n_choices_w_exp = len(optim_paras["choices_w_exp"])
+    n_lagged_choices = optim_paras["n_lagged_choices"]
+    n_individuals = options["simulation_agents"]
 
     # Standard deviates transformed to the distributions relevant for the agents actual
     # decision making as traversing the tree.
-    base_draws_sim_transformed = np.full(
-        (n_periods, n_simulation_agents, n_choices), np.nan
-    )
+    base_draws_sim_transformed = np.full((n_periods, n_individuals, n_choices), np.nan)
 
     for period in range(n_periods):
         base_draws_sim_transformed[period] = transform_disturbances(
@@ -139,24 +137,39 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
 
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
-    # Create initial starting values for agents in simulation.
-    container = ()
-    for choice in options["choices_w_exp"]:
-        container += (_get_random_initial_experience(choice, options),)
+    # Create a DataFrame to collect states.
+    states_df = pd.DataFrame({"identifier": np.arange(n_individuals)}).assign(period=0)
 
-    if n_lagged_choices:
-        edu_idx = list(options["choices_w_exp"]).index("edu")
-        container += (_get_random_lagged_choices(container[edu_idx], options),)
+    # Create observables for simulation and store them in an extra container that
+    # will be added to the state space container later
+    for observable in optim_paras["observables"]:
+        states_df = _get_random_initial_observable(
+            states_df, observable, options, optim_paras
+        )
 
-    states_wo_types = pd.DataFrame(
-        np.column_stack(container),
-        columns=[f"exp_{i}" for i in options["choices_w_exp"]]
-        + [f"lagged_choice_{i}" for i in range(1, n_lagged_choices + 1)],
-    ).assign(period=0)
-    container += (_get_random_types(states_wo_types, optim_paras, options),)
+    # Create initial experiences, lagged choices and types for agents in simulation.
+    for choice in optim_paras["choices_w_exp"]:
+        states_df = _get_random_initial_experience(
+            states_df, choice, optim_paras, options
+        )
+    for lag in reversed(range(1, n_lagged_choices + 1)):
+        states_df = _get_random_lagged_choices(states_df, optim_paras, options, lag)
+
+    states_df = _get_random_types(states_df, optim_paras, options)
+
+    # We need to convert label-based lagged choices to codes.
+    states_df = convert_choice_variables_from_categorical_to_codes(
+        states_df, optim_paras
+    )
 
     # Create a matrix of initial states of simulated agents.
-    current_states = np.column_stack(container).astype(np.uint8)
+    state_space_cols = (
+        [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
+        + [f"lagged_choice_{lag}" for lag in reversed(range(1, n_lagged_choices + 1))]
+        + [observable for observable in optim_paras["observables"]]
+        + ["type"]
+    )
+    current_states = states_df[state_space_cols].to_numpy(dtype=np.uint8)
 
     data = []
 
@@ -207,8 +220,8 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
         # Record data of all agents in one period.
         rows = np.column_stack(
             (
-                np.arange(n_simulation_agents),
-                np.full(n_simulation_agents, period),
+                np.arange(n_individuals),
+                np.full(n_individuals, period),
                 choice,
                 wage,
                 # Write relevant state space for period to data frame. However, the
@@ -224,16 +237,16 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
                 flow_utilities,
                 value_functions,
                 draws_shock,
-                np.full(n_simulation_agents, optim_paras["delta"]),
+                np.full(n_individuals, optim_paras["delta"]),
             )
         )
         data.append(rows)
 
         # Update work experiences.
-        current_states[np.arange(n_simulation_agents), choice] = np.where(
+        current_states[np.arange(n_individuals), choice] = np.where(
             choice < n_choices_w_exp,
-            current_states[np.arange(n_simulation_agents), choice] + 1,
-            current_states[np.arange(n_simulation_agents), choice],
+            current_states[np.arange(n_individuals), choice] + 1,
+            current_states[np.arange(n_individuals), choice],
         )
 
         # Update lagged choices by shifting all lags by one and inserting choice in the
@@ -246,68 +259,116 @@ def simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, opt
             ]
             current_states[:, n_choices_w_exp] = choice
 
-    simulated_data = _process_simulated_data(data, options)
+    simulated_data = _process_simulated_data(data, optim_paras)
 
     return simulated_data
 
 
-def _get_random_types(states, optim_paras, options):
+def _get_random_types(states_df, optim_paras, options):
     """Get random types for simulated agents."""
-    if options["n_types"] == 1:
-        types = np.zeros(options["simulation_agents"])
+
+    if optim_paras["n_types"] == 1:
+        states_df["type"] = np.zeros(options["simulation_agents"])
     else:
-        type_covariates = create_type_covariates(states, options)
+        type_covariates = create_type_covariates(states_df, optim_paras, options)
+        np.random.seed(next(options["simulation_seed_iteration"]))
 
-        np.random.seed(options["simulation_seed"])
+        z = np.dot(type_covariates, optim_paras["type_prob"].T)
+        probs = softmax(z, axis=1)
+        states_df["type"] = pd.Series(_random_choice(optim_paras["n_types"], probs))
 
-        probs = predict_multinomial_logit(optim_paras["type_prob"], type_covariates)
-        types = _random_choice(options["n_types"], probs)
-
-    return types
+    return states_df
 
 
-def _get_random_initial_experience(choice, options):
+def _get_random_initial_experience(states_df, choice, optim_paras, options):
     """Get random, initial levels of schooling for simulated agents."""
-    np.random.seed(options["simulation_seed"])
+    np.random.seed(next(options["simulation_seed_iteration"]))
 
-    initial_experience = np.random.choice(
-        options["choices"][choice]["start"],
-        p=options["choices"][choice]["share"],
-        size=options["simulation_agents"],
+    states_df[f"exp_{choice}"] = pd.Series(
+        np.random.choice(
+            optim_paras["choices"][choice]["start"],
+            p=optim_paras["choices"][choice]["share"],
+            size=options["simulation_agents"],
+        )
     )
 
-    return initial_experience
+    return states_df
 
 
-def _get_random_lagged_choices(edu_start, options):
-    """Get random, initial levels of lagged choices for simulated agents."""
-    np.random.seed(options["simulation_seed"])
+def _get_random_lagged_choices(states_df, optim_paras, options, lag):
+    """Get random, initial levels of lagged choices for simulated agents.
 
-    choices = [
-        list(options["choices"]).index("edu"),
-        list(options["choices"]).index("home"),
-    ]
+    For a given lagged choice, compute the covariates. Then, calculate the probabilities
+    for each choice being the lagged choice. At last, take the probabilities to draw for
+    each individual the lagged choice.
 
-    lagged_start = []
-    for i in range(options["simulation_agents"]):
-        idx = np.where(options["choices"]["edu"]["start"] == edu_start[i])[0][0]
-        probs = (
-            options["choices"]["edu"]["lagged"][idx],
-            1 - options["choices"]["edu"]["lagged"][idx],
-        )
-        lagged_start += np.random.choice(choices, p=probs, size=1).tolist()
+    Note that lagged choices are added to ``states_df`` in-place so that later lagged
+    choices can be conditioned on earlier lagged choices. E.g., having ``lagged_choice_2
+    == "edu"`` makes ``lagged_choice_1 == "edu"`` more likely.
 
-    # If we only have one individual, we need to ensure that activities are a vector.
-    lagged_start = np.array(lagged_start, ndmin=1)
+    Parameters
+    ----------
+    states_df : pandas.DataFrame
+        DataFrame containing the period, initial experiences and previous lagged
+        choices, but not types.
+    optim_paras : dict
+        Dictionary of model parameters.
+    options : dict
+        Dictionary of model options.
+    lag : int
+        Number of lag.
 
-    return lagged_start
+    Returns
+    -------
+    choices : np.ndarray
+        Array with shape (n_individuals,) containing lagged choices.
+
+    """
+    covariates_df = create_base_covariates(
+        states_df, options["covariates"], raise_errors=False
+    )
+
+    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
+
+    probabilities = ()
+
+    for choice in optim_paras["choices"]:
+        lc = f"lagged_choice_{lag}_{choice}"
+        if lc in optim_paras:
+            labels = optim_paras[lc].index
+            prob = np.dot(all_data[labels], optim_paras[lc])
+        else:
+            prob = np.zeros(options["simulation_agents"])
+
+        probabilities += (prob,)
+
+    probabilities = np.column_stack(probabilities)
+
+    np.random.seed(next(options["simulation_seed_iteration"]))
+
+    lagged_choices = _random_choice(len(optim_paras["choices"]), probabilities)
+
+    # Add lagged choices to DataFrame and convert them to labels.
+    states_df[f"lagged_choice_{lag}"] = pd.Series(lagged_choices).replace(
+        dict(enumerate(optim_paras["choices"]))
+    )
+
+    return states_df
+
+
+def _get_random_initial_observable(states_df, observable, options, optim_paras):
+    np.random.seed(next(options["simulation_seed_iteration"]))
+
+    probs = optim_paras["observables"][observable]
+    states_df[observable] = pd.Series(
+        np.random.choice(len(probs), size=options["simulation_agents"], p=probs)
+    )
+
+    return states_df
 
 
 @guvectorize(
-    [
-        "f4[:], f4[:], f4[:], f4[:, :], f4, b1[:], f4[:, :], f4[:, :]",
-        "f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :], f8[:, :]",
-    ],
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :], f8[:, :]"],
     "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
     "-> (n_choices, n_draws), (n_choices, n_draws)",
     nopython=True,
@@ -366,13 +427,13 @@ def calculate_value_functions_and_flow_utilities(
             value_functions[j, i] = value_function
 
 
-def _convert_choice_variables_from_codes_to_categorical(df, options):
-    code_to_choice = {i: choice for i, choice in enumerate(options["choices"])}
+def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
+    code_to_choice = dict(enumerate(optim_paras["choices"]))
 
     df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
         code_to_choice
     )
-    for i in range(1, options["n_lagged_choices"] + 1):
+    for i in range(1, optim_paras["n_lagged_choices"] + 1):
         df[f"Lagged_Choice_{i}"] = (
             df[f"Lagged_Choice_{i}"]
             .cat.set_categories(code_to_choice)
@@ -382,8 +443,8 @@ def _convert_choice_variables_from_codes_to_categorical(df, options):
     return df
 
 
-def _process_simulated_data(data, options):
-    labels, dtypes = generate_column_labels_simulation(options)
+def _process_simulated_data(data, optim_paras):
+    labels, dtypes = generate_column_labels_simulation(optim_paras)
 
     df = (
         pd.DataFrame(data=np.vstack(data), columns=labels)
@@ -392,7 +453,7 @@ def _process_simulated_data(data, options):
         .reset_index(drop=True)
     )
 
-    df = _convert_choice_variables_from_codes_to_categorical(df, options)
+    df = _convert_choice_variables_from_codes_to_categorical(df, optim_paras)
 
     return df
 
