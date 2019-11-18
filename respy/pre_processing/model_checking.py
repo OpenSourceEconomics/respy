@@ -6,7 +6,7 @@ import pandas as pd
 
 def validate_options(o):
     for option, value in o.items():
-        if "draws" in option:
+        if "draws" in option and "method" not in option:
             assert _is_positive_nonzero_integer(value)
         elif option.endswith("_seed"):
             assert _is_nonnegative_integer(value)

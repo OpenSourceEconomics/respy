@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 from numba import njit
 from numba import vectorize
+import scipy
+import chaospy as cp
 
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
@@ -53,13 +55,35 @@ def create_base_draws(shape, seed, method):
         # Draw random deviates from a standard normal distribution.
         draws = np.random.standard_normal(shape)
     elif method == "r2":
-        pass
+        g = phi(shape[2])
+        alpha = (1 / g) ** np.arange(1, shape[2] + 1) % 1
+        #for j in range(shape[2]):
+        #    alpha[j] = (1/g) ** (j+1) % 1
+        r2_seq = (0.5 + alpha * np.arange(1, shape[0] * shape[1] + 1).reshape(-1, 1)) % 1
+        # r2_seq = np.zeros((shape[0] * shape[1], shape[2]))
+        #for i in range(shape[0] * shape[1]):
+        #    r2_seq[i] = (0.5 + alpha * (i+1)) %1
+        draws = scipy.stats.norm.ppf(r2_seq).reshape(shape)
     elif method == "sobol":
-        pass
+        distribution = cp.MvNormal(loc=np.zeros(shape[2], int), scale = np.diag(np.ones(shape[2], int)))
+        draws = (distribution.sample(shape[0] * shape[1], rule = "S").T).reshape(shape)
+    elif method == "halton":
+        distribution = cp.MvNormal(loc=np.zeros(shape[2], int), scale = np.diag(np.ones(shape[2], int)))
+        draws = (distribution.sample(shape[0] * shape[1], rule = "H").T).reshape(shape)
+        # Comments: num_points: shape[0] * shape[1]
+        # Comments: dimension D: shape[2] (which is the number of choices)
+        # for rules, see ChaospyPackage https://www.sciencedirect.com/science/article/pii/S1877750315300119
     else:
         raise NotImplementedError
 
     return draws
+
+
+def phi(d):
+    x = 2
+    for i in range(100):
+        x = pow(1 + x, 1/(d+1))
+    return x
 
 
 def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
