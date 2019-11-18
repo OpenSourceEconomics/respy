@@ -10,7 +10,6 @@ import subprocess
 from os.path import join
 from os.path import split
 from pathlib import Path
-from subprocess import run
 
 import click
 from conda_build.api import build
@@ -48,8 +47,17 @@ def clean():
         "Do you want to remove all tests environments under .tox?"
     ):
         for path in tox_envs:
-            run(["conda", "env", "remove", "-p", str(path)])
+            subprocess.run(f"conda env remove -p {path}", shell=True)
         shutil.rmtree(".tox")
+
+    # Check for temporary files and folders which can be deleted.
+    for path in TEMPORARY_FOLDERS:
+        if path.is_dir():
+            shutil.rmtree(path)
+        elif path.is_file():
+            path.unlink()
+        else:
+            pass
 
     # Check for uncommitted and untracked files.
     files = subprocess.run(
@@ -63,6 +71,8 @@ def clean():
         )
         click.secho(files, color="yellow")
         raise click.Abort
+
+    click.secho("")
 
 
 @cli.command()
@@ -82,7 +92,7 @@ def build_convert_upload():
     all_packages = built_packages + converted_packages
     for package in all_packages:
         _, package_name = split(package)
-        run(["anaconda", "upload", "--user", "OpenSourceEconomics", package])
+        subprocess.run(["anaconda", "upload", "--user", "OpenSourceEconomics", package])
 
 
 if __name__ == "__main__":
