@@ -166,7 +166,7 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     state_space_cols = (
         [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
         + [f"lagged_choice_{lag}" for lag in reversed(range(1, n_lagged_choices + 1))]
-        + [observable for observable in optim_paras["observables"]]
+        + list(optim_paras["observables"])
         + ["type"]
     )
     current_states = states_df[state_space_cols].to_numpy(dtype=np.uint8)
