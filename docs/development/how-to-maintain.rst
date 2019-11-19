@@ -60,7 +60,7 @@ To release a new version of respy, do the following.
        $ python release.py
 
    which uploads the new release to the `repository on Anaconda.org
-   <https://anaconda.org/respy/respy>`_.
+   <https://anaconda.org/OpenSourceEconomics/respy>`_.
 
 
 .. _backports:

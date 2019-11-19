@@ -1,12 +1,14 @@
 respy
 =====
 
+.. image:: https://anaconda.org/opensourceeconomics/respy/badges/version.svg
+    :target: https://anaconda.org/OpenSourceEconomics/respy
+
+.. image:: https://anaconda.org/opensourceeconomics/respy/badges/platforms.svg
+    :target: https://anaconda.org/OpenSourceEconomics/respy
+
 .. image:: https://readthedocs.org/projects/respy/badge/?version=latest
     :target: https://respy.readthedocs.io/en/latest
-    :alt: Documentation Status
-
-.. image:: https://travis-ci.org/OpenSourceEconomics/respy.svg?branch=master
-    :target: https://travis-ci.org/OpenSourceEconomics/respy
 
 .. image:: https://dev.azure.com/OpenSourceEconomics/respy/_apis/build/status/OpenSourceEconomics.respy?branchName=master
     :target: https://dev.azure.com/OpenSourceEconomics/respy/_build/latest?definitionId=1&branchName=master
@@ -22,6 +24,12 @@ baseline model presented in:
     Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo
     Evidence <https://doi.org/10.2307/2109768>`_. *The Review of Economics and
     Statistics*, 76(4): 648-672.
+
+You can install respy via conda with
+
+.. code-block:: bash
+
+    $ conda install -c opensourceeconomics respy
 
 Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for
 details.
