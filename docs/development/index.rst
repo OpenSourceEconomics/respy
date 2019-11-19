@@ -5,7 +5,7 @@ Development
 .. toctree::
     :maxdepth: 1
 
+    how-to-maintain
     docker
-    releases
     roadmap
     randomness-and-reproducibility
