@@ -33,6 +33,13 @@ def create_base_draws(shape, seed, sequence="random"):
     The draws are either drawn randomly or from quasi-random low-discrepancy sequences,
     Sobol or Halton.
 
+    For the solution and estimation it is necessary to have the same randomness in every
+    iteration or gradients do not exist. At the same time, the variance-covariance
+    matrix of the shocks is estimated along all other parameters and changes every
+    iteration. Thus, instead of sampling draws from a varying multivariate normal
+    distribution, standard normal draws are sampled here and transformed to the
+    distribution specified by the parameters in :func:`transform_disturbances`.
+
     Parameters
     ----------
     shape : tuple(int)
@@ -80,6 +87,10 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
     The standard normal draws are transformed to normal draws with variance-covariance
     matrix :math:`\Sigma` by multiplication with the Cholesky factor :math:`L` where
     :math:`L^TL = \Sigma`. See chapter 7.4 in [1]_ for more information.
+
+    This function relates to :func:`create_base_draws` in the sense that it transforms
+    the unchanging standard normal draws to the distribution with the
+    variance-covariance matrix specified by the parameters.
 
     References
     ----------
