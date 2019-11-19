@@ -35,7 +35,6 @@ changes to the model.
 - Using interpolation and changing the number of non-interpolated states.
 - Removing states from the state space via filters.
 
-
 In the following, we document for each module the functions which use seeds to control
 randomness.
 
@@ -107,6 +106,22 @@ in the sequence initialized by ``options["simulation_seed"]``.
     :toctree: ../_generated/
 
     simulate_truncated_data
+
+
+.. seealso::
+
+    See `Random number generator seed mistakes <https://www.johndcook.com/blog/2016/01/
+    29/random-number-generator-seed-mistakes/>`_ for a general introduction to seeding
+    problems.
+
+    See `this comment <https://www.johndcook.com/blog/2016/01/29/
+    random-number-generator-seed-mistakes/#comment-704037>`_ in the same post which
+    verifies independence between sequential seeds.
+
+    NumPy documentation on their `RandomState object <https://docs.scipy.org/doc/
+    numpy/reference/generated/numpy.random.RandomState.html#numpy.random.RandomState>`_
+    which wraps the pseudo-random number generator `Mersenne Twister
+    <https://docs.scipy.org/doc/numpy/reference/random/bit_generators/mt19937.html>`_.
 
 
 .. rubric:: Footnotes
