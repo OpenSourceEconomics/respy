@@ -38,7 +38,8 @@ def create_base_draws(shape, seed, sequence="random"):
     matrix of the shocks is estimated along all other parameters and changes every
     iteration. Thus, instead of sampling draws from a varying multivariate normal
     distribution, standard normal draws are sampled here and transformed to the
-    distribution specified by the parameters in :func:`transform_disturbances`.
+    distribution specified by the parameters in
+    :func:`transform_base_draws_with_cholesky_factor`.
 
     Parameters
     ----------
@@ -56,7 +57,7 @@ def create_base_draws(shape, seed, sequence="random"):
 
     See also
     --------
-    transform_disturbances
+    transform_base_draws_with_cholesky_factor
 
     """
     n_choices = shape[2]
@@ -81,7 +82,9 @@ def create_base_draws(shape, seed, sequence="random"):
     return draws
 
 
-def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
+def transform_base_draws_with_cholesky_factor(
+    draws, shocks_mean, shocks_cholesky, n_wages
+):
     r"""Transform standard normal draws with the Cholesky factor.
 
     The standard normal draws are transformed to normal draws with variance-covariance

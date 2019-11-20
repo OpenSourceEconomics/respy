@@ -6,7 +6,7 @@ from numba import guvectorize
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
-from respy.shared import transform_disturbances
+from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.state_space import StateSpace
 
 
@@ -75,7 +75,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
     for period in reversed(range(n_periods)):
 
         base_draws_sol_period = state_space.base_draws_sol[period]
-        draws_emax_risk = transform_disturbances(
+        draws_emax_risk = transform_base_draws_with_cholesky_factor(
             base_draws_sol_period, np.zeros(n_choices), shocks_cholesky, n_wages
         )
 
