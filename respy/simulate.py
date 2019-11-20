@@ -150,9 +150,13 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     )
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
+    # We need to convert label-based lagged choices to codes.
+    df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
+
     state_space_columns = (
         [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
         + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
+        + list(optim_paras["observables"])
         + ["type"]
     )
 
@@ -215,18 +219,16 @@ def _sample_data_from_initial_conditions(optim_paras, options):
     )
     df = pd.DataFrame(index=index)
 
-    # Create initial experiences, lagged choices and types for agents in simulation.
+    for observable in optim_paras["observables"]:
+        df = _get_random_initial_observable(df, observable, options, optim_paras)
+
     for choice in optim_paras["choices_w_exp"]:
-        df[f"exp_{choice}"] = _get_random_initial_experience(
-            choice, optim_paras, options
-        )
+        df = _get_random_initial_experience(df, choice, optim_paras, options)
 
     for lag in reversed(range(1, optim_paras["n_lagged_choices"] + 1)):
-        df[f"lagged_choice_{lag}"] = _get_random_lagged_choices(
-            df, optim_paras, options, lag
-        )
+        df = _get_random_lagged_choices(df, optim_paras, options, lag)
 
-    df["type"] = _get_random_types(df, optim_paras, options)
+    df = _get_random_types(df, optim_paras, options)
 
     return df
 
@@ -241,10 +243,10 @@ def _prepare_data(df, optim_paras, options):
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
     # Assign a type to each individual which is unobserved by the researcher.
-    types = _get_random_types(df.query("period == 0"), optim_paras, options)
-    identifier = pd.Series(df.index.get_level_values("identifier"))
-    id_to_type = dict(zip(range(identifier.nunique()), types))
-    df["type"] = identifier.replace(id_to_type).to_numpy()
+    first_period_df = df.query("period == 0")
+    first_period_df = _get_random_types(first_period_df, optim_paras, options)
+
+    df = df.merge(first_period_df["type"], how="left", validate="m:1")
 
     return df
 
@@ -330,35 +332,33 @@ def _simulate_single_period(
     return rows
 
 
-def _get_random_types(states, optim_paras, options):
+def _get_random_types(states_df, optim_paras, options):
     """Get random types for simulated agents."""
-    if optim_paras["n_types"] == 1:
-        types = np.zeros(options["simulation_agents"])
-    else:
-        type_covariates = create_type_covariates(states, optim_paras, options)
 
+    if optim_paras["n_types"] == 1:
+        states_df["type"] = np.zeros(options["simulation_agents"])
+    else:
+        type_covariates = create_type_covariates(states_df, optim_paras, options)
         np.random.seed(next(options["simulation_seed_iteration"]))
 
         z = np.dot(type_covariates, optim_paras["type_prob"].T)
         probs = softmax(z, axis=1)
-        types = _random_choice(optim_paras["n_types"], probs)
+        states_df["type"] = _random_choice(optim_paras["n_types"], probs)
 
-    types = types.astype(np.uint8)
-
-    return types
+    return states_df
 
 
-def _get_random_initial_experience(choice, optim_paras, options):
+def _get_random_initial_experience(states_df, choice, optim_paras, options):
     """Get random, initial levels of schooling for simulated agents."""
     np.random.seed(next(options["simulation_seed_iteration"]))
 
-    initial_experience = np.random.choice(
+    states_df[f"exp_{choice}"] = np.random.choice(
         optim_paras["choices"][choice]["start"],
         p=optim_paras["choices"][choice]["share"],
         size=options["simulation_agents"],
     )
 
-    return initial_experience
+    return states_df
 
 
 def _get_random_lagged_choices(states_df, optim_paras, options, lag):
@@ -415,11 +415,22 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
     lagged_choices = _random_choice(len(optim_paras["choices"]), probabilities)
 
     # Add lagged choices to DataFrame and convert them to labels.
-    states_df[f"lagged_choice_{lag}"] = pd.Series(lagged_choices).replace(
-        dict(enumerate(optim_paras["choices"]))
+    states_df[f"lagged_choice_{lag}"] = pd.Series(
+        lagged_choices, index=states_df.index
+    ).replace(dict(enumerate(optim_paras["choices"])))
+
+    return states_df
+
+
+def _get_random_initial_observable(states_df, observable, options, optim_paras):
+    np.random.seed(next(options["simulation_seed_iteration"]))
+
+    probs = optim_paras["observables"][observable]
+    states_df[observable] = np.random.choice(
+        len(probs), size=options["simulation_agents"], p=probs
     )
 
-    return lagged_choices
+    return states_df
 
 
 @guvectorize(

@@ -5,6 +5,7 @@ repos:
     -   id: check-yaml
     -   id: check-merge-conflict
     -   id: debug-statements
+    -   id: end-of-file-fixer
 -   repo: https://github.com/asottile/pyupgrade
     rev: v1.25.1
     hooks:

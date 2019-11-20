@@ -115,6 +115,7 @@ def generate_column_labels_estimation(optim_paras):
         ["Identifier", "Period", "Choice", "Wage"]
         + [f"Experience_{choice.title()}" for choice in optim_paras["choices_w_exp"]]
         + [f"Lagged_Choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
+        + [observable.title() for observable in optim_paras["observables"]]
     )
 
     dtypes = {}
@@ -282,12 +283,30 @@ def convert_choice_variables_from_categorical_to_codes(df, optim_paras):
         df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
 
     for i in range(1, optim_paras["n_lagged_choices"] + 1):
-        df[f"lagged_choice_{i}"] = (
-            df[f"lagged_choice_{i}"].replace(choices_to_codes).astype(np.uint8)
-        )
+        label = f"lagged_choice_{i}"
+        if label in df.columns:
+            df[label] = df[label].replace(choices_to_codes).astype(np.uint8)
 
     return df
 
 
 def rename_labels(x):
     return x.replace("Experience", "exp").lower()
+
+
+def normalize_probabilities(probabilities):
+    """Normalize probabilities such that their sum equals one.
+
+    Example
+    -------
+    The following `probs` do not sum to one after dividing by the sum.
+
+    >>> probs = np.array([0.3775843411510946, 0.5384246942799851, 0.6522988820635421])
+    >>> normalize_probabilities(probs)
+    array([0.24075906, 0.34331568, 0.41592526])
+
+    """
+    probabilities = probabilities / probabilities.sum()
+    probabilities[-1] = 1 - probabilities[:-1].sum()
+
+    return probabilities
