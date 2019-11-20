@@ -1,7 +1,7 @@
 name: respy
 channels:
+  - opensourceeconomics
   - conda-forge
-  - janosg
 dependencies:
   - python=3.7
   - pip
