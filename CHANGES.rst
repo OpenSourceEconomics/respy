@@ -32,6 +32,8 @@ releases are available on `Anaconda.org
 - :gh:`236` implements a periodic indexer.
 - :gh:`240` makes previous choices in the state space optional.
 - :gh:`245` create continuation values dynamically from value functions.
+- :gh:`256` implements quasi-random low discrepancy sequences for better Monte-Carlo
+  integrations (:ghuser:`rafaelsuchy`).
 - :gh:`262` moves the distribution of previous choices, initial and maximum experience
   to params.
 - :gh:`268` makes seeding in ``respy`` a lot more robust by using incrementally
