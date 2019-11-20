@@ -25,10 +25,11 @@ baseline model presented in:
     Evidence <https://doi.org/10.2307/2109768>`_. *The Review of Economics and
     Statistics*, 76(4): 648-672.
 
-You can install respy via conda with
+You can install ``respy`` via conda with
 
 .. code-block:: bash
 
+    $ conda config --add channels conda-forge
     $ conda install -c opensourceeconomics respy
 
 Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for

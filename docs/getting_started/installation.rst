@@ -20,6 +20,7 @@ With conda available on your path, installing ``respy`` is as simple as typing
 
 .. code-block:: bash
 
+    $ conda config --add channels conda-forge
     $ conda install -c opensourceeconomics respy
 
 in a command shell. The whole package repository can be found under
