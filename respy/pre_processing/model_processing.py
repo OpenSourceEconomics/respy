@@ -161,7 +161,7 @@ def _parse_observables(optim_paras, params):
         for name, n_levels in counts.items():
             # This line ensures that the levels of observables start at zero and
             # increment by one.
-            shares = [observables.loc[f"{name}_{value}"] for value in range(n_levels)]
+            shares = np.array([observables.loc[f"{name}_{value}"] for value in range(n_levels)])
 
             if np.sum(shares) != 1:
                 warnings.warn(
