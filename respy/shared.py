@@ -7,7 +7,6 @@ import from respy itself. This is to prevent circular imports.
 import numba as nb
 import numpy as np
 import pandas as pd
-from numba import guvectorize
 
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
@@ -73,6 +72,7 @@ def generate_column_labels_estimation(optim_paras):
         ["Identifier", "Period", "Choice", "Wage"]
         + [f"Experience_{choice.title()}" for choice in optim_paras["choices_w_exp"]]
         + [f"Lagged_Choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
+        + [observable.title() for observable in optim_paras["observables"]]
     )
 
     dtypes = {}
@@ -211,61 +211,44 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     return covariates
 
 
-@guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :], f8[:, :]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
-    "-> (n_choices, n_draws), (n_choices, n_draws)",
-    nopython=True,
-    target="cpu",
-)
-def calculate_value_functions_and_flow_utilities(
-    wages,
-    nonpec,
-    continuation_values,
-    draws,
-    delta,
-    is_inadmissible,
-    value_functions,
-    flow_utilities,
-):
-    """Calculate the choice-specific value functions and flow utilities.
+def convert_choice_variables_from_categorical_to_codes(df, optim_paras):
+    """Recode choices to choice codes in the model.
 
-    Parameters
-    ----------
-    wages : numpy.ndarray
-        Array with shape (n_choices,).
-    nonpec : numpy.ndarray
-        Array with shape (n_choices,).
-    continuation_values : numpy.ndarray
-        Array with shape (n_choices,)
-    draws : numpy.ndarray
-        Array with shape (n_draws, n_choices)
-    delta : float
-        Discount rate.
-    is_inadmissible: numpy.ndarray
-        Array with shape (n_choices,) containing indicator for whether the following
-        state is inadmissible.
+    We cannot use ``.cat.codes`` because order might be different. The model requires an
+    order of ``choices_w_exp_w_wag``, ``choices_w_exp_wo_wage``,
+    ``choices_wo_exp_wo_wage``.
 
-    Returns
-    -------
-    value_functions : numpy.ndarray
-        Array with shape (n_choices, n_draws).
-    flow_utilities : numpy.ndarray
-        Array with shape (n_choices, n_draws).
+    See also
+    --------
+    respy.pre_processing.model_processing._order_choices
 
     """
-    n_draws, n_choices = draws.shape
+    choices_to_codes = {choice: i for i, choice in enumerate(optim_paras["choices"])}
 
-    for i in range(n_draws):
-        for j in range(n_choices):
-            value_function, flow_utility = aggregate_keane_wolpin_utility(
-                wages[j],
-                nonpec[j],
-                continuation_values[j],
-                draws[i, j],
-                delta,
-                is_inadmissible[j],
-            )
+    if "choice" in df.columns:
+        df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
 
-            flow_utilities[j, i] = flow_utility
-            value_functions[j, i] = value_function
+    for i in range(1, optim_paras["n_lagged_choices"] + 1):
+        label = f"lagged_choice_{i}"
+        if label in df.columns:
+            df[label] = df[label].replace(choices_to_codes).astype(np.uint8)
+
+    return df
+
+
+def normalize_probabilities(probabilities):
+    """Normalize probabilities such that their sum equals one.
+
+    Example
+    -------
+    The following `probs` do not sum to one after dividing by the sum.
+
+    >>> probs = np.array([0.3775843411510946, 0.5384246942799851, 0.6522988820635421])
+    >>> normalize_probabilities(probs)
+    array([0.24075906, 0.34331568, 0.41592526])
+
+    """
+    probabilities = probabilities / probabilities.sum()
+    probabilities[-1] = 1 - probabilities[:-1].sum()
+
+    return probabilities

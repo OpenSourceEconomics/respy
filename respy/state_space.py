@@ -242,6 +242,8 @@ def _create_state_space(optim_paras, options):
 
     df = _add_initial_experiences_to_core_state_space(df, optim_paras)
 
+    df = _add_observables_to_state_space(df, optim_paras)
+
     df = _add_types_to_state_space(df, optim_paras["n_types"])
 
     df = df.sort_values("period").reset_index(drop=True)
@@ -445,6 +447,23 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
     return df
 
 
+def _add_observables_to_state_space(df, optim_paras):
+    levels_of_observables = [range(len(i)) for i in optim_paras["observables"].values()]
+    combinations = itertools.product(*levels_of_observables)
+
+    container = []
+    for combination in combinations:
+        df_ = df.copy()
+        df_ = df_.assign(
+            **{col: val for col, val in zip(optim_paras["observables"], combination)}
+        )
+        container.append(df_)
+
+    df = pd.concat(container, axis="rows", sort=False) if container else df
+
+    return df
+
+
 def _add_types_to_state_space(df, n_types):
     container = []
     for i in range(n_types):
@@ -488,11 +507,12 @@ def _create_state_space_indexer(df, optim_paras):
         shape = (
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
             + (n_exp_choices + n_nonexp_choices,) * optim_paras["n_lagged_choices"]
+            + tuple(len(x) for x in optim_paras["observables"].values())
             + (optim_paras["n_types"],)
         )
         sub_indexer = np.full(shape, -1, dtype=np.int32)
 
-        sub_df = df.loc[df.period.eq(period)]
+        sub_df = df.query("period == @period")
         n_states = sub_df.shape[0]
 
         indices = (
@@ -501,8 +521,10 @@ def _create_state_space_indexer(df, optim_paras):
                 sub_df[f"lagged_choice_{i}"].replace(choice_to_code)
                 for i in range(1, optim_paras["n_lagged_choices"] + 1)
             )
+            + tuple(sub_df[observable] for observable in optim_paras["observables"])
             + (sub_df.type,)
         )
+
         sub_indexer[indices] = np.arange(count_states, count_states + n_states)
         indexer.append(sub_indexer)
 
