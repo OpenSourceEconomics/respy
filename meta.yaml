@@ -24,7 +24,8 @@ requirements:
     - scipy
     - mkl
     - numba>=0.42
-    - pyaml
+    - pyyaml
+    - pytest
 test:
   commands:
     - py.test

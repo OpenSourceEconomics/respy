@@ -21,7 +21,7 @@ dependencies:
   - numpydoc
   - pandas>=0.24
   - pdbpp
-  - pyaml
+  - pyyaml
   - pytest
   - pytest-cov
   - pytest-xdist
