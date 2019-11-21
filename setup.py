@@ -39,11 +39,12 @@ setup(
     ],
     platforms="any",
     package_data={
+        "": ["tox.ini"],
         "respy": [
             "tests/resources/*.csv",
             "tests/resources/*.pickle",
             "tests/resources/*.yaml",
-        ]
+        ],
     },
     include_package_data=True,
     zip_safe=False,
