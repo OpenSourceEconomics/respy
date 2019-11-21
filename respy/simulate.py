@@ -122,8 +122,10 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
 
         is_n_step_ahead = True
         n_periods = options["n_periods"]
+        n_individuals = options["simulation_agents"]
 
     else:
+        df = df.copy()
         df = _prepare_data(df, optim_paras, options)
 
         is_n_step_ahead = (
@@ -134,6 +136,7 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
             if is_n_step_ahead
             else int(df.index.get_level_values("period").max() + 1)
         )
+        n_individuals = df.index.get_level_values("identifier").nunique()
 
     # Solve the model.
     state_space.update_systematic_rewards(optim_paras)
@@ -143,15 +146,11 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     n_wages = len(optim_paras["choices_w_wage"])
     n_choices_w_exp = len(optim_paras["choices_w_exp"])
     n_lagged_choices = optim_paras["n_lagged_choices"]
-    n_individuals = options["simulation_agents"]
 
     base_draws_sim_transformed = transform_shocks_with_cholesky_factor(
         base_draws_sim, optim_paras["shocks_cholesky"], n_wages
     )
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
-
-    # We need to convert label-based lagged choices to codes.
-    df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
     state_space_columns = (
         [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
@@ -243,10 +242,10 @@ def _prepare_data(df, optim_paras, options):
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
     # Assign a type to each individual which is unobserved by the researcher.
-    first_period_df = df.query("period == 0")
+    first_period_df = df.query("period == 0").copy()
     first_period_df = _get_random_types(first_period_df, optim_paras, options)
 
-    df = df.merge(first_period_df["type"], how="left", validate="m:1")
+    df = df.join(first_period_df["type"])
 
     return df
 
