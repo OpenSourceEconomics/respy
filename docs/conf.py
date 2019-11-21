@@ -21,10 +21,9 @@ project = "respy"
 copyright = "2015-2019, Philipp Eisenhauer"  # noqa: A001
 author = "Philipp Eisenhauer"
 
-# The short X.Y version.
-version = "2.0"
 # The full version, including alpha/beta/rc tags.
-release = "2.0.0-dev"
+release = "2.0.0dev1"
+version = ".".join(release.split(".")[:2])
 
 # -- General configuration ------------------------------------------------
 
@@ -35,6 +34,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
+    "sphinx.ext.extlinks",
     "sphinx.ext.ifconfig",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
@@ -56,6 +56,11 @@ autodoc_mock_imports = [
     "scipy",
     "yaml",
 ]
+
+extlinks = {
+    "ghuser": ("https://github.com/%s", "@"),
+    "gh": ("https://github.com/OpenSourceEconomics/respy/pulls/%s", "#"),
+}
 
 intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy", None),
