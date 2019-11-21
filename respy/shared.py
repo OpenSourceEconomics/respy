@@ -31,7 +31,7 @@ def create_base_draws(shape, seed, sequence="random"):
     """Create a set of draws from the standard normal distribution.
 
     The draws are either drawn randomly or from quasi-random low-discrepancy sequences,
-    Sobol or Halton.
+    i.e., Sobol or Halton.
 
     For the solution and estimation it is necessary to have the same randomness in every
     iteration or gradients do not exist. At the same time, the variance-covariance
@@ -70,11 +70,11 @@ def create_base_draws(shape, seed, sequence="random"):
 
     elif sequence == "halton":
         distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
-        draws = (distribution.sample(n_points, rule="H").T).reshape(shape)
+        draws = distribution.sample(n_points, rule="H").T.reshape(shape)
 
     elif sequence == "sobol":
         distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
-        draws = (distribution.sample(n_points, rule="S").T).reshape(shape)
+        draws = distribution.sample(n_points, rule="S").T.reshape(shape)
 
     else:
         raise NotImplementedError
