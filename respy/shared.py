@@ -27,7 +27,7 @@ def aggregate_keane_wolpin_utility(
     return value_function, flow_utility
 
 
-def create_base_draws(shape, seed, sequence="random"):
+def create_base_draws(shape, seed, monte_carlo_sequence="random"):
     """Create a set of draws from the standard normal distribution.
 
     The draws are either drawn randomly or from quasi-random low-discrepancy sequences,
@@ -47,7 +47,7 @@ def create_base_draws(shape, seed, sequence="random"):
         Tuple representing the shape of the resulting array.
     seed : int
         Seed to control randomness.
-    sequence : {"random", "halton", "sobol"}, default "random"
+    monte_carlo_sequence : {"random", "halton", "sobol"}, default "random"
         Name of the sequence.
 
     Returns
@@ -65,14 +65,14 @@ def create_base_draws(shape, seed, sequence="random"):
 
     np.random.seed(seed)
 
-    if sequence == "random":
+    if monte_carlo_sequence == "random":
         draws = np.random.standard_normal(shape)
 
-    elif sequence == "halton":
+    elif monte_carlo_sequence == "halton":
         distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
         draws = distribution.sample(n_points, rule="H").T.reshape(shape)
 
-    elif sequence == "sobol":
+    elif monte_carlo_sequence == "sobol":
         distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
         draws = distribution.sample(n_points, rule="S").T.reshape(shape)
 

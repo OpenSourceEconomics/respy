@@ -30,11 +30,11 @@ DEFAULT_OPTIONS = {
     "n_periods": 40,
     "simulation_agents": 1000,
     "simulation_seed": 2,
-    "solution_draws": 500,
+    "solution_draws": 200,
     "solution_seed": 3,
     "core_state_space_filters": [],
     "inadmissible_states": {},
-    "sequence": "random",
+    "monte_carlo_sequence": "sobol",
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]
