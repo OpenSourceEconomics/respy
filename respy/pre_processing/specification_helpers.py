@@ -1,7 +1,10 @@
+import itertools
+
 import numpy as np
 import pandas as pd
 
 from respy.config import ROOT_DIR
+from respy.shared import normalize_probabilities
 
 
 def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
@@ -25,6 +28,7 @@ def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
             _type_shift_template(n_types),
         ]
         template = pd.concat(to_concat, axis=0, sort=False)
+
     if initialize_coeffs is False:
         template["value"] = np.nan
 
@@ -96,7 +100,7 @@ def lagged_choices_probs_template(n_lagged_choices, choices):
     to_concat = []
     for i in range(1, n_lagged_choices + 1):
         probs = np.random.uniform(size=len(choices))
-        probs /= probs.sum()
+        probs = normalize_probabilities(probs)
         for j, choice in enumerate(choices):
             ind = (f"lagged_choice_{i}_{choice}", "constant")
             dat = [probs[j], f"Probability of choice {choice} being lagged choice {i}"]
@@ -121,4 +125,48 @@ def _base_row(index_tuple, data):
     ind = pd.MultiIndex.from_tuples([index_tuple], names=["category", "name"])
     cols = ["value", "comment"]
     df = pd.DataFrame(index=ind, columns=cols, data=[data])
+
     return df
+
+
+def observable_prob_template(observables):
+    to_concat = []
+    for i in range(len(observables)):
+        probs = np.random.uniform(size=observables[i])
+        probs = normalize_probabilities(probs)
+
+        for j in range(observables[i]):
+            ind = (f"observables", f"observable_{i}_{j}")
+            dat = [probs[j], f"Probability of observable {i} being level choice {j}"]
+            to_concat.append(_base_row(ind, dat))
+
+    out = pd.concat(to_concat, axis=0, sort=False)
+
+    return out
+
+
+def observable_coeffs_template(observables, template):
+    index = {
+        x for x in template.index.get_level_values(0) if "nonpec" in x or "wage" in x
+    }
+
+    labels = generate_obs_labels(observables, index)
+    to_concat = []
+    for y in labels:
+        dat = [np.random.uniform(), f"effect of {y[1]}"]
+        to_concat.append(_base_row(y, dat))
+
+    out = pd.concat(to_concat, axis=0, sort=False)
+
+    return out
+
+
+def generate_obs_labels(observables, index):
+    names = []
+    for x, _ in enumerate(observables):
+        for y in range(observables[x]):
+            names.append(f"observable_{x}_{y}")
+
+    out = list(itertools.product(index, names))
+
+    return out

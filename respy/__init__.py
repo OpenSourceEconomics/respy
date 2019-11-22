@@ -9,7 +9,6 @@ Include only imports which should be available using
     rp.<func>
 
 """
-import os
 import sys
 
 import pytest
@@ -25,12 +24,9 @@ from respy.solve import solve  # noqa: F401
 # We only maintain the code base for Python >= 3.6.
 assert sys.version_info[:2] >= (3, 6)
 
-__version__ = "2.0.0-dev"
+__version__ = "2.0.0dev1"
 
 
-def test(opt=None):
+def test():
     """Run basic tests of the package."""
-    current_directory = os.getcwd()
-    os.chdir(ROOT_DIR)
-    pytest.main(opt)
-    os.chdir(current_directory)
+    pytest.main([str(ROOT_DIR)])

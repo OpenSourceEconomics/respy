@@ -80,20 +80,21 @@ hosted on `Read the Docs <https://readthedocs.org/>`_.
 Continuous Integration Workflow
 -------------------------------
 
-.. image:: https://api.travis-ci.org/OpenSourceEconomics/respy.svg?branch=master
-   :target: https://travis-ci.org/OpenSourceEconomics/respy
+.. image:: https://dev.azure.com/OpenSourceEconomics/respy/_apis/build/status/OpenSourceEconomics.respy?branchName=master
+    :target: https://dev.azure.com/OpenSourceEconomics/respy/_build/latest?definitionId=1&branchName=master
 
 We set up a continuous integration workflow around our `GitHub Organization
 <https://github.com/OpenSourceEconomics>`_. We use the continuous integration services
 provided by `Azure Pipelines
-<https://azure.microsoft.com/de-de/services/devops/pipelines/>`_ and `Travis CI
-<https://travis-ci.org/OpenSourceEconomics/respy>`_. `tox
+<https://azure.microsoft.com/de-de/services/devops/pipelines/>`_. `tox
 <https://tox.readthedocs.io/en/latest/>`_ helps us to ensure the proper workings of the
 package for alternative Python implementations. We rely on `Git <https://git-scm.com/>`_
 as our version control system and follow the `Gitflow Workflow
 <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`_. We use
 `Github <https://github.com/OpenSourceEconomics/respy/issues>`_ for our issue tracking.
-The package is distributed through `PyPI <https://pypi.org/project/respy/>`_.
+The package is nowadays distributed through `Anaconda.org
+<https://anaconda.org/opensourceeconomics/respy>`_, but older releases are also
+available on `PyPI <https://pypi.org/project/respy/>`_.
 
 Lines of code
 -------------

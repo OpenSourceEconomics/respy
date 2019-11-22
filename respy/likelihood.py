@@ -3,14 +3,14 @@ from functools import partial
 
 import numba as nb
 import numpy as np
-from scipy.special import logsumexp
-from scipy.special import softmax
+from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import convert_choice_variables_from_categorical_to_codes
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_estimation
@@ -303,12 +303,12 @@ def _internal_log_like_obs(
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
     if n_types >= 2:
         z = np.dot(type_covariates, optim_paras["type_prob"].T)
-        type_probabilities = softmax(z, axis=1)
+        type_probabilities = special.softmax(z, axis=1)
 
         log_type_probabilities = np.log(type_probabilities)
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
-        contribs = logsumexp(weighted_loglikes, axis=1)
+        contribs = special.logsumexp(weighted_loglikes, axis=1)
     else:
         contribs = per_individual_loglikes.flatten()
 
@@ -318,64 +318,37 @@ def _internal_log_like_obs(
 
 
 @nb.njit
-def log_softmax_i(x, i, tau=1):
-    """Calculate log probability of a soft maximum for index ``i``.
+def logsumexp(x):
+    """Compute `logsumexp(x)` of `x`.
 
-    The log softmax function is essentially
+    The function does the same as the following code, but faster.
 
-    .. math::
+    .. code-block:: python
 
-        log_softmax_i = log(softmax(x_i))
+        max_x = np.max(x)
+        differences = x - max_x
+        log_sum_exp = max_x + np.log(np.sum(np.exp(differences)))
 
-    This function is superior to the naive implementation as takes advantage of the log
-    and uses the fact that the softmax function is shift-invariant. Integrating the log
-    in the softmax function yields
-
-    .. math::
-
-        log_softmax_i = x_i - max(x) - log(sum(exp(x - max(x))))
-
-    The second property ensures that overflows and underflows in the exponential
-    function cannot happen as ``exp(x - max(x)) = exp(0) = 1`` at its highest value and
-    ``exp(-inf) = 0`` at its lowest value. Only infinite inputs can cause an invalid
-    output.
-
-    The temperature parameter ``tau`` controls the smoothness of the function. For
-    ``tau`` close to 1, the function is more similar to ``max(x)`` and the derivatives
-    of the functions grow to infinity. As ``tau`` grows, the smoothed maximum is bigger
-    than the actual maximum and derivatives diminish. See [1]_ for more information on
-    the smoothing factor ``tau``. Note that the post covers the inverse of the smoothing
-    factor in this function. It is also covered in [2]_ as the kernel-smoothing choice
-    probability simulator. In reinforcement learning and statistical mechanics the
-    function is known as the Boltzmann exploration.
-
-    .. [1] https://www.johndcook.com/blog/2010/01/13/soft-maximum
-    .. [2] McFadden, D. (1989). A method of simulated moments for estimation of discrete
-           response models without numerical integration. Econometrica: Journal of the
-           Econometric Society, 995-1026.
-
-    Parameters
-    ----------
-    x : np.ndarray
-        Array with shape (n,) containing the values for which a smoothed maximum should
-        be computed.
-    i : int
-        Index for which the log probability should be computed.
-    tau : float
-        Smoothing parameter to control the size of derivatives.
-
-    Returns
-    -------
-    log_probability : float
-        Log probability for input value ``i``.
+    The subtraction of the maximum prevents overflows and mitigates the impact of
+    underflows.
 
     """
-    max_x = np.max(x)
-    smoothed_differences = (x - max_x) / tau
-    log_sum_exp = np.log(np.sum(np.exp(smoothed_differences)))
-    log_probability = smoothed_differences[i] - log_sum_exp
+    # Search maximum.
+    max_x = None
+    length = len(x)
+    for i in range(length):
+        if max_x is None or x[i] > max_x:
+            max_x = x[i]
 
-    return log_probability
+    # Calculate sum of exponential differences.
+    sum_exp = 0
+    for i in range(length):
+        diff = x[i] - max_x
+        sum_exp += np.exp(diff)
+
+    log_sum_exp = max_x + np.log(sum_exp)
+
+    return log_sum_exp
 
 
 @nb.guvectorize(
@@ -394,13 +367,26 @@ def simulate_log_probability_of_individuals_observed_choice(
     is_inadmissible,
     choice,
     tau,
-    log_prob_choice,
+    smoothed_log_probability,
 ):
     """Simulate the probability of observing the agent's choice.
 
     The probability is simulated by iterating over a distribution of unobservables.
     First, the utility of each choice is computed. Then, the probability of observing
     the choice of the agent given the maximum utility from all choices is computed.
+
+    The naive implementation calculates the log probability for choice `i` with the
+    softmax function.
+
+    .. math::
+
+        \\log(\text{softmax}(x)_i) = \\log\\left(
+            \frac{e^{x_i}}{\\sum^J e^{x_j}}
+        \right)
+
+    The following function is numerically more robust. The derivation with the two
+    consecutive `logsumexp` functions is included in `#278
+    <https://github.com/OpenSourceEconomics/respy/pull/288>`_.
 
     Parameters
     ----------
@@ -424,15 +410,14 @@ def simulate_log_probability_of_individuals_observed_choice(
 
     Returns
     -------
-    log_prob_choice : float
-        Smoothed log probability of choice.
+    smoothed_log_probability : float
+        Simulated Smoothed log probability of choice.
 
     """
     n_draws, n_choices = draws.shape
 
-    value_functions = np.zeros(n_choices)
-
-    log_prob_choice_ = 0
+    smoothed_log_probabilities = np.empty(n_draws)
+    smoothed_value_functions = np.empty(n_choices)
 
     for i in range(n_draws):
 
@@ -446,35 +431,15 @@ def simulate_log_probability_of_individuals_observed_choice(
                 is_inadmissible[j],
             )
 
-            value_functions[j] = value_function
+            smoothed_value_functions[j] = value_function / tau
 
-        log_prob_choice_ += log_softmax_i(value_functions, choice, tau)
-
-    log_prob_choice_ /= n_draws
-
-    log_prob_choice[0] = log_prob_choice_
-
-
-def _convert_choice_variables_from_categorical_to_codes(df, options):
-    """Recode choices to choice codes in the model.
-
-    We cannot use ``.cat.codes`` because order might be different. The model requires an
-    order of ``choices_w_exp_w_wag``, ``choices_w_exp_wo_wage``,
-    ``choices_wo_exp_wo_wage``.
-
-    See also
-    --------
-    respy.pre_processing.model_processing._order_choices
-
-    """
-    choices_to_codes = {choice: i for i, choice in enumerate(options["choices"])}
-    df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
-    for i in range(1, options["n_lagged_choices"] + 1):
-        df[f"lagged_choice_{i}"] = (
-            df[f"lagged_choice_{i}"].replace(choices_to_codes).astype(np.uint8)
+        smoothed_log_probabilities[i] = smoothed_value_functions[choice] - logsumexp(
+            smoothed_value_functions
         )
 
-    return df
+    smoothed_log_prob = logsumexp(smoothed_log_probabilities) - np.log(n_draws)
+
+    smoothed_log_probability[0] = smoothed_log_prob
 
 
 def _process_estimation_data(df, state_space, optim_paras, options):
@@ -517,14 +482,14 @@ def _process_estimation_data(df, state_space, optim_paras, options):
 
     df = df.sort_values(["Identifier", "Period"])[labels]
     df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
-    df = _convert_choice_variables_from_categorical_to_codes(df, optim_paras)
+    df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations, n_types).
     indices = ()
 
     for period in range(df.period.max() + 1):
-        period_df = df.loc[df.period.eq(period)]
+        period_df = df.query("period == @period")
 
         period_experience = tuple(
             period_df[col].to_numpy() for col in period_df.filter(like="exp_").columns
@@ -533,9 +498,13 @@ def _process_estimation_data(df, state_space, optim_paras, options):
             period_df[f"lagged_choice_{i}"].to_numpy()
             for i in range(1, optim_paras["n_lagged_choices"] + 1)
         )
+        period_observables = tuple(
+            period_df[observable].to_numpy()
+            for observable in optim_paras["observables"]
+        )
 
         period_indices = state_space.indexer[period][
-            period_experience + period_lagged_choice
+            period_experience + period_lagged_choice + period_observables
         ]
 
         indices += (period_indices,)
