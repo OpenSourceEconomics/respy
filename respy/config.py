@@ -1,8 +1,6 @@
 """General configuration for respy."""
 from pathlib import Path
 
-import numpy as np
-
 # Obtain the root directory of the package. Do not import respy which creates a circular
 # import.
 ROOT_DIR = Path(__file__).parent
@@ -10,9 +8,10 @@ ROOT_DIR = Path(__file__).parent
 # Directory with additional resources for the testing harness
 TEST_RESOURCES_DIR = ROOT_DIR / "tests" / "resources"
 
+# Set maximum numbers to 1e200 and log(1e200) = 460.
 MAX_FLOAT = 1e200
 MIN_FLOAT = -MAX_FLOAT
-MAX_LOG_FLOAT = np.log(MAX_FLOAT)
+MAX_LOG_FLOAT = 460
 MIN_LOG_FLOAT = -MAX_LOG_FLOAT
 
 # Some assert functions take rtol instead of decimals
