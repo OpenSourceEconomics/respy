@@ -252,3 +252,30 @@ def normalize_probabilities(probabilities):
     probabilities[-1] = 1 - probabilities[:-1].sum()
 
     return probabilities
+
+
+@nb.guvectorize(
+    ["f8, f8, f8, f8, f8, b1, f8[:], f8[:]"],
+    "(), (), (), (), (), () -> (), ()",
+    nopython=True,
+    target="parallel",
+)
+def calculate_value_functions_and_flow_utilities(
+    wage,
+    nonpec,
+    continuation_value,
+    draw,
+    delta,
+    is_inadmissible,
+    value_function,
+    flow_utility,
+):
+    """Calculate the choice-specific value functions and flow utilities.
+
+    This function uses :func:`numba.guvectorize` instead of :func:`numba.vectorize`
+    because the latter does not support multiple return values.
+
+    """
+    value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
+        wage, nonpec, continuation_value, draw, delta, is_inadmissible
+    )

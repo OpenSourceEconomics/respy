@@ -193,12 +193,10 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
             state_space.wages[indices],
             state_space.nonpec[indices],
             continuation_values[cont_indices],
-            draws_shock.reshape(-1, 1, n_choices),
+            draws_shock,
             optim_paras["delta"],
             state_space.is_inadmissible[indices],
         )
-        value_functions = value_functions.reshape(-1, n_choices)
-        flow_utilities = flow_utilities.reshape(-1, n_choices)
 
         # We need to ensure that no individual chooses an inadmissible state. This
         # cannot be done directly in the calculate_value_functions function as the

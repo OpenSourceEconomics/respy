@@ -216,21 +216,19 @@ def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmis
         Array with shape (n_states_in_period,) containing maximum over all value
         functions.
 
-    TODO(tobiasraabe): If calculate value ... is simplified, remove the reshapes.
-
     """
     value_functions, _ = calculate_value_functions_and_flow_utilities(
-        wages, nonpec, emaxs, draws.reshape(1, -1), delta, is_inadmissible
+        wages, nonpec, emaxs, draws, delta, is_inadmissible
     )
 
     max_value_functions = value_functions.max(axis=1)
-    exogenous = max_value_functions - value_functions.reshape(-1, wages.shape[1])
+    exogenous = max_value_functions.reshape(-1, 1) - value_functions
 
     exogenous = np.column_stack(
         (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
     )
 
-    return exogenous, max_value_functions.ravel()
+    return exogenous, max_value_functions
 
 
 def calculate_endogenous_variables(
