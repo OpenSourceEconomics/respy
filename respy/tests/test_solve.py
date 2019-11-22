@@ -7,7 +7,7 @@ from respy.config import KEANE_WOLPIN_1994_MODELS
 from respy.config import KEANE_WOLPIN_1997_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.simulate import calculate_value_functions_and_flow_utilities
+from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.state_space import _create_state_space
 from respy.state_space import _insert_indices_of_child_states
 from respy.tests._former_code import _create_state_space_kw94

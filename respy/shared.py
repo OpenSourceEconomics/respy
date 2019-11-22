@@ -4,16 +4,15 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
+import numba as nb
 import numpy as np
 import pandas as pd
-from numba import njit
-from numba import vectorize
 
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 
 
-@njit
+@nb.njit
 def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
@@ -107,7 +106,7 @@ def generate_column_labels_simulation(optim_paras):
     return labels, dtypes
 
 
-@vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
+@nb.vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
 def clip(x, minimum=None, maximum=None):
     """Clip (limit) input value.
 
@@ -264,3 +263,30 @@ def normalize_probabilities(probabilities):
     probabilities[-1] = 1 - probabilities[:-1].sum()
 
     return probabilities
+
+
+@nb.guvectorize(
+    ["f8, f8, f8, f8, f8, b1, f8[:], f8[:]"],
+    "(), (), (), (), (), () -> (), ()",
+    nopython=True,
+    target="parallel",
+)
+def calculate_value_functions_and_flow_utilities(
+    wage,
+    nonpec,
+    continuation_value,
+    draw,
+    delta,
+    is_inadmissible,
+    value_function,
+    flow_utility,
+):
+    """Calculate the choice-specific value functions and flow utilities.
+
+    This function uses :func:`numba.guvectorize` instead of :func:`numba.vectorize`
+    because the latter does not support multiple return values.
+
+    """
+    value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
+        wage, nonpec, continuation_value, draw, delta, is_inadmissible
+    )
