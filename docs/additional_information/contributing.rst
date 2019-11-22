@@ -24,7 +24,7 @@ How to contribute?
    and the ``environment.yml``. Implement the fix.
 
 3. We validate contributions in three ways. First, we have a test suite to check the
-   implementation of respy. Second, we correct for stylistic errors in code and
+   implementation of ``respy``. Second, we correct for stylistic errors in code and
    documentation using linters. Third, we test whether the documentation builds
    successfully.
 
