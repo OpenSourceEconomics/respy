@@ -29,6 +29,10 @@ KW_97_EXTENDED_CONSTRAINTS = KW_97_BASIC_CONSTRAINTS + [
     {"loc": "lagged_choice_1_home", "type": "fixed"},
 ]
 
+ROBINSON_CONSTRAINTS = [
+    {"loc": "shocks_sdcorr", "type": "sdcorr"},
+]
+
 
 def get_example_model(model, with_data=True):
     """Return parameters, options and data (optional) of an example model.
@@ -50,7 +54,7 @@ def get_example_model(model, with_data=True):
 
     if "kw_97" in model and with_data:
         df = (create_kw_97(params, options),)
-    elif "kw_94" in model and with_data:
+    elif ("kw_94" in model or "robinson" in model) and with_data:
         simulate = get_simulate_func(params, options)
         df = (simulate(params),)
     else:
@@ -70,5 +74,7 @@ def get_parameter_constraints(model):
         constraints = KW_97_BASIC_CONSTRAINTS
     elif "kw_97_extended" == model:
         constraints = KW_97_EXTENDED_CONSTRAINTS
+    elif "robinson" == model:
+        constraints = ROBINSON_CONSTRAINTS
 
     return constraints
