@@ -27,11 +27,18 @@ def aggregate_keane_wolpin_utility(
     return value_function, flow_utility
 
 
-def create_base_draws(shape, seed, monte_carlo_sequence="random"):
+def create_base_draws(shape, seed, monte_carlo_sequence):
     """Create a set of draws from the standard normal distribution.
 
     The draws are either drawn randomly or from quasi-random low-discrepancy sequences,
     i.e., Sobol or Halton.
+
+    `"random"` is used to draw random standard normal shocks for the Monte Carlo
+    exercises or because individuals face random shocks in the simulation.
+
+    `"halton"` or `"sobol"` can be used to change the sequence for two Monte Carlo
+    exercises. First, the calculation of the expected value function (EMAX) in the
+    solution and the choice probabilities in the maximum likelihood estimation.
 
     For the solution and estimation it is necessary to have the same randomness in every
     iteration or gradients do not exist. At the same time, the variance-covariance
@@ -47,7 +54,7 @@ def create_base_draws(shape, seed, monte_carlo_sequence="random"):
         Tuple representing the shape of the resulting array.
     seed : int
         Seed to control randomness.
-    monte_carlo_sequence : {"random", "halton", "sobol"}, default "random"
+    monte_carlo_sequence : {"random", "halton", "sobol"}
         Name of the sequence.
 
     Returns

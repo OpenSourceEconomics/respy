@@ -47,8 +47,12 @@ def get_simulate_func(params, options):
         options["simulation_agents"],
         len(optim_paras["choices"]),
     )
-    base_draws_sim = create_base_draws(shape, next(options["simulation_seed_startup"]))
-    base_draws_wage = create_base_draws(shape, next(options["simulation_seed_startup"]))
+    base_draws_sim = create_base_draws(
+        shape, next(options["simulation_seed_startup"]), "random"
+    )
+    base_draws_wage = create_base_draws(
+        shape, next(options["simulation_seed_startup"]), "random"
+    )
 
     simulate_function = functools.partial(
         simulate,
