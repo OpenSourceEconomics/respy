@@ -148,13 +148,6 @@ def log_like(
         options,
     )
 
-    with open("logging.txt", "a+") as file:
-        file.write(f"Likelihood: {contribs.mean()}\n")
-        file.write(params.to_string())
-        file.write("\n")
-        file.write("-" * 88)
-        file.write("\n\n")
-
     return contribs.mean()
 
 
@@ -307,7 +300,7 @@ def _internal_log_like_obs(
     wage_loglikes = wage_loglikes.reshape(n_obs, n_types)
 
     choice_loglikes = np.clip(choice_loglikes, MIN_FLOAT, MAX_FLOAT)
-    wage_loglikes = np.clip(choice_loglikes, MIN_FLOAT, MAX_FLOAT)
+    wage_loglikes = np.clip(wage_loglikes, MIN_FLOAT, MAX_FLOAT)
 
     per_period_loglikes = wage_loglikes + choice_loglikes
 
