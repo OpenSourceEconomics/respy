@@ -16,6 +16,7 @@ from estimagic.optimization.utilities import sdcorr_params_to_matrix
 from respy.config import DEFAULT_OPTIONS
 from respy.config import SEED_STARTUP_ITERATION_GAP
 from respy.pre_processing.model_checking import validate_options
+from respy.shared import normalize_probabilities
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
@@ -104,6 +105,7 @@ def _parse_parameters(params, options):
     optim_paras = {}
 
     optim_paras["delta"] = params.loc[("delta", "delta")]
+    optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
     optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
@@ -145,6 +147,34 @@ def _parse_choices(optim_paras, params, options):
     return optim_paras
 
 
+def _parse_observables(optim_paras, params):
+    """Parse observed variables and their levels."""
+    optim_paras["observables"] = {}
+
+    if "observables" in params.index.get_level_values(0):
+        observables = params.loc["observables"]
+        counts = (
+            observables.index.str.extract(r"\b([a-z0-9_]+)_[0-9]+\b", expand=False)
+            .value_counts()
+            .sort_index()
+        )
+        for name, n_levels in counts.items():
+            # This line ensures that the levels of observables start at zero and
+            # increment by one.
+            shares = [observables.loc[f"{name}_{value}"] for value in range(n_levels)]
+
+            if np.sum(shares) != 1:
+                warnings.warn(
+                    f"The shares of observable '{name}' do not sum to one. Shares are "
+                    "divided by their sum for normalization.",
+                    category=UserWarning,
+                )
+                shares = normalize_probabilities(shares)
+            optim_paras["observables"][name] = shares
+
+    return optim_paras
+
+
 def _parse_choice_parameters(optim_paras, params):
     """Parse utility parameters for choices."""
     for choice in optim_paras["choices"]:
@@ -180,7 +210,7 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
                     "sum to one. Shares are divided by their sum for normalization.",
                     category=UserWarning,
                 )
-                shares = shares / shares.sum()
+                shares = normalize_probabilities(shares)
         else:
             starts = np.zeros(1, dtype=np.uint8)
             shares = np.ones(1, dtype=np.uint8)

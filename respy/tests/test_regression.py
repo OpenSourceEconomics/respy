@@ -3,7 +3,14 @@ import numpy as np
 import pytest
 
 from development.testing.regression import calc_crit_val
+from development.testing.regression import load_regression_tests
 from respy.config import TOL_REGRESSION_TESTS
+
+
+@pytest.fixture(scope="session")
+def regression_vault():
+    """Make regression vault available to tests."""
+    return load_regression_tests()
 
 
 @pytest.mark.parametrize("index", range(10))
