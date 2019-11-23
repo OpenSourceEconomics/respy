@@ -9,6 +9,7 @@ from respy.pre_processing.specification_helpers import generate_obs_labels
 from respy.tests.random_model import generate_random_model
 from respy.pre_processing.model_processing import process_params_and_options
 
+
 @pytest.mark.parametrize("seed", range(20))
 def test_equality_for_myopic_agents_and_tiny_delta(seed):
     """Test equality of simulated data and likelihood with myopia and tiny delta."""
@@ -115,7 +116,11 @@ def test_parse_observables(seed):
     constraints = {"observables": [3]}
     params, options = generate_random_model(point_constr=constraints)
     optim_paras_1, _ = process_params_and_options(params, options)
-    params.loc["observables", "value"] = params.loc["observables", "value"].to_numpy() / 2
+    params.loc["observables", "value"] = (
+        params.loc["observables", "value"].to_numpy() / 2
+    )
     optim_paras_2, _ = process_params_and_options(params, options)
-    np.testing.assert_array_almost_equal(optim_paras_1["observables"]["observable_0"],
-                                         optim_paras_1["observables"]["observable_0"])
+    np.testing.assert_array_almost_equal(
+        optim_paras_1["observables"]["observable_0"],
+        optim_paras_1["observables"]["observable_0"],
+    )
