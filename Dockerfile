@@ -46,7 +46,7 @@ RUN echo "conda activate ose" >> ~/.bashrc
 
 # Install current version of respy.
 SHELL ["/bin/bash", "-c"]
-RUN source activate ose && pip install -e ${HOME}
+RUN source activate ose && conda develop -e ${HOME}
 
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["/bin/bash"]
