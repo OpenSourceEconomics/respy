@@ -259,7 +259,7 @@ def normalize_probabilities(probabilities):
     array([0.24075906, 0.34331568, 0.41592526])
 
     """
-    probabilities = probabilities / probabilities.sum()
+    probabilities = probabilities / np.sum(probabilities)
     probabilities[-1] = 1 - probabilities[:-1].sum()
 
     return probabilities
