@@ -34,18 +34,20 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
     i.e., Sobol or Halton.
 
     `"random"` is used to draw random standard normal shocks for the Monte Carlo
-    exercises or because individuals face random shocks in the simulation.
+    integrations or because individuals face random shocks in the simulation.
 
     `"halton"` or `"sobol"` can be used to change the sequence for two Monte Carlo
-    exercises. First, the calculation of the expected value function (EMAX) in the
+    integrations. First, the calculation of the expected value function (EMAX) in the
     solution and the choice probabilities in the maximum likelihood estimation.
 
     For the solution and estimation it is necessary to have the same randomness in every
-    iteration or gradients do not exist. At the same time, the variance-covariance
-    matrix of the shocks is estimated along all other parameters and changes every
-    iteration. Thus, instead of sampling draws from a varying multivariate normal
-    distribution, standard normal draws are sampled here and transformed to the
-    distribution specified by the parameters in
+    iteration. Otherwise, there is chatter in the simulation, i.e. a difference in
+    simulated values not only due to different parameters but also due to draws (see
+    10.5 in [1]_). At the same time, the variance-covariance matrix of the shocks is
+    estimated along all other parameters and changes every iteration. Thus, instead of
+    sampling draws from a varying multivariate normal distribution, standard normal
+    draws are sampled here and transformed to the distribution specified by the
+    parameters in
     :func:`transform_base_draws_with_cholesky_factor`.
 
     Parameters
@@ -65,6 +67,12 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
     See also
     --------
     transform_base_draws_with_cholesky_factor
+
+    References
+    ----------
+    .. [1] Train, K. (2009). `Discrete Choice Methods with Simulation
+           <https://eml.berkeley.edu/books/choice2.html>`_. *Cambridge: Cambridge
+           University Press.*
 
     """
     n_choices = shape[2]
