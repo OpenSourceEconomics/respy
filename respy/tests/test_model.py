@@ -66,7 +66,7 @@ def test_sorting_of_type_probability_parameters(model_or_seed):
 
 
 @pytest.mark.parametrize("seed", list(range(10)))
-def test_normalizing_probabilities(seed):
+def test_normalize_probabilities(seed):
     np.random.seed(seed)
     constraints = {"observables": [3]}
     params, options = generate_random_model(point_constr=constraints)
