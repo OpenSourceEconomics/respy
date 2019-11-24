@@ -283,8 +283,13 @@ def calculate_value_functions_and_flow_utilities(
 ):
     """Calculate the choice-specific value functions and flow utilities.
 
-    This function uses :func:`numba.guvectorize` instead of :func:`numba.vectorize`
-    because the latter does not support multiple return values.
+    To apply :func:`aggregate_keane_wolpin_utility` to arrays with arbitrary dimensions,
+    this function uses :func:`numba.guvectorize`. One cannot use :func:`numba.vectorize`
+    because it does not support multiple return values.
+
+    See also
+    --------
+    aggregate_keane_wolpin_utility
 
     """
     value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
