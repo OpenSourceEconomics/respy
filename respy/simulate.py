@@ -2,12 +2,11 @@ import functools
 
 import numpy as np
 import pandas as pd
-from numba import guvectorize
 from scipy.special import softmax
 
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import convert_choice_variables_from_categorical_to_codes
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
@@ -194,12 +193,10 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
             state_space.wages[indices],
             state_space.nonpec[indices],
             continuation_values[cont_indices],
-            draws_shock.reshape(-1, 1, n_choices),
+            draws_shock,
             optim_paras["delta"],
             state_space.is_inadmissible[indices],
         )
-        value_functions = value_functions.reshape(-1, n_choices)
-        flow_utilities = flow_utilities.reshape(-1, n_choices)
 
         # We need to ensure that no individual chooses an inadmissible state. This
         # cannot be done directly in the calculate_value_functions function as the
@@ -365,66 +362,6 @@ def _get_random_initial_observable(states_df, observable, options, optim_paras):
     )
 
     return states_df
-
-
-@guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:, :], f8[:, :]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
-    "-> (n_choices, n_draws), (n_choices, n_draws)",
-    nopython=True,
-    target="cpu",
-)
-def calculate_value_functions_and_flow_utilities(
-    wages,
-    nonpec,
-    continuation_values,
-    draws,
-    delta,
-    is_inadmissible,
-    value_functions,
-    flow_utilities,
-):
-    """Calculate the choice-specific value functions and flow utilities.
-
-    Parameters
-    ----------
-    wages : numpy.ndarray
-        Array with shape (n_choices,).
-    nonpec : numpy.ndarray
-        Array with shape (n_choices,).
-    continuation_values : numpy.ndarray
-        Array with shape (n_choices,)
-    draws : numpy.ndarray
-        Array with shape (n_draws, n_choices)
-    delta : float
-        Discount rate.
-    is_inadmissible: numpy.ndarray
-        Array with shape (n_choices,) containing indicator for whether the following
-        state is inadmissible.
-
-    Returns
-    -------
-    value_functions : numpy.ndarray
-        Array with shape (n_choices, n_draws).
-    flow_utilities : numpy.ndarray
-        Array with shape (n_choices, n_draws).
-
-    """
-    n_draws, n_choices = draws.shape
-
-    for i in range(n_draws):
-        for j in range(n_choices):
-            value_function, flow_utility = aggregate_keane_wolpin_utility(
-                wages[j],
-                nonpec[j],
-                continuation_values[j],
-                draws[i, j],
-                delta,
-                is_inadmissible[j],
-            )
-
-            flow_utilities[j, i] = flow_utility
-            value_functions[j, i] = value_function
 
 
 def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
