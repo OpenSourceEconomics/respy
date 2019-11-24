@@ -31,6 +31,7 @@ KW_97_EXTENDED_CONSTRAINTS = KW_97_BASIC_CONSTRAINTS + [
 
 ROBINSON_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
+    {"loc": "lagged_choice_1_hammock", "type": "fixed"},
 ]
 
 

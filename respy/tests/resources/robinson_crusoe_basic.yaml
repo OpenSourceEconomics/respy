@@ -1,0 +1,12 @@
+n_periods: 10
+estimation_draws: 200
+estimation_seed: 500
+estimation_tau: 0.001
+interpolation_points: -1
+simulation_agents: 1_000
+simulation_seed: 132
+solution_draws: 500
+solution_seed: 456
+covariates:
+    constant: "1"
+    not_fishing_last_period: "lagged_choice_1 != 'fishing'"
