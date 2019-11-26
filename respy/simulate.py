@@ -2,11 +2,10 @@ import functools
 
 import numpy as np
 import pandas as pd
-from numba import guvectorize
 from scipy.special import softmax
 
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import convert_choice_variables_from_categorical_to_codes
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
@@ -430,33 +429,6 @@ def _get_random_initial_observable(states_df, observable, options, optim_paras):
     )
 
     return states_df
-
-
-@guvectorize(
-    ["f8, f8, f8, f8, f8, b1, f8[:], f8[:]"],
-    "(), (), (), (), (), () -> (), ()",
-    nopython=True,
-    target="cpu",
-)
-def calculate_value_functions_and_flow_utilities(
-    wage,
-    nonpec,
-    continuation_value,
-    draw,
-    delta,
-    is_inadmissible,
-    value_function,
-    flow_utility,
-):
-    """Calculate the choice-specific value functions and flow utilities.
-
-    This function uses :func:`numba.guvectorize` instead of :func:`numba.vectorize`
-    because the latter does not support multiple return values.
-
-    """
-    value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
-        wage, nonpec, continuation_value, draw, delta, is_inadmissible
-    )
 
 
 def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
