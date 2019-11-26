@@ -10,3 +10,8 @@ solution_seed: 456
 covariates:
     constant: "1"
     not_fishing_last_period: "lagged_choice_1 != 'fishing'"
+core_state_space_filters:
+  # If Robinson has always been fishing, the previous choice cannot be 'hammock'.
+  - period > 0 and exp_fishing == period and lagged_choice_1 == 'hammock'
+  # If experience in fishing is zero, previous choice cannot be fishing.
+  - exp_fishing == 0 and lagged_choice_1 == 'fishing'

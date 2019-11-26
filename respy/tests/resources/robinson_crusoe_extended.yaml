@@ -16,3 +16,22 @@ inadmissible_states:
         "period < 2",
         "exp_fishing == 0"
     ]
+core_state_space_filters:
+  # If Robinson has always been fishing or talking to Friday, the previous choice cannot
+  # be 'hammock'.
+  - period > 0 and exp_fishing + exp_friday == period and lagged_choice_1 == 'hammock'
+  # Talking to Friday is restricted up to the third period.
+  - period <= 2 and exp_friday != 0
+  # Experience of choice 'friday' has to be lower than period by 2.
+  - period >= 3 and period - exp_friday < 2
+  # Robinson has to go fishing before talking to Friday.
+  - exp_friday > 0 and exp_fishing == 0
+  # Same applies if Robinson acquired experienced in fishing just in the previous
+  # period, but had already talked to Friday.
+  - exp_friday > 0 and exp_fishing == 1 and lagged_choice_1 == 'fishing'
+  # If Robinson has maximum possible experience with Friday, the previous choice can
+  # only be 'friday'.
+  - period - exp_friday == 2 and lagged_choice_1 != 'friday' and period > 2
+  # If experience in fishing (talking to Friday) is zero, previous choice cannot be
+  # fishing (friday). The '{i}' is a placeholder for choices with experience.
+  - exp_{i} == 0 and lagged_choice_1 == '{i}'
