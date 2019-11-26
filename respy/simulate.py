@@ -66,20 +66,21 @@ def get_simulate_func(params, options, df=None):
 def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     """Perform a simulation.
 
-    This function performs one of three possible simulation exercises. The options are
+    This function performs one of three possible simulation exercises. Ordered from no
+    data to a panel data on individuals, there is:
 
-    1. *one-step-ahead simulation*: If data with multiple observations per individual is
-       passed to the function, simulate choices, wages and more for each observation.
-       This is useful to measure the within-sample fit of the model.
+    1. *n-step-ahead simulation without data*: The first observation of an individual is
+       sampled from the initial conditions, i.e., the distribution of observed variables
+       or initial experiences, etc. in the first period. Then, the individuals are
+       guided for $n$ periods by the decision rules from the solution of the model.
 
-    2. *n-step-ahead simulation with sampling from initial conditions*: If no data is
-       passed to the function, `df = None`, the first observations are sampled from the
-       initial conditions. Then, simulate choices, wages and more over the whole model
-       horizon.
+    2. *n-step-ahead simulation with first observations*: Instead of sampling
+       individuals from the initial conditions, take the first observation of each
+       individual in the data. Then, proceed as in 1..
 
-    3. *n-step-ahead simulation taking data as initial conditions*: If only one
-       observation per individual is supplied to the function, simulate choices, wages
-       and more from thereon over the whole model horizon.
+    3. *one-step-ahead simulation*: Take the complete data and find for each observation
+       the corresponding outcomes, e.g, choices and wages, using the decision rules from
+       the model solution.
 
     Parameters
     ----------
