@@ -159,6 +159,8 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
         + ["type"]
     )
 
+    df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
+
     data = []
 
     for period in range(n_periods):
