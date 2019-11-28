@@ -49,3 +49,8 @@ covariates:
   military_dropout: exp_military == 1
   up_to_nine_years_school: exp_school <= 9
   at_least_ten_years_school: 10 <= exp_school
+  seven_years_of_schooling: exp_school == 7
+  eight_years_of_schooling: exp_school == 8
+  nine_years_of_schooling: exp_school == 9
+  ten_years_of_schooling: exp_school == 10
+  eleven_years_of_schooling: exp_school == 11
