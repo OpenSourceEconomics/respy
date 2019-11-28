@@ -7,7 +7,7 @@ from respy.config import KEANE_WOLPIN_1994_MODELS
 from respy.config import KEANE_WOLPIN_1997_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.simulate import calculate_value_functions_and_flow_utilities
+from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.state_space import _create_state_space
 from respy.state_space import _insert_indices_of_child_states
 from respy.tests._former_code import _create_state_space_kw94
@@ -28,6 +28,7 @@ def test_check_solution(model_or_seed):
     check_model_solution(optim_paras, options, state_space)
 
 
+@pytest.mark.wip
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
 def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     """Test for inadmissible states in the state space.
@@ -190,7 +191,7 @@ def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
     params, options = generate_random_model(myopic=True)
     optim_paras, options = process_params_and_options(params, options)
 
-    draws = np.random.randn(1, 4)
+    draws = np.random.randn(4)
 
     state_space = rp.solve(params, options)
 
