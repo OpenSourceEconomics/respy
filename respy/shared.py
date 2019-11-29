@@ -4,6 +4,7 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
+import chaospy as cp
 import numba as nb
 import numpy as np
 import pandas as pd
@@ -25,12 +26,28 @@ def aggregate_keane_wolpin_utility(
     return value_function, flow_utility
 
 
-def create_base_draws(shape, seed):
-    """Create the relevant set of draws.
+def create_base_draws(shape, seed, monte_carlo_sequence):
+    """Create a set of draws from the standard normal distribution.
 
-    Handle special case of zero variances as this case is useful for testing.
-    The draws are from a standard normal distribution and transformed later in
-    the code.
+    The draws are either drawn randomly or from quasi-random low-discrepancy sequences,
+    i.e., Sobol or Halton.
+
+    `"random"` is used to draw random standard normal shocks for the Monte Carlo
+    integrations or because individuals face random shocks in the simulation.
+
+    `"halton"` or `"sobol"` can be used to change the sequence for two Monte Carlo
+    integrations. First, the calculation of the expected value function (EMAX) in the
+    solution and the choice probabilities in the maximum likelihood estimation.
+
+    For the solution and estimation it is necessary to have the same randomness in every
+    iteration. Otherwise, there is chatter in the simulation, i.e. a difference in
+    simulated values not only due to different parameters but also due to draws (see
+    10.5 in [1]_). At the same time, the variance-covariance matrix of the shocks is
+    estimated along all other parameters and changes every iteration. Thus, instead of
+    sampling draws from a varying multivariate normal distribution, standard normal
+    draws are sampled here and transformed to the distribution specified by the
+    parameters in
+    :func:`transform_base_draws_with_cholesky_factor`.
 
     Parameters
     ----------
@@ -38,24 +55,70 @@ def create_base_draws(shape, seed):
         Tuple representing the shape of the resulting array.
     seed : int
         Seed to control randomness.
+    monte_carlo_sequence : {"random", "halton", "sobol"}
+        Name of the sequence.
 
     Returns
     -------
     draws : numpy.ndarray
-        Draws with shape (n_periods, n_draws)
+        Array with shape (n_choices, n_draws, n_choices).
+
+    See also
+    --------
+    transform_base_draws_with_cholesky_factor
+
+    References
+    ----------
+    .. [1] Train, K. (2009). `Discrete Choice Methods with Simulation
+           <https://eml.berkeley.edu/books/choice2.html>`_. *Cambridge: Cambridge
+           University Press.*
 
     """
-    # Control randomness by setting seed value
+    n_choices = shape[2]
+    n_points = shape[0] * shape[1]
+
     np.random.seed(seed)
 
-    # Draw random deviates from a standard normal distribution.
-    draws = np.random.standard_normal(shape)
+    if monte_carlo_sequence == "random":
+        draws = np.random.standard_normal(shape)
+
+    elif monte_carlo_sequence == "halton":
+        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
+        draws = distribution.sample(n_points, rule="H").T.reshape(shape)
+
+    elif monte_carlo_sequence == "sobol":
+        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
+        draws = distribution.sample(n_points, rule="S").T.reshape(shape)
+
+    else:
+        raise NotImplementedError
 
     return draws
 
 
-def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
-    """Transform the standard normal deviates to the relevant distribution."""
+def transform_base_draws_with_cholesky_factor(
+    draws, shocks_mean, shocks_cholesky, n_wages
+):
+    r"""Transform standard normal draws with the Cholesky factor.
+
+    The standard normal draws are transformed to normal draws with variance-covariance
+    matrix :math:`\Sigma` by multiplication with the Cholesky factor :math:`L` where
+    :math:`L^TL = \Sigma`. See chapter 7.4 in [1]_ for more information.
+
+    This function relates to :func:`create_base_draws` in the sense that it transforms
+    the unchanging standard normal draws to the distribution with the
+    variance-covariance matrix specified by the parameters.
+
+    References
+    ----------
+    .. [1] Gentle, J. E. (2009). Computational statistics (Vol. 308). New York:
+           Springer.
+
+    See also
+    --------
+    create_base_draws
+
+    """
     draws_transformed = draws.dot(shocks_cholesky.T)
 
     draws_transformed += shocks_mean
