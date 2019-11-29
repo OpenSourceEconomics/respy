@@ -47,6 +47,7 @@ extensions = [
 nitpicky = True
 
 autodoc_mock_imports = [
+    "chaospy",
     "estimagic",
     "numba",
     "numpy",

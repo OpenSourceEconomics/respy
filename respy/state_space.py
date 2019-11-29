@@ -54,6 +54,7 @@ class StateSpace:
                 len(optim_paras["choices"]),
             ),
             next(options["solution_seed_startup"]),
+            options["monte_carlo_sequence"],
         )
 
         states_df, self.indexer = _create_state_space(optim_paras, options)
