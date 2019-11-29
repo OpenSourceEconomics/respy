@@ -22,7 +22,7 @@ copyright = "2015-2019, Philipp Eisenhauer"  # noqa: A001
 author = "Philipp Eisenhauer"
 
 # The full version, including alpha/beta/rc tags.
-release = "2.0.0dev1"
+release = "2.0.0dev2"
 version = ".".join(release.split(".")[:2])
 
 # -- General configuration ------------------------------------------------
