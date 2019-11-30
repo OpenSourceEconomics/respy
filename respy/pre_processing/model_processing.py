@@ -200,9 +200,9 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
             # Take starts and shares and convert index to numeric or sorting will fail.
             # Maybe waiting on https://github.com/pandas-dev/pandas/pull/27237.
             starts_and_shares = params.loc[f"initial_exp_{choice}"].copy()
-            starts_and_shares.index = starts_and_shares.index.astype(np.uint8)
+            starts_and_shares.index = starts_and_shares.index.astype(np.int)
             starts_and_shares.sort_index(inplace=True)
-            starts = starts_and_shares.index.to_numpy()
+            starts = starts_and_shares.index.to_numpy(dtype=np.uint8)
             shares = starts_and_shares.to_numpy()
             if shares.sum() != 1:
                 warnings.warn(

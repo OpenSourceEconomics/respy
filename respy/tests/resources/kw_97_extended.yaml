@@ -7,6 +7,7 @@ simulation_agents: 5000
 simulation_seed: 132
 solution_draws: 500
 solution_seed: 456
+monte_carlo_sequence: random
 core_state_space_filters:
   # In periods > 0, if agents accumulated experience only in one choice, lagged choice
   # cannot be different.
@@ -49,3 +50,8 @@ covariates:
   military_dropout: exp_military == 1
   up_to_nine_years_school: exp_school <= 9
   at_least_ten_years_school: 10 <= exp_school
+  seven_years_of_schooling: exp_school == 7
+  eight_years_of_schooling: exp_school == 8
+  nine_years_of_schooling: exp_school == 9
+  ten_years_of_schooling: exp_school == 10
+  eleven_years_of_schooling: exp_school == 11

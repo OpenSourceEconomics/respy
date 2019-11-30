@@ -96,10 +96,18 @@ type_2,up_to_nine_years_school,1.3979,effect of up to nine years of schooling on
 type_2,at_least_ten_years_school,-0.0034,effect of at least ten years of schooling on probability of being type 2
 type_3,up_to_nine_years_school,2.114,effect of up to nine years of schooling on probability of being type 3
 type_3,at_least_ten_years_school,0.466,effect of at least ten years of schooling on probability of being type 3
-type_4,up_to_nine_years_school,1.9514   ,effect of up to nine years of schooling on probability of being type 4
+type_4,up_to_nine_years_school,1.9514,effect of up to nine years of schooling on probability of being type 4
 type_4,at_least_ten_years_school,-0.389,effect of at least ten years of schooling on probability of being type 4
-lagged_choice_1_home,up_to_nine_years_school,1,Probability that the first lagged choice is home given covariate up_to_nine_years_school (simulation only)
-lagged_choice_1_school,at_least_ten_years_school,1,Probability that the first lagged choice is education given covariate at_least_ten_years_school (simulation only)
+lagged_choice_1_home,seven_years_of_schooling,1,Probability that the first lagged choice is home given covariate seven_years_of_schooling (simulation only)
+lagged_choice_1_home,eight_years_of_schooling,0.8276,Probability that the first lagged choice is home given covariate eight_years_of_schooling (simulation only)
+lagged_choice_1_home,nine_years_of_schooling,0.1913,Probability that the first lagged choice is home given covariate nine_years_of_schooling (simulation only)
+lagged_choice_1_home,ten_years_of_schooling,0.0228,Probability that the first lagged choice is home given covariate ten_years_of_schooling (simulation only)
+lagged_choice_1_home,eleven_years_of_schooling,0.0097,Probability that the first lagged choice is home given covariate eleven_years_of_schooling (simulation only)
+lagged_choice_1_school,seven_years_of_schooling,0,Probability that the first lagged choice is education given covariate seven_years_of_schooling (simulation only)
+lagged_choice_1_school,eight_years_of_schooling,0.1724,Probability that the first lagged choice is education given covariate eight_years_of_schooling (simulation only)
+lagged_choice_1_school,nine_years_of_schooling,0.8087,Probability that the first lagged choice is education given covariate nine_years_of_schooling (simulation only)
+lagged_choice_1_school,ten_years_of_schooling,0.9772,Probability that the first lagged choice is education given covariate ten_years_of_schooling (simulation only)
+lagged_choice_1_school,eleven_years_of_schooling,0.9903,Probability that the first lagged choice is education given covariate eleven_years_of_schooling (simulation only)
 initial_exp_school,7,0.0095,Probability that the initial level of education is 7
 initial_exp_school,8,0.0422,Probability that the initial level of education is 8
 initial_exp_school,9,0.2018,Probability that the initial level of education is 9

@@ -55,6 +55,7 @@ class StateSpace:
                 len(optim_paras["choices"]),
             ),
             next(options["solution_seed_startup"]),
+            options["monte_carlo_sequence"],
         )
 
         states_df, self.indexer = _create_state_space(optim_paras, options)
@@ -664,6 +665,7 @@ def _get_indices_of_child_states(state_space, optim_paras):
     dtype = state_space.indexer[0].dtype
 
     n_choices = len(optim_paras["choices"])
+    n_choices_w_exp = len(optim_paras["choices_w_exp"])
     n_periods = optim_paras["n_periods"]
     n_states = state_space.states.shape[0]
 
@@ -680,7 +682,7 @@ def _get_indices_of_child_states(state_space, optim_paras):
             state_space.indexer[period],
             state_space.indexer[period + 1],
             state_space.is_inadmissible,
-            len(optim_paras["choices_w_exp"]),
+            n_choices_w_exp,
             optim_paras["n_lagged_choices"],
         )
 
