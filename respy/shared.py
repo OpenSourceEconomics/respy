@@ -169,31 +169,20 @@ def generate_column_labels_simulation(optim_paras):
     return labels, dtypes
 
 
-@nb.vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
+@nb.njit
 def clip(x, minimum=None, maximum=None):
-    """Clip (limit) input value.
+    """Clip input array at minimum and maximum."""
+    out = np.empty_like(x)
 
-    Parameters
-    ----------
-    x : float
-        Value to be clipped.
-    minimum : float
-        Lower limit.
-    maximum : float
-        Upper limit.
+    for index, value in np.ndenumerate(x):
+        if minimum is not None and value < minimum:
+            out[index] = minimum
+        elif maximum is not None and value > maximum:
+            out[index] = maximum
+        else:
+            out[index] = value
 
-    Returns
-    -------
-    float
-        Clipped value.
-
-    """
-    if minimum is not None and x < minimum:
-        return minimum
-    elif maximum is not None and x > maximum:
-        return maximum
-    else:
-        return x
+    return out
 
 
 def downcast_to_smallest_dtype(series):
