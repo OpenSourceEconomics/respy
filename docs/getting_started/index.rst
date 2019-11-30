@@ -11,5 +11,6 @@ Getting Started
    tutorial.ipynb
    tutorial-lagged-choices.ipynb
    tutorial-model-with-observables.ipynb
+   tutorial-robinson-crusoe.ipynb
    keane-and-wolpin-1994.ipynb
    keane-and-wolpin-1997.ipynb

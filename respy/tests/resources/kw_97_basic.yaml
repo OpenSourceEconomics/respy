@@ -7,6 +7,7 @@ simulation_agents: 5000
 simulation_seed: 132
 solution_draws: 500
 solution_seed: 456
+monte_carlo_sequence: random
 covariates:
   hs_graduate: exp_school >= 12
   co_graduate: exp_school >= 16

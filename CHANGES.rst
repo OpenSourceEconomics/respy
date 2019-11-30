@@ -47,6 +47,11 @@ releases are available on `Anaconda.org
 - :gh:`285` adds the ability to generate a set of constraint for example models.
 - :gh:`288` fixes an error in the simulation of choice probabilities introduced by
   :gh:`278` (:ghuser:`peisenha`).
+- :gh:`296` contributes a new toy model to respy: The Robinson Crusoe Economy
+  (:ghuser:`tobiasraabe`, :ghuser:`peisenha`)
+- :gh:`299` adds the information on the previous choice to individuals at age sixteen to
+  the original data from Keane and Wolpin (1997) (special thanks to :ghuser:`bekauf`).
+  :gh:`300` aligns respy with the new data.
 
 
 1.2.1 - 2019-05-19
