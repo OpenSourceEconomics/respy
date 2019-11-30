@@ -7,7 +7,7 @@ from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import calculate_value_functions_and_flow_utilities
-from respy.shared import transform_shocks_with_cholesky_factor
+from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.state_space import StateSpace
 
 
@@ -73,7 +73,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
 
-    draws_emax_risk = transform_shocks_with_cholesky_factor(
+    draws_emax_risk = transform_base_draws_with_cholesky_factor(
         state_space.base_draws_sol, shocks_cholesky, n_wages
     )
 

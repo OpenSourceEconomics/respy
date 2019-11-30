@@ -12,7 +12,7 @@ from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_simulation
 from respy.shared import rename_labels
-from respy.shared import transform_shocks_with_cholesky_factor
+from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -48,8 +48,12 @@ def get_simulate_func(params, options, df=None):
         options["simulation_agents"],
         len(optim_paras["choices"]),
     )
-    base_draws_sim = create_base_draws(shape, next(options["simulation_seed_startup"]))
-    base_draws_wage = create_base_draws(shape, next(options["simulation_seed_startup"]))
+    base_draws_sim = create_base_draws(
+        shape, next(options["simulation_seed_startup"]), "random"
+    )
+    base_draws_wage = create_base_draws(
+        shape, next(options["simulation_seed_startup"]), "random"
+    )
 
     simulate_function = functools.partial(
         simulate,
@@ -147,7 +151,7 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     n_choices_w_exp = len(optim_paras["choices_w_exp"])
     n_lagged_choices = optim_paras["n_lagged_choices"]
 
-    base_draws_sim_transformed = transform_shocks_with_cholesky_factor(
+    base_draws_sim_transformed = transform_base_draws_with_cholesky_factor(
         base_draws_sim, optim_paras["shocks_cholesky"], n_wages
     )
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
