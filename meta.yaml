@@ -17,15 +17,16 @@ requirements:
 
   run:
     - python {{ python }}
-    - numpy
+    - chaospy
     - click
-    - pandas>=0.24
     - estimagic>=0.0.12
-    - scipy
     - mkl
     - numba>=0.42
+    - numpy
+    - pandas>=0.24
     - pyyaml
     - pytest
+    - scipy
 test:
   commands:
     - py.test
