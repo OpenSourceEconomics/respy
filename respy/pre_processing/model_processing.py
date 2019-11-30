@@ -218,56 +218,11 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
 
     """
     for choice in optim_paras["choices_w_exp"]:
-        mask = params.index.get_level_values("category").str.contains(
-            f"initial_exp_{choice}"
+        regex_for_levels = fr"initial_exp_{choice}_([0-9]+)"
+        parsed_parameters = _parse_probabilities_or_logit_coefficients(
+            params, regex_for_levels
         )
-        n_parameters = mask.sum()
-
-        # If parameters for initial experiences are specified, the parameters can either
-        # be probabilities or multinomial logit coefficients.
-        if n_parameters:
-            # Separate subset from params.
-            sub = params.loc[mask].copy()
-            params = params.loc[~mask].copy()
-
-            levels = sorted(
-                sub.index.get_level_values("category")
-                .str.extract(fr"initial_exp_{choice}_([0-9]+)", expand=False)
-                .astype(int)
-                .unique()
-            )
-            n_probabilities = (sub.index.get_level_values(1) == "probability").sum()
-
-            # It is allowed to specify the shares of initial experiences as
-            # probabilities. Then, the probabilities are replaced with their logs to
-            # recover the probabilities with a multinomial logit model.
-            if n_probabilities == len(levels) == n_parameters:
-                if sub.sum() != 1:
-                    warnings.warn(
-                        "The probabilities over initial experience levels for choice "
-                        f"'{choice}' do not sum to one.",
-                        category=UserWarning,
-                    )
-                sub = np.log(sub)
-                sub = sub.rename(index={"probability": "constant"}, level="name")
-
-            elif n_probabilities > 0:
-                raise ValueError(
-                    "Cannot mix probabilities and multinomial logit coefficients to "
-                    "specify the distribution of initial experience levels for choice "
-                    f"'{choice}'."
-                )
-
-            # Insert parameters for every level of initial experiences.
-            optim_paras["choices"][choice]["start"] = {
-                level: sub.loc[f"initial_exp_{choice}_{level}"] for level in levels
-            }
-
-        # If no initial experience parameters are specified, start at zero.
-        else:
-            optim_paras["choices"][choice]["start"] = {
-                0: pd.Series(index=["constant"], data=0)
-            }
+        optim_paras["choices"][choice]["start"] = parsed_parameters
 
         max_ = int(params.get(("maximum_exp", choice), options["n_periods"] - 1))
         optim_paras["choices"][choice]["max"] = max_
@@ -577,3 +532,57 @@ def _parse_lagged_choices(optim_paras, options, params):
         optim_paras[match] = params.loc[match]
 
     return optim_paras
+
+
+def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
+    mask = (
+        params.index.get_level_values("category")
+        .str.extract(regex_for_levels, expand=False)
+        .notna()
+    )
+    n_parameters = mask.sum()
+
+    # If parameters for initial experiences are specified, the parameters can either
+    # be probabilities or multinomial logit coefficients.
+    if n_parameters:
+        # Work on subset.
+        sub = params.loc[mask].copy()
+
+        levels = sub.index.get_level_values("category").str.extract(
+            regex_for_levels, expand=False
+        )
+        levels = pd.to_numeric(levels, errors="ignore")
+        unique_levels = sorted(levels.unique())
+
+        n_probabilities = (sub.index.get_level_values("name") == "probability").sum()
+
+        # It is allowed to specify the shares of initial experiences as
+        # probabilities. Then, the probabilities are replaced with their logs to
+        # recover the probabilities with a multinomial logit model.
+        if n_probabilities == len(unique_levels) == n_parameters:
+            if sub.sum() != 1:
+                warnings.warn(
+                    f"The probabilities for parameter regex {regex_for_levels} do not "
+                    "sum to one.",
+                    category=UserWarning,
+                )
+                sub = normalize_probabilities(sub)
+            sub = np.log(sub)
+            sub = sub.rename(index={"probability": "constant"}, level="name")
+
+        elif n_probabilities > 0:
+            raise ValueError(
+                "Cannot mix probabilities and multinomial logit coefficients for "
+                f"parameter regex: {regex_for_levels}."
+            )
+
+        # Drop level 'category' from :class:`pd.MultiIndex`.
+        s = sub.droplevel(axis="index", level="category")
+        # Insert parameters for every level of initial experiences.
+        container = {level: s.loc[levels == level] for level in unique_levels}
+
+    # If no initial experience parameters are specified, start at zero.
+    else:
+        container = {0: pd.Series(index=["constant"], data=0)}
+
+    return container
