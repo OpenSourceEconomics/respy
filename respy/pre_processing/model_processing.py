@@ -220,7 +220,7 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
     for choice in optim_paras["choices_w_exp"]:
         regex_for_levels = fr"initial_exp_{choice}_([0-9]+)"
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
-            params, regex_for_levels
+            params, regex_for_levels, default_key=0, default_value=0,
         )
         optim_paras["choices"][choice]["start"] = parsed_parameters
 
@@ -534,7 +534,9 @@ def _parse_lagged_choices(optim_paras, options, params):
     return optim_paras
 
 
-def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
+def _parse_probabilities_or_logit_coefficients(
+    params, regex_for_levels, default_key, default_value
+):
     mask = (
         params.index.get_level_values("category")
         .str.extract(regex_for_levels, expand=False)
@@ -583,6 +585,6 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
 
     # If no initial experience parameters are specified, start at zero.
     else:
-        container = {0: pd.Series(index=["constant"], data=0)}
+        container = {default_key: pd.Series(index=["constant"], data=default_value)}
 
     return container
