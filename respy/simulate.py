@@ -80,7 +80,7 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
 
     2. *n-step-ahead simulation with first observations*: Instead of sampling
        individuals from the initial conditions, take the first observation of each
-       individual in the data. Then, proceed as in 1..
+       individual in the data. Then, do as in 1..
 
     3. *one-step-ahead simulation*: Take the complete data and find for each observation
        the corresponding outcomes, e.g, choices and wages, using the decision rules from
@@ -118,9 +118,14 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    # If no data is passed or if only one observation for each individual is passed,
-    # perform n-step-ahead simulation. Else perform one-step-ahead simulation. Also, set
-    # a flag for the simulation method and adjust the number of periods.
+    # Solve the model.
+    state_space.update_systematic_rewards(optim_paras)
+    state_space = solve_with_backward_induction(state_space, optim_paras, options)
+
+    # Adjust options and prepare data. If no data is passed or if only one observation
+    # for each individual is passed, perform n-step-ahead simulation. Else perform
+    # one-step-ahead simulation. Also, set a flag for the simulation method and adjust
+    # the number of periods.
     if df is None:
         df = _sample_data_from_initial_conditions(optim_paras, options)
 
@@ -129,8 +134,7 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
         n_individuals = options["simulation_agents"]
 
     else:
-        df = df.copy()
-        df = _prepare_data(df, optim_paras, options)
+        df = _sample_unobserved_data_from_initial_conditions(df, optim_paras, options)
 
         is_n_step_ahead = (
             df.index.get_level_values("identifier").duplicated().sum() == 0
@@ -142,29 +146,15 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
         )
         n_individuals = df.index.get_level_values("identifier").nunique()
 
-    # Solve the model.
-    state_space.update_systematic_rewards(optim_paras)
-    state_space = solve_with_backward_induction(state_space, optim_paras, options)
-
-    # Start simulation.
+    # Transform shocks
     n_wages = len(optim_paras["choices_w_wage"])
-    n_choices_w_exp = len(optim_paras["choices_w_exp"])
-    n_lagged_choices = optim_paras["n_lagged_choices"]
-
     base_draws_sim_transformed = transform_base_draws_with_cholesky_factor(
         base_draws_sim, optim_paras["shocks_cholesky"], n_wages
     )
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
-    state_space_columns = (
-        [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
-        + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
-        + list(optim_paras["observables"])
-        + ["type"]
-    )
-
+    state_space_columns = _create_state_space_columns(optim_paras)
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
-
     data = []
 
     for period in range(n_periods):
@@ -185,27 +175,8 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
         data.append(rows)
 
         if is_n_step_ahead:
-            choice = rows[:, 1].astype(int)
-
-            # Update work experiences.
-            current_states[np.arange(n_individuals), choice] = np.where(
-                choice < n_choices_w_exp,
-                current_states[np.arange(n_individuals), choice] + 1,
-                current_states[np.arange(n_individuals), choice],
-            )
-
-            # Update lagged choices by shifting all lags by one and inserting choice in
-            # the first position.
-            if n_lagged_choices:
-                current_states[
-                    :, n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
-                ] = current_states[
-                    :, n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
-                ]
-                current_states[:, n_choices_w_exp] = choice
-
-            df = pd.DataFrame(current_states, columns=state_space_columns)
-            df.insert(0, "period", period + 1)
+            choice = rows[:, 1].astype(np.uint8)
+            df = apply_law_of_motion(choice, current_states, period, optim_paras)
 
     if is_n_step_ahead:
         identifier = np.tile(np.arange(n_individuals), n_periods)
@@ -238,10 +209,14 @@ def _sample_data_from_initial_conditions(optim_paras, options):
     return df
 
 
-def _prepare_data(df, optim_paras, options):
-    """Prepare data for simulation."""
+def _sample_unobserved_data_from_initial_conditions(df, optim_paras, options):
+    """Add unobserved information to input data."""
+    df = df.copy()
+
     if df.index.names != ["Identifier", "Period"]:
-        df = df.set_index(["Identifier", "Period"], drop=True)
+        raise ValueError(
+            "Input data needs to have a pd.MultiIndex with Identifier and Period."
+        )
 
     df = df.rename(columns=rename_labels).rename_axis(index=rename_labels).sort_index()
 
@@ -517,3 +492,54 @@ def _random_choice(choices, probabilities):
         choices = np.arange(choices)
 
     return choices[indices]
+
+
+def apply_law_of_motion(choice, states, period, optim_paras):
+    """Apply the law of motion to get the states in the next period.
+
+    This function changes experiences and previous choices according to the choice in
+    the current period, to get the states of the next period.
+
+    Parameters
+    ----------
+    choice : np.ndarray
+        Array with shape (n_individuals,) containing the current choice.
+    states : np.ndarray
+        Array with shape (n_individuals, n_state_space_dim) containing the state of each
+        individual.
+
+    """
+    n_individuals = states.shape[0]
+    n_choices_w_exp = len(optim_paras["choices_w_exp"])
+    n_lagged_choices = optim_paras["n_lagged_choices"]
+
+    # Update work experiences.
+    states[np.arange(n_individuals), choice] = np.where(
+        choice < n_choices_w_exp,
+        states[np.arange(n_individuals), choice] + 1,
+        states[np.arange(n_individuals), choice],
+    )
+
+    # Update lagged choices by shifting all lags by one and inserting choice in
+    # the first position.
+    if n_lagged_choices:
+        states[:, n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices] = states[
+            :, n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
+        ]
+        states[:, n_choices_w_exp] = choice
+
+    state_space_columns = _create_state_space_columns(optim_paras)
+    df = pd.DataFrame(states, columns=state_space_columns)
+    df.insert(0, "period", period + 1)
+
+    return df
+
+
+def _create_state_space_columns(optim_paras):
+    """Create a list of state space dimensions in order excluding `"period"`."""
+    return (
+        [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
+        + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
+        + list(optim_paras["observables"])
+        + ["type"]
+    )
