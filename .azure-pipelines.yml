@@ -49,7 +49,7 @@ jobs:
   - powershell: conda update conda --yes --quiet
     displayName: Update conda.
 
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION tox-conda numpy scipy -c conda-forge
+  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION python-libarchive-c>=2.8 tox-conda numpy scipy -c conda-forge
     displayName: Create Anaconda environment.
 
   - script: |

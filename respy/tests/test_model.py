@@ -67,7 +67,6 @@ def test_sorting_of_type_probability_parameters(model_or_seed):
         assert (optim_paras["type_prob"] == optim_paras_["type_prob"]).all()
 
 
-@pytest.mark.wip
 def test_parse_initial_and_max_experience():
     """Test ensures that probabilities are transformed with logs and rest passes."""
     choices = ["a", "b"]
@@ -100,3 +99,28 @@ def test_parse_initial_and_max_experience():
     ).all()
     assert optim_paras["choices"]["a"]["max"] == options["n_periods"] - 1
     assert optim_paras["choices"]["b"]["max"] == 5
+
+
+@pytest.mark.parametrize("seed", list(range(10)))
+def test_normalize_probabilities(seed):
+    np.random.seed(seed)
+    constraints = {"observables": [3]}
+    params, options = generate_random_model(point_constr=constraints)
+    optim_paras_1, _ = process_params_and_options(params, options)
+
+    params.loc["initial_exp_edu", "value"] = (
+        params.loc["initial_exp_edu", "value"].to_numpy() / 2
+    )
+    params.loc["observables", "value"] = (
+        params.loc["observables", "value"].to_numpy() / 2
+    )
+
+    optim_paras_2, _ = process_params_and_options(params, options)
+    np.testing.assert_array_almost_equal(
+        optim_paras_1["choices"]["edu"]["start"],
+        optim_paras_2["choices"]["edu"]["start"],
+    )
+    np.testing.assert_array_almost_equal(
+        optim_paras_1["observables"]["observable_0"],
+        optim_paras_2["observables"]["observable_0"],
+    )

@@ -46,11 +46,7 @@ def check_model_solution(optim_paras, options, state_space):
     max_initial_experience = np.array(
         [max(choices[choice]["start"]) for choice in optim_paras["choices_w_exp"]]
     )
-    n_initial_exp_comb = np.prod(
-        [len(choices[choice]["start"]) for choice in optim_paras["choices_w_exp"]]
-    )
     n_periods = options["n_periods"]
-    n_types = optim_paras["n_types"]
     n_choices_w_exp = len(optim_paras["choices_w_exp"])
 
     # Check period.
@@ -87,18 +83,6 @@ def check_model_solution(optim_paras, options, state_space):
     # Check for duplicate rows in each period. We only have possible duplicates if there
     # are multiple initial conditions.
     assert not pd.DataFrame(state_space.states).duplicated().any()
-
-    # Check the number of states in the first time period.
-    obs_factor = np.prod([len(x) for x in optim_paras["observables"].values()])
-
-    n_states_start = (
-        n_types
-        * n_initial_exp_comb
-        * (optim_paras["n_lagged_choices"] + 1)
-        * obs_factor
-    )
-    assert state_space.get_attribute_from_period("states", 0).shape[0] == n_states_start
-    assert np.sum(state_space.indexer[0] >= 0) == n_states_start
 
     # Check that we have as many indices as states.
     n_valid_indices = sum((indexer >= 0).sum() for indexer in state_space.indexer)
