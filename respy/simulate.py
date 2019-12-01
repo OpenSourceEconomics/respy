@@ -146,17 +146,22 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     # Create observables for simulation and store them in an extra container that
     # will be added to the state space container later
     for observable in optim_paras["observables"]:
-        states_df = _get_random_initial_observable(
-            states_df, observable, options, optim_paras
+        level_dict = optim_paras["observables"][observable]
+        states_df[observable] = _sample_characteristic_of_individuals(
+            states_df, options, level_dict
         )
 
     # Create initial experiences, lagged choices and types for agents in simulation.
     for choice in optim_paras["choices_w_exp"]:
-        states_df = _get_random_initial_experience(
-            states_df, choice, optim_paras, options
+        level_dict = optim_paras["choices"][choice]["start"]
+        states_df[f"exp_{choice}"] = _sample_characteristic_of_individuals(
+            states_df, options, level_dict
         )
     for lag in reversed(range(1, n_lagged_choices + 1)):
-        states_df = _get_random_lagged_choices(states_df, optim_paras, options, lag)
+        level_dict = optim_paras[f"lagged_choice_{lag}"]
+        states_df[f"lagged_choice_{lag}"] = _sample_characteristic_of_individuals(
+            states_df, options, level_dict
+        )
 
     states_df = _get_random_types(states_df, optim_paras, options)
 
@@ -281,62 +286,7 @@ def _get_random_types(states_df, optim_paras, options):
     return states_df
 
 
-def _get_random_initial_experience(states_df, choice, optim_paras, options):
-    """Get random, initial levels of schooling for simulated agents."""
-    levels = optim_paras["choices"][choice]["start"]
-
-    covariates_df = create_base_covariates(
-        states_df, options["covariates"], raise_errors=False
-    )
-    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
-
-    x_beta = ()
-
-    for level in levels:
-        coefficients = optim_paras["choices"][choice]["start"][level]
-        xb = np.dot(all_data[coefficients.index], coefficients)
-        x_beta += (xb,)
-
-    probabilities = softmax(np.column_stack(x_beta), axis=1)
-
-    np.random.seed(next(options["simulation_seed_iteration"]))
-
-    initial_experience = _random_choice(np.array(list(levels)), probabilities)
-
-    states_df[f"exp_{choice}"] = initial_experience
-
-    return states_df
-
-
-def _get_random_lagged_choices(states_df, optim_paras, options, lag):
-    """Get random, initial levels of lagged choices for simulated agents.
-
-    For a given lagged choice, compute the covariates. Then, calculate the probabilities
-    for each choice being the lagged choice. At last, take the probabilities to draw for
-    each individual the lagged choice.
-
-    Note that lagged choices are added to ``states_df`` in-place so that later lagged
-    choices can be conditioned on earlier lagged choices. E.g., having ``lagged_choice_2
-    == "edu"`` makes ``lagged_choice_1 == "edu"`` more likely.
-
-    Parameters
-    ----------
-    states_df : pandas.DataFrame
-        DataFrame containing the period, initial experiences and previous lagged
-        choices, but not types.
-    optim_paras : dict
-        Dictionary of model parameters.
-    options : dict
-        Dictionary of model options.
-    lag : int
-        Number of lag.
-
-    Returns
-    -------
-    choices : np.ndarray
-        Array with shape (n_individuals,) containing lagged choices.
-
-    """
+def _sample_characteristic_of_individuals(states_df, options, level_dict):
     covariates_df = create_base_covariates(
         states_df, options["covariates"], raise_errors=False
     )
@@ -345,9 +295,9 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
 
     probabilities = ()
 
-    for choice in optim_paras["choices"]:
-        labels = optim_paras[f"lagged_choice_{lag}"][choice].index
-        prob = np.dot(all_data[labels], optim_paras[f"lagged_choice_{lag}"][choice])
+    for level in level_dict:
+        labels = level_dict[level].index
+        prob = np.dot(all_data[labels], level_dict[level])
 
         probabilities += (prob,)
 
@@ -355,41 +305,9 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
 
     np.random.seed(next(options["simulation_seed_iteration"]))
 
-    lagged_choices = _random_choice(len(optim_paras["choices"]), probabilities)
+    characteristic = _random_choice(level_dict, probabilities)
 
-    # Add lagged choices to DataFrame and convert them to labels.
-    states_df[f"lagged_choice_{lag}"] = pd.Series(lagged_choices).replace(
-        dict(enumerate(optim_paras["choices"]))
-    )
-
-    return states_df
-
-
-def _get_random_initial_observable(states_df, observable, options, optim_paras):
-    covariates_df = create_base_covariates(
-        states_df, options["covariates"], raise_errors=False
-    )
-
-    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
-
-    probabilities = ()
-
-    for level in optim_paras["observables"][observable]:
-        labels = optim_paras["observables"][observable][level].index
-        prob = np.dot(all_data[labels], optim_paras["observables"][observable][level])
-
-        probabilities += (prob,)
-
-    probabilities = softmax(np.column_stack(probabilities), axis=1)
-
-    np.random.seed(next(options["simulation_seed_iteration"]))
-
-    obs = _random_choice(optim_paras["observables"][observable], probabilities)
-
-    # Add lagged choices to DataFrame and convert them to labels.
-    states_df[observable] = pd.Series(obs)
-
-    return states_df
+    return characteristic
 
 
 def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
@@ -469,7 +387,7 @@ def _random_choice(choices, probabilities):
     if isinstance(choices, int):
         choices = np.arange(choices)
     elif isinstance(choices, (dict, list, np.ndarray, tuple)):
-        choices = np.array(list(choices), dtype=np.uint8)
+        choices = np.array(list(choices))
     else:
         raise TypeError(f"'choices' has invalid type {type(choices)}.")
 
