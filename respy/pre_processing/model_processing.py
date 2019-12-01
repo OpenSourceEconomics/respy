@@ -152,26 +152,28 @@ def _parse_observables(optim_paras, params):
     """Parse observed variables and their levels."""
     optim_paras["observables"] = {}
 
-    if "observables" in params.index.get_level_values(0):
-        observables = params.loc["observables"]
-        counts = (
-            observables.index.str.extract(r"\b([a-z0-9_]+)_[0-9]+\b", expand=False)
-            .value_counts()
-            .sort_index()
-        )
-        for name, n_levels in counts.items():
-            # This line ensures that the levels of observables start at zero and
-            # increment by one.
-            shares = [observables.loc[f"{name}_{value}"] for value in range(n_levels)]
+    regex_observables = r"\bobservable_([a-z0-9_]+)_[0-9]+\b"
+    observable_counts = (
+        params.index.get_level_values("category")
+        .str.extract(regex_observables, expand=False)
+        .value_counts()
+        .sort_index()
+    )
 
-            if np.sum(shares) != 1:
-                warnings.warn(
-                    f"The shares of observable '{name}' do not sum to one. Shares are "
-                    "divided by their sum for normalization.",
-                    category=UserWarning,
-                )
-                shares = normalize_probabilities(shares)
-            optim_paras["observables"][name] = shares
+    for observable in observable_counts.index:
+        regex_pattern = fr"\bobservable_{observable}_([0-9])\b"
+        parsed_parameters = _parse_probabilities_or_logit_coefficients(
+            params, regex_pattern
+        )
+        optim_paras["observables"][observable] = parsed_parameters
+
+        # Check that levels of the observable start at 0 and increment by one.
+        parsed_levels = list(parsed_parameters)
+        if parsed_levels != list(range(observable_counts.loc[observable])):
+            raise ValueError(
+                f"The levels of observable '{observable}' do not start at zero and "
+                "increment by one."
+            )
 
     return optim_paras
 

@@ -136,7 +136,7 @@ def observable_prob_template(observables):
         probs = normalize_probabilities(probs)
 
         for j in range(observables[i]):
-            ind = (f"observables", f"observable_{i}_{j}")
+            ind = (f"observable_observable_{i}_{j}", "probability")
             dat = [probs[j], f"Probability of observable {i} being level choice {j}"]
             to_concat.append(_base_row(ind, dat))
 

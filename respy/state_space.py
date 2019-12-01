@@ -444,7 +444,7 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
 
 
 def _add_observables_to_state_space(df, optim_paras):
-    levels_of_observables = [range(len(i)) for i in optim_paras["observables"].values()]
+    levels_of_observables = [list(i) for i in optim_paras["observables"].values()]
     combinations = itertools.product(*levels_of_observables)
 
     container = []

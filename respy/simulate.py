@@ -366,12 +366,28 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
 
 
 def _get_random_initial_observable(states_df, observable, options, optim_paras):
+    covariates_df = create_base_covariates(
+        states_df, options["covariates"], raise_errors=False
+    )
+
+    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
+
+    probabilities = ()
+
+    for level in optim_paras["observables"][observable]:
+        labels = optim_paras["observables"][observable][level].index
+        prob = np.dot(all_data[labels], optim_paras["observables"][observable][level])
+
+        probabilities += (prob,)
+
+    probabilities = softmax(np.column_stack(probabilities), axis=1)
+
     np.random.seed(next(options["simulation_seed_iteration"]))
 
-    probs = optim_paras["observables"][observable]
-    states_df[observable] = pd.Series(
-        np.random.choice(len(probs), size=options["simulation_agents"], p=probs)
-    )
+    obs = _random_choice(optim_paras["observables"][observable], probabilities)
+
+    # Add lagged choices to DataFrame and convert them to labels.
+    states_df[observable] = pd.Series(obs)
 
     return states_df
 

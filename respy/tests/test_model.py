@@ -108,17 +108,9 @@ def test_normalize_probabilities(seed):
     params, options = generate_random_model(point_constr=constraints)
     optim_paras_1, _ = process_params_and_options(params, options)
 
-    params.loc[
-        params.index.get_level_values(0).str.contains("initial_exp_edu"), "value"
-    ] = (
-        params.loc[
-            params.index.get_level_values(0).str.contains("initial_exp_edu"), "value"
-        ].to_numpy()
-        / 2
-    )
-    params.loc["observables", "value"] = (
-        params.loc["observables", "value"].to_numpy() / 2
-    )
+    for group in ["initial_exp_edu", "observable_"]:
+        mask = params.index.get_level_values(0).str.contains(group)
+        params.loc[mask, "value"] = params.loc[mask, "value"].to_numpy() / 2
 
     optim_paras_2, _ = process_params_and_options(params, options)
 
@@ -127,7 +119,8 @@ def test_normalize_probabilities(seed):
             optim_paras_1["choices"]["edu"]["start"][key],
             optim_paras_2["choices"]["edu"]["start"][key],
         )
-    np.testing.assert_array_almost_equal(
-        optim_paras_1["observables"]["observable_0"],
-        optim_paras_2["observables"]["observable_0"],
-    )
+    for level in optim_paras_1["observables"]["observable_0"]:
+        np.testing.assert_array_almost_equal(
+            optim_paras_1["observables"]["observable_0"][level],
+            optim_paras_2["observables"]["observable_0"][level],
+        )

@@ -177,7 +177,12 @@ def generate_random_model(
         ]
         params = pd.concat(to_concat, axis=0, sort=False)
 
-        indices = params.loc["observables"].index.get_level_values("name")
+        indices = (
+            params.index.get_level_values("category")
+            .str.extract(r"observable_([a-z0-9_]+)", expand=False)
+            .dropna()
+            .unique()
+        )
         observable_covs = {x: "{} == {}".format(*x.rsplit("_", 1)) for x in indices}
     else:
         observable_covs = {}
