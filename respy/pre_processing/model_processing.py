@@ -220,8 +220,10 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
     for choice in optim_paras["choices_w_exp"]:
         regex_for_levels = fr"initial_exp_{choice}_([0-9]+)"
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
-            params, regex_for_levels, default_key=0, default_value=0,
+            params, regex_for_levels
         )
+        if parsed_parameters is None:
+            parsed_parameters = {0: pd.Series(index=["constant"], data=0)}
         optim_paras["choices"][choice]["start"] = parsed_parameters
 
         max_ = int(params.get(("maximum_exp", choice), options["n_periods"] - 1))
@@ -534,9 +536,7 @@ def _parse_lagged_choices(optim_paras, options, params):
     return optim_paras
 
 
-def _parse_probabilities_or_logit_coefficients(
-    params, regex_for_levels, default_key, default_value
-):
+def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
     mask = (
         params.index.get_level_values("category")
         .str.extract(regex_for_levels, expand=False)
@@ -564,7 +564,7 @@ def _parse_probabilities_or_logit_coefficients(
         if n_probabilities == len(unique_levels) == n_parameters:
             if sub.sum() != 1:
                 warnings.warn(
-                    f"The probabilities for parameter regex {regex_for_levels} do not "
+                    f"The probabilities for parameter group {regex_for_levels} do not "
                     "sum to one.",
                     category=UserWarning,
                 )
@@ -574,8 +574,8 @@ def _parse_probabilities_or_logit_coefficients(
 
         elif n_probabilities > 0:
             raise ValueError(
-                "Cannot mix probabilities and multinomial logit coefficients for "
-                f"parameter regex: {regex_for_levels}."
+                "Cannot mix probabilities and multinomial logit coefficients for the "
+                f"parameter group: {regex_for_levels}."
             )
 
         # Drop level 'category' from :class:`pd.MultiIndex`.
@@ -583,8 +583,9 @@ def _parse_probabilities_or_logit_coefficients(
         # Insert parameters for every level of initial experiences.
         container = {level: s.loc[levels == level] for level in unique_levels}
 
-    # If no initial experience parameters are specified, start at zero.
+    # If no parameters are provided, return `None` so that the default is handled
+    # elsewhere.
     else:
-        container = {default_key: pd.Series(index=["constant"], data=default_value)}
+        container = None
 
     return container

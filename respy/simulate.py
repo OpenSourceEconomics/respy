@@ -269,7 +269,7 @@ def _get_random_types(states_df, optim_paras, options):
     """Get random types for simulated agents."""
 
     if optim_paras["n_types"] == 1:
-        states_df["type"] = np.zeros(options["simulation_agents"])
+        states_df["type"] = np.zeros(options["simulation_agents"], dtype=np.uint8)
     else:
         type_covariates = create_type_covariates(states_df, optim_paras, options)
         np.random.seed(next(options["simulation_seed_iteration"]))
@@ -456,5 +456,9 @@ def _random_choice(choices, probabilities):
 
     if isinstance(choices, int):
         choices = np.arange(choices)
+    elif isinstance(choices, (dict, list, np.ndarray, tuple)):
+        choices = np.array(list(choices), dtype=np.uint8)
+    else:
+        raise TypeError(f"'choices' has invalid type {type(choices)}.")
 
     return choices[indices]
