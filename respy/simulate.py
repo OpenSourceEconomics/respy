@@ -346,16 +346,12 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
     probabilities = ()
 
     for choice in optim_paras["choices"]:
-        lc = f"lagged_choice_{lag}_{choice}"
-        if lc in optim_paras:
-            labels = optim_paras[lc].index
-            prob = np.dot(all_data[labels], optim_paras[lc])
-        else:
-            prob = np.zeros(options["simulation_agents"])
+        labels = optim_paras[f"lagged_choice_{lag}"][choice].index
+        prob = np.dot(all_data[labels], optim_paras[f"lagged_choice_{lag}"][choice])
 
         probabilities += (prob,)
 
-    probabilities = np.column_stack(probabilities)
+    probabilities = softmax(np.column_stack(probabilities), axis=1)
 
     np.random.seed(next(options["simulation_seed_iteration"]))
 

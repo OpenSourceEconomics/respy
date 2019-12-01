@@ -103,14 +103,14 @@ initial_exp_school_8,probability,0.0422,Probability that the initial level of ed
 initial_exp_school_9,probability,0.2018,Probability that the initial level of education is 9
 initial_exp_school_10,probability,0.6715,Probability that the initial level of education is 10
 initial_exp_school_11,probability,0.075,Probability that the initial level of education is 11
-lagged_choice_1_home,seven_years_of_schooling,1,Probability that the first lagged choice is home given covariate seven_years_of_schooling (simulation only)
-lagged_choice_1_home,eight_years_of_schooling,0.8276,Probability that the first lagged choice is home given covariate eight_years_of_schooling (simulation only)
-lagged_choice_1_home,nine_years_of_schooling,0.1913,Probability that the first lagged choice is home given covariate nine_years_of_schooling (simulation only)
-lagged_choice_1_home,ten_years_of_schooling,0.0228,Probability that the first lagged choice is home given covariate ten_years_of_schooling (simulation only)
-lagged_choice_1_home,eleven_years_of_schooling,0.0097,Probability that the first lagged choice is home given covariate eleven_years_of_schooling (simulation only)
-lagged_choice_1_school,seven_years_of_schooling,0,Probability that the first lagged choice is education given covariate seven_years_of_schooling (simulation only)
-lagged_choice_1_school,eight_years_of_schooling,0.1724,Probability that the first lagged choice is education given covariate eight_years_of_schooling (simulation only)
-lagged_choice_1_school,nine_years_of_schooling,0.8087,Probability that the first lagged choice is education given covariate nine_years_of_schooling (simulation only)
-lagged_choice_1_school,ten_years_of_schooling,0.9772,Probability that the first lagged choice is education given covariate ten_years_of_schooling (simulation only)
-lagged_choice_1_school,eleven_years_of_schooling,0.9903,Probability that the first lagged choice is education given covariate eleven_years_of_schooling (simulation only)
+lagged_choice_1_home,seven_years_of_schooling,0,Probability that the first lagged choice is home given covariate seven_years_of_schooling (simulation only)
+lagged_choice_1_home,eight_years_of_schooling,-0.1892,Probability that the first lagged choice is home given covariate eight_years_of_schooling (simulation only)
+lagged_choice_1_home,nine_years_of_schooling,-1.6539,Probability that the first lagged choice is home given covariate nine_years_of_schooling (simulation only)
+lagged_choice_1_home,ten_years_of_schooling,-3.781,Probability that the first lagged choice is home given covariate ten_years_of_schooling (simulation only)
+lagged_choice_1_home,eleven_years_of_schooling,-4.6356,Probability that the first lagged choice is home given covariate eleven_years_of_schooling (simulation only)
+lagged_choice_1_school,seven_years_of_schooling,-1e300,Probability that the first lagged choice is education given covariate seven_years_of_schooling (simulation only)
+lagged_choice_1_school,eight_years_of_schooling,-1.758,Probability that the first lagged choice is education given covariate eight_years_of_schooling (simulation only)
+lagged_choice_1_school,nine_years_of_schooling,-0.2123,Probability that the first lagged choice is education given covariate nine_years_of_schooling (simulation only)
+lagged_choice_1_school,ten_years_of_schooling,-0.0231,Probability that the first lagged choice is education given covariate ten_years_of_schooling (simulation only)
+lagged_choice_1_school,eleven_years_of_schooling,-0.0097,Probability that the first lagged choice is education given covariate eleven_years_of_schooling (simulation only)
 maximum_exp,school,20,"Maximum level of experience for education (optional, reduces computation complexity)"

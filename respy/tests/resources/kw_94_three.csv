@@ -26,6 +26,6 @@ shocks_sdcorr,corr_edu_b,0,"Element 3,2 of standard-deviation/correlation matrix
 shocks_sdcorr,corr_home_a,0,"Element 4,1 of standard-deviation/correlation matrix"
 shocks_sdcorr,corr_home_b,0,"Element 4,2 of standard-deviation/correlation matrix"
 shocks_sdcorr,corr_home_edu,-0.5,"Element 4,3 of standard-deviation/correlation matrix"
-lagged_choice_1_edu,edu_ten,1,Probability that the first lagged choice is education given covariate edu_ten (simulation only)
+lagged_choice_1_edu,probability,1,Probability that the first lagged choice is education (simulation only)
 initial_exp_edu_10,probability,1,Probability that the initial level of education is 10
 maximum_exp,edu,20,"Maximum level of experience for education (optional, reduces computation complexity)"

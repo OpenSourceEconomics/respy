@@ -14,6 +14,7 @@ from estimagic.optimization.utilities import robust_cholesky
 from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
+from respy.config import MAX_FLOAT
 from respy.config import SEED_STARTUP_ITERATION_GAP
 from respy.pre_processing.model_checking import validate_options
 from respy.shared import normalize_probabilities
@@ -468,35 +469,20 @@ def _parse_lagged_choices(optim_paras, options, params):
     UserWarning
         If the model contains superfluous definitions of lagged choices.
 
-    Example
-    -------
-    >>> optim_paras = {}
-    >>> options = {
-    ...     "covariates": {"covariate": "lagged_choice_2 + lagged_choice_1"},
-    ...     "core_state_space_filters": [],
-    ... }
-    >>> index = pd.MultiIndex.from_tuples([("name", "covariate")])
-    >>> params = pd.DataFrame(index=index)
-    >>> _parse_lagged_choices(optim_paras, options, params)
-    {'n_lagged_choices': 2}
-
     """
     regex_pattern = r"lagged_choice_([0-9]+)"
 
-    # First, infer the number of lags from all used covariates.
+    # First, infer the number of lags from all covariates.
     covariates = options["covariates"]
-    parameters = params.index.get_level_values(1)
-    used_covariates = [cov for cov in covariates if cov in parameters]
-
     matches = []
-    for cov in used_covariates:
+    for cov in covariates:
         matches += re.findall(regex_pattern, covariates[cov])
 
     n_lagged_choices = 0 if not matches else pd.to_numeric(matches).max()
 
     # Second, infer the number of lags defined in params.
     matches_params = list(
-        params.index.get_level_values(0)
+        params.index.get_level_values("category")
         .str.extract(regex_pattern, expand=False)
         .dropna()
         .unique()
@@ -528,10 +514,16 @@ def _parse_lagged_choices(optim_paras, options, params):
     optim_paras["n_lagged_choices"] = n_lagged_choices
 
     # Add existing lagged choice parameters to ``optim_paras``.
-    for match in (
-        params.filter(like="lagged_choice_", axis=0).index.get_level_values(0).unique()
-    ):
-        optim_paras[match] = params.loc[match]
+    for lag in range(1, n_lagged_choices + 1):
+        parsed_parameters = _parse_probabilities_or_logit_coefficients(
+            params, fr"lagged_choice_{lag}_([A-Za-z_]+)"
+        )
+        parsed_parameters = {} if parsed_parameters is None else parsed_parameters
+        defaults = {
+            choice: pd.Series(index=["constant"], data=-MAX_FLOAT)
+            for choice in optim_paras["choices"]
+        }
+        optim_paras[f"lagged_choice_{lag}"] = {**defaults, **parsed_parameters}
 
     return optim_paras
 
@@ -569,7 +561,9 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
                     category=UserWarning,
                 )
                 sub = normalize_probabilities(sub)
-            sub = np.log(sub)
+
+            # Clip at the smallest representable number to prevent infinity for log(0).
+            sub = np.log(np.clip(sub, 1 / MAX_FLOAT, None))
             sub = sub.rename(index={"probability": "constant"}, level="name")
 
         elif n_probabilities > 0:
