@@ -291,7 +291,7 @@ def _get_random_characteristic(states_df, options, level_dict):
 
     Parameters
     ----------
-    states_df : pd.DataFrame
+    states_df : pandas.DataFrame
         Contains the state of each individual.
     options : dict
         Options of the model.
