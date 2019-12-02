@@ -76,7 +76,7 @@ respy.simulate
 
 Routines under ``respy.simulate`` use a seed from the sequence of
 ``options["simulation_seed"]`` to control randomness. Apart from the draws,
-:func:`~respy.simulate.simulate` relies on the following three functions to generate
+:func:`~respy.simulate.simulate` relies on the following two functions to generate
 starting values for simulated agents.
 
 .. currentmodule:: respy.simulate
@@ -84,9 +84,8 @@ starting values for simulated agents.
 .. autosummary::
     :toctree: ../_generated/
 
-    _get_random_initial_experience
+    _get_random_characteristic
     _get_random_types
-    _get_random_lagged_choices
 
 
 respy.likelihood

@@ -48,7 +48,6 @@ def test_type_proportions(model, type_proportions):
     )
 
 
-@pytest.mark.wip
 def test_distribution_of_lagged_choices():
     params, options, actual_df = rp.get_example_model("kw_97_extended")
 

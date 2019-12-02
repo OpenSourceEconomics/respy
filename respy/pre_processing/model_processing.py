@@ -190,36 +190,7 @@ def _parse_choice_parameters(optim_paras, params):
 
 
 def _parse_initial_and_max_experience(optim_paras, params, options):
-    """Process initial experience distributions and maximum experience.
-
-    Given a choice, there might be multiple experience levels. Secondly, the
-    distribution of experience levels might not follow a probability mass function, but
-    dependents on other covariates. E.g., the initial schooling levels might depend on
-    an observed variable like ability.
-
-    Thus, we allow for two different ways to specify distributions:
-
-    - If all experience levels for one choice have one entry in `params` and only have
-      `"probability"` in the `"name"` level of the index, treat parameters like a
-      probability mass function.
-    - Otherwise, we assume that the `"name"` index value corresponds to a covariate and
-      the value in `params` is a multinomial logit coefficient.
-
-    Internally, probabilities are also converted to logit coefficients to align
-    interfaces. To convert probabilities to the appropriate multinomial logit
-    coefficients, use a constant for covariates and note that the sum in the denominator
-    is equal for all probabilities and, thus, can be treated as a constant. The
-    following formula shows that the multinomial coefficients which produce the same
-    probability mass function are equal to the logs of probabilities.
-
-    .. math::
-
-        p_i      &= \frac{e^{x_i \beta_i}}{\\sum_j e^{x_j \beta_j}} \\
-                 &= \frac{e^{\beta_i}}{\\sum_j e^{\beta_j}} \\
-        log(p_i) &= \beta_i - \\log(\\sum_j e^{\beta_j}) \\
-        log(p_i) &= \beta_i - C
-
-    """
+    """Process initial experience distributions and maximum experience."""
     for choice in optim_paras["choices_w_exp"]:
         regex_for_levels = fr"initial_exp_{choice}_([0-9]+)"
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
@@ -531,6 +502,41 @@ def _parse_lagged_choices(optim_paras, options, params):
 
 
 def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
+    """Parse probabilities or logit coefficients of parameter groups.
+
+    Some parameters form a group to specify a distribution. The parameters can either be
+    probabilities from a probability mass function. For example, see the specification
+    of initial years of schooling in the extended model of Keane and Wolpin (1997).
+
+    On the other hand, parameters and their corresponding covariates can form the inputs
+    of a :func:`scipy.specical.softmax` which generates the probability mass function.
+    This distribution can be more complex.
+
+    Internally, probabilities are also converted to logit coefficients to align the
+    interfaces. To convert probabilities to the appropriate multinomial logit (softmax)
+    coefficients, use a constant for covariates and note that the sum in the denominator
+    is equal for all probabilities and, thus, can be treated as a constant. The
+    following formula shows that the multinomial coefficients which produce the same
+    probability mass function are equal to the logs of probabilities.
+
+    .. math::
+
+        p_i      &= \frac{e^{x_i \beta_i}}{\\sum_j e^{x_j \beta_j}} \\
+                 &= \frac{e^{\beta_i}}{\\sum_j e^{\beta_j}} \\
+        log(p_i) &= \beta_i - \\log(\\sum_j e^{\beta_j}) \\
+        log(p_i) &= \beta_i - C
+
+    Raises
+    ------
+    ValueError
+        If probabilities and multinomial logit coefficients are mixed.
+
+    Warnings
+    --------
+    The user is warned if the discrete probabilities of a probability mass function do
+    not sum to one.
+
+    """
     mask = (
         params.index.get_level_values("category")
         .str.extract(regex_for_levels, expand=False)
@@ -564,7 +570,7 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
                 )
                 sub = normalize_probabilities(sub)
 
-            # Clip at the smallest representable number to prevent infinity for log(0).
+            # Clip at the smallest representable number to prevent -infinity for log(0).
             sub = np.log(np.clip(sub, 1 / MAX_FLOAT, None))
             sub = sub.rename(index={"probability": "constant"}, level="name")
 
@@ -580,7 +586,7 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
         container = {level: s.loc[levels == level] for level in unique_levels}
 
     # If no parameters are provided, return `None` so that the default is handled
-    # elsewhere.
+    # outside the function.
     else:
         container = None
 

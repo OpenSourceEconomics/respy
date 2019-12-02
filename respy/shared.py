@@ -242,9 +242,9 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
         DataFrame with some, not all state space dimensions like period, experiences.
     covariates_spec : dict
         Keys represent covariates and values are strings passed to ``df.eval``.
-    raise_errors : bool
+    raise_errors : bool, default True
         Whether to raise errors if a variable was not found. This option is necessary
-        for, e.g., :func:`~respy.simulate._get_random_lagged_choices` where not all
+        for, e.g., :func:`~respy.simulate._get_random_characteristic` where not all
         necessary variables exist and it is not clear how to exclude them easily.
 
     Returns
@@ -255,19 +255,20 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     Raises
     ------
     pd.core.computation.ops.UndefinedVariableError
-        If a necessary variable is not found in the data.
+        If variable on the right-hand-side of the definition is not found in the data.
 
     """
     covariates = states.copy()
 
     for covariate, definition in covariates_spec.items():
-        try:
-            covariates[covariate] = covariates.eval(definition)
-        except pd.core.computation.ops.UndefinedVariableError as e:
-            if raise_errors:
-                raise e
-            else:
-                pass
+        if covariate not in states.columns:
+            try:
+                covariates[covariate] = covariates.eval(definition)
+            except pd.core.computation.ops.UndefinedVariableError as e:
+                if raise_errors:
+                    raise e
+                else:
+                    pass
 
     covariates = covariates.drop(columns=states.columns)
 

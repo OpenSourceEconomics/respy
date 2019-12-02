@@ -147,19 +147,19 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     # will be added to the state space container later
     for observable in optim_paras["observables"]:
         level_dict = optim_paras["observables"][observable]
-        states_df[observable] = _sample_characteristic_of_individuals(
+        states_df[observable] = _get_random_characteristic(
             states_df, options, level_dict
         )
 
     # Create initial experiences, lagged choices and types for agents in simulation.
     for choice in optim_paras["choices_w_exp"]:
         level_dict = optim_paras["choices"][choice]["start"]
-        states_df[f"exp_{choice}"] = _sample_characteristic_of_individuals(
+        states_df[f"exp_{choice}"] = _get_random_characteristic(
             states_df, options, level_dict
         )
     for lag in reversed(range(1, n_lagged_choices + 1)):
         level_dict = optim_paras[f"lagged_choice_{lag}"]
-        states_df[f"lagged_choice_{lag}"] = _sample_characteristic_of_individuals(
+        states_df[f"lagged_choice_{lag}"] = _get_random_characteristic(
             states_df, options, level_dict
         )
 
@@ -286,22 +286,36 @@ def _get_random_types(states_df, optim_paras, options):
     return states_df
 
 
-def _sample_characteristic_of_individuals(states_df, options, level_dict):
+def _get_random_characteristic(states_df, options, level_dict):
+    """Sample characteristic of individuals.
+
+    Parameters
+    ----------
+    states_df : pd.DataFrame
+        Contains the state of each individual.
+    options : dict
+        Options of the model.
+    level_dict : dict
+        A dictionary where the keys are the values distributed according to the
+        probability mass function. The values are a :func:`pd.Series` with covariate
+        names as the index and parameter values.
+
+    """
     covariates_df = create_base_covariates(
         states_df, options["covariates"], raise_errors=False
     )
 
     all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
 
-    probabilities = ()
+    x_beta = ()
 
     for level in level_dict:
         labels = level_dict[level].index
-        prob = np.dot(all_data[labels], level_dict[level])
+        xb = np.dot(all_data[labels], level_dict[level])
 
-        probabilities += (prob,)
+        x_beta += (xb,)
 
-    probabilities = softmax(np.column_stack(probabilities), axis=1)
+    probabilities = softmax(np.column_stack(x_beta), axis=1)
 
     np.random.seed(next(options["simulation_seed_iteration"]))
 
