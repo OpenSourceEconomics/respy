@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 import respy as rp
@@ -45,3 +46,26 @@ def test_type_proportions(model, type_proportions):
         ten_years_or_more,
         atol=0.05,
     )
+
+
+def test_distribution_of_lagged_choices():
+    params, options, actual_df = rp.get_example_model("kw_97_extended")
+
+    options["n_periods"] = 1
+    options["simulated_agents"] = 10_000
+
+    simulate = rp.get_simulate_func(params, options)
+    df = simulate(params)
+
+    actual_df = actual_df.query("Period == 0")
+    expected = pd.crosstab(
+        actual_df.Lagged_Choice_1, actual_df.Experience_School, normalize="columns"
+    )
+
+    df = df.query("Period == 0")
+    calculated = pd.crosstab(
+        df.Lagged_Choice_1, df.Experience_School, normalize="columns"
+    )
+
+    # Allow for 4% differences which likely for small subsets.
+    np.testing.assert_allclose(expected, calculated, atol=0.04)
