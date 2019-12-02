@@ -93,6 +93,20 @@ def msm(params, simulate, moments, weighting_matrix, calc_moments):
 
     estimated_moments = calc_moments(df)
 
-    moments_error = estimated_moments - moments
+    #Get rid of nan values
+    estimated_moments = estimated_moments.dropna()
+
+    #Get index that is not contained
+    missing_moments = []
+    for x in moments.index:
+        if x not in estimated_moments.index:
+            missing_moments.append(x)
+
+    #Assign new values
+    estimated_moments[missing_moments] = 0
+
+
+
+    moments_error = estimated_moments[moments.index].as_numpy() - moments.as_numpy()
 
     return moments_error @ weighting_matrix @ moments_error
