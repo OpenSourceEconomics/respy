@@ -297,7 +297,7 @@ def _get_random_characteristic(states_df, options, level_dict):
         Options of the model.
     level_dict : dict
         A dictionary where the keys are the values distributed according to the
-        probability mass function. The values are a :func:`pd.Series` with covariate
+        probability mass function. The values are a :func:`pandas.Series` with covariate
         names as the index and parameter values.
 
     """
