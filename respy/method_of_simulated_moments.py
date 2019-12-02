@@ -69,7 +69,7 @@ def get_msm_func(params, options, moments, calc_moments, weighting_matrix=None):
     return msm_function
 
 
-def msm(params, simulate, moments, weighting_matrix, calc_moments):
+def msm(params, simulate, moments, weighting_matrix, calc_moments, replacement=0):
     """Criterion function for the estimation with MSM.
 
     This function calculates the sum of weighted squared errors of moments.
@@ -103,8 +103,11 @@ def msm(params, simulate, moments, weighting_matrix, calc_moments):
             missing_moments.append(x)
 
     #Assign new values
-    estimated_moments[missing_moments] = 0
-
+    if type(replacement) == int:
+        estimated_moments[missing_moments] = replacement
+    elif callable(replacement) is True:
+        for x in missing_moments:
+            estimated_moments[x] = replacement(x)
 
 
     moments_error = estimated_moments[moments.index].as_numpy() - moments.as_numpy()
