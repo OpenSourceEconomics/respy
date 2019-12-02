@@ -123,9 +123,9 @@ in the sequence initialized by ``options["simulation_seed"]``.
     verifies independence between sequential seeds.
 
     NumPy documentation on their `RandomState object <https://docs.scipy.org/doc/
-    numpy/reference/generated/numpy.random.RandomState.html#numpy.random.RandomState>`_
-    which wraps the pseudo-random number generator `Mersenne Twister
-    <https://docs.scipy.org/doc/numpy/reference/random/bit_generators/mt19937.html>`_.
+    numpy-1.15.0/reference/generated/numpy.random.RandomState.html>`_ which wraps the
+    pseudo-random number generator `Mersenne Twister <https://docs.scipy.org/doc/numpy/
+    reference/random/bit_generators/mt19937.html>`_.
 
 
 .. rubric:: Footnotes

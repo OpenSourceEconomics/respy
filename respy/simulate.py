@@ -297,8 +297,8 @@ def _get_random_characteristic(states_df, options, level_dict):
         Options of the model.
     level_dict : dict
         A dictionary where the keys are the values distributed according to the
-        probability mass function. The values are a :func:`pandas.Series` with covariate
-        names as the index and parameter values.
+        probability mass function. The values are a :class:`pandas.Series` with
+        covariate names as the index and parameter values.
 
     """
     covariates_df = create_base_covariates(
@@ -307,15 +307,15 @@ def _get_random_characteristic(states_df, options, level_dict):
 
     all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
 
-    x_beta = ()
+    z = ()
 
     for level in level_dict:
         labels = level_dict[level].index
-        xb = np.dot(all_data[labels], level_dict[level])
+        x_beta = np.dot(all_data[labels], level_dict[level])
 
-        x_beta += (xb,)
+        z += (x_beta,)
 
-    probabilities = softmax(np.column_stack(x_beta), axis=1)
+    probabilities = softmax(np.column_stack(z), axis=1)
 
     np.random.seed(next(options["simulation_seed_iteration"]))
 
