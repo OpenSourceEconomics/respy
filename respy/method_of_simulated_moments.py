@@ -111,6 +111,6 @@ def msm(params, simulate, moments, weighting_matrix, calc_moments, replacement):
             estimated_moments[x] = replacement(x)
 
 
-    moments_error = estimated_moments[moments.index].as_numpy() - moments.as_numpy()
+    moments_error = estimated_moments[moments.index].to_numpy() - moments.to_numpy()
 
     return moments_error @ weighting_matrix @ moments_error
