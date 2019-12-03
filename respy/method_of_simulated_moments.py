@@ -99,8 +99,8 @@ def msm(params, simulate, moments, weighting_matrix, calc_moments, replacement):
 
     #Get index that is not contained
     missing_moments = []
-    for x in moments.index:
-        if x not in estimated_moments.index:
+    for x in estimated_moments.index:
+        if x not in moments.index:
             missing_moments.append(x)
 
     #Assign new values
