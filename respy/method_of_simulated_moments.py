@@ -25,7 +25,15 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.simulate import get_simulate_func
 
 
-def get_msm_func(params, options, moments, calc_moments, weighting_matrix=None, replacement=0, all_dims=False):
+def get_msm_func(
+    params,
+    options,
+    moments,
+    calc_moments,
+    weighting_matrix=None,
+    replacement=0,
+    all_dims=False,
+):
     """Get the criterion function for estimation with MSM.
 
     Return a version of the :func:`msm` function where all arguments except the
@@ -46,11 +54,12 @@ def get_msm_func(params, options, moments, calc_moments, weighting_matrix=None, 
         Array with shape (n_moments, n_moments) which is used to weight the squared
         errors of moments.
     replacement : callable or int
-        If int then all missing moments of the evaluation with the current moments are set to this
-        int. Else callable that maps missing indices into replacement int.
+        If int then all missing moments of the evaluation with the current moments
+         are set to this int. Else callable that maps missing indices into
+          replacement int.
     all_dims: boolean
-        If set to false objective is returned. If set to True weighted array of component deviations
-        will be returned.
+        If set to false objective is returned. If set to True weighted array
+        of component deviations will be returned.
 
     Returns
     -------
@@ -72,13 +81,15 @@ def get_msm_func(params, options, moments, calc_moments, weighting_matrix=None, 
         weighting_matrix=weighting_matrix,
         calc_moments=calc_moments,
         replacement=replacement,
-        all_dims=all_dims
+        all_dims=all_dims,
     )
 
     return msm_function
 
 
-def msm(params, simulate, moments, weighting_matrix, calc_moments, replacement, all_dims):
+def msm(
+    params, simulate, moments, weighting_matrix, calc_moments, replacement, all_dims
+):
     """Criterion function for the estimation with MSM.
 
     This function calculates the sum of weighted squared errors of moments.
@@ -97,32 +108,32 @@ def msm(params, simulate, moments, weighting_matrix, calc_moments, replacement, 
     calc_moments : callable
         Function to compute the moments from the simulated data.
     replacement : callable or int
-        If int then all missing moments of the evaluation with the current moments are set to this
-        int. Else callable that maps missing indices into replacement int.
+        If int then all missing moments of the evaluation with the current
+        moments are set to this int. Else callable that maps missing
+        indices into replacement int.
     all_dims: boolean
-        If set to false objective is returned. If set to True weighted array of component deviations
-        will be returned.
+        If set to false objective is returned.
+        If set to True weighted array of component deviations will be returned.
     """
     df = simulate(params)
 
     estimated_moments = calc_moments(df)
 
-    #Get rid of nan values
+    # Get rid of nan values
     estimated_moments = estimated_moments.dropna()
 
-    #Get index that is not contained
+    # Get index that is not contained
     missing_moments = []
     for x in estimated_moments.index:
         if x not in moments.index:
             missing_moments.append(x)
 
-    #Assign new values
+    # Assign new values
     if type(replacement) == int:
         estimated_moments[missing_moments] = replacement
     elif callable(replacement) is True:
         for x in missing_moments:
             estimated_moments[x] = replacement(x)
-
 
     moments_error = estimated_moments[moments.index].to_numpy() - moments.to_numpy()
 
