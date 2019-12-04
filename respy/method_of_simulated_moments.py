@@ -117,15 +117,12 @@ def msm(
     """
     df = simulate(params)
 
-    estimated_moments = calc_moments(df)
-
-    # Get rid of nan values
-    estimated_moments = estimated_moments.dropna()
+    estimated_moments = calc_moments(df).reindex(moments.index)
 
     # Get index that is not contained
     missing_moments = []
     for x in estimated_moments.index:
-        if x not in moments.index:
+        if estimated_moments[x].isnan():
             missing_moments.append(x)
 
     # Assign new values
