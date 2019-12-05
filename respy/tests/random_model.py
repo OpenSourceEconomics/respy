@@ -2,6 +2,7 @@
 import collections
 import itertools
 from functools import partial
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -305,14 +306,13 @@ def get_mock_moment_func(df, optim_paras):
 def _get_mock_moment(df, container_idx, periods, choices):
     """
     Mock Moment function to test the smm interface.
-
     """
     moments = pd.Series(index=container_idx)
     df_indexed = df.set_index(["Identifier", "Period"], drop=True)
     df_grouped_period = df_indexed.groupby(["Period"])
 
     info_period = df_grouped_period["Choice"].value_counts(normalize=True).to_dict()
-
+    info_period = defaultdict(lambda: 0.00, info_period)
 
     for period in periods:
         for choice in choices:

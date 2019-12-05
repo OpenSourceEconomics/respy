@@ -20,6 +20,7 @@ import functools
 
 import numpy as np
 import scipy as sc
+import pandas as pd
 
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.simulate import get_simulate_func
@@ -72,7 +73,7 @@ def get_msm_func(
     simulate = get_simulate_func(params, options)
 
     if weighting_matrix is None:
-        weighting_matrix = np.eye(len(moments))
+        weighting_matrix = pd.DataFrame(np.eye(len(moments)), index=moments.index, columns=moments.index)
 
     msm_function = functools.partial(
         msm,
