@@ -3,12 +3,15 @@ Test the msm interface of respy!
 """
 import respy as rp
 import numpy as np
+import pytest
 
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.tests.random_model import get_mock_moment_func
 from respy.method_of_simulated_moments import get_msm_func
 
-def test_msm_base():
+@pytest.mark.parametrize("seed", range(5))
+def test_msm_base(seed):
+    np.random.seed(seed)
     params, options,_ = rp.get_example_model("kw_94_one")
     simulate = rp.get_simulate_func(params, options)
     df = simulate(params)
@@ -19,7 +22,9 @@ def test_msm_base():
     rslt = msm(params)
     assert rslt == 0
 
-def test_msm_vec():
+@pytest.mark.parametrize("seed", range(5))
+def test_msm_vec(seed):
+    np.random.seed(seed)
     params, options,_ = rp.get_example_model("kw_94_one")
     simulate = rp.get_simulate_func(params, options)
     df = simulate(params)
