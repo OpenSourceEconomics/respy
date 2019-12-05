@@ -1,4 +1,5 @@
 import functools
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -17,7 +18,13 @@ from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
 
-def get_simulate_func(params, options, df=None):
+def get_simulate_func(
+    params,
+    options,
+    method="n_step_ahead_with_sampling",
+    df=None,
+    n_simulation_periods=None,
+):
     """Get the simulation function.
 
     Return :func:`simulate` where all arguments except the parameter vector are fixed
@@ -30,8 +37,12 @@ def get_simulate_func(params, options, df=None):
         DataFrame containing model parameters.
     options : dict
         Dictionary containing model options.
+    method : {"n_step_ahead_with_sampling", "n_step_ahead_with_data", "one_step_ahead"}
+        The simulation method which can be one of three:
+
+        -
     df : pandas.DataFrame or None
-        DataFrame containing a panel of individuals used for one-step-ahead simulation.
+        DataFrame containing one or multiple observations per individual.
 
     Returns
     -------
@@ -41,10 +52,14 @@ def get_simulate_func(params, options, df=None):
     """
     optim_paras, options = process_params_and_options(params, options)
 
+    df, n_simulation_periods, options = _process_simulation_arguments(
+        method, df, n_simulation_periods, options
+    )
+
     state_space = StateSpace(optim_paras, options)
 
     shape = (
-        options["n_periods"],
+        n_simulation_periods,
         options["simulation_agents"],
         len(optim_paras["choices"]),
     )
@@ -219,8 +234,6 @@ def _sample_unobserved_data_from_initial_conditions(df, optim_paras, options):
         )
 
     df = df.rename(columns=rename_labels).rename_axis(index=rename_labels).sort_index()
-
-    df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
     # Assign a type to each individual which is unobserved by the researcher.
     first_period_df = df.query("period == 0").copy()
@@ -543,3 +556,35 @@ def _create_state_space_columns(optim_paras):
         + list(optim_paras["observables"])
         + ["type"]
     )
+
+
+def _process_simulation_arguments(method, df, n_simulation_periods, options):
+    if n_simulation_periods is None:
+        n_simulation_periods = options["n_periods"]
+
+    if method == "n_step_ahead_with_sampling":
+        if df is not None:
+            df = None
+            warnings.warn("Passed df is ignored.")
+
+    elif method == "n_step_ahead_with_data":
+        df = df.query("Period == 0")
+        options["simulation_agents"] = df.index.get_level_values("Identifier").nunique()
+
+    elif method == "one_step_ahead":
+        if df is None:
+            raise ValueError(f"Method '{method}' requires data.")
+        options["simulation_agents"] = df.index.get_level_values("Identifier").nunique()
+
+    else:
+        raise NotImplementedError(f"Simulation method '{method}' is not implemented.")
+
+    if options["n_periods"] < n_simulation_periods:
+        options["n_periods"] = n_simulation_periods
+        warnings.warn(
+            f"The number of periods in the model, {options['n_periods']}, is lower than"
+            f" the requested number of simulated periods, {n_simulation_periods}. Set "
+            "model periods equal to simulated periods."
+        )
+
+    return df, n_simulation_periods, options
