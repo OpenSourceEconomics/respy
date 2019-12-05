@@ -290,3 +290,6 @@ def _update_nested_dictionary(dict_, other):
         else:
             dict_[key] = value
     return dict_
+
+def mock_moment_func():
+    pass

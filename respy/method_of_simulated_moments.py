@@ -122,11 +122,14 @@ def msm(
     #Get index
     idx = moments.index.intersection(estimated_moments.index)
 
-    #Trim weighting matrix
-    idx_drop = weighting_matrix.index.symetric_difference(idx)
-    weighting_matrix = weighting_matrix.drop(index=idx_drop, columns=idx_drop)
+    #Trim momnets
+    estimated_moments = estimated_moments[idx]
+    moments = moments[idx]
 
-    moments_error = estimated_moments[idx].to_numpy() - moments[idx].to_numpy()
+    #Trim weighting matrix
+    weighting_matrix = weighting_matrix.loc[idx,idx]
+
+    moments_error = estimated_moments.to_numpy() - moments.to_numpy()
 
     if all_dims is False:
         return moments_error @ weighting_matrix.to_numpy() @ moments_error
