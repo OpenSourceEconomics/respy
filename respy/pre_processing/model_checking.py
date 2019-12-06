@@ -26,10 +26,11 @@ def validate_options(o):
     assert _is_positive_nonzero_integer(o["n_periods"])
 
     # Covariates.
-    assert all(
-        isinstance(key, str) and isinstance(val, str)
-        for key, val in o["covariates"].items()
-    )
+    if "covariates" in o:
+        assert all(
+            isinstance(key, str) and isinstance(val, str)
+            for key, val in o["covariates"].items()
+        )
 
 
 def _is_positive_nonzero_integer(x):

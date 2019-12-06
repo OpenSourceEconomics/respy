@@ -200,7 +200,8 @@ def _parse_initial_and_max_experience(optim_paras, params, options):
             parsed_parameters = {0: pd.Series(index=["constant"], data=0)}
         optim_paras["choices"][choice]["start"] = parsed_parameters
 
-        max_ = int(params.get(("maximum_exp", choice), options["n_periods"] - 1))
+        default_max = max(parsed_parameters) + options["n_periods"] - 1
+        max_ = int(params.get(("maximum_exp", choice), default_max))
         optim_paras["choices"][choice]["max"] = max_
 
     return optim_paras
