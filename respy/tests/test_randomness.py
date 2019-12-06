@@ -1,7 +1,7 @@
 """This module includes test to specifically test that randomness is held constant."""
 import numpy as np
-import pytest
 import pandas as pd
+import pytest
 
 import respy as rp
 from respy.config import EXAMPLE_MODELS

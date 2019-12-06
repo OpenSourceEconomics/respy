@@ -19,20 +19,15 @@ References
 import functools
 
 import numpy as np
-import scipy as sc
 import pandas as pd
+import scipy as sc
 
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.simulate import get_simulate_func
 
 
 def get_msm_func(
-    params,
-    options,
-    moments,
-    calc_moments,
-    weighting_matrix=None,
-    all_dims=False,
+    params, options, moments, calc_moments, weighting_matrix=None, all_dims=False
 ):
     """Get the criterion function for estimation with MSM.
 
@@ -84,9 +79,7 @@ def get_msm_func(
     return msm_function
 
 
-def msm(
-    params, simulate, moments, weighting_matrix, calc_moments, all_dims
-):
+def msm(params, simulate, moments, weighting_matrix, calc_moments, all_dims):
     """Criterion function for the estimation with MSM.
 
     This function calculates the sum of weighted squared errors of moments.

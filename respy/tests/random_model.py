@@ -1,8 +1,8 @@
 """This module contains the functions for the generation of random requests."""
 import collections
 import itertools
-from functools import partial
 from collections import defaultdict
+from functools import partial
 
 import numpy as np
 import pandas as pd
