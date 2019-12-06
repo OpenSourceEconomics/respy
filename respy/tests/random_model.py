@@ -323,6 +323,6 @@ def _get_mock_moment(df, container_idx, periods, choices):
 
 def _create_index_mock(df, optim_paras):
     periods = sorted(df["Period"].unique())
-    choices = sorted(list(optim_paras["choices"].keys()))
+    choices = sorted(optim_paras["choices"].keys())
     container_idx = list(itertools.product(periods, choices))
     return periods, choices, container_idx

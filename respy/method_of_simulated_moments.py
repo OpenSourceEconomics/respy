@@ -32,7 +32,6 @@ def get_msm_func(
     moments,
     calc_moments,
     weighting_matrix=None,
-    replacement=0,
     all_dims=False,
 ):
     """Get the criterion function for estimation with MSM.
@@ -54,10 +53,6 @@ def get_msm_func(
     weighting_matrix : np.ndarray
         Array with shape (n_moments, n_moments) which is used to weight the squared
         errors of moments.
-    replacement : callable or int
-        If int then all missing moments of the evaluation with the current moments
-         are set to this int. Else callable that maps missing indices into
-          replacement int.
     all_dims: boolean
         If set to false objective is returned. If set to True weighted array
         of component deviations will be returned.
@@ -83,7 +78,6 @@ def get_msm_func(
         moments=moments,
         weighting_matrix=weighting_matrix,
         calc_moments=calc_moments,
-        replacement=replacement,
         all_dims=all_dims,
     )
 
@@ -91,7 +85,7 @@ def get_msm_func(
 
 
 def msm(
-    params, simulate, moments, weighting_matrix, calc_moments, replacement, all_dims
+    params, simulate, moments, weighting_matrix, calc_moments, all_dims
 ):
     """Criterion function for the estimation with MSM.
 
@@ -110,10 +104,6 @@ def msm(
         errors of moments.
     calc_moments : callable
         Function to compute the moments from the simulated data.
-    replacement : callable or int
-        If int then all missing moments of the evaluation with the current
-        moments are set to this int. Else callable that maps missing
-        indices into replacement int.
     all_dims: boolean
         If set to false objective is returned.
         If set to True weighted array of component deviations will be returned.
