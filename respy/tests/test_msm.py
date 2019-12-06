@@ -35,7 +35,9 @@ def test_msm_random(msm_input):
 
 
 def test_msm_vec(msm_input):
-    msm = get_msm_func(msm_input[0], msm_input[1], msm_input[2], msm_input[3], all_dims=True)
+    msm = get_msm_func(
+        msm_input[0], msm_input[1], msm_input[2], msm_input[3], all_dims=True
+    )
     rslt = msm(msm_input[0])
     np.testing.assert_array_equal(rslt, np.zeros(len(msm_input[2])))
 
@@ -47,6 +49,8 @@ def test_msm_missing(msm_input):
     df = simulate(msm_input[0])
     optim_paras, _ = process_params_and_options(msm_input[0], msm_input[1])
     get_moments = get_mock_moment_func(df, optim_paras)
-    msm = get_msm_func(msm_input[0], msm_input[1], msm_input[2], get_moments, all_dims=True)
+    msm = get_msm_func(
+        msm_input[0], msm_input[1], msm_input[2], get_moments, all_dims=True
+    )
     rslt = msm(msm_input[0])
-    assert(len(msm_input[2]) - 4 == len(rslt))
+    assert len(msm_input[2]) - 4 == len(rslt)

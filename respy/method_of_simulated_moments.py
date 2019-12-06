@@ -73,7 +73,9 @@ def get_msm_func(
     simulate = get_simulate_func(params, options)
 
     if weighting_matrix is None:
-        weighting_matrix = pd.DataFrame(np.eye(len(moments)), index=moments.index, columns=moments.index)
+        weighting_matrix = pd.DataFrame(
+            np.eye(len(moments)), index=moments.index, columns=moments.index
+        )
 
     msm_function = functools.partial(
         msm,
@@ -120,15 +122,15 @@ def msm(
 
     estimated_moments = calc_moments(df)
 
-    #Get index
+    # Get index
     idx = moments.index.intersection(estimated_moments.index)
 
-    #Trim momnets
+    # Trim momnets
     estimated_moments = estimated_moments[idx]
     moments = moments[idx]
 
-    #Trim weighting matrix
-    weighting_matrix = weighting_matrix.loc[idx,idx]
+    # Trim weighting matrix
+    weighting_matrix = weighting_matrix.loc[idx, idx]
 
     moments_error = estimated_moments.to_numpy() - moments.to_numpy()
 

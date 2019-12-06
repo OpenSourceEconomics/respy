@@ -297,11 +297,11 @@ def _update_nested_dictionary(dict_, other):
 
 def get_mock_moment_func(df, optim_paras):
     periods, choices, container_idx = _create_index_mock(df, optim_paras)
-    out = partial(_get_mock_moment,
-                  container_idx=container_idx,
-                  periods=periods,
-                  choices=choices)
+    out = partial(
+        _get_mock_moment, container_idx=container_idx, periods=periods, choices=choices
+    )
     return out
+
 
 def _get_mock_moment(df, container_idx, periods, choices):
     """
@@ -320,15 +320,9 @@ def _get_mock_moment(df, container_idx, periods, choices):
             moments.loc[name] = info_period[name]
     return moments
 
+
 def _create_index_mock(df, optim_paras):
     periods = sorted(df["Period"].unique())
     choices = sorted(list(optim_paras["choices"].keys()))
     container_idx = list(itertools.product(periods, choices))
     return periods, choices, container_idx
-
-
-
-
-
-
-
