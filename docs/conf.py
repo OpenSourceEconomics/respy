@@ -106,8 +106,7 @@ nbsphinx_prolog = r"""
 
     .. nbinfo::
 
-        Download the notebook here: :download:`https://github.com/OpenSourceEconomics/
-        respy/blob/{{ env.config.release }}/{{ docname }}`
+        Download the notebook :download:`here <https://github.com/OpenSourceEconomics/respy/blob/{{ env.config.release }}/{{ docname }}>`!
 
 """
 
