@@ -97,7 +97,9 @@ def test_parse_initial_and_max_experience():
         optim_paras["choices"]["b"]["start"][0]
         == optim_paras["choices"]["b"]["start"][5]
     ).all()
-    assert optim_paras["choices"]["a"]["max"] == options["n_periods"] - 1
+    assert optim_paras["choices"]["a"]["max"] == options["n_periods"] - 1 + max(
+        optim_paras["choices"]["a"]["start"]
+    )
     assert optim_paras["choices"]["b"]["max"] == 5
 
 
