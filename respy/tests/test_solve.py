@@ -118,11 +118,6 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
 
     states_new, indexer_new = _create_state_space(optim_paras, options)
 
-    for i in range(1, optim_paras["n_lagged_choices"] + 1):
-        states_new[f"lagged_choice_{i}"] = states_new[f"lagged_choice_{i}"].replace(
-            {choice: i for i, choice in enumerate(optim_paras["choices"])}
-        )
-
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))
     states_new_set = set(map(tuple, states_new.to_numpy()))
@@ -161,11 +156,6 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
         )
 
     states_new, indexer_new = _create_state_space(optim_paras, options)
-
-    for i in range(1, optim_paras["n_lagged_choices"] + 1):
-        states_new[f"lagged_choice_{i}"] = states_new[f"lagged_choice_{i}"].replace(
-            {choice: i for i, choice in enumerate(optim_paras["choices"])}
-        )
 
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))

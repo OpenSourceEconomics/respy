@@ -7,7 +7,6 @@ from scipy.special import softmax
 from respy.config import HUGE_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
-from respy.shared import convert_choice_variables_from_categorical_to_codes
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
@@ -148,27 +147,22 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
     for observable in optim_paras["observables"]:
         level_dict = optim_paras["observables"][observable]
         states_df[observable] = _get_random_characteristic(
-            states_df, options, level_dict
+            states_df, options, level_dict, use_keys=False
         )
 
     # Create initial experiences, lagged choices and types for agents in simulation.
     for choice in optim_paras["choices_w_exp"]:
         level_dict = optim_paras["choices"][choice]["start"]
         states_df[f"exp_{choice}"] = _get_random_characteristic(
-            states_df, options, level_dict
+            states_df, options, level_dict, use_keys=True
         )
     for lag in reversed(range(1, n_lagged_choices + 1)):
         level_dict = optim_paras[f"lagged_choice_{lag}"]
         states_df[f"lagged_choice_{lag}"] = _get_random_characteristic(
-            states_df, options, level_dict
+            states_df, options, level_dict, use_keys=False
         )
 
     states_df = _get_random_types(states_df, optim_paras, options)
-
-    # We need to convert label-based lagged choices to codes.
-    states_df = convert_choice_variables_from_categorical_to_codes(
-        states_df, optim_paras
-    )
 
     # Create a matrix of initial states of simulated agents.
     state_space_cols = (
@@ -286,7 +280,7 @@ def _get_random_types(states_df, optim_paras, options):
     return states_df
 
 
-def _get_random_characteristic(states_df, options, level_dict):
+def _get_random_characteristic(states_df, options, level_dict, use_keys):
     """Sample characteristic of individuals.
 
     Parameters
@@ -319,12 +313,13 @@ def _get_random_characteristic(states_df, options, level_dict):
 
     np.random.seed(next(options["simulation_seed_iteration"]))
 
-    characteristic = _random_choice(level_dict, probabilities)
+    choices = level_dict if use_keys else len(level_dict)
+    characteristic = _random_choice(choices, probabilities)
 
     return characteristic
 
 
-def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
+def _convert_codes_to_original_labels(df, optim_paras):
     code_to_choice = dict(enumerate(optim_paras["choices"]))
 
     df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
@@ -336,6 +331,10 @@ def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
             .cat.set_categories(code_to_choice)
             .cat.rename_categories(code_to_choice)
         )
+
+    for observable in optim_paras["observables"]:
+        code_to_obs = dict(enumerate(optim_paras["observables"][observable]))
+        df[f"{observable.title()}"] = df[f"{observable.title()}"].replace(code_to_obs)
 
     return df
 
@@ -350,7 +349,7 @@ def _process_simulated_data(data, optim_paras):
         .reset_index(drop=True)
     )
 
-    df = _convert_choice_variables_from_codes_to_categorical(df, optim_paras)
+    df = _convert_codes_to_original_labels(df, optim_paras)
 
     return df
 
@@ -388,7 +387,7 @@ def _random_choice(choices, probabilities):
     """
     cumulative_distribution = probabilities.cumsum(axis=1)
     # Probabilities often do not sum to one but 0.99999999999999999.
-    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], 15)
+    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], 5)
 
     if not (cumulative_distribution[:, -1] == 1).all():
         raise ValueError("Probabilities do not sum to one.")

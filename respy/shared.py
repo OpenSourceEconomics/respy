@@ -186,6 +186,16 @@ def clip(x, minimum=None, maximum=None):
 
 
 def downcast_to_smallest_dtype(series):
+    """Downcast the dtype of a :class:`pandas.Series` to the lowest possible dtype.
+
+    Be aware that NumPy integers silently overflow which is why conversion to low dtypes
+    should be done after calculations. For example, using :class:`np.uint8` for an array
+    and squaring the elements leads to silent overflows for numbers higher than 255.
+
+    For more information on the boundaries the NumPy documentation under
+    https://docs.scipy.org/doc/numpy-1.17.0/user/basics.types.html.
+
+    """
     # We can skip integer as "unsigned" and "signed" will find the same dtypes.
     _downcast_options = ["unsigned", "signed", "float"]
 

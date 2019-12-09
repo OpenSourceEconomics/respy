@@ -26,12 +26,13 @@ def process_params_and_options(params, options):
     options = _read_options(options)
     options = {**DEFAULT_OPTIONS, **options}
     options = _create_internal_seeds_from_user_seeds(options)
+    options = _identify_relevant_covariates(options, params)
     validate_options(options)
 
     params = _read_params(params)
     optim_paras = _parse_parameters(params, options)
 
-    optim_paras["n_periods"] = options["n_periods"]
+    optim_paras, options = _synchronise_optim_paras_and_options(optim_paras, options)
 
     return optim_paras, options
 
@@ -152,7 +153,7 @@ def _parse_observables(optim_paras, params):
     """Parse observed variables and their levels."""
     optim_paras["observables"] = {}
 
-    regex_observables = r"\bobservable_([a-z0-9_]+)_[0-9]+\b"
+    regex_observables = r"\bobservable_([a-z0-9_]+)_[0-9a-z]+\b"
     observable_counts = (
         params.index.get_level_values("category")
         .str.extract(regex_observables, expand=False)
@@ -161,19 +162,11 @@ def _parse_observables(optim_paras, params):
     )
 
     for observable in observable_counts.index:
-        regex_pattern = fr"\bobservable_{observable}_([0-9])\b"
+        regex_pattern = fr"\bobservable_{observable}_([0-9a-z]+)\b"
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, regex_pattern
         )
         optim_paras["observables"][observable] = parsed_parameters
-
-        # Check that levels of the observable start at 0 and increment by one.
-        parsed_levels = list(parsed_parameters)
-        if parsed_levels != list(range(observable_counts.loc[observable])):
-            raise ValueError(
-                f"The levels of observable '{observable}' do not start at zero and "
-                "increment by one."
-            )
 
     return optim_paras
 
@@ -452,7 +445,7 @@ def _parse_lagged_choices(optim_paras, options, params):
     for cov in covariates:
         matches += re.findall(regex_pattern, covariates[cov])
 
-    n_lagged_choices = 0 if not matches else pd.to_numeric(matches).max()
+    n_lc_covariates = 0 if not matches else pd.to_numeric(matches).max()
 
     # Second, infer the number of lags defined in params.
     matches_params = list(
@@ -462,42 +455,56 @@ def _parse_lagged_choices(optim_paras, options, params):
         .unique()
     )
 
-    lc_params = np.zeros(1) if not matches_params else pd.to_numeric(matches_params)
-    n_lc_params = lc_params.max()
-    undefined_lags = set(range(1, n_lagged_choices + 1)) - set(lc_params)
+    lc_params = [0] if not matches_params else pd.to_numeric(matches_params)
+    n_lc_params = max(lc_params)
+
+    # Todo: I am not sure whether we want to emit a warning? Defaults are fine.
 
     # Check whether there is a discrepancy between the maximum number of lags specified
-    # in covariates and filters or params.
-    if n_lagged_choices > n_lc_params or undefined_lags:
+    # in covariates or params.
+    if n_lc_covariates > n_lc_params:
         warnings.warn(
             "The distribution of initial lagged choices is insufficiently specified in "
-            "params. This model cannot be used for simulation, only for estimation.",
+            f"the parameters. Covariates require {n_lc_covariates} lagged choices and "
+            f"parameters define {n_lc_params}. Missing lags have equiprobable choices.",
             category=UserWarning,
         )
-    elif n_lagged_choices < n_lc_params:
+
+    elif n_lc_covariates < n_lc_params:
         warnings.warn(
-            "The model contains superfluous information on lagged choices. The "
-            f"covariates and filters require {n_lagged_choices} lagged choices whereas "
-            f"{n_lc_params} lags are specified in params. Ignore superfluous lags in "
-            "params.",
+            "The parameters contain superfluous information on lagged choices. The "
+            f"covariates require {n_lc_covariates} lags whereas parameters provide "
+            f"information on {n_lc_params} lags. Superfluous lags are ignored.",
             category=UserWarning,
         )
+
     else:
         pass
 
-    optim_paras["n_lagged_choices"] = n_lagged_choices
+    optim_paras["n_lagged_choices"] = n_lc_covariates
 
     # Add existing lagged choice parameters to ``optim_paras``.
-    for lag in range(1, n_lagged_choices + 1):
+    for lag in range(1, n_lc_covariates + 1):
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, fr"lagged_choice_{lag}_([A-Za-z_]+)"
         )
-        parsed_parameters = {} if parsed_parameters is None else parsed_parameters
-        defaults = {
-            choice: pd.Series(index=["constant"], data=-MAX_FLOAT)
-            for choice in optim_paras["choices"]
-        }
-        optim_paras[f"lagged_choice_{lag}"] = {**defaults, **parsed_parameters}
+
+        # If there are no parameters for the specific lag, assume equiprobable choices.
+        if parsed_parameters is None:
+            parsed_parameters = {
+                choice: pd.Series(index=["constant"], data=0)
+                for choice in optim_paras["choices"]
+            }
+
+        # If there are parameters, put zero probability on missing choices.
+        else:
+            defaults = {
+                choice: pd.Series(index=["constant"], data=-MAX_FLOAT)
+                for choice in optim_paras["choices"]
+            }
+            parsed_parameters = {**defaults, **parsed_parameters}
+
+        optim_paras[f"lagged_choice_{lag}"] = parsed_parameters
 
     return optim_paras
 
@@ -525,7 +532,7 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
         p_i      &= \frac{e^{x_i \beta_i}}{\\sum_j e^{x_j \beta_j}} \\
                  &= \frac{e^{\beta_i}}{\\sum_j e^{\beta_j}} \\
         log(p_i) &= \beta_i - \\log(\\sum_j e^{\beta_j}) \\
-        log(p_i) &= \beta_i - C
+                 &= \beta_i - C
 
     Raises
     ------
@@ -592,3 +599,117 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
         container = None
 
     return container
+
+
+def _identify_relevant_covariates(options, params):
+    covariates = options["covariates"]
+
+    relevant_covariates = {}
+    for cov in covariates:
+        if cov in params.index.get_level_values("name"):
+            relevant_covariates[cov] = covariates[cov]
+
+    n_relevant_covariates_changed = True
+    while n_relevant_covariates_changed:
+        n_relevant_covariates = len(relevant_covariates)
+
+        for cov in covariates:
+            for relevant_cov in list(relevant_covariates):
+                if cov in relevant_covariates[relevant_cov]:
+                    # Append the covariate to the front such that nested covariates are
+                    # created in the beginning.
+                    relevant_covariates = {cov: covariates[cov], **relevant_covariates}
+
+        if n_relevant_covariates == len(relevant_covariates):
+            n_relevant_covariates_changed = False
+        else:
+            n_relevant_covariates_changed = True
+
+    options["covariates"] = relevant_covariates
+
+    return options
+
+
+def _synchronise_optim_paras_and_options(optim_paras, options):
+    optim_paras["n_periods"] = options["n_periods"]
+
+    options = _convert_labels_in_formulas_to_codes(options, optim_paras)
+
+    return optim_paras, options
+
+
+def _convert_labels_in_formulas_to_codes(options, optim_paras):
+    """Parse the covariates and convert labels to codes.
+
+    Characteristics with labels are either choices or observables. Choices are ordered
+    as in ``optim_paras["choices"]`` and observables alphabetically.
+
+    Labels can either be in single or double quote strings which has to be checked.
+
+    """
+    for covariate, formula in options["covariates"].items():
+        options["covariates"][covariate] = _replace_choices_and_observables_in_formula(
+            formula, optim_paras
+        )
+
+    options = _convert_labels_in_filters_to_codes(optim_paras, options)
+
+    for choice in optim_paras["choices"]:
+        for i, formula in enumerate(options["inadmissible_states"].get(choice, [])):
+            options["inadmissible_states"][choice][
+                i
+            ] = _replace_choices_and_observables_in_formula(formula, optim_paras)
+
+    return options
+
+
+def _replace_in_single_or_double_quotes(val, from_, to):
+    return val.replace(f"'{from_}'", f"{to}").replace(f'"{from_}"', f"{to}")
+
+
+def _replace_choices_and_observables_in_formula(formula, optim_paras):
+    observables = optim_paras["observables"]
+
+    for i, choice in enumerate(optim_paras["choices"]):
+        formula = _replace_in_single_or_double_quotes(formula, choice, i)
+
+    for observable in observables:
+        for i, obs in enumerate(observables[observable]):
+            if isinstance(obs, str):
+                formula = _replace_in_single_or_double_quotes(formula, obs, i)
+
+    return formula
+
+
+def _convert_labels_in_filters_to_codes(optim_paras, options):
+    filters = []
+
+    for filter_ in options["core_state_space_filters"]:
+        # If "{i}" is in filter_, loop over choices with experiences.
+        if "{i}" in filter_:
+            for choice in optim_paras["choices_w_exp"]:
+                fltr_ = filter_.replace("{i}", choice)
+                fltr_ = _replace_choices_and_observables_in_formula(fltr_, optim_paras)
+                filters.append(fltr_)
+
+        # If "{j}" is in filter_, loop over choices without experiences.
+        elif "{j}" in filter_:
+            for choice in optim_paras["choices_wo_exp"]:
+                fltr = filter_.replace("{j}", choice)
+                fltr = _replace_choices_and_observables_in_formula(fltr, optim_paras)
+                filters.append(fltr)
+
+        # If "{k}" is in filter_, loop over choices with wage.
+        elif "{k}" in filter_:
+            for choice in optim_paras["choices_w_wage"]:
+                fltr = filter_.replace("{k}", choice)
+                fltr = _replace_choices_and_observables_in_formula(fltr, optim_paras)
+                filters.append(fltr)
+
+        else:
+            filter_ = _replace_choices_and_observables_in_formula(filter_, optim_paras)
+            filters.append(filter_)
+
+    options["core_state_space_filters"] = filters
+
+    return options

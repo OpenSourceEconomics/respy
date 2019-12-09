@@ -1,4 +1,7 @@
 """Test model generation."""
+import io
+from textwrap import dedent
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -6,6 +9,8 @@ import pytest
 from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
 from respy.pre_processing.model_checking import validate_options
+from respy.pre_processing.model_processing import _convert_labels_in_formulas_to_codes
+from respy.pre_processing.model_processing import _identify_relevant_covariates
 from respy.pre_processing.model_processing import _parse_initial_and_max_experience
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.tests.random_model import generate_random_model
@@ -126,3 +131,73 @@ def test_normalize_probabilities(seed):
             optim_paras_1["observables"]["observable_0"][level],
             optim_paras_2["observables"]["observable_0"][level],
         )
+
+
+def test_identify_relevant_covariates():
+    params = pd.read_csv(
+        io.StringIO(
+            dedent(
+                """
+                category,name,value
+                wage_a,constant,1
+                nonpec_b,upper_upper,1
+                wage_c,upper_upper_with_spacing_problem,1
+                """
+            )
+        ),
+        index_col=["category", "name"],
+    )
+
+    options = {
+        "covariates": {
+            "constant": "1",
+            "nested_covariate": "2",
+            "upper": "nested_covariate > 2",
+            "upper_upper": "upper == 5",
+            "unrelated_covariate": "2",
+            "unrelated_covariate_upper": "unrelated_covariate",
+            "upper_upper_with_spacing_problem": "upper>2",
+        }
+    }
+
+    relevant_covariates = _identify_relevant_covariates(options, params)
+
+    expected = {
+        "covariates": {
+            "constant": "1",
+            "nested_covariate": "2",
+            "upper": "nested_covariate > 2",
+            "upper_upper": "upper == 5",
+            "upper_upper_with_spacing_problem": "upper>2",
+        }
+    }
+
+    assert expected == relevant_covariates
+
+
+def test_convert_labels_in_covariates_to_codes():
+    optim_paras = {
+        "choices": ["fishing", "hammock"],
+        "observables": {"fishing_grounds": ["poor", "rich"]},
+        "choices_w_exp": ["fishing"],
+    }
+
+    options = {
+        "covariates": {
+            "rich_fishing_grounds": "fishing_grounds == 'rich'",
+            "do_fishing": "choice == 'fishing'",
+            "do_hammock": 'choice == "hammock"',
+        },
+        "core_state_space_filters": [],
+        "inadmissible_states": {},
+    }
+
+    options = _convert_labels_in_formulas_to_codes(options, optim_paras)
+
+    expected = {
+        "rich_fishing_grounds": "fishing_grounds == 1",
+        "do_fishing": "choice == 0",
+        "do_hammock": "choice == 1",
+    }
+
+    assert options["covariates"] == expected
