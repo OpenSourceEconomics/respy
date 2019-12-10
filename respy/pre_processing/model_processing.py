@@ -110,9 +110,8 @@ def _read_params(input_):
 
 def _parse_parameters(params, options):
     """Parse the parameter vector into a dictionary of model quantities."""
-    optim_paras = {}
+    optim_paras = {"delta": params.loc[("delta", "delta")]}
 
-    optim_paras["delta"] = params.loc[("delta", "delta")]
     optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)

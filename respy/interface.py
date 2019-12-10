@@ -79,5 +79,7 @@ def get_parameter_constraints(model):
         constraints = KW_97_EXTENDED_CONSTRAINTS
     elif "robinson" == model:
         constraints = ROBINSON_CONSTRAINTS
+    else:
+        constraints = {}
 
     return constraints
