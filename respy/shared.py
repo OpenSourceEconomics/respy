@@ -17,6 +17,7 @@ from respy.config import INADMISSIBILITY_PENALTY
 def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
+    """Aggregate utility components."""
     flow_utility = wage * draw + nonpec
     value_function = flow_utility + delta * continuation_value
 
@@ -131,6 +132,7 @@ def transform_base_draws_with_cholesky_factor(
 
 
 def generate_column_labels_estimation(optim_paras):
+    """Generate column labels for data necessary for the estimation."""
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
         + [f"Experience_{choice.title()}" for choice in optim_paras["choices_w_exp"]]
@@ -151,6 +153,7 @@ def generate_column_labels_estimation(optim_paras):
 
 
 def generate_column_labels_simulation(optim_paras):
+    """Generate column labels for simulation output."""
     est_lab, est_dtypes = generate_column_labels_estimation(optim_paras)
     labels = (
         est_lab

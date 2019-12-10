@@ -1,3 +1,4 @@
+"""Everything related to the estimation with maximum likelihood."""
 import warnings
 from functools import partial
 
@@ -320,7 +321,7 @@ def _internal_log_like_obs(
 
 @nb.njit
 def logsumexp(x):
-    """Compute `logsumexp(x)` of `x`.
+    """Compute logsumexp of `x`.
 
     The function does the same as the following code, but faster.
 
@@ -370,7 +371,7 @@ def simulate_log_probability_of_individuals_observed_choice(
     tau,
     smoothed_log_probability,
 ):
-    """Simulate the probability of observing the agent's choice.
+    r"""Simulate the probability of observing the agent's choice.
 
     The probability is simulated by iterating over a distribution of unobservables.
     First, the utility of each choice is computed. Then, the probability of observing
@@ -381,8 +382,8 @@ def simulate_log_probability_of_individuals_observed_choice(
 
     .. math::
 
-        \\log(\text{softmax}(x)_i) = \\log\\left(
-            \frac{e^{x_i}}{\\sum^J e^{x_j}}
+        \log(\text{softmax}(x)_i) = \log\left(
+            \frac{e^{x_i}}{\sum^J e^{x_j}}
         \right)
 
     The following function is numerically more robust. The derivation with the two

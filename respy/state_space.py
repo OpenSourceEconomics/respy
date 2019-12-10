@@ -1,3 +1,4 @@
+"""Everything related to the state space of a structural model."""
 import itertools
 
 import numba as nb
@@ -47,6 +48,7 @@ class StateSpace:
     """
 
     def __init__(self, optim_paras, options):
+        """Initialize the state space class."""
         self.base_draws_sol = create_base_draws(
             (
                 options["n_periods"],
@@ -354,7 +356,7 @@ def _add_lagged_choice_to_core_state_space(df, optim_paras):
 
 
 def _filter_core_state_space(df, options):
-    """Applies filters to the core state space.
+    """Apply filters to the core state space.
 
     Sometimes, we want to apply filters to a group of choices. Thus, use the following
     shortcuts.

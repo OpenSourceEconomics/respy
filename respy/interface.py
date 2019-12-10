@@ -1,3 +1,4 @@
+"""General interface functions for respy."""
 import warnings
 
 import pandas as pd
@@ -69,6 +70,7 @@ def get_example_model(model, with_data=True):
 
 
 def get_parameter_constraints(model):
+    """Provide parameter constraints for the estimation compatible with estimagic."""
     if "kw_94" in model:
         constraints = KW_94_CONSTRAINTS
     elif "kw_97_basic" == model:

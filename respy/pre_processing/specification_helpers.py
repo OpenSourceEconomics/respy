@@ -8,7 +8,7 @@ from respy.shared import normalize_probabilities
 
 
 def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
-    """Creates a template for the parameter specification.
+    """Create a template for the parameter specification.
 
     Parameters
     ----------

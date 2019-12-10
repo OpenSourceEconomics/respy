@@ -23,6 +23,11 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 
 def process_params_and_options(params, options):
+    """Process ``params`` and ``options``.
+
+    This function is interface for parsing the model specification given by the user.
+
+    """
     options = _read_options(options)
     options = {**DEFAULT_OPTIONS, **options}
     options = _create_internal_seeds_from_user_seeds(options)
@@ -32,12 +37,13 @@ def process_params_and_options(params, options):
     params = _read_params(params)
     optim_paras = _parse_parameters(params, options)
 
-    optim_paras, options = _synchronise_optim_paras_and_options(optim_paras, options)
+    optim_paras, options = _sync_optim_paras_and_options(optim_paras, options)
 
     return optim_paras, options
 
 
 def _read_options(input_):
+    """Read the options which can either be a dictionary or a path."""
     if not isinstance(input_, (Path, dict)):
         raise TypeError("options must be pathlib.Path or dictionary.")
 
@@ -64,7 +70,6 @@ def _create_internal_seeds_from_user_seeds(options):
     See :ref:`randomness-and-reproducibility` for more information.
 
     """
-
     seeds = [f"{key}_seed" for key in ["solution", "simulation", "estimation"]]
 
     # Check that two seeds are not equal. Otherwise, raise warning.
@@ -84,6 +89,7 @@ def _create_internal_seeds_from_user_seeds(options):
 
 
 def _read_params(input_):
+    """Read the parameters which can either be a path, a Series, or a DataFrame."""
     input_ = pd.read_csv(input_) if isinstance(input_, Path) else input_.copy()
 
     if isinstance(input_, pd.DataFrame):
@@ -185,7 +191,7 @@ def _parse_choice_parameters(optim_paras, params):
 def _parse_initial_and_max_experience(optim_paras, params, options):
     """Process initial experience distributions and maximum experience."""
     for choice in optim_paras["choices_w_exp"]:
-        regex_for_levels = fr"initial_exp_{choice}_([0-9]+)"
+        regex_for_levels = fr"\binitial_exp_{choice}_([0-9]+)\b"
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, regex_for_levels
         )
@@ -510,7 +516,7 @@ def _parse_lagged_choices(optim_paras, options, params):
 
 
 def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
-    """Parse probabilities or logit coefficients of parameter groups.
+    r"""Parse probabilities or logit coefficients of parameter groups.
 
     Some parameters form a group to specify a distribution. The parameters can either be
     probabilities from a probability mass function. For example, see the specification
@@ -529,9 +535,9 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
 
     .. math::
 
-        p_i      &= \frac{e^{x_i \beta_i}}{\\sum_j e^{x_j \beta_j}} \\
-                 &= \frac{e^{\beta_i}}{\\sum_j e^{\beta_j}} \\
-        log(p_i) &= \beta_i - \\log(\\sum_j e^{\beta_j}) \\
+        p_i      &= \frac{e^{x_i \beta_i}}{\sum_j e^{x_j \beta_j}} \
+                 &= \frac{e^{\beta_i}}{\sum_j e^{\beta_j}} \
+        log(p_i) &= \beta_i - \log(\sum_j e^{\beta_j}) \
                  &= \beta_i - C
 
     Raises
@@ -602,6 +608,17 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
 
 
 def _identify_relevant_covariates(options, params):
+    """Identify the relevant covariates.
+
+    We try to make every model as sparse as possible which means discarding covariates
+    which are irrelevant. The immediate benefit is that memory consumption and start-up
+    costs are reduced.
+
+    An advantage further downstream is that the number of lagged choices is inferred
+    from covariates. Eliminating irrelevant covariates might reduce the number of
+    implemented lags.
+
+    """
     covariates = options["covariates"]
 
     relevant_covariates = {}
@@ -630,7 +647,8 @@ def _identify_relevant_covariates(options, params):
     return options
 
 
-def _synchronise_optim_paras_and_options(optim_paras, options):
+def _sync_optim_paras_and_options(optim_paras, options):
+    """Sync ``optim_paras`` and ``options`` after they have been parsed separately."""
     optim_paras["n_periods"] = options["n_periods"]
 
     options = _convert_labels_in_formulas_to_codes(options, optim_paras)
@@ -639,7 +657,7 @@ def _synchronise_optim_paras_and_options(optim_paras, options):
 
 
 def _convert_labels_in_formulas_to_codes(options, optim_paras):
-    """Parse the covariates and convert labels to codes.
+    """Convert labels in covariates, filters and inadmissible formulas to codes.
 
     Characteristics with labels are either choices or observables. Choices are ordered
     as in ``optim_paras["choices"]`` and observables alphabetically.
@@ -664,10 +682,17 @@ def _convert_labels_in_formulas_to_codes(options, optim_paras):
 
 
 def _replace_in_single_or_double_quotes(val, from_, to):
+    """Replace a value in a string enclosed in single or double quotes."""
     return val.replace(f"'{from_}'", f"{to}").replace(f'"{from_}"', f"{to}")
 
 
 def _replace_choices_and_observables_in_formula(formula, optim_paras):
+    """Replace choices and observables in formula.
+
+    Choices and levels of an observable can have string identifier which are replaced
+    with their codes.
+
+    """
     observables = optim_paras["observables"]
 
     for i, choice in enumerate(optim_paras["choices"]):
@@ -682,6 +707,19 @@ def _replace_choices_and_observables_in_formula(formula, optim_paras):
 
 
 def _convert_labels_in_filters_to_codes(optim_paras, options):
+    """Convert labels in ``"core_state_space_filters"`` to codes.
+
+    The filters are used to remove states from the state space which are inadmissible
+    anyway.
+
+    A filter might look like this::
+
+        "lagged_choice_1 == '{k}' and exp_{k} == 0"
+
+    ``{k}`` is replaced by the actual choice name whereas ``'{k}'`` or ``"{k}"`` is
+    replaced with the internal choice code.
+
+    """
     filters = []
 
     for filter_ in options["core_state_space_filters"]:

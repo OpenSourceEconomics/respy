@@ -1,3 +1,4 @@
+"""Everything related to the simulation of data with structural models."""
 import functools
 
 import numpy as np
@@ -266,7 +267,6 @@ def _simulate_data(state_space, base_draws_sim, base_draws_wage, optim_paras, op
 
 def _get_random_types(states_df, optim_paras, options):
     """Get random types for simulated agents."""
-
     if optim_paras["n_types"] == 1:
         states_df["type"] = np.zeros(options["simulation_agents"], dtype=np.uint8)
     else:
