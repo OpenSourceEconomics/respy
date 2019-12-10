@@ -38,11 +38,14 @@ def get_simulate_func(
     options : dict
         Dictionary containing model options.
     method : {"n_step_ahead_with_sampling", "n_step_ahead_with_data", "one_step_ahead"}
-        The simulation method which can be one of three:
-
-        -
+        The simulation method which can be one of three and is explained in more detail
+        in :func:`simulate`.
     df : pandas.DataFrame or None
         DataFrame containing one or multiple observations per individual.
+    n_simulation_periods : int or None
+        Simulate data for a number of periods. This options does not affect
+        ``options["n_periods"]`` which controls the number of periods for which decision
+        rules are computed.
 
     Returns
     -------
@@ -108,7 +111,7 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     options : dict
         Contains model options.
     df : pandas.DataFrame or None
-        Can be one three objects.
+        Can be one three objects:
 
         - :data:`None` if no data is provided. This triggers sampling from initial
           conditions and a n-step-ahead simulation.
