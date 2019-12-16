@@ -1,3 +1,4 @@
+"""Test functions to ensure the validity of data."""
 import numpy as np
 
 

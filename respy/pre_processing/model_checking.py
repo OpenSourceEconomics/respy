@@ -1,3 +1,4 @@
+"""Everything related to validate the model."""
 import itertools
 
 import numpy as np
@@ -5,6 +6,7 @@ import pandas as pd
 
 
 def validate_options(o):
+    """Validate the options provided by the user."""
     for option, value in o.items():
         if "draws" in option:
             assert _is_positive_nonzero_integer(value)
@@ -26,10 +28,11 @@ def validate_options(o):
     assert _is_positive_nonzero_integer(o["n_periods"])
 
     # Covariates.
-    assert all(
-        isinstance(key, str) and isinstance(val, str)
-        for key, val in o["covariates"].items()
-    )
+    if "covariates" in o:
+        assert all(
+            isinstance(key, str) and isinstance(val, str)
+            for key, val in o["covariates"].items()
+        )
 
 
 def _is_positive_nonzero_integer(x):
@@ -41,10 +44,11 @@ def _is_nonnegative_integer(x):
 
 
 def check_model_solution(optim_paras, options, state_space):
+    """Check properties of the solution of a model."""
     # Distribute class attributes
     choices = optim_paras["choices"]
     max_initial_experience = np.array(
-        [choices[choice]["start"].max() for choice in optim_paras["choices_w_exp"]]
+        [max(choices[choice]["start"]) for choice in optim_paras["choices_w_exp"]]
     )
     n_periods = options["n_periods"]
     n_choices_w_exp = len(optim_paras["choices_w_exp"])

@@ -1,3 +1,4 @@
+"""Everything related to the solution of a structural model."""
 import warnings
 
 import numba as nb
