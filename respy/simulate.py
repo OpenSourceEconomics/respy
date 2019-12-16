@@ -1,3 +1,4 @@
+"""Everything related to the simulation of data with structural models."""
 import functools
 import warnings
 
@@ -7,7 +8,6 @@ from scipy.special import softmax
 
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
-from respy.shared import convert_choice_variables_from_categorical_to_codes
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
@@ -172,7 +172,6 @@ def simulate(params, options, df, state_space, base_draws_sim, base_draws_wage):
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
     state_space_columns = _create_state_space_columns(optim_paras)
-    df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
     data = []
 
     for period in range(n_periods):
@@ -211,18 +210,28 @@ def _sample_data_from_initial_conditions(optim_paras, options):
     index = pd.MultiIndex.from_product(
         (np.arange(options["simulation_agents"]), [0]), names=["identifier", "period"]
     )
-    df = pd.DataFrame(index=index)
-
+    states_df = pd.DataFrame(index=index)
+    # Create observables for simulation and store them in an extra container that
+    # will be added to the state space container later
     for observable in optim_paras["observables"]:
-        df = _get_random_initial_observable(df, observable, options, optim_paras)
+        level_dict = optim_paras["observables"][observable]
+        states_df[observable] = _get_random_characteristic(
+            states_df, options, level_dict, use_keys=False
+        )
 
+    # Create initial experiences, lagged choices and types for agents in simulation.
     for choice in optim_paras["choices_w_exp"]:
-        df = _get_random_initial_experience(df, choice, optim_paras, options)
-
+        level_dict = optim_paras["choices"][choice]["start"]
+        states_df[f"exp_{choice}"] = _get_random_characteristic(
+            states_df, options, level_dict, use_keys=True
+        )
     for lag in reversed(range(1, optim_paras["n_lagged_choices"] + 1)):
-        df = _get_random_lagged_choices(df, optim_paras, options, lag)
+        level_dict = optim_paras[f"lagged_choice_{lag}"]
+        states_df[f"lagged_choice_{lag}"] = _get_random_characteristic(
+            states_df, options, level_dict, use_keys=False
+        )
 
-    df = _get_random_types(df, optim_paras, options)
+    df = _get_random_types(states_df, optim_paras, options)
 
     return df
 
@@ -330,9 +339,8 @@ def _simulate_single_period(
 
 def _get_random_types(states_df, optim_paras, options):
     """Get random types for simulated agents."""
-
     if optim_paras["n_types"] == 1:
-        states_df["type"] = np.zeros(options["simulation_agents"])
+        states_df["type"] = np.zeros(options["simulation_agents"], dtype=np.uint8)
     else:
         type_covariates = create_type_covariates(states_df, optim_paras, options)
         np.random.seed(next(options["simulation_seed_iteration"]))
@@ -344,46 +352,19 @@ def _get_random_types(states_df, optim_paras, options):
     return states_df
 
 
-def _get_random_initial_experience(states_df, choice, optim_paras, options):
-    """Get random, initial levels of schooling for simulated agents."""
-    np.random.seed(next(options["simulation_seed_iteration"]))
-
-    states_df[f"exp_{choice}"] = np.random.choice(
-        optim_paras["choices"][choice]["start"],
-        p=optim_paras["choices"][choice]["share"],
-        size=options["simulation_agents"],
-    )
-
-    return states_df
-
-
-def _get_random_lagged_choices(states_df, optim_paras, options, lag):
-    """Get random, initial levels of lagged choices for simulated agents.
-
-    For a given lagged choice, compute the covariates. Then, calculate the probabilities
-    for each choice being the lagged choice. At last, take the probabilities to draw for
-    each individual the lagged choice.
-
-    Note that lagged choices are added to ``states_df`` in-place so that later lagged
-    choices can be conditioned on earlier lagged choices. E.g., having ``lagged_choice_2
-    == "edu"`` makes ``lagged_choice_1 == "edu"`` more likely.
+def _get_random_characteristic(states_df, options, level_dict, use_keys):
+    """Sample characteristic of individuals.
 
     Parameters
     ----------
     states_df : pandas.DataFrame
-        DataFrame containing the period, initial experiences and previous lagged
-        choices, but not types.
-    optim_paras : dict
-        Dictionary of model parameters.
+        Contains the state of each individual.
     options : dict
-        Dictionary of model options.
-    lag : int
-        Number of lag.
-
-    Returns
-    -------
-    choices : np.ndarray
-        Array with shape (n_individuals,) containing lagged choices.
+        Options of the model.
+    level_dict : dict
+        A dictionary where the keys are the values distributed according to the
+        probability mass function. The values are a :class:`pandas.Series` with
+        covariate names as the index and parameter values.
 
     """
     covariates_df = create_base_covariates(
@@ -392,44 +373,25 @@ def _get_random_lagged_choices(states_df, optim_paras, options, lag):
 
     all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
 
-    probabilities = ()
+    z = ()
 
-    for choice in optim_paras["choices"]:
-        lc = f"lagged_choice_{lag}_{choice}"
-        if lc in optim_paras:
-            labels = optim_paras[lc].index
-            prob = np.dot(all_data[labels], optim_paras[lc])
-        else:
-            prob = np.zeros(options["simulation_agents"])
+    for level in level_dict:
+        labels = level_dict[level].index
+        x_beta = np.dot(all_data[labels], level_dict[level])
 
-        probabilities += (prob,)
+        z += (x_beta,)
 
-    probabilities = np.column_stack(probabilities)
+    probabilities = softmax(np.column_stack(z), axis=1)
 
     np.random.seed(next(options["simulation_seed_iteration"]))
 
-    lagged_choices = _random_choice(len(optim_paras["choices"]), probabilities)
+    choices = level_dict if use_keys else len(level_dict)
+    characteristic = _random_choice(choices, probabilities)
 
-    # Add lagged choices to DataFrame and convert them to labels.
-    states_df[f"lagged_choice_{lag}"] = pd.Series(
-        lagged_choices, index=states_df.index
-    ).replace(dict(enumerate(optim_paras["choices"])))
-
-    return states_df
+    return characteristic
 
 
-def _get_random_initial_observable(states_df, observable, options, optim_paras):
-    np.random.seed(next(options["simulation_seed_iteration"]))
-
-    probs = optim_paras["observables"][observable]
-    states_df[observable] = np.random.choice(
-        len(probs), size=options["simulation_agents"], p=probs
-    )
-
-    return states_df
-
-
-def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
+def _convert_codes_to_original_labels(df, optim_paras):
     code_to_choice = dict(enumerate(optim_paras["choices"]))
 
     df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
@@ -441,6 +403,10 @@ def _convert_choice_variables_from_codes_to_categorical(df, optim_paras):
             .cat.set_categories(code_to_choice)
             .cat.rename_categories(code_to_choice)
         )
+
+    for observable in optim_paras["observables"]:
+        code_to_obs = dict(enumerate(optim_paras["observables"][observable]))
+        df[f"{observable.title()}"] = df[f"{observable.title()}"].replace(code_to_obs)
 
     return df
 
@@ -457,7 +423,7 @@ def _process_simulated_data(identifier, data, optim_paras):
         .set_index(["Identifier", "Period"], drop=True)
     )
 
-    df = _convert_choice_variables_from_codes_to_categorical(df, optim_paras)
+    df = _convert_codes_to_original_labels(df, optim_paras)
 
     return df
 
@@ -494,7 +460,7 @@ def _random_choice(choices, probabilities):
     """
     cumulative_distribution = probabilities.cumsum(axis=1)
     # Probabilities often do not sum to one but 0.99999999999999999.
-    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], 15)
+    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], 5)
 
     if not (cumulative_distribution[:, -1] == 1).all():
         raise ValueError("Probabilities do not sum to one.")
@@ -506,6 +472,10 @@ def _random_choice(choices, probabilities):
 
     if isinstance(choices, int):
         choices = np.arange(choices)
+    elif isinstance(choices, (dict, list, np.ndarray, tuple)):
+        choices = np.array(list(choices))
+    else:
+        raise TypeError(f"'choices' has invalid type {type(choices)}.")
 
     return choices[indices]
 

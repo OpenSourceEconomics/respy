@@ -1,3 +1,4 @@
+"""General interface functions for respy."""
 import warnings
 
 import pandas as pd
@@ -29,7 +30,7 @@ KW_97_EXTENDED_CONSTRAINTS = KW_97_BASIC_CONSTRAINTS + [
     {"loc": "lagged_choice_1_home", "type": "fixed"},
 ]
 
-ROBINSON_CONSTRAINTS = [
+ROBINSON_CRUSOE_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
     {"loc": "lagged_choice_1_hammock", "type": "fixed"},
 ]
@@ -69,13 +70,16 @@ def get_example_model(model, with_data=True):
 
 
 def get_parameter_constraints(model):
+    """Provide parameter constraints for the estimation compatible with estimagic."""
     if "kw_94" in model:
         constraints = KW_94_CONSTRAINTS
     elif "kw_97_basic" == model:
         constraints = KW_97_BASIC_CONSTRAINTS
     elif "kw_97_extended" == model:
         constraints = KW_97_EXTENDED_CONSTRAINTS
-    elif "robinson" == model:
-        constraints = ROBINSON_CONSTRAINTS
+    elif "robinson_crusoe" in model:
+        constraints = ROBINSON_CRUSOE_CONSTRAINTS
+    else:
+        raise NotImplementedError(f"No constraints defined for model {model}.")
 
     return constraints

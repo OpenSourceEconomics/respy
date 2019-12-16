@@ -11,6 +11,7 @@ TEST_RESOURCES_DIR = ROOT_DIR / "tests" / "resources"
 HUGE_FLOAT = 1e20
 TINY_FLOAT = 1e-8
 PRINT_FLOAT = 1e10
+MAX_FLOAT = 1e300
 
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10

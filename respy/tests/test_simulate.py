@@ -105,5 +105,10 @@ def test_distribution_of_observables(seed):
 
     # Check proportions
     np.testing.assert_almost_equal(
-        probs.to_numpy(), params.loc["observables"]["value"].to_numpy(), decimal=1
+        probs.to_numpy(),
+        params.loc[
+            params.index.get_level_values(0).str.contains("observable_observable_0"),
+            "value",
+        ].to_numpy(),
+        decimal=1,
     )

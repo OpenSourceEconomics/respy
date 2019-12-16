@@ -8,7 +8,7 @@ from respy.shared import normalize_probabilities
 
 
 def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
-    """Creates a template for the parameter specification.
+    """Create a template for the parameter specification.
 
     Parameters
     ----------
@@ -85,7 +85,7 @@ def _type_shift_template(n_types):
 def initial_and_max_experience_template(edu_starts, edu_shares, edu_max):
     to_concat = []
     for start, share in zip(edu_starts, edu_shares):
-        ind = ("initial_exp_edu", start)
+        ind = (f"initial_exp_edu_{start}", "probability")
         dat = [share, f"Probability that the initial level of education is {start}."]
         to_concat.append(_base_row(ind, dat))
 
@@ -136,7 +136,7 @@ def observable_prob_template(observables):
         probs = normalize_probabilities(probs)
 
         for j in range(observables[i]):
-            ind = (f"observables", f"observable_{i}_{j}")
+            ind = (f"observable_observable_{i}_{j}", "probability")
             dat = [probs[j], f"Probability of observable {i} being level choice {j}"]
             to_concat.append(_base_row(ind, dat))
 
