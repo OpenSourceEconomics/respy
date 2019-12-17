@@ -12,13 +12,13 @@ from respy.simulate import get_simulate_func
 KW_94_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
     {"loc": "lagged_choice_1_edu", "type": "fixed"},
-    {"loc": "initial_exp_edu", "type": "fixed"},
+    {"loc": "initial_exp_edu_10", "type": "fixed"},
     {"loc": "maximum_exp", "type": "fixed"},
 ]
 
 KW_97_BASIC_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
-    {"loc": "initial_exp_school", "type": "fixed"},
+    {"loc": "'initial_exp_school' in category", "type": "fixed"},
     {"loc": "maximum_exp", "type": "fixed"},
 ]
 
