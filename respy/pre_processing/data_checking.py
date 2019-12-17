@@ -1,3 +1,4 @@
+"""Test functions to ensure the validity of data."""
 import numpy as np
 
 
@@ -53,7 +54,7 @@ def check_estimation_data(df, optim_paras):
 
     # Observable characteristics.
     for observable in optim_paras["observables"]:
-        assert df[observable.title()].max() + 1 == len(
+        assert df[observable.title()].nunique() == len(
             optim_paras["observables"][observable]
         )
 

@@ -1,13 +1,16 @@
 name: respy
 channels:
+  - opensourceeconomics
   - conda-forge
-  - janosg
 dependencies:
   - python=3.7
   - pip
+  - anaconda-client
+  - chaospy
   - click
   - codecov
   - conda-build
+  - conda-verify
   - doc8
   - estimagic>=0.0.14
   - jupyterlab
@@ -19,16 +22,18 @@ dependencies:
   - numpydoc
   - pandas>=0.24
   - pdbpp
-  - pyaml
+  - pyyaml
   - pytest
   - pytest-cov
   - pytest-xdist
   - restructuredtext_lint
   - scipy
+  - seaborn
   - snakeviz
   - sphinx
   - sphinx-autobuild
   - tox-conda
   - pip:
     - apprise
+    - bump2version
     - pre-commit

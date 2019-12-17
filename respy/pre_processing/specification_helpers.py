@@ -4,10 +4,11 @@ import numpy as np
 import pandas as pd
 
 from respy.config import ROOT_DIR
+from respy.shared import normalize_probabilities
 
 
-def csv_template(n_types, n_type_covariates, observables, initialize_coeffs=True):
-    """Creates a template for the parameter specification.
+def csv_template(n_types, n_type_covariates, initialize_coeffs=True):
+    """Create a template for the parameter specification.
 
     Parameters
     ----------
@@ -26,10 +27,6 @@ def csv_template(n_types, n_type_covariates, observables, initialize_coeffs=True
             _type_prob_template(n_types, n_type_covariates),
             _type_shift_template(n_types),
         ]
-        template = pd.concat(to_concat, axis=0, sort=False)
-
-    if observables is not False:
-        to_concat = [template, observable_coeffs_template(observables, template)]
         template = pd.concat(to_concat, axis=0, sort=False)
 
     if initialize_coeffs is False:
@@ -103,7 +100,7 @@ def lagged_choices_probs_template(n_lagged_choices, choices):
     to_concat = []
     for i in range(1, n_lagged_choices + 1):
         probs = np.random.uniform(size=len(choices))
-        probs /= probs.sum()
+        probs = normalize_probabilities(probs)
         for j, choice in enumerate(choices):
             ind = (f"lagged_choice_{i}_{choice}", "constant")
             dat = [probs[j], f"Probability of choice {choice} being lagged choice {i}"]
@@ -136,14 +133,16 @@ def observable_prob_template(observables):
     to_concat = []
     for i in range(len(observables)):
         probs = np.random.uniform(size=observables[i])
-        probs /= probs.sum()
+        probs = normalize_probabilities(probs)
 
         for j in range(observables[i]):
-            ind = (f"observables", f"observable_{i}_{j}")
+            ind = (f"observable_observable_{i}_{j}", "probability")
             dat = [probs[j], f"Probability of observable {i} being level choice {j}"]
             to_concat.append(_base_row(ind, dat))
 
-    return pd.concat(to_concat, axis=0, sort=False)
+    out = pd.concat(to_concat, axis=0, sort=False)
+
+    return out
 
 
 def observable_coeffs_template(observables, template):
@@ -154,9 +153,12 @@ def observable_coeffs_template(observables, template):
     labels = generate_obs_labels(observables, index)
     to_concat = []
     for y in labels:
-        dat = [0, f"effect of {y[1]}"]
+        dat = [np.random.uniform(), f"effect of {y[1]}"]
         to_concat.append(_base_row(y, dat))
-    return pd.concat(to_concat, axis=0, sort=False)
+
+    out = pd.concat(to_concat, axis=0, sort=False)
+
+    return out
 
 
 def generate_obs_labels(observables, index):
@@ -164,5 +166,7 @@ def generate_obs_labels(observables, index):
     for x, _ in enumerate(observables):
         for y in range(observables[x]):
             names.append(f"observable_{x}_{y}")
+
     out = list(itertools.product(index, names))
+
     return out

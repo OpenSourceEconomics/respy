@@ -17,8 +17,10 @@ from respy.pre_processing.specification_helpers import (
     lagged_choices_covariates_template,
 )
 from respy.pre_processing.specification_helpers import lagged_choices_probs_template
+from respy.pre_processing.specification_helpers import observable_coeffs_template
 from respy.pre_processing.specification_helpers import observable_prob_template
 from respy.shared import generate_column_labels_estimation
+from respy.shared import normalize_probabilities
 from respy.simulate import get_simulate_func
 
 
@@ -78,7 +80,6 @@ def generate_random_model(
     bound_constr=None,
     n_types=None,
     n_type_covariates=None,
-    observables=None,
     myopic=False,
 ):
     """Generate a random model specification.
@@ -95,9 +96,6 @@ def generate_random_model(
         Number of unobserved types.
     n_type_covariates :
         Number of covariates to calculate type probabilities.
-    n_observables: list
-        list containing the level of individual observables
-
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
 
@@ -114,26 +112,13 @@ def generate_random_model(
         n_types = np.random.randint(1, bound_constr["max_types"] + 1)
     if n_type_covariates is None:
         n_type_covariates = np.random.randint(2, 4)
-    if observables is None:
-        n_obs = np.random.randint(0, 3)
-        if n_obs == 0:
-            observables = False
-        else:
-            observables = np.random.randint(1, 4, size=n_obs)
 
     params = csv_template(
-        n_types=n_types,
-        n_type_covariates=n_type_covariates,
-        observables=observables,
-        initialize_coeffs=False,
+        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False,
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
-    if observables is not False:
-        to_concat = [params, observable_prob_template(observables)]
-        params = pd.concat(to_concat, axis=0, sort=False)
-
-    params.loc["delta", "value"] = 1 - np.random.uniform() if myopic is False else 0.0
+    params.loc["delta", "value"] = 1 - np.random.uniform() if myopic is False else 0
 
     n_shock_coeffs = len(params.loc["shocks_sdcorr"])
     dim = number_of_triangular_elements_to_dimension(n_shock_coeffs)
@@ -175,34 +160,48 @@ def generate_random_model(
         lc_covariates = {}
         filters = []
 
+    observables = point_constr.pop("observables", None)
+    if observables is None:
+        n_observables = np.random.randint(0, 3)
+        observables = (
+            np.random.randint(1, 4, size=n_observables) if n_observables else False
+        )
+
+    if observables is not False:
+        to_concat = [
+            params,
+            observable_prob_template(observables),
+            observable_coeffs_template(observables, params),
+        ]
+        params = pd.concat(to_concat, axis=0, sort=False)
+
+        indices = (
+            params.index.get_level_values("category")
+            .str.extract(r"observable_([a-z0-9_]+)", expand=False)
+            .dropna()
+            .unique()
+        )
+        observable_covs = {x: "{} == {}".format(*x.rsplit("_", 1)) for x in indices}
+    else:
+        observable_covs = {}
+
     options = {
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
         "simulation_seed": np.random.randint(1, 1_000),
         "n_periods": np.random.randint(1, bound_constr["max_periods"]),
+        "solution_draws": np.random.randint(1, bound_constr["max_draws"]),
+        "solution_seed": np.random.randint(1, 10_000),
+        "estimation_draws": np.random.randint(1, bound_constr["max_draws"]),
+        "estimation_seed": np.random.randint(1, 10_000),
+        "estimation_tau": np.random.uniform(100, 500),
+        "interpolation_points": -1,
     }
-
-    if observables is not False:
-        indices = params.loc["observables", :].index.get_level_values(0).to_list()
-        observable_covariates = {
-            x: f'{"_".join(x.split("_")[:-1])} == {x.split("_")[-1]}' for x in indices
-        }
-    else:
-        observable_covariates = {}
-
-    options["solution_draws"] = np.random.randint(1, bound_constr["max_draws"])
-    options["solution_seed"] = np.random.randint(1, 10_000)
-
-    options["estimation_draws"] = np.random.randint(1, bound_constr["max_draws"])
-    options["estimation_seed"] = np.random.randint(1, 10_000)
-    options["estimation_tau"] = np.random.uniform(100, 500)
-
-    options["interpolation_points"] = -1
 
     options = {
         **DEFAULT_OPTIONS,
         **options,
         "core_state_space_filters": filters,
-        "covariates": {**_BASE_COVARIATES, **lc_covariates, **observable_covariates},
+        "covariates": {**_BASE_COVARIATES, **lc_covariates, **observable_covs},
     }
 
     options = _update_nested_dictionary(options, point_constr)
@@ -226,7 +225,7 @@ def _consolidate_bound_constraints(bound_constr):
 def _get_initial_shares(num_groups):
     """We simply need a valid request for the shares of types summing to one."""
     shares = np.random.uniform(size=num_groups)
-    shares = shares / shares.sum()
+    shares = normalize_probabilities(shares)
 
     return shares
 

@@ -1,3 +1,4 @@
+"""Special functions for using numba."""
 from numba import cgutils
 from numba import types
 from numba.extending import intrinsic
@@ -5,7 +6,7 @@ from numba.extending import intrinsic
 
 @intrinsic  # noqa: U100
 def array_to_tuple(tyctx, array, indexer_array):
-    """Converts an array to a tuple for indexing.
+    """Convert an array to a tuple for indexing.
 
     This function is taken from
     https://gist.github.com/sklam/830fe01343ba95828c3b24c391855c86 to create tuple from
@@ -26,7 +27,7 @@ def array_to_tuple(tyctx, array, indexer_array):
     function_signature = typed_tuple(array, indexer_array)
 
     def codegen(cgctx, builder, signature, args):
-        # This is the implementation defined using LLVM builder
+        # This is the implementation defined using LLVM builder.
         lltupty = cgctx.get_value_type(typed_tuple)
         tup = cgutils.get_null_value(lltupty)
 

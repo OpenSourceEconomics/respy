@@ -1,3 +1,4 @@
+"""Everything related to the original data from Keane and Wolpin (1997)."""
 import numpy as np
 import pandas as pd
 
@@ -60,6 +61,7 @@ def create_kw_97(params, options):
 
     df["Lagged_Choice_1"] = df.groupby("Identifier").Choice.shift(1)
     df["Period"] = df.Age - 16
+    df = df.query("Age >= 16")
 
     labels, _ = rp_shared.generate_column_labels_estimation(optim_paras)
 

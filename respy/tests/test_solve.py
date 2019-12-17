@@ -7,13 +7,11 @@ from respy.config import KEANE_WOLPIN_1994_MODELS
 from respy.config import KEANE_WOLPIN_1997_MODELS
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.simulate import calculate_value_functions_and_flow_utilities
 from respy.state_space import _create_state_space
 from respy.state_space import _insert_indices_of_child_states
 from respy.tests._former_code import _create_state_space_kw94
 from respy.tests._former_code import _create_state_space_kw97_base
 from respy.tests._former_code import _create_state_space_kw97_extended
-from respy.tests.random_model import generate_random_model
 from respy.tests.utils import process_model_or_seed
 
 
@@ -102,10 +100,8 @@ def test_invariance_of_solution(model_or_seed):
 
 @pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS + list(range(10)))
 def test_create_state_space_vs_specialized_kw94(model_or_seed):
-    point_constr = {"n_lagged_choices": 1}
-    params, options = process_model_or_seed(
-        model_or_seed, point_constr=point_constr, observables=False
-    )
+    point_constr = {"n_lagged_choices": 1, "observables": False}
+    params, options = process_model_or_seed(model_or_seed, point_constr=point_constr)
 
     optim_paras, options = process_params_and_options(params, options)
 
@@ -121,11 +117,6 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
     )
 
     states_new, indexer_new = _create_state_space(optim_paras, options)
-
-    for i in range(1, optim_paras["n_lagged_choices"] + 1):
-        states_new[f"lagged_choice_{i}"] = states_new[f"lagged_choice_{i}"].replace(
-            {choice: i for i, choice in enumerate(optim_paras["choices"])}
-        )
 
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))
@@ -166,11 +157,6 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
 
     states_new, indexer_new = _create_state_space(optim_paras, options)
 
-    for i in range(1, optim_paras["n_lagged_choices"] + 1):
-        states_new[f"lagged_choice_{i}"] = states_new[f"lagged_choice_{i}"].replace(
-            {choice: i for i, choice in enumerate(optim_paras["choices"])}
-        )
-
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))
     states_new_set = set(map(tuple, states_new.to_numpy()))
@@ -181,38 +167,3 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
         mask_old = indexer_old[period] != -1
         mask_new = indexer_new[period] != -1
         assert np.array_equal(mask_old, mask_new)
-
-
-@pytest.mark.parametrize("seed", range(10))
-def test_equality_of_total_values_and_rewexpost_for_myopic_individuals(seed):
-    """Test equality of ex-post rewards and total values for myopic individuals."""
-    np.random.seed(seed)
-
-    # We need to simulate the model to get the emaxs and model attributes.
-    params, options = generate_random_model(myopic=True)
-    optim_paras, options = process_params_and_options(params, options)
-
-    draws = np.random.randn(1, 4)
-
-    state_space = rp.solve(params, options)
-
-    for period in range(options["n_periods"]):
-        wages = state_space.get_attribute_from_period("wages", period)
-        nonpec = state_space.get_attribute_from_period("nonpec", period)
-        continuation_values = state_space.get_continuation_values(period)
-        is_inadmissible = state_space.get_attribute_from_period(
-            "is_inadmissible", period
-        )
-
-        value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
-            wages,
-            nonpec,
-            continuation_values,
-            draws,
-            optim_paras["delta"],
-            is_inadmissible,
-        )
-
-        np.testing.assert_equal(
-            value_functions[~is_inadmissible], flow_utilities[~is_inadmissible]
-        )

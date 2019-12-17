@@ -1,0 +1,49 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: respy
+  version: {{ data.get('version') }}
+
+source:
+  path: ../respy
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - python {{ python }}
+    - setuptools
+
+  run:
+    - python {{ python }}
+    - chaospy
+    - click
+    - estimagic>=0.0.12
+    - mkl
+    - numba>=0.42
+    - numpy
+    - pandas>=0.24
+    - pyyaml
+    - pytest
+    - scipy
+test:
+  commands:
+    - py.test
+  files:
+    - respy/tests/
+    - respy/conftest.py
+  requires:
+    - pytest
+    - pytest-mock
+    - pytest-cov
+    - pytest-xdist
+    - codecov
+    - conda-build
+    - statsmodels
+
+about:
+  home: https://github.com/OpenSourceEconomics/respy
+  license: MIT
+  license_file: LICENSE
+  summary: Simulation and estimation of structural labor models.

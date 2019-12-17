@@ -1,7 +1,7 @@
 Welcome to respy's documentation!
 =================================
 
-`PyPI <https://pypi.org/project/respy/>`_ | `GitHub
+`Anaconda.org <https://anaconda.org/opensourceeconomics/respy>`_ | `GitHub
 <https://github.com/OpenSourceEconomics/respy>`_  | `Issues
 <https://github.com/OpenSourceEconomics/respy/issues>`_ | `Pull Requests
 <https://github.com/OpenSourceEconomics/respy/pulls>`_

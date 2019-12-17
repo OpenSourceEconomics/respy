@@ -4,19 +4,20 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
+import chaospy as cp
+import numba as nb
 import numpy as np
 import pandas as pd
-from numba import njit
-from numba import vectorize
 
 from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
 
 
-@njit
+@nb.njit
 def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
+    """Aggregate utility components."""
     flow_utility = wage * draw + nonpec
     value_function = flow_utility + delta * continuation_value
 
@@ -26,12 +27,28 @@ def aggregate_keane_wolpin_utility(
     return value_function, flow_utility
 
 
-def create_base_draws(shape, seed):
-    """Create the relevant set of draws.
+def create_base_draws(shape, seed, monte_carlo_sequence):
+    """Create a set of draws from the standard normal distribution.
 
-    Handle special case of zero variances as this case is useful for testing.
-    The draws are from a standard normal distribution and transformed later in
-    the code.
+    The draws are either drawn randomly or from quasi-random low-discrepancy sequences,
+    i.e., Sobol or Halton.
+
+    `"random"` is used to draw random standard normal shocks for the Monte Carlo
+    integrations or because individuals face random shocks in the simulation.
+
+    `"halton"` or `"sobol"` can be used to change the sequence for two Monte Carlo
+    integrations. First, the calculation of the expected value function (EMAX) in the
+    solution and the choice probabilities in the maximum likelihood estimation.
+
+    For the solution and estimation it is necessary to have the same randomness in every
+    iteration. Otherwise, there is chatter in the simulation, i.e. a difference in
+    simulated values not only due to different parameters but also due to draws (see
+    10.5 in [1]_). At the same time, the variance-covariance matrix of the shocks is
+    estimated along all other parameters and changes every iteration. Thus, instead of
+    sampling draws from a varying multivariate normal distribution, standard normal
+    draws are sampled here and transformed to the distribution specified by the
+    parameters in
+    :func:`transform_base_draws_with_cholesky_factor`.
 
     Parameters
     ----------
@@ -39,24 +56,70 @@ def create_base_draws(shape, seed):
         Tuple representing the shape of the resulting array.
     seed : int
         Seed to control randomness.
+    monte_carlo_sequence : {"random", "halton", "sobol"}
+        Name of the sequence.
 
     Returns
     -------
     draws : numpy.ndarray
-        Draws with shape (n_periods, n_draws)
+        Array with shape (n_choices, n_draws, n_choices).
+
+    See also
+    --------
+    transform_base_draws_with_cholesky_factor
+
+    References
+    ----------
+    .. [1] Train, K. (2009). `Discrete Choice Methods with Simulation
+           <https://eml.berkeley.edu/books/choice2.html>`_. *Cambridge: Cambridge
+           University Press.*
 
     """
-    # Control randomness by setting seed value
+    n_choices = shape[2]
+    n_points = shape[0] * shape[1]
+
     np.random.seed(seed)
 
-    # Draw random deviates from a standard normal distribution.
-    draws = np.random.standard_normal(shape)
+    if monte_carlo_sequence == "random":
+        draws = np.random.standard_normal(shape)
+
+    elif monte_carlo_sequence == "halton":
+        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
+        draws = distribution.sample(n_points, rule="H").T.reshape(shape)
+
+    elif monte_carlo_sequence == "sobol":
+        distribution = cp.MvNormal(loc=np.zeros(n_choices), scale=np.eye(n_choices))
+        draws = distribution.sample(n_points, rule="S").T.reshape(shape)
+
+    else:
+        raise NotImplementedError
 
     return draws
 
 
-def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
-    """Transform the standard normal deviates to the relevant distribution."""
+def transform_base_draws_with_cholesky_factor(
+    draws, shocks_mean, shocks_cholesky, n_wages
+):
+    r"""Transform standard normal draws with the Cholesky factor.
+
+    The standard normal draws are transformed to normal draws with variance-covariance
+    matrix :math:`\Sigma` by multiplication with the Cholesky factor :math:`L` where
+    :math:`L^TL = \Sigma`. See chapter 7.4 in [1]_ for more information.
+
+    This function relates to :func:`create_base_draws` in the sense that it transforms
+    the unchanging standard normal draws to the distribution with the
+    variance-covariance matrix specified by the parameters.
+
+    References
+    ----------
+    .. [1] Gentle, J. E. (2009). Computational statistics (Vol. 308). New York:
+           Springer.
+
+    See also
+    --------
+    create_base_draws
+
+    """
     draws_transformed = draws.dot(shocks_cholesky.T)
 
     draws_transformed += shocks_mean
@@ -69,11 +132,12 @@ def transform_disturbances(draws, shocks_mean, shocks_cholesky, n_wages):
 
 
 def generate_column_labels_estimation(optim_paras):
+    """Generate column labels for data necessary for the estimation."""
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
         + [f"Experience_{choice.title()}" for choice in optim_paras["choices_w_exp"]]
         + [f"Lagged_Choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
-        + [observable.title() for observable in optim_paras["observables"].keys()]
+        + [observable.title() for observable in optim_paras["observables"]]
     )
 
     dtypes = {}
@@ -89,6 +153,7 @@ def generate_column_labels_estimation(optim_paras):
 
 
 def generate_column_labels_simulation(optim_paras):
+    """Generate column labels for simulation output."""
     est_lab, est_dtypes = generate_column_labels_estimation(optim_paras)
     labels = (
         est_lab
@@ -107,41 +172,31 @@ def generate_column_labels_simulation(optim_paras):
     return labels, dtypes
 
 
-@vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
+@nb.njit
 def clip(x, minimum=None, maximum=None):
-    """Clip (limit) input value.
+    """Clip input array at minimum and maximum."""
+    out = np.empty_like(x)
 
-    Parameters
-    ----------
-    x : float
-        Value to be clipped.
-    minimum : float
-        Lower limit.
-    maximum : float
-        Upper limit.
+    for index, value in np.ndenumerate(x):
+        if minimum is not None and value < minimum:
+            out[index] = minimum
+        elif maximum is not None and value > maximum:
+            out[index] = maximum
+        else:
+            out[index] = value
 
-    Returns
-    -------
-    float
-        Clipped value.
-
-    """
-    if minimum is not None and x < minimum:
-        return minimum
-    elif maximum is not None and x > maximum:
-        return maximum
-    else:
-        return x
+    return out
 
 
-def downcast_to_smallest_dtype(series, save_memory=True):
-    """Downcast series to smallest possible dtype.
+def downcast_to_smallest_dtype(series):
+    """Downcast the dtype of a :class:`pandas.Series` to the lowest possible dtype.
 
-    This function always leaves categoricals unchanged and converts bools to the
-    smallest integer dtype. Otherwise, some NumPy arrays will have dtype `object` which
-    prevents numerical calculations.
+    Be aware that NumPy integers silently overflow which is why conversion to low dtypes
+    should be done after calculations. For example, using :class:`np.uint8` for an array
+    and squaring the elements leads to silent overflows for numbers higher than 255.
 
-    If `save_memory = True` other dtypes are tested for lower dtypes.
+    For more information on the boundaries the NumPy documentation under
+    https://docs.scipy.org/doc/numpy-1.17.0/user/basics.types.html.
 
     """
     # We can skip integer as "unsigned" and "signed" will find the same dtypes.
@@ -153,7 +208,7 @@ def downcast_to_smallest_dtype(series, save_memory=True):
     elif series.dtype == np.bool:
         out = series.astype(np.dtype("uint8"))
 
-    elif save_memory:
+    else:
         min_dtype = np.dtype("float64")
 
         for dc_opt in _downcast_options:
@@ -170,9 +225,6 @@ def downcast_to_smallest_dtype(series, save_memory=True):
                 pass
 
         out = series.astype(min_dtype)
-
-    else:
-        out = series
 
     return out
 
@@ -205,9 +257,9 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
         DataFrame with some, not all state space dimensions like period, experiences.
     covariates_spec : dict
         Keys represent covariates and values are strings passed to ``df.eval``.
-    raise_errors : bool
+    raise_errors : bool, default True
         Whether to raise errors if a variable was not found. This option is necessary
-        for, e.g., :func:`~respy.simulate._get_random_lagged_choices` where not all
+        for, e.g., :func:`~respy.simulate._get_random_characteristic` where not all
         necessary variables exist and it is not clear how to exclude them easily.
 
     Returns
@@ -218,20 +270,97 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     Raises
     ------
     pd.core.computation.ops.UndefinedVariableError
-        If a necessary variable is not found in the data.
+        If variable on the right-hand-side of the definition is not found in the data.
 
     """
     covariates = states.copy()
 
     for covariate, definition in covariates_spec.items():
-        try:
-            covariates[covariate] = covariates.eval(definition)
-        except pd.core.computation.ops.UndefinedVariableError as e:
-            if raise_errors:
-                raise e
-            else:
-                pass
+        if covariate not in states.columns:
+            try:
+                covariates[covariate] = covariates.eval(definition)
+            except pd.core.computation.ops.UndefinedVariableError as e:
+                if raise_errors:
+                    raise e
+                else:
+                    pass
 
     covariates = covariates.drop(columns=states.columns)
 
     return covariates
+
+
+def convert_labeled_variables_to_codes(df, optim_paras):
+    """Convert labeled variables to codes.
+
+    We need to check choice variables and observables for potential labels. The
+    mapping from labels to code can be inferred from the order in ``optim_paras``.
+
+    """
+    choices_to_codes = {choice: i for i, choice in enumerate(optim_paras["choices"])}
+
+    if "choice" in df.columns:
+        df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
+
+    for i in range(1, optim_paras["n_lagged_choices"] + 1):
+        label = f"lagged_choice_{i}"
+        if label in df.columns:
+            df[label] = df[label].replace(choices_to_codes).astype(np.uint8)
+
+    observables = optim_paras["observables"]
+    for observable in observables:
+        if observable in df.columns:
+            levels_to_codes = {lev: i for i, lev in enumerate(observables[observable])}
+            df[observable] = df[observable].replace(levels_to_codes).astype(np.uint8)
+
+    return df
+
+
+def normalize_probabilities(probabilities):
+    """Normalize probabilities such that their sum equals one.
+
+    Example
+    -------
+    The following `probs` do not sum to one after dividing by the sum.
+
+    >>> probs = np.array([0.3775843411510946, 0.5384246942799851, 0.6522988820635421])
+    >>> normalize_probabilities(probs)
+    array([0.24075906, 0.34331568, 0.41592526])
+
+    """
+    probabilities = probabilities / np.sum(probabilities)
+    probabilities[-1] = 1 - probabilities[:-1].sum()
+
+    return probabilities
+
+
+@nb.guvectorize(
+    ["f8, f8, f8, f8, f8, b1, f8[:], f8[:]"],
+    "(), (), (), (), (), () -> (), ()",
+    nopython=True,
+    target="parallel",
+)
+def calculate_value_functions_and_flow_utilities(
+    wage,
+    nonpec,
+    continuation_value,
+    draw,
+    delta,
+    is_inadmissible,
+    value_function,
+    flow_utility,
+):
+    """Calculate the choice-specific value functions and flow utilities.
+
+    To apply :func:`aggregate_keane_wolpin_utility` to arrays with arbitrary dimensions,
+    this function uses :func:`numba.guvectorize`. One cannot use :func:`numba.vectorize`
+    because it does not support multiple return values.
+
+    See also
+    --------
+    aggregate_keane_wolpin_utility
+
+    """
+    value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
+        wage, nonpec, continuation_value, draw, delta, is_inadmissible
+    )

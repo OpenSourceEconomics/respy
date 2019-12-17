@@ -3,62 +3,67 @@ Changes
 
 This is a record of all past ``respy`` releases and what went into them in reverse
 chronological order. We follow `semantic versioning <https://semver.org/>`_ and all
-releases are available on `PyPI <https://pypi.org/project/respy/>`_.
+releases are available on `Anaconda.org
+<https://anaconda.org/opensourceeconomics/respy>`_.
 
 2.0.0 - 2019-
 -------------
 
-- `#177 <https://github.com/OpenSourceEconomics/respy/pull/177>`_ removes all Fortran
-  files and ensures that all tests still run through.
-- `#193 <https://github.com/OpenSourceEconomics/respy/pull/193>`_ continues on the
-  removal of Fortran.
-- `#199 <https://github.com/OpenSourceEconomics/respy/pull/199>`_ makes the reward
-  components modular.
-- `#200 <https://github.com/OpenSourceEconomics/respy/pull/200>`_ implements the Kalman
-  filter which allows to estimate measurement error in wages.
-- `#201 <https://github.com/OpenSourceEconomics/respy/pull/201>`_ implements a flexible
-  state space which is first and foremost flexible in the number of choices with
-  experience and wages, but open to be extended.
-- `#204 <https://github.com/OpenSourceEconomics/respy/pull/204>`_ adds more thesis
-  proposals.
-- `#205 <https://github.com/OpenSourceEconomics/respy/pull/205>`_ implements Azure
-  Pipelines as the major CI, but we still rely on Travis-CI for deploying the package to
-  PyPI.
-- `#206 <https://github.com/OpenSourceEconomics/respy/pull/206>`_ prepares estimation
-  with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_
-- `#208 <https://github.com/OpenSourceEconomics/respy/pull/208>`_ implements parsing of
-  choices from data frame.
-- `#209 <https://github.com/OpenSourceEconomics/respy/pull/209>`_ adds parameterizations
-  of Keane and Wolpin (1997). Special thanks to `janosg <https://github.com/janosg>`_
-  who implemented an adaptive rescaling step within the likelihood aggregation which
-  prevents under- and overflows in the contributions.
-- `#211 <https://github.com/OpenSourceEconomics/respy/pull/211>`_ generalizes the
-  construction of type probabilities with arbitrary covariates.
-- `#221 <https://github.com/OpenSourceEconomics/respy/pull/221>`_ implements a new
-  interface for the simulation which is similar to the estimation and reduces runtime
-  for multiple simulations by a factor of four.
-- `#223 <https://github.com/OpenSourceEconomics/respy/pull/223>`_ logs rental prices in
-  parameterizations. The parameters of wage components correspond to the ``ln(wage)``
-  equation.
-- `#236 <https://github.com/OpenSourceEconomics/respy/pull/236>`_ implements a periodic
-  indexer.
+- :gh:`177` removes all Fortran files and ensures that all tests still run through.
+- :gh:`193` continues on the removal of Fortran.
+- :gh:`199` makes the reward components modular (:ghuser:`janosg`).
+- :gh:`200` implements the Kalman filter which allows to estimate measurement error in
+  wages (:ghuser:`janosg`).
+- :gh:`201` implements a flexible state space which is first and foremost flexible in
+  the number of choices with experience and wages, but open to be extended.
+- :gh:`204` adds more thesis proposals.
+- :gh:`205` implements Azure Pipelines as the major CI, but we still rely on Travis-CI
+  for deploying the package to PyPI (:ghuser:`tobiasraabe`).
+- :gh:`206` prepares estimation with `estimagic
+  <https://github.com/OpenSourceEconomics/estimagic>`_
+- :gh:`208` implements parsing of choices from data frame.
+- :gh:`209` adds parameterizations of Keane and Wolpin (1997) plus adaptive rescaling
+  step within the likelihood aggregation which prevents under- and overflows in the
+  contributions (:ghuser:`janosg`).
+- :gh:`211` generalizes the construction of type probabilities with arbitrary
+  covariates.
+- :gh:`221` implements a new interface for the simulation which is similar to the
+  estimation and reduces runtime for multiple simulations by a factor of four.
+- :gh:`236` implements a periodic indexer.
+- :gh:`240` makes previous choices in the state space optional.
+- :gh:`245` create continuation values dynamically from value functions.
+- :gh:`256` implements quasi-random low discrepancy sequences for better Monte-Carlo
+  integrations (:ghuser:`rafaelsuchy`).
+- :gh:`262` moves the distribution of previous choices, initial and maximum experience
+  to params.
+- :gh:`268` makes seeding in ``respy`` a lot more robust by using incrementally
+  increasing sequences.
+- :gh:`269` improves the generation of conditional draws with and without measurement
+  error in the likelihood calculation (:ghuser:`janosg`).
+- :gh:`275` fixes a bug in calculation of wage probabilities.
+- :gh:`278`, :gh:`279`, and :gh:`280` implement three functions, log softmax, softmax,
+  and logsumexp, which reduce the likelihood of under- and overflows and save
+  information (:ghuser:`tobiasraabe`).
+- :gh:`285` adds the ability to generate a set of constraint for example models.
+- :gh:`288` fixes an error in the simulation of choice probabilities introduced by
+  :gh:`278` (:ghuser:`peisenha`).
+- :gh:`296` contributes a new toy model to respy: The Robinson Crusoe Economy
+  (:ghuser:`tobiasraabe`, :ghuser:`peisenha`)
+- :gh:`299` adds the information on the previous choice to individuals at age sixteen to
+  the original data from Keane and Wolpin (1997) (special thanks to :ghuser:`bekauf`).
+  :gh:`300` aligns respy with the new data.
+
 
 1.2.1 - 2019-05-19
 ------------------
 
-- `#170 <https://github.com/OpenSourceEconomics/respy/pull/170>`_ adds a test for
-  inadmissible states in the state space.
-- `#180 <https://github.com/OpenSourceEconomics/respy/pull/180>`_ adds a long
-  description to the PYPi package.
-- `#181 <https://github.com/OpenSourceEconomics/respy/pull/181>`_ implements `nbsphinx
-  <https://nbsphinx.readthedocs.io/en/latest/>`_ for a documentation based on notebooks
-  and reworks structure and graphics.
-- `#183 <https://github.com/OpenSourceEconomics/respy/pull/183>`_ adds a small set of
-  regression tests.
-- `#185 <https://github.com/OpenSourceEconomics/respy/pull/185>`_ adds a list of topics
-  for theses.
-- `#186 <https://github.com/OpenSourceEconomics/respy/pull/186>`_ replaces statsmodels
-  as a dependency with our own implementation.
+- :gh:`170` adds a test for inadmissible states in the state space.
+- :gh:`180` adds a long description to the PYPi package.
+- :gh:`181` implements `nbsphinx <https://nbsphinx.readthedocs.io/en/latest/>`_ for a
+  documentation based on notebooks and reworks structure and graphics.
+- :gh:`183` adds a small set of regression tests.
+- :gh:`185` adds a list of topics for theses.
+- :gh:`186` replaces ``statsmodels`` as a dependency with our own OLS implementation.
 
 1.2.0 - 2019-04-23
 ------------------
@@ -68,18 +73,15 @@ This is the last release with a Fortran implementation. Mirrors 1.2.0-rc.1.
 1.2.0-rc.1 - 2019-04-23
 -----------------------
 
-- `#162 <https://github.com/OpenSourceEconomics/respy/pull/162>`_ is a wrapper around
-  multiple PRs in which a new Python version is implemented.
-- `#150 <https://github.com/OpenSourceEconomics/respy/pull/150>`_ implements a new
-  interface.
-- `#133 <https://github.com/OpenSourceEconomics/respy/pull/133>`_ and `#140
-  <https://github.com/OpenSourceEconomics/respy/pull/140>`_ add Appveyor to test respy
-  on Windows.
+- :gh:`162` is a wrapper around multiple PRs in which a new Python version is
+  implemented.
+- :gh:`150` implements a new interface.
+- :gh:`133` and :gh:`140` add Appveyor to test respy on Windows.
 
 1.1.0 - 2018-03-02
 ------------------
 
-- Undocumented release
+- Undocumented release.
 
 1.0.0 - 2016-08-10
 ------------------

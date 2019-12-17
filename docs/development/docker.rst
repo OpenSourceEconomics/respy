@@ -17,8 +17,8 @@ Download the appropriate Docker engine `here
 Build the image
 ---------------
 
-In order to build the image with the current respy version in the repository, cd to the
-respy folder and type
+In order to build the image with the current ``respy`` version in the repository, ``cd``
+to the ``respy`` folder and type
 
 .. code-block:: bash
 
@@ -26,11 +26,11 @@ respy folder and type
 
 .. warning:: On Linux systems you will need sudo permissions for `docker build`
 
-To be clear, the image is built with the respy version in the directory using ``pip
-install .``. Unfortunately, this means that you have to rebuild the image every time you
-change something in the code. Since Docker creates layers during builds which are
-essentially snapshots after each statement in the ``Dockerfile``, this is not as costly
-as it sounds.
+To be clear, the image is built with the ``respy`` version in the directory using
+``conda develop .``. Unfortunately, this means that you have to rebuild the image every
+time you change something in the code. Since Docker creates layers during builds which
+are essentially snapshots after each statement in the ``Dockerfile``, this is not as
+costly as it sounds.
 
 
 Enter the container interactively
@@ -49,9 +49,9 @@ to enter the container and open a bash terminal. The conda environment is alread
 activated in due to ``entrypoint.sh`` or an entry in ``.bashrc``.
 
 After entering the container you are in the home directory of a Linux system that
-contains the standard files and the `respy` folder.
+contains the standard files and the ``respy`` folder.
 
-If you want to exit the container, hit ``Ctrl + d`` or type
+If you want to exit the container, hit ``Ctrl + D`` or type
 
 .. code-block:: bash
 

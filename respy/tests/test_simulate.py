@@ -36,14 +36,23 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
 
 
 @pytest.mark.parametrize("seed", range(20))
-def test_observables(seed):
+def test_equality_of_models_with_and_without_observables(seed):
+    """Test equality of models with and without observables.
+
+    First, generate a model where the parameter values of observables is set to zero.
+    The second model is obtained by assigning all observable indicators the value of the
+    constant in the reward functions and set the constants to zero. The two models
+    should be equivalent.
+
+    """
     np.random.seed(seed)
 
     # Now specify a set of observables
     observables = [np.random.randint(2, 6)]
+    point_constr = {"observables": observables}
 
     # Get simulated data and likelihood for myopic model.
-    params, options = generate_random_model(myopic=True, observables=observables)
+    params, options = generate_random_model(myopic=True, point_constr=point_constr)
 
     # Get all reward values
     index_reward = [
@@ -76,22 +85,30 @@ def test_observables(seed):
 
 @pytest.mark.parametrize("seed", range(20))
 def test_distribution_of_observables(seed):
+    """Test that the distribution of observables matches the simulated distribution."""
     np.random.seed(seed)
 
     # Now specify a set of observables
-    observables = [np.random.randint(2, 6)]
+    point_constr = {
+        "observables": [np.random.randint(2, 6)],
+        "simulation_agents": 1000,
+        "n_periods": 1,
+    }
 
-    # Get simulated data and likelihood for myopic model.
-    params, options = generate_random_model(myopic=True, observables=observables)
+    params, options = generate_random_model(point_constr=point_constr)
 
-    # Simulate the base model
     simulate = rp.get_simulate_func(params, options)
     df = simulate(params)
 
     # Check observable probabilities
-    props = df["Observable_0"].value_counts(normalize=True, sort=False).values
+    probs = df["Observable_0"].value_counts(normalize=True, sort=False)
 
     # Check proportions
     np.testing.assert_almost_equal(
-        props, params.loc["observables"]["value"].values, decimal=1
+        probs.to_numpy(),
+        params.loc[
+            params.index.get_level_values(0).str.contains("observable_observable_0"),
+            "value",
+        ].to_numpy(),
+        decimal=1,
     )

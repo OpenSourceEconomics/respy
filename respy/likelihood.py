@@ -1,3 +1,4 @@
+"""Everything related to the estimation with maximum likelihood."""
 import warnings
 from functools import partial
 
@@ -10,6 +11,7 @@ from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
 from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_estimation
@@ -69,6 +71,7 @@ def get_crit_func(params, options, df, version="log_like"):
     base_draws_est = create_base_draws(
         (len(choices), options["estimation_draws"], len(optim_paras["choices"])),
         next(options["estimation_seed_startup"]),
+        options["monte_carlo_sequence"],
     )
 
     if version == "log_like":
@@ -318,7 +321,7 @@ def _internal_log_like_obs(
 
 @nb.njit
 def logsumexp(x):
-    """Compute `logsumexp(x)` of `x`.
+    """Compute logsumexp of `x`.
 
     The function does the same as the following code, but faster.
 
@@ -368,7 +371,7 @@ def simulate_log_probability_of_individuals_observed_choice(
     tau,
     smoothed_log_probability,
 ):
-    """Simulate the probability of observing the agent's choice.
+    r"""Simulate the probability of observing the agent's choice.
 
     The probability is simulated by iterating over a distribution of unobservables.
     First, the utility of each choice is computed. Then, the probability of observing
@@ -379,8 +382,8 @@ def simulate_log_probability_of_individuals_observed_choice(
 
     .. math::
 
-        \\log(\text{softmax}(x)_i) = \\log\\left(
-            \frac{e^{x_i}}{\\sum^J e^{x_j}}
+        \log(\text{softmax}(x)_i) = \log\left(
+            \frac{e^{x_i}}{\sum^J e^{x_j}}
         \right)
 
     The following function is numerically more robust. The derivation with the two
@@ -441,28 +444,6 @@ def simulate_log_probability_of_individuals_observed_choice(
     smoothed_log_probability[0] = smoothed_log_prob
 
 
-def _convert_choice_variables_from_categorical_to_codes(df, options):
-    """Recode choices to choice codes in the model.
-
-    We cannot use ``.cat.codes`` because order might be different. The model requires an
-    order of ``choices_w_exp_w_wag``, ``choices_w_exp_wo_wage``,
-    ``choices_wo_exp_wo_wage``.
-
-    See also
-    --------
-    respy.pre_processing.model_processing._order_choices
-
-    """
-    choices_to_codes = {choice: i for i, choice in enumerate(options["choices"])}
-    df.choice = df.choice.replace(choices_to_codes).astype(np.uint8)
-    for i in range(1, options["n_lagged_choices"] + 1):
-        df[f"lagged_choice_{i}"] = (
-            df[f"lagged_choice_{i}"].replace(choices_to_codes).astype(np.uint8)
-        )
-
-    return df
-
-
 def _process_estimation_data(df, state_space, optim_paras, options):
     """Process estimation data.
 
@@ -503,14 +484,14 @@ def _process_estimation_data(df, state_space, optim_paras, options):
 
     df = df.sort_values(["Identifier", "Period"])[labels]
     df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
-    df = _convert_choice_variables_from_categorical_to_codes(df, optim_paras)
+    df = convert_labeled_variables_to_codes(df, optim_paras)
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations, n_types).
     indices = ()
 
     for period in range(df.period.max() + 1):
-        period_df = df.loc[df.period.eq(period)]
+        period_df = df.query("period == @period")
 
         period_experience = tuple(
             period_df[col].to_numpy() for col in period_df.filter(like="exp_").columns
@@ -521,7 +502,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         )
         period_observables = tuple(
             period_df[observable].to_numpy()
-            for observable in optim_paras["observables"].keys()
+            for observable in optim_paras["observables"]
         )
 
         period_indices = state_space.indexer[period][
@@ -586,8 +567,8 @@ def _adjust_optim_paras_for_estimation(optim_paras, df):
         init_exp_params = np.array(list(optim_paras["choices"][choice]["start"]))
         if not np.array_equal(init_exp_data, init_exp_params):
             warnings.warn(
-                f"The initial experiences for choice '{choice}' differs between data, "
-                f"{init_exp_data}, and parameters, {init_exp_params}. The parameters"
+                f"The initial experience(s) for choice '{choice}' differs between data,"
+                f" {init_exp_data}, and parameters, {init_exp_params}. The parameters"
                 " are ignored.",
                 category=UserWarning,
             )

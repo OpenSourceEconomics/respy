@@ -12,6 +12,8 @@ def process_model_or_seed(model_or_seed, **kwargs):
         params, options = generate_random_model(**kwargs)
 
     if "kw_97" in str(model_or_seed):
-        options["n_periods"] = 10
+        options["n_periods"] = 5
+    elif "kw_2000" in str(model_or_seed):
+        options["n_periods"] = 3
 
     return params, options

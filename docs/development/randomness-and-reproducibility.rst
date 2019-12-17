@@ -35,23 +35,26 @@ changes to the model.
 - Using interpolation and changing the number of non-interpolated states.
 - Removing states from the state space via filters.
 
-
 In the following, we document for each module the functions which use seeds to control
 randomness.
+
 
 respy.shared
 ------------
 
 .. currentmodule:: respy.shared
 
-The function :func:`create_base_draws` is used in all parts, solution,
-simulation, and estimation, to generate random draws.
-
+The function :func:`create_base_draws` is used in all parts, solution, simulation, and
+estimation, to generate random draws. :func:`transform_base_draws_with_cholesky_factor`
+transforms the base draws to the variance-covariance matrix implied by the model
+parameters.
 
 .. autosummary::
     :toctree: ../_generated/
 
     create_base_draws
+    transform_base_draws_with_cholesky_factor
+
 
 respy.solve
 -----------
@@ -62,18 +65,18 @@ Routines under ``respy.solve`` use a seed from the sequence initialized by
 ``options["solution_seed"]`` to control randomness. Apart from the draws,
 :func:`~respy.solve.solve` relies on the following function.
 
-
 .. autosummary::
     :toctree: ../_generated/
 
     get_not_interpolated_indicator
+
 
 respy.simulate
 --------------
 
 Routines under ``respy.simulate`` use a seed from the sequence of
 ``options["simulation_seed"]`` to control randomness. Apart from the draws,
-:func:`~respy.simulate.simulate` relies on the following three functions to generate
+:func:`~respy.simulate.simulate` relies on the following two functions to generate
 starting values for simulated agents.
 
 .. currentmodule:: respy.simulate
@@ -81,9 +84,9 @@ starting values for simulated agents.
 .. autosummary::
     :toctree: ../_generated/
 
-    _get_random_initial_experience
+    _get_random_characteristic
     _get_random_types
-    _get_random_lagged_choices
+
 
 respy.likelihood
 ----------------
@@ -107,6 +110,22 @@ in the sequence initialized by ``options["simulation_seed"]``.
     :toctree: ../_generated/
 
     simulate_truncated_data
+
+
+.. seealso::
+
+    See `Random number generator seed mistakes <https://www.johndcook.com/blog/2016/01/
+    29/random-number-generator-seed-mistakes/>`_ for a general introduction to seeding
+    problems.
+
+    See `this comment <https://www.johndcook.com/blog/2016/01/29/
+    random-number-generator-seed-mistakes/#comment-704037>`_ in the same post which
+    verifies independence between sequential seeds.
+
+    NumPy documentation on their `RandomState object <https://docs.scipy.org/doc/
+    numpy-1.15.0/reference/generated/numpy.random.RandomState.html>`_ which wraps the
+    pseudo-random number generator `Mersenne Twister <https://docs.scipy.org/doc/numpy/
+    reference/random/bit_generators/mt19937.html>`_.
 
 
 .. rubric:: Footnotes

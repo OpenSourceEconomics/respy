@@ -1,3 +1,4 @@
+"""General interface functions for respy."""
 import warnings
 
 import pandas as pd
@@ -39,6 +40,11 @@ KW_2000_CONSTRAINTS = [
     {"loc": "observables", "type": "fixed"},
 ]
 
+ROBINSON_CRUSOE_CONSTRAINTS = [
+    {"loc": "shocks_sdcorr", "type": "sdcorr"},
+    {"loc": "lagged_choice_1_hammock", "type": "fixed"},
+]
+
 
 def get_example_model(model, with_data=True):
     """Return parameters, options and data (optional) of an example model.
@@ -60,7 +66,7 @@ def get_example_model(model, with_data=True):
 
     if "kw_97" in model and with_data:
         df = (create_kw_97(params, options),)
-    elif "kw_94" in model and with_data:
+    elif ("kw_94" in model or "robinson" in model) and with_data:
         simulate = get_simulate_func(params, options)
         df = (simulate(params),)
     else:
@@ -74,6 +80,7 @@ def get_example_model(model, with_data=True):
 
 
 def get_parameter_constraints(model):
+    """Provide parameter constraints for the estimation compatible with estimagic."""
     if "kw_94" in model:
         constraints = KW_94_CONSTRAINTS
     elif "kw_97_basic" == model:
@@ -82,5 +89,9 @@ def get_parameter_constraints(model):
         constraints = KW_97_EXTENDED_CONSTRAINTS
     elif "kw_2000" == model:
         constraints = KW_2000_CONSTRAINTS
+    elif "robinson_crusoe" in model:
+        constraints = ROBINSON_CRUSOE_CONSTRAINTS
+    else:
+        raise NotImplementedError(f"No constraints defined for model {model}.")
 
     return constraints

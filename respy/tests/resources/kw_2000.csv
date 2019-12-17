@@ -111,16 +111,16 @@ type_4,at_least_ten_years_school,-0.0325134,effect of at least ten years of scho
 type_4,black_and_at_least_ten_years_school,1.7476534,effect of at least ten years of schooling on probability of being type 4 for blacks
 lagged_choice_1_home,up_to_nine_years_school,1,Probability that the first lagged choice is home given covariate up_to_nine_years_school (simulation only)
 lagged_choice_1_school,at_least_ten_years_school,1,Probability that the first lagged choice is education given covariate at_least_ten_years_school (simulation only)
-initial_exp_school_7,white,0.01,Probability that the initial level of education is 7
-initial_exp_school_8,white,0.04,Probability that the initial level of education is 8
-initial_exp_school_9,white,0.2,Probability that the initial level of education is 9
-initial_exp_school_10,white,0.67,Probability that the initial level of education is 10
-initial_exp_school_11,white,0.08,Probability that the initial level of education is 11
-initial_exp_school_7,black,0.02,Probability that the initial level of education is 7
-initial_exp_school_8,black,0.08,Probability that the initial level of education is 8
-initial_exp_school_9,black,0.3,Probability that the initial level of education is 9
-initial_exp_school_10,black,0.52,Probability that the initial level of education is 10
-initial_exp_school_11,black,0.08,Probability that the initial level of education is 11
+initial_exp_school_7,white,-4.6052,Probability that the initial level of education is 7
+initial_exp_school_8,white,-3.2189,Probability that the initial level of education is 8
+initial_exp_school_9,white,-1.6094,Probability that the initial level of education is 9
+initial_exp_school_10,white,-0.4005,Probability that the initial level of education is 10
+initial_exp_school_11,white,-2.5257,Probability that the initial level of education is 11
+initial_exp_school_7,black,-3.912,Probability that the initial level of education is 7
+initial_exp_school_8,black,-2.5257,Probability that the initial level of education is 8
+initial_exp_school_9,black,-1.204,Probability that the initial level of education is 9
+initial_exp_school_10,black,-0.6539,Probability that the initial level of education is 10
+initial_exp_school_11,black,-2.5257,Probability that the initial level of education is 11
 maximum_exp,school,20,"Maximum level of experience for education (optional, reduces computation complexity)"
-observables,black_0,0.6151,Share of whites
-observables,black_1,0.3849,Share of blacks
+observable_race_white,probability,0.6151,Share of whites
+observable_race_black,probability,0.3849,Share of blacks

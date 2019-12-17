@@ -8,9 +8,8 @@ from respy.tests.random_model import simulate_truncated_data
 def test_simulation_and_estimation_with_different_models():
     """Test the evaluation of the criterion function not at the true parameters."""
     # Set constraints.
-    num_agents = np.random.randint(5, 100)
     constr = {
-        "simulation_agents": num_agents,
+        "simulation_agents": np.random.randint(5, 100),
         "n_periods": np.random.randint(1, 4),
         "edu_max": 15,
         "edu_start": [7],
@@ -19,11 +18,11 @@ def test_simulation_and_estimation_with_different_models():
     }
 
     # Simulate a dataset
-    params, options = generate_random_model(point_constr=constr, observables=False)
+    params, options = generate_random_model(point_constr=constr)
     df = simulate_truncated_data(params, options)
 
     # Evaluate at different points, ensuring that the simulated dataset still fits.
-    params, options = generate_random_model(point_constr=constr, observables=False)
+    params, options = generate_random_model(point_constr=constr)
     crit_func = get_crit_func(params, options, df)
 
     crit_func(params)

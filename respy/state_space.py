@@ -1,3 +1,4 @@
+"""Everything related to the state space of a structural model."""
 import itertools
 
 import numba as nb
@@ -47,6 +48,7 @@ class StateSpace:
     """
 
     def __init__(self, optim_paras, options):
+        """Initialize the state space class."""
         self.base_draws_sol = create_base_draws(
             (
                 options["n_periods"],
@@ -54,25 +56,17 @@ class StateSpace:
                 len(optim_paras["choices"]),
             ),
             next(options["solution_seed_startup"]),
+            options["monte_carlo_sequence"],
         )
 
         states_df, self.indexer = _create_state_space(optim_paras, options)
 
-        _states_df = states_df.copy()
-
-        for i in range(1, optim_paras["n_lagged_choices"] + 1):
-            _states_df[f"lagged_choice_{i}"] = _states_df[
-                f"lagged_choice_{i}"
-            ].cat.codes
-
-        _states_df = _states_df.apply(downcast_to_smallest_dtype)
-        self.states = _states_df.to_numpy()
-
         base_covariates_df = create_base_covariates(states_df, options["covariates"])
 
-        base_covariates_df = base_covariates_df.apply(
-            downcast_to_smallest_dtype, args=(options.get("save_memory", True),)
-        )
+        # Downcast after calculations or be aware of silent integer overflows.
+        states_df = states_df.apply(downcast_to_smallest_dtype)
+        base_covariates_df = base_covariates_df.apply(downcast_to_smallest_dtype)
+        self.states = states_df.to_numpy()
 
         self.covariates = _create_choice_covariates(
             base_covariates_df, states_df, optim_paras
@@ -241,7 +235,7 @@ def _create_state_space(optim_paras, options):
 
     df = _add_lagged_choice_to_core_state_space(df, optim_paras)
 
-    df = _filter_core_state_space(df, optim_paras, options)
+    df = _filter_core_state_space(df, options)
 
     df = _add_initial_experiences_to_core_state_space(df, optim_paras)
 
@@ -252,11 +246,6 @@ def _create_state_space(optim_paras, options):
     df = df.sort_values("period").reset_index(drop=True)
 
     indexer = _create_state_space_indexer(df, optim_paras)
-
-    for i in range(1, optim_paras["n_lagged_choices"] + 1):
-        df[f"lagged_choice_{i}"] = pd.Categorical(
-            df[f"lagged_choice_{i}"], categories=optim_paras["choices"]
-        )
 
     return df, indexer
 
@@ -356,9 +345,9 @@ def _create_core_state_space_per_period(
 def _add_lagged_choice_to_core_state_space(df, optim_paras):
     container = []
     for lag in range(1, optim_paras["n_lagged_choices"] + 1):
-        for choice in optim_paras["choices"]:
+        for choice_code in range(len(optim_paras["choices"])):
             df_ = df.copy()
-            df_[f"lagged_choice_{lag}"] = choice
+            df_[f"lagged_choice_{lag}"] = choice_code
             container.append(df_)
 
     df = pd.concat(container, axis="rows", sort=False) if container else df
@@ -366,8 +355,8 @@ def _add_lagged_choice_to_core_state_space(df, optim_paras):
     return df
 
 
-def _filter_core_state_space(df, optim_paras, options):
-    """Applies filters to the core state space.
+def _filter_core_state_space(df, options):
+    """Apply filters to the core state space.
 
     Sometimes, we want to apply filters to a group of choices. Thus, use the following
     shortcuts.
@@ -379,29 +368,11 @@ def _filter_core_state_space(df, optim_paras, options):
     Parameters
     ----------
     df : pandas.DataFrame
-        Contains the core state space.
-    optim_paras : dict
-        Contains model optim_paras and the filters to reduce the core state space.
+    options : dict
 
     """
     for definition in options["core_state_space_filters"]:
-        # If "{i}" is in definition, loop over choices with experiences.
-        if "{i}" in definition:
-            for i in optim_paras["choices_w_exp"]:
-                df = df.loc[~df.eval(definition.format(i=i))]
-
-        # If "{j}" is in definition, loop over choices without experiences.
-        elif "{j}" in definition:
-            for j in optim_paras["choices_wo_exp"]:
-                df = df.loc[~df.eval(definition.format(j=j))]
-
-        # If "{k}" is in definition, loop over choices with wage.
-        elif "{k}" in definition:
-            for k in optim_paras["choices_w_wage"]:
-                df = df.loc[~df.eval(definition.format(k=k))]
-
-        else:
-            df = df.loc[~df.eval(definition)]
+        df = df.loc[~df.eval(definition)]
 
     return df
 
@@ -446,16 +417,18 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
 
 
 def _add_observables_to_state_space(df, optim_paras):
-    for observable in optim_paras["observables"].keys():
-        container = []
-        for level, _ in enumerate(optim_paras["observables"][observable]):
-            df_ = df.copy()
+    levels_of_observables = [range(len(i)) for i in optim_paras["observables"].values()]
+    combinations = itertools.product(*levels_of_observables)
 
-            # Add columns with observable level.
-            df_[observable] = level
-            container.append(df_)
+    container = []
+    for combination in combinations:
+        df_ = df.copy()
+        df_ = df_.assign(
+            **{col: val for col, val in zip(optim_paras["observables"], combination)}
+        )
+        container.append(df_)
 
-        df = pd.concat(container, axis="rows", sort=False)
+    df = pd.concat(container, axis="rows", sort=False) if container else df
 
     return df
 
@@ -485,8 +458,7 @@ def _create_state_space_indexer(df, optim_paras):
     - https://github.com/OpenSourceEconomics/respy/pull/237
 
     """
-    n_exp_choices = len(optim_paras["choices_w_exp"])
-    n_nonexp_choices = len(optim_paras["choices_wo_exp"])
+    n_choices = len(optim_paras["choices"])
     choices = optim_paras["choices"]
 
     max_initial_experience = np.array(
@@ -494,36 +466,30 @@ def _create_state_space_indexer(df, optim_paras):
     ).astype(np.uint8)
     max_experience = [choices[choice]["max"] for choice in optim_paras["choices_w_exp"]]
 
-    choice_to_code = {choice: i for i, choice in enumerate(optim_paras["choices"])}
-
     indexer = []
     count_states = 0
 
     for period in range(optim_paras["n_periods"]):
         shape = (
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
-            + (n_exp_choices + n_nonexp_choices,) * optim_paras["n_lagged_choices"]
+            + (n_choices,) * optim_paras["n_lagged_choices"]
             + tuple(len(x) for x in optim_paras["observables"].values())
             + (optim_paras["n_types"],)
         )
         sub_indexer = np.full(shape, -1, dtype=np.int32)
 
-        sub_df = df.loc[df.period.eq(period)]
+        sub_df = df.query("period == @period")
         n_states = sub_df.shape[0]
 
-        indices = tuple(
-            sub_df[f"exp_{i}"] for i in optim_paras["choices_w_exp"]
-        ) + tuple(
-            sub_df[f"lagged_choice_{i}"].replace(choice_to_code)
-            for i in range(1, optim_paras["n_lagged_choices"] + 1)
-        )
-        if "observables" in optim_paras:
-            indices += tuple(
-                sub_df[observable.lower()]
-                for observable in optim_paras["observables"].keys()
+        indices = (
+            tuple(sub_df[f"exp_{i}"] for i in optim_paras["choices_w_exp"])
+            + tuple(
+                sub_df[f"lagged_choice_{i}"]
+                for i in range(1, optim_paras["n_lagged_choices"] + 1)
             )
-
-        indices = indices + (sub_df.type,)
+            + tuple(sub_df[observable] for observable in optim_paras["observables"])
+            + (sub_df.type,)
+        )
 
         sub_indexer[indices] = np.arange(count_states, count_states + n_states)
         indexer.append(sub_indexer)
@@ -659,6 +625,7 @@ def _get_indices_of_child_states(state_space, optim_paras):
     dtype = state_space.indexer[0].dtype
 
     n_choices = len(optim_paras["choices"])
+    n_choices_w_exp = len(optim_paras["choices_w_exp"])
     n_periods = optim_paras["n_periods"]
     n_states = state_space.states.shape[0]
 
@@ -675,7 +642,7 @@ def _get_indices_of_child_states(state_space, optim_paras):
             state_space.indexer[period],
             state_space.indexer[period + 1],
             state_space.is_inadmissible,
-            len(optim_paras["choices_w_exp"]),
+            n_choices_w_exp,
             optim_paras["n_lagged_choices"],
         )
 
