@@ -18,6 +18,7 @@ from respy.config import MIN_LOG_FLOAT
 def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
+    """Aggregate utility components."""
     flow_utility = wage * draw + nonpec
     value_function = flow_utility + delta * continuation_value
 
@@ -132,6 +133,7 @@ def transform_base_draws_with_cholesky_factor(
 
 
 def generate_column_labels_estimation(optim_paras):
+    """Generate column labels for data necessary for the estimation."""
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
         + [f"Experience_{choice.title()}" for choice in optim_paras["choices_w_exp"]]
@@ -152,6 +154,7 @@ def generate_column_labels_estimation(optim_paras):
 
 
 def generate_column_labels_simulation(optim_paras):
+    """Generate column labels for simulation output."""
     est_lab, est_dtypes = generate_column_labels_estimation(optim_paras)
     labels = (
         est_lab
@@ -170,34 +173,33 @@ def generate_column_labels_simulation(optim_paras):
     return labels, dtypes
 
 
-@nb.vectorize("f8(f8, f8, f8)", nopython=True, target="cpu")
+@nb.njit
 def clip(x, minimum=None, maximum=None):
-    """Clip (limit) input value.
+    """Clip input array at minimum and maximum."""
+    out = np.empty_like(x)
 
-    Parameters
-    ----------
-    x : float
-        Value to be clipped.
-    minimum : float
-        Lower limit.
-    maximum : float
-        Upper limit.
+    for index, value in np.ndenumerate(x):
+        if minimum is not None and value < minimum:
+            out[index] = minimum
+        elif maximum is not None and value > maximum:
+            out[index] = maximum
+        else:
+            out[index] = value
 
-    Returns
-    -------
-    float
-        Clipped value.
-
-    """
-    if minimum is not None and x < minimum:
-        return minimum
-    elif maximum is not None and x > maximum:
-        return maximum
-    else:
-        return x
+    return out
 
 
 def downcast_to_smallest_dtype(series):
+    """Downcast the dtype of a :class:`pandas.Series` to the lowest possible dtype.
+
+    Be aware that NumPy integers silently overflow which is why conversion to low dtypes
+    should be done after calculations. For example, using :class:`np.uint8` for an array
+    and squaring the elements leads to silent overflows for numbers higher than 255.
+
+    For more information on the boundaries the NumPy documentation under
+    https://docs.scipy.org/doc/numpy-1.17.0/user/basics.types.html.
+
+    """
     # We can skip integer as "unsigned" and "signed" will find the same dtypes.
     _downcast_options = ["unsigned", "signed", "float"]
 
@@ -254,9 +256,9 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
         DataFrame with some, not all state space dimensions like period, experiences.
     covariates_spec : dict
         Keys represent covariates and values are strings passed to ``df.eval``.
-    raise_errors : bool
+    raise_errors : bool, default True
         Whether to raise errors if a variable was not found. This option is necessary
-        for, e.g., :func:`~respy.simulate._get_random_lagged_choices` where not all
+        for, e.g., :func:`~respy.simulate._get_random_characteristic` where not all
         necessary variables exist and it is not clear how to exclude them easily.
 
     Returns
@@ -267,19 +269,20 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     Raises
     ------
     pd.core.computation.ops.UndefinedVariableError
-        If a necessary variable is not found in the data.
+        If variable on the right-hand-side of the definition is not found in the data.
 
     """
     covariates = states.copy()
 
     for covariate, definition in covariates_spec.items():
-        try:
-            covariates[covariate] = covariates.eval(definition)
-        except pd.core.computation.ops.UndefinedVariableError as e:
-            if raise_errors:
-                raise e
-            else:
-                pass
+        if covariate not in states.columns:
+            try:
+                covariates[covariate] = covariates.eval(definition)
+            except pd.core.computation.ops.UndefinedVariableError as e:
+                if raise_errors:
+                    raise e
+                else:
+                    pass
 
     covariates = covariates.drop(columns=states.columns)
 

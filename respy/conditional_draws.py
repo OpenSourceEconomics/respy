@@ -1,3 +1,4 @@
+"""Everything related to conditional draws for the maximum likelihood estimation."""
 import numpy as np
 from estimagic.optimization.utilities import robust_cholesky
 from numba import guvectorize

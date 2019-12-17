@@ -1,3 +1,4 @@
+"""Everything related to the solution of a structural model."""
 import warnings
 
 import numba as nb
@@ -8,6 +9,7 @@ from respy.config import MAX_LOG_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import calculate_value_functions_and_flow_utilities
+from respy.shared import clip
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.state_space import StateSpace
 
@@ -222,13 +224,13 @@ def calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmis
     )
 
     max_value_functions = value_functions.max(axis=1)
-    exogenous = max_value_functions - value_functions.reshape(-1, wages.shape[1])
+    exogenous = max_value_functions.reshape(-1, 1) - value_functions
 
     exogenous = np.column_stack(
         (exogenous, np.sqrt(exogenous), np.ones(exogenous.shape[0]))
     )
 
-    return exogenous, max_value_functions.reshape(-1)
+    return exogenous, max_value_functions
 
 
 def calculate_endogenous_variables(
@@ -309,7 +311,7 @@ def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated
     # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994),
     # negative predictions are truncated to zero.
     endogenous_predicted = exogenous.dot(beta)
-    endogenous_predicted = np.clip(endogenous_predicted, 0, MAX_FLOAT)
+    endogenous_predicted = clip(endogenous_predicted, 0)
 
     # Construct predicted EMAX for all states and the
     predictions = endogenous_predicted + max_value_functions
@@ -412,6 +414,7 @@ def calculate_emax_value_functions(
     emax_value_functions[0] /= n_draws
 
 
+@nb.njit
 def ols(y, x):
     """Calculate OLS coefficients using a pseudo-inverse.
 
