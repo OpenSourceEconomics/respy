@@ -540,14 +540,16 @@ def _process_simulation_arguments(method, df, n_simulation_periods, options):
             df = None
             warnings.warn("Passed df is ignored.")
 
-    elif method == "n_step_ahead_with_data":
-        df = df.query("Period == 0")
-        options["simulation_agents"] = df.index.get_level_values("Identifier").nunique()
+        else:
+            if df is None:
+                raise ValueError(f"Method '{method}' requires data.")
 
-    elif method == "one_step_ahead":
-        if df is None:
-            raise ValueError(f"Method '{method}' requires data.")
-        options["simulation_agents"] = df.index.get_level_values("Identifier").nunique()
+            if method == "n_step_ahead_with_data":
+                df = df.query("Period == 0")
+
+            options["simulation_agents"] = df.index.get_level_values(
+                "Identifier"
+            ).nunique()
 
     else:
         raise NotImplementedError(f"Simulation method '{method}' is not implemented.")
