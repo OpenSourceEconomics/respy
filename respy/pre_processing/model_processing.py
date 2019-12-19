@@ -335,12 +335,15 @@ def _parse_types(optim_paras, params):
         optim_paras["type_covariates"] = (
             params.loc[types[0]].sort_index().index.to_list()
         )
-        n_type_covariates = len(optim_paras["type_covariates"])
 
-        optim_paras["type_prob"] = np.zeros((n_types, n_type_covariates))
-        for i, type_ in enumerate(types, 1):
-            for j, cov in enumerate(optim_paras["type_covariates"]):
-                optim_paras["type_prob"][i, j] = params.loc[type_, cov]
+        first_type = {0: pd.Series(data=[0], index=["constant"])}
+        other_types = {i - 1: params.loc[f"type_{i}"] for i in range(2, n_types + 1)}
+        optim_paras["type_prob"] = {**first_type, **other_types}
+        optim_paras["type_covariates"] = {
+            cov
+            for level_dict in optim_paras["type_prob"].values()
+            for cov in level_dict.index
+        }
 
         optim_paras["type_shift"] = np.zeros((n_types, n_choices))
         for type_ in range(2, n_types + 1):
@@ -350,6 +353,7 @@ def _parse_types(optim_paras, params):
                 )
     else:
         optim_paras["type_shift"] = np.zeros((1, n_choices))
+        optim_paras["type_prob"] = {0: pd.Series(data=[0], index=["constant"])}
 
     optim_paras["n_types"] = optim_paras["type_shift"].shape[0]
 

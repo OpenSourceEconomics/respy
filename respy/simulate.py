@@ -10,7 +10,6 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
-from respy.shared import create_type_covariates
 from respy.shared import generate_column_labels_simulation
 from respy.shared import rename_labels
 from respy.shared import transform_base_draws_with_cholesky_factor
@@ -241,7 +240,8 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
             pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
-    types = _get_random_types(df, optim_paras, options)
+    level_dict = optim_paras["type_prob"]
+    types = _sample_characteristic(df, options, level_dict, use_keys=False)
     df["type"] = df["type"].fillna(pd.Series(data=types, index=index), downcast="infer")
 
     return df
@@ -302,20 +302,19 @@ def _simulate_single_period(
     wages[:, n_wages:] = np.nan
     wage = np.choose(choice, wages.T)
 
-    # Record data of all agents in one period.
     rows = np.column_stack(
         (
             np.full(n_individuals, period),
             choice,
             wage,
             # Write relevant state space for period to data frame. However, the
-            # individual's type is not part of the observed dataset. This is
-            # included in the simulated dataset.
+            # individual's type is not part of the observed dataset. This is included in
+            # the simulated dataset.
             current_states,
-            # As we are working with a simulated dataset, we can also output
-            # additional information that is not available in an observed dataset.
-            # The discount rate is included as this allows to construct the EMAX
-            # with the information provided in the simulation output.
+            # As we are working with a simulated dataset, we can also output additional
+            # information that is not available in an observed dataset. The discount
+            # rate is included as this allows to construct the EMAX with the information
+            # provided in the simulation output.
             state_space.nonpec[indices],
             state_space.wages[indices, :n_wages],
             flow_utilities,
@@ -326,21 +325,6 @@ def _simulate_single_period(
     )
 
     return rows
-
-
-def _get_random_types(states_df, optim_paras, options):
-    """Get random types for simulated agents."""
-    if optim_paras["n_types"] == 1:
-        types = np.zeros(options["simulation_agents"], dtype=np.uint8)
-    else:
-        type_covariates = create_type_covariates(states_df, optim_paras, options)
-        np.random.seed(next(options["simulation_seed_iteration"]))
-
-        z = np.dot(type_covariates, optim_paras["type_prob"].T)
-        probs = softmax(z, axis=1)
-        types = _random_choice(optim_paras["n_types"], probs)
-
-    return types
 
 
 def _sample_characteristic(states_df, options, level_dict, use_keys):
@@ -361,8 +345,10 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
     covariates_df = create_base_covariates(
         states_df, options["covariates"], raise_errors=False
     )
-
     all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
+    for column in all_data:
+        if all_data[column].dtype == np.bool:
+            all_data[column] = all_data[column].astype(np.uint8)
 
     z = ()
 

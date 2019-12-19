@@ -253,25 +253,6 @@ def downcast_to_smallest_dtype(series):
     return series.astype(min_dtype)
 
 
-def create_type_covariates(df, optim_paras, options):
-    """Create covariates to predict type probabilities.
-
-    In the simulation, the covariates are needed to predict type probabilities and
-    assign types to simulated individuals. In the estimation, covariates are necessary
-    to weight the probability of observations by type probabilities.
-
-    """
-    covariates = create_base_covariates(df, options["covariates"])
-
-    all_data = pd.concat([covariates, df], axis="columns", sort=False)
-
-    all_data = all_data[optim_paras["type_covariates"]].apply(
-        downcast_to_smallest_dtype
-    )
-
-    return all_data.to_numpy()
-
-
 def create_base_covariates(states, covariates_spec, raise_errors=True):
     """Create set of covariates for each state.
 

@@ -4,6 +4,7 @@ from functools import partial
 
 import numba as nb
 import numpy as np
+import pandas as pd
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
@@ -12,8 +13,9 @@ from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import convert_choice_variables_from_categorical_to_codes
+from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
-from respy.shared import create_type_covariates
+from respy.shared import downcast_to_smallest_dtype
 from respy.shared import generate_column_labels_estimation
 from respy.shared import rename_labels
 from respy.solve import solve_with_backward_induction
@@ -305,8 +307,15 @@ def _internal_log_like_obs(
 
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
     if n_types >= 2:
-        z = np.dot(type_covariates, optim_paras["type_prob"].T)
-        type_probabilities = special.softmax(z, axis=1)
+        z = ()
+
+        for level in optim_paras["type_prob"]:
+            labels = optim_paras["type_prob"][level].index
+            x_beta = np.dot(type_covariates[labels], optim_paras["type_prob"][level])
+
+            z += (x_beta,)
+
+        type_probabilities = special.softmax(np.column_stack(z), axis=1)
 
         log_type_probabilities = np.log(type_probabilities)
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
@@ -542,12 +551,17 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     choices = df.choice.to_numpy().repeat(optim_paras["n_types"])
 
     # For the type covariates, we only need the first observation of each individual.
-    initial_states = df.query("period == 0")
-    type_covariates = (
-        create_type_covariates(initial_states, optim_paras, options)
-        if optim_paras["n_types"] > 1
-        else None
-    )
+    if optim_paras["n_types"] > 1:
+        initial_states = df.query("period == 0")
+        covariates = create_base_covariates(initial_states, options["covariates"])
+
+        all_data = pd.concat([covariates, initial_states], axis="columns", sort=False)
+
+        type_covariates = all_data[optim_paras["type_covariates"]].apply(
+            downcast_to_smallest_dtype
+        )
+    else:
+        type_covariates = None
 
     return choices, idx_indiv_first_obs, indices, log_wages_observed, type_covariates
 
