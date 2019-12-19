@@ -54,11 +54,11 @@ def get_simulate_func(
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    df, n_simulation_periods, options = _process_simulation_arguments(
+    df, n_simulation_periods, options = _align_simulation_arguments(
         method, df, n_simulation_periods, options
     )
 
-    df = _process_simulation_data(df, method, options, optim_paras)
+    df = _process_input_df_for_simulation(df, method, options, optim_paras)
 
     state_space = StateSpace(optim_paras, options)
 
@@ -98,17 +98,19 @@ def simulate(
 ):
     """Perform a simulation.
 
-    This function performs one of three possible simulation exercises. Ordered from no
-    data to a panel data on individuals, there is:
+    This function performs one of three possible simulation exercises. The type of the
+    simulation is controlled by ``method`` in :func:`get_simulate_func`. Ordered from no
+    data to panel data on individuals, there is:
 
-    1. *n-step-ahead simulation without data*: The first observation of an individual is
-       sampled from the initial conditions, i.e., the distribution of observed variables
-       or initial experiences, etc. in the first period. Then, the individuals are
-       guided for ``n`` periods by the decision rules from the solution of the model.
+    1. *n-step-ahead simulation with sampling*: The first observation of an individual
+       is sampled from the initial conditions, i.e., the distribution of observed
+       variables or initial experiences, etc. in the first period. Then, the individuals
+       are guided for ``n`` periods by the decision rules from the solution of the
+       model.
 
-    2. *n-step-ahead simulation with first observations*: Instead of sampling
-       individuals from the initial conditions, take the first observation of each
-       individual in the data. Then, do as in 1..
+    2. *n-step-ahead simulation with data*: Instead of sampling individuals from the
+       initial conditions, take the first observation of each individual in the data.
+       Then, do as in 1..
 
     3. *one-step-ahead simulation*: Take the complete data and find for each observation
        the corresponding outcomes, e.g, choices and wages, using the decision rules from
@@ -118,10 +120,10 @@ def simulate(
     ----------
     params : pandas.DataFrame or pandas.Series
         Contains parameters.
-    base_draws_sim : np.ndarray
+    base_draws_sim : numpy.ndarray
         Array with shape (n_periods, n_individuals, n_choices) to provide a unique set
         of shocks for each individual in each period.
-    base_draws_wage : np.ndarray
+    base_draws_wage : numpy.ndarray
         Array with shape (n_periods, n_individuals, n_choices) to provide a unique set
         of wage measurement errors for each individual in each period.
     df : pandas.DataFrame or None
@@ -187,14 +189,9 @@ def simulate(
             choice = rows[:, 1].astype(np.uint8)
             df = _apply_law_of_motion(choice, current_states, period, optim_paras)
 
-    if is_n_step_ahead:
-        identifier = np.tile(
-            np.arange(options["simulation_agents"]), n_simulation_periods
-        )
-    else:
-        identifier = df.index.get_level_values("identifier")
-
-    simulated_data = _process_simulated_data(identifier, data, optim_paras)
+    simulated_data = _create_simulated_data(
+        data, df, is_n_step_ahead, n_simulation_periods, optim_paras, options
+    )
 
     return simulated_data
 
@@ -212,9 +209,17 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
+        A pandas DataFrame which contains only an index for n-step-ahead simulation with
+        sampling. For the other simulation methods, it contains information on
+        individuals which is allowed to have missing information in the first period.
     optim_paras : dict
     options : dict
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        A pandas DataFrame with no missings at all.
 
     """
     index = df.index
@@ -258,7 +263,22 @@ def _simulate_single_period(
     """Simulate individuals in a single period.
 
     This function takes a set of states and simulates wages, choices and other
-    information.
+    information. The information is stored in a NumPy array.
+
+    Parameter
+    ---------
+    period : int
+        The period for which individual outcomes are simulated.
+    current_states : numpy.ndarray
+        Array with shape (n_individuals, n_state_space_dims) which contains the states
+        of simulated individuals.
+    state_space : :class:`~respy.state_space.StateSpace`
+        State space of the model.
+    base_draws_sim_transformed : numpy.ndarray
+        Draws to simulate choices of individuals.
+    base_draws_wage_transformed : numpy.ndarray
+        Draws to simulate the measurement error in wages.
+    optim_paras : dict
 
     """
     n_wages = len(optim_paras["choices_w_wage"])
@@ -330,6 +350,18 @@ def _simulate_single_period(
 def _sample_characteristic(states_df, options, level_dict, use_keys):
     """Sample characteristic of individuals.
 
+    The function is used to sample the values of one state space characteristic, say
+    experience. The keys of ``level_dict`` are the possible starting values of
+    experience. The values of the dictionary are :class:`pandas.Series` whose index are
+    covariate names and the values are the parameter values.
+
+    ``states_df`` is used to generate all possible covariates with the existing
+    information.
+
+    For each level, the dot product of parameters and covariates determines the value
+    ``z``. The softmax function converts the level-specific ``z``-values to
+    probabilities. The probabilities are used to sample the characteristic.
+
     Parameters
     ----------
     states_df : pandas.DataFrame
@@ -341,7 +373,13 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
         probability mass function. The values are a :class:`pandas.Series` with
         covariate names as the index and parameter values.
 
+    Returns
+    -------
+    characteristic : numpy.ndarray
+        Array with shape (n_individuals,) containing sampled values.
+
     """
+    # Generate covariates.
     covariates_df = create_base_covariates(
         states_df, options["covariates"], raise_errors=False
     )
@@ -350,14 +388,15 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
         if all_data[column].dtype == np.bool:
             all_data[column] = all_data[column].astype(np.uint8)
 
+    # Calculate dot product of covariates and parameters.
     z = ()
-
     for level in level_dict:
         labels = level_dict[level].index
         x_beta = np.dot(all_data[labels], level_dict[level])
 
         z += (x_beta,)
 
+    # Calculate probabilities with the softmax function.
     probabilities = softmax(np.column_stack(z), axis=1)
 
     np.random.seed(next(options["simulation_seed_iteration"]))
@@ -369,6 +408,7 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
 
 
 def _convert_codes_to_original_labels(df, optim_paras):
+    """Convert codes in choice-related and observed variables to labels."""
     code_to_choice = dict(enumerate(optim_paras["choices"]))
 
     df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
@@ -388,10 +428,41 @@ def _convert_codes_to_original_labels(df, optim_paras):
     return df
 
 
-def _process_simulated_data(identifier, data, optim_paras):
+def _create_simulated_data(data, df, is_n_step_ahead, n_sim_p, optim_paras, options):
+    """Create simulated data.
+
+    This function takes an array of simulated outcomes for each period and stacks them
+    together to one DataFrame.
+
+    Parameters
+    ----------
+    data : list
+        List of period-specific simulated outcomes.
+    df : pandas.DataFrame
+        Original DataFrame passed by the user.
+    is_n_step_ahead : bool
+        Indicator for whether the simulation method is n-step-ahead or not. If it is
+        true, the individual identifier is generated. If false, take the identifier from
+        the data passed by the user.
+    n_sim_p : int
+        Number of periods for which outcomes are simulated.
+    optim_paras : dict
+    options : dict
+
+    Returns
+    -------
+    simulated_df : pandas.DataFrame
+        DataFrame with simulated data.
+
+    """
+    if is_n_step_ahead:
+        identifier = np.tile(np.arange(options["simulation_agents"]), n_sim_p)
+    else:
+        identifier = df.index.get_level_values("identifier")
+
     labels, dtypes = generate_column_labels_simulation(optim_paras)
 
-    df = (
+    simulated_df = (
         pd.DataFrame(
             data=np.column_stack((identifier, np.row_stack(data))), columns=labels
         )
@@ -400,9 +471,9 @@ def _process_simulated_data(identifier, data, optim_paras):
         .set_index(["Identifier", "Period"], drop=True)
     )
 
-    df = _convert_codes_to_original_labels(df, optim_paras)
+    simulated_df = _convert_codes_to_original_labels(simulated_df, optim_paras)
 
-    return df
+    return simulated_df
 
 
 def _random_choice(choices, probabilities):
@@ -460,8 +531,10 @@ def _random_choice(choices, probabilities):
 def _apply_law_of_motion(choice, states, period, optim_paras):
     """Apply the law of motion to get the states in the next period.
 
-    This function changes experiences and previous choices according to the choice in
-    the current period, to get the states of the next period.
+    For n-step-ahead simulations, the states of the next period are generated from the
+    current states and the current decision. This function changes experiences and
+    previous choices according to the choice in the current period, to get the states of
+    the next period.
 
     Parameters
     ----------
@@ -470,6 +543,12 @@ def _apply_law_of_motion(choice, states, period, optim_paras):
     states : np.ndarray
         Array with shape (n_individuals, n_state_space_dim) containing the state of each
         individual.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame with containing the states of individuals to simulate outcomes for the
+        next period.
 
     """
     n_individuals = states.shape[0]
@@ -499,7 +578,7 @@ def _apply_law_of_motion(choice, states, period, optim_paras):
 
 
 def _create_state_space_columns(optim_paras):
-    """Create a list of state space dimensions in order excluding `"period"`."""
+    """Create names of state space dimensions excluding the period and identifier."""
     return (
         [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
         + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
@@ -508,7 +587,8 @@ def _create_state_space_columns(optim_paras):
     )
 
 
-def _process_simulation_arguments(method, df, n_sim_p, options):
+def _align_simulation_arguments(method, df, n_sim_p, options):
+    """Align the arguments of the simulation."""
     if method == "n_step_ahead_with_sampling":
         df = None
     else:
@@ -536,7 +616,8 @@ def _process_simulation_arguments(method, df, n_sim_p, options):
     return df, n_sim_p, options
 
 
-def _process_simulation_data(df, method, options, optim_paras):
+def _process_input_df_for_simulation(df, method, options, optim_paras):
+    """Process the ``df`` provided by the user for the simulation."""
     if df is None:
         ids = np.arange(options["simulation_agents"])
         index = pd.MultiIndex.from_product((ids, [0]), names=["identifier", "period"])
