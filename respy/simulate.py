@@ -105,7 +105,7 @@ def simulate(
     1. *n-step-ahead simulation without data*: The first observation of an individual is
        sampled from the initial conditions, i.e., the distribution of observed variables
        or initial experiences, etc. in the first period. Then, the individuals are
-       guided for $n$ periods by the decision rules from the solution of the model.
+       guided for ``n`` periods by the decision rules from the solution of the model.
 
     2. *n-step-ahead simulation with first observations*: Instead of sampling
        individuals from the initial conditions, take the first observation of each
@@ -201,7 +201,23 @@ def simulate(
 
 
 def _extend_data_with_sampled_characteristics(df, optim_paras, options):
-    """Sample initial observations from initial conditions."""
+    """Sample initial observations from initial conditions.
+
+    The function iterates over all state space dimensions and replaces NaNs with values
+    sampled from initial conditions. In the case of an n-step-ahead simulation with
+    sampling all state space dimensions are sampled. For the other two simulation
+    methods, potential NaNs in the data are replaced with sampled characteristics.
+
+    Characteristics are sampled regardless of the simulation type which keeps randomness
+    across the types constant.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+    optim_paras : dict
+    options : dict
+
+    """
     index = df.index
 
     for observable in optim_paras["observables"]:
@@ -539,13 +555,10 @@ def _process_simulation_data(df, method, options, optim_paras):
         ids = np.arange(options["simulation_agents"])
         index = pd.MultiIndex.from_product((ids, [0]), names=["identifier", "period"])
         df = pd.DataFrame(index=index)
+
     else:
-        df = (
-            df.copy()
-            .rename(columns=rename_labels)
-            .rename_axis(index=rename_labels)
-            .sort_index()
-        )
+        df = df.copy().rename(columns=rename_labels)
+        df = df.rename_axis(index=rename_labels).sort_index()
 
     state_space_columns = _create_state_space_columns(optim_paras)
     df = df.reindex(columns=state_space_columns)
