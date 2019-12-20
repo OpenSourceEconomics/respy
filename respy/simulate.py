@@ -245,9 +245,12 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
             pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
-    level_dict = optim_paras["type_prob"]
-    types = _sample_characteristic(df, options, level_dict, use_keys=False)
-    df["type"] = df["type"].fillna(pd.Series(data=types, index=index), downcast="infer")
+    if optim_paras["n_types"] >= 2:
+        level_dict = optim_paras["type_prob"]
+        types = _sample_characteristic(df, options, level_dict, use_keys=False)
+        df["type"] = df["type"].fillna(
+            pd.Series(data=types, index=index), downcast="infer"
+        )
 
     return df
 

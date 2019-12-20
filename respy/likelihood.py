@@ -553,7 +553,9 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     # For the type covariates, we only need the first observation of each individual.
     if optim_paras["n_types"] >= 2:
         initial_states = df.query("period == 0")
-        covariates = create_base_covariates(initial_states, options["covariates"])
+        covariates = create_base_covariates(
+            initial_states, options["covariates"], raise_errors=False
+        )
 
         all_data = pd.concat([covariates, initial_states], axis="columns", sort=False)
 
