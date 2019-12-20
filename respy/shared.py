@@ -157,7 +157,7 @@ def transform_base_draws_with_cholesky_factor(draws, shocks_cholesky, n_wages):
     return draws_transformed
 
 
-def generate_column_labels_estimation(optim_paras):
+def generate_column_dtype_dict_for_estimation(optim_paras):
     """Generate column labels for data necessary for the estimation."""
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
@@ -166,24 +166,23 @@ def generate_column_labels_estimation(optim_paras):
         + [observable.title() for observable in optim_paras["observables"]]
     )
 
-    dtypes = {}
+    column_dtype_dict = {}
     for label in labels:
         if label == "Wage":
-            dtypes[label] = float
+            column_dtype_dict[label] = float
         elif "Choice" in label:
-            dtypes[label] = "category"
+            column_dtype_dict[label] = "category"
         else:
-            dtypes[label] = int
+            column_dtype_dict[label] = int
 
-    return labels, dtypes
+    return column_dtype_dict
 
 
-def generate_column_labels_simulation(optim_paras):
+def generate_column_dtype_dict_for_simulation(optim_paras):
     """Generate column labels for simulation output."""
-    est_lab, est_dtypes = generate_column_labels_estimation(optim_paras)
+    est_col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
     labels = (
-        est_lab
-        + ["Type"]
+        ["Type"]
         + [f"Nonpecuniary_Reward_{choice.title()}" for choice in optim_paras["choices"]]
         + [f"Wage_{choice.title()}" for choice in optim_paras["choices_w_wage"]]
         + [f"Flow_Utility_{choice.title()}" for choice in optim_paras["choices"]]
@@ -192,10 +191,10 @@ def generate_column_labels_simulation(optim_paras):
         + ["Discount_Rate"]
     )
 
-    dtypes = {col: (int if col == "Type" else float) for col in labels}
-    dtypes = {**dtypes, **est_dtypes}
+    sim_col_dtype = {col: (int if col == "Type" else float) for col in labels}
+    sim_col_dtype = {**est_col_dtype, **sim_col_dtype}
 
-    return labels, dtypes
+    return sim_col_dtype
 
 
 @nb.njit

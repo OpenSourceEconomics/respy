@@ -16,7 +16,7 @@ from respy.shared import convert_choice_variables_from_categorical_to_codes
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import downcast_to_smallest_dtype
-from respy.shared import generate_column_labels_estimation
+from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import rename_labels
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -490,9 +490,9 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         predict probabilities for each type.
 
     """
-    labels, _ = generate_column_labels_estimation(optim_paras)
+    col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
 
-    df = df.sort_index()[labels[2:]]
+    df = df.sort_index()[list(col_dtype)[2:]]
     df = df.rename(columns=rename_labels).rename_axis(index=rename_labels)
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
 
