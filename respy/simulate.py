@@ -150,6 +150,8 @@ def simulate(
         DataFrame of simulated individuals.
 
     """
+    df = df.copy()
+
     optim_paras, options = process_params_and_options(params, options)
 
     # Solve the model.
@@ -165,14 +167,14 @@ def simulate(
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
 
     is_n_step_ahead = df.index.get_level_values("identifier").duplicated().sum() == 0
-    state_space_columns = _create_state_space_columns(optim_paras)
     data = []
 
     for period in range(n_simulation_periods):
 
-        current_states = df.query("period == @period")[state_space_columns].to_numpy(
-            dtype=np.uint32
-        )
+        # If it is a one-step-ahead simulation, we pick rows from the panel data. For
+        # n-step-ahead simulation, ``df`` always contains only data of the current
+        # period.
+        current_states = df.query("period == @period").to_numpy(dtype=np.uint32)
 
         rows = _simulate_single_period(
             period,
@@ -186,8 +188,8 @@ def simulate(
         data.append(rows)
 
         if is_n_step_ahead:
-            choice = rows[:, 1].astype(np.uint8)
-            df = _apply_law_of_motion(choice, current_states, period, optim_paras)
+            choices = rows[:, 1].astype(np.uint8)
+            df = _apply_law_of_motion(df, choices, optim_paras)
 
     simulated_data = _create_simulated_data(
         data, df, is_n_step_ahead, n_simulation_periods, optim_paras, options
@@ -528,7 +530,7 @@ def _random_choice(choices, probabilities):
     return choices[indices]
 
 
-def _apply_law_of_motion(choice, states, period, optim_paras):
+def _apply_law_of_motion(df, choices, optim_paras):
     """Apply the law of motion to get the states in the next period.
 
     For n-step-ahead simulations, the states of the next period are generated from the
@@ -538,11 +540,12 @@ def _apply_law_of_motion(choice, states, period, optim_paras):
 
     Parameters
     ----------
-    choice : np.ndarray
+    df : pandas.DataFrame
+        DataFrame with shape (n_individuals, n_state_space_dim) containing the state of
+        each individual.
+    choices : numpy.ndarray
         Array with shape (n_individuals,) containing the current choice.
-    states : np.ndarray
-        Array with shape (n_individuals, n_state_space_dim) containing the state of each
-        individual.
+    optim_paras : dict
 
     Returns
     -------
@@ -551,28 +554,36 @@ def _apply_law_of_motion(choice, states, period, optim_paras):
         next period.
 
     """
-    n_individuals = states.shape[0]
-    n_choices_w_exp = len(optim_paras["choices_w_exp"])
     n_lagged_choices = optim_paras["n_lagged_choices"]
 
     # Update work experiences.
-    states[np.arange(n_individuals), choice] = np.where(
-        choice < n_choices_w_exp,
-        states[np.arange(n_individuals), choice] + 1,
-        states[np.arange(n_individuals), choice],
-    )
+    for i, choice in enumerate(optim_paras["choices_w_exp"]):
+        is_choice = choices == i
+        df.loc[is_choice, f"exp_{choice}"] = df.loc[is_choice, f"exp_{choice}"] + 1
 
-    # Update lagged choices by shifting all lags by one and inserting choice in
-    # the first position.
+    # Update lagged choices by deleting oldest lagged, renaming other lags and inserting
+    # choice in the first position.
     if n_lagged_choices:
-        states[:, n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices] = states[
-            :, n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
-        ]
-        states[:, n_choices_w_exp] = choice
+        # Save position of first lagged choice.
+        position = df.columns.tolist().index("lagged_choice_1")
 
-    state_space_columns = _create_state_space_columns(optim_paras)
-    df = pd.DataFrame(states, columns=state_space_columns)
-    df.insert(0, "period", period + 1)
+        # Drop oldest lag.
+        df = df.drop(columns=f"lagged_choice_{n_lagged_choices}")
+
+        # Rename newer lags
+        rename_lagged_choices = {
+            f"lagged_choice_{i}": f"lagged_choice_{i + 1}"
+            for i in range(1, n_lagged_choices)
+        }
+        df = df.rename(columns=rename_lagged_choices)
+
+        # Add current choice as new lag.
+        df.insert(position, "lagged_choice_1", choices)
+
+    # Increment period in MultiIndex by one.
+    df.index = df.index.set_levels(
+        df.index.get_level_values("period") + 1, level="period", verify_integrity=False
+    )
 
     return df
 
