@@ -264,7 +264,7 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
         Keys represent covariates and values are strings passed to ``df.eval``.
     raise_errors : bool, default True
         Whether to raise errors if a variable was not found. This option is necessary
-        for, e.g., :func:`~respy.simulate._get_random_characteristic` where not all
+        for, e.g., :func:`~respy.simulate._sample_characteristic` where not all
         necessary variables exist and it is not clear how to exclude them easily.
 
     Returns
