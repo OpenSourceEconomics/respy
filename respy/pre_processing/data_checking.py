@@ -1,7 +1,7 @@
 """Test functions to ensure the validity of data."""
 import numpy as np
 
-from respy.shared import generate_column_labels_estimation
+from respy.shared import generate_column_dtype_dict_for_estimation
 
 
 def check_estimation_data(df, optim_paras):
@@ -21,8 +21,8 @@ def check_estimation_data(df, optim_paras):
 
     """
     # Make sure all columns are available.
-    labels, _ = generate_column_labels_estimation(optim_paras)
-    df = df[labels[2:]].reset_index()
+    col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
+    df = df[list(col_dtype)[2:]].reset_index()
 
     n_periods = optim_paras["n_periods"]
 

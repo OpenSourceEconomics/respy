@@ -10,7 +10,7 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
-from respy.shared import generate_column_labels_simulation
+from respy.shared import generate_column_dtype_dict_for_simulation
 from respy.shared import rename_labels
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.solve import solve_with_backward_induction
@@ -54,7 +54,7 @@ def get_simulate_func(
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    df, n_simulation_periods, options = _align_simulation_arguments(
+    df, n_simulation_periods, options = _harmonize_simulation_arguments(
         method, df, n_simulation_periods, options
     )
 
@@ -462,13 +462,13 @@ def _create_simulated_data(data, df, is_n_step_ahead, n_sim_p, optim_paras, opti
     else:
         identifier = df.index.get_level_values("identifier")
 
-    labels, dtypes = generate_column_labels_simulation(optim_paras)
+    col_dtype = generate_column_dtype_dict_for_simulation(optim_paras)
 
     simulated_df = (
         pd.DataFrame(
-            data=np.column_stack((identifier, np.row_stack(data))), columns=labels
+            data=np.column_stack((identifier, np.row_stack(data))), columns=col_dtype
         )
-        .astype(dtypes)
+        .astype(col_dtype)
         .sort_values(["Identifier", "Period"])
         .set_index(["Identifier", "Period"], drop=True)
     )
@@ -598,8 +598,8 @@ def _create_state_space_columns(optim_paras):
     )
 
 
-def _align_simulation_arguments(method, df, n_sim_p, options):
-    """Align the arguments of the simulation."""
+def _harmonize_simulation_arguments(method, df, n_sim_p, options):
+    """Harmonize the arguments of the simulation."""
     if method == "n_step_ahead_with_sampling":
         df = None
     else:

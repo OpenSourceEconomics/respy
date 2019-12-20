@@ -69,11 +69,11 @@ def test_sorting_of_type_probability_parameters(model_or_seed):
 
         optim_paras_, _ = process_params_and_options(params, options)
 
-        for (i, s), (j, s_) in zip(
+        for (level, coeffs), (level_, coeffs_) in zip(
             optim_paras["type_prob"].items(), optim_paras_["type_prob"].items()
         ):
-            assert i == j
-            assert np.all(s == s_)
+            assert level == level_
+            assert np.all(coeffs == coeffs_)
 
 
 def test_parse_initial_and_max_experience():

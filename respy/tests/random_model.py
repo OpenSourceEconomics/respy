@@ -19,7 +19,7 @@ from respy.pre_processing.specification_helpers import (
 from respy.pre_processing.specification_helpers import lagged_choices_probs_template
 from respy.pre_processing.specification_helpers import observable_coeffs_template
 from respy.pre_processing.specification_helpers import observable_prob_template
-from respy.shared import generate_column_labels_estimation
+from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import normalize_probabilities
 from respy.simulate import get_simulate_func
 
@@ -273,8 +273,8 @@ def simulate_truncated_data(params, options, is_missings=True):
         data_subset = df
 
     # We can restrict the information to observed entities only.
-    labels, _ = generate_column_labels_estimation(optim_paras)
-    data_subset = data_subset[labels[2:]]
+    col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
+    data_subset = data_subset[list(col_dtype)[2:]]
 
     return data_subset
 
