@@ -12,15 +12,15 @@ wage_white_collar,period,0.0102,linear age effect (wage)
 wage_white_collar,is_minor,-0.15,effect of being a minor (wage)
 wage_white_collar,any_exp_white_collar,0.1885,gain of having worked in the same occupation at least once before (wage)
 wage_white_collar,work_white_collar_lagged,0.3054,gain of remaining in the same occupation as previous period (wage)
+wage_white_collar,type_2,-0.0872,deviation for type 2 from type 1 in a
+wage_white_collar,type_3,-0.6091,deviation for type 3 from type 1 in a
+wage_white_collar,type_4,-0.52,deviation for type 4 from type 1 in a
 nonpec_white_collar,constant,-2543,constant (non pecuniary)
 nonpec_white_collar,not_exp_white_collar_lagged,-1182,reward of switching to a from other occupation (non pecuniary)
 nonpec_white_collar,not_any_exp_white_collar,-2759,reward of working in a for the first time (non pecuniary)
 nonpec_white_collar,common_hs_graduate,804,common return to high school degree (non pecuniary)
 nonpec_white_collar,common_co_graduate,2005,common return to college degree (non pecuniary)
 nonpec_white_collar,military_dropout,-1525,effect of leaving the military early (after one year)
-wage_white_collar,type_2,-0.0872,deviation for type 2 from type 1 in a
-wage_white_collar,type_3,-0.6091,deviation for type 3 from type 1 in a
-wage_white_collar,type_4,-0.52,deviation for type 4 from type 1 in a
 wage_blue_collar,constant,8.8811,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
 wage_blue_collar,exp_school,0.024,linear return to an additional year of schooling (wage)
 wage_blue_collar,exp_white_collar,0.0191,"return to experience, other civilian sector, linear (wage)"
