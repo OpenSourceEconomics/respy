@@ -111,7 +111,7 @@ def check_simulated_data(optim_paras, df):
     check_estimation_data(df, optim_paras)
 
     # 9. Types.
-    assert df.Type.max() <= n_types - 1
+    assert df.Type.max() <= n_types
     assert df.Type.notna().all()
     assert df.groupby("Identifier").Type.nunique().eq(1).all()
 

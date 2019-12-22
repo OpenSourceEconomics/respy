@@ -22,6 +22,7 @@ baseline model presented in:
 
     getting_started/index
     economics/index
+    replications/index
     software/index
     development/index
     api

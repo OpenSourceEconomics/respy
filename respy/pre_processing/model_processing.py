@@ -327,23 +327,29 @@ def _parse_types(optim_paras, params):
     implicitly enforced that the parameters form a valid matrix.
 
     """
-    if "type_0" in params.index or "type_1" in params.index:
+    if "type_0" in params.index:
+        raise ValueError("Types are numbered from 1 onwards.")
+    if "type_1" in params.index.get_level_values("category"):
         raise ValueError(
-            "Types are numbered from 2 onwards. 'type_1' is internally reserved as a "
-            "reference category with no effect on the utility."
+            "'type_1' cannot be used to specify the probability mass function of types "
+            "as it has to be zero such that all parameters are identified."
+        )
+    if "type_1" in params.index.get_level_values("name"):
+        raise ValueError(
+            "'type_1' cannot be used as a utility covariate as it must be zero due to "
+            "normalization. All other types are expressed in relation to the first."
         )
 
     n_types = _infer_number_of_types(params)
 
     if n_types >= 2:
         # Parse type probabilities.
+        parsed_parameters = _parse_probabilities_or_logit_coefficients(
+            params, r"\btype_([0-9]+)\b"
+        )
+        parsed_parameters = {k - 1: v for k, v in parsed_parameters.items()}
         default = {i: pd.Series(data=[0], index=["constant"]) for i in range(n_types)}
-        other_types = {
-            i - 1: params.loc[f"type_{i}"]
-            for i in range(2, n_types + 1)
-            if f"type_{i}" in params.index.get_level_values("category")
-        }
-        optim_paras["type_prob"] = {**default, **other_types}
+        optim_paras["type_prob"] = {**default, **parsed_parameters}
 
         # Parse type covariates which makes estimation via maximum likelihood faster.
         optim_paras["type_covariates"] = {
