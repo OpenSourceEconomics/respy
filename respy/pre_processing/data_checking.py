@@ -22,7 +22,7 @@ def check_estimation_data(df, optim_paras):
     """
     # Make sure all columns are available.
     col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
-    df = df[list(col_dtype)[2:]].reset_index()
+    df = df.reset_index()[col_dtype]
 
     n_periods = optim_paras["n_periods"]
 
