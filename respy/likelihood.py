@@ -265,8 +265,9 @@ def _internal_log_like_obs(
         empirical data.
 
     """
-    n_obs, n_types = indices.shape
     n_choices = len(optim_paras["choices"])
+    n_obs = indices.shape[0]
+    n_types = optim_paras["n_types"]
 
     wages_systematic = state_space.wages[indices].reshape(n_obs * n_types, -1)
 
@@ -495,6 +496,8 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     df = df.sort_index()[list(col_dtype)[2:]]
     df = df.rename(columns=rename_labels).rename_axis(index=rename_labels)
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
+    if "type" in df:
+        df["type"] = df["type"] - 1
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations, n_types).
@@ -522,7 +525,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
 
         indices += (period_indices,)
 
-    indices = np.row_stack(indices)
+    indices = np.concatenate(indices).reshape(-1, optim_paras["n_types"])
 
     # The indexer is now sorted in period-individual pairs whereas the estimation needs
     # individual-period pairs. Sort it!

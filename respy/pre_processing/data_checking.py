@@ -111,9 +111,10 @@ def check_simulated_data(optim_paras, df):
     check_estimation_data(df, optim_paras)
 
     # 9. Types.
-    assert df.Type.max() <= n_types
-    assert df.Type.notna().all()
-    assert df.groupby("Identifier").Type.nunique().eq(1).all()
+    if optim_paras["n_types"] >= 2:
+        assert df.Type.max() <= n_types
+        assert df.Type.notna().all()
+        assert df.groupby("Identifier").Type.nunique().eq(1).all()
 
     # Check that there are not missing wage observations if an agent is working. Also,
     # we check that if an agent is not working, there also is no wage observation.
