@@ -8,8 +8,9 @@ from scipy.special import softmax
 
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
-from respy.shared import create_base_covariates
+from respy.shared import compute_covariates
 from respy.shared import create_base_draws
+from respy.shared import create_state_space_columns
 from respy.shared import generate_column_dtype_dict_for_simulation
 from respy.shared import rename_labels
 from respy.shared import transform_base_draws_with_cholesky_factor
@@ -385,7 +386,7 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
 
     """
     # Generate covariates.
-    covariates_df = create_base_covariates(
+    covariates_df = compute_covariates(
         states_df, options["covariates"], raise_errors=False
     )
     all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
@@ -593,19 +594,6 @@ def _apply_law_of_motion(df, choices, optim_paras):
     return df
 
 
-def _create_state_space_columns(optim_paras):
-    """Create names of state space dimensions excluding the period and identifier."""
-    columns = (
-        [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
-        + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
-        + list(optim_paras["observables"])
-    )
-    if optim_paras["n_types"] >= 2:
-        columns += ["type"]
-
-    return columns
-
-
 def _harmonize_simulation_arguments(method, df, n_sim_p, options):
     """Harmonize the arguments of the simulation."""
     if method == "n_step_ahead_with_sampling":
@@ -646,7 +634,7 @@ def _process_input_df_for_simulation(df, method, options, optim_paras):
         df = df.copy().rename(columns=rename_labels)
         df = df.rename_axis(index=rename_labels).sort_index()
 
-    state_space_columns = _create_state_space_columns(optim_paras)
+    state_space_columns = create_state_space_columns(optim_paras)
     df = df.reindex(columns=state_space_columns)
 
     first_period = df.query("period == 0")

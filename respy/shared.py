@@ -227,10 +227,7 @@ def downcast_to_smallest_dtype(series):
     # We can skip integer as "unsigned" and "signed" will find the same dtypes.
     _downcast_options = ["unsigned", "signed", "float"]
 
-    if series.dtype.name == "category":
-        min_dtype = "category"
-
-    elif series.dtype == np.bool:
+    if series.dtype == np.bool:
         min_dtype = np.dtype("uint8")
 
     else:
@@ -252,19 +249,25 @@ def downcast_to_smallest_dtype(series):
     return series.astype(min_dtype)
 
 
-def create_base_covariates(states, covariates_spec, raise_errors=True):
-    """Create set of covariates for each state.
+def compute_covariates(df, definitions, raise_errors=True):
+    """Compute covariates.
+
+    The function iterates over the definitions of covariates and tries to compute them.
+    It keeps track on how many covariates still need to be computed and stops if the
+    number does not change anymore. This might be due to missing information.
 
     Parameters
     ----------
-    states : pandas.DataFrame
-        DataFrame with some, not all state space dimensions like period, experiences.
-    covariates_spec : dict
+    df : pandas.DataFrame
+        DataFrame with some, maybe not all state space dimensions like period,
+        experiences.
+    definitions : dict
         Keys represent covariates and values are strings passed to ``df.eval``.
     raise_errors : bool, default True
-        Whether to raise errors if a variable was not found. This option is necessary
-        for, e.g., :func:`~respy.simulate._sample_characteristic` where not all
-        necessary variables exist and it is not clear how to exclude them easily.
+        Whether to raise errors if variables cannot be computed. This option is
+        necessary for, e.g., :func:`~respy.simulate._sample_characteristic` where not
+        all necessary variables exist and it is not easy to exclude covariates which
+        depend on them.
 
     Returns
     -------
@@ -273,23 +276,31 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
 
     Raises
     ------
-    pd.core.computation.ops.UndefinedVariableError
-        If variable on the right-hand-side of the definition is not found in the data.
+    Exception
+        If variables cannot be computed and ``raise_errors`` is true.
 
     """
-    covariates = states.copy()
+    covariates = df.copy()
 
-    for covariate, definition in covariates_spec.items():
-        if covariate not in states.columns:
-            try:
-                covariates[covariate] = covariates.eval(definition)
-            except pd.core.computation.ops.UndefinedVariableError as e:
-                if raise_errors:
-                    raise e
-                else:
+    n_covariates_left_changed = True
+    covariates_left = list(definitions)
+
+    while n_covariates_left_changed:
+        n_covariates_left = len(covariates_left)
+
+        for covariate in covariates_left:
+            if covariate not in df.columns:
+                try:
+                    covariates[covariate] = covariates.eval(definitions[covariate])
+                except pd.core.computation.ops.UndefinedVariableError:
                     pass
+                else:
+                    covariates_left.remove(covariate)
 
-    covariates = covariates.drop(columns=states.columns)
+        n_covariates_left_changed = n_covariates_left != len(covariates_left)
+
+    if covariates_left and raise_errors:
+        raise Exception(f"Cannot compute all covariates: {covariates_left}.")
 
     return covariates
 
@@ -372,3 +383,26 @@ def calculate_value_functions_and_flow_utilities(
     value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
         wage, nonpec, continuation_value, draw, delta, is_inadmissible
     )
+
+
+def create_core_state_space_columns(optim_paras):
+    """Create internal column names for the core state space."""
+    return [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]] + [
+        f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)
+    ]
+
+
+def create_dense_state_space_columns(optim_paras):
+    """Create internal column names for the dense state space."""
+    columns = list(optim_paras["observables"])
+    if optim_paras["n_types"] >= 2:
+        columns += ["type"]
+
+    return columns
+
+
+def create_state_space_columns(optim_paras):
+    """Create names of state space dimensions excluding the period and identifier."""
+    return create_core_state_space_columns(
+        optim_paras
+    ) + create_dense_state_space_columns(optim_paras)

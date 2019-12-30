@@ -629,28 +629,25 @@ def _identify_relevant_covariates(options, params):
     """
     covariates = options["covariates"]
 
-    relevant_covariates = {}
+    relevant_covs = {}
     for cov in covariates:
         if cov in params.index.get_level_values("name"):
-            relevant_covariates[cov] = covariates[cov]
+            relevant_covs[cov] = covariates[cov]
 
     n_relevant_covariates_changed = True
     while n_relevant_covariates_changed:
-        n_relevant_covariates = len(relevant_covariates)
+        n_relevant_covariates = len(relevant_covs)
 
         for cov in covariates:
-            for relevant_cov in list(relevant_covariates):
-                if cov in relevant_covariates[relevant_cov]:
+            for relevant_cov in relevant_covs:
+                if cov in relevant_covs[relevant_cov]:
                     # Append the covariate to the front such that nested covariates are
                     # created in the beginning.
-                    relevant_covariates = {cov: covariates[cov], **relevant_covariates}
+                    relevant_covs = {cov: covariates[cov], **relevant_covs}
 
-        if n_relevant_covariates == len(relevant_covariates):
-            n_relevant_covariates_changed = False
-        else:
-            n_relevant_covariates_changed = True
+        n_relevant_covariates_changed = n_relevant_covariates != len(relevant_covs)
 
-    options["covariates"] = relevant_covariates
+    options["covariates"] = relevant_covs
 
     return options
 
@@ -666,6 +663,7 @@ def _sync_optim_paras_and_options(optim_paras, options):
     options["covariates"] = {**options["covariates"], **type_covariates}
 
     options = _convert_labels_in_formulas_to_codes(options, optim_paras)
+    options = _separate_covariates_into_core_dense_mixed(options, optim_paras)
 
     return optim_paras, options
 
@@ -763,5 +761,78 @@ def _convert_labels_in_filters_to_codes(optim_paras, options):
             filters.append(filter_)
 
     options["core_state_space_filters"] = filters
+
+    return options
+
+
+def _separate_covariates_into_core_dense_mixed(options, optim_paras):
+    """Separate covariates into distinct groups.
+
+    Covariates are separated into three groups.
+
+    1. Covariates which use only information from the core state space.
+    2. Covariates which use only information from the dense state space.
+    3. Covariates which use information from the core and the dense state space.
+
+    Parameters
+    ----------
+    options : dict
+        Contains among other information covariates and their formulas.
+    optim_paras : dict
+        Contains information to separate the core and dense state space.
+
+    Returns
+    -------
+    options : dict
+        Contains three new covariate categories.
+
+    """
+    covariates = options.pop("covariates")
+
+    # Define two sets with default covariates for the core and dense state space.
+    core_covs = set(
+        ["period"]
+        + [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
+        + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
+    )
+    dense_covs = set(optim_paras["observables"])
+    if optim_paras["n_types"] >= 2:
+        dense_covs |= set(
+            ["type"] + [f"type_{i}" for i in range(2, optim_paras["n_types"] + 1)]
+        )
+
+    # Loop over all covariates and add them two the sets if the formula contains
+    # covariates from the sets. If both lengths of the sets do not change anymore, stop.
+    n_core_covs_changed = True
+    n_dense_covs_changed = True
+    while n_core_covs_changed or n_dense_covs_changed:
+        n_core_covs = len(core_covs)
+        n_dense_covs = len(dense_covs)
+
+        for cov, formula in covariates.items():
+            if any(i in formula for i in core_covs):
+                core_covs.update([cov])
+
+            if any(i in formula for i in dense_covs):
+                dense_covs.update([cov])
+
+        n_core_covs_changed = n_core_covs != len(core_covs)
+        n_dense_covs_changed = n_dense_covs != len(dense_covs)
+
+    core_covs_cleaned = core_covs - dense_covs
+    dense_covs_cleaned = dense_covs - core_covs
+    independent_covs = set(covariates) - core_covs - dense_covs
+
+    options["covariates_core"] = {
+        cov: covariates[cov]
+        for cov in core_covs_cleaned | independent_covs
+        if cov in covariates
+    }
+    options["covariates_dense"] = {
+        cov: covariates[cov] for cov in dense_covs_cleaned if cov in covariates
+    }
+    options["covariates_mixed"] = {
+        cov: covariates[cov] for cov in core_covs & dense_covs
+    }
 
     return options

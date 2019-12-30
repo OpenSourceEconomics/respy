@@ -12,8 +12,8 @@ from respy.config import HUGE_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import compute_covariates
 from respy.shared import convert_choice_variables_from_categorical_to_codes
-from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import generate_column_dtype_dict_for_estimation
@@ -556,7 +556,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     # For the type covariates, we only need the first observation of each individual.
     if optim_paras["n_types"] >= 2:
         initial_states = df.query("period == 0")
-        covariates = create_base_covariates(
+        covariates = compute_covariates(
             initial_states, options["covariates"], raise_errors=False
         )
 
