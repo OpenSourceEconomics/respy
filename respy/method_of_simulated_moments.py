@@ -16,7 +16,7 @@ References
        of Asset Prices. Econometrica, 61(4), 929-952.
 
 """
-
+import copy
 import numpy as np
 import pandas as pd
 
@@ -122,10 +122,10 @@ def _flatten_index(data):
 
 def get_moment_vectors(
     params, 
-    options, 
-    empirical_moments, 
+    options,  
     calc_moments, 
-    replace_nans
+    replace_nans,
+    empirical_moments,
 ):
     """Function to compute the empirical and simulated moment vectors with flat
     indexes.
@@ -136,9 +136,6 @@ def get_moment_vectors(
         Contains parameters.
     options : dict
         Dictionary containing model options. 
-    empirical_moments : pandas.DataFrame, pandas.Series, dict or list 
-        containing pandas.DataFrame or pandas.Series.
-        Contains the empirical moments calculated for the observed data.
     calc_moments: callable or list of callable functions.
         Function(s) used to calculate simulated moments. Must match structure 
         of empirical moments i.e. if empirical_moments is a list of 
@@ -148,6 +145,9 @@ def get_moment_vectors(
     replace_nans: callable or list of callable functions.
         Functions(s) specifiying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
+    empirical_moments : pandas.DataFrame, pandas.Series, dict or list 
+        containing pandas.DataFrame or pandas.Series.
+        Contains the empirical moments calculated for the observed data.
 
     Returns
     ------
@@ -195,10 +195,10 @@ def get_moment_vectors(
 
 def msm(
     params, 
-    options, 
-    empirical_moments, 
+    options,  
     calc_moments, 
-    replace_nans, 
+    replace_nans,
+    empirical_moments,
     weighting_matrix, 
     return_scalar
 ):
@@ -210,9 +210,6 @@ def msm(
         Contains parameters.
     options : dict
         Dictionary containing model options. 
-    empirical_moments : pandas.DataFrame, pandas.Series, dict or list 
-        containing pandas.DataFrame or pandas.Series.
-        Contains the empirical moments calculated for the observed data.
     calc_moments: callable or list of callable functions.
         Function(s) used to calculate simulated moments. Must match structure 
         of empirical moments i.e. if empirical_moments is a list of 
@@ -222,6 +219,9 @@ def msm(
     replace_nans: callable or list of callable functions.
         Functions(s) specifiying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
+    empirical_moments : pandas.DataFrame, pandas.Series, dict or list 
+        containing pandas.DataFrame or pandas.Series.
+        Contains the empirical moments calculated for the observed data.
     weighting_matrix: numpy.ndarray
         Square matrix of dimension (NxN) with N denoting the number of 
         empirical_moments. Used to weight squared moment errorss.
@@ -237,9 +237,10 @@ def msm(
     flat_empirical_moments, flat_simulated_moments = get_moment_vectors(
                                         params=params, 
                                         options=options, 
-                                        empirical_moments=empirical_moments, 
                                         calc_moments=calc_moments, 
-                                        replace_nans=replace_nans
+                                        replace_nans=replace_nans,
+                                        empirical_moments=empirical_moments, 
+
                                         )
     # Convert moments to arrays.
     emp_mom = np.array(flat_empirical_moments.iloc[:, 0])
@@ -257,7 +258,7 @@ def msm(
         return moment_errors.T @ weighting_matrix @ moment_errors
 
 
-def get_diag_weighting_matrix(empirical_moments, weights):
+def get_diag_weighting_matrix(empirical_moments, weights=None):
     """Creates diagonal weighting matrix from weights that are of the same 
     form as empirical_moments.
 
@@ -278,6 +279,11 @@ def get_diag_weighting_matrix(empirical_moments, weights):
     ----------
     numpy.ndarray containing a diagonal weighting matrix. 
     """
+    # Use identity matrix if no weights are specified.
+    if weights==None:
+        weights = copy.deepcopy(empirical_moments)
+        weights[:] = 1
+    
     # Harmonize inputs.
     empirical_moments = _harmonize_input(empirical_moments)
     weights = _harmonize_input(weights)
