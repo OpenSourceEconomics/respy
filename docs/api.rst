@@ -56,14 +56,3 @@ likelihood
 
     get_crit_func
     log_like
-
-simulated_method_of_moments
----------------------------
-
-.. currentmodule:: respy.simulated_method_of_moments
-
-.. autosummary::
-    :toctree: _generated/
-
-    get_smm_func
-    smm
