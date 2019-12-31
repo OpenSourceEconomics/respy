@@ -4,7 +4,6 @@ import warnings
 import numba as nb
 import numpy as np
 
-from respy.config import MAX_FLOAT
 from respy.config import MAX_LOG_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
