@@ -150,25 +150,25 @@ def simulate(
         DataFrame of simulated individuals.
 
     """
-    df = df.copy()
-
     optim_paras, options = process_params_and_options(params, options)
 
     # Solve the model.
     state_space.update_systematic_rewards(optim_paras)
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
+    # Prepare simulation.
     n_wages = len(optim_paras["choices_w_wage"])
     base_draws_sim_transformed = transform_base_draws_with_cholesky_factor(
         base_draws_sim, optim_paras["shocks_cholesky"], n_wages
     )
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
+    df = df.copy()
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
-
     is_n_step_ahead = df.index.get_level_values("identifier").duplicated().sum() == 0
-    data = []
 
+    # Start simulating.
+    data = []
     for period in range(n_simulation_periods):
 
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
