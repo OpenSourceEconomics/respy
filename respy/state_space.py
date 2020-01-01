@@ -572,12 +572,16 @@ def _create_choice_covariates(covariates_df, states_df, optim_paras):
     covariates = {}
 
     for choice in optim_paras["choices"]:
-        for prefix in ["wage", "nonpec"]:
-            if f"{prefix}_{choice}" in optim_paras:
-                wage_columns = optim_paras[f"{prefix}_{choice}"].index
-                covs = all_data[wage_columns].to_numpy()
+        if f"wage_{choice}" in optim_paras:
+            wage_columns = optim_paras[f"wage_{choice}"].index
+            covariates[f"wage_{choice}"] = all_data[wage_columns].to_numpy()
 
-                covariates[f"{prefix}_{choice}"] = np.ascontiguousarray(covs)
+        if f"nonpec_{choice}" in optim_paras:
+            nonpec_columns = optim_paras[f"nonpec_{choice}"].index
+            covariates[f"nonpec_{choice}"] = all_data[nonpec_columns].to_numpy()
+
+    for key, val in covariates.items():
+        covariates[key] = np.ascontiguousarray(val)
 
     return covariates
 
