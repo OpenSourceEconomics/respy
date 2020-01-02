@@ -63,8 +63,8 @@ def create_kw_97(params, options):
     df["Period"] = df.Age - 16
     df = df.query("Age >= 16")
 
-    labels, _ = rp_shared.generate_column_labels_estimation(optim_paras)
+    cd_dict = rp_shared.generate_column_dtype_dict_for_estimation(optim_paras)
 
-    df = df[labels]
+    df = df[cd_dict].set_index(["Identifier", "Period"])
 
     return df

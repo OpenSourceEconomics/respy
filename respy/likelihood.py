@@ -4,6 +4,7 @@ from functools import partial
 
 import numba as nb
 import numpy as np
+import pandas as pd
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
@@ -12,9 +13,11 @@ from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import convert_labeled_variables_to_codes
+from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
-from respy.shared import create_type_covariates
-from respy.shared import generate_column_labels_estimation
+from respy.shared import downcast_to_smallest_dtype
+from respy.shared import generate_column_dtype_dict_for_estimation
+from respy.shared import rename_labels
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -304,8 +307,15 @@ def _internal_log_like_obs(
 
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
     if n_types >= 2:
-        z = np.dot(type_covariates, optim_paras["type_prob"].T)
-        type_probabilities = special.softmax(z, axis=1)
+        z = ()
+
+        for level in optim_paras["type_prob"]:
+            labels = optim_paras["type_prob"][level].index
+            x_beta = np.dot(type_covariates[labels], optim_paras["type_prob"][level])
+
+            z += (x_beta,)
+
+        type_probabilities = special.softmax(np.column_stack(z), axis=1)
 
         log_type_probabilities = np.log(type_probabilities)
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
@@ -480,17 +490,18 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         predict probabilities for each type.
 
     """
-    labels, _ = generate_column_labels_estimation(optim_paras)
+    col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
 
-    df = df.sort_values(["Identifier", "Period"])[labels]
-    df = df.rename(columns=lambda x: x.replace("Experience", "exp").lower())
+    df = df.sort_index()[list(col_dtype)[2:]]
+    df = df.rename(columns=rename_labels).rename_axis(index=rename_labels)
     df = convert_labeled_variables_to_codes(df, optim_paras)
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations, n_types).
+    n_periods = df.index.get_level_values("period").max() + 1
     indices = ()
 
-    for period in range(df.period.max() + 1):
+    for period in range(n_periods):
         period_df = df.query("period == @period")
 
         period_experience = tuple(
@@ -526,7 +537,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     # Get an array of positions of the first observation for each individual. This is
     # used in :func:`_internal_log_like_obs` to aggregate probabilities of the
     # individual over all periods.
-    n_obs_per_indiv = np.bincount(df.identifier.to_numpy())
+    n_obs_per_indiv = np.bincount(df.index.get_level_values("identifier").to_numpy())
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
@@ -540,12 +551,17 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     choices = df.choice.to_numpy().repeat(optim_paras["n_types"])
 
     # For the type covariates, we only need the first observation of each individual.
-    states = df.groupby("identifier").first()
-    type_covariates = (
-        create_type_covariates(states, optim_paras, options)
-        if optim_paras["n_types"] > 1
-        else None
-    )
+    if optim_paras["n_types"] >= 2:
+        initial_states = df.query("period == 0")
+        covariates = create_base_covariates(initial_states, options["covariates"])
+
+        all_data = pd.concat([covariates, initial_states], axis="columns", sort=False)
+
+        type_covariates = all_data[optim_paras["type_covariates"]].apply(
+            downcast_to_smallest_dtype
+        )
+    else:
+        type_covariates = None
 
     return choices, idx_indiv_first_obs, indices, log_wages_observed, type_covariates
 
@@ -562,7 +578,7 @@ def _adjust_optim_paras_for_estimation(optim_paras, df):
 
         # Adjust initial experience levels for all choices with experiences.
         init_exp_data = np.sort(
-            df.loc[df.Period.eq(0), f"Experience_{choice.title()}"].unique()
+            df.query("Period == 0")[f"Experience_{choice.title()}"].unique()
         )
         init_exp_params = np.array(list(optim_paras["choices"][choice]["start"]))
         if not np.array_equal(init_exp_data, init_exp_params):
