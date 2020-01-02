@@ -17,14 +17,45 @@ from respy.config import INADMISSIBILITY_PENALTY
 def aggregate_keane_wolpin_utility(
     wage, nonpec, continuation_value, draw, delta, is_inadmissible
 ):
-    """Aggregate utility components."""
+    """Calculate the utility of Keane and Wolpin models.
+
+    Note that the function works for working and non-working alternatives as wages are
+    set to one for non-working alternatives such that the draws enter the utility
+    function additively.
+
+    Parameters
+    ----------
+    wage : float
+        Value of the wage component. Note that for non-working alternatives this value
+        is actually zero, but to simplify computations it is set to one.
+    nonpec : float
+        Value of the non-pecuniary component.
+    continuation_value : float
+        Value of the continuation value which is the expected present-value of the
+        following state.
+    draw : float
+        The shock which enters the enters the reward of working alternatives
+        multiplicatively and of non-working alternatives additively.
+    delta : float
+        The discount factor to calculate the present value of continuation values.
+    is_inadmissible : float
+        An indicator for whether the choice is in the current choice set.
+
+    Returns
+    -------
+    alternative_specific_value_function : float
+        The expected present value of an alternative.
+    flow_utility : float
+        The immediate reward of an alternative.
+
+    """
     flow_utility = wage * draw + nonpec
-    value_function = flow_utility + delta * continuation_value
+    alternative_specific_value_function = flow_utility + delta * continuation_value
 
     if is_inadmissible:
-        value_function += INADMISSIBILITY_PENALTY
+        alternative_specific_value_function += INADMISSIBILITY_PENALTY
 
-    return value_function, flow_utility
+    return alternative_specific_value_function, flow_utility
 
 
 def create_base_draws(shape, seed, monte_carlo_sequence):
@@ -97,9 +128,7 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
     return draws
 
 
-def transform_base_draws_with_cholesky_factor(
-    draws, shocks_mean, shocks_cholesky, n_wages
-):
+def transform_base_draws_with_cholesky_factor(draws, shocks_cholesky, n_wages):
     r"""Transform standard normal draws with the Cholesky factor.
 
     The standard normal draws are transformed to normal draws with variance-covariance
@@ -121,17 +150,14 @@ def transform_base_draws_with_cholesky_factor(
 
     """
     draws_transformed = draws.dot(shocks_cholesky.T)
-
-    draws_transformed += shocks_mean
-
-    draws_transformed[:, :n_wages] = np.clip(
-        np.exp(draws_transformed[:, :n_wages]), 0.0, HUGE_FLOAT
+    draws_transformed[:, :, :n_wages] = np.clip(
+        np.exp(draws_transformed[:, :, :n_wages]), 0, HUGE_FLOAT
     )
 
     return draws_transformed
 
 
-def generate_column_labels_estimation(optim_paras):
+def generate_column_dtype_dict_for_estimation(optim_paras):
     """Generate column labels for data necessary for the estimation."""
     labels = (
         ["Identifier", "Period", "Choice", "Wage"]
@@ -140,24 +166,23 @@ def generate_column_labels_estimation(optim_paras):
         + [observable.title() for observable in optim_paras["observables"]]
     )
 
-    dtypes = {}
+    column_dtype_dict = {}
     for label in labels:
         if label == "Wage":
-            dtypes[label] = float
+            column_dtype_dict[label] = float
         elif "Choice" in label:
-            dtypes[label] = "category"
+            column_dtype_dict[label] = "category"
         else:
-            dtypes[label] = int
+            column_dtype_dict[label] = int
 
-    return labels, dtypes
+    return column_dtype_dict
 
 
-def generate_column_labels_simulation(optim_paras):
+def generate_column_dtype_dict_for_simulation(optim_paras):
     """Generate column labels for simulation output."""
-    est_lab, est_dtypes = generate_column_labels_estimation(optim_paras)
+    est_col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
     labels = (
-        est_lab
-        + ["Type"]
+        ["Type"]
         + [f"Nonpecuniary_Reward_{choice.title()}" for choice in optim_paras["choices"]]
         + [f"Wage_{choice.title()}" for choice in optim_paras["choices_w_wage"]]
         + [f"Flow_Utility_{choice.title()}" for choice in optim_paras["choices"]]
@@ -166,10 +191,10 @@ def generate_column_labels_simulation(optim_paras):
         + ["Discount_Rate"]
     )
 
-    dtypes = {col: (int if col == "Type" else float) for col in labels}
-    dtypes = {**dtypes, **est_dtypes}
+    sim_col_dtype = {col: (int if col == "Type" else float) for col in labels}
+    sim_col_dtype = {**est_col_dtype, **sim_col_dtype}
 
-    return labels, dtypes
+    return sim_col_dtype
 
 
 @nb.njit
@@ -227,25 +252,6 @@ def downcast_to_smallest_dtype(series):
     return series.astype(min_dtype)
 
 
-def create_type_covariates(df, optim_paras, options):
-    """Create covariates to predict type probabilities.
-
-    In the simulation, the covariates are needed to predict type probabilities and
-    assign types to simulated individuals. In the estimation, covariates are necessary
-    to weight the probability of observations by type probabilities.
-
-    """
-    covariates = create_base_covariates(df, options["covariates"])
-
-    all_data = pd.concat([covariates, df], axis="columns", sort=False)
-
-    all_data = all_data[optim_paras["type_covariates"]].apply(
-        downcast_to_smallest_dtype
-    )
-
-    return all_data.to_numpy()
-
-
 def create_base_covariates(states, covariates_spec, raise_errors=True):
     """Create set of covariates for each state.
 
@@ -257,7 +263,7 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
         Keys represent covariates and values are strings passed to ``df.eval``.
     raise_errors : bool, default True
         Whether to raise errors if a variable was not found. This option is necessary
-        for, e.g., :func:`~respy.simulate._get_random_characteristic` where not all
+        for, e.g., :func:`~respy.simulate._sample_characteristic` where not all
         necessary variables exist and it is not clear how to exclude them easily.
 
     Returns
@@ -311,6 +317,11 @@ def convert_choice_variables_from_categorical_to_codes(df, optim_paras):
             df[label] = df[label].replace(choices_to_codes).astype(np.uint8)
 
     return df
+
+
+def rename_labels(x):
+    """Shorten labels and convert them to lower-case."""
+    return x.replace("Experience", "exp").lower()
 
 
 def normalize_probabilities(probabilities):
