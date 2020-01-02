@@ -41,6 +41,8 @@ releases are available on `Anaconda.org
 - :gh:`269` improves the generation of conditional draws with and without measurement
   error in the likelihood calculation (:ghuser:`janosg`).
 - :gh:`275` fixes a bug in calculation of wage probabilities.
+- :gh:`277` adds three different simulation methods: n-step-ahead simulation with
+  sampling or data and one-step-ahead simulation.
 - :gh:`278`, :gh:`279`, and :gh:`280` implement three functions, log softmax, softmax,
   and logsumexp, which reduce the likelihood of under- and overflows and save
   information (:ghuser:`tobiasraabe`).
