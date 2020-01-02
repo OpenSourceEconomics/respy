@@ -75,13 +75,11 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
 
+    draws_emax_risk = transform_base_draws_with_cholesky_factor(
+        state_space.base_draws_sol, shocks_cholesky, n_wages
+    )
+
     for period in reversed(range(n_periods)):
-
-        base_draws_sol_period = state_space.base_draws_sol[period]
-        draws_emax_risk = transform_base_draws_with_cholesky_factor(
-            base_draws_sol_period, np.zeros(n_choices), shocks_cholesky, n_wages
-        )
-
         # Unpack necessary attributes of the specific period.
         wages = state_space.get_attribute_from_period("wages", period)
         nonpec = state_space.get_attribute_from_period("nonpec", period)
@@ -134,7 +132,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
                 continuation_values,
                 max_emax,
                 not_interpolated,
-                draws_emax_risk,
+                draws_emax_risk[period],
                 delta,
                 is_inadmissible,
             )
@@ -149,7 +147,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
                 wages,
                 nonpec,
                 continuation_values,
-                draws_emax_risk,
+                draws_emax_risk[period],
                 delta,
                 is_inadmissible,
             )

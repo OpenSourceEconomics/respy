@@ -19,7 +19,7 @@ from respy.pre_processing.specification_helpers import (
 from respy.pre_processing.specification_helpers import lagged_choices_probs_template
 from respy.pre_processing.specification_helpers import observable_coeffs_template
 from respy.pre_processing.specification_helpers import observable_prob_template
-from respy.shared import generate_column_labels_estimation
+from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import normalize_probabilities
 from respy.simulate import get_simulate_func
 
@@ -250,10 +250,13 @@ def simulate_truncated_data(params, options, is_missings=True):
         # Truncate the histories of agents. This mimics the effect of attrition.
         # Histories can be truncated after the first period or not at all. So, all
         # individuals have at least one observation.
-        period_of_truncation = df.groupby("Identifier").Period.transform(
-            lambda x: np.random.choice(x.max() + 1) + 1
+        period_of_truncation = (  # noqa: F841
+            df.reset_index()
+            .groupby("Identifier")
+            .Period.transform(lambda x: np.random.choice(x.max() + 1) + 1)
+            .to_numpy()
         )
-        data_subset = df.loc[df.Period.lt(period_of_truncation)].copy()
+        data_subset = df.query("Period < @period_of_truncation").copy()
 
         # Add some missings to wage data.
         is_working = data_subset["Choice"].isin(optim_paras["choices_w_wage"])
@@ -270,8 +273,8 @@ def simulate_truncated_data(params, options, is_missings=True):
         data_subset = df
 
     # We can restrict the information to observed entities only.
-    labels, _ = generate_column_labels_estimation(optim_paras)
-    data_subset = data_subset[labels]
+    col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
+    data_subset = data_subset[list(col_dtype)[2:]]
 
     return data_subset
 
