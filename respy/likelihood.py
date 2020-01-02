@@ -496,8 +496,6 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     df = df.sort_index()[list(col_dtype)[2:]]
     df = df.rename(columns=rename_labels).rename_axis(index=rename_labels)
     df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
-    if "type" in df:
-        df["type"] = df["type"] - 1
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations, n_types).

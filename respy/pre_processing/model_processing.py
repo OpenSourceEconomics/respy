@@ -364,7 +364,7 @@ def _parse_types(optim_paras, params):
 
 
 def _infer_number_of_types(params):
-    """Infer the number of types from parameters.
+    """Infer the number of types from parameters which is one by default.
 
     Examples
     --------

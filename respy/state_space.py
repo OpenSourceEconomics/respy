@@ -442,8 +442,6 @@ def _add_types_to_state_space(df, n_types):
             container.append(df_)
 
         df = pd.concat(container, axis="rows", sort=False)
-    else:
-        pass
 
     return df
 
