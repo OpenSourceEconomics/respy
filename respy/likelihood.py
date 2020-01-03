@@ -321,7 +321,7 @@ def _internal_log_like_obs(
 
         type_probabilities = special.softmax(np.column_stack(z), axis=1)
 
-        type_probabilities = np.clip(type_probabilities, 1 / MAX_FLOAT, MAX_FLOAT)
+        type_probabilities = np.clip(type_probabilities, 1 / MAX_FLOAT, None)
         log_type_probabilities = np.log(type_probabilities)
 
         weighted_loglikes = per_individual_loglikes + log_type_probabilities

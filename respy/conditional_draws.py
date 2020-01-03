@@ -288,6 +288,9 @@ def calculate_conditional_draws(
 ):
     """Calculate the conditional draws from base draws, updated means and updated chols.
 
+    We need to pass ``max_log_float`` to the function, because the global variables
+    ``MAX_LOG_FLOAT`` cannot be used directly withing the guvectorize.
+
     Parameters
     ----------
     base_draws : np.ndarray
