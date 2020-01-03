@@ -537,7 +537,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     # Get an array of positions of the first observation for each individual. This is
     # used in :func:`_internal_log_like_obs` to aggregate probabilities of the
     # individual over all periods.
-    n_obs_per_indiv = np.bincount(df.index.get_level_values("identifier").to_numpy())
+    n_obs_per_indiv = np.bincount(df.index.get_level_values("identifier"))
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
