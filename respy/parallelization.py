@@ -2,6 +2,10 @@
 import copy
 import functools
 
+from joblib import delayed
+from joblib import Parallel
+from joblib import parallel_backend
+
 
 def parallelize_across_dense_dimensions(func):
     """Parallelizes decorated function across dense state space dimensions.
@@ -27,12 +31,17 @@ def parallelize_across_dense_dimensions(func):
     @functools.wraps(func)
     def wrapper_parallelize_across_dense_dimensions(state_space, *args, **kwargs):
         if state_space.dense:
+            state_spaces = []
             for idx in state_space.dense:
                 state_space_ = copy.copy(state_space)
                 state_space_.get_attribute = functools.partial(
                     state_space_.get_attribute, dense_idx=idx
                 )
-                func(state_space_, *args, **kwargs)
+                state_spaces.append(state_space_)
+            with parallel_backend("loky"):
+                Parallel(max_nbytes=None)(
+                    delayed(func)(st_sp, *args, **kwargs) for st_sp in state_spaces
+                )
         else:
             func(state_space, *args, **kwargs)
 

@@ -280,8 +280,6 @@ def compute_covariates(df, definitions, raise_errors=True):
         If variables cannot be computed and ``raise_errors`` is true.
 
     """
-    covariates = df.copy()
-
     n_covariates_left_changed = True
     covariates_left = list(definitions)
 
@@ -291,7 +289,7 @@ def compute_covariates(df, definitions, raise_errors=True):
         for covariate in covariates_left:
             if covariate not in df.columns:
                 try:
-                    covariates[covariate] = covariates.eval(definitions[covariate])
+                    df[covariate] = df.eval(definitions[covariate])
                 except pd.core.computation.ops.UndefinedVariableError:
                     pass
                 else:
@@ -302,7 +300,7 @@ def compute_covariates(df, definitions, raise_errors=True):
     if covariates_left and raise_errors:
         raise Exception(f"Cannot compute all covariates: {covariates_left}.")
 
-    return covariates
+    return df
 
 
 def convert_choice_variables_from_categorical_to_codes(df, optim_paras):

@@ -61,6 +61,8 @@ class StateSpace:
             options["monte_carlo_sequence"],
         )
 
+        self.covariates_mixed = options["covariates_mixed"]
+
         core, self.indexer, dense_grid = _create_state_space(optim_paras, options)
 
         # Downcast after calculations or be aware of silent integer overflows.
@@ -78,7 +80,7 @@ class StateSpace:
 
     def _initialize_attributes(self, optim_paras):
         """Initialize attributes to use references later."""
-        n_states = self.get_attribute("core").shape[0]
+        n_states = self.core.shape[0]
         n_choices = len(optim_paras["choices"])
         n_choices_w_wage = len(optim_paras["choices_w_wage"])
         n_choices_wo_wage = n_choices - n_choices_w_wage
@@ -109,7 +111,6 @@ class StateSpace:
     @parallelize_across_dense_dimensions
     def _create_is_inadmissible(self, optim_paras, options):
         df = self.get_attribute("core")
-        is_inadmissible = self.get_attribute("is_inadmissible")
 
         # Apply the maximum experience as a default constraint only if its not the last
         # period. Otherwise, it is unconstrained.
@@ -131,6 +132,7 @@ class StateSpace:
             for formula in options["inadmissible_states"].get(choice, []):
                 df[choice] |= df.eval(formula)
 
+        is_inadmissible = self.get_attribute("is_inadmissible")
         is_inadmissible[:] = df[optim_paras["choices"]].to_numpy()
 
     def get_attribute(self, attr, dense_idx=None):
@@ -139,26 +141,27 @@ class StateSpace:
             attribute = self.core.copy()
             if dense_idx:
                 attribute = attribute.assign(**self.dense[dense_idx])
+                attribute = compute_covariates(attribute, self.covariates_mixed)
         else:
             attribute = getattr(self, attr)
             attribute = attribute[dense_idx] if dense_idx else attribute
 
         return attribute
 
-    def get_attribute_from_period(self, attr, period):
+    def get_attribute_from_period(self, attribute, period):
         """Get an attribute of the state space sliced to a given period.
 
         Parameters
         ----------
-        attr : str
+        attribute : str
             Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
         period : int
             Attribute is retrieved from this period.
 
         """
-        attribute = self.get_attribute(attr)
+        attr = self.get_attribute(attribute)
         slice_ = self.slices_by_periods[period]
-        out = attribute[slice_]
+        out = attr[slice_]
 
         return out
 
@@ -250,7 +253,7 @@ class StateSpace:
         return continuation_values
 
     @parallelize_across_dense_dimensions
-    def create_choice_rewards(self, optim_paras, options):
+    def create_choice_rewards(self, optim_paras):
         """Create wage and non-pecuniary reward for each state and choice.
 
         Note that missing wages filled with ones and missing non-pecuniary rewards with
@@ -261,7 +264,6 @@ class StateSpace:
 
         """
         df = self.get_attribute("core")
-        df = compute_covariates(df, options["covariates_mixed"])
 
         wages = self.get_attribute("wages")
         nonpecs = self.get_attribute("nonpecs")
