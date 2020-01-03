@@ -498,7 +498,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations, n_types).
-    n_periods = df.index.get_level_values("period").max() + 1
+    n_periods = int(df.index.get_level_values("period").max() + 1)
     indices = ()
 
     for period in range(n_periods):
