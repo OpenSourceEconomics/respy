@@ -366,6 +366,8 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
 
     Parameters
     ----------
+    lag : int
+        Number of lag.
     states_df : pandas.DataFrame
         Contains the state of each individual.
     options : dict
@@ -478,7 +480,7 @@ def _create_simulated_data(data, df, is_n_step_ahead, n_sim_p, optim_paras, opti
     return simulated_df
 
 
-def _random_choice(choices, probabilities):
+def _random_choice(choices, probabilities, decimals=5):
     """Return elements of choices for a two-dimensional array of probabilities.
 
     It is assumed that probabilities are ordered (n_samples, n_choices).
@@ -510,7 +512,7 @@ def _random_choice(choices, probabilities):
     """
     cumulative_distribution = probabilities.cumsum(axis=1)
     # Probabilities often do not sum to one but 0.99999999999999999.
-    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], 5)
+    cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], decimals)
 
     if not (cumulative_distribution[:, -1] == 1).all():
         raise ValueError("Probabilities do not sum to one.")

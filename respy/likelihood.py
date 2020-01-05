@@ -13,7 +13,7 @@ from respy.config import MIN_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
-from respy.shared import convert_choice_variables_from_categorical_to_codes
+from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
 from respy.shared import downcast_to_smallest_dtype
@@ -120,7 +120,7 @@ def log_like(
     Parameters
     ----------
     params : pandas.Series
-        Parameter Series
+        Parameter Series.
     choices : numpy.ndarray
         Array with shape (n_observations * n_types) containing choices for each
         individual-period pair.
@@ -500,11 +500,11 @@ def _process_estimation_data(df, state_space, optim_paras, options):
 
     df = df.sort_index()[list(col_dtype)[2:]]
     df = df.rename(columns=rename_labels).rename_axis(index=rename_labels)
-    df = convert_choice_variables_from_categorical_to_codes(df, optim_paras)
+    df = convert_labeled_variables_to_codes(df, optim_paras)
 
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations, n_types).
-    n_periods = df.index.get_level_values("period").max() + 1
+    n_periods = int(df.index.get_level_values("period").max() + 1)
     indices = ()
 
     for period in range(n_periods):
@@ -543,7 +543,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     # Get an array of positions of the first observation for each individual. This is
     # used in :func:`_internal_log_like_obs` to aggregate probabilities of the
     # individual over all periods.
-    n_obs_per_indiv = np.bincount(df.index.get_level_values("identifier").to_numpy())
+    n_obs_per_indiv = np.bincount(df.index.get_level_values("identifier"))
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).

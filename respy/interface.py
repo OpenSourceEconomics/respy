@@ -12,13 +12,13 @@ from respy.simulate import get_simulate_func
 KW_94_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
     {"loc": "lagged_choice_1_edu", "type": "fixed"},
-    {"loc": "initial_exp_edu", "type": "fixed"},
+    {"loc": "initial_exp_edu_10", "type": "fixed"},
     {"loc": "maximum_exp", "type": "fixed"},
 ]
 
 KW_97_BASIC_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
-    {"loc": "initial_exp_school", "type": "fixed"},
+    {"loc": "'initial_exp_school' in category", "type": "fixed"},
     {"loc": "maximum_exp", "type": "fixed"},
 ]
 
@@ -28,6 +28,16 @@ KW_97_EXTENDED_CONSTRAINTS = KW_97_BASIC_CONSTRAINTS + [
     {"query": "name == 'common_co_graduate'", "type": "equality"},
     {"loc": "lagged_choice_1_school", "type": "fixed"},
     {"loc": "lagged_choice_1_home", "type": "fixed"},
+]
+
+KW_2000_CONSTRAINTS = [
+    {"loc": "shocks_sdcorr", "type": "sdcorr"},
+    {"query": "'type' in category", "type": "fixed"},
+    {"loc": "lagged_choice_1_school", "type": "fixed"},
+    {"loc": "lagged_choice_1_home", "type": "fixed"},
+    {"query": "'initial_exp_school' in category", "type": "fixed"},
+    {"loc": "maximum_exp", "type": "fixed"},
+    {"loc": "observables", "type": "fixed"},
 ]
 
 ROBINSON_CRUSOE_CONSTRAINTS = [
@@ -77,6 +87,8 @@ def get_parameter_constraints(model):
         constraints = KW_97_BASIC_CONSTRAINTS
     elif "kw_97_extended" == model:
         constraints = KW_97_EXTENDED_CONSTRAINTS
+    elif "kw_2000" == model:
+        constraints = KW_2000_CONSTRAINTS
     elif "robinson_crusoe" in model:
         constraints = ROBINSON_CRUSOE_CONSTRAINTS
     else:
