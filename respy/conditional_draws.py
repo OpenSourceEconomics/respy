@@ -3,7 +3,8 @@ import numpy as np
 from estimagic.optimization.utilities import robust_cholesky
 from numba import guvectorize
 
-from respy.config import HUGE_FLOAT
+from respy.config import MAX_FLOAT
+from respy.config import MAX_LOG_FLOAT
 
 
 def create_draws_and_log_prob_wages(
@@ -60,8 +61,8 @@ def create_draws_and_log_prob_wages(
 
     choices = choices.astype(np.uint16)
     relevant_systematic_wages = np.choose(choices, wages_systematic.T)
-    log_wage_systematic = np.clip(
-        np.log(relevant_systematic_wages), -HUGE_FLOAT, HUGE_FLOAT
+    log_wage_systematic = np.log(
+        np.clip(relevant_systematic_wages, 1 / MAX_FLOAT, MAX_FLOAT)
     )
     cov = shocks_cholesky @ shocks_cholesky.T
 
@@ -78,7 +79,7 @@ def create_draws_and_log_prob_wages(
 
     chol_indices = np.where(np.isfinite(log_wage_observed), choices, n_wages)
     draws = calculate_conditional_draws(
-        base_draws, updated_means, updated_chols, chol_indices, HUGE_FLOAT
+        base_draws, updated_means, updated_chols, chol_indices, MAX_LOG_FLOAT
     )
 
     return draws, log_prob_wages
@@ -283,9 +284,12 @@ def update_cholcov(shocks_cholesky, n_wages):
     nopython=True,
 )
 def calculate_conditional_draws(
-    base_draws, updated_mean, updated_chols, chol_index, huge_float, conditional_draw
+    base_draws, updated_mean, updated_chols, chol_index, max_log_float, conditional_draw
 ):
     """Calculate the conditional draws from base draws, updated means and updated chols.
+
+    We need to pass ``max_log_float`` to the function, because the global variables
+    ``MAX_LOG_FLOAT`` cannot be used directly withing the guvectorize.
 
     Parameters
     ----------
@@ -300,8 +304,8 @@ def calculate_conditional_draws(
         observed shock.
     chol_index : float
         index of the relevant updated cholesky factor
-    huge_float : float
-        value at which exponentials are clipped.
+    max_log_float : float
+        Value at which numbers soon to be exponentiated are clipped.
 
     Returns
     -------
@@ -318,9 +322,9 @@ def calculate_conditional_draws(
             for j in range(i + 1):
                 cd += base_draws[d, j] * updated_chols[chol_index, i, j]
             if i < n_wages:
+                if cd > max_log_float:
+                    cd = max_log_float
                 cd = np.exp(cd)
-                if cd > huge_float:
-                    cd = huge_float
             conditional_draw[d, i] = cd
 
 
