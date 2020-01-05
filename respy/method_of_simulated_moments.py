@@ -14,9 +14,10 @@ References
        Journal of Econometrics, 47(2-3), 197-205.
 .. [3] Duffie, D., & Singleton, K. (1993). Simulated Moments Estimation of Markov Models
        of Asset Prices. Econometrica, 61(4), 929-952.
-
 """
+
 import copy
+
 import numpy as np
 import pandas as pd
 
@@ -32,22 +33,24 @@ def _harmonize_input(arg):
     """
     # Convert single DataFrames, Series or function into list containing one
     # item.
-    if (isinstance(arg, (pd.DataFrame, pd.Series)) | callable(arg)):
+    if isinstance(arg, (pd.DataFrame, pd.Series)) | callable(arg):
         arg = [arg]
-        
+
     # Sort dictionary accoding to keys and turn into list.
     if isinstance(arg, dict):
         temp = []
         for key in sorted(arg.keys()):
             temp.append(arg[key])
         arg = temp
-        
+
     # Leave lists as is.
     if isinstance(arg, list):
         pass
     else:
-        raise TypeError("Function only accepts lists, dictionaries,"
-                        " functions, Series and DataFrames as inputs.")
+        raise TypeError(
+            "Function only accepts lists, dictionaries,"
+            " functions, Series and DataFrames as inputs."
+        )
 
     return arg
 
@@ -98,22 +101,22 @@ def _flatten_index(data):
     """
     data_flat = []
     for df in data:
-        # Unstack df to add columns to index and extract indexes from the 
+        # Unstack df to add columns to index and extract indexes from the
         # new df.
         df.index = df.index.map(str)
         df = df.unstack()
         index = pd.MultiIndex.to_flat_index(df.index)
-        
+
         # Flatten index
         index_flat = []
         for idx in index:
-            label = '_'.join(idx)
+            label = "_".join(idx)
             index_flat.append(label)
-            
+
         # Drop old and add new index to data.
         df_flat = pd.DataFrame(df.reset_index(level=[0, 1], drop=True))
         df_flat.index = index_flat
-        
+
         # Add df to list.
         data_flat.append(df_flat)
 
@@ -121,11 +124,7 @@ def _flatten_index(data):
 
 
 def get_moment_vectors(
-    params, 
-    options,  
-    calc_moments, 
-    replace_nans,
-    empirical_moments,
+    params, options, calc_moments, replace_nans, empirical_moments,
 ):
     """Function to compute the empirical and simulated moment vectors with flat
     indexes.
@@ -134,7 +133,7 @@ def get_moment_vectors(
     -------
     params : pandas.DataFrame or pandas.Series
         Contains parameters.
-    options : dict
+    options : dicts
         Dictionary containing model options. 
     calc_moments: callable or list of callable functions.
         Function(s) used to calculate simulated moments. Must match structure 
@@ -150,7 +149,7 @@ def get_moment_vectors(
         Contains the empirical moments calculated for the observed data.
 
     Returns
-    ------
+    --------
     flat_empirical_moments: pandas.DataFrame
         Vector of empirical_moments with flat index.
     flat_simulated_moments: pandas.DataFrame
@@ -174,33 +173,32 @@ def get_moment_vectors(
     simulated_moments = _harmonize_input(simulated_moments)
 
     # Reindex simulated inputs.
-    simulated_moments = _reindex_simulated_moments(
-        empirical_moments, simulated_moments)
+    simulated_moments = _reindex_simulated_moments(empirical_moments, simulated_moments)
 
     # Replace Missings values in  simulated moments.
-    simulated_moments = _replace_missing_values(
-        simulated_moments, replace_nans)
+    simulated_moments = _replace_missing_values(simulated_moments, replace_nans)
 
     # Flatten moments.
     flat_empirical_moments = _flatten_index(empirical_moments)
     flat_simulated_moments = _flatten_index(simulated_moments)
 
-    # Sort index of flat_simulated_moments according to index of 
+    # Sort index of flat_simulated_moments according to index of
     # flat_empirical_moments.
     flat_simulated_moments = flat_empirical_moments.join(
-        flat_simulated_moments, lsuffix='_emp').iloc[:, 1:]
+        flat_simulated_moments, lsuffix="_emp"
+    ).iloc[:, 1:]
 
     return flat_empirical_moments, flat_simulated_moments
 
 
 def msm(
-    params, 
-    options,  
-    calc_moments, 
+    params,
+    options,
+    calc_moments,
     replace_nans,
     empirical_moments,
-    weighting_matrix, 
-    return_scalar
+    weighting_matrix,
+    return_scalar,
 ):
     """ Loss function for msm estimation.
 
@@ -224,24 +222,23 @@ def msm(
         Contains the empirical moments calculated for the observed data.
     weighting_matrix: numpy.ndarray
         Square matrix of dimension (NxN) with N denoting the number of 
-        empirical_moments. Used to weight squared moment errorss.
+        empirical_moments. Used to weight squared moment errors.
     return_scalar: boolean
-        Indicates whether to moment error vector (False) or weighted square 
-        product of moment error vector (True).
+        Indicates whether to return moment error vector (False) or weighted 
+        square product of moment error vector (True).
 
     Returns
-    ------
+    ---------
     Scalar or moment error vector depending on value of return_scalar.
     """
 
     flat_empirical_moments, flat_simulated_moments = get_moment_vectors(
-                                        params=params, 
-                                        options=options, 
-                                        calc_moments=calc_moments, 
-                                        replace_nans=replace_nans,
-                                        empirical_moments=empirical_moments, 
-
-                                        )
+        params=params,
+        options=options,
+        calc_moments=calc_moments,
+        replace_nans=replace_nans,
+        empirical_moments=empirical_moments,
+    )
     # Convert moments to arrays.
     emp_mom = np.array(flat_empirical_moments.iloc[:, 0])
     sim_mom = np.array(flat_simulated_moments.iloc[:, 0])
@@ -249,8 +246,8 @@ def msm(
     # Calculate vector of moment errors.
     moment_errors = emp_mom - sim_mom
 
-    # Return moment errors as indexed dataframe or caculate weighted square 
-    # product of moment errors depening on return_scalar.
+    # Return moment errors as indexed dataframe or calculate weighted square
+    # product of moment errors depending on return_scalar.
     if return_scalar == False:
         return pd.DataFrame(moment_errors, index=flat_empirical_moments.index)
 
@@ -279,21 +276,25 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
     ----------
     numpy.ndarray containing a diagonal weighting matrix. 
     """
-    # Use identity matrix if no weights are specified.
-    if weights==None:
-        weights = copy.deepcopy(empirical_moments)
-        weights[:] = 1
-    
-    # Harmonize inputs.
+    # Harmonize empirical moments.
     empirical_moments = _harmonize_input(empirical_moments)
-    weights = _harmonize_input(weights)
 
-    # Faltten indexes.
+    # Use identity matrix if no weights are specified.
+    if weights == None:
+        weights = copy.deepcopy(empirical_moments)
+        for df in weights:
+            df[:] = 1
+
+    # Harmonize input weights.
+    else:
+        weights = _harmonize_input(weights)
+
+    # Flatten indexes.
     flat_weights = _flatten_index(weights)
     flat_empirical_moments = _flatten_index(empirical_moments)
 
     # Sort index in weights accoding to emprical moments.
-    flat_weights = flat_empirical_moments.join(
-        flat_weights, lsuffix='_emp').iloc[:, 1:]
+    flat_weights = flat_empirical_moments.join(flat_weights, lsuffix="_emp").iloc[:, 1:]
 
+    # Return diagonal weighting matrix.
     return np.diag(flat_weights.iloc[:, 0])
