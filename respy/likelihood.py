@@ -8,7 +8,8 @@ import pandas as pd
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
-from respy.config import HUGE_FLOAT
+from respy.config import MAX_FLOAT
+from respy.config import MIN_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
@@ -303,6 +304,9 @@ def _internal_log_like_obs(
 
     wage_loglikes = wage_loglikes.reshape(n_obs, n_types)
 
+    choice_loglikes = np.clip(choice_loglikes, MIN_FLOAT, MAX_FLOAT)
+    wage_loglikes = np.clip(wage_loglikes, MIN_FLOAT, MAX_FLOAT)
+
     per_period_loglikes = wage_loglikes + choice_loglikes
 
     per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
@@ -317,14 +321,16 @@ def _internal_log_like_obs(
 
         type_probabilities = special.softmax(np.column_stack(z), axis=1)
 
+        type_probabilities = np.clip(type_probabilities, 1 / MAX_FLOAT, None)
         log_type_probabilities = np.log(type_probabilities)
+
         weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
         contribs = special.logsumexp(weighted_loglikes, axis=1)
     else:
         contribs = per_individual_loglikes.flatten()
 
-    contribs = np.clip(contribs, -HUGE_FLOAT, HUGE_FLOAT)
+    contribs = np.clip(contribs, MIN_FLOAT, MAX_FLOAT)
 
     return contribs
 
@@ -541,10 +547,9 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
-    log_wages_observed = (
-        np.log(df.wage.to_numpy())
-        .clip(-HUGE_FLOAT, HUGE_FLOAT)
-        .repeat(optim_paras["n_types"])
+    log_wages_observed = np.repeat(
+        np.log(np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT)),
+        optim_paras["n_types"],
     )
 
     # For the estimation, choices are needed with shape (n_observations * n_types).
