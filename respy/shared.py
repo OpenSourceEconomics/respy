@@ -9,8 +9,9 @@ import numba as nb
 import numpy as np
 import pandas as pd
 
-from respy.config import HUGE_FLOAT
 from respy.config import INADMISSIBILITY_PENALTY
+from respy.config import MAX_LOG_FLOAT
+from respy.config import MIN_LOG_FLOAT
 
 
 @nb.njit
@@ -150,8 +151,8 @@ def transform_base_draws_with_cholesky_factor(draws, shocks_cholesky, n_wages):
 
     """
     draws_transformed = draws.dot(shocks_cholesky.T)
-    draws_transformed[:, :, :n_wages] = np.clip(
-        np.exp(draws_transformed[:, :, :n_wages]), 0, HUGE_FLOAT
+    draws_transformed[:, :, :n_wages] = np.exp(
+        np.clip(draws_transformed[:, :, :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
     )
 
     return draws_transformed
@@ -228,10 +229,10 @@ def downcast_to_smallest_dtype(series):
     _downcast_options = ["unsigned", "signed", "float"]
 
     if series.dtype.name == "category":
-        min_dtype = "category"
+        out = series
 
     elif series.dtype == np.bool:
-        min_dtype = np.dtype("uint8")
+        out = series.astype(np.dtype("uint8"))
 
     else:
         min_dtype = np.dtype("float64")
@@ -249,7 +250,9 @@ def downcast_to_smallest_dtype(series):
             else:
                 pass
 
-    return series.astype(min_dtype)
+        out = series.astype(min_dtype)
+
+    return out
 
 
 def create_base_covariates(states, covariates_spec, raise_errors=True):
@@ -294,16 +297,11 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     return covariates
 
 
-def convert_choice_variables_from_categorical_to_codes(df, optim_paras):
-    """Recode choices to choice codes in the model.
+def convert_labeled_variables_to_codes(df, optim_paras):
+    """Convert labeled variables to codes.
 
-    We cannot use ``.cat.codes`` because order might be different. The model requires an
-    order of ``choices_w_exp_w_wag``, ``choices_w_exp_wo_wage``,
-    ``choices_wo_exp_wo_wage``.
-
-    See also
-    --------
-    respy.pre_processing.model_processing._order_choices
+    We need to check choice variables and observables for potential labels. The
+    mapping from labels to code can be inferred from the order in ``optim_paras``.
 
     """
     choices_to_codes = {choice: i for i, choice in enumerate(optim_paras["choices"])}
@@ -315,6 +313,12 @@ def convert_choice_variables_from_categorical_to_codes(df, optim_paras):
         label = f"lagged_choice_{i}"
         if label in df.columns:
             df[label] = df[label].replace(choices_to_codes).astype(np.uint8)
+
+    observables = optim_paras["observables"]
+    for observable in observables:
+        if observable in df.columns:
+            levels_to_codes = {lev: i for i, lev in enumerate(observables[observable])}
+            df[observable] = df[observable].replace(levels_to_codes).astype(np.uint8)
 
     return df
 
