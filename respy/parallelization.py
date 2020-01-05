@@ -39,7 +39,7 @@ def parallelize_across_dense_dimensions(func):
                 )
                 state_spaces.append(state_space_)
             with parallel_backend("loky"):
-                Parallel(max_nbytes=None)(
+                Parallel(n_jobs=1, max_nbytes=None)(
                     delayed(func)(st_sp, *args, **kwargs) for st_sp in state_spaces
                 )
         else:
