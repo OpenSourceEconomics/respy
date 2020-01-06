@@ -45,9 +45,6 @@ def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     criterion_functions = [
         simulate,
         rp.get_crit_func(params, options, df),
-        rp.get_msm_func(
-            params, options, pd.Series(0, index=[0]), lambda x: pd.Series(0, index=[0])
-        ),
     ]
 
     for crit_func in criterion_functions:

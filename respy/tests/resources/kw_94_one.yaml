@@ -28,4 +28,3 @@ covariates:
   exp_b_square: exp_b ** 2
   at_least_twelve_exp_edu: exp_edu >= 12
   not_edu_last_period: lagged_choice_1 != 'edu'
-  edu_ten: exp_edu == 10

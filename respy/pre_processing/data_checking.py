@@ -1,4 +1,7 @@
+"""Test functions to ensure the validity of data."""
 import numpy as np
+
+from respy.shared import generate_column_dtype_dict_for_estimation
 
 
 def check_estimation_data(df, optim_paras):
@@ -17,7 +20,9 @@ def check_estimation_data(df, optim_paras):
         If data has not the expected format.
 
     """
-    df = df.reset_index()
+    # Make sure all columns are available.
+    col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
+    df = df.reset_index()[col_dtype]
 
     n_periods = optim_paras["n_periods"]
 
@@ -53,7 +58,7 @@ def check_estimation_data(df, optim_paras):
 
     # Observable characteristics.
     for observable in optim_paras["observables"]:
-        assert df[observable.title()].max() + 1 == len(
+        assert df[observable.title()].nunique() == len(
             optim_paras["observables"][observable]
         )
 
@@ -100,7 +105,6 @@ def check_simulated_data(optim_paras, df):
     df = df.copy()
 
     # Distribute class attributes
-    n_periods = optim_paras["n_periods"]
     n_types = optim_paras["n_types"]
 
     # Run all tests available for the estimation data.
@@ -116,6 +120,3 @@ def check_simulated_data(optim_paras, df):
     is_working = df["Choice"].isin(optim_paras["choices_w_wage"])
     assert df.Wage[is_working].notna().all()
     assert df.Wage[~is_working].isna().all()
-
-    # Check that there are no missing observations and we follow an agent each period.
-    df.groupby("Identifier").Period.nunique().eq(n_periods).all()

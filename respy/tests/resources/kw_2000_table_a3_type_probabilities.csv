@@ -1,0 +1,5 @@
+race,exp_school,type_1,type_2,type_3,type_4
+white,up_to_nine_years_school,0.0339,0.2435,0.4012,0.3215
+white,at_least_ten_years_school,.1688,0.3151,0.3527,0.1634
+black,up_to_nine_years_school,2.0262,2.1264,2.0349,0.1875
+black,at_least_ten_years_school,2.1053,2.1712,0.0870,0.1895

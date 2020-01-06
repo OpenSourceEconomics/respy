@@ -37,6 +37,10 @@ carlo-evidence>`_. *Federal Reserve Bank of Minneapolis*, No. 181.
 Keane, M. P. and Wolpin, K. I. (1997). `The Career Decisions of Young Men
 <https://doi.org/10.1086/262080>`_. *Journal of Political Economy*, 105(3): 473-522.
 
+Keane, M. P., & Wolpin, K. I. (2000). `Eliminating race differences in school attainment
+and labor market success <https://www.journals.uchicago.edu/doi/abs/10.1086/209971>`_.
+Journal of Labor Economics, 18(4), 614-652.
+
 Manski, C. and Lerman S. (1977). `The Estimation of Choice Probabilities from Choice
 Based Samples <https://doi.org/10.2307/1914121>`_. *Econometrica*, 45(8): 1977-1988.
 

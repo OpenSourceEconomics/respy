@@ -99,6 +99,16 @@ linkcheck_ignore = [
 # Configuration for nbsphinx
 nbsphinx_execute = "never"
 nbsphinx_allow_errors = False
+nbsphinx_prolog = r"""
+{% set docname = 'docs/' + env.doc2path(env.docname, base=None) %}
+
+.. only:: html
+
+    .. nbinfo::
+
+        Download the notebook :download:`here <https://github.com/OpenSourceEconomics/respy/blob/{{ env.config.release }}/{{ docname }}>`!
+
+"""
 
 # Configuration for numpydoc
 numpydoc_xref_param_type = True

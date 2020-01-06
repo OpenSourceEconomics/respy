@@ -76,17 +76,15 @@ respy.simulate
 
 Routines under ``respy.simulate`` use a seed from the sequence of
 ``options["simulation_seed"]`` to control randomness. Apart from the draws,
-:func:`~respy.simulate.simulate` relies on the following three functions to generate
-starting values for simulated agents.
+:func:`~respy.simulate.simulate` relies on the following function to generate
+starting values for simulated individuals (experiences, types, etc.).
 
 .. currentmodule:: respy.simulate
 
 .. autosummary::
     :toctree: ../_generated/
 
-    _get_random_initial_experience
-    _get_random_types
-    _get_random_lagged_choices
+    _sample_characteristic
 
 
 respy.likelihood
@@ -124,9 +122,9 @@ in the sequence initialized by ``options["simulation_seed"]``.
     verifies independence between sequential seeds.
 
     NumPy documentation on their `RandomState object <https://docs.scipy.org/doc/
-    numpy/reference/generated/numpy.random.RandomState.html#numpy.random.RandomState>`_
-    which wraps the pseudo-random number generator `Mersenne Twister
-    <https://docs.scipy.org/doc/numpy/reference/random/bit_generators/mt19937.html>`_.
+    numpy-1.15.0/reference/generated/numpy.random.RandomState.html>`_ which wraps the
+    pseudo-random number generator `Mersenne Twister <https://docs.scipy.org/doc/numpy/
+    reference/random/bit_generators/mt19937.html>`_.
 
 
 .. rubric:: Footnotes
