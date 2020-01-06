@@ -787,7 +787,7 @@ def _separate_covariates_into_core_dense_mixed(options, optim_paras):
         Contains three new covariate categories.
 
     """
-    covariates = options.pop("covariates")
+    covariates = options["covariates"]
 
     # Define two sets with default covariates for the core and dense state space.
     core_covs = set(

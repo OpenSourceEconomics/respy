@@ -154,7 +154,7 @@ def simulate(
     optim_paras, options = process_params_and_options(params, options)
 
     # Solve the model.
-    state_space.update_systematic_rewards(optim_paras)
+    state_space.create_choice_rewards(optim_paras)
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
     # Prepare simulation.
@@ -386,10 +386,7 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
 
     """
     # Generate covariates.
-    covariates_df = compute_covariates(
-        states_df, options["covariates"], raise_errors=False
-    )
-    all_data = pd.concat([covariates_df, states_df], axis="columns", sort=False)
+    all_data = compute_covariates(states_df, options["covariates"], raise_errors=False)
     for column in all_data:
         if all_data[column].dtype == np.bool:
             all_data[column] = all_data[column].astype(np.uint8)
