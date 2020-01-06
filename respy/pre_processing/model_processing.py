@@ -327,58 +327,72 @@ def _parse_types(optim_paras, params):
     implicitly enforced that the parameters form a valid matrix.
 
     """
-    n_choices = len(optim_paras["choices"])
-
-    if "type_shift" in params.index:
-        n_types = _infer_number_of_types(params)
-        types = [f"type_{i}" for i in range(2, n_types + 1)]
-        optim_paras["type_covariates"] = (
-            params.loc[types[0]].sort_index().index.to_list()
+    if "type_0" in params.index.get_level_values("category"):
+        raise ValueError(
+            "'type_0' cannot be used to specify the probability mass function of types "
+            "as it has to be zero such that all parameters are identified."
+        )
+    if "type_0" in params.index.get_level_values("name"):
+        raise ValueError(
+            "'type_0' cannot be used as a utility covariate as it must be zero due to "
+            "normalization. All other types are expressed in relation to the first."
         )
 
-        first_type = {0: pd.Series(data=[0], index=["constant"])}
-        other_types = {i - 1: params.loc[f"type_{i}"] for i in range(2, n_types + 1)}
-        optim_paras["type_prob"] = {**first_type, **other_types}
+    n_types = _infer_number_of_types(params)
+
+    if n_types >= 2:
+        # Parse type probabilities.
+        parsed_parameters = _parse_probabilities_or_logit_coefficients(
+            params, r"\btype_([0-9]+)\b"
+        )
+        parsed_parameters = {k: v for k, v in parsed_parameters.items()}
+        default = {i: pd.Series(data=[0], index=["constant"]) for i in range(n_types)}
+        optim_paras["type_prob"] = {**default, **parsed_parameters}
+
+        # Parse type covariates which makes estimation via maximum likelihood faster.
         optim_paras["type_covariates"] = {
             cov
             for level_dict in optim_paras["type_prob"].values()
             for cov in level_dict.index
         }
 
-        optim_paras["type_shift"] = np.zeros((n_types, n_choices))
-        for type_ in range(2, n_types + 1):
-            for i, choice in enumerate(optim_paras["choices"]):
-                optim_paras["type_shift"][type_ - 1, i] = params.get(
-                    ("type_shift", f"type_{type_}_in_{choice}"), 0
-                )
-    else:
-        optim_paras["type_shift"] = np.zeros((1, n_choices))
-        optim_paras["type_prob"] = {0: pd.Series(data=[0], index=["constant"])}
-
-    optim_paras["n_types"] = optim_paras["type_shift"].shape[0]
+    optim_paras["n_types"] = n_types
 
     return optim_paras
 
 
 def _infer_number_of_types(params):
-    """Infer the number of types from parameters.
+    """Infer the number of types from parameters which is zero by default.
 
     Examples
     --------
-    >>> params = pd.DataFrame(index=["type_3", "type_2"])
-    >>> _infer_number_of_types(params)
-    3
-    >>> params = pd.DataFrame(index=["type_2", "type_3_asds", "type_423_"])
-    >>> _infer_number_of_types(params)
-    2
+    An example without types:
+
+    >>> tuples = [("wage_a", "constant"), ("nonpec_edu", "exp_edu")]
+    >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
+    >>> s = pd.Series(index=index)
+    >>> _infer_number_of_types(s)
+    1
+
+    And one with types:
+
+    >>> tuples = [("wage_a", "type_3"), ("nonpec_edu", "type_2")]
+    >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
+    >>> s = pd.Series(index=index)
+    >>> _infer_number_of_types(s)
+    4
 
     """
-    return (
-        params.index.get_level_values(0)
-        .str.extract(r"(\btype_[0-9]+\b)", expand=False)
-        .nunique()
+    n_types = (
+        params.index.get_level_values("name")
+        .str.extract(r"\btype_([0-9]+)\b", expand=False)
+        .fillna(0)
+        .astype(int)
+        .max()
         + 1
     )
+
+    return n_types
 
 
 def _infer_choices_with_experience(params, options):
@@ -653,6 +667,14 @@ def _identify_relevant_covariates(options, params):
 def _sync_optim_paras_and_options(optim_paras, options):
     """Sync ``optim_paras`` and ``options`` after they have been parsed separately."""
     optim_paras["n_periods"] = options["n_periods"]
+
+    # Create covariates for the reward functions.
+    if optim_paras["n_types"] >= 2:
+        type_covariates = {
+            f"type_{i}": f"type == {i}" for i in range(1, optim_paras["n_types"])
+        }
+
+        options["covariates"] = {**options["covariates"], **type_covariates}
 
     options = _convert_labels_in_formulas_to_codes(options, optim_paras)
 

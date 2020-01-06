@@ -115,6 +115,11 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
     states_old, indexer_old = _create_state_space_kw94(
         n_periods, n_types, edu_starts, edu_max
     )
+    if n_types < 2:
+        states_old = states_old[:, :-1]
+        for i, idx in enumerate(indexer_old):
+            shape = idx.shape
+            indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
     states_new, indexer_new = _create_state_space(optim_paras, options)
 
@@ -154,6 +159,11 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
         states_old, indexer_old = _create_state_space_kw97_extended(
             n_periods, n_types, edu_starts, edu_max
         )
+    if n_types < 2:
+        states_old = states_old[:, :-1]
+        for i, idx in enumerate(indexer_old):
+            shape = idx.shape
+            indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
     states_new, indexer_new = _create_state_space(optim_paras, options)
 

@@ -182,9 +182,9 @@ def generate_column_dtype_dict_for_estimation(optim_paras):
 def generate_column_dtype_dict_for_simulation(optim_paras):
     """Generate column labels for simulation output."""
     est_col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
-    labels = (
-        ["Type"]
-        + [f"Nonpecuniary_Reward_{choice.title()}" for choice in optim_paras["choices"]]
+    labels = ["Type"] if optim_paras["n_types"] >= 2 else []
+    labels += (
+        [f"Nonpecuniary_Reward_{choice.title()}" for choice in optim_paras["choices"]]
         + [f"Wage_{choice.title()}" for choice in optim_paras["choices_w_wage"]]
         + [f"Flow_Utility_{choice.title()}" for choice in optim_paras["choices"]]
         + [f"Value_Function_{choice.title()}" for choice in optim_paras["choices"]]

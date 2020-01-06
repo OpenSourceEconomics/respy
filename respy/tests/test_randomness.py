@@ -11,7 +11,7 @@ from respy.tests.utils import process_model_or_seed
 def test_invariance_of_model_solution_in_solve_and_criterion_functions(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
 
-    options["n_periods"] = 3
+    options["n_periods"] = 3 if options["n_periods"] > 3 else options["n_periods"]
 
     state_space = rp.solve(params, options)
     simulate = rp.get_simulate_func(params, options)
@@ -33,7 +33,7 @@ def test_invariance_of_model_solution_in_solve_and_criterion_functions(model_or_
 def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
 
-    options["n_periods"] = 5
+    options["n_periods"] = 3 if options["n_periods"] > 3 else options["n_periods"]
 
     state_space = rp.solve(params, options)
 
