@@ -64,7 +64,7 @@ def test_sorting_of_type_probability_parameters(model_or_seed):
 
     if optim_paras["n_types"] > 1:
         # Resort type probability parameters.
-        types = [f"type_{i}" for i in range(2, optim_paras["n_types"] + 1)]
+        types = [f"type_{i}" for i in range(1, optim_paras["n_types"])]
         params.loc[types] = params.sort_index(ascending=False).loc[types]
 
         optim_paras_, _ = process_params_and_options(params, options)

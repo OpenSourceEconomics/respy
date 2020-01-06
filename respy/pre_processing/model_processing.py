@@ -386,9 +386,10 @@ def _infer_number_of_types(params):
     n_types = (
         params.index.get_level_values("name")
         .str.extract(r"\btype_([0-9]+)\b", expand=False)
-        .fillna(1)
+        .fillna(0)
         .astype(int)
         .max()
+        + 1
     )
 
     return n_types
@@ -673,7 +674,7 @@ def _sync_optim_paras_and_options(optim_paras, options):
             f"type_{i}": f"type == {i}" for i in range(1, optim_paras["n_types"])
         }
 
-    options["covariates"] = {**options["covariates"], **type_covariates}
+        options["covariates"] = {**options["covariates"], **type_covariates}
 
     options = _convert_labels_in_formulas_to_codes(options, optim_paras)
 
