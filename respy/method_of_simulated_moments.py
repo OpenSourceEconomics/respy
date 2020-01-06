@@ -15,8 +15,8 @@ References
 .. [3] Duffie, D., & Singleton, K. (1993). Simulated Moments Estimation of Markov Models
        of Asset Prices. Econometrica, 61(4), 929-952.
 """
-
 import copy
+import functools
 
 import numpy as np
 import pandas as pd
@@ -25,9 +25,9 @@ from respy.simulate import get_simulate_func
 
 
 def _harmonize_input(arg):
-    """ Harmonizes different types of inputs by turning all inputs into lists. 
-    - pandas.DataFrames/Series and callable functions will turn into list 
-        containing a single item (i.e. the input). 
+    """ Harmonizes different types of inputs by turning all inputs into lists.
+    - pandas.DataFrames/Series and callable functions will turn into list
+        containing a single item (i.e. the input).
     - Dictionaries will be sorted according to keys and then turn into a list
         containing the dictionary entries.
     """
@@ -68,7 +68,7 @@ def _calculate_moments(data, calc_moments):
 
 
 def _reindex_simulated_moments(empirical_moments, simulated_moments):
-    """ Reindexes data in simulated_moments to match index of 
+    """ Reindexes data in simulated_moments to match index of
     empirical_moments.
     """
     simulated_moments_reindexed = []
@@ -96,7 +96,7 @@ def _replace_missing_values(simulated_moments, replace_nans):
 
 
 def _flatten_index(data):
-    """ Function flattens index of DataFrames/Series contained in data and 
+    """ Function flattens index of DataFrames/Series contained in data and
         concatinates all flattend elements in the list to one long DataFrame.
     """
     data_flat = []
@@ -123,9 +123,7 @@ def _flatten_index(data):
     return pd.concat(data_flat)
 
 
-def get_moment_vectors(
-    params, options, calc_moments, replace_nans, empirical_moments,
-):
+def get_moment_vectors(params, options, calc_moments, replace_nans, empirical_moments):
     """Function to compute the empirical and simulated moment vectors with flat
     indexes.
 
@@ -134,17 +132,17 @@ def get_moment_vectors(
     params : pandas.DataFrame or pandas.Series
         Contains parameters.
     options : dicts
-        Dictionary containing model options. 
+        Dictionary containing model options.
     calc_moments: callable or list of callable functions.
-        Function(s) used to calculate simulated moments. Must match structure 
-        of empirical moments i.e. if empirical_moments is a list of 
+        Function(s) used to calculate simulated moments. Must match structure
+        of empirical moments i.e. if empirical_moments is a list of
         pandas.DataFrames, calc_moments must be a list of the same length
-        containing functions that correspond to the moments in 
+        containing functions that correspond to the moments in
         empirical_moments.
     replace_nans: callable or list of callable functions.
         Functions(s) specifiying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
-    empirical_moments : pandas.DataFrame, pandas.Series, dict or list 
+    empirical_moments : pandas.DataFrame, pandas.Series, dict or list
         containing pandas.DataFrame or pandas.Series.
         Contains the empirical moments calculated for the observed data.
 
@@ -207,24 +205,24 @@ def msm(
     params : pandas.DataFrame or pandas.Series
         Contains parameters.
     options : dict
-        Dictionary containing model options. 
+        Dictionary containing model options.
     calc_moments: callable or list of callable functions.
-        Function(s) used to calculate simulated moments. Must match structure 
-        of empirical moments i.e. if empirical_moments is a list of 
+        Function(s) used to calculate simulated moments. Must match structure
+        of empirical moments i.e. if empirical_moments is a list of
         pandas.DataFrames, calc_moments must be a list of the same length
-        containing functions that correspond to the moments in 
+        containing functions that correspond to the moments in
         empirical_moments.
     replace_nans: callable or list of callable functions.
         Functions(s) specifiying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
-    empirical_moments : pandas.DataFrame, pandas.Series, dict or list 
+    empirical_moments : pandas.DataFrame, pandas.Series, dict or list
         containing pandas.DataFrame or pandas.Series.
         Contains the empirical moments calculated for the observed data.
     weighting_matrix: numpy.ndarray
-        Square matrix of dimension (NxN) with N denoting the number of 
+        Square matrix of dimension (NxN) with N denoting the number of
         empirical_moments. Used to weight squared moment errors.
     return_scalar: boolean
-        Indicates whether to return moment error vector (False) or weighted 
+        Indicates whether to return moment error vector (False) or weighted
         square product of moment error vector (True).
 
     Returns
@@ -256,25 +254,25 @@ def msm(
 
 
 def get_diag_weighting_matrix(empirical_moments, weights=None):
-    """Creates diagonal weighting matrix from weights that are of the same 
+    """Creates diagonal weighting matrix from weights that are of the same
     form as empirical_moments.
 
     Args:
     -------
-    empirical_moments : pandas.DataFrame, pandas.Series, dict or list 
+    empirical_moments : pandas.DataFrame, pandas.Series, dict or list
         containing pandas.DataFrame or pandas.Series.
         Contains the empirical moments calculated for the observed data.
-    weights: pandas.DataFrame, pandas.Series, dict or list 
+    weights: pandas.DataFrame, pandas.Series, dict or list
         containing pandas.DataFrame or pandas.Series.
         Contains weights (usually variances) of empirical moments. Must match
-        structure of empirical_moments i.e. if empirical_moments is a list of 
+        structure of empirical_moments i.e. if empirical_moments is a list of
         pandas.DataFrames, weights be list of pandas.DataFrames as well where
         each DataFrame entry contains the weight for the corresponding
         moment in empirical_moments.
 
     Returns:
     ----------
-    numpy.ndarray containing a diagonal weighting matrix. 
+    numpy.ndarray containing a diagonal weighting matrix.
     """
     # Harmonize empirical moments.
     empirical_moments = _harmonize_input(empirical_moments)
@@ -298,3 +296,32 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
 
     # Return diagonal weighting matrix.
     return np.diag(flat_weights.iloc[:, 0])
+
+
+def get_msm_func(
+    params,
+    options,
+    calc_moments,
+    replace_nans,
+    empirical_moments,
+    weighting_matrix,
+    return_scalar,
+):
+    # Move the creation of the simulation function here from get_moment_vectors.
+
+    # Move all steps of the input harmonization here.
+
+    # Attach all invariant information to the msm function with functools.partial. See
+    # get_crit_func or get_simulate_func for an example. params should be the only free
+    # parameter.
+    msm_func = functools.partial(
+        msm,
+        options=options,
+        calc_moments=calc_moments,
+        replace_nans=replace_nans,
+        empirical_moments=empirical_moments,
+        weighting_matrix=weighting_matrix,
+        return_scalar=return_scalar,
+    )
+
+    return msm_func
