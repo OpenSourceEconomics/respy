@@ -10,8 +10,8 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
-from respy.shared import generate_column_dtype_dict_for_simulation
-from respy.shared import rename_labels
+from respy.shared import rename_labels_from_internal
+from respy.shared import rename_labels_to_internal
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
@@ -150,8 +150,6 @@ def simulate(
         DataFrame of simulated individuals.
 
     """
-    df = df.copy()
-
     optim_paras, options = process_params_and_options(params, options)
 
     # Solve the model.
@@ -169,6 +167,11 @@ def simulate(
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
     is_n_step_ahead = df.index.get_level_values("identifier").duplicated().sum() == 0
 
+    # Initialize shock columns to later store shocks in ``current_df``.
+    shock_cols = [f"shock_reward_{choice}" for choice in optim_paras["choices"]]
+    meas_error_cols = [f"meas_error_wage_{choice}" for choice in optim_paras["choices"]]
+    df = df.reindex(columns=df.columns.tolist() + shock_cols + meas_error_cols)
+
     # Start simulating.
     data = []
     for period in range(n_simulation_periods):
@@ -176,26 +179,26 @@ def simulate(
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
         # n-step-ahead simulation, ``df`` always contains only data of the current
         # period.
-        current_states = df.query("period == @period").to_numpy(dtype=np.uint32)
+        current_df = df.query("period == @period").copy()
 
-        rows = _simulate_single_period(
-            period,
-            current_states,
-            state_space,
-            base_draws_sim_transformed,
-            base_draws_wage_transformed,
-            optim_paras,
+        # Attach shocks to DataFrame which makes splitting easier.
+        n_individuals = current_df.shape[0]
+
+        current_df[shock_cols] = base_draws_sim_transformed[period][:n_individuals]
+        current_df[meas_error_cols] = base_draws_wage_transformed[period][
+            :n_individuals
+        ]
+
+        current_df_extended = _simulate_single_period(
+            current_df, state_space, optim_paras
         )
 
-        data.append(rows)
+        data.append(current_df_extended.copy())
 
         if is_n_step_ahead:
-            choices = rows[:, 1].astype(np.uint8)
-            df = _apply_law_of_motion(df, choices, optim_paras)
+            df = _apply_law_of_motion(current_df_extended, optim_paras)
 
-    simulated_data = _create_simulated_data(
-        data, df, is_n_step_ahead, n_simulation_periods, optim_paras, options
-    )
+    simulated_data = _create_simulated_data(data, optim_paras)
 
     return simulated_data
 
@@ -259,14 +262,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
     return df
 
 
-def _simulate_single_period(
-    period,
-    current_states,
-    state_space,
-    base_draws_sim_transformed,
-    base_draws_wage_transformed,
-    optim_paras,
-):
+def _simulate_single_period(df, state_space, optim_paras):
     """Simulate individuals in a single period.
 
     This function takes a set of states and simulates wages, choices and other
@@ -274,27 +270,21 @@ def _simulate_single_period(
 
     Parameter
     ---------
-    period : int
-        The period for which individual outcomes are simulated.
-    current_states : numpy.ndarray
-        Array with shape (n_individuals, n_state_space_dims) which contains the states
-        of simulated individuals.
+    df : pandas.DataFrame
+        DataFrame with shape (n_individuals, n_state_space_dims) which contains the
+        states of simulated individuals.
     state_space : :class:`~respy.state_space.StateSpace`
         State space of the model.
-    base_draws_sim_transformed : numpy.ndarray
-        Draws to simulate choices of individuals.
-    base_draws_wage_transformed : numpy.ndarray
-        Draws to simulate the measurement error in wages.
     optim_paras : dict
 
     """
+    period = df.index.get_level_values("period").max()
     n_wages = len(optim_paras["choices_w_wage"])
-    n_individuals = current_states.shape[0]
 
     # Get indices which connect states in the state space and simulated agents.
-    indices = state_space.indexer[period][
-        tuple(current_states[:, i] for i in range(current_states.shape[1]))
-    ]
+    core_columns = create_core_state_space_columns(optim_paras)
+    core_columns += ["type"] if optim_paras["n_types"] >= 2 else []
+    indices = state_space.indexer[period][tuple(df[col] for col in core_columns)]
 
     # Get continuation values. Indices work on the complete state space whereas
     # continuation values are period-specific. Make them period-specific.
@@ -302,8 +292,8 @@ def _simulate_single_period(
     cont_indices = indices - state_space.slices_by_periods[period].start
 
     # Select relevant subset of random draws.
-    draws_shock = base_draws_sim_transformed[period][:n_individuals]
-    draws_wage = base_draws_wage_transformed[period][:n_individuals]
+    draws_shock = df.filter(like="shock_reward_").to_numpy()
+    draws_wage = df.filter(like="meas_error_wage_").to_numpy()
 
     # Get total values and ex post rewards.
     value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
@@ -329,29 +319,17 @@ def _simulate_single_period(
     wages[:, n_wages:] = np.nan
     wage = np.choose(choice, wages.T)
 
-    rows = np.column_stack(
-        (
-            np.full(n_individuals, period),
-            choice,
-            wage,
-            # Write relevant state space for period to data frame. However, the
-            # individual's type is not part of the observed dataset. This is included in
-            # the simulated dataset.
-            current_states,
-            # As we are working with a simulated dataset, we can also output additional
-            # information that is not available in an observed dataset. The discount
-            # rate is included as this allows to construct the EMAX with the information
-            # provided in the simulation output.
-            state_space.nonpec[indices],
-            state_space.wages[indices, :n_wages],
-            flow_utilities,
-            value_functions,
-            draws_shock,
-            np.full(n_individuals, optim_paras["delta"]),
-        )
-    )
+    # Store information for debugging, etc..
+    df["choice"] = choice
+    df["wage"] = wage
+    df["discount_rate"] = optim_paras["delta"]
+    for i, choice in enumerate(optim_paras["choices"]):
+        df[f"nonpecuniary_reward_{choice}"] = state_space.nonpec[indices][:, i]
+        df[f"wage_{choice}"] = state_space.wages[indices][:, i]
+        df[f"flow_utility_{choice}"] = flow_utilities[:, i]
+        df[f"value_function_{choice}"] = value_functions[:, i]
 
-    return rows
+    return df
 
 
 def _sample_characteristic(states_df, options, level_dict, use_keys):
@@ -420,12 +398,16 @@ def _convert_codes_to_original_labels(df, optim_paras):
     """Convert codes in choice-related and observed variables to labels."""
     code_to_choice = dict(enumerate(optim_paras["choices"]))
 
-    df.Choice = df.Choice.cat.set_categories(code_to_choice).cat.rename_categories(
-        code_to_choice
+    df["Choice"] = (
+        df["Choice"]
+        .astype("category")
+        .cat.set_categories(code_to_choice)
+        .cat.rename_categories(code_to_choice)
     )
     for i in range(1, optim_paras["n_lagged_choices"] + 1):
         df[f"Lagged_Choice_{i}"] = (
             df[f"Lagged_Choice_{i}"]
+            .astype("category")
             .cat.set_categories(code_to_choice)
             .cat.rename_categories(code_to_choice)
         )
@@ -437,7 +419,7 @@ def _convert_codes_to_original_labels(df, optim_paras):
     return df
 
 
-def _create_simulated_data(data, df, is_n_step_ahead, n_sim_p, optim_paras, options):
+def _create_simulated_data(data, optim_paras):
     """Create simulated data.
 
     This function takes an array of simulated outcomes for each period and stacks them
@@ -447,16 +429,7 @@ def _create_simulated_data(data, df, is_n_step_ahead, n_sim_p, optim_paras, opti
     ----------
     data : list
         List of period-specific simulated outcomes.
-    df : pandas.DataFrame
-        Original DataFrame passed by the user.
-    is_n_step_ahead : bool
-        Indicator for whether the simulation method is n-step-ahead or not. If it is
-        true, the individual identifier is generated. If false, take the identifier from
-        the data passed by the user.
-    n_sim_p : int
-        Number of periods for which outcomes are simulated.
     optim_paras : dict
-    options : dict
 
     Returns
     -------
@@ -464,25 +437,15 @@ def _create_simulated_data(data, df, is_n_step_ahead, n_sim_p, optim_paras, opti
         DataFrame with simulated data.
 
     """
-    if is_n_step_ahead:
-        identifier = np.tile(np.arange(options["simulation_agents"]), n_sim_p)
-    else:
-        identifier = df.index.get_level_values("identifier")
-
-    col_dtype = generate_column_dtype_dict_for_simulation(optim_paras)
-
-    simulated_df = (
-        pd.DataFrame(
-            data=np.column_stack((identifier, np.row_stack(data))), columns=col_dtype
-        )
-        .astype(col_dtype)
-        .sort_values(["Identifier", "Period"])
-        .set_index(["Identifier", "Period"], drop=True)
+    df = (
+        pd.concat(data, axis=0)
+        .rename(columns=rename_labels_from_internal)
+        .rename_axis(index=rename_labels_from_internal)
+        .sort_index()
     )
+    df = _convert_codes_to_original_labels(df, optim_paras)
 
-    simulated_df = _convert_codes_to_original_labels(simulated_df, optim_paras)
-
-    return simulated_df
+    return df
 
 
 def _random_choice(choices, probabilities, decimals=5):
@@ -537,7 +500,7 @@ def _random_choice(choices, probabilities, decimals=5):
     return choices[indices]
 
 
-def _apply_law_of_motion(df, choices, optim_paras):
+def _apply_law_of_motion(df, optim_paras):
     """Apply the law of motion to get the states in the next period.
 
     For n-step-ahead simulations, the states of the next period are generated from the
@@ -565,7 +528,7 @@ def _apply_law_of_motion(df, choices, optim_paras):
 
     # Update work experiences.
     for i, choice in enumerate(optim_paras["choices_w_exp"]):
-        is_choice = choices == i
+        is_choice = df["choice"] == i
         df.loc[is_choice, f"exp_{choice}"] = df.loc[is_choice, f"exp_{choice}"] + 1
 
     # Update lagged choices by deleting oldest lagged, renaming other lags and inserting
@@ -585,7 +548,7 @@ def _apply_law_of_motion(df, choices, optim_paras):
         df = df.rename(columns=rename_lagged_choices)
 
         # Add current choice as new lag.
-        df.insert(position, "lagged_choice_1", choices)
+        df.insert(position, "lagged_choice_1", df["choice"])
 
     # Increment period in MultiIndex by one.
     df.index = df.index.set_levels(
@@ -595,17 +558,27 @@ def _apply_law_of_motion(df, choices, optim_paras):
     return df
 
 
-def _create_state_space_columns(optim_paras):
-    """Create names of state space dimensions excluding the period and identifier."""
-    columns = (
-        [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
-        + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
-        + list(optim_paras["observables"])
-    )
+def create_core_state_space_columns(optim_paras):
+    """Create internal column names for the core state space."""
+    return [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]] + [
+        f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)
+    ]
+
+
+def create_dense_state_space_columns(optim_paras):
+    """Create internal column names for the dense state space."""
+    columns = list(optim_paras["observables"])
     if optim_paras["n_types"] >= 2:
         columns += ["type"]
 
     return columns
+
+
+def create_state_space_columns(optim_paras):
+    """Create names of state space dimensions excluding the period and identifier."""
+    return create_core_state_space_columns(
+        optim_paras
+    ) + create_dense_state_space_columns(optim_paras)
 
 
 def _harmonize_simulation_arguments(method, df, n_sim_p, options):
@@ -645,10 +618,14 @@ def _process_input_df_for_simulation(df, method, options, optim_paras):
         df = pd.DataFrame(index=index)
 
     else:
-        df = df.copy().rename(columns=rename_labels)
-        df = df.rename_axis(index=rename_labels).sort_index()
+        df = (
+            df.copy()
+            .rename(columns=rename_labels_to_internal)
+            .rename_axis(index=rename_labels_to_internal)
+            .sort_index()
+        )
 
-    state_space_columns = _create_state_space_columns(optim_paras)
+    state_space_columns = create_state_space_columns(optim_paras)
     df = df.reindex(columns=state_space_columns)
 
     first_period = df.query("period == 0")

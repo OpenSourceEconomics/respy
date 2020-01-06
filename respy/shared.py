@@ -179,25 +179,6 @@ def generate_column_dtype_dict_for_estimation(optim_paras):
     return column_dtype_dict
 
 
-def generate_column_dtype_dict_for_simulation(optim_paras):
-    """Generate column labels for simulation output."""
-    est_col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
-    labels = ["Type"] if optim_paras["n_types"] >= 2 else []
-    labels += (
-        [f"Nonpecuniary_Reward_{choice.title()}" for choice in optim_paras["choices"]]
-        + [f"Wage_{choice.title()}" for choice in optim_paras["choices_w_wage"]]
-        + [f"Flow_Utility_{choice.title()}" for choice in optim_paras["choices"]]
-        + [f"Value_Function_{choice.title()}" for choice in optim_paras["choices"]]
-        + [f"Shock_Reward_{choice.title()}" for choice in optim_paras["choices"]]
-        + ["Discount_Rate"]
-    )
-
-    sim_col_dtype = {col: (int if col == "Type" else float) for col in labels}
-    sim_col_dtype = {**est_col_dtype, **sim_col_dtype}
-
-    return sim_col_dtype
-
-
 @nb.njit
 def clip(x, minimum=None, maximum=None):
     """Clip input array at minimum and maximum."""
@@ -323,9 +304,14 @@ def convert_labeled_variables_to_codes(df, optim_paras):
     return df
 
 
-def rename_labels(x):
+def rename_labels_to_internal(x):
     """Shorten labels and convert them to lower-case."""
     return x.replace("Experience", "exp").lower()
+
+
+def rename_labels_from_internal(x):
+    """Shorten labels and convert them to lower-case."""
+    return x.replace("exp", "Experience").title()
 
 
 def normalize_probabilities(probabilities):
