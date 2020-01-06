@@ -1,3 +1,4 @@
+"""The general package information for respy."""
 from pathlib import Path
 
 from setuptools import find_packages

@@ -28,6 +28,7 @@ dependencies:
   - pytest-xdist
   - restructuredtext_lint
   - scipy
+  - seaborn
   - snakeviz
   - sphinx
   - sphinx-autobuild

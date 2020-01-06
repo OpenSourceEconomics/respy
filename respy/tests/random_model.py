@@ -1,8 +1,5 @@
 """This module contains the functions for the generation of random requests."""
 import collections
-import itertools
-from collections import defaultdict
-from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -22,7 +19,7 @@ from respy.pre_processing.specification_helpers import (
 from respy.pre_processing.specification_helpers import lagged_choices_probs_template
 from respy.pre_processing.specification_helpers import observable_coeffs_template
 from respy.pre_processing.specification_helpers import observable_prob_template
-from respy.shared import generate_column_labels_estimation
+from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import normalize_probabilities
 from respy.simulate import get_simulate_func
 
@@ -99,8 +96,6 @@ def generate_random_model(
         Number of unobserved types.
     n_type_covariates :
         Number of covariates to calculate type probabilities.
-
-
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
 
@@ -119,7 +114,7 @@ def generate_random_model(
         n_type_covariates = np.random.randint(2, 4)
 
     params = csv_template(
-        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
+        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False,
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
@@ -180,7 +175,12 @@ def generate_random_model(
         ]
         params = pd.concat(to_concat, axis=0, sort=False)
 
-        indices = params.loc["observables"].index.get_level_values("name")
+        indices = (
+            params.index.get_level_values("category")
+            .str.extract(r"observable_([a-z0-9_]+)", expand=False)
+            .dropna()
+            .unique()
+        )
         observable_covs = {x: "{} == {}".format(*x.rsplit("_", 1)) for x in indices}
     else:
         observable_covs = {}
@@ -189,16 +189,13 @@ def generate_random_model(
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
         "simulation_seed": np.random.randint(1, 1_000),
         "n_periods": np.random.randint(1, bound_constr["max_periods"]),
+        "solution_draws": np.random.randint(1, bound_constr["max_draws"]),
+        "solution_seed": np.random.randint(1, 10_000),
+        "estimation_draws": np.random.randint(1, bound_constr["max_draws"]),
+        "estimation_seed": np.random.randint(1, 10_000),
+        "estimation_tau": np.random.uniform(100, 500),
+        "interpolation_points": -1,
     }
-
-    options["solution_draws"] = np.random.randint(1, bound_constr["max_draws"])
-    options["solution_seed"] = np.random.randint(1, 10_000)
-
-    options["estimation_draws"] = np.random.randint(1, bound_constr["max_draws"])
-    options["estimation_seed"] = np.random.randint(1, 10_000)
-    options["estimation_tau"] = np.random.uniform(100, 500)
-
-    options["interpolation_points"] = -1
 
     options = {
         **DEFAULT_OPTIONS,
@@ -251,10 +248,13 @@ def simulate_truncated_data(params, options, is_missings=True):
         # Truncate the histories of agents. This mimics the effect of attrition.
         # Histories can be truncated after the first period or not at all. So, all
         # individuals have at least one observation.
-        period_of_truncation = df.groupby("Identifier").Period.transform(
-            lambda x: np.random.choice(x.max() + 1) + 1
+        period_of_truncation = (  # noqa: F841
+            df.reset_index()
+            .groupby("Identifier")
+            .Period.transform(lambda x: np.random.choice(x.max() + 1) + 1)
+            .to_numpy()
         )
-        data_subset = df.loc[df.Period.lt(period_of_truncation)].copy()
+        data_subset = df.query("Period < @period_of_truncation").copy()
 
         # Add some missings to wage data.
         is_working = data_subset["Choice"].isin(optim_paras["choices_w_wage"])
@@ -271,8 +271,8 @@ def simulate_truncated_data(params, options, is_missings=True):
         data_subset = df
 
     # We can restrict the information to observed entities only.
-    labels, _ = generate_column_labels_estimation(optim_paras)
-    data_subset = data_subset[labels]
+    col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
+    data_subset = data_subset[list(col_dtype)[2:]]
 
     return data_subset
 
