@@ -185,11 +185,11 @@ def calculate_emax_value_functions(
     """
     n_draws, n_choices = draws.shape
 
-    emax_value_functions[0] = 0.0
+    emax_value_functions[0] = 0
 
     for i in range(n_draws):
 
-        max_value_functions = 0.0
+        max_value_functions = 0
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(

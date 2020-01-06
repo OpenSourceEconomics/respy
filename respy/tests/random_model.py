@@ -96,8 +96,6 @@ def generate_random_model(
         Number of unobserved types.
     n_type_covariates :
         Number of covariates to calculate type probabilities.
-
-
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
 
@@ -116,7 +114,7 @@ def generate_random_model(
         n_type_covariates = np.random.randint(2, 4)
 
     params = csv_template(
-        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
+        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False,
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 

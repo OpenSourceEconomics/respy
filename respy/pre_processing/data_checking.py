@@ -58,7 +58,7 @@ def check_estimation_data(df, optim_paras):
 
     # Observable characteristics.
     for observable in optim_paras["observables"]:
-        assert df[observable.title()].max() + 1 == len(
+        assert df[observable.title()].nunique() == len(
             optim_paras["observables"][observable]
         )
 
@@ -112,7 +112,7 @@ def check_simulated_data(optim_paras, df):
 
     # 9. Types.
     if optim_paras["n_types"] >= 2:
-        assert df.Type.max() <= n_types
+        assert df.Type.max() <= n_types - 1
         assert df.Type.notna().all()
         assert df.groupby("Identifier").Type.nunique().eq(1).all()
 
