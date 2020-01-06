@@ -481,8 +481,6 @@ def _create_simulated_data(data, df, is_n_step_ahead, n_sim_p, optim_paras, opti
     )
 
     simulated_df = _convert_codes_to_original_labels(simulated_df, optim_paras)
-    if "Type" in simulated_df:
-        simulated_df["Type"] = simulated_df["Type"] + 1
 
     return simulated_df
 

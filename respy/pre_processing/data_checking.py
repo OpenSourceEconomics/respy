@@ -112,7 +112,7 @@ def check_simulated_data(optim_paras, df):
 
     # 9. Types.
     if optim_paras["n_types"] >= 2:
-        assert df.Type.max() <= n_types
+        assert df.Type.max() <= n_types - 1
         assert df.Type.notna().all()
         assert df.groupby("Identifier").Type.nunique().eq(1).all()
 
