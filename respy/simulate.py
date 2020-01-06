@@ -282,9 +282,8 @@ def _simulate_single_period(df, state_space, optim_paras):
     n_wages = len(optim_paras["choices_w_wage"])
 
     # Get indices which connect states in the state space and simulated agents.
-    core_columns = create_core_state_space_columns(optim_paras)
-    core_columns += ["type"] if optim_paras["n_types"] >= 2 else []
-    indices = state_space.indexer[period][tuple(df[col] for col in core_columns)]
+    columns = create_state_space_columns(optim_paras)
+    indices = state_space.indexer[period][tuple(df[col] for col in columns)]
 
     # Get continuation values. Indices work on the complete state space whereas
     # continuation values are period-specific. Make them period-specific.
