@@ -4,9 +4,39 @@ import pandas as pd
 import pytest
 
 import respy as rp
+from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
+from respy.pre_processing.data_checking import check_simulated_data
+from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import generate_obs_labels
 from respy.tests.random_model import generate_random_model
+from respy.tests.utils import process_model_or_seed
+
+
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
+def test_simulated_data(model_or_seed):
+    """Test simulated data with ``check_simulated_data``.
+
+    Note that, ``check_estimation_data`` is also tested in this function as these tests
+    focus on a subset of the data.
+
+    """
+    params, options = process_model_or_seed(model_or_seed)
+
+    options["n_periods"] = 5
+
+    simulate = rp.get_simulate_func(params, options)
+    df = simulate(params)
+
+    optim_paras, _ = process_params_and_options(params, options)
+    check_simulated_data(optim_paras, df)
+
+
+def test_one_step_ahead_simulation():
+    params, options, df = rp.get_example_model("kw_97_basic")
+    options["n_periods"] = 11
+    simulate = rp.get_simulate_func(params, options, "one_step_ahead", df)
+    df = simulate(params)
 
 
 @pytest.mark.parametrize("seed", range(20))

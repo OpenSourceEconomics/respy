@@ -169,8 +169,8 @@ def simulate(
 
     # Initialize shock columns to later store shocks in ``current_df``.
     shock_cols = [f"shock_reward_{choice}" for choice in optim_paras["choices"]]
-    meas_error_cols = [f"meas_error_wage_{choice}" for choice in optim_paras["choices"]]
-    df = df.reindex(columns=df.columns.tolist() + shock_cols + meas_error_cols)
+    meas_err_cols = [f"meas_error_wage_{choice}" for choice in optim_paras["choices"]]
+    df = df.reindex(columns=df.columns.tolist() + shock_cols + meas_err_cols)
 
     # Start simulating.
     data = []
@@ -183,11 +183,8 @@ def simulate(
 
         # Attach shocks to DataFrame which makes splitting easier.
         n_individuals = current_df.shape[0]
-
         current_df[shock_cols] = base_draws_sim_transformed[period][:n_individuals]
-        current_df[meas_error_cols] = base_draws_wage_transformed[period][
-            :n_individuals
-        ]
+        current_df[meas_err_cols] = base_draws_wage_transformed[period][:n_individuals]
 
         current_df_extended = _simulate_single_period(
             current_df, state_space, optim_paras
@@ -229,35 +226,44 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
         A pandas DataFrame with no missings at all.
 
     """
-    index = df.index
+    # Sample characteristics only for the first period.
+    fp = df.query("period == 0").copy()
+    index = fp.index
 
     for observable in optim_paras["observables"]:
         level_dict = optim_paras["observables"][observable]
-        sampled_char = _sample_characteristic(df, options, level_dict, use_keys=False)
-        df[observable] = df[observable].fillna(
+        sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=False)
+        fp[observable] = fp[observable].fillna(
             pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
     for choice in optim_paras["choices_w_exp"]:
         level_dict = optim_paras["choices"][choice]["start"]
-        sampled_char = _sample_characteristic(df, options, level_dict, use_keys=True)
-        df[f"exp_{choice}"] = df[f"exp_{choice}"].fillna(
+        sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=True)
+        fp[f"exp_{choice}"] = fp[f"exp_{choice}"].fillna(
             pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
     for lag in reversed(range(1, optim_paras["n_lagged_choices"] + 1)):
         level_dict = optim_paras[f"lagged_choice_{lag}"]
-        sampled_char = _sample_characteristic(df, options, level_dict, use_keys=False)
-        df[f"lagged_choice_{lag}"] = df[f"lagged_choice_{lag}"].fillna(
+        sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=False)
+        fp[f"lagged_choice_{lag}"] = fp[f"lagged_choice_{lag}"].fillna(
             pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
+    # Fill NaNs in the first period with the sampled values.
+    df = df.combine_first(fp)
+
+    # Sample types and map them to individuals for all periods.
     if optim_paras["n_types"] >= 2:
         level_dict = optim_paras["type_prob"]
-        types = _sample_characteristic(df, options, level_dict, use_keys=False)
-        df["type"] = df["type"].fillna(
-            pd.Series(data=types, index=index), downcast="infer"
+        types = _sample_characteristic(fp, options, level_dict, use_keys=False)
+        df["type"] = df.index.get_level_values("identifier").map(
+            pd.Series(data=types, index=index.get_level_values("identifier"))
         )
+
+    # HOTFIX
+    df = df.astype(int)
 
     return df
 
