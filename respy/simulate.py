@@ -150,6 +150,8 @@ def simulate(
         DataFrame of simulated individuals.
 
     """
+    df = df.copy()
+
     optim_paras, options = process_params_and_options(params, options)
 
     # Solve the model.
@@ -247,9 +249,12 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
             pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
-    level_dict = optim_paras["type_prob"]
-    types = _sample_characteristic(df, options, level_dict, use_keys=False)
-    df["type"] = df["type"].fillna(pd.Series(data=types, index=index), downcast="infer")
+    if optim_paras["n_types"] >= 2:
+        level_dict = optim_paras["type_prob"]
+        types = _sample_characteristic(df, options, level_dict, use_keys=False)
+        df["type"] = df["type"].fillna(
+            pd.Series(data=types, index=index), downcast="infer"
+        )
 
     return df
 
@@ -592,12 +597,15 @@ def _apply_law_of_motion(df, choices, optim_paras):
 
 def _create_state_space_columns(optim_paras):
     """Create names of state space dimensions excluding the period and identifier."""
-    return (
+    columns = (
         [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
         + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
         + list(optim_paras["observables"])
-        + ["type"]
     )
+    if optim_paras["n_types"] >= 2:
+        columns += ["type"]
+
+    return columns
 
 
 def _harmonize_simulation_arguments(method, df, n_sim_p, options):
@@ -644,7 +652,7 @@ def _process_input_df_for_simulation(df, method, options, optim_paras):
     df = df.reindex(columns=state_space_columns)
 
     first_period = df.query("period == 0")
-    has_nans = np.any(first_period.drop(columns="type").isna())
+    has_nans = np.any(first_period.drop(columns="type", errors="ignore").isna())
     if has_nans and method != "n_step_ahead_with_sampling":
         warnings.warn(
             "The data contains 'NaNs' in the first period which are replaced with "
@@ -655,7 +663,7 @@ def _process_input_df_for_simulation(df, method, options, optim_paras):
         pass
 
     other_periods = df.query("period != 0")
-    has_nans = np.any(other_periods.drop(columns="type").isna())
+    has_nans = np.any(other_periods.drop(columns="type", errors="ignore").isna())
     if has_nans:
         raise ValueError("The data must not contain NaNs beyond the first period.")
 

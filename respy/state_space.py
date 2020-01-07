@@ -435,13 +435,14 @@ def _add_observables_to_state_space(df, optim_paras):
 
 
 def _add_types_to_state_space(df, n_types):
-    container = []
-    for i in range(n_types):
-        df_ = df.copy()
-        df_["type"] = i
-        container.append(df_)
+    if n_types >= 2:
+        container = []
+        for i in range(n_types):
+            df_ = df.copy()
+            df_["type"] = i
+            container.append(df_)
 
-    df = pd.concat(container, axis="rows", sort=False)
+        df = pd.concat(container, axis="rows", sort=False)
 
     return df
 
@@ -475,8 +476,10 @@ def _create_state_space_indexer(df, optim_paras):
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
             + (n_choices,) * optim_paras["n_lagged_choices"]
             + tuple(len(x) for x in optim_paras["observables"].values())
-            + (optim_paras["n_types"],)
         )
+        if optim_paras["n_types"] >= 2:
+            shape += (optim_paras["n_types"],)
+
         sub_indexer = np.full(shape, -1, dtype=np.int32)
 
         sub_df = df.query("period == @period")
@@ -489,8 +492,9 @@ def _create_state_space_indexer(df, optim_paras):
                 for i in range(1, optim_paras["n_lagged_choices"] + 1)
             )
             + tuple(sub_df[observable] for observable in optim_paras["observables"])
-            + (sub_df.type,)
         )
+        if optim_paras["n_types"] >= 2:
+            indices += (sub_df["type"],)
 
         sub_indexer[indices] = np.arange(count_states, count_states + n_states)
         indexer.append(sub_indexer)
@@ -534,12 +538,6 @@ def _create_reward_components(types, covariates, optim_paras):
             for n in nonpec_labels
         ]
     )
-
-    n_wages = len(optim_paras["choices_w_wage"])
-    type_deviations = optim_paras["type_shift"][types]
-
-    log_wages = log_wages + type_deviations[:, :n_wages]
-    nonpec[:, n_wages:] = nonpec[:, n_wages:] + type_deviations[:, n_wages:]
 
     wages = np.exp(np.clip(log_wages, MIN_LOG_FLOAT, MAX_LOG_FLOAT))
 

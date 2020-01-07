@@ -8,12 +8,9 @@ Getting Started
    introduction
    recommended-reading
    installation
-   tutorial.ipynb
+   tutorial-robinson-crusoe.ipynb
+   tutorial-simulation.ipynb
+   tutorial-initial-conditions
    tutorial-lagged-choices.ipynb
    tutorial-model-with-observables.ipynb
-   tutorial-simulation.ipynb
-   tutorial-robinson-crusoe.ipynb
-   tutorial-msm.ipynb
-   tutorial-initial-conditions
-   keane-and-wolpin-1994.ipynb
-   keane-and-wolpin-1997.ipynb
+   tutorial-finite-mixture.ipynb

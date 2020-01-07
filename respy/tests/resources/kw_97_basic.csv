@@ -1,25 +1,37 @@
 category,name,value,comment
 delta,delta,0.787,discount factor
-wage_white_collar,constant,8.8043,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_white_collar,constant,8.8043,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
 wage_white_collar,exp_school,0.0938,linear return to an additional year of schooling (wage)
 wage_white_collar,exp_white_collar,0.1170,"return to experience, same sector, linear (wage)"
 wage_white_collar,exp_white_collar_square,-0.0461,"return to experience, same sector, quadratic (divided by 100) (wage)"
 wage_white_collar,exp_blue_collar,0.0748,"return to experience, other civilian sector, linear (wage)"
 wage_white_collar,exp_military,0.0077,"return to experience, military sector, linear (wage)"
-wage_blue_collar,constant,8.9156,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_white_collar,type_1,-0.0668,deviation for type 1 from type 0 in a
+wage_white_collar,type_2,-0.4221,deviation for type 2 from type 0 in a
+wage_white_collar,type_3,-0.4998,deviation for type 3 from type 0 in a
+wage_blue_collar,constant,8.9156,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
 wage_blue_collar,exp_school,0.0189,linear return to an additional year of schooling (wage)
 wage_blue_collar,exp_white_collar,0.0674,"return to experience, other civilian sector, linear (wage)"
 wage_blue_collar,exp_blue_collar,0.1424,"return to experience, same sector, linear (wage)"
 wage_blue_collar,exp_blue_collar_square,-0.1774,"return to experience, same sector, quadratic (divided by 100) (wage)"
 wage_blue_collar,exp_military,0.1021,"return to experience, military sector, linear (wage)"
-wage_military,constant,8.4704,log of rental price if the base skill endowment of type 1 is normalized to 0 (wage)
+wage_blue_collar,type_1,0.2996,deviation for type 1 from type 0 in b
+wage_blue_collar,type_2,-0.1223,deviation for type 2 from type 0 in b
+wage_blue_collar,type_3,0.0756,deviation for type 3 from type 0 in b
+wage_military,constant,8.4704,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
 wage_military,exp_school,0.0443,linear return to an additional year of schooling (wage)
 wage_military,exp_military,0.3391,"return to experience, same sector, linear (wage)"
 wage_military,exp_military_square,-2.99,"return to experience, same sector, quadratic (divided by 100) (wage)"
-nonpec_school,constant,43948,consumption value of school attendance for type 1
+nonpec_school,constant,43948,consumption value of school attendance for type 0
 nonpec_school,hs_graduate,-2983,consumption value of college
 nonpec_school,co_graduate,-26357,consumption value of graduate school
-nonpec_home,constant,16887,mean value of non-market alternative for type 1
+nonpec_school,type_1,-26352,deviation for type 1 from type 0 in edu
+nonpec_school,type_2,-30541,deviation for type 2 from type 0 in edu
+nonpec_school,type_3,226,deviation for type 3 from type 0 in edu
+nonpec_home,constant,16887,mean value of non-market alternative for type 0
+nonpec_home,type_1,215,deviation for type 1 from type 0 in home
+nonpec_home,type_2,-16966,deviation for type 2 from type 0 in home
+nonpec_home,type_3,-13128,deviation for type 3 from type 0 in home
 shocks_sdcorr,sd_white_collar,0.3301,standard deviation of the shock in occupation a
 shocks_sdcorr,sd_blue_collar,0.3329,standard deviation of the shock in occupation b
 shocks_sdcorr,sd_military,0.3308,standard deviation of the shock in occupation military
@@ -38,24 +50,12 @@ shocks_sdcorr,corr_home_school,0,correlation between the shocks in home sector a
 meas_error,sd_white_collar,0.4133,SD of the measurement error in wages in occupation a
 meas_error,sd_blue_collar,0.3089,SD of the measurement error in wages occupation b
 meas_error,sd_military,0.1259,SD of the measurement error in wages occupation mil
-type_shift,type_2_in_white_collar,-0.0668,deviation for type 2 from type 1 in a
-type_shift,type_2_in_blue_collar,0.2996,deviation for type 2 from type 1 in b
-type_shift,type_2_in_school,-26352,deviation for type 2 from type 1 in edu
-type_shift,type_2_in_home,215,deviation for type 2 from type 1 in home
-type_shift,type_3_in_white_collar,-0.4221,deviation for type 3 from type 1 in a
-type_shift,type_3_in_blue_collar,-0.1223,deviation for type 3 from type 1 in b
-type_shift,type_3_in_school,-30541,deviation for type 3 from type 1 in edu
-type_shift,type_3_in_home,-16966,deviation for type 3 from type 1 in home
-type_shift,type_4_in_white_collar,-0.4998,deviation for type 4 from type 1 in a
-type_shift,type_4_in_blue_collar,0.0756,deviation for type 4 from type 1 in b
-type_shift,type_4_in_school,226,deviation for type 4 from type 1 in edu
-type_shift,type_4_in_home,-13128,deviation for type 4 from type 1 in home
-type_2,up_to_nine_years_school,0.313614,effect of up to nine years of schooling on probability of being type 2
-type_2,at_least_ten_years_school,2.43357,effect of at least ten years of schooling on probability of being type 2
-type_3,up_to_nine_years_school,1.05225,effect of up to nine years of schooling on probability of being type 3
-type_3,at_least_ten_years_school,2.53624,effect of at least ten years of schooling on probability of being type 3
-type_4,up_to_nine_years_school,-0.736924,effect of up to nine years of schooling on probability of being type 4
-type_4,at_least_ten_years_school,-0.15978,effect of at least ten years of schooling on probability of being type 4
+type_1,up_to_nine_years_school,0.313614,effect of up to nine years of schooling on probability of being type 1
+type_1,at_least_ten_years_school,2.43357,effect of at least ten years of schooling on probability of being type 1
+type_2,up_to_nine_years_school,1.05225,effect of up to nine years of schooling on probability of being type 2
+type_2,at_least_ten_years_school,2.53624,effect of at least ten years of schooling on probability of being type 2
+type_3,up_to_nine_years_school,-0.736924,effect of up to nine years of schooling on probability of being type 3
+type_3,at_least_ten_years_school,-0.15978,effect of at least ten years of schooling on probability of being type 3
 initial_exp_school_7,probability,0.0095,Probability that the initial level of school is 7
 initial_exp_school_8,probability,0.0422,Probability that the initial level of school is 8
 initial_exp_school_9,probability,0.2018,Probability that the initial level of school is 9
