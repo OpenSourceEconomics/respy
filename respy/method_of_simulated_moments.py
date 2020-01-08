@@ -48,7 +48,7 @@ def get_msm_func(
         containing functions that correspond to the moments in
         empirical_moments.
     replace_nans: callable or list
-        Functions(s) specifiying how to handle missings in simulated_moments.
+        Functions(s) specifying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
     empirical_moments: pandas.DataFrame or pandas.Series or dict or list
         Contains the empirical moments calculated for the observed data. Moments
@@ -66,6 +66,9 @@ def get_msm_func(
     msm_func: callable
         Msm function where all arguments except the parameter vector are set.
     """
+    params = params.copy()
+    options = copy.deepcopy(options)
+    empirical_moments = copy.deepcopy(empirical_moments)
 
     # Define simulator.
     simulator = get_simulate_func(params, options)
@@ -127,16 +130,20 @@ def msm(
     ---------
     Scalar or moment error vector depending on value of return_scalar.
     """
+    params = params.copy()
+    empirical_moments = copy.deepcopy(empirical_moments)
 
     # Compute simulated moments.
     df_sim = simulator(params)
     simulated_moments = _calculate_moments(df_sim, calc_moments)
 
-    # Reindex simulated inputs.
-    simulated_moments = _reindex_simulated_moments(empirical_moments, simulated_moments)
+    # Reindex simulated moments.
+    simulated_moments = _reindex_simulated_moments(
+        empirical_moments, simulated_moments)
 
-    # Replace Missings values in  simulated moments.
-    simulated_moments = _replace_missing_values(simulated_moments, replace_nans)
+    # Replace missing values in simulated moments.
+    simulated_moments = _replace_missing_values(
+        simulated_moments, replace_nans)
 
     # Flatten moments.
     flat_empirical_moments = _flatten_index(empirical_moments)
@@ -152,7 +159,6 @@ def msm(
 
     else:
         return moment_errors.T @ weighting_matrix @ moment_errors
-
 
 
 def get_diag_weighting_matrix(empirical_moments, weights=None):
@@ -178,6 +184,7 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
         Array contains a diagonal weighting matrix.
     """
     # Harmonize empirical moments.
+    empirical_moments = copy.deepcopy(empirical_moments)
     empirical_moments = _harmonize_input(empirical_moments)
 
     # Use identity matrix if no weights are specified.
@@ -188,18 +195,19 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
 
     # Harmonize input weights.
     else:
+        weights = copy.deepcopy(weights)
         weights = _harmonize_input(weights)
 
     # Flatten indexes.
     flat_weights = _flatten_index(weights)
     flat_empirical_moments = _flatten_index(empirical_moments)
 
-    # Sort index in weights accoding to emprical moments.
-    flat_weights = flat_empirical_moments.join(flat_weights, lsuffix="_emp").iloc[:, 1:]
+    # Sort index in weights according to empirical moments.
+    flat_weights = flat_empirical_moments.join(
+        flat_weights, lsuffix="_emp").iloc[:, 1:]
 
     # Return diagonal weighting matrix.
     return np.diag(flat_weights.iloc[:, 0])
-
 
 
 def get_moment_vectors(params, options, calc_moments, replace_nans, empirical_moments):
@@ -209,7 +217,7 @@ def get_moment_vectors(params, options, calc_moments, replace_nans, empirical_mo
     Args
     -------
     params : pandas.DataFrame or pandas.Series
-        Contains parameters.
+        Contains model parameters.
     options : dict
         Dictionary containing model options.
     calc_moments: callable or list
@@ -219,7 +227,7 @@ def get_moment_vectors(params, options, calc_moments, replace_nans, empirical_mo
         containing functions that correspond to the moments in
         empirical_moments.
     replace_nans: callable or list
-        Functions(s) specifiying how to handle missings in simulated_moments.
+        Functions(s) specifying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
     empirical_moments : pandas.DataFrame or pandas.Series or dict or list
         containing pandas.DataFrame or pandas.Series.
@@ -236,9 +244,7 @@ def get_moment_vectors(params, options, calc_moments, replace_nans, empirical_mo
 
     """
     params = params.copy()
-    options = options.copy()
-
-    # Harmonize inputs
+    # Harmonize inputs.
     empirical_moments = _harmonize_input(empirical_moments)
     calc_moments = _harmonize_input(calc_moments)
     replace_nans = _harmonize_input(replace_nans)
@@ -251,26 +257,22 @@ def get_moment_vectors(params, options, calc_moments, replace_nans, empirical_mo
     # Harmonize simulated_moments.
     simulated_moments = _harmonize_input(simulated_moments)
 
-    # Reindex simulated inputs.
-    simulated_moments = _reindex_simulated_moments(empirical_moments, simulated_moments)
+    # Reindex simulated moments.
+    simulated_moments = _reindex_simulated_moments(
+        empirical_moments, simulated_moments)
 
-    # Replace Missings values in  simulated moments.
-    simulated_moments = _replace_missing_values(simulated_moments, replace_nans)
+    # Replace missing values in  simulated moments.
+    simulated_moments = _replace_missing_values(
+        simulated_moments, replace_nans)
 
     # Flatten moments.
     flat_empirical_moments = _flatten_index(empirical_moments)
     flat_simulated_moments = _flatten_index(simulated_moments)
 
-    # Sort index of flat_simulated_moments according to index of
-    # flat_empirical_moments.
-    #flat_simulated_moments = flat_empirical_moments.join(
-    #   flat_simulated_moments, lsuffix="_emp"
-    #).iloc[:, 1:]
-
     return flat_empirical_moments, flat_simulated_moments
 
 
-def _harmonize_input(arg):
+def _harmonize_input(data):
     """ Harmonizes different types of inputs by turning all inputs into lists.
 
     - pandas.DataFrames/Series and callable functions will turn into list
@@ -281,15 +283,15 @@ def _harmonize_input(arg):
     """
     # Convert single DataFrames, Series or function into list containing one
     # item.
-    if isinstance(arg, (pd.DataFrame, pd.Series)) or callable(arg):
-        arg = [arg]
+    if isinstance(data, (pd.DataFrame, pd.Series)) or callable(data):
+        data = [data]
 
     # Sort dictionary accoding to keys and turn into list.
-    elif isinstance(arg, dict):
-        arg = [arg[key] for key in sorted(arg.keys())]
-        
+    elif isinstance(data, dict):
+        data = [data[key] for key in sorted(data.keys())]
+
     # Leave lists as is.
-    elif isinstance(arg, list):
+    elif isinstance(data, list):
         pass
     else:
         raise TypeError(
@@ -297,14 +299,13 @@ def _harmonize_input(arg):
             " functions, Series and DataFrames as inputs."
         )
 
-    return arg
+    return data
 
 
 def _calculate_moments(data, calc_moments):
     """ Uses functions specified in calc_moments to calculate moments for the
     data.
     """
-    data = data.copy()
     moments = []
     for func in calc_moments:
         moments.append(func(data))
@@ -313,18 +314,16 @@ def _calculate_moments(data, calc_moments):
 
 
 def _reindex_simulated_moments(empirical_moments, simulated_moments):
-    """ Reindexes data in simulated_moments to match index of
+    """ Reindex data in simulated_moments to match index of
     empirical_moments.
     """
     simulated_moments_reindexed = []
 
     for emp_mom, sim_mom in zip(empirical_moments, simulated_moments):
-        col = emp_mom.columns
-        #idx = emp_mom.index
-        sim = sim_mom.reindex(columns=col)
-        #sim = sim_mom.reindex(index=idx, columns=col)
 
-        simulated_moments_reindexed.append(sim)
+        sim_mom = sim_mom.reindex(index=emp_mom.index,
+                                  columns=emp_mom.columns)
+        simulated_moments_reindexed.append(sim_mom)
 
     return simulated_moments_reindexed
 
@@ -344,9 +343,11 @@ def _replace_missing_values(simulated_moments, replace_nans):
 
 def _flatten_index(data):
     """ Function flattens index of DataFrames/Series contained in data and
-        concatinates all flattend elements in the list to one long DataFrame.
+        concatenates all flattened elements in the list to one long DataFrame.
     """
+    data = copy.deepcopy(data)
     data_flat = []
+
     for df in data:
         # Unstack df to add columns to index and flatten indexes for the
         # new df.
@@ -362,5 +363,3 @@ def _flatten_index(data):
         data_flat.append(df_flat)
 
     return pd.concat(data_flat)
-
-
