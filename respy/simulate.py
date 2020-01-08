@@ -253,6 +253,10 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
     # Update data in the first period with sampled characteristics.
     df = df.combine_first(fp)
 
+    # Types are invariant and we have to fill the DataFrame for one-step-ahead.
+    if optim_paras["n_types"] >= 2:
+        df["type"] = df["type"].fillna(method="ffill")
+
     return df
 
 
