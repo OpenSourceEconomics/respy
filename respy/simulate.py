@@ -156,7 +156,9 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
-    is_n_step_ahead = np.any(df.isna())
+
+    core_columns = create_core_state_space_columns(optim_paras)
+    is_n_step_ahead = np.any(df[core_columns].isna())
 
     # Store the draws inside the DataFrame which makes splitting a lot easier.
     df = df.sort_index(level=["period", "identifier"])
@@ -250,12 +252,6 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 
     # Update data in the first period with sampled characteristics.
     df = df.combine_first(fp)
-
-    # Here we assume that observables are constant. We will lift this restriction when
-    # we implement exogenous processes.
-    dense_cols = create_dense_state_space_columns(optim_paras)
-    if dense_cols:
-        df[dense_cols] = df[dense_cols].fillna(method="ffill", downcast="infer")
 
     return df
 
