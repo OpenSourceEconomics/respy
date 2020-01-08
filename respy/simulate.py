@@ -65,11 +65,7 @@ def get_simulate_func(
 
     state_space = StateSpace(optim_paras, options)
 
-    shape = (
-        n_simulation_periods,
-        options["simulation_agents"],
-        len(optim_paras["choices"]),
-    )
+    shape = (df.shape[0], len(optim_paras["choices"]))
     base_draws_sim = create_base_draws(
         shape, next(options["simulation_seed_startup"]), "random"
     )
@@ -162,15 +158,12 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
     is_n_step_ahead = np.any(df.isna())
 
-    # Initialize shock columns to later store shocks in ``current_df``.
-    for period in range(n_simulation_periods):
-        for i, choice in enumerate(optim_paras["choices"]):
-            df.loc[
-                df.eval("period == @period"), f"shock_reward_{choice}"
-            ] = base_draws_sim_transformed[period][:, i]
-            df.loc[
-                df.eval("period == @period"), f"meas_error_wage_{choice}"
-            ] = base_draws_wage_transformed[period][:, i]
+    # Store the draws inside the DataFrame which makes splitting a lot easier.
+    df = df.sort_index(level=["period", "identifier"])
+    for i, choice in enumerate(optim_paras["choices"]):
+        df[f"shock_reward_{choice}"] = base_draws_sim_transformed[:, i]
+        df[f"meas_error_wage_{choice}"] = base_draws_wage_transformed[:, i]
+    df = df.sort_index(level=["identifier", "period"])
 
     # Start simulating.
     for period in range(n_simulation_periods):

@@ -107,8 +107,8 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
            University Press.*
 
     """
-    n_choices = shape[2]
-    n_points = shape[0] * shape[1]
+    n_choices = shape[-1]
+    n_points = np.prod(shape[:-1])
 
     np.random.seed(seed)
 
@@ -151,8 +151,8 @@ def transform_base_draws_with_cholesky_factor(draws, shocks_cholesky, n_wages):
 
     """
     draws_transformed = draws.dot(shocks_cholesky.T)
-    draws_transformed[:, :, :n_wages] = np.exp(
-        np.clip(draws_transformed[:, :, :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
+    draws_transformed[..., :n_wages] = np.exp(
+        np.clip(draws_transformed[..., :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
     )
 
     return draws_transformed
