@@ -148,37 +148,37 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
     # Prepare simulation.
     n_simulation_periods = int(df.index.get_level_values("period").max() + 1)
 
-    # Prepare shocks and add them to the DataFrame.
+    # Prepare shocks.
     n_wages = len(optim_paras["choices_w_wage"])
     base_draws_sim_transformed = transform_base_draws_with_cholesky_factor(
         base_draws_sim, optim_paras["shocks_cholesky"], n_wages
     )
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
-    df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
-
-    core_columns = create_core_state_space_columns(optim_paras)
-    is_n_step_ahead = np.any(df[core_columns].isna())
-
-    # Store the draws inside the DataFrame which makes splitting a lot easier.
+    # Store the shocks inside the DataFrame. The sorting ensures that regression tests
+    # still work.
     df = df.sort_index(level=["period", "identifier"])
     for i, choice in enumerate(optim_paras["choices"]):
         df[f"shock_reward_{choice}"] = base_draws_sim_transformed[:, i]
         df[f"meas_error_wage_{choice}"] = base_draws_wage_transformed[:, i]
     df = df.sort_index(level=["identifier", "period"])
 
-    # Start simulating.
+    df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
+
+    core_columns = create_core_state_space_columns(optim_paras)
+    is_n_step_ahead = np.any(df[core_columns].isna())
+
     for period in range(n_simulation_periods):
 
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
-        # n-step-ahead simulation, ``df`` always contains only data of the current
-        # period.
+        # n-step-ahead simulation, `df` always contains only data of the current period.
         current_df = df.query("period == @period").copy()
 
         current_df_extended = _simulate_single_period(
             current_df, state_space, optim_paras
         )
 
+        # Add all columns with simulated information to the complete DataFrame.
         df = df.reindex(columns=current_df_extended.columns) if period == 0 else df
         df = df.combine_first(current_df_extended)
 
@@ -186,7 +186,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
             next_df = _apply_law_of_motion(current_df_extended, optim_paras)
             df = df.combine_first(next_df)
 
-    simulated_data = _create_simulated_data(df, optim_paras)
+    simulated_data = _process_simulation_output(df, optim_paras)
 
     return simulated_data
 
@@ -289,8 +289,8 @@ def _simulate_single_period(df, state_space, optim_paras):
     cont_indices = indices - state_space.slices_by_periods[period].start
 
     # Select relevant subset of random draws.
-    draws_shock = df.filter(like="shock_reward_").to_numpy()
-    draws_wage = df.filter(like="meas_error_wage_").to_numpy()
+    draws_shock = df[[f"shock_reward_{c}" for c in optim_paras["choices"]]].to_numpy()
+    draws_wage = df[[f"meas_error_wage_{c}" for c in optim_paras["choices"]]].to_numpy()
 
     # Get total values and ex post rewards.
     value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
@@ -396,15 +396,11 @@ def _convert_codes_to_original_labels(df, optim_paras):
     """Convert codes in choice-related and observed variables to labels."""
     code_to_choice = dict(enumerate(optim_paras["choices"]))
 
-    df["Choice"] = (
-        df["Choice"]
-        .astype("category")
-        .cat.set_categories(code_to_choice)
-        .cat.rename_categories(code_to_choice)
-    )
-    for i in range(1, optim_paras["n_lagged_choices"] + 1):
-        df[f"Lagged_Choice_{i}"] = (
-            df[f"Lagged_Choice_{i}"]
+    for choice_var in ["Choice"] + [
+        f"Lagged_Choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)
+    ]:
+        df[choice_var] = (
+            df[choice_var]
             .astype("category")
             .cat.set_categories(code_to_choice)
             .cat.rename_categories(code_to_choice)
@@ -417,7 +413,7 @@ def _convert_codes_to_original_labels(df, optim_paras):
     return df
 
 
-def _create_simulated_data(df, optim_paras):
+def _process_simulation_output(df, optim_paras):
     """Create simulated data.
 
     This function takes an array of simulated outcomes for each period and stacks them
@@ -425,8 +421,8 @@ def _create_simulated_data(df, optim_paras):
 
     Parameters
     ----------
-    data : list
-        List of period-specific simulated outcomes.
+    df : pandas.DataFrame
+        DataFrame which contains the simulated data with internal codes and labels.
     optim_paras : dict
 
     Returns
@@ -440,6 +436,7 @@ def _create_simulated_data(df, optim_paras):
     )
     df = _convert_codes_to_original_labels(df, optim_paras)
 
+    # We use the downcast to convert some variables to integers.
     df = df.apply(downcast_to_smallest_dtype)
 
     return df
@@ -452,7 +449,7 @@ def _random_choice(choices, probabilities, decimals=5):
 
     The function is taken from this `StackOverflow post
     <https://stackoverflow.com/questions/40474436>`_ as a workaround for
-    :func:`np.random.choice` as it can only handle one-dimensional probabilities.
+    :func:`numpy.random.choice` as it can only handle one-dimensional probabilities.
 
     Example
     -------
