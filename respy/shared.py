@@ -195,8 +195,11 @@ def clip(x, minimum=None, maximum=None):
     return out
 
 
-def downcast_to_smallest_dtype(series):
+def downcast_to_smallest_dtype(series, downcast_options=None):
     """Downcast the dtype of a :class:`pandas.Series` to the lowest possible dtype.
+
+    By default, variables are converted to signed or unsigned integers. Use ``"float"``
+    to cast variables from ``float64`` to ``float32``.
 
     Be aware that NumPy integers silently overflow which is why conversion to low dtypes
     should be done after calculations. For example, using :class:`np.uint8` for an array
@@ -207,7 +210,8 @@ def downcast_to_smallest_dtype(series):
 
     """
     # We can skip integer as "unsigned" and "signed" will find the same dtypes.
-    _downcast_options = ["unsigned", "signed", "float"]
+    if downcast_options is None:
+        downcast_options = ["unsigned", "signed"]
 
     if series.dtype.name == "category":
         out = series
@@ -218,8 +222,12 @@ def downcast_to_smallest_dtype(series):
     else:
         min_dtype = np.dtype("float64")
 
-        for dc_opt in _downcast_options:
-            dtype = pd.to_numeric(series, downcast=dc_opt).dtype
+        for dc_opt in downcast_options:
+            try:
+                dtype = pd.to_numeric(series, downcast=dc_opt).dtype
+            except ValueError:
+                min_dtype = series.dtype
+                break
 
             if dtype.itemsize == 1 and dtype.name.startswith("u"):
                 min_dtype = dtype
