@@ -154,7 +154,7 @@ def msm(
 
     # Return moment errors as indexed dataframe or calculate weighted square
     # product of moment errors depending on return_scalar.
-    if return_scalar == False:
+    if return_scalar is False:
         return pd.DataFrame(moment_errors, index=flat_empirical_moments.index)
 
     else:
@@ -188,7 +188,7 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
     empirical_moments = _harmonize_input(empirical_moments)
 
     # Use identity matrix if no weights are specified.
-    if weights == None:
+    if weights is None:
         weights = copy.deepcopy(empirical_moments)
         for df in weights:
             df[:] = 1
@@ -244,6 +244,8 @@ def get_moment_vectors(params, options, calc_moments, replace_nans, empirical_mo
 
     """
     params = params.copy()
+    empirical_moments = copy.deepcopy(empirical_moments)
+
     # Harmonize inputs.
     empirical_moments = _harmonize_input(empirical_moments)
     calc_moments = _harmonize_input(calc_moments)
