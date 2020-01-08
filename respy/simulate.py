@@ -505,20 +505,18 @@ def _apply_law_of_motion(df, optim_paras):
     previous choices according to the choice in the current period, to get the states of
     the next period.
 
+    We implicitly assume that observed variables are constant.
+
     Parameters
     ----------
     df : pandas.DataFrame
-        DataFrame with shape (n_individuals, n_state_space_dim) containing the state of
-        each individual.
-    choices : numpy.ndarray
-        Array with shape (n_individuals,) containing the current choice.
+        The DataFrame contains the simulated information of individuals in one period.
     optim_paras : dict
 
     Returns
     -------
     df : pandas.DataFrame
-        DataFrame with containing the states of individuals to simulate outcomes for the
-        next period.
+        The DataFrame contains the states of individuals in the next period.
 
     """
     n_lagged_choices = optim_paras["n_lagged_choices"]
@@ -610,14 +608,12 @@ def _harmonize_simulation_arguments(method, df, n_sim_p, options):
     return df, n_sim_p, options
 
 
-def _process_input_df_for_simulation(
-    df, method, n_simulation_periods, options, optim_paras
-):
+def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_paras):
     """Process the ``df`` provided by the user for the simulation."""
     if df is None:
         ids = np.arange(options["simulation_agents"])
         index = pd.MultiIndex.from_product(
-            (ids, range(n_simulation_periods)), names=["identifier", "period"]
+            (ids, range(n_sim_periods)), names=["identifier", "period"]
         )
         df = pd.DataFrame(index=index)
 
