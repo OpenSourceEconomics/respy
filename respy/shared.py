@@ -202,10 +202,11 @@ def downcast_to_smallest_dtype(series, downcast_options=None):
     to cast variables from ``float64`` to ``float32``.
 
     Be aware that NumPy integers silently overflow which is why conversion to low dtypes
-    should be done after calculations. For example, using :class:`np.uint8` for an array
-    and squaring the elements leads to silent overflows for numbers higher than 255.
+    should be done after calculations. For example, using :class:`numpy.uint8` for an
+    array and squaring the elements leads to silent overflows for numbers higher than
+    255.
 
-    For more information on the boundaries the NumPy documentation under
+    For more information on the dtype boundaries see the NumPy documentation under
     https://docs.scipy.org/doc/numpy-1.17.0/user/basics.types.html.
 
     """
@@ -216,24 +217,26 @@ def downcast_to_smallest_dtype(series, downcast_options=None):
     if series.dtype.name == "category":
         out = series
 
+    # Convert bools to integers because they turn the dot product in
+    # `create_choice_rewards` to the object dtype.
     elif series.dtype == np.bool:
         out = series.astype(np.dtype("uint8"))
 
     else:
-        min_dtype = np.dtype("float64")
+        min_dtype = series.dtype
 
         for dc_opt in downcast_options:
             try:
                 dtype = pd.to_numeric(series, downcast=dc_opt).dtype
+            # A ValueError happens if strings are found in the series.
             except ValueError:
-                min_dtype = series.dtype
+                min_dtype = "category"
                 break
 
-            if dtype.itemsize == 1 and dtype.name.startswith("u"):
+            # If we can convert the series to an unsigned integer, we can stop.
+            if dtype.name.startswith("u"):
                 min_dtype = dtype
                 break
-            elif dtype.itemsize == min_dtype.itemsize and dtype.name.startswith("u"):
-                min_dtype = dtype
             elif dtype.itemsize < min_dtype.itemsize:
                 min_dtype = dtype
             else:
