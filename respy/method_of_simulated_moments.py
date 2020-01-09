@@ -88,7 +88,7 @@ def get_msm_func(
 
     # Raise error if replace_nans has at least two items but less than
     # empirical moments.
-    if len(replace_nans) < 1 and len(replace_nans) < len(empirical_moments):
+    if len(replace_nans) > 1 and len(replace_nans) < len(empirical_moments):
         raise ValueError(
             "Ambiguous inputs. Number of replacement functions is "
             "smaller than the number of empirical moment sets."
