@@ -176,8 +176,10 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
         # n-step-ahead simulation, `df` always contains only data of the current period.
         current_df = df.query("period == @period").copy()
 
+        breakpoint()
+
         current_df_extended = _simulate_single_period(
-            current_df, state_space, optim_paras
+            state_space, current_df, optim_paras
         )
 
         # Add all columns with simulated information to the complete DataFrame.
@@ -262,7 +264,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
     return df
 
 
-def _simulate_single_period(df, state_space, optim_paras):
+def _simulate_single_period(state_space, df, optim_paras):
     """Simulate individuals in a single period.
 
     This function takes a set of states and simulates wages, choices and other
@@ -270,11 +272,11 @@ def _simulate_single_period(df, state_space, optim_paras):
 
     Parameter
     ---------
+    state_space : :class:`~respy.state_space.StateSpace`
+        State space of the model.
     df : pandas.DataFrame
         DataFrame with shape (n_individuals_in_period, n_state_space_dims) which
         contains the states of simulated individuals.
-    state_space : :class:`~respy.state_space.StateSpace`
-        State space of the model.
     optim_paras : dict
 
     """
@@ -367,6 +369,7 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
 
     """
     # Generate covariates.
+    breakpoint()
     all_data = compute_covariates(states_df, options["covariates"], raise_errors=False)
     for column in all_data:
         if all_data[column].dtype == np.bool:

@@ -5,7 +5,7 @@ import numba as nb
 import numpy as np
 
 from respy import solve
-from respy.config import HUGE_FLOAT
+from respy.config import MAX_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import clip
@@ -38,8 +38,8 @@ def kw_94_interpolation(state_space, period, draws_emax_risk, optim_paras, optio
     # simply set to zero, but :math:`E(X) = \exp\{\mu + \frac{\sigma^2}{2}\}`.
     shifts = np.zeros(len(optim_paras["choices"]))
     shocks_cov = optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T)
-    shifts[:n_choices_w_wage] = np.clip(
-        np.exp(np.diag(shocks_cov)[:n_choices_w_wage] / 2.0), 0.0, HUGE_FLOAT
+    shifts[:n_choices_w_wage] = np.exp(
+        np.clip(np.diag(shocks_cov)[:n_choices_w_wage], 0, MAX_LOG_FLOAT) / 2
     )
 
     # Get indicator for interpolation and simulation of states. The seed value

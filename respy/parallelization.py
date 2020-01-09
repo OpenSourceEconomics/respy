@@ -6,6 +6,8 @@ from joblib import delayed
 from joblib import Parallel
 from joblib import parallel_backend
 
+from respy.shared import create_dense_state_space_columns
+
 
 def parallelize_across_dense_dimensions(func):
     """Parallelizes decorated function across dense state space dimensions.
@@ -46,3 +48,15 @@ def parallelize_across_dense_dimensions(func):
             func(state_space, *args, **kwargs)
 
     return wrapper_parallelize_across_dense_dimensions
+
+
+def distribute_and_combine_simulation(func):
+    @functools.wraps(func)
+    def wrapper_distribute_and_combine_simulation(state_space, df, optim_paras):
+        columns = create_dense_state_space_columns(optim_paras)
+        if columns:
+            groups = df.groupby(columns).groups
+            for key in groups:
+                val = groups.pop(key)
+                key = (int(key),) if len(columns) == 1 else tuple(int(i) for i in key)
+                groups[key] = val

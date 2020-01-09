@@ -573,9 +573,6 @@ def _create_core_state_space_indexer(df, optim_paras):
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
             + (n_choices,) * optim_paras["n_lagged_choices"]
         )
-        if optim_paras["n_types"] >= 2:
-            shape += (optim_paras["n_types"],)
-
         sub_indexer = np.full(shape, -1, dtype=np.int32)
 
         sub_df = df.query("period == @period")
@@ -587,8 +584,6 @@ def _create_core_state_space_indexer(df, optim_paras):
             sub_df[f"lagged_choice_{i}"]
             for i in range(1, optim_paras["n_lagged_choices"] + 1)
         )
-        if optim_paras["n_types"] >= 2:
-            indices += (sub_df["type"],)
 
         sub_indexer[indices] = np.arange(count_states, count_states + n_states)
         indexer.append(sub_indexer)
