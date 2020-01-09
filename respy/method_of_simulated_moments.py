@@ -50,6 +50,8 @@ def get_msm_func(
     replace_nans: callable or list
         Functions(s) specifying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
+        Exception: If only one replacement function is specified, it will be
+        used on all sets of simulated moments.
     empirical_moments: pandas.DataFrame or pandas.Series or dict or list
         Contains the empirical moments calculated for the observed data. Moments
         should be saved to pandas.DataFrame or pandas.Series that can either be
@@ -73,10 +75,39 @@ def get_msm_func(
     # Define simulator.
     simulator = get_simulate_func(params, options)
 
-    # Harmonize inputs
+    # Harmonize inputs.
     empirical_moments = _harmonize_input(empirical_moments)
     calc_moments = _harmonize_input(calc_moments)
     replace_nans = _harmonize_input(replace_nans)
+
+    # If only one replacement function is given for multiple sets of moments,
+    # duplicate replacement function for all sets of simulated moments.
+    if len(replace_nans) == 1 and len(empirical_moments) > 1:
+        while len(replace_nans) < len(empirical_moments):
+            replace_nans.append(replace_nans[0])
+
+    # Raise error if replace_nans has at least two items but less than
+    # empirical moments.
+    if len(replace_nans) < 1 and len(replace_nans) < len(empirical_moments):
+        raise ValueError(
+            "Ambiguous inputs. Number of replacement functions is "
+            "smaller than the number of empirical moment sets."
+        )
+
+    # Raise error if there are more replacement functions than sets of
+    # moments.
+    if len(replace_nans) > len(empirical_moments):
+        raise ValueError(
+            "Ambiguous inputs. Number of replacement functions is "
+            "greater than the number of empirical moment sets."
+        )
+
+    # Raise error of calc_moments and empirical_moments do not match.
+    if len(calc_moments) != len(empirical_moments):
+        raise ValueError(
+            "Ambiguous inputs. Number of functions to calculate simulated "
+            "moments is not equal to the number of empirical moment sets."
+        )
 
     # Define msm_function to only leave params variable.
     msm_func = functools.partial(
