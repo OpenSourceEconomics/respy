@@ -269,8 +269,8 @@ def _simulate_single_period(df, state_space, optim_paras):
     Parameter
     ---------
     df : pandas.DataFrame
-        DataFrame with shape (n_individuals, n_state_space_dims) which contains the
-        states of simulated individuals.
+        DataFrame with shape (n_individuals_in_period, n_state_space_dims) which
+        contains the states of simulated individuals.
     state_space : :class:`~respy.state_space.StateSpace`
         State space of the model.
     optim_paras : dict
@@ -316,7 +316,7 @@ def _simulate_single_period(df, state_space, optim_paras):
     wages[:, n_wages:] = np.nan
     wage = np.choose(choice, wages.T)
 
-    # Store information for debugging, etc..
+    # Store necessary information and information for debugging, etc..
     df["choice"] = choice
     df["wage"] = wage
     df["discount_rate"] = optim_paras["delta"]
