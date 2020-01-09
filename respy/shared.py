@@ -107,8 +107,8 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
            University Press.*
 
     """
-    n_choices = shape[2]
-    n_points = shape[0] * shape[1]
+    n_choices = shape[-1]
+    n_points = np.prod(shape[:-1])
 
     np.random.seed(seed)
 
@@ -151,8 +151,8 @@ def transform_base_draws_with_cholesky_factor(draws, shocks_cholesky, n_wages):
 
     """
     draws_transformed = draws.dot(shocks_cholesky.T)
-    draws_transformed[:, :, :n_wages] = np.exp(
-        np.clip(draws_transformed[:, :, :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
+    draws_transformed[..., :n_wages] = np.exp(
+        np.clip(draws_transformed[..., :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
     )
 
     return draws_transformed
@@ -179,25 +179,6 @@ def generate_column_dtype_dict_for_estimation(optim_paras):
     return column_dtype_dict
 
 
-def generate_column_dtype_dict_for_simulation(optim_paras):
-    """Generate column labels for simulation output."""
-    est_col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
-    labels = ["Type"] if optim_paras["n_types"] >= 2 else []
-    labels += (
-        [f"Nonpecuniary_Reward_{choice.title()}" for choice in optim_paras["choices"]]
-        + [f"Wage_{choice.title()}" for choice in optim_paras["choices_w_wage"]]
-        + [f"Flow_Utility_{choice.title()}" for choice in optim_paras["choices"]]
-        + [f"Value_Function_{choice.title()}" for choice in optim_paras["choices"]]
-        + [f"Shock_Reward_{choice.title()}" for choice in optim_paras["choices"]]
-        + ["Discount_Rate"]
-    )
-
-    sim_col_dtype = {col: (int if col == "Type" else float) for col in labels}
-    sim_col_dtype = {**est_col_dtype, **sim_col_dtype}
-
-    return sim_col_dtype
-
-
 @nb.njit
 def clip(x, minimum=None, maximum=None):
     """Clip input array at minimum and maximum."""
@@ -214,34 +195,48 @@ def clip(x, minimum=None, maximum=None):
     return out
 
 
-def downcast_to_smallest_dtype(series):
+def downcast_to_smallest_dtype(series, downcast_options=None):
     """Downcast the dtype of a :class:`pandas.Series` to the lowest possible dtype.
 
-    Be aware that NumPy integers silently overflow which is why conversion to low dtypes
-    should be done after calculations. For example, using :class:`np.uint8` for an array
-    and squaring the elements leads to silent overflows for numbers higher than 255.
+    By default, variables are converted to signed or unsigned integers. Use ``"float"``
+    to cast variables from ``float64`` to ``float32``.
 
-    For more information on the boundaries the NumPy documentation under
+    Be aware that NumPy integers silently overflow which is why conversion to low dtypes
+    should be done after calculations. For example, using :class:`numpy.uint8` for an
+    array and squaring the elements leads to silent overflows for numbers higher than
+    255.
+
+    For more information on the dtype boundaries see the NumPy documentation under
     https://docs.scipy.org/doc/numpy-1.17.0/user/basics.types.html.
 
     """
     # We can skip integer as "unsigned" and "signed" will find the same dtypes.
-    _downcast_options = ["unsigned", "signed", "float"]
+    if downcast_options is None:
+        downcast_options = ["unsigned", "signed"]
 
-    if series.dtype == np.bool:
-        min_dtype = np.dtype("uint8")
+    if series.dtype.name == "category":
+        out = series
+
+    # Convert bools to integers because they turn the dot product in
+    # `create_choice_rewards` to the object dtype.
+    elif series.dtype == np.bool:
+        out = series.astype(np.dtype("uint8"))
 
     else:
-        min_dtype = np.dtype("float64")
+        min_dtype = series.dtype
 
-        for dc_opt in _downcast_options:
-            dtype = pd.to_numeric(series, downcast=dc_opt).dtype
+        for dc_opt in downcast_options:
+            try:
+                dtype = pd.to_numeric(series, downcast=dc_opt).dtype
+            # A ValueError happens if strings are found in the series.
+            except ValueError:
+                min_dtype = "category"
+                break
 
-            if dtype.itemsize == 1 and dtype.name.startswith("u"):
+            # If we can convert the series to an unsigned integer, we can stop.
+            if dtype.name.startswith("u"):
                 min_dtype = dtype
                 break
-            elif dtype.itemsize == min_dtype.itemsize and dtype.name.startswith("u"):
-                min_dtype = dtype
             elif dtype.itemsize < min_dtype.itemsize:
                 min_dtype = dtype
             else:
@@ -332,9 +327,14 @@ def convert_labeled_variables_to_codes(df, optim_paras):
     return df
 
 
-def rename_labels(x):
+def rename_labels_to_internal(x):
     """Shorten labels and convert them to lower-case."""
     return x.replace("Experience", "exp").lower()
+
+
+def rename_labels_from_internal(x):
+    """Shorten labels and convert them to lower-case."""
+    return x.replace("exp", "Experience").title()
 
 
 def normalize_probabilities(probabilities):

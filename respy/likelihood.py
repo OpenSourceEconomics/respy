@@ -18,7 +18,7 @@ from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import generate_column_dtype_dict_for_estimation
-from respy.shared import rename_labels
+from respy.shared import rename_labels_to_internal
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
@@ -499,8 +499,11 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     """
     col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
 
-    df = df.sort_index()[list(col_dtype)[2:]]
-    df = df.rename(columns=rename_labels).rename_axis(index=rename_labels)
+    df = (
+        df.sort_index()[list(col_dtype)[2:]]
+        .rename(columns=rename_labels_to_internal)
+        .rename_axis(index=rename_labels_to_internal)
+    )
     df = convert_labeled_variables_to_codes(df, optim_paras)
 
     # Get indices of states in the state space corresponding to all observations for all
