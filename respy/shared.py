@@ -276,10 +276,10 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     """
     covariates = states.copy()
 
-    n_covariates_left_changed = True
+    has_covariates_left_changed = True
     covariates_left = list(covariates_spec)
 
-    while n_covariates_left_changed:
+    while has_covariates_left_changed:
         n_covariates_left = len(covariates_left)
 
         # Create a copy of `covariates_left` to remove elements without side-effects.
@@ -290,15 +290,12 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
             if is_covariate_missing:
                 try:
                     covariates[covariate] = covariates.eval(covariates_spec[covariate])
-                except pd.core.computation.ops.UndefinedVariableError as e:
-                    if raise_errors:
-                        raise e
-                    else:
-                        pass
+                except pd.core.computation.ops.UndefinedVariableError:
+                    pass
                 else:
                     covariates_left.remove(covariate)
 
-        n_covariates_left_changed = n_covariates_left != len(covariates_left)
+        has_covariates_left_changed = n_covariates_left != len(covariates_left)
 
     if covariates_left and raise_errors:
         raise Exception(f"Cannot compute all covariates: {covariates_left}.")
