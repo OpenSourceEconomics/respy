@@ -237,12 +237,9 @@ def _internal_log_like_obs(
     df[choice_cols] = choice_loglikes
     df[wage_cols] = wage_loglikes
 
+    data = df[choice_cols].to_numpy() + df[wage_cols].to_numpy()
     per_individual_loglikes = (
-        pd.DataFrame(
-            data=df[choice_cols].to_numpy() + df[wage_cols].to_numpy(), index=df.index
-        )
-        .groupby("identifier")
-        .sum()
+        pd.DataFrame(data=data, index=df.index).groupby("identifier").sum()
     )
 
     if n_types >= 2:
