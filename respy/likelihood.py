@@ -34,9 +34,6 @@ def get_crit_func(
     function can be directly passed into an optimizer or a function for taking
     numerical derivatives.
 
-    By default we return :func:`log_like`. Other versions can be requested via the
-    version argument.
-
     Parameters
     ----------
     params : pandas.DataFrame
@@ -45,10 +42,12 @@ def get_crit_func(
         Dictionary containing model options.
     df : pandas.DataFrame
         The model is fit to this dataset.
-    return_scalar : bool
+    return_scalar : bool, default False
         Indicator for whether the mean log likelihood should be returned or the log
-        likelihoods as well as a :class:`pandas.DataFrame` with various contributions
-        for visualization with estimagic.
+        likelihood contributions.
+    return_comparison_plot_data : bool, default False
+        Indicator for whether a :class:`pandas.DataFrame` with various contributions for
+        the visualization with estimagic should be returned.
 
     Returns
     -------
@@ -84,7 +83,7 @@ def get_crit_func(
     )
 
     criterion_function = partial(
-        log_likelihood,
+        log_like,
         df=df,
         base_draws_est=base_draws_est,
         state_space=state_space,
@@ -97,7 +96,7 @@ def get_crit_func(
     return criterion_function
 
 
-def log_likelihood(
+def log_like(
     params,
     df,
     base_draws_est,
@@ -138,7 +137,7 @@ def log_likelihood(
 
     out = contribs.mean() if return_scalar else contribs
     if return_comparison_plot_data:
-        comparison_plot_data = _create_comparison_plot_data(df)
+        comparison_plot_data = _create_comparison_plot_data(df, optim_paras)
         out = (out, comparison_plot_data)
 
     return out
@@ -166,15 +165,21 @@ def _internal_log_like_obs(
     base_draws_est : numpy.ndarray
         Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
         standard normal distributions.
+    type_covariates : pandas.DataFrame or None
+        If the model includes types, this is a :class:`pandas.DataFrame` containing the
+        covariates to compute the type probabilities.
     optim_paras : dict
         Dictionary with quantities that were extracted from the parameter vector.
     options : dict
+        Options of the model.
 
     Returns
     -------
     contribs : numpy.ndarray
         Array with shape (n_individuals,) containing contributions of individuals in the
         empirical data.
+    df : pandas.DataFrame
+        Contains log wages, choices and
 
     """
     df = df.copy()
@@ -522,15 +527,19 @@ def _adjust_optim_paras_for_estimation(optim_paras, df):
     return optim_paras
 
 
-def _create_comparison_plot_data(df):
+def _create_comparison_plot_data(df, optim_paras):
     """Create DataFrame for estimagic's comparison plot."""
     # During the likelihood calculation, the log likelihood for missing wages is
     # substituted with 0. Remove these log likelihoods to get the correct picture.
     df = df.loc[df.log_wage.notna()]
 
-    df = df.filter(like="loglike")
+    # Keep the log likelihood and the choice.
+    columns = df.filter(like="loglike").columns.tolist() + ["choice"]
+    df = df[columns]
 
-    df = df.reset_index().melt(id_vars=["identifier", "period"])
+    df["choice"] = df["choice"].replace(dict(enumerate(optim_paras["choices"])))
+
+    df = df.reset_index().melt(id_vars=["identifier", "period", "choice"])
 
     splitted_label = df.variable.str.split("_", expand=True)
     df["kind"] = splitted_label[1]
