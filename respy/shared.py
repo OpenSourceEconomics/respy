@@ -376,3 +376,26 @@ def calculate_value_functions_and_flow_utilities(
     value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
         wage, nonpec, continuation_value, draw, delta, is_inadmissible
     )
+
+
+def create_core_state_space_columns(optim_paras):
+    """Create internal column names for the core state space."""
+    return [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]] + [
+        f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)
+    ]
+
+
+def create_dense_state_space_columns(optim_paras):
+    """Create internal column names for the dense state space."""
+    columns = list(optim_paras["observables"])
+    if optim_paras["n_types"] >= 2:
+        columns += ["type"]
+
+    return columns
+
+
+def create_state_space_columns(optim_paras):
+    """Create names of state space dimensions excluding the period and identifier."""
+    return create_core_state_space_columns(
+        optim_paras
+    ) + create_dense_state_space_columns(optim_paras)
