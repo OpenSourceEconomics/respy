@@ -280,10 +280,10 @@ def compute_covariates(df, definitions, raise_errors=True):
         If variables cannot be computed and ``raise_errors`` is true.
 
     """
-    n_covariates_left_changed = True
+    has_covariates_left_changed = True
     covariates_left = list(definitions)
 
-    while n_covariates_left_changed:
+    while has_covariates_left_changed:
         n_covariates_left = len(covariates_left)
 
         # Create a copy of `covariates_left` to remove elements without side-effects.
@@ -300,7 +300,7 @@ def compute_covariates(df, definitions, raise_errors=True):
                 df[covariate] = df.eval(definitions[covariate]["formula"])
                 covariates_left.remove(covariate)
 
-        n_covariates_left_changed = n_covariates_left != len(covariates_left)
+        has_covariates_left_changed = n_covariates_left != len(covariates_left)
 
     if covariates_left and raise_errors:
         raise Exception(f"Cannot compute all covariates: {covariates_left}.")
