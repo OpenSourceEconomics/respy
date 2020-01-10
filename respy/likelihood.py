@@ -563,7 +563,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     if optim_paras["n_types"] >= 2:
         initial_states = df.query("period == 0")
         covariates = compute_covariates(
-            initial_states, options["covariates"], raise_errors=False
+            initial_states, options["covariates_detailed"], raise_errors=False
         )
 
         all_data = pd.concat([covariates, initial_states], axis="columns", sort=False)

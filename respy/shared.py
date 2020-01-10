@@ -288,13 +288,17 @@ def compute_covariates(df, definitions, raise_errors=True):
 
         # Create a copy of `covariates_left` to remove elements without side-effects.
         for covariate in copy.copy(covariates_left):
-            if covariate not in df.columns:
-                try:
-                    df[covariate] = df.eval(definitions[covariate])
-                except pd.core.computation.ops.UndefinedVariableError:
-                    pass
-                else:
-                    covariates_left.remove(covariate)
+            # Check if the covariate does not exist and needs to be computed.
+            is_covariate_missing = covariate not in df.columns
+            # Check that the dependencies are present and do not contain NaNs.
+            are_dependencies_present = all(
+                df[dep].notna().all() if dep in df.columns else False
+                for dep in definitions[covariate]["depends_on"]
+            )
+
+            if is_covariate_missing and are_dependencies_present:
+                df[covariate] = df.eval(definitions[covariate]["formula"])
+                covariates_left.remove(covariate)
 
         n_covariates_left_changed = n_covariates_left != len(covariates_left)
 

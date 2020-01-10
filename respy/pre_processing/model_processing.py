@@ -635,6 +635,15 @@ def _identify_relevant_covariates(options, params):
     from covariates. Eliminating irrelevant covariates might reduce the number of
     implemented lags.
 
+    The function catches all relevant "high-level" covariates by looking at the `"name"`
+    index in `params`. "Low-level" covariates which are relevant but not included in the
+    index are recursively found by checking whether covariates are used in the formula
+    of relevant covariates.
+
+    See also
+    --------
+    _separate_covariates_into_core_dense_mixed
+
     """
     covariates = options["covariates"]
 
@@ -812,6 +821,10 @@ def _separate_covariates_into_core_dense_mixed(options, optim_paras):
             ["type"] + [f"type_{i}" for i in range(2, optim_paras["n_types"] + 1)]
         )
 
+    detailed_covariates = {
+        cov: {"formula": covariates[cov], "depends_on": set()} for cov in covariates
+    }
+
     # Loop over all covariates and add them two the sets if the formula contains
     # covariates from the sets. If both lengths of the sets do not change anymore, stop.
     n_core_covs_changed = True
@@ -821,29 +834,37 @@ def _separate_covariates_into_core_dense_mixed(options, optim_paras):
         n_dense_covs = len(dense_covs)
 
         for cov, formula in covariates.items():
-            if any(i in formula for i in core_covs):
+            matches_core = [i for i in core_covs if i in formula]
+            if matches_core:
                 core_covs.update([cov])
 
-            if any(i in formula for i in dense_covs):
+            matches_dense = [i for i in dense_covs if i in formula]
+            if matches_dense:
                 dense_covs.update([cov])
+
+            detailed_covariates[cov]["depends_on"] |= set(matches_core + matches_dense)
 
         n_core_covs_changed = n_core_covs != len(core_covs)
         n_dense_covs_changed = n_dense_covs != len(dense_covs)
 
-    core_covs_cleaned = core_covs - dense_covs
-    dense_covs_cleaned = dense_covs - core_covs
+    only_core_covs = core_covs - dense_covs
+    only_dense_covs = dense_covs - core_covs
     independent_covs = set(covariates) - core_covs - dense_covs
 
     options["covariates_core"] = {
-        cov: covariates[cov]
-        for cov in core_covs_cleaned | independent_covs
-        if cov in covariates
+        cov: detailed_covariates[cov]
+        for cov in only_core_covs | independent_covs
+        if cov in detailed_covariates
     }
     options["covariates_dense"] = {
-        cov: covariates[cov] for cov in dense_covs_cleaned if cov in covariates
+        cov: detailed_covariates[cov]
+        for cov in only_dense_covs
+        if cov in detailed_covariates
     }
     options["covariates_mixed"] = {
-        cov: covariates[cov] for cov in core_covs & dense_covs
+        cov: detailed_covariates[cov] for cov in core_covs & dense_covs
     }
+    # We cannot overwrite `options["covariates"]`.
+    options["covariates_detailed"] = detailed_covariates
 
     return options

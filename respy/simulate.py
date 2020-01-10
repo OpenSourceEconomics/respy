@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 from scipy.special import softmax
 
+from respy.parallelization import distribute_and_combine_simulation
+from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
@@ -145,10 +147,12 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
 
     # Solve the model.
     state_space.create_choice_rewards(optim_paras)
-    state_space = solve_with_backward_induction(state_space, optim_paras, options)
+    solve_with_backward_induction(state_space, optim_paras, options)
 
     # Prepare simulation.
     n_simulation_periods = int(df.index.get_level_values("period").max() + 1)
+
+    df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
 
     # Prepare shocks.
     n_wages = len(optim_paras["choices_w_wage"])
@@ -165,8 +169,6 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
         df[f"meas_error_wage_{choice}"] = base_draws_wage_transformed[:, i]
     df = df.sort_index(level=["identifier", "period"])
 
-    df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
-
     core_columns = create_core_state_space_columns(optim_paras)
     is_n_step_ahead = np.any(df[core_columns].isna())
 
@@ -175,8 +177,6 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
         # n-step-ahead simulation, `df` always contains only data of the current period.
         current_df = df.query("period == @period").copy()
-
-        breakpoint()
 
         current_df_extended = _simulate_single_period(
             state_space, current_df, optim_paras
@@ -261,9 +261,14 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
     if optim_paras["n_types"] >= 2:
         df["type"] = df["type"].fillna(method="ffill")
 
+    state_space_columns = create_state_space_columns(optim_paras)
+    df = df[state_space_columns]
+
     return df
 
 
+@distribute_and_combine_simulation
+@parallelize_across_dense_dimensions
 def _simulate_single_period(state_space, df, optim_paras):
     """Simulate individuals in a single period.
 
@@ -284,39 +289,39 @@ def _simulate_single_period(state_space, df, optim_paras):
     n_wages = len(optim_paras["choices_w_wage"])
 
     # Get indices which connect states in the state space and simulated agents.
-    columns = create_state_space_columns(optim_paras)
+    columns = create_core_state_space_columns(optim_paras)
     indices = state_space.indexer[period][tuple(df[col].astype(int) for col in columns)]
 
     # Get continuation values. Indices work on the complete state space whereas
     # continuation values are period-specific. Make them period-specific.
-    continuation_values = state_space.get_continuation_values(period)
     cont_indices = indices - state_space.slices_by_periods[period].start
+    continuation_values = state_space.get_continuation_values(period)[cont_indices]
 
-    # Select relevant subset of random draws.
     draws_shock = df[[f"shock_reward_{c}" for c in optim_paras["choices"]]].to_numpy()
     draws_wage = df[[f"meas_error_wage_{c}" for c in optim_paras["choices"]]].to_numpy()
 
-    # Get total values and ex post rewards.
+    wages = state_space.get_attribute("wages")[indices]
+    nonpecs = state_space.get_attribute("nonpecs")[indices]
+    is_inadmissible = state_space.get_attribute("is_inadmissible")[indices]
+
     value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
-        state_space.wages[indices],
-        state_space.nonpec[indices],
-        continuation_values[cont_indices],
+        wages,
+        nonpecs,
+        continuation_values,
         draws_shock,
         optim_paras["delta"],
-        state_space.is_inadmissible[indices],
+        is_inadmissible,
     )
 
     # We need to ensure that no individual chooses an inadmissible state. Thus, set
     # value functions to NaN. This cannot be done in
     # :func:`aggregate_keane_wolpin_utility` as the interpolation requires a mild
     # penalty.
-    value_functions = np.where(
-        state_space.is_inadmissible[indices], np.nan, value_functions
-    )
+    value_functions = np.where(is_inadmissible, np.nan, value_functions)
 
     choice = np.nanargmax(value_functions, axis=1)
 
-    wages = state_space.wages[indices] * draws_shock * draws_wage
+    wages = wages * draws_shock * draws_wage
     wages[:, n_wages:] = np.nan
     wage = np.choose(choice, wages.T)
 
@@ -325,11 +330,11 @@ def _simulate_single_period(state_space, df, optim_paras):
     df["wage"] = wage
     df["discount_rate"] = optim_paras["delta"]
     for i, choice in enumerate(optim_paras["choices"]):
-        df[f"nonpecuniary_reward_{choice}"] = state_space.nonpec[indices][:, i]
-        df[f"wage_{choice}"] = state_space.wages[indices][:, i]
+        df[f"nonpecuniary_reward_{choice}"] = nonpecs[:, i]
+        df[f"wage_{choice}"] = wages[:, i]
         df[f"flow_utility_{choice}"] = flow_utilities[:, i]
         df[f"value_function_{choice}"] = value_functions[:, i]
-        df[f"continuation_value_{choice}"] = continuation_values[cont_indices][:, i]
+        df[f"continuation_value_{choice}"] = continuation_values[:, i]
 
     return df
 
@@ -351,8 +356,6 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
 
     Parameters
     ----------
-    lag : int
-        Number of lag.
     states_df : pandas.DataFrame
         Contains the state of each individual.
     options : dict
@@ -361,6 +364,9 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
         A dictionary where the keys are the values distributed according to the
         probability mass function. The values are a :class:`pandas.Series` with
         covariate names as the index and parameter values.
+    use_keys : bool
+        Identifier for whether the keys of the level dict should be used as variables
+        values or use numeric codes instead. For example, assign numbers to choices.
 
     Returns
     -------
@@ -369,8 +375,9 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
 
     """
     # Generate covariates.
-    breakpoint()
-    all_data = compute_covariates(states_df, options["covariates"], raise_errors=False)
+    all_data = compute_covariates(
+        states_df, options["covariates_detailed"], raise_errors=False
+    )
     for column in all_data:
         if all_data[column].dtype == np.bool:
             all_data[column] = all_data[column].astype(np.uint8)
@@ -563,8 +570,6 @@ def _harmonize_simulation_arguments(method, df, n_sim_p, options):
         if df is None:
             raise ValueError(f"Method '{method}' requires data.")
 
-        options["simulation_agents"] = df.index.get_level_values("Identifier").nunique()
-
         if method == "n_step_ahead_with_data":
             df = df.query("Period == 0")
         elif method == "one_step_ahead":
@@ -577,8 +582,8 @@ def _harmonize_simulation_arguments(method, df, n_sim_p, options):
         options["n_periods"] = n_sim_p
         warnings.warn(
             f"The number of periods in the model, {options['n_periods']}, is lower than"
-            f" the requested number of simulated periods, {n_sim_p}. Set "
-            "model periods equal to simulated periods."
+            f" the requested number of simulated periods, {n_sim_p}. Set model periods "
+            "equal to simulated periods."
         )
 
     return df, n_sim_p, options
