@@ -96,7 +96,6 @@ def get_msm_func(
     else:
         pass
 
-    # Raise error of calc_moments and empirical_moments do not match.
     if len(calc_moments) != len(empirical_moments):
         raise ValueError(
             "Number of functions to calculate simulated moments must be equal to "
@@ -216,13 +215,13 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
     else:
         weights = _harmonize_input(weights)
 
-    # Reindex weights to ensure they are assigned to the correct moments in the
-    # msm function.
+    # Reindex weights to ensure they are assigned to the correct moments in the msm
+    # function.
     weights = _reindex_simulated_moments(empirical_moments, weights)
 
     flat_weights = _flatten_index(weights)
 
-    return np.diag(flat_weights) #np.diag(flat_weights.iloc[:, 0])
+    return np.diag(flat_weights)
 
 
 def get_flat_moments(empirical_moments):
@@ -308,10 +307,9 @@ def _flatten_index(data):
             pass
 
         index_flat = df.index.to_flat_index().str.join("_")
-        # Drop old and add new index to data.
+
         df.index = index_flat
 
-        # Add df to list.
         data_flat.append(df)
 
     return pd.concat(data_flat)
