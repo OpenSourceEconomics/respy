@@ -4,6 +4,8 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
+import copy
+
 import chaospy as cp
 import numba as nb
 import numpy as np
@@ -274,15 +276,32 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
     """
     covariates = states.copy()
 
-    for covariate, definition in covariates_spec.items():
-        if covariate not in states.columns:
-            try:
-                covariates[covariate] = covariates.eval(definition)
-            except pd.core.computation.ops.UndefinedVariableError as e:
-                if raise_errors:
-                    raise e
+    n_covariates_left_changed = True
+    covariates_left = list(covariates_spec)
+
+    while n_covariates_left_changed:
+        n_covariates_left = len(covariates_left)
+
+        # Create a copy of `covariates_left` to remove elements without side-effects.
+        for covariate in copy.copy(covariates_left):
+            # Check if the covariate does not exist and needs to be computed.
+            is_covariate_missing = covariate not in covariates.columns
+
+            if is_covariate_missing:
+                try:
+                    covariates[covariate] = covariates.eval(covariates_spec[covariate])
+                except pd.core.computation.ops.UndefinedVariableError as e:
+                    if raise_errors:
+                        raise e
+                    else:
+                        pass
                 else:
-                    pass
+                    covariates_left.remove(covariate)
+
+        n_covariates_left_changed = n_covariates_left != len(covariates_left)
+
+    if covariates_left and raise_errors:
+        raise Exception(f"Cannot compute all covariates: {covariates_left}.")
 
     covariates = covariates.drop(columns=states.columns)
 
