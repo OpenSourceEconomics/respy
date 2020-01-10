@@ -17,6 +17,7 @@ References
 """
 import copy
 import functools
+import itertools
 
 import numpy as np
 import pandas as pd
@@ -56,6 +57,7 @@ def get_msm_func(
         Contains the empirical moments calculated for the observed data. Moments
         should be saved to pandas.DataFrame or pandas.Series that can either be
         passed to the function directly or as items of a list or dictionary.
+        Index of pandas.DataFrames can be of type MultiIndex, but columns cannot.
     weighting_matrix: numpy.ndarray
         Square matrix of dimension (NxN) with N denoting the number of
         empirical_moments. Used to weight squared moment errors.
@@ -142,7 +144,8 @@ def msm(
     empirical_moments : list
         Contains the empirical moments calculated for the observed data. Each item in
         the list constitutes a set of moments saved to a pandas.DataFrame or
-        pandas.Series.
+        pandas.Series. Index of pandas.DataFrames can be of type MultiIndex, but columns
+        cannot.
     weighting_matrix : numpy.ndarray
         Square matrix of dimension (NxN) with N denoting the number of
         empirical_moments. Used to weight squared moment errors.
@@ -161,7 +164,9 @@ def msm(
     df = simulate(params)
     simulated_moments = [func(df) for func in calc_moments]
 
-    simulated_moments = _reindex_simulated_moments(empirical_moments, simulated_moments)
+    simulated_moments = [sim_mom.reindex_like(emp_mom) for emp_mom, sim_mom in zip(
+        empirical_moments, simulated_moments)
+                         ]
 
     simulated_moments = [func(mom) for mom, func in zip(simulated_moments, replace_nans)]
 
@@ -215,9 +220,11 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
     else:
         weights = _harmonize_input(weights)
 
-    # Reindex weights to ensure they are assigned to the correct moments in the msm
-    # function.
-    weights = _reindex_simulated_moments(empirical_moments, weights)
+    # Reindex weights to ensure they are assigned to the correct moments in
+    # the msm function.
+    weights = [weight.reindex_like(emp_mom) for emp_mom, weight in zip(
+        empirical_moments, weights)
+               ]
 
     flat_weights = _flatten_index(weights)
 
@@ -277,34 +284,22 @@ def _harmonize_input(data):
     return data
 
 
-def _reindex_simulated_moments(empirical_moments, simulated_moments):
-    """Reindex data in simulated_moments to match index of empirical_moments."""
-    simulated_moments_reindexed = []
-
-    for emp_mom, sim_mom in zip(empirical_moments, simulated_moments):
-        if isinstance(emp_mom, pd.DataFrame):
-            sim_mom = sim_mom.reindex(index=emp_mom.index, columns=emp_mom.columns)
-        elif isinstance(emp_mom, pd.Series):
-            sim_mom = sim_mom.reindex(index=emp_mom.index)
-        else:
-            raise ValueError("Empirical and simulated moments must be saved to "
-                             "pd.Series or pd.DataFrame.")
-
-        simulated_moments_reindexed.append(sim_mom)
-
-    return simulated_moments_reindexed
-
-
 def _flatten_index(data):
     """Flatten the index as a combination of the former index and the columns."""
     data_flat = []
+    counter = itertools.count()
+
     for df in data:
-        # Unstack df to add columns to index and flatten indexes for the new df.
         df.index = df.index.map(str)
-        if isinstance(df,pd.DataFrame):
+        # Unstack DataFrames and Series to add columns/Series name to index.
+        if isinstance(df, pd.DataFrame):
             df = df.unstack()
+        # Series without a name are named using a counter to avoid duplicate indexes.
+        elif isinstance(df, pd.Series) and df.name is None:
+            df = df.to_frame(name=str(next(counter)))
+            df = pd.DataFrame(df).unstack()
         else:
-            pass
+            df = pd.DataFrame(df).unstack()
 
         index_flat = df.index.to_flat_index().str.join("_")
 
