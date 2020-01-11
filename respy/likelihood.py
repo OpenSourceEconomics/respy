@@ -22,6 +22,10 @@ from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import rename_labels_to_internal
 from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
+from respy.parallelization import (
+    parallelize_across_dense_dimensions,
+    distribute_and_combine_likelihood,
+)
 
 
 def get_crit_func(
@@ -143,6 +147,8 @@ def log_like(
     return out
 
 
+@distribute_and_combine_likelihood
+@parallelize_across_dense_dimensions
 def _internal_log_like_obs(
     state_space, df, base_draws_est, type_covariates, optim_paras, options
 ):
@@ -184,13 +190,57 @@ def _internal_log_like_obs(
     """
     df = df.copy()
 
+    n_types = optim_paras["n_types"]
+
+    df = _compute_likelihood_contributions(
+        state_space, df, base_draws_est, optim_paras, options
+    )
+
+    choice_cols = [f"loglike_choice_type_{i}" for i in range(n_types)]
+    wage_cols = [f"loglike_wage_type_{i}" for i in range(n_types)]
+
+    data = df[choice_cols].to_numpy() + df[wage_cols].to_numpy()
+    per_individual_loglikes = (
+        pd.DataFrame(data=data, index=df.index).groupby("identifier").sum()
+    )
+
+    if n_types >= 2:
+        z = ()
+
+        for level in optim_paras["type_prob"]:
+            labels = optim_paras["type_prob"][level].index
+            x_beta = np.dot(type_covariates[labels], optim_paras["type_prob"][level])
+
+            z += (x_beta,)
+
+        type_probabilities = special.softmax(np.column_stack(z), axis=1)
+
+        type_probabilities = np.clip(type_probabilities, 1 / MAX_FLOAT, None)
+        log_type_probabilities = np.log(type_probabilities)
+
+        weighted_loglikes = per_individual_loglikes + log_type_probabilities
+
+        contribs = special.logsumexp(weighted_loglikes, axis=1)
+    else:
+        contribs = per_individual_loglikes.to_numpy().flatten()
+
+    contribs = np.clip(contribs, MIN_FLOAT, MAX_FLOAT)
+
+    return contribs, df
+
+
+def _compute_likelihood_contributions(
+    state_space, df, base_draws_est, optim_paras, options
+):
     n_choices = len(optim_paras["choices"])
     n_obs = df.shape[0]
     n_types = optim_paras["n_types"]
 
     indices = df[[f"index_type_{i}" for i in range(optim_paras["n_types"])]].to_numpy()
 
-    wages_systematic = state_space.wages[indices].reshape(n_obs * n_types, n_choices)
+    wages_systematic = state_space.get_attribute("wages")[indices].reshape(
+        n_obs * n_types, n_choices
+    )
     log_wages_observed = df["log_wage"].to_numpy().repeat(n_types)
     choices = df["choice"].to_numpy().repeat(n_types)
 
@@ -237,37 +287,7 @@ def _internal_log_like_obs(
     df[choice_cols] = choice_loglikes
     df[wage_cols] = wage_loglikes
 
-    per_individual_loglikes = (
-        pd.DataFrame(
-            data=df[choice_cols].to_numpy() + df[wage_cols].to_numpy(), index=df.index
-        )
-        .groupby("identifier")
-        .sum()
-    )
-
-    if n_types >= 2:
-        z = ()
-
-        for level in optim_paras["type_prob"]:
-            labels = optim_paras["type_prob"][level].index
-            x_beta = np.dot(type_covariates[labels], optim_paras["type_prob"][level])
-
-            z += (x_beta,)
-
-        type_probabilities = special.softmax(np.column_stack(z), axis=1)
-
-        type_probabilities = np.clip(type_probabilities, 1 / MAX_FLOAT, None)
-        log_type_probabilities = np.log(type_probabilities)
-
-        weighted_loglikes = per_individual_loglikes + log_type_probabilities
-
-        contribs = special.logsumexp(weighted_loglikes, axis=1)
-    else:
-        contribs = per_individual_loglikes.to_numpy().flatten()
-
-    contribs = np.clip(contribs, MIN_FLOAT, MAX_FLOAT)
-
-    return contribs, df
+    return df
 
 
 @nb.njit

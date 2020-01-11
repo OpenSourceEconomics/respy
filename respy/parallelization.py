@@ -84,30 +84,71 @@ def parallelize_across_dense_dimensions(func):
     return wrapper_parallelize_across_dense_dimensions
 
 
-def _is_dense_dictionary_argument(argument, dense_indices):
-    return not np.isscalar(argument) and all(idx in argument for idx in dense_indices)
-
-
 def distribute_and_combine_simulation(func):
-    """Distribute the simulation across sub state spaces and combine the outputs."""
+    """Distribute the simulation across sub state spaces and combine."""
 
     @functools.wraps(func)
     def wrapper_distribute_and_combine_simulation(state_space, df, optim_paras):
-        columns = create_dense_state_space_columns(optim_paras)
-        if columns:
-            groups = df.groupby(columns).groups
-            for key in list(groups):
-                sub_df = df.loc[groups.pop(key)].copy()
-                key = (int(key),) if len(columns) == 1 else tuple(int(i) for i in key)
-                groups[key] = sub_df
+        splitted_df = _split_dataframe(df, optim_paras) if state_space.dense else df
 
-        else:
-            groups = df
-
-        out = func(state_space, groups, optim_paras)
+        out = func(state_space, splitted_df, optim_paras)
 
         df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
 
         return df
 
     return wrapper_distribute_and_combine_simulation
+
+
+def distribute_and_combine_likelihood(func):
+    """Distribute the likelihood calculation across sub state spaces and combine."""
+
+    @functools.wraps(func)
+    def wrapper_distribute_and_combine_likelihood(
+        state_space, df, base_draws_est, optim_paras, *args, **kwargs
+    ):
+        n_obs = df.shape[0]
+        # Number each state to split the shocks later.
+        df["__id"] = np.arange(n_obs)
+        # Each row of indices corresponds to a state whereas the columns refer to
+        # different types.
+        indices = np.arange(n_obs * optim_paras["n_types"]).reshape(n_obs, -1)
+
+        splitted_df = _split_dataframe(df, optim_paras) if state_space.dense else df
+
+        splitted_shocks = _split_shocks(base_draws_est, splitted_df, indices)
+
+        out = func(
+            state_space, splitted_df, splitted_shocks, optim_paras, *args, **kwargs
+        )
+
+        df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
+
+        return df
+
+    return wrapper_distribute_and_combine_likelihood
+
+
+def _is_dense_dictionary_argument(argument, dense_indices):
+    return not np.isscalar(argument) and all(idx in argument for idx in dense_indices)
+
+
+def _split_dataframe(df, optim_paras):
+    columns = create_dense_state_space_columns(optim_paras)
+    groups = df.groupby(columns).groups
+    for key in list(groups):
+        sub_df = df.loc[groups.pop(key)].copy()
+        key = (int(key),) if len(columns) == 1 else tuple(int(i) for i in key)
+        groups[key] = sub_df
+
+    return groups
+
+
+def _split_shocks(base_draws_est, splitted_df, indices):
+    splitted_shocks = {}
+    for dense_idx, sub_df in splitted_df.items():
+        sub_indices = sub_df.pop("__id").to_numpy()
+        shock_indices_for_group = indices[sub_indices].reshape(-1)
+        splitted_shocks[dense_idx] = base_draws_est[shock_indices_for_group]
+
+    return splitted_shocks
