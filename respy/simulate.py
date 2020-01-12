@@ -59,7 +59,7 @@ def get_simulate_func(
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    df, n_simulation_periods, options = _harmonize_simulation_arguments(
+    n_simulation_periods, options = _harmonize_simulation_arguments(
         method, df, n_simulation_periods, options
     )
 
@@ -565,17 +565,15 @@ def _apply_law_of_motion(df, optim_paras):
 def _harmonize_simulation_arguments(method, df, n_sim_p, options):
     """Harmonize the arguments of the simulation."""
     if method == "n_step_ahead_with_sampling":
-        df = None
+        pass
     else:
         if df is None:
             raise ValueError(f"Method '{method}' requires data.")
 
-        if method == "n_step_ahead_with_data":
-            df = df.query("Period == 0")
-        elif method == "one_step_ahead":
+        options["simulation_agents"] = df.index.get_level_values("Identifier").nunique()
+
+        if method == "one_step_ahead":
             n_sim_p = int(df.index.get_level_values("Period").max() + 1)
-        else:
-            raise NotImplementedError(f"Method '{method}' is not implemented.")
 
     n_sim_p = options["n_periods"] if n_sim_p is None else n_sim_p
     if options["n_periods"] < n_sim_p:
@@ -586,19 +584,33 @@ def _harmonize_simulation_arguments(method, df, n_sim_p, options):
             "equal to simulated periods."
         )
 
-    return df, n_sim_p, options
+    return n_sim_p, options
 
 
 def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_paras):
     """Process the ``df`` provided by the user for the simulation."""
-    if df is None:
+    if method == "n_step_ahead_with_sampling":
         ids = np.arange(options["simulation_agents"])
         index = pd.MultiIndex.from_product(
             (ids, range(n_sim_periods)), names=["identifier", "period"]
         )
         df = pd.DataFrame(index=index)
 
-    else:
+    elif method == "n_step_ahead_with_data":
+        ids = np.arange(options["simulation_agents"])
+        index = pd.MultiIndex.from_product(
+            (ids, range(n_sim_periods)), names=["identifier", "period"]
+        )
+        df = (
+            df.copy()
+            .rename(columns=rename_labels_to_internal)
+            .rename_axis(index=rename_labels_to_internal)
+            .query("period == 0")
+            .reindex(index=index)
+            .sort_index()
+        )
+
+    elif method == "one_step_ahead":
         df = (
             df.copy()
             .rename(columns=rename_labels_to_internal)
@@ -606,23 +618,26 @@ def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_p
             .sort_index()
         )
 
+    else:
+        raise NotImplementedError
+
     state_space_columns = create_state_space_columns(optim_paras)
     df = df.reindex(columns=state_space_columns)
 
-    first_period = df.query("period == 0")
-    has_nans = np.any(first_period.drop(columns="type", errors="ignore").isna())
-    if has_nans and method != "n_step_ahead_with_sampling":
+    # Perform two checks for NaNs.
+    data = df.query("period == 0").drop(columns="type", errors="ignore")
+    has_nans_in_first_period = np.any(data.isna())
+    if has_nans_in_first_period and method == "n_step_ahead_with_data":
         warnings.warn(
             "The data contains 'NaNs' in the first period which are replaced with "
             "characteristics implied by the initial conditions. Fix the data to silence"
             " the warning."
         )
-    else:
-        pass
 
-    other_periods = df.query("period != 0")
-    has_nans = np.any(other_periods.drop(columns="type", errors="ignore").isna())
+    has_nans = np.any(df.drop(columns="type", errors="ignore").isna())
     if has_nans and method == "one_step_ahead":
-        raise ValueError("The data must not contain NaNs beyond the first period.")
+        raise ValueError(
+            "The data for one-step-ahead simulation must not contain NaNs."
+        )
 
     return df
