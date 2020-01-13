@@ -293,12 +293,14 @@ def _flatten_index(data):
         df.index = df.index.map(str)
         # Unstack DataFrames and Series to add columns/Series name to index.
         if isinstance(df, pd.DataFrame):
+            df.columns = df.columns.astype(str)
             df = df.unstack()
         # Series without a name are named using a counter to avoid duplicate indexes.
         elif isinstance(df, pd.Series) and df.name is None:
             df = df.to_frame(name=str(next(counter)))
             df = pd.DataFrame(df).unstack()
         else:
+            df.name = str(df.name)
             df = pd.DataFrame(df).unstack()
 
         index_flat = df.index.to_flat_index().str.join("_")
