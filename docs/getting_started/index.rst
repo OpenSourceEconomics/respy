@@ -15,4 +15,3 @@ Getting Started
    tutorial-model-with-observables.ipynb
    tutorial-finite-mixture.ipynb
    tutorial-msm.ipynb
-

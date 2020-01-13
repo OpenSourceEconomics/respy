@@ -164,11 +164,14 @@ def msm(
     df = simulate(params)
     simulated_moments = [func(df) for func in calc_moments]
 
-    simulated_moments = [sim_mom.reindex_like(emp_mom) for emp_mom, sim_mom in zip(
-        empirical_moments, simulated_moments)
-                         ]
+    simulated_moments = [
+        sim_mom.reindex_like(emp_mom)
+        for emp_mom, sim_mom in zip(empirical_moments, simulated_moments)
+    ]
 
-    simulated_moments = [func(mom) for mom, func in zip(simulated_moments, replace_nans)]
+    simulated_moments = [
+        func(mom) for mom, func in zip(simulated_moments, replace_nans)
+    ]
 
     flat_empirical_moments = _flatten_index(empirical_moments)
     flat_simulated_moments = _flatten_index(simulated_moments)
@@ -222,9 +225,10 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
 
     # Reindex weights to ensure they are assigned to the correct moments in
     # the msm function.
-    weights = [weight.reindex_like(emp_mom) for emp_mom, weight in zip(
-        empirical_moments, weights)
-               ]
+    weights = [
+        weight.reindex_like(emp_mom)
+        for emp_mom, weight in zip(empirical_moments, weights)
+    ]
 
     flat_weights = _flatten_index(weights)
 
