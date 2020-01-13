@@ -1,6 +1,5 @@
 """This module includes test to specifically test that randomness is held constant."""
 import numpy as np
-import pandas as pd
 import pytest
 
 import respy as rp
@@ -30,7 +29,6 @@ def test_invariance_of_model_solution_in_solve_and_criterion_functions(model_or_
     )
 
 
-@pytest.skip(reason="get_msm_func not implemented.")
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(5)))
 def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
@@ -46,9 +44,6 @@ def test_invariance_of_model_solution_in_solve_and_crit_func(model_or_seed):
     criterion_functions = [
         simulate,
         rp.get_crit_func(params, options, df),
-        rp.get_msm_func(
-            params, options, pd.Series(0, index=[0]), lambda x: pd.Series(0, index=[0])
-        ),
     ]
 
     for crit_func in criterion_functions:
