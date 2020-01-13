@@ -1,47 +1,60 @@
 """
-Test the msm interface of respy!
+Test the msm interface of respy.
 """
-import numpy as np
 import pytest
 
-import respy as rp
+from respy.interface import get_example_model
+from respy.method_of_simulated_moments import get_msm_func
 from respy.method_of_simulated_moments import get_diag_weighting_matrix
-from respy.method_of_simulated_moments import msm
 
 
 @pytest.fixture
 def inputs():
+
     def calc_choice_freq(df):
         return df.groupby("Period").Choice.value_counts(normalize=True).unstack()
 
-    def calc_wage_distr(df):
-        return df.groupby(["Period"])["Wage"].describe()[["mean", "std"]]
+    def calc_wage_mean(df):
+        return df.groupby(["Period"])["Wage"].describe()["mean"]
 
-    def fill_nans_zero(df):
+    def replace_nans(df):
         return df.fillna(0)
 
-    calc_moments = [calc_choice_freq, calc_wage_distr]
-    replace_nans = [fill_nans_zero, fill_nans_zero]
+    calc_moments = {'Choices': calc_choice_freq,
+                    'Mean Wage': calc_wage_mean,
+                    }
+    params, options, df_emp = get_example_model("kw_94_one")
+    empirical_moments = {'Choices': calc_choice_freq(df_emp),
+                         'Mean Wage': calc_wage_mean(df_emp),
+                         }
 
-    params, options, df_emp = rp.get_example_model("kw_94_one")
-    empirical_moments = [calc_choice_freq(df_emp), calc_wage_distr(df_emp)]
-    empirical_moments[0] = fill_nans_zero(empirical_moments[0])
-    empirical_moments[1] = fill_nans_zero(empirical_moments[1])
+    empirical_moments['Choices'] = replace_nans(empirical_moments['Choices'])
+    empirical_moments['Mean Wage'] = replace_nans(empirical_moments['Mean Wage'])
+
     weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
     return params, options, calc_moments, replace_nans, empirical_moments, weighting_matrix
- 
-def test_msm_base(inputs):
-    """ Test whether msm function successfully returns 0 for true parameter 
+
+
+def test_msm_zero(inputs):
+    """ Test whether msm function successfully returns 0 for true parameter
     vector.
     """
-    rslt = msm(
-        params=inputs[0],
-        options=inputs[1],
-        calc_moments=inputs[2],
-        replace_nans=inputs[3],
-        empirical_moments=inputs[4],
-        weighting_matrix=inputs[5],
-        return_scalar=True,
-    )
-    assert rslt == 0
+    msm = get_msm_func(return_scalar=True, *inputs)
+    msm_vector = get_msm_func(return_scalar=False, *inputs)
+
+    scalar = msm(inputs[0])
+    vector = msm_vector(inputs[0])
+
+    assert scalar == 0 and (vector == 0).all()
+
+
+def test_msm_seed(inputs):
+    """ Test whether msm function successfully returns a value larger than 0
+    for a different simulation seed.
+    """
+    inputs[1]['simulation_seed'] = inputs[1]['simulation_seed']+100
+    msm = get_msm_func(return_scalar=True, *inputs)
+    scalar = msm(inputs[0])
+
+    assert scalar > 0
