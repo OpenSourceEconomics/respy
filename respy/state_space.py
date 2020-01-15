@@ -61,8 +61,6 @@ class StateSpace:
             options["monte_carlo_sequence"],
         )
 
-        self.covariates_mixed = options["covariates_mixed"]
-
         core, self.indexer, dense_grid = _create_state_space(optim_paras, options)
 
         # Downcast after calculations or be aware of silent integer overflows.
@@ -76,7 +74,7 @@ class StateSpace:
 
         self._create_is_inadmissible(optim_paras, options)
         self._create_slices_by_core_periods()
-        self._get_indices_of_child_states(optim_paras)
+        self._get_indices_of_child_states(optim_paras, options)
 
     def _initialize_attributes(self, optim_paras):
         """Initialize attributes to use references later."""
@@ -110,7 +108,7 @@ class StateSpace:
 
     @parallelize_across_dense_dimensions
     def _create_is_inadmissible(self, optim_paras, options):
-        df = self.get_attribute("core")
+        df = self.get_attribute("core", options)
 
         # Apply the maximum experience as a default constraint only if its not the last
         # period. Otherwise, it is unconstrained.
@@ -135,20 +133,20 @@ class StateSpace:
         is_inadmissible = self.get_attribute("is_inadmissible")
         is_inadmissible[:] = df[optim_paras["choices"]].to_numpy()
 
-    def get_attribute(self, attr, dense_idx=None):
+    def get_attribute(self, attr, options=None, dense_idx=None):
         """Get an attribute of the state space."""
         if attr == "core":
             attribute = self.core.copy()
             if dense_idx:
                 attribute = attribute.assign(**self.dense[dense_idx])
-                attribute = compute_covariates(attribute, self.covariates_mixed)
+                attribute = compute_covariates(attribute, options["covariates_all"])
         else:
             attribute = getattr(self, attr)
             attribute = attribute[dense_idx] if dense_idx else attribute
 
         return attribute
 
-    def get_attribute_from_period(self, attribute, period):
+    def get_attribute_from_period(self, attribute, period, options=None):
         """Get an attribute of the state space sliced to a given period.
 
         Parameters
@@ -159,7 +157,7 @@ class StateSpace:
             Attribute is retrieved from this period.
 
         """
-        attr = self.get_attribute(attribute)
+        attr = self.get_attribute(attribute, options)
         slice_ = self.slices_by_periods[period]
         out = attr[slice_]
 
@@ -181,7 +179,7 @@ class StateSpace:
             self.slices_by_periods.append(slice(indices[i], indices[i + 1]))
 
     @parallelize_across_dense_dimensions
-    def _get_indices_of_child_states(self, optim_paras):
+    def _get_indices_of_child_states(self, optim_paras, options):
         """For each parent state get the indices of child states.
 
         During the backward induction, the ``emax_value_functions`` in the future period
@@ -209,7 +207,7 @@ class StateSpace:
 
         # Skip the last period which does not have child states.
         for period in reversed(range(n_periods - 1)):
-            states_in_period = self.get_attribute_from_period("core", period)
+            states_in_period = self.get_attribute_from_period("core", period, options)
             states_in_period = states_in_period[["period"] + core_columns].to_numpy()
 
             indices = _insert_indices_of_child_states(
@@ -253,7 +251,7 @@ class StateSpace:
         return continuation_values
 
     @parallelize_across_dense_dimensions
-    def create_choice_rewards(self, optim_paras):
+    def create_choice_rewards(self, optim_paras, options):
         """Create wage and non-pecuniary reward for each state and choice.
 
         Note that missing wages filled with ones and missing non-pecuniary rewards with
@@ -263,7 +261,7 @@ class StateSpace:
         positions without allocating another temporary array.
 
         """
-        df = self.get_attribute("core")
+        df = self.get_attribute("core", options)
 
         wages = self.get_attribute("wages")
         nonpecs = self.get_attribute("nonpecs")

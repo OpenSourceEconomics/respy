@@ -865,6 +865,6 @@ def _separate_covariates_into_core_dense_mixed(options, optim_paras):
         cov: detailed_covariates[cov] for cov in core_covs & dense_covs
     }
     # We cannot overwrite `options["covariates"]`.
-    options["covariates_detailed"] = detailed_covariates
+    options["covariates_all"] = detailed_covariates
 
     return options

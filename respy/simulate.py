@@ -146,7 +146,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
     optim_paras, options = process_params_and_options(params, options)
 
     # Solve the model.
-    state_space.create_choice_rewards(optim_paras)
+    state_space.create_choice_rewards(optim_paras, options)
     solve_with_backward_induction(state_space, optim_paras, options)
 
     # Prepare simulation.
@@ -181,6 +181,8 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
         current_df_extended = _simulate_single_period(
             state_space, current_df, optim_paras
         )
+
+        breakpoint()
 
         # Add all columns with simulated information to the complete DataFrame.
         df = df.reindex(columns=current_df_extended.columns) if period == 0 else df
@@ -376,7 +378,7 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
     """
     # Generate covariates.
     all_data = compute_covariates(
-        states_df, options["covariates_detailed"], raise_errors=False
+        states_df, options["covariates_all"], raise_errors=False
     )
     for column in all_data:
         if all_data[column].dtype == np.bool:

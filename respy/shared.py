@@ -291,12 +291,15 @@ def compute_covariates(df, definitions, raise_errors=True):
             # Check if the covariate does not exist and needs to be computed.
             is_covariate_missing = covariate not in df.columns
             # Check that the dependencies are present and do not contain NaNs.
+            index_or_columns = df.columns.union(df.index.names)
             are_dependencies_present = all(
-                df[dep].notna().all() if dep in df.columns else False
+                df.eval(f"{dep}.notna().all()") if dep in index_or_columns else False
                 for dep in definitions[covariate]["depends_on"]
             )
 
-            if is_covariate_missing and are_dependencies_present:
+            if not is_covariate_missing:
+                covariates_left.remove(covariate)
+            elif is_covariate_missing and are_dependencies_present:
                 df[covariate] = df.eval(definitions[covariate]["formula"])
                 covariates_left.remove(covariate)
 

@@ -105,24 +105,44 @@ def distribute_and_combine_likelihood(func):
 
     @functools.wraps(func)
     def wrapper_distribute_and_combine_likelihood(
-        state_space, df, base_draws_est, optim_paras, *args, **kwargs
+        state_space, df, base_draws_est, type_covariates, optim_paras, *args, **kwargs
     ):
-        n_obs = df.shape[0]
-        # Number each state to split the shocks later.
-        df["__id"] = np.arange(n_obs)
-        # Each row of indices corresponds to a state whereas the columns refer to
-        # different types.
-        indices = np.arange(n_obs * optim_paras["n_types"]).reshape(n_obs, -1)
-
-        splitted_df = _split_dataframe(df, optim_paras) if state_space.dense else df
-
-        splitted_shocks = _split_shocks(base_draws_est, splitted_df, indices)
+        # Duplicate the DataFrame for each type.
+        if state_space.dense:
+            n_obs = df.shape[0]
+            n_types = optim_paras["n_types"]
+            # Number each state to split the shocks later.
+            df["__id"] = np.arange(n_obs)
+            # Each row of indices corresponds to a state whereas the columns refer to
+            # different types.
+            indices = np.arange(n_obs * n_types).reshape(n_obs, n_types)
+            splitted_df = {}
+            for i in range(optim_paras["n_types"]):
+                df = df.copy().assign(type=i)
+                type_specific_dense = _split_dataframe(df, optim_paras)
+                splitted_df = {**splitted_df, **type_specific_dense}
+            splitted_shocks = _split_shocks(base_draws_est, splitted_df, indices)
+        else:
+            splitted_df = df
+            splitted_shocks = base_draws_est
 
         out = func(
-            state_space, splitted_df, splitted_shocks, optim_paras, *args, **kwargs
+            state_space,
+            splitted_df,
+            splitted_shocks,
+            type_covariates,
+            optim_paras,
+            *args,
+            **kwargs
         )
 
-        df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
+        if isinstance(out, dict):
+            out = list(out.values())
+            df = df.join(
+                [sub_df.drop(columns=df.columns, errors="ignore") for sub_df in out]
+            )
+        else:
+            df = out
 
         return df
 
@@ -147,8 +167,9 @@ def _split_dataframe(df, optim_paras):
 def _split_shocks(base_draws_est, splitted_df, indices):
     splitted_shocks = {}
     for dense_idx, sub_df in splitted_df.items():
+        type_ = dense_idx[-1]
         sub_indices = sub_df.pop("__id").to_numpy()
-        shock_indices_for_group = indices[sub_indices].reshape(-1)
+        shock_indices_for_group = indices[sub_indices][:, type_].reshape(-1)
         splitted_shocks[dense_idx] = base_draws_est[shock_indices_for_group]
 
     return splitted_shocks

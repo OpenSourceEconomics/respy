@@ -32,7 +32,7 @@ def solve(params, options):
     optim_paras, options = process_params_and_options(params, options)
 
     state_space = StateSpace(optim_paras, options)
-    state_space.create_choice_rewards(optim_paras)
+    state_space.create_choice_rewards(optim_paras, options)
 
     if optim_paras["delta"] == 0:
         solve_for_myopic_individuals(state_space)
