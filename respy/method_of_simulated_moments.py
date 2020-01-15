@@ -33,6 +33,7 @@ def get_msm_func(
     empirical_moments,
     weighting_matrix,
     return_scalar,
+    n_simulation_periods=None,
 ):
     """Get the msm function.
 
@@ -64,6 +65,10 @@ def get_msm_func(
     return_scalar: bool
         Indicates whether to return moment error vector (False) or weighted
         square product of moment error vector (True).
+    n_simulation_periods: int or None
+        Dictates the number of periods in the simulated dataset.
+        This option does not affect ``options["n_periods"]`` which controls the
+        number of periods for which decision rules are computed.
 
     Returns
     -------
@@ -73,7 +78,9 @@ def get_msm_func(
     """
     empirical_moments = copy.deepcopy(empirical_moments)
 
-    simulate = get_simulate_func(params, options)
+    simulate = get_simulate_func(
+        params=params, options=options, n_simulation_periods=n_simulation_periods
+    )
 
     empirical_moments = _harmonize_input(empirical_moments)
     calc_moments = _harmonize_input(calc_moments)
@@ -162,6 +169,7 @@ def msm(
     empirical_moments = copy.deepcopy(empirical_moments)
 
     df = simulate(params)
+
     simulated_moments = [func(df) for func in calc_moments]
 
     simulated_moments = [
@@ -215,22 +223,21 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
 
     # Use identity matrix if no weights are specified.
     if weights is None:
-        weights = copy.deepcopy(empirical_moments)
-        for df in weights:
-            df[:] = 1
+        flat_weights = _flatten_index(empirical_moments)
+        flat_weights[:] = 1
 
     # Harmonize input weights.
     else:
         weights = _harmonize_input(weights)
 
-    # Reindex weights to ensure they are assigned to the correct moments in
-    # the msm function.
-    weights = [
-        weight.reindex_like(emp_mom)
-        for emp_mom, weight in zip(empirical_moments, weights)
-    ]
+        # Reindex weights to ensure they are assigned to the correct moments in
+        # the msm function.
+        weights = [
+            weight.reindex_like(emp_mom)
+            for emp_mom, weight in zip(empirical_moments, weights)
+        ]
 
-    flat_weights = _flatten_index(weights)
+        flat_weights = _flatten_index(weights)
 
     return np.diag(flat_weights)
 
