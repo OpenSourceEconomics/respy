@@ -28,7 +28,7 @@ jobs:
 
   - bash: |
       source activate respy
-      tox
+      tox -- -m "not slow"
     displayName: Run all tests.
 
 - job:
@@ -54,7 +54,7 @@ jobs:
 
   - script: |
       call activate respy
-      tox -e pytest
+      tox -e pytest -- -m "not slow"
     displayName: Run pytest.
 
 - job:
@@ -94,5 +94,5 @@ jobs:
 
   - bash: |
       source activate respy
-      tox -e pytest
+      tox -e pytest -- -m "not slow"
     displayName: Run pytest.
