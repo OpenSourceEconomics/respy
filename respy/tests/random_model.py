@@ -24,31 +24,6 @@ from respy.shared import normalize_probabilities
 from respy.simulate import get_simulate_func
 
 
-_BASE_CORE_STATE_SPACE_FILTERS = [
-    # In periods > 0, if agents accumulated experience only in one choice, lagged choice
-    # cannot be different.
-    "period > 0 and exp_{i} == period and lagged_choice_1 != '{i}'",
-    # In periods > 0, if agents always accumulated experience, lagged choice cannot be
-    # non-experience choice.
-    "period > 0 and exp_a + exp_b + exp_edu == period and lagged_choice_1 == '{j}'",
-    # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
-    # be school.
-    "period > 0 and lagged_choice_1 == 'edu' and exp_edu == 0",
-    # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
-    "lagged_choice_1 == '{k}' and exp_{k} == 0",
-    # In period 0, agents cannot choose occupation a or b.
-    "period == 0 and lagged_choice_1 == '{k}'",
-]
-"""list: List of core state space filters.
-
-.. deprecated::
-
-    This variable must be removed if generate_random_model is rewritten such that
-    functions for each replicable paper are written.
-
-"""
-
-
 _BASE_COVARIATES = {
     "not_any_exp_a": "exp_a == 0",
     "not_any_exp_b": "exp_b == 0",
@@ -155,7 +130,7 @@ def generate_random_model(
         lc_params.set_index(["category", "name"], inplace=True)
         params = pd.concat([params, lc_probs_params, lc_params], axis=0, sort=False)
         lc_covariates = lagged_choices_covariates_template()
-        filters = _BASE_CORE_STATE_SPACE_FILTERS
+        filters = []  # _BASE_CORE_STATE_SPACE_FILTERS
     else:
         lc_covariates = {}
         filters = []

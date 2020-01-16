@@ -1,6 +1,8 @@
 """General configuration for respy."""
 from pathlib import Path
 
+import numpy as np
+
 # Obtain the root directory of the package. Do not import respy which creates a circular
 # import.
 ROOT_DIR = Path(__file__).parent
@@ -13,6 +15,10 @@ MAX_FLOAT = 1e200
 MIN_FLOAT = -MAX_FLOAT
 MAX_LOG_FLOAT = 460
 MIN_LOG_FLOAT = -MAX_LOG_FLOAT
+
+# Everything for the indexer.
+INDEXER_DTYPE = np.int32
+INDEXER_INVALID_INDEX = np.iinfo(INDEXER_DTYPE).min
 
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10
