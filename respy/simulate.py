@@ -182,8 +182,6 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
             state_space, current_df, optim_paras
         )
 
-        breakpoint()
-
         # Add all columns with simulated information to the complete DataFrame.
         df = df.reindex(columns=current_df_extended.columns) if period == 0 else df
         df = df.combine_first(current_df_extended)

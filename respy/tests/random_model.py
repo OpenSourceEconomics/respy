@@ -242,8 +242,6 @@ def simulate_truncated_data(params, options, is_missings=True):
     simulate = get_simulate_func(params, options)
     df = simulate(params)
 
-    breakpoint()
-
     np.random.seed(options["simulation_seed"])
 
     if is_missings:
