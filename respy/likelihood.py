@@ -8,7 +8,6 @@ import pandas as pd
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
-from respy.config import INDEXER_INVALID_INDEX
 from respy.config import MAX_FLOAT
 from respy.config import MIN_FLOAT
 from respy.pre_processing.data_checking import check_estimation_data
@@ -286,18 +285,7 @@ def _internal_log_like_obs(
 
     draws = draws.reshape(n_obs, n_types, -1, n_choices)
 
-    # Get continuation values. The problem is that we only need a subset of continuation
-    # values defined in ``indices``. To not create the complete matrix of continuation
-    # values, select only necessary continuation value indices. Indices may contain
-    # :data:`respy.config.INDEXER_INVALID_INDEX` as an identifier for invalid states. In
-    # this case, indexing leads to an `IndexError`. Replace the continuation values with
-    # zeros for such indices. See also `get_continuation_values`.
-    selected_indices = state_space.indices_of_child_states[indices]
-    mask = selected_indices != INDEXER_INVALID_INDEX
-    valid_indices = np.where(mask, selected_indices, 0)
-    continuation_values = np.where(
-        mask, state_space.emax_value_functions[valid_indices], 0
-    )
+    continuation_values = state_space.get_continuation_values(indices=indices)
 
     choice_loglikes = simulate_log_probability_of_individuals_observed_choice(
         state_space.wages[indices],

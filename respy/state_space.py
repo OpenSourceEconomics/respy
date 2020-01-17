@@ -142,16 +142,27 @@ class StateSpace:
             idx_start, idx_end = np.where(self.states[:, 0] == i)[0][[0, -1]]
             self.slices_by_periods.append(slice(idx_start, idx_end + 1))
 
-    def get_continuation_values(self, period):
-        """Return the continuation values for a given period.
+    def get_continuation_values(self, period=None, indices=None):
+        """Return the continuation values for a given period or states.
 
         If the last period is selected, return a matrix of zeros. In any other period,
         use the precomputed ``indices_of_child_states`` to select continuation values
         from ``emax_value_functions``.
 
+        You can also indices to collect continuation values across periods.
+
         Indices may contain :data:`respy.config.INDEXER_INVALID_INDEX` as an identifier
         for invalid states. In this case, indexing leads to an `IndexError`. Replace the
         continuation values with zeros for such indices.
+
+        Parameters
+        ----------
+        period : int or None
+            Return the continuation values for period `period` which are the expected
+            value functions from period `period + 1`.
+        indices : numpy.ndarray or None
+            Indices of states for which to return the continuation values. These states
+            can cover multiple periods.
 
         """
         n_periods = len(self.indexer)
@@ -161,10 +172,19 @@ class StateSpace:
             n_states_last_period = len(range(last_slice.start, last_slice.stop))
             n_choices = self.is_inadmissible.shape[1]
             continuation_values = np.zeros((n_states_last_period, n_choices))
+
         else:
-            indices = self.get_attribute_from_period("indices_of_child_states", period)
-            mask = indices != INDEXER_INVALID_INDEX
-            valid_indices = np.where(mask, indices, 0)
+            if indices is not None:
+                child_indices = self.indices_of_child_states[indices]
+            elif period is not None and 0 <= period <= n_periods - 2:
+                child_indices = self.get_attribute_from_period(
+                    "indices_of_child_states", period
+                )
+            else:
+                raise NotImplementedError
+
+            mask = child_indices != INDEXER_INVALID_INDEX
+            valid_indices = np.where(mask, child_indices, 0)
             continuation_values = np.where(
                 mask, self.emax_value_functions[valid_indices], 0
             )

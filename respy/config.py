@@ -18,7 +18,18 @@ MIN_LOG_FLOAT = -MAX_LOG_FLOAT
 
 # Everything for the indexer.
 INDEXER_DTYPE = np.int32
+"""numpy.dtype: Data type for the entries in the state space indexer."""
 INDEXER_INVALID_INDEX = np.iinfo(INDEXER_DTYPE).min
+"""int: Identifier for invalid states.
+
+Every valid state has a unique number which is stored in the state space indexer at the
+correct position. Invalid entries in the indexer are filled with
+:data:`INDEXER_INVALID_INDEX` which is the most negative value for
+:data:`INDEXER_DTYPE`. Using the invalid value as an index likely raises an
+:class:`IndexError` as negative indices cannot exceed the length of the indexed array
+dimension.
+
+"""
 
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10
