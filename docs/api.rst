@@ -11,19 +11,7 @@ interface
     :toctree: _generated/
 
     get_example_model
-
-state_space
------------
-
-.. currentmodule:: respy.state_space
-
-.. autosummary::
-    :toctree: _generated/
-
-    StateSpace
-    StateSpace.get_attribute_from_period
-    StateSpace.get_continuation_values
-    StateSpace.update_systematic_rewards
+    get_parameter_constraints
 
 solve
 -----
