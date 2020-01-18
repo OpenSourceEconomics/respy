@@ -175,11 +175,11 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
 
         # Add all columns with simulated information to the complete DataFrame.
         df = df.reindex(columns=current_df_extended.columns) if period == 0 else df
-        df = df.combine_first(current_df_extended)
+        df = df.fillna(current_df_extended)
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             next_df = _apply_law_of_motion(current_df_extended, optim_paras)
-            df = df.combine_first(next_df)
+            df = df.fillna(next_df)
 
     simulated_data = _process_simulation_output(df, optim_paras)
 
