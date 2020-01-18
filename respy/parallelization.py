@@ -105,7 +105,7 @@ def distribute_and_combine_likelihood(func):
 
     @functools.wraps(func)
     def wrapper_distribute_and_combine_likelihood(
-        state_space, df, base_draws_est, type_covariates, optim_paras, *args, **kwargs
+        state_space, df, base_draws_est, optim_paras, options
     ):
         # Duplicate the DataFrame for each type.
         if state_space.dense:
@@ -126,15 +126,7 @@ def distribute_and_combine_likelihood(func):
             splitted_df = df
             splitted_shocks = base_draws_est
 
-        out = func(
-            state_space,
-            splitted_df,
-            splitted_shocks,
-            type_covariates,
-            optim_paras,
-            *args,
-            **kwargs
-        )
+        out = func(state_space, splitted_df, splitted_shocks, optim_paras, options)
 
         if isinstance(out, dict):
             out = list(out.values())
