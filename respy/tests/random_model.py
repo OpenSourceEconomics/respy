@@ -130,10 +130,8 @@ def generate_random_model(
         lc_params.set_index(["category", "name"], inplace=True)
         params = pd.concat([params, lc_probs_params, lc_params], axis=0, sort=False)
         lc_covariates = lagged_choices_covariates_template()
-        filters = []  # _BASE_CORE_STATE_SPACE_FILTERS
     else:
         lc_covariates = {}
-        filters = []
 
     observables = point_constr.pop("observables", None)
     if observables is None:
@@ -175,7 +173,6 @@ def generate_random_model(
     options = {
         **DEFAULT_OPTIONS,
         **options,
-        "core_state_space_filters": filters,
         "covariates": {**_BASE_COVARIATES, **lc_covariates, **observable_covs},
     }
 
