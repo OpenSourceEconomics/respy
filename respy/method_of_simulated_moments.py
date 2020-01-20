@@ -32,8 +32,8 @@ def get_msm_func(
     replace_nans,
     empirical_moments,
     weighting_matrix,
-    return_scalar,
     n_simulation_periods=None,
+    return_scalar=True,
 ):
     """Get the msm function.
 
@@ -62,13 +62,13 @@ def get_msm_func(
     weighting_matrix: numpy.ndarray
         Square matrix of dimension (NxN) with N denoting the number of
         empirical_moments. Used to weight squared moment errors.
-    return_scalar: bool
-        Indicates whether to return moment error vector (False) or weighted
-        square product of moment error vector (True).
     n_simulation_periods: int or None
         Dictates the number of periods in the simulated dataset.
         This option does not affect ``options["n_periods"]`` which controls the
         number of periods for which decision rules are computed.
+    return_scalar: bool
+        Indicates whether to return moment error vector (False) or weighted
+        square product of moment error vector (True).
 
     Returns
     -------
@@ -188,10 +188,10 @@ def msm(
 
     # Return moment errors as indexed DataFrame or calculate weighted square product of
     # moment errors depending on return_scalar.
-    if return_scalar is False:
-        out = moment_errors
-    else:
+    if return_scalar:
         out = moment_errors.T @ weighting_matrix @ moment_errors
+    else:
+        out = moment_errors
 
     return out
 
@@ -300,24 +300,20 @@ def _flatten_index(data):
     data_flat = []
     counter = itertools.count()
 
-    for df in data:
-        df.index = df.index.map(str)
+    for series_or_df in data:
+        series_or_df.index = series_or_df.index.map(str)
         # Unstack DataFrames and Series to add columns/Series name to index.
-        if isinstance(df, pd.DataFrame):
-            df.columns = df.columns.astype(str)
-            df = df.unstack()
+        if isinstance(series_or_df, pd.DataFrame):
+            df = series_or_df.rename(columns=str)
         # Series without a name are named using a counter to avoid duplicate indexes.
-        elif isinstance(df, pd.Series) and df.name is None:
-            df = df.to_frame(name=str(next(counter)))
-            df = pd.DataFrame(df).unstack()
+        elif isinstance(series_or_df, pd.Series) and series_or_df.name is None:
+            df = series_or_df.to_frame(name=str(next(counter)))
         else:
-            df.name = str(df.name)
-            df = pd.DataFrame(df).unstack()
+            df = series_or_df.to_frame(str(series_or_df.name))
 
-        index_flat = df.index.to_flat_index().str.join("_")
-
-        df.index = index_flat
-
+        # Columns to the index.
+        df = df.unstack()
+        df.index = df.index.to_flat_index().str.join("_")
         data_flat.append(df)
 
     return pd.concat(data_flat)
