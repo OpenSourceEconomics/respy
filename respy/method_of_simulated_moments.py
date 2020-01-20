@@ -43,30 +43,30 @@ def get_msm_func(
         Contains parameters.
     options : dict
         Dictionary containing model options.
-    calc_moments: callable or list
+    calc_moments : callable or list
         Function(s) used to calculate simulated moments. Must match structure
         of empirical moments i.e. if empirical_moments is a list of
         pandas.DataFrames, calc_moments must be a list of the same length
         containing functions that correspond to the moments in
         empirical_moments.
-    replace_nans: callable or list
+    replace_nans : callable or list
         Functions(s) specifying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
         Exception: If only one replacement function is specified, it will be
         used on all sets of simulated moments.
-    empirical_moments: pandas.DataFrame or pandas.Series or dict or list
+    empirical_moments : pandas.DataFrame or pandas.Series or dict or list
         Contains the empirical moments calculated for the observed data. Moments
         should be saved to pandas.DataFrame or pandas.Series that can either be
         passed to the function directly or as items of a list or dictionary.
         Index of pandas.DataFrames can be of type MultiIndex, but columns cannot.
-    weighting_matrix: numpy.ndarray
+    weighting_matrix : numpy.ndarray
         Square matrix of dimension (NxN) with N denoting the number of
         empirical_moments. Used to weight squared moment errors.
-    n_simulation_periods: int or None
+    n_simulation_periods : int, default None
         Dictates the number of periods in the simulated dataset.
         This option does not affect ``options["n_periods"]`` which controls the
         number of periods for which decision rules are computed.
-    return_scalar: bool
+    return_scalar : bool, default True
         Indicates whether to return moment error vector (False) or weighted
         square product of moment error vector (True).
 
