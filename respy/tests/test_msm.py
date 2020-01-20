@@ -6,6 +6,8 @@ import pytest
 from respy.interface import get_example_model
 from respy.method_of_simulated_moments import get_diag_weighting_matrix
 from respy.method_of_simulated_moments import get_msm_func
+from respy.simulate import get_simulate_func
+from respy.tests.utils import process_model_or_seed
 
 
 @pytest.fixture
@@ -20,17 +22,16 @@ def inputs():
         return df.fillna(0)
 
     calc_moments = {
-        "Choices": calc_choice_freq,
         "Mean Wage": calc_wage_mean,
-    }
-    params, options, df_emp = get_example_model("kw_94_one")
-    empirical_moments = {
-        "Choices": calc_choice_freq(df_emp),
-        "Mean Wage": calc_wage_mean(df_emp),
+        "Choices": calc_choice_freq,
     }
 
-    empirical_moments["Choices"] = replace_nans(empirical_moments["Choices"])
-    empirical_moments["Mean Wage"] = replace_nans(empirical_moments["Mean Wage"])
+    params, options, df_emp = get_example_model("kw_94_one")
+
+    empirical_moments = {
+        "Choices": replace_nans(calc_choice_freq(df_emp)),
+        "Mean Wage": replace_nans(calc_wage_mean(df_emp)),
+    }
 
     weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
@@ -51,18 +52,56 @@ def test_msm_zero(inputs):
     msm = get_msm_func(return_scalar=True, *inputs)
     msm_vector = get_msm_func(return_scalar=False, *inputs)
 
-    scalar = msm(inputs[0])
-    vector = msm_vector(inputs[0])
-
-    assert scalar == 0 and (vector == 0).all()
+    assert msm(inputs[0]) == 0
+    assert (msm_vector(inputs[0]) == 0).all()
 
 
-def test_msm_seed(inputs):
+def test_msm_nonzero(inputs):
     """ Test whether msm function successfully returns a value larger than 0
-    for a different simulation seed.
+    for different deviations in the simulated set.
     """
-    inputs[1]["simulation_seed"] = inputs[1]["simulation_seed"] + 100
-    msm = get_msm_func(return_scalar=True, *inputs)
-    scalar = msm(inputs[0])
+    # 1. Different parameter vector.
+    params = inputs[0].copy()
+    params.loc["delta", "value"] = 0.8
+    msm_params = get_msm_func(return_scalar=True, *inputs)
 
-    assert scalar > 0
+    # 2. Lower number of periods in the simulated dataset.
+    msm_periods = get_msm_func(return_scalar=True, n_simulation_periods=4, *inputs)
+
+    # 3. Different simulation seed for the simulated dataset.
+    inputs[1]["simulation_seed"] = inputs[1]["simulation_seed"] + 100
+    msm_seed = get_msm_func(return_scalar=True, *inputs)
+
+    assert msm_params(params) > 0
+    assert msm_periods(inputs[0]) > 0
+    assert msm_seed(inputs[0]) > 0
+
+
+@pytest.mark.parametrize("model_or_seed", ["kw_94_one", "kw_97_basic"] + list(range(5)))
+def test_randomness_msm(model_or_seed):
+    def calc_choice_freq(df):
+        return df.groupby("Period").Choice.value_counts(normalize=True).unstack()
+
+    def replace_nans(df):
+        return df.fillna(0)
+
+    params, options = process_model_or_seed(model_or_seed)
+    simulate = get_simulate_func(params, options)
+    df_emp = simulate(params)
+
+    empirical_moments = replace_nans(calc_choice_freq(df_emp))
+
+    weighting_matrix = get_diag_weighting_matrix(empirical_moments)
+
+    inputs = (
+        params,
+        options,
+        calc_choice_freq,
+        replace_nans,
+        empirical_moments,
+        weighting_matrix,
+    )
+
+    msm = get_msm_func(return_scalar=True, *inputs)
+
+    assert msm(params) == 0
