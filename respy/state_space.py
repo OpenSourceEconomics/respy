@@ -9,6 +9,7 @@ from respy._numba import array_to_tuple
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.shared import cast_bool_to_numeric
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
@@ -142,6 +143,7 @@ class StateSpace:
             if dense_idx:
                 attribute = attribute.assign(**self.dense[dense_idx])
                 attribute = compute_covariates(attribute, options["covariates_all"])
+            attribute = cast_bool_to_numeric(attribute)
         else:
             attribute = getattr(self, attr)
             attribute = attribute[dense_idx] if dense_idx else attribute

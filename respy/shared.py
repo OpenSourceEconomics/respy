@@ -248,6 +248,13 @@ def downcast_to_smallest_dtype(series, downcast_options=None):
     return out
 
 
+def cast_bool_to_numeric(df):
+    bool_columns = df.columns[df.dtypes == np.bool]
+    for column in bool_columns:
+        df[column] = df[column].astype(np.uint8)
+    return df
+
+
 def compute_covariates(df, definitions, raise_errors=True):
     """Compute covariates.
 

@@ -14,6 +14,7 @@ from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import cast_bool_to_numeric
 from respy.shared import compute_covariates
 from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
@@ -296,6 +297,7 @@ def _compute_x_beta_for_type_probability(df, optim_paras, options):
         first_observations = compute_covariates(
             first_observations, options["covariates_all"]
         )
+        first_observations = cast_bool_to_numeric(first_observations)
 
         labels = optim_paras["type_prob"][type_].index
         df[type_] = np.dot(first_observations[labels], optim_paras["type_prob"][type_])
