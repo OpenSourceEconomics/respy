@@ -252,15 +252,7 @@ def _compute_wage_and_choice_likelihood_contributions(
 
     draws = draws.reshape(n_obs, -1, n_choices)
 
-    # Get continuation values. The problem is that we only need a subset of continuation
-    # values defined in ``indices``. To not create the complete matrix of continuation
-    # values, select only necessary continuation value indices and then index
-    # continuation values. Same steps as in `get_continuation_values`.
-    selected_indices = state_space.get_attribute("indices_of_child_states")[indices]
-    continuation_values = state_space.get_attribute("expected_value_functions")[
-        selected_indices
-    ]
-    continuation_values = np.where(selected_indices >= 0, continuation_values, 0)
+    continuation_values = state_space.get_continuation_values(indices=indices)
 
     choice_loglikes = _simulate_log_probability_of_individuals_observed_choice(
         state_space.get_attribute("wages")[indices],

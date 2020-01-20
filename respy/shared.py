@@ -81,8 +81,7 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
     estimated along all other parameters and changes every iteration. Thus, instead of
     sampling draws from a varying multivariate normal distribution, standard normal
     draws are sampled here and transformed to the distribution specified by the
-    parameters in
-    :func:`transform_base_draws_with_cholesky_factor`.
+    parameters in :func:`transform_base_draws_with_cholesky_factor`.
 
     Parameters
     ----------

@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 
 from respy._numba import array_to_tuple
+from respy.config import INDEXER_DTYPE
+from respy.config import INDEXER_INVALID_INDEX
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
@@ -222,16 +224,27 @@ class StateSpace:
 
         indices_of_child_states[:] = indices
 
-    def get_continuation_values(self, period):
-        """Return the continuation values for a given period.
+    def get_continuation_values(self, period=None, indices=None):
+        """Return the continuation values for a given period or states.
 
         If the last period is selected, return a matrix of zeros. In any other period,
         use the precomputed ``indices_of_child_states`` to select continuation values
         from ``emax_value_functions``.
 
-        Indices may contain ``-1`` as an identifier for invalid states. In this case,
-        the last value of ``emax_value_functions`` is taken which is why all entries in
-        ``continuation_values`` where ``indices == -1`` need to be replaced with zeros.
+        You can also indices to collect continuation values across periods.
+
+        Indices may contain :data:`respy.config.INDEXER_INVALID_INDEX` as an identifier
+        for invalid states. In this case, indexing leads to an `IndexError`. Replace the
+        continuation values with zeros for such indices.
+
+        Parameters
+        ----------
+        period : int or None
+            Return the continuation values for period `period` which are the expected
+            value functions from period `period + 1`.
+        indices : numpy.ndarray or None
+            Indices of states for which to return the continuation values. These states
+            can cover multiple periods.
 
         """
         n_periods = len(self.indexer)
@@ -241,12 +254,22 @@ class StateSpace:
             n_states_last_period = len(range(last_slice.start, last_slice.stop))
             n_choices = self.get_attribute("is_inadmissible").shape[1]
             continuation_values = np.zeros((n_states_last_period, n_choices))
+
         else:
-            indices = self.get_attribute_from_period("indices_of_child_states", period)
-            continuation_values = self.get_attribute("expected_value_functions")[
-                indices
-            ]
-            continuation_values = np.where(indices >= 0, continuation_values, 0)
+            if indices is not None:
+                child_indices = self.get_attribute("indices_of_child_states")[indices]
+            elif period is not None and 0 <= period <= n_periods - 2:
+                child_indices = self.get_attribute_from_period(
+                    "indices_of_child_states", period
+                )
+            else:
+                raise NotImplementedError
+
+            mask = child_indices != INDEXER_INVALID_INDEX
+            valid_indices = np.where(mask, child_indices, 0)
+            continuation_values = np.where(
+                mask, self.get_attribute("expected_value_functions")[valid_indices], 0
+            )
 
         return continuation_values
 
@@ -571,7 +594,7 @@ def _create_core_state_space_indexer(df, optim_paras):
             tuple(np.minimum(max_initial_experience + period, max_experience) + 1)
             + (n_choices,) * optim_paras["n_lagged_choices"]
         )
-        sub_indexer = np.full(shape, -1, dtype=np.int32)
+        sub_indexer = np.full(shape, INDEXER_INVALID_INDEX, dtype=INDEXER_DTYPE)
 
         sub_df = df.query("period == @period")
         n_states = sub_df.shape[0]
