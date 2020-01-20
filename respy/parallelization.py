@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 from joblib import delayed
 from joblib import Parallel
-from joblib import parallel_backend
 
 from respy.shared import create_dense_state_space_columns
 
@@ -69,11 +68,10 @@ def parallelize_across_dense_dimensions(func):
 
             args, kwargs = broadcast_arguments(state_space, args, kwargs)
 
-            with parallel_backend("loky"):
-                out = Parallel(n_jobs=1, max_nbytes=None)(
-                    delayed(func)(st_sp, *args, **kwargs)
-                    for st_sp, args, kwargs in zip(state_spaces, args, kwargs)
-                )
+            out = Parallel(n_jobs=1, max_nbytes=None)(
+                delayed(func)(st_sp, *args, **kwargs)
+                for st_sp, args, kwargs in zip(state_spaces, args, kwargs)
+            )
 
             out = dict(zip(state_space.dense, out))
         else:
@@ -118,25 +116,21 @@ def distribute_and_combine_likelihood(func):
             indices = np.arange(n_obs * n_types).reshape(n_obs, n_types)
             splitted_df = {}
             for i in range(optim_paras["n_types"]):
-                df = df.copy().assign(type=i)
-                type_specific_dense = _split_dataframe(df, optim_paras)
+                df_ = df.copy().assign(type=i)
+                type_specific_dense = _split_dataframe(df_, optim_paras)
                 splitted_df = {**splitted_df, **type_specific_dense}
-            splitted_shocks = _split_shocks(base_draws_est, splitted_df, indices)
+            splitted_shocks = _split_shocks(
+                base_draws_est, splitted_df, indices, optim_paras
+            )
         else:
             splitted_df = df
             splitted_shocks = base_draws_est
 
         out = func(state_space, splitted_df, splitted_shocks, optim_paras, options)
 
-        if isinstance(out, dict):
-            out = list(out.values())
-            df = df.join(
-                [sub_df.drop(columns=df.columns, errors="ignore") for sub_df in out]
-            )
-        else:
-            df = out
+        out = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
 
-        return df
+        return out
 
     return wrapper_distribute_and_combine_likelihood
 
@@ -156,10 +150,10 @@ def _split_dataframe(df, optim_paras):
     return groups
 
 
-def _split_shocks(base_draws_est, splitted_df, indices):
+def _split_shocks(base_draws_est, splitted_df, indices, optim_paras):
     splitted_shocks = {}
     for dense_idx, sub_df in splitted_df.items():
-        type_ = dense_idx[-1]
+        type_ = dense_idx[-1] if optim_paras["n_types"] >= 2 else 0
         sub_indices = sub_df.pop("__id").to_numpy()
         shock_indices_for_group = indices[sub_indices][:, type_].reshape(-1)
         splitted_shocks[dense_idx] = base_draws_est[shock_indices_for_group]

@@ -4,7 +4,6 @@ from functools import partial
 
 import numba as nb
 import numpy as np
-import pandas as pd
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
@@ -199,29 +198,24 @@ def _internal_log_like_obs(
     )
 
     # Aggregate choice probabilities and wage densities to log likes per observation.
-    choice_cols = [f"loglike_choice_type_{i}" for i in range(n_types)]
-    wage_cols = [f"loglike_wage_type_{i}" for i in range(n_types)]
-    per_observation_loglikes = df[choice_cols].to_numpy() + df[wage_cols].to_numpy()
-
-    # Sum up log likelihoods per observation for each individual.
-    per_individual_loglikes = (
-        pd.DataFrame(data=per_observation_loglikes, index=df.index)
-        .groupby("identifier")
-        .sum()
-        .to_numpy()
+    loglikes = (
+        multiindex_pivot(df, columns="type", values=["loglike_choice", "loglike_wage"])
+        if optim_paras["n_types"] >= 2
+        else df[["loglike_choice", "loglike_wage"]]
     )
+    per_observation_loglikes = loglikes["loglike_choice"] + loglikes["loglike_wage"]
+    per_individual_loglikes = per_observation_loglikes.groupby("identifier").sum()
 
     if n_types >= 2:
         # Weight each type-specific individual log likelihood with the type probability.
         log_type_probabilities = _compute_log_type_probabilities(
             type_covariates, optim_paras, options
         )
-
-        weighted_loglikes = per_individual_loglikes + log_type_probabilities.to_numpy()
+        weighted_loglikes = per_individual_loglikes + log_type_probabilities
 
         contribs = special.logsumexp(weighted_loglikes, axis=1)
     else:
-        contribs = per_individual_loglikes.flatten()
+        contribs = per_individual_loglikes.to_numpy().flatten()
         log_type_probabilities = None
 
     contribs = np.clip(contribs, MIN_FLOAT, MAX_FLOAT)
@@ -236,7 +230,6 @@ def _compute_wage_and_choice_likelihood_contributions(
 ):
     n_choices = len(optim_paras["choices"])
     n_obs = df.shape[0]
-    n_types = optim_paras["n_types"]
 
     indices = df["index"].to_numpy()
 
@@ -278,19 +271,8 @@ def _compute_wage_and_choice_likelihood_contributions(
         options["estimation_tau"],
     )
 
-    choice_loglikes = np.clip(choice_loglikes, MIN_FLOAT, MAX_FLOAT)
-    wage_loglikes = np.clip(wage_loglikes, MIN_FLOAT, MAX_FLOAT)
-
-    if n_types >= 2:
-        # Save type-specific choice and wage log likelihoods.
-        type_ = df.type.unique()[0] if optim_paras["n_types"] >= 2 else None
-        df[f"loglike_choice_type_{type_}"] = choice_loglikes
-        df[f"loglike_wage_type_{type_}"] = wage_loglikes
-
-    else:
-        # Save choice and wage log likelihoods.
-        df[f"loglike_choice_type_0"] = choice_loglikes
-        df[f"loglike_wage_type_0"] = wage_loglikes
+    df["loglike_choice"] = np.clip(choice_loglikes, MIN_FLOAT, MAX_FLOAT)
+    df["loglike_wage"] = np.clip(wage_loglikes, MIN_FLOAT, MAX_FLOAT)
 
     return df
 
@@ -300,22 +282,16 @@ def _compute_log_type_probabilities(df, optim_paras, options):
     dense_columns.remove("type")
 
     if dense_columns:
-        x_betas = df.groupby(dense_columns).apply(
-            _compute_x_beta_for_type_probability, args=(optim_paras, options)
+        x_betas = df.groupby(dense_columns, as_index=False).apply(
+            _compute_x_beta_for_type_probability, optim_paras, options
         )
     else:
         x_betas = _compute_x_beta_for_type_probability(df, optim_paras, options)
 
-    probabilities = special.softmax(
-        x_betas[[f"x_beta_type_{i}" for i in range(optim_paras["n_types"])]], axis=1
-    )
+    probabilities = special.softmax(x_betas, axis=1)
 
     probabilities = np.clip(probabilities, 1 / MAX_FLOAT, None)
     log_probabilities = np.log(probabilities)
-
-    log_probabilities = log_probabilities.rename(
-        columns=lambda x: x.replace("x_beta", "log_probability")
-    )
 
     return log_probabilities
 
@@ -328,11 +304,9 @@ def _compute_x_beta_for_type_probability(df, optim_paras, options):
         )
 
         labels = optim_paras["type_prob"][type_].index
-        df[f"x_beta_type_{type_}"] = np.dot(
-            first_observations[labels], optim_paras["type_prob"][type_]
-        )
+        df[type_] = np.dot(first_observations[labels], optim_paras["type_prob"][type_])
 
-    return df[[f"x_beta_type_{i}" for i in range(optim_paras["n_types"])]]
+    return df[range(optim_paras["n_types"])]
 
 
 @nb.njit
@@ -613,4 +587,17 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
 
         df = df.append(log_type_probabilities, sort=False)
 
+    return df
+
+
+def multiindex_pivot(df, columns=None, values=None):
+    """Apply `pd.pivot` to DataFrames with MultiIndex.
+
+    See https://github.com/pandas-dev/pandas/issues/23955 for the issue.
+
+    """
+    old_index = df.index
+    df = df.reset_index(drop=True)
+    df = df.pivot(columns=columns, values=values)
+    df.index = old_index
     return df
