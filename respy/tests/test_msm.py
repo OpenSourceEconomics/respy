@@ -26,11 +26,11 @@ def inputs():
         "Choices": calc_choice_freq,
     }
 
-    params, options, df_emp = get_example_model("kw_94_one")
+    params, options, df = get_example_model("kw_94_one")
 
     empirical_moments = {
-        "Choices": replace_nans(calc_choice_freq(df_emp)),
-        "Mean Wage": replace_nans(calc_wage_mean(df_emp)),
+        "Choices": replace_nans(calc_choice_freq(df)),
+        "Mean Wage": replace_nans(calc_wage_mean(df)),
     }
 
     weighting_matrix = get_diag_weighting_matrix(empirical_moments)
@@ -87,21 +87,20 @@ def test_randomness_msm(model_or_seed):
 
     params, options = process_model_or_seed(model_or_seed)
     simulate = get_simulate_func(params, options)
-    df_emp = simulate(params)
+    df = simulate(params)
 
-    empirical_moments = replace_nans(calc_choice_freq(df_emp))
+    empirical_moments = replace_nans(calc_choice_freq(df))
 
     weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
-    inputs = (
+    msm = get_msm_func(
         params,
         options,
         calc_choice_freq,
         replace_nans,
         empirical_moments,
         weighting_matrix,
+        return_scalar=True,
     )
-
-    msm = get_msm_func(return_scalar=True, *inputs)
 
     assert msm(params) == 0
