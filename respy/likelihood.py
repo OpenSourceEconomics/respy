@@ -199,7 +199,9 @@ def _internal_log_like_obs(
 
     # Aggregate choice probabilities and wage densities to log likes per observation.
     loglikes = (
-        multiindex_pivot(df, columns="type", values=["loglike_choice", "loglike_wage"])
+        df.groupby(["identifier", "period", "type"])[["loglike_choice", "loglike_wage"]]
+        .first()
+        .unstack("type")
         if optim_paras["n_types"] >= 2
         else df[["loglike_choice", "loglike_wage"]]
     )
@@ -587,17 +589,4 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
 
         df = df.append(log_type_probabilities, sort=False)
 
-    return df
-
-
-def multiindex_pivot(df, columns=None, values=None):
-    """Apply `pd.pivot` to DataFrames with MultiIndex.
-
-    See https://github.com/pandas-dev/pandas/issues/23955 for the issue.
-
-    """
-    old_index = df.index
-    df = df.reset_index(drop=True)
-    df = df.pivot(columns=columns, values=values)
-    df.index = old_index
     return df

@@ -154,20 +154,15 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
 
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
 
-    # Prepare shocks.
+    # Prepare shocks and store them in the pandas.DataFrame.
     n_wages = len(optim_paras["choices_w_wage"])
     base_draws_sim_transformed = transform_base_draws_with_cholesky_factor(
         base_draws_sim, optim_paras["shocks_cholesky"], n_wages
     )
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
-
-    # Store the shocks inside the DataFrame. The sorting ensures that regression tests
-    # still work.
-    df = df.sort_index(level=["period", "identifier"])
     for i, choice in enumerate(optim_paras["choices"]):
         df[f"shock_reward_{choice}"] = base_draws_sim_transformed[:, i]
         df[f"meas_error_wage_{choice}"] = base_draws_wage_transformed[:, i]
-    df = df.sort_index(level=["identifier", "period"])
 
     core_columns = create_core_state_space_columns(optim_paras)
     is_n_step_ahead = np.any(df[core_columns].isna())
