@@ -212,7 +212,7 @@ class StateSpace:
         # Skip the last period which does not have child states.
         for period in reversed(range(n_periods - 1)):
             states_in_period = self.get_attribute_from_period("core", period, options)
-            states_in_period = states_in_period[["period"] + core_columns].to_numpy()
+            states_in_period = states_in_period[core_columns].to_numpy()
 
             indices = _insert_indices_of_child_states(
                 indices,
@@ -631,7 +631,7 @@ def _insert_indices_of_child_states(
 
     for i in range(states.shape[0]):
 
-        idx_current = indexer_current[array_to_tuple(indexer_current, states[i, 1:])]
+        idx_current = indexer_current[array_to_tuple(indexer_current, states[i])]
 
         for choice in range(n_choices):
             # Check if the state in the future is admissible.
@@ -639,7 +639,7 @@ def _insert_indices_of_child_states(
                 continue
             else:
                 # Cut off the period which is not necessary for the indexer.
-                child = states[i, 1:].copy()
+                child = states[i].copy()
 
                 # Increment experience if it is a choice with experience
                 # accumulation.

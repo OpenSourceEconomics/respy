@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 import respy as rp
@@ -6,13 +7,16 @@ from respy.config import EXAMPLE_MODELS
 from respy.config import INDEXER_INVALID_INDEX
 from respy.config import KEANE_WOLPIN_1994_MODELS
 from respy.config import KEANE_WOLPIN_1997_MODELS
+from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
+from respy.shared import create_core_state_space_columns
 from respy.state_space import _create_state_space
 from respy.state_space import _insert_indices_of_child_states
 from respy.tests._former_code import _create_state_space_kw94
 from respy.tests._former_code import _create_state_space_kw97_base
 from respy.tests._former_code import _create_state_space_kw97_extended
+from respy.tests.utils import compare_state_space_attributes
 from respy.tests.utils import process_model_or_seed
 
 
@@ -43,35 +47,45 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
 
     state_space = rp.solve(params, options)
 
-    indices = np.full((state_space.states.shape[0], len(optim_paras["choices"])), -1)
+    @parallelize_across_dense_dimensions
+    def wrapper(state_space):
+        indices = np.full(
+            (state_space.core.shape[0], len(optim_paras["choices"])),
+            INDEXER_INVALID_INDEX,
+        )
+        core_columns = create_core_state_space_columns(optim_paras)
 
-    for period in range(options["n_periods"] - 1):
+        for period in range(options["n_periods"] - 1):
 
-        if period == 0:
-            states = state_space.get_attribute_from_period("states", period)
-        else:
-            indices_period = state_space.get_attribute_from_period(
-                "indices_of_child_states", period - 1
+            if period == 0:
+                states = state_space.core.query("period == 0")[core_columns].to_numpy(
+                    np.int
+                )
+            else:
+                indices_period = state_space.get_attribute_from_period(
+                    "indices_of_child_states", period - 1
+                )
+                indices_period = indices_period[indices_period >= 0]
+                states = state_space.core[core_columns].to_numpy(np.int)[indices_period]
+
+            indices = _insert_indices_of_child_states(
+                indices,
+                states,
+                state_space.indexer[period],
+                state_space.indexer[period + 1],
+                state_space.get_attribute("is_inadmissible"),
+                len(optim_paras["choices_w_exp"]),
+                optim_paras["n_lagged_choices"],
             )
-            indices_period = indices_period[indices_period >= 0]
-            states = state_space.states[indices_period]
 
-        indices = _insert_indices_of_child_states(
-            indices,
-            states,
-            state_space.indexer[period],
-            state_space.indexer[period + 1],
-            state_space.is_inadmissible,
-            len(optim_paras["choices_w_exp"]),
-            optim_paras["n_lagged_choices"],
+        # Take all valid indices and add the indices of the first period.
+        set_valid_indices = set(indices[indices >= 0]) | set(
+            range(state_space.core.query("period == 0").shape[0])
         )
 
-    # Take all valid indices and add the indices of the first period.
-    set_valid_indices = set(indices[indices >= 0]) | set(
-        range(state_space.get_attribute_from_period("states", 0).shape[0])
-    )
+        assert set_valid_indices == set(range(state_space.core.shape[0]))
 
-    assert set_valid_indices == set(range(state_space.states.shape[0]))
+    wrapper(state_space)
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
@@ -88,14 +102,24 @@ def test_invariance_of_solution(model_or_seed):
     state_space = rp.solve(params, options)
     state_space_ = rp.solve(params, options)
 
-    np.testing.assert_array_equal(state_space.states, state_space_.states)
-    np.testing.assert_array_equal(state_space.wages, state_space_.wages)
-    np.testing.assert_array_equal(state_space.nonpec, state_space_.nonpec)
-    np.testing.assert_array_equal(
-        state_space.emax_value_functions, state_space_.emax_value_functions
+    compare_state_space_attributes(
+        state_space.core, state_space_.core, np.testing.assert_array_equal
     )
-    np.testing.assert_array_equal(
-        state_space.base_draws_sol, state_space_.base_draws_sol
+    compare_state_space_attributes(
+        state_space.wages, state_space_.wages, np.testing.assert_array_equal
+    )
+    compare_state_space_attributes(
+        state_space.nonpecs, state_space_.nonpecs, np.testing.assert_array_equal
+    )
+    compare_state_space_attributes(
+        state_space.expected_value_functions,
+        state_space_.expected_value_functions,
+        np.testing.assert_array_equal,
+    )
+    compare_state_space_attributes(
+        state_space.base_draws_sol,
+        state_space_.base_draws_sol,
+        np.testing.assert_array_equal,
     )
 
 
@@ -122,7 +146,7 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
             shape = idx.shape
             indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
-    states_new, indexer_new = _create_state_space(optim_paras, options)
+    states_new, indexer_new, _ = _create_state_space(optim_paras, options)
 
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))
@@ -166,7 +190,8 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
             shape = idx.shape
             indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
-    states_new, indexer_new = _create_state_space(optim_paras, options)
+    states_new, indexer_new, dense_grid = _create_state_space(optim_paras, options)
+    states_new = pd.concat([states_new.copy().assign(type=i) for i in range(4)])
 
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))
@@ -177,4 +202,5 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
     for period in range(n_periods):
         mask_old = indexer_old[period] != INDEXER_INVALID_INDEX
         mask_new = indexer_new[period] != INDEXER_INVALID_INDEX
-        assert np.array_equal(mask_old, mask_new)
+        adj_mask_new = np.repeat(mask_new, 4).reshape(mask_old.shape)
+        assert np.array_equal(mask_old, adj_mask_new)

@@ -2,7 +2,8 @@
 import itertools
 
 import numpy as np
-import pandas as pd
+
+from respy.shared import apply_to_state_space_attribute
 
 
 def validate_options(o):
@@ -44,48 +45,44 @@ def check_model_solution(optim_paras, options, state_space):
         [max(choices[choice]["start"]) for choice in optim_paras["choices_w_exp"]]
     )
     n_periods = options["n_periods"]
-    n_choices_w_exp = len(optim_paras["choices_w_exp"])
 
     # Check period.
-    assert np.all(np.isin(state_space.states[:, 0], range(n_periods)))
+    assert np.all(np.isin(state_space.core.period, range(n_periods)))
 
     # The sum of years of experiences cannot be larger than constraint time.
     assert np.all(
-        state_space.states[:, 1 : n_choices_w_exp + 1].sum(axis=1)
-        <= (state_space.states[:, 0] + max_initial_experience.sum())
+        state_space.core[[f"exp_{c}" for c in optim_paras["choices_w_exp"]]].sum(axis=1)
+        <= (state_space.core.period + max_initial_experience.sum())
     )
 
     # Choice experience cannot exceed the time frame.
     for choice in optim_paras["choices_w_exp"]:
-        idx = list(choices).index(choice) + 1
-        assert np.all(state_space.states[:, idx] <= choices[choice]["max"])
+        assert state_space.core[f"exp_{choice}"].le(choices[choice]["max"]).all()
 
     # Lagged choices are always in ``range(n_choices)``.
     if optim_paras["n_lagged_choices"]:
-        assert np.isin(
-            state_space.states[
-                :,
-                n_choices_w_exp
-                + 1 : n_choices_w_exp
-                + optim_paras["n_lagged_choices"]
-                + 1,
-            ],
-            range(len(choices)),
-        ).all()
+        assert (
+            state_space.core.filter(regex=r"\blagged_choice_[0-9]*\b")
+            .isin(range(len(choices)))
+            .all()
+            .all()
+        )
 
-    # States and covariates have finite and nonnegative values.
-    assert np.all(state_space.states >= 0)
-    assert np.all(np.isfinite(state_space.states))
+    assert np.all(np.isfinite(state_space.core))
 
     # Check for duplicate rows in each period. We only have possible duplicates if there
     # are multiple initial conditions.
-    assert not pd.DataFrame(state_space.states).duplicated().any()
+    assert not state_space.core.duplicated().any()
 
     # Check that we have as many indices as states.
     n_valid_indices = sum((indexer >= 0).sum() for indexer in state_space.indexer)
-    assert state_space.states.shape[0] == n_valid_indices
+    assert state_space.core.shape[0] == n_valid_indices
 
     # Check finiteness of rewards and emaxs.
-    assert np.all(np.isfinite(state_space.wages))
-    assert np.all(np.isfinite(state_space.nonpec))
-    assert np.all(np.isfinite(state_space.emax_value_functions))
+    assert np.all(apply_to_state_space_attribute(state_space.wages, np.isfinite))
+    assert np.all(apply_to_state_space_attribute(state_space.nonpecs, np.isfinite))
+    assert np.all(
+        apply_to_state_space_attribute(
+            state_space.expected_value_functions, np.isfinite
+        )
+    )
