@@ -8,9 +8,7 @@ from respy.tests.utils import compare_state_space_attributes
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.mark.parametrize(
-    "model_or_seed", EXAMPLE_MODELS + list(range(3, np.testing.assert_array_equal))
-)
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(3)))
 def test_invariance_of_model_solution_in_solve_and_criterion_functions(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
 
