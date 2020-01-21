@@ -21,7 +21,10 @@ def process_model_or_seed(model_or_seed, **kwargs):
 
 def compare_state_space_attributes(attr_1, attr_2, func):
     if isinstance(attr_1, dict):
+        out = {}
         for key in attr_1:
-            func(attr_1[key], attr_2[key])
+            out[key] = func(attr_1[key], attr_2[key])
     else:
-        func(attr_1, attr_2)
+        out = func(attr_1, attr_2)
+
+    return out
