@@ -107,6 +107,9 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
     .. [1] Train, K. (2009). `Discrete Choice Methods with Simulation
            <https://eml.berkeley.edu/books/choice2.html>`_. *Cambridge: Cambridge
            University Press.*
+    .. [2] Lemieux, C. (2009). `Monte Carlo and Quasi-Monte Carlo Sampling
+            <https://www.springer.com/de/book/9780387781648>`_. *New York: Springer
+            Verlag New York.*
 
     """
     n_choices = shape[-1]
