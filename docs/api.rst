@@ -36,7 +36,7 @@ simulate
 
     get_simulate_func
     simulate
-    
+
 method_of_simulated_moments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -78,6 +78,9 @@ state space
 ~~~~~~~~~~~
 
 .. currentmodule:: respy.state_space
+
+.. autosummary::
+    :toctree: _generated/
 
     StateSpace
     StateSpace.get_attribute_from_period
