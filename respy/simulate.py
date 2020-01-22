@@ -224,30 +224,28 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
         level_dict = optim_paras["observables"][observable]
         sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=False)
         fp[observable] = fp[observable].fillna(
-            pd.Series(data=sampled_char, index=index), downcast="infer"
+            pd.Series(data=sampled_char, index=index)
         )
 
     for choice in optim_paras["choices_w_exp"]:
         level_dict = optim_paras["choices"][choice]["start"]
         sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=True)
         fp[f"exp_{choice}"] = fp[f"exp_{choice}"].fillna(
-            pd.Series(data=sampled_char, index=index), downcast="infer"
+            pd.Series(data=sampled_char, index=index)
         )
 
     for lag in reversed(range(1, optim_paras["n_lagged_choices"] + 1)):
         level_dict = optim_paras[f"lagged_choice_{lag}"]
         sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=False)
         fp[f"lagged_choice_{lag}"] = fp[f"lagged_choice_{lag}"].fillna(
-            pd.Series(data=sampled_char, index=index), downcast="infer"
+            pd.Series(data=sampled_char, index=index)
         )
 
     # Sample types and map them to individuals for all periods.
     if optim_paras["n_types"] >= 2:
         level_dict = optim_paras["type_prob"]
         types = _sample_characteristic(fp, options, level_dict, use_keys=False)
-        fp["type"] = fp["type"].fillna(
-            pd.Series(data=types, index=index), downcast="infer"
-        )
+        fp["type"] = fp["type"].fillna(pd.Series(data=types, index=index))
 
     # Update data in the first period with sampled characteristics.
     df = df.combine_first(fp)

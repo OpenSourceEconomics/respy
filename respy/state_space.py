@@ -77,7 +77,7 @@ class StateSpace:
 
         self._create_is_inadmissible(optim_paras, options)
         self._create_slices_by_core_periods()
-        self._get_indices_of_child_states(optim_paras, options)
+        self._get_indices_of_child_states(optim_paras)
 
     def _initialize_attributes(self, optim_paras):
         """Initialize attributes to use references later."""
@@ -142,6 +142,7 @@ class StateSpace:
             attribute = self.core.copy()
             if dense_idx:
                 attribute = attribute.assign(**self.dense[dense_idx])
+            if options:
                 attribute = compute_covariates(attribute, options["covariates_all"])
             attribute = cast_bool_to_numeric(attribute)
         else:
@@ -183,7 +184,7 @@ class StateSpace:
             self.slices_by_periods.append(slice(indices[i], indices[i + 1]))
 
     @parallelize_across_dense_dimensions
-    def _get_indices_of_child_states(self, optim_paras, options):
+    def _get_indices_of_child_states(self, optim_paras):
         """For each parent state get the indices of child states.
 
         During the backward induction, the ``emax_value_functions`` in the future period
@@ -211,8 +212,9 @@ class StateSpace:
 
         # Skip the last period which does not have child states.
         for period in reversed(range(n_periods - 1)):
-            states_in_period = self.get_attribute_from_period("core", period, options)
-            states_in_period = states_in_period[core_columns].to_numpy()
+            states_in_period = self.core.query("period == @period")[
+                core_columns
+            ].to_numpy(dtype=np.int8)
 
             indices = _insert_indices_of_child_states(
                 indices,
@@ -674,7 +676,7 @@ def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
         covariates = covariates.to_dict(orient="index")
 
         # Convert scalar keys to tuples.
-        for key in list(covariates):
+        for key in covariates.copy():
             if np.isscalar(key):
                 covariates[(key,)] = covariates.pop(key)
 

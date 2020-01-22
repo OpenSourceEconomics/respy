@@ -13,6 +13,7 @@ from respy.parallelization import distribute_and_combine_likelihood
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
+from respy.pre_processing.process_covariates import identify_necessary_covariates
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import cast_bool_to_numeric
 from respy.shared import compute_covariates
@@ -294,9 +295,10 @@ def _compute_log_type_probabilities(df, optim_paras, options):
 def _compute_x_beta_for_type_probability(df, optim_paras, options):
     for type_ in range(optim_paras["n_types"]):
         first_observations = df.copy().assign(type=type_)
-        first_observations = compute_covariates(
-            first_observations, options["covariates_all"]
+        relevant_covariates = identify_necessary_covariates(
+            optim_paras["type_prob"][type_].index, options["covariates_all"]
         )
+        first_observations = compute_covariates(first_observations, relevant_covariates)
         first_observations = cast_bool_to_numeric(first_observations)
 
         labels = optim_paras["type_prob"][type_].index

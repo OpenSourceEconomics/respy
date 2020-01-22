@@ -4,8 +4,6 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
-import copy
-
 import chaospy as cp
 import numba as nb
 import numpy as np
@@ -294,7 +292,7 @@ def compute_covariates(df, definitions, raise_errors=True):
         n_covariates_left = len(covariates_left)
 
         # Create a copy of `covariates_left` to remove elements without side-effects.
-        for covariate in copy.copy(covariates_left):
+        for covariate in covariates_left.copy():
             # Check if the covariate does not exist and needs to be computed.
             is_covariate_missing = covariate not in df.columns
             # Check that the dependencies are present and do not contain NaNs.
