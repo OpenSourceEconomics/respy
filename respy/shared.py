@@ -254,7 +254,7 @@ def cast_bool_to_numeric(df):
     return df
 
 
-def compute_covariates(df, definitions, raise_errors=True):
+def compute_covariates(df, definitions, check_nans=False, raise_errors=True):
     """Compute covariates.
 
     The function iterates over the definitions of covariates and tries to compute them.
@@ -268,6 +268,11 @@ def compute_covariates(df, definitions, raise_errors=True):
         experiences.
     definitions : dict
         Keys represent covariates and values are strings passed to ``df.eval``.
+    check_nans : bool, default False
+        Perform a check whether the variables used to compute the selected covariate do
+        not contain any `np.nan`. This is necessary in
+        :func:`respy.simulate._sample_characteristic` where some characteristics may
+        contain missings.
     raise_errors : bool, default True
         Whether to raise errors if variables cannot be computed. This option is
         necessary for, e.g., :func:`~respy.simulate._sample_characteristic` where not
@@ -295,16 +300,28 @@ def compute_covariates(df, definitions, raise_errors=True):
         for covariate in covariates_left.copy():
             # Check if the covariate does not exist and needs to be computed.
             is_covariate_missing = covariate not in df.columns
-            # Check that the dependencies are present and do not contain NaNs.
-            index_or_columns = df.columns.union(df.index.names)
-            are_dependencies_present = all(
-                df.eval(f"{dep}.notna().all()") if dep in index_or_columns else False
-                for dep in definitions[covariate]["depends_on"]
-            )
-
             if not is_covariate_missing:
                 covariates_left.remove(covariate)
-            elif is_covariate_missing and are_dependencies_present:
+                continue
+
+            # Check that the dependencies are present.
+            index_or_columns = df.columns.union(df.index.names)
+            are_dependencies_present = all(
+                dep in index_or_columns for dep in definitions[covariate]["depends_on"]
+            )
+            if are_dependencies_present:
+                # If true, perform checks for NaNs.
+                if check_nans:
+                    have_dependencies_no_missings = all(
+                        df.eval(f"{dep}.notna().all()")
+                        for dep in definitions[covariate]["depends_on"]
+                    )
+                else:
+                    have_dependencies_no_missings = True
+            else:
+                have_dependencies_no_missings = False
+
+            if have_dependencies_no_missings:
                 df[covariate] = df.eval(definitions[covariate]["formula"])
                 covariates_left.remove(covariate)
 

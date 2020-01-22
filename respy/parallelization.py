@@ -4,8 +4,6 @@ import functools
 
 import numpy as np
 import pandas as pd
-from joblib import delayed
-from joblib import Parallel
 
 from respy.shared import create_dense_state_space_columns
 
@@ -41,12 +39,9 @@ def parallelize_across_dense_dimensions(func):
                 state_space, dense_indices
             )
 
-            out = Parallel(n_jobs=1, max_nbytes=None)(
-                delayed(func)(sub_state_spaces[idx], *args_[idx], **kwargs_[idx])
-                for idx in dense_indices
-            )
-
-            out = dict(zip(state_space.dense, out))
+            out = {}
+            for idx in dense_indices:
+                out[idx] = func(sub_state_spaces[idx], *args_[idx], **kwargs_[idx])
         else:
             out = func(state_space, *args, **kwargs)
 

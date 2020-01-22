@@ -369,7 +369,7 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
     """
     # Generate covariates.
     all_data = compute_covariates(
-        states_df, options["covariates_all"], raise_errors=False
+        states_df, options["covariates_all"], check_nans=True, raise_errors=False
     )
     for column in all_data:
         if all_data[column].dtype == np.bool:
