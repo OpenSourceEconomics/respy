@@ -56,3 +56,14 @@ likelihood
 
     get_crit_func
     log_like
+
+method_of_simulated_moments
+---------------------------
+
+.. currentmodule:: respy.method_of_simulated_moments
+
+.. autosummary::
+    :toctree: _generated/
+
+    get_msm_func
+    msm
