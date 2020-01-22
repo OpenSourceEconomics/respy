@@ -14,3 +14,4 @@ Getting Started
    tutorial-lagged-choices.ipynb
    tutorial-model-with-observables.ipynb
    tutorial-finite-mixture.ipynb
+   tutorial-msm.ipynb

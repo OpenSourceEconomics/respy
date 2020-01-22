@@ -36,6 +36,17 @@ simulate
 
     get_simulate_func
     simulate
+    
+method_of_simulated_moments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: respy.method_of_simulated_moments
+
+.. autosummary::
+    :toctree: _generated/
+
+    get_msm_func
+    msm
 
 likelihood
 ~~~~~~~~~~
@@ -67,9 +78,6 @@ state space
 ~~~~~~~~~~~
 
 .. currentmodule:: respy.state_space
-
-.. autosummary::
-    :toctree: _generated/
 
     StateSpace
     StateSpace.get_attribute_from_period
