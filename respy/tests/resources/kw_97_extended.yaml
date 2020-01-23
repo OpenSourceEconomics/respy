@@ -38,8 +38,8 @@ covariates:
   co_graduate: exp_school >= 16
   common_hs_graduate: hs_graduate
   common_co_graduate: co_graduate
-  is_return_not_high_school: ~school_lagged and ~hs_graduate
-  is_return_high_school: ~school_lagged and hs_graduate
+  returns_to_high_school: ~school_lagged and ~hs_graduate
+  returns_to_college: ~school_lagged and hs_graduate
   is_minor: period < 2
   is_young_adult: 2 <= period <= 4
   is_adult: 5 <= period
