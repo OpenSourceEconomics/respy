@@ -15,7 +15,7 @@ def parallelize_across_dense_dimensions(func):
     other dense dimensions. This might be true for different levels. E.g.
     :meth:`respy.state_space.StateSpace.create_choice_rewards` can be directly
     parallelized. :func:`respy.solve.solve_with_backward_induction` cannot be
-    directly parallized because the continuation values for one dense dimension will
+    directly parallelized because the continuation values for one dense dimension will
     become important for others if we implement exogenous processes. Thus, parallelize
     across periods.
 
@@ -38,6 +38,15 @@ def parallelize_across_dense_dimensions(func):
             sub_state_spaces = _create_dict_of_patched_sub_state_spaces(
                 state_space, dense_indices
             )
+
+            # import joblib
+            # out = joblib.Parallel()(
+            #     joblib.delayed(func)(
+            #         sub_state_spaces[idx], *args_[idx], **kwargs_[idx]
+            #     )
+            #     for idx in dense_indices
+            # )
+            # out = dict(zip(state_space.dense, out))
 
             out = {}
             for idx in dense_indices:
