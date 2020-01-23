@@ -36,6 +36,17 @@ simulate
     get_simulate_func
     simulate
 
+method_of_simulated_moments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: respy.method_of_simulated_moments
+
+.. autosummary::
+    :toctree: _generated/
+
+    get_msm_func
+    msm
+
 likelihood
 ~~~~~~~~~~
 
@@ -72,7 +83,7 @@ interpolate
 
     _get_not_interpolated_indicator
 
-state_space
+state space
 ~~~~~~~~~~~
 
 .. currentmodule:: respy.state_space

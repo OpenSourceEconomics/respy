@@ -53,8 +53,8 @@ nonpec_military,not_any_exp_military,-560,reward of being in the military sector
 nonpec_military,common_hs_graduate,804,return to high school degree (non pecuniary)
 nonpec_military,common_co_graduate,2005,return to college degree (non pecuniary)
 nonpec_school,constant,11031,consumption value of school attendance for type 0
-nonpec_school,is_return_not_high_school,-10700,reward for going back to college
-nonpec_school,is_return_high_school,-23283,reward for going back to high school
+nonpec_school,returns_to_high_school,-23283,reward for going back to high school
+nonpec_school,returns_to_college,-10700,reward for going back to college
 nonpec_school,period,-1502,linear age effect
 nonpec_school,is_minor,3632,effect of being a minor
 nonpec_school,common_hs_graduate,804,common return to high school degree (non pecuniary)

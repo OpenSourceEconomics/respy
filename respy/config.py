@@ -18,9 +18,9 @@ MIN_LOG_FLOAT = -MAX_LOG_FLOAT
 
 # Everything for the indexer.
 INDEXER_DTYPE = np.int32
-"""numpy.dtype: Data type for the entries in the state space indexer."""
+"""numpy.dtype : Data type for the entries in the state space indexer."""
 INDEXER_INVALID_INDEX = np.iinfo(INDEXER_DTYPE).min
-"""int: Identifier for invalid states.
+"""int : Identifier for invalid states.
 
 Every valid state has a unique number which is stored in the state space indexer at the
 correct position. Invalid entries in the indexer are filled with
