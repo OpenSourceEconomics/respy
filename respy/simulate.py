@@ -167,6 +167,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
     core_columns = create_core_state_space_columns(optim_paras)
     is_n_step_ahead = np.any(df[core_columns].isna())
 
+    data = []
     for period in range(n_simulation_periods):
 
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
@@ -177,15 +178,13 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
             state_space, current_df, optim_paras
         )
 
-        # Add all columns with simulated information to the complete DataFrame.
-        df = df.reindex(columns=current_df_extended.columns) if period == 0 else df
-        df = df.fillna(current_df_extended)
+        data.append(current_df_extended)
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             next_df = _apply_law_of_motion(current_df_extended, optim_paras)
             df = df.fillna(next_df)
 
-    simulated_data = _process_simulation_output(df, optim_paras)
+    simulated_data = _process_simulation_output(data, optim_paras)
 
     return simulated_data
 
@@ -224,35 +223,37 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
         level_dict = optim_paras["observables"][observable]
         sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=False)
         fp[observable] = fp[observable].fillna(
-            pd.Series(data=sampled_char, index=index)
+            pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
     for choice in optim_paras["choices_w_exp"]:
         level_dict = optim_paras["choices"][choice]["start"]
         sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=True)
         fp[f"exp_{choice}"] = fp[f"exp_{choice}"].fillna(
-            pd.Series(data=sampled_char, index=index)
+            pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
     for lag in reversed(range(1, optim_paras["n_lagged_choices"] + 1)):
         level_dict = optim_paras[f"lagged_choice_{lag}"]
         sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=False)
         fp[f"lagged_choice_{lag}"] = fp[f"lagged_choice_{lag}"].fillna(
-            pd.Series(data=sampled_char, index=index)
+            pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
     # Sample types and map them to individuals for all periods.
     if optim_paras["n_types"] >= 2:
         level_dict = optim_paras["type_prob"]
         types = _sample_characteristic(fp, options, level_dict, use_keys=False)
-        fp["type"] = fp["type"].fillna(pd.Series(data=types, index=index))
+        fp["type"] = fp["type"].fillna(
+            pd.Series(data=types, index=index), downcast="infer"
+        )
 
     # Update data in the first period with sampled characteristics.
     df = df.combine_first(fp)
 
     # Types are invariant and we have to fill the DataFrame for one-step-ahead.
     if optim_paras["n_types"] >= 2:
-        df["type"] = df["type"].fillna(method="ffill")
+        df["type"] = df["type"].fillna(method="ffill", downcast="infer")
 
     state_space_columns = create_state_space_columns(optim_paras)
     df = df[state_space_columns]
@@ -415,7 +416,7 @@ def _convert_codes_to_original_labels(df, optim_paras):
     return df
 
 
-def _process_simulation_output(df, optim_paras):
+def _process_simulation_output(data, optim_paras):
     """Create simulated data.
 
     This function takes an array of simulated outcomes for each period and stacks them
@@ -423,8 +424,9 @@ def _process_simulation_output(df, optim_paras):
 
     Parameters
     ----------
-    df : pandas.DataFrame
-        DataFrame which contains the simulated data with internal codes and labels.
+    data : list
+        List of DataFrames which contains the simulated data with internal codes and
+        labels.
     optim_paras : dict
 
     Returns
@@ -433,8 +435,10 @@ def _process_simulation_output(df, optim_paras):
         DataFrame with simulated data.
 
     """
-    df = df.rename(columns=rename_labels_from_internal).rename_axis(
-        index=rename_labels_from_internal
+    df = (
+        pd.concat(data)
+        .rename(columns=rename_labels_from_internal)
+        .rename_axis(index=rename_labels_from_internal)
     )
     df = _convert_codes_to_original_labels(df, optim_paras)
 
