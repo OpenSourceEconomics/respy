@@ -119,8 +119,8 @@ def lagged_choices_covariates_template():
         "work_a_lagged": "lagged_choice_1 == 'a'",
         "work_b_lagged": "lagged_choice_1 == 'b'",
         "edu_lagged": "lagged_choice_1 == 'edu'",
-        "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
-        "is_return_high_school": "~edu_lagged and hs_graduate",
+        "returns_to_high_school": "~edu_lagged and ~hs_graduate",
+        "returns_to_college": "~edu_lagged and hs_graduate",
     }
 
 

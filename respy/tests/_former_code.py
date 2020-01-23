@@ -1,6 +1,9 @@
 import numpy as np
 from numba import njit
 
+from respy.config import INDEXER_DTYPE
+from respy.config import INDEXER_INVALID_INDEX
+
 
 @njit
 def _create_state_space_kw94(n_periods, n_types, edu_starts, edu_max):
@@ -74,7 +77,7 @@ def _create_state_space_kw94(n_periods, n_types, edu_starts, edu_max):
         max_edu_starts = max(edu_starts)
         dim_edu = min(max_edu_starts + period, edu_max) + 1
         shape = (period + 1, period + 1, dim_edu, 4, n_types)
-        sub_indexer = np.full(shape, -1, dtype=np.int32)
+        sub_indexer = np.full(shape, INDEXER_INVALID_INDEX, dtype=INDEXER_DTYPE)
         indexer.append(sub_indexer)
 
         # Loop over all unobserved types
@@ -169,7 +172,7 @@ def _create_state_space_kw94(n_periods, n_types, edu_starts, edu_max):
                                         lagged_choice,
                                         type_,
                                     ]
-                                    != -1
+                                    != INDEXER_INVALID_INDEX
                                 ):
                                     continue
 
@@ -233,7 +236,7 @@ def _create_state_space_kw97_base(n_periods, n_types, edu_starts, edu_max):
         max_edu_starts = max(edu_starts)
         dim_edu = min(max_edu_starts + period, edu_max) + 1
         shape = (period + 1, period + 1, period + 1, dim_edu, n_types)
-        sub_indexer = np.full(shape, -1, dtype=np.int32)
+        sub_indexer = np.full(shape, INDEXER_INVALID_INDEX, dtype=INDEXER_DTYPE)
         indexer.append(sub_indexer)
 
         # Loop over all unobserved types
@@ -277,7 +280,7 @@ def _create_state_space_kw97_base(n_periods, n_types, edu_starts, edu_max):
                                         edu_start + edu_add,
                                         type_,
                                     ]
-                                    != -1
+                                    != INDEXER_INVALID_INDEX
                                 ):
                                     continue
 
@@ -338,7 +341,7 @@ def _create_state_space_kw97_extended(n_periods, n_types, edu_starts, edu_max):
         max_edu_starts = max(edu_starts)
         dim_edu = min(max_edu_starts + period, edu_max) + 1
         shape = (period + 1, period + 1, period + 1, dim_edu, 5, n_types)
-        sub_indexer = np.full(shape, -1, dtype=np.int32)
+        sub_indexer = np.full(shape, INDEXER_INVALID_INDEX, dtype=INDEXER_DTYPE)
         indexer.append(sub_indexer)
 
         # Loop over all unobserved types
@@ -453,7 +456,7 @@ def _create_state_space_kw97_extended(n_periods, n_types, edu_starts, edu_max):
                                             lagged_choice,
                                             type_,
                                         ]
-                                        != -1
+                                        != INDEXER_INVALID_INDEX
                                     ):
                                         continue
 

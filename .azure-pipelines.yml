@@ -28,8 +28,18 @@ jobs:
 
   - bash: |
       source activate respy
-      tox -- -m "not slow"
-    displayName: Run all tests.
+      tox -e pytest -- -m "not slow"
+    displayName: Run pytest.
+
+  - bash: |
+      source activate respy
+      tox -e linting
+    displayName: Run pre-commit.
+
+  - bash: |
+      source activate respy
+      tox -e sphinx
+    displayName: Run sphinx.
 
 - job:
   displayName: Windows
