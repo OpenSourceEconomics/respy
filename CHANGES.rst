@@ -57,6 +57,10 @@ releases are available on `Anaconda.org
   the original data from Keane and Wolpin (1997). Special thanks to :ghuser:`bekauf` for
   the data preparation.
 - :gh:`300` aligns respy functions with the new data in :gh:`299`.
+- :gh:`314` fixes two parameters in KW97 and KW2000 (:ghuser:`tostenzel`,
+  :ghuser:`tobiasraabe`).
+- :gh:`316` changes the invalid index value for the indexer to prevent silent errors
+  (:ghuser:`tobiasraabe`).
 
 
 1.2.1 - 2019-05-19

@@ -148,20 +148,15 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
     # Prepare simulation.
     n_simulation_periods = int(df.index.get_level_values("period").max() + 1)
 
-    # Prepare shocks.
+    # Prepare shocks and store them in the pandas.DataFrame.
     n_wages = len(optim_paras["choices_w_wage"])
     base_draws_sim_transformed = transform_base_draws_with_cholesky_factor(
         base_draws_sim, optim_paras["shocks_cholesky"], n_wages
     )
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
-
-    # Store the shocks inside the DataFrame. The sorting ensures that regression tests
-    # still work.
-    df = df.sort_index(level=["period", "identifier"])
     for i, choice in enumerate(optim_paras["choices"]):
         df[f"shock_reward_{choice}"] = base_draws_sim_transformed[:, i]
         df[f"meas_error_wage_{choice}"] = base_draws_wage_transformed[:, i]
-    df = df.sort_index(level=["identifier", "period"])
 
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
 
@@ -180,11 +175,11 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
 
         # Add all columns with simulated information to the complete DataFrame.
         df = df.reindex(columns=current_df_extended.columns) if period == 0 else df
-        df = df.combine_first(current_df_extended)
+        df = df.fillna(current_df_extended)
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             next_df = _apply_law_of_motion(current_df_extended, optim_paras)
-            df = df.combine_first(next_df)
+            df = df.fillna(next_df)
 
     simulated_data = _process_simulation_output(df, optim_paras)
 

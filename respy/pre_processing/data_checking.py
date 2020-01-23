@@ -58,7 +58,7 @@ def check_estimation_data(df, optim_paras):
 
     # Observable characteristics.
     for observable in optim_paras["observables"]:
-        assert df[observable.title()].nunique() == len(
+        assert df[observable.title()].nunique() <= len(
             optim_paras["observables"][observable]
         )
 
