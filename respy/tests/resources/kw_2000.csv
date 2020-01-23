@@ -62,8 +62,8 @@ nonpec_school,hs_graduate,-5684,return to high school degree (non pecuniary)
 nonpec_school,co_graduate,-4492,return to college degree (non pecuniary)
 nonpec_school,common_hs_graduate,802,common return to high school degree (non pecuniary)
 nonpec_school,common_co_graduate,1821,common return to college degree (non pecuniary)
-nonpec_school,is_return_high_school,-23609,reward for going back to high school
-nonpec_school,is_return_not_high_school,-10179,reward for going back to college
+nonpec_school,returns_to_high_school,-23609,reward for going back to high school
+nonpec_school,returns_to_college,-10179,reward for going back to college
 nonpec_school,period,-2101,age effect
 nonpec_school,is_minor,1993,effect for minors from 16-17 years
 nonpec_school,military_dropout,-1362,benefit for leaving military early
