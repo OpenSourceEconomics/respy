@@ -47,7 +47,7 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
 
     state_space = rp.solve(params, options)
 
-    @parallelize_across_dense_dimensions
+    @parallelize_across_dense_dimensions()
     def wrapper(state_space):
         indices = np.full(
             (state_space.core.shape[0], len(optim_paras["choices"])),

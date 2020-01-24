@@ -11,7 +11,7 @@ from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import clip
 
 
-@parallelize_across_dense_dimensions
+@parallelize_across_dense_dimensions()
 def interpolate(state_space, period, draws_emax_risk, optim_paras, options):
     """Interface for interpolation routines."""
     slice_ = state_space.slices_by_periods[period]

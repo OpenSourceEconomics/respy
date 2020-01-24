@@ -262,7 +262,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 
 
 @distribute_and_combine_simulation
-@parallelize_across_dense_dimensions
+@parallelize_across_dense_dimensions()
 def _simulate_single_period(state_space, df, optim_paras):
     """Simulate individuals in a single period.
 

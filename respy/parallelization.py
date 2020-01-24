@@ -2,13 +2,14 @@
 import copy
 import functools
 
+import joblib
 import numpy as np
 import pandas as pd
 
 from respy.shared import create_dense_state_space_columns
 
 
-def parallelize_across_dense_dimensions(func):
+def parallelize_across_dense_dimensions(n_jobs=1):
     """Parallelizes decorated function across dense state space dimensions.
 
     Parallelization is only possible if the decorated function has no side-effects to
@@ -29,34 +30,38 @@ def parallelize_across_dense_dimensions(func):
 
     """
 
-    @functools.wraps(func)
-    def wrapper_parallelize_across_dense_dimensions(state_space, *args, **kwargs):
-        if state_space.dense:
-            args_, kwargs_, dense_indices = _broadcast_arguments(
-                state_space, args, kwargs
-            )
-            sub_state_spaces = _create_dict_of_patched_sub_state_spaces(
-                state_space, dense_indices
-            )
+    def decorator_parallelize_across_dense_dimensions(func):
+        @functools.wraps(func)
+        def wrapper_parallelize_across_dense_dimensions(state_space, *args, **kwargs):
+            if state_space.dense:
+                args_, kwargs_, dense_indices = _broadcast_arguments(
+                    state_space, args, kwargs
+                )
+                sub_state_spaces = _create_dict_of_patched_sub_state_spaces(
+                    state_space, dense_indices
+                )
 
-            # import joblib
-            # out = joblib.Parallel()(
-            #     joblib.delayed(func)(
-            #         sub_state_spaces[idx], *args_[idx], **kwargs_[idx]
-            #     )
-            #     for idx in dense_indices
-            # )
-            # out = dict(zip(state_space.dense, out))
+                out = joblib.Parallel(n_jobs=n_jobs)(
+                    joblib.delayed(func)(
+                        sub_state_spaces[idx], *args_[idx], **kwargs_[idx]
+                    )
+                    for idx in dense_indices
+                )
+                out = dict(zip(state_space.dense, out))
 
-            out = {}
-            for idx in dense_indices:
-                out[idx] = func(sub_state_spaces[idx], *args_[idx], **kwargs_[idx])
-        else:
-            out = func(state_space, *args, **kwargs)
+                # out = {}
+                # for idx in dense_indices:
+                #     out[idx] = func(
+                #   sub_state_spaces[idx], *args_[idx], **kwargs_[idx]
+                # )
+            else:
+                out = func(state_space, *args, **kwargs)
 
-        return out
+            return out
 
-    return wrapper_parallelize_across_dense_dimensions
+        return wrapper_parallelize_across_dense_dimensions
+
+    return decorator_parallelize_across_dense_dimensions
 
 
 def _create_dict_of_patched_sub_state_spaces(state_space, dense_indices):

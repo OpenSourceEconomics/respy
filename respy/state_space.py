@@ -109,7 +109,7 @@ class StateSpace:
                 attribute = array.copy()
             setattr(self, name, attribute)
 
-    @parallelize_across_dense_dimensions
+    @parallelize_across_dense_dimensions()
     def _create_is_inadmissible(self, optim_paras, options):
         df = self.get_attribute("core", options)
 
@@ -183,7 +183,7 @@ class StateSpace:
         for i in range(len(indices) - 1):
             self.slices_by_periods.append(slice(indices[i], indices[i + 1]))
 
-    @parallelize_across_dense_dimensions
+    @parallelize_across_dense_dimensions()
     def _get_indices_of_child_states(self, optim_paras):
         """For each parent state get the indices of child states.
 
@@ -277,7 +277,7 @@ class StateSpace:
 
         return continuation_values
 
-    @parallelize_across_dense_dimensions
+    @parallelize_across_dense_dimensions()
     def create_choice_rewards(self, optim_paras, options):
         """Create wage and non-pecuniary reward for each state and choice.
 

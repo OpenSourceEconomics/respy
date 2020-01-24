@@ -42,7 +42,7 @@ def solve(params, options):
     return state_space
 
 
-@parallelize_across_dense_dimensions
+@parallelize_across_dense_dimensions()
 def solve_for_myopic_individuals(state_space):
     """Solve the dynamic programming problem for myopic individuals."""
     state_space.get_attribute("expected_value_functions")[:] = 0
@@ -92,7 +92,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             _full_solution(state_space, period, draws_emax_risk, optim_paras)
 
 
-@parallelize_across_dense_dimensions
+@parallelize_across_dense_dimensions()
 def _full_solution(state_space, period, draws_emax_risk, optim_paras):
     """Calculate the full solution of the model.
 

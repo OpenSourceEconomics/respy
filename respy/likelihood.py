@@ -228,7 +228,7 @@ def _internal_log_like_obs(
 
 
 @distribute_and_combine_likelihood
-@parallelize_across_dense_dimensions
+@parallelize_across_dense_dimensions()
 def _compute_wage_and_choice_likelihood_contributions(
     state_space, df, base_draws_est, optim_paras, options
 ):
