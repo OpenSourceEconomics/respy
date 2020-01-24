@@ -89,11 +89,11 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             interpolate(state_space, period, draws_emax_risk, optim_paras, options)
 
         else:
-            full_solution(state_space, period, draws_emax_risk, optim_paras)
+            _full_solution(state_space, period, draws_emax_risk, optim_paras)
 
 
 @parallelize_across_dense_dimensions
-def full_solution(state_space, period, draws_emax_risk, optim_paras):
+def _full_solution(state_space, period, draws_emax_risk, optim_paras):
     """Calculate the full solution of the model.
 
     In contrast to approximate solution, the Monte Carlo integration is done for each
