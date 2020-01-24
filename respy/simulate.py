@@ -526,8 +526,7 @@ def _apply_law_of_motion(df, optim_paras):
 
     # Update work experiences.
     for i, choice in enumerate(optim_paras["choices_w_exp"]):
-        is_choice = df["choice"] == i
-        df.loc[is_choice, f"exp_{choice}"] = df.loc[is_choice, f"exp_{choice}"] + 1
+        df[f"exp_{choice}"] += df["choice"] == i
 
     # Update lagged choices by deleting oldest lagged, renaming other lags and inserting
     # choice in the first position.
