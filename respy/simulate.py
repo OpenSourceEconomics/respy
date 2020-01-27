@@ -522,6 +522,7 @@ def _apply_law_of_motion(df, optim_paras):
         The DataFrame contains the states of individuals in the next period.
 
     """
+    df = df.copy()
     n_lagged_choices = optim_paras["n_lagged_choices"]
 
     # Update work experiences.
