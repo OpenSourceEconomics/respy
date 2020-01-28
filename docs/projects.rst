@@ -11,6 +11,24 @@ further resources, and contact details.
 Research
 --------
 
+Eisenhauer, P. and Suchy, R. (2020). Robust Human Capital Investment under Risk and
+Ambiguity. *Working Paper*.
+
+    We build on the prototypical life cycle model of human capital investment Keane and
+    Wolpin (1994) and study individual decision-making under risk as well as ambiguity.
+    Individuals fear model misspecification and seek robust decisions that work well
+    over a whole range of models about their economic environment. We describe the
+    individual's decision problem as a robust Markov decision process. Our Monte Carlo
+    analysis indicates that the empirical finding of large psychic cost of schooling is
+    in part due to model misspecification by econometricians who only analyze individual
+    investment decisions under risk. This changes the mechanisms driving schooling
+    decisions and affects the ex ante evaluation of tuition policies.
+
+Contact: `@peisenha <https://github.com/peisenha>`_, `@rafaelsuchy
+<https://github.com/rafaelsuchy>`_
+
+----
+
 Eisenhauer, P. (2019). `The Approximate Solution of Finite-Horizon Discrete Choice
 Dynamic Programming Models: Revisiting Keane & Wolpin (1994)
 <https://doi.org/10.1002/jae.2648>`_. *Journal of Applied Econometrics, 34* (1),
