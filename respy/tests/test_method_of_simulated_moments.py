@@ -12,7 +12,7 @@ from respy.tests.utils import process_model_or_seed
 def inputs():
     calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
 
-    params, options, df = get_example_model("kw_94_one", with_data=False)
+    params, options = get_example_model("kw_94_one", with_data=False)
     options["n_periods"] = 5
     simulate = get_simulate_func(params, options)
     df = simulate(params)
