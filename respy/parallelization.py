@@ -49,11 +49,6 @@ def parallelize_across_dense_dimensions(n_jobs=1):
                 )
                 out = dict(zip(state_space.dense, out))
 
-                # out = {}
-                # for idx in dense_indices:
-                #     out[idx] = func(
-                #   sub_state_spaces[idx], *args_[idx], **kwargs_[idx]
-                # )
             else:
                 out = func(state_space, *args, **kwargs)
 
