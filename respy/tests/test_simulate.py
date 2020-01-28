@@ -13,7 +13,7 @@ from respy.tests.random_model import generate_random_model
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.mark.parametrize("model", EXAMPLE_MODELS)
+@pytest.mark.parametrize("model", EXAMPLE_MODELS + [None])
 def test_simulated_data(model):
     """Test simulated data with ``check_simulated_data``.
 

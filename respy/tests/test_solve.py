@@ -16,7 +16,7 @@ from respy.tests._former_code import _create_state_space_kw97_extended
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + [None])
 def test_check_solution(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
 
@@ -27,7 +27,7 @@ def test_check_solution(model_or_seed):
     check_model_solution(optim_paras, options, state_space)
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     """Test for inadmissible states in the state space.
 
@@ -43,7 +43,10 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
 
     state_space = rp.solve(params, options)
 
-    indices = np.full((state_space.states.shape[0], len(optim_paras["choices"])), -1)
+    indices = np.full(
+        (state_space.states.shape[0], len(optim_paras["choices"])),
+        INDEXER_INVALID_INDEX,
+    )
 
     for period in range(options["n_periods"] - 1):
 
@@ -67,14 +70,14 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
         )
 
     # Take all valid indices and add the indices of the first period.
-    set_valid_indices = set(indices[indices >= 0]) | set(
+    set_valid_indices = set(indices[indices != INDEXER_INVALID_INDEX]) | set(
         range(state_space.get_attribute_from_period("states", 0).shape[0])
     )
 
     assert set_valid_indices == set(range(state_space.states.shape[0]))
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + [None])
 def test_invariance_of_solution(model_or_seed):
     """Test for the invariance of the solution.
 

@@ -61,6 +61,8 @@ releases are available on `Anaconda.org
   :ghuser:`tobiasraabe`).
 - :gh:`316` changes the invalid index value for the indexer to prevent silent errors
   (:ghuser:`tobiasraabe`).
+- :gh:`320` adds ``add_noise_to_params()`` and makes the test suite faster, tests more
+  random.
 
 
 1.2.1 - 2019-05-19
