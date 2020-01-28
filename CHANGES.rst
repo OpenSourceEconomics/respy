@@ -61,7 +61,8 @@ releases are available on `Anaconda.org
   :ghuser:`tobiasraabe`).
 - :gh:`316` changes the invalid index value for the indexer to prevent silent errors
   (:ghuser:`tobiasraabe`).
-- :gh:`319` adds a page for projects using ``respy`` (:ghuser:`tobiasraabe`).
+- :gh:`319` adds a page for projects using ``respy`` (:ghuser:`tobiasraabe`). :gh:`321`
+  adds more projects.
 
 
 1.2.1 - 2019-05-19
