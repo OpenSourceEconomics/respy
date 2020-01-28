@@ -37,3 +37,4 @@ dependencies:
     - apprise
     - bump2version
     - pre-commit
+    - pytest-randomly

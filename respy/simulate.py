@@ -451,15 +451,16 @@ def _random_choice(choices, probabilities, decimals=5):
     Here is an example with non-zero probabilities.
 
     >>> n_samples = 100_000
-    >>> choices = np.array([0, 1, 2])
+    >>> n_choices = 3
     >>> p = np.array([0.15, 0.35, 0.5])
     >>> ps = np.tile(p, (n_samples, 1))
-    >>> choices = _random_choice(choices, ps)
+    >>> choices = _random_choice(n_choices, ps)
     >>> np.round(np.bincount(choices), decimals=-3) / n_samples
     array([0.15, 0.35, 0.5 ])
 
     Here is an example where one choice has probability zero.
 
+    >>> choices = np.arange(3)
     >>> p = np.array([0.4, 0, 0.6])
     >>> ps = np.tile(p, (n_samples, 1))
     >>> choices = _random_choice(choices, ps)

@@ -21,6 +21,7 @@ from respy.pre_processing.specification_helpers import observable_coeffs_templat
 from respy.pre_processing.specification_helpers import observable_prob_template
 from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import normalize_probabilities
+from respy.simulate import _random_choice
 from respy.simulate import get_simulate_func
 
 
@@ -89,7 +90,7 @@ def generate_random_model(
         n_type_covariates = np.random.randint(2, 4)
 
     params = csv_template(
-        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False,
+        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
@@ -265,3 +266,95 @@ def _update_nested_dictionary(dict_, other):
         else:
             dict_[key] = value
     return dict_
+
+
+def add_noise_to_params(
+    params,
+    perc_range=None,
+    low_high=None,
+    low_high_null=None,
+    add_group_mean_null=False,
+):
+    """Add noise to parameters.
+
+    The function allows to vary the noise based on the absolute value for not
+    zero-valued parameters or to simply add noise in forms of bounded random variables.
+
+    The function ensures that special parameters are valid:
+
+    - Probabilities are between 0 and 1.
+    - Correlations are between -1 and 1.
+    - Standard deviations are bounded at 1e-6.
+
+    Parameters
+    ----------
+    params : pandas.DataFrame
+        The parameters in a DataFrame.
+    perc_range : float or tuple
+        The deviation from a not zero-valued parameter value is either a
+        constant percentage for all parameters
+        or a varying percentage between upper and lower bounds.
+    low_high : tuple
+        The deviation for a not zero-valued parameter value is between the lower and
+        upper bound.
+    low_high_null : tuple
+        The deviation for a zero-valued parameter is between the lower and upper bound.
+    add_group_mean_null : bool
+        If true, add the mean of the parameter group to zero-valued parameters for a
+        more reasonable start value except for probabilities and correlations.
+
+    """
+    if perc_range is not None and low_high is not None:
+        raise ValueError("Cannot use 'perc_range' and 'low_high' at the same time.")
+
+    is_malleable = params.eval("~category.str.contains('maximum')")
+    untouchables = params.loc[~is_malleable].copy()
+    params = params.loc[is_malleable].copy()
+
+    not_zero = ~params["value"].eq(0)
+
+    if perc_range is not None:
+        try:
+            low, high = perc_range
+            perc_range = np.random.uniform(low=low, high=high, size=not_zero.sum())
+        except TypeError:
+            possible_signs = np.tile(np.array([-1, 1]), (not_zero.sum(), 1))
+            sign = _random_choice(possible_signs)
+            perc_range = sign * perc_range
+
+        params.loc[not_zero, "value"] += (
+            perc_range * params.loc[not_zero, "value"].abs()
+        )
+
+    elif low_high is not None:
+        low, high = low_high
+        params.loc[not_zero, "value"] += np.random.uniform(low, high, not_zero.sum())
+
+    if add_group_mean_null:
+        means = params.groupby("category")["value"].transform("mean")
+        is_shock = params.eval(
+            "category in ['shocks_sdcorr', 'shocks_varcov', 'shocks_chol']"
+        )
+        params.loc[~not_zero & ~is_shock, "value"] += means.loc[~not_zero & ~is_shock]
+
+    if low_high_null is not None:
+        low, high = low_high_null
+        params.loc[~not_zero, "value"] += np.random.uniform(
+            low, high, (~not_zero).sum()
+        )
+
+    # Correct probabilities.
+    idx = pd.IndexSlice[:, ("delta", "probability")]
+    params.loc[idx, "value"] = params.loc[idx, "value"].clip(0, 1)
+
+    # Correct correlations.
+    is_corr = params.index.get_level_values("name").str.contains(r"\bcorr_")
+    params.loc[is_corr, "value"] = params.loc[is_corr, "value"].clip(-1, 1)
+
+    # Correct standard deviations.
+    is_sd = params.index.get_level_values("name").str.contains(r"\bsd_")
+    params.loc[is_sd, "value"] = params.loc[is_sd, "value"].clip(1e-6, None)
+
+    params = pd.concat([params, untouchables])
+
+    return params
