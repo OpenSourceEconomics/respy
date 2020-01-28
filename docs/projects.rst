@@ -11,6 +11,25 @@ further resources, and contact details.
 Research
 --------
 
+Eisenhauer, P. and Mendel, M. (2020). The Option Value of Education. *Working Paper*.
+
+    We provide a comprehensive account of the returns to education using Norwegian
+    population panel data with nearly career-long earnings histories. We use variation
+    induced by a mandatory schooling reform for an instrumental variables strategy as
+    well as the validation of a full structural model. We discuss the trade-offs between
+    the two approaches. Using the structural model, we go beyond the standard return
+    concepts such as Mincer returns and the internal rate of return. This allows us to
+    account for the sequential resolution of uncertainty and nonlinearities in the
+    returns to education. Both give rise to option values as each additional year of
+    schooling provides information about the value of different schooling choices and
+    new opportunities become available. We are thus able to estimate the true return to
+    education and find an important role for option values.
+
+Contact: `@peisenha <https://github.com/peisenha>`_, `@mo2561057
+<https://github.com/mo2561057>`_
+
+----
+
 Eisenhauer, P. and Suchy, R. (2020). Robust Human Capital Investment under Risk and
 Ambiguity. *Working Paper*.
 
