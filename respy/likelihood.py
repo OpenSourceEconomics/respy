@@ -468,7 +468,6 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     df = df.reindex(columns=df.columns.tolist() + type_index_cols)
     df[type_index_cols] = indices
 
-    # For the estimation, log wages are needed with shape (n_observations, n_types).
     df["log_wage"] = np.log(np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT))
     df = df.drop(columns="wage")
 
