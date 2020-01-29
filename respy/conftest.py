@@ -1,4 +1,5 @@
 """This module includes code to configure pytest."""
+import pytest
 
 
 def pytest_addoption(parser):
@@ -44,7 +45,19 @@ def pytest_generate_tests(metafunc):
         ]
 
         mark = metafunc.definition.get_closest_marker("parametrize")
+        # If a marker exist, extend it with the seeds.
         if mark:
-            mark.args[1].extend(seeds)
+            # Combine the existing parametrize with the seeds.
+            extended_mark = pytest.mark.parametrize(
+                "model_or_seed", mark.args[1] + seeds
+            ).mark
+
+            # Replace the old parametrize marker with the extended marker.
+            all_marks = metafunc.definition.own_markers
+            pos = [
+                i for i in range(len(all_marks)) if all_marks[i].name == "parametrize"
+            ][0]
+            metafunc.definition.own_markers[pos] = extended_mark
+        # Else, parametrize with the seeds.
         else:
             metafunc.parametrize("model_or_seed", seeds)
