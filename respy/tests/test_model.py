@@ -31,7 +31,7 @@ def test_generate_random_model():
     assert isinstance(crit_val, float)
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + [None])
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_model_options(model_or_seed):
     _, options = process_model_or_seed(model_or_seed)
 
@@ -40,7 +40,7 @@ def test_model_options(model_or_seed):
     validate_options(options)
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + [None])
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_sorting_of_type_probability_parameters(model_or_seed):
     # Set configuration for random models.
     n_types = np.random.randint(2, 5)

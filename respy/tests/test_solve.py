@@ -16,7 +16,7 @@ from respy.tests._former_code import _create_state_space_kw97_extended
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + [None])
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_check_solution(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
 
@@ -27,8 +27,8 @@ def test_check_solution(model_or_seed):
     check_model_solution(optim_paras, options, state_space)
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
-def test_state_space_restrictions_by_traversing_forward(model_or_seed):
+@pytest.mark.parametrize("model", EXAMPLE_MODELS)
+def test_state_space_restrictions_by_traversing_forward(model):
     """Test for inadmissible states in the state space.
 
     The test is motivated by the addition of another restriction in
@@ -37,8 +37,12 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     their child states. Taking only the child states their children are found and so on.
     At last, the set of visited states is compared against the total set of states.
 
+    The test can only applied to some models. Most models would need custom
+    ``options["core_state_space_filters"]`` to remove inaccessible states from the state
+    space.
+
     """
-    params, options = process_model_or_seed(model_or_seed)
+    params, options = process_model_or_seed(model)
     optim_paras, options = process_params_and_options(params, options)
 
     state_space = rp.solve(params, options)
@@ -77,7 +81,7 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     assert set_valid_indices == set(range(state_space.states.shape[0]))
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + [None])
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_invariance_of_solution(model_or_seed):
     """Test for the invariance of the solution.
 
@@ -102,10 +106,10 @@ def test_invariance_of_solution(model_or_seed):
     )
 
 
-@pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS)
-def test_create_state_space_vs_specialized_kw94(model_or_seed):
+@pytest.mark.parametrize("model", KEANE_WOLPIN_1994_MODELS)
+def test_create_state_space_vs_specialized_kw94(model):
     point_constr = {"n_lagged_choices": 1, "observables": False}
-    params, options = process_model_or_seed(model_or_seed, point_constr=point_constr)
+    params, options = process_model_or_seed(model, point_constr=point_constr)
 
     optim_paras, options = process_params_and_options(params, options)
 
@@ -139,9 +143,9 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
         assert np.array_equal(mask_old, mask_new)
 
 
-@pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1997_MODELS)
-def test_create_state_space_vs_specialized_kw97(model_or_seed):
-    params, options = process_model_or_seed(model_or_seed)
+@pytest.mark.parametrize("model", KEANE_WOLPIN_1997_MODELS)
+def test_create_state_space_vs_specialized_kw97(model):
+    params, options = process_model_or_seed(model)
 
     # Reduce runtime
     options["n_periods"] = 10 if options["n_periods"] > 10 else options["n_periods"]
@@ -155,7 +159,7 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
     edu_starts = np.array(list(optim_paras["choices"]["school"]["start"]))
 
     # Get states and indexer from old state space.
-    if model_or_seed == "kw_97_basic":
+    if model == "kw_97_basic":
         states_old, indexer_old = _create_state_space_kw97_base(
             n_periods, n_types, edu_starts, edu_max
         )

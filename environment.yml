@@ -25,7 +25,7 @@ dependencies:
   - pyyaml
   - pytest
   - pytest-cov
-  - pytest-xdist
+  - pytest-xdist=1.29.0
   - restructuredtext_lint
   - scipy
   - seaborn

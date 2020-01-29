@@ -13,15 +13,15 @@ from respy.tests.random_model import generate_random_model
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.mark.parametrize("model", EXAMPLE_MODELS + [None])
-def test_simulated_data(model):
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
+def test_simulated_data(model_or_seed):
     """Test simulated data with ``check_simulated_data``.
 
     Note that, ``check_estimation_data`` is also tested in this function as these tests
     focus on a subset of the data.
 
     """
-    params, options = process_model_or_seed(model)
+    params, options = process_model_or_seed(model_or_seed)
 
     simulate = rp.get_simulate_func(params, options)
     df = simulate(params)

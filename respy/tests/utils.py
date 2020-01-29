@@ -11,7 +11,7 @@ def process_model_or_seed(model_or_seed=None, **kwargs):
         np.random.seed(model_or_seed)
         params, options = generate_random_model(**kwargs)
     else:
-        params, options = generate_random_model(**kwargs)
+        raise ValueError
 
     if "kw_94" in str(model_or_seed):
         options["n_periods"] = 10
