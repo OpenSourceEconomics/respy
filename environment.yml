@@ -20,7 +20,7 @@ dependencies:
   - nbsphinx=0.4.2
   - numba
   - numpydoc
-  - pandas>=0.24
+  - pandas>=0.24,<1
   - pdbpp
   - pyyaml
   - pytest

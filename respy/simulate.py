@@ -278,10 +278,21 @@ def _simulate_single_period(df, state_space, optim_paras):
     columns = create_state_space_columns(optim_paras)
     indices = state_space.indexer[period][tuple(df[col].astype(int) for col in columns)]
 
-    # Get continuation values. Indices work on the complete state space whereas
-    # continuation values are period-specific. Make them period-specific.
-    continuation_values = state_space.get_continuation_values(period)
-    cont_indices = indices - state_space.slices_by_periods[period].start
+    try:
+        wages = state_space.wages[indices]
+        nonpecs = state_space.nonpec[indices]
+        # Get continuation values. Indices work on the complete state space whereas
+        # continuation values are period-specific. Make them period-specific.
+        cont_indices = indices - state_space.slices_by_periods[period].start
+        continuation_values = state_space.get_continuation_values(period)[cont_indices]
+
+        is_inadmissible = state_space.is_inadmissible[indices]
+    except IndexError as e:
+        raise Exception(
+            "Simulated individuals could not be mapped to their corresponding states in"
+            " the state space. This might be caused by a mismatch between "
+            "option['core_state_space_filters'] and the initial conditions."
+        ) from e
 
     # Select relevant subset of random draws.
     draws_shock = df[[f"shock_reward_{c}" for c in optim_paras["choices"]]].to_numpy()
@@ -289,25 +300,23 @@ def _simulate_single_period(df, state_space, optim_paras):
 
     # Get total values and ex post rewards.
     value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
-        state_space.wages[indices],
-        state_space.nonpec[indices],
-        continuation_values[cont_indices],
+        wages,
+        nonpecs,
+        continuation_values,
         draws_shock,
         optim_paras["delta"],
-        state_space.is_inadmissible[indices],
+        is_inadmissible,
     )
 
     # We need to ensure that no individual chooses an inadmissible state. Thus, set
     # value functions to NaN. This cannot be done in
     # :func:`aggregate_keane_wolpin_utility` as the interpolation requires a mild
     # penalty.
-    value_functions = np.where(
-        state_space.is_inadmissible[indices], np.nan, value_functions
-    )
+    value_functions = np.where(is_inadmissible, np.nan, value_functions)
 
     choice = np.nanargmax(value_functions, axis=1)
 
-    wages = state_space.wages[indices] * draws_shock * draws_wage
+    wages = wages * draws_shock * draws_wage
     wages[:, n_wages:] = np.nan
     wage = np.choose(choice, wages.T)
 
@@ -316,11 +325,11 @@ def _simulate_single_period(df, state_space, optim_paras):
     df["wage"] = wage
     df["discount_rate"] = optim_paras["delta"]
     for i, choice in enumerate(optim_paras["choices"]):
-        df[f"nonpecuniary_reward_{choice}"] = state_space.nonpec[indices][:, i]
-        df[f"wage_{choice}"] = state_space.wages[indices][:, i]
+        df[f"nonpecuniary_reward_{choice}"] = nonpecs[:, i]
+        df[f"wage_{choice}"] = wages[:, i]
         df[f"flow_utility_{choice}"] = flow_utilities[:, i]
         df[f"value_function_{choice}"] = value_functions[:, i]
-        df[f"continuation_value_{choice}"] = continuation_values[cont_indices][:, i]
+        df[f"continuation_value_{choice}"] = continuation_values[:, i]
 
     return df
 
