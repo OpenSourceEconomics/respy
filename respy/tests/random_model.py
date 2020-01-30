@@ -5,9 +5,11 @@ import numpy as np
 import pandas as pd
 from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
 from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
+from estimagic.optimization.utilities import robust_cholesky
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import ROOT_DIR
+from respy.pre_processing.model_processing import _parse_shocks
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
 from respy.pre_processing.specification_helpers import (
@@ -274,6 +276,8 @@ def add_noise_to_params(
     low_high=None,
     low_high_null=None,
     add_group_mean_null=False,
+    low_high_cholesky_shock=False,
+    change_initial_conditions=False,
 ):
     """Add noise to parameters.
 
@@ -307,10 +311,20 @@ def add_noise_to_params(
     if perc_range is not None and low_high is not None:
         raise ValueError("Cannot use 'perc_range' and 'low_high' at the same time.")
 
-    is_malleable = params.eval("~category.str.contains('maximum')")
-    untouchables = params.loc[~is_malleable].copy()
-    params = params.loc[is_malleable].copy()
+    index = params.index.copy()
 
+    category = params.index.get_level_values("category")
+    initial_conditions = params.loc[
+        category.str.startswith("initial_exp_")
+        | category.str.startswith("maximum_exp_")
+        | category.str.startswith("lagged_choice_")
+        | category.str.startswith("observable_")
+    ].copy()
+    shocks = params.loc[category.str.startswith("shocks_")].copy()
+
+    params = params.loc[
+        params.index.difference(initial_conditions.index).difference(shocks.index)
+    ].copy()
     not_zero = ~params["value"].eq(0)
 
     if perc_range is not None:
@@ -330,6 +344,9 @@ def add_noise_to_params(
         low, high = low_high
         params.loc[not_zero, "value"] += np.random.uniform(low, high, not_zero.sum())
 
+    if change_initial_conditions:
+        pass
+
     if add_group_mean_null:
         means = params.groupby("category")["value"].transform("mean")
         is_shock = params.eval(
@@ -343,18 +360,27 @@ def add_noise_to_params(
             low, high, (~not_zero).sum()
         )
 
+    if low_high_cholesky_shock:
+        covariance = _parse_shocks(shocks)
+        cholesky_factor = robust_cholesky(covariance)
+
+        # Add random shock to Cholesky factor.
+        cholesky_factor[
+            np.tril_indices(len(cholesky_factor), k=-1)
+        ] += np.random.uniform(*low_high_cholesky_shock)
+
+        # Correct correlations.
+        is_corr = shocks.index.get_level_values("name").str.contains(r"\bcorr_")
+        shocks.loc[is_corr, "value"] = shocks.loc[is_corr, "value"].clip(-1, 1)
+
+        # Correct standard deviations.
+        is_sd = shocks.index.get_level_values("name").str.contains(r"\bsd_")
+        shocks.loc[is_sd, "value"] = shocks.loc[is_sd, "value"].clip(1e-6, None)
+
     # Correct probabilities.
     idx = pd.IndexSlice[:, ("delta", "probability")]
     params.loc[idx, "value"] = params.loc[idx, "value"].clip(0, 1)
 
-    # Correct correlations.
-    is_corr = params.index.get_level_values("name").str.contains(r"\bcorr_")
-    params.loc[is_corr, "value"] = params.loc[is_corr, "value"].clip(-1, 1)
-
-    # Correct standard deviations.
-    is_sd = params.index.get_level_values("name").str.contains(r"\bsd_")
-    params.loc[is_sd, "value"] = params.loc[is_sd, "value"].clip(1e-6, None)
-
-    params = pd.concat([params, untouchables])
+    params = pd.concat([params, shocks, initial_conditions]).loc[index]
 
     return params
