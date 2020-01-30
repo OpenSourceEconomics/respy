@@ -1,6 +1,4 @@
 """Everything related to validate the model."""
-import itertools
-
 import numpy as np
 import pandas as pd
 
@@ -12,8 +10,6 @@ def validate_options(o):
             assert _is_positive_nonzero_integer(value)
         elif option.endswith("_seed"):
             assert _is_nonnegative_integer(value)
-        elif option.endswith("_seed_startup") or option.endswith("_seed_iteration"):
-            assert isinstance(value, itertools.count)
         else:
             pass
 
@@ -33,6 +29,46 @@ def validate_options(o):
             isinstance(key, str) and isinstance(val, str)
             for key, val in o["covariates"].items()
         )
+
+
+def validate_params(params, optim_paras):
+    """Validate params."""
+    _validate_shocks(params, optim_paras)
+
+
+def _validate_shocks(params, optim_paras):
+    """Assert that the elements of the shock matrix are correctly sorted."""
+    choices = list(optim_paras["choices"])
+
+    if "shocks_sdcorr" in params.index:
+        sds_flat = [f"sd_{c}" for c in choices]
+
+        corrs_flat = []
+        for i, c_1 in enumerate(choices):
+            for c_2 in choices[: i + 1]:
+                if c_1 == c_2:
+                    pass
+                else:
+                    corrs_flat.append(f"corr_{c_1}_{c_2}")
+        index = sds_flat + corrs_flat
+
+    else:
+        index = []
+        for i, c_1 in enumerate(choices):
+            for c_2 in choices[: i + 1]:
+                if c_1 == c_2:
+                    label = "var" if "shocks_cov" in index else "chol"
+                    index.append(f"{label}_{c_1}")
+                else:
+                    label = "cov" if "shocks_cov" in index else "chol"
+                    index.append(f"{label}_{c_1}_{c_2}")
+
+    assert all(
+        params.filter(regex=r"shocks_(sdcorr|cov|chol)", axis=0).index.get_level_values(
+            "name"
+        )
+        == index
+    ), f"Reorder the 'name' index of the shock matrix to {index}."
 
 
 def _is_positive_nonzero_integer(x):
