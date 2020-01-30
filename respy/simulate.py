@@ -471,7 +471,7 @@ def _random_choice(choices, probabilities, decimals=5):
 
     >>> p = np.array([0.4, 0, 0.6])
     >>> ps = np.tile(p, (n_samples, 1))
-    >>> choices = _random_choice(choices, ps)
+    >>> choices = _random_choice(3, ps)
     >>> np.round(np.bincount(choices), decimals=-3) / n_samples
     array([0.4, 0. , 0.6])
 
