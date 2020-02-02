@@ -3,13 +3,12 @@ import collections
 
 import numpy as np
 import pandas as pd
+from estimagic.optimization.utilities import cov_matrix_to_params
 from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
 from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
-from estimagic.optimization.utilities import robust_cholesky
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import ROOT_DIR
-from respy.pre_processing.model_processing import _parse_shocks
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
 from respy.pre_processing.specification_helpers import (
@@ -272,115 +271,207 @@ def _update_nested_dictionary(dict_, other):
 
 def add_noise_to_params(
     params,
-    perc_range=None,
-    low_high=None,
-    low_high_null=None,
-    add_group_mean_null=False,
-    low_high_cholesky_shock=False,
-    change_initial_conditions=False,
+    options,
+    delta_low_high=(-0.2, 0.2),
+    wages_percent_absolute=(0, 0.2),
+    wages_low_high=None,
+    wages_null_low_high=(-0.2, 0.2),
+    nonpecs_percent_absolute=(0, 0.2),
+    nonpecs_low_high=None,
+    nonpecs_null_low_high=(-5000, 5000),
+    cholesky_low_high=(-0.5, 0.5),
+    meas_sd_low_high=(1e-6, 0.5),
+    ic_probabilities_low_high=False,
+    ic_logit_low_high=False,
+    seed=None,
 ):
     """Add noise to parameters.
 
-    The function allows to vary the noise based on the absolute value for not
-    zero-valued parameters or to simply add noise in forms of bounded random variables.
+    The function allows to vary the noise based on the absolute value for non-zero
+    parameters or to simply add noise in forms of bounded random variables.
 
     The function ensures that special parameters are valid:
 
     - Probabilities are between 0 and 1.
     - Correlations are between -1 and 1.
-    - Standard deviations are bounded at 1e-6.
+    - Diagonal elements of the Cholesky factor have 1e-6 as the lower bound.
+    - The standard deviations of the measurement error have 1e-6 as the lower bound.
 
     Parameters
     ----------
     params : pandas.DataFrame
         The parameters in a DataFrame.
-    perc_range : float or tuple
-        The deviation from a not zero-valued parameter value is either a
-        constant percentage for all parameters
-        or a varying percentage between upper and lower bounds.
-    low_high : tuple
-        The deviation for a not zero-valued parameter value is between the lower and
-        upper bound.
-    low_high_null : tuple
-        The deviation for a zero-valued parameter is between the lower and upper bound.
-    add_group_mean_null : bool
-        If true, add the mean of the parameter group to zero-valued parameters for a
-        more reasonable start value except for probabilities and correlations.
+    delta_low_high : tuple of floats
+        Lower and upper bound to shock to discount factor.
+    wages_percent_absolute : float or tuple of floats
+        The deviation in percentages of the absolute value of a non-zero parameter is
+        either a constant percentage for all parameters or a random percentage between
+        upper and lower bounds.
+    wages_low_high : tuple of floats
+        The deviation for a non-zero parameter value is between an lower and upper
+        bound.
+    wages_null_low_high : tuple of floats
+        The deviation for a parameter with value zero is between the lower and upper
+        bound.
+    nonpecs_percent_absolute : float or tuple of floats
+        The deviation in percentages of the absolute value of a non-zero parameter is
+        either a constant percentage for all parameters or a random percentage between
+        upper and lower bounds.
+    nonpecs_low_high : tuple of floats
+        The deviation for a non-zero parameter value is between an lower and upper
+        bound.
+    nonpecs_null_low_high : tuple of floats
+        The deviation for a parameter with value zero is between the lower and upper
+        bound.
+    cholesky_low_high : tuple of floats
+        Lower and upper bound for a shock applied to the Cholesky factor of the shock
+        matrix. To ensure proper scaling, the shock is multiplied with the square root
+        of the product of diagonal elements for this entry. The shock for the diagonal
+        elements is between zero and the upper bound and the resulting diagonal element
+        in the Cholesky factor has 1e-6 as the lower bound.
+    meas_sd_low_high : tuple of floats
+        Lower and upper bound for shock to measurement error standard deviations.
+    ic_probabilities_low_high : tuple of floats
+        Lower and upper bound for shocks to the probabilities in the initial conditions.
+    ic_logit_low_high : tuple of floats
+        Lower and upper bound for shocks to the logit coefficients in the initial
+        conditions.
+
+    Returns
+    -------
+    params : pandas.DataFrame
+        The new parameters.
 
     """
-    if perc_range is not None and low_high is not None:
-        raise ValueError("Cannot use 'perc_range' and 'low_high' at the same time.")
+    if wages_percent_absolute is not None and wages_low_high is not None:
+        raise ValueError(
+            "Cannot use 'wages_percent_absolute' and 'wages_low_high' at the same "
+            "time."
+        )
+    if nonpecs_percent_absolute is not None and nonpecs_low_high is not None:
+        raise ValueError(
+            "Cannot use 'nonpecs_percent_absolute' and 'nonpecs_low_high' at the same "
+            "time."
+        )
 
-    index = params.index.copy()
+    optim_paras, options = process_params_and_options(params, options)
 
-    category = params.index.get_level_values("category")
+    np.random.seed(seed)
+
+    # Change discount factor.
+    delta = params.filter(like="delta", axis=0).copy()
+    delta["value"] = np.clip(delta["value"] + np.random.uniform(*delta_low_high), 0, 1)
+
+    # Change non-zero reward parameters.
+    wages = params.filter(regex=r"wage_", axis=0).copy()
+    nonpecs = params.filter(regex=r"nonpec_", axis=0).copy()
+    for rewards, percent_absolute, low_high, null_low_high in zip(
+        [wages, nonpecs],
+        [wages_percent_absolute, nonpecs_percent_absolute],
+        [wages_low_high, nonpecs_low_high],
+        [wages_null_low_high, nonpecs_null_low_high],
+    ):
+        not_zero = ~rewards["value"].eq(0)
+        if percent_absolute is not None:
+            rewards = _add_percentage_of_absolute_value_as_shock(
+                rewards, percent_absolute
+            )
+
+        elif low_high is not None:
+            low, high = low_high
+            rewards.loc[not_zero, "value"] += np.random.uniform(
+                low, high, not_zero.sum()
+            )
+
+        # Change parameters with value zero.
+        if null_low_high is not None:
+            low, high = null_low_high
+            rewards.loc[~not_zero, "value"] += np.random.uniform(
+                low, high, (~not_zero).sum()
+            )
+
+    # Change the parameters of the shock matrix.
+    shocks = params.filter(regex=r"shocks_(sdcorr|cov|chol)", axis=0).copy()
+    if cholesky_low_high:
+        low, high = cholesky_low_high
+        # Add a random shock to the Cholesky factor of the shock matrix.
+        chol = optim_paras["shocks_cholesky"]
+
+        # Create matrix for scaling.
+        diag = np.sqrt(np.diag(chol))
+        scaling_factor = np.outer(diag, diag)
+
+        # Add random shock to lower triangular.
+        idx = np.tril_indices_from(chol, k=-1)
+        chol[idx] += (
+            np.random.uniform(low, high, size=len(idx[0])) * scaling_factor[idx]
+        )
+
+        # Add random shock to diagonal and ensure non-zero elements.
+        idx = np.diag_indices_from(chol)
+        chol[idx] += np.random.uniform(0, high, size=len(chol)) * scaling_factor[idx]
+        chol[idx] = np.clip(chol[idx], 1e-6, None)
+
+        if "shocks_sdcorr" in shocks.index:
+            shocks["value"] = cov_matrix_to_sdcorr_params(chol.dot(chol.T))
+        elif "shocks_cov" in shocks.index:
+            shocks["value"] = cov_matrix_to_params(chol.dot(chol.T))
+        elif "shocks_chol" in shocks.index:
+            shocks["value"] = cov_matrix_to_params(chol)
+        else:
+            raise NotImplementedError
+
+    # Change measurement errors.
+    meas_sds = params.filter(regex=r"meas_error", axis=0).copy()
+    if meas_sd_low_high:
+        meas_sds["value"] += np.random.uniform(*meas_sd_low_high, size=len(meas_sds))
+        meas_sds["value"] = np.clip(meas_sds["value"], 1e-6, None)
+
+    # Change the parameters of the initial conditions.
     initial_conditions = params.loc[
-        category.str.startswith("initial_exp_")
-        | category.str.startswith("maximum_exp_")
-        | category.str.startswith("lagged_choice_")
-        | category.str.startswith("observable_")
+        params.index.get_level_values("category").str.contains(
+            r"initial_exp|lagged_choice|observable|type"
+        )
     ].copy()
-    shocks = params.loc[category.str.startswith("shocks_")].copy()
-
-    params = params.loc[
-        params.index.difference(initial_conditions.index).difference(shocks.index)
-    ].copy()
-    not_zero = ~params["value"].eq(0)
-
-    if perc_range is not None:
-        try:
-            low, high = perc_range
-            perc_range = np.random.uniform(low=low, high=high, size=not_zero.sum())
-        except TypeError:
-            possible_signs = np.tile(np.array([-1, 1]), (not_zero.sum(), 1))
-            sign = _random_choice(possible_signs)
-            perc_range = sign * perc_range
-
-        params.loc[not_zero, "value"] += (
-            perc_range * params.loc[not_zero, "value"].abs()
+    is_prob = initial_conditions.index.get_level_values("name") == "probability"
+    if ic_probabilities_low_high and bool(initial_conditions):
+        initial_conditions.loc[is_prob, "value"] += np.random.uniform(
+            *ic_probabilities_low_high, size=is_prob.sum()
         )
 
-    elif low_high is not None:
-        low, high = low_high
-        params.loc[not_zero, "value"] += np.random.uniform(low, high, not_zero.sum())
+        # Correct probabilities.
+        initial_conditions.loc[is_prob, "value"] = initial_conditions.loc[
+            is_prob, "value"
+        ].clip(0, 1)
 
-    if change_initial_conditions:
-        pass
-
-    if add_group_mean_null:
-        means = params.groupby("category")["value"].transform("mean")
-        is_shock = params.eval(
-            "category in ['shocks_sdcorr', 'shocks_varcov', 'shocks_chol']"
-        )
-        params.loc[~not_zero & ~is_shock, "value"] += means.loc[~not_zero & ~is_shock]
-
-    if low_high_null is not None:
-        low, high = low_high_null
-        params.loc[~not_zero, "value"] += np.random.uniform(
-            low, high, (~not_zero).sum()
+    if ic_logit_low_high and bool(initial_conditions):
+        initial_conditions.loc[~is_prob, "value"] += np.random.uniform(
+            *ic_logit_low_high, size=(~is_prob).sum()
         )
 
-    if low_high_cholesky_shock:
-        covariance = _parse_shocks(shocks)
-        cholesky_factor = robust_cholesky(covariance)
+    maximum_exps = params.query("category == 'maximum_exp'")
 
-        # Add random shock to Cholesky factor.
-        cholesky_factor[
-            np.tril_indices(len(cholesky_factor), k=-1)
-        ] += np.random.uniform(*low_high_cholesky_shock)
-
-        # Correct correlations.
-        is_corr = shocks.index.get_level_values("name").str.contains(r"\bcorr_")
-        shocks.loc[is_corr, "value"] = shocks.loc[is_corr, "value"].clip(-1, 1)
-
-        # Correct standard deviations.
-        is_sd = shocks.index.get_level_values("name").str.contains(r"\bsd_")
-        shocks.loc[is_sd, "value"] = shocks.loc[is_sd, "value"].clip(1e-6, None)
-
-    # Correct probabilities.
-    idx = pd.IndexSlice[:, ("delta", "probability")]
-    params.loc[idx, "value"] = params.loc[idx, "value"].clip(0, 1)
-
-    params = pd.concat([params, shocks, initial_conditions]).loc[index]
+    params = pd.concat(
+        [delta, wages, nonpecs, shocks, meas_sds, initial_conditions, maximum_exps]
+    ).reindex(index=params.index)
 
     return params
+
+
+def _add_percentage_of_absolute_value_as_shock(rewards, rewards_percent_absolute):
+    """Add percentage of value as the shock to rewards."""
+    not_zero = ~rewards["value"].eq(0)
+
+    if isinstance(rewards_percent_absolute, tuple):
+        low, high = rewards_percent_absolute
+        rewards_percent_absolute = np.random.uniform(
+            low=low, high=high, size=not_zero.sum()
+        )
+    possible_signs = np.tile(np.array([-1, 1]), (not_zero.sum(), 1))
+    sign = _random_choice(possible_signs)
+
+    rewards.loc[not_zero, "value"] += (
+        sign * rewards_percent_absolute * rewards.loc[not_zero, "value"].abs()
+    )
+
+    return rewards

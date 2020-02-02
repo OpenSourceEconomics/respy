@@ -74,7 +74,7 @@ releases are available on `Anaconda.org
 ------------------
 
 - :gh:`170` adds a test for inadmissible states in the state space.
-- :gh:`180` adds a long description to the PYPi package.
+- :gh:`180` adds a long description to the PyPI package.
 - :gh:`181` implements `nbsphinx <https://nbsphinx.readthedocs.io/en/latest/>`_ for a
   documentation based on notebooks and reworks structure and graphics.
 - :gh:`183` adds a small set of regression tests.
