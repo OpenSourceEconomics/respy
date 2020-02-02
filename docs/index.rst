@@ -18,12 +18,13 @@ baseline model presented in:
 .. image:: https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     getting_started/index
     economics/index
     replications/index
     software/index
     development/index
+    projects
     api
     additional_information/index

@@ -286,10 +286,21 @@ def _simulate_single_period(state_space, df, optim_paras):
     columns = create_core_state_space_columns(optim_paras)
     indices = state_space.indexer[period][tuple(df[col].astype(int) for col in columns)]
 
-    # Get continuation values. Indices work on the complete state space whereas
-    # continuation values are period-specific. Make them period-specific.
-    cont_indices = indices - state_space.slices_by_periods[period].start
-    continuation_values = state_space.get_continuation_values(period)[cont_indices]
+    try:
+        wages = state_space.wages[indices]
+        nonpecs = state_space.nonpec[indices]
+        # Get continuation values. Indices work on the complete state space whereas
+        # continuation values are period-specific. Make them period-specific.
+        cont_indices = indices - state_space.slices_by_periods[period].start
+        continuation_values = state_space.get_continuation_values(period)[cont_indices]
+
+        is_inadmissible = state_space.is_inadmissible[indices]
+    except IndexError as e:
+        raise Exception(
+            "Simulated individuals could not be mapped to their corresponding states in"
+            " the state space. This might be caused by a mismatch between "
+            "option['core_state_space_filters'] and the initial conditions."
+        ) from e
 
     draws_shock = df[[f"shock_reward_{c}" for c in optim_paras["choices"]]].to_numpy()
     draws_wage = df[[f"meas_error_wage_{c}" for c in optim_paras["choices"]]].to_numpy()
