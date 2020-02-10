@@ -68,19 +68,26 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
 
 
 def _infer_dense_indices_from_arguments(args, kwargs):
-    """Infer the dense indices from the arguments."""
-    dense_indices = []
+    """Infer the dense indices from the arguments.
+
+    This function uses the intersection of all dense indices from the arguments. Since
+    the simulated data or data for the likelihood might not comprise all dense
+    dimensions, we might need to discard some indices.
+
+    """
+    list_of_dense_indices = []
     for arg in args:
         if _is_dictionary_with_tuple_keys(arg):
-            dense_indices.extend(arg.keys())
-            break
-    if not dense_indices:
-        for kwarg in kwargs.values():
-            if _is_dictionary_with_tuple_keys(kwarg):
-                dense_indices.extend(kwarg.keys())
-                break
+            list_of_dense_indices.append(set(arg.keys()))
+    for kwarg in kwargs.values():
+        if _is_dictionary_with_tuple_keys(kwarg):
+            list_of_dense_indices.append(set(kwarg.keys()))
 
-    return dense_indices
+    intersection_of_dense_indices = (
+        set.intersection(*list_of_dense_indices) if list_of_dense_indices else []
+    )
+
+    return intersection_of_dense_indices
 
 
 def _is_dictionary_with_tuple_keys(candidate):
@@ -98,20 +105,20 @@ def _broadcast_arguments(args, kwargs, dense_indices):
     # dimension as keys.
     for i, arg in enumerate(args):
         if _is_dense_dictionary_argument(arg, dense_indices):
-            pass
+            args[i] = {idx: arg[idx] for idx in dense_indices}
         else:
             args[i] = {idx: arg for idx in dense_indices}
     for kwarg, value in kwargs.items():
         if _is_dense_dictionary_argument(value, dense_indices):
-            pass
+            kwargs[kwarg] = {idx: kwargs[kwarg][idx] for idx in dense_indices}
         else:
             kwargs[kwarg] = {idx: value for idx in dense_indices}
 
     # Re-order arguments for zipping.
-    args = {dense_idx: [arg[dense_idx] for arg in args] for dense_idx in dense_indices}
+    args = {idx: [arg[idx] for arg in args] for idx in dense_indices}
     kwargs = {
-        dense_idx: {kwarg: value[dense_idx] for kwarg, value in kwargs.items()}
-        for dense_idx in dense_indices
+        idx: {kwarg: value[idx] for kwarg, value in kwargs.items()}
+        for idx in dense_indices
     }
 
     return args, kwargs
@@ -124,7 +131,7 @@ def _is_dense_dictionary_argument(argument, dense_indices):
     in :func:`distribute_and_combine_simulation` may not cover all dense combinations.
 
     """
-    return isinstance(argument, dict) and all(idx in dense_indices for idx in argument)
+    return isinstance(argument, dict) and all(idx in argument for idx in dense_indices)
 
 
 def distribute_and_combine_simulation(func):

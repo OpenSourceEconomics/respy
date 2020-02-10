@@ -2,15 +2,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import respy as rp
 from respy.config import EXAMPLE_MODELS
 from respy.config import INDEXER_INVALID_INDEX
 from respy.config import KEANE_WOLPIN_1994_MODELS
 from respy.config import KEANE_WOLPIN_1997_MODELS
-from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_core_state_space_columns
+from respy.solve import get_solve_func
 from respy.state_space import _create_state_space
 from respy.state_space import _insert_indices_of_child_states
 from respy.tests._former_code import _create_state_space_kw94
@@ -24,14 +23,15 @@ from respy.tests.utils import process_model_or_seed
 def test_check_solution(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
 
-    state_space = rp.solve(params, options)
+    solve = get_solve_func(params, options)
+    state_space = solve(params)
 
     optim_paras, options = process_params_and_options(params, options)
 
     check_model_solution(optim_paras, options, state_space)
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     """Test for inadmissible states in the state space.
 
@@ -45,47 +45,43 @@ def test_state_space_restrictions_by_traversing_forward(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
     optim_paras, options = process_params_and_options(params, options)
 
-    state_space = rp.solve(params, options)
+    solve = get_solve_func(params, options)
+    state_space = solve(params)
 
-    @parallelize_across_dense_dimensions()
-    def wrapper(state_space):
-        indices = np.full(
-            (state_space.core.shape[0], len(optim_paras["choices"])),
-            INDEXER_INVALID_INDEX,
-        )
-        core_columns = create_core_state_space_columns(optim_paras)
+    indices = np.full(
+        (state_space.core.shape[0], len(optim_paras["choices"])), INDEXER_INVALID_INDEX
+    )
+    core_columns = create_core_state_space_columns(optim_paras)
 
-        for period in range(options["n_periods"] - 1):
+    for period in range(options["n_periods"] - 1):
 
-            if period == 0:
-                states = state_space.core.query("period == 0")[core_columns].to_numpy(
-                    np.int
-                )
-            else:
-                indices_period = state_space.get_attribute_from_period(
-                    "indices_of_child_states", period - 1
-                )
-                indices_period = indices_period[indices_period >= 0]
-                states = state_space.core[core_columns].to_numpy(np.int)[indices_period]
-
-            indices = _insert_indices_of_child_states(
-                indices,
-                states,
-                state_space.indexer[period],
-                state_space.indexer[period + 1],
-                state_space.get_attribute("is_inadmissible"),
-                len(optim_paras["choices_w_exp"]),
-                optim_paras["n_lagged_choices"],
+        if period == 0:
+            states = state_space.core.query("period == 0")[core_columns].to_numpy(
+                np.int
             )
+        else:
+            indices_period = state_space.indices_of_child_states[
+                state_space.slices_by_periods[period - 1]
+            ]
+            indices_period = indices_period[indices_period >= 0]
+            states = state_space.core[core_columns].to_numpy(np.int)[indices_period]
 
-        # Take all valid indices and add the indices of the first period.
-        set_valid_indices = set(indices[indices >= 0]) | set(
-            range(state_space.core.query("period == 0").shape[0])
+        indices = _insert_indices_of_child_states(
+            indices,
+            states,
+            state_space.indexer[period],
+            state_space.indexer[period + 1],
+            state_space.is_inadmissible,
+            len(optim_paras["choices_w_exp"]),
+            optim_paras["n_lagged_choices"],
         )
 
-        assert set_valid_indices == set(range(state_space.core.shape[0]))
+    # Take all valid indices and add the indices of the first period.
+    set_valid_indices = set(indices[indices >= 0]) | set(
+        range(state_space.core.query("period == 0").shape[0])
+    )
 
-    wrapper(state_space)
+    assert set_valid_indices == set(range(state_space.core.shape[0]))
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
@@ -99,26 +95,31 @@ def test_invariance_of_solution(model_or_seed):
 
     optim_paras, options = process_params_and_options(params, options)
 
-    state_space = rp.solve(params, options)
-    state_space_ = rp.solve(params, options)
+    solve = get_solve_func(params, options)
+    state_space = solve(params)
+    state_space_ = solve(params)
 
     compare_state_space_attributes(
         state_space.core, state_space_.core, np.testing.assert_array_equal
     )
     compare_state_space_attributes(
-        state_space.wages, state_space_.wages, np.testing.assert_array_equal
-    )
-    compare_state_space_attributes(
-        state_space.nonpecs, state_space_.nonpecs, np.testing.assert_array_equal
-    )
-    compare_state_space_attributes(
-        state_space.expected_value_functions,
-        state_space_.expected_value_functions,
+        state_space.get_attribute("wages"),
+        state_space_.get_attribute("wages"),
         np.testing.assert_array_equal,
     )
     compare_state_space_attributes(
-        state_space.base_draws_sol,
-        state_space_.base_draws_sol,
+        state_space.get_attribute("nonpecs"),
+        state_space_.get_attribute("nonpecs"),
+        np.testing.assert_array_equal,
+    )
+    compare_state_space_attributes(
+        state_space.get_attribute("expected_value_functions"),
+        state_space_.get_attribute("expected_value_functions"),
+        np.testing.assert_array_equal,
+    )
+    compare_state_space_attributes(
+        state_space.get_attribute("base_draws_sol"),
+        state_space_.get_attribute("base_draws_sol"),
         np.testing.assert_array_equal,
     )
 

@@ -2,8 +2,10 @@
 import numpy as np
 import pytest
 
-import respy as rp
 from respy.config import EXAMPLE_MODELS
+from respy.likelihood import get_crit_func
+from respy.simulate import get_simulate_func
+from respy.solve import get_solve_func
 from respy.tests.utils import compare_state_space_attributes
 from respy.tests.utils import process_model_or_seed
 
@@ -14,33 +16,37 @@ def test_invariance_of_model_solution_in_solve_and_criterion_functions(model_or_
 
     options["n_periods"] = 2 if model_or_seed == "kw_2000" else 3
 
-    state_space = rp.solve(params, options)
+    solve = get_solve_func(params, options)
+    state_space = solve(params)
 
-    simulate = rp.get_simulate_func(params, options)
+    simulate = get_simulate_func(params, options)
     df = simulate(params)
-    state_space_sim = simulate.keywords["state_space"]
+    state_space_sim = simulate.keywords["solve"].keywords["state_space"]
 
-    criterion = rp.get_crit_func(params, options, df)
+    criterion = get_crit_func(params, options, df)
     _ = criterion(params)
-    state_space_crit = criterion.keywords["state_space"]
+    state_space_crit = criterion.keywords["solve"].keywords["state_space"]
 
     for state_space_ in [state_space_sim, state_space_crit]:
         assert state_space.core.equals(state_space_.core)
-        assert state_space.dense == state_space_.dense
 
         compare_state_space_attributes(
-            state_space.wages, state_space_.wages, np.testing.assert_array_equal
-        )
-        compare_state_space_attributes(
-            state_space.nonpecs, state_space_.nonpecs, np.testing.assert_array_equal
-        )
-        compare_state_space_attributes(
-            state_space.expected_value_functions,
-            state_space_.expected_value_functions,
+            state_space.get_attribute("wages"),
+            state_space_.get_attribute("wages"),
             np.testing.assert_array_equal,
         )
         compare_state_space_attributes(
-            state_space.base_draws_sol,
-            state_space_.base_draws_sol,
+            state_space.get_attribute("nonpecs"),
+            state_space_.get_attribute("nonpecs"),
+            np.testing.assert_array_equal,
+        )
+        compare_state_space_attributes(
+            state_space.get_attribute("expected_value_functions"),
+            state_space_.get_attribute("expected_value_functions"),
+            np.testing.assert_array_equal,
+        )
+        compare_state_space_attributes(
+            state_space.get_attribute("base_draws_sol"),
+            state_space_.get_attribute("base_draws_sol"),
             np.testing.assert_array_equal,
         )
