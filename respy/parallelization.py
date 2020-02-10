@@ -1,5 +1,4 @@
 """This module contains the code to control parallel execution."""
-import copy
 import functools
 
 import joblib
@@ -9,12 +8,12 @@ import pandas as pd
 from respy.shared import create_dense_state_space_columns
 
 
-def parallelize_across_dense_dimensions(n_jobs=1):
+def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
     """Parallelizes decorated function across dense state space dimensions.
 
     Parallelization is only possible if the decorated function has no side-effects to
     other dense dimensions. This might be true for different levels. E.g.
-    :meth:`respy.state_space.StateSpace.create_choice_rewards` can be directly
+    :meth:`respy.solve._create_choice_rewards` can be directly
     parallelized. :func:`respy.solve.solve_with_backward_induction` cannot be
     directly parallelized because the continuation values for one dense dimension will
     become important for others if we implement exogenous processes. Thus, parallelize
@@ -25,112 +24,118 @@ def parallelize_across_dense_dimensions(n_jobs=1):
     across dense dimensions by patching the attribute access such that each sub state
     space can only access its attributes.
 
-    The copy is shallow and thus sub state spaces hold references to the original arrays
-    which should be changed in-place.
+    The decorator can be applied to functions without trailing parentheses. At the same
+    time, the `*` prohibits to use the decorator with positional arguments.
 
     """
 
     def decorator_parallelize_across_dense_dimensions(func):
         @functools.wraps(func)
-        def wrapper_parallelize_across_dense_dimensions(state_space, *args, **kwargs):
-            if state_space.dense:
-                args_, kwargs_, dense_indices = _broadcast_arguments(
-                    state_space, args, kwargs
-                )
-                sub_state_spaces = _create_dict_of_patched_sub_state_spaces(
-                    state_space, dense_indices
-                )
+        def wrapper_parallelize_across_dense_dimensions(*args, **kwargs):
+            dense_indices = _infer_dense_indices_from_arguments(args, kwargs)
+            if dense_indices:
+                args_, kwargs_ = _broadcast_arguments(args, kwargs, dense_indices)
 
-                out = joblib.Parallel(n_jobs=n_jobs)(
-                    joblib.delayed(func)(
-                        sub_state_spaces[idx], *args_[idx], **kwargs_[idx]
-                    )
+                out = joblib.Parallel(n_jobs=n_jobs, max_nbytes=None)(
+                    joblib.delayed(func)(*args_[idx], **kwargs_[idx])
                     for idx in dense_indices
                 )
-                out = dict(zip(state_space.dense, out))
 
+                # Re-order multiple return values from list of tuples to tuple of lists
+                # to tuple of dictionaries to set as state space attributes.
+                if isinstance(out[0], tuple):
+                    n_returns = len(out[0])
+                    tuple_of_lists = tuple(
+                        [single_out[i] for single_out in out] for i in range(n_returns)
+                    )
+                    out = tuple(
+                        dict(zip(dense_indices, list_)) for list_ in tuple_of_lists
+                    )
+                else:
+                    out = dict(zip(dense_indices, out))
             else:
-                out = func(state_space, *args, **kwargs)
+                out = func(*args, **kwargs)
 
             return out
 
         return wrapper_parallelize_across_dense_dimensions
 
-    return decorator_parallelize_across_dense_dimensions
+    # Ensures that the decorator can be used without parentheses.
+    if callable(func):
+        return decorator_parallelize_across_dense_dimensions(func)
+    else:
+        return decorator_parallelize_across_dense_dimensions
 
 
-def _create_dict_of_patched_sub_state_spaces(state_space, dense_indices):
-    """Create a dictionary of state spaces with patched attribute access.
+def _infer_dense_indices_from_arguments(args, kwargs):
+    """Infer the dense indices from the arguments."""
+    dense_indices = []
+    for arg in args:
+        if _is_dictionary_with_tuple_keys(arg):
+            dense_indices.extend(arg.keys())
+            break
+    if not dense_indices:
+        for kwarg in kwargs.values():
+            if _is_dictionary_with_tuple_keys(kwarg):
+                dense_indices.extend(kwarg.keys())
+                break
 
-    To parallelize functions across the dense state space, one could pass the dense
-    index to functions which then perform the correct lookup. But, it also messes up
-    code by introducing the index as a new argument to each function and lookups for
-    state space attributes get longer because they need the index.
-
-    Instead, we create shallow copies of the state space class which does only create a
-    copy of the class, but not attributes or NumPy arrays attached to it. Then, we patch
-    the attribute access such that each sub state space only accesses the rewards and
-    expected value functions which belong to its dense state space index.
-
-    """
-    sub_state_spaces = {}
-    for idx in dense_indices:
-        sub_state_space = copy.copy(state_space)
-        sub_state_space.get_attribute = functools.partial(
-            sub_state_space.get_attribute, dense_idx=idx
-        )
-        sub_state_spaces[idx] = sub_state_space
-
-    return sub_state_spaces
+    return dense_indices
 
 
-def _broadcast_arguments(state_space, args, kwargs):
+def _is_dictionary_with_tuple_keys(candidate):
+    """Infer whether the argument is a dictionary with tuple keys."""
+    return isinstance(candidate, dict) and all(
+        isinstance(key, tuple) for key in candidate
+    )
+
+
+def _broadcast_arguments(args, kwargs, dense_indices):
     """Broadcast arguments to dense state space dimensions."""
     args = list(args) if isinstance(args, tuple) else [args]
 
-    # First, infer the necessary dense indices by inspecting `args` and `kwargs`.
-    # Functions in the solution operate over all indices, but the simulation might only
-    # cover a subset.
-    dense_indices = set()
-    for arg in args:
-        if _is_dense_dictionary_argument(arg, state_space.dense):
-            dense_indices |= set(arg)
-    for value in kwargs.values():
-        if _is_dense_dictionary_argument(value, state_space.dense):
-            dense_indices |= set(value)
-    dense_indices = dense_indices if dense_indices else state_space.dense.keys()
-
-    # Secondly, broadcast arguments which are not captured in a dictionary with dense
-    # state space dimension as keys.
+    # Broadcast arguments which are not captured in a dictionary with dense state space
+    # dimension as keys.
     for i, arg in enumerate(args):
-        if _is_dense_dictionary_argument(arg, state_space.dense):
+        if _is_dense_dictionary_argument(arg, dense_indices):
             pass
         else:
             args[i] = {idx: arg for idx in dense_indices}
     for kwarg, value in kwargs.items():
-        if _is_dense_dictionary_argument(value, state_space.dense):
+        if _is_dense_dictionary_argument(value, dense_indices):
             pass
         else:
             kwargs[kwarg] = {idx: value for idx in dense_indices}
 
-    # Thirdly, re-order arguments for zipping.
+    # Re-order arguments for zipping.
     args = {dense_idx: [arg[dense_idx] for arg in args] for dense_idx in dense_indices}
     kwargs = {
         dense_idx: {kwarg: value[dense_idx] for kwarg, value in kwargs.items()}
         for dense_idx in dense_indices
     }
 
-    return args, kwargs, dense_indices
+    return args, kwargs
+
+
+def _is_dense_dictionary_argument(argument, dense_indices):
+    """Check whether all keys of the dictionary argument are also dense indices.
+
+    We cannot check whether all dense indices are in the argument because `splitted_df`
+    in :func:`distribute_and_combine_simulation` may not cover all dense combinations.
+
+    """
+    return isinstance(argument, dict) and all(idx in dense_indices for idx in argument)
 
 
 def distribute_and_combine_simulation(func):
     """Distribute the simulation across sub state spaces and combine."""
 
     @functools.wraps(func)
-    def wrapper_distribute_and_combine_simulation(state_space, df, optim_paras):
-        splitted_df = _split_dataframe(df, optim_paras) if state_space.dense else df
+    def wrapper_distribute_and_combine_simulation(df, *args, optim_paras, **kwargs):
+        dense_columns = create_dense_state_space_columns(optim_paras)
+        splitted_df = _split_dataframe(df, dense_columns) if dense_columns else df
 
-        out = func(state_space, splitted_df, optim_paras)
+        out = func(splitted_df, *args, optim_paras, **kwargs)
 
         df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
 
@@ -144,10 +149,11 @@ def distribute_and_combine_likelihood(func):
 
     @functools.wraps(func)
     def wrapper_distribute_and_combine_likelihood(
-        state_space, df, base_draws_est, optim_paras, options
+        df, base_draws_est, *args, optim_paras, options
     ):
+        dense_columns = create_dense_state_space_columns(optim_paras)
         # Duplicate the DataFrame for each type.
-        if state_space.dense:
+        if dense_columns:
             n_obs = df.shape[0]
             n_types = optim_paras["n_types"]
             # Number each state to split the shocks later.
@@ -158,7 +164,7 @@ def distribute_and_combine_likelihood(func):
             splitted_df = {}
             for i in range(optim_paras["n_types"]):
                 df_ = df.copy().assign(type=i)
-                type_specific_dense = _split_dataframe(df_, optim_paras)
+                type_specific_dense = _split_dataframe(df_, dense_columns)
                 splitted_df = {**splitted_df, **type_specific_dense}
             splitted_shocks = _split_shocks(
                 base_draws_est, splitted_df, indices, optim_paras
@@ -167,7 +173,7 @@ def distribute_and_combine_likelihood(func):
             splitted_df = df
             splitted_shocks = base_draws_est
 
-        out = func(state_space, splitted_df, splitted_shocks, optim_paras, options)
+        out = func(splitted_df, splitted_shocks, *args, optim_paras, options)
 
         out = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
 
@@ -176,22 +182,11 @@ def distribute_and_combine_likelihood(func):
     return wrapper_distribute_and_combine_likelihood
 
 
-def _is_dense_dictionary_argument(argument, dense_indices):
-    """Check whether all keys of the dictionary argument are also dense indices.
-
-    We cannot check whether all dense indices are in the argument because `splitted_df`
-    in :func:`distribute_and_combine_simulation` may not cover all dense combinations.
-
-    """
-    return isinstance(argument, dict) and all(idx in dense_indices for idx in argument)
-
-
-def _split_dataframe(df, optim_paras):
-    columns = create_dense_state_space_columns(optim_paras)
-    groups = df.groupby(columns).groups
+def _split_dataframe(df, group_columns):
+    groups = df.groupby(group_columns).groups
     for key in list(groups):
         sub_df = df.loc[groups.pop(key)].copy()
-        key = (int(key),) if len(columns) == 1 else tuple(int(i) for i in key)
+        key = (int(key),) if len(group_columns) == 1 else tuple(int(i) for i in key)
         groups[key] = sub_df
 
     return groups

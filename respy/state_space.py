@@ -8,7 +8,6 @@ import pandas as pd
 from respy._numba import array_to_tuple
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
-from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import cast_bool_to_numeric
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
@@ -17,7 +16,133 @@ from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 
 
-class StateSpace:
+def create_state_space_class(optim_paras, options):
+    """Create the state space of the model."""
+    core, indexer, dense_grid = _create_state_space(optim_paras, options)
+
+    # Downcast after calculations or be aware of silent integer overflows.
+    core = compute_covariates(core, options["covariates_core"])
+    core = core.apply(downcast_to_smallest_dtype)
+    dense = _create_dense_state_space_covariates(dense_grid, optim_paras, options)
+
+    base_draws_sol = create_base_draws(
+        (options["n_periods"], options["solution_draws"], len(optim_paras["choices"])),
+        next(options["solution_seed_startup"]),
+        options["monte_carlo_sequence"],
+    )
+
+    if dense:
+        state_space = _MultiDimStateSpace(
+            core, indexer, base_draws_sol, optim_paras, options, dense
+        )
+    else:
+        state_space = _SingleDimStateSpace(
+            core, indexer, base_draws_sol, optim_paras, options
+        )
+
+    return state_space
+
+
+class _BaseStateSpace:
+    """The base class of a state space."""
+
+    @property
+    def n_dense_combinations(self):
+        """Return number of combinations of dense state space dimensions."""
+        sub_state_spaces = getattr(self, "sub_state_spaces", None)
+        return 1 if sub_state_spaces is None else len(sub_state_spaces)
+
+    @property
+    def n_core_states_per_period(self):
+        return np.array([len(range(s.start, s.stop)) for s in self.slices_by_periods])
+
+    @property
+    def n_states_per_period(self):
+        return self.n_core_states_per_period * self.n_dense_combinations
+
+    def _create_slices_by_core_periods(self):
+        """Create slices to index all attributes in a given period.
+
+        It is important that the returned objects are not fancy indices. Fancy indexing
+        results in copies of array which decrease performance and raise memory usage.
+
+        """
+        period = self.core.period
+        indices = np.where(period - period.shift(1).fillna(-1) == 1)[0]
+        indices = np.append(indices, self.core.shape[0])
+
+        slices = [slice(indices[i], indices[i + 1]) for i in range(len(indices) - 1)]
+        self.slices_by_periods = slices
+
+    def _create_is_inadmissible(self, optim_paras, options):
+        core = self.core.copy()
+        # Apply the maximum experience as a default constraint only if its not the last
+        # period. Otherwise, it is unconstrained.
+        for choice in optim_paras["choices_w_exp"]:
+            max_exp = optim_paras["choices"][choice]["max"]
+            formula = (
+                f"exp_{choice} == {max_exp}"
+                if max_exp != optim_paras["n_periods"] - 1
+                else "False"
+            )
+            core[choice] = core.eval(formula)
+
+        # Apply no constraint for choices without experience.
+        for choice in optim_paras["choices_wo_exp"]:
+            core[choice] = core.eval("False")
+
+        # Apply user-defined constraints
+        for choice in optim_paras["choices"]:
+            for formula in options["inadmissible_states"].get(choice, []):
+                core[choice] |= core.eval(formula)
+
+        is_inadmissible = core[optim_paras["choices"]].to_numpy(dtype=np.bool)
+
+        return is_inadmissible
+
+    def _create_indices_of_child_states(self, optim_paras):
+        """For each parent state get the indices of child states.
+
+        During the backward induction, the ``emax_value_functions`` in the future period
+        serve as the ``continuation_values`` of the current period. As the indices for
+        child states never change, these indices can be precomputed and added to the
+        state_space.
+
+        Actually, the indices of the child states do not have to cover the last period,
+        but it makes the code prettier and reduces the need to expand the indices in the
+        estimation.
+
+        """
+        n_choices = len(optim_paras["choices"])
+        n_choices_w_exp = len(optim_paras["choices_w_exp"])
+        n_periods = optim_paras["n_periods"]
+        n_states = self.core.shape[0]
+        core_columns = create_core_state_space_columns(optim_paras)
+
+        indices = np.full(
+            (n_states, n_choices), INDEXER_INVALID_INDEX, dtype=INDEXER_DTYPE
+        )
+
+        # Skip the last period which does not have child states.
+        for period in reversed(range(n_periods - 1)):
+            states_in_period = self.core.query("period == @period")[
+                core_columns
+            ].to_numpy(dtype=np.int8)
+
+            indices = _insert_indices_of_child_states(
+                indices,
+                states_in_period,
+                self.indexer[period],
+                self.indexer[period + 1],
+                self.is_inadmissible,
+                n_choices_w_exp,
+                optim_paras["n_lagged_choices"],
+            )
+
+        return indices
+
+
+class _SingleDimStateSpace(_BaseStateSpace):
     """The state space of a discrete choice dynamic programming model.
 
     Parameters
@@ -52,106 +177,40 @@ class StateSpace:
 
     """
 
-    def __init__(self, optim_paras, options):
-        """Initialize the state space class."""
-        self.base_draws_sol = create_base_draws(
-            (
-                options["n_periods"],
-                options["solution_draws"],
-                len(optim_paras["choices"]),
-            ),
-            next(options["solution_seed_startup"]),
-            options["monte_carlo_sequence"],
-        )
-
-        core, self.indexer, dense_grid = _create_state_space(optim_paras, options)
-
-        # Downcast after calculations or be aware of silent integer overflows.
-        core = compute_covariates(core, options["covariates_core"])
-        self.core = core.apply(downcast_to_smallest_dtype)
-        self.dense = _create_dense_state_space_covariates(
-            dense_grid, optim_paras, options
-        )
-
+    def __init__(
+        self,
+        core,
+        indexer,
+        base_draws_sol,
+        optim_paras,
+        options,
+        dense_covariates=None,
+        is_inadmissible=None,
+        indices_of_child_states=None,
+    ):
+        self.core = core
+        self.indexer = indexer
+        self.dense_covariates = dense_covariates if dense_covariates is not None else {}
+        self.mixed_covariates = options["covariates_mixed"]
+        self.base_draws_sol = base_draws_sol
+        super()._create_slices_by_core_periods()
         self._initialize_attributes(optim_paras)
+        self.is_inadmissible = (
+            self._create_is_inadmissible(optim_paras, options)
+            if is_inadmissible is None
+            else is_inadmissible
+        )
+        self.indices_of_child_states = (
+            super()._create_indices_of_child_states(optim_paras)
+            if indices_of_child_states is None
+            else indices_of_child_states
+        )
 
-        self._create_is_inadmissible(optim_paras, options)
-        self._create_slices_by_core_periods()
-        self._get_indices_of_child_states(optim_paras)
-
-    def _initialize_attributes(self, optim_paras):
-        """Initialize attributes to use references later."""
-        n_states = self.core.shape[0]
-        n_choices = len(optim_paras["choices"])
-        n_choices_w_wage = len(optim_paras["choices_w_wage"])
-        n_choices_wo_wage = n_choices - n_choices_w_wage
-
-        for name, array in (
-            ("expected_value_functions", np.empty(n_states)),
-            ("indices_of_child_states", np.empty((n_states, n_choices), dtype=np.int)),
-            ("is_inadmissible", np.empty((n_states, n_choices), dtype=np.bool)),
-            (
-                "wages",
-                np.column_stack(
-                    (
-                        np.empty((n_states, n_choices_w_wage)),
-                        np.ones((n_states, n_choices_wo_wage)),
-                    )
-                ),
-            ),
-            ("nonpecs", np.zeros((n_states, n_choices))),
-        ):
-            if self.dense:
-                attribute = {}
-                for idx in self.dense:
-                    attribute[idx] = array.copy()
-            else:
-                attribute = array.copy()
-            setattr(self, name, attribute)
-
-    @parallelize_across_dense_dimensions()
-    def _create_is_inadmissible(self, optim_paras, options):
-        df = self.get_attribute("core", options)
-
-        # Apply the maximum experience as a default constraint only if its not the last
-        # period. Otherwise, it is unconstrained.
-        for choice in optim_paras["choices_w_exp"]:
-            max_exp = optim_paras["choices"][choice]["max"]
-            formula = (
-                f"exp_{choice} == {max_exp}"
-                if max_exp != optim_paras["n_periods"] - 1
-                else "False"
-            )
-            df[choice] = df.eval(formula)
-
-        # Apply no constraint for choices without experience.
-        for choice in optim_paras["choices_wo_exp"]:
-            df[choice] = df.eval("False")
-
-        # Apply user-defined constraints
-        for choice in optim_paras["choices"]:
-            for formula in options["inadmissible_states"].get(choice, []):
-                df[choice] |= df.eval(formula)
-
-        is_inadmissible = self.get_attribute("is_inadmissible")
-        is_inadmissible[:] = df[optim_paras["choices"]].to_numpy()
-
-    def get_attribute(self, attr, options=None, dense_idx=None):
+    def get_attribute(self, attr):
         """Get an attribute of the state space."""
-        if attr == "core":
-            attribute = self.core.copy()
-            if dense_idx:
-                attribute = attribute.assign(**self.dense[dense_idx])
-            if options:
-                attribute = compute_covariates(attribute, options["covariates_all"])
-            attribute = cast_bool_to_numeric(attribute)
-        else:
-            attribute = getattr(self, attr)
-            attribute = attribute[dense_idx] if dense_idx else attribute
+        return getattr(self, attr)
 
-        return attribute
-
-    def get_attribute_from_period(self, attribute, period, options=None):
+    def get_attribute_from_period(self, attribute, period):
         """Get an attribute of the state space sliced to a given period.
 
         Parameters
@@ -162,71 +221,11 @@ class StateSpace:
             Attribute is retrieved from this period.
 
         """
-        attr = self.get_attribute(attribute, options)
+        attr = self.get_attribute(attribute)
         slice_ = self.slices_by_periods[period]
         out = attr[slice_]
 
         return out
-
-    def _create_slices_by_core_periods(self):
-        """Create slices to index all attributes in a given period.
-
-        It is important that the returned objects are not fancy indices. Fancy indexing
-        results in copies of array which decrease performance and raise memory usage.
-
-        """
-        period = self.core.period
-        indices = np.where(period - period.shift(1).fillna(-1) == 1)[0]
-        indices = np.append(indices, self.core.shape[0])
-
-        self.slices_by_periods = []
-        for i in range(len(indices) - 1):
-            self.slices_by_periods.append(slice(indices[i], indices[i + 1]))
-
-    @parallelize_across_dense_dimensions()
-    def _get_indices_of_child_states(self, optim_paras):
-        """For each parent state get the indices of child states.
-
-        During the backward induction, the ``emax_value_functions`` in the future period
-        serve as the ``continuation_values`` of the current period. As the indices for
-        child states never change, these indices can be precomputed and added to the
-        state_space.
-
-        Actually, the indices of the child states do not have to cover the last period,
-        but it makes the code prettier and reduces the need to expand the indices in the
-        estimation.
-
-        """
-        is_inadmissible = self.get_attribute("is_inadmissible")
-        indices_of_child_states = self.get_attribute("indices_of_child_states")
-
-        dtype = self.indexer[0].dtype
-
-        n_choices = len(optim_paras["choices"])
-        n_choices_w_exp = len(optim_paras["choices_w_exp"])
-        n_periods = optim_paras["n_periods"]
-        n_states = self.core.shape[0]
-        core_columns = create_core_state_space_columns(optim_paras)
-
-        indices = np.full((n_states, n_choices), -1, dtype=dtype)
-
-        # Skip the last period which does not have child states.
-        for period in reversed(range(n_periods - 1)):
-            states_in_period = self.core.query("period == @period")[
-                core_columns
-            ].to_numpy(dtype=np.int8)
-
-            indices = _insert_indices_of_child_states(
-                indices,
-                states_in_period,
-                self.indexer[period],
-                self.indexer[period + 1],
-                is_inadmissible,
-                n_choices_w_exp,
-                optim_paras["n_lagged_choices"],
-            )
-
-        indices_of_child_states[:] = indices
 
     def get_continuation_values(self, period=None, indices=None):
         """Return the continuation values for a given period or states.
@@ -277,37 +276,102 @@ class StateSpace:
 
         return continuation_values
 
-    @parallelize_across_dense_dimensions()
-    def create_choice_rewards(self, optim_paras, options):
-        """Create wage and non-pecuniary reward for each state and choice.
+    def set_attribute(self, attribute, value):
+        self.get_attribute(attribute)[:] = value
 
-        Note that missing wages filled with ones and missing non-pecuniary rewards with
-        zeros. This is done in :meth:`_initialize_attributes`.
+    def set_attribute_from_period(self, attribute, value, period):
+        self.get_attribute_from_period(attribute, period)[:] = value
 
-        The ``out`` keyword ensures that the result is written into the specified
-        positions without allocating another temporary array.
+    def _initialize_attributes(self, optim_paras):
+        """Initialize attributes to use references later."""
+        n_states = self.core.shape[0]
+        n_choices = len(optim_paras["choices"])
+        n_choices_w_wage = len(optim_paras["choices_w_wage"])
+        n_choices_wo_wage = n_choices - n_choices_w_wage
 
-        """
-        df = self.get_attribute("core", options)
+        for name, array in (
+            ("expected_value_functions", np.empty(n_states)),
+            ("indices_of_child_states", np.empty((n_states, n_choices), dtype=np.int)),
+            (
+                "wages",
+                np.column_stack(
+                    (
+                        np.empty((n_states, n_choices_w_wage)),
+                        np.ones((n_states, n_choices_wo_wage)),
+                    )
+                ),
+            ),
+            ("nonpecs", np.zeros((n_states, n_choices))),
+        ):
+            setattr(self, name, array)
 
-        wages = self.get_attribute("wages")
-        nonpecs = self.get_attribute("nonpecs")
+    @property
+    def states(self):
+        states = self.core.copy().assign(**self.dense_covariates)
+        states = compute_covariates(states, self.mixed_covariates)
+        states = cast_bool_to_numeric(states)
+        return states
 
-        for i, choice in enumerate(optim_paras["choices"]):
-            if f"wage_{choice}" in optim_paras:
-                wage_columns = optim_paras[f"wage_{choice}"].index
-                log_wage = np.dot(
-                    df[wage_columns].to_numpy(),
-                    optim_paras[f"wage_{choice}"].to_numpy(),
-                )
-                wages[:, i] = np.exp(log_wage)
 
-            if f"nonpec_{choice}" in optim_paras:
-                nonpec_columns = optim_paras[f"nonpec_{choice}"].index
-                nonpecs[:, i] = np.dot(
-                    df[nonpec_columns].to_numpy(),
-                    optim_paras[f"nonpec_{choice}"].to_numpy(),
-                )
+class _MultiDimStateSpace(_BaseStateSpace):
+    """The state space of a discrete choice dynamic programming model.
+
+    This class wraps the whole state space of the model.
+
+    """
+
+    def __init__(self, core, indexer, base_draws_sol, optim_paras, options, dense):
+        self.base_draws_sol = base_draws_sol
+        self.core = core
+        self.indexer = indexer
+        self.is_inadmissible = super()._create_is_inadmissible(optim_paras, options)
+        self.indices_of_child_states = super()._create_indices_of_child_states(
+            optim_paras
+        )
+        self.sub_state_spaces = {
+            dense_dim: _SingleDimStateSpace(
+                self.core,
+                self.indexer,
+                self.base_draws_sol,
+                optim_paras,
+                options,
+                dense_covariates,
+                self.is_inadmissible,
+                self.indices_of_child_states,
+            )
+            for dense_dim, dense_covariates in dense.items()
+        }
+        super()._create_slices_by_core_periods()
+
+    def get_attribute(self, attribute):
+        return {
+            key: sss.get_attribute(attribute)
+            for key, sss in self.sub_state_spaces.items()
+        }
+
+    def get_attribute_from_period(self, attribute, period):
+        return {
+            key: sss.get_attribute_from_period(attribute, period)
+            for key, sss in self.sub_state_spaces.items()
+        }
+
+    def get_continuation_values(self, period=None, indices=None):
+        return {
+            key: sss.get_continuation_values(period, indices)
+            for key, sss in self.sub_state_spaces.items()
+        }
+
+    def set_attribute(self, attribute, value):
+        for key, sss in self.sub_state_spaces.items():
+            sss.set_attribute(attribute, value[key])
+
+    def set_attribute_from_period(self, attribute, value, period):
+        for key, sss in self.sub_state_spaces.items():
+            sss.set_attribute_from_period(attribute, value[key], period)
+
+    @property
+    def states(self):
+        return {key: sss.states for key, sss in self.sub_state_spaces.items()}
 
 
 def _create_state_space(optim_paras, options):

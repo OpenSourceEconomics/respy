@@ -106,7 +106,7 @@ nbsphinx_prolog = r"""
 
     .. nbinfo::
 
-        Download the notebook :download:`here <https://github.com/OpenSourceEconomics/respy/blob/{{ env.config.release }}/{{ docname }}>`!
+        View and download the notebook `here <https://nbviewer.jupyter.org/github/OpenSourceEconomics/respy/tree/v{{ env.config.release }}/{{ docname }}>`_!
 
 """
 
@@ -116,7 +116,6 @@ numpydoc_xref_ignore = {"type", "optional", "default"}
 
 # Configuration for autodoc
 autosummary_generate = True
-
 
 # -- Options for HTML output ----------------------------------------------
 

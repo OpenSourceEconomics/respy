@@ -11,77 +11,97 @@ from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import clip
 
 
-@parallelize_across_dense_dimensions()
-def interpolate(state_space, period, draws_emax_risk, optim_paras, options):
-    """Interface for interpolation routines."""
-    slice_ = state_space.slices_by_periods[period]
-    exp_val_funcs = kw_94_interpolation(
-        state_space, period, draws_emax_risk, optim_paras, options
+@parallelize_across_dense_dimensions
+def interpolate(
+    wages,
+    nonpecs,
+    continuation_values,
+    is_inadmissible,
+    period_draws_emax_risk,
+    interpolation_points,
+    optim_paras,
+    options,
+):
+    """Interface to switch between different interpolation routines."""
+    period_expected_value_functions = kw_94_interpolation(
+        wages,
+        nonpecs,
+        continuation_values,
+        is_inadmissible,
+        period_draws_emax_risk,
+        interpolation_points,
+        optim_paras,
+        options,
     )
 
-    state_space.get_attribute("expected_value_functions")[slice_] = exp_val_funcs
+    return period_expected_value_functions
 
 
-def kw_94_interpolation(state_space, period, draws_emax_risk, optim_paras, options):
+def kw_94_interpolation(
+    wages,
+    nonpecs,
+    continuation_values,
+    is_inadmissible,
+    period_draws_emax_risk,
+    interpolation_points,
+    optim_paras,
+    options,
+):
     """Calculate the approximate solution proposed by Keane and Wolpin (1994)."""
     n_choices_w_wage = len(optim_paras["choices_w_wage"])
-    slice_ = state_space.slices_by_periods[period]
-    n_states_in_period = len(range(slice_.start, slice_.stop))
-
-    wages = state_space.get_attribute_from_period("wages", period)
-    nonpec = state_space.get_attribute_from_period("nonpecs", period)
-    is_inadmissible = state_space.get_attribute_from_period("is_inadmissible", period)
-    continuation_values = state_space.get_continuation_values(period)
+    n_core_states_in_period = wages.shape[0]
 
     # These shifts are used to determine the expected values of the working
-    # alternatives. These are log normal distributed and thus the draws cannot
-    # simply set to zero, but :math:`E(X) = \exp\{\mu + \frac{\sigma^2}{2}\}`.
+    # alternatives. These are log normal distributed and thus the draws cannot simply
+    # set to zero, but :math:`E(X) = \exp\{\mu + \frac{\sigma^2}{2}\}`.
     shifts = np.zeros(len(optim_paras["choices"]))
     shocks_cov = optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T)
     shifts[:n_choices_w_wage] = np.exp(
         np.clip(np.diag(shocks_cov)[:n_choices_w_wage], 0, MAX_LOG_FLOAT) / 2
     )
 
-    # Get indicator for interpolation and simulation of states. The seed value
-    # is the base seed plus the number of the period. Thus, not interpolated
-    # states are held constant for each periods and not across periods.
+    # Get indicator for interpolation and simulation of states. The seed value is the
+    # base seed plus the number of the period. Thus, not interpolated states are held
+    # constant for each periods and not across periods.
     not_interpolated = _get_not_interpolated_indicator(
-        options["interpolation_points"],
-        n_states_in_period,
+        interpolation_points,
+        n_core_states_in_period,
         next(options["solution_seed_iteration"]),
     )
 
-    # Constructing the exogenous variable for all states, including the ones
-    # where simulation will take place. All information will be used in either
-    # the construction of the prediction model or the prediction step.
+    # Constructing the exogenous variable for all states, including the ones where
+    # simulation will take place. All information will be used in either the
+    # construction of the prediction model or the prediction step.
     exogenous, max_emax = _calculate_exogenous_variables(
         wages,
-        nonpec,
+        nonpecs,
         continuation_values,
         shifts,
         optim_paras["delta"],
         is_inadmissible,
     )
 
-    # Constructing the dependent variables for all states at the random subset
-    # of points where the EMAX is actually calculated.
+    # Constructing the dependent variables for all states at the random subset of points
+    # where the EMAX is actually calculated.
     endogenous = _calculate_endogenous_variables(
         wages,
-        nonpec,
+        nonpecs,
         continuation_values,
         max_emax,
         not_interpolated,
-        draws_emax_risk[period],
+        period_draws_emax_risk,
         optim_paras["delta"],
         is_inadmissible,
     )
 
-    # Create prediction model based on the random subset of points where the
-    # EMAX is actually simulated and thus dependent and independent variables
-    # are available. For the interpolation points, the actual values are used.
-    emax = get_predictions(endogenous, exogenous, max_emax, not_interpolated)
+    # Create prediction model based on the random subset of points where the EMAX is
+    # actually simulated and thus dependent and independent variables are available. For
+    # the interpolation points, the actual values are used.
+    period_expected_value_functions = get_predictions(
+        endogenous, exogenous, max_emax, not_interpolated
+    )
 
-    return emax
+    return period_expected_value_functions
 
 
 def _get_not_interpolated_indicator(interpolation_points, n_states, seed):

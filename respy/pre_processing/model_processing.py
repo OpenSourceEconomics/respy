@@ -176,6 +176,12 @@ def _parse_observables(optim_paras, params):
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, regex_pattern
         )
+        if len(parsed_parameters) < 2:
+            warnings.warn(
+                f"Observable '{observable}' must have at least two possible values. "
+                "Constant effects should be implemented via constant covariates.",
+                category=DeprecationWarning,
+            )
         optim_paras["observables"][observable] = parsed_parameters
 
     return optim_paras

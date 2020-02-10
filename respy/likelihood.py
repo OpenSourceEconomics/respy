@@ -4,9 +4,11 @@ from functools import partial
 
 import numba as nb
 import numpy as np
+import pandas as pd
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
+from respy.config import INDEXER_INVALID_INDEX
 from respy.config import MAX_FLOAT
 from respy.config import MIN_FLOAT
 from respy.parallelization import distribute_and_combine_likelihood
@@ -24,8 +26,7 @@ from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import rename_labels_to_internal
-from respy.solve import solve_with_backward_induction
-from respy.state_space import StateSpace
+from respy.solve import get_solve_func
 
 
 def get_crit_func(
@@ -70,7 +71,8 @@ def get_crit_func(
 
     check_estimation_data(df, optim_paras)
 
-    state_space = StateSpace(optim_paras, options)
+    solve = get_solve_func(params, options)
+    state_space = solve.keywords["state_space"]
 
     df, type_covariates = _process_estimation_data(
         df, state_space, optim_paras, options
@@ -90,7 +92,7 @@ def get_crit_func(
         log_like,
         df=df,
         base_draws_est=base_draws_est,
-        state_space=state_space,
+        solve=solve,
         type_covariates=type_covariates,
         options=options,
         return_scalar=return_scalar,
@@ -104,7 +106,7 @@ def log_like(
     params,
     df,
     base_draws_est,
-    state_space,
+    solve,
     type_covariates,
     options,
     return_scalar,
@@ -123,16 +125,15 @@ def log_like(
         different types.
     base_draws_est : numpy.ndarray
         Set of draws to calculate the probability of observed wages.
-    state_space : :class:`~respy.state_space.StateSpace`
-        State space.
+    solve : :func:`~respy.solve._solve`
+        Function which solves the model with new parameters.
     options : dict
         Contains model options.
 
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    state_space.create_choice_rewards(optim_paras, options)
-    solve_with_backward_induction(state_space, optim_paras, options)
+    state_space = solve(params)
 
     contribs, df, log_type_probabilities = _internal_log_like_obs(
         state_space, df, base_draws_est, type_covariates, optim_paras, options
@@ -195,8 +196,20 @@ def _internal_log_like_obs(
 
     n_types = optim_paras["n_types"]
 
+    wages = state_space.get_attribute("wages")
+    nonpecs = state_space.get_attribute("nonpecs")
+    expected_value_functions = state_space.get_attribute("expected_value_functions")
+    is_inadmissible = state_space.get_attribute("is_inadmissible")
+
     df = _compute_wage_and_choice_likelihood_contributions(
-        state_space, df, base_draws_est, optim_paras, options
+        df,
+        base_draws_est,
+        wages,
+        nonpecs,
+        expected_value_functions,
+        is_inadmissible,
+        optim_paras=optim_paras,
+        options=options,
     )
 
     # Aggregate choice probabilities and wage densities to log likes per observation.
@@ -228,16 +241,23 @@ def _internal_log_like_obs(
 
 
 @distribute_and_combine_likelihood
-@parallelize_across_dense_dimensions()
+@parallelize_across_dense_dimensions
 def _compute_wage_and_choice_likelihood_contributions(
-    state_space, df, base_draws_est, optim_paras, options
+    df,
+    base_draws_est,
+    wages,
+    nonpecs,
+    expected_value_functions,
+    is_inadmissible,
+    optim_paras,
+    options,
 ):
     n_choices = len(optim_paras["choices"])
     n_obs = df.shape[0]
 
     indices = df["index"].to_numpy()
 
-    wages_systematic = state_space.get_attribute("wages")[indices]
+    wages_systematic = wages[indices]
     log_wages_observed = df["log_wage"].to_numpy()
     choices = df["choice"].to_numpy()
 
@@ -254,15 +274,20 @@ def _compute_wage_and_choice_likelihood_contributions(
 
     draws = draws.reshape(n_obs, -1, n_choices)
 
-    continuation_values = state_space.get_continuation_values(indices=indices)
+    # To get the continuation values, correctly index the expected value functions. This
+    # is the same operation done in `_SingleDimStateSpace.get_continuation_values()`.
+    child_indices = df[[f"child_index_{c}" for c in optim_paras["choices"]]]
+    mask = child_indices != INDEXER_INVALID_INDEX
+    valid_indices = np.where(mask, child_indices, 0)
+    continuation_values = np.where(mask, expected_value_functions[valid_indices], 0)
 
     choice_loglikes = _simulate_log_probability_of_individuals_observed_choice(
-        state_space.get_attribute("wages")[indices],
-        state_space.get_attribute("nonpecs")[indices],
+        wages[indices],
+        nonpecs[indices],
         continuation_values,
         draws,
         optim_paras["delta"],
-        state_space.get_attribute("is_inadmissible")[indices],
+        is_inadmissible[indices],
         choices,
         options["estimation_tau"],
     )
@@ -447,8 +472,10 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         The DataFrame which contains the data used for estimation. The DataFrame
         contains individual identifiers, periods, experiences, lagged choices, choices
         in current period, the wage and other observed data.
-    state_space : ~respy.state_space.StateSpace
+    indexer : numpy.ndarray
+        Indexer for the core state space.
     optim_paras : dict
+    options : dict
 
     Returns
     -------
@@ -502,6 +529,14 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         .to_numpy()
     )
     df["index"] = indices[indices_to_reorder]
+
+    # Add indices of child states to the DataFrame.
+    children = pd.DataFrame(
+        data=state_space.indices_of_child_states[df["index"]],
+        index=df.index,
+        columns=[f"child_index_{c}" for c in optim_paras["choices"]],
+    )
+    df = pd.concat([df, children], axis="columns")
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
     df["log_wage"] = np.log(np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT))
