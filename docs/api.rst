@@ -91,9 +91,6 @@ state space
 .. autosummary::
     :toctree: _generated/
 
-    StateSpace
-    StateSpace.create_choice_rewards
-    StateSpace.get_attribute
-    StateSpace.get_attribute_from_period
-    StateSpace.get_continuation_values
-    StateSpace._initialize_attributes
+    _BaseStateSpace
+    _SingleDimStateSpace
+    _MultiDimStateSpace

@@ -212,7 +212,7 @@ def _calculate_endogenous_variables(
         state has reached maximum education.
 
     """
-    emax_value_functions = solve.calculate_emax_value_functions(
+    emax_value_functions = solve.calculate_expected_value_functions(
         wages[not_interpolated],
         nonpec[not_interpolated],
         continuation_values[not_interpolated],

@@ -44,21 +44,12 @@ def create_state_space_class(optim_paras, options):
 
 
 class _BaseStateSpace:
-    """The base class of a state space."""
+    """The base class of a state space.
 
-    @property
-    def n_dense_combinations(self):
-        """Return number of combinations of dense state space dimensions."""
-        sub_state_spaces = getattr(self, "sub_state_spaces", None)
-        return 1 if sub_state_spaces is None else len(sub_state_spaces)
+    The base class includes some methods which should be available to both state spaces
+    and are shared between multiple sub state spaces.
 
-    @property
-    def n_core_states_per_period(self):
-        return np.array([len(range(s.start, s.stop)) for s in self.slices_by_periods])
-
-    @property
-    def n_states_per_period(self):
-        return self.n_core_states_per_period * self.n_dense_combinations
+    """
 
     def _create_slices_by_core_periods(self):
         """Create slices to index all attributes in a given period.
@@ -72,7 +63,8 @@ class _BaseStateSpace:
         indices = np.append(indices, self.core.shape[0])
 
         slices = [slice(indices[i], indices[i + 1]) for i in range(len(indices) - 1)]
-        self.slices_by_periods = slices
+
+        return slices
 
     def _create_is_inadmissible(self, optim_paras, options):
         core = self.core.copy()
@@ -103,10 +95,10 @@ class _BaseStateSpace:
     def _create_indices_of_child_states(self, optim_paras):
         """For each parent state get the indices of child states.
 
-        During the backward induction, the ``emax_value_functions`` in the future period
-        serve as the ``continuation_values`` of the current period. As the indices for
-        child states never change, these indices can be precomputed and added to the
-        state_space.
+        During the backward induction, the ``expected_value_functions`` in the future
+        period serve as the ``continuation_values`` of the current period. As the
+        indices for child states never change, these indices can be precomputed and
+        added to the state_space.
 
         Actually, the indices of the child states do not have to cover the last period,
         but it makes the code prettier and reduces the need to expand the indices in the
@@ -147,6 +139,10 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
     Parameters
     ----------
+    core : pandas.DataFrame
+        DataFrame containing the core state space.
+    indexer : numpy.ndarray
+        Multidimensional array containing indices of states in valid positions.
     optim_paras : dict
         Dictionary containing model parameters.
     options : dict
@@ -171,7 +167,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
         Array with shape (n_states, n_choices + 3) containing containing the emax of
         each choice of the subsequent period and the simulated or interpolated maximum
         of the current period.
-    emax_value_functions : numpy.ndarray
+    expected_value_functions : numpy.ndarray
         Array with shape (n_states, 1) containing the expected maximum of
         choice-specific value functions.
 
@@ -187,13 +183,18 @@ class _SingleDimStateSpace(_BaseStateSpace):
         dense_covariates=None,
         is_inadmissible=None,
         indices_of_child_states=None,
+        slices_by_periods=None,
     ):
         self.core = core
         self.indexer = indexer
         self.dense_covariates = dense_covariates if dense_covariates is not None else {}
         self.mixed_covariates = options["covariates_mixed"]
         self.base_draws_sol = base_draws_sol
-        super()._create_slices_by_core_periods()
+        self.slices_by_periods = (
+            super()._create_slices_by_core_periods()
+            if slices_by_periods is None
+            else slices_by_periods
+        )
         self._initialize_attributes(optim_paras)
         self.is_inadmissible = (
             self._create_is_inadmissible(optim_paras, options)
@@ -231,8 +232,8 @@ class _SingleDimStateSpace(_BaseStateSpace):
         """Return the continuation values for a given period or states.
 
         If the last period is selected, return a matrix of zeros. In any other period,
-        use the precomputed ``indices_of_child_states`` to select continuation values
-        from ``emax_value_functions``.
+        use the precomputed `indices_of_child_states` to select continuation values from
+        `expected_value_functions`.
 
         You can also indices to collect continuation values across periods.
 
@@ -282,6 +283,13 @@ class _SingleDimStateSpace(_BaseStateSpace):
     def set_attribute_from_period(self, attribute, value, period):
         self.get_attribute_from_period(attribute, period)[:] = value
 
+    @property
+    def states(self):
+        states = self.core.copy().assign(**self.dense_covariates)
+        states = compute_covariates(states, self.mixed_covariates)
+        states = cast_bool_to_numeric(states)
+        return states
+
     def _initialize_attributes(self, optim_paras):
         """Initialize attributes to use references later."""
         n_states = self.core.shape[0]
@@ -291,7 +299,6 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
         for name, array in (
             ("expected_value_functions", np.empty(n_states)),
-            ("indices_of_child_states", np.empty((n_states, n_choices), dtype=np.int)),
             (
                 "wages",
                 np.column_stack(
@@ -304,13 +311,6 @@ class _SingleDimStateSpace(_BaseStateSpace):
             ("nonpecs", np.zeros((n_states, n_choices))),
         ):
             setattr(self, name, array)
-
-    @property
-    def states(self):
-        states = self.core.copy().assign(**self.dense_covariates)
-        states = compute_covariates(states, self.mixed_covariates)
-        states = cast_bool_to_numeric(states)
-        return states
 
 
 class _MultiDimStateSpace(_BaseStateSpace):
@@ -328,6 +328,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
         self.indices_of_child_states = super()._create_indices_of_child_states(
             optim_paras
         )
+        self.slices_by_periods = super()._create_slices_by_core_periods()
         self.sub_state_spaces = {
             dense_dim: _SingleDimStateSpace(
                 self.core,
@@ -338,10 +339,10 @@ class _MultiDimStateSpace(_BaseStateSpace):
                 dense_covariates,
                 self.is_inadmissible,
                 self.indices_of_child_states,
+                self.slices_by_periods,
             )
             for dense_dim, dense_covariates in dense.items()
         }
-        super()._create_slices_by_core_periods()
 
     def get_attribute(self, attribute):
         return {

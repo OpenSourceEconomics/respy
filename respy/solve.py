@@ -58,7 +58,7 @@ def solve(params, options, state_space):
         )
         state_space.set_attribute("expected_value_functions", expected_value_functions)
     else:
-        state_space = solve_with_backward_induction(state_space, optim_paras, options)
+        state_space = _solve_with_backward_induction(state_space, optim_paras, options)
 
     return state_space
 
@@ -100,7 +100,7 @@ def _solve_for_myopic_individuals(expected_value_functions):
     return expected_value_functions
 
 
-def solve_with_backward_induction(state_space, optim_paras, options):
+def _solve_with_backward_induction(state_space, optim_paras, options):
     """Calculate utilities with backward induction.
 
     Parameters
@@ -137,16 +137,16 @@ def solve_with_backward_induction(state_space, optim_paras, options):
         # The number of interpolation points is the same for all periods. Thus, for some
         # periods the number of interpolation points is larger than the actual number of
         # states. In this case, no interpolation is needed.
-        n_states_in_period = state_space.n_states_per_period[period]
+        n_dense_combinations = len(getattr(state_space, "sub_state_spaces", [1]))
+        n_core_states = state_space.core.query("period == @period").shape[0]
+        n_states_in_period = n_core_states * n_dense_combinations
         any_interpolated = (
             options["interpolation_points"] <= n_states_in_period
             and options["interpolation_points"] != -1
         )
 
         if any_interpolated:
-            interp_points = int(
-                options["interpolation_points"] / state_space.n_dense_combinations
-            )
+            interp_points = int(options["interpolation_points"] / n_dense_combinations)
             period_expected_value_functions = interpolate(
                 wages,
                 nonpecs,
@@ -190,7 +190,7 @@ def _full_solution(
     state and not only a subset.
 
     """
-    period_expected_value_functions = calculate_emax_value_functions(
+    period_expected_value_functions = calculate_expected_value_functions(
         wages,
         nonpecs,
         continuation_values,
@@ -209,14 +209,14 @@ def _full_solution(
     nopython=True,
     target="parallel",
 )
-def calculate_emax_value_functions(
+def calculate_expected_value_functions(
     wages,
-    nonpec,
+    nonpecs,
     continuation_values,
     draws,
     delta,
     is_inadmissible,
-    emax_value_functions,
+    expected_value_functions,
 ):
     r"""Calculate the expected maximum of value functions for a set of unobservables.
 
@@ -231,7 +231,7 @@ def calculate_emax_value_functions(
     points. In this setting, one wants to approximate the expected maximum utility of
     the current state.
 
-    Note that ``wages`` have the same length as `nonpec` despite that wages are only
+    Note that ``wages`` have the same length as `nonpecs` despite that wages are only
     available in some choices. Missing choices are filled with ones. In the case of a
     choice with wage and without wage, flow utilities are
 
@@ -240,12 +240,11 @@ def calculate_emax_value_functions(
         \text{Flow Utility} = \text{Wage} * \epsilon + \text{Non-pecuniary}
         \text{Flow Utility} = 1 * \epsilon + \text{Non-pecuniary}
 
-
     Parameters
     ----------
     wages : numpy.ndarray
         Array with shape (n_choices,) containing wages.
-    nonpec : numpy.ndarray
+    nonpecs : numpy.ndarray
         Array with shape (n_choices,) containing non-pecuniary rewards.
     continuation_values : numpy.ndarray
         Array with shape (n_choices,) containing expected maximum utility for each
@@ -260,7 +259,7 @@ def calculate_emax_value_functions(
 
     Returns
     -------
-    emax_value_functions : float
+    expected_value_functions : float
         Expected maximum utility of an agent.
 
     .. _Monte Carlo integration:
@@ -269,7 +268,7 @@ def calculate_emax_value_functions(
     """
     n_draws, n_choices = draws.shape
 
-    emax_value_functions[0] = 0
+    expected_value_functions[0] = 0
 
     for i in range(n_draws):
 
@@ -278,7 +277,7 @@ def calculate_emax_value_functions(
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
                 wages[j],
-                nonpec[j],
+                nonpecs[j],
                 continuation_values[j],
                 draws[i, j],
                 delta,
@@ -288,6 +287,6 @@ def calculate_emax_value_functions(
             if value_function > max_value_functions:
                 max_value_functions = value_function
 
-        emax_value_functions[0] += max_value_functions
+        expected_value_functions[0] += max_value_functions
 
-    emax_value_functions[0] /= n_draws
+    expected_value_functions[0] /= n_draws
