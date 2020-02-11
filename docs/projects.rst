@@ -11,7 +11,8 @@ further resources, and contact details.
 Research
 --------
 
-Bhuller, M., Eisenhauer, P. and Mendel, M. (2020). The Option Value of Education. *Working Paper*.
+Bhuller, M., Eisenhauer, P. and Mendel, M. (2020). The Option Value of Education.
+*Working Paper*.
 
     We provide a comprehensive account of the returns to education using Norwegian
     population panel data with nearly career-long earnings histories. We use variation
