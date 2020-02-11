@@ -28,8 +28,13 @@ jobs:
 
   - bash: |
       source activate respy
-      tox -e pytest -- -m "not slow"
+      tox -e pytest -- -m "not slow" --cov-report xml --cov=./
     displayName: Run pytest.
+
+
+  # The token is taken from environment variables.
+  - script: bash <(curl https://codecov.io/bash) -t $(CODECOV_TOKEN)
+    displayName: Upload coverage report to codecov.io.
 
   - bash: |
       source activate respy
