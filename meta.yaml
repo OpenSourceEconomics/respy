@@ -23,7 +23,7 @@ requirements:
     - mkl
     - numba>=0.42
     - numpy
-    - pandas>=0.24
+    - pandas>=0.24,<1
     - pyyaml
     - pytest
     - scipy
