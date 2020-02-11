@@ -10,3 +10,5 @@ coverage:
 ignore:
   - "release.py"
   - "setup.py"
+  - "respy/conftest.py"
+  - "respy/tests/**/*"
