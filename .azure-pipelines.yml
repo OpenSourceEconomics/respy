@@ -17,13 +17,10 @@ jobs:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH.
 
-  - bash: |
-      pip uninstall -y setuptools
-      conda install setuptools --yes --quiet
-      conda update conda --yes --quiet
+  - bash: conda update conda --yes --quiet
     displayName: Update conda.
 
-  - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
+  - bash: conda create --yes --quiet --name respy -c conda-forge python=$PYTHON_VERSION tox-conda
     displayName: Create Anaconda environment.
 
   - bash: |
@@ -64,7 +61,7 @@ jobs:
   - powershell: conda update conda --yes --quiet
     displayName: Update conda.
 
-  - powershell: conda create --yes --quiet --name respy python=$env:PYTHON_VERSION python-libarchive-c>=2.8 tox-conda numpy scipy -c conda-forge
+  - powershell: conda create --yes --quiet --name respy -c conda-forge python=$env:PYTHON_VERSION tox-conda
     displayName: Create Anaconda environment.
 
   - script: |
@@ -104,7 +101,7 @@ jobs:
       conda clean --all --yes
     displayName: Reset index-cache and clean conda.
 
-  - bash: conda create --yes --quiet --name respy python=$PYTHON_VERSION tox-conda -c conda-forge
+  - bash: conda create --yes --quiet --name respy -c conda-forge python=$PYTHON_VERSION tox-conda
     displayName: Create Anaconda environment
 
   - bash: |
