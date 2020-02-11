@@ -25,16 +25,16 @@ jobs:
         run: tox -e pytest -- -m "not slow" --cov-report xml --cov=./
 
       - name: Upload coverage report.
-        if: ${{ matrix.os }} == 'ubuntu-latest' and ${{ matrix.python-version }} == '3.7'
+        if: runner.os == 'Linux' and matrix.python-version == '3.7'
         shell: bash -l {0}
         run: bash <(curl https://codecov.io/bash) -t $(CODECOV_TOKEN)
 
       - name: Run sphinx.
-        if: ${{ matrix.os }} == 'ubuntu-latest' and ${{ matrix.python-version }} == '3.7'
+        if: runner.os == 'Linux' and matrix.python-version == '3.7'
         shell: bash -l {0}
         run: tox -e sphinx
 
       - name: Run pre-commits.
-        if: ${{ matrix.os }} == 'ubuntu-latest' and ${{ matrix.python-version }} == '3.7'
+        if: runner.os == 'Linux' and matrix.python-version == '3.7'
         shell: bash -l {0}
         run: tox -e linting
