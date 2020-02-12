@@ -20,12 +20,12 @@ dependencies:
   - nbsphinx=0.4.2
   - numba
   - numpydoc
-  - pandas>=0.24
+  - pandas>=0.24,<1
   - pdbpp
   - pyyaml
   - pytest
   - pytest-cov
-  - pytest-xdist
+  - pytest-xdist=1.29.0
   - restructuredtext_lint
   - scipy
   - seaborn
@@ -37,3 +37,4 @@ dependencies:
     - apprise
     - bump2version
     - pre-commit
+    - pytest-randomly

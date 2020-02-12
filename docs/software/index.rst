@@ -9,4 +9,3 @@ Software
     numerical-methods
     reliability
     scalability.ipynb
-    software-engineering
