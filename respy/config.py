@@ -1,6 +1,8 @@
 """General configuration for respy."""
 from pathlib import Path
 
+import numpy as np
+
 # Obtain the root directory of the package. Do not import respy which creates a circular
 # import.
 ROOT_DIR = Path(__file__).parent
@@ -8,10 +10,26 @@ ROOT_DIR = Path(__file__).parent
 # Directory with additional resources for the testing harness
 TEST_RESOURCES_DIR = ROOT_DIR / "tests" / "resources"
 
-HUGE_FLOAT = 1e20
-TINY_FLOAT = 1e-8
-PRINT_FLOAT = 1e10
-MAX_FLOAT = 1e300
+# Set maximum numbers to 1e200 and log(1e200) = 460.
+MAX_FLOAT = 1e200
+MIN_FLOAT = -MAX_FLOAT
+MAX_LOG_FLOAT = 460
+MIN_LOG_FLOAT = -MAX_LOG_FLOAT
+
+# Everything for the indexer.
+INDEXER_DTYPE = np.int32
+"""numpy.dtype : Data type for the entries in the state space indexer."""
+INDEXER_INVALID_INDEX = np.iinfo(INDEXER_DTYPE).min
+"""int : Identifier for invalid states.
+
+Every valid state has a unique number which is stored in the state space indexer at the
+correct position. Invalid entries in the indexer are filled with
+:data:`INDEXER_INVALID_INDEX` which is the most negative value for
+:data:`INDEXER_DTYPE`. Using the invalid value as an index likely raises an
+:class:`IndexError` as negative indices cannot exceed the length of the indexed array
+dimension.
+
+"""
 
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10
@@ -40,6 +58,12 @@ DEFAULT_OPTIONS = {
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]
 KEANE_WOLPIN_1997_MODELS = ["kw_97_basic", "kw_97_extended"]
-ROBINSON_MODELS = ["robinson_crusoe_basic", "robinson_crusoe_extended"]
+KEANE_WOLPIN_2000_MODELS = ["kw_2000"]
+ROBINSON_CRUSOE_MODELS = ["robinson_crusoe_basic", "robinson_crusoe_extended"]
 
-EXAMPLE_MODELS = KEANE_WOLPIN_1994_MODELS + KEANE_WOLPIN_1997_MODELS + ROBINSON_MODELS
+EXAMPLE_MODELS = (
+    KEANE_WOLPIN_1994_MODELS
+    + KEANE_WOLPIN_1997_MODELS
+    + KEANE_WOLPIN_2000_MODELS
+    + ROBINSON_CRUSOE_MODELS
+)

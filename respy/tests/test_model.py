@@ -64,12 +64,16 @@ def test_sorting_of_type_probability_parameters(model_or_seed):
 
     if optim_paras["n_types"] > 1:
         # Resort type probability parameters.
-        types = [f"type_{i}" for i in range(2, optim_paras["n_types"] + 1)]
+        types = [f"type_{i}" for i in range(1, optim_paras["n_types"])]
         params.loc[types] = params.sort_index(ascending=False).loc[types]
 
         optim_paras_, _ = process_params_and_options(params, options)
 
-        assert (optim_paras["type_prob"] == optim_paras_["type_prob"]).all()
+        for (level, coeffs), (level_, coeffs_) in zip(
+            optim_paras["type_prob"].items(), optim_paras_["type_prob"].items()
+        ):
+            assert level == level_
+            assert np.all(coeffs == coeffs_)
 
 
 def test_parse_initial_and_max_experience():

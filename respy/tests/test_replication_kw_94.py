@@ -31,6 +31,7 @@ import respy as rp
 from respy.config import TEST_RESOURCES_DIR
 
 
+@pytest.mark.slow
 def test_table_6_exact_solution_row_mean_and_sd():
     """Replicate the first two rows of Table 6 in Keane and Wolpin (1994).
 
@@ -65,22 +66,18 @@ def test_table_6_exact_solution_row_mean_and_sd():
 
         # Assign bootstrap sample number.
         df_wo_ts["Bootstrap_Sample"] = pd.cut(
-            df_wo_ts.Identifier, bins=40, labels=np.arange(1, 41)
+            df_wo_ts.index.get_level_values(0), bins=40, labels=np.arange(1, 41)
         )
         df_w_ts["Bootstrap_Sample"] = pd.cut(
-            df_w_ts.Identifier, bins=40, labels=np.arange(1, 41)
+            df_w_ts.index.get_level_values(0), bins=40, labels=np.arange(1, 41)
         )
 
         # Calculate mean experiences.
         mean_exp_wo_ts = (
-            df_wo_ts.loc[df_wo_ts.Period.eq(39), columns]
-            .groupby("Bootstrap_Sample")
-            .mean()
+            df_wo_ts.query("Period == 39")[columns].groupby("Bootstrap_Sample").mean()
         )
         mean_exp_w_ts = (
-            df_w_ts.loc[df_w_ts.Period.eq(39), columns]
-            .groupby("Bootstrap_Sample")
-            .mean()
+            df_w_ts.query("Period == 39")[columns].groupby("Bootstrap_Sample").mean()
         )
 
         # Calculate bootstrap statistics.

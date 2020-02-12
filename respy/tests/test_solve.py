@@ -3,6 +3,7 @@ import pytest
 
 import respy as rp
 from respy.config import EXAMPLE_MODELS
+from respy.config import INDEXER_INVALID_INDEX
 from respy.config import KEANE_WOLPIN_1994_MODELS
 from respy.config import KEANE_WOLPIN_1997_MODELS
 from respy.pre_processing.model_checking import check_model_solution
@@ -98,7 +99,7 @@ def test_invariance_of_solution(model_or_seed):
     )
 
 
-@pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS + list(range(10)))
+@pytest.mark.parametrize("model_or_seed", KEANE_WOLPIN_1994_MODELS)
 def test_create_state_space_vs_specialized_kw94(model_or_seed):
     point_constr = {"n_lagged_choices": 1, "observables": False}
     params, options = process_model_or_seed(model_or_seed, point_constr=point_constr)
@@ -115,6 +116,11 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
     states_old, indexer_old = _create_state_space_kw94(
         n_periods, n_types, edu_starts, edu_max
     )
+    if n_types < 2:
+        states_old = states_old[:, :-1]
+        for i, idx in enumerate(indexer_old):
+            shape = idx.shape
+            indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
     states_new, indexer_new = _create_state_space(optim_paras, options)
 
@@ -125,8 +131,8 @@ def test_create_state_space_vs_specialized_kw94(model_or_seed):
 
     # Compare indexers via masks for valid indices.
     for period in range(n_periods):
-        mask_old = indexer_old[period] != -1
-        mask_new = indexer_new[period] != -1
+        mask_old = indexer_old[period] != INDEXER_INVALID_INDEX
+        mask_new = indexer_new[period] != INDEXER_INVALID_INDEX
         assert np.array_equal(mask_old, mask_new)
 
 
@@ -154,6 +160,11 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
         states_old, indexer_old = _create_state_space_kw97_extended(
             n_periods, n_types, edu_starts, edu_max
         )
+    if n_types < 2:
+        states_old = states_old[:, :-1]
+        for i, idx in enumerate(indexer_old):
+            shape = idx.shape
+            indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
     states_new, indexer_new = _create_state_space(optim_paras, options)
 
@@ -164,6 +175,6 @@ def test_create_state_space_vs_specialized_kw97(model_or_seed):
 
     # Compare indexers via masks for valid indices.
     for period in range(n_periods):
-        mask_old = indexer_old[period] != -1
-        mask_new = indexer_new[period] != -1
+        mask_old = indexer_old[period] != INDEXER_INVALID_INDEX
+        mask_new = indexer_new[period] != INDEXER_INVALID_INDEX
         assert np.array_equal(mask_old, mask_new)

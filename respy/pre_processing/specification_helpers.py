@@ -43,7 +43,7 @@ def _base_template():
 
 def _type_prob_template(n_types, n_type_covariates):
     to_concat = []
-    for type_ in range(2, n_types + 1):
+    for type_ in range(1, n_types):
         if n_type_covariates == 3:
             ind = (f"type_{type_}", "constant")
             comment = f"constant effect on probability of being type {type_}"
@@ -73,10 +73,13 @@ def _type_prob_template(n_types, n_type_covariates):
 
 def _type_shift_template(n_types):
     to_concat = []
-    for type_ in range(2, n_types + 1):
+    for type_ in range(1, n_types):
         for choice in ["a", "b", "edu", "home"]:
-            ind = ("type_shift", f"type_{type_}_in_{choice}")
-            comment = f"deviation for type {type_} from type 1 in {choice}"
+            if choice in ["a", "b"]:
+                ind = (f"wage_{choice}", f"type_{type_}")
+            else:
+                ind = (f"nonpec_{choice}", f"type_{type_}")
+            comment = f"deviation for type {type_} from type 0 in {choice}"
             dat = [0, comment]
             to_concat.append(_base_row(index_tuple=ind, data=dat))
     return pd.concat(to_concat, axis=0, sort=False)
@@ -116,8 +119,8 @@ def lagged_choices_covariates_template():
         "work_a_lagged": "lagged_choice_1 == 'a'",
         "work_b_lagged": "lagged_choice_1 == 'b'",
         "edu_lagged": "lagged_choice_1 == 'edu'",
-        "is_return_not_high_school": "~edu_lagged and ~hs_graduate",
-        "is_return_high_school": "~edu_lagged and hs_graduate",
+        "returns_to_high_school": "~edu_lagged and ~hs_graduate",
+        "returns_to_college": "~edu_lagged and hs_graduate",
     }
 
 

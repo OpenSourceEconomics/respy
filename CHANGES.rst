@@ -29,6 +29,8 @@ releases are available on `Anaconda.org
   covariates.
 - :gh:`221` implements a new interface for the simulation which is similar to the
   estimation and reduces runtime for multiple simulations by a factor of four.
+- :gh:`230` allows the model to include observed variables which are time-invariant
+  (:ghuser:`mo2561057`, :ghuser:`tobiasraabe`)
 - :gh:`236` implements a periodic indexer.
 - :gh:`240` makes previous choices in the state space optional.
 - :gh:`245` create continuation values dynamically from value functions.
@@ -41,18 +43,30 @@ releases are available on `Anaconda.org
 - :gh:`269` improves the generation of conditional draws with and without measurement
   error in the likelihood calculation (:ghuser:`janosg`).
 - :gh:`275` fixes a bug in calculation of wage probabilities.
+- :gh:`277` adds three different simulation methods: n-step-ahead simulation with
+  sampling or data and one-step-ahead simulation.
 - :gh:`278`, :gh:`279`, and :gh:`280` implement three functions, log softmax, softmax,
   and logsumexp, which reduce the likelihood of under- and overflows and save
   information (:ghuser:`tobiasraabe`).
+- :gh:`282` adds an interface for the estimation of models with the method of simulated
+  moments (:ghuser:`amageh`, :ghuser:`mo2561057`, :ghuser:`tobiasraabe`).
 - :gh:`285` adds the ability to generate a set of constraint for example models.
 - :gh:`288` fixes an error in the simulation of choice probabilities introduced by
   :gh:`278` (:ghuser:`peisenha`).
 - :gh:`296` contributes a new toy model to respy: The Robinson Crusoe Economy
   (:ghuser:`tobiasraabe`, :ghuser:`peisenha`)
 - :gh:`299` adds the information on the previous choice to individuals at age sixteen to
-  the original data from Keane and Wolpin (1997) (special thanks to :ghuser:`bekauf`).
-  :gh:`300` aligns respy with the new data.
-
+  the original data from Keane and Wolpin (1997). Special thanks to :ghuser:`bekauf` for
+  the data preparation.
+- :gh:`300` aligns respy functions with the new data in :gh:`299`.
+- :gh:`314` fixes two parameters in KW97 and KW2000 (:ghuser:`tostenzel`,
+  :ghuser:`tobiasraabe`).
+- :gh:`316` changes the invalid index value for the indexer to prevent silent errors
+  (:ghuser:`tobiasraabe`).
+- :gh:`319` adds a page for projects using ``respy`` (:ghuser:`tobiasraabe`). :gh:`321`
+  adds more projects.
+- :gh:`323` adds an informative message if simulated individuals cannot be mapped to
+  states in the state space (:ghuser:`mo2561057`, :ghuser:`tobiasraabe`).
 
 1.2.1 - 2019-05-19
 ------------------

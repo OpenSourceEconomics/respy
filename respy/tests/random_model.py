@@ -19,34 +19,9 @@ from respy.pre_processing.specification_helpers import (
 from respy.pre_processing.specification_helpers import lagged_choices_probs_template
 from respy.pre_processing.specification_helpers import observable_coeffs_template
 from respy.pre_processing.specification_helpers import observable_prob_template
-from respy.shared import generate_column_labels_estimation
+from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import normalize_probabilities
 from respy.simulate import get_simulate_func
-
-
-_BASE_CORE_STATE_SPACE_FILTERS = [
-    # In periods > 0, if agents accumulated experience only in one choice, lagged choice
-    # cannot be different.
-    "period > 0 and exp_{i} == period and lagged_choice_1 != '{i}'",
-    # In periods > 0, if agents always accumulated experience, lagged choice cannot be
-    # non-experience choice.
-    "period > 0 and exp_a + exp_b + exp_edu == period and lagged_choice_1 == '{j}'",
-    # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
-    # be school.
-    "period > 0 and lagged_choice_1 == 'edu' and exp_edu == 0",
-    # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
-    "lagged_choice_1 == '{k}' and exp_{k} == 0",
-    # In period 0, agents cannot choose occupation a or b.
-    "period == 0 and lagged_choice_1 == '{k}'",
-]
-"""list: List of core state space filters.
-
-.. deprecated::
-
-    This variable must be removed if generate_random_model is rewritten such that
-    functions for each replicable paper are written.
-
-"""
 
 
 _BASE_COVARIATES = {
@@ -96,8 +71,6 @@ def generate_random_model(
         Number of unobserved types.
     n_type_covariates :
         Number of covariates to calculate type probabilities.
-
-
     myopic : bool
         Indicator for myopic agents meaning the discount factor is set to zero.
 
@@ -116,7 +89,7 @@ def generate_random_model(
         n_type_covariates = np.random.randint(2, 4)
 
     params = csv_template(
-        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False
+        n_types=n_types, n_type_covariates=n_type_covariates, initialize_coeffs=False,
     )
     params["value"] = np.random.uniform(low=-0.05, high=0.05, size=len(params))
 
@@ -157,10 +130,8 @@ def generate_random_model(
         lc_params.set_index(["category", "name"], inplace=True)
         params = pd.concat([params, lc_probs_params, lc_params], axis=0, sort=False)
         lc_covariates = lagged_choices_covariates_template()
-        filters = _BASE_CORE_STATE_SPACE_FILTERS
     else:
         lc_covariates = {}
-        filters = []
 
     observables = point_constr.pop("observables", None)
     if observables is None:
@@ -202,7 +173,6 @@ def generate_random_model(
     options = {
         **DEFAULT_OPTIONS,
         **options,
-        "core_state_space_filters": filters,
         "covariates": {**_BASE_COVARIATES, **lc_covariates, **observable_covs},
     }
 
@@ -250,10 +220,13 @@ def simulate_truncated_data(params, options, is_missings=True):
         # Truncate the histories of agents. This mimics the effect of attrition.
         # Histories can be truncated after the first period or not at all. So, all
         # individuals have at least one observation.
-        period_of_truncation = df.groupby("Identifier").Period.transform(
-            lambda x: np.random.choice(x.max() + 1) + 1
+        period_of_truncation = (  # noqa: F841
+            df.reset_index()
+            .groupby("Identifier")
+            .Period.transform(lambda x: np.random.choice(x.max() + 1) + 1)
+            .to_numpy()
         )
-        data_subset = df.loc[df.Period.lt(period_of_truncation)].copy()
+        data_subset = df.query("Period < @period_of_truncation").copy()
 
         # Add some missings to wage data.
         is_working = data_subset["Choice"].isin(optim_paras["choices_w_wage"])
@@ -270,8 +243,8 @@ def simulate_truncated_data(params, options, is_missings=True):
         data_subset = df
 
     # We can restrict the information to observed entities only.
-    labels, _ = generate_column_labels_estimation(optim_paras)
-    data_subset = data_subset[labels]
+    col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
+    data_subset = data_subset[list(col_dtype)[2:]]
 
     return data_subset
 

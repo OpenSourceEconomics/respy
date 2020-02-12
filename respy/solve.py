@@ -4,7 +4,7 @@ import warnings
 import numba as nb
 import numpy as np
 
-from respy.config import HUGE_FLOAT
+from respy.config import MAX_LOG_FLOAT
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import calculate_value_functions_and_flow_utilities
@@ -75,13 +75,11 @@ def solve_with_backward_induction(state_space, optim_paras, options):
 
     shocks_cov = shocks_cholesky.dot(shocks_cholesky.T)
 
+    draws_emax_risk = transform_base_draws_with_cholesky_factor(
+        state_space.base_draws_sol, shocks_cholesky, n_wages
+    )
+
     for period in reversed(range(n_periods)):
-
-        base_draws_sol_period = state_space.base_draws_sol[period]
-        draws_emax_risk = transform_base_draws_with_cholesky_factor(
-            base_draws_sol_period, np.zeros(n_choices), shocks_cholesky, n_wages
-        )
-
         # Unpack necessary attributes of the specific period.
         wages = state_space.get_attribute_from_period("wages", period)
         nonpec = state_space.get_attribute_from_period("nonpec", period)
@@ -106,8 +104,8 @@ def solve_with_backward_induction(state_space, optim_paras, options):
             # simply set to zero, but :math:`E(X) = \exp\{\mu + \frac{\sigma^2}{2}\}`.
             shifts = np.zeros(n_choices)
             n_choices_w_wage = len(optim_paras["choices_w_wage"])
-            shifts[:n_choices_w_wage] = np.clip(
-                np.exp(np.diag(shocks_cov)[:n_choices_w_wage] / 2.0), 0.0, HUGE_FLOAT
+            shifts[:n_choices_w_wage] = np.exp(
+                np.clip(np.diag(shocks_cov)[:n_choices_w_wage], 0, MAX_LOG_FLOAT) / 2
             )
 
             # Get indicator for interpolation and simulation of states. The seed value
@@ -134,7 +132,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
                 continuation_values,
                 max_emax,
                 not_interpolated,
-                draws_emax_risk,
+                draws_emax_risk[period],
                 delta,
                 is_inadmissible,
             )
@@ -149,7 +147,7 @@ def solve_with_backward_induction(state_space, optim_paras, options):
                 wages,
                 nonpec,
                 continuation_values,
-                draws_emax_risk,
+                draws_emax_risk[period],
                 delta,
                 is_inadmissible,
             )
@@ -389,11 +387,11 @@ def calculate_emax_value_functions(
     """
     n_draws, n_choices = draws.shape
 
-    emax_value_functions[0] = 0.0
+    emax_value_functions[0] = 0
 
     for i in range(n_draws):
 
-        max_value_functions = 0.0
+        max_value_functions = 0
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
