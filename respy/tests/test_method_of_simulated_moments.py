@@ -12,7 +12,10 @@ from respy.tests.utils import process_model_or_seed
 def inputs():
     calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
 
-    params, options, df = get_example_model("kw_94_one")
+    params, options = get_example_model("kw_94_one", with_data=False)
+    options["n_periods"] = 5
+    simulate = get_simulate_func(params, options)
+    df = simulate(params)
 
     empirical_moments = {
         "Choices": _replace_nans(_calc_choice_freq(df)),
@@ -63,7 +66,7 @@ def test_msm_nonzero(inputs):
     assert msm_seed(inputs[0]) > 0
 
 
-@pytest.mark.parametrize("model_or_seed", ["kw_94_one", "kw_97_basic"] + list(range(3)))
+@pytest.mark.parametrize("model_or_seed", ["kw_94_one", "kw_97_basic"])
 def test_randomness_msm(model_or_seed):
     params, options = process_model_or_seed(model_or_seed)
     simulate = get_simulate_func(params, options)

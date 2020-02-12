@@ -32,24 +32,24 @@ nonpec_home,constant,16887,mean value of non-market alternative for type 0
 nonpec_home,type_1,215,deviation for type 1 from type 0 in home
 nonpec_home,type_2,-16966,deviation for type 2 from type 0 in home
 nonpec_home,type_3,-13128,deviation for type 3 from type 0 in home
-shocks_sdcorr,sd_white_collar,0.3301,standard deviation of the shock in occupation a
 shocks_sdcorr,sd_blue_collar,0.3329,standard deviation of the shock in occupation b
 shocks_sdcorr,sd_military,0.3308,standard deviation of the shock in occupation military
+shocks_sdcorr,sd_white_collar,0.3301,standard deviation of the shock in occupation a
 shocks_sdcorr,sd_school,2312,standard deviation of the shock in the education sector
 shocks_sdcorr,sd_home,13394,standard deviation of the shock in the home sector
-shocks_sdcorr,corr_blue_collar_white_collar,-0.3806,correlation between the shocks in occupation a and b
-shocks_sdcorr,corr_military_white_collar,-0.3688,correlation between the shocks in military and a
 shocks_sdcorr,corr_military_blue_collar,0.4120,correlation between the shocks in military and b
-shocks_sdcorr,corr_school_white_collar,0,correlation between the shocks in the education sector and a
+shocks_sdcorr,corr_white_collar_blue_collar,-0.3806,correlation between the shocks in occupation a and b
+shocks_sdcorr,corr_white_collar_military,-0.3688,correlation between the shocks in military and a
 shocks_sdcorr,corr_school_blue_collar,0,correlation between the shocks in the education sector and b
 shocks_sdcorr,corr_school_military,0,correlation between the shocks in the education sector and military
-shocks_sdcorr,corr_home_white_collar,0,correlation between the shocks in home sector and a
+shocks_sdcorr,corr_school_white_collar,0,correlation between the shocks in the education sector and a
 shocks_sdcorr,corr_home_blue_collar,0,correlation between the shocks in home sector and b
 shocks_sdcorr,corr_home_military,0,correlation between the shocks in home sector and military
+shocks_sdcorr,corr_home_white_collar,0,correlation between the shocks in home sector and a
 shocks_sdcorr,corr_home_school,0,correlation between the shocks in home sector and education
-meas_error,sd_white_collar,0.4133,SD of the measurement error in wages in occupation a
 meas_error,sd_blue_collar,0.3089,SD of the measurement error in wages occupation b
 meas_error,sd_military,0.1259,SD of the measurement error in wages occupation mil
+meas_error,sd_white_collar,0.4133,SD of the measurement error in wages in occupation a
 type_1,up_to_nine_years_school,0.313614,effect of up to nine years of schooling on probability of being type 1
 type_1,at_least_ten_years_school,2.43357,effect of at least ten years of schooling on probability of being type 1
 type_2,up_to_nine_years_school,1.05225,effect of up to nine years of schooling on probability of being type 2

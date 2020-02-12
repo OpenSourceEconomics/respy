@@ -18,11 +18,8 @@ from respy.tests.random_model import simulate_truncated_data
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.mark.parametrize("seed", range(5))
-def test_generate_random_model(seed):
+def test_generate_random_model():
     """Test if random model specifications can be simulated and processed."""
-    np.random.seed(seed)
-
     params, options = generate_random_model()
 
     df = simulate_truncated_data(params, options)
@@ -34,7 +31,7 @@ def test_generate_random_model(seed):
     assert isinstance(crit_val, float)
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_model_options(model_or_seed):
     _, options = process_model_or_seed(model_or_seed)
 
@@ -43,7 +40,7 @@ def test_model_options(model_or_seed):
     validate_options(options)
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(10)))
+@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_sorting_of_type_probability_parameters(model_or_seed):
     # Set configuration for random models.
     n_types = np.random.randint(2, 5)
@@ -112,9 +109,7 @@ def test_parse_initial_and_max_experience():
     assert optim_paras["choices"]["b"]["max"] == 5
 
 
-@pytest.mark.parametrize("seed", list(range(10)))
-def test_normalize_probabilities(seed):
-    np.random.seed(seed)
+def test_normalize_probabilities():
     constraints = {"observables": [3]}
     params, options = generate_random_model(point_constr=constraints)
     optim_paras_1, _ = process_params_and_options(params, options)

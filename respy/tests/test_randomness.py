@@ -2,7 +2,6 @@
 import numpy as np
 import pytest
 
-from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
 from respy.simulate import get_simulate_func
 from respy.solve import get_solve_func
@@ -10,11 +9,11 @@ from respy.tests.utils import compare_state_space_attributes
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(3)))
-def test_invariance_of_model_solution_in_solve_and_criterion_functions(model_or_seed):
-    params, options = process_model_or_seed(model_or_seed)
+@pytest.mark.parametrize("model", ["kw_94_one", "kw_97_basic", "kw_2000"])
+def test_invariance_of_model_solution_in_solve_and_criterion_functions(model):
+    params, options = process_model_or_seed(model)
 
-    options["n_periods"] = 2 if model_or_seed == "kw_2000" else 3
+    options["n_periods"] = 2 if model == "kw_2000" else 3
 
     solve = get_solve_func(params, options)
     state_space = solve(params)

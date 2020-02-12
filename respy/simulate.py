@@ -466,7 +466,7 @@ def _process_simulation_output(data, optim_paras):
     return df
 
 
-def _random_choice(choices, probabilities, decimals=5):
+def _random_choice(choices, probabilities=None, decimals=5):
     """Return elements of choices for a two-dimensional array of probabilities.
 
     It is assumed that probabilities are ordered (n_samples, n_choices).
@@ -489,13 +489,28 @@ def _random_choice(choices, probabilities, decimals=5):
 
     Here is an example where one choice has probability zero.
 
+    >>> choices = np.arange(3)
     >>> p = np.array([0.4, 0, 0.6])
     >>> ps = np.tile(p, (n_samples, 1))
-    >>> choices = _random_choice(np.arange(n_choices), ps)
+    >>> choices = _random_choice(3, ps)
     >>> np.round(np.bincount(choices), decimals=-3) / n_samples
     array([0.4, 0. , 0.6])
 
     """
+    if isinstance(choices, int):
+        choices = np.arange(choices)
+    elif isinstance(choices, (dict, list, tuple)):
+        choices = np.array(list(choices))
+    elif isinstance(choices, np.ndarray):
+        pass
+    else:
+        raise TypeError(f"'choices' has invalid type {type(choices)}.")
+
+    if probabilities is None:
+        n_choices = choices.shape[-1]
+        probabilities = np.ones((1, n_choices)) / n_choices
+        probabilities = np.broadcast_to(probabilities, choices.shape)
+
     cumulative_distribution = probabilities.cumsum(axis=1)
     # Probabilities often do not sum to one but 0.99999999999999999.
     cumulative_distribution[:, -1] = np.round(cumulative_distribution[:, -1], decimals)
@@ -508,14 +523,11 @@ def _random_choice(choices, probabilities, decimals=5):
     # Note that :func:`np.argmax` returns the first index for multiple maximum values.
     indices = (u < cumulative_distribution).argmax(axis=1)
 
-    if isinstance(choices, int):
-        choices = np.arange(choices)
-    elif isinstance(choices, (dict, list, np.ndarray, tuple)):
-        choices = np.array(list(choices))
-    else:
-        raise TypeError(f"'choices' has invalid type {type(choices)}.")
+    out = np.take(choices, indices)
+    if out.shape == (1,):
+        out = out[0]
 
-    return choices[indices]
+    return out
 
 
 def _apply_law_of_motion(df, optim_paras):
