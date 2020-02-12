@@ -10,11 +10,17 @@ respy
 .. image:: https://readthedocs.org/projects/respy/badge/?version=latest
     :target: https://respy.readthedocs.io/en/latest
 
+.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
+    :target: https://opensource.org/licenses/MIT
+
 .. image:: https://github.com/OpenSourceEconomics/respy/workflows/Continuous%20Integration%20Workflow/badge.svg?branch=master
     :target: https://github.com/OpenSourceEconomics/respy/actions?query=branch%3Amaster
 
+.. image:: https://codecov.io/gh/OpenSourceEconomics/respy/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/OpenSourceEconomics/respy
+
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/python/black
+    :target: https://github.com/psf/black
 
 ``respy``  is an open-source Python package for the simulation and estimation of a
 prototypical finite-horizon discrete choice dynamic programming model. We build on the
