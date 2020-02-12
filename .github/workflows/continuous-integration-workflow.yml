@@ -38,8 +38,9 @@ jobs:
 
       - name: Upload coverage report.
         if: runner.os == 'Linux' && matrix.python-version == '3.7'
-        shell: bash -l {0}
-        run: bash <(curl https://codecov.io/bash) -t $(CODECOV_TOKEN)
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Run sphinx.
         if: runner.os == 'Linux' && matrix.python-version == '3.7'
