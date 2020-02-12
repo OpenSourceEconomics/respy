@@ -9,7 +9,6 @@ Getting Started
    recommended-reading
    installation
    tutorial.ipynb
-   tutorial-model-complexity.ipynb
    tutorial-model-with-observables.ipynb
    tutorial-robinson-crusoe.ipynb
    tutorial-initial-conditions
