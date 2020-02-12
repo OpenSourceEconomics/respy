@@ -10,8 +10,8 @@ respy
 .. image:: https://readthedocs.org/projects/respy/badge/?version=latest
     :target: https://respy.readthedocs.io/en/latest
 
-.. image:: https://dev.azure.com/OpenSourceEconomics/respy/_apis/build/status/OpenSourceEconomics.respy?branchName=master
-    :target: https://dev.azure.com/OpenSourceEconomics/respy/_build/latest?definitionId=1&branchName=master
+.. image:: https://github.com/OpenSourceEconomics/respy/workflows/Continuous%20Integration%20Workflow/badge.svg?branch=master
+    :target: https://github.com/OpenSourceEconomics/respy/actions?query=branch%3Amaster
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/python/black
