@@ -34,7 +34,7 @@ def pytest_generate_tests(metafunc):
         $ pytest --randomly-seed=5
 
     Then, tests with certain parameter names are parameterized with incremented seed
-    values (5, 6, 7, 8, ...).
+    values (5, 6, 7, 8, ...). Existing parameterizations are extended.
 
     """
     if "model_or_seed" in metafunc.fixturenames:

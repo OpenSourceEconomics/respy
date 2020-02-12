@@ -37,7 +37,7 @@ def validate_params(params, optim_paras):
 
 
 def _validate_shocks(params, optim_paras):
-    """Assert that the elements of the shock matrix are correctly sorted."""
+    """Validate that the elements of the shock matrix are correctly sorted."""
     choices = list(optim_paras["choices"])
 
     if "shocks_sdcorr" in params.index:
