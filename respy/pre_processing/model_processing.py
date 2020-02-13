@@ -18,6 +18,7 @@ from respy.config import MAX_FLOAT
 from respy.config import MIN_FLOAT
 from respy.config import SEED_STARTUP_ITERATION_GAP
 from respy.pre_processing.model_checking import validate_options
+from respy.pre_processing.model_checking import validate_params
 from respy.shared import normalize_probabilities
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
@@ -39,6 +40,7 @@ def process_params_and_options(params, options):
 
     optim_paras = _parse_parameters(params, options)
     optim_paras, options = _sync_optim_paras_and_options(optim_paras, options)
+    validate_params(params, optim_paras)
 
     return optim_paras, options
 
@@ -211,87 +213,19 @@ def _parse_shocks(optim_paras, params):
     if sum(f"shocks_{i}" in params.index for i in ["sdcorr", "cov", "chol"]) >= 2:
         raise ValueError("It is not allowed to define multiple shock matrices.")
     elif "shocks_sdcorr" in params.index:
-        sorted_shocks = _sort_shocks_sdcorr(optim_paras, params.loc["shocks_sdcorr"])
-        cov = sdcorr_params_to_matrix(sorted_shocks)
+        cov = sdcorr_params_to_matrix(params.loc["shocks_sdcorr"])
         optim_paras["shocks_cholesky"] = robust_cholesky(cov)
     elif "shocks_cov" in params.index:
-        sorted_shocks = _sort_shocks_cov_chol(
-            optim_paras, params.loc["shocks_cov"], "cov"
-        )
-        cov = cov_params_to_matrix(sorted_shocks)
+        cov = cov_params_to_matrix(params.loc["shocks_cov"])
         optim_paras["shocks_cholesky"] = robust_cholesky(cov)
     elif "shocks_chol" in params.index:
-        sorted_shocks = _sort_shocks_cov_chol(
-            optim_paras, params.loc["shocks_chol"], "chol"
-        )
         optim_paras["shocks_cholesky"] = chol_params_to_lower_triangular_matrix(
-            sorted_shocks
+            params.loc["shocks_chol"]
         )
     else:
         raise NotImplementedError
 
     return optim_paras
-
-
-def _sort_shocks_sdcorr(optim_paras, params):
-    """Sort shocks of the standard deviation/correlation matrix.
-
-    To fit :func:`estimagic.optimization.utilities.sdcorr_params_to_matrix`, standard
-    deviations have to precede the elements of the remaining lower triangular matrix.
-
-    """
-    sds_flat = []
-    corrs_flat = []
-
-    for i, c_1 in enumerate(optim_paras["choices"]):
-        for c_2 in list(optim_paras["choices"])[: i + 1]:
-            if c_1 == c_2:
-                sds_flat.append(params.loc[f"sd_{c_1}"])
-            else:
-                # The order in which choices are mentioned in the labels is not clear.
-                # Check both combinations.
-                if f"corr_{c_1}_{c_2}" in params.index:
-                    corrs_flat.append(params.loc[f"corr_{c_1}_{c_2}"])
-                elif f"corr_{c_2}_{c_1}" in params.index:
-                    corrs_flat.append(params.loc[f"corr_{c_2}_{c_1}"])
-                else:
-                    raise ValueError(
-                        f"Shock matrix has no entry for choice {c_1} and {c_2}"
-                    )
-
-    return sds_flat + corrs_flat
-
-
-def _sort_shocks_cov_chol(optim_paras, params, type_):
-    """Sort shocks of the covariance matrix or the Cholesky factor.
-
-    To fit :func:`estimagic.optimization.utilities.cov_params_to_matrix` and
-    :func:`estimagic.optimization.utilties.chol_params_to_lower_triangular_matrix`
-    shocks have to be sorted like the lower triangular matrix or
-    :func:`np.tril_indices(dim)`.
-
-    """
-    lower_triangular_flat = []
-
-    for i, c_1 in enumerate(optim_paras["choices"]):
-        for c_2 in list(optim_paras["choices"])[: i + 1]:
-            if c_1 == c_2:
-                label = "var" if type_ == "cov" else "chol"
-                lower_triangular_flat.append(params.loc[f"{label}_{c_1}"])
-            else:
-                label = "cov" if type_ == "cov" else "chol"
-                # The order in which choices are mentioned in the labels is not clear.
-                # Check both combinations.
-                if f"{label}_{c_1}_{c_2}" in params.index:
-                    lower_triangular_flat.append(params.loc[f"{label}_{c_1}_{c_2}"])
-                elif f"{label}_{c_2}_{c_1}" in params.index:
-                    lower_triangular_flat.append(params.loc[f"{label}_{c_2}_{c_1}"])
-                else:
-                    raise ValueError(
-                        f"Shock matrix has no entry for choice {c_1} and {c_2}"
-                    )
-
-    return lower_triangular_flat
 
 
 def _parse_measurement_errors(optim_paras, params):

@@ -23,8 +23,6 @@ def test_simulated_data(model_or_seed):
     """
     params, options = process_model_or_seed(model_or_seed)
 
-    options["n_periods"] = 5
-
     simulate = rp.get_simulate_func(params, options)
     df = simulate(params)
 
@@ -32,7 +30,6 @@ def test_simulated_data(model_or_seed):
     check_simulated_data(optim_paras, df)
 
 
-@pytest.mark.skip
 def test_one_step_ahead_simulation():
     params, options, df = rp.get_example_model("kw_97_basic")
     options["n_periods"] = 11
@@ -40,11 +37,8 @@ def test_one_step_ahead_simulation():
     df = simulate(params)
 
 
-@pytest.mark.parametrize("seed", range(20))
-def test_equality_for_myopic_agents_and_tiny_delta(seed):
+def test_equality_for_myopic_agents_and_tiny_delta():
     """Test equality of simulated data and likelihood with myopia and tiny delta."""
-    np.random.seed(seed)
-
     # Get simulated data and likelihood for myopic model.
     params, options = generate_random_model(myopic=True)
 
@@ -71,8 +65,7 @@ def test_equality_for_myopic_agents_and_tiny_delta(seed):
     np.testing.assert_almost_equal(likelihood, likelihood_, decimal=12)
 
 
-@pytest.mark.parametrize("seed", range(20))
-def test_equality_of_models_with_and_without_observables(seed):
+def test_equality_of_models_with_and_without_observables():
     """Test equality of models with and without observables.
 
     First, generate a model where the parameter values of observables is set to zero.
@@ -81,8 +74,6 @@ def test_equality_of_models_with_and_without_observables(seed):
     should be equivalent.
 
     """
-    np.random.seed(seed)
-
     # Now specify a set of observables
     observables = [np.random.randint(2, 6)]
     point_constr = {"observables": observables}
@@ -119,16 +110,12 @@ def test_equality_of_models_with_and_without_observables(seed):
     pd.testing.assert_frame_equal(df_, df)
 
 
-@pytest.mark.parametrize("seed", range(20))
-def test_distribution_of_observables(seed):
+def test_distribution_of_observables():
     """Test that the distribution of observables matches the simulated distribution."""
-    np.random.seed(seed)
-
     # Now specify a set of observables
     point_constr = {
         "observables": [np.random.randint(2, 6)],
         "simulation_agents": 1000,
-        "n_periods": 1,
     }
 
     params, options = generate_random_model(point_constr=point_constr)

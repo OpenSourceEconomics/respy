@@ -3,15 +3,14 @@ import numpy as np
 import pytest
 
 import respy as rp
-from respy.config import EXAMPLE_MODELS
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS + list(range(3)))
-def test_invariance_of_model_solution_in_solve_and_criterion_functions(model_or_seed):
-    params, options = process_model_or_seed(model_or_seed)
+@pytest.mark.parametrize("model", ["kw_94_one", "kw_97_basic", "kw_2000"])
+def test_invariance_of_model_solution_in_solve_and_criterion_functions(model):
+    params, options = process_model_or_seed(model)
 
-    options["n_periods"] = 2 if model_or_seed == "kw_2000" else 3
+    options["n_periods"] = 2 if model == "kw_2000" else 3
 
     state_space = rp.solve(params, options)
 
