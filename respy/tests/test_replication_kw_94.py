@@ -31,7 +31,9 @@ import respy as rp
 from respy.config import TEST_RESOURCES_DIR
 
 
-@pytest.mark.slow
+pytestmark = pytest.mark.slow
+
+
 def test_table_6_exact_solution_row_mean_and_sd():
     """Replicate the first two rows of Table 6 in Keane and Wolpin (1994).
 

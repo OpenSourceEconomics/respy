@@ -5,6 +5,9 @@ import pytest
 import respy as rp
 
 
+pytestmark = pytest.mark.slow
+
+
 @pytest.mark.parametrize(
     "model, type_proportions",
     [
