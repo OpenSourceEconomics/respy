@@ -16,6 +16,7 @@ from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_covariates
 from respy.shared import create_base_draws
+from respy.shared import create_core_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import rename_labels_to_internal
@@ -23,16 +24,15 @@ from respy.solve import solve_with_backward_induction
 from respy.state_space import StateSpace
 
 
-def get_crit_func(params, options, df, version="log_like"):
+def get_crit_func(
+    params, options, df, return_scalar=True, return_comparison_plot_data=False
+):
     """Get the criterion function.
 
     Return a version of the likelihood functions in respy where all arguments
     except the parameter vector are fixed with :func:`functools.partial`. Thus the
     function can be directly passed into an optimizer or a function for taking
     numerical derivatives.
-
-    By default we return :func:`log_like`. Other versions can be requested via the
-    version argument.
 
     Parameters
     ----------
@@ -42,8 +42,12 @@ def get_crit_func(params, options, df, version="log_like"):
         Dictionary containing model options.
     df : pandas.DataFrame
         The model is fit to this dataset.
-    version : str, default "log_like"
-        Can take the values "log_like" and "log_like_obs".
+    return_scalar : bool, default False
+        Indicator for whether the mean log likelihood should be returned or the log
+        likelihood contributions.
+    return_comparison_plot_data : bool, default False
+        Indicator for whether a :class:`pandas.DataFrame` with various contributions for
+        the visualization with estimagic should be returned.
 
     Returns
     -------
@@ -64,108 +68,43 @@ def get_crit_func(params, options, df, version="log_like"):
 
     state_space = StateSpace(optim_paras, options)
 
-    (
-        choices,
-        idx_indiv_first_obs,
-        indices,
-        log_wages_observed,
-        type_covariates,
-    ) = _process_estimation_data(df, state_space, optim_paras, options)
+    df, type_covariates = _process_estimation_data(
+        df, state_space, optim_paras, options
+    )
 
     base_draws_est = create_base_draws(
-        (len(choices), options["estimation_draws"], len(optim_paras["choices"])),
+        (
+            df.shape[0] * optim_paras["n_types"],
+            options["estimation_draws"],
+            len(optim_paras["choices"]),
+        ),
         next(options["estimation_seed_startup"]),
         options["monte_carlo_sequence"],
     )
 
-    if version == "log_like":
-        unpartialed = log_like
-    elif version == "log_like_obs":
-        unpartialed = log_like_obs
-    else:
-        raise ValueError("version has to be 'log_like' or 'log_like_obs'.")
-
     criterion_function = partial(
-        unpartialed,
-        choices=choices,
-        idx_indiv_first_obs=idx_indiv_first_obs,
-        indices=indices,
-        log_wages_observed=log_wages_observed,
+        log_like,
+        df=df,
         base_draws_est=base_draws_est,
         state_space=state_space,
         type_covariates=type_covariates,
         options=options,
+        return_scalar=return_scalar,
+        return_comparison_plot_data=return_comparison_plot_data,
     )
 
-    # this will be relevant for estimagic topography plots
-    criterion_function.__name__ = version
     return criterion_function
 
 
 def log_like(
     params,
-    choices,
-    idx_indiv_first_obs,
-    indices,
-    log_wages_observed,
+    df,
     base_draws_est,
     state_space,
     type_covariates,
     options,
-):
-    """Criterion function for the likelihood maximization.
-
-    This function calculates the average likelihood contribution of the sample.
-
-    Parameters
-    ----------
-    params : pandas.Series
-        Parameter Series.
-    choices : numpy.ndarray
-        Array with shape (n_observations * n_types) containing choices for each
-        individual-period pair.
-    idx_indiv_first_obs : numpy.ndarray
-        Array with shape (n_individuals,) containing indices for the first observation
-        of each individual in the data. This is used to aggregate probabilities of the
-        individual over all periods.
-    indices : numpy.ndarray
-        Array with shape (n_observations, n_types) containing indices to map each
-        observation to its correponding state for each type.
-    log_wages_observed : numpy.ndarray
-        Array with shape (n_observations, n_types) containing observed log wages.
-    base_draws_est : numpy.ndarray
-        Set of draws to calculate the probability of observed wages.
-    state_space : :class:`~respy.state_space.StateSpace`
-        State space.
-    options : dict
-        Contains model options.
-
-    """
-    contribs = log_like_obs(
-        params,
-        choices,
-        idx_indiv_first_obs,
-        indices,
-        log_wages_observed,
-        base_draws_est,
-        state_space,
-        type_covariates,
-        options,
-    )
-
-    return contribs.mean()
-
-
-def log_like_obs(
-    params,
-    choices,
-    idx_indiv_first_obs,
-    indices,
-    log_wages_observed,
-    base_draws_est,
-    state_space,
-    type_covariates,
-    options,
+    return_scalar,
+    return_comparison_plot_data,
 ):
     """Criterion function for the likelihood maximization.
 
@@ -175,18 +114,9 @@ def log_like_obs(
     ----------
     params : pandas.Series
         Parameter Series
-    choices : numpy.ndarray
-        Array with shape (n_observations * n_types) containing choices for each
-        individual-period pair.
-    idx_indiv_first_obs : numpy.ndarray
-        Array with shape (n_individuals,) containing indices for the first observation
-        of each individual in the data. This is used to aggregate probabilities of the
-        individual over all periods.
-    indices : numpy.ndarray
-        Array with shape (n_observations, n_types) containing indices to map each
-        observation to its correponding state for each type.
-    log_wages_observed : numpy.ndarray
-        Array with shape (n_observations, n_types) containing observed log wages.
+    df : pandas.DataFrame
+        The DataFrame contains choices, log wages, the indices of the states for the
+        different types.
     base_draws_est : numpy.ndarray
         Set of draws to calculate the probability of observed wages.
     state_space : :class:`~respy.state_space.StateSpace`
@@ -201,31 +131,20 @@ def log_like_obs(
 
     state_space = solve_with_backward_induction(state_space, optim_paras, options)
 
-    contribs = _internal_log_like_obs(
-        state_space,
-        choices,
-        idx_indiv_first_obs,
-        indices,
-        log_wages_observed,
-        base_draws_est,
-        type_covariates,
-        optim_paras,
-        options,
+    contribs, df = _internal_log_like_obs(
+        state_space, df, base_draws_est, type_covariates, optim_paras, options
     )
 
-    return contribs
+    out = contribs.mean() if return_scalar else contribs
+    if return_comparison_plot_data:
+        comparison_plot_data = _create_comparison_plot_data(df, optim_paras)
+        out = (out, comparison_plot_data)
+
+    return out
 
 
 def _internal_log_like_obs(
-    state_space,
-    choices,
-    idx_indiv_first_obs,
-    indices,
-    log_wages_observed,
-    base_draws_est,
-    type_covariates,
-    optim_paras,
-    options,
+    state_space, df, base_draws_est, type_covariates, optim_paras, options
 ):
     """Calculate the likelihood contribution of each individual in the sample.
 
@@ -240,37 +159,40 @@ def _internal_log_like_obs(
     ----------
     state_space : :class:`~respy.state_space.StateSpace`
         Class of state space.
-    choices : numpy.ndarray
-        Array with shape (n_observations * n_types) containing choices for each
-        individual-period pair.
-    idx_indiv_first_obs : numpy.ndarray
-        Array with shape (n_individuals,) containing indices for the first observation
-        of each individual in the data. This is used to aggregate probabilities of the
-        individual over all periods.
-    indices : numpy.ndarray
-        Array with shape (n_observations, n_types) containing indices to map each
-        observation to its correponding state for each type.
-    log_wages_observed : numpy.ndarray
-        Array with shape (n_observations, n_types) containing observed log wages.
+    df : pandas.DataFrame
+        The DataFrame contains choices, log wages, the indices of the states for the
+        different types.
     base_draws_est : numpy.ndarray
         Array with shape (n_periods, n_draws, n_choices) containing i.i.d. draws from
         standard normal distributions.
+    type_covariates : pandas.DataFrame or None
+        If the model includes types, this is a :class:`pandas.DataFrame` containing the
+        covariates to compute the type probabilities.
     optim_paras : dict
         Dictionary with quantities that were extracted from the parameter vector.
     options : dict
+        Options of the model.
 
     Returns
     -------
     contribs : numpy.ndarray
         Array with shape (n_individuals,) containing contributions of individuals in the
         empirical data.
+    df : pandas.DataFrame
+        Contains log wages, choices and
 
     """
+    df = df.copy()
+
     n_choices = len(optim_paras["choices"])
-    n_obs = indices.shape[0]
+    n_obs = df.shape[0]
     n_types = optim_paras["n_types"]
 
-    wages_systematic = state_space.wages[indices].reshape(n_obs * n_types, -1)
+    indices = df[[f"index_type_{i}" for i in range(optim_paras["n_types"])]].to_numpy()
+
+    wages_systematic = state_space.wages[indices].reshape(n_obs * n_types, n_choices)
+    log_wages_observed = df["log_wage"].to_numpy().repeat(n_types)
+    choices = df["choice"].to_numpy().repeat(n_types)
 
     draws, wage_loglikes = create_draws_and_log_prob_wages(
         log_wages_observed,
@@ -287,7 +209,7 @@ def _internal_log_like_obs(
 
     continuation_values = state_space.get_continuation_values(indices=indices)
 
-    choice_loglikes = simulate_log_probability_of_individuals_observed_choice(
+    choice_loglikes = _simulate_log_probability_of_individuals_observed_choice(
         state_space.wages[indices],
         state_space.nonpec[indices],
         continuation_values,
@@ -303,9 +225,18 @@ def _internal_log_like_obs(
     choice_loglikes = np.clip(choice_loglikes, MIN_FLOAT, MAX_FLOAT)
     wage_loglikes = np.clip(wage_loglikes, MIN_FLOAT, MAX_FLOAT)
 
-    per_period_loglikes = wage_loglikes + choice_loglikes
+    choice_cols = [f"loglike_choice_type_{i}" for i in range(n_types)]
+    wage_cols = [f"loglike_wage_type_{i}" for i in range(n_types)]
 
-    per_individual_loglikes = np.add.reduceat(per_period_loglikes, idx_indiv_first_obs)
+    df = df.reindex(columns=df.columns.tolist() + choice_cols + wage_cols)
+    df[choice_cols] = choice_loglikes
+    df[wage_cols] = wage_loglikes
+
+    data = df[choice_cols].to_numpy() + df[wage_cols].to_numpy()
+    per_individual_loglikes = (
+        pd.DataFrame(data=data, index=df.index).groupby("identifier").sum()
+    )
+
     if n_types >= 2:
         z = ()
 
@@ -324,15 +255,15 @@ def _internal_log_like_obs(
 
         contribs = special.logsumexp(weighted_loglikes, axis=1)
     else:
-        contribs = per_individual_loglikes.flatten()
+        contribs = per_individual_loglikes.to_numpy().flatten()
 
     contribs = np.clip(contribs, MIN_FLOAT, MAX_FLOAT)
 
-    return contribs
+    return contribs, df
 
 
 @nb.njit
-def logsumexp(x):
+def _logsumexp(x):
     """Compute logsumexp of `x`.
 
     The function does the same as the following code, but faster.
@@ -372,7 +303,7 @@ def logsumexp(x):
     nopython=True,
     target="parallel",
 )
-def simulate_log_probability_of_individuals_observed_choice(
+def _simulate_log_probability_of_individuals_observed_choice(
     wages,
     nonpec,
     continuation_values,
@@ -447,11 +378,11 @@ def simulate_log_probability_of_individuals_observed_choice(
 
             smoothed_value_functions[j] = value_function / tau
 
-        smoothed_log_probabilities[i] = smoothed_value_functions[choice] - logsumexp(
+        smoothed_log_probabilities[i] = smoothed_value_functions[choice] - _logsumexp(
             smoothed_value_functions
         )
 
-    smoothed_log_prob = logsumexp(smoothed_log_probabilities) - np.log(n_draws)
+    smoothed_log_prob = _logsumexp(smoothed_log_probabilities) - np.log(n_draws)
 
     smoothed_log_probability[0] = smoothed_log_prob
 
@@ -509,22 +440,15 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     for period in range(n_periods):
         period_df = df.query("period == @period")
 
-        period_experience = tuple(
-            period_df[col].to_numpy() for col in period_df.filter(like="exp_").columns
-        )
-        period_lagged_choice = tuple(
-            period_df[f"lagged_choice_{i}"].to_numpy()
-            for i in range(1, optim_paras["n_lagged_choices"] + 1)
-        )
+        core_columns = create_core_state_space_columns(optim_paras)
+        period_core = tuple(period_df[col].to_numpy() for col in core_columns)
+
         period_observables = tuple(
             period_df[observable].to_numpy()
             for observable in optim_paras["observables"]
         )
 
-        period_indices = state_space.indexer[period][
-            period_experience + period_lagged_choice + period_observables
-        ]
-
+        period_indices = state_space.indexer[period][period_core + period_observables]
         indices += (period_indices,)
 
     indices = np.concatenate(indices).reshape(-1, optim_paras["n_types"])
@@ -539,20 +463,13 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     )
     indices = indices[indices_to_reorder]
 
-    # Get an array of positions of the first observation for each individual. This is
-    # used in :func:`_internal_log_like_obs` to aggregate probabilities of the
-    # individual over all periods.
-    n_obs_per_indiv = np.bincount(df.index.get_level_values("identifier"))
-    idx_indiv_first_obs = np.hstack((0, np.cumsum(n_obs_per_indiv)[:-1]))
+    # Finally, add the indices to the DataFrame.
+    type_index_cols = [f"index_type_{i}" for i in range(optim_paras["n_types"])]
+    df = df.reindex(columns=df.columns.tolist() + type_index_cols)
+    df[type_index_cols] = indices
 
-    # For the estimation, log wages are needed with shape (n_observations, n_types).
-    log_wages_observed = np.repeat(
-        np.log(np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT)),
-        optim_paras["n_types"],
-    )
-
-    # For the estimation, choices are needed with shape (n_observations * n_types).
-    choices = df.choice.to_numpy().repeat(optim_paras["n_types"])
+    df["log_wage"] = np.log(np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT))
+    df = df.drop(columns="wage")
 
     # For the type covariates, we only need the first observation of each individual.
     if optim_paras["n_types"] >= 2:
@@ -561,7 +478,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
             initial_states, options["covariates"], raise_errors=False
         )
 
-        all_data = pd.concat([covariates, initial_states], axis="columns", sort=False)
+        all_data = pd.concat([covariates, initial_states], axis="columns")
 
         type_covariates = all_data[optim_paras["type_covariates"]].apply(
             downcast_to_smallest_dtype
@@ -569,7 +486,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     else:
         type_covariates = None
 
-    return choices, idx_indiv_first_obs, indices, log_wages_observed, type_covariates
+    return df, type_covariates
 
 
 def _adjust_optim_paras_for_estimation(optim_paras, df):
@@ -602,3 +519,25 @@ def _adjust_optim_paras_for_estimation(optim_paras, df):
             }
 
     return optim_paras
+
+
+def _create_comparison_plot_data(df, optim_paras):
+    """Create DataFrame for estimagic's comparison plot."""
+    # During the likelihood calculation, the log likelihood for missing wages is
+    # substituted with 0. Remove these log likelihoods to get the correct picture.
+    df = df.loc[df.log_wage.notna()]
+
+    # Keep the log likelihood and the choice.
+    columns = df.filter(like="loglike").columns.tolist() + ["choice"]
+    df = df[columns]
+
+    df["choice"] = df["choice"].replace(dict(enumerate(optim_paras["choices"])))
+
+    df = df.reset_index().melt(id_vars=["identifier", "period", "choice"])
+
+    splitted_label = df.variable.str.split("_", expand=True)
+    df["kind"] = splitted_label[1]
+    df["type"] = splitted_label[3]
+    df = df.drop(columns="variable")
+
+    return df
