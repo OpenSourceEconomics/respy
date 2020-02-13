@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
+    rev: v2.5.0
     hooks:
     -   id: check-merge-conflict
     -   id: check-yaml
@@ -36,7 +36,7 @@ repos:
             flake8-todo, flake8-unused-arguments, pep8-naming, pydocstyle<4.0, Pygments,
         ]
 -   repo: https://github.com/PyCQA/doc8
-    rev: 0.8.1rc2
+    rev: 0.8.1rc3
     hooks:
         -   id: doc8
 -   repo: local
