@@ -135,16 +135,16 @@ def update_mean_and_evaluate_likelihood(
     log_wage_systematic : float
         Log of the implied wage for the choice by the model. This term is computed by
         the wage equation without the choice-specific shock.
-    cov : np.ndarray
+    cov : numpy.ndarray
         Unconditional covariance matrix of the shocks.
     choice : int
         The observed choice.
-    meas_sds : np.ndarray
+    meas_sds : numpy.ndarray
         Array with shape (n_choices,) containing standard errors of measurement errors.
 
     Returns
     -------
-    updated_mean : np.ndarray
+    updated_mean : numpy.ndarray
         Conditional mean of shocks, given the observed shock. Contains the observed
         shock in the corresponding position even in the degenerate case of no
         measurement error. Has length n_choices.
@@ -191,14 +191,12 @@ def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds, n_wages):
     Parameters
     ----------
     shocks_cholesky : numpy.ndarray
-        cholesky factor of the covariance matrix before updating. Has
-        dimension (n_choices, n_choices)
-
+        Cholesky factor of the covariance matrix before updating. Has dimension
+        (n_choices, n_choices).
     meas_sds: numpy.ndarray
-        the standard deviations of the measurement errors. Has length n_wages.
-
+        The standard deviations of the measurement errors. Has length n_wages.
     n_wages : int
-        number of wage sectors.
+        Number of wage sectors.
 
     Returns
     -------
@@ -213,8 +211,8 @@ def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds, n_wages):
 
     References
     ----------
-    Robert Grover Brown. Introduction to Random Signals and Applied Kalman Filtering.
-        Wiley and sons, 2012.
+    .. [1] Robert Grover Brown. Introduction to Random Signals and Applied Kalman
+           Filtering. Wiley and sons, 2012.
 
     """
     n_choices = len(shocks_cholesky)
