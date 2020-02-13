@@ -15,6 +15,7 @@ from estimagic.optimization.utilities import sdcorr_params_to_matrix
 
 from respy.config import DEFAULT_OPTIONS
 from respy.config import MAX_FLOAT
+from respy.config import MIN_FLOAT
 from respy.config import SEED_STARTUP_ITERATION_GAP
 from respy.pre_processing.model_checking import validate_options
 from respy.shared import normalize_probabilities
@@ -29,14 +30,14 @@ def process_params_and_options(params, options):
 
     """
     options = _read_options(options)
+    params = _read_params(params)
+
     options = {**DEFAULT_OPTIONS, **options}
     options = _create_internal_seeds_from_user_seeds(options)
     options = _identify_relevant_covariates(options, params)
     validate_options(options)
 
-    params = _read_params(params)
     optim_paras = _parse_parameters(params, options)
-
     optim_paras, options = _sync_optim_paras_and_options(optim_paras, options)
 
     return optim_paras, options
@@ -522,7 +523,7 @@ def _parse_lagged_choices(optim_paras, options, params):
         # If there are parameters, put zero probability on missing choices.
         else:
             defaults = {
-                choice: pd.Series(index=["constant"], data=-MAX_FLOAT)
+                choice: pd.Series(index=["constant"], data=MIN_FLOAT)
                 for choice in optim_paras["choices"]
             }
             parsed_parameters = {**defaults, **parsed_parameters}
