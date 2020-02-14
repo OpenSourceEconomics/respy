@@ -6,8 +6,8 @@ import numpy as np
 
 from respy.config import MAX_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.shared import calculate_expected_value_functions
 from respy.shared import calculate_value_functions_and_flow_utilities
-from respy.solve import calculate_expected_value_functions
 
 
 @parallelize_across_dense_dimensions
@@ -189,7 +189,6 @@ def _calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmi
         functions.
 
     """
-    # TODO: No reason why this should not be calculate_expected_value_functions
     value_functions, _ = calculate_value_functions_and_flow_utilities(
         wages, nonpec, emaxs, draws, delta, is_inadmissible
     )

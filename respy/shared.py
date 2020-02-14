@@ -434,3 +434,93 @@ def apply_to_state_space_attribute(attribute, func):
         out = func(attribute)
 
     return out
+
+
+@nb.guvectorize(
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
+    "-> ()",
+    nopython=True,
+    target="parallel",
+)
+def calculate_expected_value_functions(
+    wages,
+    nonpecs,
+    continuation_values,
+    draws,
+    delta,
+    is_inadmissible,
+    expected_value_functions,
+):
+    r"""Calculate the expected maximum of value functions for a set of unobservables.
+
+    The function takes an agent and calculates the utility for each of the choices, the
+    ex-post rewards, with multiple draws from the distribution of unobservables and adds
+    the discounted expected maximum utility of subsequent periods resulting from
+    choices. Averaging over all maximum utilities yields the expected maximum utility of
+    this state.
+
+    The underlying process in this function is called `Monte Carlo integration`_. The
+    goal is to approximate an integral by evaluating the integrand at randomly chosen
+    points. In this setting, one wants to approximate the expected maximum utility of
+    the current state.
+
+    Note that ``wages`` have the same length as `nonpecs` despite that wages are only
+    available in some choices. Missing choices are filled with ones. In the case of a
+    choice with wage and without wage, flow utilities are
+
+    .. math::
+
+        \text{Flow Utility} = \text{Wage} * \epsilon + \text{Non-pecuniary}
+        \text{Flow Utility} = 1 * \epsilon + \text{Non-pecuniary}
+
+    Parameters
+    ----------
+    wages : numpy.ndarray
+        Array with shape (n_choices,) containing wages.
+    nonpecs : numpy.ndarray
+        Array with shape (n_choices,) containing non-pecuniary rewards.
+    continuation_values : numpy.ndarray
+        Array with shape (n_choices,) containing expected maximum utility for each
+        choice in the subsequent period.
+    draws : numpy.ndarray
+        Array with shape (n_draws, n_choices).
+    delta : float
+        The discount factor.
+    is_inadmissible: numpy.ndarray
+        Array with shape (n_choices,) containing indicator for whether the following
+        state is inadmissible.
+
+    Returns
+    -------
+    expected_value_functions : float
+        Expected maximum utility of an agent.
+
+    .. _Monte Carlo integration:
+        https://en.wikipedia.org/wiki/Monte_Carlo_integration
+
+    """
+    n_draws, n_choices = draws.shape
+
+    expected_value_functions[0] = 0
+
+    for i in range(n_draws):
+
+        max_value_functions = 0
+
+        for j in range(n_choices):
+            value_function, _ = aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpecs[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
+
+            if value_function > max_value_functions:
+                max_value_functions = value_function
+
+        expected_value_functions[0] += max_value_functions
+
+    expected_value_functions[0] /= n_draws

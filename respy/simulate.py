@@ -129,7 +129,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
           a one-step-ahead simulation.
         - :class:`pandas.DataFrame` containing only first observations which triggers a
           n-step-ahead simulation taking the data as initial conditions.
-    solve : :func:`~respy.solve._solve`
+    solve : :func:`~respy.solve.solve`
         Function which creates the solution of the model with new parameters.
     options : dict
         Contains model options.

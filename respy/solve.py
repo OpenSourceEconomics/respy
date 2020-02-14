@@ -1,13 +1,12 @@
 """Everything related to the solution of a structural model."""
 import functools
 
-import numba as nb
 import numpy as np
 
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import aggregate_keane_wolpin_utility
+from respy.shared import calculate_expected_value_functions
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.state_space import create_state_space_class
 
@@ -28,8 +27,8 @@ def get_solve_func(params, options):
 
     Returns
     -------
-    state_space : :class:`~respy.state_space.StateSpace`
-        State space of the model which is already solved via backward-induction.
+    solve : :func:`~respy.solve.solve`
+        Function with partialed arguments.
 
     """
     optim_paras, options = process_params_and_options(params, options)
@@ -200,93 +199,3 @@ def _full_solution(
     )
 
     return period_expected_value_functions
-
-
-@nb.guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
-    "-> ()",
-    nopython=True,
-    target="parallel",
-)
-def calculate_expected_value_functions(
-    wages,
-    nonpecs,
-    continuation_values,
-    draws,
-    delta,
-    is_inadmissible,
-    expected_value_functions,
-):
-    r"""Calculate the expected maximum of value functions for a set of unobservables.
-
-    The function takes an agent and calculates the utility for each of the choices, the
-    ex-post rewards, with multiple draws from the distribution of unobservables and adds
-    the discounted expected maximum utility of subsequent periods resulting from
-    choices. Averaging over all maximum utilities yields the expected maximum utility of
-    this state.
-
-    The underlying process in this function is called `Monte Carlo integration`_. The
-    goal is to approximate an integral by evaluating the integrand at randomly chosen
-    points. In this setting, one wants to approximate the expected maximum utility of
-    the current state.
-
-    Note that ``wages`` have the same length as `nonpecs` despite that wages are only
-    available in some choices. Missing choices are filled with ones. In the case of a
-    choice with wage and without wage, flow utilities are
-
-    .. math::
-
-        \text{Flow Utility} = \text{Wage} * \epsilon + \text{Non-pecuniary}
-        \text{Flow Utility} = 1 * \epsilon + \text{Non-pecuniary}
-
-    Parameters
-    ----------
-    wages : numpy.ndarray
-        Array with shape (n_choices,) containing wages.
-    nonpecs : numpy.ndarray
-        Array with shape (n_choices,) containing non-pecuniary rewards.
-    continuation_values : numpy.ndarray
-        Array with shape (n_choices,) containing expected maximum utility for each
-        choice in the subsequent period.
-    draws : numpy.ndarray
-        Array with shape (n_draws, n_choices).
-    delta : float
-        The discount factor.
-    is_inadmissible: numpy.ndarray
-        Array with shape (n_choices,) containing indicator for whether the following
-        state is inadmissible.
-
-    Returns
-    -------
-    expected_value_functions : float
-        Expected maximum utility of an agent.
-
-    .. _Monte Carlo integration:
-        https://en.wikipedia.org/wiki/Monte_Carlo_integration
-
-    """
-    n_draws, n_choices = draws.shape
-
-    expected_value_functions[0] = 0
-
-    for i in range(n_draws):
-
-        max_value_functions = 0
-
-        for j in range(n_choices):
-            value_function, _ = aggregate_keane_wolpin_utility(
-                wages[j],
-                nonpecs[j],
-                continuation_values[j],
-                draws[i, j],
-                delta,
-                is_inadmissible[j],
-            )
-
-            if value_function > max_value_functions:
-                max_value_functions = value_function
-
-        expected_value_functions[0] += max_value_functions
-
-    expected_value_functions[0] /= n_draws
