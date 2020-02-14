@@ -4,11 +4,10 @@ import warnings
 import numba as nb
 import numpy as np
 
-from respy import solve
 from respy.config import MAX_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import calculate_value_functions_and_flow_utilities
-from respy.shared import clip
+from respy.solve import calculate_expected_value_functions
 
 
 @parallelize_across_dense_dimensions
@@ -23,7 +22,7 @@ def interpolate(
     options,
 ):
     """Interface to switch between different interpolation routines."""
-    period_expected_value_functions = kw_94_interpolation(
+    period_expected_value_functions = _kw_94_interpolation(
         wages,
         nonpecs,
         continuation_values,
@@ -37,7 +36,7 @@ def interpolate(
     return period_expected_value_functions
 
 
-def kw_94_interpolation(
+def _kw_94_interpolation(
     wages,
     nonpecs,
     continuation_values,
@@ -47,18 +46,37 @@ def kw_94_interpolation(
     optim_paras,
     options,
 ):
-    """Calculate the approximate solution proposed by Keane and Wolpin (1994)."""
+    """Calculate the approximate solution proposed by [1]_.
+
+    The authors propose an interpolation method to alleviate the computation burden of
+    the full solution. The full solution calculates the expected value function with
+    Monte-Carlo simulation for each state in the state space for a pre-defined number of
+    points. Both, the number of states and points, have a huge impact on runtime.
+
+    [1]_ propose an interpolation method to alleviate the computation burden. The
+    general idea is to calculate the expected value function with Monte-Carlo simulation
+    only for a much smaller number of states and predict the remaining expected value
+    functions with a linear model.
+
+    The function consists of the following steps.
+
+    1. Create an indicator for whether the expected value function of the state is
+       calculated with Monte-Carlo simulation or interpolation.
+
+    2. Compute
+
+    References
+    ----------
+    .. [1] Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of
+           Discrete Choice Dynamic Programming Models by Simulation and Interpolation:
+           Monte Carlo Evidence <https://doi.org/10.2307/2109768>`_. *The Review of
+           Economics and Statistics*, 76(4): 648-672.
+
+
+
+    """
     n_choices_w_wage = len(optim_paras["choices_w_wage"])
     n_core_states_in_period = wages.shape[0]
-
-    # These shifts are used to determine the expected values of the working
-    # alternatives. These are log normal distributed and thus the draws cannot simply
-    # set to zero, but :math:`E(X) = \exp\{\mu + \frac{\sigma^2}{2}\}`.
-    shifts = np.zeros(len(optim_paras["choices"]))
-    shocks_cov = optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T)
-    shifts[:n_choices_w_wage] = np.exp(
-        np.clip(np.diag(shocks_cov)[:n_choices_w_wage], 0, MAX_LOG_FLOAT) / 2
-    )
 
     # Get indicator for interpolation and simulation of states. The seed value is the
     # base seed plus the number of the period. Thus, not interpolated states are held
@@ -67,6 +85,15 @@ def kw_94_interpolation(
         interpolation_points,
         n_core_states_in_period,
         next(options["solution_seed_iteration"]),
+    )
+
+    # These shifts are used to determine the expected values of the working
+    # alternatives. These are log normal distributed and thus the draws cannot simply
+    # set to zero, but :math:`E(X) = \exp\{\mu + \frac{\sigma^2}{2}\}`.
+    shifts = np.zeros(len(optim_paras["choices"]))
+    shocks_cov = optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T)
+    shifts[:n_choices_w_wage] = np.exp(
+        np.clip(np.diag(shocks_cov)[:n_choices_w_wage], 0, MAX_LOG_FLOAT) / 2
     )
 
     # Constructing the exogenous variable for all states, including the ones where
@@ -128,8 +155,7 @@ def _get_not_interpolated_indicator(interpolation_points, n_states, seed):
     np.random.seed(seed)
 
     indices = np.random.choice(n_states, size=interpolation_points, replace=False)
-
-    not_interpolated = np.full(n_states, False)
+    not_interpolated = np.zeros(n_states, dtype="bool")
     not_interpolated[indices] = True
 
     return not_interpolated
@@ -163,6 +189,7 @@ def _calculate_exogenous_variables(wages, nonpec, emaxs, draws, delta, is_inadmi
         functions.
 
     """
+    # TODO: No reason why this should not be calculate_expected_value_functions
     value_functions, _ = calculate_value_functions_and_flow_utilities(
         wages, nonpec, emaxs, draws, delta, is_inadmissible
     )
@@ -212,7 +239,7 @@ def _calculate_endogenous_variables(
         state has reached maximum education.
 
     """
-    emax_value_functions = solve.calculate_expected_value_functions(
+    emax_value_functions = calculate_expected_value_functions(
         wages[not_interpolated],
         nonpec[not_interpolated],
         continuation_values[not_interpolated],
@@ -255,7 +282,7 @@ def get_predictions(endogenous, exogenous, max_value_functions, not_interpolated
     # Use the model to predict EMAX for all states. As in Keane & Wolpin (1994),
     # negative predictions are truncated to zero.
     endogenous_predicted = exogenous.dot(beta)
-    endogenous_predicted = clip(endogenous_predicted, 0)
+    endogenous_predicted = np.clip(endogenous_predicted, 0, None)
 
     # Construct predicted EMAX for all states and the
     predictions = endogenous_predicted + max_value_functions

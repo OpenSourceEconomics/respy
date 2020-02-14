@@ -178,22 +178,6 @@ def generate_column_dtype_dict_for_estimation(optim_paras):
     return column_dtype_dict
 
 
-@nb.njit
-def clip(x, minimum=None, maximum=None):
-    """Clip input array at minimum and maximum."""
-    out = np.empty_like(x)
-
-    for index, value in np.ndenumerate(x):
-        if minimum is not None and value < minimum:
-            out[index] = minimum
-        elif maximum is not None and value > maximum:
-            out[index] = maximum
-        else:
-            out[index] = value
-
-    return out
-
-
 def downcast_to_smallest_dtype(series, downcast_options=None):
     """Downcast the dtype of a :class:`pandas.Series` to the lowest possible dtype.
 

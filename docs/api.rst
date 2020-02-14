@@ -23,6 +23,7 @@ solve
 .. autosummary::
     :toctree: _generated/
 
+    get_solve_func
     solve
 
 simulate
@@ -81,6 +82,8 @@ interpolate
 .. autosummary::
     :toctree: _generated/
 
+    interpolate
+    _kw_94_interpolation
     _get_not_interpolated_indicator
 
 state space

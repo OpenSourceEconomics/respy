@@ -125,7 +125,7 @@ def log_like(
         different types.
     base_draws_est : numpy.ndarray
         Set of draws to calculate the probability of observed wages.
-    solve : :func:`~respy.solve._solve`
+    solve : :func:`~respy.solve.solve`
         Function which solves the model with new parameters.
     options : dict
         Contains model options.
@@ -191,8 +191,6 @@ def _internal_log_like_obs(
 
     """
     df = df.copy()
-    if type_covariates is not None:
-        type_covariates = type_covariates.copy()
 
     n_types = optim_paras["n_types"]
 
@@ -224,6 +222,8 @@ def _internal_log_like_obs(
     per_individual_loglikes = per_observation_loglikes.groupby("identifier").sum()
 
     if n_types >= 2:
+        # To not alter the attribute in the functools.partial, create a copy.
+        type_covariates = type_covariates.copy()
         # Weight each type-specific individual log likelihood with the type probability.
         log_type_probabilities = _compute_log_type_probabilities(
             type_covariates, optim_paras, options
@@ -507,16 +507,14 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     # Get indices of states in the state space corresponding to all observations for all
     # types. The indexer has the shape (n_observations,).
     n_periods = int(df.index.get_level_values("period").max() + 1)
-    indices = ()
+    indices = []
+    core_columns = create_core_state_space_columns(optim_paras)
 
     for period in range(n_periods):
         period_df = df.query("period == @period")
-
-        core_columns = create_core_state_space_columns(optim_paras)
         period_core = tuple(period_df[col].to_numpy() for col in core_columns)
-
         period_indices = state_space.indexer[period][period_core]
-        indices += (period_indices,)
+        indices.append(period_indices)
 
     indices = np.concatenate(indices)
 

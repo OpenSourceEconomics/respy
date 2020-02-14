@@ -278,17 +278,11 @@ def _simulate_single_period(
 ):
     """Simulate individuals in a single period.
 
-    This function takes a set of states and simulates wages, choices and other
-    information. The information is stored in a NumPy array.
+    The function performs the following sets:
 
-    Parameter
-    ---------
-    state_space : :class:`~respy.state_space.StateSpace`
-        State space of the model.
-    df : pandas.DataFrame
-        DataFrame with shape (n_individuals_in_period, n_state_space_dims) which
-        contains the states of simulated individuals.
-    optim_paras : dict
+    - Map individuals in one period to the states in the model.
+    - Simulate choices and wages for those individuals.
+    - Store additional information in a :class:`pandas.DataFrame` and return it.
 
     """
     n_wages = len(optim_paras["choices_w_wage"])
@@ -325,9 +319,8 @@ def _simulate_single_period(
     )
 
     # We need to ensure that no individual chooses an inadmissible state. Thus, set
-    # value functions to NaN. This cannot be done in
-    # :func:`aggregate_keane_wolpin_utility` as the interpolation requires a mild
-    # penalty.
+    # value functions to NaN. This cannot be done in `aggregate_keane_wolpin_utility` as
+    # the interpolation requires a mild penalty.
     value_functions = np.where(is_inadmissible, np.nan, value_functions)
 
     choice = np.nanargmax(value_functions, axis=1)
@@ -436,19 +429,18 @@ def _convert_codes_to_original_labels(df, optim_paras):
 def _process_simulation_output(data, optim_paras):
     """Create simulated data.
 
-    This function takes an array of simulated outcomes for each period and stacks them
-    together to one DataFrame.
+    This function takes an array of simulated outcomes and additional information for
+    each period and stacks them together to one DataFrame.
 
     Parameters
     ----------
     data : list
-        List of DataFrames which contains the simulated data with internal codes and
-        labels.
+        List of DataFrames for each simulated period with internal codes and labels.
     optim_paras : dict
 
     Returns
     -------
-    simulated_df : pandas.DataFrame
+    df : pandas.DataFrame
         DataFrame with simulated data.
 
     """
@@ -615,7 +607,7 @@ def _harmonize_simulation_arguments(method, df, n_sim_p, options):
 
 
 def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_paras):
-    """Process the ``df`` provided by the user for the simulation."""
+    """Process a :class:`pandas.DataFrame` provided by the user for the simulation."""
     if method == "n_step_ahead_with_sampling":
         ids = np.arange(options["simulation_agents"])
         index = pd.MultiIndex.from_product(
