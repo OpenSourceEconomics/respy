@@ -23,8 +23,10 @@ setup(
     description=DESCRIPTION,
     long_description=DESCRIPTION + "\n\n" + README,
     long_description_content_type="text/x-rst",
-    author="Philipp Eisenhauer",
-    author_email="eisenhauer@policy-lab.org",
+    author="The respy Development Team",
+    author_email=(
+        "respy.9b46528f81292a712fa4855ff362f40f.show-sender@streams.zulipchat.com"
+    ),
     python_requires=">=3.6.0",
     url="https://respy.readthedocs.io/en/latest/",
     project_urls=PROJECT_URLS,
@@ -45,7 +47,7 @@ setup(
             "tests/resources/*.pickle",
             "tests/resources/*.yaml",
             "tox.ini",
-        ],
+        ]
     },
     include_package_data=True,
     zip_safe=False,

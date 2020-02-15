@@ -6,23 +6,28 @@ from respy.shared import apply_to_state_space_attribute
 
 def validate_options(o):
     """Validate the options provided by the user."""
+    assert _is_positive_nonzero_integer(o["n_periods"])
+
     for option, value in o.items():
         if "draws" in option:
             assert _is_positive_nonzero_integer(value)
         elif option.endswith("_seed"):
             assert _is_nonnegative_integer(value)
-        else:
-            pass
 
     assert 0 < o["estimation_tau"]
-
     assert (
         _is_positive_nonzero_integer(o["interpolation_points"])
         or o["interpolation_points"] == -1
     )
-
-    # Number of periods.
-    assert _is_positive_nonzero_integer(o["n_periods"])
+    assert _is_positive_nonzero_integer(o["simulation_agents"])
+    assert isinstance(o["core_state_space_filters"], list) and all(
+        isinstance(filter_, str) for filter_ in o["core_state_space_filters"]
+    )
+    assert isinstance(o["inadmissible_states"], dict) and all(
+        isinstance(key, str) and isinstance(val, str)
+        for key, val in o["inadmissible_states"].items()
+    )
+    assert o["monte_carlo_sequence"] in ["random", "halton", "sobol"]
 
 
 def validate_params(params, optim_paras):
