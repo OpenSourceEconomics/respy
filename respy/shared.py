@@ -465,7 +465,7 @@ def calculate_expected_value_functions(
     points. In this setting, one wants to approximate the expected maximum utility of
     the current state.
 
-    Note that ``wages`` have the same length as `nonpecs` despite that wages are only
+    Note that `wages` have the same length as `nonpecs` despite that wages are only
     available in some choices. Missing choices are filled with ones. In the case of a
     choice with wage and without wage, flow utilities are
 
