@@ -77,8 +77,8 @@ def generate_random_model(
         Indicator for myopic agents meaning the discount factor is set to zero.
 
     """
-    point_constr = {} if point_constr is None else point_constr
-    bound_constr = {} if bound_constr is None else bound_constr
+    point_constr = {} if point_constr is None else point_constr.copy()
+    bound_constr = {} if bound_constr is None else bound_constr.copy()
 
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
