@@ -305,7 +305,7 @@ def _infer_number_of_types(params):
 
     >>> tuples = [("wage_a", "constant"), ("nonpec_edu", "exp_edu")]
     >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
-    >>> s = pd.Series(index=index)
+    >>> s = pd.Series(index=index, dtype="object")
     >>> _infer_number_of_types(s)
     1
 
@@ -313,7 +313,7 @@ def _infer_number_of_types(params):
 
     >>> tuples = [("wage_a", "type_3"), ("nonpec_edu", "type_2")]
     >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
-    >>> s = pd.Series(index=index)
+    >>> s = pd.Series(index=index, dtype="object")
     >>> _infer_number_of_types(s)
     4
 
@@ -337,7 +337,7 @@ def _infer_choices_with_experience(params, options):
     -------
     >>> options = {"covariates": {"a": "exp_white_collar + exp_a", "b": "exp_b >= 2"}}
     >>> index = pd.MultiIndex.from_product([["category"], ["a", "b"]])
-    >>> params = pd.Series(index=index)
+    >>> params = pd.Series(index=index, dtype="object")
     >>> _infer_choices_with_experience(params, options)
     ['a', 'b', 'white_collar']
 
@@ -361,7 +361,9 @@ def _infer_choices_with_prefix(params, prefix):
 
     Example
     -------
-    >>> params = pd.Series(index=["wage_b", "wage_white_collar", "wage_a", "nonpec_c"])
+    >>> params = pd.Series(
+    ...     index=["wage_b", "wage_white_collar", "wage_a", "nonpec_c"], dtype="object"
+    ... )
     >>> _infer_choices_with_prefix(params, "wage")
     ['a', 'b', 'white_collar']
 
