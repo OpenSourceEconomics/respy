@@ -62,7 +62,7 @@ def solve(params, options, state_space):
     return state_space
 
 
-@parallelize_across_dense_dimensions
+@parallelize_across_dense_dimensions(mmap_mode="r+")
 def _create_choice_rewards(states, wages, nonpecs, optim_paras):
     """Create wage and non-pecuniary reward for each state and choice.
 

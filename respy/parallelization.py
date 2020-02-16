@@ -8,7 +8,7 @@ import pandas as pd
 from respy.shared import create_dense_state_space_columns
 
 
-def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
+def parallelize_across_dense_dimensions(func=None, *, n_jobs=1, mmap_mode="r"):
     """Parallelizes decorated function across dense state space dimensions.
 
     Parallelization is only possible if the decorated function has no side-effects to
@@ -36,7 +36,7 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
             if dense_indices:
                 args_, kwargs_ = _broadcast_arguments(args, kwargs, dense_indices)
 
-                out = joblib.Parallel(n_jobs=n_jobs, max_nbytes=None)(
+                out = joblib.Parallel(n_jobs=n_jobs, mmap_mode=mmap_mode)(
                     joblib.delayed(func)(*args_[idx], **kwargs_[idx])
                     for idx in dense_indices
                 )
