@@ -1,5 +1,6 @@
 """This module contains the functions for the generation of random requests."""
 import collections
+import copy
 
 import numpy as np
 import pandas as pd
@@ -77,8 +78,8 @@ def generate_random_model(
         Indicator for myopic agents meaning the discount factor is set to zero.
 
     """
-    point_constr = {} if point_constr is None else point_constr.copy()
-    bound_constr = {} if bound_constr is None else bound_constr.copy()
+    point_constr = {} if point_constr is None else copy.deepcopy(point_constr)
+    bound_constr = {} if bound_constr is None else copy.deepcopy(bound_constr)
 
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
