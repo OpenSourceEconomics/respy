@@ -65,6 +65,10 @@ releases are available on `Anaconda.org
   the data preparation.
 - :gh:`300` aligns respy functions with the new data in :gh:`299`
   (:ghuser:`tobiasraabe`).
+- :gh:`310` introduces the separation between a core state space and dense dimensions of
+  the state space which reduces memory consumption by a lot and makes respy scalable.
+  :gh:`312` and :gh:`313` include changes to the simulation or maximum likelihood
+  estimation which pave the way for :gh:`310`. (:ghuser:`tobiasraabe`)
 - :gh:`314` fixes two parameters in KW97 and KW2000 (:ghuser:`tostenzel`,
   :ghuser:`tobiasraabe`).
 - :gh:`316` changes the invalid index value for the indexer to prevent silent errors
