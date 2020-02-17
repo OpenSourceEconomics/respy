@@ -15,7 +15,6 @@ def interpolate(
     wages,
     nonpecs,
     continuation_values,
-    is_inadmissible,
     period_draws_emax_risk,
     interpolation_points,
     optim_paras,
@@ -26,7 +25,6 @@ def interpolate(
         wages,
         nonpecs,
         continuation_values,
-        is_inadmissible,
         period_draws_emax_risk,
         interpolation_points,
         optim_paras,
@@ -40,7 +38,6 @@ def _kw_94_interpolation(
     wages,
     nonpecs,
     continuation_values,
-    is_inadmissible,
     period_draws_emax_risk,
     interpolation_points,
     optim_paras,
@@ -112,12 +109,7 @@ def _kw_94_interpolation(
     expected_shocks[:n_wages] = np.exp(np.clip(var[:n_wages], 0, MAX_LOG_FLOAT) / 2)
 
     exogenous, max_emax = _compute_rhs_variables(
-        wages,
-        nonpecs,
-        continuation_values,
-        expected_shocks,
-        optim_paras["delta"],
-        is_inadmissible,
+        wages, nonpecs, continuation_values, expected_shocks, optim_paras["delta"],
     )
 
     endogenous = _compute_lhs_variable(
@@ -128,7 +120,6 @@ def _kw_94_interpolation(
         not_interpolated,
         period_draws_emax_risk,
         optim_paras["delta"],
-        is_inadmissible,
     )
 
     # Create prediction model based on the random subset of points where the EMAX is
@@ -168,7 +159,7 @@ def _get_not_interpolated_indicator(interpolation_points, n_states, seed):
     return not_interpolated
 
 
-def _compute_rhs_variables(wages, nonpec, emaxs, draws, delta, is_inadmissible):
+def _compute_rhs_variables(wages, nonpec, emaxs, draws, delta):
     """Compute right-hand side variables of the linear model.
 
     Constructing the exogenous variable for all states, including the ones where
@@ -187,9 +178,6 @@ def _compute_rhs_variables(wages, nonpec, emaxs, draws, delta, is_inadmissible):
         Array with shape (n_choices,).
     delta : float
         Discount factor.
-    is_inadmissible : numpy.ndarray
-        Array with shape (n_states_in_period, n_choices) containing an indicator for
-        whether the state in the next period is not admissible.
 
     Returns
     -------
@@ -202,7 +190,7 @@ def _compute_rhs_variables(wages, nonpec, emaxs, draws, delta, is_inadmissible):
 
     """
     value_functions, _ = calculate_value_functions_and_flow_utilities(
-        wages, nonpec, emaxs, draws, delta, is_inadmissible
+        wages, nonpec, emaxs, draws, delta
     )
 
     max_value_functions = value_functions.max(axis=1)
@@ -223,7 +211,6 @@ def _compute_lhs_variable(
     not_interpolated,
     draws,
     delta,
-    is_inadmissible,
 ):
     """Calculate left-hand side variable for all states which are not interpolated.
 
@@ -249,9 +236,6 @@ def _compute_lhs_variable(
         Array with shape (n_draws, n_choices) containing draws.
     delta : float
         Discount factor.
-    is_inadmissible : numpy.ndarray
-        Array with shape (n_states_in_period, n_choices) containing an indicator for
-        whether the state in the next period is not admissible.
 
     """
     expected_value_functions = calculate_expected_value_functions(
@@ -260,7 +244,6 @@ def _compute_lhs_variable(
         continuation_values[not_interpolated],
         draws,
         delta,
-        is_inadmissible[not_interpolated],
     )
     endogenous = expected_value_functions - max_value_functions[not_interpolated]
 

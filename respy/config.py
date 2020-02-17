@@ -34,9 +34,6 @@ dimension.
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10
 
-# Penalty for states which cannot be reached.
-INADMISSIBILITY_PENALTY = -400_000
-
 SEED_STARTUP_ITERATION_GAP = 100
 
 DEFAULT_OPTIONS = {

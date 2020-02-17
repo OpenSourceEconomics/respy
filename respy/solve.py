@@ -3,6 +3,7 @@ import functools
 
 import numpy as np
 
+from respy.config import MIN_FLOAT
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
@@ -46,8 +47,11 @@ def solve(params, options, state_space):
     states = state_space.states
     wages = state_space.get_attribute("wages")
     nonpecs = state_space.get_attribute("nonpecs")
+    is_inadmissible = state_space.get_attribute("is_inadmissible")
 
-    wages, nonpecs = _create_choice_rewards(states, wages, nonpecs, optim_paras)
+    wages, nonpecs = _create_choice_rewards(
+        states, wages, nonpecs, is_inadmissible, optim_paras
+    )
     state_space.set_attribute("wages", wages)
     state_space.set_attribute("nonpecs", nonpecs)
 
@@ -63,7 +67,7 @@ def solve(params, options, state_space):
 
 
 @parallelize_across_dense_dimensions
-def _create_choice_rewards(states, wages, nonpecs, optim_paras):
+def _create_choice_rewards(states, wages, nonpecs, is_inadmissible, optim_paras):
     """Create wage and non-pecuniary reward for each state and choice.
 
     Note that missing wages filled with ones and missing non-pecuniary rewards with
@@ -88,6 +92,11 @@ def _create_choice_rewards(states, wages, nonpecs, optim_paras):
                 states[nonpec_columns].to_numpy(),
                 optim_paras[f"nonpec_{choice}"].to_numpy(),
             )
+
+        # For inadmissible choices apply a penalty to the non-pecuniary rewards.
+        penalty = optim_paras["inadmissibility_penalty"]
+        penalty = MIN_FLOAT if penalty is None else penalty
+        nonpecs[is_inadmissible] += penalty
 
     return wages, nonpecs
 
@@ -127,9 +136,6 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     for period in reversed(range(n_periods)):
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-        is_inadmissible = state_space.get_attribute_from_period(
-            "is_inadmissible", period
-        )
         continuation_values = state_space.get_continuation_values(period)
         period_draws_emax_risk = draws_emax_risk[period]
 
@@ -150,7 +156,6 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
                 wages,
                 nonpecs,
                 continuation_values,
-                is_inadmissible,
                 period_draws_emax_risk,
                 interp_points,
                 optim_paras,
@@ -162,7 +167,6 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
                 wages,
                 nonpecs,
                 continuation_values,
-                is_inadmissible,
                 period_draws_emax_risk,
                 optim_paras,
             )
@@ -176,12 +180,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
 @parallelize_across_dense_dimensions
 def _full_solution(
-    wages,
-    nonpecs,
-    continuation_values,
-    is_inadmissible,
-    period_draws_emax_risk,
-    optim_paras,
+    wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras,
 ):
     """Calculate the full solution of the model.
 
@@ -195,7 +194,6 @@ def _full_solution(
         continuation_values,
         period_draws_emax_risk,
         optim_paras["delta"],
-        is_inadmissible,
     )
 
     return period_expected_value_functions

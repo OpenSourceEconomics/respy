@@ -14,3 +14,4 @@ shocks_sdcorr,corr_friday_fishing,0
 shocks_sdcorr,corr_hammock_fishing,0
 shocks_sdcorr,corr_hammock_friday,0
 lagged_choice_1_hammock,constant,1
+inadmissibility_penalty,inadmissibility_penalty,-20
