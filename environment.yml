@@ -13,6 +13,7 @@ dependencies:
   - conda-verify
   - doc8
   - estimagic>=0.0.14
+  - joblib
   - jupyterlab
   - line_profiler
   - matplotlib
