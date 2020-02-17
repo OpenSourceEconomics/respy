@@ -53,8 +53,8 @@ implementation always remain. So, if you are struggling with a particularly poor
 performance in your application, please do not hesitate to let us know so we can help
 with the investigation.
 
-For more details, see the script `online <https://github.com/OpenSourceEconomics/
-respy/tree/master/development/documentation/reliability>`_. The results for all the
+For more details, see the script `online <https://github.com/OpenSourceEconomics/respy/
+tree/v1.2.1/development/documentation/reliability>`_. The results for all the
 parameterizations analyzed in Keane and Wolpin (1994) are available `here
-<https://github.com/OpenSourceEconomics/respy/blob/master/docs/results/reliability
-.respy.info>`_.
+<https://github.com/OpenSourceEconomics/respy/blob/v1.2.1/docs/results/
+reliability.respy.info>`_.

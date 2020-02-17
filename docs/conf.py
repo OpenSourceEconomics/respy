@@ -49,6 +49,7 @@ nitpicky = True
 autodoc_mock_imports = [
     "chaospy",
     "estimagic",
+    "joblib",
     "numba",
     "numpy",
     "pandas",
