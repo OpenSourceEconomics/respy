@@ -530,7 +530,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
 
     # Add indices of child states to the DataFrame.
     children = pd.DataFrame(
-        data=state_space.indices_of_child_states[df["index"]],
+        data=state_space.indices_of_child_states[df["index"].to_numpy()],
         index=df.index,
         columns=[f"child_index_{c}" for c in optim_paras["choices"]],
     )
