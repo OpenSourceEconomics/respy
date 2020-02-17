@@ -163,7 +163,8 @@ def distribute_and_combine_likelihood(func):
         if dense_columns:
             n_obs = df.shape[0]
             n_types = optim_paras["n_types"]
-            # Number each state to split the shocks later.
+            # Number each state to split the shocks later. This is necessary to keep the
+            # regression tests from failing.
             df["__id"] = np.arange(n_obs)
             # Each row of indices corresponds to a state whereas the columns refer to
             # different types.
@@ -190,6 +191,7 @@ def distribute_and_combine_likelihood(func):
 
 
 def _split_dataframe(df, group_columns):
+    """Split a DataFrame by creating groups of the same values for the dense dims."""
     groups = df.groupby(group_columns).groups
     for key in list(groups):
         sub_df = df.loc[groups.pop(key)].copy()
@@ -200,6 +202,14 @@ def _split_dataframe(df, group_columns):
 
 
 def _split_shocks(base_draws_est, splitted_df, indices, optim_paras):
+    """Split the shocks.
+
+    Previously, shocks were assigned to observations which were ordered like observation
+    * n_types. Due to the changes to the dense dimensions, this might not be true
+    anymore. Thus, ensure the former ordering with the `__id` variable. This will be
+    removed with new regression tests.
+
+    """
     splitted_shocks = {}
     for dense_idx, sub_df in splitted_df.items():
         type_ = dense_idx[-1] if optim_paras["n_types"] >= 2 else 0

@@ -104,11 +104,10 @@ def check_model_solution(optim_paras, options, state_space):
 
     # Lagged choices are always in ``range(n_choices)``.
     if optim_paras["n_lagged_choices"]:
-        assert (
-            state_space.core.filter(regex=r"\blagged_choice_[0-9]*\b")
-            .isin(range(len(choices)))
-            .all()
-            .all()
+        assert np.all(
+            state_space.core.filter(regex=r"\blagged_choice_[0-9]*\b").isin(
+                range(len(choices))
+            )
         )
 
     assert np.all(np.isfinite(state_space.core))

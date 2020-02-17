@@ -24,6 +24,7 @@ def process_model_or_seed(model_or_seed=None, **kwargs):
 
 
 def compare_state_space_attributes(attr_1, attr_2, func):
+    """Apply a function to two state space attributes."""
     if isinstance(attr_1, dict):
         out = {}
         for key in attr_1:
