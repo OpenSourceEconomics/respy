@@ -24,7 +24,9 @@ def validate_options(o):
         isinstance(filter_, str) for filter_ in o["core_state_space_filters"]
     )
     assert isinstance(o["inadmissible_states"], dict) and all(
-        isinstance(key, str) and isinstance(val, str)
+        isinstance(key, str)
+        and isinstance(val, list)
+        and all(isinstance(condition, str) for condition in val)
         for key, val in o["inadmissible_states"].items()
     )
     assert o["monte_carlo_sequence"] in ["random", "halton", "sobol"]

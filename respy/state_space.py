@@ -1,6 +1,8 @@
 """Everything related to the state space of a structural model."""
 import itertools
+from pathlib import Path
 
+import joblib
 import numba as nb
 import numpy as np
 import pandas as pd
@@ -180,11 +182,13 @@ class _SingleDimStateSpace(_BaseStateSpace):
         base_draws_sol,
         optim_paras,
         options,
+        dense_dim=None,
         dense_covariates=None,
         is_inadmissible=None,
         indices_of_child_states=None,
         slices_by_periods=None,
     ):
+        self.dense_dim = dense_dim
         self.core = core
         self.indexer = indexer
         self.dense_covariates = dense_covariates if dense_covariates is not None else {}
@@ -297,6 +301,9 @@ class _SingleDimStateSpace(_BaseStateSpace):
         n_choices_w_wage = len(optim_paras["choices_w_wage"])
         n_choices_wo_wage = n_choices - n_choices_w_wage
 
+        base_path = Path.cwd() / ".respy"
+        base_path.mkdir(parents=True, exist_ok=True)
+
         for name, array in (
             ("expected_value_functions", np.empty(n_states)),
             (
@@ -310,6 +317,14 @@ class _SingleDimStateSpace(_BaseStateSpace):
             ),
             ("nonpecs", np.zeros((n_states, n_choices))),
         ):
+            if self.dense_dim:
+                dense_dim_to_string = "_".join(map(str, self.dense_dim))
+                path = base_path / f"{name}_{dense_dim_to_string}.npy"
+                if path.exists():
+                    path.unlink()
+                joblib.dump(array, path)
+                array = joblib.load(path, mmap_mode="r+")
+
             setattr(self, name, array)
 
 
@@ -336,6 +351,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
                 self.base_draws_sol,
                 optim_paras,
                 options,
+                dense_dim,
                 dense_covariates,
                 self.is_inadmissible,
                 self.indices_of_child_states,
