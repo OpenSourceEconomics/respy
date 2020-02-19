@@ -2,7 +2,8 @@ channels:
   - conda-forge
 dependencies:
   - python=3.7
-  - ipython
   - nbsphinx
-  - numpydoc
-  - sphinx
+  - pip:
+    - ipython
+    - numpydoc
+    - sphinx
