@@ -200,7 +200,7 @@ def test_parse_observables():
 def test_raise_exception_for_missing_meas_error():
     params, options = generate_random_model()
 
-    params = params.drop(index=("meas_error", "sd_blue_collar"))
+    params = params.drop(index=("meas_error", "sd_b"))
 
     with pytest.raises(KeyError):
         _parse_measurement_errors(params, options)
