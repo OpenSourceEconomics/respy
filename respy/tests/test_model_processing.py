@@ -198,7 +198,7 @@ def test_parse_observables():
 
 
 def test_raise_exception_for_missing_meas_error():
-    params, options = process_model_or_seed("kw_97_basic")
+    params, options = generate_random_model()
 
     params = params.drop(index=("meas_error", "sd_blue_collar"))
 
@@ -207,9 +207,20 @@ def test_raise_exception_for_missing_meas_error():
 
 
 def test_raise_exception_for_missing_shock_matrix():
-    params, _ = process_model_or_seed("kw_97_basic")
+    params, _ = generate_random_model()
 
     params = params.drop(index="shocks_sdcorr", level="category")
 
     with pytest.raises(KeyError):
         _parse_shocks({}, params)
+
+
+@pytest.mark.parametrize("observables", [[2], [2, 2]])
+def test_raise_exception_for_observable_with_one_value(observables):
+    point_constr = {"observables": observables}
+    params, _ = generate_random_model(point_constr=point_constr)
+
+    params = params.drop(index="observable_observable_0_0", level="category")["value"]
+
+    with pytest.raises(ValueError, match=r"Observables and exogenous processes"):
+        _parse_observables({}, params)

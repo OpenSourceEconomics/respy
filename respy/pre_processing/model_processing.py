@@ -159,10 +159,6 @@ def _parse_observables(optim_paras, params):
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, regex_pattern
         )
-        if len(parsed_parameters) < 2:
-            raise ValueError(
-                f"Observable '{observable}' must have at least two possible values."
-            )
         optim_paras["observables"][observable] = parsed_parameters
 
     return optim_paras
@@ -250,6 +246,9 @@ def _parse_shocks(optim_paras, params):
 def _parse_measurement_errors(optim_paras, params):
     """Parse the standard deviations of measurement errors.
 
+    Measurement errors can be provided for all or none choices with wages. Measurement
+    errors for non-wage choices are neglected.
+
     `optim_paras["has_meas_error"]` is only False if there are no standard deviations of
     measurement errors in `params`, not if they are all zero. Otherwise, we would
     introduce a kink into the likelihood function.
@@ -268,8 +267,7 @@ def _parse_measurement_errors(optim_paras, params):
         except KeyError as e:
             raise KeyError(
                 "Standard deviations of measurement error have to be provided for all "
-                "or none of the choices with wages. There can't be standard deviations "
-                "of measurement errors for choices without wage."
+                "or none of the choices with wages."
             ) from e
     else:
         optim_paras["has_meas_error"] = False
@@ -615,6 +613,7 @@ def _parse_observable_or_exog_process_names(params, keyword):
         .index.get_level_values("category")
         .str.replace(f"{keyword}_", "", n=1)
     )
+
     prefixes = {
         os.path.commonprefix([a, b]) for a, b in itertools.combinations(categories, 2)
     }
@@ -624,6 +623,16 @@ def _parse_observable_or_exog_process_names(params, keyword):
     # Remove substrings. If a prefix is in any other prefix, remove it from the set.
     substrings = {a for a, b in itertools.permutations(prefixes, 2) if a in b}
     prefixes = sorted(prefixes - substrings)
+
+    # Check whether not as many names
+    n_matched_params = np.any(
+        [categories.str.startswith(prefix) for prefix in prefixes], axis=0
+    ).sum()
+
+    if mask.sum() != n_matched_params:
+        raise ValueError(
+            "Observables and exogenous processes must have at least two values."
+        )
 
     return prefixes
 
