@@ -137,6 +137,7 @@ def _parse_parameters(params, options):
     """Parse the parameter vector into a dictionary of model quantities."""
     optim_paras = {"delta": params.loc[("delta", "delta")]}
     optim_paras = _parse_observables(optim_paras, params)
+    optim_paras = _parse_exogenous_processes(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
     optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
@@ -160,6 +161,22 @@ def _parse_observables(optim_paras, params):
             params, regex_pattern
         )
         optim_paras["observables"][observable] = parsed_parameters
+
+    return optim_paras
+
+
+def _parse_exogenous_processes(optim_paras, params):
+    """Parse exogenous processes."""
+    optim_paras["exogenous_processes"] = {}
+
+    names = _parse_observable_or_exog_process_names(params, "exogenous_process")
+
+    for observable in names:
+        regex_pattern = fr"\bexogenous_process_{observable}_([0-9a-z_]+)\b"
+        parsed_parameters = _parse_probabilities_or_logit_coefficients(
+            params, regex_pattern
+        )
+        optim_paras["exogenous_processes"][observable] = parsed_parameters
 
     return optim_paras
 
@@ -693,14 +710,20 @@ def _replace_choices_and_observables_in_formula(formula, optim_paras):
 
     """
     observables = optim_paras["observables"]
+    exog_procs = optim_paras["exogenous_processes"]
 
     for i, choice in enumerate(optim_paras["choices"]):
         formula = _replace_in_single_or_double_quotes(formula, choice, i)
 
     for observable in observables:
-        for i, obs in enumerate(observables[observable]):
-            if isinstance(obs, str):
-                formula = _replace_in_single_or_double_quotes(formula, obs, i)
+        for i, level in enumerate(observables[observable]):
+            if isinstance(level, str):
+                formula = _replace_in_single_or_double_quotes(formula, level, i)
+
+    for exog_proc in exog_procs:
+        for i, level in enumerate(exog_procs[exog_proc]):
+            if isinstance(level, str):
+                formula = _replace_in_single_or_double_quotes(formula, level, i)
 
     return formula
 

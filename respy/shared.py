@@ -412,7 +412,9 @@ def create_core_state_space_columns(optim_paras):
 
 def create_dense_state_space_columns(optim_paras):
     """Create internal column names for the dense state space."""
-    columns = list(optim_paras["observables"])
+    columns = list(optim_paras["observables"]) + list(
+        optim_paras["exogenous_processes"]
+    )
     if optim_paras["n_types"] >= 2:
         columns += ["type"]
 

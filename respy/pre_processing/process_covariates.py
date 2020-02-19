@@ -1,4 +1,5 @@
 """This module comprises all functions which process the definition of covariates."""
+from respy.shared import create_dense_state_space_columns
 
 
 def remove_irrelevant_covariates(options, params):
@@ -80,12 +81,7 @@ def separate_covariates_into_core_dense_mixed(options, optim_paras):
         + [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]]
         + [f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
     )
-    dense_covs = set(optim_paras["observables"])
-    if optim_paras["n_types"] >= 2:
-        dense_covs |= set(
-            ["type"] + [f"type_{i}" for i in range(2, optim_paras["n_types"] + 1)]
-        )
-
+    dense_covs = set(create_dense_state_space_columns(optim_paras))
     detailed_covariates = {
         cov: {"formula": covariates[cov], "depends_on": set()} for cov in covariates
     }
