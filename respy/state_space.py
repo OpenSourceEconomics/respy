@@ -733,6 +733,29 @@ def _insert_indices_of_child_states(
 
 
 def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
+    """Create a dictionary with dense state space covariates.
+
+    The function creates a dictionary where the keys are a tuple of values of the dense
+    state space dimensions. For example, a model with types but no other dense
+    dimensions would have the keys `(0,), (1,), ...`.
+
+    The values of the keys are also dictionaries. Their keys are the names of covariates
+    and the values are a scalar for the value.
+
+    Example
+    -------
+    As an example, we take a model with two types but no other dense dimensions.
+
+    >>> dg = [(0,), (1,)]
+    >>> o_par = {"observables": {}, "exogenous_processes": {}, "n_types": 2}
+    >>> opt = {"covariates_dense": {
+    ...     "type_0": {"formula": "type == 0", "depends_on": ["type"]},
+    ...     "type_1": {"formula": "type == 1", "depends_on": ["type"]},
+    ... }}
+    >>> _create_dense_state_space_covariates(dg, o_par, opt)  # doctest: +ELLIPSIS
+    {(0,): {'type': 0, 'type_0': 1, 'type_1': 0}, (1,): {'type': 1, 'type_0': 0, ...
+
+    """
     if dense_grid:
         columns = create_dense_state_space_columns(optim_paras)
 
