@@ -148,6 +148,8 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
     # Prepare simulation.
     n_simulation_periods = int(df.index.get_level_values("period").max() + 1)
 
+    df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
+
     # Prepare shocks and store them in the pandas.DataFrame.
     n_wages = len(optim_paras["choices_w_wage"])
     base_draws_sim_transformed = transform_base_draws_with_cholesky_factor(
@@ -158,11 +160,10 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
         df[f"shock_reward_{choice}"] = base_draws_sim_transformed[:, i]
         df[f"meas_error_wage_{choice}"] = base_draws_wage_transformed[:, i]
 
-    df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
-
     core_columns = create_core_state_space_columns(optim_paras)
     is_n_step_ahead = np.any(df[core_columns].isna())
 
+    data = []
     for period in range(n_simulation_periods):
 
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
@@ -173,15 +174,13 @@ def simulate(params, base_draws_sim, base_draws_wage, df, state_space, options):
             current_df, state_space, optim_paras
         )
 
-        # Add all columns with simulated information to the complete DataFrame.
-        df = df.reindex(columns=current_df_extended.columns) if period == 0 else df
-        df = df.fillna(current_df_extended)
+        data.append(current_df_extended)
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             next_df = _apply_law_of_motion(current_df_extended, optim_paras)
             df = df.fillna(next_df)
 
-    simulated_data = _process_simulation_output(df, optim_paras)
+    simulated_data = _process_simulation_output(data, optim_paras)
 
     return simulated_data
 
@@ -250,7 +249,10 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 
     # Types are invariant and we have to fill the DataFrame for one-step-ahead.
     if optim_paras["n_types"] >= 2:
-        df["type"] = df["type"].fillna(method="ffill")
+        df["type"] = df["type"].fillna(method="ffill", downcast="infer")
+
+    state_space_columns = create_state_space_columns(optim_paras)
+    df = df[state_space_columns]
 
     return df
 
@@ -417,26 +419,29 @@ def _convert_codes_to_original_labels(df, optim_paras):
     return df
 
 
-def _process_simulation_output(df, optim_paras):
+def _process_simulation_output(data, optim_paras):
     """Create simulated data.
 
-    This function takes an array of simulated outcomes for each period and stacks them
-    together to one DataFrame.
+    This function takes an array of simulated outcomes and additional information for
+    each period and stacks them together to one DataFrame.
 
     Parameters
     ----------
-    df : pandas.DataFrame
-        DataFrame which contains the simulated data with internal codes and labels.
+    data : list
+        List of DataFrames for each simulated period with internal codes and labels.
     optim_paras : dict
 
     Returns
     -------
-    simulated_df : pandas.DataFrame
+    df : pandas.DataFrame
         DataFrame with simulated data.
 
     """
-    df = df.rename(columns=rename_labels_from_internal).rename_axis(
-        index=rename_labels_from_internal
+    df = (
+        pd.concat(data)
+        .sort_index()
+        .rename(columns=rename_labels_from_internal)
+        .rename_axis(index=rename_labels_from_internal)
     )
     df = _convert_codes_to_original_labels(df, optim_paras)
 
@@ -532,12 +537,12 @@ def _apply_law_of_motion(df, optim_paras):
         The DataFrame contains the states of individuals in the next period.
 
     """
+    df = df.copy()
     n_lagged_choices = optim_paras["n_lagged_choices"]
 
     # Update work experiences.
     for i, choice in enumerate(optim_paras["choices_w_exp"]):
-        is_choice = df["choice"] == i
-        df.loc[is_choice, f"exp_{choice}"] = df.loc[is_choice, f"exp_{choice}"] + 1
+        df[f"exp_{choice}"] += df["choice"] == i
 
     # Update lagged choices by deleting oldest lagged, renaming other lags and inserting
     # choice in the first position.
