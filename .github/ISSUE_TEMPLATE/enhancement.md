@@ -1,8 +1,8 @@
 ---
-name: Feature request
-about: Suggest an idea for this project.
+name: Enhancement
+about: Enhance an existing component.
 title: ''
-labels: feature-request
+labels: enhancement
 assignees: ''
 
 ---
@@ -11,9 +11,9 @@ assignees: ''
 * Python version, if any:
 * Operating System:
 
-### Is your feature request related to a problem? Please describe.
+### What would you like to enhance and why? Is it related to an issue/problem?
 
-A clear and concise description of what the problem is.
+A clear and concise description of the current implementation and its limitations.
 
 ### Describe the solution you'd like
 
