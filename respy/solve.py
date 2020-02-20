@@ -3,7 +3,7 @@ import functools
 
 import numpy as np
 
-from respy.config import MIN_FLOAT
+from respy.config import INADMISSIBILITY_PENALTY
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
@@ -95,7 +95,7 @@ def _create_choice_rewards(states, wages, nonpecs, is_inadmissible, optim_paras)
 
         # For inadmissible choices apply a penalty to the non-pecuniary rewards.
         penalty = optim_paras["inadmissibility_penalty"]
-        penalty = MIN_FLOAT if penalty is None else penalty
+        penalty = INADMISSIBILITY_PENALTY if penalty is None else penalty
         nonpecs[is_inadmissible] += penalty
 
     return wages, nonpecs

@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 
 from respy._numba import array_to_tuple
+from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
-from respy.config import MIN_FLOAT
 from respy.shared import cast_bool_to_numeric
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
@@ -95,11 +95,11 @@ class _BaseStateSpace:
         if np.any(is_inadmissible) and optim_paras["inadmissibility_penalty"] is None:
             warnings.warn(
                 "'params' does not include a penalty to the utility if an individual "
-                f"makes an invalid choice. A default penalty of {MIN_FLOAT} is set. "
-                "Although unproblematic for the full solution, choose a milder penalty "
-                "for the approximate solution of the model or the penalty will dominate"
-                " the linear model for the interpolation. Set the penalty in your csv "
-                "with:\n\n"
+                "makes an invalid choice. A default penalty of "
+                f"{INADMISSIBILITY_PENALTY} is set. Although unproblematic for the full"
+                " solution, choose a milder penalty for the approximate solution of the"
+                " model or the penalty will break/dominate the linear model for the "
+                "interpolation. Set the penalty in your csv with:\n\n"
                 "inadmissibility_penalty,inadmissibility_penalty,<negative-number>\n",
                 category=UserWarning,
             )

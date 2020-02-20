@@ -16,6 +16,20 @@ MIN_FLOAT = -MAX_FLOAT
 MAX_LOG_FLOAT = 460
 MIN_LOG_FLOAT = -MAX_LOG_FLOAT
 
+INADMISSIBILITY_PENALTY = -400_000
+"""int : Penalty for choosing an inadmissible state.
+
+The penalty is applied to the non-pecuniary reward of choice which cannot be taken.
+
+See Also
+--------
+respy.pre_processing.model_processing._parse_inadmissibility_penalty
+respy.state_space._create_is_inadmissible
+respy.solve._create_choice_rewards
+
+"""
+
+
 # Everything for the indexer.
 INDEXER_DTYPE = np.int32
 """numpy.dtype : Data type for the entries in the state space indexer."""
