@@ -8,6 +8,7 @@ import pandas as pd
 from respy._numba import array_to_tuple
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
+from respy.exogenous_processes import compute_transition_probabilities
 from respy.shared import cast_bool_to_numeric
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
@@ -346,6 +347,10 @@ class _MultiDimStateSpace(_BaseStateSpace):
             )
             for dense_dim, dense_covariates in dense.items()
         }
+        states = self.get_attribute("states")
+        self.transition_probabilities = compute_transition_probabilities(
+            states, optim_paras
+        )
 
     def get_attribute(self, attribute):
         return {
@@ -360,10 +365,17 @@ class _MultiDimStateSpace(_BaseStateSpace):
         }
 
     def get_continuation_values(self, period=None, indices=None):
-        return {
+        continuation_values = {
             key: sss.get_continuation_values(period, indices)
             for key, sss in self.sub_state_spaces.items()
         }
+
+        if self.transition_probabilities:
+            continuation_values = weight_continuation_values_by_exogenous_processes(
+                continuation_values, self.transition_probabilities
+            )
+
+        return continuation_values
 
     def set_attribute(self, attribute, value):
         for key, sss in self.sub_state_spaces.items():
