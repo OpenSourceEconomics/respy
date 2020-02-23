@@ -31,7 +31,7 @@ def test_simulated_data(model_or_seed):
 
 
 def test_one_step_ahead_simulation():
-    params, options, df = rp.get_example_model("kw_97_basic")
+    params, options, df = rp.get_example_model("kw_97_extended")
     options["n_periods"] = 11
     simulate = rp.get_simulate_func(params, options, "one_step_ahead", df)
     df = simulate(params)

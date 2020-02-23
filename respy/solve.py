@@ -3,6 +3,7 @@ import functools
 
 import numpy as np
 
+from respy.exogenous_processes import compute_transition_probabilities
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
@@ -50,6 +51,10 @@ def solve(params, options, state_space):
     wages, nonpecs = _create_choice_rewards(states, wages, nonpecs, optim_paras)
     state_space.set_attribute("wages", wages)
     state_space.set_attribute("nonpecs", nonpecs)
+
+    if optim_paras["exogenous_processes"]:
+        transition_probabilities = compute_transition_probabilities(states, optim_paras)
+        state_space.set_attribute("transition_probabilities", transition_probabilities)
 
     if optim_paras["delta"] == 0:
         expected_value_functions = _solve_for_myopic_individuals(

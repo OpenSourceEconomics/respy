@@ -139,6 +139,7 @@ def test_convert_labels_in_covariates_to_codes():
         "choices": ["fishing", "hammock"],
         "observables": {"fishing_grounds": ["poor", "rich"]},
         "choices_w_exp": ["fishing"],
+        "exogenous_processes": {},
     }
 
     options = {

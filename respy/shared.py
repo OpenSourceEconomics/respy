@@ -164,6 +164,7 @@ def generate_column_dtype_dict_for_estimation(optim_paras):
         + [f"Experience_{choice.title()}" for choice in optim_paras["choices_w_exp"]]
         + [f"Lagged_Choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)]
         + [observable.title() for observable in optim_paras["observables"]]
+        + [exog_proc.title() for exog_proc in optim_paras["exogenous_processes"]]
     )
 
     column_dtype_dict = {}
@@ -339,6 +340,12 @@ def convert_labeled_variables_to_codes(df, optim_paras):
         if observable in df.columns:
             levels_to_codes = {lev: i for i, lev in enumerate(observables[observable])}
             df[observable] = df[observable].replace(levels_to_codes).astype(np.uint8)
+
+    exog_procs = optim_paras["exogenous_processes"]
+    for exog_proc in exog_procs:
+        if exog_proc in df.columns:
+            levels_to_codes = {lev: i for i, lev in enumerate(exog_procs[exog_proc])}
+            df[exog_proc] = df[exog_proc].replace(levels_to_codes).astype(np.uint8)
 
     return df
 

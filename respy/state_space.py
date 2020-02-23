@@ -8,7 +8,6 @@ import pandas as pd
 from respy._numba import array_to_tuple
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
-from respy.exogenous_processes import compute_transition_probabilities
 from respy.shared import cast_bool_to_numeric
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
@@ -280,8 +279,36 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
         return continuation_values
 
+    def _get_transition_probabilities(self, period=None, indices=None):
+        n_periods = len(self.indexer)
+
+        if indices is not None:
+            child_indices = self.get_attribute("indices_of_child_states")[indices]
+        elif period is not None and 0 <= period <= n_periods - 1:
+            child_indices = self.get_attribute_from_period(
+                "indices_of_child_states", period
+            )
+        else:
+            raise NotImplementedError
+
+        mask = child_indices != INDEXER_INVALID_INDEX
+        valid_indices = np.where(mask, child_indices, 0)
+
+        transition_probabilities = self.get_attribute("transition_probabilities")
+        subset_trans_probs = {}
+        for dense_idx, probabilities in transition_probabilities.items():
+            subset_trans_probs[dense_idx] = np.where(
+                mask, probabilities[valid_indices], 0
+            )
+
+        return subset_trans_probs
+
     def set_attribute(self, attribute, value):
-        self.get_attribute(attribute)[:] = value
+        attr = self.get_attribute(attribute)
+        if isinstance(attr, np.ndarray):
+            attr[:] = value
+        else:
+            setattr(self, attribute, value)
 
     def set_attribute_from_period(self, attribute, value, period):
         self.get_attribute_from_period(attribute, period)[:] = value
@@ -300,7 +327,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
         n_choices_w_wage = len(optim_paras["choices_w_wage"])
         n_choices_wo_wage = n_choices - n_choices_w_wage
 
-        for name, array in (
+        for name, container in (
             ("expected_value_functions", np.empty(n_states)),
             (
                 "wages",
@@ -312,8 +339,9 @@ class _SingleDimStateSpace(_BaseStateSpace):
                 ),
             ),
             ("nonpecs", np.zeros((n_states, n_choices))),
+            ("transition_probabilities", {}),
         ):
-            setattr(self, name, array)
+            setattr(self, name, container.copy())
 
 
 class _MultiDimStateSpace(_BaseStateSpace):
@@ -347,10 +375,6 @@ class _MultiDimStateSpace(_BaseStateSpace):
             )
             for dense_dim, dense_covariates in dense.items()
         }
-        states = self.get_attribute("states")
-        self.transition_probabilities = compute_transition_probabilities(
-            states, optim_paras
-        )
 
     def get_attribute(self, attribute):
         return {
@@ -369,13 +393,40 @@ class _MultiDimStateSpace(_BaseStateSpace):
             key: sss.get_continuation_values(period, indices)
             for key, sss in self.sub_state_spaces.items()
         }
-
-        if self.transition_probabilities:
-            continuation_values = weight_continuation_values_by_exogenous_processes(
-                continuation_values, self.transition_probabilities
+        has_exogenous_processes = all(
+            hasattr(sss, "transition_probabilities")
+            for sss in self.sub_state_spaces.values()
+        )
+        if has_exogenous_processes:
+            continuation_values = self._weight_continuation_values(
+                continuation_values, period, indices
             )
 
         return continuation_values
+
+    def _weight_continuation_values(self, continuation_values, period, indices):
+        """Weight the continuation values.
+
+        For invalid indices, the first transition probability is selected which does not
+        make a difference because the continuation values related to invalid indices are
+        set to zero.
+
+        """
+        transition_probabilities = {
+            key: sss._get_transition_probabilities(period, indices)
+            for key, sss in self.sub_state_spaces.items()
+        }
+
+        weighted_continutation_values = {}
+        for dense_idx in transition_probabilities:
+            w_cont_values = []
+            for trans_idx, trans_probs in transition_probabilities[dense_idx].items():
+                w_cont_value = np.multiply(trans_probs, continuation_values[trans_idx])
+                w_cont_values.append(w_cont_value)
+
+            weighted_continutation_values[dense_idx] = np.add(*w_cont_values)
+
+        return weighted_continutation_values
 
     def set_attribute(self, attribute, value):
         for key, sss in self.sub_state_spaces.items():

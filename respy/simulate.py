@@ -12,8 +12,10 @@ from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
+from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
+from respy.shared import create_dense_state_space_columns
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import rename_labels_from_internal
@@ -63,7 +65,7 @@ def get_simulate_func(
         method, df, n_simulation_periods, options
     )
 
-    df = _process_input_df_for_simulation(
+    df = _process_data_for_simulation(
         df, method, n_simulation_periods, options, optim_paras
     )
 
@@ -191,7 +193,12 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
         data.append(current_df_extended)
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
-            next_df = _apply_law_of_motion(current_df_extended, optim_paras)
+            next_df = _apply_law_of_motion(
+                current_df_extended,
+                state_space.indexer[period],
+                state_space.get_attribute("transition_probabilities"),
+                optim_paras=optim_paras,
+            )
             df = df.fillna(next_df)
 
     simulated_data = _process_simulation_output(data, optim_paras)
@@ -233,6 +240,13 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
         level_dict = optim_paras["observables"][observable]
         sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=False)
         fp[observable] = fp[observable].fillna(
+            pd.Series(data=sampled_char, index=index), downcast="infer"
+        )
+
+    for exog_proc in optim_paras["exogenous_processes"]:
+        level_dict = optim_paras["exogenous_processes"][exog_proc]
+        sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=False)
+        fp[exog_proc] = fp[exog_proc].fillna(
             pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
@@ -423,6 +437,10 @@ def _convert_codes_to_original_labels(df, optim_paras):
         code_to_obs = dict(enumerate(optim_paras["observables"][observable]))
         df[f"{observable.title()}"] = df[f"{observable.title()}"].replace(code_to_obs)
 
+    for exog_proc in optim_paras["exogenous_processes"]:
+        code_to_exog = dict(enumerate(optim_paras["exogenous_processes"][exog_proc]))
+        df[f"{exog_proc.title()}"] = df[f"{exog_proc.title()}"].replace(code_to_exog)
+
     return df
 
 
@@ -522,7 +540,9 @@ def _random_choice(choices, probabilities=None, decimals=5):
     return out
 
 
-def _apply_law_of_motion(df, optim_paras):
+@distribute_and_combine_simulation
+@parallelize_across_dense_dimensions
+def _apply_law_of_motion(df, indexer, transition_probabilities, optim_paras):
     """Apply the law of motion to get the states in the next period.
 
     For n-step-ahead simulations, the states of the next period are generated from the
@@ -546,6 +566,25 @@ def _apply_law_of_motion(df, optim_paras):
     """
     df = df.copy()
     n_lagged_choices = optim_paras["n_lagged_choices"]
+
+    # Exogenous processes first, because the indexer requires the original states.
+    if transition_probabilities:
+        # Get indices which connect states in the state space and simulated agents.
+        # Subtract the minimum of indices (excluding invalid indices) because wages,
+        # etc. contain only wages in this period and normal indices select rows from all
+        # wages.
+        columns = create_core_state_space_columns(optim_paras)
+        indices = indexer[tuple(df[col].astype("int64") for col in columns)]
+
+        # Sample characteristics affected by exogenous processes.
+        dense_indices = list(transition_probabilities)
+        probs = np.column_stack(list(transition_probabilities.values()))[indices]
+        choices = _random_choice(len(dense_indices), probs)
+        new_dense_indices = [dense_indices[i] for i in choices]
+
+        # Insert the new dense indices in the DataFrame.
+        dense_columns = create_dense_state_space_columns(optim_paras)
+        df[dense_columns] = new_dense_indices
 
     # Update work experiences.
     for i, choice in enumerate(optim_paras["choices_w_exp"]):
@@ -606,7 +645,7 @@ def _harmonize_simulation_arguments(method, df, n_sim_p, options):
     return n_sim_p, options
 
 
-def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_paras):
+def _process_data_for_simulation(df, method, n_sim_periods, options, optim_paras):
     """Process a :class:`pandas.DataFrame` provided by the user for the simulation."""
     if method == "n_step_ahead_with_sampling":
         ids = np.arange(options["simulation_agents"])
@@ -636,6 +675,7 @@ def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_p
             .rename_axis(index=rename_labels_to_internal)
             .sort_index()
         )
+        df = convert_labeled_variables_to_codes(df, optim_paras)
 
     else:
         raise NotImplementedError

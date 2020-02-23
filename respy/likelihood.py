@@ -74,7 +74,7 @@ def get_crit_func(
     solve = get_solve_func(params, options)
     state_space = solve.keywords["state_space"]
 
-    df, type_covariates = _process_estimation_data(
+    df, type_covariates = _process_data_for_estimation(
         df, state_space, optim_paras, options
     )
 
@@ -457,7 +457,7 @@ def _simulate_log_probability_of_individuals_observed_choice(
     smoothed_log_probability[0] = smoothed_log_prob
 
 
-def _process_estimation_data(df, state_space, optim_paras, options):
+def _process_data_for_estimation(df, state_space, optim_paras, options):
     """Process estimation data.
 
     All necessary objects for :func:`_internal_log_like_obs` dependent on the data are

@@ -171,12 +171,12 @@ def _parse_exogenous_processes(optim_paras, params):
 
     names = _parse_observable_or_exog_process_names(params, "exogenous_process")
 
-    for observable in names:
-        regex_pattern = fr"\bexogenous_process_{observable}_([0-9a-z_]+)\b"
+    for exog_proc in names:
+        regex_pattern = fr"\bexogenous_process_{exog_proc}_([0-9a-z_]+)\b"
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, regex_pattern
         )
-        optim_paras["exogenous_processes"][observable] = parsed_parameters
+        optim_paras["exogenous_processes"][exog_proc] = parsed_parameters
 
     return optim_paras
 
