@@ -72,7 +72,7 @@ def compute_transition_probabilities(states, optim_paras):
     n_exog_procs = len(exogenous_processes)
     pos = dense_columns.index(list(exogenous_processes)[0])
     for exog_proc_idx in comb_exog_procs:
-        probs = _flexible_multiply(
+        probs = np.multiply.reduce(
             [probabilities[i][:, idx] for i, idx in enumerate(exog_proc_idx)]
         )
         new_dense_idx = (
@@ -83,7 +83,3 @@ def compute_transition_probabilities(states, optim_paras):
         transition_probabilities[new_dense_idx] = probs
 
     return transition_probabilities
-
-
-def _flexible_multiply(iterable):
-    return np.multiply(*iterable) if len(iterable) >= 2 else list(iterable)[0]

@@ -394,8 +394,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
             for key, sss in self.sub_state_spaces.items()
         }
         has_exogenous_processes = all(
-            hasattr(sss, "transition_probabilities")
-            for sss in self.sub_state_spaces.values()
+            bool(sss.transition_probabilities) for sss in self.sub_state_spaces.values()
         )
         if has_exogenous_processes:
             continuation_values = self._weight_continuation_values(
@@ -424,7 +423,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
                 w_cont_value = np.multiply(trans_probs, continuation_values[trans_idx])
                 w_cont_values.append(w_cont_value)
 
-            weighted_continutation_values[dense_idx] = np.add(*w_cont_values)
+            weighted_continutation_values[dense_idx] = np.add.reduce(w_cont_values)
 
         return weighted_continutation_values
 
