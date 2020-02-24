@@ -33,16 +33,10 @@ def test_identify_relevant_covariates():
         }
     }
 
-    relevant_covariates = remove_irrelevant_covariates(options, params)
+    expected = options.copy()
+    expected["covariates"].pop("unrelated_covariate")
+    expected["covariates"].pop("unrelated_covariate_upper")
 
-    expected = {
-        "covariates": {
-            "constant": "1",
-            "nested_covariate": "2",
-            "upper": "nested_covariate > 2",
-            "upper_upper": "upper == 5",
-            "upper_upper_with_spacing_problem": "upper>2",
-        }
-    }
+    relevant_covariates = remove_irrelevant_covariates(options, params)
 
     assert expected == relevant_covariates
