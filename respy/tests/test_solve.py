@@ -107,26 +107,13 @@ def test_invariance_of_solution(model_or_seed):
     compare_state_space_attributes(
         state_space.core, state_space_.core, np.testing.assert_array_equal
     )
-    compare_state_space_attributes(
-        state_space.get_attribute("wages"),
-        state_space_.get_attribute("wages"),
-        np.testing.assert_array_equal,
-    )
-    compare_state_space_attributes(
-        state_space.get_attribute("nonpecs"),
-        state_space_.get_attribute("nonpecs"),
-        np.testing.assert_array_equal,
-    )
-    compare_state_space_attributes(
-        state_space.get_attribute("expected_value_functions"),
-        state_space_.get_attribute("expected_value_functions"),
-        np.testing.assert_array_equal,
-    )
-    compare_state_space_attributes(
-        state_space.get_attribute("base_draws_sol"),
-        state_space_.get_attribute("base_draws_sol"),
-        np.testing.assert_array_equal,
-    )
+
+    for attribute in ["wages", "nonpecs", "expected_value_functions", "base_draws_sol"]:
+        compare_state_space_attributes(
+            state_space.get_attribute(attribute),
+            state_space_.get_attribute(attribute),
+            np.testing.assert_array_equal,
+        )
 
 
 @pytest.mark.parametrize("model", KEANE_WOLPIN_1994_MODELS)

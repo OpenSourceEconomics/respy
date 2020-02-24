@@ -32,7 +32,6 @@ KW_97_EXTENDED_CONSTRAINTS = KW_97_BASIC_CONSTRAINTS + [
 
 KW_2000_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
-    {"query": "'type' in category", "type": "fixed"},
     {"loc": "lagged_choice_1_school", "type": "fixed"},
     {"loc": "lagged_choice_1_home", "type": "fixed"},
     {"query": "'initial_exp_school' in category", "type": "fixed"},
