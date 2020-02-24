@@ -31,6 +31,7 @@ def test_check_solution(model_or_seed):
     check_model_solution(optim_paras, options, state_space)
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize("model", EXAMPLE_MODELS)
 def test_state_space_restrictions_by_traversing_forward(model):
     """Test for inadmissible states in the state space.

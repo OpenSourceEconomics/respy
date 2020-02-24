@@ -4,7 +4,6 @@ from functools import partial
 
 import numba as nb
 import numpy as np
-import pandas as pd
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
@@ -198,6 +197,7 @@ def _internal_log_like_obs(
     nonpecs = state_space.get_attribute("nonpecs")
     expected_value_functions = state_space.get_attribute("expected_value_functions")
     is_inadmissible = state_space.get_attribute("is_inadmissible")
+    indices_of_child_states = state_space.get_attribute("indices_of_child_states")
 
     df = _compute_wage_and_choice_likelihood_contributions(
         df,
@@ -206,6 +206,7 @@ def _internal_log_like_obs(
         nonpecs,
         expected_value_functions,
         is_inadmissible,
+        indices_of_child_states,
         optim_paras=optim_paras,
         options=options,
     )
@@ -249,6 +250,7 @@ def _compute_wage_and_choice_likelihood_contributions(
     nonpecs,
     expected_value_functions,
     is_inadmissible,
+    indices_of_child_states,
     optim_paras,
     options,
 ):
@@ -276,7 +278,7 @@ def _compute_wage_and_choice_likelihood_contributions(
 
     # To get the continuation values, correctly index the expected value functions. This
     # is the same operation done in `_SingleDimStateSpace.get_continuation_values()`.
-    child_indices = df[[f"child_index_{c}" for c in optim_paras["choices"]]]
+    child_indices = indices_of_child_states[df["index"].to_numpy()]
     mask = child_indices != INDEXER_INVALID_INDEX
     valid_indices = np.where(mask, child_indices, 0)
     continuation_values = np.where(mask, expected_value_functions[valid_indices], 0)
@@ -527,14 +529,6 @@ def _process_data_for_estimation(df, state_space, optim_paras, options):
         .to_numpy()
     )
     df["index"] = indices[indices_to_reorder]
-
-    # Add indices of child states to the DataFrame.
-    children = pd.DataFrame(
-        data=state_space.indices_of_child_states[df["index"].to_numpy()],
-        index=df.index,
-        columns=[f"child_index_{c}" for c in optim_paras["choices"]],
-    )
-    df = pd.concat([df, children], axis="columns")
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
     df["log_wage"] = np.log(np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT))
