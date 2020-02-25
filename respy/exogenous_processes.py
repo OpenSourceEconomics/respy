@@ -12,6 +12,7 @@ the characteristics of the state.
 See Also
 --------
 respy.pre_processing.model_processing._parse_exogenous_processes
+respy.pre_processing.model_processing._parse_observables
 respy.state_space._MultiDimStateSpace._weight_continuation_values
 respy.simulate._apply_law_of_motion
 

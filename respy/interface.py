@@ -71,9 +71,7 @@ def get_example_model(model, with_data=True):
     else:
         df = ()
         if with_data:
-            warnings.warn(
-                f"No data available for model '{model}'.", category=UserWarning
-            )
+            warnings.warn(f"No data available for model '{model}'.")
 
     return (params, options) + df
 

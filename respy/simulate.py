@@ -243,13 +243,6 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
             pd.Series(data=sampled_char, index=index), downcast="infer"
         )
 
-    for exog_proc in optim_paras["exogenous_processes"]:
-        level_dict = optim_paras["exogenous_processes"][exog_proc]
-        sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=False)
-        fp[exog_proc] = fp[exog_proc].fillna(
-            pd.Series(data=sampled_char, index=index), downcast="infer"
-        )
-
     for choice in optim_paras["choices_w_exp"]:
         level_dict = optim_paras["choices"][choice]["start"]
         sampled_char = _sample_characteristic(fp, options, level_dict, use_keys=True)
@@ -437,10 +430,6 @@ def _convert_codes_to_original_labels(df, optim_paras):
         code_to_obs = dict(enumerate(optim_paras["observables"][observable]))
         df[f"{observable.title()}"] = df[f"{observable.title()}"].replace(code_to_obs)
 
-    for exog_proc in optim_paras["exogenous_processes"]:
-        code_to_exog = dict(enumerate(optim_paras["exogenous_processes"][exog_proc]))
-        df[f"{exog_proc.title()}"] = df[f"{exog_proc.title()}"].replace(code_to_exog)
-
     return df
 
 
@@ -534,8 +523,6 @@ def _random_choice(choices, probabilities=None, decimals=5):
     indices = (u < cumulative_distribution).argmax(axis=1)
 
     out = np.take(choices, indices)
-    if out.shape == (1,):
-        out = out[0]
 
     return out
 

@@ -11,6 +11,8 @@ from respy.solve import get_solve_func
 def model_with_one_exog_proc():
     params, options = get_example_model("robinson_crusoe_basic", with_data=False)
     params.loc[("nonpec_fishing", "sick"), "value"] = -2
+    params.loc[("observable_illness_sick", "probability"), "value"] = 0.1
+    params.loc[("observable_illness_healthy", "probability"), "value"] = 0.9
     params.loc[("exogenous_process_illness_sick", "probability"), "value"] = 0.1
     params.loc[("exogenous_process_illness_healthy", "probability"), "value"] = 0.9
     options["covariates"]["sick"] = "illness == 'sick'"
@@ -22,6 +24,8 @@ def model_with_one_exog_proc():
 def model_with_two_exog_proc(model_with_one_exog_proc):
     params, options = model_with_one_exog_proc
     params.loc[("nonpec_fishing", "stormy"), "value"] = -1
+    params.loc[("observable_weather_stormy", "probability"), "value"] = 0.2
+    params.loc[("observable_weather_normal", "probability"), "value"] = 0.8
     params.loc[("exogenous_process_weather_stormy", "probability"), "value"] = 0.2
     params.loc[("exogenous_process_weather_normal", "probability"), "value"] = 0.8
     options["covariates"]["stormy"] = "weather == 'stormy'"

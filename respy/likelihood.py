@@ -566,8 +566,7 @@ def _adjust_optim_paras_for_estimation(optim_paras, df):
             warnings.warn(
                 f"The initial experience(s) for choice '{choice}' differs between data,"
                 f" {init_exp_data}, and parameters, {init_exp_params}. The parameters"
-                " are ignored.",
-                category=UserWarning,
+                " are ignored."
             )
             optim_paras["choices"][choice]["start"] = init_exp_data
             optim_paras = {

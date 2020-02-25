@@ -668,10 +668,9 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
 
 def _create_dense_state_space_grid(optim_paras):
     observables = [range(len(i)) for i in optim_paras["observables"].values()]
-    exog_procs = [range(len(i)) for i in optim_paras["exogenous_processes"].values()]
     types = [range(optim_paras["n_types"])] if optim_paras["n_types"] >= 2 else []
 
-    dense_state_space_grid = list(itertools.product(*observables, *exog_procs, *types))
+    dense_state_space_grid = list(itertools.product(*observables, *types))
     if dense_state_space_grid == [()]:
         dense_state_space_grid = False
 
