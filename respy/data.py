@@ -34,7 +34,7 @@ def create_kw_97(params, options):
 
     dtypes = {
         "Identifier": np.int,
-        "Age": np.uint8,
+        "Age": np.int,
         "Experience_School": np.uint8,
         "Choice": "category",
         "Wage": np.float,
@@ -60,6 +60,7 @@ def create_kw_97(params, options):
     df = _create_working_experience(df, optim_paras)
 
     df["Lagged_Choice_1"] = df.groupby("Identifier").Choice.shift(1)
+
     df["Period"] = df.Age - 16
     df = df.query("Age >= 16")
 

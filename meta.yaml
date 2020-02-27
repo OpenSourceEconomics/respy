@@ -22,6 +22,7 @@ requirements:
     - estimagic>=0.0.12
     - mkl
     - numba>=0.42
+    - numexpr
     - numpy
     - pandas>=0.24,<1
     - pyyaml

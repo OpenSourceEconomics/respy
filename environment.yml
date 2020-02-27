@@ -6,7 +6,6 @@ dependencies:
   - python=3.7
   - pip
   - anaconda-client
-  - bump2version
   - chaospy
   - click
   - codecov
@@ -20,6 +19,7 @@ dependencies:
   - mkl
   - nbsphinx=0.4.2
   - numba
+  - numexpr
   - numpydoc
   - pandas>=0.24,<1
   - pdbpp
@@ -37,4 +37,5 @@ dependencies:
   - tox-conda
   - pip:
     - apprise
+    - bump2version
     - pytest-randomly
