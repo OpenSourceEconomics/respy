@@ -66,7 +66,14 @@ def check_estimation_data(df, optim_paras):
     assert df.drop(columns="Wage").notna().all().all()
 
     # We check individual state variables against the recorded choices.
-    df.groupby("Identifier").apply(_check_state_variables, optim_paras=optim_paras)
+    for choice in optim_paras["choices_w_exp"]:
+        df["__exp"] = df[f"Experience_{choice.title()}"] + df["Choice"].eq(choice)
+        shifted_exp = (
+            df.groupby("Identifier")["__exp"].transform("shift").dropna().astype(int)
+        )
+        assert shifted_exp.eq(
+            df.loc[shifted_exp.index, f"Experience_{choice.title()}"]
+        ).all()
 
     # Check that there are no duplicated observations for any period by agent.
     assert ~df.duplicated(subset=["Identifier", "Period"]).any()
@@ -75,24 +82,6 @@ def check_estimation_data(df, optim_paras):
     max_periods_per_ind = df.groupby("Identifier").Period.max() + 1
     n_obs_per_ind = df.groupby("Identifier").size()
     assert (max_periods_per_ind == n_obs_per_ind).all()
-
-
-def _check_state_variables(agent, optim_paras):
-    """Check that state variables in the dataset.
-
-    Construct the experience and schooling levels implied by the reported
-    choices and compare them to the information provided in the dataset.
-
-    """
-    experiences = agent.iloc[0].filter(like="Experience_").to_numpy()
-
-    for _, row in agent.iterrows():
-
-        assert (experiences == row.filter(like="Experience_").to_numpy()).all()
-
-        if row.Choice in optim_paras["choices_w_exp"]:
-            index_of_choice = optim_paras["choices_w_exp"].index(row.Choice)
-            experiences[index_of_choice] += 1
 
 
 def check_simulated_data(optim_paras, df):

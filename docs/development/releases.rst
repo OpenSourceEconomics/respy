@@ -24,28 +24,21 @@ How to release a new version?
 2. Second, we need to create a final PR to prepare everything for the new version. The
    name of the PR and the commit message will be "Release vx.y.z". We need to
 
-   - update all references of the old version number (``setup.py``,
-     ``respy/__init__.py``, ``docs/conf.py``).
+   - use ``bumpversion part <dev|patch|minor|major>`` to increment the correct part of
+     the version number in all files.
    - update information in ``CHANGES.rst`` to have summary of the changes which
      can also be posted in the Github repository under the tag.
 
-   Merge the PR into master.
+3. Run ``python release.py`` and check whether you can actually release a new version.
+   If you experience errors, fix them here.
 
-3. After that, revisit the draft of the release. Make sure everything is fine. Now, you
+4. Merge the PR into master.
+
+5. After that, revisit the draft of the release. Make sure everything is fine. Now, you
    click on "Publish release" which creates a version tag on the latest commit of the
-   specified branch. The tag will trigger a build on Travis-CI which will publish the
-   release on PypI.
+   specified branch. Make sure to target the master branch.
 
-4. Make sure that the new release was indeed published by checking `PyPI
-   <https://pypi.org/project/respy/>`_.
+6. Visit `Anaconda.org <https://anaconda.org/OpenSourceEconomics/respy>`_ and check
+   whether the release is available.
 
-5. Spread the word!
-
-
-Notes
------
-
-- Travis-CI only builds tags if "Build pushed branches" is active.
-- If you publish a release on PyPI, the same version number cannot be reused even if you
-  delete the release. This is a safety measure. If you are not sure whether the release
-  will work, create a release candidate instead and publish the real version later.
+7. Spread the word!

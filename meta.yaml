@@ -20,6 +20,7 @@ requirements:
     - chaospy
     - click
     - estimagic>=0.0.12
+    - joblib
     - mkl
     - numba>=0.42
     - numexpr
