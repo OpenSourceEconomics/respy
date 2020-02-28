@@ -10,9 +10,9 @@ from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
 from respy.pre_processing.model_checking import validate_options
 from respy.pre_processing.model_processing import _convert_labels_in_formulas_to_codes
-from respy.pre_processing.model_processing import _identify_relevant_covariates
 from respy.pre_processing.model_processing import _parse_initial_and_max_experience
 from respy.pre_processing.model_processing import process_params_and_options
+from respy.pre_processing.process_covariates import remove_irrelevant_covariates
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
 from respy.tests.utils import process_model_or_seed
@@ -159,7 +159,7 @@ def test_identify_relevant_covariates():
         }
     }
 
-    relevant_covariates = _identify_relevant_covariates(options, params)
+    relevant_covariates = remove_irrelevant_covariates(options, params)
 
     expected = {
         "covariates": {

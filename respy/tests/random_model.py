@@ -139,8 +139,9 @@ def generate_random_model(
     observables = point_constr.pop("observables", None)
     if observables is None:
         n_observables = np.random.randint(0, 3)
+        # Do not sample observables with 1 level!
         observables = (
-            np.random.randint(1, 4, size=n_observables) if n_observables else False
+            np.random.randint(2, 4, size=n_observables) if n_observables else False
         )
 
     if observables is not False:
@@ -149,7 +150,7 @@ def generate_random_model(
             observable_prob_template(observables),
             observable_coeffs_template(observables, params),
         ]
-        params = pd.concat(to_concat, axis=0, sort=False)
+        params = pd.concat(to_concat, axis="rows", sort=False)
 
         indices = (
             params.index.get_level_values("category")
