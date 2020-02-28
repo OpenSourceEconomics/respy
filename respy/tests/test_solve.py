@@ -10,12 +10,12 @@ from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_core_state_space_columns
 from respy.solve import get_solve_func
-from respy.state_space import _create_state_space
+from respy.state_space import _create_core_and_indexer
 from respy.state_space import _insert_indices_of_child_states
 from respy.tests._former_code import _create_state_space_kw94
 from respy.tests._former_code import _create_state_space_kw97_base
 from respy.tests._former_code import _create_state_space_kw97_extended
-from respy.tests.utils import compare_state_space_attributes
+from respy.tests.utils import apply_to_attributes_of_two_state_spaces
 from respy.tests.utils import process_model_or_seed
 
 
@@ -103,25 +103,25 @@ def test_invariance_of_solution(model_or_seed):
     state_space = solve(params)
     state_space_ = solve(params)
 
-    compare_state_space_attributes(
+    apply_to_attributes_of_two_state_spaces(
         state_space.core, state_space_.core, np.testing.assert_array_equal
     )
-    compare_state_space_attributes(
+    apply_to_attributes_of_two_state_spaces(
         state_space.get_attribute("wages"),
         state_space_.get_attribute("wages"),
         np.testing.assert_array_equal,
     )
-    compare_state_space_attributes(
+    apply_to_attributes_of_two_state_spaces(
         state_space.get_attribute("nonpecs"),
         state_space_.get_attribute("nonpecs"),
         np.testing.assert_array_equal,
     )
-    compare_state_space_attributes(
+    apply_to_attributes_of_two_state_spaces(
         state_space.get_attribute("expected_value_functions"),
         state_space_.get_attribute("expected_value_functions"),
         np.testing.assert_array_equal,
     )
-    compare_state_space_attributes(
+    apply_to_attributes_of_two_state_spaces(
         state_space.get_attribute("base_draws_sol"),
         state_space_.get_attribute("base_draws_sol"),
         np.testing.assert_array_equal,
@@ -151,7 +151,7 @@ def test_create_state_space_vs_specialized_kw94(model):
             shape = idx.shape
             indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
-    states_new, indexer_new, _ = _create_state_space(optim_paras, options)
+    states_new, indexer_new = _create_core_and_indexer(optim_paras, options)
 
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))
@@ -195,7 +195,7 @@ def test_create_state_space_vs_specialized_kw97(model):
             shape = idx.shape
             indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
-    states_new, indexer_new, dense_grid = _create_state_space(optim_paras, options)
+    states_new, indexer_new = _create_core_and_indexer(optim_paras, options)
     states_new = pd.concat([states_new.copy().assign(type=i) for i in range(4)])
 
     # Compare the state spaces via sets as ordering changed in some cases.

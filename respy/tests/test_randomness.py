@@ -5,7 +5,7 @@ import pytest
 from respy.likelihood import get_crit_func
 from respy.simulate import get_simulate_func
 from respy.solve import get_solve_func
-from respy.tests.utils import compare_state_space_attributes
+from respy.tests.utils import apply_to_attributes_of_two_state_spaces
 from respy.tests.utils import process_model_or_seed
 
 
@@ -29,22 +29,22 @@ def test_invariance_of_model_solution_in_solve_and_criterion_functions(model):
     for state_space_ in [state_space_sim, state_space_crit]:
         assert state_space.core.equals(state_space_.core)
 
-        compare_state_space_attributes(
+        apply_to_attributes_of_two_state_spaces(
             state_space.get_attribute("wages"),
             state_space_.get_attribute("wages"),
             np.testing.assert_array_equal,
         )
-        compare_state_space_attributes(
+        apply_to_attributes_of_two_state_spaces(
             state_space.get_attribute("nonpecs"),
             state_space_.get_attribute("nonpecs"),
             np.testing.assert_array_equal,
         )
-        compare_state_space_attributes(
+        apply_to_attributes_of_two_state_spaces(
             state_space.get_attribute("expected_value_functions"),
             state_space_.get_attribute("expected_value_functions"),
             np.testing.assert_array_equal,
         )
-        compare_state_space_attributes(
+        apply_to_attributes_of_two_state_spaces(
             state_space.get_attribute("base_draws_sol"),
             state_space_.get_attribute("base_draws_sol"),
             np.testing.assert_array_equal,
