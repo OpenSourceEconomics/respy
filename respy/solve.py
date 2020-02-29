@@ -69,9 +69,6 @@ def _create_choice_rewards(states, wages, nonpecs, optim_paras):
     Note that missing wages filled with ones and missing non-pecuniary rewards with
     zeros. This is done in :meth:`_initialize_attributes`.
 
-    The ``out`` keyword ensures that the result is written into the specified
-    positions without allocating another temporary array.
-
     """
     for i, choice in enumerate(optim_paras["choices"]):
         if f"wage_{choice}" in optim_paras:

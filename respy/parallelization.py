@@ -190,13 +190,12 @@ def distribute_and_combine_likelihood(func):
     return wrapper_distribute_and_combine_likelihood
 
 
-def _split_dataframe(df, group_columns):
+def _split_dataframe(df, dense_columns):
     """Split a DataFrame by creating groups of the same values for the dense dims."""
-    groups = df.groupby(group_columns).groups
-    for key in list(groups):
-        sub_df = df.loc[groups.pop(key)].copy()
-        key = (int(key),) if len(group_columns) == 1 else tuple(int(i) for i in key)
-        groups[key] = sub_df
+    groups = {}
+    for name, group in df.groupby(dense_columns):
+        name = (int(name),) if len(dense_columns) == 1 else tuple(int(i) for i in name)
+        groups[name] = group
 
     return groups
 

@@ -426,16 +426,6 @@ def create_state_space_columns(optim_paras):
     ) + create_dense_state_space_columns(optim_paras)
 
 
-def apply_to_state_space_attribute(attribute, func):
-    """Apply a function to a state space attribute which might be dense or not."""
-    if isinstance(attribute, dict):
-        out = [func(val) for val in attribute.values()]
-    else:
-        out = func(attribute)
-
-    return out
-
-
 @nb.guvectorize(
     ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]"],
     "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
