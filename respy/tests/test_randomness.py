@@ -27,7 +27,7 @@ def test_invariance_of_model_solution_in_solve_and_criterion_functions(model):
     state_space_crit = criterion.keywords["solve"].keywords["state_space"]
 
     for state_space_ in [state_space_sim, state_space_crit]:
-        assert state_space.core.equals(state_space_.core)
+        assert state_space.core.equals(state_space_.core.reindex_like(state_space.core))
 
         apply_to_attributes_of_two_state_spaces(
             state_space.get_attribute("wages"),

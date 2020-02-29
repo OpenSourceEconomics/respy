@@ -21,7 +21,7 @@ dependencies:
   - nbsphinx=0.4.2
   - numba
   - numpydoc
-  - pandas>=0.24,<1
+  - pandas>=0.24
   - pdbpp
   - pre-commit
   - pyyaml
