@@ -399,9 +399,8 @@ def create_state_space_columns(optim_paras):
 
 
 @nb.guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
-    "-> ()",
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), () -> ()",
     nopython=True,
     target="parallel",
 )
