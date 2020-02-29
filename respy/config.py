@@ -16,6 +16,16 @@ MIN_FLOAT = -MAX_FLOAT
 MAX_LOG_FLOAT = 460
 MIN_LOG_FLOAT = -MAX_LOG_FLOAT
 
+COVARIATES_DOT_PRODUCT_DTYPE = np.float64
+"""numpy.dtype : Dtype of covariates before being used in a dot product.
+
+If you convert a DataFrame with boolean variables and others to an NumPy array, the
+resulting array will have an 'object' dtype. Having an 'object' dtype array causes a lot
+of problems as functions like :func:`numpy.exp` will fail raising an uninformative error
+message.
+
+"""
+
 INADMISSIBILITY_PENALTY = -400_000
 """int : Penalty for choosing an inadmissible state.
 
@@ -29,8 +39,6 @@ respy.solve._create_choice_rewards
 
 """
 
-
-# Everything for the indexer.
 INDEXER_DTYPE = np.int32
 """numpy.dtype : Data type for the entries in the state space indexer."""
 INDEXER_INVALID_INDEX = np.iinfo(INDEXER_DTYPE).min

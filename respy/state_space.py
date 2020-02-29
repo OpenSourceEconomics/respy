@@ -10,7 +10,6 @@ from respy._numba import array_to_tuple
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
-from respy.shared import cast_bool_to_numeric
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
@@ -304,7 +303,6 @@ class _SingleDimStateSpace(_BaseStateSpace):
     def states(self):
         states = self.core.copy().assign(**self.dense_covariates)
         states = compute_covariates(states, self.mixed_covariates)
-        states = cast_bool_to_numeric(states)
         return states
 
     def _initialize_attributes(self, optim_paras):

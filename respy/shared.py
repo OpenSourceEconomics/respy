@@ -192,11 +192,6 @@ def downcast_to_smallest_dtype(series, downcast_options=None):
     if series.dtype.name == "category":
         out = series
 
-    # Convert bools to integers because they turn the dot product in
-    # `create_choice_rewards` to the object dtype.
-    elif series.dtype == np.bool:
-        out = series.astype(np.dtype("uint8"))
-
     else:
         min_dtype = series.dtype
 
@@ -220,14 +215,6 @@ def downcast_to_smallest_dtype(series, downcast_options=None):
         out = series.astype(min_dtype)
 
     return out
-
-
-def cast_bool_to_numeric(df):
-    """Cast columns with boolean data type to the smallest integer."""
-    bool_columns = df.columns[df.dtypes == np.bool]
-    for column in bool_columns:
-        df[column] = df[column].astype(np.uint8)
-    return df
 
 
 def compute_covariates(df, definitions, check_nans=False, raise_errors=True):
