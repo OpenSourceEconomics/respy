@@ -40,4 +40,4 @@ You can install ``respy`` via conda with
     $ conda install -c opensourceeconomics respy
 
 Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for
-details.
+tutorials and other information.

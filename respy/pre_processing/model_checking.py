@@ -1,8 +1,6 @@
 """Everything related to validate the model."""
 import numpy as np
 
-from respy.shared import apply_to_state_space_attribute
-
 
 def validate_options(o):
     """Validate the options provided by the user."""
@@ -104,11 +102,10 @@ def check_model_solution(optim_paras, options, state_space):
 
     # Lagged choices are always in ``range(n_choices)``.
     if optim_paras["n_lagged_choices"]:
-        assert (
-            state_space.core.filter(regex=r"\blagged_choice_[0-9]*\b")
-            .isin(range(len(choices)))
-            .all()
-            .all()
+        assert np.all(
+            state_space.core.filter(regex=r"\blagged_choice_[0-9]*\b").isin(
+                range(len(choices))
+            )
         )
 
     assert np.all(np.isfinite(state_space.core))
@@ -123,15 +120,31 @@ def check_model_solution(optim_paras, options, state_space):
 
     # Check finiteness of rewards and emaxs.
     assert np.all(
-        apply_to_state_space_attribute(state_space.get_attribute("wages"), np.isfinite)
+        _apply_to_attribute_of_state_space(
+            state_space.get_attribute("wages"), np.isfinite
+        )
     )
     assert np.all(
-        apply_to_state_space_attribute(
+        _apply_to_attribute_of_state_space(
             state_space.get_attribute("nonpecs"), np.isfinite
         )
     )
     assert np.all(
-        apply_to_state_space_attribute(
+        _apply_to_attribute_of_state_space(
             state_space.get_attribute("expected_value_functions"), np.isfinite
         )
     )
+
+
+def _apply_to_attribute_of_state_space(attribute, func):
+    """Apply a function to a state space attribute which might be dense or not.
+
+    Attribute might be `state_space.wages` which can be a dictionary or a Numpy array.
+
+    """
+    if isinstance(attribute, dict):
+        out = [func(val) for val in attribute.values()]
+    else:
+        out = func(attribute)
+
+    return out

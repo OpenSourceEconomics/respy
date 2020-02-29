@@ -20,7 +20,8 @@ from respy.shared import downcast_to_smallest_dtype
 
 def create_state_space_class(optim_paras, options):
     """Create the state space of the model."""
-    core, indexer, dense_grid = _create_state_space(optim_paras, options)
+    core, indexer = _create_core_and_indexer(optim_paras, options)
+    dense_grid = _create_dense_state_space_grid(optim_paras)
 
     # Downcast after calculations or be aware of silent integer overflows.
     core = compute_covariates(core, options["covariates_core"])
@@ -392,7 +393,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
         return {key: sss.states for key, sss in self.sub_state_spaces.items()}
 
 
-def _create_state_space(optim_paras, options):
+def _create_core_and_indexer(optim_paras, options):
     """Create the state space.
 
     The state space of the model are all feasible combinations of the period,
@@ -469,9 +470,7 @@ def _create_state_space(optim_paras, options):
 
     indexer = _create_core_state_space_indexer(core, optim_paras)
 
-    dense_grid = _create_dense_state_space_grid(optim_paras)
-
-    return core, indexer, dense_grid
+    return core, indexer
 
 
 def _create_core_state_space(optim_paras):
