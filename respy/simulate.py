@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.special import softmax
 
+from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
 from respy.parallelization import distribute_and_combine_simulation
 from respy.parallelization import parallelize_across_dense_dimensions
@@ -382,15 +383,15 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
     all_data = compute_covariates(
         states_df, options["covariates_all"], check_nans=True, raise_errors=False
     )
-    for column in all_data:
-        if all_data[column].dtype == np.bool:
-            all_data[column] = all_data[column].astype(np.uint8)
 
     # Calculate dot product of covariates and parameters.
     z = ()
     for level in level_dict:
         labels = level_dict[level].index
-        x_beta = np.dot(all_data[labels], level_dict[level])
+        x_beta = np.dot(
+            all_data[labels].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
+            level_dict[level],
+        )
 
         z += (x_beta,)
 
