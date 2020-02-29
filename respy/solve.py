@@ -3,6 +3,7 @@ import functools
 
 import numpy as np
 
+from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
@@ -74,7 +75,7 @@ def _create_choice_rewards(states, wages, nonpecs, optim_paras):
         if f"wage_{choice}" in optim_paras:
             wage_columns = optim_paras[f"wage_{choice}"].index
             log_wage = np.dot(
-                states[wage_columns].to_numpy(),
+                states[wage_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
                 optim_paras[f"wage_{choice}"].to_numpy(),
             )
             wages[:, i] = np.exp(log_wage)
@@ -82,7 +83,7 @@ def _create_choice_rewards(states, wages, nonpecs, optim_paras):
         if f"nonpec_{choice}" in optim_paras:
             nonpec_columns = optim_paras[f"nonpec_{choice}"].index
             nonpecs[:, i] = np.dot(
-                states[nonpec_columns].to_numpy(),
+                states[nonpec_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
                 optim_paras[f"nonpec_{choice}"].to_numpy(),
             )
 

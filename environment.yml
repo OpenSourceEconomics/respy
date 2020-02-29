@@ -21,6 +21,7 @@ dependencies:
   - mkl
   - nbsphinx=0.4.2
   - numba
+  - numexpr
   - numpydoc
   - pandas>=0.24,<1
   - pdbpp

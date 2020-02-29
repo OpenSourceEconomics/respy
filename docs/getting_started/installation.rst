@@ -26,6 +26,16 @@ With conda available on your path, installing ``respy`` is as simple as typing
 in a command shell. The whole package repository can be found under
 https://anaconda.org/OpenSourceEconomics/respy.
 
+As ``respy`` relies heavily on ``pandas``, you might also want to install their
+`recommended dependencies <https://pandas.pydata.org/pandas-docs/stable/getting_started/
+install.html#recommended-dependencies>`_ to speed up internal calculations done with
+`pd.eval <https://pandas.pydata.org/pandas-docs/stable/user_guide/enhancingperf.html
+#expression-evaluation-via-eval>`_
+
+.. code-block:: bash
+
+    conda install -c conda-forge bottleneck numexpr
+
 
 Source Files
 ------------
