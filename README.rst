@@ -21,7 +21,7 @@ respy
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
-    
+
 
 ``respy``  is an open-source Python package for the simulation and estimation of a
 prototypical finite-horizon discrete choice dynamic programming model. We build on the
@@ -40,4 +40,4 @@ You can install ``respy`` via conda with
     $ conda install -c opensourceeconomics respy
 
 Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for
-details.
+tutorials and other information.

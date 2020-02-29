@@ -34,19 +34,16 @@ dimension.
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10
 
-# Interpolation
+# Penalty for states which cannot be reached.
 INADMISSIBILITY_PENALTY = -400_000
 
 SEED_STARTUP_ITERATION_GAP = 100
-
-IS_DEBUG = False
 
 DEFAULT_OPTIONS = {
     "estimation_draws": 200,
     "estimation_seed": 1,
     "estimation_tau": 500,
     "interpolation_points": -1,
-    "n_periods": 40,
     "simulation_agents": 1000,
     "simulation_seed": 2,
     "solution_draws": 200,

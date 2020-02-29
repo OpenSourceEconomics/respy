@@ -112,11 +112,13 @@ def _check_single(test, strict):
     """Check a single test."""
     params, options, exp_val = test
 
-    crit_val = calc_crit_val(params, options)
-
-    is_success = np.isclose(
-        crit_val, exp_val, rtol=TOL_REGRESSION_TESTS, atol=TOL_REGRESSION_TESTS
-    )
+    try:
+        crit_val = calc_crit_val(params, options)
+        is_success = np.isclose(
+            crit_val, exp_val, rtol=TOL_REGRESSION_TESTS, atol=TOL_REGRESSION_TESTS
+        )
+    except Exception:
+        is_success = False
 
     if strict is True:
         assert is_success, "Failed regression test."

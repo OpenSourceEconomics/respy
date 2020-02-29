@@ -6,7 +6,6 @@ dependencies:
   - python=3.7
   - pip
   - anaconda-client
-  - bump2version
   - chaospy
   - click
   - codecov
@@ -14,6 +13,7 @@ dependencies:
   - conda-verify
   - doc8
   - estimagic>=0.0.14
+  - joblib
   - jupyterlab
   - line_profiler
   - matplotlib
@@ -21,7 +21,7 @@ dependencies:
   - nbsphinx=0.4.2
   - numba
   - numpydoc
-  - pandas>=0.24,<1
+  - pandas>=0.24
   - pdbpp
   - pre-commit
   - pyyaml
@@ -37,4 +37,5 @@ dependencies:
   - tox-conda
   - pip:
     - apprise
+    - bump2version
     - pytest-randomly

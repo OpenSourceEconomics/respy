@@ -21,3 +21,17 @@ def process_model_or_seed(model_or_seed=None, **kwargs):
         options["n_periods"] = 3
 
     return params, options
+
+
+def apply_to_attributes_of_two_state_spaces(attr_1, attr_2, func):
+    """Apply a function to two state space attributes, dense or not.
+
+    Attributes might be `state_space.wages` which can be a dictionary or a Numpy array.
+
+    """
+    if isinstance(attr_1, dict):
+        out = {key: func(attr_1[key], attr_2[key]) for key in attr_1}
+    else:
+        out = func(attr_1, attr_2)
+
+    return out

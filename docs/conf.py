@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "respy"
-copyright = "2015-2019, Philipp Eisenhauer"  # noqa: A001
-author = "Philipp Eisenhauer"
+copyright = "2015-2020, The respy Development Team"  # noqa: A001
+author = "The respy Development Team"
 
 # The full version, including alpha/beta/rc tags.
 release = "2.0.0dev2"
@@ -49,6 +49,7 @@ nitpicky = True
 autodoc_mock_imports = [
     "chaospy",
     "estimagic",
+    "joblib",
     "numba",
     "numpy",
     "pandas",
@@ -106,7 +107,7 @@ nbsphinx_prolog = r"""
 
     .. nbinfo::
 
-        Download the notebook :download:`here <https://github.com/OpenSourceEconomics/respy/blob/{{ env.config.release }}/{{ docname }}>`!
+        View and download the notebook `here <https://nbviewer.jupyter.org/github/OpenSourceEconomics/respy/tree/v{{ env.config.release }}/{{ docname }}>`_!
 
 """
 
@@ -116,7 +117,6 @@ numpydoc_xref_ignore = {"type", "optional", "default"}
 
 # Configuration for autodoc
 autosummary_generate = True
-
 
 # -- Options for HTML output ----------------------------------------------
 

@@ -1,5 +1,6 @@
 """This module contains the functions for the generation of random requests."""
 import collections
+import copy
 
 import numpy as np
 import pandas as pd
@@ -77,8 +78,8 @@ def generate_random_model(
         Indicator for myopic agents meaning the discount factor is set to zero.
 
     """
-    point_constr = {} if point_constr is None else point_constr
-    bound_constr = {} if bound_constr is None else bound_constr
+    point_constr = {} if point_constr is None else copy.deepcopy(point_constr)
+    bound_constr = {} if bound_constr is None else copy.deepcopy(bound_constr)
 
     for constr in point_constr, bound_constr:
         assert isinstance(constr, dict)
@@ -138,8 +139,9 @@ def generate_random_model(
     observables = point_constr.pop("observables", None)
     if observables is None:
         n_observables = np.random.randint(0, 3)
+        # Do not sample observables with 1 level!
         observables = (
-            np.random.randint(1, 4, size=n_observables) if n_observables else False
+            np.random.randint(2, 4, size=n_observables) if n_observables else False
         )
 
     if observables is not False:
@@ -148,7 +150,7 @@ def generate_random_model(
             observable_prob_template(observables),
             observable_coeffs_template(observables, params),
         ]
-        params = pd.concat(to_concat, axis=0, sort=False)
+        params = pd.concat(to_concat, axis="rows", sort=False)
 
         indices = (
             params.index.get_level_values("category")

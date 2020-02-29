@@ -19,6 +19,10 @@ from respy.config import MIN_FLOAT
 from respy.config import SEED_STARTUP_ITERATION_GAP
 from respy.pre_processing.model_checking import validate_options
 from respy.pre_processing.model_checking import validate_params
+from respy.pre_processing.process_covariates import remove_irrelevant_covariates
+from respy.pre_processing.process_covariates import (
+    separate_covariates_into_core_dense_mixed,
+)
 from respy.shared import normalize_probabilities
 
 warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
@@ -35,7 +39,7 @@ def process_params_and_options(params, options):
 
     options = {**DEFAULT_OPTIONS, **options}
     options = _create_internal_seeds_from_user_seeds(options)
-    options = _identify_relevant_covariates(options, params)
+    options = remove_irrelevant_covariates(options, params)
     validate_options(options)
 
     optim_paras = _parse_parameters(params, options)
@@ -174,6 +178,12 @@ def _parse_observables(optim_paras, params):
         parsed_parameters = _parse_probabilities_or_logit_coefficients(
             params, regex_pattern
         )
+        if len(parsed_parameters) < 2:
+            warnings.warn(
+                f"Observable '{observable}' must have at least two possible values. "
+                "Constant effects should be implemented via constant covariates.",
+                category=DeprecationWarning,
+            )
         optim_paras["observables"][observable] = parsed_parameters
 
     return optim_paras
@@ -305,7 +315,7 @@ def _infer_number_of_types(params):
 
     >>> tuples = [("wage_a", "constant"), ("nonpec_edu", "exp_edu")]
     >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
-    >>> s = pd.Series(index=index)
+    >>> s = pd.Series(index=index, dtype="object")
     >>> _infer_number_of_types(s)
     1
 
@@ -313,7 +323,7 @@ def _infer_number_of_types(params):
 
     >>> tuples = [("wage_a", "type_3"), ("nonpec_edu", "type_2")]
     >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
-    >>> s = pd.Series(index=index)
+    >>> s = pd.Series(index=index, dtype="object")
     >>> _infer_number_of_types(s)
     4
 
@@ -337,7 +347,7 @@ def _infer_choices_with_experience(params, options):
     -------
     >>> options = {"covariates": {"a": "exp_white_collar + exp_a", "b": "exp_b >= 2"}}
     >>> index = pd.MultiIndex.from_product([["category"], ["a", "b"]])
-    >>> params = pd.Series(index=index)
+    >>> params = pd.Series(index=index, dtype="object")
     >>> _infer_choices_with_experience(params, options)
     ['a', 'b', 'white_collar']
 
@@ -361,7 +371,9 @@ def _infer_choices_with_prefix(params, prefix):
 
     Example
     -------
-    >>> params = pd.Series(index=["wage_b", "wage_white_collar", "wage_a", "nonpec_c"])
+    >>> params = pd.Series(
+    ...     index=["wage_b", "wage_white_collar", "wage_a", "nonpec_c"], dtype="object"
+    ... )
     >>> _infer_choices_with_prefix(params, "wage")
     ['a', 'b', 'white_collar']
 
@@ -559,46 +571,6 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
     return container
 
 
-def _identify_relevant_covariates(options, params):
-    """Identify the relevant covariates.
-
-    We try to make every model as sparse as possible which means discarding covariates
-    which are irrelevant. The immediate benefit is that memory consumption and start-up
-    costs are reduced.
-
-    An advantage further downstream is that the number of lagged choices is inferred
-    from covariates. Eliminating irrelevant covariates might reduce the number of
-    implemented lags.
-
-    """
-    covariates = options["covariates"]
-
-    relevant_covariates = {}
-    for cov in covariates:
-        if cov in params.index.get_level_values("name"):
-            relevant_covariates[cov] = covariates[cov]
-
-    n_relevant_covariates_changed = True
-    while n_relevant_covariates_changed:
-        n_relevant_covariates = len(relevant_covariates)
-
-        for cov in covariates:
-            for relevant_cov in list(relevant_covariates):
-                if cov in relevant_covariates[relevant_cov]:
-                    # Append the covariate to the front such that nested covariates are
-                    # created in the beginning.
-                    relevant_covariates = {cov: covariates[cov], **relevant_covariates}
-
-        if n_relevant_covariates == len(relevant_covariates):
-            n_relevant_covariates_changed = False
-        else:
-            n_relevant_covariates_changed = True
-
-    options["covariates"] = relevant_covariates
-
-    return options
-
-
 def _sync_optim_paras_and_options(optim_paras, options):
     """Sync ``optim_paras`` and ``options`` after they have been parsed separately."""
     optim_paras["n_periods"] = options["n_periods"]
@@ -612,6 +584,7 @@ def _sync_optim_paras_and_options(optim_paras, options):
         options["covariates"] = {**options["covariates"], **type_covariates}
 
     options = _convert_labels_in_formulas_to_codes(options, optim_paras)
+    options = separate_covariates_into_core_dense_mixed(options, optim_paras)
 
     return optim_paras, options
 
