@@ -34,7 +34,7 @@ def create_kw_97(params, options):
 
     dtypes = {
         "Identifier": np.int,
-        "Age": np.uint8,
+        "Age": np.int,
         "Experience_School": np.uint8,
         "Choice": "category",
         "Wage": np.float,

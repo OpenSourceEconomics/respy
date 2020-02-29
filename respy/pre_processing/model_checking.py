@@ -108,7 +108,7 @@ def check_model_solution(optim_paras, options, state_space):
             )
         )
 
-    assert np.all(np.isfinite(state_space.core))
+    assert np.all(np.isfinite(state_space.core.select_dtypes(exclude=np.bool)))
 
     # Check for duplicate rows in each period. We only have possible duplicates if there
     # are multiple initial conditions.
