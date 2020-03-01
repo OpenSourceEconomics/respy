@@ -789,7 +789,7 @@ def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
     ...     "type_1": {"formula": "type == 1", "depends_on": ["type"]},
     ... }}
     >>> _create_dense_state_space_covariates(dg, o_par, opt)  # doctest: +ELLIPSIS
-    {(0,): {'type': 0, 'type_0': 1, 'type_1': 0}, (1,): {'type': 1, 'type_0': 0, ...
+    {(0,): {'type': 0, 'type_0': True, 'type_1': False}, (1,): {'type': 1, ...
 
     """
     if dense_grid:
