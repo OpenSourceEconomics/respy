@@ -86,6 +86,10 @@ releases are available on `Anaconda.org
 *Releases prior to the second version were published on PyPI, but deleted later. You can
 still checkout the following releases with the corresponding tags.*
 
+
+*Releases prior to the second version were published on PyPI, but deleted later. You can
+still checkout the following releases with the corresponding tags.*
+
 1.2.1 - 2019-05-19
 ------------------
 

@@ -7,6 +7,7 @@ import numpy as np
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
+from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
 from respy.config import MAX_FLOAT
 from respy.config import MIN_FLOAT
@@ -16,7 +17,6 @@ from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.process_covariates import identify_necessary_covariates
 from respy.shared import aggregate_keane_wolpin_utility
-from respy.shared import cast_bool_to_numeric
 from respy.shared import compute_covariates
 from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
@@ -326,10 +326,12 @@ def _compute_x_beta_for_type_probability(df, optim_paras, options):
             optim_paras["type_prob"][type_].index, options["covariates_all"]
         )
         first_observations = compute_covariates(first_observations, relevant_covariates)
-        first_observations = cast_bool_to_numeric(first_observations)
 
         labels = optim_paras["type_prob"][type_].index
-        df[type_] = np.dot(first_observations[labels], optim_paras["type_prob"][type_])
+        df[type_] = np.dot(
+            first_observations[labels].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
+            optim_paras["type_prob"][type_],
+        )
 
     return df[range(optim_paras["n_types"])]
 

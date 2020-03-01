@@ -22,6 +22,7 @@ import itertools
 import numpy as np
 from scipy import special
 
+from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import create_dense_state_space_columns
 
@@ -54,18 +55,24 @@ def compute_transition_probabilities(states, optim_paras):
     dense_idx = list(states.groupby(dense_columns).groups)[0]
     dense_idx = (dense_idx,) if np.isscalar(dense_idx) else dense_idx
 
+    # Compute the probabilities for every exogenous process.
     probabilities = []
     for exog_proc in exogenous_processes:
 
         # Create the dot product of covariates and parameters.
         x_betas = []
         for params in exogenous_processes[exog_proc].values():
-            x_beta = np.dot(states[params.index].to_numpy(), params.to_numpy())
+            x_beta = np.dot(
+                states[params.index].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
+                params.to_numpy(),
+            )
             x_betas.append(x_beta)
 
         probs = special.softmax(np.column_stack(x_betas), axis=1)
         probabilities.append(probs)
 
+    # Assign one probability vector per process to one `SingleDimStateSpace`. Instead of
+    # storing multiple vectors per state space, multiply them.
     transition_probabilities = {}
     comb_exog_procs = itertools.product(
         *[range(len(levels)) for levels in exogenous_processes.values()]

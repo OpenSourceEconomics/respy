@@ -113,10 +113,7 @@ def test_equality_of_models_with_and_without_observables():
 def test_distribution_of_observables():
     """Test that the distribution of observables matches the simulated distribution."""
     # Now specify a set of observables
-    point_constr = {
-        "observables": [np.random.randint(2, 6)],
-        "simulation_agents": 1000,
-    }
+    point_constr = {"observables": [np.random.randint(2, 6)], "simulation_agents": 1000}
 
     params, options = generate_random_model(point_constr=point_constr)
 
@@ -127,11 +124,14 @@ def test_distribution_of_observables():
     probs = df["Observable_0"].value_counts(normalize=True, sort=False)
 
     # Check proportions
-    np.testing.assert_almost_equal(
-        probs.to_numpy(),
-        params.loc[
-            params.index.get_level_values(0).str.contains("observable_observable_0"),
-            "value",
-        ].to_numpy(),
-        decimal=1,
-    )
+    n_levels = point_constr["observables"][0]
+    for level in range(n_levels):
+        # Some observables might be missing in the simulated data because of small
+        # probabilities. Test for zero probability in this case.
+        probability = probs.loc[level] if level in probs.index else 0
+
+        params_probability = params.loc[
+            (f"observable_observable_0_{level}", "probability"), "value"
+        ]
+
+        np.testing.assert_allclose(probability, params_probability, atol=0.05)

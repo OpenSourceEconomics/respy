@@ -1,4 +1,6 @@
 """This module comprises all functions which process the definition of covariates."""
+import copy
+
 from respy.shared import create_dense_state_space_columns
 
 
@@ -23,6 +25,7 @@ def remove_irrelevant_covariates(options, params):
     separate_covariates_into_core_dense_mixed
 
     """
+    options = copy.deepcopy(options)
     covariates = options["covariates"]
 
     # Collect initial relevant covariates from params.
@@ -73,6 +76,7 @@ def separate_covariates_into_core_dense_mixed(options, optim_paras):
         Contains three new covariate categories.
 
     """
+    options = copy.deepcopy(options)
     covariates = options["covariates"]
 
     # Define two sets with default covariates for the core and dense state space.

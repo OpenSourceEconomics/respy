@@ -200,11 +200,6 @@ def downcast_to_smallest_dtype(series, downcast_options=None):
     if series.dtype.name == "category":
         out = series
 
-    # Convert bools to integers because they turn the dot product in
-    # `create_choice_rewards` to the object dtype.
-    elif series.dtype == np.bool:
-        out = series.astype(np.dtype("uint8"))
-
     else:
         min_dtype = series.dtype
 
@@ -228,14 +223,6 @@ def downcast_to_smallest_dtype(series, downcast_options=None):
         out = series.astype(min_dtype)
 
     return out
-
-
-def cast_bool_to_numeric(df):
-    """Cast columns with boolean data type to the smallest integer."""
-    bool_columns = df.columns[df.dtypes == np.bool]
-    for column in bool_columns:
-        df[column] = df[column].astype(np.uint8)
-    return df
 
 
 def compute_covariates(df, definitions, check_nans=False, raise_errors=True):
@@ -424,16 +411,6 @@ def create_state_space_columns(optim_paras):
     return create_core_state_space_columns(
         optim_paras
     ) + create_dense_state_space_columns(optim_paras)
-
-
-def apply_to_state_space_attribute(attribute, func):
-    """Apply a function to a state space attribute which might be dense or not."""
-    if isinstance(attribute, dict):
-        out = [func(val) for val in attribute.values()]
-    else:
-        out = func(attribute)
-
-    return out
 
 
 @nb.guvectorize(
