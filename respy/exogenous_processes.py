@@ -31,6 +31,15 @@ from respy.shared import create_dense_state_space_columns
 def compute_transition_probabilities(states, optim_paras):
     """Compute the transition probabilities between states due to exogenous processes.
 
+    The exogenous process is defined by a multinomial logit. The steps are
+
+    1. For each realization of each exogenous process, calculate the dot product of
+       process parameters and covariates and compute the transition probabilities with
+       the softmax function.
+
+    2. For each dense index this `_SingleDimStateSpace` may transition to, collect the
+       transition probabilities for each exogenous process and multiply them.
+
     This function returns a dictionary for each `respy.state_space._SingleDimStateSpace`
     whose keys are the dense state space indices to where the states can transition to.
     To each key belongs a probability vector which is the product of probabilities
@@ -71,8 +80,8 @@ def compute_transition_probabilities(states, optim_paras):
         probs = special.softmax(np.column_stack(x_betas), axis=1)
         probabilities.append(probs)
 
-    # Assign one probability vector per process to one `SingleDimStateSpace`. Instead of
-    # storing multiple vectors per state space, multiply them.
+    # Assign one probability vector per process to one `_SingleDimStateSpace`. Instead
+    # of storing multiple vectors per state space, multiply them.
     transition_probabilities = {}
     comb_exog_procs = itertools.product(
         *[range(len(levels)) for levels in exogenous_processes.values()]
