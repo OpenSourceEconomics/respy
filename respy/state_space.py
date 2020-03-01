@@ -94,14 +94,12 @@ class _BaseStateSpace:
 
         if np.any(is_inadmissible) and optim_paras["inadmissibility_penalty"] is None:
             warnings.warn(
-                "'params' does not include a penalty to the utility if an individual "
-                "makes an invalid choice. A default penalty of "
-                f"{INADMISSIBILITY_PENALTY} is set. Although unproblematic for the full"
-                " solution, choose a milder penalty for the approximate solution of the"
-                " model or the penalty will break/dominate the linear model for the "
-                "interpolation. Set the penalty in your csv with:\n\n"
-                "inadmissibility_penalty,inadmissibility_penalty,<negative-number>\n",
-                category=UserWarning,
+                "Some choices in the model are not admissible all the time. To prevent"
+                "an individual choosing an inadmissible alternative, respy requires a "
+                f"penalty to the utility which is by default {INADMISSIBILITY_PENALTY}."
+                " For the full solution, the penalty only needs to be larger than all "
+                "other value functions. Choose a milder penalty for the interpolation "
+                "which does not dominate the linear interpolation model."
             )
 
         return is_inadmissible
