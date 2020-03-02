@@ -135,14 +135,13 @@ def _parse_parameters(params, options):
 def _parse_inadmissibility_penalty(optim_paras, params):
     """Parse the inadmissibility penalty.
 
-    The penalty is added to the non-pecuniary reward of a choice if the choice cannot be
-    chosen. For example, Keane and Wolpin (1997) limit schooling to 20 years.
+    The penalty is added to the non-pecuniary reward of a choice in
+    :func:`respy.solve._create_choice_rewards` if the alternative cannot be chosen. For
+    example, Keane and Wolpin (1997) limit schooling to 20 years.
 
     A warning is raise in :func:`respy.state_space._create_is_inadmissible` if the model
     includes inadmissible states but no penalty was specified. In this case, the default
-    penalty is :data:`respy.config.MIN_FLOAT`.
-
-    The penalty is applied to non-pecuniary reward in :func:`_create_choice_rewards`.
+    penalty is :data:`respy.config.INADMISSIBILITY_PENALTY`.
 
     """
     penalty = params.get(("inadmissibility_penalty", "inadmissibility_penalty"), None)

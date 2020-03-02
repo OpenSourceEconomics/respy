@@ -94,12 +94,12 @@ class _BaseStateSpace:
 
         if np.any(is_inadmissible) and optim_paras["inadmissibility_penalty"] is None:
             warnings.warn(
-                "Some choices in the model are not admissible all the time. To prevent"
-                "an individual choosing an inadmissible alternative, respy requires a "
-                f"penalty to the utility which is by default {INADMISSIBILITY_PENALTY}."
-                " For the full solution, the penalty only needs to be larger than all "
-                "other value functions. Choose a milder penalty for the interpolation "
-                "which does not dominate the linear interpolation model."
+                "Some choices in the model are not admissible all the time. Thus, respy"
+                " applies a penalty to the utility for these choices which is "
+                f"{INADMISSIBILITY_PENALTY} by default. For the full solution, the "
+                "penalty only needs to be larger than all other value functions to be "
+                "effective. Choose a milder penalty for the interpolation which does "
+                "not dominate the linear interpolation model."
             )
 
         return is_inadmissible
