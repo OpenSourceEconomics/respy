@@ -501,3 +501,13 @@ def calculate_expected_value_functions(
         expected_value_functions[0] += max_value_functions
 
     expected_value_functions[0] /= n_draws
+
+
+def convert_dictionary_keys_to_dense_indices(dictionary):
+    """Convert the keys to tuples containing integers."""
+    new_dictionary = {}
+    for key, val in dictionary.items():
+        new_key = (int(key),) if np.isscalar(key) else tuple(int(i) for i in key)
+        new_dictionary[new_key] = val
+
+    return new_dictionary

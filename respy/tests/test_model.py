@@ -40,39 +40,6 @@ def test_model_options(model_or_seed):
     validate_options(options)
 
 
-@pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
-def test_sorting_of_type_probability_parameters(model_or_seed):
-    # Set configuration for random models.
-    n_types = np.random.randint(2, 5)
-    n_type_covariates = np.random.randint(2, 4)
-
-    params, options = process_model_or_seed(
-        model_or_seed, n_types=n_types, n_type_covariates=n_type_covariates
-    )
-
-    optim_paras, options = process_params_and_options(params, options)
-
-    # Update variables if not a random model, but an example model is tested.
-    if isinstance(model_or_seed, str):
-        n_types = optim_paras["n_types"]
-        n_type_covariates = (
-            None if n_types == 1 else len(optim_paras["type_covariates"])
-        )
-
-    if optim_paras["n_types"] > 1:
-        # Resort type probability parameters.
-        types = [f"type_{i}" for i in range(1, optim_paras["n_types"])]
-        params.loc[types] = params.sort_index(ascending=False).loc[types]
-
-        optim_paras_, _ = process_params_and_options(params, options)
-
-        for (level, coeffs), (level_, coeffs_) in zip(
-            optim_paras["type_prob"].items(), optim_paras_["type_prob"].items()
-        ):
-            assert level == level_
-            assert np.all(coeffs == coeffs_)
-
-
 def test_parse_initial_and_max_experience():
     """Test ensures that probabilities are transformed with logs and rest passes."""
     choices = ["a", "b"]
