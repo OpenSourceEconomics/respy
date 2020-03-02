@@ -504,7 +504,15 @@ def calculate_expected_value_functions(
 
 
 def convert_dictionary_keys_to_dense_indices(dictionary):
-    """Convert the keys to tuples containing integers."""
+    """Convert the keys to tuples containing integers.
+
+    Example
+    -------
+    >>> dictionary = {(0.0, 1): 0, 2: 1}
+    >>> convert_dictionary_keys_to_dense_indices(dictionary)
+    {(0, 1): 0, (2,): 1}
+
+    """
     new_dictionary = {}
     for key, val in dictionary.items():
         new_key = (int(key),) if np.isscalar(key) else tuple(int(i) for i in key)

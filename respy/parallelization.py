@@ -101,7 +101,8 @@ def split_and_combine_df(func=None, *, remove_type=False):
 def split_and_combine_likelihood(func):
     """Split the likelihood calculation across sub state spaces and combine.
 
-    Along with the data, we need to split the shocks.
+    If types are modeled, the data is duplicated for each type. Along with the data, the
+    shocks are split across the dense indices.
 
     """
 
