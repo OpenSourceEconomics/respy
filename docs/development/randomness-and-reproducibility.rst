@@ -59,16 +59,16 @@ parameters.
 respy.solve
 -----------
 
-.. currentmodule:: respy.solve
-
 Routines under ``respy.solve`` use a seed from the sequence initialized by
 ``options["solution_seed"]`` to control randomness. Apart from the draws,
 :func:`~respy.solve.solve` relies on the following function.
 
+.. currentmodule:: respy.interpolate
+
 .. autosummary::
     :toctree: ../_generated/
 
-    get_not_interpolated_indicator
+    _get_not_interpolated_indicator
 
 
 respy.simulate

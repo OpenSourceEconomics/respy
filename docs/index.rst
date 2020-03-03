@@ -15,15 +15,16 @@ baseline model presented in:
     Evidence <https://doi.org/10.2307/2109768>`_. *The Review of Economics and
     Statistics*, 76(4): 648-672.
 
-.. image:: https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000
+.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     getting_started/index
     economics/index
     replications/index
     software/index
     development/index
+    projects
     api
     additional_information/index

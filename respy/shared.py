@@ -4,8 +4,6 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
-import copy
-
 import chaospy as cp
 import numba as nb
 import numpy as np
@@ -81,8 +79,7 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
     estimated along all other parameters and changes every iteration. Thus, instead of
     sampling draws from a varying multivariate normal distribution, standard normal
     draws are sampled here and transformed to the distribution specified by the
-    parameters in
-    :func:`transform_base_draws_with_cholesky_factor`.
+    parameters in :func:`transform_base_draws_with_cholesky_factor`.
 
     Parameters
     ----------
@@ -184,22 +181,6 @@ def generate_column_dtype_dict_for_estimation(optim_paras):
     return column_dtype_dict
 
 
-@nb.njit
-def clip(x, minimum=None, maximum=None):
-    """Clip input array at minimum and maximum."""
-    out = np.empty_like(x)
-
-    for index, value in np.ndenumerate(x):
-        if minimum is not None and value < minimum:
-            out[index] = minimum
-        elif maximum is not None and value > maximum:
-            out[index] = maximum
-        else:
-            out[index] = value
-
-    return out
-
-
 def downcast_to_smallest_dtype(series, downcast_options=None):
     """Downcast the dtype of a :class:`pandas.Series` to the lowest possible dtype.
 
@@ -221,11 +202,6 @@ def downcast_to_smallest_dtype(series, downcast_options=None):
 
     if series.dtype.name == "category":
         out = series
-
-    # Convert bools to integers because they turn the dot product in
-    # `create_choice_rewards` to the object dtype.
-    elif series.dtype == np.bool:
-        out = series.astype(np.dtype("uint8"))
 
     else:
         min_dtype = series.dtype
@@ -252,19 +228,30 @@ def downcast_to_smallest_dtype(series, downcast_options=None):
     return out
 
 
-def create_base_covariates(states, covariates_spec, raise_errors=True):
-    """Create set of covariates for each state.
+def compute_covariates(df, definitions, check_nans=False, raise_errors=True):
+    """Compute covariates.
+
+    The function iterates over the definitions of covariates and tries to compute them.
+    It keeps track on how many covariates still need to be computed and stops if the
+    number does not change anymore. This might be due to missing information.
 
     Parameters
     ----------
-    states : pandas.DataFrame
-        DataFrame with some, not all state space dimensions like period, experiences.
-    covariates_spec : dict
+    df : pandas.DataFrame
+        DataFrame with some, maybe not all state space dimensions like period,
+        experiences.
+    definitions : dict
         Keys represent covariates and values are strings passed to ``df.eval``.
+    check_nans : bool, default False
+        Perform a check whether the variables used to compute the selected covariate do
+        not contain any `np.nan`. This is necessary in
+        :func:`respy.simulate._sample_characteristic` where some characteristics may
+        contain missings.
     raise_errors : bool, default True
-        Whether to raise errors if a variable was not found. This option is necessary
-        for, e.g., :func:`~respy.simulate._sample_characteristic` where not all
-        necessary variables exist and it is not clear how to exclude them easily.
+        Whether to raise errors if variables cannot be computed. This option is
+        necessary for, e.g., :func:`~respy.simulate._sample_characteristic` where not
+        all necessary variables exist and it is not easy to exclude covariates which
+        depend on them.
 
     Returns
     -------
@@ -273,39 +260,51 @@ def create_base_covariates(states, covariates_spec, raise_errors=True):
 
     Raises
     ------
-    pd.core.computation.ops.UndefinedVariableError
-        If variable on the right-hand-side of the definition is not found in the data.
+    Exception
+        If variables cannot be computed and ``raise_errors`` is true.
 
     """
-    covariates = states.copy()
-
     has_covariates_left_changed = True
-    covariates_left = list(covariates_spec)
+    covariates_left = list(definitions)
 
     while has_covariates_left_changed:
         n_covariates_left = len(covariates_left)
 
         # Create a copy of `covariates_left` to remove elements without side-effects.
-        for covariate in copy.copy(covariates_left):
+        for covariate in covariates_left.copy():
             # Check if the covariate does not exist and needs to be computed.
-            is_covariate_missing = covariate not in covariates.columns
+            is_covariate_missing = covariate not in df.columns
+            if not is_covariate_missing:
+                covariates_left.remove(covariate)
+                continue
 
-            if is_covariate_missing:
-                try:
-                    covariates[covariate] = covariates.eval(covariates_spec[covariate])
-                except pd.core.computation.ops.UndefinedVariableError:
-                    pass
+            # Check that the dependencies are present.
+            index_or_columns = df.columns.union(df.index.names)
+            are_dependencies_present = all(
+                dep in index_or_columns for dep in definitions[covariate]["depends_on"]
+            )
+            if are_dependencies_present:
+                # If true, perform checks for NaNs.
+                if check_nans:
+                    have_dependencies_no_missings = all(
+                        df.eval(f"{dep}.notna().all()")
+                        for dep in definitions[covariate]["depends_on"]
+                    )
                 else:
-                    covariates_left.remove(covariate)
+                    have_dependencies_no_missings = True
+            else:
+                have_dependencies_no_missings = False
+
+            if have_dependencies_no_missings:
+                df[covariate] = df.eval(definitions[covariate]["formula"])
+                covariates_left.remove(covariate)
 
         has_covariates_left_changed = n_covariates_left != len(covariates_left)
 
     if covariates_left and raise_errors:
         raise Exception(f"Cannot compute all covariates: {covariates_left}.")
 
-    covariates = covariates.drop(columns=states.columns)
-
-    return covariates
+    return df
 
 
 def convert_labeled_variables_to_codes(df, optim_paras):
@@ -392,3 +391,116 @@ def calculate_value_functions_and_flow_utilities(
     value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
         wage, nonpec, continuation_value, draw, delta, is_inadmissible
     )
+
+
+def create_core_state_space_columns(optim_paras):
+    """Create internal column names for the core state space."""
+    return [f"exp_{choice}" for choice in optim_paras["choices_w_exp"]] + [
+        f"lagged_choice_{i}" for i in range(1, optim_paras["n_lagged_choices"] + 1)
+    ]
+
+
+def create_dense_state_space_columns(optim_paras):
+    """Create internal column names for the dense state space."""
+    columns = list(optim_paras["observables"])
+    if optim_paras["n_types"] >= 2:
+        columns += ["type"]
+
+    return columns
+
+
+def create_state_space_columns(optim_paras):
+    """Create names of state space dimensions excluding the period and identifier."""
+    return create_core_state_space_columns(
+        optim_paras
+    ) + create_dense_state_space_columns(optim_paras)
+
+
+@nb.guvectorize(
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
+    "-> ()",
+    nopython=True,
+    target="parallel",
+)
+def calculate_expected_value_functions(
+    wages,
+    nonpecs,
+    continuation_values,
+    draws,
+    delta,
+    is_inadmissible,
+    expected_value_functions,
+):
+    r"""Calculate the expected maximum of value functions for a set of unobservables.
+
+    The function takes an agent and calculates the utility for each of the choices, the
+    ex-post rewards, with multiple draws from the distribution of unobservables and adds
+    the discounted expected maximum utility of subsequent periods resulting from
+    choices. Averaging over all maximum utilities yields the expected maximum utility of
+    this state.
+
+    The underlying process in this function is called `Monte Carlo integration`_. The
+    goal is to approximate an integral by evaluating the integrand at randomly chosen
+    points. In this setting, one wants to approximate the expected maximum utility of
+    the current state.
+
+    Note that `wages` have the same length as `nonpecs` despite that wages are only
+    available in some choices. Missing choices are filled with ones. In the case of a
+    choice with wage and without wage, flow utilities are
+
+    .. math::
+
+        \text{Flow Utility} = \text{Wage} * \epsilon + \text{Non-pecuniary}
+        \text{Flow Utility} = 1 * \epsilon + \text{Non-pecuniary}
+
+    Parameters
+    ----------
+    wages : numpy.ndarray
+        Array with shape (n_choices,) containing wages.
+    nonpecs : numpy.ndarray
+        Array with shape (n_choices,) containing non-pecuniary rewards.
+    continuation_values : numpy.ndarray
+        Array with shape (n_choices,) containing expected maximum utility for each
+        choice in the subsequent period.
+    draws : numpy.ndarray
+        Array with shape (n_draws, n_choices).
+    delta : float
+        The discount factor.
+    is_inadmissible: numpy.ndarray
+        Array with shape (n_choices,) containing indicator for whether the following
+        state is inadmissible.
+
+    Returns
+    -------
+    expected_value_functions : float
+        Expected maximum utility of an agent.
+
+    .. _Monte Carlo integration:
+        https://en.wikipedia.org/wiki/Monte_Carlo_integration
+
+    """
+    n_draws, n_choices = draws.shape
+
+    expected_value_functions[0] = 0
+
+    for i in range(n_draws):
+
+        max_value_functions = 0
+
+        for j in range(n_choices):
+            value_function, _ = aggregate_keane_wolpin_utility(
+                wages[j],
+                nonpecs[j],
+                continuation_values[j],
+                draws[i, j],
+                delta,
+                is_inadmissible[j],
+            )
+
+            if value_function > max_value_functions:
+                max_value_functions = value_function
+
+        expected_value_functions[0] += max_value_functions
+
+    expected_value_functions[0] /= n_draws

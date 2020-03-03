@@ -1,9 +1,11 @@
-===
 API
 ===
 
+User
+----
+
 interface
----------
+~~~~~~~~~
 
 .. currentmodule:: respy.interface
 
@@ -11,32 +13,21 @@ interface
     :toctree: _generated/
 
     get_example_model
-
-state_space
------------
-
-.. currentmodule:: respy.state_space
-
-.. autosummary::
-    :toctree: _generated/
-
-    StateSpace
-    StateSpace.get_attribute_from_period
-    StateSpace.get_continuation_values
-    StateSpace.update_systematic_rewards
+    get_parameter_constraints
 
 solve
------
+~~~~~
 
 .. currentmodule:: respy.solve
 
 .. autosummary::
     :toctree: _generated/
 
+    get_solve_func
     solve
 
 simulate
---------
+~~~~~~~~
 
 .. currentmodule:: respy.simulate
 
@@ -46,8 +37,19 @@ simulate
     get_simulate_func
     simulate
 
+method_of_simulated_moments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. currentmodule:: respy.method_of_simulated_moments
+
+.. autosummary::
+    :toctree: _generated/
+
+    get_msm_func
+    msm
+
 likelihood
-----------
+~~~~~~~~~~
 
 .. currentmodule:: respy.likelihood
 

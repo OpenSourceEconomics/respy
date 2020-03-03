@@ -53,8 +53,8 @@ nonpec_military,not_any_exp_military,-560,reward of being in the military sector
 nonpec_military,common_hs_graduate,804,return to high school degree (non pecuniary)
 nonpec_military,common_co_graduate,2005,return to college degree (non pecuniary)
 nonpec_school,constant,11031,consumption value of school attendance for type 0
-nonpec_school,is_return_not_high_school,-10700,reward for going back to college
-nonpec_school,is_return_high_school,-23283,reward for going back to high school
+nonpec_school,returns_to_high_school,-23283,reward for going back to high school
+nonpec_school,returns_to_college,-10700,reward for going back to college
 nonpec_school,period,-1502,linear age effect
 nonpec_school,is_minor,3632,effect of being a minor
 nonpec_school,common_hs_graduate,804,common return to high school degree (non pecuniary)
@@ -74,24 +74,24 @@ nonpec_home,military_dropout,-1525,effect of leaving the military early (after o
 nonpec_home,type_1,-2135,deviation for type 1 from type 0 in home
 nonpec_home,type_2,-14678,deviation for type 2 from type 0 in home
 nonpec_home,type_3,-2912,deviation for type 3 from type 0 in home
-shocks_sdcorr,sd_white_collar,0.3864,standard deviation of the shock in occupation a
 shocks_sdcorr,sd_blue_collar,0.3823,standard deviation of the shock in occupation b
 shocks_sdcorr,sd_military,0.2426,standard deviation of the shock in the military sector
+shocks_sdcorr,sd_white_collar,0.3864,standard deviation of the shock in occupation a
 shocks_sdcorr,sd_school,12821,standard deviation of the shocks in the education sector
 shocks_sdcorr,sd_home,9350,standard deviation of the shock in the home sector
-shocks_sdcorr,corr_blue_collar_white_collar,0.1226,correlation between the shocks in occupation a and b
-shocks_sdcorr,corr_military_white_collar,0,correlation of the shocks in the military sector and occupation a
 shocks_sdcorr,corr_military_blue_collar,0,correlation of the shocks in the military sector and occupation b
-shocks_sdcorr,corr_school_white_collar,0,correlation between the shocks in the education sector and occupation a
+shocks_sdcorr,corr_white_collar_blue_collar,0.1226,correlation between the shocks in occupation a and b
+shocks_sdcorr,corr_white_collar_military,0,correlation of the shocks in the military sector and occupation a
 shocks_sdcorr,corr_school_blue_collar,0,correlation between the shocks in the education sector and occupation b
 shocks_sdcorr,corr_school_military,0,correlation of the shocks in the military sector and education
-shocks_sdcorr,corr_home_white_collar,0,correlation of the shocks in the home sector and occupation a
+shocks_sdcorr,corr_school_white_collar,0,correlation between the shocks in the education sector and occupation a
 shocks_sdcorr,corr_home_blue_collar,0,correlation of the shocks in the home sector and occupation b
 shocks_sdcorr,corr_home_military,0,correlation of the shocks in the military sector and home
+shocks_sdcorr,corr_home_white_collar,0,correlation of the shocks in the home sector and occupation a
 shocks_sdcorr,corr_home_school,0,correlation of the shocks in the home and the education sector
-meas_error,sd_white_collar,0.2415,SD of the measurement error in wages in occupation a
 meas_error,sd_blue_collar,0.1942,SD of the measurement error in wages occupation b
 meas_error,sd_military,0.2063,SD of the measurement error in wages in military sector
+meas_error,sd_white_collar,0.2415,SD of the measurement error in wages in occupation a
 type_1,up_to_nine_years_school,1.3979,effect of up to nine years of schooling on probability of being type 1
 type_1,at_least_ten_years_school,-0.0034,effect of at least ten years of schooling on probability of being type 1
 type_2,up_to_nine_years_school,2.114,effect of up to nine years of schooling on probability of being type 2

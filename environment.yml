@@ -6,6 +6,7 @@ dependencies:
   - python=3.7
   - pip
   - anaconda-client
+  - bottleneck
   - chaospy
   - click
   - codecov
@@ -13,19 +14,22 @@ dependencies:
   - conda-verify
   - doc8
   - estimagic>=0.0.14
+  - joblib
   - jupyterlab
   - line_profiler
   - matplotlib
   - mkl
   - nbsphinx=0.4.2
   - numba
+  - numexpr
   - numpydoc
   - pandas>=0.24
   - pdbpp
+  - pre-commit
   - pyyaml
   - pytest
   - pytest-cov
-  - pytest-xdist
+  - pytest-xdist=1.29.0
   - restructuredtext_lint
   - scipy
   - seaborn
@@ -36,4 +40,4 @@ dependencies:
   - pip:
     - apprise
     - bump2version
-    - pre-commit
+    - pytest-randomly

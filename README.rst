@@ -10,11 +10,18 @@ respy
 .. image:: https://readthedocs.org/projects/respy/badge/?version=latest
     :target: https://respy.readthedocs.io/en/latest
 
-.. image:: https://dev.azure.com/OpenSourceEconomics/respy/_apis/build/status/OpenSourceEconomics.respy?branchName=master
-    :target: https://dev.azure.com/OpenSourceEconomics/respy/_build/latest?definitionId=1&branchName=master
+.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
+    :target: https://opensource.org/licenses/MIT
+
+.. image:: https://github.com/OpenSourceEconomics/respy/workflows/Continuous%20Integration%20Workflow/badge.svg?branch=master
+    :target: https://github.com/OpenSourceEconomics/respy/actions?query=branch%3Amaster
+
+.. image:: https://codecov.io/gh/OpenSourceEconomics/respy/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/OpenSourceEconomics/respy
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/python/black
+    :target: https://github.com/psf/black
+
 
 ``respy``  is an open-source Python package for the simulation and estimation of a
 prototypical finite-horizon discrete choice dynamic programming model. We build on the
@@ -33,4 +40,4 @@ You can install ``respy`` via conda with
     $ conda install -c opensourceeconomics respy
 
 Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for
-details.
+tutorials and other information.

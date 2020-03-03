@@ -1,6 +1,8 @@
 """General configuration for respy."""
 from pathlib import Path
 
+import numpy as np
+
 # Obtain the root directory of the package. Do not import respy which creates a circular
 # import.
 ROOT_DIR = Path(__file__).parent
@@ -14,22 +16,44 @@ MIN_FLOAT = -MAX_FLOAT
 MAX_LOG_FLOAT = 460
 MIN_LOG_FLOAT = -MAX_LOG_FLOAT
 
+COVARIATES_DOT_PRODUCT_DTYPE = np.float64
+"""numpy.dtype : Dtype of covariates before being used in a dot product.
+
+If you convert a DataFrame with boolean variables and others to an NumPy array, the
+resulting array will have an 'object' dtype. Having an 'object' dtype array causes a lot
+of problems as functions like :func:`numpy.exp` will fail raising an uninformative error
+message.
+
+"""
+
+# Everything for the indexer.
+INDEXER_DTYPE = np.int32
+"""numpy.dtype : Data type for the entries in the state space indexer."""
+INDEXER_INVALID_INDEX = np.iinfo(INDEXER_DTYPE).min
+"""int : Identifier for invalid states.
+
+Every valid state has a unique number which is stored in the state space indexer at the
+correct position. Invalid entries in the indexer are filled with
+:data:`INDEXER_INVALID_INDEX` which is the most negative value for
+:data:`INDEXER_DTYPE`. Using the invalid value as an index likely raises an
+:class:`IndexError` as negative indices cannot exceed the length of the indexed array
+dimension.
+
+"""
+
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10
 
-# Interpolation
+# Penalty for states which cannot be reached.
 INADMISSIBILITY_PENALTY = -400_000
 
 SEED_STARTUP_ITERATION_GAP = 100
-
-IS_DEBUG = False
 
 DEFAULT_OPTIONS = {
     "estimation_draws": 200,
     "estimation_seed": 1,
     "estimation_tau": 500,
     "interpolation_points": -1,
-    "n_periods": 40,
     "simulation_agents": 1000,
     "simulation_seed": 2,
     "solution_draws": 200,
