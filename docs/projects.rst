@@ -112,8 +112,8 @@ correlated input parameters.
     a model with correlated input parameters. Based on these Elementary Effects, I
     compute multiple aggregate statistics to quantify the impact of the uncertainty in
     one parameter on uncertainty in the QoI. However, the analysis does not lead to clear
-    results as there is no consensus about how to interpret the aggregate statistics in this
-    context - even for uncorrelated parameters.
+    results as there is no consensus about how to interpret the aggregate statistics in
+    this context - even for uncorrelated parameters.
 
 
 Contact: `@tostenzel <https://github.com/tostenzel>`_
