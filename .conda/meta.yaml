@@ -24,13 +24,13 @@ requirements:
     - mkl
     - numba>=0.42
     - numpy
-    - pandas>=0.24,<1
+    - pandas>=0.24
     - pyyaml
     - pytest
     - scipy
 test:
   commands:
-    - py.test
+    - python -c "import respy as rp; rp.test()"
   files:
     - respy/tests/
     - respy/conftest.py
