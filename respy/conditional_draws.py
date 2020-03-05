@@ -15,7 +15,7 @@ def create_draws_and_log_prob_wages(
     shocks_cholesky,
     n_wages,
     meas_sds,
-    is_meas_error,
+    has_meas_error,
 ):
     """Evaluate likelihood of observed wages and create conditional draws.
 
@@ -45,7 +45,7 @@ def create_draws_and_log_prob_wages(
         Array with shape (n_choices,) containing standard deviations of the measurement
         errors of observed reward components. It is 0 for choices where no reward
         component is observed.
-    is_meas_error : bool
+    has_meas_error : bool
 
     Returns
     -------
@@ -70,7 +70,7 @@ def create_draws_and_log_prob_wages(
         log_wage_observed, log_wage_systematic, cov, choices, meas_sds
     )
 
-    if is_meas_error:
+    if has_meas_error:
         updated_chols = update_cholcov_with_measurement_error(
             shocks_cholesky, meas_sds, n_wages
         )
