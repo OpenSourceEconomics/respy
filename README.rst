@@ -41,3 +41,18 @@ You can install ``respy`` via conda with
 
 Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for
 tutorials and other information.
+
+
+Citation
+--------
+
+If you use respy for your research, do not forget to cite it with
+
+.. code-block::
+
+    @Unpublished{The respy Team,
+      Title  = {respy - A Framework for the Estimation of some DCDP Models.},
+      Author = {The respy Team},
+      Year   = {2015},
+      Url    = {https://github.com/OpenSourceEconomics/respy},
+    }
