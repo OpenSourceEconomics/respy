@@ -1,10 +1,13 @@
 """Run a few regression tests."""
+import pickle
+
 import numpy as np
 import pytest
 
-from development.testing.regression import calc_crit_val
-from development.testing.regression import load_regression_tests
+import respy as rp
+from respy.config import TEST_RESOURCES_DIR
 from respy.config import TOL_REGRESSION_TESTS
+from respy.tests.random_model import simulate_truncated_data
 
 
 @pytest.fixture(scope="session")
@@ -17,8 +20,24 @@ def regression_vault():
 def test_single_regression(regression_vault, index):
     """Run a single regression test."""
     params, options, exp_val = regression_vault[index]
-    crit_val = calc_crit_val(params, options)
+    crit_val = compute_log_likelihood(params, options)
 
     assert np.isclose(
         crit_val, exp_val, rtol=TOL_REGRESSION_TESTS, atol=TOL_REGRESSION_TESTS
     )
+
+
+def compute_log_likelihood(params, options):
+    df = simulate_truncated_data(params, options)
+    crit_func = rp.get_crit_func(params, options, df)
+    crit_val = crit_func(params)
+
+    return crit_val
+
+
+def load_regression_tests():
+    """Load regression tests from disk."""
+    with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "rb") as p:
+        tests = pickle.load(p)
+
+    return tests

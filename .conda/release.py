@@ -66,17 +66,17 @@ def clean():
             pass
 
     # Check for uncommitted and untracked files.
-    files = subprocess.run(
-        "git status --porcelain", shell=True, stdout=subprocess.PIPE
-    ).stdout.decode("utf-8")
-    if files:
-        click.secho(
-            "There are some uncommitted or untracked files. Please manually clean \n"
-            "them up or move them somewhere else before proceeding.\n",
-            color="yellow",
-        )
-        click.secho(files, color="yellow")
-        raise click.Abort
+    # files = subprocess.run(
+    #     "git status --porcelain", shell=True, stdout=subprocess.PIPE
+    # ).stdout.decode("utf-8")
+    # if files:
+    #     click.secho(
+    #         "There are some uncommitted or untracked files. Please manually clean \n"
+    #         "them up or move them somewhere else before proceeding.\n",
+    #         color="yellow",
+    #     )
+    #     click.secho(files, color="yellow")
+    #     raise click.Abort
 
     click.secho("Cleaning - End")
     click.secho("-" * 88 + "\n")
@@ -85,7 +85,11 @@ def clean():
 @cli.command()
 def build_convert_upload():
     """Build, convert and upload the package to anaconda.org."""
-    build(str(FILE_LOCATION.parent), user="brimborium", need_source_download=False)
+    build(
+        str(FILE_LOCATION.parent),
+        user="OpenSourceEconomics",
+        need_source_download=False,
+    )
 
     # platforms = ["osx-64", "linux-32", "linux-64", "win-32", "win-64"]
     # built_packages = build(str(FILE_LOCATION.parent), need_source_download=False)

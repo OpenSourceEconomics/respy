@@ -8,15 +8,15 @@ source:
   path: ../../respy
 
 build:
-  norarch: python
+  noarch: python
 
 requirements:
   build:
-    - python >=3.6
+    - python
     - setuptools
 
   run:
-    - python >=3.6
+    - python >=3.6,<=3.7
     - chaospy
     - click
     - estimagic >=0.0.27
@@ -25,13 +25,16 @@ requirements:
     - numba >=0.42
     - numpy
     - pandas >=0.24
-    - pyyaml
     - pytest
+    - pyyaml
     - scipy
 test:
+  requires:
+    - pytest-xdist
   commands:
-    - python -c "import respy as rp; rp.test()"
+    - pytest
   source_files:
+    - respy
     - tox.ini
 
 about:
