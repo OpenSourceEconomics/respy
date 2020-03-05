@@ -1,20 +1,16 @@
-
-Please use one of the following samples to cite the respy version (change
-x.y) from this installation
+Please use one of the following samples to cite the respy version (change x.y) from this
+installation
 
 Text:
 
 [respy]  respy x.y, 2016
 The respy Team, http://respy.readthedocs.io
 
-BibTeX:
-
-@misc{respy-x.y,
-  title =            {respy x.y},
-  author =     {{The respy Team}},
-  year =             {2016},
-  howpublished = {\href{http://respy.readthedocs.io}{http://respy.readthedocs.io}},
+@Unpublished{respy-x.y,
+  Title        = {respy x.y},
+  Author       = {The respy Team},
+  Year         = {2016},
+  Howpublished = {\href{http://respy.readthedocs.io}{http://respy.readthedocs.io}},
 }
 
-If you are unsure about which version of respy you are using run: `pip show
-respy`.
+If you are unsure about which version of respy you are using run: `conda list respy`.

@@ -19,6 +19,7 @@ from conda_build.api import convert
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 TEMPORARY_FOLDERS = [
+    Path("..", ".coverage"),
     Path("..", "docs", "_build"),
     Path("..", "docs", "_generated"),
 ] + list(Path("..").glob("**/__pycache__"))

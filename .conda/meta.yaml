@@ -19,7 +19,7 @@ requirements:
     - python {{ python }}
     - chaospy
     - click
-    - estimagic>=0.0.12
+    - estimagic>=0.0.27
     - joblib
     - mkl
     - numba>=0.42
@@ -36,12 +36,9 @@ test:
     - respy/conftest.py
   requires:
     - pytest
-    - pytest-mock
     - pytest-cov
     - pytest-xdist
-    - codecov
     - conda-build
-    - statsmodels
 
 about:
   home: https://github.com/OpenSourceEconomics/respy
