@@ -26,6 +26,8 @@ TEMPORARY_FILES_AND_FOLDERS = [
     Path(FILE_LOCATION, "..", "docs", "_generated"),
 ] + list(Path(FILE_LOCATION, "..").glob("**/__pycache__"))
 
+TOX_LOCATION = Path(FILE_LOCATION, "..", ".tox")
+
 
 @click.group(context_settings=CONTEXT_SETTINGS, chain=True, invoke_without_command=True)
 @click.pass_context
@@ -46,14 +48,13 @@ def clean():
     )
 
     # Check for environments in .tox.
-    tox_directory = Path(FILE_LOCATION, "..", ".tox")
-    tox_envs = list(tox_directory.glob("*"))
+    tox_envs = list(TOX_LOCATION.glob("*"))
     if tox_envs and click.confirm(
         "Do you want to remove all tests environments under .tox?"
     ):
         for path in tox_envs:
             subprocess.run(f"conda env remove -p {path}", shell=True)
-        shutil.rmtree(tox_directory)
+        shutil.rmtree(TOX_LOCATION)
 
     # Check for temporary files and folders which can be deleted.
     for path in TEMPORARY_FILES_AND_FOLDERS:
