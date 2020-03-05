@@ -260,7 +260,7 @@ def _compute_wage_and_choice_likelihood_contributions(
         optim_paras["shocks_cholesky"],
         len(optim_paras["choices_w_wage"]),
         optim_paras["meas_error"],
-        optim_paras["is_meas_error"],
+        optim_paras["has_meas_error"],
     )
 
     draws = draws.reshape(n_obs, -1, n_choices)

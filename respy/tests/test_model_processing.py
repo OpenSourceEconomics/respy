@@ -1,6 +1,6 @@
 """Test model generation."""
 import io
-from textwrap import dedent
+import textwrap
 
 import numpy as np
 import pandas as pd
@@ -11,8 +11,10 @@ from respy.likelihood import get_crit_func
 from respy.pre_processing.model_checking import validate_options
 from respy.pre_processing.model_processing import _convert_labels_in_formulas_to_codes
 from respy.pre_processing.model_processing import _parse_initial_and_max_experience
+from respy.pre_processing.model_processing import _parse_measurement_errors
+from respy.pre_processing.model_processing import _parse_observables
+from respy.pre_processing.model_processing import _parse_shocks
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.pre_processing.process_covariates import remove_irrelevant_covariates
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
 from respy.tests.utils import process_model_or_seed
@@ -132,48 +134,6 @@ def test_normalize_probabilities():
         )
 
 
-def test_identify_relevant_covariates():
-    params = pd.read_csv(
-        io.StringIO(
-            dedent(
-                """
-                category,name,value
-                wage_a,constant,1
-                nonpec_b,upper_upper,1
-                wage_c,upper_upper_with_spacing_problem,1
-                """
-            )
-        ),
-        index_col=["category", "name"],
-    )
-
-    options = {
-        "covariates": {
-            "constant": "1",
-            "nested_covariate": "2",
-            "upper": "nested_covariate > 2",
-            "upper_upper": "upper == 5",
-            "unrelated_covariate": "2",
-            "unrelated_covariate_upper": "unrelated_covariate",
-            "upper_upper_with_spacing_problem": "upper>2",
-        }
-    }
-
-    relevant_covariates = remove_irrelevant_covariates(options, params)
-
-    expected = {
-        "covariates": {
-            "constant": "1",
-            "nested_covariate": "2",
-            "upper": "nested_covariate > 2",
-            "upper_upper": "upper == 5",
-            "upper_upper_with_spacing_problem": "upper>2",
-        }
-    }
-
-    assert expected == relevant_covariates
-
-
 def test_convert_labels_in_covariates_to_codes():
     optim_paras = {
         "choices": ["fishing", "hammock"],
@@ -200,3 +160,67 @@ def test_convert_labels_in_covariates_to_codes():
     }
 
     assert options["covariates"] == expected
+
+
+def test_parse_observables():
+    params = pd.read_csv(
+        io.StringIO(
+            textwrap.dedent(
+                """
+                category,name,value
+                observable_fishing_grounds_rich_grounds,probability,0.5
+                observable_fishing_grounds_poor_grounds,probability,0.5
+                observable_ability_low_middle,probability,0.5
+                observable_ability_high,probability,0.5
+                """
+            )
+        ),
+        index_col=["category", "name"],
+    )["value"]
+    optim_paras = _parse_observables({}, params)
+
+    expected = {
+        "fishing_grounds": {
+            "rich_grounds": pd.Series(data=np.log(0.5), index=["constant"]),
+            "poor_grounds": pd.Series(data=np.log(0.5), index=["constant"]),
+        },
+        "ability": {
+            "low_middle": pd.Series(data=np.log(0.5), index=["constant"]),
+            "high": pd.Series(data=np.log(0.5), index=["constant"]),
+        },
+    }
+
+    for observable, level_dict in optim_paras["observables"].items():
+        for level in level_dict:
+            assert optim_paras["observables"][observable][level].equals(
+                expected[observable][level]
+            )
+
+
+def test_raise_exception_for_missing_meas_error():
+    params, options = generate_random_model()
+
+    params = params.drop(index=("meas_error", "sd_b"))
+
+    with pytest.raises(KeyError):
+        _parse_measurement_errors(params, options)
+
+
+def test_raise_exception_for_missing_shock_matrix():
+    params, _ = generate_random_model()
+
+    params = params.drop(index="shocks_sdcorr", level="category")
+
+    with pytest.raises(KeyError):
+        _parse_shocks({}, params)
+
+
+@pytest.mark.parametrize("observables", [[2], [2, 2]])
+def test_raise_exception_for_observable_with_one_value(observables):
+    point_constr = {"observables": observables}
+    params, _ = generate_random_model(point_constr=point_constr)
+
+    params = params.drop(index="observable_observable_0_0", level="category")["value"]
+
+    with pytest.raises(ValueError, match=r"Observables and exogenous processes"):
+        _parse_observables({}, params)
