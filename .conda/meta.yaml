@@ -8,37 +8,31 @@ source:
   path: ../../respy
 
 build:
-  number: 0
+  norarch: python
 
 requirements:
   build:
-    - python {{ python }}
+    - python >=3.6
     - setuptools
 
   run:
-    - python {{ python }}
+    - python >=3.6
     - chaospy
     - click
-    - estimagic>=0.0.27
+    - estimagic >=0.0.27
     - joblib
     - mkl
-    - numba>=0.42
+    - numba >=0.42
     - numpy
-    - pandas>=0.24
+    - pandas >=0.24
     - pyyaml
     - pytest
     - scipy
 test:
   commands:
     - python -c "import respy as rp; rp.test()"
-  files:
-    - respy/tests/
-    - respy/conftest.py
-  requires:
-    - pytest
-    - pytest-cov
-    - pytest-xdist
-    - conda-build
+  source_files:
+    - tox.ini
 
 about:
   home: https://github.com/OpenSourceEconomics/respy

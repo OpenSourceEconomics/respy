@@ -85,24 +85,26 @@ def clean():
 @cli.command()
 def build_convert_upload():
     """Build, convert and upload the package to anaconda.org."""
-    platforms = ["osx-64", "linux-32", "linux-64", "win-32", "win-64"]
-    built_packages = build(str(FILE_LOCATION.parent), need_source_download=False)
-    converted_packages = []
+    build(str(FILE_LOCATION.parent), user="brimborium", need_source_download=False)
 
-    for path in built_packages:
-        helper, package_name = split(path)
-        out_root, os = split(helper)
-        pfs = [pf for pf in platforms if pf != os]
-        convert(path, output_dir=out_root, platforms=pfs)
-        for pf in pfs:
-            converted_packages.append(join(out_root, pf, package_name))
+    # platforms = ["osx-64", "linux-32", "linux-64", "win-32", "win-64"]
+    # built_packages = build(str(FILE_LOCATION.parent), need_source_download=False)
+    # converted_packages = []
 
-    all_packages = built_packages + converted_packages
-    for package in all_packages:
-        _, package_name = split(package)
-        subprocess.run(
-            ["anaconda", "upload", "--force", "--user", "OpenSourceEconomics", package]
-        )
+    # for path in built_packages:
+    #     helper, package_name = split(path)
+    #     out_root, os = split(helper)
+    #     pfs = [pf for pf in platforms if pf != os]
+    #     convert(path, output_dir=out_root, platforms=pfs)
+    #     for pf in pfs:
+    #         converted_packages.append(join(out_root, pf, package_name))
+
+    # all_packages = built_packages + converted_packages
+    # for package in all_packages:
+    #     _, package_name = split(package)
+    #     subprocess.run(
+    #         ["anaconda", "upload", "--force", "--user", "OpenSourceEconomics", package]
+    #     )
 
 
 if __name__ == "__main__":
