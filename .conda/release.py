@@ -19,9 +19,9 @@ from conda_build.api import convert
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 TEMPORARY_FOLDERS = [
-    Path("documentation", "_build"),
-    Path("documentation", "_generated"),
-] + list(Path(".").glob("**/__pycache__"))
+    Path("..", "docs", "_build"),
+    Path("..", "docs", "_generated"),
+] + list(Path("..").glob("**/__pycache__"))
 
 
 @click.group(context_settings=CONTEXT_SETTINGS, chain=True, invoke_without_command=True)
@@ -43,13 +43,13 @@ def clean():
     )
 
     # Check for environments in .tox.
-    tox_envs = list(Path(".", ".tox").glob("*"))
+    tox_envs = list(Path("..", ".tox").glob("*"))
     if tox_envs and click.confirm(
         "Do you want to remove all tests environments under .tox?"
     ):
         for path in tox_envs:
             subprocess.run(f"conda env remove -p {path}", shell=True)
-        shutil.rmtree(".tox")
+        shutil.rmtree(Path("..", ".tox"))
 
     # Check for temporary files and folders which can be deleted.
     for path in TEMPORARY_FOLDERS:
