@@ -178,6 +178,7 @@ def test_parse_observables():
         ),
         index_col=["category", "name"],
     )["value"]
+
     optim_paras = _parse_observables({"exogenous_processes": {}}, params)
 
     expected = {
