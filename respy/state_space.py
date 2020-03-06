@@ -1,11 +1,13 @@
 """Everything related to the state space of a structural model."""
 import itertools
+import warnings
 
 import numba as nb
 import numpy as np
 import pandas as pd
 
 from respy._numba import array_to_tuple
+from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
 from respy.shared import compute_covariates
@@ -90,6 +92,16 @@ class _BaseStateSpace:
                 core[choice] |= core.eval(formula)
 
         is_inadmissible = core[optim_paras["choices"]].to_numpy(dtype=np.bool)
+
+        if np.any(is_inadmissible) and optim_paras["inadmissibility_penalty"] is None:
+            warnings.warn(
+                "Some choices in the model are not admissible all the time. Thus, respy"
+                " applies a penalty to the utility for these choices which is "
+                f"{INADMISSIBILITY_PENALTY} by default. For the full solution, the "
+                "penalty only needs to be larger than all other value functions to be "
+                "effective. Choose a milder penalty for the interpolation which does "
+                "not dominate the linear interpolation model."
+            )
 
         return is_inadmissible
 
