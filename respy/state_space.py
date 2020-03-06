@@ -1,11 +1,13 @@
 """Everything related to the state space of a structural model."""
 import itertools
+import warnings
 
 import numba as nb
 import numpy as np
 import pandas as pd
 
 from respy._numba import array_to_tuple
+from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
 from respy.shared import compute_covariates
@@ -261,7 +263,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
             setattr(self, name, container.copy())
 
     def _create_is_inadmissible(self, optim_paras, options):
-        states = self.states
+        core = self.core.copy()
         # Apply the maximum experience as a default constraint only if its not the last
         # period. Otherwise, it is unconstrained.
         for choice in optim_paras["choices_w_exp"]:
@@ -271,18 +273,28 @@ class _SingleDimStateSpace(_BaseStateSpace):
                 if max_exp != optim_paras["n_periods"] - 1
                 else "False"
             )
-            states[choice] = states.eval(formula)
+            core[choice] = core.eval(formula)
 
         # Apply no constraint for choices without experience.
         for choice in optim_paras["choices_wo_exp"]:
-            states[choice] = states.eval("False")
+            core[choice] = core.eval("False")
 
         # Apply user-defined constraints
         for choice in optim_paras["choices"]:
             for formula in options["inadmissible_states"].get(choice, []):
-                states[choice] |= states.eval(formula)
+                core[choice] |= core.eval(formula)
 
-        is_inadmissible = states[optim_paras["choices"]].to_numpy(dtype=np.bool)
+        is_inadmissible = core[optim_paras["choices"]].to_numpy(dtype=np.bool)
+
+        if np.any(is_inadmissible) and optim_paras["inadmissibility_penalty"] is None:
+            warnings.warn(
+                "Some choices in the model are not admissible all the time. Thus, respy"
+                " applies a penalty to the utility for these choices which is "
+                f"{INADMISSIBILITY_PENALTY} by default. For the full solution, the "
+                "penalty only needs to be larger than all other value functions to be "
+                "effective. Choose a milder penalty for the interpolation which does "
+                "not dominate the linear interpolation model."
+            )
 
         return is_inadmissible
 

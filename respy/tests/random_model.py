@@ -9,6 +9,7 @@ from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
 from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
 
 from respy.config import DEFAULT_OPTIONS
+from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import ROOT_DIR
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
@@ -161,6 +162,10 @@ def generate_random_model(
         observable_covs = {x: "{} == {}".format(*x.rsplit("_", 1)) for x in indices}
     else:
         observable_covs = {}
+
+    params.loc[
+        ("inadmissibility_penalty", "inadmissibility_penalty"), "value"
+    ] = INADMISSIBILITY_PENALTY
 
     options = {
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),

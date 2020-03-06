@@ -196,7 +196,6 @@ def _internal_log_like_obs(
     wages = state_space.get_attribute("wages")
     nonpecs = state_space.get_attribute("nonpecs")
     expected_value_functions = state_space.get_attribute("expected_value_functions")
-    is_inadmissible = state_space.get_attribute("is_inadmissible")
     indices_of_child_states = state_space.get_attribute("indices_of_child_states")
 
     df = _compute_wage_and_choice_likelihood_contributions(
@@ -205,7 +204,6 @@ def _internal_log_like_obs(
         wages,
         nonpecs,
         expected_value_functions,
-        is_inadmissible,
         indices_of_child_states,
         optim_paras=optim_paras,
         options=options,
@@ -249,7 +247,6 @@ def _compute_wage_and_choice_likelihood_contributions(
     wages,
     nonpecs,
     expected_value_functions,
-    is_inadmissible,
     indices_of_child_states,
     optim_paras,
     options,
@@ -289,7 +286,6 @@ def _compute_wage_and_choice_likelihood_contributions(
         continuation_values,
         draws,
         optim_paras["delta"],
-        is_inadmissible[indices],
         choices,
         options["estimation_tau"],
     )
@@ -371,9 +367,8 @@ def _logsumexp(x):
 
 
 @nb.guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
-    "() -> ()",
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, i8, f8, f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (), () -> ()",
     nopython=True,
     target="parallel",
 )
@@ -383,7 +378,6 @@ def _simulate_log_probability_of_individuals_observed_choice(
     continuation_values,
     draws,
     delta,
-    is_inadmissible,
     choice,
     tau,
     smoothed_log_probability,
@@ -419,9 +413,6 @@ def _simulate_log_probability_of_individuals_observed_choice(
         Array with shape (n_draws, n_choices)
     delta : float
         Discount rate.
-    is_inadmissible: numpy.ndarray
-        Array with shape (n_choices,) containing an indicator for each choice whether
-        the following state is inadmissible.
     choice : int
         Choice of the agent.
     tau : float
@@ -442,12 +433,7 @@ def _simulate_log_probability_of_individuals_observed_choice(
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
-                wages[j],
-                nonpec[j],
-                continuation_values[j],
-                draws[i, j],
-                delta,
-                is_inadmissible[j],
+                wages[j], nonpec[j], continuation_values[j], draws[i, j], delta,
             )
 
             smoothed_value_functions[j] = value_function / tau
