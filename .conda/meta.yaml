@@ -29,8 +29,6 @@ requirements:
     - pyyaml
     - scipy
 test:
-  requires:
-    - pytest-xdist
   commands:
     - pytest
   source_files:
