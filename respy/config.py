@@ -26,7 +26,19 @@ message.
 
 """
 
-# Everything for the indexer.
+INADMISSIBILITY_PENALTY = -400_000
+"""int : Penalty for choosing an inadmissible state.
+
+The penalty is applied to the non-pecuniary reward of choice which cannot be taken.
+
+See Also
+--------
+respy.pre_processing.model_processing._parse_inadmissibility_penalty
+respy.state_space._create_is_inadmissible
+respy.solve._create_choice_rewards
+
+"""
+
 INDEXER_DTYPE = np.int32
 """numpy.dtype : Data type for the entries in the state space indexer."""
 INDEXER_INVALID_INDEX = np.iinfo(INDEXER_DTYPE).min
@@ -43,9 +55,6 @@ dimension.
 
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10
-
-# Penalty for states which cannot be reached.
-INADMISSIBILITY_PENALTY = -400_000
 
 SEED_STARTUP_ITERATION_GAP = 100
 

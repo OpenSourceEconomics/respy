@@ -69,6 +69,29 @@ Contact: `@peisenha <https://github.com/peisenha>`_
 Thesis
 ------
 
+Stenzel, T. (2020). Uncertainty Quantification for an Eckstein-Keane-Wolpin model with
+correlated input parameters.
+
+    The thesis analyzes the uncertainty of the effect of a 500 USD subsidy on annual
+    tuition costs for higher education on the average years of education caused by the
+    parametric uncertainty in the model of occupational choice by Keane and Wolpin
+    (1994). This model output is called a quantity of interest (QoI). The uncertainty
+    quantification (UQ) has two stages. The first stage is an uncertainty analysis, and
+    the second stage is a quantitative global sensitivity analysis (GSA). The
+    uncertainty analysis finds that the tuition subsidy has a mean effect of an increase
+    of 1.5 years and a standard deviation of 0.1 years in education. For the qualitative
+    GSA, I develop redesigned Elementary Effects based on Ge and Menendez (2017) for
+    a model with correlated input parameters. Based on these Elementary Effects, I
+    compute multiple aggregate statistics to quantify the impact of the uncertainty in
+    one parameter on uncertainty in the QoI. However, the analysis does not lead to clear
+    results as there is no consensus about how to interpret the aggregate statistics in
+    this context - even for uncorrelated parameters.
+
+
+Contact: `@tostenzel <https://github.com/tostenzel>`_
+
+----
+
 Massner, P. (2019). Modeling Wage Uncertainty in Dynamic Life-cycle Models.
 
     The thesis sheds light on the validity of the modeling assumptions of wage
