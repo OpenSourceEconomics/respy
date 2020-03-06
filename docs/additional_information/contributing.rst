@@ -21,7 +21,7 @@ How to contribute?
    merge your changes into the project.
 
 2. Clone the repository to your disk. Set up the environment of the project with conda
-   and the ``environment.yaml``. Implement the fix.
+   and the ``environment.yml``. Implement the fix.
 
 3. We validate contributions in three ways. First, we have a test suite to check the
    implementation of ``respy``. Second, we correct for stylistic errors in code and
