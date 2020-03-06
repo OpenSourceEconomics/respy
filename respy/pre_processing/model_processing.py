@@ -136,6 +136,7 @@ def _read_params(df_or_series):
 def _parse_parameters(params, options):
     """Parse the parameter vector into a dictionary of model quantities."""
     optim_paras = {"delta": params.loc[("delta", "delta")]}
+    optim_paras = _parse_inadmissibility_penalty(optim_paras, params)
     optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
@@ -144,6 +145,24 @@ def _parse_parameters(params, options):
     optim_paras = _parse_measurement_errors(optim_paras, params)
     optim_paras = _parse_types(optim_paras, params)
     optim_paras = _parse_lagged_choices(optim_paras, options, params)
+
+    return optim_paras
+
+
+def _parse_inadmissibility_penalty(optim_paras, params):
+    """Parse the inadmissibility penalty.
+
+    The penalty is added to the non-pecuniary reward of a choice in
+    :func:`respy.solve._create_choice_rewards` if the alternative cannot be chosen. For
+    example, Keane and Wolpin (1997) limit schooling to 20 years.
+
+    A warning is raise in :func:`respy.state_space._create_is_inadmissible` if the model
+    includes inadmissible states but no penalty was specified. In this case, the default
+    penalty is :data:`respy.config.INADMISSIBILITY_PENALTY`.
+
+    """
+    penalty = params.get(("inadmissibility_penalty", "inadmissibility_penalty"), None)
+    optim_paras["inadmissibility_penalty"] = penalty
 
     return optim_paras
 
