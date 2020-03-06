@@ -1,6 +1,7 @@
 """Process model specification files or objects."""
 import copy
 import itertools
+import os
 import re
 import warnings
 from pathlib import Path
@@ -49,15 +50,14 @@ def process_params_and_options(params, options):
     return optim_paras, options
 
 
-def _read_options(input_):
+def _read_options(dict_or_path):
     """Read the options which can either be a dictionary or a path."""
-    if not isinstance(input_, (Path, dict)):
-        raise TypeError("options must be pathlib.Path or dictionary.")
-
-    if isinstance(input_, Path):
-        options = yaml.safe_load(input_.read_text())
+    if isinstance(dict_or_path, Path):
+        options = yaml.safe_load(dict_or_path.read_text())
+    elif isinstance(dict_or_path, dict):
+        options = copy.deepcopy(dict_or_path)
     else:
-        options = copy.deepcopy(input_)
+        raise TypeError("options must be pathlib.Path or dictionary.")
 
     return options
 
@@ -68,13 +68,31 @@ def _create_internal_seeds_from_user_seeds(options):
     Instead of reusing the same seed, we use sequences of seeds incrementing by one. It
     ensures that we do not accidentally draw the same randomness twice.
 
-    Furthermore, we need to sets of seeds. The first set is for building
+    As naive sequences started by the seeds given by the user might be overlapping,
+    the user seeds are used to generate seeds within certain ranges. The seed for the
+
+    - solution is between 100 and 1,000.
+    - simulation is between 10,000 and 100,000.
+    - likelihood estimation is between 1,000,000 and 10,000,000.
+
+    Furthermore, we need to sequences of seeds. The first sequence is for building
     :func:`~respy.simulate.simulate` or :func:`~respy.likelihood.log_like` where
-    ``"startup"`` seeds are used to generate the draws. The second set is for the
-    iterations and has to be reset to the initial value at the beginning of every
-    iteration.
+    `"startup"` seeds are used to generate the draws. The second sequence start at
+    `seed_start + SEED_STARTUP_ITERATION_GAP` and has to be reset to the initial
+    value at the beginning of every iteration.
 
     See :ref:`randomness-and-reproducibility` for more information.
+
+    Example
+    -------
+    >>> options = {"solution_seed": 1, "simulation_seed": 2, "estimation_seed": 3}
+    >>> options = _create_internal_seeds_from_user_seeds(options)
+    >>> options["solution_seed_startup"], options["solution_seed_iteration"]
+    (count(137), count(237))
+    >>> options["simulation_seed_startup"], options["simulation_seed_iteration"]
+    (count(99256), count(99356))
+    >>> options["estimation_seed_startup"], options["estimation_seed_iteration"]
+    (count(1071530), count(1071630))
 
     """
     seeds = [f"{key}_seed" for key in ["solution", "simulation", "estimation"]]
@@ -95,20 +113,20 @@ def _create_internal_seeds_from_user_seeds(options):
     return options
 
 
-def _read_params(input_):
+def _read_params(df_or_series):
     """Read the parameters which can either be a path, a Series, or a DataFrame."""
-    input_ = pd.read_csv(input_) if isinstance(input_, Path) else input_.copy()
+    if isinstance(df_or_series, Path):
+        df_or_series = pd.read_csv(df_or_series)
+    else:
+        df_or_series.copy()
 
-    if isinstance(input_, pd.DataFrame):
-        if not input_.index.names == ["category", "name"]:
-            input_.set_index(["category", "name"], inplace=True)
-        params = input_["value"]
-    elif isinstance(input_, pd.Series):
-        params = input_
-        assert params.index.names == [
-            "category",
-            "name",
-        ], "params as pd.Series has wrong index."
+    if isinstance(df_or_series, pd.DataFrame):
+        if not df_or_series.index.names == ["category", "name"]:
+            df_or_series = df_or_series.set_index(["category", "name"])
+        params = df_or_series["value"]
+    elif isinstance(df_or_series, pd.Series):
+        params = df_or_series
+        assert params.index.names == ["category", "name"], "params has wrong index."
     else:
         raise TypeError("params must be Path, pd.DataFrame or pd.Series.")
 
@@ -118,7 +136,6 @@ def _read_params(input_):
 def _parse_parameters(params, options):
     """Parse the parameter vector into a dictionary of model quantities."""
     optim_paras = {"delta": params.loc[("delta", "delta")]}
-
     optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
@@ -127,6 +144,22 @@ def _parse_parameters(params, options):
     optim_paras = _parse_measurement_errors(optim_paras, params)
     optim_paras = _parse_types(optim_paras, params)
     optim_paras = _parse_lagged_choices(optim_paras, options, params)
+
+    return optim_paras
+
+
+def _parse_observables(optim_paras, params):
+    """Parse observed variables and their levels."""
+    optim_paras["observables"] = {}
+
+    names = _parse_observable_or_exog_process_names(params, "observable")
+
+    for observable in names:
+        regex_pattern = fr"\bobservable_{observable}_([0-9a-z_]+)\b"
+        parsed_parameters = _parse_probabilities_or_logit_coefficients(
+            params, regex_pattern
+        )
+        optim_paras["observables"][observable] = parsed_parameters
 
     return optim_paras
 
@@ -140,8 +173,8 @@ def _parse_choices(optim_paras, params, options):
     each group, we order alphabetically.
 
     """
-    # Be careful with ``choices_w_exp_fuzzy`` as it contains some erroneous elements,
-    # e.g., ``"a_squared"`` from the covariate ``"exp_a_squared"``.
+    # Be careful with `choices_w_exp_fuzzy` as it contains some erroneous elements,
+    # e.g., `"a_squared"` from the covariate `"exp_a_squared"`.
     choices_w_exp_fuzzy = set(_infer_choices_with_experience(params, options))
     choices_w_wage = set(_infer_choices_with_prefix(params, "wage"))
     choices_w_nonpec = set(_infer_choices_with_prefix(params, "nonpec"))
@@ -157,34 +190,6 @@ def _parse_choices(optim_paras, params, options):
     # Dictionaries are insertion ordered since Python 3.6+.
     order = optim_paras["choices_w_exp"] + optim_paras["choices_wo_exp"]
     optim_paras["choices"] = {choice: {} for choice in order}
-
-    return optim_paras
-
-
-def _parse_observables(optim_paras, params):
-    """Parse observed variables and their levels."""
-    optim_paras["observables"] = {}
-
-    regex_observables = r"\bobservable_([a-z0-9_]+)_[0-9a-z]+\b"
-    observable_counts = (
-        params.index.get_level_values("category")
-        .str.extract(regex_observables, expand=False)
-        .value_counts()
-        .sort_index()
-    )
-
-    for observable in observable_counts.index:
-        regex_pattern = fr"\bobservable_{observable}_([0-9a-z]+)\b"
-        parsed_parameters = _parse_probabilities_or_logit_coefficients(
-            params, regex_pattern
-        )
-        if len(parsed_parameters) < 2:
-            warnings.warn(
-                f"Observable '{observable}' must have at least two possible values. "
-                "Constant effects should be implemented via constant covariates.",
-                category=DeprecationWarning,
-            )
-        optim_paras["observables"][observable] = parsed_parameters
 
     return optim_paras
 
@@ -233,32 +238,39 @@ def _parse_shocks(optim_paras, params):
             params.loc["shocks_chol"]
         )
     else:
-        raise NotImplementedError
+        raise KeyError("No shock matrix is specified.")
 
     return optim_paras
 
 
 def _parse_measurement_errors(optim_paras, params):
-    """Parse correctly sorted measurement errors.
+    """Parse the standard deviations of measurement errors.
 
-    optim_paras["is_meas_error"] is only False if there are no meas_error sds in params,
-    not if they are all zero. Otherwise we would introduce a kink into the likelihood
-    function.
+    Measurement errors can be provided for all or none choices with wages. Measurement
+    errors for non-wage choices are neglected.
+
+    `optim_paras["has_meas_error"]` is only False if there are no standard deviations of
+    measurement errors in `params`, not if they are all zero. Otherwise, we would
+    introduce a kink into the likelihood function.
 
     """
     meas_error = np.zeros(len(optim_paras["choices"]))
 
     if "meas_error" in params.index:
-        optim_paras["is_meas_error"] = True
+        optim_paras["has_meas_error"] = True
         labels = [f"sd_{choice}" for choice in optim_paras["choices_w_wage"]]
-        assert set(params.loc["meas_error"].index) == set(labels), (
-            "Standard deviations of measurement error have to be provided for all or "
-            "none of the choices with wages. There can't be standard deviations of "
-            "measurement errors for choices without wage."
-        )
-        meas_error[: len(labels)] = params.loc["meas_error"].loc[labels].to_numpy()
+        indices = list(itertools.product(["meas_error"], labels))
+        try:
+            # Using indices without the list comprehension raises only a warning for
+            # `pandas < 1.`.
+            meas_error[: len(labels)] = [params.loc[idx] for idx in indices]
+        except KeyError as e:
+            raise KeyError(
+                "Standard deviations of measurement error have to be provided for all "
+                "or none of the choices with wages."
+            ) from e
     else:
-        optim_paras["is_meas_error"] = False
+        optim_paras["has_meas_error"] = False
 
     optim_paras["meas_error"] = meas_error
 
@@ -428,8 +440,6 @@ def _parse_lagged_choices(optim_paras, options, params):
     lc_params = [0] if not matches_params else pd.to_numeric(matches_params)
     n_lc_params = max(lc_params)
 
-    # Todo: I am not sure whether we want to emit a warning? Defaults are fine.
-
     # Check whether there is a discrepancy between the maximum number of lags specified
     # in covariates or params.
     if n_lc_covariates > n_lc_params:
@@ -499,9 +509,9 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
 
     .. math::
 
-        p_i      &= \frac{e^{x_i \beta_i}}{\sum_j e^{x_j \beta_j}} \
-                 &= \frac{e^{\beta_i}}{\sum_j e^{\beta_j}} \
-        log(p_i) &= \beta_i - \log(\sum_j e^{\beta_j}) \
+        p_i      &= \frac{e^{x_i \beta_i}}{\sum_j e^{x_j \beta_j}} \\
+                 &= \frac{e^{\beta_i}}{\sum_j e^{\beta_j}} \\
+        log(p_i) &= \beta_i - \log(\sum_j e^{\beta_j}) \\
                  &= \beta_i - C
 
     Raises
@@ -569,6 +579,64 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
         container = None
 
     return container
+
+
+def _parse_observable_or_exog_process_names(params, keyword):
+    """Parse the names of observables or exogenous processes.
+
+    The function accepts `params` and a `keyword` like `observable`
+    and separates the name of the variables from its possible realizations.
+
+    Parameters
+    ----------
+    params : pd.Series
+        Contains the parameters of a model.
+    keyword : {"exogenous_process", "observable"}
+        Keyword for a group of parameters.
+
+    Examples
+    --------
+    >>> index = pd.MultiIndex.from_tuples([
+    ...     ("observable_observable_0_first", "probability"),
+    ...     ("observable_observable_0_second", "probability"),
+    ...     ("observable_observable_1_first", "probability"),
+    ...     ("observable_observable_1_second", "probability"),
+    ...     ("observable_children_two_or_less", "probability"),
+    ...     ("observable_children_more_than_two", "probability"),
+    ... ], names=["category", "name"])
+    >>> params = pd.Series(index=index, dtype="object")
+    >>> _parse_observable_or_exog_process_names(params, "observable")
+    ['children', 'observable_0', 'observable_1']
+
+    """
+    mask = params.index.get_level_values("category").str.startswith(f"{keyword}_")
+    categories = (
+        params[mask]
+        .index.get_level_values("category")
+        .str.replace(f"{keyword}_", "", n=1)
+    )
+
+    prefixes = {
+        os.path.commonprefix([a, b]) for a, b in itertools.combinations(categories, 2)
+    }
+    # Remove trailing underscores and empty strings.
+    prefixes = {prefix[:-1] for prefix in prefixes if prefix}
+
+    # Remove substrings. If a prefix is in any other prefix, remove it from the set.
+    substrings = {a for a, b in itertools.permutations(prefixes, 2) if a in b}
+    prefixes = sorted(prefixes - substrings)
+
+    # Check whether not as many names
+    n_matched_params = np.any(
+        [categories.str.startswith(prefix) for prefix in prefixes], axis=0
+    ).sum()
+
+    if mask.sum() != n_matched_params:
+        raise ValueError(
+            "Observables and exogenous processes must have at least two values."
+        )
+
+    return prefixes
 
 
 def _sync_optim_paras_and_options(optim_paras, options):

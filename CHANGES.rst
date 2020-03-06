@@ -79,6 +79,8 @@ releases are available on `Anaconda.org
   random, moved to Github Actions, and more badges.
 - :gh:`323` adds an informative message if simulated individuals cannot be mapped to
   states in the state space (:ghuser:`mo2561057`, :ghuser:`tobiasraabe`).
+- :gh:`331` better parsing for observables (and exogenous processes) and better model
+  tests and docstrings.
 
 
 *Releases prior to the second version were published on PyPI, but deleted later. You can
