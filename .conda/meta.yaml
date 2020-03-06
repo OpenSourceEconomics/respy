@@ -36,7 +36,9 @@ test:
     - tox.ini
 
 about:
-  home: https://github.com/OpenSourceEconomics/respy
-  license: MIT
+  home: {{ data.get('url') }}
+  license: {{ data.get('license') }}
   license_file: LICENSE
-  summary: Simulation and estimation of structural labor models.
+  summary: {{ data.get('description') }}
+  dev_url: https://github.com/OpenSourceEconomics/respy
+  doc_url: {{ data.get('url') }}
