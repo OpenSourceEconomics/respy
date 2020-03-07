@@ -80,10 +80,10 @@ correlated input parameters.
     the second stage is a quantitative global sensitivity analysis (GSA). The
     uncertainty analysis finds that the tuition subsidy has a mean effect of an increase
     of 1.5 years and a standard deviation of 0.1 years in education. For the qualitative
-    GSA, I develop redesigned Elementary Effects based on Ge and Menendez (2017) for
-    a model with correlated input parameters. Based on these Elementary Effects, I
-    compute multiple aggregate statistics to quantify the impact of the uncertainty in
-    one parameter on uncertainty in the QoI. However, the analysis does not lead to clear
+    GSA, I develop redesigned Elementary Effects based on Ge and Menendez (2017) for a
+    model with correlated input parameters. Based on these Elementary Effects, I compute
+    multiple aggregate statistics to quantify the impact of the uncertainty in one
+    parameter on uncertainty in the QoI. However, the analysis does not lead to clear
     results as there is no consensus about how to interpret the aggregate statistics in
     this context - even for uncorrelated parameters.
 

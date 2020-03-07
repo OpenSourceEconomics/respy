@@ -523,7 +523,7 @@ def _random_choice(choices, probabilities=None, decimals=5):
     return out
 
 
-@distribute_and_combine_simulation
+@split_and_combine_df
 @parallelize_across_dense_dimensions
 def _apply_law_of_motion(df, indexer, transition_probabilities, optim_paras):
     """Apply the law of motion to get the states in the next period.
