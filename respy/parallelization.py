@@ -115,17 +115,17 @@ def split_and_combine_likelihood(func):
         if dense_columns:
             n_obs = df.shape[0]
             n_types = optim_paras["n_types"]
+
             # Number each state to split the shocks later. This is necessary to keep the
             # regression tests from failing.
             df["__id"] = np.arange(n_obs)
             # Each row of indices corresponds to a state whereas the columns refer to
             # different types.
             indices = np.arange(n_obs * n_types).reshape(n_obs, n_types)
-            splitted_df = {}
-            for i in range(optim_paras["n_types"]):
-                df_ = df.copy().assign(type=i)
-                type_specific_dense = _split_dataframe(df_, dense_columns)
-                splitted_df = {**splitted_df, **type_specific_dense}
+
+            df_ = pd.concat([df.copy().assign(type=i) for i in range(n_types)])
+            splitted_df = _split_dataframe(df_, dense_columns)
+
             splitted_shocks = _split_shocks(
                 base_draws_est, splitted_df, indices, optim_paras
             )
