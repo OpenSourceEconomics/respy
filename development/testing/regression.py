@@ -5,12 +5,11 @@ import socket
 import click
 import numpy as np
 
-import respy as rp
 from respy.config import TEST_RESOURCES_DIR
 from respy.config import TOL_REGRESSION_TESTS
 from respy.tests.random_model import generate_random_model
-from respy.tests.random_model import simulate_truncated_data
-
+from respy.tests.test_regression import compute_log_likelihood
+from respy.tests.test_regression import load_regression_tests
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
@@ -27,15 +26,6 @@ def _prepare_message(idx_failures):
         message = f"Regression testing is completed on @{hostname}."
 
     return subject, message
-
-
-def calc_crit_val(params, options):
-    df = simulate_truncated_data(params, options)
-
-    crit_func = rp.get_crit_func(params, options, df)
-    crit_val = crit_func(params)
-
-    return crit_val
 
 
 def run_regression_tests(n_tests, strict, notification):
@@ -88,20 +78,12 @@ def create_regression_tests(n_tests, save):
             pickle.dump(tests, p)
 
 
-def load_regression_tests():
-    """Load regression tests from disk."""
-    with open(TEST_RESOURCES_DIR / "regression_vault.pickle", "rb") as p:
-        tests = pickle.load(p)
-
-    return tests
-
-
 def investigate_regression_test(idx):
     """Investigate regression tests."""
     tests = load_regression_tests()
     params, options, exp_val = tests[idx]
 
-    crit_val = calc_crit_val(params, options)
+    crit_val = compute_log_likelihood(params, options)
 
     assert np.isclose(
         crit_val, exp_val, rtol=TOL_REGRESSION_TESTS, atol=TOL_REGRESSION_TESTS
@@ -113,7 +95,7 @@ def _check_single(test, strict):
     params, options, exp_val = test
 
     try:
-        crit_val = calc_crit_val(params, options)
+        crit_val = compute_log_likelihood(params, options)
         is_success = np.isclose(
             crit_val, exp_val, rtol=TOL_REGRESSION_TESTS, atol=TOL_REGRESSION_TESTS
         )
@@ -132,7 +114,7 @@ def _create_single(idx):
 
     params, options = generate_random_model()
 
-    crit_val = calc_crit_val(params, options)
+    crit_val = compute_log_likelihood(params, options)
 
     if not isinstance(crit_val, float):
         raise AssertionError(" ... value of criterion function too large.")
