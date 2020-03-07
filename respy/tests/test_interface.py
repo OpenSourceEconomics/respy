@@ -12,4 +12,4 @@ def test_get_example_model(model):
 
 @pytest.mark.parametrize("model", EXAMPLE_MODELS)
 def test_get_parameter_constraints(model):
-    assert get_parameter_constraints(model)
+    get_parameter_constraints(model)

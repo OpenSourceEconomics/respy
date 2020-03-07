@@ -29,7 +29,7 @@ setup(
     python_requires=">=3.6.0",
     url="https://respy.readthedocs.io/en/latest/",
     project_urls=PROJECT_URLS,
-    packages=find_packages() + ["development.testing"],
+    packages=find_packages(),
     license="MIT",
     keywords=["Economics", " Discrete Choice Dynamic Programming Model"],
     classifiers=[

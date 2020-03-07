@@ -11,6 +11,7 @@ from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
 from respy.shared import compute_covariates
+from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
@@ -814,11 +815,7 @@ def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
         covariates = compute_covariates(df, options["covariates_dense"])
         covariates = covariates.apply(downcast_to_smallest_dtype)
         covariates = covariates.to_dict(orient="index")
-
-        # Convert scalar keys to tuples.
-        for key in covariates.copy():
-            if np.isscalar(key):
-                covariates[(key,)] = covariates.pop(key)
+        covariates = convert_dictionary_keys_to_dense_indices(covariates)
 
     else:
         covariates = False

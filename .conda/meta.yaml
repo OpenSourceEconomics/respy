@@ -1,0 +1,44 @@
+{% set data = load_setup_py_data() %}
+
+package:
+  name: respy
+  version: {{ data.get('version') }}
+
+source:
+  path: ../../respy
+
+build:
+  noarch: python
+
+requirements:
+  build:
+    - python
+    - setuptools
+
+  run:
+    - python >=3.6,<=3.7
+    - chaospy
+    - click
+    - estimagic >=0.0.27
+    - joblib
+    - mkl
+    - numba >=0.42
+    - numpy
+    - pandas >=0.24
+    - pytest
+    - pyyaml
+    - scipy
+test:
+  commands:
+    - pytest
+  source_files:
+    - respy
+    - tox.ini
+
+about:
+  home: {{ data.get('url') }}
+  license: {{ data.get('license') }}
+  license_file: LICENSE
+  summary: {{ data.get('description') }}
+  dev_url: https://github.com/OpenSourceEconomics/respy
+  doc_url: {{ data.get('url') }}

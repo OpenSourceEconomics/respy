@@ -24,12 +24,12 @@ from respy.simulate import get_simulate_func  # noqa: F401
 from respy.solve import get_solve_func  # noqa: F401
 from respy.tests.random_model import add_noise_to_params  # noqa: F401
 
-# We only maintain the code base for Python >= 3.6.
-assert sys.version_info[:2] >= (3, 6)
+# We only maintain the code base for Python 3.6 and 3.7.
+assert (3, 6) <= sys.version_info[:2] <= (3, 7)
 
 __version__ = "2.0.0dev2"
 
 
-def test():
+def test(*args, **kwargs):
     """Run basic tests of the package."""
-    pytest.main([str(ROOT_DIR)])
+    pytest.main([str(ROOT_DIR), *args], **kwargs)

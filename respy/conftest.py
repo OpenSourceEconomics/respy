@@ -40,7 +40,7 @@ def pytest_generate_tests(metafunc):
     if "model_or_seed" in metafunc.fixturenames:
         n_random_tests = int(metafunc.config.getoption("--n-random-tests"))
         seeds = [
-            metafunc.config.getoption("--randomly-seed") + i
+            metafunc.config.getoption("--randomly-seed", 0) + i
             for i in range(n_random_tests)
         ]
 
