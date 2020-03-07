@@ -62,7 +62,8 @@ def test_parse_initial_and_max_experience():
         }
     ).set_index(["category", "name"])["value"]
 
-    optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
+    with pytest.warns(UserWarning, match=r"The probabilities for parameter group"):
+        optim_paras = _parse_initial_and_max_experience(optim_paras, params, options)
 
     assert (
         optim_paras["choices"]["a"]["start"][0]
@@ -87,7 +88,8 @@ def test_normalize_probabilities():
         mask = params.index.get_level_values(0).str.contains(group)
         params.loc[mask, "value"] = params.loc[mask, "value"].to_numpy() / 2
 
-    optim_paras_2, _ = process_params_and_options(params, options)
+    with pytest.warns(UserWarning, match=r"The probabilities for parameter group"):
+        optim_paras_2, _ = process_params_and_options(params, options)
 
     for key in optim_paras_1["choices"]["edu"]["start"]:
         np.testing.assert_array_almost_equal(

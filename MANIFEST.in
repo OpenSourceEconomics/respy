@@ -8,7 +8,6 @@
 
 include CHANGES.rst
 include CITATION
-include Dockerfile
 include LICENSE
 include README.rst
 include tox.ini
@@ -16,14 +15,13 @@ include *.sh
 include *.yaml
 include *.yml
 
-graft docs
+graft .conda
 graft respy
 
-prune .binder
 prune development
-prune docs/_build
-prune docs/getting_started/__tutorial__
+prune docs
 
 global-exclude __pycache__
+global-exclude .ipynb_checkpoints
 global-exclude *.py[co]
 global-exclude *-checkpoint.ipynb
