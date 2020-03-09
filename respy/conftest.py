@@ -2,6 +2,12 @@
 import pytest
 
 
+@pytest.fixture(scope="session")
+def seed():
+    """Create placeholder value for function argument `seed` to be overwritten."""
+    return "placeholder value"
+
+
 def pytest_addoption(parser):
     """Add a custom option to the pytest call.
 
@@ -39,7 +45,7 @@ def pytest_generate_tests(metafunc):
     """
     if "model_or_seed" in metafunc.fixturenames:
         argument = "model_or_seed"
-    elif "_seed" in metafunc.fixturenames:
+    elif "seed" in metafunc.fixturenames:
         argument = "seed"
     else:
         argument = False
