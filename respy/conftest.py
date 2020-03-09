@@ -38,6 +38,13 @@ def pytest_generate_tests(metafunc):
 
     """
     if "model_or_seed" in metafunc.fixturenames:
+        argument = "model_or_seed"
+    elif "_seed" in metafunc.fixturenames:
+        argument = "seed"
+    else:
+        argument = False
+
+    if argument:
         n_random_tests = int(metafunc.config.getoption("--n-random-tests"))
         seeds = [
             metafunc.config.getoption("--randomly-seed", 0) + i
@@ -48,9 +55,7 @@ def pytest_generate_tests(metafunc):
         # If a marker exist, extend it with the seeds.
         if mark:
             # Combine the existing parametrize with the seeds.
-            extended_mark = pytest.mark.parametrize(
-                "model_or_seed", mark.args[1] + seeds
-            ).mark
+            extended_mark = pytest.mark.parametrize(argument, mark.args[1] + seeds).mark
 
             # Replace the old parametrize marker with the extended marker.
             all_marks = metafunc.definition.own_markers
@@ -60,4 +65,4 @@ def pytest_generate_tests(metafunc):
             metafunc.definition.own_markers[pos] = extended_mark
         # Else, parametrize with the seeds.
         else:
-            metafunc.parametrize("model_or_seed", seeds)
+            metafunc.parametrize(argument, seeds)
