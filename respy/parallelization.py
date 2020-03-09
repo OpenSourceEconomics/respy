@@ -68,6 +68,47 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
         return decorator_parallelize_across_dense_dimensions
 
 
+def combine_and_split_interpolation(func):
+    """Combine and split the information across sub state spaces.
+
+    For the interpolation, we compute endogenous, exogenous, and other components within
+    each sub state space. The linear model to predict the expected value function has to
+    be fitted on all states withing a period which is why this decorator combines the
+    information.
+
+    """
+
+    @functools.wraps(func)
+    def wrapper_combine_and_split_interpolation(
+        endogenous, exogenous, max_evf, not_interpolated
+    ):
+        if isinstance(endogenous, dict):
+            dense_indices = endogenous.keys()
+
+            endogenous = np.hstack(tuple(endogenous.values()))
+            exogenous = np.row_stack(tuple(exogenous.values()))
+            max_evf = np.hstack(tuple(max_evf.values()))
+            not_interpolated = np.hstack(tuple(not_interpolated.values()))
+
+            out = func(endogenous, exogenous, max_evf, not_interpolated)
+
+            period_expected_value_functions = {
+                dense_idx: array
+                for dense_idx, array in zip(
+                    dense_indices, np.split(out, len(dense_indices), axis=0)
+                )
+            }
+
+        else:
+            period_expected_value_functions = func(
+                endogenous, exogenous, max_evf, not_interpolated
+            )
+
+        return period_expected_value_functions
+
+    return wrapper_combine_and_split_interpolation
+
+
 def split_and_combine_df(func=None, *, remove_type=False):
     """Split the data across sub state spaces and combine.
 
