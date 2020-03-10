@@ -5,7 +5,9 @@ package:
   version: {{ data.get('version') }}
 
 source:
-  path: ../../respy
+  # git_url is nice in that it won't capture devenv stuff.  However, it only captures
+  # committed code, so pay attention.
+  git_url: ../
 
 build:
   noarch: python
@@ -40,5 +42,6 @@ about:
   license: {{ data.get('license') }}
   license_file: LICENSE
   summary: {{ data.get('description') }}
+  description: {{ data.get('long_description') }}
   dev_url: https://github.com/OpenSourceEconomics/respy
   doc_url: {{ data.get('url') }}
