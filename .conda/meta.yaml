@@ -42,6 +42,5 @@ about:
   license: {{ data.get('license') }}
   license_file: LICENSE
   summary: {{ data.get('description') }}
-  description: {{ data.get('long_description') }}
   dev_url: https://github.com/OpenSourceEconomics/respy
   doc_url: {{ data.get('url') }}
