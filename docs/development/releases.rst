@@ -29,14 +29,33 @@ How to release a new version?
    - update information in ``CHANGES.rst`` to have summary of the changes which
      can also be posted in the Github repository under the tag.
 
-3. Run ``python release.py`` and check whether you can actually release a new version.
-   If you experience errors, fix them here.
+3. Run
+
+   .. code-block:: bash
+
+       $ conda build .
+
+   and check whether you can actually build a new version. If you experience errors, fix
+   them here. Depending on whether you allowed automatic upload to Anaconda, the release
+   appears under your account. Feel free to delete it.
 
 4. Merge the PR into master.
 
 5. After that, revisit the draft of the release. Make sure everything is fine. Now, you
    click on "Publish release" which creates a version tag on the latest commit of the
    specified branch. Make sure to target the master branch.
+
+6. Check out the tag in your local repository and run
+
+   .. code-block:: bash
+
+       $ conda build . --user OpenSourceEconomics
+
+   In case automatic upload is disabled, copy the path to the built package and type
+
+   .. code-block:: bash
+
+       $ anaconda upload <path> --user OpenSourceEconomics
 
 6. Visit `Anaconda.org <https://anaconda.org/OpenSourceEconomics/respy>`_ and check
    whether the release is available.

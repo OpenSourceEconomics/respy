@@ -12,8 +12,9 @@ from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
 from respy.config import MAX_FLOAT
 from respy.config import MIN_FLOAT
-from respy.parallelization import distribute_and_combine_likelihood
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.parallelization import split_and_combine_df
+from respy.parallelization import split_and_combine_likelihood
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.process_covariates import identify_necessary_covariates
@@ -22,7 +23,6 @@ from respy.shared import compute_covariates
 from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
-from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import rename_labels_to_internal
@@ -197,7 +197,6 @@ def _internal_log_like_obs(
     wages = state_space.get_attribute("wages")
     nonpecs = state_space.get_attribute("nonpecs")
     expected_value_functions = state_space.get_attribute("expected_value_functions")
-    is_inadmissible = state_space.get_attribute("is_inadmissible")
 
     df = _compute_wage_and_choice_likelihood_contributions(
         df,
@@ -205,7 +204,6 @@ def _internal_log_like_obs(
         wages,
         nonpecs,
         expected_value_functions,
-        is_inadmissible,
         optim_paras=optim_paras,
         options=options,
     )
@@ -240,17 +238,10 @@ def _internal_log_like_obs(
     return contribs, df, log_type_probabilities
 
 
-@distribute_and_combine_likelihood
+@split_and_combine_likelihood
 @parallelize_across_dense_dimensions
 def _compute_wage_and_choice_likelihood_contributions(
-    df,
-    base_draws_est,
-    wages,
-    nonpecs,
-    expected_value_functions,
-    is_inadmissible,
-    optim_paras,
-    options,
+    df, base_draws_est, wages, nonpecs, expected_value_functions, optim_paras, options,
 ):
     n_choices = len(optim_paras["choices"])
     n_obs = df.shape[0]
@@ -269,7 +260,7 @@ def _compute_wage_and_choice_likelihood_contributions(
         optim_paras["shocks_cholesky"],
         len(optim_paras["choices_w_wage"]),
         optim_paras["meas_error"],
-        optim_paras["is_meas_error"],
+        optim_paras["has_meas_error"],
     )
 
     draws = draws.reshape(n_obs, -1, n_choices)
@@ -287,7 +278,6 @@ def _compute_wage_and_choice_likelihood_contributions(
         continuation_values,
         draws,
         optim_paras["delta"],
-        is_inadmissible[indices],
         choices,
         options["estimation_tau"],
     )
@@ -299,25 +289,20 @@ def _compute_wage_and_choice_likelihood_contributions(
 
 
 def _compute_log_type_probabilities(df, optim_paras, options):
-    dense_columns = create_dense_state_space_columns(optim_paras)
-    dense_columns.remove("type")
+    """Compute the log type probabilities."""
+    x_betas = _compute_x_beta_for_type_probabilities(
+        df, optim_paras=optim_paras, options=options
+    )
 
-    if dense_columns:
-        x_betas = df.groupby(dense_columns, as_index=False).apply(
-            _compute_x_beta_for_type_probability, optim_paras, options
-        )
-    else:
-        x_betas = _compute_x_beta_for_type_probability(df, optim_paras, options)
-
-    probabilities = special.softmax(x_betas, axis=1)
-
-    probabilities = np.clip(probabilities, 1 / MAX_FLOAT, None)
-    log_probabilities = np.log(probabilities)
+    log_probabilities = x_betas - special.logsumexp(x_betas, axis=1, keepdims=True)
+    log_probabilities = np.clip(log_probabilities, MIN_FLOAT, MAX_FLOAT)
 
     return log_probabilities
 
 
-def _compute_x_beta_for_type_probability(df, optim_paras, options):
+@split_and_combine_df(remove_type=True)
+@parallelize_across_dense_dimensions
+def _compute_x_beta_for_type_probabilities(df, optim_paras, options):
     for type_ in range(optim_paras["n_types"]):
         first_observations = df.copy().assign(type=type_)
         relevant_covariates = identify_necessary_covariates(
@@ -342,9 +327,7 @@ def _logsumexp(x):
 
     .. code-block:: python
 
-        max_x = np.max(x)
-        differences = x - max_x
-        log_sum_exp = max_x + np.log(np.sum(np.exp(differences)))
+        log_sum_exp = np.max(x) + np.log(np.sum(np.exp(x - np.max(x))))
 
     The subtraction of the maximum prevents overflows and mitigates the impact of
     underflows.
@@ -369,9 +352,8 @@ def _logsumexp(x):
 
 
 @nb.guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], i8, f8, f8[:]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices), (), "
-    "() -> ()",
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, i8, f8, f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (), () -> ()",
     nopython=True,
     target="parallel",
 )
@@ -381,7 +363,6 @@ def _simulate_log_probability_of_individuals_observed_choice(
     continuation_values,
     draws,
     delta,
-    is_inadmissible,
     choice,
     tau,
     smoothed_log_probability,
@@ -417,9 +398,6 @@ def _simulate_log_probability_of_individuals_observed_choice(
         Array with shape (n_draws, n_choices)
     delta : float
         Discount rate.
-    is_inadmissible: numpy.ndarray
-        Array with shape (n_choices,) containing an indicator for each choice whether
-        the following state is inadmissible.
     choice : int
         Choice of the agent.
     tau : float
@@ -440,12 +418,7 @@ def _simulate_log_probability_of_individuals_observed_choice(
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
-                wages[j],
-                nonpec[j],
-                continuation_values[j],
-                draws[i, j],
-                delta,
-                is_inadmissible[j],
+                wages[j], nonpec[j], continuation_values[j], draws[i, j], delta,
             )
 
             smoothed_value_functions[j] = value_function / tau

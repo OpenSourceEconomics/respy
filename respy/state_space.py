@@ -1,14 +1,17 @@
 """Everything related to the state space of a structural model."""
 import itertools
+import warnings
 
 import numba as nb
 import numpy as np
 import pandas as pd
 
 from respy._numba import array_to_tuple
+from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
 from respy.shared import compute_covariates
+from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
@@ -89,6 +92,16 @@ class _BaseStateSpace:
                 core[choice] |= core.eval(formula)
 
         is_inadmissible = core[optim_paras["choices"]].to_numpy(dtype=np.bool)
+
+        if np.any(is_inadmissible) and optim_paras["inadmissibility_penalty"] is None:
+            warnings.warn(
+                "Some choices in the model are not admissible all the time. Thus, respy"
+                " applies a penalty to the utility for these choices which is "
+                f"{INADMISSIBILITY_PENALTY} by default. For the full solution, the "
+                "penalty only needs to be larger than all other value functions to be "
+                "effective. Choose a milder penalty for the interpolation which does "
+                "not dominate the linear interpolation model."
+            )
 
         return is_inadmissible
 
@@ -739,11 +752,7 @@ def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
         covariates = compute_covariates(df, options["covariates_dense"])
         covariates = covariates.apply(downcast_to_smallest_dtype)
         covariates = covariates.to_dict(orient="index")
-
-        # Convert scalar keys to tuples.
-        for key in covariates.copy():
-            if np.isscalar(key):
-                covariates[(key,)] = covariates.pop(key)
+        covariates = convert_dictionary_keys_to_dense_indices(covariates)
 
     else:
         covariates = False

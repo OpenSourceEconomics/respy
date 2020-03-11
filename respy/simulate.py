@@ -8,8 +8,8 @@ from scipy.special import softmax
 
 from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
-from respy.parallelization import distribute_and_combine_simulation
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.parallelization import split_and_combine_df
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
@@ -272,7 +272,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
     return df
 
 
-@distribute_and_combine_simulation
+@split_and_combine_df
 @parallelize_across_dense_dimensions
 def _simulate_single_period(
     df, indexer, wages, nonpecs, continuation_values, is_inadmissible, optim_paras
@@ -311,12 +311,7 @@ def _simulate_single_period(
     draws_wage = df[[f"meas_error_wage_{c}" for c in optim_paras["choices"]]].to_numpy()
 
     value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
-        wages,
-        nonpecs,
-        continuation_values,
-        draws_shock,
-        optim_paras["delta"],
-        is_inadmissible,
+        wages, nonpecs, continuation_values, draws_shock, optim_paras["delta"],
     )
 
     # We need to ensure that no individual chooses an inadmissible state. Thus, set

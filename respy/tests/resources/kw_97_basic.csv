@@ -62,3 +62,4 @@ initial_exp_school_9,probability,0.2018,Probability that the initial level of sc
 initial_exp_school_10,probability,0.6715,Probability that the initial level of school is 10
 initial_exp_school_11,probability,0.075,Probability that the initial level of school is 11
 maximum_exp,school,20,"Maximum level of experience for school (optional, reduces computation complexity)"
+inadmissibility_penalty,inadmissibility_penalty,-400000,Penalty to non-pecuniary reward for invalid choices.

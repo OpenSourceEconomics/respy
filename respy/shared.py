@@ -9,15 +9,12 @@ import numba as nb
 import numpy as np
 import pandas as pd
 
-from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
 
 
 @nb.njit
-def aggregate_keane_wolpin_utility(
-    wage, nonpec, continuation_value, draw, delta, is_inadmissible
-):
+def aggregate_keane_wolpin_utility(wage, nonpec, continuation_value, draw, delta):
     """Calculate the utility of Keane and Wolpin models.
 
     Note that the function works for working and non-working alternatives as wages are
@@ -39,8 +36,6 @@ def aggregate_keane_wolpin_utility(
         multiplicatively and of non-working alternatives additively.
     delta : float
         The discount factor to calculate the present value of continuation values.
-    is_inadmissible : float
-        An indicator for whether the choice is in the current choice set.
 
     Returns
     -------
@@ -52,9 +47,6 @@ def aggregate_keane_wolpin_utility(
     """
     flow_utility = wage * draw + nonpec
     alternative_specific_value_function = flow_utility + delta * continuation_value
-
-    if is_inadmissible:
-        alternative_specific_value_function += INADMISSIBILITY_PENALTY
 
     return alternative_specific_value_function, flow_utility
 
@@ -362,20 +354,13 @@ def normalize_probabilities(probabilities):
 
 
 @nb.guvectorize(
-    ["f8, f8, f8, f8, f8, b1, f8[:], f8[:]"],
-    "(), (), (), (), (), () -> (), ()",
+    ["f8, f8, f8, f8, f8, f8[:], f8[:]"],
+    "(), (), (), (), () -> (), ()",
     nopython=True,
     target="parallel",
 )
 def calculate_value_functions_and_flow_utilities(
-    wage,
-    nonpec,
-    continuation_value,
-    draw,
-    delta,
-    is_inadmissible,
-    value_function,
-    flow_utility,
+    wage, nonpec, continuation_value, draw, delta, value_function, flow_utility
 ):
     """Calculate the choice-specific value functions and flow utilities.
 
@@ -389,7 +374,7 @@ def calculate_value_functions_and_flow_utilities(
 
     """
     value_function[0], flow_utility[0] = aggregate_keane_wolpin_utility(
-        wage, nonpec, continuation_value, draw, delta, is_inadmissible
+        wage, nonpec, continuation_value, draw, delta
     )
 
 
@@ -417,20 +402,13 @@ def create_state_space_columns(optim_paras):
 
 
 @nb.guvectorize(
-    ["f8[:], f8[:], f8[:], f8[:, :], f8, b1[:], f8[:]"],
-    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), (), (n_choices) "
-    "-> ()",
+    ["f8[:], f8[:], f8[:], f8[:, :], f8, f8[:]"],
+    "(n_choices), (n_choices), (n_choices), (n_draws, n_choices), () -> ()",
     nopython=True,
     target="parallel",
 )
 def calculate_expected_value_functions(
-    wages,
-    nonpecs,
-    continuation_values,
-    draws,
-    delta,
-    is_inadmissible,
-    expected_value_functions,
+    wages, nonpecs, continuation_values, draws, delta, expected_value_functions
 ):
     r"""Calculate the expected maximum of value functions for a set of unobservables.
 
@@ -467,9 +445,6 @@ def calculate_expected_value_functions(
         Array with shape (n_draws, n_choices).
     delta : float
         The discount factor.
-    is_inadmissible: numpy.ndarray
-        Array with shape (n_choices,) containing indicator for whether the following
-        state is inadmissible.
 
     Returns
     -------
@@ -490,12 +465,7 @@ def calculate_expected_value_functions(
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
-                wages[j],
-                nonpecs[j],
-                continuation_values[j],
-                draws[i, j],
-                delta,
-                is_inadmissible[j],
+                wages[j], nonpecs[j], continuation_values[j], draws[i, j], delta
             )
 
             if value_function > max_value_functions:
@@ -504,3 +474,21 @@ def calculate_expected_value_functions(
         expected_value_functions[0] += max_value_functions
 
     expected_value_functions[0] /= n_draws
+
+
+def convert_dictionary_keys_to_dense_indices(dictionary):
+    """Convert the keys to tuples containing integers.
+
+    Example
+    -------
+    >>> dictionary = {(0.0, 1): 0, 2: 1}
+    >>> convert_dictionary_keys_to_dense_indices(dictionary)
+    {(0, 1): 0, (2,): 1}
+
+    """
+    new_dictionary = {}
+    for key, val in dictionary.items():
+        new_key = (int(key),) if np.isscalar(key) else tuple(int(i) for i in key)
+        new_dictionary[new_key] = val
+
+    return new_dictionary
