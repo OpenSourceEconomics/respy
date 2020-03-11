@@ -27,7 +27,7 @@ from respy.tests.random_model import add_noise_to_params  # noqa: F401
 # We only maintain the code base for Python 3.6 and 3.7.
 assert (3, 6) <= sys.version_info[:2] <= (3, 7)
 
-__version__ = "2.0.0dev2"
+__version__ = "2.0.0dev3"
 
 
 def test(*args, **kwargs):
