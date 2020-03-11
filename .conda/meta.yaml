@@ -14,10 +14,8 @@ build:
   noarch: python
 
 requirements:
-  build:
-    - python
-    - setuptools
-
+  host:
+    - python >=3.6
   run:
     - python >=3.6
     - chaospy
