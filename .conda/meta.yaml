@@ -18,7 +18,7 @@ requirements:
     - setuptools
 
   run:
-    - python >=3.6,<=3.7
+    - python >=3.6,<3.8
     - chaospy
     - click
     - estimagic >=0.0.27
