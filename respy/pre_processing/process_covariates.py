@@ -138,6 +138,36 @@ def separate_covariates_into_core_dense_mixed(options, optim_paras):
     return options
 
 
+def separate_choice_restrictions_into_core_dense_mixed(options):
+    """
+    This is the simplest version we can possbly think of!
+    #TODO: Align with separation of covariates. If possible unify both.
+    If not try to synchronize as far as possible!
+    """
+    options = copy.deepcopy(options)
+    covariates = options["covariates"]
+
+    # Add ne dict keys
+    constr_list = list()
+    for choice in options["inadmissible_choices"].keys():
+        for choice_constr in options["inadmissible_choices"][choice]:
+            if any(x in choice_constr for x in options["covariates_dense"]) is False:
+                constr_list.append((choice_constr, choice, "core"))
+            elif any(x in choice_constr for x in options["covariates_core"]) is False:
+                constr_list.append((choice_constr, choice, "dense"))
+            else:
+                constr_list.append((choice_constr, choice, "mixed"))
+
+    for sp in ["core", "dense", "mixed"]:
+        options[f"inadmissible_choices_{sp}"] = {}
+        for choice in options["inadmissible_choices"].keys():
+            relevant_contraints = [x for x in constr_list if x[1] == choice and x[2] == sp]
+            if relevant_contraints == []:
+                pass
+            else:
+                options[f"inadmissible_choices_{sp}"][choice] = relevant_contraints
+    return options
+
 def identify_necessary_covariates(dependents, definitions):
     """Identify covariates necessary to compute `dependents`.
 

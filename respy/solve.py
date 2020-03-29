@@ -58,42 +58,44 @@ def solve(params, options, state_space):
 
 
 @parallelize_across_dense_dimensions
-def _create_choice_rewards(states, is_inadmissible, optim_paras):
-    """Create wage and non-pecuniary reward for each state and choice.
-
-    Note that missing wages filled with ones and missing non-pecuniary rewards with
-    zeros. This is done in :meth:`_initialize_attributes`.
-
-    """
+def _create_choice_rewards(states, period_choice_cores, is_inadmissible, optim_paras):
     n_states = states.shape[0]
     n_choices = len(optim_paras["choices"])
 
-    wages = np.ones((n_states, n_choices))
-    nonpecs = np.zeros((n_states, n_choices))
+    # Initialize objects
+    out_wages = {
+        key: np.ones(
+            (len(period_choice_cores[key]),
+             key(1).count(True)))
+    for key in period_choice_cores}
 
-    for i, choice in enumerate(optim_paras["choices"]):
-        if f"wage_{choice}" in optim_paras:
-            wage_columns = optim_paras[f"wage_{choice}"].index
-            log_wage = np.dot(
-                states[wage_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
-                optim_paras[f"wage_{choice}"].to_numpy(),
-            )
-            wages[:, i] = np.exp(log_wage)
+    out_nonpecs = {key: np.ones(
+            (len(period_choice_cores[key]),
+             key(1).count(True)))
+            for key in period_choice_cores
+    }
 
-        if f"nonpec_{choice}" in optim_paras:
-            nonpec_columns = optim_paras[f"nonpec_{choice}"].index
-            nonpecs[:, i] = np.dot(
-                states[nonpec_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
-                optim_paras[f"nonpec_{choice}"].to_numpy(),
-            )
+    for (period, choice_set) in period_choice_cores.keys():
+        # Funktioniert Boolean indexing mit Listen sonst muss ich mir da noch was überlegen
+        for i, choice in enumerate(optim_paras["choices"][choice_set]):
+            # Get releavnt portion of the state space
+            states_period_choice = states.loc[period_choice_cores[(period, choice_set)]]
+            if f"wage_{choice}" in optim_paras:
+                wage_columns = optim_paras[f"wage_{choice}"].index
+                log_wage = np.dot(
+                    states_period_choice[wage_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
+                    optim_paras[f"wage_{choice}"].to_numpy(),
+                )
+                out_wages[(choice_set, period)][:,i] = np.exp(log_wage)
 
-        # For inadmissible choices apply a penalty to the non-pecuniary rewards.
-        penalty = optim_paras["inadmissibility_penalty"]
-        penalty = INADMISSIBILITY_PENALTY if penalty is None else penalty
-        nonpecs[is_inadmissible] += penalty
+            if f"nonpec_{choice}" in optim_paras:
+                nonpec_columns = optim_paras[f"nonpec_{choice}"].index
+                out_wages[(choice_set, period)][:, i] = np.dot(
+                    states_period_choice[nonpec_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
+                    optim_paras[f"nonpec_{choice}"].to_numpy(),
+                )
 
-    return wages, nonpecs
-
+    return out_wages, out_nonpecs
 
 def _solve_with_backward_induction(state_space, optim_paras, options):
     """Calculate utilities with backward induction.
