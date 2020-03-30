@@ -707,8 +707,9 @@ def _create_choice_sets(df, optim_paras, options, category):
 
     for choice in options[f"inadmissible_choices_{category}"].keys():
         for formula in options[f"inadmissible_choices_{category}"][choice]:
+            print(formula)
             try:
-                df[choice] |= df.eval(formula)
+                df[choice] |= df.eval(formula[0])
             except pd.core.computation.ops.UndefinedVariableError:
                 pass
 

@@ -668,7 +668,7 @@ def _sync_optim_paras_and_options(optim_paras, options):
     options = _add_default_is_inadmissible(options, optim_paras)
     options = _convert_labels_in_formulas_to_codes(options, optim_paras)
     options = separate_covariates_into_core_dense_mixed(options, optim_paras)
-    options = separate_choice_restrictions_into_core_dense_mixed(options)
+    options = separate_choice_restrictions_into_core_dense_mixed(options, optim_paras)
 
     return optim_paras, options
 

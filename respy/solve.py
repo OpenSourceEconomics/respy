@@ -46,22 +46,19 @@ def solve(params, options, state_space):
     optim_paras, options = process_params_and_options(params, options)
 
     states = state_space.states
-    is_inadmissible = state_space.get_attribute("is_inadmissible")
+    period_choice_dense_cores = state_space.period_choice_dense_cores
 
-    wages, nonpecs = _create_choice_rewards(states, is_inadmissible, optim_paras)
+    wages, nonpecs = _create_choice_rewards(states, optim_paras,)
     state_space.set_attribute("wages", wages)
     state_space.set_attribute("nonpecs", nonpecs)
 
-    state_space = _solve_with_backward_induction(state_space, optim_paras, options)
+    state_space = _solve_with_backward_induction(state_space, period_choice_dense_cores, optim_paras)
 
     return state_space
 
 
 @parallelize_across_dense_dimensions
-def _create_choice_rewards(states, period_choice_cores, is_inadmissible, optim_paras):
-    n_states = states.shape[0]
-    n_choices = len(optim_paras["choices"])
-
+def _create_choice_rewards(states, period_choice_cores, optim_paras):
     # Initialize objects
     out_wages = {
         key: np.ones(
