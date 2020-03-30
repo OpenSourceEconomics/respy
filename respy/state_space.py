@@ -58,13 +58,13 @@ def create_sp(options, optim_paras):
     core = compute_covariates(core, options["covariates_core"])
     core = core.apply(downcast_to_smallest_dtype)
     core = _create_choice_sets(core, optim_paras, options, "core")
-    period_choice_cores = _split_core_state_space(core)
+    period_choice_cores = _split_core_state_space(core, optim_paras)
 
     # Create dense sp!
     dense_grid = _create_dense_state_space_grid(optim_paras)
     dense_cov = _create_dense_state_space_covariates(dense_grid, optim_paras, options)
     dense_df = pd.DataFrame(dense_cov).transpose()
-    dense_df = _create_choice_sets(dense_df, options, optim_paras, "dense")
+    dense_df = _create_choice_sets(dense_df, optim_paras,options, "dense")
 
     # Plug both together
     period_choice_dense_cores = _split_full_state_space(period_choice_cores,
@@ -132,7 +132,7 @@ class _BaseStateSpace:
                 states_in_period,
                 self.indexer[period],
                 self.indexer[period + 1],
-                self.is_inadmissible,
+                len(self.optim_paras["choices"]),
                 n_choices_w_exp,
                 optim_paras["n_lagged_choices"],
             )
@@ -147,8 +147,8 @@ class _SingleDimStateSpace(_BaseStateSpace):
     def __init__(
         self,
         core,
-        period_choice_cores,
         indexer,
+        period_choice_cores,
         base_draws_sol,
         optim_paras,
         options,
@@ -156,14 +156,15 @@ class _SingleDimStateSpace(_BaseStateSpace):
         dense_covariates = None,
         indices_of_child_states = None,
         ):
-        self.dense_dim = dense_dim
         self.core = core
         self.period_choice_cores = period_choice_cores
         self.indexer = indexer
+        self.base_draws_sol = _reshape_base_draws(base_draws_sol, self.period_choice_cores, options)
+        self.optim_paras = optim_paras
+        self.options = options
+        self.dense_dim = dense_dim
         self.dense_covariates = dense_covariates if dense_covariates is not None else {}
         self.mixed_covariates = options["covariates_mixed"]
-        self.base_draws_sol = _reshape_base_draws(base_draws_sol, self.period_choice_cores)
-        self._initialize_attributes(optim_paras)
         self.indices_of_child_states = (
             super()._create_indices_of_child_states(optim_paras)
             if indices_of_child_states is None
@@ -183,7 +184,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
             if period == n_periods - 1:
                 last_slice = choice_cores[choice_set]
                 n_states_last_period = len(last_slice)
-                continuation_values_choice = np.zeros((n_states_last_period, self.n_choices))
+                continuation_values_choice = np.zeros((n_states_last_period, choice_set.count(True)))
             else:
                 child_indices = self.get_attribute("indices_of_child_states")[choice_cores[choice_set], choice_set]
                 mask = child_indices != INDEXER_INVALID_INDEX
@@ -242,13 +243,16 @@ class _MultiDimStateSpace(_BaseStateSpace):
                  options,
                  dense
                  ):
-        self.base_draws_sol = base_draws_sol
         self.core = core
+        self.period_choice_dense_cores = period_choice_dense_cores
         self.indexer = indexer
+        self.base_draws_sol = base_draws_sol
+        self.optim_paras = optim_paras
+        self.options = options
+        self.dense = dense
         self.indices_of_child_states = super()._create_indices_of_child_states(
             optim_paras
         )
-        self.period_choice_dense_cores = period_choice_dense_cores
         self.sub_state_spaces = {
             dense_dim: _SingleDimStateSpace(
                 self.core,
@@ -607,41 +611,38 @@ def _insert_indices_of_child_states(
     states,
     indexer_current,
     indexer_future,
-    is_inadmissible,
+    n_choices_tot,
     n_choices_w_exp,
     n_lagged_choices,
 ):
     """Collect indices of child states for each parent state."""
-    n_choices = is_inadmissible.shape[1]
+    n_choices = n_choices_tot
 
     for i in range(states.shape[0]):
 
         idx_current = indexer_current[array_to_tuple(indexer_current, states[i])]
 
         for choice in range(n_choices):
-            # Check if the state in the future is admissible.
-            if is_inadmissible[idx_current, choice]:
-                continue
-            else:
-                # Cut off the period which is not necessary for the indexer.
-                child = states[i].copy()
 
-                # Increment experience if it is a choice with experience
-                # accumulation.
-                if choice < n_choices_w_exp:
-                    child[choice] += 1
+            # Cut off the period which is not necessary for the indexer.
+            child = states[i].copy()
 
-                # Change lagged choice by shifting all existing lagged choices by
-                # one period and inserting the current choice in first position.
-                if n_lagged_choices:
-                    child[
-                        n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
-                    ] = child[n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1]
-                    child[n_choices_w_exp] = choice
+            # Increment experience if it is a choice with experience
+            # accumulation.
+            if choice < n_choices_w_exp:
+                child[choice] += 1
 
-                # Get the position of the continuation value.
-                idx_future = indexer_future[array_to_tuple(indexer_future, child)]
-                indices[idx_current, choice] = idx_future
+            # Change lagged choice by shifting all existing lagged choices by
+            # one period and inserting the current choice in first position.
+            if n_lagged_choices:
+                child[
+                    n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
+                ] = child[n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1]
+                child[n_choices_w_exp] = choice
+
+            # Get the position of the continuation value.
+            idx_future = indexer_future[array_to_tuple(indexer_future, child)]
+            indices[idx_current, choice] = idx_future
 
     return indices
 
