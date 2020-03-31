@@ -673,6 +673,7 @@ def _split_full_state_space(period_choice_cores, dense_df, options, optim_paras)
     """
     state_space = {}
     for (period, choice_set), df in period_choice_cores.items():
+        # BUGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
         for dense_state in dense_df.index:
             admissible_choices = _get_subspace_of_choice(
                 dense_df.loc[dense_state, list(optim_paras["choices"].keys())].to_numpy())
@@ -706,6 +707,7 @@ def _create_choice_sets(df, optim_paras, options, category):
         df[choice] = False
 
     for choice in options[f"inadmissible_choices_{category}"].keys():
+        print(choice)
         for formula in options[f"inadmissible_choices_{category}"][choice]:
             print(formula)
             try:
