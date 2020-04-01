@@ -58,20 +58,10 @@ def create_sp(options, optim_paras):
     core = compute_covariates(core, options["covariates_core"])
     core = core.apply(downcast_to_smallest_dtype)
     core = _create_choice_sets(core, optim_paras, options, "core")
-    period_choice_cores = _split_core_state_space(core, optim_paras)
 
     # Create dense sp!
     dense_grid = _create_dense_state_space_grid(optim_paras)
     dense_cov = _create_dense_state_space_covariates(dense_grid, optim_paras, options)
-    dense_df = pd.DataFrame(dense_cov).transpose()
-    dense_df = _create_choice_sets(dense_df, optim_paras,options, "dense")
-
-    # Plug both together
-    period_choice_dense_cores = _split_full_state_space(period_choice_cores,
-                                                        dense_df,
-                                                        options,
-                                                        optim_paras
-                                                        )
 
     # Create base draws sol
     base_draws_sol = create_base_draws(
@@ -84,7 +74,6 @@ def create_sp(options, optim_paras):
     #      We need to take new strcuture of dense variables into account!
     state_space = _MultiDimStateSpace(
         core,
-        period_choice_dense_cores,
         indexer,
         base_draws_sol,
         optim_paras,
@@ -148,7 +137,6 @@ class _SingleDimStateSpace(_BaseStateSpace):
         self,
         core,
         indexer,
-        period_choice_cores,
         base_draws_sol,
         optim_paras,
         options,
@@ -157,9 +145,8 @@ class _SingleDimStateSpace(_BaseStateSpace):
         indices_of_child_states = None,
         ):
         self.core = core
-        self.period_choice_cores = period_choice_cores
         self.indexer = indexer
-        self.base_draws_sol = _reshape_base_draws(base_draws_sol, self.period_choice_cores, options)
+        self.base_draws = base_draws_sol
         self.optim_paras = optim_paras
         self.options = options
         self.dense_dim = dense_dim
@@ -204,7 +191,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
     def get_attribute_from_period_choice(self, attribute, period, choice_set, privacy="public"):
         attr = self.get_attribute(attribute)
         if privacy == "public":
-            slice_ = self.cores[(period, choice_set)]
+            slice_ = self.period_choice_cores[(period, choice_set)]
             out = attr[slice_]
         elif privacy == "privat":
             out = attr[(period,choice_set)]
@@ -225,6 +212,33 @@ class _SingleDimStateSpace(_BaseStateSpace):
         states = compute_covariates(states, self.mixed_covariates)
         return states
 
+    @property
+    def period_choice_cores(self):
+        if self.dense_dim:
+            print(self.dense_covariates)
+            dense_df = pd.DataFrame(self.dense_covariates,index=[0])
+            dense_df = _create_choice_sets(dense_df, self.optim_paras, self.options, "dense")
+            dense_choice_set = {key:dense_df[key] for key in self.optim_paras["choices"]}
+            # Set all to False in core!
+            states = self.states
+            for choice in dense_choice_set.keys():
+                print(dense_choice_set[choice])
+                if dense_choice_set[choice].loc[0] == True:
+                    states[choice] = True
+
+        states = _create_choice_sets(states, self.optim_paras, self.options, "mixed")
+        # Dirty Fix to reverse False and True
+        for choice in self.optim_paras["choices"]:
+            states[choice] = ~ states[choice]
+        period_choice_cores = _split_core_state_space(states,self.optim_paras)
+
+        return period_choice_cores
+
+    @property
+    def base_draws_sol(self):
+        return _reshape_base_draws(self.base_draws, self.period_choice_cores, self.options)
+
+
 
 class _MultiDimStateSpace(_BaseStateSpace):
     """The state space of a discrete choice dynamic programming model.
@@ -236,17 +250,15 @@ class _MultiDimStateSpace(_BaseStateSpace):
 
     def __init__(self,
                  core,
-                 period_choice_dense_cores,
                  indexer,
-                 base_draws_sol,
+                 base_draws,
                  optim_paras,
                  options,
                  dense
                  ):
         self.core = core
-        self.period_choice_dense_cores = period_choice_dense_cores
         self.indexer = indexer
-        self.base_draws_sol = base_draws_sol
+        self.base_draws = base_draws
         self.optim_paras = optim_paras
         self.options = options
         self.dense = dense
@@ -255,11 +267,9 @@ class _MultiDimStateSpace(_BaseStateSpace):
         )
         self.sub_state_spaces = {
             dense_dim: _SingleDimStateSpace(
-                self.core,
+                self.core.copy(),
                 self.indexer,
-                {key[:2]:self.period_choice_dense_cores[key] for key in self.period_choice_dense_cores.keys()
-                 if key[2]==dense_dim},
-                self.base_draws_sol,
+                self.base_draws.copy(),
                 optim_paras,
                 options,
                 dense_dim,
@@ -298,6 +308,12 @@ class _MultiDimStateSpace(_BaseStateSpace):
     @property
     def states(self):
         return {key: sss.states for key, sss in self.sub_state_spaces.items()}
+    @property
+    def period_choice_cores(self):
+        return {key: sss.period_choice_cores for key, sss in self.sub_state_spaces.items()}
+    @property
+    def base_draws_sol(self):
+        return {key: sss.base_draws_sol for key, sss in self.sub_state_spaces.items()}
 
 def _create_core_and_indexer(optim_paras, options):
     """Create the state space.
@@ -666,35 +682,6 @@ def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
     return covariates
 
 
-def _split_full_state_space(period_choice_cores, dense_df, options, optim_paras):
-    """
-    This function should directly give us a number of indices after all!
-    TODO: Major cleanup. Way to complicated for now!
-    """
-    state_space = {}
-    for (period, choice_set), df in period_choice_cores.items():
-        # BUGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
-        for dense_state in dense_df.index:
-            admissible_choices = _get_subspace_of_choice(
-                dense_df.loc[dense_state, list(optim_paras["choices"].keys())].to_numpy())
-
-            if choice_set in admissible_choices:
-                df_ = df.copy().assign(
-                    **dense_df.drop(
-                        columns=optim_paras["choices"].keys()).loc[dense_state].to_dict())
-                df_ = _create_choice_sets(
-                    df_,
-                    optim_paras,
-                    options,
-                    "mixed"
-                )
-
-                for choice_set_, sub_df in df_.groupby(list(optim_paras["choices"])):
-                    # Here we want to assign an index
-                    state_space[(period, choice_set_, dense_state)] = sub_df.index
-    return state_space
-
-
 def _create_choice_sets(df, optim_paras, options, category):
     """
     Todo: Check to which extent we can use the same procedure for
@@ -703,22 +690,19 @@ def _create_choice_sets(df, optim_paras, options, category):
     df = df.copy()
 
     # Apply user-defined constraints
+
     for choice in optim_paras["choices"]:
-        df[choice] = False
+        if choice in df.columns:
+            continue
+        else:
+            df[choice] = False
 
     for choice in options[f"inadmissible_choices_{category}"].keys():
-        print(choice)
         for formula in options[f"inadmissible_choices_{category}"][choice]:
-            print(formula)
             try:
                 df[choice] |= df.eval(formula[0])
             except pd.core.computation.ops.UndefinedVariableError:
                 pass
-
-    # Dirty Fix to reverse False and True
-    for choice in optim_paras["choices"]:
-        df[choice] = df[choice].map(lambda x: False if x is True else True)
-
     return df
 
 
@@ -761,7 +745,6 @@ def _reshape_base_draws(draws, period_choice_cores, options):
     n_states_draws = draws.shape[1]
     out = dict()
     for period in range(options["n_periods"]):
-        period_draws = draws[period, :, :]
         prop_dict = {key: size_dict[key] for key in size_dict.keys() if key[0] == period}
         n_states_core = np.array(list(prop_dict.values())).sum()
         pos = 0
