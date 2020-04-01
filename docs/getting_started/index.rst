@@ -8,7 +8,7 @@ Getting Started
    introduction
    recommended-reading
    installation
-   tutorial-robinson-crusoe.ipynb
+   robinson-crusoe.ipynb
    tutorial-simulation.ipynb
    tutorial-initial-conditions
    tutorial-finite-mixture.ipynb

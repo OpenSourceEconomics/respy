@@ -3,8 +3,8 @@ Installation
 
 The ``respy`` package can be conveniently installed from the `Anaconda.org
 <https://anaconda.org/>`_ or directly from its source files. We currently support only
-Python 3.6+. We develop the package mainly on Linux systems, but the test battery
-ensures compatibility with Windows and MacOS.
+Python 3.6+. We develop the package mainly on Linux and Windows, but the test battery
+ensures compatibility with MacOS.
 
 
 Anaconda.org
