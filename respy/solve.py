@@ -46,13 +46,13 @@ def solve(params, options, state_space):
     optim_paras, options = process_params_and_options(params, options)
 
     states = state_space.states
-    period_choice_dense_cores = state_space.period_choice_dense_cores
+    period_choice_cores = state_space.period_choice_cores
 
-    wages, nonpecs = _create_choice_rewards(states, optim_paras,)
+    wages, nonpecs = _create_choice_rewards(states, period_choice_cores, optim_paras)
     state_space.set_attribute("wages", wages)
     state_space.set_attribute("nonpecs", nonpecs)
 
-    state_space = _solve_with_backward_induction(state_space, period_choice_dense_cores, optim_paras)
+    state_space = _solve_with_backward_induction(state_space, optim_paras)
 
     return state_space
 
@@ -62,20 +62,21 @@ def _create_choice_rewards(states, period_choice_cores, optim_paras):
     # Initialize objects
     out_wages = {
         key: np.ones(
-            (len(period_choice_cores[key]),
-             key(1).count(True)))
-    for key in period_choice_cores}
+            (period_choice_cores[key].shape[0],
+             key[1].count(True)))
+    for key in period_choice_cores.keys()}
 
     out_nonpecs = {key: np.ones(
-            (len(period_choice_cores[key]),
-             key(1).count(True)))
-            for key in period_choice_cores
+            (period_choice_cores[key].shape[0],
+             key[1].count(True)))
+            for key in period_choice_cores.keys()
     }
 
     for (period, choice_set) in period_choice_cores.keys():
-        # Funktioniert Boolean indexing mit Listen sonst muss ich mir da noch was überlegen
-        for i, choice in enumerate(optim_paras["choices"][choice_set]):
-            # Get releavnt portion of the state space
+        # Subsetting auslagern!
+        choices = [x for i,x in enumerate(optim_paras["choices"]) if choice_set[i]==True]
+        for i, choice in enumerate(choices):
+
             states_period_choice = states.loc[period_choice_cores[(period, choice_set)]]
             if f"wage_{choice}" in optim_paras:
                 wage_columns = optim_paras[f"wage_{choice}"].index
@@ -83,16 +84,18 @@ def _create_choice_rewards(states, period_choice_cores, optim_paras):
                     states_period_choice[wage_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
                     optim_paras[f"wage_{choice}"].to_numpy(),
                 )
-                out_wages[(choice_set, period)][:,i] = np.exp(log_wage)
+                out_wages[(period, choice_set)][:,i] = np.exp(log_wage)
 
             if f"nonpec_{choice}" in optim_paras:
                 nonpec_columns = optim_paras[f"nonpec_{choice}"].index
-                out_wages[(choice_set, period)][:, i] = np.dot(
+                print(i)
+                out_nonpecs[(period, choice_set)][:, i] = np.dot(
                     states_period_choice[nonpec_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
                     optim_paras[f"nonpec_{choice}"].to_numpy(),
                 )
 
     return out_wages, out_nonpecs
+
 
 def _solve_with_backward_induction(state_space, optim_paras, options):
     """Calculate utilities with backward induction.

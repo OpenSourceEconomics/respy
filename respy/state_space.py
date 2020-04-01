@@ -711,7 +711,7 @@ def _split_core_state_space(core, optim_paras):
     This function splits the sp according to period and choice set
     """
     periodic_cores = {idx: sub for idx, sub in core.groupby("period")}
-    periodic_choice_cores = {(period, choice_set): sub
+    periodic_choice_cores = {(period, choice_set): sub.index
                              for period in periodic_cores
                              for choice_set, sub
                              in periodic_cores[period].groupby(list(optim_paras["choices"]))
