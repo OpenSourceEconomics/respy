@@ -87,10 +87,10 @@ def _create_choice_rewards(states, is_inadmissible, optim_paras):
                 optim_paras[f"nonpec_{choice}"].to_numpy(),
             )
 
-        # For inadmissible choices apply a penalty to the non-pecuniary rewards.
-        penalty = optim_paras["inadmissibility_penalty"]
-        penalty = INADMISSIBILITY_PENALTY if penalty is None else penalty
-        nonpecs[is_inadmissible] += penalty
+    # For inadmissible choices apply a penalty to the non-pecuniary rewards.
+    penalty = optim_paras["inadmissibility_penalty"]
+    penalty = INADMISSIBILITY_PENALTY if penalty is None else penalty
+    nonpecs[is_inadmissible] += penalty
 
     return wages, nonpecs
 
