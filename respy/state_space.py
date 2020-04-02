@@ -199,7 +199,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
 
     def set_attribute(self, attribute, value):
-        self.get_attribute(attribute)[:] = value
+        setattr(self, attribute, value)
 
 
     def set_attribute_from_period_choice_set(self, attribute, value, period, choice_set, privacy):
@@ -308,12 +308,15 @@ class _MultiDimStateSpace(_BaseStateSpace):
     @property
     def states(self):
         return {key: sss.states for key, sss in self.sub_state_spaces.items()}
+
     @property
     def period_choice_cores(self):
         return {key: sss.period_choice_cores for key, sss in self.sub_state_spaces.items()}
+
     @property
     def base_draws_sol(self):
         return {key: sss.base_draws_sol for key, sss in self.sub_state_spaces.items()}
+
 
 def _create_core_and_indexer(optim_paras, options):
     """Create the state space.

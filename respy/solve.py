@@ -97,7 +97,7 @@ def _create_choice_rewards(states, period_choice_cores, optim_paras):
     return out_wages, out_nonpecs
 
 
-def _solve_with_backward_induction(state_space, optim_paras, options):
+def _solve_with_backward_induction(state_space,period_choice_cores, optim_paras, options):
     """Calculate utilities with backward induction.
 
     Parameters
@@ -114,9 +114,11 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     state_space : :class:`~respy.state_space.StateSpace`
 
     """
+    # Is this still practicable?
     n_wages = len(optim_paras["choices_w_wage"])
     n_periods = optim_paras["n_periods"]
 
+    # Rewrite
     draws_emax_risk = transform_base_draws_with_cholesky_factor(
         state_space.base_draws_sol, optim_paras["shocks_cholesky"], n_wages
     )
