@@ -405,7 +405,7 @@ def create_state_space_columns(optim_paras):
     target="parallel",
 )
 def calculate_expected_value_functions(
-    wages, nonpecs, continuation_values, draws, delta, expected_value_functions, choice_set
+    wages, nonpecs, continuation_values, draws, delta, expected_value_functions
 ):
     r"""Calculate the expected maximum of value functions for a set of unobservables.
 
@@ -453,9 +453,6 @@ def calculate_expected_value_functions(
 
     """
     #Subset draws
-    positions = [i for i,x in enumerate(choice_set) if x == True]
-    draws = draws[:,positions]
-
     n_draws, n_choices = draws.shape
 
     expected_value_functions[0] = 0

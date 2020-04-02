@@ -173,7 +173,11 @@ class _SingleDimStateSpace(_BaseStateSpace):
                 n_states_last_period = len(last_slice)
                 continuation_values_choice = np.zeros((n_states_last_period, choice_set.count(True)))
             else:
-                child_indices = self.get_attribute("indices_of_child_states")[choice_cores[choice_set], choice_set]
+                position_choices = [i for i, x in enumerate(choice_set) if x == True]
+                position_states = np.array(choice_cores[choice_set]).reshape(len(choice_cores[choice_set]), 1)
+
+                child_indices = self.get_attribute("indices_of_child_states")[position_states, position_choices]
+
                 mask = child_indices != INDEXER_INVALID_INDEX
                 valid_indices = np.where(mask, child_indices, 0)
                 continuation_values_choice = np.where(
@@ -193,7 +197,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
         if privacy == "public":
             slice_ = self.period_choice_cores[(period, choice_set)]
             out = attr[slice_]
-        elif privacy == "privat":
+        elif privacy == "private":
             out = attr[(period,choice_set)]
         return out
 
@@ -203,7 +207,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
         out = dict()
         for choice_set in choice_sets:
             out[choice_set] = self.get_attribute_from_period_choice(attribute, period, choice_set, privacy)
-
+        return out
 
     def set_attribute(self, attribute, value):
         setattr(self, attribute, value)
@@ -212,7 +216,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
     def set_attribute_from_period_choice_set(self, attribute, value, period, choice_set, privacy):
         self.get_attribute_from_period_choice(attribute, period, choice_set, privacy)[:] = value
 
-    def set_attribute_from_period(self,attribute,value,period, privacy):
+    def set_attribute_from_period(self,attribute,value, period, privacy):
         for choice_set in value.keys():
             self.set_attribute_from_period_choice_set(attribute,value[choice_set],period,choice_set,privacy)
 
@@ -305,7 +309,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
 
     def get_continuation_values(self, period, indices=None):
         return {
-            key: sss.get_continuation_values(period, indices)
+            key: sss.get_continuation_values(period)
             for key, sss in self.sub_state_spaces.items()
         }
 
@@ -318,7 +322,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
             sss.set_attribute_from_choice_set_private(
                 attribute, value[key], period, choice_set, privacy)
 
-    def set_attribute_from_period(self, attribute, period, value, privacy):
+    def set_attribute_from_period(self, attribute, value, period, privacy):
         for key, sss in self.sub_state_spaces.items():
             sss.set_attribute_from_period(
                 attribute, value[key], period, privacy)

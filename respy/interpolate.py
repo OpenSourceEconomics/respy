@@ -11,17 +11,43 @@ from respy.shared import calculate_expected_value_functions
 from respy.shared import calculate_value_functions_and_flow_utilities
 
 
-def interpolate(state_space, period_draws_emax_risk, period, optim_paras, options):
+def interpolate(wages,
+                nonpecs,
+                continuation_values,
+                state_space,
+                period_draws_emax_risk,
+                period,
+                optim_paras,
+                options):
     """Interface to switch between different interpolation routines."""
-    period_expected_value_functions = _kw_94_interpolation(
-        state_space, period_draws_emax_risk, period, optim_paras, options
-    )
+    period_expected_value_functions = dict()
+    for choice_set in wages.keys():
+        positions = {i:x for i, x in enumerate(choice_set) if x == True}
+        period_draws_emax_risk = period_draws_emax_risk[:, list(positions.keys())]
+        period_expected_value_functions[choice_set] = _kw_94_interpolation(
+            wages[choice_set],
+            nonpecs[choice_set],
+            continuation_values[choice_set],
+            state_space,
+            period_draws_emax_risk,
+            period,
+            optim_paras,
+            options,
+            list(positions.values())
+        )
 
     return period_expected_value_functions
 
 
 def _kw_94_interpolation(
-    state_space, period_draws_emax_risk, period, optim_paras, options
+    wages,
+    nonpecs,
+    continuation_values,
+    state_space,
+    period_draws_emax_risk,
+    optim_paras,
+    options,
+    choices
 ):
     r"""Calculate the approximate solution proposed by [1]_.
 
@@ -74,8 +100,10 @@ def _kw_94_interpolation(
            Economics and Statistics*, 76(4): 648-672.
 
     """
-    n_wages = len(optim_paras["choices_w_wage"])
-    n_core_states_in_period = state_space.core.query("period == @period").shape[0]
+    # This has to be adapted!
+    n_wages = len([x for x in optim_paras["choices_w_wage"] if x in choices])
+
+    n_core_states_in_period = wages.shape[0]
 
     seed = _get_seeds_for_interpolation(state_space, options)
     interp_points = _split_interpolation_points_evenly(state_space, options)
@@ -85,13 +113,9 @@ def _kw_94_interpolation(
     )
 
     # Create an array with the expected value of the shocks.
-    expected_shocks = np.zeros(len(optim_paras["choices"]))
+    expected_shocks = np.zeros(wages.shape[1])
     var = np.diag(optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T))
     expected_shocks[:n_wages] = np.exp(np.clip(var[:n_wages], 0, MAX_LOG_FLOAT) / 2)
-
-    wages = state_space.get_attribute_from_period("wages", period)
-    nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-    continuation_values = state_space.get_continuation_values(period=period)
 
     exogenous, max_emax = _compute_rhs_variables(
         wages, nonpecs, continuation_values, expected_shocks, optim_paras["delta"]

@@ -10,7 +10,7 @@ from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_expected_value_functions
 from respy.shared import transform_base_draws_with_cholesky_factor
-from respy.state_space import create_state_space_class
+from respy.state_space import create_sp
 
 
 def get_solve_func(params, options):
@@ -35,7 +35,7 @@ def get_solve_func(params, options):
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    state_space = create_state_space_class(optim_paras, options)
+    state_space = create_sp(options, optim_paras)
     solve_function = functools.partial(solve, options=options, state_space=state_space)
 
     return solve_function
@@ -52,7 +52,7 @@ def solve(params, options, state_space):
     state_space.set_attribute("wages", wages)
     state_space.set_attribute("nonpecs", nonpecs)
 
-    state_space = _solve_with_backward_induction(state_space, optim_paras)
+    state_space = _solve_with_backward_induction(state_space, optim_paras, options)
 
     return state_space
 
@@ -97,7 +97,7 @@ def _create_choice_rewards(states, period_choice_cores, optim_paras):
     return out_wages, out_nonpecs
 
 
-def _solve_with_backward_induction(state_space,period_choice_cores, optim_paras, options):
+def _solve_with_backward_induction(state_space, optim_paras, options):
     """Calculate utilities with backward induction.
 
     Parameters
@@ -126,8 +126,8 @@ def _solve_with_backward_induction(state_space,period_choice_cores, optim_paras,
     for period in reversed(range(n_periods)):
         n_core_states = state_space.core.query("period == @period").shape[0]
 
-        wages = state_space.get_attribute_from_period("wages", period)
-        nonpecs = state_space.get_attribute_from_period("nonpecs", period)
+        wages = state_space.get_attribute_from_period("wages", period, "private")
+        nonpecs = state_space.get_attribute_from_period("nonpecs", period, "private")
         continuation_values = state_space.get_continuation_values(period)
         period_draws_emax_risk = draws_emax_risk[period]
 
@@ -145,14 +145,21 @@ def _solve_with_backward_induction(state_space,period_choice_cores, optim_paras,
         if optim_paras["delta"] == 0:
             if hasattr(state_space, "sub_state_spaces"):
                 period_expected_value_functions = {
-                    dense_idx: 0 for dense_idx in state_space.sub_state_spaces
+                    dense_idx: {key: 0 for key in wages.keys()} for dense_idx in state_space.sub_state_spaces
                 }
             else:
                 period_expected_value_functions = 0
 
         elif any_interpolated:
             period_expected_value_functions = interpolate(
-                state_space, period_draws_emax_risk, period, optim_paras, options
+                wages,
+                nonpecs,
+                continuation_values,
+                state_space,
+                period_draws_emax_risk,
+                period,
+                optim_paras,
+                options
             )
 
         else:
@@ -161,7 +168,7 @@ def _solve_with_backward_induction(state_space,period_choice_cores, optim_paras,
             )
 
         state_space.set_attribute_from_period(
-            "expected_value_functions", period_expected_value_functions, period
+            "expected_value_functions", period_expected_value_functions, period, "public"
         )
 
     return state_space
@@ -179,13 +186,18 @@ def _full_solution(
     """
     period_expected_value_functions = dict()
     for choice_set in wages.keys():
+
+        # Subset shocks accordingly!
+        positions = [i for i, x in enumerate(choice_set) if x == True]
+        period_draws_emax_risk = period_draws_emax_risk[:, positions]
+
+        # Get expectations
         period_expected_value_functions[choice_set] = calculate_expected_value_functions(
             wages[choice_set],
             nonpecs[choice_set],
             continuation_values[choice_set],
             period_draws_emax_risk,
             optim_paras["delta"],
-            choice_set
         )
 
     return period_expected_value_functions
