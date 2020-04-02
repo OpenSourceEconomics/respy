@@ -188,7 +188,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
         return getattr(self, attr)
 
 
-    def get_attribute_from_period_choice(self, attribute, period, choice_set, privacy="public"):
+    def get_attribute_from_period_choice(self, attribute, period, choice_set, privacy):
         attr = self.get_attribute(attribute)
         if privacy == "public":
             slice_ = self.period_choice_cores[(period, choice_set)]
@@ -198,6 +198,13 @@ class _SingleDimStateSpace(_BaseStateSpace):
         return out
 
 
+    def get_attribute_from_period(self,attribute, period, privacy):
+        choice_sets = [key[1] for key in self.period_choice_cores.keys() if key[0] == period]
+        out = dict()
+        for choice_set in choice_sets:
+            out[choice_set] = self.get_attribute_from_period_choice(attribute, period, choice_set, privacy)
+
+
     def set_attribute(self, attribute, value):
         setattr(self, attribute, value)
 
@@ -205,6 +212,9 @@ class _SingleDimStateSpace(_BaseStateSpace):
     def set_attribute_from_period_choice_set(self, attribute, value, period, choice_set, privacy):
         self.get_attribute_from_period_choice(attribute, period, choice_set, privacy)[:] = value
 
+    def set_attribute_from_period(self,attribute,value,period, privacy):
+        for choice_set in value.keys():
+            self.set_attribute_from_period_choice_set(attribute,value[choice_set],period,choice_set,privacy)
 
     @property
     def states(self):
@@ -234,9 +244,6 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
         return period_choice_cores
 
-    @property
-    def base_draws_sol(self):
-        return _reshape_base_draws(self.base_draws, self.period_choice_cores, self.options)
 
 
 
@@ -258,7 +265,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
                  ):
         self.core = core
         self.indexer = indexer
-        self.base_draws = base_draws
+        self.base_draws_sol = base_draws
         self.optim_paras = optim_paras
         self.options = options
         self.dense = dense
@@ -269,7 +276,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
             dense_dim: _SingleDimStateSpace(
                 self.core.copy(),
                 self.indexer,
-                self.base_draws.copy(),
+                self.base_draws_sol,
                 optim_paras,
                 options,
                 dense_dim,
@@ -290,6 +297,12 @@ class _MultiDimStateSpace(_BaseStateSpace):
             for key, sss in self.sub_state_spaces.items()
         }
 
+    def get_attribute_from_period(self, attribute, period, privacy):
+        return {
+            key: sss.get_attribute_from_period(attribute, period, privacy)
+            for key, sss in self.sub_state_spaces.items()
+        }
+
     def get_continuation_values(self, period, indices=None):
         return {
             key: sss.get_continuation_values(period, indices)
@@ -305,6 +318,10 @@ class _MultiDimStateSpace(_BaseStateSpace):
             sss.set_attribute_from_choice_set_private(
                 attribute, value[key], period, choice_set, privacy)
 
+    def set_attribute_from_period(self, attribute, period, value, privacy):
+        for key, sss in self.sub_state_spaces.items():
+            sss.set_attribute_from_period(
+                attribute, value[key], period, privacy)
     @property
     def states(self):
         return {key: sss.states for key, sss in self.sub_state_spaces.items()}
@@ -312,10 +329,6 @@ class _MultiDimStateSpace(_BaseStateSpace):
     @property
     def period_choice_cores(self):
         return {key: sss.period_choice_cores for key, sss in self.sub_state_spaces.items()}
-
-    @property
-    def base_draws_sol(self):
-        return {key: sss.base_draws_sol for key, sss in self.sub_state_spaces.items()}
 
 
 def _create_core_and_indexer(optim_paras, options):

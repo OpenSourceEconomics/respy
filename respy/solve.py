@@ -177,12 +177,15 @@ def _full_solution(
     state and not only a subset.
 
     """
-    period_expected_value_functions = calculate_expected_value_functions(
-        wages,
-        nonpecs,
-        continuation_values,
-        period_draws_emax_risk,
-        optim_paras["delta"],
-    )
+    period_expected_value_functions = dict()
+    for choice_set in wages.keys():
+        period_expected_value_functions[choice_set] = calculate_expected_value_functions(
+            wages[choice_set],
+            nonpecs[choice_set],
+            continuation_values[choice_set],
+            period_draws_emax_risk,
+            optim_paras["delta"],
+            choice_set
+        )
 
     return period_expected_value_functions
