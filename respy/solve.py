@@ -53,7 +53,6 @@ def solve(params, options, state_space):
     state_space.set_attribute("nonpecs", nonpecs)
 
     state_space = _solve_with_backward_induction(state_space, optim_paras, options)
-
     return state_space
 
 
@@ -75,6 +74,7 @@ def _create_choice_rewards(states, period_choice_cores, optim_paras):
     for (period, choice_set) in period_choice_cores.keys():
         # Subsetting auslagern!
         choices = [x for i,x in enumerate(optim_paras["choices"]) if choice_set[i]==True]
+
         for i, choice in enumerate(choices):
 
             states_period_choice = states.loc[period_choice_cores[(period, choice_set)]]
@@ -88,7 +88,6 @@ def _create_choice_rewards(states, period_choice_cores, optim_paras):
 
             if f"nonpec_{choice}" in optim_paras:
                 nonpec_columns = optim_paras[f"nonpec_{choice}"].index
-                print(i)
                 out_nonpecs[(period, choice_set)][:, i] = np.dot(
                     states_period_choice[nonpec_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
                     optim_paras[f"nonpec_{choice}"].to_numpy(),

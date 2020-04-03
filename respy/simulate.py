@@ -171,23 +171,31 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
 
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
         # n-step-ahead simulation, `df` always contains only data of the current period.
+
+        # TODO: Until now we use many objects! Check whether that could be changed!
+
         current_df = df.query("period == @period").copy()
-        wages = state_space.get_attribute_from_period("wages", period)
-        nonpecs = state_space.get_attribute_from_period("nonpecs", period)
+        df.to_pickle("debug.pkl")
+        wages = state_space.get_attribute_from_period("wages", period, "private")
+        nonpecs = state_space.get_attribute_from_period("nonpecs", period, "private")
         continuation_values = state_space.get_continuation_values(period=period)
-        is_inadmissible = state_space.get_attribute_from_period(
-            "is_inadmissible", period
-        )
+        states_period = state_space.get_attribute_from_period("states", period, "public")
+        choice_cores = state_space.get_attribute_from_period("period_choice_cores", period, "private")
+
+
 
         current_df_extended = _simulate_single_period(
             current_df,
             state_space.indexer[period],
+            choice_cores,
+            states_period,
             wages,
             nonpecs,
             continuation_values,
-            is_inadmissible,
             optim_paras=optim_paras,
         )
+
+        # Build admissible choice sets!
 
         data.append(current_df_extended)
 
@@ -275,7 +283,14 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 @split_and_combine_df
 @parallelize_across_dense_dimensions
 def _simulate_single_period(
-    df, indexer, wages, nonpecs, continuation_values, is_inadmissible, optim_paras
+    df,
+    indexer,
+    choice_cores,
+    states_period,
+    wages,
+    nonpecs,
+    continuation_values,
+    optim_paras
 ):
     """Simulate individuals in a single period.
 
@@ -286,55 +301,76 @@ def _simulate_single_period(
     - Store additional information in a :class:`pandas.DataFrame` and return it.
 
     """
-    n_wages = len(optim_paras["choices_w_wage"])
-
-    # Get indices which connect states in the state space and simulated agents. Subtract
-    # the minimum of indices (excluding invalid indices) because wages, etc. contain
-    # only wages in this period and normal indices select rows from all wages.
+    # TODO: FIND better names! Too much differnet indexing!
     columns = create_core_state_space_columns(optim_paras)
-    indices = indexer[tuple(df[col].astype("int64") for col in columns)]
-    period_indices = indices - np.min(indexer[indexer != INDEXER_INVALID_INDEX])
 
-    try:
-        wages = wages[period_indices]
-        nonpecs = nonpecs[period_indices]
-        continuation_values = continuation_values[period_indices]
-        is_inadmissible = is_inadmissible[period_indices]
-    except IndexError as e:
-        raise Exception(
-            "Simulated individuals could not be mapped to their corresponding states in"
-            " the state space. This might be caused by a mismatch between "
-            "option['core_state_space_filters'] and the initial conditions."
-        ) from e
+    #We only need choice sets
+    states_period = pd.concat(list(states_period.values()))
+    states_period = states_period[list(optim_paras["choices"].keys())]
 
-    draws_shock = df[[f"shock_reward_{c}" for c in optim_paras["choices"]]].to_numpy()
-    draws_wage = df[[f"meas_error_wage_{c}" for c in optim_paras["choices"]]].to_numpy()
+    #Create the indexer
+    df["indexer"] = indexer[tuple(df[col].astype("int64") for col in columns)]
+    # Merge choice sets to indeices
+    df = df.merge(states_period, left_on="indexer", right_index=True, how="left")
 
-    value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
-        wages, nonpecs, continuation_values, draws_shock, optim_paras["delta"],
-    )
+    # Add all the info cols. Required bacause we subset now
+    df = _create_additional_cols(df, optim_paras)
 
-    # We need to ensure that no individual chooses an inadmissible state. Thus, set
-    # value functions to NaN. This cannot be done in `aggregate_keane_wolpin_utility` as
-    # the interpolation requires a mild penalty.
-    value_functions = np.where(is_inadmissible, np.nan, value_functions)
+    choice_dfs = df.groupby(list(optim_paras["choices"].keys()))
 
-    choice = np.nanargmax(value_functions, axis=1)
+    for choice_set, sub_df in choice_dfs:
+        # Get indices which connect states in the state space and simulated agents. Subtract
+        # the minimum of indices (excluding invalid indices) because wages, etc. contain
+        # only wages in this period and normal indices select rows from all wages.
+        choices = {x:i for i, x in enumerate(optim_paras["choices"]) if choice_set[i] == True}
+        n_wages = len([x for x in optim_paras["choices_w_wage"] if x in choices.keys()])
+        indexing_states_dict = {x: i for i, x in enumerate(choice_cores[choice_set])}
 
-    wages = wages * draws_shock * draws_wage
-    wages[:, n_wages:] = np.nan
-    wage = np.choose(choice, wages.T)
+        # TODO: More Powerfull Method required I guess!
+        period_indices_states = [indexing_states_dict[x] for x in sub_df["indexer"]]
 
-    # Store necessary information and information for debugging, etc..
-    df["choice"] = choice
-    df["wage"] = wage
-    df["discount_rate"] = optim_paras["delta"]
-    for i, choice in enumerate(optim_paras["choices"]):
-        df[f"nonpecuniary_reward_{choice}"] = nonpecs[:, i]
-        df[f"wage_{choice}"] = wages[:, i]
-        df[f"flow_utility_{choice}"] = flow_utilities[:, i]
-        df[f"value_function_{choice}"] = value_functions[:, i]
-        df[f"continuation_value_{choice}"] = continuation_values[:, i]
+        # Da muss i mir wqas überkegn
+        try:
+            wages = wages[choice_set][period_indices_states]
+            nonpecs = nonpecs[choice_set][period_indices_states]
+            continuation_values = continuation_values[choice_set][period_indices_states]
+        except IndexError as e:
+            raise Exception(
+                "Simulated individuals could not be mapped to their corresponding states in"
+                " the state space. This might be caused by a mismatch between "
+                "option['core_state_space_filters'] and the initial conditions."
+            ) from e
+
+        draws_shock = sub_df[[f"shock_reward_{c}" for c in choices.keys()]].to_numpy()
+        draws_wage = sub_df[[f"meas_error_wage_{c}" for c in choices.keys()]].to_numpy()
+
+        value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
+            wages, nonpecs, continuation_values, draws_shock, optim_paras["delta"],
+        )
+        choice = np.nanargmax(value_functions, axis=1)
+
+        #Get choice replacement dict. There is too much positioning until now!
+
+
+        wages = wages * draws_shock * draws_wage
+        wages[:, n_wages:] = np.nan
+        wage = np.choose(choice, wages.T)
+
+        for pos,val in enumerate(choices.values()):
+            choice = np.where(choice==pos,val,choice)
+        # Store necessary information and information for debugging, etc..
+        print(len(choice))
+        print(len(df))
+        df.loc[sub_df.index,"choice"] = choice
+        df.loc[sub_df.index,"wage"] = wage
+        df.loc[sub_df.index,"discount_rate"] = optim_paras["delta"]
+
+        for i, choice in enumerate(choices.keys()):
+            df.loc[sub_df.index,f"nonpecuniary_reward_{choice}"] = nonpecs[:, i]
+            df.loc[sub_df.index,f"wage_{choice}"] = wages[:, i]
+            df.loc[sub_df.index,f"flow_utility_{choice}"] = flow_utilities[:, i]
+            df.loc[sub_df.index,f"value_function_{choice}"] = value_functions[:, i]
+            df.loc[sub_df.index,f"continuation_value_{choice}"] = continuation_values[:, i]
 
     return df
 
@@ -640,6 +676,7 @@ def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_p
     df = df.reindex(columns=state_space_columns)
 
     # Perform two checks for NaNs.
+
     data = df.query("period == 0").drop(columns="type", errors="ignore")
     has_nans_in_first_period = np.any(data.isna())
     if has_nans_in_first_period and method == "n_step_ahead_with_data":
@@ -654,5 +691,24 @@ def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_p
         raise ValueError(
             "The data for one-step-ahead simulation must not contain NaNs."
         )
+
+    return df
+
+
+def _create_additional_cols(df, optim_paras):
+    """
+    Hotfix. This can be made better!
+    """
+    cols = ["choice", "wage", "discount_rate"]
+
+    for i, choice in enumerate(optim_paras["choices"]):
+        cols.append(f"nonpecuniary_reward_{choice}")
+        cols.append(f"wage_{choice}")
+        cols.append(f"flow_utility_{choice}")
+        cols.append(f"value_function_{choice}")
+        cols.append(f"continuation_value_{choice}")
+
+    for col in cols:
+        df[col] = np.nan
 
     return df

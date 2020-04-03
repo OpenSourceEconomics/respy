@@ -196,7 +196,11 @@ class _SingleDimStateSpace(_BaseStateSpace):
         attr = self.get_attribute(attribute)
         if privacy == "public":
             slice_ = self.period_choice_cores[(period, choice_set)]
-            out = attr[slice_]
+            if isinstance(attr,pd.DataFrame):
+                out = attr.loc[slice_]
+            else:
+                print(slice_)
+                out = attr[slice_]
         elif privacy == "private":
             out = attr[(period,choice_set)]
         return out
@@ -224,29 +228,39 @@ class _SingleDimStateSpace(_BaseStateSpace):
     def states(self):
         states = self.core.copy().assign(**self.dense_covariates)
         states = compute_covariates(states, self.mixed_covariates)
+        if self.dense_dim:
+            dense_df = pd.DataFrame(self.dense_covariates,index=[0])
+            dense_df = _create_choice_sets(dense_df, self.optim_paras, self.options, "dense")
+            dense_choice_set = {key:dense_df[key] for key in self.optim_paras["choices"]}
+
+        for choice in dense_choice_set.keys():
+            if dense_choice_set[choice].loc[0] == True:
+                states[choice] = True
+
+        states = _create_choice_sets(states, self.optim_paras, self.options, "mixed")
+        for choice in self.optim_paras["choices"]:
+            states[choice] = ~ states[choice]
+
         return states
 
     @property
     def period_choice_cores(self):
-        if self.dense_dim:
-            print(self.dense_covariates)
-            dense_df = pd.DataFrame(self.dense_covariates,index=[0])
-            dense_df = _create_choice_sets(dense_df, self.optim_paras, self.options, "dense")
-            dense_choice_set = {key:dense_df[key] for key in self.optim_paras["choices"]}
-            # Set all to False in core!
-            states = self.states
-            for choice in dense_choice_set.keys():
-                print(dense_choice_set[choice])
-                if dense_choice_set[choice].loc[0] == True:
-                    states[choice] = True
-
-        states = _create_choice_sets(states, self.optim_paras, self.options, "mixed")
         # Dirty Fix to reverse False and True
-        for choice in self.optim_paras["choices"]:
-            states[choice] = ~ states[choice]
-        period_choice_cores = _split_core_state_space(states,self.optim_paras)
+
+        period_choice_cores = _split_core_state_space(self.states.copy(), self.optim_paras)
 
         return period_choice_cores
+
+    @property
+    def choice_set_indexer(self):
+        data = []
+        for key in self.period_choice_cores.keys():
+            df = pd.DataFrame(index=self.period_choice_cores[key],
+                              columns=self.optim_paras["choices"])
+            for i,choice in enumerate(self.optim_paras["choices"]):
+                df[choice] = key[1][i]
+            data.append(df)
+        return pd.concat(data)
 
 
 
@@ -333,6 +347,10 @@ class _MultiDimStateSpace(_BaseStateSpace):
     @property
     def period_choice_cores(self):
         return {key: sss.period_choice_cores for key, sss in self.sub_state_spaces.items()}
+
+    @property
+    def choice_set_indexer(self):
+        return {key: sss.choice_set_indexer for key, sss in self.sub_state_spaces.items()}
 
 
 def _create_core_and_indexer(optim_paras, options):
@@ -428,6 +446,7 @@ def _create_core_state_space(optim_paras):
     _create_core_state_space_per_period
 
     """
+    print()
     choices_w_exp = list(optim_paras["choices_w_exp"])
     minimal_initial_experience = np.array(
         [min(optim_paras["choices"][choice]["start"]) for choice in choices_w_exp],
