@@ -49,10 +49,12 @@ def solve(params, options, state_space):
     period_choice_cores = state_space.period_choice_cores
 
     wages, nonpecs = _create_choice_rewards(states, period_choice_cores, optim_paras)
+
     state_space.set_attribute("wages", wages)
     state_space.set_attribute("nonpecs", nonpecs)
 
     state_space = _solve_with_backward_induction(state_space, optim_paras, options)
+
     return state_space
 
 

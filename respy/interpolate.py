@@ -48,6 +48,7 @@ def _kw_94_interpolation(
     optim_paras,
     options,
     choices
+
 ):
     r"""Calculate the approximate solution proposed by [1]_.
 
@@ -105,6 +106,7 @@ def _kw_94_interpolation(
 
     n_core_states_in_period = wages.shape[0]
 
+
     seed = _get_seeds_for_interpolation(state_space, options)
     interp_points = _split_interpolation_points_evenly(state_space, options)
 
@@ -116,6 +118,10 @@ def _kw_94_interpolation(
     expected_shocks = np.zeros(wages.shape[1])
     var = np.diag(optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T))
     expected_shocks[:n_wages] = np.exp(np.clip(var[:n_wages], 0, MAX_LOG_FLOAT) / 2)
+
+    wages = state_space.get_attribute_from_period("wages", period)
+    nonpecs = state_space.get_attribute_from_period("nonpecs", period)
+    continuation_values = state_space.get_continuation_values(period=period)
 
     exogenous, max_emax = _compute_rhs_variables(
         wages, nonpecs, continuation_values, expected_shocks, optim_paras["delta"]

@@ -122,6 +122,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
         self.dense_dim = dense_dim
         self.dense_covariates = dense_covariates if dense_covariates is not None else {}
         self.mixed_covariates = options["covariates_mixed"]
+
         self.indices_of_child_states = (
             super()._create_indices_of_child_states(optim_paras)
             if indices_of_child_states is None
@@ -216,23 +217,8 @@ class _SingleDimStateSpace(_BaseStateSpace):
     @property
     def period_choice_cores(self):
         # Dirty Fix to reverse False and True
-
         period_choice_cores = _split_core_state_space(self.states.copy(), self.optim_paras)
-
         return period_choice_cores
-
-    @property
-    def choice_set_indexer(self):
-        data = []
-        for key in self.period_choice_cores.keys():
-            df = pd.DataFrame(index=self.period_choice_cores[key],
-                              columns=self.optim_paras["choices"])
-            for i,choice in enumerate(self.optim_paras["choices"]):
-                df[choice] = key[1][i]
-            data.append(df)
-        return pd.concat(data)
-
-
 
 
 class _MultiDimStateSpace(_BaseStateSpace):
@@ -317,10 +303,6 @@ class _MultiDimStateSpace(_BaseStateSpace):
     @property
     def period_choice_cores(self):
         return {key: sss.period_choice_cores for key, sss in self.sub_state_spaces.items()}
-
-    @property
-    def choice_set_indexer(self):
-        return {key: sss.choice_set_indexer for key, sss in self.sub_state_spaces.items()}
 
 
 def _create_core_and_indexer(optim_paras, options):
