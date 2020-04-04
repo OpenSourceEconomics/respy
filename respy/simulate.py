@@ -175,7 +175,6 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
         # TODO: Until now we use many objects! Check whether that could be changed!
 
         current_df = df.query("period == @period").copy()
-        df.to_pickle("debug.pkl")
         wages = state_space.get_attribute_from_period("wages", period, "private")
         nonpecs = state_space.get_attribute_from_period("nonpecs", period, "private")
         continuation_values = state_space.get_continuation_values(period=period)
@@ -183,7 +182,8 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
         choice_cores = state_space.get_attribute_from_period("period_choice_cores", period, "private")
 
 
-
+        print(period)
+        print(continuation_values)
         current_df_extended = _simulate_single_period(
             current_df,
             state_space.indexer[period],
@@ -348,6 +348,7 @@ def _simulate_single_period(
             wages, nonpecs, continuation_values, draws_shock, optim_paras["delta"],
         )
         choice = np.nanargmax(value_functions, axis=1)
+
 
         #Get choice replacement dict. There is too much positioning until now!
 

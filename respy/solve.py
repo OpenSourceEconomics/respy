@@ -10,7 +10,7 @@ from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_expected_value_functions
 from respy.shared import transform_base_draws_with_cholesky_factor
-from respy.state_space import create_sp
+from respy.state_space import create_state_space_class
 
 
 def get_solve_func(params, options):
@@ -35,7 +35,7 @@ def get_solve_func(params, options):
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    state_space = create_sp(options, optim_paras)
+    state_space = create_state_space_class(options, optim_paras)
     solve_function = functools.partial(solve, options=options, state_space=state_space)
 
     return solve_function
@@ -200,5 +200,6 @@ def _full_solution(
             period_draws_emax_risk,
             optim_paras["delta"],
         )
+        print(period_expected_value_functions[choice_set])
 
     return period_expected_value_functions

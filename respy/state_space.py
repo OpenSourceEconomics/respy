@@ -166,11 +166,12 @@ class _SingleDimStateSpace(_BaseStateSpace):
     def get_attribute_from_period_choice(self, attribute, period, choice_set, privacy):
         attr = self.get_attribute(attribute)
         if privacy == "public":
+            print("pk22")
             slice_ = self.period_choice_cores[(period, choice_set)]
             if isinstance(attr,pd.DataFrame):
                 out = attr.loc[slice_]
             else:
-                print(slice_)
+                print("pk33")
                 out = attr[slice_]
         elif privacy == "private":
             out = attr[(period,choice_set)]
@@ -189,10 +190,12 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
 
     def set_attribute_from_period_choice_set(self, attribute, value, period, choice_set, privacy):
+        print(value)
         self.get_attribute_from_period_choice(attribute, period, choice_set, privacy)[:] = value
 
     def set_attribute_from_period(self,attribute,value, period, privacy):
         for choice_set in value.keys():
+            print("plankreuz1")
             self.set_attribute_from_period_choice_set(attribute,value[choice_set],period,choice_set,privacy)
 
     @property
@@ -398,7 +401,7 @@ def _create_core_state_space(optim_paras):
     _create_core_state_space_per_period
 
     """
-    print()
+
     choices_w_exp = list(optim_paras["choices_w_exp"])
     minimal_initial_experience = np.array(
         [min(optim_paras["choices"][choice]["start"]) for choice in choices_w_exp],
