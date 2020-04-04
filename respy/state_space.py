@@ -18,8 +18,12 @@ from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 
 
-def create_state_space_class(optim_paras, options):
-    """Create the state space of the model."""
+def create_state_space_class(options, optim_paras):
+    """
+    Define a function that calls all the prior methods to create something
+    that looks like a sp!
+    """
+    # We create the full core first! (Do we have to create covariates here?)
     core, indexer = _create_core_and_indexer(optim_paras, options)
     dense_grid = _create_dense_state_space_grid(optim_paras)
 
@@ -28,6 +32,10 @@ def create_state_space_class(optim_paras, options):
     core = core.apply(downcast_to_smallest_dtype)
     dense = _create_dense_state_space_covariates(dense_grid, optim_paras, options)
 
+
+    core = _create_choice_sets(core, optim_paras, options, "core")
+
+    # Create base draws sol
     base_draws_sol = create_base_draws(
         (options["n_periods"], options["solution_draws"], len(optim_paras["choices"])),
         next(options["solution_seed_startup"]),
@@ -41,44 +49,6 @@ def create_state_space_class(optim_paras, options):
     else:
         state_space = _SingleDimStateSpace(
             core, indexer, base_draws_sol, optim_paras, options
-        )
-
-    return state_space
-
-
-def create_sp(options, optim_paras):
-    """
-    Define a function that calls all the prior methods to create something
-    that looks like a sp!
-    """
-    # We create the full core first! (Do we have to create covariates here?)
-    core, indexer = _create_core_and_indexer(optim_paras, options)
-
-    # We apply all inadmissable states
-    core = compute_covariates(core, options["covariates_core"])
-    core = core.apply(downcast_to_smallest_dtype)
-    core = _create_choice_sets(core, optim_paras, options, "core")
-
-    # Create dense sp!
-    dense_grid = _create_dense_state_space_grid(optim_paras)
-    dense_cov = _create_dense_state_space_covariates(dense_grid, optim_paras, options)
-
-    # Create base draws sol
-    base_draws_sol = create_base_draws(
-        (options["n_periods"], options["solution_draws"], len(optim_paras["choices"])),
-        next(options["solution_seed_startup"]),
-        options["monte_carlo_sequence"],
-    )
-
-    #TODO: We have to change code here such as to allow for no dense vars.
-    #      We need to take new strcuture of dense variables into account!
-    state_space = _MultiDimStateSpace(
-        core,
-        indexer,
-        base_draws_sol,
-        optim_paras,
-        options,
-        dense_cov
         )
 
     return state_space
