@@ -6,6 +6,7 @@ from respy.config import EXAMPLE_MODELS
 from respy.config import INDEXER_INVALID_INDEX
 from respy.config import KEANE_WOLPIN_1994_MODELS
 from respy.config import KEANE_WOLPIN_1997_MODELS
+from respy.interface import get_example_model
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_core_state_space_columns
@@ -209,3 +210,27 @@ def test_create_state_space_vs_specialized_kw97(model):
         mask_new = indexer_new[period] != INDEXER_INVALID_INDEX
         adj_mask_new = np.repeat(mask_new, 4).reshape(mask_old.shape)
         assert np.array_equal(mask_old, adj_mask_new)
+
+
+def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
+    params, options = get_example_model("kw_94_one", with_data=False)
+
+    solve = get_solve_func(params, options)
+    state_space = solve(params)
+
+    assert (state_space.nonpecs[:, :2] == 0).all()
+    assert np.isin(state_space.nonpecs[:, 2], [0, -4_000, -400_000, -404_000]).all()
+    assert (state_space.nonpecs[:, 3] == 17_750).all()
+
+
+def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
+    params, options = get_example_model("kw_94_two", with_data=False)
+
+    solve = get_solve_func(params, options)
+    state_space = solve(params)
+
+    assert (state_space.nonpecs[:, :2] == 0).all()
+    assert np.isin(
+        state_space.nonpecs[:, 2], [5_000, 0, -10_000, -15_000, -400_000, -415_000]
+    ).all()
+    assert (state_space.nonpecs[:, 3] == 14_500).all()

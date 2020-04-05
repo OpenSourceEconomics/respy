@@ -5,18 +5,19 @@ package:
   version: {{ data.get('version') }}
 
 source:
-  path: ../../respy
+  # git_url is nice in that it won't capture devenv stuff.  However, it only captures
+  # committed code, so pay attention.
+  git_url: ../
 
 build:
+  number: 0
   noarch: python
 
 requirements:
-  build:
-    - python
-    - setuptools
-
+  host:
+    - python >=3.6,<3.8
   run:
-    - python >=3.6,<=3.7
+    - python >=3.6,<3.8
     - chaospy
     - click
     - estimagic >=0.0.27
