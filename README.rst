@@ -25,14 +25,13 @@ respy
 ----
 
 ``respy`` is an open source framework written in Python for the simulation and
-estimation of some finite-horizon discrete choice dynamic programming models. The models
-which can be represented in ``respy`` are called Eckstein-Keane-Wolpin models, named
-after three noteworthy researchers in this research area.
+estimation of some finite-horizon discrete choice dynamic programming models. The group
+of models which can be currently represented in ``respy`` are called
+Eckstein-Keane-Wolpin models (Aguirregabiria and Mira (2010))
 
 What makes ``respy`` powerful is that it allows to build and solve structural models in
 minutes whose development previously took years. The design of ``respy`` allows the
 researcher to flexibly add the following components to her model.
-
 
 - **Any number of two or more choices** (e.g., working alternatives, schooling, home
   production, retirement) where each choice may yield a wage, may allow for experience
@@ -50,7 +49,6 @@ researcher to flexibly add the following components to her model.
 
 - Estimate **measurement errors** in wages using a Kalman Filter.
 
-
 You can install ``respy`` via conda with
 
 .. code-block:: bash
@@ -67,7 +65,7 @@ tutorials and other information.
 Citation
 --------
 
-With the second release and a complete rewrite ``respy`` evolved into a general
+``respy`` was completely rewritten in the second release and evolved into a general
 framework for the estimation of Eckstein-Keane-Wolpin models. Please cite it with
 
 .. code-block::
@@ -104,6 +102,10 @@ been using the package and it motivates further work.
 
 References
 ----------
+
+Aguirregabiria, V., & Mira, P. (2010). `Dynamic discrete choice structural models: A
+survey <https://doi.org/10.1016/j.jeconom.2009.09.007>`_. Journal of Econometrics,
+156(1), 38-67
 
 Bhuller, M., Eisenhauer, P. and Mendel, M. (2020). The Option Value of Education.
 *Working Paper*.

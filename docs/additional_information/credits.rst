@@ -40,7 +40,7 @@ top of numerous open source tools such as the `SciPy <https://www.scipy.org>`_ a
 Citation
 --------
 
-With the second release and a complete rewrite ``respy`` evolved into a general
+``respy`` was completely rewritten in the second release and evolved into a general
 framework for the estimation of Eckstein-Keane-Wolpin models. Please cite it with
 
 .. code-block::
@@ -56,8 +56,8 @@ framework for the estimation of Eckstein-Keane-Wolpin models. Please cite it wit
 Before that, ``respy`` was developed by Philipp Eisenhauer and provided a package for
 the simulation and estimation of a prototypical finite-horizon discrete choice dynamic
 programming model. At the heart of this release is a Fortran implementation with Python
-bindings which uses MPI and OMP to scale up to HPC clusters. It is accompanied by a
-Python implementation for teaching purposes. If you use ``respy`` up to version 1.2.1,
+bindings which uses MPI and OMP to scale up to HPC clusters. It is accompanied by a pure
+Python implementation as teaching material. If you use ``respy`` up to version 1.2.1,
 please cite it with
 
 .. code-block::
