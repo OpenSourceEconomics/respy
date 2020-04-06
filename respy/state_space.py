@@ -60,6 +60,19 @@ class _BaseStateSpace:
     and are shared between multiple sub state spaces.
     """
 
+    def _create_slices_by_core_periods(self):
+        """Create slices to index all attributes in a given period.
+        It is important that the returned objects are not fancy indices. Fancy indexing
+        results in copies of array which decrease performance and raise memory usage.
+        """
+        period = self.core.period
+        indices = np.where(period - period.shift(1).fillna(-1) == 1)[0]
+        indices = np.append(indices, self.core.shape[0])
+
+        slices = [slice(indices[i], indices[i + 1]) for i in range(len(indices) - 1)]
+
+        return slices
+
     def _create_indices_of_child_states(self, optim_paras):
         """For each parent state get the indices of child states.
         During the backward induction, the ``expected_value_functions`` in the future
@@ -113,6 +126,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
         dense_dim = None,
         dense_covariates = None,
         indices_of_child_states = None,
+        slices_by_periods = None
         ):
         self.core = core
         self.indexer = indexer
@@ -128,8 +142,40 @@ class _SingleDimStateSpace(_BaseStateSpace):
             if indices_of_child_states is None
             else indices_of_child_states
         )
+        self.slices_by_periods = (
+            super()._create_slices_by_core_periods()
+            if slices_by_periods is None
+            else slices_by_periods
+        )
         self.expected_value_functions = np.empty(self.core.shape[0])
 
+
+
+    def get_attribute(self, attr):
+        """Get an attribute of the state space."""
+        return getattr(self, attr)
+
+
+    def get_attribute_from_period_choice(self, attribute, period, choice_set, privacy):
+        attr = self.get_attribute(attribute)
+
+        if privacy == "public":
+            slice_ = self.period_choice_cores[(period, choice_set)]
+            if isinstance(attr,pd.DataFrame):
+                out = attr.loc[slice_]
+            else:
+                out = attr[slice_]
+        elif privacy == "private":
+            out = attr[(period,choice_set)]
+
+        return out
+
+    def get_attribute_from_period(self,attribute, period, privacy):
+        choice_sets = [key[1] for key in self.period_choice_cores.keys() if key[0] == period]
+        out = dict()
+        for choice_set in choice_sets:
+            out[choice_set] = self.get_attribute_from_period_choice(attribute, period, choice_set, privacy)
+        return out
 
     def get_continuation_values(self, period):
         n_periods = len(self.indexer)
@@ -157,46 +203,30 @@ class _SingleDimStateSpace(_BaseStateSpace):
             continuation_values[choice_set] = continuation_values_choice
         return continuation_values
 
-
-    def get_attribute(self, attr):
-        """Get an attribute of the state space."""
-        return getattr(self, attr)
-
-
-    def get_attribute_from_period_choice(self, attribute, period, choice_set, privacy):
-        attr = self.get_attribute(attribute)
-        if privacy == "public":
-            print("pk22")
-            slice_ = self.period_choice_cores[(period, choice_set)]
-            if isinstance(attr,pd.DataFrame):
-                out = attr.loc[slice_]
-            else:
-                print("pk33")
-                out = attr[slice_]
-        elif privacy == "private":
-            out = attr[(period,choice_set)]
-        return out
-
-
-    def get_attribute_from_period(self,attribute, period, privacy):
-        choice_sets = [key[1] for key in self.period_choice_cores.keys() if key[0] == period]
-        out = dict()
-        for choice_set in choice_sets:
-            out[choice_set] = self.get_attribute_from_period_choice(attribute, period, choice_set, privacy)
-        return out
-
     def set_attribute(self, attribute, value):
         setattr(self, attribute, value)
 
 
-    def set_attribute_from_period_choice_set(self, attribute, value, period, choice_set, privacy):
+    def set_attribute_from_period_choice(self, attribute, value, period, choice_set, privacy):
+        if privacy == "public":
+            slice_ = self.period_choice_cores[(period, choice_set)]
+        else:
+            slice_=None
         print(value)
-        self.get_attribute_from_period_choice(attribute, period, choice_set, privacy)[:] = value
+        self.get_attribute_from_period_choice(attribute, period, choice_set, privacy, slice_)[:] = value
+        print(self.get_attribute_from_period_choice(attribute, period, choice_set, privacy, slice_))
+
 
     def set_attribute_from_period(self,attribute,value, period, privacy):
+        """We build an array first! Methods need to be cleaned up!
+        This will be done once we decide on setup!"""
+        slice_ = self.slices_by_periods[period]
+        array = np.empty(slice_.stop-slice_.start)
         for choice_set in value.keys():
-            print("plankreuz1")
-            self.set_attribute_from_period_choice_set(attribute,value[choice_set],period,choice_set,privacy)
+            indices = self.period_choice_cores[(period,choice_set)] - slice_.start
+            array[indices] = value[choice_set]
+        attr = self.get_attribute(attribute)
+        attr[slice_] = array
 
     @property
     def states(self):
@@ -268,7 +298,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
             for key, sss in self.sub_state_spaces.items()
         }
 
-    def get_attribute_from_period_choice_set(self, attribute, period, choice_set, privacy):
+    def get_attribute_from_period_choice(self, attribute, period, choice_set, privacy):
         return {
             key: sss.get_attribute_from_period(attribute, period, choice_set, privacy)
             for key, sss in self.sub_state_spaces.items()
@@ -290,7 +320,7 @@ class _MultiDimStateSpace(_BaseStateSpace):
         for key, sss in self.sub_state_spaces.items():
             sss.set_attribute(attribute, value[key])
 
-    def set_attribute_from_period_choice_set(self, attribute, period, choice_set, value, privacy):
+    def set_attribute_from_period_choice(self, attribute, period, choice_set, value, privacy):
         for key, sss in self.sub_state_spaces.items():
             sss.set_attribute_from_choice_set_private(
                 attribute, value[key], period, choice_set, privacy)
