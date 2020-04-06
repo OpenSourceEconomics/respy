@@ -32,7 +32,6 @@ def create_state_space_class(options, optim_paras):
     core = core.apply(downcast_to_smallest_dtype)
     dense = _create_dense_state_space_covariates(dense_grid, optim_paras, options)
 
-
     core = _create_choice_sets(core, optim_paras, options, "core")
 
     # Create base draws sol
@@ -116,6 +115,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
     """
     This is the state space that handles one period of data!
     """
+
     def __init__(
         self,
         core,
@@ -123,11 +123,11 @@ class _SingleDimStateSpace(_BaseStateSpace):
         base_draws_sol,
         optim_paras,
         options,
-        dense_dim = None,
-        dense_covariates = None,
-        indices_of_child_states = None,
-        slices_by_periods = None
-        ):
+        dense_dim=None,
+        dense_covariates=None,
+        indices_of_child_states=None,
+        slices_by_periods=None,
+    ):
         self.core = core
         self.indexer = indexer
         self.base_draws = base_draws_sol
@@ -149,38 +149,40 @@ class _SingleDimStateSpace(_BaseStateSpace):
         )
         self.expected_value_functions = np.empty(self.core.shape[0])
 
-
-
     def get_attribute(self, attr):
         """Get an attribute of the state space."""
         return getattr(self, attr)
-
 
     def get_attribute_from_period_choice(self, attribute, period, choice_set, privacy):
         attr = self.get_attribute(attribute)
 
         if privacy == "public":
             slice_ = self.period_choice_cores[(period, choice_set)]
-            if isinstance(attr,pd.DataFrame):
+            if isinstance(attr, pd.DataFrame):
                 out = attr.loc[slice_]
             else:
                 out = attr[slice_]
         elif privacy == "private":
-            out = attr[(period,choice_set)]
+            out = attr[(period, choice_set)]
 
         return out
 
-    def get_attribute_from_period(self,attribute, period, privacy):
-        choice_sets = [key[1] for key in self.period_choice_cores.keys() if key[0] == period]
+    def get_attribute_from_period(self, attribute, period, privacy):
+        choice_sets = [
+            key[1] for key in self.period_choice_cores.keys() if key[0] == period
+        ]
         out = dict()
         for choice_set in choice_sets:
-            out[choice_set] = self.get_attribute_from_period_choice(attribute, period, choice_set, privacy)
+            out[choice_set] = self.get_attribute_from_period_choice(
+                attribute, period, choice_set, privacy
+            )
         return out
 
     def get_continuation_values(self, period):
         n_periods = len(self.indexer)
         choice_cores = {
-            key[1]: self.period_choice_cores[key] for key in self.period_choice_cores.keys()
+            key[1]: self.period_choice_cores[key]
+            for key in self.period_choice_cores.keys()
             if key[0] == period
         }
         continuation_values = dict()
@@ -188,17 +190,25 @@ class _SingleDimStateSpace(_BaseStateSpace):
             if period == n_periods - 1:
                 last_slice = choice_cores[choice_set]
                 n_states_last_period = len(last_slice)
-                continuation_values_choice = np.zeros((n_states_last_period, choice_set.count(True)))
+                continuation_values_choice = np.zeros(
+                    (n_states_last_period, choice_set.count(True))
+                )
             else:
                 position_choices = [i for i, x in enumerate(choice_set) if x == True]
-                position_states = np.array(choice_cores[choice_set]).reshape(len(choice_cores[choice_set]), 1)
+                position_states = np.array(choice_cores[choice_set]).reshape(
+                    len(choice_cores[choice_set]), 1
+                )
 
-                child_indices = self.get_attribute("indices_of_child_states")[position_states, position_choices]
+                child_indices = self.get_attribute("indices_of_child_states")[
+                    position_states, position_choices
+                ]
 
                 mask = child_indices != INDEXER_INVALID_INDEX
                 valid_indices = np.where(mask, child_indices, 0)
                 continuation_values_choice = np.where(
-                    mask, self.get_attribute("expected_value_functions")[valid_indices], 0
+                    mask,
+                    self.get_attribute("expected_value_functions")[valid_indices],
+                    0,
                 )
             continuation_values[choice_set] = continuation_values_choice
         return continuation_values
@@ -206,24 +216,13 @@ class _SingleDimStateSpace(_BaseStateSpace):
     def set_attribute(self, attribute, value):
         setattr(self, attribute, value)
 
-
-    def set_attribute_from_period_choice(self, attribute, value, period, choice_set, privacy):
-        if privacy == "public":
-            slice_ = self.period_choice_cores[(period, choice_set)]
-        else:
-            slice_=None
-        print(value)
-        self.get_attribute_from_period_choice(attribute, period, choice_set, privacy, slice_)[:] = value
-        print(self.get_attribute_from_period_choice(attribute, period, choice_set, privacy, slice_))
-
-
-    def set_attribute_from_period(self,attribute,value, period, privacy):
+    def set_attribute_from_period(self, attribute, value, period, privacy):
         """We build an array first! Methods need to be cleaned up!
         This will be done once we decide on setup!"""
         slice_ = self.slices_by_periods[period]
-        array = np.empty(slice_.stop-slice_.start)
+        array = np.empty(slice_.stop - slice_.start)
         for choice_set in value.keys():
-            indices = self.period_choice_cores[(period,choice_set)] - slice_.start
+            indices = self.period_choice_cores[(period, choice_set)] - slice_.start
             array[indices] = value[choice_set]
         attr = self.get_attribute(attribute)
         attr[slice_] = array
@@ -233,9 +232,13 @@ class _SingleDimStateSpace(_BaseStateSpace):
         states = self.core.copy().assign(**self.dense_covariates)
         states = compute_covariates(states, self.mixed_covariates)
         if self.dense_dim:
-            dense_df = pd.DataFrame(self.dense_covariates,index=[0])
-            dense_df = _create_choice_sets(dense_df, self.optim_paras, self.options, "dense")
-            dense_choice_set = {key:dense_df[key] for key in self.optim_paras["choices"]}
+            dense_df = pd.DataFrame(self.dense_covariates, index=[0])
+            dense_df = _create_choice_sets(
+                dense_df, self.optim_paras, self.options, "dense"
+            )
+            dense_choice_set = {
+                key: dense_df[key] for key in self.optim_paras["choices"]
+            }
 
         for choice in dense_choice_set.keys():
             if dense_choice_set[choice].loc[0] == True:
@@ -243,33 +246,29 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
         states = _create_choice_sets(states, self.optim_paras, self.options, "mixed")
         for choice in self.optim_paras["choices"]:
-            states[choice] = ~ states[choice]
+            states[choice] = ~states[choice]
 
         return states
 
     @property
     def period_choice_cores(self):
-        # Dirty Fix to reverse False and True
-        period_choice_cores = _split_core_state_space(self.states.copy(), self.optim_paras)
+        period_choice_cores = _split_core_state_space(
+            self.states.copy(), self.optim_paras
+        )
         return period_choice_cores
 
 
 class _MultiDimStateSpace(_BaseStateSpace):
-    """The state space of a discrete choice dynamic programming model.
+    """
+    The state space of a discrete choice dynamic programming model.
     This class wraps the whole state space of the model.
-    In this case we take the whole seperated choice space and create individual objects for each
-    dense option. Operations are still seperated and thus the old logic still largely applies.
-    Down the road we might want to redcue the number of input variables since this looks a bit confusing now
+    In this case we take the whole seperated choice space and
+    create individual objects for each
+    dense option. Operations are still seperated and thus the old logic
+     still largely applies.
     """
 
-    def __init__(self,
-                 core,
-                 indexer,
-                 base_draws,
-                 optim_paras,
-                 options,
-                 dense
-                 ):
+    def __init__(self, core, indexer, base_draws, optim_paras, options, dense):
         self.core = core
         self.indexer = indexer
         self.base_draws_sol = base_draws
@@ -290,7 +289,8 @@ class _MultiDimStateSpace(_BaseStateSpace):
                 dense_covariates,
                 self.indices_of_child_states,
             )
-            for dense_dim, dense_covariates in dense.items()}
+            for dense_dim, dense_covariates in dense.items()
+        }
 
     def get_attribute(self, attribute):
         return {
@@ -320,22 +320,19 @@ class _MultiDimStateSpace(_BaseStateSpace):
         for key, sss in self.sub_state_spaces.items():
             sss.set_attribute(attribute, value[key])
 
-    def set_attribute_from_period_choice(self, attribute, period, choice_set, value, privacy):
-        for key, sss in self.sub_state_spaces.items():
-            sss.set_attribute_from_choice_set_private(
-                attribute, value[key], period, choice_set, privacy)
-
     def set_attribute_from_period(self, attribute, value, period, privacy):
         for key, sss in self.sub_state_spaces.items():
-            sss.set_attribute_from_period(
-                attribute, value[key], period, privacy)
+            sss.set_attribute_from_period(attribute, value[key], period, privacy)
+
     @property
     def states(self):
         return {key: sss.states for key, sss in self.sub_state_spaces.items()}
 
     @property
     def period_choice_cores(self):
-        return {key: sss.period_choice_cores for key, sss in self.sub_state_spaces.items()}
+        return {
+            key: sss.period_choice_cores for key, sss in self.sub_state_spaces.items()
+        }
 
 
 def _create_core_and_indexer(optim_paras, options):
@@ -675,9 +672,9 @@ def _insert_indices_of_child_states(
             # Change lagged choice by shifting all existing lagged choices by
             # one period and inserting the current choice in first position.
             if n_lagged_choices:
-                child[
-                    n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices
-                ] = child[n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1]
+                child[n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices] = child[
+                    n_choices_w_exp : n_choices_w_exp + n_lagged_choices - 1
+                ]
                 child[n_choices_w_exp] = choice
 
             # Get the position of the continuation value.
@@ -735,11 +732,13 @@ def _split_core_state_space(core, optim_paras):
     This function splits the sp according to period and choice set
     """
     periodic_cores = {idx: sub for idx, sub in core.groupby("period")}
-    periodic_choice_cores = {(period, choice_set): sub.index
-                             for period in periodic_cores
-                             for choice_set, sub
-                             in periodic_cores[period].groupby(list(optim_paras["choices"]))
-                             }
+    periodic_choice_cores = {
+        (period, choice_set): sub.index
+        for period in periodic_cores
+        for choice_set, sub in periodic_cores[period].groupby(
+            list(optim_paras["choices"])
+        )
+    }
 
     return periodic_choice_cores
 
@@ -765,11 +764,15 @@ def _reshape_base_draws(draws, period_choice_cores, options):
     Distribute draws across period choice core subsets.
     Highly preliminary for illustrative purposes!
     """
-    size_dict = {key: len(period_choice_cores[key]) for key in period_choice_cores.keys()}
+    size_dict = {
+        key: len(period_choice_cores[key]) for key in period_choice_cores.keys()
+    }
     n_states_draws = draws.shape[1]
     out = dict()
     for period in range(options["n_periods"]):
-        prop_dict = {key: size_dict[key] for key in size_dict.keys() if key[0] == period}
+        prop_dict = {
+            key: size_dict[key] for key in size_dict.keys() if key[0] == period
+        }
         n_states_core = np.array(list(prop_dict.values())).sum()
         pos = 0
         for key in prop_dict.keys():

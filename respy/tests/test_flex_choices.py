@@ -1,16 +1,12 @@
 """
 This module contains tests for felx choices!
 """
-import numpy as np
 import pandas as pd
 import respy as rp
-import itertools
-import copy
 
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.state_space import _create_core_and_indexer, create_state_space_class
 from respy.solve import _create_choice_rewards
-
 
 
 def test_period_choice_dense_cores():
@@ -26,8 +22,8 @@ def test_period_choice_dense_cores():
 
     # Sick people can never work.
     options["inadmissible_choices"] = {
-        "fishing": ["health == 1"],
-        'friday': ['period < 2', 'exp_fishing == 0']
+        "fishing": ["health == 1 & period < 2", "health == 1 & period >= 2"],
+        "friday": ["period < 2", "exp_fishing == 0"],
     }
     # Create internal specification objects.
     optim_paras, options = process_params_and_options(params, options)
@@ -58,7 +54,7 @@ def test_robustness_solution():
     # Sick people can never work.
     options["inadmissible_choices"] = {
         "fishing": ["health == 1"],
-        'friday': ['period < 2', 'exp_fishing == 0']
+        "friday": ["period < 2", "exp_fishing == 0"],
     }
     # Create internal specification objects.
     optim_paras, options = process_params_and_options(params, options)
@@ -70,6 +66,7 @@ def test_robustness_solution():
 
     wages, nonpecs = _create_choice_rewards(states, period_choice_cores, optim_paras)
     state_space.set_attribute("wages", wages)
+
 
 def test_robustness_mixed_constrainst():
     """
@@ -87,19 +84,31 @@ def test_robustness_mixed_constrainst():
 
     # Sick people can never work.
     options["inadmissible_choices"] = {
-        "fishing": ["health == 1 & period < 2"],
-        'friday': ['period < 2', 'exp_fishing == 0']
+        "fishing": ["health == 1 & period < 2", "health == 1 & period >= 2"],
+        "friday": ["period < 2", "exp_fishing == 0"],
     }
-    # Create internal specification objects.
-    optim_paras, options = process_params_and_options(params, options)
+    simulate = rp.get_simulate_func(params, options)
+    df_mixed = simulate(params)
 
-    state_space = create_state_space_class(options, optim_paras)
+    # Equivalent model
+    params, options = rp.get_example_model("robinson_crusoe_extended", with_data=False)
 
-    states = state_space.states
-    period_choice_cores = state_space.period_choice_cores
+    # Extend with observable characteristic.
+    params.loc[("observable_health_well", "probability"), "value"] = 0.9
+    params.loc[("observable_health_sick", "probability"), "value"] = 0.1
 
-    wages, nonpecs = _create_choice_rewards(states, period_choice_cores, optim_paras)
-    state_space.set_attribute("wages", wages)
+    options["inadmissible_choices"] = {
+        "fishing": ["health == 1"],
+        "friday": ["period < 2", "exp_fishing == 0"],
+    }
+    simulate = rp.get_simulate_func(params, options)
+    df_core = simulate(params)
+
+    pd.testing.assert_series_equal(df_core["Choice"], df_mixed["Choice"])
+
 
 def test_equality_solution():
+    """
+    Rough take at adaptation of reg tests! 
+    """
     pass

@@ -23,7 +23,7 @@ from respy.pre_processing.model_checking import validate_params
 from respy.pre_processing.process_covariates import remove_irrelevant_covariates
 from respy.pre_processing.process_covariates import (
     separate_covariates_into_core_dense_mixed,
-    separate_choice_restrictions_into_core_dense_mixed
+    separate_choice_restrictions_into_core_dense_mixed,
 )
 from respy.shared import normalize_probabilities
 

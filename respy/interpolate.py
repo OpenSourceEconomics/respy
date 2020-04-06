@@ -11,18 +11,20 @@ from respy.shared import calculate_expected_value_functions
 from respy.shared import calculate_value_functions_and_flow_utilities
 
 
-def interpolate(wages,
-                nonpecs,
-                continuation_values,
-                state_space,
-                period_draws_emax_risk,
-                period,
-                optim_paras,
-                options):
+def interpolate(
+    wages,
+    nonpecs,
+    continuation_values,
+    state_space,
+    period_draws_emax_risk,
+    period,
+    optim_paras,
+    options,
+):
     """Interface to switch between different interpolation routines."""
     period_expected_value_functions = dict()
     for choice_set in wages.keys():
-        positions = {i:x for i, x in enumerate(choice_set) if x == True}
+        positions = {i: x for i, x in enumerate(choice_set) if x == True}
         period_draws_emax_risk = period_draws_emax_risk[:, list(positions.keys())]
         period_expected_value_functions[choice_set] = _kw_94_interpolation(
             wages[choice_set],
@@ -33,7 +35,7 @@ def interpolate(wages,
             period,
             optim_paras,
             options,
-            list(positions.values())
+            list(positions.values()),
         )
 
     return period_expected_value_functions
@@ -47,8 +49,7 @@ def _kw_94_interpolation(
     period_draws_emax_risk,
     optim_paras,
     options,
-    choices
-
+    choices,
 ):
     r"""Calculate the approximate solution proposed by [1]_.
 
@@ -105,7 +106,6 @@ def _kw_94_interpolation(
     n_wages = len([x for x in optim_paras["choices_w_wage"] if x in choices])
 
     n_core_states_in_period = wages.shape[0]
-
 
     seed = _get_seeds_for_interpolation(state_space, options)
     interp_points = _split_interpolation_points_evenly(state_space, options)

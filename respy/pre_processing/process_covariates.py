@@ -154,7 +154,10 @@ def separate_choice_restrictions_into_core_dense_mixed(options, optim_paras):
     # Core
     core_var = list(options["covariates_core"].keys())
     core_var = core_var + [f"exp_{x}" for x in optim_paras["choices_w_exp"]]
-    core_var = core_var + [f"lagged_choice_{x}" for x in range(1, optim_paras["n_lagged_choices"] + 1)]
+    core_var = core_var + [
+        f"lagged_choice_{x}" for x in range(1, optim_paras["n_lagged_choices"] + 1)
+    ]
+    core_var = core_var + ["period"]
 
     # Add ne dict keys
     constr_list = list()
@@ -170,12 +173,15 @@ def separate_choice_restrictions_into_core_dense_mixed(options, optim_paras):
     for sp in ["core", "dense", "mixed"]:
         options[f"inadmissible_choices_{sp}"] = {}
         for choice in options["inadmissible_choices"].keys():
-            relevant_contraints = [x for x in constr_list if x[1] == choice and x[2] == sp]
+            relevant_contraints = [
+                x for x in constr_list if x[1] == choice and x[2] == sp
+            ]
             if relevant_contraints == []:
                 pass
             else:
                 options[f"inadmissible_choices_{sp}"][choice] = relevant_contraints
     return options
+
 
 def identify_necessary_covariates(dependents, definitions):
     """Identify covariates necessary to compute `dependents`.

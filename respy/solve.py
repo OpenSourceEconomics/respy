@@ -62,20 +62,20 @@ def solve(params, options, state_space):
 def _create_choice_rewards(states, period_choice_cores, optim_paras):
     # Initialize objects
     out_wages = {
-        key: np.ones(
-            (period_choice_cores[key].shape[0],
-             key[1].count(True)))
-    for key in period_choice_cores.keys()}
+        key: np.ones((period_choice_cores[key].shape[0], key[1].count(True)))
+        for key in period_choice_cores.keys()
+    }
 
-    out_nonpecs = {key: np.ones(
-            (period_choice_cores[key].shape[0],
-             key[1].count(True)))
-            for key in period_choice_cores.keys()
+    out_nonpecs = {
+        key: np.ones((period_choice_cores[key].shape[0], key[1].count(True)))
+        for key in period_choice_cores.keys()
     }
 
     for (period, choice_set) in period_choice_cores.keys():
         # Subsetting auslagern!
-        choices = [x for i,x in enumerate(optim_paras["choices"]) if choice_set[i]==True]
+        choices = [
+            x for i, x in enumerate(optim_paras["choices"]) if choice_set[i] == True
+        ]
 
         for i, choice in enumerate(choices):
 
@@ -83,15 +83,19 @@ def _create_choice_rewards(states, period_choice_cores, optim_paras):
             if f"wage_{choice}" in optim_paras:
                 wage_columns = optim_paras[f"wage_{choice}"].index
                 log_wage = np.dot(
-                    states_period_choice[wage_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
+                    states_period_choice[wage_columns].to_numpy(
+                        dtype=COVARIATES_DOT_PRODUCT_DTYPE
+                    ),
                     optim_paras[f"wage_{choice}"].to_numpy(),
                 )
-                out_wages[(period, choice_set)][:,i] = np.exp(log_wage)
+                out_wages[(period, choice_set)][:, i] = np.exp(log_wage)
 
             if f"nonpec_{choice}" in optim_paras:
                 nonpec_columns = optim_paras[f"nonpec_{choice}"].index
                 out_nonpecs[(period, choice_set)][:, i] = np.dot(
-                    states_period_choice[nonpec_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
+                    states_period_choice[nonpec_columns].to_numpy(
+                        dtype=COVARIATES_DOT_PRODUCT_DTYPE
+                    ),
                     optim_paras[f"nonpec_{choice}"].to_numpy(),
                 )
 
@@ -146,7 +150,8 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         if optim_paras["delta"] == 0:
             if hasattr(state_space, "sub_state_spaces"):
                 period_expected_value_functions = {
-                    dense_idx: {key: 0 for key in wages.keys()} for dense_idx in state_space.sub_state_spaces
+                    dense_idx: {key: 0 for key in wages.keys()}
+                    for dense_idx in state_space.sub_state_spaces
                 }
             else:
                 period_expected_value_functions = 0
@@ -160,7 +165,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
                 period_draws_emax_risk,
                 period,
                 optim_paras,
-                options
+                options,
             )
 
         else:
@@ -169,7 +174,10 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             )
 
         state_space.set_attribute_from_period(
-            "expected_value_functions", period_expected_value_functions, period, "public"
+            "expected_value_functions",
+            period_expected_value_functions,
+            period,
+            "public",
         )
 
     return state_space
@@ -193,13 +201,14 @@ def _full_solution(
         period_draws_emax_risk_choice = period_draws_emax_risk[:, positions]
 
         # Get expectations
-        period_expected_value_functions[choice_set] = calculate_expected_value_functions(
+        period_expected_value_functions[
+            choice_set
+        ] = calculate_expected_value_functions(
             wages[choice_set],
             nonpecs[choice_set],
             continuation_values[choice_set],
             period_draws_emax_risk_choice,
             optim_paras["delta"],
         )
-        print(period_expected_value_functions[choice_set])
 
     return period_expected_value_functions

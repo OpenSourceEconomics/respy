@@ -452,7 +452,7 @@ def calculate_expected_value_functions(
         https://en.wikipedia.org/wiki/Monte_Carlo_integration
 
     """
-    #Subset draws
+    # Subset draws
     n_draws, n_choices = draws.shape
 
     expected_value_functions[0] = 0
