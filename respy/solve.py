@@ -190,14 +190,14 @@ def _full_solution(
 
         # Subset shocks accordingly!
         positions = [i for i, x in enumerate(choice_set) if x == True]
-        period_draws_emax_risk = period_draws_emax_risk[:, positions]
+        period_draws_emax_risk_choice = period_draws_emax_risk[:, positions]
 
         # Get expectations
         period_expected_value_functions[choice_set] = calculate_expected_value_functions(
             wages[choice_set],
             nonpecs[choice_set],
             continuation_values[choice_set],
-            period_draws_emax_risk,
+            period_draws_emax_risk_choice,
             optim_paras["delta"],
         )
         print(period_expected_value_functions[choice_set])

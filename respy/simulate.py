@@ -331,9 +331,9 @@ def _simulate_single_period(
 
         # Da muss i mir wqas überkegn
         try:
-            wages = wages[choice_set][period_indices_states]
-            nonpecs = nonpecs[choice_set][period_indices_states]
-            continuation_values = continuation_values[choice_set][period_indices_states]
+            wages_choice = wages[choice_set][period_indices_states]
+            nonpecs_choice = nonpecs[choice_set][period_indices_states]
+            continuation_values_choice = continuation_values[choice_set][period_indices_states]
         except IndexError as e:
             raise Exception(
                 "Simulated individuals could not be mapped to their corresponding states in"
@@ -345,7 +345,7 @@ def _simulate_single_period(
         draws_wage = sub_df[[f"meas_error_wage_{c}" for c in choices.keys()]].to_numpy()
 
         value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
-            wages, nonpecs, continuation_values, draws_shock, optim_paras["delta"],
+            wages_choice, nonpecs_choice, continuation_values_choice, draws_shock, optim_paras["delta"],
         )
         choice = np.nanargmax(value_functions, axis=1)
 
@@ -353,9 +353,9 @@ def _simulate_single_period(
         #Get choice replacement dict. There is too much positioning until now!
 
 
-        wages = wages * draws_shock * draws_wage
-        wages[:, n_wages:] = np.nan
-        wage = np.choose(choice, wages.T)
+        wages_choice = wages_choice * draws_shock * draws_wage
+        wages_choice[:, n_wages:] = np.nan
+        wage_choice = np.choose(choice, wages_choice.T)
 
         for pos,val in enumerate(choices.values()):
             choice = np.where(choice==pos,val,choice)
@@ -363,15 +363,15 @@ def _simulate_single_period(
         print(len(choice))
         print(len(df))
         df.loc[sub_df.index,"choice"] = choice
-        df.loc[sub_df.index,"wage"] = wage
+        df.loc[sub_df.index,"wage"] = wage_choice
         df.loc[sub_df.index,"discount_rate"] = optim_paras["delta"]
 
         for i, choice in enumerate(choices.keys()):
-            df.loc[sub_df.index,f"nonpecuniary_reward_{choice}"] = nonpecs[:, i]
-            df.loc[sub_df.index,f"wage_{choice}"] = wages[:, i]
+            df.loc[sub_df.index,f"nonpecuniary_reward_{choice}"] = nonpecs_choice[:, i]
+            df.loc[sub_df.index,f"wage_{choice}"] = wages_choice[:, i]
             df.loc[sub_df.index,f"flow_utility_{choice}"] = flow_utilities[:, i]
             df.loc[sub_df.index,f"value_function_{choice}"] = value_functions[:, i]
-            df.loc[sub_df.index,f"continuation_value_{choice}"] = continuation_values[:, i]
+            df.loc[sub_df.index,f"continuation_value_{choice}"] = continuation_values_choice[:, i]
 
     return df
 
