@@ -36,6 +36,8 @@ def regression_vault():
 def test_single_regression(regression_vault, index):
     """Run a single regression test."""
     params, options, exp_val = regression_vault[index]
+    # Hotfix
+    options["inadmissible_choices"] = {}
     crit_val = compute_log_likelihood(params, options)
 
     assert np.isclose(
