@@ -277,7 +277,7 @@ def _compute_wage_and_choice_likelihood_contributions(
         nonpecs[indices],
         continuation_values,
         draws,
-        optim_paras["delta"],
+        optim_paras["beta_delta"],
         choices,
         options["estimation_tau"],
     )
@@ -418,7 +418,7 @@ def _simulate_log_probability_of_individuals_observed_choice(
 
         for j in range(n_choices):
             value_function, _ = aggregate_keane_wolpin_utility(
-                wages[j], nonpec[j], continuation_values[j], draws[i, j], delta,
+                wages[j], nonpec[j], continuation_values[j], draws[i, j], delta
             )
 
             smoothed_value_functions[j] = value_function / tau

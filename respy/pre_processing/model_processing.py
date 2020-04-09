@@ -137,6 +137,7 @@ def _read_params(df_or_series):
 def _parse_parameters(params, options):
     """Parse the parameter vector into a dictionary of model quantities."""
     optim_paras = {"delta": params.loc[("delta", "delta")]}
+    optim_paras = _parse_present_bias_parameter(optim_paras, params)
     optim_paras = _parse_inadmissibility_penalty(optim_paras, params)
     optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
@@ -146,6 +147,45 @@ def _parse_parameters(params, options):
     optim_paras = _parse_measurement_errors(optim_paras, params)
     optim_paras = _parse_types(optim_paras, params)
     optim_paras = _parse_lagged_choices(optim_paras, options, params)
+
+    return optim_paras
+
+
+def _parse_present_bias_parameter(optim_paras, params):
+    """Parse present-bias parameter which is 1 by default.
+
+    Examples
+    --------
+    An example where present-bias parameter is specified:
+
+    >>> tuples = [("delta", "delta"), ("beta", "beta")]
+    >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
+    >>> data = [0.95, 0.4]
+    >>> params = pd.Series(data=data, index=index)
+    >>> optim_paras = {}
+    >>> _parse_present_bias_parameter(optim_paras, params)
+    {'beta': 0.4, 'beta_delta': 0.38}
+
+    And one where present-bias parameter is not specified:
+
+    >>> tuples = [("delta", "delta")]
+    >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
+    >>> data = 0.95
+    >>> params = pd.Series(data=data, index=index)
+    >>> optim_paras = {}
+    >>> _parse_present_bias_parameter(optim_paras, params)
+    {'beta': 1, 'beta_delta': 0.95}
+
+    """
+    if "beta" in params.index.get_level_values("category"):
+        beta = params.loc[("beta", "beta")]
+    else:
+        beta = 1
+
+    delta = params.loc[("delta", "delta")]
+
+    optim_paras["beta"] = beta
+    optim_paras["beta_delta"] = beta * delta
 
     return optim_paras
 
