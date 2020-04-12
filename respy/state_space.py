@@ -69,6 +69,69 @@ class _BaseStateSpace:
 
         return slices
 
+    def _create_is_inadmissible(self, optim_paras, options):
+        core = self.core.copy()
+
+        for choice in optim_paras["choices"]:
+            core[choice] = False
+            for formula in options["inadmissible_states"][choice]:
+                core[choice] |= core.eval(formula)
+
+        is_inadmissible = core[optim_paras["choices"]].to_numpy(dtype=np.bool)
+
+        if np.any(is_inadmissible) and optim_paras["inadmissibility_penalty"] is None:
+            warnings.warn(
+                "Some choices in the model are not admissible all the time. Thus, respy"
+                " applies a penalty to the utility for these choices which is "
+                f"{INADMISSIBILITY_PENALTY} by default. For the full solution, the "
+                "penalty only needs to be larger than all other value functions to be "
+                "effective. Choose a milder penalty for the interpolation which does "
+                "not dominate the linear interpolation model."
+            )
+
+        return is_inadmissible
+
+    def _create_indices_of_child_states(self, optim_paras):
+        """For each parent state get the indices of child states.
+
+        During the backward induction, the ``expected_value_functions`` in the future
+        period serve as the ``continuation_values`` of the current period. As the
+        indices for child states never change, these indices can be precomputed and
+        added to the state_space.
+
+        Actually, the indices of the child states do not have to cover the last period,
+        but it makes the code prettier and reduces the need to expand the indices in the
+        estimation.
+
+        """
+        n_choices = len(optim_paras["choices"])
+        n_choices_w_exp = len(optim_paras["choices_w_exp"])
+        n_periods = optim_paras["n_periods"]
+        n_states = self.core.shape[0]
+        core_columns = create_core_state_space_columns(optim_paras)
+
+        indices = np.full(
+            (n_states, n_choices), INDEXER_INVALID_INDEX, dtype=INDEXER_DTYPE
+        )
+
+        # Skip the last period which does not have child states.
+        for period in reversed(range(n_periods - 1)):
+            states_in_period = self.core.query("period == @period")[
+                core_columns
+            ].to_numpy(dtype=np.int8)
+
+            indices = _insert_indices_of_child_states(
+                indices,
+                states_in_period,
+                self.indexer[period],
+                self.indexer[period + 1],
+                self.is_inadmissible,
+                n_choices_w_exp,
+                optim_paras["n_lagged_choices"],
+            )
+
+        return indices
+
 
 class _SingleDimStateSpace(_BaseStateSpace):
     """The state space of a discrete choice dynamic programming model.
@@ -126,9 +189,14 @@ class _SingleDimStateSpace(_BaseStateSpace):
         self.mixed_covariates = options["covariates_mixed"]
         self.base_draws_sol = base_draws_sol
         self.slices_by_periods = super()._create_slices_by_core_periods()
-        self._initialize_attributes(optim_paras)
         self.is_inadmissible = self._create_is_inadmissible(optim_paras, options)
-        self.indices_of_child_states = self._create_indices_of_child_states(optim_paras)
+        self.indices_of_child_states = super()._create_indices_of_child_states(
+            optim_paras
+        )
+
+        # HOTFIX: Will be removed with flexible choice sets.
+        self.expected_value_functions = np.empty(self.core.shape[0])
+        self.transition_probabilities = {}
 
     def get_attribute(self, attr):
         """Get an attribute of the state space."""
@@ -225,11 +293,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
         return subset_trans_probs
 
     def set_attribute(self, attribute, value):
-        attr = self.get_attribute(attribute)
-        if isinstance(attr, np.ndarray):
-            attr[:] = value
-        else:
-            setattr(self, attribute, value)
+        setattr(self, attribute, value)
 
     def set_attribute_from_period(self, attribute, value, period):
         self.get_attribute_from_period(attribute, period)[:] = value
@@ -239,106 +303,6 @@ class _SingleDimStateSpace(_BaseStateSpace):
         states = self.core.copy().assign(**self.dense_covariates)
         states = compute_covariates(states, self.mixed_covariates)
         return states
-
-    def _initialize_attributes(self, optim_paras):
-        """Initialize attributes to use references later."""
-        n_states = self.core.shape[0]
-        n_choices = len(optim_paras["choices"])
-        n_choices_w_wage = len(optim_paras["choices_w_wage"])
-        n_choices_wo_wage = n_choices - n_choices_w_wage
-
-        for name, container in (
-            ("expected_value_functions", np.empty(n_states)),
-            (
-                "wages",
-                np.column_stack(
-                    (
-                        np.empty((n_states, n_choices_w_wage)),
-                        np.ones((n_states, n_choices_wo_wage)),
-                    )
-                ),
-            ),
-            ("nonpecs", np.zeros((n_states, n_choices))),
-            ("transition_probabilities", {}),
-        ):
-            setattr(self, name, container.copy())
-
-    def _create_is_inadmissible(self, optim_paras, options):
-        core = self.core.copy()
-        # Apply the maximum experience as a default constraint only if its not the last
-        # period. Otherwise, it is unconstrained.
-        for choice in optim_paras["choices_w_exp"]:
-            max_exp = optim_paras["choices"][choice]["max"]
-            formula = (
-                f"exp_{choice} == {max_exp}"
-                if max_exp != optim_paras["n_periods"] - 1
-                else "False"
-            )
-            core[choice] = core.eval(formula)
-
-        # Apply no constraint for choices without experience.
-        for choice in optim_paras["choices_wo_exp"]:
-            core[choice] = core.eval("False")
-
-        # Apply user-defined constraints
-        for choice in optim_paras["choices"]:
-            for formula in options["inadmissible_states"].get(choice, []):
-                core[choice] |= core.eval(formula)
-
-        is_inadmissible = core[optim_paras["choices"]].to_numpy(dtype=np.bool)
-
-        if np.any(is_inadmissible) and optim_paras["inadmissibility_penalty"] is None:
-            warnings.warn(
-                "Some choices in the model are not admissible all the time. Thus, respy"
-                " applies a penalty to the utility for these choices which is "
-                f"{INADMISSIBILITY_PENALTY} by default. For the full solution, the "
-                "penalty only needs to be larger than all other value functions to be "
-                "effective. Choose a milder penalty for the interpolation which does "
-                "not dominate the linear interpolation model."
-            )
-
-        return is_inadmissible
-
-    def _create_indices_of_child_states(self, optim_paras):
-        """For each parent state get the indices of child states.
-
-        During the backward induction, the ``expected_value_functions`` in the future
-        period serve as the ``continuation_values`` of the current period. As the
-        indices for child states never change, these indices can be precomputed and
-        added to the state_space.
-
-        Actually, the indices of the child states do not have to cover the last period,
-        but it makes the code prettier and reduces the need to expand the indices in the
-        estimation.
-
-        """
-        n_choices = len(optim_paras["choices"])
-        n_choices_w_exp = len(optim_paras["choices_w_exp"])
-        n_periods = optim_paras["n_periods"]
-        n_states = self.core.shape[0]
-        core_columns = create_core_state_space_columns(optim_paras)
-
-        indices = np.full(
-            (n_states, n_choices), INDEXER_INVALID_INDEX, dtype=INDEXER_DTYPE
-        )
-
-        # Skip the last period which does not have child states.
-        for period in reversed(range(n_periods - 1)):
-            states_in_period = self.core.query("period == @period")[
-                core_columns
-            ].to_numpy(dtype=np.int8)
-
-            indices = _insert_indices_of_child_states(
-                indices,
-                states_in_period,
-                self.indexer[period],
-                self.indexer[period + 1],
-                self.is_inadmissible,
-                n_choices_w_exp,
-                optim_paras["n_lagged_choices"],
-            )
-
-        return indices
 
 
 class _MultiDimStateSpace(_BaseStateSpace):

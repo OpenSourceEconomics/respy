@@ -47,13 +47,9 @@ def solve(params, options, state_space):
     optim_paras, options = process_params_and_options(params, options)
 
     states = state_space.states
-    wages = state_space.get_attribute("wages")
-    nonpecs = state_space.get_attribute("nonpecs")
     is_inadmissible = state_space.get_attribute("is_inadmissible")
 
-    wages, nonpecs = _create_choice_rewards(
-        states, wages, nonpecs, is_inadmissible, optim_paras
-    )
+    wages, nonpecs = _create_choice_rewards(states, is_inadmissible, optim_paras)
     state_space.set_attribute("wages", wages)
     state_space.set_attribute("nonpecs", nonpecs)
 
@@ -61,25 +57,25 @@ def solve(params, options, state_space):
         transition_probabilities = compute_transition_probabilities(states, optim_paras)
         state_space.set_attribute("transition_probabilities", transition_probabilities)
 
-    if optim_paras["delta"] == 0:
-        expected_value_functions = _solve_for_myopic_individuals(
-            state_space.get_attribute("expected_value_functions")
-        )
-        state_space.set_attribute("expected_value_functions", expected_value_functions)
-    else:
-        state_space = _solve_with_backward_induction(state_space, optim_paras, options)
+    state_space = _solve_with_backward_induction(state_space, optim_paras, options)
 
     return state_space
 
 
 @parallelize_across_dense_dimensions
-def _create_choice_rewards(states, wages, nonpecs, is_inadmissible, optim_paras):
+def _create_choice_rewards(states, is_inadmissible, optim_paras):
     """Create wage and non-pecuniary reward for each state and choice.
 
     Note that missing wages filled with ones and missing non-pecuniary rewards with
     zeros. This is done in :meth:`_initialize_attributes`.
 
     """
+    n_states = states.shape[0]
+    n_choices = len(optim_paras["choices"])
+
+    wages = np.ones((n_states, n_choices))
+    nonpecs = np.zeros((n_states, n_choices))
+
     for i, choice in enumerate(optim_paras["choices"]):
         if f"wage_{choice}" in optim_paras:
             wage_columns = optim_paras[f"wage_{choice}"].index
@@ -96,19 +92,12 @@ def _create_choice_rewards(states, wages, nonpecs, is_inadmissible, optim_paras)
                 optim_paras[f"nonpec_{choice}"].to_numpy(),
             )
 
-        # For inadmissible choices apply a penalty to the non-pecuniary rewards.
-        penalty = optim_paras["inadmissibility_penalty"]
-        penalty = INADMISSIBILITY_PENALTY if penalty is None else penalty
-        nonpecs[is_inadmissible] += penalty
+    # For inadmissible choices apply a penalty to the non-pecuniary rewards.
+    penalty = optim_paras["inadmissibility_penalty"]
+    penalty = INADMISSIBILITY_PENALTY if penalty is None else penalty
+    nonpecs[is_inadmissible] += penalty
 
     return wages, nonpecs
-
-
-@parallelize_across_dense_dimensions
-def _solve_for_myopic_individuals(expected_value_functions):
-    """Solve the dynamic programming problem for myopic individuals."""
-    expected_value_functions[:] = 0
-    return expected_value_functions
 
 
 def _solve_with_backward_induction(state_space, optim_paras, options):
@@ -130,48 +119,46 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     """
     n_wages = len(optim_paras["choices_w_wage"])
     n_periods = optim_paras["n_periods"]
-    shocks_cholesky = optim_paras["shocks_cholesky"]
 
     draws_emax_risk = transform_base_draws_with_cholesky_factor(
-        state_space.base_draws_sol, shocks_cholesky, n_wages
+        state_space.base_draws_sol, optim_paras["shocks_cholesky"], n_wages
     )
 
     for period in reversed(range(n_periods)):
+        n_core_states = state_space.core.query("period == @period").shape[0]
+
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
         continuation_values = state_space.get_continuation_values(period)
         period_draws_emax_risk = draws_emax_risk[period]
 
-        # The number of interpolation points is the same for all periods. Thus, for some
-        # periods the number of interpolation points is larger than the actual number of
-        # states. In this case, no interpolation is needed.
+        # The number of interpolation points is the same for all periods. Thus, for
+        # some periods the number of interpolation points is larger than the actual
+        # number of states. In this case, no interpolation is needed.
         n_dense_combinations = len(getattr(state_space, "sub_state_spaces", [1]))
-        n_core_states = state_space.core.query("period == @period").shape[0]
         n_states_in_period = n_core_states * n_dense_combinations
         any_interpolated = (
             options["interpolation_points"] <= n_states_in_period
             and options["interpolation_points"] != -1
         )
 
-        if any_interpolated:
-            interp_points = int(options["interpolation_points"] / n_dense_combinations)
+        # Handle myopic individuals.
+        if optim_paras["delta"] == 0:
+            if hasattr(state_space, "sub_state_spaces"):
+                period_expected_value_functions = {
+                    dense_idx: 0 for dense_idx in state_space.sub_state_spaces
+                }
+            else:
+                period_expected_value_functions = 0
+
+        elif any_interpolated:
             period_expected_value_functions = interpolate(
-                wages,
-                nonpecs,
-                continuation_values,
-                period_draws_emax_risk,
-                interp_points,
-                optim_paras,
-                options,
+                state_space, period_draws_emax_risk, period, optim_paras, options
             )
 
         else:
             period_expected_value_functions = _full_solution(
-                wages,
-                nonpecs,
-                continuation_values,
-                period_draws_emax_risk,
-                optim_paras,
+                wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras
             )
 
         state_space.set_attribute_from_period(
@@ -183,7 +170,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
 @parallelize_across_dense_dimensions
 def _full_solution(
-    wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras,
+    wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras
 ):
     """Calculate the full solution of the model.
 

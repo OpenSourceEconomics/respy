@@ -30,7 +30,7 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 
 def process_params_and_options(params, options):
-    """Process ``params`` and ``options``.
+    """Process `params` and `options`.
 
     This function is interface for parsing the model specification given by the user.
 
@@ -44,6 +44,7 @@ def process_params_and_options(params, options):
     validate_options(options)
 
     optim_paras = _parse_parameters(params, options)
+
     optim_paras, options = _sync_optim_paras_and_options(optim_paras, options)
     validate_params(params, optim_paras)
 
@@ -467,7 +468,7 @@ def _parse_lagged_choices(optim_paras, options, params):
 
     Lagged choices can only influence behavior of individuals through covariates of the
     utility function. Thus, check the covariates for any patterns like
-    ``"lagged_choice_[0-9]+"``.
+    `"lagged_choice_[0-9]+"`.
 
     Then, compare the number of lags required by covariates with the information on
     lagged choices in the parameter specification. For the estimation, there does not
@@ -709,7 +710,15 @@ def _sync_optim_paras_and_options(optim_paras, options):
     """Sync ``optim_paras`` and ``options`` after they have been parsed separately."""
     optim_paras["n_periods"] = options["n_periods"]
 
-    # Create covariates for the reward functions.
+    options = _add_type_covariates(options, optim_paras)
+    options = _add_default_is_inadmissible(options, optim_paras)
+    options = _convert_labels_in_formulas_to_codes(options, optim_paras)
+    options = separate_covariates_into_core_dense_mixed(options, optim_paras)
+
+    return optim_paras, options
+
+
+def _add_type_covariates(options, optim_paras):
     if optim_paras["n_types"] >= 2:
         type_covariates = {
             f"type_{i}": f"type == {i}" for i in range(1, optim_paras["n_types"])
@@ -717,10 +726,26 @@ def _sync_optim_paras_and_options(optim_paras, options):
 
         options["covariates"] = {**options["covariates"], **type_covariates}
 
-    options = _convert_labels_in_formulas_to_codes(options, optim_paras)
-    options = separate_covariates_into_core_dense_mixed(options, optim_paras)
+    return options
 
-    return optim_paras, options
+
+def _add_default_is_inadmissible(options, optim_paras):
+    inadmissible_states = options["inadmissible_states"]
+
+    for choice in optim_paras["choices_w_exp"]:
+        max_exp = optim_paras["choices"][choice]["max"]
+        formula = (
+            f"exp_{choice} == {max_exp}"
+            if max_exp != optim_paras["n_periods"] - 1
+            else "False"
+        )
+        formulas = inadmissible_states.get(choice, [])
+        inadmissible_states[choice] = formulas + [formula]
+
+    for choice in optim_paras["choices_wo_exp"]:
+        inadmissible_states[choice] = inadmissible_states.get(choice, ["False"])
+
+    return options
 
 
 def _convert_labels_in_formulas_to_codes(options, optim_paras):
@@ -780,7 +805,7 @@ def _replace_choices_and_observables_in_formula(formula, optim_paras):
 
 
 def _convert_labels_in_filters_to_codes(optim_paras, options):
-    """Convert labels in ``"core_state_space_filters"`` to codes.
+    """Convert labels in `"core_state_space_filters"` to codes.
 
     The filters are used to remove states from the state space which are inadmissible
     anyway.
@@ -789,7 +814,7 @@ def _convert_labels_in_filters_to_codes(optim_paras, options):
 
         "lagged_choice_1 == '{k}' and exp_{k} == 0"
 
-    ``{k}`` is replaced by the actual choice name whereas ``'{k}'`` or ``"{k}"`` is
+    `{k}` is replaced by the actual choice name whereas `'{k}'` or `"{k}"` is
     replaced with the internal choice code.
 
     """
