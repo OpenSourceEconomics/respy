@@ -158,34 +158,25 @@ def _parse_present_bias_parameter(optim_paras, params):
     --------
     An example where present-bias parameter is specified:
 
-    >>> tuples = [("delta", "delta"), ("beta", "beta")]
+    >>> tuples = [("beta", "beta")]
     >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
-    >>> data = [0.95, 0.4]
-    >>> params = pd.Series(data=data, index=index)
-    >>> optim_paras = {}
+    >>> params = pd.Series(data=0.4, index=index)
+    >>> optim_paras = {"delta": 0.95}
     >>> _parse_present_bias_parameter(optim_paras, params)
-    {'beta': 0.4, 'beta_delta': 0.38}
+    {'delta': 0.95, 'beta': 0.4, 'beta_delta': 0.38}
 
     And one where present-bias parameter is not specified:
 
-    >>> tuples = [("delta", "delta")]
-    >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
-    >>> data = 0.95
-    >>> params = pd.Series(data=data, index=index)
-    >>> optim_paras = {}
+    >>> params = pd.Series()
+    >>> optim_paras = {"delta": 0.95}
     >>> _parse_present_bias_parameter(optim_paras, params)
-    {'beta': 1, 'beta_delta': 0.95}
+    {'delta': 0.95, 'beta': 1, 'beta_delta': 0.95}
 
     """
-    if "beta" in params.index.get_level_values("category"):
-        beta = params.loc[("beta", "beta")]
-    else:
-        beta = 1
-
-    delta = params.loc[("delta", "delta")]
+    beta = params.get(("beta", "beta"), 1)
 
     optim_paras["beta"] = beta
-    optim_paras["beta_delta"] = beta * delta
+    optim_paras["beta_delta"] = beta * optim_paras["delta"]
 
     return optim_paras
 
