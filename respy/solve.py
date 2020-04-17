@@ -58,49 +58,44 @@ def solve(params, options, state_space):
     return state_space
 
 
+
 @parallelize_across_dense_dimensions
-def _create_choice_rewards(states, period_choice_cores, optim_paras):
-    # Initialize objects
-    out_wages = {
-        key: np.ones((period_choice_cores[key].shape[0], key[1].count(True)))
-        for key in period_choice_cores.keys()
-    }
+def _create_choice_rewards(core, core_indices, choice_set, dense_covariates, optim_paras, options):
+    """Create wage and non-pecuniary reward for each state and choice.
 
-    out_nonpecs = {
-        key: np.ones((period_choice_cores[key].shape[0], key[1].count(True)))
-        for key in period_choice_cores.keys()
-    }
+    TODO: The function receives the full core and the indices instead of the already indexed core
+    which would require less memory to be copied and moved. At the same time, indexing and copying
+    in the main process is also expensive.
 
-    for (period, choice_set) in period_choice_cores.keys():
-        # Subsetting auslagern!
-        choices = [
-            x for i, x in enumerate(optim_paras["choices"]) if choice_set[i] == True
-        ]
+    """
+    n_choices = sum(choice_set)
+    choices = [choice for i, choice in enumerate(optim_paras["choices"]) if choice_set[i]]
 
-        for i, choice in enumerate(choices):
+    dense = core.loc[core_indices].copy().assign(**dense_covariates)
+    states = rp.shared.compute_covariates(dense, options["covariates_all"])
 
-            states_period_choice = states.loc[period_choice_cores[(period, choice_set)]]
-            if f"wage_{choice}" in optim_paras:
-                wage_columns = optim_paras[f"wage_{choice}"].index
-                log_wage = np.dot(
-                    states_period_choice[wage_columns].to_numpy(
-                        dtype=COVARIATES_DOT_PRODUCT_DTYPE
-                    ),
-                    optim_paras[f"wage_{choice}"].to_numpy(),
-                )
-                out_wages[(period, choice_set)][:, i] = np.exp(log_wage)
+    n_states = states.shape[0]
 
-            if f"nonpec_{choice}" in optim_paras:
-                nonpec_columns = optim_paras[f"nonpec_{choice}"].index
-                out_nonpecs[(period, choice_set)][:, i] = np.dot(
-                    states_period_choice[nonpec_columns].to_numpy(
-                        dtype=COVARIATES_DOT_PRODUCT_DTYPE
-                    ),
-                    optim_paras[f"nonpec_{choice}"].to_numpy(),
-                )
+    wages = np.ones((n_states, n_choices))
+    nonpecs = np.zeros((n_states, n_choices))
 
-    return out_wages, out_nonpecs
+    for i, choice in enumerate(choices):
+        if f"wage_{choice}" in optim_paras:
+            wage_columns = optim_paras[f"wage_{choice}"].index
+            log_wage = np.dot(
+                states[wage_columns].to_numpy(dtype=rp.config.COVARIATES_DOT_PRODUCT_DTYPE),
+                optim_paras[f"wage_{choice}"].to_numpy(),
+            )
+            wages[:, i] = np.exp(log_wage)
 
+        if f"nonpec_{choice}" in optim_paras:
+            nonpec_columns = optim_paras[f"nonpec_{choice}"].index
+            nonpecs[:, i] = np.dot(
+                states[nonpec_columns].to_numpy(dtype=rp.config.COVARIATES_DOT_PRODUCT_DTYPE),
+                optim_paras[f"nonpec_{choice}"].to_numpy(),
+            )
+
+    return wages, nonpecs
 
 def _solve_with_backward_induction(state_space, optim_paras, options):
     """Calculate utilities with backward induction.

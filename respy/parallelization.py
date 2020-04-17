@@ -33,12 +33,14 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
     def decorator_parallelize_across_dense_dimensions(func):
         @functools.wraps(func)
         def wrapper_parallelize_across_dense_dimensions(*args, **kwargs):
+            bypass = kwargs.pop("bypass", {})
             dense_indices = _infer_dense_indices_from_arguments(args, kwargs)
+
             if dense_indices:
                 args_, kwargs_ = _broadcast_arguments(args, kwargs, dense_indices)
 
                 out = joblib.Parallel(n_jobs=n_jobs)(
-                    joblib.delayed(func)(*args_[idx], **kwargs_[idx])
+                    joblib.delayed(func)(*args_[idx], **kwargs_[idx], **bypass)
                     for idx in dense_indices
                 )
 
@@ -186,6 +188,8 @@ def split_and_combine_likelihood(func):
 def _infer_dense_indices_from_arguments(args, kwargs):
     """Infer the dense indices from the arguments.
 
+    Dense indices can be found in dictionaries with only integer keys.
+
     This function uses the intersection of all dense indices from the arguments. Since
     the simulated data or data for the likelihood might not comprise all dense
     dimensions, we might need to discard some indices.
@@ -193,10 +197,10 @@ def _infer_dense_indices_from_arguments(args, kwargs):
     """
     list_of_dense_indices = []
     for arg in args:
-        if _is_dictionary_with_tuple_keys(arg):
+        if _is_dictionary_with_integer_keys(arg):
             list_of_dense_indices.append(set(arg.keys()))
     for kwarg in kwargs.values():
-        if _is_dictionary_with_tuple_keys(kwarg):
+        if _is_dictionary_with_integer_keys(kwarg):
             list_of_dense_indices.append(set(kwarg.keys()))
 
     intersection_of_dense_indices = (
@@ -206,10 +210,10 @@ def _infer_dense_indices_from_arguments(args, kwargs):
     return intersection_of_dense_indices
 
 
-def _is_dictionary_with_tuple_keys(candidate):
-    """Infer whether the argument is a dictionary with tuple keys."""
+def _is_dictionary_with_integer_keys(candidate):
+    """Infer whether the argument is a dictionary with integer keys."""
     return isinstance(candidate, dict) and all(
-        isinstance(key, tuple) for key in candidate
+        isinstance(key, int) for key in candidate
     )
 
 
@@ -238,6 +242,7 @@ def _broadcast_arguments(args, kwargs, dense_indices):
     }
 
     return args, kwargs
+
 
 
 def _is_dense_dictionary_argument(argument, dense_indices):

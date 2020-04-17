@@ -23,7 +23,6 @@ from respy.pre_processing.model_checking import validate_params
 from respy.pre_processing.process_covariates import remove_irrelevant_covariates
 from respy.pre_processing.process_covariates import (
     separate_covariates_into_core_dense_mixed,
-    separate_choice_restrictions_into_core_dense_mixed,
 )
 from respy.shared import normalize_probabilities
 
@@ -32,9 +31,7 @@ warnings.simplefilter("error", category=pd.errors.PerformanceWarning)
 
 def process_params_and_options(params, options):
     """Process `params` and `options`.
-
     This function is interface for parsing the model specification given by the user.
-
     """
     options = _read_options(options)
     params = _read_params(params)
@@ -66,25 +63,19 @@ def _read_options(dict_or_path):
 
 def _create_internal_seeds_from_user_seeds(options):
     """Create internal seeds from user input.
-
     Instead of reusing the same seed, we use sequences of seeds incrementing by one. It
     ensures that we do not accidentally draw the same randomness twice.
-
     As naive sequences started by the seeds given by the user might be overlapping,
     the user seeds are used to generate seeds within certain ranges. The seed for the
-
     - solution is between 100 and 1,000.
     - simulation is between 10,000 and 100,000.
     - likelihood estimation is between 1,000,000 and 10,000,000.
-
     Furthermore, we need to sequences of seeds. The first sequence is for building
     :func:`~respy.simulate.simulate` or :func:`~respy.likelihood.log_like` where
     `"startup"` seeds are used to generate the draws. The second sequence start at
     `seed_start + SEED_STARTUP_ITERATION_GAP` and has to be reset to the initial
     value at the beginning of every iteration.
-
     See :ref:`randomness-and-reproducibility` for more information.
-
     Example
     -------
     >>> options = {"solution_seed": 1, "simulation_seed": 2, "estimation_seed": 3}
@@ -95,7 +86,6 @@ def _create_internal_seeds_from_user_seeds(options):
     (count(99256), count(99356))
     >>> options["estimation_seed_startup"], options["estimation_seed_iteration"]
     (count(1071530), count(1071630))
-
     """
     seeds = [f"{key}_seed" for key in ["solution", "simulation", "estimation"]]
 
@@ -153,15 +143,12 @@ def _parse_parameters(params, options):
 
 def _parse_inadmissibility_penalty(optim_paras, params):
     """Parse the inadmissibility penalty.
-
     The penalty is added to the non-pecuniary reward of a choice in
     :func:`respy.solve._create_choice_rewards` if the alternative cannot be chosen. For
     example, Keane and Wolpin (1997) limit schooling to 20 years.
-
     A warning is raise in :func:`respy.state_space._create_is_inadmissible` if the model
     includes inadmissible states but no penalty was specified. In this case, the default
     penalty is :data:`respy.config.INADMISSIBILITY_PENALTY`.
-
     """
     penalty = params.get(("inadmissibility_penalty", "inadmissibility_penalty"), None)
     optim_paras["inadmissibility_penalty"] = penalty
@@ -187,12 +174,10 @@ def _parse_observables(optim_paras, params):
 
 def _parse_choices(optim_paras, params, options):
     """Define unique order of choices.
-
     This function defines a unique order of choices. Choices can be separated in choices
     with experience and wage, with experience but without wage and without experience
     and wage. This distinction is used to create a unique ordering of choices. Within
     each group, we order alphabetically.
-
     """
     # Be careful with `choices_w_exp_fuzzy` as it contains some erroneous elements,
     # e.g., `"a_squared"` from the covariate `"exp_a_squared"`.
@@ -266,14 +251,11 @@ def _parse_shocks(optim_paras, params):
 
 def _parse_measurement_errors(optim_paras, params):
     """Parse the standard deviations of measurement errors.
-
     Measurement errors can be provided for all or none choices with wages. Measurement
     errors for non-wage choices are neglected.
-
     `optim_paras["has_meas_error"]` is only False if there are no standard deviations of
     measurement errors in `params`, not if they are all zero. Otherwise, we would
     introduce a kink into the likelihood function.
-
     """
     meas_error = np.zeros(len(optim_paras["choices"]))
 
@@ -300,10 +282,8 @@ def _parse_measurement_errors(optim_paras, params):
 
 def _parse_types(optim_paras, params):
     """Parse type shifts and type parameters.
-
     It is not explicitly enforced that all types have the same covariates, but it is
     implicitly enforced that the parameters form a valid matrix.
-
     """
     if "type_0" in params.index.get_level_values("category"):
         raise ValueError(
@@ -341,25 +321,20 @@ def _parse_types(optim_paras, params):
 
 def _infer_number_of_types(params):
     """Infer the number of types from parameters which is zero by default.
-
     Examples
     --------
     An example without types:
-
     >>> tuples = [("wage_a", "constant"), ("nonpec_edu", "exp_edu")]
     >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
     >>> s = pd.Series(index=index, dtype="object")
     >>> _infer_number_of_types(s)
     1
-
     And one with types:
-
     >>> tuples = [("wage_a", "type_3"), ("nonpec_edu", "type_2")]
     >>> index = pd.MultiIndex.from_tuples(tuples, names=["category", "name"])
     >>> s = pd.Series(index=index, dtype="object")
     >>> _infer_number_of_types(s)
     4
-
     """
     n_types = (
         params.index.get_level_values("name")
@@ -375,7 +350,6 @@ def _infer_number_of_types(params):
 
 def _infer_choices_with_experience(params, options):
     """Infer choices with experiences.
-
     Example
     -------
     >>> options = {"covariates": {"a": "exp_white_collar + exp_a", "b": "exp_b >= 2"}}
@@ -383,7 +357,6 @@ def _infer_choices_with_experience(params, options):
     >>> params = pd.Series(index=index, dtype="object")
     >>> _infer_choices_with_experience(params, options)
     ['a', 'b', 'white_collar']
-
     """
     covariates = options["covariates"]
     parameters = params.index.get_level_values(1)
@@ -401,7 +374,6 @@ def _infer_choices_with_experience(params, options):
 
 def _infer_choices_with_prefix(params, prefix):
     """Infer choices with prefix.
-
     Example
     -------
     >>> params = pd.Series(
@@ -409,7 +381,6 @@ def _infer_choices_with_prefix(params, prefix):
     ... )
     >>> _infer_choices_with_prefix(params, "wage")
     ['a', 'b', 'white_collar']
-
     """
     return sorted(
         params.index.get_level_values(0)
@@ -421,16 +392,13 @@ def _infer_choices_with_prefix(params, prefix):
 
 def _parse_lagged_choices(optim_paras, options, params):
     """Parse lagged choices from covariates and params.
-
     Lagged choices can only influence behavior of individuals through covariates of the
     utility function. Thus, check the covariates for any patterns like
     `"lagged_choice_[0-9]+"`.
-
     Then, compare the number of lags required by covariates with the information on
     lagged choices in the parameter specification. For the estimation, there does not
     have to be any information on lagged choices. For the simulation, we need parameters
     to define the probability of a choice being the lagged choice.
-
     Warning
     -------
     UserWarning
@@ -438,7 +406,6 @@ def _parse_lagged_choices(optim_paras, options, params):
         used for estimation.
     UserWarning
         If the model contains superfluous definitions of lagged choices.
-
     """
     regex_pattern = r"lagged_choice_([0-9]+)"
 
@@ -512,39 +479,31 @@ def _parse_lagged_choices(optim_paras, options, params):
 
 def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
     r"""Parse probabilities or logit coefficients of parameter groups.
-
     Some parameters form a group to specify a distribution. The parameters can either be
     probabilities from a probability mass function. For example, see the specification
     of initial years of schooling in the extended model of Keane and Wolpin (1997).
-
     On the other hand, parameters and their corresponding covariates can form the inputs
     of a :func:`scipy.specical.softmax` which generates the probability mass function.
     This distribution can be more complex.
-
     Internally, probabilities are also converted to logit coefficients to align the
     interfaces. To convert probabilities to the appropriate multinomial logit (softmax)
     coefficients, use a constant for covariates and note that the sum in the denominator
     is equal for all probabilities and, thus, can be treated as a constant. The
     following formula shows that the multinomial coefficients which produce the same
     probability mass function are equal to the logs of probabilities.
-
     .. math::
-
         p_i      &= \frac{e^{x_i \beta_i}}{\sum_j e^{x_j \beta_j}} \\
                  &= \frac{e^{\beta_i}}{\sum_j e^{\beta_j}} \\
         log(p_i) &= \beta_i - \log(\sum_j e^{\beta_j}) \\
                  &= \beta_i - C
-
     Raises
     ------
     ValueError
         If probabilities and multinomial logit coefficients are mixed.
-
     Warnings
     --------
     The user is warned if the discrete probabilities of a probability mass function do
     not sum to one.
-
     """
     mask = (
         params.index.get_level_values("category")
@@ -604,17 +563,14 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
 
 def _parse_observable_or_exog_process_names(params, keyword):
     """Parse the names of observables or exogenous processes.
-
     The function accepts `params` and a `keyword` like `observable`
     and separates the name of the variables from its possible realizations.
-
     Parameters
     ----------
     params : pd.Series
         Contains the parameters of a model.
     keyword : {"exogenous_process", "observable"}
         Keyword for a group of parameters.
-
     Examples
     --------
     >>> index = pd.MultiIndex.from_tuples([
@@ -628,7 +584,6 @@ def _parse_observable_or_exog_process_names(params, keyword):
     >>> params = pd.Series(index=index, dtype="object")
     >>> _parse_observable_or_exog_process_names(params, "observable")
     ['children', 'observable_0', 'observable_1']
-
     """
     mask = params.index.get_level_values("category").str.startswith(f"{keyword}_")
     categories = (
@@ -668,7 +623,6 @@ def _sync_optim_paras_and_options(optim_paras, options):
     options = _add_default_is_inadmissible(options, optim_paras)
     options = _convert_labels_in_formulas_to_codes(options, optim_paras)
     options = separate_covariates_into_core_dense_mixed(options, optim_paras)
-    options = separate_choice_restrictions_into_core_dense_mixed(options, optim_paras)
 
     return optim_paras, options
 
@@ -705,12 +659,9 @@ def _add_default_is_inadmissible(options, optim_paras):
 
 def _convert_labels_in_formulas_to_codes(options, optim_paras):
     """Convert labels in covariates, filters and inadmissible formulas to codes.
-
     Characteristics with labels are either choices or observables. Choices are ordered
     as in ``optim_paras["choices"]`` and observables alphabetically.
-
     Labels can either be in single or double quote strings which has to be checked.
-
     """
     for covariate, formula in options["covariates"].items():
         options["covariates"][covariate] = _replace_choices_and_observables_in_formula(
@@ -735,10 +686,8 @@ def _replace_in_single_or_double_quotes(val, from_, to):
 
 def _replace_choices_and_observables_in_formula(formula, optim_paras):
     """Replace choices and observables in formula.
-
     Choices and levels of an observable can have string identifier which are replaced
     with their codes.
-
     """
     observables = optim_paras["observables"]
 
@@ -755,17 +704,12 @@ def _replace_choices_and_observables_in_formula(formula, optim_paras):
 
 def _convert_labels_in_filters_to_codes(optim_paras, options):
     """Convert labels in `"core_state_space_filters"` to codes.
-
     The filters are used to remove states from the state space which are inadmissible
     anyway.
-
     A filter might look like this::
-
         "lagged_choice_1 == '{k}' and exp_{k} == 0"
-
     `{k}` is replaced by the actual choice name whereas `'{k}'` or `"{k}"` is
     replaced with the internal choice code.
-
     """
     filters = []
 
