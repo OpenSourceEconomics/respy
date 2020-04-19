@@ -71,6 +71,8 @@ def get_simulate_func(
     solve = get_solve_func(params, options)
 
     shape = (df.shape[0], len(optim_paras["choices"]))
+
+    # We gotta do sth here. That has to be changed
     base_draws_sim = create_base_draws(
         shape, next(options["simulation_seed_startup"]), "random"
     )

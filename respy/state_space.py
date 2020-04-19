@@ -6,8 +6,9 @@ import numba as nb
 import numpy as np
 import pandas as pd
 from numba import types
-from numba.typed import Dict
-
+from numba.extending import intrinsic
+from numba.typed.typeddict import Dict
+from numba import cgutils
 
 from respy._numba import array_to_tuple
 from respy.config import INADMISSIBILITY_PENALTY
@@ -19,6 +20,7 @@ from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
+from respy.parallelization import parallelize_across_dense_dimensions
 
 
 def create_state_space_class(options, optim_paras):
@@ -53,11 +55,15 @@ def create_state_space_class(options, optim_paras):
     # Create sp indexer
     indexer = _create_indexer(core, core_index_to_indices, optim_paras)
 
-    # Create base draws sol
-    base_draws_sol = create_base_draws(
-        (options["n_periods"], options["solution_draws"], len(optim_paras["choices"])),
-        next(options["solution_seed_startup"]),
-        options["monte_carlo_sequence"],
+    state_space = StateSpaceClass(
+        core,
+        indexer,
+        dense,
+        dense_period_choice,
+        core_index_to_complex,
+        core_index_to_indices,
+        optim_paras,
+        options
     )
 
     return state_space
@@ -66,13 +72,118 @@ class StateSpaceClass:
     def __init__(self,
                  core,
                  indexer,
+                 dense,
                  dense_period_cores,
+                 core_index_to_complex,
+                 core_index_to_indices,
                  optim_paras,
                  options):
-        self.dens_period_cores = dense_period_cores
+        self.core = core
+        self.indexer = indexer
+        self.dense_period_cores = dense_period_cores
+        self.dense = dense
+        self.core_index_to_complex = core_index_to_complex
+        self.core_index_to_indices = core_index_to_indices
         self.optim_paras = optim_paras
         self.options = options
-    
+        self.set_convenience_objects()
+        self.child_indices = self.collect_child_indices()
+        self.base_draws_sol = self.create_base_draws()
+        self.expected_value_functions = {
+            key:np.zeros(len(self.dense_index_to_indices[key])) for key in self.dense_index_to_indices.keys()}
+
+    def set_convenience_objects(self):
+        self.dense_index_to_complex = {i: k for i, k in enumerate(self.dense_period_cores)}
+        self.dense_index_to_core_index = {i: self.dense_period_cores[self.dense_index_to_complex[i]] for i in self.dense_index_to_complex}
+        self.dense_index_to_indices = {i: self.core_index_to_indices[self.dense_index_to_core_index[i]] for i in
+                                  self.dense_index_to_complex}
+        self.dense_index_to_choice_set = {i: self.dense_index_to_complex[i][0][1] for i in self.dense_index_to_complex}
+        self.dense_index_to_dense_covariates = {i: self.dense[self.dense_index_to_complex[i][1]] for i in self.dense_index_to_complex}
+        self.dense_index_to_dense_vector = {i: self.dense_index_to_complex[i][1] for i in self.dense_index_to_complex}
+
+        self.core_index_and_dense_vector_to_dense_index = {(self.dense_index_to_core_index[i], self.dense_index_to_dense_vector[i]): i
+                                                      for i in self.dense_index_to_complex}
+
+
+    def get_continuation_values(self,period):
+        continuation_values = _get_continuation_values(self.get_attribute_from_period("dense_index_to_indices",period),
+                                                       self.get_attribute_from_period("dense_index_to_complex", period),
+                                                       self.get_attribute_from_period("child_indices", period),
+                                                       self.get_attribute_from_period(
+                                                           "core_index_and_dense_vector_to_dense_index", period),
+                                                       options=self.options,
+                                                       bypass={"expected_value_functions": self.expected_value_functions})
+        return continuation_values
+
+    def collect_child_indices(self):
+        limited_dense_index_to_indices = {k: v for k, v in self.dense_index_to_indices.items() if
+                                          self.dense_index_to_complex[k][0][0] < self.options["n_periods"] - 1}
+
+        limited_dense_index_to_choice_set = {k: v for k, v in self.dense_index_to_choice_set.items() if
+                                             self.dense_index_to_complex[k][0][0] < self.options["n_periods"] - 1}
+
+        child_indices = _collect_child_indices(self.core, limited_dense_index_to_indices, limited_dense_index_to_choice_set,
+                                              self.indexer, self.optim_paras, self.options)
+
+        return child_indices
+
+    def create_base_draws(self):
+        n_choices_in_sets = np.unique([sum(i) for i in self.dense_index_to_choice_set.values()]).tolist()
+        shocks_sets = []
+
+        for n_choices in n_choices_in_sets:
+            draws = create_base_draws(
+                (self.options["n_periods"], self.options["solution_draws"], n_choices),
+                next(self.options["solution_seed_startup"]),
+                self.options["monte_carlo_sequence"],
+            )
+            shocks_sets.append(draws)
+        draws = {}
+        for dense_idx, complex in self.dense_index_to_complex.items():
+            period = complex[0][0]
+            n_choices = sum(complex[0][1])
+            idx = n_choices_in_sets.index(n_choices)
+            draws[dense_idx] = shocks_sets[idx][period]
+        return draws
+
+
+    def get_attribute(self, attr):
+        """Get an attribute of the state space."""
+        return getattr(self, attr)
+
+    def get_attribute_from_period(self, attribute, period):
+        """Get an attribute of the state space sliced to a given period.
+        Parameters
+        ----------
+        attribute : str
+            Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
+        period : int
+            Attribute is retrieved from this period.
+        """
+        attr = self.get_attribute(attribute)
+        keys = [x for x,y in self.dense_index_to_complex.items() if y[0][0]==period]
+        out = {key:attr[key] for key in keys}
+        return out
+
+    def get_attribute_from_key(self, attribute, key):
+        """Get an attribute of the state space sliced to a given period.
+        Parameters
+        ----------
+        attribute : str
+            Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
+        period : int
+            Attribute is retrieved from this period.
+        """
+        attr = self.get_attribute(attribute)
+        out = attr[key]
+        return out
+
+    def set_attribute(self, attribute, value):
+        setattr(self, attribute, value)
+
+    def set_attribute_from_keys(self, attribute, value):
+        for key in value.keys():
+            self.get_attribute_from_key(attribute,key)[:] =value[key]
 
 
 def _create_core_and_indexer(optim_paras, options):
@@ -591,13 +702,36 @@ def _insert_indices_of_child_states(
 
 
 @parallelize_across_dense_dimensions
-def collect_child_indices(core, core_indices, choice_set, indexer, optim_paras, options):
+def _get_continuation_values(core_indices, dense_complex_index, child_indices,
+                            core_index_and_dense_vector_to_dense_index, expected_value_functions, options):
+    (period, choice_set), dense_vector = dense_complex_index
+
+    if period == options["n_periods"] - 1:
+        continuation_values = np.zeros((len(core_indices), sum(choice_set)))
+
+    else:
+        n_choices = sum(choice_set)
+        n_states = core_indices.shape[0]
+
+        continuation_values = np.zeros((len(core_indices), sum(choice_set)))
+        for i in range(n_states):
+            for j in range(n_choices):
+                core_idx, row_idx = child_indices[i, j]
+                dense_choice = core_index_and_dense_vector_to_dense_index[(core_idx, dense_vector)]
+                continuation_values[core_idx] = expected_value_functions[(dense_choice, dense_vector)][row_idx]
+
+    return continuation_values
+
+
+@parallelize_across_dense_dimensions
+def _collect_child_indices(core, core_indices, choice_set, indexer, optim_paras, options):
     n_choices = sum(choice_set)
 
-    core_columns = rp.shared.create_core_state_space_columns(optim_paras)
+    core_columns = create_core_state_space_columns(optim_paras)
     states = core.loc[core_indices, ["period"] + core_columns].to_numpy()
 
-    indices = _insert_indices_of_child_states(states, indexer, choice_set, n_choices, len(optim_paras["choices_w_exp"]),
+    indices = _insert_indices_of_child_states(states, indexer, choice_set, n_choices,
+                                              len(optim_paras["choices_w_exp"]),
                                               optim_paras["n_lagged_choices"])
 
     return indices

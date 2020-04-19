@@ -8,6 +8,7 @@ from respy.config import INADMISSIBILITY_PENALTY
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
+from respy.shared import compute_covariates
 from respy.shared import calculate_expected_value_functions
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.state_space import create_state_space_class
@@ -45,10 +46,13 @@ def solve(params, options, state_space):
     """Solve the model."""
     optim_paras, options = process_params_and_options(params, options)
 
-    states = state_space.states
-    period_choice_cores = state_space.period_choice_cores
 
-    wages, nonpecs = _create_choice_rewards(states, period_choice_cores, optim_paras)
+    wages, nonpecs =_create_choice_rewards(state_space.core,
+                                           state_space.dense_index_to_indices,
+                                           state_space.dense_index_to_choice_set,
+                                           state_space.dense_index_to_dense_covariates,
+                                           optim_paras,
+                                           options)
 
     state_space.set_attribute("wages", wages)
     state_space.set_attribute("nonpecs", nonpecs)
@@ -72,7 +76,7 @@ def _create_choice_rewards(core, core_indices, choice_set, dense_covariates, opt
     choices = [choice for i, choice in enumerate(optim_paras["choices"]) if choice_set[i]]
 
     dense = core.loc[core_indices].copy().assign(**dense_covariates)
-    states = rp.shared.compute_covariates(dense, options["covariates_all"])
+    states = compute_covariates(dense, options["covariates_all"])
 
     n_states = states.shape[0]
 
@@ -83,7 +87,7 @@ def _create_choice_rewards(core, core_indices, choice_set, dense_covariates, opt
         if f"wage_{choice}" in optim_paras:
             wage_columns = optim_paras[f"wage_{choice}"].index
             log_wage = np.dot(
-                states[wage_columns].to_numpy(dtype=rp.config.COVARIATES_DOT_PRODUCT_DTYPE),
+                states[wage_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
                 optim_paras[f"wage_{choice}"].to_numpy(),
             )
             wages[:, i] = np.exp(log_wage)
@@ -91,7 +95,7 @@ def _create_choice_rewards(core, core_indices, choice_set, dense_covariates, opt
         if f"nonpec_{choice}" in optim_paras:
             nonpec_columns = optim_paras[f"nonpec_{choice}"].index
             nonpecs[:, i] = np.dot(
-                states[nonpec_columns].to_numpy(dtype=rp.config.COVARIATES_DOT_PRODUCT_DTYPE),
+                states[nonpec_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
                 optim_paras[f"nonpec_{choice}"].to_numpy(),
             )
 
@@ -120,14 +124,17 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
     # Rewrite
     draws_emax_risk = transform_base_draws_with_cholesky_factor(
-        state_space.base_draws_sol, optim_paras["shocks_cholesky"], n_wages
+        state_space.base_draws_sol,
+        state_space.dense_index_to_choice_set,
+        optim_paras["shocks_cholesky"],
+        optim_paras
     )
 
     for period in reversed(range(n_periods)):
         n_core_states = state_space.core.query("period == @period").shape[0]
 
-        wages = state_space.get_attribute_from_period("wages", period, "private")
-        nonpecs = state_space.get_attribute_from_period("nonpecs", period, "private")
+        wages = state_space.get_attribute_from_period("wages", period)
+        nonpecs = state_space.get_attribute_from_period("nonpecs", period)
         continuation_values = state_space.get_continuation_values(period)
         period_draws_emax_risk = draws_emax_risk[period]
 
@@ -168,11 +175,9 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
                 wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras
             )
 
-        state_space.set_attribute_from_period(
+        state_space.set_attribute_from_keys(
             "expected_value_functions",
-            period_expected_value_functions,
-            period,
-            "public",
+            period_expected_value_functions
         )
 
     return state_space

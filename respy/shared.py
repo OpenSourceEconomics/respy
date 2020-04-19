@@ -11,6 +11,7 @@ import pandas as pd
 
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
+from respy.parallelization import parallelize_across_dense_dimensions
 
 
 @nb.njit
@@ -119,8 +120,8 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
 
     return draws
 
-
-def transform_base_draws_with_cholesky_factor(draws, shocks_cholesky, n_wages):
+@parallelize_across_dense_dimensions
+def transform_base_draws_with_cholesky_factor(draws, choice_set, shocks_cholesky, optim_paras):
     r"""Transform standard normal draws with the Cholesky factor.
 
     The standard normal draws are transformed to normal draws with variance-covariance
@@ -141,9 +142,15 @@ def transform_base_draws_with_cholesky_factor(draws, shocks_cholesky, n_wages):
     create_base_draws
 
     """
+    shocks_cholesky = shocks_cholesky[choice_set,choice_set]
     draws_transformed = draws.dot(shocks_cholesky.T)
-    draws_transformed[..., :n_wages] = np.exp(
-        np.clip(draws_transformed[..., :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
+
+    # Check how many wages we have
+    num_wages_raw = len(optim_paras["choices_w_wage"])
+    num_wages = sum(choice_set[:num_wages_raw])
+
+    draws_transformed[..., num_wages] = np.exp(
+        np.clip(draws_transformed[..., num_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
     )
 
     return draws_transformed
