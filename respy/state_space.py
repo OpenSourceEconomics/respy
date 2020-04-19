@@ -64,12 +64,14 @@ def create_state_space_class(options, optim_paras):
 
 class StateSpaceClass:
     def __init__(self,
+                 core,
+                 indexer,
                  dense_period_cores,
-                      optim_paras,
-                      options):
-    self.dens_period_cores = dense_period_cores
-    self.optim_paras = optim_paras
-    self.options = options
+                 optim_paras,
+                 options):
+        self.dens_period_cores = dense_period_cores
+        self.optim_paras = optim_paras
+        self.options = options
     
 
 
@@ -482,3 +484,120 @@ def _create_dense_period_choice(
             dense_period_choice = {**dense_period_choice, **period_choice}
 
     return dense_period_choice
+
+
+@intrinsic  # noqa: U100
+def array_to_tuple(tyctx, array_or_dict, indexer_array):
+    """Convert an array to a tuple for indexing.
+
+    This function is taken from
+    https://gist.github.com/sklam/830fe01343ba95828c3b24c391855c86 to create tuple from
+    an array for indexing which is not possible within a Numba function.
+
+    Parameters
+    ----------
+    array : numpy.ndarray
+        Array for which the indexer is used.
+    indexer_array : numpy.ndarray
+        Array which should be converted to a tuple.
+
+    """
+    # This is the typing level. Setup the type and constant information here.
+    if isinstance(array_or_dict, types.DictType):
+        tuple_size = len(array_or_dict.key_type)
+    else:
+        tuple_size = array_or_dict.ndim
+
+    tuple_type = indexer_array.dtype
+    typed_tuple = types.UniTuple(dtype=tuple_type, count=tuple_size)
+    function_signature = typed_tuple(array_or_dict, indexer_array)
+
+    def codegen(cgctx, builder, signature, args):
+        # This is the implementation defined using LLVM builder.
+        lltupty = cgctx.get_value_type(typed_tuple)
+        tup = cgutils.get_null_value(lltupty)
+
+        [_, idxaryval] = args
+
+        def array_checker(a):
+            if a.size != tuple_size:
+                raise IndexError("index array size mismatch")
+
+        # Compile and call array_checker.
+        cgctx.compile_internal(
+            builder, array_checker, types.none(indexer_array), [idxaryval]
+        )
+
+        def array_indexer(a, i):
+            return a[i]
+
+        # loop to fill the tuple
+        for i in range(tuple_size):
+            dataidx = cgctx.get_constant(types.intp, i)
+            # compile and call array_indexer
+            data = cgctx.compile_internal(
+                builder,
+                array_indexer,
+                indexer_array.dtype(indexer_array, types.intp),
+                [idxaryval, dataidx],
+            )
+            tup = builder.insert_value(tup, data, i)
+        return tup
+
+    return function_signature, codegen
+
+
+@nb.njit
+def _insert_indices_of_child_states(
+        states,
+        indexer,
+        choice_set,
+        n_choices,
+        n_choices_w_exp,
+        n_lagged_choices,
+):
+    """Collect indices of child states for each parent state."""
+    indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)
+
+    for i in range(states.shape[0]):
+        j = 0
+        for choice, is_available in enumerate(choice_set):
+            if is_available:
+                child = states[i].copy()
+
+                # Adjust period.
+                child[0] += 1
+
+                # Increment experience if it is a choice with experience
+                # accumulation.
+                if choice < n_choices_w_exp:
+                    child[choice + 1] += 1
+
+                # Change lagged choice by shifting all existing lagged choices by
+                # one period and inserting the current choice in first position.
+                if n_lagged_choices:
+                    child[
+                    n_choices_w_exp + 2: n_choices_w_exp + n_lagged_choices + 1
+                    ] = child[n_choices_w_exp + 1: n_choices_w_exp + n_lagged_choices]
+                    child[n_choices_w_exp + 1] = choice
+
+                # Get the position of the continuation value.
+                idx_future = indexer[array_to_tuple(indexer, child)]
+                indices[i, j] = idx_future
+
+                j += 1
+
+    return indices
+
+
+@parallelize_across_dense_dimensions
+def collect_child_indices(core, core_indices, choice_set, indexer, optim_paras, options):
+    n_choices = sum(choice_set)
+
+    core_columns = rp.shared.create_core_state_space_columns(optim_paras)
+    states = core.loc[core_indices, ["period"] + core_columns].to_numpy()
+
+    indices = _insert_indices_of_child_states(states, indexer, choice_set, n_choices, len(optim_paras["choices_w_exp"]),
+                                              optim_paras["n_lagged_choices"])
+
+    return indices
