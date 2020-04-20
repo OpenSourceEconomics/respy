@@ -22,7 +22,7 @@ copyright = "2015-2020, The respy Development Team"  # noqa: A001
 author = "The respy Development Team"
 
 # The full version, including alpha/beta/rc tags.
-release = "2.0.0dev3"
+release = "2.0.0dev4"
 version = ".".join(release.split(".")[:2])
 
 # -- General configuration ------------------------------------------------

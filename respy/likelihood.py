@@ -575,20 +575,15 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
 
     splitted_label = df.variable.str.split("_", expand=True)
     df["kind"] = splitted_label[1]
-    df["type"] = splitted_label[3]
     df = df.drop(columns="variable")
 
     if log_type_probabilities is not None:
         log_type_probabilities = log_type_probabilities.reset_index().melt(
-            id_vars=["identifier", "period"]
+            id_vars=["identifier", "period"],
+            value_vars=range(optim_paras["n_types"]),
+            var_name="type",
+            value_name="log_type_probability",
         )
-        log_type_probabilities["kind"] = "log_type_probability"
-        log_type_probabilities["type"] = (
-            log_type_probabilities["variable"]
-            .str.split("_", expand=True)[3]
-            .astype(int)
-        )
-        log_type_probabilities = log_type_probabilities.drop(columns="variable")
 
         df = df.append(log_type_probabilities, sort=False)
 
