@@ -10,17 +10,24 @@ an issue on Github, writing an `email`_ to our `zulipchat group
 .. _email: respy.9b46528f81292a712fa4855ff362f40f.show-sender@streams.zulipchat.com
 
 
-Development Lead
-----------------
+Project Manager
+---------------
 
-`Tobias Raabe <https://github.com/tobiasraabe>`_
+`Philipp Eisenhauer <https://github.com/peisenha>`_
 
 
-Maintainer / Core Developer
----------------------------
+Software Design
+---------------
 
-- `Philipp Eisenhauer <https://github.com/peisenha>`_
 - `Janos Gabler <https://github.com/janosg>`_
+- `Tobias Raabe <https://github.com/tobiasraabe>`_
+
+
+Developer
+---------
+
+- `Annica Gehlen <https://github.com/amageh>`_
+- `Moritz Mendel <https://github.com/mo2561057>`_
 
 
 Acknowledgments
@@ -30,9 +37,13 @@ We are grateful to the `Social Science Computing Services <https://sscs.uchicago
 at the `University of Chicago <https://www.uchicago.edu/>`_ who let us use the Acropolis
 cluster for scalability and performance testing. We appreciate the financial support of
 the `AXA Research Fund <https://www.axa-research.org/>`_ and the  `University of Bonn
-<https://www.uni-bonn.de>`_. We are indebted to the open source community as we build on
-top of numerous open source tools such as the `SciPy <https://www.scipy.org>`_ and
-`PyData <https://pydata.org/>`_ ecosystems.
+<https://www.uni-bonn.de>`_.
+
+We are indebted to the open source community as we build on top of numerous open source
+tools such as the `SciPy <https://www.scipy.org>`_ and `PyData <https://pydata.org/>`_
+ecosystems. In particular, without ``respy``'s interface would not work without `pandas
+<https://pandas.pydata.org/>`_ and it could not rival any program written in Fortran in
+terms of speed without `Numba <http://numba.pydata.org/>`_.
 
 
 .. Keep following section in sync with README.rst.
@@ -45,10 +56,10 @@ framework for the estimation of Eckstein-Keane-Wolpin models. Please cite it wit
 
 .. code-block::
 
-    @Unpublished{Raabe2020,
+    @Unpublished{Gabler2020,
       Title  = {respy - A Framework for the Simulation and Estimation of
                 Eckstein-Keane-Wolpin Models.},
-      Author = {Tobias Raabe},
+      Author = {Janos Gabler and Tobias Raabe},
       Year   = {2020},
       Url    = {https://github.com/OpenSourceEconomics/respy},
     }

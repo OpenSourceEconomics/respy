@@ -30,10 +30,10 @@ of models which can be currently represented in ``respy`` are called
 Eckstein-Keane-Wolpin models (Aguirregabiria and Mira (2010))
 
 What makes ``respy`` powerful is that it allows to build and solve structural models in
-minutes whose development previously took years. The design of ``respy`` allows the
-researcher to flexibly add the following components to her model.
+weeks or months whose development previously took years. The design of ``respy`` allows
+the researcher to flexibly add the following components to her model.
 
-- **Any number of two or more choices** (e.g., working alternatives, schooling, home
+- **Any number of discrete choices** (e.g., working alternatives, schooling, home
   production, retirement) where each choice may yield a wage, may allow for experience
   accumulation and can be constrained by time, a maximum amount of accumulated
   experience or other characteristics.
@@ -44,10 +44,12 @@ researcher to flexibly add the following components to her model.
 - Adding a **finite mixture** with any number of subgroups to account for unobserved
   heterogeneity among individuals as developed by Keane and Wolpin (1997).
 
-- **Any number of additional characteristics** (e.g., ability measures (Bhuller et al.
+- **Any number of observed state variables** (e.g., ability measures (Bhuller et al.
   (2020)), race (Keane and Wolpin (2000)), demographic variables) found in the data.
 
-- Estimate **measurement errors** in wages using a Kalman Filter.
+- Correct the estimation for **measurement error** in wages, either using a Kalman
+  filter in maximum likelihood estimation or by adding the measurement error in
+  simulation based approaches.
 
 You can install ``respy`` via conda with
 
@@ -70,10 +72,10 @@ framework for the estimation of Eckstein-Keane-Wolpin models. Please cite it wit
 
 .. code-block::
 
-    @Unpublished{Raabe2020,
+    @Unpublished{Gabler2020,
       Title  = {respy - A Framework for the Simulation and Estimation of
                 Eckstein-Keane-Wolpin Models.},
-      Author = {Tobias Raabe},
+      Author = {Janos Gabler and Tobias Raabe},
       Year   = {2020},
       Url    = {https://github.com/OpenSourceEconomics/respy},
     }
