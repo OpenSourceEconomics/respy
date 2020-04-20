@@ -31,7 +31,7 @@ from respy.shared import create_dense_state_space_columns
 def compute_transition_probabilities(states, optim_paras):
     """Compute the transition probabilities between states due to exogenous processes.
 
-    The exogenous process is defined by a multinomial logit. The steps are
+    The exogenous process is defined by a multinomial logit. The steps are:
 
     1. For each realization of each exogenous process, calculate the dot product of
        process parameters and covariates and compute the transition probabilities with
