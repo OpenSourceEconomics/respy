@@ -19,7 +19,7 @@ from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import rename_labels_from_internal
 from respy.shared import rename_labels_to_internal
-from respy.shared import transform_base_draws_with_cholesky_factor
+from respy.state_space import transform_base_draws_with_cholesky_factor
 from respy.solve import get_solve_func
 
 

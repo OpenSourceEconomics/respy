@@ -9,10 +9,6 @@ import numba as nb
 import numpy as np
 import pandas as pd
 
-from respy.config import MAX_LOG_FLOAT
-from respy.config import MIN_LOG_FLOAT
-from respy.parallelization import parallelize_across_dense_dimensions
-
 
 @nb.njit
 def aggregate_keane_wolpin_utility(wage, nonpec, continuation_value, draw, delta):
@@ -119,41 +115,6 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
         raise NotImplementedError
 
     return draws
-
-@parallelize_across_dense_dimensions
-def transform_base_draws_with_cholesky_factor(draws, choice_set, shocks_cholesky, optim_paras):
-    r"""Transform standard normal draws with the Cholesky factor.
-
-    The standard normal draws are transformed to normal draws with variance-covariance
-    matrix :math:`\Sigma` by multiplication with the Cholesky factor :math:`L` where
-    :math:`L^TL = \Sigma`. See chapter 7.4 in [1]_ for more information.
-
-    This function relates to :func:`create_base_draws` in the sense that it transforms
-    the unchanging standard normal draws to the distribution with the
-    variance-covariance matrix specified by the parameters.
-
-    References
-    ----------
-    .. [1] Gentle, J. E. (2009). Computational statistics (Vol. 308). New York:
-           Springer.
-
-    See also
-    --------
-    create_base_draws
-
-    """
-    shocks_cholesky = shocks_cholesky[choice_set,choice_set]
-    draws_transformed = draws.dot(shocks_cholesky.T)
-
-    # Check how many wages we have
-    num_wages_raw = len(optim_paras["choices_w_wage"])
-    num_wages = sum(choice_set[:num_wages_raw])
-
-    draws_transformed[..., num_wages] = np.exp(
-        np.clip(draws_transformed[..., num_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
-    )
-
-    return draws_transformed
 
 
 def generate_column_dtype_dict_for_estimation(optim_paras):

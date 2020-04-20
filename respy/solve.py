@@ -10,7 +10,7 @@ from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import compute_covariates
 from respy.shared import calculate_expected_value_functions
-from respy.shared import transform_base_draws_with_cholesky_factor
+from respy.state_space import transform_base_draws_with_cholesky_factor
 from respy.state_space import create_state_space_class
 
 
@@ -136,7 +136,10 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
         continuation_values = state_space.get_continuation_values(period)
-        period_draws_emax_risk = draws_emax_risk[period]
+
+        # This has to be finxed in the mdeium
+        period_keys = [x for x, y in state_space.dense_index_to_complex.items() if y[0][0] == period]
+        period_draws_emax_risk = {key:draws_emax_risk[key] for key in draws_emax_risk.keys() if key in period_keys}
 
         # The number of interpolation points is the same for all periods. Thus, for
         # some periods the number of interpolation points is larger than the actual
@@ -193,22 +196,15 @@ def _full_solution(
     state and not only a subset.
 
     """
-    period_expected_value_functions = dict()
-    for choice_set in wages.keys():
-
-        # Subset shocks accordingly!
-        positions = [i for i, x in enumerate(choice_set) if x == True]
-        period_draws_emax_risk_choice = period_draws_emax_risk[:, positions]
-
-        # Get expectations
-        period_expected_value_functions[
-            choice_set
-        ] = calculate_expected_value_functions(
-            wages[choice_set],
-            nonpecs[choice_set],
-            continuation_values[choice_set],
-            period_draws_emax_risk_choice,
-            optim_paras["delta"],
-        )
+    # Get expectations
+    print(wages.shape)
+    print(period_draws_emax_risk.shape)
+    period_expected_value_functions = calculate_expected_value_functions(
+        wages,
+        nonpecs,
+        continuation_values,
+        period_draws_emax_risk,
+        optim_paras["delta"],
+    )
 
     return period_expected_value_functions
