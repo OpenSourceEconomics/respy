@@ -4,9 +4,11 @@ coverage:
   round: down
   status:
     project:
-      threshold: 5%
+      default:
+        threshold: 5%
     patch:
-      threshold: 5%
+      default:
+        threshold: 5%
 
 ignore:
   - ".tox/**/*"
