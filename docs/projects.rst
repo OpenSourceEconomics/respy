@@ -1,8 +1,8 @@
 Projects
 ========
 
-``respy`` is actively used as a research tool. Here is a list of projects to showcase
-the capabilities and kind of questions which are tackled with ``respy``.
+**respy** is actively used as a research tool. Here is a list of projects to showcase
+the capabilities and kind of questions which are tackled with **respy**.
 
 If you want to feature your project in this list, open an `issue or pr
 <https://github.com/OpenSourceEconomics/respy>`_ and submit a title, a summary, links to
@@ -80,10 +80,10 @@ correlated input parameters.
     the second stage is a quantitative global sensitivity analysis (GSA). The
     uncertainty analysis finds that the tuition subsidy has a mean effect of an increase
     of 1.5 years and a standard deviation of 0.1 years in education. For the qualitative
-    GSA, I develop redesigned Elementary Effects based on Ge and Menendez (2017) for
-    a model with correlated input parameters. Based on these Elementary Effects, I
-    compute multiple aggregate statistics to quantify the impact of the uncertainty in
-    one parameter on uncertainty in the QoI. However, the analysis does not lead to clear
+    GSA, I develop redesigned Elementary Effects based on Ge and Menendez (2017) for a
+    model with correlated input parameters. Based on these Elementary Effects, I compute
+    multiple aggregate statistics to quantify the impact of the uncertainty in one
+    parameter on uncertainty in the QoI. However, the analysis does not lead to clear
     results as there is no consensus about how to interpret the aggregate statistics in
     this context - even for uncorrelated parameters.
 
@@ -111,7 +111,7 @@ Contact: `@PatriziaMassner <https://github.com/PatriziaMassner>`_
 Raabe, T. (2019). A unified estimation framework for some discrete choice dynamic
 programming models.
 
-    The thesis lays the foundation for ``respy`` to become a general framework for the
+    The thesis lays the foundation for **respy** to become a general framework for the
     estimation of discrete choice dynamic programming models in labor economics. It
     showcases the ability to represent Keane and Wolpin (1994), Keane and Wolpin (1997),
     and Keane and Wolpin (2000) within a single implementation.

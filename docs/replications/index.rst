@@ -2,7 +2,7 @@
 Replications
 ============
 
-To showcase ``respy``'s applicability in research projects, we present a few
+To showcase **respy**'s applicability in research projects, we present a few
 replications of published papers and their key results.
 
 .. toctree::

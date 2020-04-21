@@ -4,7 +4,7 @@ import sys
 
 # Add custom CSS
 def setup(app):
-    app.add_stylesheet("css/custom.css")
+    app.add_css_file("css/custom.css")
 
 
 # Set variable so that todos are shown in local build
@@ -66,7 +66,7 @@ extlinks = {
 intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
-    "python": ("https://docs.python.org/3.6", None),
+    "python": ("https://docs.python.org/3.7", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -122,5 +122,10 @@ autosummary_generate = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme_path = ["_themes"]
-html_theme = "nature_with_gtoc"
+html_theme = "pydata_sphinx_theme"
+
+html_theme_options: {
+    "github_url": "https://github.com/OpenSourceEconomics/respy",
+}
+
+html_css_files = ["css/custom.css"]

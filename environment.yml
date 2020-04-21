@@ -36,6 +36,7 @@ dependencies:
   - snakeviz
   - sphinx
   - sphinx-autobuild
+  - pydata-sphinx-theme
   - tox-conda
   - pip:
     - apprise

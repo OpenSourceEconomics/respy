@@ -135,10 +135,10 @@ where :math:`\epsilon_1(a)` is the idiosyncratic, serially uncorrelated shock to
 individual's skills in age a. Note that in Appendix C of Keane & Wolpin (1997) the age
 function is not necessarily linear (:math:`e_{1, 5}(a)`). However, from table 7 it
 becomes clear that the age function was estimated to be linear so this is what is also
-implemented in ``respy``.
+implemented in **respy**.
 
 Furthermore, Keane & Wolpin (1997) only allow for a second degree polynomial function
-for the same sector experience. ``respy`` allows for both civilian sectors (occupation A
+for the same sector experience. **respy** allows for both civilian sectors (occupation A
 and B) to have quadratic effects on wages in both sectors.
 
 .. include:: ./occ-a-params.rst
