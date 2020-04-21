@@ -10,6 +10,7 @@ from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import compute_covariates
 from respy.shared import calculate_expected_value_functions
+from respy.shared import subset_to_period
 from respy.state_space import transform_base_draws_with_cholesky_factor
 from respy.state_space import create_state_space_class
 
@@ -119,7 +120,6 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
     """
     # Is this still practicable?
-    n_wages = len(optim_paras["choices_w_wage"])
     n_periods = optim_paras["n_periods"]
 
     # Rewrite
@@ -137,9 +137,9 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
         continuation_values = state_space.get_continuation_values(period)
 
-        # This has to be finxed in the mdeium
-        period_keys = [x for x, y in state_space.dense_index_to_complex.items() if y[0][0] == period]
-        period_draws_emax_risk = {key:draws_emax_risk[key] for key in draws_emax_risk.keys() if key in period_keys}
+        period_draws_emax_risk = subset_to_period(draws_emax_risk,
+                                                  state_space.dense_index_to_complex,
+                                                  period)
 
         # The number of interpolation points is the same for all periods. Thus, for
         # some periods the number of interpolation points is larger than the actual

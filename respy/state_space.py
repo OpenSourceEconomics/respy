@@ -10,18 +10,20 @@ from numba.extending import intrinsic
 from numba.typed.typeddict import Dict
 from numba import cgutils
 
-from respy._numba import array_to_tuple
 from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import INDEXER_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
+from respy.shared import array_to_tuple
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
-from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
+from respy.shared import create_base_draws
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
+from respy.shared import subset_to_period
+from respy.shared import subset_to_choice
 from respy.parallelization import parallelize_across_dense_dimensions
 
 
@@ -91,9 +93,10 @@ class StateSpaceClass:
         self.options = options
         self.set_convenience_objects()
         self.child_indices = self.collect_child_indices()
-        self.base_draws_sol = self.create_base_draws()
+        self.base_draws_sol = self.create_draws()
         self.expected_value_functions = {
-            key: np.zeros(len(self.dense_index_to_indices[key])) for key in self.dense_index_to_indices.keys()}
+            key: np.zeros(len(self.dense_index_to_indices[key])) for key in self.dense_index_to_indices.keys()
+        }
 
     def set_convenience_objects(self):
         self.dense_index_to_complex = {i: k for i, k in enumerate(self.dense_period_cores)}
@@ -108,6 +111,9 @@ class StateSpaceClass:
 
         self.core_index_and_dense_vector_to_dense_index = {
             (self.dense_index_to_core_index[i], self.dense_index_to_dense_vector[i]): i
+            for i in self.dense_index_to_complex}
+        self.dense_vector_and_choice_set_to_dense_index = {
+            self.dense_index_to_complex[i]: i
             for i in self.dense_index_to_complex}
 
     def get_continuation_values(self, period):
@@ -137,7 +143,7 @@ class StateSpaceClass:
 
         return child_indices
 
-    def create_base_draws(self):
+    def create_draws(self):
         n_choices_in_sets = np.unique([sum(i) for i in self.dense_index_to_choice_set.values()]).tolist()
         shocks_sets = []
 
@@ -154,6 +160,7 @@ class StateSpaceClass:
             n_choices = sum(complex[0][1])
             idx = n_choices_in_sets.index(n_choices)
             draws[dense_idx] = shocks_sets[idx][period]
+
         return draws
 
     def get_attribute(self, attr):
@@ -170,8 +177,7 @@ class StateSpaceClass:
             Attribute is retrieved from this period.
         """
         attr = self.get_attribute(attribute)
-        keys = [x for x, y in self.dense_index_to_complex.items() if y[0][0] == period]
-        out = {key: attr[key] for key in keys}
+        out = subset_to_period(attr, self.dense_index_to_complex, period)
         return out
 
     def get_attribute_from_key(self, attribute, key):
@@ -451,48 +457,6 @@ def _create_dense_state_space_grid(optim_paras):
     return dense_state_space_grid
 
 
-@nb.njit
-def _insert_indices_of_child_states(
-        indices,
-        states,
-        indexer_current,
-        indexer_future,
-        n_choices_tot,
-        n_choices_w_exp,
-        n_lagged_choices,
-):
-    """Collect indices of child states for each parent state."""
-    n_choices = n_choices_tot
-
-    for i in range(states.shape[0]):
-
-        idx_current = indexer_current[array_to_tuple(indexer_current, states[i])]
-
-        for choice in range(n_choices):
-
-            # Cut off the period which is not necessary for the indexer.
-            child = states[i].copy()
-
-            # Increment experience if it is a choice with experience
-            # accumulation.
-            if choice < n_choices_w_exp:
-                child[choice] += 1
-
-            # Change lagged choice by shifting all existing lagged choices by
-            # one period and inserting the current choice in first position.
-            if n_lagged_choices:
-                child[n_choices_w_exp + 1: n_choices_w_exp + n_lagged_choices] = child[
-                                                                                 n_choices_w_exp: n_choices_w_exp + n_lagged_choices - 1
-                                                                                 ]
-                child[n_choices_w_exp] = choice
-
-            # Get the position of the continuation value.
-            idx_future = indexer_future[array_to_tuple(indexer_future, child)]
-            indices[idx_current, choice] = idx_future
-
-    return indices
-
-
 def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
     if dense_grid:
         columns = create_dense_state_space_columns(optim_paras)
@@ -512,7 +476,7 @@ def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
     return covariates
 
 
-def _create_is_inadmissible(df, optim_paras, options):
+def create_is_inadmissible(df, optim_paras, options):
     df = df.copy()
 
     for choice in optim_paras["choices"]:
@@ -564,7 +528,7 @@ def _create_core_period_choice(core, optim_paras, options):
     """
     choices = [f"_{choice}" for choice in optim_paras["choices"]]
     df = core.copy()
-    df = _create_is_inadmissible(df, optim_paras, options)
+    df = create_is_inadmissible(df, optim_paras, options)
     df[choices] = ~df[choices]
     core_period_choice = {
         (idx[0], idx[1:]): indices
@@ -589,7 +553,7 @@ def _create_dense_period_choice(
         for dense_idx, dense_vec in dense.items():
             df = core.copy().loc[indices].assign(**dense_vec)
             df = compute_covariates(df, options["covariates_all"])
-            df = _create_is_inadmissible(df, optim_paras, options)
+            df = create_is_inadmissible(df, optim_paras, options)
             df[choices] = ~df[choices]
             grouper = df.groupby(choices).groups
             assert len(grouper) == 1, (
@@ -605,67 +569,6 @@ def _create_dense_period_choice(
             dense_period_choice = {**dense_period_choice, **period_choice}
 
     return dense_period_choice
-
-
-@intrinsic  # noqa: U100
-def array_to_tuple(tyctx, array_or_dict, indexer_array):
-    """Convert an array to a tuple for indexing.
-
-    This function is taken from
-    https://gist.github.com/sklam/830fe01343ba95828c3b24c391855c86 to create tuple from
-    an array for indexing which is not possible within a Numba function.
-
-    Parameters
-    ----------
-    array : numpy.ndarray
-        Array for which the indexer is used.
-    indexer_array : numpy.ndarray
-        Array which should be converted to a tuple.
-
-    """
-    # This is the typing level. Setup the type and constant information here.
-    if isinstance(array_or_dict, types.DictType):
-        tuple_size = len(array_or_dict.key_type)
-    else:
-        tuple_size = array_or_dict.ndim
-
-    tuple_type = indexer_array.dtype
-    typed_tuple = types.UniTuple(dtype=tuple_type, count=tuple_size)
-    function_signature = typed_tuple(array_or_dict, indexer_array)
-
-    def codegen(cgctx, builder, signature, args):
-        # This is the implementation defined using LLVM builder.
-        lltupty = cgctx.get_value_type(typed_tuple)
-        tup = cgutils.get_null_value(lltupty)
-
-        [_, idxaryval] = args
-
-        def array_checker(a):
-            if a.size != tuple_size:
-                raise IndexError("index array size mismatch")
-
-        # Compile and call array_checker.
-        cgctx.compile_internal(
-            builder, array_checker, types.none(indexer_array), [idxaryval]
-        )
-
-        def array_indexer(a, i):
-            return a[i]
-
-        # loop to fill the tuple
-        for i in range(tuple_size):
-            dataidx = cgctx.get_constant(types.intp, i)
-            # compile and call array_indexer
-            data = cgctx.compile_internal(
-                builder,
-                array_indexer,
-                indexer_array.dtype(indexer_array, types.intp),
-                [idxaryval, dataidx],
-            )
-            tup = builder.insert_value(tup, data, i)
-        return tup
-
-    return function_signature, codegen
 
 
 @nb.njit
@@ -769,8 +672,7 @@ def transform_base_draws_with_cholesky_factor(draws, choice_set, shocks_cholesky
     create_base_draws
 
     """
-    delete = [i for i,x in enumerate(choice_set) if bool(x) is False]
-    shocks_cholesky = np.delete(np.delete(shocks_cholesky,delete,0),delete,1)
+    shocks_cholesky = subset_to_choice(shocks_cholesky,choice_set)
     draws_transformed = draws.dot(shocks_cholesky.T)
 
     # Check how many wages we have
