@@ -70,14 +70,15 @@ class _BaseStateSpace:
         return slices
 
     def _create_is_inadmissible(self, optim_paras, options):
-        core = self.core.copy()
+        df = self.core.copy().assign(**self.dense_covariates)
+        df = compute_covariates(df, options["covariates_all"])
 
         for choice in optim_paras["choices"]:
-            core[choice] = False
+            df[choice] = False
             for formula in options["inadmissible_states"][choice]:
-                core[choice] |= core.eval(formula)
+                df[choice] |= df.eval(formula)
 
-        is_inadmissible = core[optim_paras["choices"]].to_numpy(dtype=np.bool)
+        is_inadmissible = df[optim_paras["choices"]].to_numpy(dtype=np.bool)
 
         if np.any(is_inadmissible) and optim_paras["inadmissibility_penalty"] is None:
             warnings.warn(
@@ -188,11 +189,9 @@ class _SingleDimStateSpace(_BaseStateSpace):
         self.dense_covariates = dense_covariates if dense_covariates is not None else {}
         self.mixed_covariates = options["covariates_mixed"]
         self.base_draws_sol = base_draws_sol
-        self.slices_by_periods = super()._create_slices_by_core_periods()
+        self.slices_by_periods = self._create_slices_by_core_periods()
         self.is_inadmissible = self._create_is_inadmissible(optim_paras, options)
-        self.indices_of_child_states = super()._create_indices_of_child_states(
-            optim_paras
-        )
+        self.indices_of_child_states = self._create_indices_of_child_states(optim_paras)
 
         # HOTFIX: Will be removed with flexible choice sets.
         self.expected_value_functions = np.empty(self.core.shape[0])
