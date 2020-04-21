@@ -197,7 +197,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
             next_df = _apply_law_of_motion(
                 current_df_extended,
                 state_space.indexer[period],
-                state_space.get_attribute("transition_probabilities"),
+                state_space.get_transition_probabilities(period),
                 optim_paras=optim_paras,
             )
             df = df.fillna(next_df)
@@ -553,15 +553,14 @@ def _apply_law_of_motion(df, indexer, transition_probabilities, optim_paras):
     # Exogenous processes first, because the indexer requires the original states.
     if transition_probabilities:
         # Get indices which connect states in the state space and simulated agents.
-        # Subtract the minimum of indices (excluding invalid indices) because wages,
-        # etc. contain only wages in this period and normal indices select rows from all
-        # wages.
         columns = create_core_state_space_columns(optim_paras)
         indices = indexer[tuple(df[col].astype("int64") for col in columns)]
+        # Subtract the value of the lowest index because we have periodic objects.
+        indices = indices - indexer[indexer != INDEXER_INVALID_INDEX].min()
 
         # Sample characteristics affected by exogenous processes.
-        dense_indices = list(transition_probabilities)
         probs = np.column_stack(list(transition_probabilities.values()))[indices]
+        dense_indices = list(transition_probabilities)
         choices = _random_choice(len(dense_indices), probs)
         new_dense_indices = [dense_indices[i] for i in choices]
 

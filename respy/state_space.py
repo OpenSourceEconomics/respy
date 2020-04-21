@@ -196,7 +196,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
         # HOTFIX: Will be removed with flexible choice sets.
         self.expected_value_functions = np.empty(self.core.shape[0])
-        self.transition_probabilities = {}
+        self.process_specific_transition_probabilities = []
 
     def get_attribute(self, attr):
         """Get an attribute of the state space."""
@@ -219,27 +219,18 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
         return out
 
-    def get_continuation_values(self, period=None, indices=None):
+    def get_continuation_values(self, period):
         """Return the continuation values for a given period or states.
 
         If the last period is selected, return a matrix of zeros. In any other period,
         use the precomputed `indices_of_child_states` to select continuation values from
         `expected_value_functions`.
 
-        You can also indices to collect continuation values across periods.
-
-        Indices may contain :data:`respy.config.INDEXER_INVALID_INDEX` as an identifier
-        for invalid states. In this case, indexing leads to an `IndexError`. Replace the
-        continuation values with zeros for such indices.
-
         Parameters
         ----------
-        period : int or None
+        period : int
             Return the continuation values for period `period` which are the expected
             value functions from period `period + 1`.
-        indices : numpy.ndarray or None
-            Indices of states for which to return the continuation values. These states
-            can cover multiple periods.
 
         """
         n_periods = len(self.indexer)
@@ -251,9 +242,7 @@ class _SingleDimStateSpace(_BaseStateSpace):
             continuation_values = np.zeros((n_states_last_period, n_choices))
 
         else:
-            if indices is not None:
-                child_indices = self.get_attribute("indices_of_child_states")[indices]
-            elif period is not None and 0 <= period <= n_periods - 2:
+            if 0 <= period <= n_periods - 2:
                 child_indices = self.get_attribute_from_period(
                     "indices_of_child_states", period
                 )
@@ -268,27 +257,49 @@ class _SingleDimStateSpace(_BaseStateSpace):
 
         return continuation_values
 
-    def _get_transition_probabilities(self, period=None, indices=None):
-        n_periods = len(self.indexer)
+    def get_transition_probabilities(self, period):
+        """Get the transition probabilities.
 
-        if indices is not None:
-            child_indices = self.get_attribute("indices_of_child_states")[indices]
-        elif period is not None and 0 <= period <= n_periods - 1:
-            child_indices = self.get_attribute_from_period(
-                "indices_of_child_states", period
+        This function creates a dictionary where keys are dense indices and values are
+        vectors with the probability for each state to transition to this dense index.
+
+        """
+        proc_spec_trans_probs = self.get_attribute(
+            "process_specific_transition_probabilities"
+        )
+        if proc_spec_trans_probs:
+            proc_spec_trans_probs = [
+                i[self.slices_by_periods[period]] for i in proc_spec_trans_probs
+            ]
+
+            n_exog_procs = len(proc_spec_trans_probs)
+            n_dense_dims = len(self.dense_dim)
+
+            subset_trans_probs = {}
+            comb_exog_procs = itertools.product(
+                *[range(probs.shape[1]) for probs in proc_spec_trans_probs]
             )
+            pos = (
+                n_dense_dims - n_exog_procs - 1
+                if "type" in self.dense_covariates
+                else n_dense_dims - n_exog_procs
+            )
+            for exog_proc_idx in comb_exog_procs:
+                probs = np.multiply.reduce(
+                    [
+                        proc_spec_trans_probs[i][:, idx]
+                        for i, idx in enumerate(exog_proc_idx)
+                    ]
+                )
+                new_dense_idx = (
+                    *self.dense_dim[:pos],
+                    *exog_proc_idx,
+                    *self.dense_dim[pos + n_exog_procs :],
+                )
+                subset_trans_probs[new_dense_idx] = probs
+
         else:
-            raise NotImplementedError
-
-        mask = child_indices != INDEXER_INVALID_INDEX
-        valid_indices = np.where(mask, child_indices, 0)
-
-        transition_probabilities = self.get_attribute("transition_probabilities")
-        subset_trans_probs = {}
-        for dense_idx, probabilities in transition_probabilities.items():
-            subset_trans_probs[dense_idx] = np.where(
-                mask, probabilities[valid_indices], 0
-            )
+            subset_trans_probs = {}
 
         return subset_trans_probs
 
@@ -342,31 +353,50 @@ class _MultiDimStateSpace(_BaseStateSpace):
             for key, sss in self.sub_state_spaces.items()
         }
 
-    def get_continuation_values(self, period=None, indices=None):
+    def get_continuation_values(self, period):
         continuation_values = {
-            key: sss.get_continuation_values(period, indices)
+            key: sss.get_continuation_values(period)
             for key, sss in self.sub_state_spaces.items()
         }
         has_exogenous_processes = all(
-            bool(sss.transition_probabilities) for sss in self.sub_state_spaces.values()
+            bool(sss.process_specific_transition_probabilities)
+            for sss in self.sub_state_spaces.values()
         )
         if has_exogenous_processes:
             continuation_values = self._weight_continuation_values(
-                continuation_values, period, indices
+                continuation_values, period
             )
 
         return continuation_values
 
-    def _weight_continuation_values(self, continuation_values, period, indices):
-        """Weight the continuation values.
+    def get_transition_probabilities(self, period=None):
+        """Get transition probabilities.
 
-        For invalid indices, the first transition probability is selected which does not
-        make a difference because the continuation values related to invalid indices are
-        set to zero.
+        This function collects transition probabilities from all SingleDimStateSpaces.
 
         """
         transition_probabilities = {
-            key: sss._get_transition_probabilities(period, indices)
+            key: sss.get_transition_probabilities(period)
+            for key, sss in self.sub_state_spaces.items()
+        }
+
+        return transition_probabilities
+
+    def _weight_continuation_values(self, continuation_values, period):
+        """Weight the continuation values.
+
+        Parameters
+        ----------
+        continuation_values : dict
+            Dictionary with dense indices as keys and arrays with shape
+            ``(n_states_in_period, n_choices)`` containing the continuation values as
+            values.
+        period : int
+            The period in which we want to weight the continuation values.
+
+        """
+        transition_probabilities = {
+            key: sss.get_transition_probabilities(period)
             for key, sss in self.sub_state_spaces.items()
         }
 
@@ -374,7 +404,9 @@ class _MultiDimStateSpace(_BaseStateSpace):
         for dense_idx in transition_probabilities:
             w_cont_values = []
             for trans_idx, trans_probs in transition_probabilities[dense_idx].items():
-                w_cont_value = np.multiply(trans_probs, continuation_values[trans_idx])
+                w_cont_value = np.multiply(
+                    trans_probs.reshape(-1, 1), continuation_values[trans_idx]
+                )
                 w_cont_values.append(w_cont_value)
 
             weighted_continutation_values[dense_idx] = np.add.reduce(w_cont_values)

@@ -17,8 +17,6 @@ respy.state_space._MultiDimStateSpace._weight_continuation_values
 respy.simulate._apply_law_of_motion
 
 """
-import itertools
-
 import numpy as np
 from scipy import special
 
@@ -28,33 +26,27 @@ from respy.shared import create_dense_state_space_columns
 
 
 @parallelize_across_dense_dimensions
-def compute_transition_probabilities(states, optim_paras):
-    """Compute the transition probabilities between states due to exogenous processes.
+def compute_process_specific_transition_probabilities(states, optim_paras):
+    """Compute process-specific transition probabilities for all exogenous processes.
 
-    The exogenous process is defined by a multinomial logit. The steps are:
+    This function computes for each exogenous process the probability of transitioning
+    to another realization of the exogenous process given the current value. For each
+    exogenous process, the result is a matrix with as many rows as states and a column
+    for each realization of the process. The values are the probabilities.
 
-    1. For each realization of each exogenous process, calculate the dot product of
-       process parameters and covariates and compute the transition probabilities with
-       the softmax function.
+    The matrices of all exogenous processes are stored in a list where the position is
+    determined by the order of exogenous processes in ``optim_paras``.
 
-    2. For each dense index this `_SingleDimStateSpace` may transition to, collect the
-       transition probabilities for each exogenous process and multiply them.
+    Why do we store the probabilities like this? Another alternative would be to combine
+    the process-specific probabilities to calculate the transition probabilities to
+    other dense dimensions of the state space.
 
-    This function returns a dictionary for each `respy.state_space._SingleDimStateSpace`
-    whose keys are the dense state space indices to where the states can transition to.
-    To each key belongs a probability vector which is the product of probabilities
-    defined by the exogenous processes.
-
-    As an example, assume a model without observables and types but one exogenous
-    processes named "exog_proc" with two possible values, zero and one. The return
-    taking into account the decorator will look like this:
-
-    .. code-block:: python
-
-        {  # Outer dictionary created by deco.
-            (0,): {(0,): prob_vector, (1,): prob_vector},  # Inner dictionary create by
-            (1,): {(0,): prob_vector, (1,): prob_vector},  # the function.
-        }
+    The reason we do not do this is to save memory. Assume you have one exogenous
+    process with two realizations and another one with three. The process-specific
+    transition probabilities are two matrices with two and three columns. If we would
+    compute the transition probabilities to each combination of the realizations of the
+    exogenous processes, we would end up with six (2 * 3) vectors of transition
+    probabilities.
 
     """
     exogenous_processes = optim_paras["exogenous_processes"]
@@ -80,23 +72,4 @@ def compute_transition_probabilities(states, optim_paras):
         probs = special.softmax(np.column_stack(x_betas), axis=1)
         probabilities.append(probs)
 
-    # Assign one probability vector per process to one `_SingleDimStateSpace`. Instead
-    # of storing multiple vectors per state space, multiply them.
-    transition_probabilities = {}
-    comb_exog_procs = itertools.product(
-        *[range(len(levels)) for levels in exogenous_processes.values()]
-    )
-    n_exog_procs = len(exogenous_processes)
-    pos = dense_columns.index(list(exogenous_processes)[0])
-    for exog_proc_idx in comb_exog_procs:
-        probs = np.multiply.reduce(
-            [probabilities[i][:, idx] for i, idx in enumerate(exog_proc_idx)]
-        )
-        new_dense_idx = (
-            *dense_idx[:pos],
-            *exog_proc_idx,
-            *dense_idx[pos + n_exog_procs :],
-        )
-        transition_probabilities[new_dense_idx] = probs
-
-    return transition_probabilities
+    return probabilities

@@ -5,7 +5,7 @@ import numpy as np
 
 from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.config import INADMISSIBILITY_PENALTY
-from respy.exogenous_processes import compute_transition_probabilities
+from respy.exogenous_processes import compute_process_specific_transition_probabilities
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
@@ -54,8 +54,13 @@ def solve(params, options, state_space):
     state_space.set_attribute("nonpecs", nonpecs)
 
     if optim_paras["exogenous_processes"]:
-        transition_probabilities = compute_transition_probabilities(states, optim_paras)
-        state_space.set_attribute("transition_probabilities", transition_probabilities)
+        (
+            process_specific_transition_probabilities
+        ) = compute_process_specific_transition_probabilities(states, optim_paras)
+        state_space.set_attribute(
+            "process_specific_transition_probabilities",
+            process_specific_transition_probabilities,
+        )
 
     state_space = _solve_with_backward_induction(state_space, optim_paras, options)
 
