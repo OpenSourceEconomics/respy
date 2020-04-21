@@ -44,8 +44,9 @@ the researcher to flexibly add the following components to her model.
 - Adding a **finite mixture** with any number of subgroups to account for unobserved
   heterogeneity among individuals as developed by Keane and Wolpin (1997).
 
-- **Any number of observed state variables** (e.g., ability measures (Bhuller et al.
-  (2020)), race (Keane and Wolpin (2000)), demographic variables) found in the data.
+- **Any number of time-constant observed state variables** (e.g., ability measures
+  (Bhuller et al. (2020)), race (Keane and Wolpin (2000)), demographic variables) found
+  in the data.
 
 - Correct the estimation for **measurement error** in wages, either using a Kalman
   filter in maximum likelihood estimation or by adding the measurement error in
@@ -105,8 +106,8 @@ been using the package and it motivates further work.
 References
 ----------
 
-Aguirregabiria, V., & Mira, P. (2010). `Dynamic discrete choice structural models: A
-survey <https://doi.org/10.1016/j.jeconom.2009.09.007>`_. Journal of Econometrics,
+Aguirregabiria, V., & Mira, P. (2010). `Dynamic Discrete Choice Structural Models: A
+Survey <https://doi.org/10.1016/j.jeconom.2009.09.007>`_. Journal of Econometrics,
 156(1), 38-67
 
 Bhuller, M., Eisenhauer, P. and Mendel, M. (2020). The Option Value of Education.
@@ -120,6 +121,6 @@ Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence
 Keane, M. P. and Wolpin, K. I. (1997). `The Career Decisions of Young Men
 <https://doi.org/10.1086/262080>`_. *Journal of Political Economy*, 105(3): 473-522.
 
-Keane, M. P., & Wolpin, K. I. (2000). `Eliminating race differences in school attainment
-and labor market success <https://www.journals.uchicago.edu/doi/abs/10.1086/209971>`_.
+Keane, M. P., & Wolpin, K. I. (2000). `Eliminating Race Differences in School Attainment
+and Labor Market Success <https://www.journals.uchicago.edu/doi/abs/10.1086/209971>`_.
 Journal of Labor Economics, 18(4), 614-652.

@@ -5,7 +5,7 @@ Contact and Credits
 
 If you have any questions or comments, please do not hesitate to contact us via filing
 an issue on Github, writing an `email`_ to our `zulipchat group
-<http://gettsim.zulipchat.com/>`_ or via personal emails.
+<https://ose.zulipchat.com/>`_ or via personal emails.
 
 .. _email: respy.9b46528f81292a712fa4855ff362f40f.show-sender@streams.zulipchat.com
 
@@ -23,11 +23,21 @@ Software Design
 - `Tobias Raabe <https://github.com/tobiasraabe>`_
 
 
-Developer
----------
+Developers
+----------
 
-- `Annica Gehlen <https://github.com/amageh>`_
-- `Moritz Mendel <https://github.com/mo2561057>`_
+- `Annica Gehlen <https://github.com/amageh>`_ (Interface for estimation with MSM)
+- `Moritz Mendel <https://github.com/mo2561057>`_ (Flexible choice sets, interface for
+  estimation with MSM)
+
+
+Contributors
+------------
+
+- `Sofia Badini <https://github.com/SofiaBadini>`_ (Hyperbolic discounting)
+- `Rafael Suchy <https://github.com/rafaelsuchy>`_ (Quasi-Monte Carlo simulation)
+- `Linda Maokomatanda <https://github.com/lindamaok899>`_ (Robust OLS)
+- `Tim Mensinger <https://github.com/timmens>`_ (Recommended reading)
 
 
 Acknowledgments
