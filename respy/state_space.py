@@ -262,6 +262,18 @@ class _SingleDimStateSpace(_BaseStateSpace):
         This function creates a dictionary where keys are dense indices and values are
         vectors with the probability for each state to transition to this dense index.
 
+        Parameters
+        ----------
+        period : int
+            Period for which to compute the transition probabilities.
+
+        Returns
+        -------
+        subset_trans_probs : dict
+            A dictionary where keys are dense indices to which the states can transition
+            to and values are the transition probabilities for each state in a specific
+            period.
+
         """
         proc_spec_trans_probs = self.get_attribute(
             "process_specific_transition_probabilities"

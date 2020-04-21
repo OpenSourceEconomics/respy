@@ -48,6 +48,19 @@ def compute_process_specific_transition_probabilities(states, optim_paras):
     exogenous processes, we would end up with six (2 * 3) vectors of transition
     probabilities.
 
+    Parameters
+    ----------
+    states : pandas.DataFrame
+        DataFrame containing the states for one dense vector .
+    optim_paras : dict
+        Dictionary containing parameters.
+
+    Returns
+    -------
+    probabilities : list
+        List containing a matrix for each exogenous process. Each matrix has as many
+        rows as states and as many columns as number of realizations of the process.
+
     """
     exogenous_processes = optim_paras["exogenous_processes"]
     dense_columns = create_dense_state_space_columns(optim_paras)
