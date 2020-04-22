@@ -266,10 +266,8 @@ def _split_dataframe(df,
                      dense_indexer):
     """Split a DataFrame by creating groups of the same values for the dense dims."""
     group_columns = choices + dense_columns
-    print("hy")
     groups = {name: group for name, group in df.groupby(group_columns)}
-    dense_position = False if dense_columns == [] else len(choices)
-    print(groups)
+    dense_position = len(choices)
     groups = convert_dictionary_keys_to_dense_indices(groups,
                                                       dense_position,
                                                       period,
@@ -310,16 +308,10 @@ def convert_dictionary_keys_to_dense_indices(dictionary,
 
     """
     new_dictionary = {}
-    print("hy")
     for key, val in dictionary.items():
-        if dense_position is False:
-            ix = ((period,key),)
-        else:
-            ix = ((period,key[:dense_position]),key[dense_position:])
+        ix = ((period,key[:dense_position]),key[dense_position:])
 
         new_key = dense_indexer[ix]
-        print(key)
-        print(new_key)
         new_dictionary[new_key] = val
 
     return new_dictionary
