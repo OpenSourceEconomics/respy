@@ -1,12 +1,9 @@
 """
 This module contains tests for felx choices!
 """
-import pandas as pd
-
 import respy as rp
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.simulate import get_simulate_func
-from respy.state_space import _create_core_and_indexer
 from respy.state_space import create_state_space_class
 
 
