@@ -34,7 +34,6 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
         def wrapper_parallelize_across_dense_dimensions(*args, **kwargs):
             bypass = kwargs.pop("bypass", {})
             dense_indices = _infer_dense_indices_from_arguments(args, kwargs)
-
             if dense_indices:
                 args_, kwargs_ = _broadcast_arguments(args, kwargs, dense_indices)
 
@@ -131,8 +130,7 @@ def split_and_combine_df(func=None, *, remove_type=False):
                                            choices,
                                            period,
                                            dense_indexer
-                                           ) if dense_choice_columns else df
-
+                                           )
             out = func(splitted_df, *args, optim_paras,period, **kwargs)
             df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
 
@@ -268,11 +266,14 @@ def _split_dataframe(df,
                      dense_indexer):
     """Split a DataFrame by creating groups of the same values for the dense dims."""
     group_columns = choices + dense_columns
+    print("hy")
     groups = {name: group for name, group in df.groupby(group_columns)}
+    dense_position = False if dense_columns == [] else len(choices)
+    print(groups)
     groups = convert_dictionary_keys_to_dense_indices(groups,
-                                                      len(choices),
+                                                      dense_position,
                                                       period,
-                                                      dense_indexer,)
+                                                      dense_indexer)
 
     return groups
 
@@ -296,7 +297,7 @@ def _split_shocks(base_draws_est, splitted_df, indices, optim_paras):
     return splitted_shocks
 
 def convert_dictionary_keys_to_dense_indices(dictionary,
-                                             n_choices,
+                                             dense_position,
                                              period,
                                              dense_indexer):
     """Convert the keys to tuples containing integers.
@@ -309,9 +310,16 @@ def convert_dictionary_keys_to_dense_indices(dictionary,
 
     """
     new_dictionary = {}
+    print("hy")
     for key, val in dictionary.items():
-        ix = ((period,key[:n_choices]),key[n_choices:])
+        if dense_position is False:
+            ix = ((period,key),)
+        else:
+            ix = ((period,key[:dense_position]),key[dense_position:])
+
         new_key = dense_indexer[ix]
+        print(key)
+        print(new_key)
         new_dictionary[new_key] = val
 
     return new_dictionary

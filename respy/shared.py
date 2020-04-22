@@ -486,9 +486,6 @@ def return_valid_choices(choice_set,
                          optim_paras):
     return [x for i,x in enumerate(optim_paras["choices"]) if bool(choice_set[i]) is True]
 
-def construct_tuple(iterable):
-    return iterable(iterable[0],)
-
 
 @intrinsic  # noqa: U100
 def array_to_tuple(tyctx, array_or_dict, indexer_array):
@@ -549,3 +546,11 @@ def array_to_tuple(tyctx, array_or_dict, indexer_array):
         return tup
 
     return function_signature, codegen
+
+
+def return_core_dense_key(core_idx, dense=False):
+    if dense is False:
+        return (core_idx,)
+    else:
+        return (core_idx,dense)
+

@@ -181,19 +181,19 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
 
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-        dense_to_choice_set = state_space.get_attribute_from_period("dense_index_to_choice_set",period)
+        index_to_choice_set = state_space.get_attribute_from_period("index_to_choice_set",period)
         continuation_values = state_space.get_continuation_values(period=period)
 
         current_df_extended = _simulate_single_period(
             current_df,
-            dense_to_choice_set,
+            index_to_choice_set,
             state_space.indexer,
             wages,
             nonpecs,
             continuation_values,
             optim_paras=optim_paras,
             period=period,
-            dense_indexer=state_space.dense_vector_and_choice_set_to_dense_index
+            dense_indexer=state_space.complex_to_index
         )
 
         # Build admissible choice sets!
@@ -320,7 +320,6 @@ def _simulate_single_period(
     # only wages in this period and normal indices select rows from all wages.
     # TODO: This only works as long as we have no mixed constraints!
     period_indices = df.apply(lambda x:indexer[tuple(int(x) for x in [period]+list(x[columns].values))][1],axis=1).values
-
     try:
         wages = wages[period_indices]
         nonpecs = nonpecs[period_indices]
@@ -340,7 +339,6 @@ def _simulate_single_period(
                                                                         )
 
     draws_wage = df[[f"meas_error_wage_{c}" for c in valid_choices]].to_numpy()
-    print("hy")
     value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
         wages,
         nonpecs,

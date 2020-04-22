@@ -16,6 +16,7 @@ from respy.config import INDEXER_INVALID_INDEX
 from respy.shared import array_to_tuple
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
+from respy.shared import return_core_dense_key
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_core_state_space_columns
@@ -48,6 +49,9 @@ def create_state_space_class(options, optim_paras):
     core_index_to_complex = {i: k for i, k in enumerate(core_period_choice)}
     core_index_to_indices = {i: core_period_choice[core_index_to_complex[i]] for i in core_index_to_complex}
 
+    # Create sp indexer
+    indexer = _create_indexer(core, core_index_to_indices, optim_paras)
+
     dense_period_choice = _create_dense_period_choice(
         core,
         dense,
@@ -56,19 +60,16 @@ def create_state_space_class(options, optim_paras):
         optim_paras,
         options)
 
-    # Create sp indexer
-    indexer = _create_indexer(core, core_index_to_indices, optim_paras)
-
     state_space = StateSpaceClass(
-        core,
-        indexer,
-        dense,
-        dense_period_choice,
-        core_index_to_complex,
-        core_index_to_indices,
-        optim_paras,
-        options
-    )
+            core,
+            indexer,
+            dense,
+            dense_period_choice,
+            core_index_to_complex,
+            core_index_to_indices,
+            optim_paras,
+            options
+            )
 
     return state_space
 
@@ -95,56 +96,66 @@ class StateSpaceClass:
         self.child_indices = self.collect_child_indices()
         self.base_draws_sol = self.create_draws()
         self.expected_value_functions = {
-            key: np.zeros(len(self.dense_index_to_indices[key])) for key in self.dense_index_to_indices.keys()
+            key: np.zeros(len(self.index_to_indices[key])) for key in self.index_to_indices.keys()
         }
 
     def set_convenience_objects(self):
-        self.dense_index_to_complex = {i: k for i, k in enumerate(self.dense_period_cores)}
-        self.dense_index_to_core_index = {i: self.dense_period_cores[self.dense_index_to_complex[i]] for i in
-                                          self.dense_index_to_complex}
-        self.dense_index_to_indices = {i: self.core_index_to_indices[self.dense_index_to_core_index[i]] for i in
-                                       self.dense_index_to_complex}
-        self.dense_index_to_choice_set = {i: self.dense_index_to_complex[i][0][1] for i in self.dense_index_to_complex}
-        self.dense_index_to_dense_covariates = {i: self.dense[self.dense_index_to_complex[i][1]] for i in
-                                                self.dense_index_to_complex}
-        self.dense_index_to_dense_vector = {i: self.dense_index_to_complex[i][1] for i in self.dense_index_to_complex}
+        self.index_to_complex = {
+            i: k for i, k in enumerate(self.dense_period_cores)}
+        self.index_to_core_index = {
+            i: self.dense_period_cores[self.index_to_complex[i]] for i in
+                                          self.index_to_complex.keys()}
+        self.index_to_choice_set = {
+            i: self.index_to_complex[i][0][1] for i in self.index_to_complex}
+        self.index_to_indices = {
+            i: self.core_index_to_indices[self.index_to_core_index[i]] for i in
+                                       self.index_to_complex}
 
-        self.core_index_and_dense_vector_to_dense_index = {
-            (self.dense_index_to_core_index[i], self.dense_index_to_dense_vector[i]): i
-            for i in self.dense_index_to_complex}
-        self.dense_vector_and_choice_set_to_dense_index = {
-            self.dense_index_to_complex[i]: i
-            for i in self.dense_index_to_complex}
+        self.core_to_index = {
+            return_core_dense_key(self.index_to_core_index[i],*self.index_to_complex[i][1:]): i
+            for i in self.index_to_complex}
+
+        self.complex_to_index = {k: i for i,k in self.index_to_complex.items()}
+
+        if self.dense is False:
+            self.index_to_dense_covariates = {i:{} for i in
+                                                    self.index_to_complex}
+        else:
+            self.index_to_dense_covariates = {
+                i: self.dense[self.index_to_complex[i][1]] for i in
+                                                    self.index_to_complex}
+
 
     def get_continuation_values(self, period):
         if period == self.options["n_periods"]-1:
             child_indices = None
         else:
             child_indices = self.get_attribute_from_period("child_indices", period)
-        continuation_values = _get_continuation_values(self.get_attribute_from_period("dense_index_to_indices", period),
-                                                       self.get_attribute_from_period("dense_index_to_complex", period),
+        continuation_values = _get_continuation_values(self.get_attribute_from_period("index_to_indices", period),
+                                                       self.get_attribute_from_period("index_to_complex", period),
                                                        child_indices,
+                                                       self.core_to_index,
                                                        options=self.options,
                                                        bypass={
-                                                           "expected_value_functions": self.expected_value_functions,
-                                                           "core_index_and_dense_vector_to_dense_index": self.core_index_and_dense_vector_to_dense_index})
+                                                           "expected_value_functions": self.expected_value_functions})
         return continuation_values
 
     def collect_child_indices(self):
-        limited_dense_index_to_indices = {k: v for k, v in self.dense_index_to_indices.items() if
-                                          self.dense_index_to_complex[k][0][0] < self.options["n_periods"] - 1}
+        limited_index_to_indices = {k: v for k, v in self.index_to_indices.items() if
+                                          self.index_to_complex[k][0][0] < self.options["n_periods"] - 1}
 
-        limited_dense_index_to_choice_set = {k: v for k, v in self.dense_index_to_choice_set.items() if
-                                             self.dense_index_to_complex[k][0][0] < self.options["n_periods"] - 1}
+        limited_index_to_choice_set = {k: v for k, v in self.index_to_choice_set.items() if
+                                             self.index_to_complex[k][0][0] < self.options["n_periods"] - 1}
 
-        child_indices = _collect_child_indices(self.core, limited_dense_index_to_indices,
-                                               limited_dense_index_to_choice_set,
+        child_indices = _collect_child_indices(self.core,
+                                               limited_index_to_indices,
+                                               limited_index_to_choice_set,
                                                self.indexer, self.optim_paras, self.options)
 
         return child_indices
 
     def create_draws(self):
-        n_choices_in_sets = np.unique([sum(i) for i in self.dense_index_to_choice_set.values()]).tolist()
+        n_choices_in_sets = np.unique([sum(i) for i in self.index_to_choice_set.values()]).tolist()
         shocks_sets = []
 
         for n_choices in n_choices_in_sets:
@@ -155,7 +166,7 @@ class StateSpaceClass:
             )
             shocks_sets.append(draws)
         draws = {}
-        for dense_idx, complex in self.dense_index_to_complex.items():
+        for dense_idx, complex in self.index_to_complex.items():
             period = complex[0][0]
             n_choices = sum(complex[0][1])
             idx = n_choices_in_sets.index(n_choices)
@@ -177,7 +188,7 @@ class StateSpaceClass:
             Attribute is retrieved from this period.
         """
         attr = self.get_attribute(attribute)
-        out = subset_to_period(attr, self.dense_index_to_complex, period)
+        out = subset_to_period(attr, self.index_to_complex, period)
         return out
 
     def get_attribute_from_key(self, attribute, key):
@@ -547,26 +558,29 @@ def _create_dense_period_choice(
     """
 
     """
-    choices = [f"_{choice}" for choice in optim_paras["choices"]]
-    dense_period_choice = {}
-    for core_idx, indices in core_index_to_indices.items():
-        for dense_idx, dense_vec in dense.items():
-            df = core.copy().loc[indices].assign(**dense_vec)
-            df = compute_covariates(df, options["covariates_all"])
-            df = create_is_inadmissible(df, optim_paras, options)
-            df[choices] = ~df[choices]
-            grouper = df.groupby(choices).groups
-            assert len(grouper) == 1, (
-                "Choice restrictions cannot interact between core and dense information such "
-                "that heterogenous choice sets within a period are created. Use penalties in the "
-                "utility functions for that."
-            )
-            period_choice = {
-                ((core_index_to_complex[core_idx][0], idx), dense_idx): core_idx
-                for idx, indices in df.groupby(choices).groups.items()
-            }
+    if dense is False:
+        return {(k,):i for i,k in core_index_to_complex.items()}
+    else:
+        choices = [f"_{choice}" for choice in optim_paras["choices"]]
+        dense_period_choice = {}
+        for core_idx, indices in core_index_to_indices.items():
+            for dense_idx, dense_vec in dense.items():
+                df = core.copy().loc[indices].assign(**dense_vec)
+                df = compute_covariates(df, options["covariates_all"])
+                df = create_is_inadmissible(df, optim_paras, options)
+                df[choices] = ~df[choices]
+                grouper = df.groupby(choices).groups
+                assert len(grouper) == 1, (
+                    "Choice restrictions cannot interact between core and dense information such "
+                    "that heterogenous choice sets within a period are created. Use penalties in the "
+                    "utility functions for that."
+                )
+                period_choice = {
+                    ((core_index_to_complex[core_idx][0], idx), dense_idx): core_idx
+                    for idx, indices in df.groupby(choices).groups.items()
+                }
 
-            dense_period_choice = {**dense_period_choice, **period_choice}
+                dense_period_choice = {**dense_period_choice, **period_choice}
 
     return dense_period_choice
 
@@ -617,7 +631,13 @@ def _insert_indices_of_child_states(
 @parallelize_across_dense_dimensions
 def _get_continuation_values(core_indices, dense_complex_index, child_indices,
                              core_index_and_dense_vector_to_dense_index, expected_value_functions, options):
-    (period, choice_set), dense_vector = dense_complex_index
+
+    if len(dense_complex_index) == 2:
+        (period, choice_set), dense_vector = dense_complex_index
+    elif len(dense_complex_index) == 1:
+        ((period, choice_set),) = dense_complex_index
+        dense_vector = False
+
 
     if period == options["n_periods"] - 1:
         continuation_values = np.zeros((len(core_indices), sum(choice_set)))
@@ -630,7 +650,8 @@ def _get_continuation_values(core_indices, dense_complex_index, child_indices,
         for i in range(n_states):
             for j in range(n_choices):
                 core_idx, row_idx = child_indices[i, j]
-                dense_choice = core_index_and_dense_vector_to_dense_index[(core_idx, dense_vector)]
+                idx = return_core_dense_key(core_idx,dense_vector)
+                dense_choice = core_index_and_dense_vector_to_dense_index[idx]
                 continuation_values[i,j] = expected_value_functions[dense_choice][row_idx]
 
     return continuation_values

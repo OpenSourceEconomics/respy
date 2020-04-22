@@ -49,9 +49,9 @@ def solve(params, options, state_space):
 
 
     wages, nonpecs =_create_choice_rewards(state_space.core,
-                                           state_space.dense_index_to_indices,
-                                           state_space.dense_index_to_choice_set,
-                                           state_space.dense_index_to_dense_covariates,
+                                           state_space.index_to_indices,
+                                           state_space.index_to_choice_set,
+                                           state_space.index_to_dense_covariates,
                                            optim_paras,
                                            options)
 
@@ -125,7 +125,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     # Rewrite
     draws_emax_risk = transform_base_draws_with_cholesky_factor(
         state_space.base_draws_sol,
-        state_space.dense_index_to_choice_set,
+        state_space.index_to_choice_set,
         optim_paras["shocks_cholesky"],
         optim_paras
     )
@@ -138,7 +138,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         continuation_values = state_space.get_continuation_values(period)
 
         period_draws_emax_risk = subset_to_period(draws_emax_risk,
-                                                  state_space.dense_index_to_complex,
+                                                  state_space.index_to_complex,
                                                   period)
 
         # The number of interpolation points is the same for all periods. Thus, for
@@ -197,8 +197,6 @@ def _full_solution(
 
     """
     # Get expectations
-    print(wages.shape)
-    print(period_draws_emax_risk.shape)
     period_expected_value_functions = calculate_expected_value_functions(
         wages,
         nonpecs,
