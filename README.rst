@@ -22,15 +22,35 @@ respy
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
 
+----
 
-``respy``  is an open-source Python package for the simulation and estimation of a
-prototypical finite-horizon discrete choice dynamic programming model. We build on the
-baseline model presented in:
+``respy`` is an open source framework written in Python for the simulation and
+estimation of some finite-horizon discrete choice dynamic programming models. The group
+of models which can be currently represented in ``respy`` are called
+Eckstein-Keane-Wolpin models (Aguirregabiria and Mira (2010))
 
-    Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete
-    Choice Dynamic Programming Models by Simulation and Interpolation: Monte Carlo
-    Evidence <https://doi.org/10.2307/2109768>`_. *The Review of Economics and
-    Statistics*, 76(4): 648-672.
+What makes ``respy`` powerful is that it allows to build and solve structural models in
+weeks or months whose development previously took years. The design of ``respy`` allows
+the researcher to flexibly add the following components to her model.
+
+- **Any number of discrete choices** (e.g., working alternatives, schooling, home
+  production, retirement) where each choice may yield a wage, may allow for experience
+  accumulation and can be constrained by time, a maximum amount of accumulated
+  experience or other characteristics.
+
+- Condition the decision of individuals on its **previous choices** or their labor
+  market history.
+
+- Adding a **finite mixture** with any number of subgroups to account for unobserved
+  heterogeneity among individuals as developed by Keane and Wolpin (1997).
+
+- **Any number of time-constant observed state variables** (e.g., ability measures
+  (Bhuller et al. (2020)), race (Keane and Wolpin (2000)), demographic variables) found
+  in the data.
+
+- Correct the estimation for **measurement error** in wages, either using a Kalman
+  filter in maximum likelihood estimation or by adding the measurement error in
+  simulation based approaches.
 
 You can install ``respy`` via conda with
 
@@ -43,16 +63,64 @@ Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>
 tutorials and other information.
 
 
+.. Keep following section in sync with ./docs/additional_information/credits.rst.
+
 Citation
 --------
 
-If you use respy for your research, do not forget to cite it with
+``respy`` was completely rewritten in the second release and evolved into a general
+framework for the estimation of Eckstein-Keane-Wolpin models. Please cite it with
 
 .. code-block::
 
-    @Unpublished{The respy Team,
-      Title  = {respy - A Framework for the Estimation of some DCDP Models.},
-      Author = {The respy Team},
-      Year   = {2015},
+    @Unpublished{Gabler2020,
+      Title  = {respy - A Framework for the Simulation and Estimation of
+                Eckstein-Keane-Wolpin Models.},
+      Author = {Janos Gabler and Tobias Raabe},
+      Year   = {2020},
       Url    = {https://github.com/OpenSourceEconomics/respy},
     }
+
+Before that, ``respy`` was developed by Philipp Eisenhauer and provided a package for
+the simulation and estimation of a prototypical finite-horizon discrete choice dynamic
+programming model. At the heart of this release is a Fortran implementation with Python
+bindings which uses MPI and OMP to scale up to HPC clusters. It is accompanied by a pure
+Python implementation as teaching material. If you use ``respy`` up to version 1.2.1,
+please cite it with
+
+.. code-block::
+
+    @Software{Eisenhauer2019,
+      Title  = {respy - A Package for the Simulation and Estimation of a prototypical
+                finite-horizon Discrete Choice Dynamic Programming Model.},
+      Author = {Philipp Eisenhauer},
+      Year   = {2019},
+      DOI    = {10.5281/zenodo.3011343},
+      Url    = {https://doi.org/10.5281/zenodo.3011343}
+    }
+
+We appreciate citations for ``respy`` because it helps us to find out how people have
+been using the package and it motivates further work.
+
+
+References
+----------
+
+Aguirregabiria, V., & Mira, P. (2010). `Dynamic Discrete Choice Structural Models: A
+Survey <https://doi.org/10.1016/j.jeconom.2009.09.007>`_. Journal of Econometrics,
+156(1), 38-67
+
+Bhuller, M., Eisenhauer, P. and Mendel, M. (2020). The Option Value of Education.
+*Working Paper*.
+
+Keane, M. P. and  Wolpin, K. I. (1994). `The Solution and Estimation of Discrete Choice
+Dynamic Programming Models by Simulation and Interpolation: Monte Carlo Evidence
+<https://doi.org/10.2307/2109768>`_. *The Review of Economics and Statistics*, 76(4):
+648-672.
+
+Keane, M. P. and Wolpin, K. I. (1997). `The Career Decisions of Young Men
+<https://doi.org/10.1086/262080>`_. *Journal of Political Economy*, 105(3): 473-522.
+
+Keane, M. P., & Wolpin, K. I. (2000). `Eliminating Race Differences in School Attainment
+and Labor Market Success <https://www.journals.uchicago.edu/doi/abs/10.1086/209971>`_.
+Journal of Labor Economics, 18(4), 614-652.
