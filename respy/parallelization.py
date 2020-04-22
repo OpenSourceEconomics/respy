@@ -309,7 +309,10 @@ def convert_dictionary_keys_to_dense_indices(dictionary,
     """
     new_dictionary = {}
     for key, val in dictionary.items():
-        ix = ((period,key[:dense_position]),key[dense_position:])
+        if dense_position==len(key):
+            ix = ((period,key[:dense_position]),)
+        else:
+            ix = ((period,key[:dense_position]),key[dense_position:])
 
         new_key = dense_indexer[ix]
         new_dictionary[new_key] = val
