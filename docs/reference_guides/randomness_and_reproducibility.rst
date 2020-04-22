@@ -4,18 +4,14 @@ Randomness and Reproducibility
 ==============================
 
 **respy** embraces randomness to study individual behavior under risk. At the same time,
-it is crucial to make results reproducible for research. To build a reproducible model,
-users must define three seeds for the solution, simulation and estimation of the model
-in the options. This allows to study the impact of randomness for each of the components
+it is crucial to make results reproducible. To build a reproducible model, users must
+define three seeds for the solution, simulation and estimation of the model in the
+options. This allows to study the impact of randomness for each of the components
 independently.
 
 .. code-block:: python
 
     options = {"solution_seed": 1, "simulation_seed": 2, "estimation_seed": 3}
-
-.. warning::
-
-    Do not use the same seed twice.
 
 The seeds for the solution, simulation and estimation are used to draw a 3-, 5- and
 7-digit seed sequence [#f1]_. The first 100 seeds in the sequences are reserved for
@@ -25,7 +21,7 @@ All other seeds are used during the iterations of those functions and reset to t
 initial value at the begin of every iteration.
 
 As a general rule, models in **respy** are reproducible or use the same randomness as
-long as only model parameters are changed, e.g. utility or type shifts, but the
+long as only model parameters are changed, for example utility parameters, but the
 structure of the model stays the same. The following list includes example of structural
 changes to the model.
 

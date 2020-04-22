@@ -1,6 +1,9 @@
 Explanations
 ============
 
+Explanations help you to deepen your knowledge on the concepts and topics behind
+**respy**.
+
 .. toctree::
    :maxdepth: 1
 

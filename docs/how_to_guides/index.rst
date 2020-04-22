@@ -1,6 +1,7 @@
 How-to Guides
 =============
 
+How-to guides are designed to provide detailed instructions for very specific tasks.
 
 .. toctree::
     :maxdepth: 1

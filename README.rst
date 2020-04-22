@@ -66,6 +66,15 @@ You can install **respy** via conda with
 Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for
 tutorials and other information.
 
+As **respy** relies heavily on ``pandas``, you might also want to install their
+`recommended dependencies <https://pandas.pydata.org/pandas-docs/stable/getting_started/
+install.html#recommended-dependencies>`_ to speed up internal calculations done with
+`pd.eval <https://pandas.pydata.org/pandas-docs/stable/user_guide/enhancingperf.html
+#expression-evaluation-via-eval>`_.
+
+.. code-block:: bash
+
+    conda install -c conda-forge bottleneck numexpr
 
 .. Keep following section in sync with ./docs/additional_information/credits.rst.
 

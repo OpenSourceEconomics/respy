@@ -29,9 +29,8 @@ Software Design
 Developers
 ~~~~~~~~~~
 
-- `Annica Gehlen <https://github.com/amageh>`_ (Interface for estimation with MSM)
-- `Moritz Mendel <https://github.com/mo2561057>`_ (Flexible choice sets, interface for
-  estimation with MSM)
+- `Annica Gehlen <https://github.com/amageh>`_ (MSM interface)
+- `Moritz Mendel <https://github.com/mo2561057>`_ (Flexible choice sets, MSM interface)
 
 Contributors
 ~~~~~~~~~~~~

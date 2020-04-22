@@ -5,11 +5,15 @@ What is the new version number?
 -------------------------------
 
 The version number depends on the severity of the changes and adheres to `semantic
-versioning <https://semver.org/>`_. The format is x.y.z..
+versioning <https://semver.org/>`_. The format is <major>.<minor>.<patch>. Increment
 
-You are also allowed to append ``-rc.1`` after the last digit to indicate the first or
-higher release candidates. Thus, you can test deployment on PyPI and release preliminary
-versions.
+1. <major> version when you make incompatible API changes,
+1. <minor> version when you add functionality in a backwards compatible manner, and
+1. <patch> version when you make backwards compatible bug fixes.
+
+You can create development releases which are allowed to be deleted, once a new version
+is released. Append ``dev0`` to the version string. Do not separate the string with a
+dash or another dot because ``conda`` will complain about the format.
 
 
 How to release a new version?
@@ -18,8 +22,8 @@ How to release a new version?
 1. At first, we can draft a release on Github. Go to
    https://github.com/OpenSourceEconomics/respy/releases and click on "Draft a new
    release". Fill in the new version number as a tag and title. You can write a summary
-   for the release, but also do it later. Important: Only save the draft. Do not publish
-   yet.
+   for the release, but also do it later. Important: Only save the draft. Do not
+   publish, yet.
 
 2. Second, we need to create a final PR to prepare everything for the new version. The
    name of the PR and the commit message will be "Release vx.y.z". We need to

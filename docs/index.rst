@@ -27,36 +27,16 @@ respy
 ----
 
 **respy** is an open source framework written in Python for the simulation and
-estimation of some finite-horizon discrete choice dynamic programming models. The group
-of models which can be currently represented in **respy** are called
-Eckstein-Keane-Wolpin models (Aguirregabiria and Mira (2010))
+estimation of some finite-horizon discrete choice dynamic programming models.
 
-What makes **respy** powerful is that it allows to build and solve structural models in
-weeks or months whose development previously took years. The design of **respy** allows
-the researcher to flexibly add the following components to her model.
+With conda available on your path, installing **respy** is as simple as typing
 
-- **Any number of discrete choices** (e.g., working alternatives, schooling, home
-  production, retirement) where each choice may yield a wage, may allow for experience
-  accumulation and can be constrained by time, a maximum amount of accumulated
-  experience or other characteristics.
+.. code-block:: bash
 
-- Condition the decision of individuals on its **previous choices** or their labor
-  market history.
+    $ conda config --add channels conda-forge
+    $ conda install -c opensourceeconomics respy
 
-- Adding a **finite mixture** with any number of subgroups to account for unobserved
-  heterogeneity among individuals as developed by Keane and Wolpin (1997).
-
-- **Any number of time-constant observed state variables** (e.g., ability measures
-  (Bhuller et al. (2020)), race (Keane and Wolpin (2000)), demographic variables) found
-  in the data.
-
-- Correct the estimation for **measurement error** in wages, either using a Kalman
-  filter in maximum likelihood estimation or by adding the measurement error in
-  simulation based approaches.
-
-.. End of section
-
-**respy**'s documentation is structured in four parts.
+The documentation is structured in four parts.
 
 1. **Tutorials**  help you to get started with **respy**. They cover the basics and are
    designed for everyone new to the package and structural models. Although, the focus
@@ -74,16 +54,22 @@ the researcher to flexibly add the following components to her model.
    this section helpful. They assume that you are already familiar with **respy**.
 
 .. toctree::
-    :caption: Table of Contents
     :maxdepth: 1
 
     tutorials/index
     explanations/index
     how_to_guides/index
     reference_guides/index
+
+
+If you are looking for other resources, you might find them here.
+
+.. toctree::
+    :maxdepth: 1
+
+    api
     about_us
     projects
-    api
     development/index
-    changes
     replications/index
+    changes

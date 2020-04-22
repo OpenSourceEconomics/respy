@@ -12,8 +12,8 @@ Where to start?
 ---------------
 
 In general, you can take a look at our `issue tracker <https://github.com/
-OpenSourceEconomics/respy/issues>`_ or at our :ref:`roadmap` to find opportunities to
-contribute to the project.
+OpenSourceEconomics/respy/issues>`_ or at our :ref:`roadmap <roadmap>` to find
+opportunities to contribute to the project.
 
 If you are new to **respy**, you might want to check out issues labeled with
 `good-first-issue <https://github.com/OpenSourceEconomics/respy/issues?q=is%3Aissue+is
@@ -87,10 +87,6 @@ rendered with `Sphinx <https://www.sphinx-doc.org>`_ whose documentation also pr
 an `introduction to reST
 <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_.
 
-The correct code formatting in ``.rst`` files is ensured by ``blacken-docs``. To
-correctly format the code inside notebooks, use the `jupyterlab-code-formatter
-<jupyterlab-code-formatter.readthedocs.io>`_.
-
 
 Types of documents
 ~~~~~~~~~~~~~~~~~~
@@ -127,21 +123,32 @@ Styleguide for the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - In general, follow the style applied in other documents.
+
+- The correct code formatting in ``.rst`` files is ensured by ``blacken-docs``. To
+  correctly format the code inside notebooks, use the `jupyterlab-code-formatter
+  <jupyterlab-code-formatter.readthedocs.io>`_.
+
 - Use the following order of headings
 
-   + ``===``
+   + ``===`` only below the main heading of a document.
    + ``---``
    + ``~~~``
    + ``^^^``
    + ``"""``
+
 - Between the end of a section and the following heading are two empty lines.
+
+- The documentation is formatted with a line length of 88 characters. To wrap the text
+  use `AutoWrap <https://github.com/randy3k/AutoWrap>` for Sublime Text, `this setting
+  <https://stackoverflow.com/a/39011656>`_ plus the fill-paragraph command with PyCharm.
 
 
 Contributing docstrings
 -----------------------
 
 Docstrings in **respy** are written in `NumPy Docstring Standard
-<https://numpydoc.readthedocs.io/en/latest/format.html>`_.
+<https://numpydoc.readthedocs.io/en/latest/format.html>`_. Here is an `example
+<https://numpydoc.readthedocs.io/en/latest/example.html#example>`_.
 
 
 Styleguide for docstrings
@@ -155,10 +162,60 @@ Styleguide for docstrings
 Contributing to the code base
 -----------------------------
 
-The style guide for the code base is enforced by several linters and formatters which do
-not leave much room for idiosyncrasies.
+Styleguide for the code base
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The user must focus on
+Some styling issues are enforced by several linters and formatters which are run in
+accordance with the tests. The contributor can focus on details which cannot be
+automatically be enforced.
 
-- using code simple structures if possible
-- meaningful variable names
+The first two are very important because they help to read the code almost like a normal
+text.
+
+- **Good names for functions and variables**
+
+  “You should name a variable using the same care with which you name a first-born
+  child.”, Robert C. Martin, Clean Code: A Handbook of Agile Software Craftsmanship.
+
+  A bit more concretely, this means:
+
+  The length of a variable name should be proportional to its scope. In a list
+  comprehension or short loop, ``i`` might be an acceptable name for the running
+  variable, but variables that are used at many different places should have
+  descriptive names.
+
+  The name of variables should reflect the content or meaning of the variable and not
+  only the type. Names like ``dict_list`` would not have been a good name for the
+  constraints.
+
+  Function names should contain a verb. Moreover, the length of a function name is
+  typically inversely proportional to its scope. The public functions like
+  ``get_example_models`` and ``get_solve_func`` can have very short names. At a lower
+  level of abstraction you typically need more words to describe what a function does.
+
+- **Intuitive code structures**
+
+  Compare the following two syntaxes and neglect the stupid content.
+
+   .. code-block:: python
+
+       # Bad
+       dict_names = []
+       for name in dictionary:
+           dict_names.append(name)
+
+       # Good
+       dict_names = [name for name in dictionary]
+
+   The loop covers three lines which automatically produces visual noise and the code
+   seems to carry some weight, although, almost nothing has been done.
+
+   The list comprehension hides the operation in a single line and I might be able to
+   read the code while only looking at the variable name.
+
+   Other preferred syntaxes are
+
+   - `list and dict comprehensions and related concepts
+     <https://realpython.com/list-comprehension-python/>`_
+   - `ternary operators or conditional expressions
+     <https://stackoverflow.com/a/394814>`_ like ``a = 1 if b > 2 else 4``.

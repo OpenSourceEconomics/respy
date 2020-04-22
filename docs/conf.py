@@ -1,3 +1,4 @@
+import datetime as dt
 import os
 import sys
 
@@ -18,7 +19,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "respy"
-copyright = "2015-2020, The respy Development Team"  # noqa: A001
+copyright = f"2015-{dt.datetime.now().year}, The respy Development Team"  # noqa: A001
 author = "The respy Development Team"
 
 # The full version, including alpha/beta/rc tags.
