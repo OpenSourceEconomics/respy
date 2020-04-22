@@ -597,8 +597,9 @@ def _create_dense_period_choice(
                 df[choices] = ~df[choices]
                 grouper = df.groupby(choices).groups
                 assert len(grouper) == 1, (
-                    "Choice restrictions cannot interact between core and dense information such "
-                    "that heterogenous choice sets within a period are created. Use penalties in the "
+                    "Choice restrictions cannot interact between core"
+                    " and dense information such that heterogenous choice"
+                    " sets within a period are created. Use penalties in the "
                     "utility functions for that."
                 )
                 period_choice = {

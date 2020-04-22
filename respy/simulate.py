@@ -298,10 +298,6 @@ def _simulate_single_period(
     n_wages_raw = len(optim_paras["choices_w_wage"])
     n_wages = sum(choice_set[:n_wages_raw])
 
-    # We only need choice sets
-    # Add all the info cols. Required bacause we subset now
-    df = _create_additional_cols(df, optim_paras)
-
     # Get indices which connect states in the state space and simulated agents. Subtract
     # the minimum of indices (excluding invalid indices) because wages, etc. contain
     # only wages in this period and normal indices select rows from all wages.
@@ -679,24 +675,5 @@ def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_p
         raise ValueError(
             "The data for one-step-ahead simulation must not contain NaNs."
         )
-
-    return df
-
-
-def _create_additional_cols(df, optim_paras):
-    """
-    Hotfix. This can be made better!
-    """
-    cols = ["choice", "wage", "discount_rate"]
-
-    for i, choice in enumerate(optim_paras["choices"]):
-        cols.append(f"nonpecuniary_reward_{choice}")
-        cols.append(f"wage_{choice}")
-        cols.append(f"flow_utility_{choice}")
-        cols.append(f"value_function_{choice}")
-        cols.append(f"continuation_value_{choice}")
-
-    for col in cols:
-        df[col] = np.nan
 
     return df
