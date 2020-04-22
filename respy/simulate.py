@@ -5,16 +5,11 @@ import warnings
 import numpy as np
 import pandas as pd
 from scipy.special import softmax
-from numba import types
-import numba as nb
 
 from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
-from respy.config import INDEXER_INVALID_INDEX
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.parallelization import split_and_combine_df
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.state_space import create_is_inadmissible
-from respy.shared import array_to_tuple
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
@@ -24,8 +19,9 @@ from respy.shared import downcast_to_smallest_dtype
 from respy.shared import rename_labels_from_internal
 from respy.shared import rename_labels_to_internal
 from respy.shared import return_valid_choices
-from respy.state_space import transform_base_draws_with_cholesky_factor
 from respy.solve import get_solve_func
+from respy.state_space import create_is_inadmissible
+from respy.state_space import transform_base_draws_with_cholesky_factor
 
 
 def get_simulate_func(
@@ -172,16 +168,15 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
 
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
         # n-step-ahead simulation, `df` always contains only data of the current period.
-
-        # TODO: Until now we use many objects! Check whether that could be changed!
-
         current_df = df.query("period == @period").copy()
         current_df = create_is_inadmissible(current_df, optim_paras, options)
         current_df[choices] = ~current_df[choices]
 
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-        index_to_choice_set = state_space.get_attribute_from_period("index_to_choice_set",period)
+        index_to_choice_set = state_space.get_attribute_from_period(
+            "index_to_choice_set", period
+        )
         continuation_values = state_space.get_continuation_values(period=period)
 
         current_df_extended = _simulate_single_period(
@@ -193,7 +188,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
             continuation_values,
             optim_paras=optim_paras,
             period=period,
-            dense_indexer=state_space.complex_to_index
+            dense_indexer=state_space.complex_to_index,
         )
 
         # Build admissible choice sets!
@@ -284,14 +279,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 @split_and_combine_df
 @parallelize_across_dense_dimensions
 def _simulate_single_period(
-    df,
-    choice_set,
-    indexer,
-    wages,
-    nonpecs,
-    continuation_values,
-    optim_paras,
-    period
+    df, choice_set, indexer, wages, nonpecs, continuation_values, optim_paras, period
 ):
     """Simulate individuals in a single period.
 
@@ -306,8 +294,7 @@ def _simulate_single_period(
 
     valid_choices = return_valid_choices(choice_set, optim_paras)
 
-
-    #TODO: Write a function maybe!
+    # TODO: Write a function maybe!
     n_wages_raw = len(optim_paras["choices_w_wage"])
     n_wages = sum(choice_set[:n_wages_raw])
 
@@ -319,7 +306,10 @@ def _simulate_single_period(
     # the minimum of indices (excluding invalid indices) because wages, etc. contain
     # only wages in this period and normal indices select rows from all wages.
     # TODO: This only works as long as we have no mixed constraints!
-    period_indices = df.apply(lambda x:indexer[tuple(int(x) for x in [period]+list(x[columns].values))][1],axis=1).values
+    period_indices = df.apply(
+        lambda x: indexer[tuple(int(x) for x in [period] + list(x[columns].values))][1],
+        axis=1,
+    ).values
     try:
         wages = wages[period_indices]
         nonpecs = nonpecs[period_indices]
@@ -332,11 +322,9 @@ def _simulate_single_period(
         ) from e
 
     draws_shock = df[[f"shock_reward_{c}" for c in valid_choices]].to_numpy()
-    draws_shock_transformed = transform_base_draws_with_cholesky_factor(draws_shock,
-                                                                        choice_set,
-                                                                        optim_paras["shocks_cholesky"],
-                                                                        optim_paras
-                                                                        )
+    draws_shock_transformed = transform_base_draws_with_cholesky_factor(
+        draws_shock, choice_set, optim_paras["shocks_cholesky"], optim_paras
+    )
 
     draws_wage = df[[f"meas_error_wage_{c}" for c in valid_choices]].to_numpy()
     value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
@@ -355,7 +343,7 @@ def _simulate_single_period(
     wage = np.choose(choice, wages.T)
 
     # We map choice positions to choice codes
-    positions = [i for i,x in enumerate(optim_paras["choices"]) if x in valid_choices]
+    positions = [i for i, x in enumerate(optim_paras["choices"]) if x in valid_choices]
     for pos, val in enumerate(positions):
         choice = np.where(choice == pos, val, choice)
 
@@ -370,8 +358,7 @@ def _simulate_single_period(
         df[f"wage_{choice}"] = wages[:, i]
         df[f"flow_utility_{choice}"] = flow_utilities[:, i]
         df[f"value_function_{choice}"] = value_functions[:, i]
-        df[f"continuation_value_{choice}"
-        ] = continuation_values[:, i]
+        df[f"continuation_value_{choice}"] = continuation_values[:, i]
 
     return df
 
@@ -713,5 +700,3 @@ def _create_additional_cols(df, optim_paras):
         df[col] = np.nan
 
     return df
-
-

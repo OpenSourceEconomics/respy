@@ -8,9 +8,9 @@ import chaospy as cp
 import numba as nb
 import numpy as np
 import pandas as pd
+from numba import cgutils
 from numba import types
 from numba.extending import intrinsic
-from numba import cgutils
 
 
 @nb.njit
@@ -361,13 +361,17 @@ def create_dense_state_space_columns(optim_paras):
 
     return columns
 
+
 def create_dense_choice_state_space_columns(optim_paras):
     """Create internal column names for the dense state space."""
-    columns = list(optim_paras["observables"])+[f"_{x}" for x in optim_paras["choices"]]
+    columns = list(optim_paras["observables"]) + [
+        f"_{x}" for x in optim_paras["choices"]
+    ]
     if optim_paras["n_types"] >= 2:
         columns += ["type"]
 
     return columns
+
 
 def create_state_space_columns(optim_paras):
     """Create names of state space dimensions excluding the period and identifier."""
@@ -477,14 +481,15 @@ def subset_to_period(object, dense_index_to_complex, period):
 
 
 def subset_to_choice(matrix, choice_set):
-    delete = [i for i,x in enumerate(choice_set) if bool(x) is False]
-    out = np.delete(np.delete(matrix,delete,0),delete,1)
+    delete = [i for i, x in enumerate(choice_set) if bool(x) is False]
+    out = np.delete(np.delete(matrix, delete, 0), delete, 1)
     return out
 
 
-def return_valid_choices(choice_set,
-                         optim_paras):
-    return [x for i,x in enumerate(optim_paras["choices"]) if bool(choice_set[i]) is True]
+def return_valid_choices(choice_set, optim_paras):
+    return [
+        x for i, x in enumerate(optim_paras["choices"]) if bool(choice_set[i]) is True
+    ]
 
 
 @intrinsic  # noqa: U100
@@ -552,5 +557,4 @@ def return_core_dense_key(core_idx, dense=False):
     if dense is False:
         return (core_idx,)
     else:
-        return (core_idx,dense)
-
+        return (core_idx, dense)

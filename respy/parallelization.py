@@ -8,6 +8,7 @@ import pandas as pd
 from respy.shared import create_dense_choice_state_space_columns
 from respy.shared import create_dense_state_space_columns
 
+
 def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
     """Parallelizes decorated function across dense state space dimensions.
 
@@ -119,19 +120,18 @@ def split_and_combine_df(func=None, *, remove_type=False):
 
     def decorator_split_and_combine_df(func):
         @functools.wraps(func)
-        def wrapper_distribute_and_combine_df(df, *args, optim_paras, period, dense_indexer, **kwargs):
+        def wrapper_distribute_and_combine_df(
+            df, *args, optim_paras, period, dense_indexer, **kwargs
+        ):
             dense_choice_columns = create_dense_state_space_columns(optim_paras)
             choices = [f"_{choice}" for choice in optim_paras["choices"]]
             if remove_type:
                 dense_choice_columns.remove("type")
 
-            splitted_df = _split_dataframe(df,
-                                           dense_choice_columns,
-                                           choices,
-                                           period,
-                                           dense_indexer
-                                           )
-            out = func(splitted_df, *args, optim_paras,period, **kwargs)
+            splitted_df = _split_dataframe(
+                df, dense_choice_columns, choices, period, dense_indexer
+            )
+            out = func(splitted_df, *args, optim_paras, period, **kwargs)
             df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
 
             return df
@@ -248,7 +248,6 @@ def _broadcast_arguments(args, kwargs, dense_indices):
     return args, kwargs
 
 
-
 def _is_dense_dictionary_argument(argument, dense_indices):
     """Check whether all keys of the dictionary argument are also dense indices.
 
@@ -259,19 +258,14 @@ def _is_dense_dictionary_argument(argument, dense_indices):
     return isinstance(argument, dict) and all(idx in argument for idx in dense_indices)
 
 
-def _split_dataframe(df,
-                     dense_columns,
-                     choices,
-                     period,
-                     dense_indexer):
+def _split_dataframe(df, dense_columns, choices, period, dense_indexer):
     """Split a DataFrame by creating groups of the same values for the dense dims."""
     group_columns = choices + dense_columns
     groups = {name: group for name, group in df.groupby(group_columns)}
     dense_position = len(choices)
-    groups = convert_dictionary_keys_to_dense_indices(groups,
-                                                      dense_position,
-                                                      period,
-                                                      dense_indexer)
+    groups = convert_dictionary_keys_to_dense_indices(
+        groups, dense_position, period, dense_indexer
+    )
 
     return groups
 
@@ -294,10 +288,10 @@ def _split_shocks(base_draws_est, splitted_df, indices, optim_paras):
 
     return splitted_shocks
 
-def convert_dictionary_keys_to_dense_indices(dictionary,
-                                             dense_position,
-                                             period,
-                                             dense_indexer):
+
+def convert_dictionary_keys_to_dense_indices(
+    dictionary, dense_position, period, dense_indexer
+):
     """Convert the keys to tuples containing integers.
 
     Example
@@ -309,10 +303,10 @@ def convert_dictionary_keys_to_dense_indices(dictionary,
     """
     new_dictionary = {}
     for key, val in dictionary.items():
-        if dense_position==len(key):
-            ix = ((period,key[:dense_position]),)
+        if dense_position == len(key):
+            ix = ((period, key[:dense_position]),)
         else:
-            ix = ((period,key[:dense_position]),key[dense_position:])
+            ix = ((period, key[:dense_position]), key[dense_position:])
 
         new_key = dense_indexer[ix]
         new_dictionary[new_key] = val

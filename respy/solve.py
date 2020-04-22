@@ -8,11 +8,11 @@ from respy.config import INADMISSIBILITY_PENALTY
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import compute_covariates
 from respy.shared import calculate_expected_value_functions
+from respy.shared import compute_covariates
 from respy.shared import subset_to_period
-from respy.state_space import transform_base_draws_with_cholesky_factor
 from respy.state_space import create_state_space_class
+from respy.state_space import transform_base_draws_with_cholesky_factor
 
 
 def get_solve_func(params, options):
@@ -47,13 +47,14 @@ def solve(params, options, state_space):
     """Solve the model."""
     optim_paras, options = process_params_and_options(params, options)
 
-
-    wages, nonpecs =_create_choice_rewards(state_space.core,
-                                           state_space.index_to_indices,
-                                           state_space.index_to_choice_set,
-                                           state_space.index_to_dense_covariates,
-                                           optim_paras,
-                                           options)
+    wages, nonpecs = _create_choice_rewards(
+        state_space.core,
+        state_space.index_to_indices,
+        state_space.index_to_choice_set,
+        state_space.index_to_dense_covariates,
+        optim_paras,
+        options,
+    )
 
     state_space.set_attribute("wages", wages)
     state_space.set_attribute("nonpecs", nonpecs)
@@ -63,9 +64,10 @@ def solve(params, options, state_space):
     return state_space
 
 
-
 @parallelize_across_dense_dimensions
-def _create_choice_rewards(core, core_indices, choice_set, dense_covariates, optim_paras, options):
+def _create_choice_rewards(
+    core, core_indices, choice_set, dense_covariates, optim_paras, options
+):
     """Create wage and non-pecuniary reward for each state and choice.
 
     TODO: The function receives the full core and the indices instead of the already indexed core
@@ -74,7 +76,9 @@ def _create_choice_rewards(core, core_indices, choice_set, dense_covariates, opt
 
     """
     n_choices = sum(choice_set)
-    choices = [choice for i, choice in enumerate(optim_paras["choices"]) if choice_set[i]]
+    choices = [
+        choice for i, choice in enumerate(optim_paras["choices"]) if choice_set[i]
+    ]
 
     dense = core.loc[core_indices].copy().assign(**dense_covariates)
     states = compute_covariates(dense, options["covariates_all"])
@@ -102,6 +106,7 @@ def _create_choice_rewards(core, core_indices, choice_set, dense_covariates, opt
 
     return wages, nonpecs
 
+
 def _solve_with_backward_induction(state_space, optim_paras, options):
     """Calculate utilities with backward induction.
 
@@ -127,7 +132,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         state_space.base_draws_sol,
         state_space.index_to_choice_set,
         optim_paras["shocks_cholesky"],
-        optim_paras
+        optim_paras,
     )
 
     for period in reversed(range(n_periods)):
@@ -137,9 +142,9 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
         continuation_values = state_space.get_continuation_values(period)
 
-        period_draws_emax_risk = subset_to_period(draws_emax_risk,
-                                                  state_space.index_to_complex,
-                                                  period)
+        period_draws_emax_risk = subset_to_period(
+            draws_emax_risk, state_space.index_to_complex, period
+        )
 
         # The number of interpolation points is the same for all periods. Thus, for
         # some periods the number of interpolation points is larger than the actual
@@ -179,8 +184,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             )
 
         state_space.set_attribute_from_keys(
-            "expected_value_functions",
-            period_expected_value_functions
+            "expected_value_functions", period_expected_value_functions
         )
 
     return state_space
