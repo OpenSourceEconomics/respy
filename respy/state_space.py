@@ -41,9 +41,7 @@ def create_state_space_class(options, optim_paras):
 
     # I think here we can get more elegant! Or is this the only way?
     core_index_to_complex = {i: k for i, k in enumerate(core_period_choice)}
-    core_index_to_indices = {
-        i: core_period_choice[core_index_to_complex[i]] for i in core_index_to_complex
-    }
+    core_index_to_indices = {k: core_period_choice[v] for k, v in core_index_to_complex.items()}
 
     # Create sp indexer
     indexer = _create_indexer(core, core_index_to_indices, optim_paras)
