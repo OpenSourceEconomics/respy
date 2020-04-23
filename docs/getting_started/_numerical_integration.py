@@ -1,10 +1,4 @@
-"""
-Module that contains auxiliary and plotting functions for the
-respy tutorial numerical integration.
-"""
-
-import os
-
+"""Auxiliary and plotting functions for the respy tutorial numerical integration."""
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 
@@ -13,7 +7,9 @@ METHODS = ["random", "halton", "sobol"]
 TUITION_SUBSIDIES = [0, 500]
 
 
-def get_single_integrand(df, idx, scaling, methods, manual_limits="no", xlimits=[0,1], ylimits=[0,1]):
+def get_single_integrand(
+    df, idx, scaling, methods, manual_limits="no", xlimits=[0, 1], ylimits=[0, 1]
+):
     """Plots the values of the idx-th evaluation of an integral stored in a
     dataframe. The dataframe contains values of the integrand computed at
     a different number of points.
@@ -32,7 +28,7 @@ def get_single_integrand(df, idx, scaling, methods, manual_limits="no", xlimits=
 
     for m in methods:
         label = get_label(m)
-        x = df.index.get_level_values('integration_points').unique()
+        x = df.index.get_level_values("integration_points").unique()
         y = df.loc[(slice(None), idx), m] / scaling
 
         ax.plot(x, y, label=label)
@@ -54,7 +50,7 @@ def get_label(method):
         - label (string): standardizes labels
     """
 
-    label =  method.capitalize()
+    label = method.capitalize()
     if label == "Random":
         label = "random"
 
@@ -73,44 +69,45 @@ def get_rmse_rate(df, comparison_rates, methods):
         - figure
     """
 
-    for measure in ['absolute', 'relative']:
+    for measure in ["absolute", "relative"]:
 
-        fig, ax = plt.subplots(1,1, figsize = (6.5, 4.5))
+        fig, ax = plt.subplots(1, 1, figsize=(6.5, 4.5))
 
         for m in methods:
             label = get_label(m)
 
-            x = df.index.get_level_values('integration_points').unique()
+            x = df.index.get_level_values("integration_points").unique()
             y = df.loc[measure, m]
 
             ax.loglog(x, y, label=label)
 
         ax.loglog(
-            x, comparison_rates[0],
+            x,
+            comparison_rates[0],
             label="$C_1 log(n)/n$",
             linestyle="-.",
             linewidth=2,
-            color="silver"
-            )
+            color="silver",
+        )
         ax.loglog(
-            x, comparison_rates[1],
+            x,
+            comparison_rates[1],
             label="$C_2 log(n)/n^{1/2}$",
             linestyle="-.",
             linewidth=2,
-            color="grey"
-            )
+            color="grey",
+        )
         ax.loglog(
-            x, comparison_rates[2],
+            x,
+            comparison_rates[2],
             label="$C_3 log(n)/n^{3/2}$",
             linestyle="-.",
             linewidth=2.5,
-            color="darkviolet"
-            )
+            color="darkviolet",
+        )
 
         ax.set_xlabel("Points"), ax.legend()
         ax.set_ylabel(f"Rate {measure} RMSE")
-        #fig.savefig(get_fname(f"{measure}-rmse-rate"))
-
 
 
 def get_policy_prediction(df, baseline, alternative, methods):
@@ -131,26 +128,18 @@ def get_policy_prediction(df, baseline, alternative, methods):
     for m in methods:
         label = get_label(m)
 
-        x = df.index.get_level_values('Points').unique()
+        x = df.index.get_level_values("Points").unique()
         y = df.loc[(m, slice(None)), baseline] - df.loc[(m, slice(None)), alternative]
         ax.plot(x, y, label=label)
 
     ax.set_xlabel("Points")
     set_formatter(ax, which="x")
 
-    ax.set_ylabel("$\Delta$ Schooling ")
+    ax.set_ylabel(r"$\Delta$ Schooling ")
     ax.legend()
-    #fig.savefig(get_fname("fig-evaluation-policy"))
 
 
-def get_fname(fname):
-    """Retrieves saving path for figures
-    """
-    DIR_FIGURES = os.environ["DIR_FIGURES"]
-    return f"{DIR_FIGURES}/" + fname
-
-
-def set_formatter(ax, is_int=True, which='xy'):
+def set_formatter(ax, is_int=True, which="xy"):
     """Formats axis values.
 
     Input
@@ -160,7 +149,7 @@ def set_formatter(ax, is_int=True, which='xy'):
     Output
         - formatted ax object
     """
-    formatter = ticker.FuncFormatter(lambda x, p: format(int(x), ','))
+    formatter = ticker.FuncFormatter(lambda x, p: format(int(x), ","))
     if "x" in which:
         ax.get_xaxis().set_major_formatter(formatter)
     if "y" in which:
