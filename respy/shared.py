@@ -555,6 +555,6 @@ def array_to_tuple(tyctx, array_or_dict, indexer_array):
 
 def return_core_dense_key(core_idx, dense=False):
     if dense is False:
-        return (core_idx,)
+        return (core_idx, 0)
     else:
         return (core_idx, dense)
