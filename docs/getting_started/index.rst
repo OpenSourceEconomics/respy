@@ -13,3 +13,4 @@ Getting Started
    tutorial-initial-conditions
    tutorial-finite-mixture.ipynb
    tutorial-msm.ipynb
+   tutorial-numerical-integration.ipynb
