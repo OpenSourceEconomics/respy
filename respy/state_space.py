@@ -131,7 +131,7 @@ class StateSpaceClass:
 
         self.complex_to_index = {k: i for i, k in self.index_to_complex.items()}
 
-        if self.dense is False:
+        if not self.dense:
             self.dense_covariates_to_index = {}
             self.index_to_dense_covariates = {i: {} for i in self.index_to_complex}
 
