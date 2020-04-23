@@ -1,11 +1,9 @@
 API
 ===
 
-User
-----
 
 interface
-~~~~~~~~~
+---------
 
 .. currentmodule:: respy.interface
 
@@ -15,8 +13,9 @@ interface
     get_example_model
     get_parameter_constraints
 
+
 solve
-~~~~~
+-----
 
 .. currentmodule:: respy.solve
 
@@ -26,8 +25,9 @@ solve
     get_solve_func
     solve
 
+
 simulate
-~~~~~~~~
+--------
 
 .. currentmodule:: respy.simulate
 
@@ -37,19 +37,23 @@ simulate
     get_simulate_func
     simulate
 
+
 method_of_simulated_moments
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 
 .. currentmodule:: respy.method_of_simulated_moments
 
 .. autosummary::
     :toctree: _generated/
 
+    get_diag_weighting_matrix
+    get_flat_moments
     get_msm_func
     msm
 
+
 likelihood
-~~~~~~~~~~
+----------
 
 .. currentmodule:: respy.likelihood
 
@@ -58,3 +62,14 @@ likelihood
 
     get_crit_func
     log_like
+
+
+experimental
+------------
+
+.. currentmodule:: respy.tests.random_model
+
+.. autosummary::
+    :toctree: _generated/
+
+    add_noise_to_params

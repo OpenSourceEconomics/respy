@@ -27,7 +27,8 @@ respy
 ----
 
 **respy** is an open source framework written in Python for the simulation and
-estimation of some finite-horizon discrete choice dynamic programming models.
+estimation of some :term:`finite-horizon` :term:`discrete choice` :term:`dynamic
+programming` models.
 
 With conda available on your path, installing **respy** is as simple as typing
 
@@ -38,23 +39,93 @@ With conda available on your path, installing **respy** is as simple as typing
 
 The documentation is structured in four parts.
 
-1. **Tutorials**  help you to get started with **respy**. They cover the basics and are
-   designed for everyone new to the package and structural models. Although, the focus
-   is on the implementation, you will find several cross-references to the theoretical
-   concepts behind the models.
+.. raw:: html
 
-2. **Explanations** give detailed information to key topics and concepts which underlie
-   the package.
+    <div class="container" id="index-container">
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
+                <div class="card text-center intro-card shadow">
+                    <img src="_static/images/light-bulb.svg" class="card-img-top"
+                         alt="tutorials-icon" height="76"
+                    >
+                    <div class="card-body flex-fill">
+                        <h5 class="card-title">Tutorials</h5>
+                        <p class="card-text">
+                            Tutorials help you to get started. They cover the basics and
+                            are designed for everyone new to the package.
+                        </p>
+                        <a href="tutorials/index.html">
+                            <div class="custom-button docutils container">
+                                To the tutorials
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
+                <div class="card text-center intro-card shadow">
+                    <img src="_static/images/book.svg" class="card-img-top"
+                         alt="how-to guides icon" height="76"
+                    >
+                    <div class="card-body flex-fill">
+                        <h5 class="card-title">How-to Guides</h5>
+                        <p class="card-text">
+                            How-to guides are designed to provide detailed instructions
+                            for very specific tasks.
+                        </p>
+                        <a href="tutorials/index.html">
+                            <div class="custom-button docutils container">
+                                To the how-to guides
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
+                <div class="card text-center intro-card shadow">
+                    <img src="_static/images/books.svg" class="card-img-top"
+                         alt="explanations icon" height="76"
+                    >
+                    <div class="card-body flex-fill">
+                        <h5 class="card-title">Explanations</h5>
+                        <p class="card-text">
+                            Explanations give detailed information to key topics and
+                            concepts which underlie the package.
+                        </p>
+                        <a href="explanations/index.html">
+                            <div class="custom-button docutils container">
+                                To the explanations
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
+                <div class="card text-center intro-card shadow">
+                    <img src="_static/images/coding.svg" class="card-img-top"
+                         alt="reference guides icon" height="76"
+                    >
+                    <div class="card-body flex-fill">
+                        <h5 class="card-title">Reference Guides</h5>
+                        <p class="card-text">
+                            Reference Guides explain the implementation. If you are
+                            interested in the inner workings, you will find this section
+                            helpful.
+                        </p>
+                        <a href="reference_guides/index.html">
+                            <div class="custom-button docutils container">
+                                To the reference guides
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-3. **How-to Guides** are designed to provide detailed instructions for very specific
-   tasks.
-
-4. **Reference Guides** explain how **respy** is implemented. If you want to contribute
-   to **respy** or if you are simply interested in the inner workings, you will find
-   this section helpful. They assume that you are already familiar with **respy**.
 
 .. toctree::
-    :maxdepth: 1
+    :hidden:
 
     tutorials/index
     explanations/index
@@ -68,6 +139,7 @@ If you are looking for other resources, you might find them here.
     :maxdepth: 1
 
     api
+    glossary
     about_us
     projects
     development/index

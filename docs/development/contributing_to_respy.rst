@@ -126,7 +126,7 @@ Styleguide for the documentation
 
 - The correct code formatting in ``.rst`` files is ensured by ``blacken-docs``. To
   correctly format the code inside notebooks, use the `jupyterlab-code-formatter
-  <jupyterlab-code-formatter.readthedocs.io>`_.
+  <jupyterlab-code-formatter.readthedocs.io>`_ with the black formatter.
 
 - Use the following order of headings
 
@@ -141,6 +141,9 @@ Styleguide for the documentation
 - The documentation is formatted with a line length of 88 characters. To wrap the text
   use `AutoWrap <https://github.com/randy3k/AutoWrap>` for Sublime Text, `this setting
   <https://stackoverflow.com/a/39011656>`_ plus the fill-paragraph command with PyCharm.
+
+- For rather self-contained functions with few arguments, a doctest can serve as a unit
+  test while providing documentation at the same time.
 
 
 Contributing docstrings

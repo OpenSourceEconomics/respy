@@ -8,8 +8,8 @@ The version number depends on the severity of the changes and adheres to `semant
 versioning <https://semver.org/>`_. The format is <major>.<minor>.<patch>. Increment
 
 1. <major> version when you make incompatible API changes,
-1. <minor> version when you add functionality in a backwards compatible manner, and
-1. <patch> version when you make backwards compatible bug fixes.
+2. <minor> version when you add functionality in a backwards compatible manner, and
+3. <patch> version when you make backwards compatible bug fixes.
 
 You can create development releases which are allowed to be deleted, once a new version
 is released. Append ``dev0`` to the version string. Do not separate the string with a

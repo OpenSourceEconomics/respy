@@ -19,7 +19,7 @@ fully learns about all immediate rewards, chooses one of the alternatives and re
 the corresponding benefits. The state space is then updated according to the agent's
 state experience and the process is repeated in :math:`a + 1`.
 
-.. image:: ../images/timing.png
+.. image:: ../_static/images/timing.png
 
 Agents are forward looking. Thus, they do not simply choose the alternative with the
 highest immediate rewards each period. Instead, their objective at any time :math:`\tau`
