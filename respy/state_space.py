@@ -118,7 +118,7 @@ class StateSpaceClass:
             i: np.array(self.core_index_to_indices[self.index_to_core_index[i]])
             for i in self.index_to_complex
         }
-        print(1 if self.dense is False else 2)
+
         self.core_to_index = Dict.empty(
             key_type=types.UniTuple(types.int64, 1 if self.dense is False else 2),
             value_type=types.int64,
@@ -157,6 +157,7 @@ class StateSpaceClass:
         """
         Wrap get continuation values.
         """
+        # We seperate the construction of continuation values
         if period == self.options["n_periods"] - 1:
             shapes = self.get_attribute_from_period("base_draws_sol", period)
             states = self.get_attribute_from_period("index_to_indices", period)
