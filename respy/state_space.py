@@ -102,22 +102,27 @@ class StateSpaceClass:
         """
 
         """
+        self.dense_to_dense_idx = {} if not self.dense else  {i:k for i,k in enumerate(self.dense)}
+
         self.index_to_complex = {i: k for i, k in enumerate(self.dense_period_cores)}
+
         self.index_to_core_index = {
             i: self.dense_period_cores[self.index_to_complex[i]]
             for i in self.index_to_complex.keys()
         }
+
         self.index_to_choice_set = {
-            i: self.index_to_complex[i][0][1] for i in self.index_to_complex
+            i: self.index_to_complex[i][1] for i in self.index_to_complex
         }
+
         self.index_to_indices = {
-            i: self.core_index_to_indices[self.index_to_core_index[i]]
+            i: np.array(self.core_index_to_indices[self.index_to_core_index[i]])
             for i in self.index_to_complex
         }
 
         self.core_to_index = {
             return_core_dense_key(
-                self.index_to_core_index[i], *self.index_to_complex[i][1:]
+                self.index_to_core_index[i], *self.index_to_complex[i][2:]
             ): i
             for i in self.index_to_complex
         }
@@ -125,10 +130,13 @@ class StateSpaceClass:
         self.complex_to_index = {k: i for i, k in self.index_to_complex.items()}
 
         if self.dense is False:
+            self.dense_covariates_to_index = {}
             self.index_to_dense_covariates = {i: {} for i in self.index_to_complex}
+
         else:
+            self.dense_covariates_to_index = {k:i for i,k in enumerate(self.dense)}
             self.index_to_dense_covariates = {
-                i: self.dense[self.index_to_complex[i][1]]
+                i: list(self.dense.values())[self.index_to_complex[i][2]]
                 for i in self.index_to_complex
             }
 
@@ -157,13 +165,13 @@ class StateSpaceClass:
         limited_index_to_indices = {
             k: v
             for k, v in self.index_to_indices.items()
-            if self.index_to_complex[k][0][0] < self.options["n_periods"] - 1
+            if self.index_to_complex[k][0] < self.options["n_periods"] - 1
         }
 
         limited_index_to_choice_set = {
             k: v
             for k, v in self.index_to_choice_set.items()
-            if self.index_to_complex[k][0][0] < self.options["n_periods"] - 1
+            if self.index_to_complex[k][0] < self.options["n_periods"] - 1
         }
 
         child_indices = _collect_child_indices(
@@ -195,8 +203,8 @@ class StateSpaceClass:
             shocks_sets.append(draws)
         draws = {}
         for dense_idx, complex in self.index_to_complex.items():
-            period = complex[0][0]
-            n_choices = sum(complex[0][1])
+            period = complex[0]
+            n_choices = sum(complex[1])
             idx = n_choices_in_sets.index(n_choices)
             draws[dense_idx] = shocks_sets[idx][period]
 
@@ -585,12 +593,12 @@ def _create_dense_period_choice(
 
     """
     if dense is False:
-        return {(k,): i for i, k in core_index_to_complex.items()}
+        return {k: i for i, k in core_index_to_complex.items()}
     else:
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
         dense_period_choice = {}
         for core_idx, indices in core_index_to_indices.items():
-            for dense_idx, dense_vec in dense.items():
+            for dense_idx,(_, dense_vec) in enumerate(dense.items()):
                 df = core.copy().loc[indices].assign(**dense_vec)
                 df = compute_covariates(df, options["covariates_all"])
                 df = create_is_inadmissible(df, optim_paras, options)
@@ -603,7 +611,7 @@ def _create_dense_period_choice(
                     "utility functions for that."
                 )
                 period_choice = {
-                    ((core_index_to_complex[core_idx][0], idx), dense_idx): core_idx
+                    (core_index_to_complex[core_idx][0], idx, dense_idx): core_idx
                     for idx, indices in df.groupby(choices).groups.items()
                 }
 
@@ -660,14 +668,14 @@ def _get_continuation_values(
     options,
 ):
 
-    if len(dense_complex_index) == 2:
-        (period, choice_set), dense_vector = dense_complex_index
-    elif len(dense_complex_index) == 1:
-        ((period, choice_set),) = dense_complex_index
+    if len(dense_complex_index) == 3:
+        period, choice_set, dense_vector = dense_complex_index
+    elif len(dense_complex_index) == 2:
+        period, choice_set = dense_complex_index
         dense_vector = False
 
     if period == options["n_periods"] - 1:
-        continuation_values = np.zeros((len(core_indices), sum(choice_set)))
+        continuation_values = np.zeros((len(core_indices), np.sum(choice_set)))
 
     else:
         n_choices = sum(choice_set)

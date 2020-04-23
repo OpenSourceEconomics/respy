@@ -475,7 +475,7 @@ def convert_dictionary_keys_to_dense_indices(dictionary):
 
 
 def subset_to_period(object, dense_index_to_complex, period):
-    period_keys = [x for x, y in dense_index_to_complex.items() if y[0][0] == period]
+    period_keys = [x for x, y in dense_index_to_complex.items() if y[0] == period]
     out = {key: object[key] for key in object.keys() if key in period_keys}
     return out
 

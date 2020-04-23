@@ -189,6 +189,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
             optim_paras=optim_paras,
             period=period,
             dense_indexer=state_space.complex_to_index,
+            dense_to_dense_index=state_space.dense_covariates_to_index
         )
 
         # Build admissible choice sets!
