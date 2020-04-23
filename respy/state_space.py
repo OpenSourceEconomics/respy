@@ -7,10 +7,10 @@ import pandas as pd
 from numba import types
 from numba.typed.typeddict import Dict
 
+from respy._numba import array_to_tuple
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
-from respy.shared import array_to_tuple
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
@@ -41,7 +41,9 @@ def create_state_space_class(options, optim_paras):
 
     # I think here we can get more elegant! Or is this the only way?
     core_index_to_complex = {i: k for i, k in enumerate(core_period_choice)}
-    core_index_to_indices = {k: core_period_choice[v] for k, v in core_index_to_complex.items()}
+    core_index_to_indices = {
+        k: core_period_choice[v] for k, v in core_index_to_complex.items()
+    }
 
     # Create sp indexer
     indexer = _create_indexer(core, core_index_to_indices, optim_paras)
@@ -50,7 +52,7 @@ def create_state_space_class(options, optim_paras):
         core, dense, core_index_to_indices, core_index_to_complex, optim_paras, options
     )
 
-    state_space = StateSpaceClass(
+    state_space = _StateSpaceClass(
         core,
         indexer,
         dense,
@@ -64,7 +66,7 @@ def create_state_space_class(options, optim_paras):
     return state_space
 
 
-class StateSpaceClass:
+class _StateSpaceClass:
     """Explain how things work once finally decided upon."""
 
     def __init__(
@@ -105,7 +107,7 @@ class StateSpaceClass:
 
         self.index_to_core_index = {
             i: self.dense_period_cores[self.index_to_complex[i]]
-            for i in self.index_to_complex.keys()
+            for i in self.index_to_complex
         }
 
         self.index_to_choice_set = {
@@ -113,8 +115,8 @@ class StateSpaceClass:
         }
 
         self.index_to_indices = {
-            i: np.array(self.core_index_to_indices[self.index_to_core_index[i]])
-            for i in self.index_to_complex
+            i: np.array(self.core_index_to_indices[k])
+            for i, k in self.index_to_complex.items()
         }
 
         self.core_to_index = Dict.empty(
@@ -138,8 +140,8 @@ class StateSpaceClass:
         else:
             self.dense_covariates_to_index = {k: i for i, k in enumerate(self.dense)}
             self.index_to_dense_covariates = {
-                i: list(self.dense.values())[self.index_to_complex[i][2]]
-                for i in self.index_to_complex
+                i: list(self.dense.values())[k[2]]
+                for i, k in self.index_to_complex.items()
             }
 
     def create_expected_value_func(self):
@@ -263,7 +265,7 @@ class StateSpaceClass:
 
     def set_attribute_from_keys(self, attribute, value):
         """Set attributes by keys"""
-        for key in value.keys():
+        for key in value:
             self.get_attribute_from_key(attribute, key)[:] = value[key]
 
 

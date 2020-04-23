@@ -4,7 +4,6 @@ import functools
 import numpy as np
 
 from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
-from respy.config import INADMISSIBILITY_PENALTY
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
