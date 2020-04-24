@@ -105,6 +105,7 @@ def _kw_94_interpolation(
         not_interpolated,
         period_draws_emax_risk,
         optim_paras["delta"],
+        optim_paras["eta"]
     )
 
     # Create prediction model based on the random subset of points where the EMAX is
@@ -230,6 +231,7 @@ def _compute_lhs_variable(
     not_interpolated,
     draws,
     delta,
+    eta
 ):
     """Calculate left-hand side variable for all states which are not interpolated.
 
