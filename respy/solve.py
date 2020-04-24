@@ -180,6 +180,7 @@ def _full_solution(
         continuation_values,
         period_draws_emax_risk,
         optim_paras["delta"],
+        optim_paras["eta"],
     )
 
     return period_expected_value_functions

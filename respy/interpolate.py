@@ -263,6 +263,7 @@ def _compute_lhs_variable(
         continuation_values[not_interpolated],
         draws,
         delta,
+        eta,
     )
     endogenous = expected_value_functions - max_value_functions[not_interpolated]
 
