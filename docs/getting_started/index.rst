@@ -9,6 +9,7 @@ Getting Started
    recommended-reading
    installation
    tutorial-robinson-crusoe.ipynb
+   tutorial-hyperbolic-discounting.ipynb
    tutorial-simulation.ipynb
    tutorial-initial-conditions
    tutorial-finite-mixture.ipynb

@@ -311,7 +311,7 @@ def _simulate_single_period(
     draws_wage = df[[f"meas_error_wage_{c}" for c in optim_paras["choices"]]].to_numpy()
 
     value_functions, flow_utilities = calculate_value_functions_and_flow_utilities(
-        wages, nonpecs, continuation_values, draws_shock, optim_paras["delta"],
+        wages, nonpecs, continuation_values, draws_shock, optim_paras["beta_delta"],
     )
 
     # We need to ensure that no individual chooses an inadmissible state. Thus, set
@@ -329,6 +329,7 @@ def _simulate_single_period(
     df["choice"] = choice
     df["wage"] = wage
     df["discount_rate"] = optim_paras["delta"]
+    df["present_bias"] = optim_paras["beta"]
     for i, choice in enumerate(optim_paras["choices"]):
         df[f"nonpecuniary_reward_{choice}"] = nonpecs[:, i]
         df[f"wage_{choice}"] = wages[:, i]
