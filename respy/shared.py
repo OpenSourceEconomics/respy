@@ -408,15 +408,15 @@ def create_state_space_columns(optim_paras):
     target="parallel",
 )
 def calculate_expected_value_functions(
-    wages, nonpecs, continuation_values, draws, delta, expected_value_functions
+    wages, nonpecs, continuation_values, draws, delta, eta, expected_value_functions
 ):
     r"""Calculate the expected maximum of value functions for a set of unobservables.
 
     The function takes an agent and calculates the utility for each of the choices, the
     ex-post rewards, with multiple draws from the distribution of unobservables and adds
-    the discounted expected maximum utility of subsequent periods resulting from
-    choices. Averaging over all maximum utilities yields the expected maximum utility of
-    this state.
+    the discounted expected maximum utility under a worst case scenario of subsequent periods
+    resulting from choices. Averaging over all maximum utilities yields the expected maximum
+    utility of this state
 
     The underlying process in this function is called `Monte Carlo integration`_. The
     goal is to approximate an integral by evaluating the integrand at randomly chosen
@@ -445,6 +445,8 @@ def calculate_expected_value_functions(
         Array with shape (n_draws, n_choices).
     delta : float
         The discount factor.
+    eta: float
+        The size of the ambiguity set.
 
     Returns
     -------
@@ -471,9 +473,16 @@ def calculate_expected_value_functions(
             if value_function > max_value_functions:
                 max_value_functions = value_function
 
-        expected_value_functions[0] += max_value_functions
+        v[i] = max_value_functions
 
-    expected_value_functions[0] /= n_draws
+    if eta > 0:
+        q = np.repeat(1.0 / n_draws, n_draws)
+        p = get_worst_case_probs(v, q, eta)
+        emax = np.dot(v, p)
+    else:
+        emax = np.mean(v)
+
+    expected_value_functions[0] = emax
 
 
 def convert_dictionary_keys_to_dense_indices(dictionary):
