@@ -21,6 +21,7 @@ requirements:
     - chaospy
     - click
     - estimagic >=0.0.27
+    - robupy =1.1
     - joblib
     - mkl
     - numba >=0.42
