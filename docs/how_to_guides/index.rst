@@ -13,3 +13,4 @@ How-to guides are designed to provide detailed instructions for very specific ta
     msm
     simulation
     numerical_integration
+    impatient_robinson
