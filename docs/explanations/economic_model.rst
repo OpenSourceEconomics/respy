@@ -1,3 +1,5 @@
+.. _economic_model:
+
 The Economic Model
 ===================
 

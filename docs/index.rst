@@ -71,7 +71,7 @@ The documentation is structured in four parts.
                         <h5 class="card-title">How-to Guides</h5>
                         <p class="card-text">
                             How-to guides are designed to provide detailed instructions
-                            for very specific tasks.
+                            for very specific and advanced tasks.
                         </p>
                         <a href="tutorials/index.html">
                             <div class="custom-button docutils container">

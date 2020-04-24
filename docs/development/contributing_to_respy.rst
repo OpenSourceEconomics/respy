@@ -102,6 +102,8 @@ The structure is inspired by Daniele Procida who shared his approach in `text an
    explanation. Provide some links to related explanations or how-to guides, but do
    overdo it and create confusion.
 
+   Here is a :ref:`template_for_tutorials`.
+
 2. Explanations are understanding-oriented. They provide context, discuss alternatives,
    but most importantly, nothing is done nor is the code discussed directly.
 
@@ -122,7 +124,8 @@ organized documentation.
 Styleguide for the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- In general, follow the style applied in other documents.
+- In general, follow the style applied in other documents. This list can never be
+  exhaustive, so pay attention to the rest of the documentation.
 
 - The correct code formatting in ``.rst`` files is ensured by ``blacken-docs``. To
   correctly format the code inside notebooks, use the `jupyterlab-code-formatter
@@ -139,8 +142,9 @@ Styleguide for the documentation
 - Between the end of a section and the following heading are two empty lines.
 
 - The documentation is formatted with a line length of 88 characters. To wrap the text
-  use `AutoWrap <https://github.com/randy3k/AutoWrap>` for Sublime Text, `this setting
-  <https://stackoverflow.com/a/39011656>`_ plus the fill-paragraph command with PyCharm.
+  use `AutoWrap <https://github.com/randy3k/AutoWrap>` for Sublime Text, and `this
+  setting <https://stackoverflow.com/a/39011656>`_ plus the fill-paragraph command with
+  PyCharm.
 
 - For rather self-contained functions with few arguments, a doctest can serve as a unit
   test while providing documentation at the same time.
@@ -160,6 +164,7 @@ Styleguide for docstrings
 - The first line of a docstring starts is right after the three quotes.
 - Keep a newline between the last text of a docstring and the closing quotes.
 - Inline code is surrounded by single backticks, e.g., ```sum```.
+- Doctests are a preferred way to test and document at the same time.
 
 
 Contributing to the code base
