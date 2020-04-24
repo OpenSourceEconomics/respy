@@ -458,6 +458,7 @@ def calculate_expected_value_functions(
 
     """
     n_draws, n_choices = draws.shape
+    v = np.repeat(np.nan, n_draws)
 
     expected_value_functions[0] = 0
 
