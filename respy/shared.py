@@ -9,8 +9,11 @@ import numba as nb
 import numpy as np
 import pandas as pd
 
+from robupy.get_worst_case import get_worst_case_probs
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
+
+
 
 
 @nb.njit
