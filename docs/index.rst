@@ -128,8 +128,7 @@ If you are looking for other resources, you might find them here.
 
     api
     glossary
+    projects/index
+    release_notes
     about_us
-    projects
     development/index
-    replications/index
-    changes

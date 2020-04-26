@@ -1,15 +1,5 @@
-Projects
-========
-
-**respy** is actively used as a research tool. Here is a list of projects to showcase
-the capabilities and kind of questions which are tackled with **respy**.
-
-If you want to feature your project in this list, open an `issue or pr
-<https://github.com/OpenSourceEconomics/respy>`_ and submit a title, a summary, links to
-further resources, and contact details.
-
-Research
---------
+Research papers
+===============
 
 Bhuller, M., Eisenhauer, P. and Mendel, M. (2020). The Option Value of Education.
 *Working Paper*.
