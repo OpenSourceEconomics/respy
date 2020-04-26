@@ -1,6 +1,10 @@
 Research papers
 ===============
 
+Here is a list of research papers using **respy**.
+
+----
+
 Bhuller, M., Eisenhauer, P. and Mendel, M. (2020). The Option Value of Education.
 *Working Paper*.
 

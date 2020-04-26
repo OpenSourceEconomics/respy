@@ -1,6 +1,10 @@
 Theses
 ======
 
+Here is a list of theses using **respy**.
+
+----
+
 Stenzel, T. (2020). Uncertainty Quantification for an Eckstein-Keane-Wolpin model with
 correlated input parameters.
 
