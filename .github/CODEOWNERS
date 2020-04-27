@@ -5,7 +5,7 @@
 # These owners will be the default owners for everything in the repo. Unless a later
 # match takes precedence, global owners will be requested for review when someone opens
 # a pull request.
-*                       @tobiasraabe
+*                       @mo2561057 @tobiasraabe
 
 # Owners responsible for the documentation.
 /docs/                  @amageh @tobiasraabe
@@ -15,6 +15,3 @@ respy/msm.py            @mo2561057 @amageh
 
 # Owners responsible for the state space.
 respy/state_space.py    @mo2561057 @tobiasraabe
-
-# Owners responsible for the simulation.
-respy/simulate.py       @mo2561057 @tobiasraabe
