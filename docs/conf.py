@@ -125,7 +125,7 @@ autosummary_generate = True
 # a list of builtin themes.
 html_theme = "pydata_sphinx_theme"
 
-html_theme_options: {
+html_theme_options = {
     "github_url": "https://github.com/OpenSourceEconomics/respy",
 }
 

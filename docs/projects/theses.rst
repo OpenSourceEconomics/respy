@@ -1,7 +1,8 @@
 Theses
 ======
 
-Here is a list of theses using **respy**.
+Here is a list of Master's theses submitted by students of economics from the University
+of Bonn.
 
 ----
 

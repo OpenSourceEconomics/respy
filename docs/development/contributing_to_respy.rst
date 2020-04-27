@@ -23,19 +23,20 @@ If you are new to **respy**, you might want to check out issues labeled with
 Workflow
 --------
 
-1. Assuming you have settled on contributing a small fix to the project, fork the
-   `repository <https://github.com/OpenSourceEconomics/respy/>`_. This will create a
-   copy of the repository where you have write access. Your fix will be implemented in
-   your copy. After that, you will start a pull request (PR) which means a proposal to
-   merge your changes into the project.
+1. Assuming you have settled on a contribution, fork the `repository
+   <https://github.com/OpenSourceEconomics/respy/>`_ (only if you do not have write
+   access to the repository). This will create a copy of the repository where you have
+   write access. Your fix will be implemented in your copy. After that, you will start a
+   pull request (PR) which means a proposal to merge your changes into the project.
 
 2. Clone the repository to your disk. Set up the environment of the project with conda
    and the ``environment.yml``. Implement the fix.
 
-3. We validate contributions in three ways. First, we have a test suite to check the
-   implementation of **respy**. Second, we correct for stylistic errors in code and
-   documentation using linters. Third, we test whether the documentation builds
-   successfully.
+3. We validate contributions in three ways.
+
+   1. We have a test suite to check the implementation of **respy**.
+   2. We correct for stylistic errors in code and documentation using linters.
+   3. We test whether the documentation builds successfully.
 
    You can run all checks with ``tox`` by running
 
@@ -71,16 +72,16 @@ Workflow
    server. The status of the tests is shown in the PR. Reiterate on your changes until
    the tests pass on the remote machine.
 
-5. Ask one of the main contributors to review your changes. Include their remarks in
-   your changes.
+5. The main contributors will be automatically notified to review your changes. Include
+   their remarks in your changes.
 
 6. If the changes should be merged, add yourself to the list of contributors and
    depending on the size of the changes, add a note to ``CHANGES.rst``. The final PR
    will be merged by one of the main contributors.
 
 
-Contributing to the documentation
----------------------------------
+Guidelines for the documentation
+--------------------------------
 
 The documentation is written in **reStructuredText** or as a Jupyter notebook and
 rendered with `Sphinx <https://www.sphinx-doc.org>`_ whose documentation also provides
@@ -150,8 +151,8 @@ Styleguide for the documentation
   test while providing documentation at the same time.
 
 
-Contributing docstrings
------------------------
+Guidelines for docstrings
+-------------------------
 
 Docstrings in **respy** are written in `NumPy Docstring Standard
 <https://numpydoc.readthedocs.io/en/latest/format.html>`_. Here is an `example
@@ -167,8 +168,8 @@ Styleguide for docstrings
 - Doctests are a preferred way to test and document at the same time.
 
 
-Contributing to the code base
------------------------------
+Guidelines for the code base
+----------------------------
 
 Styleguide for the code base
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,19 +188,21 @@ text.
 
   A bit more concretely, this means:
 
-  The length of a variable name should be proportional to its scope. In a list
-  comprehension or short loop, ``i`` might be an acceptable name for the running
-  variable, but variables that are used at many different places should have
-  descriptive names.
+  - The length of a variable name should be proportional to its scope. In a list
+    comprehension or short loop, ``i`` might be an acceptable name for the running
+    variable, but variables that are used at many different places should have
+    descriptive names.
 
-  The name of variables should reflect the content or meaning of the variable and not
-  only the type. Names like ``dict_list`` would not have been a good name for the
-  constraints.
+  - The name of variables should reflect the content or meaning of the variable and not
+    only the type.
 
-  Function names should contain a verb. Moreover, the length of a function name is
-  typically inversely proportional to its scope. The public functions like
-  ``get_example_models`` and ``get_solve_func`` can have very short names. At a lower
-  level of abstraction you typically need more words to describe what a function does.
+  - Function names should contain a verb. Moreover, the length of a function name is
+    typically inversely proportional to its scope. The public functions like
+    ``get_example_models`` and ``get_solve_func`` can have very short names. At a lower
+    level of abstraction you typically need more words to describe what a function does.
+
+  - Other recommendations can be found in `PEP 8
+    <https://www.python.org/dev/peps/pep-0008/#naming-conventions>`_.
 
 - **Intuitive code structures**
 
@@ -215,11 +218,11 @@ text.
        # Good
        dict_names = [name for name in dictionary]
 
-   The loop covers three lines which automatically produces visual noise and the code
-   seems to carry some weight, although, almost nothing has been done.
+   1. The loop covers three lines which automatically produces visual noise and the code
+      seems to carry some weight, although, almost nothing has been done.
 
-   The list comprehension hides the operation in a single line and I might be able to
-   read the code while only looking at the variable name.
+   2. The list comprehension hides the operation in a single line and I might be able to
+      read the code while only looking at the variable name.
 
    Other preferred syntaxes are
 

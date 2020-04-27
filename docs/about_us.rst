@@ -4,7 +4,7 @@ About us
 ========
 
 If you have any questions or comments, please do not hesitate to contact us via filing
-an issue on Github, writing an `email`_ to our `zulipchat group
+an issue on Github, writing an `email`_ to or join our `zulipchat group
 <https://ose.zulipchat.com/>`_ or via personal emails.
 
 .. _email: respy.9b46528f81292a712fa4855ff362f40f.show-sender@streams.zulipchat.com
@@ -18,13 +18,16 @@ students at the University of Bonn.
 Project Manager
 ~~~~~~~~~~~~~~~
 
-`Philipp Eisenhauer <https://github.com/peisenha>`_
+`Philipp Eisenhauer <https://github.com/peisenha>`_ (`email
+<mailto://eisenhauer@policy-lab.org>`__ )
 
 Software Design
 ~~~~~~~~~~~~~~~
 
-- `Janos Gabler <https://github.com/janosg>`_
-- `Tobias Raabe <https://github.com/tobiasraabe>`_
+- `Janos Gabler <https://github.com/janosg>`_ (`email
+  <mailto://janos.gabler@gmail.com>`__ )
+- `Tobias Raabe <https://github.com/tobiasraabe>`_ (`email <mailto://raabe@posteo.de>`__
+  )
 
 Developers
 ~~~~~~~~~~
