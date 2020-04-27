@@ -2,6 +2,7 @@
 import functools
 import warnings
 
+import numba as nb
 import numpy as np
 import pandas as pd
 from scipy.special import softmax
@@ -10,10 +11,12 @@ from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.parallelization import split_and_combine_df
 from respy.pre_processing.model_processing import process_params_and_options
+from respy.shared import array_to_tuple
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
+from respy.shared import create_dense_state_space_columns
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import rename_labels_from_internal
@@ -171,6 +174,34 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
         current_df = df.query("period == @period").copy()
         current_df = create_is_inadmissible(current_df, optim_paras, options)
         current_df[choices] = ~current_df[choices]
+        current_df["period"] = period
+
+        columns = ["period"]
+        columns += create_core_state_space_columns(optim_paras)
+
+        sp_cols = _get_location_of_simulated_objects(
+            current_df[columns].to_numpy(), state_space.indexer, size=2
+        ).astype(int)
+
+        current_df["core_index"] = sp_cols[:, 0]
+        current_df["position"] = sp_cols[:, 1]
+
+        dense_choice_columns = create_dense_state_space_columns(optim_paras)
+
+        if not state_space.dense:
+            current_df["dense_position"] = 0
+        else:
+            current_df["dense_position"] = _get_location_of_simulated_objects(
+                current_df[dense_choice_columns].to_numpy(),
+                state_space.dense_covariates_to_index,
+                1,
+            ).astype(int)
+
+        current_df["dense_index"] = _get_location_of_simulated_objects(
+            current_df[["core_index", "dense_position"]].to_numpy(),
+            state_space.core_to_index,
+            1,
+        ).astype(int)
 
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
@@ -182,14 +213,10 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
         current_df_extended = _simulate_single_period(
             current_df,
             index_to_choice_set,
-            state_space.indexer,
             wages,
             nonpecs,
             continuation_values,
             optim_paras=optim_paras,
-            period=period,
-            dense_indexer=state_space.complex_to_index,
-            dense_to_dense_index=state_space.dense_covariates_to_index
         )
 
         # Build admissible choice sets!
@@ -280,7 +307,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
 @split_and_combine_df
 @parallelize_across_dense_dimensions
 def _simulate_single_period(
-    df, choice_set, indexer, wages, nonpecs, continuation_values, optim_paras, period
+    df, choice_set, wages, nonpecs, continuation_values, optim_paras
 ):
     """Simulate individuals in a single period.
 
@@ -291,8 +318,6 @@ def _simulate_single_period(
     - Store additional information in a :class:`pandas.DataFrame` and return it.
 
     """
-    columns = create_core_state_space_columns(optim_paras)
-
     valid_choices = return_valid_choices(choice_set, optim_paras)
 
     # TODO: Write a function maybe!
@@ -303,10 +328,8 @@ def _simulate_single_period(
     # the minimum of indices (excluding invalid indices) because wages, etc. contain
     # only wages in this period and normal indices select rows from all wages.
     # TODO: This only works as long as we have no mixed constraints!
-    period_indices = df.apply(
-        lambda x: indexer[tuple(int(x) for x in [period] + list(x[columns].values))][1],
-        axis=1,
-    ).values
+
+    period_indices = df["position"].to_numpy()  #
     try:
         wages = wages[period_indices]
         nonpecs = nonpecs[period_indices]
@@ -678,3 +701,15 @@ def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_p
         )
 
     return df
+
+
+@nb.njit
+def _get_location_of_simulated_objects(array, indexer, size):
+    n_states = array.shape[0]
+    out = np.zeros((n_states, size))
+    for n in range(n_states):
+        state = array[n, :]
+        idx = indexer[array_to_tuple(indexer, state)]
+        out[n, :] = idx
+
+    return out

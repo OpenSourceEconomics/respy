@@ -137,7 +137,13 @@ class StateSpaceClass:
             self.index_to_dense_covariates = {i: {} for i in self.index_to_complex}
 
         else:
-            self.dense_covariates_to_index = {k: i for i, k in enumerate(self.dense)}
+            n_dense = len(create_dense_state_space_columns(self.optim_paras))
+            self.dense_covariates_to_index = Dict.empty(
+                key_type=types.UniTuple(types.int64, n_dense), value_type=types.int64,
+            )
+            for i, k in enumerate(self.dense):
+                self.dense_covariates_to_index[k] = i
+
             self.index_to_dense_covariates = {
                 i: list(self.dense.values())[self.index_to_complex[i][2]]
                 for i in self.index_to_complex
