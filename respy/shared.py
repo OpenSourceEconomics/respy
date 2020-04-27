@@ -8,9 +8,6 @@ import chaospy as cp
 import numba as nb
 import numpy as np
 import pandas as pd
-from numba import cgutils
-from numba import types
-from numba.extending import intrinsic
 
 
 @nb.njit
@@ -473,23 +470,27 @@ def convert_dictionary_keys_to_dense_indices(dictionary):
     return new_dictionary
 
 
-def subset_to_period(object, dense_index_to_complex, period):
+def subset_to_period(state_dict, dense_index_to_complex, period):
+    """Get all sp parts of a particular period."""
     period_keys = [x for x, y in dense_index_to_complex.items() if y[0] == period]
-    out = {key: object[key] for key in object.keys() if key in period_keys}
+    out = {key: state_dict[key] for key in state_dict.keys() if key in period_keys}
     return out
 
 
 def subset_to_choice(matrix, choice_set):
+    """Curtial the shock matrix to dimesions required by the admissible choice set."""
     delete = [i for i, x in enumerate(choice_set) if bool(x) is False]
     out = np.delete(np.delete(matrix, delete, 0), delete, 1)
     return out
 
 
 def return_valid_choices(choice_set, optim_paras):
+    """Return the name of all admissible choices under a certain choice set."""
     return [x for i, x in enumerate(optim_paras["choices"]) if bool(choice_set[i])]
 
 
 def return_core_dense_key(core_idx, dense=False):
+    """Return core dense keys in the right format."""
     if dense is False:
         return (core_idx, 0)
     else:
