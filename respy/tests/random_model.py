@@ -308,39 +308,39 @@ def add_noise_to_params(
     ----------
     params : pandas.DataFrame
         The parameters in a DataFrame.
-    delta_low_high : tuple of floats
+    delta_low_high : tuple[float]
         Lower and upper bound to shock to discount factor.
-    wages_percent_absolute : float or tuple of floats
+    wages_percent_absolute : float or tuple[float]
         The deviation in percentages of the absolute value of a non-zero parameter is
         either a constant percentage for all parameters or a random percentage between
         upper and lower bounds.
-    wages_low_high : tuple of floats
+    wages_low_high : tuple[float]
         The deviation for a non-zero parameter value is between an lower and upper
         bound.
-    wages_null_low_high : tuple of floats
+    wages_null_low_high : tuple[float]
         The deviation for a parameter with value zero is between the lower and upper
         bound.
-    nonpecs_percent_absolute : float or tuple of floats
+    nonpecs_percent_absolute : float or tuple[float]
         The deviation in percentages of the absolute value of a non-zero parameter is
         either a constant percentage for all parameters or a random percentage between
         upper and lower bounds.
-    nonpecs_low_high : tuple of floats
+    nonpecs_low_high : tuple[float]
         The deviation for a non-zero parameter value is between an lower and upper
         bound.
-    nonpecs_null_low_high : tuple of floats
+    nonpecs_null_low_high : tuple[float]
         The deviation for a parameter with value zero is between the lower and upper
         bound.
-    cholesky_low_high : tuple of floats
+    cholesky_low_high : tuple[float]
         Lower and upper bound for a shock applied to the Cholesky factor of the shock
         matrix. To ensure proper scaling, the shock is multiplied with the square root
         of the product of diagonal elements for this entry. The shock for the diagonal
         elements is between zero and the upper bound and the resulting diagonal element
         in the Cholesky factor has 1e-6 as the lower bound.
-    meas_sd_low_high : tuple of floats
+    meas_sd_low_high : tuple[float]
         Lower and upper bound for shock to measurement error standard deviations.
-    ic_probabilities_low_high : tuple of floats
+    ic_probabilities_low_high : tuple[float]
         Lower and upper bound for shocks to the probabilities in the initial conditions.
-    ic_logit_low_high : tuple of floats
+    ic_logit_low_high : tuple[float]
         Lower and upper bound for shocks to the logit coefficients in the initial
         conditions.
 

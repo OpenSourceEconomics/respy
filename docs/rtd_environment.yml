@@ -6,3 +6,4 @@ dependencies:
   - nbsphinx
   - numpydoc
   - sphinx
+  - pydata-sphinx-theme

@@ -20,7 +20,7 @@ requirements:
     - python >=3.6,<3.8
     - chaospy
     - click
-    - estimagic >=0.0.27
+    - estimagic >=0.0.28
     - joblib
     - mkl
     - numba >=0.42
