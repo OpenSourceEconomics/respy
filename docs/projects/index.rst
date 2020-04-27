@@ -11,7 +11,8 @@ interested.
    research_papers
    theses
 
-We also maintain a list of replicated models from some research papers to validate **respy** against specific implementations and to showcase **respy**'s flexibility.
+We also maintain a list of replicated models from some research papers to validate
+**respy** against specific implementations and to showcase **respy**'s flexibility.
 
 .. toctree::
    :maxdepth: 1
