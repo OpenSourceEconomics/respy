@@ -120,8 +120,7 @@ class StateSpaceClass:
         }
 
         self.core_to_index = Dict.empty(
-            key_type=types.UniTuple(types.int64, 1 if self.dense is False else 2),
-            value_type=types.int64,
+            key_type=types.UniTuple(types.int64, 2), value_type=types.int64,
         )
 
         for i in self.index_to_complex:
