@@ -57,7 +57,7 @@ def get_example_model(model, with_data=True):
         "kw_2000"}``.
     with_data : bool
         Whether the accompanying data set should be returned. For some data sets, real
-        data can be provided, for others a simulated data set.
+        data can be provided, for others, a simulated data set will be produced.
 
     """
     assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."

@@ -4,29 +4,24 @@ Template for tutorials
 ======================
 
 *This document should serve as a template for all tutorials. If something is not covered
-in here, please, extend it.*
+in here, please extend it.*
 
-To get in the right mood for writing a tutorial, read through two other tutorials and
-focus on what language is used, how are things explained and the flow of the document.
-Furthermore, go through this `checklist
-<https://documentation.divio.com/tutorials/#how-to-write-good-tutorials>`_. Now, you are
-ready
+In order to get started on a tutorial, please refer to the other :ref:`tutorials` to get a feel of the structure and language you should use so your tutorial is aligned with the rest of the documentation. Check out this `checklist
+<https://documentation.divio.com/tutorials/#how-to-write-good-tutorials>`_ as an additional resource to guide you through the writing process.
 
 Goal
 ----
 
-Describe what the goal and what the user should have learned by the end of this
+Describe the goal and what the user should have learned by the end of this
 tutorial.
 
 
 Steps
 -----
 
-Most of content in tutorials are clearly defined steps which follow after another.
+Tutorials should be structured as clearly defined, sequential steps to reaching the specified goal.
 
-You have to omit a lot of background information you might find helpful to keep the
-tutorial short and the user doing things. If you want to guide the user to further
-material, use the following buttons.
+The tutorials should be short, focused, and concise. This means you might have to omit background information that you consider helpful for understanding the underlying code and theory. If you want to guide the user to further material like related :ref:`explanations`, :ref:`_how_to_guides`, and :ref:`reference_guides`, use the following buttons.
 
 .. raw:: html
 
