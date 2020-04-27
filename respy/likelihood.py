@@ -8,7 +8,6 @@ import pandas as pd
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
-from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.config import INDEXER_INVALID_INDEX
 from respy.config import MAX_FLOAT
 from respy.config import MIN_FLOAT
@@ -25,6 +24,7 @@ from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import generate_column_dtype_dict_for_estimation
+from respy.shared import pandas_dot
 from respy.shared import rename_labels_to_internal
 from respy.solve import get_solve_func
 
@@ -310,11 +310,7 @@ def _compute_x_beta_for_type_probabilities(df, optim_paras, options):
         )
         first_observations = compute_covariates(first_observations, relevant_covariates)
 
-        labels = optim_paras["type_prob"][type_].index
-        df[type_] = np.dot(
-            first_observations[labels].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
-            optim_paras["type_prob"][type_],
-        )
+        df[type_] = pandas_dot(first_observations, optim_paras["type_prob"][type_])
 
     return df[range(optim_paras["n_types"])]
 

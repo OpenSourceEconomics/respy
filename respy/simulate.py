@@ -8,7 +8,6 @@ import pandas as pd
 from scipy.special import softmax
 
 from respy._numba import array_to_tuple
-from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.parallelization import split_and_combine_df
 from respy.pre_processing.model_processing import process_params_and_options
@@ -19,6 +18,7 @@ from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
+from respy.shared import pandas_dot
 from respy.shared import rename_labels_from_internal
 from respy.shared import rename_labels_to_internal
 from respy.shared import return_valid_choices
@@ -426,12 +426,7 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
     # Calculate dot product of covariates and parameters.
     z = ()
     for level in level_dict:
-        labels = level_dict[level].index
-        x_beta = np.dot(
-            all_data[labels].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
-            level_dict[level],
-        )
-
+        x_beta = pandas_dot(all_data, level_dict[level],)
         z += (x_beta,)
 
     # Calculate probabilities with the softmax function.

@@ -495,3 +495,49 @@ def return_core_dense_key(core_idx, dense=False):
         return (core_idx, 0)
     else:
         return (core_idx, dense)
+
+
+def pandas_dot(x, beta, out=None):
+    """Compute the dot product for a DataFrame and a Series.
+
+    The function computes each product in the dot product separately to limit the impact
+    of converting a Series to an array.
+
+    To access the NumPy array, `.values` is used instead of `.to_numpy()` because it is
+    faster and the latter avoids problems for extension arrays which are not used here.
+
+    Parameters
+    ----------
+    x : pandas.DataFrame
+        A DataFrame containing the covariates of the dot product.
+    beta : pandas.Series
+        A Series containing the parameters or coefficients of the dot product.
+    out : numpy.ndarray or optional
+        An output array can be passed to the function which is filled instead of
+        allocating a new array.
+
+    Returns
+    -------
+    out : numpy.ndarray
+        Array with shape `len(x)` which contains the solution of the dot product.
+
+    Example
+    -------
+    >>> x = pd.DataFrame(np.arange(10).reshape(5, 2), columns=list("ab"))
+    >>> beta = pd.Series([1, 2], index=list("ab"))
+    >>> x.dot(beta).values
+    array([ 2,  8, 14, 20, 26], dtype=int64)
+    >>> pandas_dot(x, beta)
+    array([ 2.,  8., 14., 20., 26.])
+
+    """
+    received_out = False if out is None else True
+
+    if not received_out:
+        out = np.zeros(x.shape[0])
+
+    for covariate, beta in beta.items():
+        out += beta * x[covariate].values
+
+    if not received_out:
+        return out

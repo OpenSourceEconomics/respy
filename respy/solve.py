@@ -3,12 +3,12 @@ import functools
 
 import numpy as np
 
-from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_expected_value_functions
 from respy.shared import compute_covariates
+from respy.shared import pandas_dot
 from respy.shared import subset_to_period
 from respy.state_space import create_state_space_class
 from respy.state_space import transform_base_draws_with_cholesky_factor
@@ -91,19 +91,11 @@ def _create_choice_rewards(
 
     for i, choice in enumerate(choices):
         if f"wage_{choice}" in optim_paras:
-            wage_columns = optim_paras[f"wage_{choice}"].index
-            log_wage = np.dot(
-                states[wage_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
-                optim_paras[f"wage_{choice}"].to_numpy(),
-            )
-            wages[:, i] = np.exp(log_wage)
+            pandas_dot(states, optim_paras[f"wage_{choice}"], out=wages[:, i])
+            np.exp(wages[:, i], out=wages[:, i])
 
         if f"nonpec_{choice}" in optim_paras:
-            nonpec_columns = optim_paras[f"nonpec_{choice}"].index
-            nonpecs[:, i] = np.dot(
-                states[nonpec_columns].to_numpy(dtype=COVARIATES_DOT_PRODUCT_DTYPE),
-                optim_paras[f"nonpec_{choice}"].to_numpy(),
-            )
+            pandas_dot(states, optim_paras[f"nonpec_{choice}"], out=nonpecs[:, i])
 
     return wages, nonpecs
 

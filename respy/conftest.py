@@ -1,5 +1,14 @@
 """This module includes code to configure pytest."""
+import numpy as np
+import pandas as pd
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def patch_doctest_namespace(doctest_namespace):
+    """Patch the namespace for doctests."""
+    doctest_namespace["np"] = np
+    doctest_namespace["pd"] = pd
 
 
 @pytest.fixture(scope="session")
