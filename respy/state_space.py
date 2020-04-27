@@ -23,11 +23,7 @@ from respy.shared import subset_to_period
 
 
 def create_state_space_class(optim_paras, options):
-    """
-    Define a function that calls all the prior methods to create something
-    that looks like a sp!
-    """
-    # We create the full core first! (Do we have to create covariates here?).
+    """Take all preperations for creating a sp object and create it."""
     core = _create_core_and_indexer(optim_paras, options)
     dense_grid = _create_dense_state_space_grid(optim_paras)
 
@@ -80,8 +76,7 @@ class StateSpaceClass:
         optim_paras,
         options,
     ):
-        """
-        """
+        """Insert a description of variables once this is final."""
         self.core = core
         self.indexer = indexer
         self.dense_period_cores = dense_period_cores
@@ -96,9 +91,7 @@ class StateSpaceClass:
         self.create_expected_value_func()
 
     def set_convenience_objects(self):
-        """
-
-        """
+        """Create a number of conveneience objects."""
         self.dense_to_dense_idx = (
             {} if not self.dense else {i: k for i, k in enumerate(self.dense)}
         )
@@ -150,6 +143,7 @@ class StateSpaceClass:
             }
 
     def create_expected_value_func(self):
+        """Create a contianer for expected value functions."""
         self.expected_value_functions = Dict.empty(
             key_type=types.int64, value_type=types.float64[:]
         )
@@ -159,10 +153,7 @@ class StateSpaceClass:
             )
 
     def get_continuation_values(self, period):
-        """
-        Wrap get continuation values.
-        """
-        # We seperate the construction of continuation values
+        """Wrap get continuation values."""
         if period == self.options["n_periods"] - 1:
             shapes = self.get_attribute_from_period("base_draws_sol", period)
             states = self.get_attribute_from_period("index_to_indices", period)
@@ -183,9 +174,7 @@ class StateSpaceClass:
         return continuation_values
 
     def collect_child_indices(self):
-        """
-        Wrap get child indices
-        """
+        """Wrap get child indices."""
         limited_index_to_indices = {
             k: v
             for k, v in self.index_to_indices.items()
@@ -210,9 +199,7 @@ class StateSpaceClass:
         return child_indices
 
     def create_draws(self):
-        """
-        Get draws
-        """
+        """Get draws."""
         n_choices_in_sets = np.unique(
             [sum(i) for i in self.index_to_choice_set.values()]
         ).tolist()
@@ -226,9 +213,9 @@ class StateSpaceClass:
             )
             shocks_sets.append(draws)
         draws = {}
-        for dense_idx, complex in self.index_to_complex.items():
-            period = complex[0]
-            n_choices = sum(complex[1])
+        for dense_idx, complex_ix in self.index_to_complex.items():
+            period = complex_ix[0]
+            n_choices = sum(complex_ix[1])
             idx = n_choices_in_sets.index(n_choices)
             draws[dense_idx] = shocks_sets[idx][period]
 
@@ -265,11 +252,11 @@ class StateSpaceClass:
         return out
 
     def set_attribute(self, attribute, value):
-        """Set attributes"""
+        """Set attributes."""
         setattr(self, attribute, value)
 
     def set_attribute_from_keys(self, attribute, value):
-        """Set attributes by keys"""
+        """Set attributes by keys."""
         for key in value.keys():
             self.get_attribute_from_key(attribute, key)[:] = value[key]
 

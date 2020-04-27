@@ -4,7 +4,6 @@ import functools
 import numpy as np
 
 from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
-from respy.config import INADMISSIBILITY_PENALTY
 from respy.interpolate import interpolate
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
@@ -70,8 +69,10 @@ def _create_choice_rewards(
 ):
     """Create wage and non-pecuniary reward for each state and choice.
 
-    TODO: The function receives the full core and the indices instead of the already indexed core
-    which would require less memory to be copied and moved. At the same time, indexing and copying
+    TODO: The function receives the full core and the indices
+     instead of the already indexed core
+    which would require less memory to be copied and moved.
+    At the same time, indexing and copying
     in the main process is also expensive.
 
     """

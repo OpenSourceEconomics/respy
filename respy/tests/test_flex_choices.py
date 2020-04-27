@@ -55,7 +55,7 @@ def test_robustness_solution():
     # Create internal specification objects.
     optim_paras, options = process_params_and_options(params, options)
     simulate = get_simulate_func(params, options)
-    df = simulate(params)
+    _df = simulate(params)
 
 
 def test_large_model():
