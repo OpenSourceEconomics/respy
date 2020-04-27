@@ -7,10 +7,10 @@ import pandas as pd
 from numba import types
 from numba.typed.typeddict import Dict
 
+from respy._numba import array_to_tuple
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
-from respy.shared import array_to_tuple
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
@@ -22,7 +22,7 @@ from respy.shared import subset_to_choice
 from respy.shared import subset_to_period
 
 
-def create_state_space_class(options, optim_paras):
+def create_state_space_class(optim_paras, options):
     """
     Define a function that calls all the prior methods to create something
     that looks like a sp!

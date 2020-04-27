@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 from scipy.special import softmax
 
+from respy._numba import array_to_tuple
 from respy.config import COVARIATES_DOT_PRODUCT_DTYPE
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.parallelization import split_and_combine_df
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import array_to_tuple
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws

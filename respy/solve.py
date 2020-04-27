@@ -37,7 +37,7 @@ def get_solve_func(params, options):
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    state_space = create_state_space_class(options, optim_paras)
+    state_space = create_state_space_class(optim_paras, options)
     solve_function = functools.partial(solve, options=options, state_space=state_space)
 
     return solve_function
@@ -200,7 +200,6 @@ def _full_solution(
     state and not only a subset.
 
     """
-    # Get expectations
     period_expected_value_functions = calculate_expected_value_functions(
         wages,
         nonpecs,
