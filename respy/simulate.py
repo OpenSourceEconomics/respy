@@ -426,7 +426,7 @@ def _sample_characteristic(states_df, options, level_dict, use_keys):
     # Calculate dot product of covariates and parameters.
     z = ()
     for level in level_dict:
-        x_beta = pandas_dot(all_data, level_dict[level],)
+        x_beta = pandas_dot(all_data, level_dict[level])
         z += (x_beta,)
 
     # Calculate probabilities with the softmax function.
