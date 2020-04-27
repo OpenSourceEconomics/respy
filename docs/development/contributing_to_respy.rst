@@ -206,7 +206,10 @@ text.
 
 - **Intuitive code structures**
 
-We strive to use intuitive and efficient code structures. This may require you to revise your code contribution multiple times but will ensure that it is useful and comprehensible for all future users and contributors. See below for an example of an easy switch that can commonly be made.  
+We strive to use intuitive and efficient code structures. This may require you to revise
+your code contribution multiple times but will ensure that it is useful and
+comprehensible for all future users and contributors. See below for an example of an
+easy switch that can commonly be made.
 
    .. code-block:: python
 
