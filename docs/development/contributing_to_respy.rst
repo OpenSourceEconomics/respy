@@ -3,7 +3,7 @@ Contributing to respy
 
 Contributions are always welcome. Everything ranging from small extensions of the
 documentation to implementing new features of the model is appreciated. Of course, the
-bigger the change the more it is recommended to reach out to us in advance for a
+bigger the change, the more it is recommended to reach out to us in advance for a
 discussion. You can post an issue or use the email contact details under
 :ref:`about_us`.
 
@@ -15,7 +15,7 @@ In general, you can take a look at our `issue tracker <https://github.com/
 OpenSourceEconomics/respy/issues>`_ or at our :ref:`roadmap <roadmap>` to find
 opportunities to contribute to the project.
 
-If you are new to **respy**, you might want to check out issues labeled with
+If you are new to **respy**, you might want to check out issues labeled as
 `good-first-issue <https://github.com/OpenSourceEconomics/respy/issues?q=is%3Aissue+is
 %3Aopen+label%3Agood-first-issue>`_.
 
@@ -203,7 +203,7 @@ text.
 
 - **Intuitive code structures**
 
-  Compare the following two syntaxes and neglect the stupid content.
+We strive to use intuitive and efficient code structures. This may require you to revise your code contribution multiple times but will ensure that it is useful and comprehensible for all future users and contributors. See below for an example of an easy switch that can commonly be made.  
 
    .. code-block:: python
 

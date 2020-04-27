@@ -129,6 +129,6 @@ If you are looking for other resources, you might find them here.
     api
     glossary
     projects/index
-    release_notes
-    about_us
     development/index
+    about_us
+    release_notes

@@ -10,7 +10,7 @@ How-to guides are designed to provide detailed instructions for very specific ta
 
     finite_mixture
     initial_conditions
-    msm
-    simulation
     numerical_integration
+    simulation
+    msm
     impatient_robinson

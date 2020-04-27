@@ -4,7 +4,7 @@ Glossary
 .. glossary::
 
     discrete choice
-        A term in economics and control theory for settings in which two or more
+        A term used in economics and control theory to refer to settings in which two or more
         discrete alternatives are available.
 
     dynamic programming
