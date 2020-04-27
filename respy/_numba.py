@@ -5,7 +5,7 @@ from numba.extending import intrinsic
 
 
 @intrinsic  # noqa: U100
-def array_to_tuple(tyctx, array_or_dict, indexer_array):
+def array_to_tuple(tyctx, array, indexer_array):
     """Convert an array to a tuple for indexing.
 
     This function is taken from
@@ -21,14 +21,10 @@ def array_to_tuple(tyctx, array_or_dict, indexer_array):
 
     """
     # This is the typing level. Setup the type and constant information here.
-    if isinstance(array_or_dict, types.DictType):
-        tuple_size = len(array_or_dict.key_type)
-    else:
-        tuple_size = array_or_dict.ndim
-
+    tuple_size = array.ndim
     tuple_type = indexer_array.dtype
     typed_tuple = types.UniTuple(dtype=tuple_type, count=tuple_size)
-    function_signature = typed_tuple(array_or_dict, indexer_array)
+    function_signature = typed_tuple(array, indexer_array)
 
     def codegen(cgctx, builder, signature, args):
         # This is the implementation defined using LLVM builder.

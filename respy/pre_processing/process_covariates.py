@@ -138,6 +138,51 @@ def separate_covariates_into_core_dense_mixed(options, optim_paras):
     return options
 
 
+def separate_choice_restrictions_into_core_dense_mixed(options, optim_paras):
+    """
+    TODO: PRELIMINARY I AM NOT YET SURE WHETHER THIS LOGIC
+          WORKS!
+    """
+    options = copy.deepcopy(options)
+
+    # We want to build lists with all terms that are dense vars and all terms that are core
+    # I am not sure whether this list is exhaustive and I can imagine there is a more elegant way to do so!
+    # Dense
+    dense_var = list(options["covariates_dense"].keys())
+    dense_var = dense_var + list(optim_paras["observables"].keys())
+
+    # Core
+    core_var = list(options["covariates_core"].keys())
+    core_var = core_var + [f"exp_{x}" for x in optim_paras["choices_w_exp"]]
+    core_var = core_var + [
+        f"lagged_choice_{x}" for x in range(1, optim_paras["n_lagged_choices"] + 1)
+    ]
+    core_var = core_var + ["period"]
+
+    # Add ne dict keys
+    constr_list = list()
+    for choice in options["inadmissible_choices"].keys():
+        for choice_constr in options["inadmissible_choices"][choice]:
+            if any([x in choice_constr for x in dense_var]) == False:
+                constr_list.append((choice_constr, choice, "core"))
+            elif any([x in choice_constr for x in core_var]) == False:
+                constr_list.append((choice_constr, choice, "dense"))
+            else:
+                constr_list.append((choice_constr, choice, "mixed"))
+
+    for sp in ["core", "dense", "mixed"]:
+        options[f"inadmissible_choices_{sp}"] = {}
+        for choice in options["inadmissible_choices"].keys():
+            relevant_contraints = [
+                x for x in constr_list if x[1] == choice and x[2] == sp
+            ]
+            if relevant_contraints == []:
+                pass
+            else:
+                options[f"inadmissible_choices_{sp}"][choice] = relevant_contraints
+    return options
+
+
 def identify_necessary_covariates(dependents, definitions):
     """Identify covariates necessary to compute `dependents`.
 

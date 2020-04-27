@@ -7,10 +7,10 @@ import pandas as pd
 from numba import types
 from numba.typed.typeddict import Dict
 
-from respy._numba import array_to_tuple
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.shared import array_to_tuple
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
@@ -42,7 +42,7 @@ def create_state_space_class(options, optim_paras):
     # I think here we can get more elegant! Or is this the only way?
     core_index_to_complex = {i: k for i, k in enumerate(core_period_choice)}
     core_index_to_indices = {
-        k: core_period_choice[v] for k, v in core_index_to_complex.items()
+        i: core_period_choice[core_index_to_complex[i]] for i in core_index_to_complex
     }
 
     # Create sp indexer
@@ -52,7 +52,7 @@ def create_state_space_class(options, optim_paras):
         core, dense, core_index_to_indices, core_index_to_complex, optim_paras, options
     )
 
-    state_space = _StateSpaceClass(
+    state_space = StateSpaceClass(
         core,
         indexer,
         dense,
@@ -66,7 +66,7 @@ def create_state_space_class(options, optim_paras):
     return state_space
 
 
-class _StateSpaceClass:
+class StateSpaceClass:
     """Explain how things work once finally decided upon."""
 
     def __init__(
@@ -107,7 +107,7 @@ class _StateSpaceClass:
 
         self.index_to_core_index = {
             i: self.dense_period_cores[self.index_to_complex[i]]
-            for i in self.index_to_complex
+            for i in self.index_to_complex.keys()
         }
 
         self.index_to_choice_set = {
@@ -115,8 +115,8 @@ class _StateSpaceClass:
         }
 
         self.index_to_indices = {
-            i: np.array(self.core_index_to_indices[k])
-            for i, k in self.index_to_complex.items()
+            i: np.array(self.core_index_to_indices[self.index_to_core_index[i]])
+            for i in self.index_to_complex
         }
 
         self.core_to_index = Dict.empty(
@@ -133,15 +133,15 @@ class _StateSpaceClass:
 
         self.complex_to_index = {k: i for i, k in self.index_to_complex.items()}
 
-        if not self.dense:
+        if self.dense is False:
             self.dense_covariates_to_index = {}
             self.index_to_dense_covariates = {i: {} for i in self.index_to_complex}
 
         else:
             self.dense_covariates_to_index = {k: i for i, k in enumerate(self.dense)}
             self.index_to_dense_covariates = {
-                i: list(self.dense.values())[k[2]]
-                for i, k in self.index_to_complex.items()
+                i: list(self.dense.values())[self.index_to_complex[i][2]]
+                for i in self.index_to_complex
             }
 
     def create_expected_value_func(self):
@@ -265,7 +265,7 @@ class _StateSpaceClass:
 
     def set_attribute_from_keys(self, attribute, value):
         """Set attributes by keys"""
-        for key in value:
+        for key in value.keys():
             self.get_attribute_from_key(attribute, key)[:] = value[key]
 
 
@@ -699,23 +699,16 @@ def _get_continuation_values(
         if x:
             sum_choices += 1
 
-    if period == n_periods - 1:
-        continuation_values = np.zeros((len(core_indices), sum_choices))
+    n_states = core_indices.shape[0]
 
-    else:
-        n_choices = sum_choices
-        n_states = core_indices.shape[0]
+    continuation_values = np.zeros((len(core_indices), sum_choices))
+    for i in range(n_states):
+        for j in range(sum_choices):
+            core_idx, row_idx = child_indices[i, j]
+            idx = (core_idx, dense_idx)
+            dense_choice = core_index_and_dense_vector_to_dense_index[idx]
 
-        continuation_values = np.zeros((len(core_indices), sum_choices))
-        for i in range(n_states):
-            for j in range(n_choices):
-                core_idx, row_idx = child_indices[i, j]
-                idx = (core_idx, dense_idx)
-                dense_choice = core_index_and_dense_vector_to_dense_index[idx]
-
-                continuation_values[i, j] = expected_value_functions[dense_choice][
-                    row_idx
-                ]
+            continuation_values[i, j] = expected_value_functions[dense_choice][row_idx]
 
     return continuation_values
 

@@ -5,6 +5,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from respy.shared import create_dense_choice_state_space_columns
 from respy.shared import create_dense_state_space_columns
 
 
@@ -128,13 +129,18 @@ def split_and_combine_df(func=None, *, remove_type=False):
             dense_to_dense_index,
             **kwargs,
         ):
-            dense_columns = create_dense_state_space_columns(optim_paras)
+            dense_choice_columns = create_dense_state_space_columns(optim_paras)
             choices = [f"_{choice}" for choice in optim_paras["choices"]]
             if remove_type:
-                dense_columns.remove("type")
+                dense_choice_columns.remove("type")
 
             splitted_df = _split_dataframe(
-                df, dense_columns, choices, period, dense_indexer, dense_to_dense_index
+                df,
+                dense_choice_columns,
+                choices,
+                period,
+                dense_indexer,
+                dense_to_dense_index,
             )
             out = func(splitted_df, *args, optim_paras, period, **kwargs)
             df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
