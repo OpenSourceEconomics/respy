@@ -33,6 +33,7 @@ def test_generate_random_model():
     assert isinstance(crit_val, float)
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_model_options(model_or_seed):
     _, options = process_model_or_seed(model_or_seed)
@@ -42,6 +43,8 @@ def test_model_options(model_or_seed):
     validate_options(options)
 
 
+@pytest.mark.unit
+@pytest.mark.precise
 def test_parse_initial_and_max_experience():
     """Test ensures that probabilities are transformed with logs and rest passes."""
     choices = ["a", "b"]
@@ -79,6 +82,8 @@ def test_parse_initial_and_max_experience():
     assert optim_paras["choices"]["b"]["max"] == 5
 
 
+@pytest.mark.unit
+@pytest.mark.precise
 def test_normalize_probabilities():
     constraints = {"observables": [3]}
     params, options = generate_random_model(point_constr=constraints)
@@ -103,6 +108,8 @@ def test_normalize_probabilities():
         )
 
 
+@pytest.mark.unit
+@pytest.mark.precise
 def test_convert_labels_in_covariates_to_codes():
     optim_paras = {
         "choices": ["fishing", "hammock"],
@@ -131,6 +138,8 @@ def test_convert_labels_in_covariates_to_codes():
     assert options["covariates"] == expected
 
 
+@pytest.mark.unit
+@pytest.mark.precise
 def test_parse_observables():
     params = pd.read_csv(
         io.StringIO(
@@ -166,6 +175,8 @@ def test_parse_observables():
             )
 
 
+@pytest.mark.unit
+@pytest.mark.precise
 def test_raise_exception_for_missing_meas_error():
     params, options = generate_random_model()
 
@@ -175,6 +186,8 @@ def test_raise_exception_for_missing_meas_error():
         _parse_measurement_errors(params, options)
 
 
+@pytest.mark.unit
+@pytest.mark.precise
 def test_raise_exception_for_missing_shock_matrix():
     params, _ = generate_random_model()
 
@@ -184,6 +197,8 @@ def test_raise_exception_for_missing_shock_matrix():
         _parse_shocks({}, params)
 
 
+@pytest.mark.unit
+@pytest.mark.precise
 @pytest.mark.parametrize("observables", [[2], [2, 2]])
 def test_raise_exception_for_observable_with_one_value(observables):
     point_constr = {"observables": observables}

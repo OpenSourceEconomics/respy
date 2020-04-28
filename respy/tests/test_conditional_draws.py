@@ -20,6 +20,8 @@ def kalman_results():
     return fix
 
 
+@pytest.mark.precise
+@pytest.mark.unit
 @pytest.mark.parametrize("i", range(20))
 def test_update_and_evaluate_likelihood(i, kalman_results):
     inp = kalman_results["mean"][i]["input"]
@@ -30,6 +32,8 @@ def test_update_and_evaluate_likelihood(i, kalman_results):
     aaae(calculated_like, expected_like)
 
 
+@pytest.mark.precise
+@pytest.mark.unit
 @pytest.mark.parametrize("i", range(10))
 def test_update_cholcovs_with_error(i, kalman_results):
     inp = kalman_results["cov_error"][i]["input"]
@@ -44,6 +48,8 @@ def test_update_cholcovs_with_error(i, kalman_results):
     aaae(calculated_cov, expected_cov)
 
 
+@pytest.mark.precise
+@pytest.mark.unit
 def test_update_cholcovs():
     cov = np.array([[1, 0.8, 0.8], [0.8, 1, 0.8], [0.8, 0.8, 1]])
 
@@ -62,6 +68,8 @@ def test_update_cholcovs():
     aaae(calculated[i], expected[i], decimal=5)
 
 
+@pytest.mark.precise
+@pytest.mark.unit
 def test_calculate_conditional_draws():
     draws = np.array([[0.5, -1, 1]])
     updated_mean = np.arange(3)

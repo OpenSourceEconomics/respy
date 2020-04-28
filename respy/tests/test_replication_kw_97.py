@@ -8,6 +8,8 @@ import respy as rp
 pytestmark = pytest.mark.slow
 
 
+@pytest.mark.end_to_end
+@pytest.mark.precise
 @pytest.mark.parametrize(
     "model, type_proportions",
     [
@@ -51,6 +53,8 @@ def test_type_proportions(model, type_proportions):
     )
 
 
+@pytest.mark.end_to_end
+@pytest.mark.precise
 def test_distribution_of_lagged_choices():
     params, options, actual_df = rp.get_example_model("kw_97_extended")
 
