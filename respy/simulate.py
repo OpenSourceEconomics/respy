@@ -219,8 +219,6 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
             optim_paras=optim_paras,
         )
 
-        # Build admissible choice sets!
-
         data.append(current_df_extended)
 
         if is_n_step_ahead and period != n_simulation_periods - 1:

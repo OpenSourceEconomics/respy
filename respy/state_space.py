@@ -147,7 +147,7 @@ class StateSpaceClass:
         self.expected_value_functions = Dict.empty(
             key_type=types.int64, value_type=types.float64[:]
         )
-        for index, indices in self.index_to_indices:
+        for index, indices in self.index_to_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
 
     def get_continuation_values(self, period):
