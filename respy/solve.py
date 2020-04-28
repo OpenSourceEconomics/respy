@@ -91,11 +91,11 @@ def _create_choice_rewards(
 
     for i, choice in enumerate(choices):
         if f"wage_{choice}" in optim_paras:
-            pandas_dot(states, optim_paras[f"wage_{choice}"], out=wages[:, i])
-            np.exp(wages[:, i], out=wages[:, i])
+            log_wage = pandas_dot(states, optim_paras[f"wage_{choice}"])
+            wages[:, i] = np.exp(log_wage)
 
         if f"nonpec_{choice}" in optim_paras:
-            pandas_dot(states, optim_paras[f"nonpec_{choice}"], out=nonpecs[:, i])
+            nonpecs[:, i] = pandas_dot(states, optim_paras[f"nonpec_{choice}"])
 
     return wages, nonpecs
 
