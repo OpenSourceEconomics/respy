@@ -147,10 +147,8 @@ class StateSpaceClass:
         self.expected_value_functions = Dict.empty(
             key_type=types.int64, value_type=types.float64[:]
         )
-        for key in self.index_to_indices:
-            self.expected_value_functions[key] = np.zeros(
-                len(self.index_to_indices[key])
-            )
+        for index, indices in self.index_to_indices:
+            self.expected_value_functions[index] = np.zeros(len(indices))
 
     def get_continuation_values(self, period):
         """Wrap get continuation values."""
@@ -168,7 +166,6 @@ class StateSpaceClass:
                 self.get_attribute_from_period("index_to_complex", period),
                 child_indices,
                 self.core_to_index,
-                n_periods=self.options["n_periods"],
                 bypass={"expected_value_functions": self.expected_value_functions},
             )
         return continuation_values
@@ -677,7 +674,6 @@ def _get_continuation_values(
     child_indices,
     core_index_and_dense_vector_to_dense_index,
     expected_value_functions,
-    n_periods,
 ):
 
     if len(dense_complex_index) == 3:
@@ -686,16 +682,17 @@ def _get_continuation_values(
         period, choice_set = dense_complex_index
         dense_idx = 0
 
-    sum_choices = 0
+    # Sum over UniTuple.
+    n_choices = 0
     for x in choice_set:
         if x:
-            sum_choices += 1
+            n_choices += 1
 
     n_states = core_indices.shape[0]
 
-    continuation_values = np.zeros((len(core_indices), sum_choices))
+    continuation_values = np.zeros((len(core_indices), n_choices))
     for i in range(n_states):
-        for j in range(sum_choices):
+        for j in range(n_choices):
             core_idx, row_idx = child_indices[i, j]
             idx = (core_idx, dense_idx)
             dense_choice = core_index_and_dense_vector_to_dense_index[idx]
