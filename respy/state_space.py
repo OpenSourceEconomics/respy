@@ -667,7 +667,7 @@ def _insert_indices_of_child_states(
 
 
 @parallelize_across_dense_dimensions
-@nb.njit
+@nb.njit(parallel=True)
 def _get_continuation_values(
     core_indices,
     dense_complex_index,
@@ -691,8 +691,8 @@ def _get_continuation_values(
     n_states = core_indices.shape[0]
 
     continuation_values = np.zeros((len(core_indices), n_choices))
-    for i in range(n_states):
-        for j in range(n_choices):
+    for i in nb.prange(n_states):
+        for j in nb.prange(n_choices):
             core_idx, row_idx = child_indices[i, j]
             idx = (core_idx, dense_idx)
             dense_choice = core_index_and_dense_vector_to_dense_index[idx]
