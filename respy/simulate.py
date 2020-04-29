@@ -180,8 +180,8 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
         columns += create_core_state_space_columns(optim_paras)
 
         sp_cols = _get_location_of_simulated_objects(
-            current_df[columns].to_numpy(), state_space.indexer, size=2
-        ).astype(int)
+            current_df[columns].to_numpy(dtype="int64"), state_space.indexer, size=2
+        )
 
         current_df["core_index"] = sp_cols[:, 0]
         current_df["position"] = sp_cols[:, 1]
@@ -192,16 +192,16 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
             current_df["dense_position"] = 0
         else:
             current_df["dense_position"] = _get_location_of_simulated_objects(
-                current_df[dense_choice_columns].to_numpy(),
+                current_df[dense_choice_columns].to_numpy(dtype="int64"),
                 state_space.dense_covariates_to_index,
                 1,
-            ).astype(int)
+            )
 
         current_df["dense_index"] = _get_location_of_simulated_objects(
-            current_df[["core_index", "dense_position"]].to_numpy(),
+            current_df[["core_index", "dense_position"]].to_numpy(dtype="int64"),
             state_space.core_to_index,
             1,
-        ).astype(int)
+        )
 
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
@@ -699,7 +699,7 @@ def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_p
 @nb.njit
 def _get_location_of_simulated_objects(array, indexer, size):
     n_states = array.shape[0]
-    out = np.zeros((n_states, size))
+    out = np.zeros((n_states, size), dtype=np.int64)
     for n in range(n_states):
         state = array[n, :]
         idx = indexer[array_to_tuple(indexer, state)]
