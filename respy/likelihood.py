@@ -563,7 +563,6 @@ def _adjust_optim_paras_for_estimation(optim_paras, df):
 def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
     """Create DataFrame for estimagic's comparison plot."""
     df = df.copy()
-    log_type_probabilities = log_type_probabilities.copy()
 
     df["choice"] = df["choice"].replace(dict(enumerate(optim_paras["choices"])))
 
@@ -583,11 +582,15 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
     df = df.drop(columns="variable").dropna()
 
     if log_type_probabilities is not None:
-        log_type_probabilities = log_type_probabilities.reset_index().melt(
-            id_vars=["identifier", "period"],
-            value_vars=range(optim_paras["n_types"]),
-            var_name="type",
-            value_name="log_type_probability",
+        log_type_probabilities = (
+            log_type_probabilities.copy()
+            .reset_index()
+            .melt(
+                id_vars=["identifier", "period"],
+                value_vars=range(optim_paras["n_types"]),
+                var_name="type",
+                value_name="log_type_probability",
+            )
         )
 
         df = df.append(log_type_probabilities, sort=False)
