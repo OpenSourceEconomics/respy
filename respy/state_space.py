@@ -760,11 +760,11 @@ def transform_base_draws_with_cholesky_factor(
     draws_transformed = draws.dot(shocks_cholesky.T)
 
     # Check how many wages we have
-    num_wages_raw = len(optim_paras["choices_w_wage"])
-    num_wages = sum(choice_set[:num_wages_raw])
+    n_wages_raw = len(optim_paras["choices_w_wage"])
+    n_wages = sum(choice_set[:n_wages_raw])
 
-    draws_transformed[:num_wages] = np.exp(
-        np.clip(draws_transformed[:num_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
+    draws_transformed[:, :n_wages] = np.exp(
+        np.clip(draws_transformed[:, :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
     )
 
     return draws_transformed
