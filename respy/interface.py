@@ -52,9 +52,12 @@ def get_example_model(model, with_data=True):
     Parameters
     ----------
     model : str
-        Use arbitrary string to see all available models in traceback.
+        Choose one model name in ``{"robinson_crusoe_basic", "robinson_crusoe_extended",
+        kw_94_one", "kw_94_two", "kw_94_three", "kw_97_basic", "kw_97_extended"
+        "kw_2000"}``.
     with_data : bool
-        Whether the accompanying data set should be returned.
+        Whether the accompanying data set should be returned. For some data sets, real
+        data can be provided, for others, a simulated data set will be produced.
 
     """
     assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
@@ -80,7 +83,31 @@ def get_example_model(model, with_data=True):
 
 
 def get_parameter_constraints(model):
-    """Provide parameter constraints for the estimation compatible with estimagic."""
+    """Get parameter constraints for the estimation compatible with estimagic.
+
+    For more information, see the `documentation of estimagic
+    <https://estimagic.readthedocs.io/en/latest/optimization/constraints/
+    constraints.html>`_.
+
+    Parameters
+    ----------
+    model : str
+        Choose one model name in ``{"robinson_crusoe_basic", "robinson_crusoe_extended",
+        kw_94_one", "kw_94_two", "kw_94_three", "kw_97_basic", "kw_97_extended"
+        "kw_2000"}``.
+
+    Returns
+    -------
+    constraints : list[dict[str, str]]
+        A list of dictionaries specifying constraints.
+
+    Examples
+    --------
+    >>> constr = rp.get_parameter_constraints("robinson_crusoe_basic")
+    >>> constr
+    [{'loc': 'shocks_sdcorr', 'type': 'sdcorr'}, ...
+
+    """
     if "kw_94" in model:
         constraints = KW_94_CONSTRAINTS
     elif "kw_97_basic" == model:

@@ -1,3 +1,5 @@
+.. Keep the following section in sync with ./docs/index.rst.
+
 respy
 =====
 
@@ -24,13 +26,13 @@ respy
 
 ----
 
-``respy`` is an open source framework written in Python for the simulation and
+**respy** is an open source framework written in Python for the simulation and
 estimation of some finite-horizon discrete choice dynamic programming models. The group
-of models which can be currently represented in ``respy`` are called
+of models which can be currently represented in **respy** are called
 Eckstein-Keane-Wolpin models (Aguirregabiria and Mira (2010))
 
-What makes ``respy`` powerful is that it allows to build and solve structural models in
-weeks or months whose development previously took years. The design of ``respy`` allows
+What makes **respy** powerful is that it allows to build and solve structural models in
+weeks or months whose development previously took years. The design of **respy** allows
 the researcher to flexibly add the following components to her model.
 
 - **Any number of discrete choices** (e.g., working alternatives, schooling, home
@@ -52,7 +54,9 @@ the researcher to flexibly add the following components to her model.
   filter in maximum likelihood estimation or by adding the measurement error in
   simulation based approaches.
 
-You can install ``respy`` via conda with
+.. End of section
+
+You can install **respy** via conda with
 
 .. code-block:: bash
 
@@ -62,13 +66,22 @@ You can install ``respy`` via conda with
 Please visit our `online documentation <https://respy.readthedocs.io/en/latest/>`_ for
 tutorials and other information.
 
+As **respy** relies heavily on ``pandas``, you might also want to install their
+`recommended dependencies <https://pandas.pydata.org/pandas-docs/stable/getting_started/
+install.html#recommended-dependencies>`_ to speed up internal calculations done with
+`pd.eval <https://pandas.pydata.org/pandas-docs/stable/user_guide/enhancingperf.html
+#expression-evaluation-via-eval>`_.
+
+.. code-block:: bash
+
+    conda install -c conda-forge bottleneck numexpr
 
 .. Keep following section in sync with ./docs/additional_information/credits.rst.
 
 Citation
 --------
 
-``respy`` was completely rewritten in the second release and evolved into a general
+**respy** was completely rewritten in the second release and evolved into a general
 framework for the estimation of Eckstein-Keane-Wolpin models. Please cite it with
 
 .. code-block::
@@ -81,11 +94,11 @@ framework for the estimation of Eckstein-Keane-Wolpin models. Please cite it wit
       Url    = {https://github.com/OpenSourceEconomics/respy},
     }
 
-Before that, ``respy`` was developed by Philipp Eisenhauer and provided a package for
+Before that, **respy** was developed by Philipp Eisenhauer and provided a package for
 the simulation and estimation of a prototypical finite-horizon discrete choice dynamic
 programming model. At the heart of this release is a Fortran implementation with Python
 bindings which uses MPI and OMP to scale up to HPC clusters. It is accompanied by a pure
-Python implementation as teaching material. If you use ``respy`` up to version 1.2.1,
+Python implementation as teaching material. If you use **respy** up to version 1.2.1,
 please cite it with
 
 .. code-block::
@@ -99,7 +112,7 @@ please cite it with
       Url    = {https://doi.org/10.5281/zenodo.3011343}
     }
 
-We appreciate citations for ``respy`` because it helps us to find out how people have
+We appreciate citations for **respy** because it helps us to find out how people have
 been using the package and it motivates further work.
 
 

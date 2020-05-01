@@ -350,7 +350,7 @@ def _simulate_single_period(
         nonpecs,
         continuation_values,
         draws_shock_transformed,
-        optim_paras["delta"],
+        optim_paras["beta_delta"],
     )
     choice = np.nanargmax(value_functions, axis=1)
 
@@ -370,6 +370,7 @@ def _simulate_single_period(
     df["choice"] = choice
     df["wage"] = wage
     df["discount_rate"] = optim_paras["delta"]
+    df["present_bias"] = optim_paras["beta"]
 
     for i, choice in enumerate(valid_choices):
         df[f"nonpecuniary_reward_{choice}"] = nonpecs[:, i]

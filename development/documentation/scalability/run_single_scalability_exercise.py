@@ -8,7 +8,7 @@ def main():
     """Evaluate the criterion function multiple times for a scalability report.
 
     The criterion function is evaluated ``maxfun``-times. The number of threads used is
-    limited by environment variables. ``respy`` has to be imported after the environment
+    limited by environment variables. **respy** has to be imported after the environment
     variables are set as Numpy, Numba and others load them at import time.
 
     """

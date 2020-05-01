@@ -5,6 +5,8 @@ Development
 .. toctree::
     :maxdepth: 1
 
+    contributing_to_respy
     releases
     roadmap
-    randomness-and-reproducibility
+
+    template_for_tutorials
