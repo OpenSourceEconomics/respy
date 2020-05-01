@@ -161,21 +161,21 @@ class StateSpaceClass:
             }
         else:
             child_indices = self.get_attribute_from_period("child_indices", period)
-            value_functions = self.get_attribute_from_period(
+            expected_value_functions = self.get_attribute_from_period(
                 "expected_value_functions", period + 1
             )
-            expected_value_functions = Dict.empty(
+            subset_expected_value_functions = Dict.empty(
                 key_type=types.int64, value_type=types.float64[:]
             )
-            for key, value in value_functions.items():
-                expected_value_functions[key] = value
+            for key, value in expected_value_functions.items():
+                subset_expected_value_functions[key] = value
 
             continuation_values = _get_continuation_values(
                 self.get_attribute_from_period("index_to_indices", period),
                 self.get_attribute_from_period("index_to_complex", period),
                 child_indices,
                 self.core_to_index,
-                bypass={"expected_value_functions": expected_value_functions},
+                bypass={"expected_value_functions": subset_expected_value_functions},
             )
         return continuation_values
 
