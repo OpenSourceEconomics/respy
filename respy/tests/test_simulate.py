@@ -40,7 +40,7 @@ def test_one_step_ahead_simulation():
 
 
 @pytest.mark.end_to_end
-@pytest.mark.edgecase
+@pytest.mark.edge_case
 def test_equality_for_myopic_agents_and_tiny_delta():
     """Test equality of simulated data and likelihood with myopia and tiny delta."""
     # Get simulated data and likelihood for myopic model.
@@ -70,7 +70,7 @@ def test_equality_for_myopic_agents_and_tiny_delta():
 
 
 @pytest.mark.end_to_end
-@pytest.mark.edgecase
+@pytest.mark.edge_case
 def test_equality_of_models_with_and_without_observables():
     """Test equality of models with and without observables.
 

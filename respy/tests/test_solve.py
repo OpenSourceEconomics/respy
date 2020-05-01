@@ -219,7 +219,7 @@ def test_create_state_space_vs_specialized_kw97(model):
         assert np.array_equal(mask_old, adj_mask_new)
 
 
-@pytest.mark.edgecase
+@pytest.mark.edge_case
 @pytest.mark.integration
 def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
     params, options = get_example_model("kw_94_one", with_data=False)
@@ -232,7 +232,7 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
     assert (state_space.nonpecs[:, 3] == 17_750).all()
 
 
-@pytest.mark.edgecase
+@pytest.mark.edge_case
 @pytest.mark.integration
 def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
     params, options = get_example_model("kw_94_two", with_data=False)

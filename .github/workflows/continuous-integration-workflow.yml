@@ -7,6 +7,9 @@ on:
     branches:
     - '*'
 
+env:
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
 jobs:
   run-tests:
     name: Run tests for ${{ matrix.os }} on ${{ matrix.python-version }}
@@ -51,13 +54,13 @@ jobs:
         shell: bash -l {0}
         run: bash <(curl -s https://codecov.io/bash) -F unit_precise -c
 
-      - name: Run unit tests which are edge cases.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and unit and edge_case" --cov=./ --cov-report=xml
+      # - name: Run unit tests which are edge cases.
+      #   shell: bash -l {0}
+      #   run: tox -e pytest -- -m "not slow and unit and edge_case" --cov=./ --cov-report=xml
 
-      - name: Upload coverage report
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F unit_edge_case -c
+      # - name: Upload coverage report
+      #   shell: bash -l {0}
+      #   run: bash <(curl -s https://codecov.io/bash) -F unit_edge_case -c
 
       - name: Run unit tests which neither precise nor an edge case.
         shell: bash -l {0}

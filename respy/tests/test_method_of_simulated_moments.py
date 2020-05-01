@@ -34,7 +34,7 @@ def inputs():
     )
 
 
-@pytest.mark.edgecase
+@pytest.mark.edge_case
 @pytest.mark.end_to_end
 def test_msm_zero(inputs):
     """ Test whether msm function successfully returns 0 for true parameter
@@ -69,7 +69,7 @@ def test_msm_nonzero(inputs):
     assert msm_seed(inputs[0]) > 0
 
 
-@pytest.mark.edgecase
+@pytest.mark.edge_case
 @pytest.mark.end_to_end
 @pytest.mark.parametrize("model_or_seed", ["kw_94_one", "kw_97_basic"])
 def test_randomness_msm(model_or_seed):
