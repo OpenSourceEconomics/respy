@@ -88,16 +88,3 @@ def pytest_generate_tests(metafunc):
         # Else, parametrize with the seeds.
         else:
             metafunc.parametrize(argument, seeds)
-
-
-def pytest_configure(config):
-    """Register custom markers."""
-    markers = [
-        "precise: Tests that assert a numeric value is correct, up to rounding error.",
-        "edge_case: Tests that exploit edge cases with closed form solutions",
-        "unit: Unit tests, i.e. tests that only test one function in isolation.",
-        "integration: Tests that test the interplay of several functions.",
-        "end_to_end: Tests that test the whole system.",
-    ]
-    for marker in markers:
-        config.addinivalue_line("markers", marker)

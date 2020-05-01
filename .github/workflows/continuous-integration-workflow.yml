@@ -32,20 +32,94 @@ jobs:
         shell: bash -l {0}
         run: conda install -c conda-forge -c opensourceeconomics conda-build estimagic matplotlib
 
-      - name: Run pytest.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow" --cov-report=xml --cov=./
-
       - name: Validate codecov.yml
         if: runner.os == 'Linux' && matrix.python-version == '3.7'
         shell: bash -l {0}
         run: cat codecov.yml | curl --data-binary @- https://codecov.io/validate
 
-      - name: Upload coverage report.
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+      ###############
+      # Test Matrix #
+      ###############
+
+      # Unit tests.
+
+      - name: Run precise unit tests and doctests.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and unit and precise or (not integration and not end_to_end)" --cov=./ --cov-report=xml
+
+      - name: Upload coverage report
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F unit_precise -c
+
+      - name: Run unit tests which are edge cases.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and unit and edge_case" --cov=./ --cov-report=xml
+
+      - name: Upload coverage report
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F unit_edge_case -c
+
+      - name: Run unit tests which neither precise nor an edge case.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and unit and not precise and not edge_case" --cov=./ --cov-report=xml
+
+      - name: Upload coverage report
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F unit_rest -c
+
+      # Integration tests.
+
+      - name: Run precise integration tests.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and integration and precise" --cov=./ --cov-report=xml
+
+      - name: Upload coverage report
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F integration_precise -c
+
+      - name: Run integration tests which are edge cases.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and integration and edge_case" --cov=./ --cov-report=xml
+
+      - name: Upload coverage report
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F integration_edge_case -c
+
+      - name: Run integration tests which neither precise nor an edge case.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and integration and not precise and not edge_case" --cov=./ --cov-report=xml
+
+      - name: Upload coverage report
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F integration_rest -c
+
+      # End-to-end tests.
+
+      - name: Run precise end_to_end tests.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and end_to_end and precise" --cov=./ --cov-report=xml
+
+      - name: Upload coverage report
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F end_to_end_precise -c
+
+      - name: Run end_to_end tests which are edge cases.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and end_to_end and edge_case" --cov=./ --cov-report=xml
+
+      - name: Upload coverage report
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F end_to_end_edge_case -c
+
+      - name: Run end_to_end tests which neither precise nor an edge case.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and end_to_end and not precise and not edge_case" --cov=./ --cov-report=xml
+
+      - name: Upload coverage report
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F end_to_end_rest -c
+
+      # Run other tests.
 
       - name: Run sphinx.
         if: runner.os == 'Linux' && matrix.python-version == '3.7'

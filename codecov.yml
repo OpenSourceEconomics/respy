@@ -10,6 +10,35 @@ coverage:
       default:
         threshold: 5%
 
+flags:
+  unit_precise:
+    paths:
+      - .
+  unit_edge_case:
+    paths:
+      - .
+  unit_rest:
+    paths:
+      - .
+  integration_precise:
+    paths:
+      - .
+  integration_edge_case:
+    paths:
+      - .
+  integration_rest:
+    paths:
+      - .
+  end_to_end_precise:
+    paths:
+      - .
+  end_to_end_edge_case:
+    paths:
+      - .
+  end_to_end_rest:
+    paths:
+      - .
+
 ignore:
   - ".tox/**/*"
   - "release.py"
