@@ -32,6 +32,8 @@ def test_check_solution(model_or_seed):
     check_model_solution(optim_paras, options, state_space)
 
 
+@pytest.mark.integration
+@pytest.mark.precise
 @pytest.mark.parametrize("model", EXAMPLE_MODELS)
 def test_state_space_restrictions_by_traversing_forward(model):
     """Test for inadmissible states in the state space.
@@ -89,6 +91,7 @@ def test_state_space_restrictions_by_traversing_forward(model):
     assert set_valid_indices == set(range(state_space.core.shape[0]))
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_invariance_of_solution(model_or_seed):
     """Test for the invariance of the solution.
@@ -129,6 +132,8 @@ def test_invariance_of_solution(model_or_seed):
     )
 
 
+@pytest.mark.precise
+@pytest.mark.unit
 @pytest.mark.parametrize("model", KEANE_WOLPIN_1994_MODELS)
 def test_create_state_space_vs_specialized_kw94(model):
     point_constr = {"n_lagged_choices": 1, "observables": False}
@@ -166,6 +171,8 @@ def test_create_state_space_vs_specialized_kw94(model):
         assert np.array_equal(mask_old, mask_new)
 
 
+@pytest.mark.precise
+@pytest.mark.unit
 @pytest.mark.parametrize("model", KEANE_WOLPIN_1997_MODELS)
 def test_create_state_space_vs_specialized_kw97(model):
     params, options = process_model_or_seed(model)
@@ -212,6 +219,8 @@ def test_create_state_space_vs_specialized_kw97(model):
         assert np.array_equal(mask_old, adj_mask_new)
 
 
+@pytest.mark.edge_case
+@pytest.mark.integration
 def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
     params, options = get_example_model("kw_94_one", with_data=False)
 
@@ -223,6 +232,8 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
     assert (state_space.nonpecs[:, 3] == 17_750).all()
 
 
+@pytest.mark.edge_case
+@pytest.mark.integration
 def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
     params, options = get_example_model("kw_94_two", with_data=False)
 

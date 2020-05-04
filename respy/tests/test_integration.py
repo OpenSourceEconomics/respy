@@ -1,9 +1,12 @@
+import pytest
+
 from respy.likelihood import get_crit_func
 from respy.tests.random_model import add_noise_to_params
 from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
 
 
+@pytest.mark.end_to_end
 def test_simulation_and_estimation_with_different_models():
     """Test the evaluation of the criterion function not at the true parameters."""
     # Simulate a dataset
@@ -19,6 +22,7 @@ def test_simulation_and_estimation_with_different_models():
     crit_func(params)
 
 
+@pytest.mark.end_to_end
 def test_invariant_results_for_two_estimations():
     params, options = generate_random_model()
     df = simulate_truncated_data(params, options)
