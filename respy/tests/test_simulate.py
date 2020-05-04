@@ -13,6 +13,7 @@ from respy.tests.random_model import generate_random_model
 from respy.tests.utils import process_model_or_seed
 
 
+@pytest.mark.end_to_end
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_simulated_data(model_or_seed):
     """Test simulated data with ``check_simulated_data``.
@@ -30,6 +31,7 @@ def test_simulated_data(model_or_seed):
     check_simulated_data(optim_paras, df)
 
 
+@pytest.mark.end_to_end
 def test_one_step_ahead_simulation():
     params, options, df = rp.get_example_model("kw_97_basic")
     options["n_periods"] = 11
@@ -37,6 +39,8 @@ def test_one_step_ahead_simulation():
     df = simulate(params)
 
 
+@pytest.mark.end_to_end
+@pytest.mark.edge_case
 def test_equality_for_myopic_agents_and_tiny_delta():
     """Test equality of simulated data and likelihood with myopia and tiny delta."""
     # Get simulated data and likelihood for myopic model.
@@ -65,6 +69,8 @@ def test_equality_for_myopic_agents_and_tiny_delta():
     np.testing.assert_almost_equal(likelihood, likelihood_, decimal=12)
 
 
+@pytest.mark.end_to_end
+@pytest.mark.edge_case
 def test_equality_of_models_with_and_without_observables():
     """Test equality of models with and without observables.
 
@@ -110,6 +116,8 @@ def test_equality_of_models_with_and_without_observables():
     pd.testing.assert_frame_equal(df_, df)
 
 
+@pytest.mark.end_to_end
+@pytest.mark.precise
 def test_distribution_of_observables():
     """Test that the distribution of observables matches the simulated distribution."""
     # Now specify a set of observables

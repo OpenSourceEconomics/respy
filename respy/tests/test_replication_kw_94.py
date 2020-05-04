@@ -34,6 +34,8 @@ from respy.config import TEST_RESOURCES_DIR
 pytestmark = pytest.mark.slow
 
 
+@pytest.mark.end_to_end
+@pytest.mark.precise
 def test_table_6_exact_solution_row_mean_and_sd():
     """Replicate the first two rows of Table 6 in Keane and Wolpin (1994).
 
@@ -110,6 +112,8 @@ def test_table_6_exact_solution_row_mean_and_sd():
     assert (np.abs(diff) < kw_94_table_6.iloc[1]).all()
 
 
+@pytest.mark.end_to_end
+@pytest.mark.precise
 @pytest.mark.parametrize(
     "model, table",
     zip(
