@@ -1,0 +1,25 @@
+name: old-respy
+channels:
+  - opensourceeconomics
+  - conda-forge
+dependencies:
+  - python=3.6
+  - jupyterlab
+  - pip
+  - mkl
+  - numba
+  - pandas=0.23
+  - pdbpp
+  - pyyaml
+  - pytest
+  - pytest-cov
+  - pytest-xdist=1.29.0
+  - scipy
+  - seaborn
+  - snakeviz
+  - sphinx
+  - sphinx-autobuild
+  - tox-conda
+  - pip:
+    - sphinx_rtd_theme
+    - sphinxcontrib-bibtex

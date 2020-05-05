@@ -1,2 +1,6 @@
 *.sublime-project
 *.sublime-workspace
+doc/build/
+__pycache__/
+*.egg-info/
+.eggs/
