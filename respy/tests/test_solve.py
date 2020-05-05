@@ -12,6 +12,8 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_core_state_space_columns
 from respy.solve import get_solve_func
 from respy.state_space import _create_core_and_indexer
+from respy.state_space import _create_core_period_choice
+from respy.state_space import _create_indexer
 from respy.state_space import _insert_indices_of_child_states
 from respy.tests._former_code import _create_state_space_kw94
 from respy.tests._former_code import _create_state_space_kw97_base
@@ -53,40 +55,21 @@ def test_state_space_restrictions_by_traversing_forward(model):
     solve = get_solve_func(params, options)
     state_space = solve(params)
 
-    indices = np.full(
-        (state_space.core.shape[0], len(optim_paras["choices"])), INDEXER_INVALID_INDEX
-    )
-    core_columns = create_core_state_space_columns(optim_paras)
+    out = dict()
+    for x in state_space.child_indices.values():
+        print(x)
+        array = np.concatenate(x)
+        for state in array:
+            if state[0] in out.keys():
+                if state[1] not in out[state[0]]:
+                    out[state[0]].append(state[1])
+                else:
+                    continue
+            else:
+                out[state[0]] = [state[1]]
 
-    for period in range(options["n_periods"] - 1):
-
-        if period == 0:
-            states = state_space.core.query("period == 0")[core_columns].to_numpy(
-                np.int
-            )
-        else:
-            indices_period = state_space.indices_of_child_states[
-                state_space.slices_by_periods[period - 1]
-            ]
-            indices_period = indices_period[indices_period >= 0]
-            states = state_space.core[core_columns].to_numpy(np.int)[indices_period]
-
-        indices = _insert_indices_of_child_states(
-            indices,
-            states,
-            state_space.indexer[period],
-            state_space.indexer[period + 1],
-            state_space.is_inadmissible,
-            len(optim_paras["choices_w_exp"]),
-            optim_paras["n_lagged_choices"],
-        )
-
-    # Take all valid indices and add the indices of the first period.
-    set_valid_indices = set(indices[indices != INDEXER_INVALID_INDEX]) | set(
-        range(state_space.core.query("period == 0").shape[0])
-    )
-
-    assert set_valid_indices == set(range(state_space.core.shape[0]))
+    for x in out:
+        assert len(out[x]) == len(state_space.core_index_to_indices[x])
 
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
@@ -152,7 +135,17 @@ def test_create_state_space_vs_specialized_kw94(model):
             shape = idx.shape
             indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
-    states_new, indexer_new = _create_core_and_indexer(optim_paras, options)
+    states_new = _create_core_and_indexer(optim_paras, options)
+    core_period_choice = _create_core_period_choice(states_new, optim_paras, options)
+
+    # I think here we can get more elegant! Or is this the only way?
+    core_index_to_complex = {i: k for i, k in enumerate(core_period_choice)}
+    core_index_to_indices = {
+        i: core_period_choice[core_index_to_complex[i]] for i in core_index_to_complex
+    }
+
+    # Create sp indexer
+    indexer = _create_indexer(states_new, core_index_to_indices, optim_paras)
 
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))
@@ -161,9 +154,22 @@ def test_create_state_space_vs_specialized_kw94(model):
 
     # Compare indexers via masks for valid indices.
     for period in range(n_periods):
-        mask_old = indexer_old[period] != INDEXER_INVALID_INDEX
-        mask_new = indexer_new[period] != INDEXER_INVALID_INDEX
-        assert np.array_equal(mask_old, mask_new)
+        index_old_period = indexer_old[period]
+        index_old_period = index_old_period != INDEXER_INVALID_INDEX
+        index_old_period = np.nonzero(index_old_period)
+
+        indices_old = [
+            [period] + [index_old_period[x][i] for x in range(len(index_old_period))]
+            for i in range(len(index_old_period[0]))
+        ]
+
+        for index in indices_old:
+            assert tuple(index) in indexer.keys()
+
+        for index in indexer.keys():
+            print(index)
+            if index[0] == period:
+                assert list(index) in indices_old
 
 
 @pytest.mark.parametrize("model", KEANE_WOLPIN_1997_MODELS)
@@ -190,14 +196,21 @@ def test_create_state_space_vs_specialized_kw97(model):
         states_old, indexer_old = _create_state_space_kw97_extended(
             n_periods, n_types, edu_starts, edu_max
         )
-    if n_types == 1:
-        states_old = states_old[:, :-1]
-        for i, idx in enumerate(indexer_old):
-            shape = idx.shape
-            indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
-    states_new, indexer_new = _create_core_and_indexer(optim_paras, options)
-    states_new = pd.concat([states_new.copy().assign(type=i) for i in range(4)])
+    states_old = states_old[:, :-1]
+
+    states_new = _create_core_and_indexer(optim_paras, options)
+
+    core_period_choice = _create_core_period_choice(states_new, optim_paras, options)
+
+    # I think here we can get more elegant! Or is this the only way?
+    core_index_to_complex = {i: k for i, k in enumerate(core_period_choice)}
+    core_index_to_indices = {
+        i: core_period_choice[core_index_to_complex[i]] for i in core_index_to_complex
+    }
+
+    # Create sp indexer
+    indexer = _create_indexer(states_new, core_index_to_indices, optim_paras)
 
     # Compare the state spaces via sets as ordering changed in some cases.
     states_old_set = set(map(tuple, states_old))
@@ -206,10 +219,23 @@ def test_create_state_space_vs_specialized_kw97(model):
 
     # Compare indexers via masks for valid indices.
     for period in range(n_periods):
-        mask_old = indexer_old[period] != INDEXER_INVALID_INDEX
-        mask_new = indexer_new[period] != INDEXER_INVALID_INDEX
-        adj_mask_new = np.repeat(mask_new, 4).reshape(mask_old.shape)
-        assert np.array_equal(mask_old, adj_mask_new)
+        index_old_period = indexer_old[period] != INDEXER_INVALID_INDEX
+        index_old_period = np.nonzero(index_old_period)
+
+        indices_old = [
+            [period]
+            + [index_old_period[x][i] for x in range(len(index_old_period) - 1)]
+            for i in range(len(index_old_period[0]))
+        ]
+
+        for index in indexer.keys():
+
+            if index[0] == period:
+                print(index)
+                assert list(index) in indices_old
+
+        for index in indices_old:
+            assert tuple(index) in indexer.keys()
 
 
 def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
@@ -218,9 +244,11 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
     solve = get_solve_func(params, options)
     state_space = solve(params)
 
-    assert (state_space.nonpecs[:, :2] == 0).all()
-    assert np.isin(state_space.nonpecs[:, 2], [0, -4_000, -400_000, -404_000]).all()
-    assert (state_space.nonpecs[:, 3] == 17_750).all()
+    for arr in state_space.nonpecs.values():
+        assert (arr[:, :2] == 0).all()
+        assert (arr[:, -1] == 17_750).all()
+        if arr.shape[1] == 4:
+            np.isin(arr[:, 2], [0, -4_000, -400_000, -404_000]).all()
 
 
 def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
@@ -229,8 +257,8 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
     solve = get_solve_func(params, options)
     state_space = solve(params)
 
-    assert (state_space.nonpecs[:, :2] == 0).all()
-    assert np.isin(
-        state_space.nonpecs[:, 2], [5_000, 0, -10_000, -15_000, -400_000, -415_000]
-    ).all()
-    assert (state_space.nonpecs[:, 3] == 14_500).all()
+    for arr in state_space.nonpecs.values():
+        assert (arr[:, :2] == 0).all()
+        assert (arr[:, -1] == 14_500).all()
+        if arr.shape[1] == 4:
+            np.isin(arr[:, 2], [5_000, 0, -10_000, -15_000, -400_000, -415_000]).all()

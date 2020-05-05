@@ -115,18 +115,22 @@ def check_model_solution(optim_paras, options, state_space):
     assert not state_space.core.duplicated().any()
 
     # Check that we have as many indices as states.
-    n_valid_indices = sum((indexer >= 0).sum() for indexer in state_space.indexer)
+    n_valid_indices = len(state_space.indexer)
     assert state_space.core.shape[0] == n_valid_indices
 
     # Check finiteness of rewards and emaxs.
     assert np.all(
-        _apply_to_attribute_of_state_space(
-            state_space.get_attribute("wages"), np.isfinite
+        np.concatenate(
+            _apply_to_attribute_of_state_space(
+                state_space.get_attribute("wages"), np.isfinite
+            )
         )
     )
     assert np.all(
-        _apply_to_attribute_of_state_space(
-            state_space.get_attribute("nonpecs"), np.isfinite
+        np.concatenate(
+            _apply_to_attribute_of_state_space(
+                state_space.get_attribute("nonpecs"), np.isfinite
+            )
         )
     )
     assert np.all(
