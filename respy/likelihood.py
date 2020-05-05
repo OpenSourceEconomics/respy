@@ -562,28 +562,35 @@ def _adjust_optim_paras_for_estimation(optim_paras, df):
 
 def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
     """Create DataFrame for estimagic's comparison plot."""
+    df = df.copy()
+
+    df["choice"] = df["choice"].replace(dict(enumerate(optim_paras["choices"])))
+
     # During the likelihood calculation, the log likelihood for missing wages is
     # substituted with 0. Remove these log likelihoods to get the correct picture.
-    df = df.loc[df.log_wage.notna()]
+    is_wage_missing = df.log_wage.isna() & df.choice.isin(optim_paras["choices_w_wage"])
+    df.loc[is_wage_missing, "loglike_wage"] = np.nan
 
     # Keep the log likelihood and the choice.
     columns = df.filter(like="loglike").columns.tolist() + ["choice"]
     df = df[columns]
 
-    df["choice"] = df["choice"].replace(dict(enumerate(optim_paras["choices"])))
-
     df = df.reset_index().melt(id_vars=["identifier", "period", "choice"])
 
     splitted_label = df.variable.str.split("_", expand=True)
     df["kind"] = splitted_label[1]
-    df = df.drop(columns="variable")
+    df = df.drop(columns="variable").dropna()
 
     if log_type_probabilities is not None:
-        log_type_probabilities = log_type_probabilities.reset_index().melt(
-            id_vars=["identifier", "period"],
-            value_vars=range(optim_paras["n_types"]),
-            var_name="type",
-            value_name="log_type_probability",
+        log_type_probabilities = (
+            log_type_probabilities.copy()
+            .reset_index()
+            .melt(
+                id_vars=["identifier", "period"],
+                value_vars=range(optim_paras["n_types"]),
+                var_name="type",
+                value_name="log_type_probability",
+            )
         )
 
         df = df.append(log_type_probabilities, sort=False)
