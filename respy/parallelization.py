@@ -5,7 +5,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from respy.shared import create_dense_state_space_columns
+import respy.shared
 
 
 def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
@@ -135,7 +135,7 @@ def split_and_combine_likelihood(func):
     def wrapper_distribute_and_combine_likelihood(
         df, base_draws_est, *args, optim_paras, options
     ):
-        dense_columns = create_dense_state_space_columns(optim_paras)
+        dense_columns = respy.shared.create_dense_state_space_columns(optim_paras)
         # Duplicate the DataFrame for each type.
         if dense_columns:
             n_obs = df.shape[0]

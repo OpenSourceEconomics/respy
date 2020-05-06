@@ -8,8 +8,6 @@ from numba import types
 from numba.typed.typeddict import Dict
 
 from respy._numba import array_to_tuple
-from respy.config import MAX_LOG_FLOAT
-from respy.config import MIN_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
@@ -18,7 +16,6 @@ from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import return_core_dense_key
-from respy.shared import subset_to_choice
 from respy.shared import subset_to_period
 
 
@@ -730,41 +727,3 @@ def _collect_child_indices(
     )
 
     return indices
-
-
-@parallelize_across_dense_dimensions
-def transform_base_draws_with_cholesky_factor(
-    draws, choice_set, shocks_cholesky, optim_paras
-):
-    r"""Transform standard normal draws with the Cholesky factor.
-
-    The standard normal draws are transformed to normal draws with variance-covariance
-    matrix :math:`\Sigma` by multiplication with the Cholesky factor :math:`L` where
-    :math:`L^TL = \Sigma`. See chapter 7.4 in [1]_ for more information.
-
-    This function relates to :func:`create_base_draws` in the sense that it transforms
-    the unchanging standard normal draws to the distribution with the
-    variance-covariance matrix specified by the parameters.
-
-    References
-    ----------
-    .. [1] Gentle, J. E. (2009). Computational statistics (Vol. 308). New York:
-           Springer.
-
-    See also
-    --------
-    create_base_draws
-
-    """
-    shocks_cholesky = subset_to_choice(shocks_cholesky, choice_set)
-    draws_transformed = draws.dot(shocks_cholesky.T)
-
-    # Check how many wages we have
-    n_wages_raw = len(optim_paras["choices_w_wage"])
-    n_wages = sum(choice_set[:n_wages_raw])
-
-    draws_transformed[:, :n_wages] = np.exp(
-        np.clip(draws_transformed[:, :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
-    )
-
-    return draws_transformed
