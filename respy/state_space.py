@@ -543,8 +543,6 @@ def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
 
 
 def create_is_inadmissible(df, optim_paras, options):
-    df = df.copy()
-
     for choice in optim_paras["choices"]:
         df[f"_{choice}"] = False
         for formula in options["inadmissible_states"][choice]:
@@ -552,6 +550,8 @@ def create_is_inadmissible(df, optim_paras, options):
                 df[f"_{choice}"] |= df.eval(formula)
             except pd.core.computation.ops.UndefinedVariableError:
                 pass
+
+        # df[f"_{choice}"] = df[f"_{choice}"].astype(np.bool_)
 
     return df
 
@@ -616,7 +616,7 @@ def _create_dense_period_choice(
         dense_period_choice = {}
         for core_idx, indices in core_index_to_indices.items():
             for dense_idx, (_, dense_vec) in enumerate(dense.items()):
-                df = core.copy().loc[indices].assign(**dense_vec)
+                df = core.loc[indices].copy().assign(**dense_vec)
                 df = compute_covariates(df, options["covariates_all"])
                 df = create_is_inadmissible(df, optim_paras, options)
                 df[choices] = ~df[choices]
@@ -629,7 +629,7 @@ def _create_dense_period_choice(
                 )
                 period_choice = {
                     (core_index_to_complex[core_idx][0], idx, dense_idx): core_idx
-                    for idx, indices in df.groupby(choices).groups.items()
+                    for idx, indices in grouper.items()
                 }
 
                 dense_period_choice = {**dense_period_choice, **period_choice}

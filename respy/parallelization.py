@@ -5,7 +5,6 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from respy.shared import create_dense_choice_state_space_columns
 from respy.shared import create_dense_state_space_columns
 
 
@@ -56,7 +55,7 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
                 else:
                     out = dict(zip(dense_indices, out))
             else:
-                out = func(*args, **kwargs)
+                out = func(*args, **kwargs, **bypass)
 
             return out
 
@@ -112,8 +111,10 @@ def combine_and_split_interpolation(func):
 
 def split_and_combine_df(func=None, *, remove_type=False):
     """Split the data across sub state spaces and combine.
+
     This function groups the data according to the dense variables. `remove_type` is
     used to prevent grouping by types which might not be possible.
+
     """
 
     def decorator_split_and_combine_df(func):
