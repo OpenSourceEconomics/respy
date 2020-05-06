@@ -33,7 +33,7 @@ def create_state_space_class(optim_paras, options):
     core_period_choice = _create_core_period_choice(core, optim_paras, options)
 
     # I think here we can get more elegant! Or is this the only way?
-    core_index_to_complex = {i: k for i, k in enumerate(core_period_choice)}
+    core_index_to_complex = dict(enumerate(core_period_choice))
     core_index_to_indices = {
         i: core_period_choice[core_index_to_complex[i]] for i in core_index_to_complex
     }
