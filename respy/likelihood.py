@@ -300,7 +300,7 @@ def _compute_log_type_probabilities(df, optim_paras, options):
     return log_probabilities
 
 
-@split_and_combine_df(remove_type=True)
+@split_and_combine_df
 @parallelize_across_dense_dimensions
 def _compute_x_beta_for_type_probabilities(df, optim_paras, options):
     for type_ in range(optim_paras["n_types"]):
