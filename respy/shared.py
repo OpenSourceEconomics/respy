@@ -148,7 +148,7 @@ def transform_base_draws_with_cholesky_factor(
     create_base_draws
 
     """
-    shocks_cholesky = subset_to_choice(shocks_cholesky, choice_set)
+    shocks_cholesky = subset_cholesky_factor_to_choice_set(shocks_cholesky, choice_set)
     draws_transformed = draws.dot(shocks_cholesky.T)
 
     # Check how many wages we have
@@ -518,20 +518,23 @@ def convert_dictionary_keys_to_dense_indices(dictionary):
 def subset_to_period(state_dict, dense_index_to_complex, period):
     """Get all sp parts of a particular period."""
     period_keys = [x for x, y in dense_index_to_complex.items() if y[0] == period]
-    out = {key: state_dict[key] for key in state_dict.keys() if key in period_keys}
+    out = {key: value for key, value in state_dict.items() if key in period_keys}
     return out
 
 
-def subset_to_choice(matrix, choice_set):
-    """Curtial the shock matrix to dimesions required by the admissible choice set."""
-    delete = [i for i, x in enumerate(choice_set) if bool(x) is False]
-    out = np.delete(np.delete(matrix, delete, 0), delete, 1)
+def subset_cholesky_factor_to_choice_set(cholesky_factor, choice_set):
+    """Subset the Cholesky factor to dimensions required by the admissible choice set.
+
+    Example
+    -------
+    >>> m = np.arange(9).reshape(3, 3)
+    >>> subset_cholesky_factor_to_choice_set(m, (False, True, False))
+    array([[4]])
+
+    """
+    rows_cols_to_keep = np.where(choice_set)[0]
+    out = cholesky_factor[rows_cols_to_keep][:, rows_cols_to_keep]
     return out
-
-
-def return_valid_choices(choice_set, optim_paras):
-    """Return the name of all admissible choices under a certain choice set."""
-    return [x for i, x in enumerate(optim_paras["choices"]) if bool(choice_set[i])]
 
 
 def return_core_dense_key(core_idx, dense=False):

@@ -21,7 +21,6 @@ from respy.shared import downcast_to_smallest_dtype
 from respy.shared import pandas_dot
 from respy.shared import rename_labels_from_internal
 from respy.shared import rename_labels_to_internal
-from respy.shared import return_valid_choices
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.solve import get_solve_func
 from respy.state_space import create_is_inadmissible
@@ -316,7 +315,7 @@ def _simulate_single_period(
     - Store additional information in a :class:`pandas.DataFrame` and return it.
 
     """
-    valid_choices = return_valid_choices(choice_set, optim_paras)
+    valid_choices = [x for i, x in enumerate(optim_paras["choices"]) if choice_set[i]]
 
     # TODO: Write a function maybe!
     n_wages_raw = len(optim_paras["choices_w_wage"])
@@ -327,7 +326,7 @@ def _simulate_single_period(
     # only wages in this period and normal indices select rows from all wages.
     # TODO: This only works as long as we have no mixed constraints!
 
-    period_indices = df["position"].to_numpy()  #
+    period_indices = df["position"].to_numpy()
     try:
         wages = wages[period_indices]
         nonpecs = nonpecs[period_indices]

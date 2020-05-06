@@ -153,7 +153,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         if optim_paras["delta"] == 0:
             if hasattr(state_space, "sub_state_spaces"):
                 period_expected_value_functions = {
-                    dense_idx: {key: 0 for key in wages.keys()}
+                    dense_idx: {key: 0 for key in wages}
                     for dense_idx in state_space.sub_state_spaces
                 }
             else:
