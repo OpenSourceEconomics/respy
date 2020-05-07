@@ -14,7 +14,7 @@ def array_to_tuple(tyctx, array_or_dict, indexer_array):
 
     Parameters
     ----------
-    array : numpy.ndarray
+    array_or_dict : numpy.ndarray or numba.typed.Dict
         Array for which the indexer is used.
     indexer_array : numpy.ndarray
         Array which should be converted to a tuple.

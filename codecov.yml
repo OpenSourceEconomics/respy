@@ -1,14 +1,41 @@
 coverage:
-  range: 50...100
   precision: 2
   round: down
+  range: 80...100
   status:
     project:
       default:
-        threshold: 5%
-    patch:
-      default:
-        threshold: 5%
+        threshold: 1%
+      patch:
+        default:
+          threshold: 5%
+      unit_precise:
+        flags:
+          - unit_precise
+      # unit_edge_case:
+      #   flags:
+      #     - unit_edge_case
+      unit_rest:
+        flags:
+          - unit_rest
+      integration_precise:
+        flags:
+          - integration_precise
+      integration_edge_case:
+        flags:
+          - integration_edge_case
+      integration_rest:
+        flags:
+          - integration_rest
+      end_to_end_precise:
+        flags:
+          - end_to_end_precise
+      end_to_end_edge_case:
+        flags:
+          - end_to_end_edge_case
+      end_to_end_rest:
+        flags:
+          - end_to_end_rest
 
 ignore:
   - ".tox/**/*"

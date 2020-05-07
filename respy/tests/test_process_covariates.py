@@ -2,10 +2,13 @@ import io
 from textwrap import dedent
 
 import pandas as pd
+import pytest
 
 from respy.pre_processing.process_covariates import remove_irrelevant_covariates
 
 
+@pytest.mark.unit
+@pytest.mark.precise
 def test_identify_relevant_covariates():
     params = pd.read_csv(
         io.StringIO(

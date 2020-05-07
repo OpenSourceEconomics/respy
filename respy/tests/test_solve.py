@@ -11,8 +11,8 @@ from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_core_state_space_columns
 from respy.solve import get_solve_func
-from respy.state_space import _create_core_and_indexer
 from respy.state_space import _create_core_period_choice
+from respy.state_space import _create_core_state_space
 from respy.state_space import _create_indexer
 from respy.state_space import _insert_indices_of_child_states
 from respy.tests._former_code import _create_state_space_kw94
@@ -35,6 +35,8 @@ def test_check_solution(model_or_seed):
     check_model_solution(optim_paras, options, state_space)
 
 
+@pytest.mark.integration
+@pytest.mark.precise
 @pytest.mark.parametrize("model", EXAMPLE_MODELS)
 def test_state_space_restrictions_by_traversing_forward(model):
     """Test for inadmissible states in the state space.
@@ -73,6 +75,7 @@ def test_state_space_restrictions_by_traversing_forward(model):
         assert len(out[x]) == len(state_space.core_index_to_indices[x])
 
 
+@pytest.mark.integration
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_invariance_of_solution(model_or_seed):
     """Test for the invariance of the solution.
@@ -113,6 +116,8 @@ def test_invariance_of_solution(model_or_seed):
     )
 
 
+@pytest.mark.precise
+@pytest.mark.unit
 @pytest.mark.parametrize("model", KEANE_WOLPIN_1994_MODELS)
 def test_create_state_space_vs_specialized_kw94(model):
     point_constr = {"n_lagged_choices": 1, "observables": False}
@@ -136,7 +141,7 @@ def test_create_state_space_vs_specialized_kw94(model):
             shape = idx.shape
             indexer_old[i] = idx.reshape(shape[:-2] + (-1,))
 
-    states_new = _create_core_and_indexer(optim_paras, options)
+    states_new = _create_core_state_space(optim_paras, options)
     core_period_choice = _create_core_period_choice(states_new, optim_paras, options)
 
     # I think here we can get more elegant! Or is this the only way?
@@ -173,6 +178,8 @@ def test_create_state_space_vs_specialized_kw94(model):
                 assert list(index) in indices_old
 
 
+@pytest.mark.precise
+@pytest.mark.unit
 @pytest.mark.parametrize("model", KEANE_WOLPIN_1997_MODELS)
 def test_create_state_space_vs_specialized_kw97(model):
     params, options = process_model_or_seed(model)
@@ -200,7 +207,7 @@ def test_create_state_space_vs_specialized_kw97(model):
 
     states_old = states_old[:, :-1]
 
-    states_new = _create_core_and_indexer(optim_paras, options)
+    states_new = _create_core_state_space(optim_paras, options)
 
     core_period_choice = _create_core_period_choice(states_new, optim_paras, options)
 
@@ -239,6 +246,8 @@ def test_create_state_space_vs_specialized_kw97(model):
             assert tuple(index) in indexer.keys()
 
 
+@pytest.mark.edge_case
+@pytest.mark.integration
 def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
     params, options = get_example_model("kw_94_one", with_data=False)
 
@@ -252,6 +261,8 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
             np.isin(arr[:, 2], [0, -4_000, -400_000, -404_000]).all()
 
 
+@pytest.mark.edge_case
+@pytest.mark.integration
 def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
     params, options = get_example_model("kw_94_two", with_data=False)
 

@@ -8,8 +8,6 @@ from numba import types
 from numba.typed.typeddict import Dict
 
 from respy._numba import array_to_tuple
-from respy.config import MAX_LOG_FLOAT
-from respy.config import MIN_LOG_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
@@ -18,13 +16,12 @@ from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import return_core_dense_key
-from respy.shared import subset_to_choice
 from respy.shared import subset_to_period
 
 
 def create_state_space_class(optim_paras, options):
-    """Take all preperations for creating a sp object and create it."""
-    core = _create_core_and_indexer(optim_paras, options)
+    """Create the state space of the model."""
+    core = _create_core_state_space(optim_paras, options)
     dense_grid = _create_dense_state_space_grid(optim_paras)
 
     # Downcast after calculations or be aware of silent integer overflows.
@@ -32,16 +29,13 @@ def create_state_space_class(optim_paras, options):
     core = core.apply(downcast_to_smallest_dtype)
     dense = _create_dense_state_space_covariates(dense_grid, optim_paras, options)
 
-    # Create choice_period_core
     core_period_choice = _create_core_period_choice(core, optim_paras, options)
 
-    # I think here we can get more elegant! Or is this the only way?
-    core_index_to_complex = {i: k for i, k in enumerate(core_period_choice)}
+    core_index_to_complex = dict(enumerate(core_period_choice))
     core_index_to_indices = {
-        i: core_period_choice[core_index_to_complex[i]] for i in core_index_to_complex
+        i: core_period_choice[complex_] for i, complex_ in core_index_to_complex.items()
     }
 
-    # Create sp indexer
     indexer = _create_indexer(core, core_index_to_indices, optim_paras)
 
     dense_period_choice = _create_dense_period_choice(
@@ -265,12 +259,12 @@ class StateSpaceClass:
 
     def set_attribute_from_keys(self, attribute, value):
         """Set attributes by keys."""
-        for key in value.keys():
+        for key in value:
             self.get_attribute_from_key(attribute, key)[:] = value[key]
 
 
-def _create_core_and_indexer(optim_paras, options):
-    """Create the state space.
+def _create_core_state_space(optim_paras, options):
+    """Create the core state space.
 
     The state space of the model are all feasible combinations of the period,
     experiences, lagged choices and types.
@@ -327,14 +321,14 @@ def _create_core_and_indexer(optim_paras, options):
 
     See also
     --------
-    _create_core_state_space
+    _create_core_from_choice_experiences
     _create_core_state_space_per_period
     _filter_core_state_space
     _add_initial_experiences_to_core_state_space
     _create_core_state_space_indexer
 
     """
-    core = _create_core_state_space(optim_paras)
+    core = _create_core_from_choice_experiences(optim_paras)
 
     core = _add_lagged_choice_to_core_state_space(core, optim_paras)
 
@@ -347,8 +341,8 @@ def _create_core_and_indexer(optim_paras, options):
     return core
 
 
-def _create_core_state_space(optim_paras):
-    """Create the core state space.
+def _create_core_from_choice_experiences(optim_paras):
+    """Create the core state space from choice experiences.
 
     The core state space abstracts from initial experiences and uses the maximum range
     between initial experiences and maximum experiences to cover the whole range. The
@@ -545,8 +539,6 @@ def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
 
 
 def create_is_inadmissible(df, optim_paras, options):
-    df = df.copy()
-
     for choice in optim_paras["choices"]:
         df[f"_{choice}"] = False
         for formula in options["inadmissible_states"][choice]:
@@ -555,23 +547,9 @@ def create_is_inadmissible(df, optim_paras, options):
             except pd.core.computation.ops.UndefinedVariableError:
                 pass
 
+        # df[f"_{choice}"] = df[f"_{choice}"].astype(np.bool_)
+
     return df
-
-
-def _split_core_state_space(core, optim_paras):
-    """
-    This function splits the sp according to period and choice set
-    """
-    periodic_cores = {idx: sub for idx, sub in core.groupby("period")}
-    periodic_choice_cores = {
-        (period, choice_set): sub.index
-        for period in periodic_cores
-        for choice_set, sub in periodic_cores[period].groupby(
-            list(optim_paras["choices"])
-        )
-    }
-
-    return periodic_choice_cores
 
 
 def _create_indexer(core, core_index_to_indices, optim_paras):
@@ -591,9 +569,7 @@ def _create_indexer(core, core_index_to_indices, optim_paras):
 
 
 def _create_core_period_choice(core, optim_paras, options):
-    """
-
-    """
+    """Create the core separated into period-choice cores."""
     choices = [f"_{choice}" for choice in optim_paras["choices"]]
     df = core.copy()
     df = create_is_inadmissible(df, optim_paras, options)
@@ -608,30 +584,27 @@ def _create_core_period_choice(core, optim_paras, options):
 def _create_dense_period_choice(
     core, dense, core_index_to_indices, core_index_to_complex, optim_paras, options
 ):
-    """
-
-    """
-    if dense is False:
+    """Create dense period choice parts of the state space."""
+    if not dense:
         return {k: i for i, k in core_index_to_complex.items()}
     else:
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
         dense_period_choice = {}
         for core_idx, indices in core_index_to_indices.items():
             for dense_idx, (_, dense_vec) in enumerate(dense.items()):
-                df = core.copy().loc[indices].assign(**dense_vec)
+                df = core.loc[indices].copy().assign(**dense_vec)
                 df = compute_covariates(df, options["covariates_all"])
                 df = create_is_inadmissible(df, optim_paras, options)
                 df[choices] = ~df[choices]
                 grouper = df.groupby(choices).groups
                 assert len(grouper) == 1, (
-                    "Choice restrictions cannot interact between core"
-                    " and dense information such that heterogenous choice"
-                    " sets within a period are created. Use penalties in the "
-                    "utility functions for that."
+                    "Choice restrictions cannot interact between core and dense "
+                    "information such that heterogeneous choice sets within a period "
+                    "are created. Use penalties in the utility functions for that. "
                 )
                 period_choice = {
                     (core_index_to_complex[core_idx][0], idx, dense_idx): core_idx
-                    for idx, indices in df.groupby(choices).groups.items()
+                    for idx, indices in grouper.items()
                 }
 
                 dense_period_choice = {**dense_period_choice, **period_choice}
@@ -678,7 +651,7 @@ def _insert_indices_of_child_states(
 
 
 @parallelize_across_dense_dimensions
-@nb.njit(parallel=True)
+@nb.njit
 def _get_continuation_values(
     core_indices,
     dense_complex_index,
@@ -702,8 +675,8 @@ def _get_continuation_values(
     n_states = core_indices.shape[0]
 
     continuation_values = np.zeros((len(core_indices), n_choices))
-    for i in nb.prange(n_states):
-        for j in nb.prange(n_choices):
+    for i in range(n_states):
+        for j in range(n_choices):
             core_idx, row_idx = child_indices[i, j]
             idx = (core_idx, dense_idx)
             dense_choice = core_index_and_dense_vector_to_dense_index[idx]
@@ -733,41 +706,3 @@ def _collect_child_indices(
     )
 
     return indices
-
-
-@parallelize_across_dense_dimensions
-def transform_base_draws_with_cholesky_factor(
-    draws, choice_set, shocks_cholesky, optim_paras
-):
-    r"""Transform standard normal draws with the Cholesky factor.
-
-    The standard normal draws are transformed to normal draws with variance-covariance
-    matrix :math:`\Sigma` by multiplication with the Cholesky factor :math:`L` where
-    :math:`L^TL = \Sigma`. See chapter 7.4 in [1]_ for more information.
-
-    This function relates to :func:`create_base_draws` in the sense that it transforms
-    the unchanging standard normal draws to the distribution with the
-    variance-covariance matrix specified by the parameters.
-
-    References
-    ----------
-    .. [1] Gentle, J. E. (2009). Computational statistics (Vol. 308). New York:
-           Springer.
-
-    See also
-    --------
-    create_base_draws
-
-    """
-    shocks_cholesky = subset_to_choice(shocks_cholesky, choice_set)
-    draws_transformed = draws.dot(shocks_cholesky.T)
-
-    # Check how many wages we have
-    n_wages_raw = len(optim_paras["choices_w_wage"])
-    n_wages = sum(choice_set[:n_wages_raw])
-
-    draws_transformed[:, :n_wages] = np.exp(
-        np.clip(draws_transformed[:, :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
-    )
-
-    return draws_transformed

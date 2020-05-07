@@ -5,8 +5,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from respy.shared import create_dense_choice_state_space_columns
-from respy.shared import create_dense_state_space_columns
+import respy.shared
 
 
 def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
@@ -56,7 +55,7 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
                 else:
                     out = dict(zip(dense_indices, out))
             else:
-                out = func(*args, **kwargs)
+                out = func(*args, **kwargs, **bypass)
 
             return out
 
@@ -110,29 +109,18 @@ def combine_and_split_interpolation(func):
     return wrapper_combine_and_split_interpolation
 
 
-def split_and_combine_df(func=None, *, remove_type=False):
-    """Split the data across sub state spaces and combine.
-    This function groups the data according to the dense variables. `remove_type` is
-    used to prevent grouping by types which might not be possible.
-    """
+def split_and_combine_df(func):
+    """Split the data across dense indices, run a function, and combine again."""
 
-    def decorator_split_and_combine_df(func):
-        @functools.wraps(func)
-        def wrapper_distribute_and_combine_df(df, *args, **kwargs):
+    @functools.wraps(func)
+    def wrapper_distribute_and_combine_df(df, *args, **kwargs):
+        splitted_df = _split_dataframe(df)
+        out = func(splitted_df, *args, **kwargs)
+        df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
 
-            splitted_df = _split_dataframe(df)
-            out = func(splitted_df, *args, **kwargs)
-            df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
+        return df
 
-            return df
-
-        return wrapper_distribute_and_combine_df
-
-    # Ensures that the decorator can be used without parentheses.
-    if callable(func):
-        return decorator_split_and_combine_df(func)
-    else:
-        return decorator_split_and_combine_df
+    return wrapper_distribute_and_combine_df
 
 
 def split_and_combine_likelihood(func):
@@ -147,7 +135,7 @@ def split_and_combine_likelihood(func):
     def wrapper_distribute_and_combine_likelihood(
         df, base_draws_est, *args, optim_paras, options
     ):
-        dense_columns = create_dense_state_space_columns(optim_paras)
+        dense_columns = respy.shared.create_dense_state_space_columns(optim_paras)
         # Duplicate the DataFrame for each type.
         if dense_columns:
             n_obs = df.shape[0]
@@ -250,9 +238,7 @@ def _is_dense_dictionary_argument(argument, dense_indices):
 
 def _split_dataframe(df):
     """Split a DataFrame by creating groups of the same values for the dense dims."""
-    groups = {name: group for name, group in df.groupby("dense_index")}
-
-    return groups
+    return {name: group for name, group in df.groupby("dense_index")}
 
 
 def _split_shocks(base_draws_est, splitted_df, indices, optim_paras):

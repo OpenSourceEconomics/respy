@@ -9,6 +9,10 @@ import numba as nb
 import numpy as np
 import pandas as pd
 
+from respy.config import MAX_LOG_FLOAT
+from respy.config import MIN_LOG_FLOAT
+from respy.parallelization import parallelize_across_dense_dimensions
+
 
 @nb.njit
 def aggregate_keane_wolpin_utility(wage, nonpec, continuation_value, draw, delta):
@@ -118,6 +122,44 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
         raise NotImplementedError
 
     return draws
+
+
+@parallelize_across_dense_dimensions
+def transform_base_draws_with_cholesky_factor(
+    draws, choice_set, shocks_cholesky, optim_paras
+):
+    r"""Transform standard normal draws with the Cholesky factor.
+
+    The standard normal draws are transformed to normal draws with variance-covariance
+    matrix :math:`\Sigma` by multiplication with the Cholesky factor :math:`L` where
+    :math:`L^TL = \Sigma`. See chapter 7.4 in [1]_ for more information.
+
+    This function relates to :func:`create_base_draws` in the sense that it transforms
+    the unchanging standard normal draws to the distribution with the
+    variance-covariance matrix specified by the parameters.
+
+    References
+    ----------
+    .. [1] Gentle, J. E. (2009). Computational statistics (Vol. 308). New York:
+           Springer.
+
+    See also
+    --------
+    create_base_draws
+
+    """
+    shocks_cholesky = subset_cholesky_factor_to_choice_set(shocks_cholesky, choice_set)
+    draws_transformed = draws.dot(shocks_cholesky.T)
+
+    # Check how many wages we have
+    n_wages_raw = len(optim_paras["choices_w_wage"])
+    n_wages = sum(choice_set[:n_wages_raw])
+
+    draws_transformed[:, :n_wages] = np.exp(
+        np.clip(draws_transformed[:, :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
+    )
+
+    return draws_transformed
 
 
 def generate_column_dtype_dict_for_estimation(optim_paras):
@@ -324,7 +366,7 @@ def normalize_probabilities(probabilities):
 @nb.guvectorize(
     ["f8, f8, f8, f8, f8, f8[:], f8[:]"],
     "(), (), (), (), () -> (), ()",
-    nopython=False,
+    nopython=True,
     target="parallel",
 )
 def calculate_value_functions_and_flow_utilities(
@@ -476,20 +518,23 @@ def convert_dictionary_keys_to_dense_indices(dictionary):
 def subset_to_period(state_dict, dense_index_to_complex, period):
     """Get all sp parts of a particular period."""
     period_keys = [x for x, y in dense_index_to_complex.items() if y[0] == period]
-    out = {key: state_dict[key] for key in state_dict.keys() if key in period_keys}
+    out = {key: value for key, value in state_dict.items() if key in period_keys}
     return out
 
 
-def subset_to_choice(matrix, choice_set):
-    """Curtial the shock matrix to dimesions required by the admissible choice set."""
-    delete = [i for i, x in enumerate(choice_set) if bool(x) is False]
-    out = np.delete(np.delete(matrix, delete, 0), delete, 1)
+def subset_cholesky_factor_to_choice_set(cholesky_factor, choice_set):
+    """Subset the Cholesky factor to dimensions required by the admissible choice set.
+
+    Example
+    -------
+    >>> m = np.arange(9).reshape(3, 3)
+    >>> subset_cholesky_factor_to_choice_set(m, (False, True, False))
+    array([[4]])
+
+    """
+    rows_cols_to_keep = np.where(choice_set)[0]
+    out = cholesky_factor[rows_cols_to_keep][:, rows_cols_to_keep]
     return out
-
-
-def return_valid_choices(choice_set, optim_paras):
-    """Return the name of all admissible choices under a certain choice set."""
-    return [x for i, x in enumerate(optim_paras["choices"]) if bool(choice_set[i])]
 
 
 def return_core_dense_key(core_idx, dense=False):
