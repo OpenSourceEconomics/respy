@@ -119,25 +119,23 @@ def check_model_solution(optim_paras, options, state_space):
     assert state_space.core.shape[0] == n_valid_indices
 
     # Check finiteness of rewards and emaxs.
-    assert np.all(
-        np.concatenate(
-            _apply_to_attribute_of_state_space(
-                state_space.get_attribute("wages"), np.isfinite
-            )
-        )
+    finite_wages = _apply_to_attribute_of_state_space(
+        state_space.get_attribute("wages"), np.isfinite
     )
-    assert np.all(
-        np.concatenate(
-            _apply_to_attribute_of_state_space(
-                state_space.get_attribute("nonpecs"), np.isfinite
-            )
-        )
+    for arr in finite_wages:
+        assert np.all(arr)
+
+    finite_nonpecs = _apply_to_attribute_of_state_space(
+        state_space.get_attribute("nonpecs"), np.isfinite
     )
-    assert np.all(
-        _apply_to_attribute_of_state_space(
-            state_space.get_attribute("expected_value_functions"), np.isfinite
-        )
+    for arr in finite_nonpecs:
+        assert np.all(arr)
+
+    finite_vf = _apply_to_attribute_of_state_space(
+        state_space.get_attribute("expected_value_functions"), np.isfinite
     )
+    for arr in finite_vf:
+        assert np.all(arr)
 
 
 def _apply_to_attribute_of_state_space(attribute, func):

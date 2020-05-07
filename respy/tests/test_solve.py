@@ -24,6 +24,7 @@ from respy.tests.utils import process_model_or_seed
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_check_solution(model_or_seed):
+
     params, options = process_model_or_seed(model_or_seed)
 
     solve = get_solve_func(params, options)

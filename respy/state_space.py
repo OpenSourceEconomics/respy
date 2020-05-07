@@ -181,6 +181,9 @@ class StateSpaceClass:
 
     def collect_child_indices(self):
         """Wrap get child indices."""
+        if self.options["n_periods"] == 1:
+            return None
+
         limited_index_to_indices = {
             k: v
             for k, v in self.index_to_indices.items()
@@ -192,7 +195,6 @@ class StateSpaceClass:
             for k, v in self.index_to_choice_set.items()
             if self.index_to_complex[k][0] < self.options["n_periods"] - 1
         }
-
         child_indices = _collect_child_indices(
             self.core,
             limited_index_to_indices,
@@ -715,6 +717,7 @@ def _get_continuation_values(
 def _collect_child_indices(
     core, core_indices, choice_set, indexer, optim_paras, options
 ):
+
     n_choices = sum(choice_set)
 
     core_columns = create_core_state_space_columns(optim_paras)
