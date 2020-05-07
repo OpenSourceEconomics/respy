@@ -98,7 +98,7 @@ def get_cholesky(x, info=None):
 
 
 def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
-        edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all):
+        edu_max, edu_start, mapping_state_idx, periods_emax, k, states_all, future_payoffs_list=None):
     """ Get total value of all possible states.
     """
     # Initialize containers
@@ -122,6 +122,9 @@ def get_total_value(period, num_periods, delta, payoffs_systematic, draws,
 
     # Calculate total utilities
     total_payoffs = payoffs_ex_post + delta * payoffs_future
+
+    if future_payoffs_list is not None:
+        future_payoffs_list.append(payoffs_future)
 
     # This is required to ensure that the agent does not choose any
     # inadmissible states. If the state is inadmissible payoffs_future takes

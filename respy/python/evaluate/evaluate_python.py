@@ -1,5 +1,6 @@
 from scipy.stats import norm
 import numpy as np
+import pandas as pd
 
 from respy.python.evaluate.evaluate_auxiliary import get_smoothed_probability
 from respy.python.shared.shared_auxiliary import get_total_value
@@ -34,6 +35,9 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
     contribs = np.tile(-HUGE_FLOAT, (num_agents_est * num_periods))
     j = 0
 
+    payoffs_systematic_list = []
+    future_payoffs_list = []
+
     # Calculate the probability over agents and time.
     for _ in range(num_agents_est):
         for period in range(num_periods):
@@ -52,6 +56,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
             # probabilities.
             k = mapping_state_idx[period, exp_a, exp_b, edu, edu_lagged]
             payoffs_systematic = periods_payoffs_systematic[period, k, :]
+            payoffs_systematic_list.append(payoffs_systematic.copy())
 
             # Extract relevant deviates from standard normal distribution.
             # The same set of baseline draws are used for each agent and period.
@@ -123,7 +128,7 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
                 # Calculate total payoff.
                 total_payoffs = get_total_value(period, num_periods,
                     delta, payoffs_systematic, draws, edu_max, edu_start,
-                    mapping_state_idx, periods_emax, k, states_all)
+                    mapping_state_idx, periods_emax, k, states_all, future_payoffs_list)
 
                 # Record optimal choices
                 counts[np.argmax(total_payoffs)] += 1
@@ -145,6 +150,22 @@ def pyth_evaluate(coeffs_a, coeffs_b, coeffs_edu, coeffs_home, shocks_cholesky,
             contribs[j] = prob_obs
 
             j += 1
+
+    syst_payoffs_df = pd.DataFrame(
+        data=payoffs_systematic_list,
+        columns=["a", "b", "edu", "home"],
+    )
+    syst_payoffs_df["id"] = np.repeat(np.arange(num_agents_est), num_periods)
+    syst_payoffs_df["period"] = np.tile(np.arange(num_periods), num_agents_est)
+    syst_payoffs_df.set_index(["id", "period"], inplace=True)
+    syst_payoffs_df.to_pickle("systematic_payoffs.pickle")
+
+    future_payoffs_df = pd.DataFrame(
+        data=future_payoffs_list[::num_draws_prob],
+        columns=["a", "b", "edu", "home"],
+        index=syst_payoffs_df.index
+    )
+    future_payoffs_df.to_pickle("future_payoffs.pickle")
 
     # If there is no random variation in payoffs and no agent violated the
     # implications of observed wages and choices, then the evaluation return

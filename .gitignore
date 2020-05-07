@@ -4,3 +4,6 @@ doc/build/
 __pycache__/
 *.egg-info/
 .eggs/
+*.ipynb_checkpoints/
+criterion_wrapper.ipynb
+bld/
