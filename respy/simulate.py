@@ -173,6 +173,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
         current_df = df.query("period == @period").copy()
         current_df = create_is_inadmissible(current_df, optim_paras, options)
         current_df[choices] = ~current_df[choices]
+
         current_df["period"] = period
 
         columns = ["period"]
@@ -216,7 +217,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
             nonpecs,
             continuation_values,
             optim_paras=optim_paras,
-        )
+        ).drop(columns=["period"])
 
         data.append(current_df_extended)
 
