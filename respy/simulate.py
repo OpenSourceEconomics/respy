@@ -217,9 +217,9 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
             nonpecs,
             continuation_values,
             optim_paras=optim_paras,
-        ).drop(columns=["period"])
+        )
 
-        data.append(current_df_extended)
+        data.append(current_df_extended.drop(columns=["period"]))
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             next_df = _apply_law_of_motion(current_df_extended, optim_paras)
@@ -355,8 +355,7 @@ def _simulate_single_period(
     choice = np.nanargmax(value_functions, axis=1)
 
     # Get choice replacement dict. There is too much positioning until now!
-
-    wages = wages * draws_shock * draws_wage
+    wages = wages * draws_shock_transformed * draws_wage
     wages[:, n_wages:] = np.nan
     wage = np.choose(choice, wages.T)
 
