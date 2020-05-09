@@ -163,7 +163,7 @@ Styleguide for the documentation
           <span class="badge badge-info">To how-to guide</span>
 
           Find out more about numerical integration in <a
-          href="../how_to_guides/how_to_improve_numerical_integration.ipynb">How to
+          href="../how_to_guides/how_to_improve_numerical_integration.html">How to
           improve numerical integration</a>.
       </div>
 
@@ -175,9 +175,12 @@ Styleguide for the documentation
           <span class="badge badge-info">To how-to guide</span>
 
           Find out more about numerical integration in <a
-          href="../how_to_guides/how_to_improve_numerical_integration.ipynb">How to
+          href="../how_to_guides/how_to_improve_numerical_integration.html">How to
           improve numerical integration</a>.
       </div>
+
+  Note that, the path is the same, but the file extension has to be changed to
+  ``.html``.
 
   In notebooks, the HTML has to be placed in a separate cell which must not be a
   markdown but a raw cell in HTML format. The `nbsphinx documentation
@@ -193,7 +196,7 @@ Styleguide for the documentation
               <span class="badge badge-info">To how-to guide</span>
 
                   Find out more about numerical integration in <a
-                  href="../how_to_guides/how_to_improve_numerical_integration.ipynb">How
+                  href="../how_to_guides/how_to_improve_numerical_integration.html">How
                   to improve numerical integration</a>.
           </div>
 
