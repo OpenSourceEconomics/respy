@@ -15,8 +15,8 @@ In general, you can take a look at our `issue tracker <https://github.com/
 OpenSourceEconomics/respy/issues>`_ or at our :ref:`roadmap <roadmap>` to find
 opportunities to contribute to the project.
 
-If you are new to **respy**, you might want to check out issues labeled as
-`good-first-issue <https://github.com/OpenSourceEconomics/respy/issues?q=is%3Aissue+is
+If you are new to respy, you might want to check out issues labeled as `good-first-issue
+<https://github.com/OpenSourceEconomics/respy/issues?q=is%3Aissue+is
 %3Aopen+label%3Agood-first-issue>`_.
 
 
@@ -34,7 +34,7 @@ Workflow
 
 3. We validate contributions in three ways.
 
-   1. We have a test suite to check the implementation of **respy**.
+   1. We have a test suite to check the implementation of respy.
    2. We correct for stylistic errors in code and documentation using linters.
    3. We test whether the documentation builds successfully.
 
@@ -143,18 +143,66 @@ Styleguide for the documentation
 - Between the end of a section and the following heading are two empty lines.
 
 - The documentation is formatted with a line length of 88 characters. To wrap the text
-  use `AutoWrap <https://github.com/randy3k/AutoWrap>` for Sublime Text, and `this
+  use `AutoWrap <https://github.com/randy3k/AutoWrap>`_ for Sublime Text, and `this
   setting <https://stackoverflow.com/a/39011656>`_ plus the fill-paragraph command with
   PyCharm.
 
 - For rather self-contained functions with few arguments, a doctest can serve as a unit
   test while providing documentation at the same time.
 
+- Cross-references which do not hurt the reading flow are highly recommended to prevent
+  the same information spread over various parts of the documentation and to provide
+  further insights.
+
+  We make use of the following HTML object to produce cross-references which stand out,
+  but can be skipped quickly.
+
+  .. code-block:: html
+
+      <div class="d-flex flex-row gs-torefguide">
+          <span class="badge badge-info">To how-to guide</span>
+
+          Find out more about numerical integration in <a
+          href="../how_to_guides/how_to_improve_numerical_integration.ipynb">How to
+          improve numerical integration</a>.
+      </div>
+
+  with renders like
+
+  .. raw:: html
+
+      <div class="d-flex flex-row gs-torefguide">
+          <span class="badge badge-info">To how-to guide</span>
+
+          Find out more about numerical integration in <a
+          href="../how_to_guides/how_to_improve_numerical_integration.ipynb">How to
+          improve numerical integration</a>.
+      </div>
+
+  In notebooks, the HTML has to be placed in a separate cell which must not be a
+  markdown but a raw cell in HTML format. The `nbsphinx documentation
+  <https://nbsphinx.readthedocs.io/en/latest/raw-cells.html>`_ explains this nicely.
+
+  In normal RST files, insert
+
+  .. code-block:: restructuredtext
+
+      .. raw:: html
+
+          <div class="d-flex flex-row gs-torefguide">
+              <span class="badge badge-info">To how-to guide</span>
+
+                  Find out more about numerical integration in <a
+                  href="../how_to_guides/how_to_improve_numerical_integration.ipynb">How
+                  to improve numerical integration</a>.
+          </div>
+
+
 
 Guidelines for docstrings
 -------------------------
 
-Docstrings in **respy** are written in `NumPy Docstring Standard
+Docstrings in respy are written in `NumPy Docstring Standard
 <https://numpydoc.readthedocs.io/en/latest/format.html>`_. Here is an `example
 <https://numpydoc.readthedocs.io/en/latest/example.html#example>`_.
 

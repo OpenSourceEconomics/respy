@@ -1,6 +1,31 @@
 /* Remove execution count for notebook cells. */
-div.prompt {
+.nbinput .prompt,
+.nboutput .prompt {
     display: none;
+}
+
+
+/* General */
+
+h1, h2, h3, h4, h5, h6 {
+    color: #2A3B49 !important;
+}
+
+a {
+    color: #547482 !important;
+}
+
+a.headerlink {
+    color: #2A3B49 !important;
+}
+
+a.headerlink:hover {
+    color: #fff !important;
+    background-color: #2A3B49 !important;
+}
+
+.navbar-light .navbar-nav .active>.nav-link {
+    color: #2A3B49 !important;
 }
 
 /* Getting started index page */
@@ -33,16 +58,16 @@ a#index-link {
 }
 
 .gs-torefguide .badge {
-    background-color: #130654;
+    background-color: #2A3B49;
     margin: 10px 10px 10px 0px;
     padding: 5px;
 }
 
 .gs-torefguide a {
     margin-left: 5px;
-    color: #130654;
-    border-bottom: 1px solid #FFCA00f3;
-    box-shadow: 0px -10px 0px #FFCA00f3 inset;
+    color: #2A3B49;
+    border-bottom: 1px solid #F1B05D;
+    box-shadow: 0px -5px 0px #F1B05D inset;
 }
 
 .gs-torefguide p {
@@ -53,6 +78,6 @@ a#index-link {
     margin-left: 5px;
     color: grey;
     text-decoration: none;
-    border-bottom: 1px solid #b2ff80f3;
-    box-shadow: 0px -10px 0px #b2ff80f3 inset;
+    border-bottom: 1px solid  #F1B05D;
+    box-shadow: 0px -5px 0px  #F1B05D inset;
 }

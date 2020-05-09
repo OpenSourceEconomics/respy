@@ -1,7 +1,7 @@
 Release notes
 =============
 
-This is a record of all past **respy** releases and what went into them in reverse
+This is a record of all past respy releases and what went into them in reverse
 chronological order. We follow `semantic versioning <https://semver.org/>`_ and all
 releases are available on `Anaconda.org
 <https://anaconda.org/opensourceeconomics/respy>`_.
@@ -42,8 +42,8 @@ releases are available on `Anaconda.org
   integrations (:ghuser:`rafaelsuchy`).
 - :gh:`262` moves the distribution of previous choices, initial and maximum experience
   to params (:ghuser:`tobiasraabe`).
-- :gh:`268` makes seeding in **respy** a lot more robust by using incrementally
-  increasing sequences (:ghuser:`janosg`, :ghuser:`tobiasraabe`).
+- :gh:`268` makes seeding in respy a lot more robust by using incrementally increasing
+  sequences (:ghuser:`janosg`, :ghuser:`tobiasraabe`).
 - :gh:`269` improves the generation of conditional draws with and without measurement
   error in the likelihood calculation (:ghuser:`janosg`).
 - :gh:`275` fixes a bug in calculation of wage probabilities (:ghuser:`tobiasraabe`).
@@ -73,8 +73,8 @@ releases are available on `Anaconda.org
   :ghuser:`tobiasraabe`).
 - :gh:`316` changes the invalid index value for the indexer to prevent silent errors
   (:ghuser:`tobiasraabe`).
-- :gh:`319` adds a page for projects using **respy** (:ghuser:`tobiasraabe`). :gh:`321`
-  adds more projects.
+- :gh:`319` adds a page for projects using respy (:ghuser:`tobiasraabe`). :gh:`321` adds
+  more projects.
 - :gh:`320` adds ``add_noise_to_params()`` and makes the test suite faster, tests more
   random, moved to Github Actions, and more badges.
 - :gh:`323` adds an informative message if simulated individuals cannot be mapped to
@@ -118,4 +118,4 @@ This is the last release with a Fortran implementation. Mirrors 1.2.0-rc.1.
 1.0.0 - 2016-08-10
 ------------------
 
-This is the initial release of the **respy** package.
+This is the initial release of the respy package.
