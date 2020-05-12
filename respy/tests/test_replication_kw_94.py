@@ -105,7 +105,7 @@ def test_table_6_exact_solution_row_mean_and_sd():
     )
 
     # Test that standard deviations are very close.
-    np.testing.assert_allclose(rp_replication.iloc[1], kw_94_table_6.iloc[1], atol=0.07)
+    np.testing.assert_allclose(rp_replication.iloc[1], kw_94_table_6.iloc[1], atol=0.05)
 
     # Test that difference lies within one standard deviation.
     diff = rp_replication.iloc[0].to_numpy() - kw_94_table_6.iloc[0].to_numpy()
