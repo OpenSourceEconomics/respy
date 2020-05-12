@@ -23,7 +23,6 @@ from respy.shared import rename_labels_from_internal
 from respy.shared import rename_labels_to_internal
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.solve import get_solve_func
-from respy.state_space import create_is_inadmissible
 
 
 def get_simulate_func(
@@ -163,45 +162,14 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
 
     core_columns = create_core_state_space_columns(optim_paras)
     is_n_step_ahead = np.any(df[core_columns].isna())
-    choices = [f"_{choice}" for choice in optim_paras["choices"]]
 
     data = []
     for period in range(n_simulation_periods):
-
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
         # n-step-ahead simulation, `df` always contains only data of the current period.
         current_df = df.query("period == @period").copy()
-        current_df = create_is_inadmissible(current_df, optim_paras, options)
-        current_df[choices] = ~current_df[choices]
 
-        current_df["period"] = period
-
-        columns = ["period"]
-        columns += create_core_state_space_columns(optim_paras)
-
-        sp_cols = _get_location_of_simulated_objects(
-            current_df[columns].to_numpy(dtype="int64"), state_space.indexer, size=2
-        )
-
-        current_df["core_index"] = sp_cols[:, 0]
-        current_df["position"] = sp_cols[:, 1]
-
-        dense_choice_columns = create_dense_state_space_columns(optim_paras)
-
-        if not state_space.dense:
-            current_df["dense_position"] = 0
-        else:
-            current_df["dense_position"] = _get_location_of_simulated_objects(
-                current_df[dense_choice_columns].to_numpy(dtype="int64"),
-                state_space.dense_covariates_to_index,
-                1,
-            )
-
-        current_df["dense_index"] = _get_location_of_simulated_objects(
-            current_df[["core_index", "dense_position"]].to_numpy(dtype="int64"),
-            state_space.core_to_index,
-            1,
-        )
+        current_df = _map_observations_to_states(current_df, state_space, optim_paras)
 
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
@@ -219,7 +187,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
             optim_paras=optim_paras,
         )
 
-        data.append(current_df_extended.drop(columns=["period"]))
+        data.append(current_df_extended)
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             next_df = _apply_law_of_motion(current_df_extended, optim_paras)
@@ -704,5 +672,48 @@ def _get_location_of_simulated_objects(array, indexer, size):
         state = array[n, :]
         idx = indexer[array_to_tuple(indexer, state)]
         out[n, :] = idx
+
+    return out
+
+
+def _map_observations_to_states(states, state_space, optim_paras):
+    """Map observations in data to states."""
+    core_columns = ["period"] + create_core_state_space_columns(optim_paras)
+    core = states.reset_index(level="period")[core_columns].to_numpy(dtype="int64")
+
+    dense_columns = create_dense_state_space_columns(optim_paras)
+    dense = states[dense_columns].to_numpy(dtype="int64")
+
+    indices = _map_observations_to_states_numba(
+        core,
+        dense,
+        state_space.indexer,
+        state_space.dense_covariates_to_index,
+        state_space.core_to_index,
+    )
+
+    states["core_index"] = indices[:, 0]
+    states["position"] = indices[:, 1]
+    states["dense_index"] = indices[:, 2]
+
+    return states
+
+
+@nb.njit
+def _map_observations_to_states_numba(
+    core, dense, indexer, dense_vector_to_index, core_to_index,
+):
+    """Map observations to states in Numba."""
+    n_observations = core.shape[0]
+    out = np.zeros((n_observations, 3), dtype=np.int64)
+
+    for i in range(n_observations):
+        core_index, index = indexer[array_to_tuple(indexer, core[i])]
+        dense_vector_index = dense_vector_to_index[
+            array_to_tuple(dense_vector_to_index, dense[i])
+        ]
+        dense_index = core_to_index[(core_index, dense_vector_index)]
+
+        out[i] = core_index, index, dense_index
 
     return out
