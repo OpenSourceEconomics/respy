@@ -1,12 +1,16 @@
 """
 This module contains tests for felx choices!
 """
+import pandas as pd
+import pytest
+
 import respy as rp
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.simulate import get_simulate_func
 from respy.state_space import create_state_space_class
 
 
+@pytest.mark.xfail
 def test_period_choice_dense_cores():
     """
     Basic first test!
@@ -26,8 +30,8 @@ def test_period_choice_dense_cores():
     # Create internal specification objects.
     optim_paras, options = process_params_and_options(params, options)
 
-    sp = create_state_space_class(options, optim_paras)
-    check = sp.dense_index_to_complex
+    sp = create_state_space_class(optim_paras, options)
+    check = sp.index_to_complex
 
     for x in check.values():
         if (x[0][0] < 2) & (x[1] == (0,)):
@@ -55,8 +59,6 @@ def test_robustness_solution():
     # Create internal specification objects.
     optim_paras, options = process_params_and_options(params, options)
     simulate = get_simulate_func(params, options)
-    _df = simulate(params)
+    df = simulate(params)
 
-
-def test_large_model():
-    pass
+    assert isinstance(df, pd.DataFrame)
