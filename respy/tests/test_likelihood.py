@@ -1,7 +1,12 @@
+import hypothesis.strategies as st
 import numpy as np
 import pandas as pd
 import pytest
+from hypothesis import given
+from hypothesis.extra.numpy import arrays
+from scipy import special
 
+from respy.likelihood import _logsumexp
 from respy.likelihood import get_crit_func
 from respy.simulate import get_simulate_func
 from respy.tests.utils import process_model_or_seed
@@ -44,3 +49,19 @@ def test_return_scalar_for_likelihood(model):
     array = loglike(params)
 
     assert isinstance(array, np.ndarray)
+
+
+@pytest.mark.unit
+@pytest.mark.precise
+@given(
+    arrays(
+        dtype=np.float64,
+        shape=st.integers(2, 10),
+        elements=st.floats(allow_nan=False, allow_infinity=False),
+    )
+)
+def test_logsumexp(array):
+    expected = special.logsumexp(array)
+    result = _logsumexp(array)
+
+    np.testing.assert_allclose(result, expected)

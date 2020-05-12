@@ -2,13 +2,16 @@
 import numpy as np
 import pandas as pd
 import pytest
+import yaml
 
 import respy as rp
 from respy.config import EXAMPLE_MODELS
+from respy.config import TEST_DIR
 from respy.likelihood import get_crit_func
 from respy.pre_processing.data_checking import check_simulated_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import generate_obs_labels
+from respy.simulate import _apply_law_of_motion
 from respy.tests.random_model import generate_random_model
 from respy.tests.utils import process_model_or_seed
 
@@ -36,7 +39,7 @@ def test_one_step_ahead_simulation():
     params, options, df = rp.get_example_model("kw_97_basic")
     options["n_periods"] = 11
     simulate = rp.get_simulate_func(params, options, "one_step_ahead", df)
-    _df = simulate(params)
+    df = simulate(params)
 
 
 @pytest.mark.end_to_end
@@ -143,3 +146,27 @@ def test_distribution_of_observables():
         ]
 
         np.testing.assert_allclose(probability, params_probability, atol=0.05)
+
+
+@pytest.mark.unit
+@pytest.mark.precise
+@pytest.mark.parametrize("i", range(1, 3))
+def test_apply_law_of_motion(i):
+    df = pd.read_csv(
+        TEST_DIR / "test_simulate" / f"test_apply_law_of_motion_{i}_in.csv",
+        index_col=["identifier", "period"],
+    )
+    optim_paras = yaml.safe_load(
+        TEST_DIR.joinpath(
+            "test_simulate", f"test_apply_law_of_motion_{i}_optim_paras.yaml"
+        ).read_text()
+    )
+
+    new_df = _apply_law_of_motion(df, optim_paras)
+
+    expected = pd.read_csv(
+        TEST_DIR / "test_simulate" / f"test_apply_law_of_motion_{i}_out.csv",
+        index_col=["identifier", "period"],
+    )
+
+    assert new_df.equals(expected)

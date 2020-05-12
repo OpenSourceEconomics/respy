@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import pytest
 
 from respy.config import EXAMPLE_MODELS
@@ -14,7 +13,6 @@ from respy.solve import get_solve_func
 from respy.state_space import _create_core_period_choice
 from respy.state_space import _create_core_state_space
 from respy.state_space import _create_indexer
-from respy.state_space import _insert_indices_of_child_states
 from respy.state_space import create_state_space_class
 from respy.tests._former_code import _create_state_space_kw94
 from respy.tests._former_code import _create_state_space_kw97_base
@@ -60,9 +58,8 @@ def test_state_space_restrictions_by_traversing_forward(model):
     solve = get_solve_func(params, options)
     state_space = solve(params)
 
-    out = dict()
+    out = {}
     for x in state_space.child_indices.values():
-        print(x)
         array = np.concatenate(x)
         for state in array:
             if state[0] in out.keys():
@@ -175,7 +172,6 @@ def test_create_state_space_vs_specialized_kw94(model):
             assert tuple(index) in indexer.keys()
 
         for index in indexer.keys():
-            print(index)
             if index[0] == period:
                 assert list(index) in indices_old
 
@@ -241,7 +237,6 @@ def test_create_state_space_vs_specialized_kw97(model):
         for index in indexer.keys():
 
             if index[0] == period:
-                print(index)
                 assert list(index) in indices_old
 
         for index in indices_old:
