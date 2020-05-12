@@ -273,14 +273,14 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
             np.isin(arr[:, 2], [5_000, 0, -10_000, -15_000, -400_000, -415_000]).all()
 
 
+@pytest.mark.end_to_end
 def test_dense_choice_cores():
     """
-    Check whether continuation values are equal for paths where
-    the restrictions do not make
-    any difference. We check continuation values
-     at states where one choice leads to a remain
-    ing decision tree that is equivalent to the unrestricted problem and one where this is not
-    the case!
+    Check whether continuation values are equal for paths where the restrictions do not
+    make any difference. We check continuation values at states where one choice leads
+    to a remaining decision tree that is equivalent to the unrestricted problem and one
+    where this is not the case!
+
     """
     point_constr = {"n_periods": 6, "observables": [3]}
 
@@ -295,7 +295,7 @@ def test_dense_choice_cores():
 
     # Retrieve index
     edu_start = np.random.choice(list(optim_paras["choices"]["edu"]["start"].keys()))
-    state = (3, 0, 3, edu_start, 1)
+    state = (3, 0, 3, edu_start)
     core_ix = sp.indexer[state]
 
     # value = cont value at that point of the sp!
@@ -373,13 +373,12 @@ def test_child_indices():
     initial_state = sp.core.iloc[0][core_columns].to_numpy()
 
     # Get all the future states
-    states = list()
-    for i, choice in enumerate(optim_paras["choices"]):
+    states = []
+    for i in range(len(optim_paras["choices"])):
         child = initial_state.copy()
         child[0] += 1
         child[i + 1] += 1
         child[-1] = i
-        print(child)
         ix = sp.indexer[(tuple(child))]
         states.append(np.array(ix).reshape(1, 2))
 
@@ -387,7 +386,7 @@ def test_child_indices():
     np.testing.assert_array_equal(sp.child_indices[0][0], manual)
 
 
-@pytest.mark.skip
+@pytest.mark.xfail
 def test_equality_of_equivalent_choice_sets():
     """
     Check for equcivalence
