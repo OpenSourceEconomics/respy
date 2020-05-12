@@ -195,16 +195,13 @@ class StateSpaceClass:
             limited_index_to_choice_set,
             self.indexer,
             self.optim_paras,
-            self.options,
         )
 
         return child_indices
 
     def create_draws(self):
         """Get draws."""
-        n_choices_in_sets = np.unique(
-            [sum(i) for i in self.index_to_choice_set.values()]
-        ).tolist()
+        n_choices_in_sets = list(set(map(sum, self.index_to_choice_set.values())))
         shocks_sets = []
 
         for n_choices in n_choices_in_sets:
@@ -229,12 +226,14 @@ class StateSpaceClass:
 
     def get_attribute_from_period(self, attribute, period):
         """Get an attribute of the state space sliced to a given period.
+
         Parameters
         ----------
         attribute : str
             Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
         period : int
             Attribute is retrieved from this period.
+
         """
         attr = self.get_attribute(attribute)
         out = subset_to_period(attr, self.index_to_complex, period)
@@ -242,12 +241,14 @@ class StateSpaceClass:
 
     def get_attribute_from_key(self, attribute, key):
         """Get an attribute of the state space sliced to a given period.
+
         Parameters
         ----------
         attribute : str
             Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
         period : int
             Attribute is retrieved from this period.
+
         """
         attr = self.get_attribute(attribute)
         out = attr[key]
@@ -354,7 +355,6 @@ def _create_core_from_choice_experiences(optim_paras):
     _create_core_state_space_per_period
 
     """
-
     choices_w_exp = list(optim_paras["choices_w_exp"])
     minimal_initial_experience = np.array(
         [min(optim_paras["choices"][choice]["start"]) for choice in choices_w_exp],
@@ -539,6 +539,9 @@ def _create_dense_state_space_covariates(dense_grid, optim_paras, options):
 
 
 def create_is_inadmissible(df, optim_paras, options):
+    """Compute is_inadmissible for passed states."""
+    df = df.copy()
+
     for choice in optim_paras["choices"]:
         df[f"_{choice}"] = False
         for formula in options["inadmissible_states"][choice]:
@@ -546,8 +549,6 @@ def create_is_inadmissible(df, optim_paras, options):
                 df[f"_{choice}"] |= df.eval(formula)
             except pd.core.computation.ops.UndefinedVariableError:
                 pass
-
-        # df[f"_{choice}"] = df[f"_{choice}"].astype(np.bool_)
 
     return df
 
@@ -687,10 +688,7 @@ def _get_continuation_values(
 
 
 @parallelize_across_dense_dimensions
-def _collect_child_indices(
-    core, core_indices, choice_set, indexer, optim_paras, options
-):
-
+def _collect_child_indices(core, core_indices, choice_set, indexer, optim_paras):
     n_choices = sum(choice_set)
 
     core_columns = create_core_state_space_columns(optim_paras)

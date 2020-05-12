@@ -8,6 +8,7 @@ import numpy as np
 ROOT_DIR = Path(__file__).parent
 
 # Directory with additional resources for the testing harness
+TEST_DIR = ROOT_DIR / "tests"
 TEST_RESOURCES_DIR = ROOT_DIR / "tests" / "resources"
 
 # Set maximum numbers to 1e200 and log(1e200) = 460.

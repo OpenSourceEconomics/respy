@@ -1,5 +1,6 @@
 # Ignore folders.
 .cache/
+.hypothesis/
 .idea/
 .ipynb_checkpoints/
 .tox/
