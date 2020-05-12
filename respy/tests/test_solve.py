@@ -387,6 +387,7 @@ def test_child_indices():
     np.testing.assert_array_equal(sp.child_indices[0][0], manual)
 
 
+@pytest.mark.skip
 def test_equality_of_equivalent_choice_sets():
     """
     Check for equcivalence
