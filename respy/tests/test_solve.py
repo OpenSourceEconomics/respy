@@ -282,7 +282,7 @@ def test_dense_choice_cores():
     where this is not the case!
 
     """
-    point_constr = {"n_periods": 6, "observables": [3]}
+    point_constr = {"n_periods": 6, "observables": [3], "n_lagged_choices": 1}
 
     params, options = generate_random_model(point_constr=point_constr)
 
@@ -295,7 +295,7 @@ def test_dense_choice_cores():
 
     # Retrieve index
     edu_start = np.random.choice(list(optim_paras["choices"]["edu"]["start"].keys()))
-    state = (3, 0, 3, edu_start)
+    state = (3, 0, 3, edu_start, 1)
     core_ix = sp.indexer[state]
 
     # value = cont value at that point of the sp!

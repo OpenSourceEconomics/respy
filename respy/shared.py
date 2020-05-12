@@ -573,7 +573,7 @@ def pandas_dot(x, beta, out=None):
     -------
     >>> x = pd.DataFrame(np.arange(10).reshape(5, 2), columns=list("ab"))
     >>> beta = pd.Series([1, 2], index=list("ab"))
-    >>> x.dot(beta).values
+    >>> x.dot(beta).to_numpy()
     array([ 2,  8, 14, 20, 26], dtype=int64)
     >>> pandas_dot(x, beta)
     array([ 2.,  8., 14., 20., 26.])
