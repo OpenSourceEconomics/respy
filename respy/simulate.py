@@ -66,13 +66,16 @@ def get_simulate_func(
         method, df, n_simulation_periods, options
     )
 
-    df = _process_input_df_for_simulation(
-        df, method, n_simulation_periods, options, optim_paras
-    )
+    df = _process_input_df_for_simulation(df, method, options, optim_paras)
 
     solve = get_solve_func(params, options)
 
-    shape = (df.shape[0], len(optim_paras["choices"]))
+    n_observations = (
+        df.shape[0]
+        if method == "one_step_ahead"
+        else df.shape[0] * n_simulation_periods
+    )
+    shape = (n_observations, len(optim_paras["choices"]))
 
     # We gotta do sth here. That has to be changed
     base_draws_sim = create_base_draws(
@@ -87,6 +90,8 @@ def get_simulate_func(
         base_draws_sim=base_draws_sim,
         base_draws_wage=base_draws_wage,
         df=df,
+        method=method,
+        n_simulation_periods=n_simulation_periods,
         solve=solve,
         options=options,
     )
@@ -94,7 +99,16 @@ def get_simulate_func(
     return simulate_function
 
 
-def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
+def simulate(
+    params,
+    base_draws_sim,
+    base_draws_wage,
+    df,
+    method,
+    n_simulation_periods,
+    solve,
+    options,
+):
     """Perform a simulation.
 
     This function performs one of three possible simulation exercises. The type of the
@@ -134,6 +148,10 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
           a one-step-ahead simulation.
         - :class:`pandas.DataFrame` containing only first observations which triggers a
           n-step-ahead simulation taking the data as initial conditions.
+    method : str
+        The simulation method.
+    n_simulation_periods : int
+        Number periods to simulate.
     solve : :func:`~respy.solve.solve`
         Function which creates the solution of the model with new parameters.
     options : dict
@@ -147,27 +165,33 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
     """
     # Copy DataFrame so that the DataFrame attached to :func:`simulate` is not altered.
     df = df.copy()
+    is_n_step_ahead = method != "one_step_ahead"
+
     optim_paras, options = process_params_and_options(params, options)
     state_space = solve(params)
 
     # Prepare simulation.
-    n_simulation_periods = int(df.index.get_level_values("period").max() + 1)
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
 
     # Prepare shocks and store them in the pandas.DataFrame.
     base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
-    for i, choice in enumerate(optim_paras["choices"]):
-        df[f"shock_reward_{choice}"] = base_draws_sim[:, i]
-        df[f"meas_error_wage_{choice}"] = base_draws_wage_transformed[:, i]
-
-    core_columns = create_core_state_space_columns(optim_paras)
-    is_n_step_ahead = np.any(df[core_columns].isna())
 
     data = []
     for period in range(n_simulation_periods):
         # If it is a one-step-ahead simulation, we pick rows from the panel data. For
         # n-step-ahead simulation, `df` always contains only data of the current period.
         current_df = df.query("period == @period").copy()
+
+        if method == "one_step_ahead":
+            slice_ = np.where(df.eval("period == @period"))[0]
+        else:
+            slice_ = slice(df.shape[0] * period, df.shape[0] * (period + 1))
+
+        for i, choice in enumerate(optim_paras["choices"]):
+            current_df[f"shock_reward_{choice}"] = base_draws_sim[slice_, i]
+            current_df[f"meas_error_wage_{choice}"] = base_draws_wage_transformed[
+                slice_, i
+            ]
 
         current_df = _map_observations_to_states(current_df, state_space, optim_paras)
 
@@ -190,8 +214,7 @@ def simulate(params, base_draws_sim, base_draws_wage, df, solve, options):
         data.append(current_df_extended)
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
-            next_df = _apply_law_of_motion(current_df_extended, optim_paras)
-            df = df.fillna(next_df)
+            df = _apply_law_of_motion(current_df_extended, optim_paras)
 
     simulated_data = _process_simulation_output(data, optim_paras)
 
@@ -265,7 +288,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
         df["type"] = df["type"].fillna(method="ffill", downcast="infer")
 
     state_space_columns = create_state_space_columns(optim_paras)
-    df = df[state_space_columns]
+    df = df[state_space_columns].astype("int")
 
     return df
 
@@ -582,50 +605,49 @@ def _apply_law_of_motion(df, optim_paras):
     return df
 
 
-def _harmonize_simulation_arguments(method, df, n_sim_p, options):
-    """Harmonize the arguments of the simulation."""
+def _harmonize_simulation_arguments(method, df, n_simulation_periods, options):
+    """Harmonize the arguments of the simulation.
+
+    This function handles the interaction of the four inputs and aligns the number of
+    simulated individuals and the number of simulated periods.
+
+    """
+    if n_simulation_periods is None and method == "one_step_ahead":
+        n_simulation_periods = int(df.index.get_level_values("Period").max() + 1)
+    else:
+        n_simulation_periods = options["n_periods"]
+
     if method == "n_step_ahead_with_sampling":
         pass
     else:
-        if df is None:
-            raise ValueError(f"Method '{method}' requires data.")
-
         options["simulation_agents"] = df.index.get_level_values("Identifier").nunique()
 
-        if method == "one_step_ahead":
-            n_sim_p = int(df.index.get_level_values("Period").max() + 1)
-
-    n_sim_p = options["n_periods"] if n_sim_p is None else n_sim_p
-    if options["n_periods"] < n_sim_p:
-        options["n_periods"] = n_sim_p
+    if options["n_periods"] < n_simulation_periods:
+        options["n_periods"] = n_simulation_periods
         warnings.warn(
-            f"The number of periods in the model, {options['n_periods']}, is lower than"
-            f" the requested number of simulated periods, {n_sim_p}. Set model periods "
-            "equal to simulated periods."
+            f"The number of periods in the model, {options['n_periods']}, is lower "
+            f"than the requested number of simulated periods, {n_simulation_periods}. "
+            "Set model periods equal to simulated periods. To silence the warning, "
+            "adjust your specification."
         )
 
-    return n_sim_p, options
+    return n_simulation_periods, options
 
 
-def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_paras):
+def _process_input_df_for_simulation(df, method, options, optim_paras):
     """Process a :class:`pandas.DataFrame` provided by the user for the simulation."""
     if method == "n_step_ahead_with_sampling":
         ids = np.arange(options["simulation_agents"])
-        index = pd.MultiIndex.from_product(
-            (ids, range(n_sim_periods)), names=["identifier", "period"]
-        )
+        index = pd.MultiIndex.from_product((ids, [0]), names=["identifier", "period"])
         df = pd.DataFrame(index=index)
 
     elif method == "n_step_ahead_with_data":
         ids = np.arange(options["simulation_agents"])
-        index = pd.MultiIndex.from_product(
-            (ids, range(n_sim_periods)), names=["identifier", "period"]
-        )
+        index = pd.MultiIndex.from_product((ids, [0]), names=["identifier", "period"])
         df = (
             df.copy()
             .rename(columns=rename_labels_to_internal)
             .rename_axis(index=rename_labels_to_internal)
-            .query("period == 0")
             .reindex(index=index)
             .sort_index()
         )
