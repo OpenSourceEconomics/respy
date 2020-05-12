@@ -116,7 +116,11 @@ def split_and_combine_df(func):
     def wrapper_distribute_and_combine_df(df, *args, **kwargs):
         splitted_df = _split_dataframe(df)
         out = func(splitted_df, *args, **kwargs)
-        df = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
+        df = (
+            pd.concat(out.values(), sort=False).sort_index()
+            if isinstance(out, dict)
+            else out
+        )
 
         return df
 

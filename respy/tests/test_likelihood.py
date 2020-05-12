@@ -12,6 +12,7 @@ from respy.simulate import get_simulate_func
 from respy.tests.utils import process_model_or_seed
 
 
+@pytest.mark.xfail
 @pytest.mark.integration
 @pytest.mark.parametrize("model", ["kw_94_one", "kw_97_basic"])
 def test_return_comparison_plot_data_for_likelihood(model):
@@ -32,6 +33,7 @@ def test_return_comparison_plot_data_for_likelihood(model):
     assert isinstance(df, pd.DataFrame)
 
 
+@pytest.mark.xfail
 @pytest.mark.integration
 @pytest.mark.parametrize("model", ["kw_94_one", "kw_97_basic"])
 def test_return_scalar_for_likelihood(model):

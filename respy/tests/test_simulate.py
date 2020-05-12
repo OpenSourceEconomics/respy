@@ -42,6 +42,7 @@ def test_one_step_ahead_simulation():
     df = simulate(params)
 
 
+@pytest.mark.xfail
 @pytest.mark.end_to_end
 @pytest.mark.edge_case
 def test_equality_for_myopic_agents_and_tiny_delta():

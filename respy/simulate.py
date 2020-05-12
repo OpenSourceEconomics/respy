@@ -478,7 +478,7 @@ def _process_simulation_output(data, optim_paras):
 
     """
     df = (
-        pd.concat(data)
+        pd.concat(data, sort=False)
         .sort_index()
         .rename(columns=rename_labels_from_internal)
         .rename_axis(index=rename_labels_from_internal)

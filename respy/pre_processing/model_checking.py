@@ -1,4 +1,5 @@
 """Everything related to validate the model."""
+import numba as nb
 import numpy as np
 
 
@@ -144,7 +145,7 @@ def _apply_to_attribute_of_state_space(attribute, func):
     Attribute might be `state_space.wages` which can be a dictionary or a Numpy array.
 
     """
-    if isinstance(attribute, dict):
+    if isinstance(attribute, (dict, nb.typed.typeddict.Dict)):
         out = [func(val) for val in attribute.values()]
     else:
         out = func(attribute)
