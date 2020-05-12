@@ -77,7 +77,6 @@ def get_simulate_func(
     )
     shape = (n_observations, len(optim_paras["choices"]))
 
-    # We gotta do sth here. That has to be changed
     base_draws_sim = create_base_draws(
         shape, next(options["simulation_seed_startup"]), "random"
     )
@@ -174,7 +173,7 @@ def simulate(
     df = _extend_data_with_sampled_characteristics(df, optim_paras, options)
 
     # Prepare shocks and store them in the pandas.DataFrame.
-    base_draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
+    draws_wage_transformed = np.exp(base_draws_wage * optim_paras["meas_error"])
 
     data = []
     for period in range(n_simulation_periods):
@@ -189,9 +188,7 @@ def simulate(
 
         for i, choice in enumerate(optim_paras["choices"]):
             current_df[f"shock_reward_{choice}"] = base_draws_sim[slice_, i]
-            current_df[f"meas_error_wage_{choice}"] = base_draws_wage_transformed[
-                slice_, i
-            ]
+            current_df[f"meas_error_wage_{choice}"] = draws_wage_transformed[slice_, i]
 
         current_df = _map_observations_to_states(current_df, state_space, optim_paras)
 
