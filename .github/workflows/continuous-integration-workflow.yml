@@ -30,6 +30,15 @@ jobs:
         shell: bash -l {0}
         run: conda install -c conda-forge tox-conda
 
+      ###############################################################################
+      # tox-conda fixes on Windows (https://github.com/tox-dev/tox-conda/issues/37) #
+      ###############################################################################
+
+      - name: Install fixes for Python 3.6 on Windows
+        if: runner.os == 'Windows' && matrix.python-version == '3.6'
+        shell: bash -l {0}
+        run: conda install -c conda-forge numpy
+
       - name: Install fixes for Python 3.7 on Windows
         if: runner.os == 'Windows' && matrix.python-version == '3.7'
         shell: bash -l {0}
