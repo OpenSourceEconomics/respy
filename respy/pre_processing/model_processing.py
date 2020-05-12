@@ -167,7 +167,7 @@ def _parse_present_bias_parameter(optim_paras, params):
 
     And one where present-bias parameter is not specified:
 
-    >>> params = pd.Series()
+    >>> params = pd.Series(dtype="float64")
     >>> optim_paras = {"delta": 0.95}
     >>> _parse_present_bias_parameter(optim_paras, params)
     {'delta': 0.95, 'beta': 1, 'beta_delta': 0.95}

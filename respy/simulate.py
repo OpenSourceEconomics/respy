@@ -664,56 +664,62 @@ def _process_input_df_for_simulation(df, method, n_sim_periods, options, optim_p
     return df
 
 
-@nb.njit
-def _get_location_of_simulated_objects(array, indexer, size):
-    n_states = array.shape[0]
-    out = np.zeros((n_states, size), dtype=np.int64)
-    for n in range(n_states):
-        state = array[n, :]
-        idx = indexer[array_to_tuple(indexer, state)]
-        out[n, :] = idx
-
-    return out
-
-
 def _map_observations_to_states(states, state_space, optim_paras):
     """Map observations in data to states."""
     core_columns = ["period"] + create_core_state_space_columns(optim_paras)
     core = states.reset_index(level="period")[core_columns].to_numpy(dtype="int64")
 
-    dense_columns = create_dense_state_space_columns(optim_paras)
-    dense = states[dense_columns].to_numpy(dtype="int64")
-
-    indices = _map_observations_to_states_numba(
-        core,
-        dense,
-        state_space.indexer,
-        state_space.dense_covariates_to_index,
-        state_space.core_to_index,
+    core_index, index = _map_observations_to_core_states_numba(
+        core, state_space.indexer
     )
 
-    states["core_index"] = indices[:, 0]
-    states["position"] = indices[:, 1]
-    states["dense_index"] = indices[:, 2]
+    if state_space.dense_covariates_to_index:
+        dense_columns = create_dense_state_space_columns(optim_paras)
+        dense = states[dense_columns].to_numpy(dtype="int64")
+
+        dense_index = _map_observations_to_dense_index(
+            dense,
+            core_index,
+            state_space.dense_covariates_to_index,
+            state_space.core_to_index,
+        )
+    else:
+        dense_index = core_index.copy()
+
+    states["core_index"] = core_index
+    states["position"] = index
+    states["dense_index"] = dense_index
 
     return states
 
 
 @nb.njit
-def _map_observations_to_states_numba(
-    core, dense, indexer, dense_vector_to_index, core_to_index,
-):
+def _map_observations_to_core_states_numba(core, indexer):
     """Map observations to states in Numba."""
     n_observations = core.shape[0]
-    out = np.zeros((n_observations, 3), dtype=np.int64)
+    core_index = np.zeros(n_observations, dtype=np.int64)
+    index = np.zeros(n_observations, dtype=np.int64)
 
     for i in range(n_observations):
-        core_index, index = indexer[array_to_tuple(indexer, core[i])]
+        core_index_, index_ = indexer[array_to_tuple(indexer, core[i])]
+        core_index[i] = core_index_
+        index[i] = index_
+
+    return core_index, index
+
+
+@nb.njit
+def _map_observations_to_dense_index(
+    dense, core_index, dense_vector_to_index, core_to_index
+):
+    n_observations = dense.shape[0]
+    dense_index = np.zeros(n_observations, dtype=np.int64)
+
+    for i in range(n_observations):
         dense_vector_index = dense_vector_to_index[
             array_to_tuple(dense_vector_to_index, dense[i])
         ]
-        dense_index = core_to_index[(core_index, dense_vector_index)]
+        dense_index_ = core_to_index[(core_index[i], dense_vector_index)]
+        dense_index[i] = dense_index_
 
-        out[i] = core_index, index, dense_index
-
-    return out
+    return dense_index
