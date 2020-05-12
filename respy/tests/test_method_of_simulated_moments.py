@@ -65,7 +65,7 @@ def test_msm_nonzero(inputs):
     msm_seed = get_msm_func(*inputs)
 
     assert msm_params(params) > 0
-    assert msm_periods(inputs[0]) > 0
+    assert msm_periods(params) > 0
     assert msm_seed(inputs[0]) > 0
 
 

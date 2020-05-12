@@ -8,6 +8,7 @@ import pandas as pd
 from scipy.special import softmax
 
 from respy._numba import array_to_tuple
+from respy.config import DTYPE_STATES
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.parallelization import split_and_combine_df
 from respy.pre_processing.model_processing import process_params_and_options
@@ -285,7 +286,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
         df["type"] = df["type"].fillna(method="ffill", downcast="infer")
 
     state_space_columns = create_state_space_columns(optim_paras)
-    df = df[state_space_columns].astype("int")
+    df = df[state_space_columns].astype(DTYPE_STATES)
 
     return df
 

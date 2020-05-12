@@ -42,7 +42,7 @@ def create_state_space_class(optim_paras, options):
         core, dense, core_index_to_indices, core_index_to_complex, optim_paras, options
     )
 
-    state_space = StateSpaceClass(
+    state_space = StateSpace(
         core,
         indexer,
         dense,
@@ -56,7 +56,7 @@ def create_state_space_class(optim_paras, options):
     return state_space
 
 
-class StateSpaceClass:
+class StateSpace:
     """Explain how things work once finally decided upon."""
 
     def __init__(

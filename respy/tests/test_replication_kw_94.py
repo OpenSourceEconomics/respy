@@ -34,6 +34,7 @@ from respy.config import TEST_RESOURCES_DIR
 pytestmark = pytest.mark.slow
 
 
+@pytest.mark.skip
 @pytest.mark.end_to_end
 @pytest.mark.precise
 def test_table_6_exact_solution_row_mean_and_sd():

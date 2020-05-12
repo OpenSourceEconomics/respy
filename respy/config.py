@@ -39,7 +39,7 @@ respy.state_space._create_is_inadmissible
 respy.solve._create_choice_rewards
 
 """
-
+DTYPE_STATES = np.uint8
 INDEXER_DTYPE = np.int32
 """numpy.dtype : Data type for the entries in the state space indexer."""
 INDEXER_INVALID_INDEX = np.iinfo(INDEXER_DTYPE).min
