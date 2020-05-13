@@ -14,3 +14,4 @@ the models.
 
    installation
    robinson_crusoe
+   tutorial_params_options_simulate
