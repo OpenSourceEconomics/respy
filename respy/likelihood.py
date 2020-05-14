@@ -24,6 +24,7 @@ from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
 from respy.shared import rename_labels_to_internal
+from respy.shared import subset_cholesky_factor_to_choice_set
 from respy.solve import get_solve_func
 
 
@@ -203,7 +204,14 @@ def _internal_log_like_obs(
         }
 
     df = _compute_wage_and_choice_likelihood_contributions(
-        df, base_draws_est, wages, nonpecs, continuation_values, optim_paras, options,
+        df,
+        base_draws_est,
+        wages,
+        nonpecs,
+        continuation_values,
+        state_space.dense_index_to_choice_set,
+        optim_paras,
+        options,
     )
 
     # Aggregate choice probabilities and wage densities to log likes per observation.
@@ -239,21 +247,35 @@ def _internal_log_like_obs(
 @split_and_combine_df
 @parallelize_across_dense_dimensions
 def _compute_wage_and_choice_likelihood_contributions(
-    df, base_draws_est, wages, nonpecs, continuation_values, optim_paras, options,
+    df,
+    base_draws_est,
+    wages,
+    nonpecs,
+    continuation_values,
+    choice_set,
+    optim_paras,
+    options,
 ):
+    n_wages_raw = len(optim_paras["choices_w_wage"])
+    n_wages = sum(choice_set[:n_wages_raw])
+
     indices = df["index"].to_numpy()
 
-    wages_systematic = wages[indices]
+    selected_wages = wages[indices]
     log_wages_observed = df["log_wage"].to_numpy()
     choices = df["choice"].to_numpy()
 
+    shocks_cholesky = subset_cholesky_factor_to_choice_set(
+        optim_paras["shocks_cholesky"], choice_set
+    )
+
     draws, wage_loglikes = create_draws_and_log_prob_wages(
         log_wages_observed,
-        wages_systematic,
+        selected_wages,
         base_draws_est,
         choices,
-        optim_paras["shocks_cholesky"],
-        len(optim_paras["choices_w_wage"]),
+        shocks_cholesky,
+        n_wages,
         optim_paras["meas_error"],
         optim_paras["has_meas_error"],
     )
@@ -265,7 +287,7 @@ def _compute_wage_and_choice_likelihood_contributions(
     selected_continuation_values = continuation_values[indices]
 
     choice_loglikes = _simulate_log_probability_of_individuals_observed_choice(
-        wages[indices],
+        selected_wages,
         nonpecs[indices],
         selected_continuation_values,
         draws,
