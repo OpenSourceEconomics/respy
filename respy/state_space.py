@@ -57,7 +57,7 @@ def create_state_space_class(optim_paras, options):
 
 
 class StateSpace:
-    """Explain how things work once finally decided upon."""
+    """The state space of a structural model."""
 
     def __init__(
         self,
@@ -78,50 +78,77 @@ class StateSpace:
         self.core_index_to_complex = core_index_to_complex
         self.core_index_to_indices = core_index_to_indices
         self.optim_paras = optim_paras
-        self.options = options
-        self.set_convenience_objects()
+        self.n_periods = options["n_periods"]
+        self._create_conversion_dictionaries()
         self.child_indices = self.collect_child_indices()
-        self.base_draws_sol = self.create_draws()
+        self.base_draws_sol = self.create_draws(options)
         self.create_expected_value_func()
 
-    def set_convenience_objects(self):
-        """Create a number of conveneience objects."""
-        self.dense_to_dense_idx = (
-            {} if not self.dense else {i: k for i, k in enumerate(self.dense)}
-        )
+    def _create_conversion_dictionaries(self):
+        """Create mappings between indices and choice sets.
 
-        self.index_to_complex = {i: k for i, k in enumerate(self.dense_period_cores)}
+        This function also establishes the naming convention for various objects. Here
+        is a short summary.
 
-        self.index_to_core_index = {
-            i: self.dense_period_cores[self.index_to_complex[i]]
-            for i in self.index_to_complex.keys()
+        `indices`
+            Indices are row indices for states in the :ref:`core state space
+            <core_state_space>`. They are continued over different periods and choice
+            sets in the core.
+
+        `core_index`
+            A `core_index` is an index for a set of states in the core state space which
+            are in the same period and share the same choice set.
+
+        `dense_vector`
+            A dense vector is combination of values in the dense dimensions.
+
+        `dense_index`
+            A `dense_index` is an index for a set of states in the dense state space
+            which are in the same period, share the same choice set, and the same dense
+            vector.
+
+        `complex`
+            A complex index is the basis for `core_index` and `dense_index` it is a
+            tuple of a period and a tuple for the choice set which contains booleans for
+            whether a choice is available. The complex index for a dense index also
+            contains the dense vector in the last position.
+
+
+        """
+        self.dense_index_to_complex = {
+            i: k for i, k in enumerate(self.dense_period_cores)
         }
 
-        self.index_to_choice_set = {
-            i: self.index_to_complex[i][1] for i in self.index_to_complex
+        dense_index_to_core_index = {
+            i: self.dense_period_cores[self.dense_index_to_complex[i]]
+            for i in self.dense_index_to_complex.keys()
         }
 
-        self.index_to_indices = {
-            i: np.array(self.core_index_to_indices[self.index_to_core_index[i]])
-            for i in self.index_to_complex
+        self.dense_index_to_choice_set = {
+            i: self.dense_index_to_complex[i][1] for i in self.dense_index_to_complex
+        }
+
+        self.dense_index_to_indices = {
+            i: np.array(self.core_index_to_indices[dense_index_to_core_index[i]])
+            for i in self.dense_index_to_complex
         }
 
         self.core_to_index = Dict.empty(
             key_type=types.UniTuple(types.int64, 2), value_type=types.int64,
         )
 
-        for i in self.index_to_complex:
+        for i in self.dense_index_to_complex:
             self.core_to_index[
                 return_core_dense_key(
-                    self.index_to_core_index[i], *self.index_to_complex[i][2:]
+                    dense_index_to_core_index[i], *self.dense_index_to_complex[i][2:],
                 )
             ] = i
 
-        self.complex_to_index = {k: i for i, k in self.index_to_complex.items()}
-
         if self.dense is False:
             self.dense_covariates_to_index = {}
-            self.index_to_dense_covariates = {i: {} for i in self.index_to_complex}
+            self.index_to_dense_covariates = {
+                i: {} for i in self.dense_index_to_complex
+            }
 
         else:
             n_dense = len(create_dense_state_space_columns(self.optim_paras))
@@ -132,23 +159,23 @@ class StateSpace:
                 self.dense_covariates_to_index[k] = i
 
             self.index_to_dense_covariates = {
-                i: list(self.dense.values())[self.index_to_complex[i][2]]
-                for i in self.index_to_complex
+                i: list(self.dense.values())[self.dense_index_to_complex[i][2]]
+                for i in self.dense_index_to_complex
             }
 
     def create_expected_value_func(self):
-        """Create a contianer for expected value functions."""
+        """Create a container for expected value functions."""
         self.expected_value_functions = Dict.empty(
             key_type=types.int64, value_type=types.float64[:]
         )
-        for index, indices in self.index_to_indices.items():
+        for index, indices in self.dense_index_to_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
 
     def get_continuation_values(self, period):
         """Wrap get continuation values."""
-        if period == self.options["n_periods"] - 1:
+        if period == self.n_periods - 1:
             shapes = self.get_attribute_from_period("base_draws_sol", period)
-            states = self.get_attribute_from_period("index_to_indices", period)
+            states = self.get_attribute_from_period("dense_index_to_indices", period)
             continuation_values = {
                 key: np.zeros((states[key].shape[0], shapes[key].shape[1]))
                 for key in shapes
@@ -165,8 +192,8 @@ class StateSpace:
                 subset_expected_value_functions[key] = value
 
             continuation_values = _get_continuation_values(
-                self.get_attribute_from_period("index_to_indices", period),
-                self.get_attribute_from_period("index_to_complex", period),
+                self.get_attribute_from_period("dense_index_to_indices", period),
+                self.get_attribute_from_period("dense_index_to_complex", period),
                 child_indices,
                 self.core_to_index,
                 bypass={"expected_value_functions": subset_expected_value_functions},
@@ -175,19 +202,19 @@ class StateSpace:
 
     def collect_child_indices(self):
         """Wrap get child indices."""
-        if self.options["n_periods"] == 1:
+        if self.n_periods == 1:
             return None
 
         limited_index_to_indices = {
             k: v
-            for k, v in self.index_to_indices.items()
-            if self.index_to_complex[k][0] < self.options["n_periods"] - 1
+            for k, v in self.dense_index_to_indices.items()
+            if self.dense_index_to_complex[k][0] < self.n_periods - 1
         }
 
         limited_index_to_choice_set = {
             k: v
-            for k, v in self.index_to_choice_set.items()
-            if self.index_to_complex[k][0] < self.options["n_periods"] - 1
+            for k, v in self.dense_index_to_choice_set.items()
+            if self.dense_index_to_complex[k][0] < self.n_periods - 1
         }
         child_indices = _collect_child_indices(
             self.core,
@@ -199,20 +226,20 @@ class StateSpace:
 
         return child_indices
 
-    def create_draws(self):
+    def create_draws(self, options):
         """Get draws."""
-        n_choices_in_sets = list(set(map(sum, self.index_to_choice_set.values())))
+        n_choices_in_sets = list(set(map(sum, self.dense_index_to_choice_set.values())))
         shocks_sets = []
 
         for n_choices in n_choices_in_sets:
             draws = create_base_draws(
-                (self.options["n_periods"], self.options["solution_draws"], n_choices),
-                next(self.options["solution_seed_startup"]),
-                self.options["monte_carlo_sequence"],
+                (options["n_periods"], options["solution_draws"], n_choices),
+                next(options["solution_seed_startup"]),
+                options["monte_carlo_sequence"],
             )
             shocks_sets.append(draws)
         draws = {}
-        for dense_idx, complex_ix in self.index_to_complex.items():
+        for dense_idx, complex_ix in self.dense_index_to_complex.items():
             period = complex_ix[0]
             n_choices = sum(complex_ix[1])
             idx = n_choices_in_sets.index(n_choices)
@@ -236,7 +263,7 @@ class StateSpace:
 
         """
         attr = self.get_attribute(attribute)
-        out = subset_to_period(attr, self.index_to_complex, period)
+        out = subset_to_period(attr, self.dense_index_to_complex, period)
         return out
 
     def get_attribute_from_key(self, attribute, key):

@@ -48,8 +48,8 @@ def solve(params, options, state_space):
 
     wages, nonpecs = _create_choice_rewards(
         state_space.core,
-        state_space.index_to_indices,
-        state_space.index_to_choice_set,
+        state_space.dense_index_to_indices,
+        state_space.dense_index_to_choice_set,
         state_space.index_to_dense_covariates,
         optim_paras,
         options,
@@ -67,15 +67,7 @@ def solve(params, options, state_space):
 def _create_choice_rewards(
     core, core_indices, choice_set, dense_covariates, optim_paras, options
 ):
-    """Create wage and non-pecuniary reward for each state and choice.
-
-    TODO: The function receives the full core and the indices
-     instead of the already indexed core
-    which would require less memory to be copied and moved.
-    At the same time, indexing and copying
-    in the main process is also expensive.
-
-    """
+    """Create wage and non-pecuniary reward for each state and choice."""
     n_choices = sum(choice_set)
     choices = [
         choice for i, choice in enumerate(optim_paras["choices"]) if choice_set[i]
@@ -117,13 +109,11 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     state_space : :class:`~respy.state_space.StateSpace`
 
     """
-    # Is this still practicable?
-    n_periods = optim_paras["n_periods"]
+    n_periods = options["n_periods"]
 
-    # Rewrite
     draws_emax_risk = transform_base_draws_with_cholesky_factor(
         state_space.base_draws_sol,
-        state_space.index_to_choice_set,
+        state_space.dense_index_to_choice_set,
         optim_paras["shocks_cholesky"],
         optim_paras,
     )
@@ -136,7 +126,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         continuation_values = state_space.get_continuation_values(period)
 
         period_draws_emax_risk = subset_to_period(
-            draws_emax_risk, state_space.index_to_complex, period
+            draws_emax_risk, state_space.dense_index_to_complex, period
         )
 
         # The number of interpolation points is the same for all periods. Thus, for
@@ -184,7 +174,7 @@ def _full_solution(
     """Calculate the full solution of the model.
 
     In contrast to approximate solution, the Monte Carlo integration is done for each
-    state and not only a subset.
+    state and not only a subset of states.
 
     """
     period_expected_value_functions = calculate_expected_value_functions(

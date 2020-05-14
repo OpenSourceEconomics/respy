@@ -410,9 +410,9 @@ def test_equality_of_equivalent_choice_sets():
     optim_paras, options_ = process_params_and_options(params, options)
     sp_alt = create_state_space_class(optim_paras, options_)
 
-    for i in sp_alt.index_to_indices:
+    for i in sp_alt.dense_index_to_indices:
         np.testing.assert_array_equal(
-            sp_alt.index_to_indices[i], sp.index_to_indices[i]
+            sp_alt.dense_index_to_indices[i], sp.dense_index_to_indices[i]
         )
 
 

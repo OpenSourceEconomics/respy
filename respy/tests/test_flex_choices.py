@@ -31,7 +31,7 @@ def test_period_choice_dense_cores():
     optim_paras, options = process_params_and_options(params, options)
 
     sp = create_state_space_class(optim_paras, options)
-    check = sp.index_to_complex
+    check = sp.dense_index_to_complex
 
     for x in check.values():
         if (x[0][0] < 2) & (x[1] == (0,)):

@@ -10,5 +10,6 @@ section helpful. They assume you are already familiar with using **respy**.
 .. toctree::
    :maxdepth: 1
 
+   state_space
    randomness_and_reproducibility
    scalability

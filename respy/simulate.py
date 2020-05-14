@@ -196,7 +196,7 @@ def simulate(
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
         index_to_choice_set = state_space.get_attribute_from_period(
-            "index_to_choice_set", period
+            "dense_index_to_choice_set", period
         )
         continuation_values = state_space.get_continuation_values(period=period)
 
