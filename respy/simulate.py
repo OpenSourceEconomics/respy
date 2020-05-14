@@ -2,12 +2,10 @@
 import functools
 import warnings
 
-import numba as nb
 import numpy as np
 import pandas as pd
 from scipy.special import softmax
 
-from respy._numba import array_to_tuple
 from respy.config import DTYPE_STATES
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.parallelization import split_and_combine_df
@@ -15,10 +13,9 @@ from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
-from respy.shared import create_core_state_space_columns
-from respy.shared import create_dense_state_space_columns
 from respy.shared import create_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
+from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
 from respy.shared import rename_labels_from_internal
 from respy.shared import rename_labels_to_internal
@@ -191,7 +188,9 @@ def simulate(
             current_df[f"shock_reward_{choice}"] = base_draws_sim[slice_, i]
             current_df[f"meas_error_wage_{choice}"] = draws_wage_transformed[slice_, i]
 
-        current_df = _map_observations_to_states(current_df, state_space, optim_paras)
+        current_df["dense_index"], current_df["index"] = map_observations_to_states(
+            current_df, state_space, optim_paras
+        )
 
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
@@ -316,7 +315,7 @@ def _simulate_single_period(
     # only wages in this period and normal indices select rows from all wages.
     # TODO: This only works as long as we have no mixed constraints!
 
-    period_indices = df["position"].to_numpy()
+    period_indices = df["index"].to_numpy()
     try:
         wages = wages[period_indices]
         nonpecs = nonpecs[period_indices]
@@ -682,64 +681,3 @@ def _process_input_df_for_simulation(df, method, options, optim_paras):
         )
 
     return df
-
-
-def _map_observations_to_states(states, state_space, optim_paras):
-    """Map observations in data to states."""
-    core_columns = ["period"] + create_core_state_space_columns(optim_paras)
-    core = states.reset_index(level="period")[core_columns].to_numpy(dtype="int64")
-
-    core_index, index = _map_observations_to_core_states_numba(
-        core, state_space.indexer
-    )
-
-    if state_space.dense_covariates_to_index:
-        dense_columns = create_dense_state_space_columns(optim_paras)
-        dense = states[dense_columns].to_numpy(dtype="int64")
-
-        dense_index = _map_observations_to_dense_index(
-            dense,
-            core_index,
-            state_space.dense_covariates_to_index,
-            state_space.core_to_index,
-        )
-    else:
-        dense_index = core_index.copy()
-
-    states["core_index"] = core_index
-    states["position"] = index
-    states["dense_index"] = dense_index
-
-    return states
-
-
-@nb.njit
-def _map_observations_to_core_states_numba(core, indexer):
-    """Map observations to states in Numba."""
-    n_observations = core.shape[0]
-    core_index = np.zeros(n_observations, dtype=np.int64)
-    index = np.zeros(n_observations, dtype=np.int64)
-
-    for i in range(n_observations):
-        core_index_, index_ = indexer[array_to_tuple(indexer, core[i])]
-        core_index[i] = core_index_
-        index[i] = index_
-
-    return core_index, index
-
-
-@nb.njit
-def _map_observations_to_dense_index(
-    dense, core_index, dense_vector_to_index, core_to_index
-):
-    n_observations = dense.shape[0]
-    dense_index = np.zeros(n_observations, dtype=np.int64)
-
-    for i in range(n_observations):
-        dense_vector_index = dense_vector_to_index[
-            array_to_tuple(dense_vector_to_index, dense[i])
-        ]
-        dense_index_ = core_to_index[(core_index[i], dense_vector_index)]
-        dense_index[i] = dense_index_
-
-    return dense_index

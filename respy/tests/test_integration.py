@@ -6,7 +6,6 @@ from respy.tests.random_model import generate_random_model
 from respy.tests.random_model import simulate_truncated_data
 
 
-@pytest.mark.xfail
 @pytest.mark.end_to_end
 def test_simulation_and_estimation_with_different_models():
     """Test the evaluation of the criterion function not at the true parameters."""
@@ -23,7 +22,6 @@ def test_simulation_and_estimation_with_different_models():
     crit_func(params)
 
 
-@pytest.mark.xfail
 @pytest.mark.end_to_end
 def test_invariant_results_for_two_estimations():
     params, options = generate_random_model()

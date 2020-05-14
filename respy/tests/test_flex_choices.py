@@ -10,8 +10,8 @@ from respy.simulate import get_simulate_func
 from respy.state_space import create_state_space_class
 
 
-@pytest.mark.xfail
-def test_period_choice_dense_cores():
+@pytest.mark.integration
+def test_choice_restrictions():
     """
     Basic first test!
     """
@@ -34,17 +34,18 @@ def test_period_choice_dense_cores():
     check = sp.dense_index_to_complex
 
     for x in check.values():
-        if (x[0][0] < 2) & (x[1] == (0,)):
-            assert x[0][1] == (False, False, True)
-        elif x[1] == (0,):
-            assert x[0][1] in [(False, False, True), (False, True, True)]
-        elif (x[0][0] < 2) & (x[1] == (1,)):
-            assert x[0][1] == (True, False, True)
-        elif x[1] == (1,):
-            assert x[0][1] in [(True, False, True), (True, True, True)]
+        if (x[0] < 2) & (x[2] == (0,)):
+            assert x[1] == (False, False, True)
+        elif x[2] == (0,):
+            assert x[1] in [(False, False, True), (False, True, True)]
+        elif (x[0] < 2) & (x[2] == (1,)):
+            assert x[1] == (True, False, True)
+        elif x[2] == (1,):
+            assert x[1] in [(True, False, True), (True, True, True)]
 
 
-def test_robustness_solution():
+@pytest.mark.end_to_end
+def test_simulation_with_flexible_choice_sets():
     params, options = rp.get_example_model("robinson_crusoe_extended", with_data=False)
 
     # Extend with observable characteristic.

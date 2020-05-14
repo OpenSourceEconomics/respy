@@ -20,7 +20,6 @@ from respy.tests.random_model import simulate_truncated_data
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.mark.xfail
 def test_generate_random_model():
     """Test if random model specifications can be simulated and processed."""
     params, options = generate_random_model()

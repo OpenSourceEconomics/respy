@@ -5,8 +5,6 @@ import joblib
 import numpy as np
 import pandas as pd
 
-import respy.shared
-
 
 def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
     """Parallelizes decorated function across dense state space dimensions.
@@ -127,50 +125,6 @@ def split_and_combine_df(func):
     return wrapper_distribute_and_combine_df
 
 
-def split_and_combine_likelihood(func):
-    """Split the likelihood calculation across sub state spaces and combine.
-
-    If types are modeled, the data is duplicated for each type. Along with the data, the
-    shocks are split across the dense indices.
-
-    """
-
-    @functools.wraps(func)
-    def wrapper_distribute_and_combine_likelihood(
-        df, base_draws_est, *args, optim_paras, options
-    ):
-        dense_columns = respy.shared.create_dense_state_space_columns(optim_paras)
-        # Duplicate the DataFrame for each type.
-        if dense_columns:
-            n_obs = df.shape[0]
-            n_types = optim_paras["n_types"]
-
-            # Number each state to split the shocks later. This is necessary to keep the
-            # regression tests from failing.
-            df["__id"] = np.arange(n_obs)
-            # Each row of indices corresponds to a state whereas the columns refer to
-            # different types.
-            indices = np.arange(n_obs * n_types).reshape(n_obs, n_types)
-
-            df_ = pd.concat([df.copy().assign(type=i) for i in range(n_types)])
-            splitted_df = _split_dataframe(df_, dense_columns)
-
-            splitted_shocks = _split_shocks(
-                base_draws_est, splitted_df, indices, optim_paras
-            )
-        else:
-            splitted_df = df
-            splitted_shocks = base_draws_est
-
-        out = func(splitted_df, splitted_shocks, *args, optim_paras, options)
-
-        out = pd.concat(out.values()).sort_index() if isinstance(out, dict) else out
-
-        return out
-
-    return wrapper_distribute_and_combine_likelihood
-
-
 def _infer_dense_indices_from_arguments(args, kwargs):
     """Infer the dense indices from the arguments.
 
@@ -243,22 +197,3 @@ def _is_dense_dictionary_argument(argument, dense_indices):
 def _split_dataframe(df):
     """Split a DataFrame by creating groups of the same values for the dense dims."""
     return {name: group for name, group in df.groupby("dense_index")}
-
-
-def _split_shocks(base_draws_est, splitted_df, indices, optim_paras):
-    """Split the shocks.
-
-    Previously, shocks were assigned to observations which were ordered like observation
-    * n_types. Due to the changes to the dense dimensions, this might not be true
-    anymore. Thus, ensure the former ordering with the `__id` variable. This will be
-    removed with new regression tests.
-
-    """
-    splitted_shocks = {}
-    for dense_idx, sub_df in splitted_df.items():
-        type_ = dense_idx[-1] if optim_paras["n_types"] >= 2 else 0
-        sub_indices = sub_df.pop("__id").to_numpy()
-        shock_indices_for_group = indices[sub_indices][:, type_].reshape(-1)
-        splitted_shocks[dense_idx] = base_draws_est[shock_indices_for_group]
-
-    return splitted_shocks

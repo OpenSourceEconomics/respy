@@ -8,12 +8,10 @@ import pandas as pd
 from scipy import special
 
 from respy.conditional_draws import create_draws_and_log_prob_wages
-from respy.config import INDEXER_INVALID_INDEX
 from respy.config import MAX_FLOAT
 from respy.config import MIN_FLOAT
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.parallelization import split_and_combine_df
-from respy.parallelization import split_and_combine_likelihood
 from respy.pre_processing.data_checking import check_estimation_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.process_covariates import identify_necessary_covariates
@@ -21,9 +19,9 @@ from respy.shared import aggregate_keane_wolpin_utility
 from respy.shared import compute_covariates
 from respy.shared import convert_labeled_variables_to_codes
 from respy.shared import create_base_draws
-from respy.shared import create_core_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import generate_column_dtype_dict_for_estimation
+from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
 from respy.shared import rename_labels_to_internal
 from respy.solve import get_solve_func
@@ -67,7 +65,7 @@ def get_crit_func(
     """
     optim_paras, options = process_params_and_options(params, options)
 
-    optim_paras = _adjust_optim_paras_for_estimation(optim_paras, df)
+    optim_paras = _update_optim_paras_with_initial_experience_levels(optim_paras, df)
 
     check_estimation_data(df, optim_paras)
 
@@ -78,15 +76,16 @@ def get_crit_func(
         df, state_space, optim_paras, options
     )
 
-    base_draws_est = create_base_draws(
-        (
-            df.shape[0] * optim_paras["n_types"],
-            options["estimation_draws"],
-            len(optim_paras["choices"]),
-        ),
-        next(options["estimation_seed_startup"]),
-        options["monte_carlo_sequence"],
-    )
+    # Replace with decorator.
+    base_draws_est = {}
+    for dense_index, indices in df.groupby("dense_index").groups.items():
+        n_choices = sum(state_space.dense_index_to_choice_set[dense_index])
+        draws = create_base_draws(
+            (len(indices), options["estimation_draws"], n_choices),
+            next(options["estimation_seed_startup"]),
+            options["monte_carlo_sequence"],
+        )
+        base_draws_est[dense_index] = draws
 
     criterion_function = partial(
         log_like,
@@ -196,16 +195,15 @@ def _internal_log_like_obs(
 
     wages = state_space.get_attribute("wages")
     nonpecs = state_space.get_attribute("nonpecs")
-    expected_value_functions = state_space.get_attribute("expected_value_functions")
+    continuation_values = {}
+    for period in range(options["n_periods"]):
+        continuation_values = {
+            **continuation_values,
+            **state_space.get_continuation_values(period),
+        }
 
     df = _compute_wage_and_choice_likelihood_contributions(
-        df,
-        base_draws_est,
-        wages,
-        nonpecs,
-        expected_value_functions,
-        optim_paras=optim_paras,
-        options=options,
+        df, base_draws_est, wages, nonpecs, continuation_values, optim_paras, options,
     )
 
     # Aggregate choice probabilities and wage densities to log likes per observation.
@@ -238,14 +236,11 @@ def _internal_log_like_obs(
     return contribs, df, log_type_probabilities
 
 
-@split_and_combine_likelihood
+@split_and_combine_df
 @parallelize_across_dense_dimensions
 def _compute_wage_and_choice_likelihood_contributions(
-    df, base_draws_est, wages, nonpecs, expected_value_functions, optim_paras, options,
+    df, base_draws_est, wages, nonpecs, continuation_values, optim_paras, options,
 ):
-    n_choices = len(optim_paras["choices"])
-    n_obs = df.shape[0]
-
     indices = df["index"].to_numpy()
 
     wages_systematic = wages[indices]
@@ -263,19 +258,16 @@ def _compute_wage_and_choice_likelihood_contributions(
         optim_paras["has_meas_error"],
     )
 
-    draws = draws.reshape(n_obs, -1, n_choices)
+    n_choices = wages.shape[1]
+    n_observations = df.shape[0]
+    draws = draws.reshape(n_observations, -1, n_choices)
 
-    # To get the continuation values, correctly index the expected value functions. This
-    # is the same operation done in `_SingleDimStateSpace.get_continuation_values()`.
-    child_indices = df[[f"child_index_{c}" for c in optim_paras["choices"]]]
-    mask = child_indices != INDEXER_INVALID_INDEX
-    valid_indices = np.where(mask, child_indices, 0)
-    continuation_values = np.where(mask, expected_value_functions[valid_indices], 0)
+    selected_continuation_values = continuation_values[indices]
 
     choice_loglikes = _simulate_log_probability_of_individuals_observed_choice(
         wages[indices],
         nonpecs[indices],
-        continuation_values,
+        selected_continuation_values,
         draws,
         optim_paras["beta_delta"],
         choices,
@@ -466,6 +458,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
         predict probabilities for each type.
 
     """
+    n_types = optim_paras["n_types"]
     col_dtype = generate_column_dtype_dict_for_estimation(optim_paras)
 
     df = (
@@ -475,44 +468,20 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     )
     df = convert_labeled_variables_to_codes(df, optim_paras)
 
-    # Get indices of states in the state space corresponding to all observations for all
-    # types. The indexer has the shape (n_observations,).
-    n_periods = int(df.index.get_level_values("period").max() + 1)
-    indices = []
-    core_columns = create_core_state_space_columns(optim_paras)
+    # Duplicate observations for each type.
+    if n_types >= 2:
+        df = pd.concat([df.copy().assign(type=i) for i in range(n_types)])
 
-    for period in range(n_periods):
-        period_df = df.query("period == @period")
-        period_core = tuple(period_df[col].to_numpy() for col in core_columns)
-        period_indices = state_space.indexer[period][period_core]
-        indices.append(period_indices)
-
-    indices = np.concatenate(indices)
-
-    # The indexer is now sorted in period-individual pairs whereas the estimation needs
-    # individual-period pairs. Sort it!
-    indices_to_reorder = (
-        df.sort_values(["period", "identifier"])
-        .assign(__index__=np.arange(df.shape[0]))
-        .sort_values(["identifier", "period"])["__index__"]
-        .to_numpy()
+    df["dense_index"], df["index"] = map_observations_to_states(
+        df, state_space, optim_paras
     )
-    df["index"] = indices[indices_to_reorder]
-
-    # Add indices of child states to the DataFrame.
-    children = pd.DataFrame(
-        data=state_space.indices_of_child_states[df["index"].to_numpy()],
-        index=df.index,
-        columns=[f"child_index_{c}" for c in optim_paras["choices"]],
-    )
-    df = pd.concat([df, children], axis="columns")
 
     # For the estimation, log wages are needed with shape (n_observations, n_types).
     df["log_wage"] = np.log(np.clip(df.wage.to_numpy(), 1 / MAX_FLOAT, MAX_FLOAT))
     df = df.drop(columns="wage")
 
     # For the type covariates, we only need the first observation of each individual.
-    if optim_paras["n_types"] >= 2:
+    if n_types >= 2:
         initial_states = df.query("period == 0").copy()
         type_covariates = compute_covariates(
             initial_states, options["covariates_core"], raise_errors=False
@@ -524,14 +493,8 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     return df, type_covariates
 
 
-def _adjust_optim_paras_for_estimation(optim_paras, df):
-    """Adjust optim_paras for estimation.
-
-    There are some option values which are necessary for the simulation, but they can be
-    directly inferred from the data for estimation. A warning is raised for the user
-    which can be suppressed by adjusting the optim_paras.
-
-    """
+def _update_optim_paras_with_initial_experience_levels(optim_paras, df):
+    """Adjust the initial experience levels in optim_paras from the data."""
     for choice in optim_paras["choices_w_exp"]:
 
         # Adjust initial experience levels for all choices with experiences.

@@ -113,7 +113,6 @@ class StateSpace:
             whether a choice is available. The complex index for a dense index also
             contains the dense vector in the last position.
 
-
         """
         self.dense_index_to_complex = {
             i: k for i, k in enumerate(self.dense_period_cores)
@@ -203,26 +202,27 @@ class StateSpace:
     def collect_child_indices(self):
         """Wrap get child indices."""
         if self.n_periods == 1:
-            return None
+            child_indices = None
 
-        limited_index_to_indices = {
-            k: v
-            for k, v in self.dense_index_to_indices.items()
-            if self.dense_index_to_complex[k][0] < self.n_periods - 1
-        }
+        else:
+            limited_index_to_indices = {
+                k: v
+                for k, v in self.dense_index_to_indices.items()
+                if self.dense_index_to_complex[k][0] < self.n_periods - 1
+            }
 
-        limited_index_to_choice_set = {
-            k: v
-            for k, v in self.dense_index_to_choice_set.items()
-            if self.dense_index_to_complex[k][0] < self.n_periods - 1
-        }
-        child_indices = _collect_child_indices(
-            self.core,
-            limited_index_to_indices,
-            limited_index_to_choice_set,
-            self.indexer,
-            self.optim_paras,
-        )
+            limited_index_to_choice_set = {
+                k: v
+                for k, v in self.dense_index_to_choice_set.items()
+                if self.dense_index_to_complex[k][0] < self.n_periods - 1
+            }
+            child_indices = _collect_child_indices(
+                self.core,
+                limited_index_to_indices,
+                limited_index_to_choice_set,
+                self.indexer,
+                self.optim_paras,
+            )
 
         return child_indices
 
