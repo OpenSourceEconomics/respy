@@ -3,13 +3,12 @@ import functools
 
 import numpy as np
 
-from respy.interpolate import interpolate
+from respy.interpolate import kw_94_interpolation
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_expected_value_functions
 from respy.shared import compute_covariates
 from respy.shared import pandas_dot
-from respy.shared import subset_to_period
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.state_space import create_state_space_class
 
@@ -95,6 +94,12 @@ def _create_choice_rewards(
 def _solve_with_backward_induction(state_space, optim_paras, options):
     """Calculate utilities with backward induction.
 
+    The expected value functions in one period are only computed by interpolation if:
+
+    1. Interpolation is requested.
+    2. If there are more states in the period than interpolation points.
+    3. If there are at least two interpolation points per `dense_index`.
+
     Parameters
     ----------
     state_space : :class:`~respy.state_space.StateSpace`
@@ -119,43 +124,38 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
     )
 
     for period in reversed(range(n_periods)):
-        n_core_states = state_space.core.query("period == @period").shape[0]
+        dense_indices_in_period = state_space.get_dense_indices_from_period(period)
 
-        wages = state_space.get_attribute_from_period("wages", period)
-        nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-        continuation_values = state_space.get_continuation_values(period)
+        period_draws_emax_risk = {
+            dense_index: draws_emax_risk[dense_index]
+            for dense_index in dense_indices_in_period
+        }
 
-        period_draws_emax_risk = subset_to_period(
-            draws_emax_risk, state_space.dense_index_to_complex, period
+        n_states_in_period = sum(
+            len(state_space.dense_index_to_indices[dense_index])
+            for dense_index in dense_indices_in_period
         )
-
-        # The number of interpolation points is the same for all periods. Thus, for
-        # some periods the number of interpolation points is larger than the actual
-        # number of states. In this case, no interpolation is needed.
-        n_dense_combinations = len(getattr(state_space, "sub_state_spaces", [1]))
-        n_states_in_period = n_core_states * n_dense_combinations
-        any_interpolated = (
-            options["interpolation_points"] <= n_states_in_period
-            and options["interpolation_points"] != -1
+        # See docstring for note on interpolation.
+        any_interpolated = options[
+            "interpolation_points"
+        ] < n_states_in_period and options["interpolation_points"] >= 2 * len(
+            dense_indices_in_period
         )
 
         # Handle myopic individuals.
         if optim_paras["delta"] == 0:
-            period_expected_value_functions = {k: 0 for k in wages}
+            period_expected_value_functions = {k: 0 for k in dense_indices_in_period}
 
         elif any_interpolated:
-            period_expected_value_functions = interpolate(
-                wages,
-                nonpecs,
-                continuation_values,
-                state_space,
-                period_draws_emax_risk,
-                period,
-                optim_paras,
-                options,
+            period_expected_value_functions = kw_94_interpolation(
+                state_space, period_draws_emax_risk, period, optim_paras, options,
             )
 
         else:
+            wages = state_space.get_attribute_from_period("wages", period)
+            nonpecs = state_space.get_attribute_from_period("nonpecs", period)
+            continuation_values = state_space.get_continuation_values(period)
+
             period_expected_value_functions = _full_solution(
                 wages, nonpecs, continuation_values, period_draws_emax_risk, optim_paras
             )

@@ -16,7 +16,6 @@ from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import return_core_dense_key
-from respy.shared import subset_to_period
 
 
 def create_state_space_class(optim_paras, options):
@@ -251,6 +250,14 @@ class StateSpace:
         """Get an attribute of the state space."""
         return getattr(self, attr)
 
+    def get_dense_indices_from_period(self, period):
+        """Get dense indices from one period."""
+        return [
+            dense_index
+            for dense_index, complex_ in self.dense_index_to_complex.items()
+            if complex_[0] == period
+        ]
+
     def get_attribute_from_period(self, attribute, period):
         """Get an attribute of the state space sliced to a given period.
 
@@ -262,9 +269,12 @@ class StateSpace:
             Attribute is retrieved from this period.
 
         """
-        attr = self.get_attribute(attribute)
-        out = subset_to_period(attr, self.dense_index_to_complex, period)
-        return out
+        dense_indices_in_period = self.get_dense_indices_from_period(period)
+        return {
+            dense_index: attr
+            for dense_index, attr in getattr(self, attribute).items()
+            if dense_index in dense_indices_in_period
+        }
 
     def get_attribute_from_key(self, attribute, key):
         """Get an attribute of the state space sliced to a given period.

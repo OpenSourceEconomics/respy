@@ -516,13 +516,6 @@ def convert_dictionary_keys_to_dense_indices(dictionary):
     return new_dictionary
 
 
-def subset_to_period(state_dict, dense_index_to_complex, period):
-    """Get all sp parts of a particular period."""
-    period_keys = [x for x, y in dense_index_to_complex.items() if y[0] == period]
-    out = {key: value for key, value in state_dict.items() if key in period_keys}
-    return out
-
-
 def subset_cholesky_factor_to_choice_set(cholesky_factor, choice_set):
     """Subset the Cholesky factor to dimensions required by the admissible choice set.
 

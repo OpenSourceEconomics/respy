@@ -5,51 +5,13 @@ import numba as nb
 import numpy as np
 
 from respy.config import MAX_LOG_FLOAT
-from respy.parallelization import combine_and_split_interpolation
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.shared import calculate_expected_value_functions
 from respy.shared import calculate_value_functions_and_flow_utilities
 
 
-def interpolate(
-    wages,
-    nonpecs,
-    continuation_values,
-    state_space,
-    period_draws_emax_risk,
-    period,
-    optim_paras,
-    options,
-):
-    """Interface to switch between different interpolation routines."""
-    period_expected_value_functions = dict()
-    for choice_set in wages.keys():
-        positions = {i: x for i, x in enumerate(choice_set) if x == True}
-        period_draws_emax_risk = period_draws_emax_risk[:, list(positions.keys())]
-        period_expected_value_functions[choice_set] = _kw_94_interpolation(
-            wages[choice_set],
-            nonpecs[choice_set],
-            continuation_values[choice_set],
-            state_space,
-            period_draws_emax_risk,
-            period,
-            optim_paras,
-            options,
-            list(positions.values()),
-        )
-
-    return period_expected_value_functions
-
-
-def _kw_94_interpolation(
-    wages,
-    nonpecs,
-    continuation_values,
-    state_space,
-    period_draws_emax_risk,
-    optim_paras,
-    options,
-    choices,
+def kw_94_interpolation(
+    state_space, period_draws_emax_risk, period, optim_paras, options,
 ):
     r"""Calculate the approximate solution proposed by [1]_.
 
@@ -102,26 +64,38 @@ def _kw_94_interpolation(
            Economics and Statistics*, 76(4): 648-672.
 
     """
-    # This has to be adapted!
-    n_wages = len([x for x in optim_paras["choices_w_wage"] if x in choices])
-
-    n_core_states_in_period = wages.shape[0]
-
-    seed = _get_seeds_for_interpolation(state_space, options)
-    interp_points = _split_interpolation_points_evenly(state_space, options)
-
-    not_interpolated = _get_not_interpolated_indicator(
-        interp_points, n_core_states_in_period, seed
-    )
-
-    # Create an array with the expected value of the shocks.
-    expected_shocks = np.zeros(wages.shape[1])
-    var = np.diag(optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T))
-    expected_shocks[:n_wages] = np.exp(np.clip(var[:n_wages], 0, MAX_LOG_FLOAT) / 2)
-
+    # Get reward components.
     wages = state_space.get_attribute_from_period("wages", period)
     nonpecs = state_space.get_attribute_from_period("nonpecs", period)
-    continuation_values = state_space.get_continuation_values(period=period)
+    continuation_values = state_space.get_continuation_values(period)
+
+    # Create some dense index conversion objects.
+    dense_indices_in_period = list(wages)
+    dense_index_to_n_states = {
+        dense_index: len(state_space.dense_index_to_indices[dense_index])
+        for dense_index in dense_indices_in_period
+    }
+    dense_index_to_choice_set_in_period = {
+        dense_index: state_space.dense_index_to_choice_set[dense_index]
+        for dense_index in dense_indices_in_period
+    }
+
+    # Start interpolation.
+    seeds = _get_seeds_to_create_not_interpolate_indicator(
+        dense_indices_in_period, options
+    )
+
+    interpolation_points = _split_interpolation_points_evenly(
+        dense_index_to_n_states, period, options
+    )
+
+    not_interpolated = _get_not_interpolated_indicator(
+        interpolation_points, dense_index_to_n_states, seeds
+    )
+
+    expected_shocks = _compute_expected_shocks(
+        dense_index_to_choice_set_in_period, optim_paras
+    )
 
     exogenous, max_emax = _compute_rhs_variables(
         wages, nonpecs, continuation_values, expected_shocks, optim_paras["delta"]
@@ -147,35 +121,80 @@ def _kw_94_interpolation(
     return period_expected_value_functions
 
 
-def _get_seeds_for_interpolation(state_space, options):
-    if hasattr(state_space, "sub_state_spaces"):
-        seed = {
-            dense_idx: next(options["solution_seed_iteration"])
-            for dense_idx in state_space.sub_state_spaces
-        }
-    else:
-        seed = next(options["solution_seed_iteration"])
+def _get_seeds_to_create_not_interpolate_indicator(dense_indices, options):
+    """Get seeds for each dense index to mask not interpolated states."""
+    seeds = {
+        dense_index: next(options["solution_seed_iteration"])
+        for dense_index in dense_indices
+    }
 
-    return seed
+    return seeds
 
 
-def _split_interpolation_points_evenly(state_space, options):
-    """Split the number of interpolated states evenly across dense dimensions."""
-    if hasattr(state_space, "sub_state_spaces"):
-        n_dense_combinations = len(state_space.sub_state_spaces)
-        interp_points = options["interpolation_points"] // np.full(
-            n_dense_combinations, n_dense_combinations
+def _split_interpolation_points_evenly(dense_index_to_n_states, period, options):
+    """Split the number of interpolated states evenly across dense dimensions.
+
+    We want to distribute the interpolation points evenly across dense indices in the
+    state space. Thus, we draw the dense indices until we reach the total number of
+    interpolation points and count the indices. The probability for each dense index
+    being drawn is the its share of the total number of states in the period.
+
+    Parameters
+    ----------
+    dense_index_to_n_states : dict
+        Dictionary whose keys are dense indices in the period and values are the number
+        of states.
+    period : int
+        The current period. Used to print a more informative warning.
+    options : dict
+        Model options.
+
+    Warning
+    -------
+    UserWarning
+        If the number of interpolation points is below 1% for one `dense_index`.
+
+    """
+    # Each `dense_index` receives at least two points. No regression line without two
+    # points!
+    dense_index_to_interpolation_points = {
+        dense_index: 2 if n_states > 2 else n_states
+        for dense_index, n_states in dense_index_to_n_states.items()
+    }
+
+    interpolation_points = options["interpolation_points"] - 2 * len(
+        dense_index_to_n_states
+    )
+
+    # If there are interpolation points left, distribute them.
+    dense_indices = list(dense_index_to_interpolation_points)
+    n_states = np.array(list(dense_index_to_n_states.values()))
+
+    np.random.seed(next(options["solution_seed_iteration"]))
+    if interpolation_points:
+        for _ in range(interpolation_points):
+            probs = n_states / n_states.sum()
+
+            dense_index = np.random.choice(list(dense_index_to_n_states), p=probs)
+
+            dense_index_to_interpolation_points[dense_index] += 1
+
+            pos = dense_indices.index(dense_index)
+            n_states[pos] -= 1
+
+    share_interp_points_per_dense_index = {
+        dense_index: dense_index_to_interpolation_points[dense_index]
+        / dense_index_to_n_states[dense_index]
+        for dense_index in dense_index_to_n_states
+    }
+    if (np.array(list(share_interp_points_per_dense_index.values())) < 0.01).any():
+        warnings.warn(
+            "The number of interpolation points for one 'dense_index' in period "
+            f"{period} is less than 1% of its total number of states. Consider "
+            "increasing the number of interpolation points."
         )
-        remaining_points = options["interpolation_points"] % n_dense_combinations
-        interp_points[:remaining_points] += 1
-        interp_points = {
-            dense_idx: points
-            for dense_idx, points in zip(state_space.sub_state_spaces, interp_points)
-        }
-    else:
-        interp_points = options["interpolation_points"]
 
-    return interp_points
+    return dense_index_to_interpolation_points
 
 
 @parallelize_across_dense_dimensions
@@ -206,8 +225,24 @@ def _get_not_interpolated_indicator(interpolation_points, n_states, seed):
     return not_interpolated
 
 
+def _compute_expected_shocks(dense_index_to_choice_set_in_period, optim_paras):
+    """Compute an array with the expected value of the shocks."""
+    n_wages = len(optim_paras["choices_w_wage"])
+
+    exp_shocks = np.zeros(len(optim_paras["choices"]))
+    var = np.diag(optim_paras["shocks_cholesky"].dot(optim_paras["shocks_cholesky"].T))
+    exp_shocks[:n_wages] = np.exp(np.clip(var[:n_wages], 0, MAX_LOG_FLOAT) / 2)
+
+    expected_shocks = {
+        dense_index: exp_shocks[np.array(choice_set)]
+        for dense_index, choice_set in dense_index_to_choice_set_in_period.items()
+    }
+
+    return expected_shocks
+
+
 @parallelize_across_dense_dimensions
-def _compute_rhs_variables(wages, nonpec, emaxs, draws, delta):
+def _compute_rhs_variables(wages, nonpec, continuation_values, draws, delta):
     """Compute right-hand side variables of the linear model.
 
     Constructing the exogenous variable for all states, including the ones where
@@ -220,7 +255,7 @@ def _compute_rhs_variables(wages, nonpec, emaxs, draws, delta):
         Array with shape (n_states_in_period, n_choices).
     nonpec : numpy.ndarray
         Array with shape (n_states_in_period, n_choices).
-    emaxs : numpy.ndarray
+    continuation_values : numpy.ndarray
         Array with shape (n_states_in_period, n_choices).
     draws : numpy.ndarray
         Array with shape (n_choices,).
@@ -238,7 +273,7 @@ def _compute_rhs_variables(wages, nonpec, emaxs, draws, delta):
 
     """
     value_functions, _ = calculate_value_functions_and_flow_utilities(
-        wages, nonpec, emaxs, draws, delta
+        wages, nonpec, continuation_values, draws, delta
     )
 
     max_value_functions = value_functions.max(axis=1)
@@ -299,7 +334,7 @@ def _compute_lhs_variable(
     return endogenous
 
 
-@combine_and_split_interpolation
+@parallelize_across_dense_dimensions
 def _predict_with_linear_model(
     endogenous, exogenous, max_value_functions, not_interpolated
 ):
