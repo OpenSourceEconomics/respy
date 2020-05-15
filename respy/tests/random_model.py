@@ -308,6 +308,8 @@ def add_noise_to_params(
     ----------
     params : pandas.DataFrame
         The parameters in a DataFrame.
+    options : dict
+        The options of the model.
     delta_low_high : tuple[float]
         Lower and upper bound to shock to discount factor.
     wages_percent_absolute : float or tuple[float]
@@ -343,6 +345,8 @@ def add_noise_to_params(
     ic_logit_low_high : tuple[float]
         Lower and upper bound for shocks to the logit coefficients in the initial
         conditions.
+    seed : int or None
+        Seed to replicate the perturbation.
 
     Returns
     -------

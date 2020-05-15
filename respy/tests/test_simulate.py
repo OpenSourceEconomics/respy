@@ -39,7 +39,7 @@ def test_one_step_ahead_simulation():
     params, options, df = rp.get_example_model("kw_97_basic")
     options["n_periods"] = 11
     simulate = rp.get_simulate_func(params, options, "one_step_ahead", df)
-    df = simulate(params)
+    _ = simulate(params)
 
 
 @pytest.mark.end_to_end
