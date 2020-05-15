@@ -31,22 +31,18 @@ def test_invariance_of_model_solution_in_solve_and_criterion_functions(model):
         assert state_space.core.equals(state_space_.core.reindex_like(state_space.core))
 
         apply_to_attributes_of_two_state_spaces(
-            state_space.get_attribute("wages"),
-            state_space_.get_attribute("wages"),
+            state_space.wages, state_space_.wages, np.testing.assert_array_equal,
+        )
+        apply_to_attributes_of_two_state_spaces(
+            state_space.nonpecs, state_space_.nonpecs, np.testing.assert_array_equal,
+        )
+        apply_to_attributes_of_two_state_spaces(
+            state_space.expected_value_functions,
+            state_space_.expected_value_functions,
             np.testing.assert_array_equal,
         )
         apply_to_attributes_of_two_state_spaces(
-            state_space.get_attribute("nonpecs"),
-            state_space_.get_attribute("nonpecs"),
-            np.testing.assert_array_equal,
-        )
-        apply_to_attributes_of_two_state_spaces(
-            state_space.get_attribute("expected_value_functions"),
-            state_space_.get_attribute("expected_value_functions"),
-            np.testing.assert_array_equal,
-        )
-        apply_to_attributes_of_two_state_spaces(
-            state_space.get_attribute("base_draws_sol"),
-            state_space_.get_attribute("base_draws_sol"),
+            state_space.base_draws_sol,
+            state_space_.base_draws_sol,
             np.testing.assert_array_equal,
         )

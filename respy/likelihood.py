@@ -194,8 +194,8 @@ def _internal_log_like_obs(
 
     n_types = optim_paras["n_types"]
 
-    wages = state_space.get_attribute("wages")
-    nonpecs = state_space.get_attribute("nonpecs")
+    wages = state_space.wages
+    nonpecs = state_space.nonpecs
     continuation_values = {}
     for period in range(options["n_periods"]):
         continuation_values = {

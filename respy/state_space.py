@@ -246,10 +246,6 @@ class StateSpace:
 
         return draws
 
-    def get_attribute(self, attr):
-        """Get an attribute of the state space."""
-        return getattr(self, attr)
-
     def get_dense_indices_from_period(self, period):
         """Get dense indices from one period."""
         return [
@@ -276,21 +272,6 @@ class StateSpace:
             if dense_index in dense_indices_in_period
         }
 
-    def get_attribute_from_key(self, attribute, key):
-        """Get an attribute of the state space sliced to a given period.
-
-        Parameters
-        ----------
-        attribute : str
-            Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
-        period : int
-            Attribute is retrieved from this period.
-
-        """
-        attr = self.get_attribute(attribute)
-        out = attr[key]
-        return out
-
     def set_attribute(self, attribute, value):
         """Set attributes."""
         setattr(self, attribute, value)
@@ -298,7 +279,7 @@ class StateSpace:
     def set_attribute_from_keys(self, attribute, value):
         """Set attributes by keys."""
         for key in value:
-            self.get_attribute_from_key(attribute, key)[:] = value[key]
+            getattr(self, attribute)[key][:] = value[key]
 
 
 def _create_core_state_space(optim_paras, options):
