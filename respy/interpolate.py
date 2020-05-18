@@ -105,7 +105,7 @@ def _kw_94_interpolation(
         not_interpolated,
         period_draws_emax_risk,
         optim_paras["delta"],
-        optim_paras["eta"]
+        optim_paras["eta"],
     )
 
     # Create prediction model based on the random subset of points where the EMAX is
