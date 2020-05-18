@@ -4,10 +4,15 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
+import shutil
+from pathlib import Path
+
 import chaospy as cp
 import numba as nb
 import numpy as np
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 from respy._numba import array_to_tuple
 from respy.config import MAX_LOG_FLOAT
@@ -640,3 +645,39 @@ def _map_observations_to_dense_index(
         dense_index[i] = dense_index_
 
     return dense_index
+
+
+def dump_states(states, complex):
+    file_name = _return_file_name(complex)
+    path = Path.cwd() / ".respy" / file_name
+    states.to_parquet(path)
+
+
+def load_states(complex):
+    file_name = _return_file_name(complex)
+    path = Path.cwd() / ".respy" / file_name
+    with open(path, "rb") as f:
+        df = pd.read_parquet(f, engine="pyarrow")
+    return df
+
+
+def _return_file_name(complex):
+    choice = ""
+    for x in complex[1]:
+        choice += str(int(x))
+    if len(complex) == 3:
+        file_name = f"{complex[0]}{choice}{complex[2]}.parquet"
+    else:
+        file_name = f"{complex[0]}{choice}0.parquet"
+    return file_name
+
+
+def check_dir():
+    directory = Path.cwd() / ".respy"
+
+    if directory.exists():
+        shutil.rmtree(directory)
+
+    directory.mkdir()
+
+    return directory

@@ -1,5 +1,6 @@
 """Everything related to the state space of a structural model."""
 import itertools
+import pathlib
 
 import numba as nb
 import numpy as np
@@ -9,17 +10,20 @@ from numba.typed.typeddict import Dict
 
 from respy._numba import array_to_tuple
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.shared import check_dir
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
 from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
+from respy.shared import dump_states
 from respy.shared import return_core_dense_key
 
 
 def create_state_space_class(optim_paras, options):
     """Create the state space of the model."""
+    check_dir()
     core = _create_core_state_space(optim_paras, options)
     dense_grid = _create_dense_state_space_grid(optim_paras)
 
@@ -609,9 +613,11 @@ def _create_dense_period_choice(
     else:
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
         dense_period_choice = {}
-        for core_idx, indices in core_index_to_indices.items():
-            for dense_idx, (_, dense_vec) in enumerate(dense.items()):
-                df = core.loc[indices].copy().assign(**dense_vec)
+        for dense_idx, (_, dense_vec) in enumerate(dense.items()):
+            states = core.copy().assign(**dense_vec)
+            states = compute_covariates(states, options["covariates_all"])
+            for core_idx, indices in core_index_to_indices.items():
+                df = states.loc[indices].copy().assign(**dense_vec)
                 df = compute_covariates(df, options["covariates_all"])
                 df = create_is_inadmissible(df, optim_paras, options)
                 df[choices] = ~df[choices]
@@ -627,6 +633,8 @@ def _create_dense_period_choice(
                 }
 
                 dense_period_choice = {**dense_period_choice, **period_choice}
+                idx = list(grouper.keys())[0]
+                dump_states(df, (core_index_to_complex[core_idx][0], idx, dense_idx))
 
     return dense_period_choice
 

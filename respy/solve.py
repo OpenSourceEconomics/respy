@@ -8,6 +8,7 @@ from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_expected_value_functions
 from respy.shared import compute_covariates
+from respy.shared import load_states
 from respy.shared import pandas_dot
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.state_space import create_state_space_class
@@ -47,9 +48,10 @@ def solve(params, options, state_space):
 
     wages, nonpecs = _create_choice_rewards(
         state_space.core,
+        state_space.dense,
+        state_space.dense_index_to_complex,
         state_space.dense_index_to_indices,
         state_space.dense_index_to_choice_set,
-        state_space.index_to_dense_covariates,
         optim_paras,
         options,
     )
@@ -64,16 +66,18 @@ def solve(params, options, state_space):
 
 @parallelize_across_dense_dimensions
 def _create_choice_rewards(
-    core, core_indices, choice_set, dense_covariates, optim_paras, options
+    core, dense, complex, indices, choice_set, optim_paras, options
 ):
     """Create wage and non-pecuniary reward for each state and choice."""
+
     n_choices = sum(choice_set)
     choices = [
         choice for i, choice in enumerate(optim_paras["choices"]) if choice_set[i]
     ]
-
-    dense = core.loc[core_indices].copy().assign(**dense_covariates)
-    states = compute_covariates(dense, options["covariates_all"])
+    if dense is False:
+        states = compute_covariates(core, options["covariates_all"]).loc[indices]
+    else:
+        states = load_states(complex)
 
     n_states = states.shape[0]
 

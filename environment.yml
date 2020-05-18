@@ -27,6 +27,7 @@ dependencies:
   - pandas>=0.24
   - pdbpp
   - pre-commit
+  - pyarrow
   - pyyaml
   - pytest
   - pytest-cov
