@@ -11,8 +11,6 @@ import chaospy as cp
 import numba as nb
 import numpy as np
 import pandas as pd
-import pyarrow as pa
-import pyarrow.parquet as pq
 
 from respy._numba import array_to_tuple
 from respy.config import MAX_LOG_FLOAT

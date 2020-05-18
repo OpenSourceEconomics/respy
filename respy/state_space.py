@@ -617,7 +617,7 @@ def _create_dense_period_choice(
             states = core.copy().assign(**dense_vec)
             states = compute_covariates(states, options["covariates_all"])
             for core_idx, indices in core_index_to_indices.items():
-                df = states.loc[indices].copy().assign(**dense_vec)
+                df = states.copy().loc[indices].assign(**dense_vec)
                 df = compute_covariates(df, options["covariates_all"])
                 df = create_is_inadmissible(df, optim_paras, options)
                 df[choices] = ~df[choices]
