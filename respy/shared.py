@@ -14,8 +14,6 @@ from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
 
 
-
-
 @nb.njit
 def aggregate_keane_wolpin_utility(wage, nonpec, continuation_value, draw, delta):
     """Calculate the utility of Keane and Wolpin models.
