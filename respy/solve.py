@@ -156,6 +156,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
             )
 
         else:
+
             wages = state_space.get_attribute_from_period("wages", period)
             nonpecs = state_space.get_attribute_from_period("nonpecs", period)
             continuation_values = state_space.get_continuation_values(period)
