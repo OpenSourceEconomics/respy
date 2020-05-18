@@ -616,10 +616,9 @@ def _create_dense_period_choice(
         for dense_idx, (_, dense_vec) in enumerate(dense.items()):
             states = core.copy().assign(**dense_vec)
             states = compute_covariates(states, options["covariates_all"])
+            states = create_is_inadmissible(states, optim_paras, options)
             for core_idx, indices in core_index_to_indices.items():
                 df = states.copy().loc[indices].assign(**dense_vec)
-                df = compute_covariates(df, options["covariates_all"])
-                df = create_is_inadmissible(df, optim_paras, options)
                 df[choices] = ~df[choices]
                 grouper = df.groupby(choices).groups
                 assert len(grouper) == 1, (
