@@ -138,7 +138,6 @@ def _parse_parameters(params, options):
     """Parse the parameter vector into a dictionary of model quantities."""
     optim_paras = {"delta": params.loc[("delta", "delta")]}
     optim_paras["eta"] = params.get(("eta", "eta"), 0.0)
-    abdsc
 
     optim_paras = _parse_present_bias_parameter(optim_paras, params)
     optim_paras = _parse_inadmissibility_penalty(optim_paras, params)
