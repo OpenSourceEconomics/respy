@@ -231,7 +231,7 @@ def _compute_lhs_variable(
     not_interpolated,
     draws,
     delta,
-    eta
+    eta,
 ):
     """Calculate left-hand side variable for all states which are not interpolated.
 
