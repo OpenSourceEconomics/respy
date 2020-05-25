@@ -477,12 +477,13 @@ def calculate_expected_value_functions(
 
         v[i] = max_value_functions
 
-    if eta > 0:
-        q = np.repeat(1.0 / n_draws, n_draws)
-        p = get_worst_case_probs(v, q, eta)
-        emax = np.dot(v, p)
-    else:
-        emax = np.mean(v)
+
+    q = np.repeat(1.0 / n_draws, n_draws)
+    p = get_worst_case_probs(v, q, eta)
+
+    emax = 0
+    for i in range(len(v)):
+        emax += v[i] * p[i]
 
     expected_value_functions[0] = emax
 
