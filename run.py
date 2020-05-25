@@ -79,20 +79,39 @@ def _get_arg_list(model, data, n_seeds, size=31):
     return arg_list
 
 
+def simulate_and_save(arg):
+    arg = arg.copy()
+    out_path = arg.pop("path")
+    data = simulate(**arg)
+    pd.to_pickle(data, out_path)
+
+
+
+
 if __name__ == "__main__":
     bld = Path(".").resolve() / "bld"
     if not bld.exists():
         bld.mkdir()
 
-    models = ["kw_data_one"]
-    n_seeds = 3
-    size = 31
-    n_processes = 24
+    model = "kw_data_one"
+    n_seeds = 100
+    n_processes = 25
 
-    for model in models:
-        start_params = get_params(model)
-        data = simulate(start_params, model)
-        arg_list = _get_arg_list(model, data, n_seeds, size)
-        p = Pool(processes=n_processes)
-        p.map(one_arg_collect_and_save_likelihood_data, arg_list)
+    start_params = get_params(model)
+
+
+    args_list = []
+
+    for sim_seed in range(n_seeds):
+        sol_seed = sim_seed + 1000
+        arg = {}
+        arg["simulation_seed"] = sim_seed
+        arg["solution_seed"] = sol_seed
+        arg["model"] = model
+        arg["params"] = start_params
+        arg["path"] = bld / f"seed_sim_{sim_seed}__sol_seed__{sol_seed}.pickle"
+        args_list.append(arg)
+
+    p = Pool(processes=n_processes)
+    p.map(simulate_and_save, args_list)
 
