@@ -83,3 +83,46 @@ EXAMPLE_MODELS = (
     + KEANE_WOLPIN_2000_MODELS
     + ROBINSON_CRUSOE_MODELS
 )
+
+
+INDEX_TUPLES = [
+    ("delta", "delta"),
+    ("wage_a", "constant"),
+    ("wage_a", "exp_edu"),
+    ("wage_a", "exp_a"),
+    ("wage_a", "exp_a_square"),
+    ("wage_a", "exp_b"),
+    ("wage_a", "exp_b_square"),
+    ("wage_b", "constant"),
+    ("wage_b", "exp_edu"),
+    ("wage_b", "exp_a"),
+    ("wage_b", "exp_a_square"),
+    ("wage_b", "exp_b"),
+    ("wage_b", "exp_b_square"),
+    ("nonpec_edu", "constant"),
+    ("nonpec_edu", "at_least_twelve_exp_edu"),
+    ("nonpec_edu", "not_edu_last_period"),
+    ("nonpec_home", "constant"),
+    ("shocks_chol", "chol_a"),
+    ("shocks_chol", "chol_b_a"),
+    ("shocks_chol", "chol_b"),
+    ("shocks_chol", "chol_edu_a"),
+    ("shocks_chol", "chol_edu_b"),
+    ("shocks_chol", "chol_edu"),
+    ("shocks_chol", "chol_home_a"),
+    ("shocks_chol", "chol_home_b"),
+    ("shocks_chol", "chol_home_edu"),
+    ("shocks_chol", "chol_home"),
+]
+
+
+DATA_COLUMNS = [
+    "Identifier",
+    "Period",
+    "Choice",
+    "Wage",
+    "Experience_A",
+    "Experience_B",
+    "Experience_Edu",
+    "Lagged Schooling",
+]

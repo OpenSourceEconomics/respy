@@ -198,6 +198,23 @@ def _internal_log_like_obs(
     nonpecs = state_space.get_attribute("nonpecs")
     expected_value_functions = state_space.get_attribute("expected_value_functions")
 
+    # ==================================================================================
+    indices = df["index"].to_numpy()
+    wages_obs = wages[indices]
+    nonpecs_obs = nonpecs[indices]
+    syst_payoffs = wages_obs + nonpecs_obs
+    syst_payoffs_df = pd.DataFrame(
+        index=df.index, data=syst_payoffs, columns=["a", "b", "edu", "home"]
+    )
+
+    syst_payoffs_df.to_pickle("systematic_payoffs.pickle")
+
+    future_payoffs = expected_value_functions[indices]
+    future_payoffs_df = pd.DataFrame(future_payoffs, index=df.index)
+
+    future_payoffs_df.to_pickle("future_payoffs.pickle")
+
+    # ==================================================================================
     df = _compute_wage_and_choice_likelihood_contributions(
         df,
         base_draws_est,
@@ -234,6 +251,8 @@ def _internal_log_like_obs(
         log_type_probabilities = None
 
     contribs = np.clip(contribs, MIN_FLOAT, MAX_FLOAT)
+
+    per_observation_loglikes.to_frame().to_pickle("likelihood_contributions.pickle")
 
     return contribs, df, log_type_probabilities
 
