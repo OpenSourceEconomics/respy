@@ -116,13 +116,13 @@ if __name__ == "__main__":
                     if "data_5000" in dname and est_draws > 1000:
                         n_processes = 1
                     elif "data_5000" in dname or est_draws > 1000:
-                        n_processes = 4
+                        n_processes = 2
                     elif "data_2000" in dname and est_draws >= 800:
-                        n_processes = 6
+                        n_processes = 4
                     elif "data_2000" in dname or est_draws >= 800:
-                        n_processes = 8
+                        n_processes = 6
                     else:
-                        n_processes = 12
+                        n_processes = 8
 
                     p = Pool(processes=n_processes)
                     p.map(my_cf, arg_list)
