@@ -37,9 +37,9 @@ def simulate(params, model, solution_seed=None, simulation_seed=None):
     """
     respy_obj = RespyCls(MODEL_TO_INI[model])
     if solution_seed is not None:
-        respy_obj.attr["solution_seed"] = solution_seed
+        respy_obj.attr["seed_emax"] = solution_seed
     if simulation_seed is not None:
-        respy_obj.attr["simulation_seed"] = simulation_seed
+        respy_obj.attr["seed_sim"] = simulation_seed
 
     respy_obj.attr["delta"] = params.loc[("delta", "delta"), "value"]
     x = params["value"].values[1:]
