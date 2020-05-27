@@ -308,7 +308,13 @@ def test_dense_choice_cores():
     # Solve the base model
     solve = get_solve_func(params, options)
     sp = solve(params)
+    core_ix = sp.indexer[state]
 
+    # value = cont value at that point of the sp!
+    pos = np.random.choice(range(len(sp.dense)))
+    dense_combination = list(sp.dense.keys())[pos]
+    dense_index = sp.dense_covariates_to_index[dense_combination]
+    ix = (sp.core_to_index[core_ix[0], dense_index], core_ix[1])
     # Check some features of the sp
     restricted_cont = sp.get_continuation_values(3)[ix[0]][ix[1]]
 
