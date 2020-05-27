@@ -791,33 +791,40 @@ def _convert_labels_in_filters_to_codes(optim_paras, options):
 
     A filter might look like this::
 
-        "lagged_choice_1 == '{k}' and exp_{k} == 0"
+        "lagged_choice_1 == '{choice_w_wage}' and exp_{choice_w_wage} == 0"
 
-    `{k}` is replaced by the actual choice name whereas `'{k}'` or `"{k}"` is
-    replaced with the internal choice code.
+    `{choice_w_wage}` is replaced by the actual choice name whereas `'{choice_w_wage}'`
+    or `"{choice_w_wage}"` is replaced with the internal choice code.
 
     """
     filters = []
 
     for filter_ in options["core_state_space_filters"]:
-        # If "{i}" is in filter_, loop over choices with experiences.
-        if "{i}" in filter_:
+        if any(fltr in filter_ for fltr in ["{i}", "{j}", "{k}"]):
+            raise ValueError(
+                "Please update your model options under inadmissible_states. Replace "
+                "{i} with {choices_w_exp}, {j} with {choices_wo_exp}, and {k} with "
+                "{choices_w_wage}."
+            )
+
+        # If "{choices_w_exp}" is in filter_, loop over choices with experiences.
+        if "{choices_w_exp}" in filter_:
             for choice in optim_paras["choices_w_exp"]:
-                fltr_ = filter_.replace("{i}", choice)
+                fltr_ = filter_.replace("{choices_w_exp}", choice)
                 fltr_ = _replace_choices_and_observables_in_formula(fltr_, optim_paras)
                 filters.append(fltr_)
 
-        # If "{j}" is in filter_, loop over choices without experiences.
-        elif "{j}" in filter_:
+        # If "{choices_wo_exp}" is in filter_, loop over choices without experiences.
+        elif "{choices_wo_exp}" in filter_:
             for choice in optim_paras["choices_wo_exp"]:
-                fltr = filter_.replace("{j}", choice)
+                fltr = filter_.replace("{choices_wo_exp}", choice)
                 fltr = _replace_choices_and_observables_in_formula(fltr, optim_paras)
                 filters.append(fltr)
 
-        # If "{k}" is in filter_, loop over choices with wage.
-        elif "{k}" in filter_:
+        # If "{choices_w_wage}" is in filter_, loop over choices with wage.
+        elif "{choices_w_wage}" in filter_:
             for choice in optim_paras["choices_w_wage"]:
-                fltr = filter_.replace("{k}", choice)
+                fltr = filter_.replace("{choices_w_wage}", choice)
                 fltr = _replace_choices_and_observables_in_formula(fltr, optim_paras)
                 filters.append(fltr)
 

@@ -37,7 +37,7 @@ jobs:
       - name: Install fixes for Python 3+ on Windows
         if: runner.os == 'Windows'
         shell: bash -l {0}
-        run: conda install -c conda-forge -c opensourceeconomics conda-build estimagic matplotlib
+        run: conda install -c conda-forge -c opensourceeconomics conda-build estimagic matplotlib python-snappy
 
       - name: Validate codecov.yml
         if: runner.os == 'Linux' && matrix.python-version == '3.7'

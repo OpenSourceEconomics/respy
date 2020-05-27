@@ -33,5 +33,5 @@ core_state_space_filters:
   # only be 'friday'.
   - period - exp_friday == 2 and lagged_choice_1 != 'friday' and period > 2
   # If experience in fishing (talking to Friday) is zero, previous choice cannot be
-  # fishing (friday). The '{i}' is a placeholder for choices with experience.
-  - exp_{i} == 0 and lagged_choice_1 == '{i}'
+  # fishing (friday). The '{choices_w_exp}' is a placeholder for choices with experience.
+  - exp_{choices_w_exp} == 0 and lagged_choice_1 == '{choices_w_exp}'

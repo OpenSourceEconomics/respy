@@ -1,6 +1,6 @@
 """Special functions for using numba."""
-from numba import cgutils
 from numba import types
+from numba.core import cgutils
 from numba.extending import intrinsic
 
 

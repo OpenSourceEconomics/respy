@@ -10,17 +10,17 @@ solution_seed: 456
 core_state_space_filters:
   # In periods > 0, if agents accumulated experience only in one choice, lagged choice
   # cannot be different.
-  - period > 0 and exp_{i} == period and lagged_choice_1 != '{i}'
+  - period > 0 and exp_{choices_w_exp} == period and lagged_choice_1 != '{choices_w_exp}'
   # In periods > 0, if agents always accumulated experience, lagged choice cannot be
   # non-experience choice.
-  - period > 0 and exp_white_collar + exp_blue_collar + exp_military + exp_school == period and lagged_choice_1 == '{j}'
+  - period > 0 and exp_white_collar + exp_blue_collar + exp_military + exp_school == period and lagged_choice_1 == '{choices_wo_exp}'
   # In periods > 0, if agents accumulated no years of schooling, lagged choice cannot
   # be school.
   - period > 0 and lagged_choice_1 == 'school' and exp_school == 0
   # If experience in choice 0 and 1 are zero, lagged choice cannot be this choice.
-  - lagged_choice_1 == '{k}' and exp_{k} == 0
+  - lagged_choice_1 == '{choices_w_wage}' and exp_{choices_w_wage} == 0
   # In period 0, agents cannot choose occupation a or b or mil.
-  - period == 0 and lagged_choice_1 == '{k}'
+  - period == 0 and lagged_choice_1 == '{choices_w_wage}'
 covariates:
   not_exp_white_collar_lagged: exp_white_collar > 0 and lagged_choice_1 != 'white_collar'
   not_exp_blue_collar_lagged: exp_blue_collar > 0 and lagged_choice_1 != 'blue_collar'
