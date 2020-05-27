@@ -645,29 +645,31 @@ def _map_observations_to_dense_index(
     return dense_index
 
 
-def dump_states(states, complex):
-    file_name = _return_file_name(complex)
+def dump_states(states, complex_):
+    """Dump states."""
+    file_name = _return_file_name(complex_)
     path = Path.cwd() / ".respy" / file_name
     states.to_parquet(path)
 
 
-def load_states(complex):
-    file_name = _return_file_name(complex)
+def load_states(complex_):
+    """Load states."""
+    file_name = _return_file_name(complex_)
     path = Path.cwd() / ".respy" / file_name
-    with open(path, "rb") as f:
-        df = pd.read_parquet(f, engine="pyarrow")
+    df = pd.read_parquet(path)
     return df
 
 
-def _return_file_name(complex):
+def _return_file_name(complex_):
     choice = ""
-    for x in complex[1]:
+    for x in complex_[1]:
         choice += str(int(x))
-    file_name = f"{complex[0]}_{choice}_{complex[2]}.parquet"
+    file_name = f"{complex_[0]}_{choice}_{complex_[2]}.parquet"
     return file_name
 
 
 def check_dir():
+    """Check dir."""
     directory = Path.cwd() / ".respy"
 
     if directory.exists():

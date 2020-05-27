@@ -23,11 +23,13 @@ requirements:
     - estimagic >=0.0.28
     - hypothesis
     - joblib
+    - fastparquet
     - mkl
     - numba >=0.42
     - numpy
     - pandas >=0.24
     - pytest
+    - python-snappy
     - pyyaml
     - scipy
 test:

@@ -14,6 +14,7 @@ dependencies:
   - conda-verify
   - doc8
   - estimagic>=0.0.28
+  - fastparquet
   - hypothesis
   - joblib
   - jupyterlab
@@ -32,6 +33,7 @@ dependencies:
   - pytest
   - pytest-cov
   - pytest-xdist
+  - python-snappy
   - restructuredtext_lint
   - scipy
   - seaborn
