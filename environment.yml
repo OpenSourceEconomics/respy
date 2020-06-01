@@ -42,3 +42,4 @@ dependencies:
     - apprise
     - bump2version
     - pytest-randomly
+    - black-nb
