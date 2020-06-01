@@ -23,7 +23,7 @@ from respy.shared import return_core_dense_key
 
 def create_state_space_class(optim_paras, options):
     """Create the state space of the model."""
-    check_dir()
+    check_dir(options)
     core = _create_core_state_space(optim_paras, options)
     dense_grid = _create_dense_state_space_grid(optim_paras)
 
@@ -633,7 +633,7 @@ def _create_dense_period_choice(
 
                 dense_period_choice = {**dense_period_choice, **period_choice}
                 idx = list(grouper.keys())[0]
-                dump_states(df, (core_index_to_complex[core_idx][0], idx, dense_idx))
+                dump_states(df, (core_index_to_complex[core_idx][0], idx, dense_idx), options)
 
     return dense_period_choice
 

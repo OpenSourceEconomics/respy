@@ -24,6 +24,10 @@ from respy.tests.utils import process_model_or_seed
 
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_check_solution(model_or_seed):
+    """
+    Test robustness of a random model.
+    The test should work for all random model specification.
+    """
 
     params, options = process_model_or_seed(model_or_seed)
 
@@ -115,6 +119,10 @@ def test_invariance_of_solution(model_or_seed):
 @pytest.mark.unit
 @pytest.mark.parametrize("model", KEANE_WOLPIN_1994_MODELS)
 def test_create_state_space_vs_specialized_kw94(model):
+    """
+    Test whether create state space reproduces invariant features of the kw94
+    state space!
+    """
     point_constr = {"n_lagged_choices": 1, "observables": False}
     params, options = process_model_or_seed(model, point_constr=point_constr)
 
@@ -176,6 +184,10 @@ def test_create_state_space_vs_specialized_kw94(model):
 @pytest.mark.unit
 @pytest.mark.parametrize("model", KEANE_WOLPIN_1997_MODELS)
 def test_create_state_space_vs_specialized_kw97(model):
+    """
+    Test whether create state space reproduces invariant features of the kw97
+    state space!
+    """
     params, options = process_model_or_seed(model)
 
     # Reduce runtime
@@ -242,6 +254,9 @@ def test_create_state_space_vs_specialized_kw97(model):
 @pytest.mark.edge_case
 @pytest.mark.integration
 def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
+    """
+    Unit test checking nonpec reward structure of kw94
+    """
     params, options = get_example_model("kw_94_one", with_data=False)
 
     solve = get_solve_func(params, options)
@@ -257,6 +272,9 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
 @pytest.mark.edge_case
 @pytest.mark.integration
 def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
+    """
+    Unit test checking nonpec reward structure of kw94
+    """
     params, options = get_example_model("kw_94_two", with_data=False)
 
     solve = get_solve_func(params, options)
@@ -325,7 +343,8 @@ def test_dense_choice_cores():
 
 def test_invariance_of_wage_calc():
     """
-    Simple
+    Simple check whether the modle reproduces invariant properties of wage
+    outcomes.
     """
     point_constr = {"n_periods": 2, "observables": [3]}
 
@@ -358,6 +377,10 @@ def test_invariance_of_wage_calc():
 
 
 def test_child_indices():
+    """
+    Testing existance of properties for calculations
+    of child indices!
+    """
     point_constr = {"n_periods": 2, "n_lagged_choices": 1}
 
     params, options = generate_random_model(point_constr=point_constr)
@@ -391,7 +414,8 @@ def test_child_indices():
 @pytest.mark.xfail
 def test_equality_of_equivalent_choice_sets():
     """
-    Check for equcivalence
+    Check for ecquivalence of model solution if the
+    type set is defined via different variables but is logically the same
     """
     point_constr = {"n_periods": 3, "n_lagged_choices": 1}
 
@@ -419,6 +443,9 @@ def test_equality_of_equivalent_choice_sets():
 
 
 def test_wage_nonpecs():
+    """
+    Testing properties of reward processes!
+    """
     point_constr = {"n_periods": 3, "n_lagged_choices": 1, "observables": [2]}
 
     params, options = generate_random_model(point_constr=point_constr)
