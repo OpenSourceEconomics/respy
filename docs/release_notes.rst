@@ -81,6 +81,8 @@ releases are available on `Anaconda.org
   states in the state space (:ghuser:`mo2561057`, :ghuser:`tobiasraabe`).
 - :gh:`331` better parsing for observables (and exogenous processes) and better model
   tests and docstrings (:gh:`tobiasraabe`).
+- :gh:`359` fixes a Numba deprecation warning and some errors in the constraints of
+  pre-defined models.
 
 
 *Releases prior to the second version were published on PyPI, but later deleted. You can
