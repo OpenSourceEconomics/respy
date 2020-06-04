@@ -77,7 +77,7 @@ def _create_choice_rewards(
     if dense is False:
         states = compute_covariates(core, options["covariates_all"]).loc[indices]
     else:
-        states = load_states(complex)
+        states = load_states(complex, options)
 
     n_states = states.shape[0]
 

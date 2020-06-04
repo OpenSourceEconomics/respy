@@ -645,17 +645,23 @@ def _map_observations_to_dense_index(
     return dense_index
 
 
-def dump_states(states, complex_):
+def dump_states(states, complex_, options):
     """Dump states."""
     file_name = _return_file_name(complex_)
-    path = Path.cwd() / ".respy" / file_name
-    states.to_parquet(path)
+
+    dir = options.get("state_space_path", Path.cwd() / ".respy")
+
+    path = dir / file_name
+
+    compression = options.get("compression","snappy")
+    states.to_parquet(path, compression=compression)
 
 
-def load_states(complex_):
+def load_states(complex_, options):
     """Load states."""
     file_name = _return_file_name(complex_)
-    path = Path.cwd() / ".respy" / file_name
+    dir = options.get("state_space_path", Path.cwd() / ".respy")
+    path = dir / file_name
     df = pd.read_parquet(path)
     return df
 
@@ -668,9 +674,12 @@ def _return_file_name(complex_):
     return file_name
 
 
-def check_dir():
+def check_dir(options):
     """Check dir."""
-    directory = Path.cwd() / ".respy"
+    if "state_space_path" in options:
+        directory = options["state_space_path"]
+    else:
+        directory = Path.cwd() / ".respy"
 
     if directory.exists():
         shutil.rmtree(directory)
