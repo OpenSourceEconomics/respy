@@ -46,7 +46,7 @@ ROBINSON_CRUSOE_CONSTRAINTS = [
 ]
 
 
-def get_example_model(model, with_data=True):
+def get_example_model(model, with_data=True, with_sd=False):
     """Return parameters, options and data (optional) of an example model.
 
     Parameters
@@ -58,6 +58,9 @@ def get_example_model(model, with_data=True):
     with_data : bool
         Whether the accompanying data set should be returned. For some data sets, real
         data can be provided, for others, a simulated data set will be produced.
+    with_sd : bool
+        Wether the returned params data frame should contain standard deviations of
+        estimated parameters or only means.
 
     """
     assert model in EXAMPLE_MODELS, f"{model} is not in {EXAMPLE_MODELS}."
@@ -66,6 +69,17 @@ def get_example_model(model, with_data=True):
     params = pd.read_csv(
         TEST_RESOURCES_DIR / f"{model}.csv", index_col=["category", "name"]
     )
+
+    if with_sd is True:
+        if model != "kw_97_basic":
+            warnings.warn(
+                f"No standard deviation available for model '{model}'.",
+                category=UserWarning,
+            )
+        params_sd = pd.read_csv(
+            TEST_RESOURCES_DIR / f"{model}_sd.csv", index_col=["category", "name"]
+        )
+        params = pd.concat([params, params_sd], keys=["mean", "sd"], names="type")
 
     if "kw_97" in model and with_data:
         df = (create_kw_97(params, options),)
