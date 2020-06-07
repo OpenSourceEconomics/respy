@@ -70,17 +70,6 @@ def get_example_model(model, with_data=True, with_sd=False):
         TEST_RESOURCES_DIR / f"{model}.csv", index_col=["category", "name"]
     )
 
-    if with_sd is True:
-        if model != "kw_97_basic":
-            warnings.warn(
-                f"No standard deviation available for model '{model}'.",
-                category=UserWarning,
-            )
-        params_sd = pd.read_csv(
-            TEST_RESOURCES_DIR / f"{model}_sd.csv", index_col=["category", "name"]
-        )
-        params = pd.concat([params, params_sd], keys=["mean", "sd"], names="type")
-
     if "kw_97" in model and with_data:
         df = (create_kw_97(params, options),)
     elif ("kw_94" in model or "robinson" in model) and with_data:
@@ -92,6 +81,17 @@ def get_example_model(model, with_data=True, with_sd=False):
             warnings.warn(
                 f"No data available for model '{model}'.", category=UserWarning
             )
+
+    if with_sd is True:
+        if model != "kw_97_basic":
+            warnings.warn(
+                f"No standard deviation available for model '{model}'.",
+                category=UserWarning,
+            )
+        params = pd.read_csv(
+            TEST_RESOURCES_DIR / f"{model}_sd.csv",
+            index_col=["type", "category", "name"],
+        )
 
     return (params, options) + df
 

@@ -1,52 +1,116 @@
-category,name,value,comment
-delta,delta,0.0048,discount factor
-wage_white_collar,constant,0.0124,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
-wage_white_collar,exp_school,0.0014,linear return to an additional year of schooling (wage)
-wage_white_collar,exp_white_collar,0.0015,"return to experience, same sector, linear (wage)"
-wage_white_collar,exp_white_collar_square,0.0032,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_white_collar,exp_blue_collar,0.0017,"return to experience, other civilian sector, linear (wage)"
-wage_white_collar,exp_military,0.0007,"return to experience, military sector, linear (wage)"
-wage_white_collar,type_1,0.0047,deviation for type 1 from type 0 in a
-wage_white_collar,type_2,0.01,deviation for type 2 from type 0 in a
-wage_white_collar,type_3,0.0176,deviation for type 3 from type 0 in a
-wage_blue_collar,constant,0.0126,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
-wage_blue_collar,exp_school,0.0014,linear return to an additional year of schooling (wage)
-wage_blue_collar,exp_white_collar,0.0674,"return to experience, other civilian sector, linear (wage)"
-wage_blue_collar,exp_blue_collar,0.0011,"return to experience, same sector, linear (wage)"
-wage_blue_collar,exp_blue_collar_square,0.0041,"return to experience, same sector, quadratic (divided by 100) (wage)"
-wage_blue_collar,exp_military,0.0021,"return to experience, military sector, linear (wage)"
-wage_blue_collar,type_1,0.0094,deviation for type 1 from type 0 in b
-wage_blue_collar,type_2,0.0079,deviation for type 2 from type 0 in b
-wage_blue_collar,type_3,0.0058,deviation for type 3 from type 0 in b
-wage_military,constant,0.0234,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
-wage_military,exp_school,0.0027,linear return to an additional year of schooling (wage)
-wage_military,exp_military,0.0122,"return to experience, same sector, linear (wage)"
-wage_military,exp_military_square,0.2156,"return to experience, same sector, quadratic (divided by 100) (wage)"
-nonpec_school,constant,850.0,consumption value of school attendance for type 0
-nonpec_school,hs_graduate,156.0,consumption value of college
-nonpec_school,co_graduate,737.0,consumption value of graduate school
-nonpec_school,type_1,757.0,deviation for type 1 from type 0 in edu
-nonpec_school,type_2,754.0,deviation for type 2 from type 0 in edu
-nonpec_school,type_3,594.0,deviation for type 3 from type 0 in edu
-nonpec_home,constant,413.0,mean value of non-market alternative for type 0
-nonpec_home,type_1,377.0,deviation for type 1 from type 0 in home
-nonpec_home,type_2,542.0,deviation for type 2 from type 0 in home
-nonpec_home,type_3,1000.0,deviation for type 3 from type 0 in home
-shocks_sdcorr,sd_blue_collar,0.007,standard deviation of the shock in occupation b
-shocks_sdcorr,sd_military,0.0156,standard deviation of the shock in occupation military
-shocks_sdcorr,sd_white_collar,0.0077,standard deviation of the shock in occupation a
-shocks_sdcorr,sd_school,105.0,standard deviation of the shock in the education sector
-shocks_sdcorr,sd_home,460.0,standard deviation of the shock in the home sector
-shocks_sdcorr,corr_military_blue_collar,0.0505,correlation between the shocks in military and b
-shocks_sdcorr,corr_white_collar_blue_collar,0.0252,correlation between the shocks in occupation a and b
-shocks_sdcorr,corr_white_collar_military,0.0245,correlation between the shocks in military and a
-shocks_sdcorr,corr_school_blue_collar,0.0,correlation between the shocks in the education sector and b
-shocks_sdcorr,corr_school_military,0.0,correlation between the shocks in the education sector and military
-shocks_sdcorr,corr_school_white_collar,0.0,correlation between the shocks in the education sector and a
-shocks_sdcorr,corr_home_blue_collar,0.0,correlation between the shocks in home sector and b
-shocks_sdcorr,corr_home_military,0.0,correlation between the shocks in home sector and military
-shocks_sdcorr,corr_home_white_collar,0.0,correlation between the shocks in home sector and a
-shocks_sdcorr,corr_home_school,0.0,correlation between the shocks in home sector and education
-meas_error,sd_blue_collar,0.0055,SD of the measurement error in wages occupation b
-meas_error,sd_military,0.0166,SD of the measurement error in wages occupation mil
-meas_error,sd_white_collar,0.0065,SD of the measurement error in wages in occupation a
+type,category,name,value,comment
+mean,delta,delta,0.787,discount factor
+mean,wage_white_collar,constant,8.8043,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
+mean,wage_white_collar,exp_school,0.0938,linear return to an additional year of schooling (wage)
+mean,wage_white_collar,exp_white_collar,0.117,"return to experience, same sector, linear (wage)"
+mean,wage_white_collar,exp_white_collar_square,-0.0461,"return to experience, same sector, quadratic (divided by 100) (wage)"
+mean,wage_white_collar,exp_blue_collar,0.0748,"return to experience, other civilian sector, linear (wage)"
+mean,wage_white_collar,exp_military,0.0077,"return to experience, military sector, linear (wage)"
+mean,wage_white_collar,type_1,-0.0668,deviation for type 1 from type 0 in a
+mean,wage_white_collar,type_2,-0.4221,deviation for type 2 from type 0 in a
+mean,wage_white_collar,type_3,-0.4998,deviation for type 3 from type 0 in a
+mean,wage_blue_collar,constant,8.9156,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
+mean,wage_blue_collar,exp_school,0.0189,linear return to an additional year of schooling (wage)
+mean,wage_blue_collar,exp_white_collar,0.0674,"return to experience, other civilian sector, linear (wage)"
+mean,wage_blue_collar,exp_blue_collar,0.1424,"return to experience, same sector, linear (wage)"
+mean,wage_blue_collar,exp_blue_collar_square,-0.1774,"return to experience, same sector, quadratic (divided by 100) (wage)"
+mean,wage_blue_collar,exp_military,0.1021,"return to experience, military sector, linear (wage)"
+mean,wage_blue_collar,type_1,0.2996,deviation for type 1 from type 0 in b
+mean,wage_blue_collar,type_2,-0.1223,deviation for type 2 from type 0 in b
+mean,wage_blue_collar,type_3,0.0756,deviation for type 3 from type 0 in b
+mean,wage_military,constant,8.4704,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
+mean,wage_military,exp_school,0.0443,linear return to an additional year of schooling (wage)
+mean,wage_military,exp_military,0.3391,"return to experience, same sector, linear (wage)"
+mean,wage_military,exp_military_square,-2.99,"return to experience, same sector, quadratic (divided by 100) (wage)"
+mean,nonpec_school,constant,43948.0,consumption value of school attendance for type 0
+mean,nonpec_school,hs_graduate,-2983.0,consumption value of college
+mean,nonpec_school,co_graduate,-26357.0,consumption value of graduate school
+mean,nonpec_school,type_1,-26352.0,deviation for type 1 from type 0 in edu
+mean,nonpec_school,type_2,-30541.0,deviation for type 2 from type 0 in edu
+mean,nonpec_school,type_3,226.0,deviation for type 3 from type 0 in edu
+mean,nonpec_home,constant,16887.0,mean value of non-market alternative for type 0
+mean,nonpec_home,type_1,215.0,deviation for type 1 from type 0 in home
+mean,nonpec_home,type_2,-16966.0,deviation for type 2 from type 0 in home
+mean,nonpec_home,type_3,-13128.0,deviation for type 3 from type 0 in home
+mean,shocks_sdcorr,sd_blue_collar,0.3329,standard deviation of the shock in occupation b
+mean,shocks_sdcorr,sd_military,0.3308,standard deviation of the shock in occupation military
+mean,shocks_sdcorr,sd_white_collar,0.3301,standard deviation of the shock in occupation a
+mean,shocks_sdcorr,sd_school,2312.0,standard deviation of the shock in the education sector
+mean,shocks_sdcorr,sd_home,13394.0,standard deviation of the shock in the home sector
+mean,shocks_sdcorr,corr_military_blue_collar,0.412,correlation between the shocks in military and b
+mean,shocks_sdcorr,corr_white_collar_blue_collar,-0.3806,correlation between the shocks in occupation a and b
+mean,shocks_sdcorr,corr_white_collar_military,-0.3688,correlation between the shocks in military and a
+mean,shocks_sdcorr,corr_school_blue_collar,0.0,correlation between the shocks in the education sector and b
+mean,shocks_sdcorr,corr_school_military,0.0,correlation between the shocks in the education sector and military
+mean,shocks_sdcorr,corr_school_white_collar,0.0,correlation between the shocks in the education sector and a
+mean,shocks_sdcorr,corr_home_blue_collar,0.0,correlation between the shocks in home sector and b
+mean,shocks_sdcorr,corr_home_military,0.0,correlation between the shocks in home sector and military
+mean,shocks_sdcorr,corr_home_white_collar,0.0,correlation between the shocks in home sector and a
+mean,shocks_sdcorr,corr_home_school,0.0,correlation between the shocks in home sector and education
+mean,meas_error,sd_blue_collar,0.3089,SD of the measurement error in wages occupation b
+mean,meas_error,sd_military,0.1259,SD of the measurement error in wages occupation mil
+mean,meas_error,sd_white_collar,0.4133,SD of the measurement error in wages in occupation a
+mean,type_1,up_to_nine_years_school,0.313614,effect of up to nine years of schooling on probability of being type 1
+mean,type_1,at_least_ten_years_school,2.43357,effect of at least ten years of schooling on probability of being type 1
+mean,type_2,up_to_nine_years_school,1.05225,effect of up to nine years of schooling on probability of being type 2
+mean,type_2,at_least_ten_years_school,2.5362400000000003,effect of at least ten years of schooling on probability of being type 2
+mean,type_3,up_to_nine_years_school,-0.736924,effect of up to nine years of schooling on probability of being type 3
+mean,type_3,at_least_ten_years_school,-0.15978,effect of at least ten years of schooling on probability of being type 3
+mean,initial_exp_school_7,probability,0.0095,Probability that the initial level of school is 7
+mean,initial_exp_school_8,probability,0.0422,Probability that the initial level of school is 8
+mean,initial_exp_school_9,probability,0.2018,Probability that the initial level of school is 9
+mean,initial_exp_school_10,probability,0.6715,Probability that the initial level of school is 10
+mean,initial_exp_school_11,probability,0.075,Probability that the initial level of school is 11
+mean,maximum_exp,school,20.0,"Maximum level of experience for school (optional, reduces computation complexity)"
+mean,inadmissibility_penalty,inadmissibility_penalty,-400000.0,Penalty to non-pecuniary reward for invalid choices.
+sd,delta,delta,0.0048,discount factor
+sd,wage_white_collar,constant,0.0124,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
+sd,wage_white_collar,exp_school,0.0014,linear return to an additional year of schooling (wage)
+sd,wage_white_collar,exp_white_collar,0.0015,"return to experience, same sector, linear (wage)"
+sd,wage_white_collar,exp_white_collar_square,0.0032,"return to experience, same sector, quadratic (divided by 100) (wage)"
+sd,wage_white_collar,exp_blue_collar,0.0017,"return to experience, other civilian sector, linear (wage)"
+sd,wage_white_collar,exp_military,0.0007,"return to experience, military sector, linear (wage)"
+sd,wage_white_collar,type_1,0.0047,deviation for type 1 from type 0 in a
+sd,wage_white_collar,type_2,0.01,deviation for type 2 from type 0 in a
+sd,wage_white_collar,type_3,0.0176,deviation for type 3 from type 0 in a
+sd,wage_blue_collar,constant,0.0126,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
+sd,wage_blue_collar,exp_school,0.0014,linear return to an additional year of schooling (wage)
+sd,wage_blue_collar,exp_white_collar,0.0674,"return to experience, other civilian sector, linear (wage)"
+sd,wage_blue_collar,exp_blue_collar,0.0011,"return to experience, same sector, linear (wage)"
+sd,wage_blue_collar,exp_blue_collar_square,0.0041,"return to experience, same sector, quadratic (divided by 100) (wage)"
+sd,wage_blue_collar,exp_military,0.0021,"return to experience, military sector, linear (wage)"
+sd,wage_blue_collar,type_1,0.0094,deviation for type 1 from type 0 in b
+sd,wage_blue_collar,type_2,0.0079,deviation for type 2 from type 0 in b
+sd,wage_blue_collar,type_3,0.0058,deviation for type 3 from type 0 in b
+sd,wage_military,constant,0.0234,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
+sd,wage_military,exp_school,0.0027,linear return to an additional year of schooling (wage)
+sd,wage_military,exp_military,0.0122,"return to experience, same sector, linear (wage)"
+sd,wage_military,exp_military_square,0.2156,"return to experience, same sector, quadratic (divided by 100) (wage)"
+sd,nonpec_school,constant,850.0,consumption value of school attendance for type 0
+sd,nonpec_school,hs_graduate,156.0,consumption value of college
+sd,nonpec_school,co_graduate,737.0,consumption value of graduate school
+sd,nonpec_school,type_1,757.0,deviation for type 1 from type 0 in edu
+sd,nonpec_school,type_2,754.0,deviation for type 2 from type 0 in edu
+sd,nonpec_school,type_3,594.0,deviation for type 3 from type 0 in edu
+sd,nonpec_home,constant,413.0,mean value of non-market alternative for type 0
+sd,nonpec_home,type_1,377.0,deviation for type 1 from type 0 in home
+sd,nonpec_home,type_2,542.0,deviation for type 2 from type 0 in home
+sd,nonpec_home,type_3,1000.0,deviation for type 3 from type 0 in home
+sd,shocks_sdcorr,sd_blue_collar,0.006999999999999999,standard deviation of the shock in occupation b
+sd,shocks_sdcorr,sd_military,0.0156,standard deviation of the shock in occupation military
+sd,shocks_sdcorr,sd_white_collar,0.0077,standard deviation of the shock in occupation a
+sd,shocks_sdcorr,sd_school,105.0,standard deviation of the shock in the education sector
+sd,shocks_sdcorr,sd_home,460.0,standard deviation of the shock in the home sector
+sd,shocks_sdcorr,corr_military_blue_collar,0.0505,correlation between the shocks in military and b
+sd,shocks_sdcorr,corr_white_collar_blue_collar,0.0252,correlation between the shocks in occupation a and b
+sd,shocks_sdcorr,corr_white_collar_military,0.0245,correlation between the shocks in military and a
+sd,shocks_sdcorr,corr_school_blue_collar,0.0,correlation between the shocks in the education sector and b
+sd,shocks_sdcorr,corr_school_military,0.0,correlation between the shocks in the education sector and military
+sd,shocks_sdcorr,corr_school_white_collar,0.0,correlation between the shocks in the education sector and a
+sd,shocks_sdcorr,corr_home_blue_collar,0.0,correlation between the shocks in home sector and b
+sd,shocks_sdcorr,corr_home_military,0.0,correlation between the shocks in home sector and military
+sd,shocks_sdcorr,corr_home_white_collar,0.0,correlation between the shocks in home sector and a
+sd,shocks_sdcorr,corr_home_school,0.0,correlation between the shocks in home sector and education
+sd,meas_error,sd_blue_collar,0.0055,SD of the measurement error in wages occupation b
+sd,meas_error,sd_military,0.0166,SD of the measurement error in wages occupation mil
+sd,meas_error,sd_white_collar,0.0065,SD of the measurement error in wages in occupation a
