@@ -2,7 +2,7 @@ category,name,value,sd,comment
 delta,delta,0.787,0.0048,discount factor
 wage_white_collar,constant,8.8043,0.0124,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
 wage_white_collar,exp_school,0.0938,0.0014,linear return to an additional year of schooling (wage)
-wage_white_collar,exp_white_collar,0.11699999999999999,0.0015,"return to experience, same sector, linear (wage)"
+wage_white_collar,exp_white_collar,0.117,0.0015,"return to experience, same sector, linear (wage)"
 wage_white_collar,exp_white_collar_square,-0.0461,0.0032,"return to experience, same sector, quadratic (divided by 100) (wage)"
 wage_white_collar,exp_blue_collar,0.0748,0.0017,"return to experience, other civilian sector, linear (wage)"
 wage_white_collar,exp_military,0.0077,0.0007,"return to experience, military sector, linear (wage)"
@@ -32,12 +32,12 @@ nonpec_home,constant,16887.0,413.0,mean value of non-market alternative for type
 nonpec_home,type_1,215.0,377.0,deviation for type 1 from type 0 in home
 nonpec_home,type_2,-16966.0,542.0,deviation for type 2 from type 0 in home
 nonpec_home,type_3,-13128.0,1000.0,deviation for type 3 from type 0 in home
-shocks_sdcorr,sd_blue_collar,0.3329,0.006999999999999999,standard deviation of the shock in occupation b
+shocks_sdcorr,sd_blue_collar,0.3329,0.007,standard deviation of the shock in occupation b
 shocks_sdcorr,sd_military,0.3308,0.0156,standard deviation of the shock in occupation military
 shocks_sdcorr,sd_white_collar,0.3301,0.0077,standard deviation of the shock in occupation a
 shocks_sdcorr,sd_school,2312.0,105.0,standard deviation of the shock in the education sector
 shocks_sdcorr,sd_home,13394.0,460.0,standard deviation of the shock in the home sector
-shocks_sdcorr,corr_military_blue_collar,0.41200000000000003,0.0505,correlation between the shocks in military and b
+shocks_sdcorr,corr_military_blue_collar,0.4120,0.0505,correlation between the shocks in military and b
 shocks_sdcorr,corr_white_collar_blue_collar,-0.3806,0.0252,correlation between the shocks in occupation a and b
 shocks_sdcorr,corr_white_collar_military,-0.3688,0.0245,correlation between the shocks in military and a
 shocks_sdcorr,corr_school_blue_collar,0.0,,correlation between the shocks in the education sector and b
@@ -53,7 +53,7 @@ meas_error,sd_white_collar,0.4133,0.0065,SD of the measurement error in wages in
 type_1,up_to_nine_years_school,0.313614,,effect of up to nine years of schooling on probability of being type 1
 type_1,at_least_ten_years_school,2.43357,,effect of at least ten years of schooling on probability of being type 1
 type_2,up_to_nine_years_school,1.05225,,effect of up to nine years of schooling on probability of being type 2
-type_2,at_least_ten_years_school,2.5362400000000003,,effect of at least ten years of schooling on probability of being type 2
+type_2,at_least_ten_years_school,2.53624,,effect of at least ten years of schooling on probability of being type 2
 type_3,up_to_nine_years_school,-0.736924,,effect of up to nine years of schooling on probability of being type 3
 type_3,at_least_ten_years_school,-0.15978,,effect of at least ten years of schooling on probability of being type 3
 initial_exp_school_7,probability,0.0095,,Probability that the initial level of school is 7
@@ -61,5 +61,5 @@ initial_exp_school_8,probability,0.0422,,Probability that the initial level of s
 initial_exp_school_9,probability,0.2018,,Probability that the initial level of school is 9
 initial_exp_school_10,probability,0.6715,,Probability that the initial level of school is 10
 initial_exp_school_11,probability,0.075,,Probability that the initial level of school is 11
-maximum_exp,school,20.0,,"Maximum level of experience for school (optional, reduces computation complexity)"
-inadmissibility_penalty,inadmissibility_penalty,-400000.0,,Penalty to non-pecuniary reward for invalid choices.
+maximum_exp,school,20,,"Maximum level of experience for school (optional, reduces computation complexity)"
+inadmissibility_penalty,inadmissibility_penalty,-400000,,Penalty to non-pecuniary reward for invalid choices.
