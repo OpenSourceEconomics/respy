@@ -83,15 +83,16 @@ def get_example_model(model, with_data=True, with_sd=False):
             )
 
     if with_sd is True:
-        if model != "kw_97_basic":
+        if model == "kw_97_basic":
+            params = pd.read_csv(
+                TEST_RESOURCES_DIR / f"{model}_sd.csv",
+                index_col=["type", "category", "name"],
+            )
+        else:
             warnings.warn(
                 f"No standard deviation available for model '{model}'.",
                 category=UserWarning,
             )
-        params = pd.read_csv(
-            TEST_RESOURCES_DIR / f"{model}_sd.csv",
-            index_col=["type", "category", "name"],
-        )
 
     return (params, options) + df
 
