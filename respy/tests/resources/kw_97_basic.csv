@@ -2,7 +2,7 @@ category,name,value,sd,comment
 delta,delta,0.787,0.0048,discount factor
 wage_white_collar,constant,8.8043,0.0124,log of rental price if the base skill endowment of type 0 is normalized to 0 (wage)
 wage_white_collar,exp_school,0.0938,0.0014,linear return to an additional year of schooling (wage)
-wage_white_collar,exp_white_collar,0.117,0.0015,"return to experience, same sector, linear (wage)"
+wage_white_collar,exp_white_collar,0.1170,0.0015,"return to experience, same sector, linear (wage)"
 wage_white_collar,exp_white_collar_square,-0.0461,0.0032,"return to experience, same sector, quadratic (divided by 100) (wage)"
 wage_white_collar,exp_blue_collar,0.0748,0.0017,"return to experience, other civilian sector, linear (wage)"
 wage_white_collar,exp_military,0.0077,0.0007,"return to experience, military sector, linear (wage)"
