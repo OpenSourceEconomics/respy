@@ -68,6 +68,8 @@ def get_simulate_func(
 
     solve = get_solve_func(params, options)
 
+    # We draw shocks for all observations and for all choices although some choices
+    # might not be available. Later, only the relevant shocks are selected.
     n_observations = (
         df.shape[0]
         if method == "one_step_ahead"
