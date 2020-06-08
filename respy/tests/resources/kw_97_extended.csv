@@ -92,26 +92,26 @@ shocks_sdcorr,corr_home_school,0,0.05,correlation of the shocks in the home and 
 meas_error,sd_blue_collar,0.1942,0.0134,SD of the measurement error in wages occupation b
 meas_error,sd_military,0.2063,0.0207,SD of the measurement error in wages in military sector
 meas_error,sd_white_collar,0.2415,0.014,SD of the measurement error in wages in occupation a
-type_1,up_to_nine_years_school,1.3979,,effect of up to nine years of schooling on probability of being type 1
-type_1,at_least_ten_years_school,-0.0034,,effect of at least ten years of schooling on probability of being type 1
-type_2,up_to_nine_years_school,2.114,,effect of up to nine years of schooling on probability of being type 2
-type_2,at_least_ten_years_school,0.466,,effect of at least ten years of schooling on probability of being type 2
-type_3,up_to_nine_years_school,1.9514,,effect of up to nine years of schooling on probability of being type 3
-type_3,at_least_ten_years_school,-0.389,,effect of at least ten years of schooling on probability of being type 3
-initial_exp_school_7,probability,0.0095,,Probability that the initial level of education is 7
-initial_exp_school_8,probability,0.0422,,Probability that the initial level of education is 8
-initial_exp_school_9,probability,0.2018,,Probability that the initial level of education is 9
-initial_exp_school_10,probability,0.6715,,Probability that the initial level of education is 10
-initial_exp_school_11,probability,0.075,,Probability that the initial level of education is 11
-lagged_choice_1_home,seven_years_of_schooling,0,,Probability that the first lagged choice is home given covariate seven_years_of_schooling (simulation only)
-lagged_choice_1_home,eight_years_of_schooling,-0.1892,,Probability that the first lagged choice is home given covariate eight_years_of_schooling (simulation only)
-lagged_choice_1_home,nine_years_of_schooling,-1.6539,,Probability that the first lagged choice is home given covariate nine_years_of_schooling (simulation only)
-lagged_choice_1_home,ten_years_of_schooling,-3.781,,Probability that the first lagged choice is home given covariate ten_years_of_schooling (simulation only)
-lagged_choice_1_home,eleven_years_of_schooling,-4.6356,,Probability that the first lagged choice is home given covariate eleven_years_of_schooling (simulation only)
-lagged_choice_1_school,seven_years_of_schooling,-1e300,,Probability that the first lagged choice is education given covariate seven_years_of_schooling (simulation only)
-lagged_choice_1_school,eight_years_of_schooling,-1.758,,Probability that the first lagged choice is education given covariate eight_years_of_schooling (simulation only)
-lagged_choice_1_school,nine_years_of_schooling,-0.2123,,Probability that the first lagged choice is education given covariate nine_years_of_schooling (simulation only)
-lagged_choice_1_school,ten_years_of_schooling,-0.0231,,Probability that the first lagged choice is education given covariate ten_years_of_schooling (simulation only)
-lagged_choice_1_school,eleven_years_of_schooling,-0.0097,,Probability that the first lagged choice is education given covariate eleven_years_of_schooling (simulation only)
+type_1,up_to_nine_years_school,1.3979,0.2,effect of up to nine years of schooling on probability of being type 1
+type_1,at_least_ten_years_school,-0.0034,0.0003,effect of at least ten years of schooling on probability of being type 1
+type_2,up_to_nine_years_school,2.114,0.2,effect of up to nine years of schooling on probability of being type 2
+type_2,at_least_ten_years_school,0.466,0.03,effect of at least ten years of schooling on probability of being type 2
+type_3,up_to_nine_years_school,1.9514,0.2,effect of up to nine years of schooling on probability of being type 3
+type_3,at_least_ten_years_school,-0.389,0.05,effect of at least ten years of schooling on probability of being type 3
+initial_exp_school_7,probability,0.0095,0.05,Probability that the initial level of education is 7
+initial_exp_school_8,probability,0.0422,0.05,Probability that the initial level of education is 8
+initial_exp_school_9,probability,0.2018,0.05,Probability that the initial level of education is 9
+initial_exp_school_10,probability,0.6715,0.05,Probability that the initial level of education is 10
+initial_exp_school_11,probability,0.075,0.05,Probability that the initial level of education is 11
+lagged_choice_1_home,seven_years_of_schooling,0,0.05,Probability that the first lagged choice is home given covariate seven_years_of_schooling (simulation only)
+lagged_choice_1_home,eight_years_of_schooling,-0.1892,0.05,Probability that the first lagged choice is home given covariate eight_years_of_schooling (simulation only)
+lagged_choice_1_home,nine_years_of_schooling,-1.6539,0.05,Probability that the first lagged choice is home given covariate nine_years_of_schooling (simulation only)
+lagged_choice_1_home,ten_years_of_schooling,-3.781,0.05,Probability that the first lagged choice is home given covariate ten_years_of_schooling (simulation only)
+lagged_choice_1_home,eleven_years_of_schooling,-4.6356,0.05,Probability that the first lagged choice is home given covariate eleven_years_of_schooling (simulation only)
+lagged_choice_1_school,seven_years_of_schooling,-1e300,0.05,Probability that the first lagged choice is education given covariate seven_years_of_schooling (simulation only)
+lagged_choice_1_school,eight_years_of_schooling,-1.758,0.05,Probability that the first lagged choice is education given covariate eight_years_of_schooling (simulation only)
+lagged_choice_1_school,nine_years_of_schooling,-0.2123,0.05,Probability that the first lagged choice is education given covariate nine_years_of_schooling (simulation only)
+lagged_choice_1_school,ten_years_of_schooling,-0.0231,0.05,Probability that the first lagged choice is education given covariate ten_years_of_schooling (simulation only)
+lagged_choice_1_school,eleven_years_of_schooling,-0.0097,0.05,Probability that the first lagged choice is education given covariate eleven_years_of_schooling (simulation only)
 maximum_exp,school,20,,"Maximum level of experience for education (optional, reduces computation complexity)"
 inadmissibility_penalty,inadmissibility_penalty,-400000,,Penalty to non-pecuniary reward for invalid choices.

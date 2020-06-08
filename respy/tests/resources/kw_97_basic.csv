@@ -40,26 +40,26 @@ shocks_sdcorr,sd_home,13394.0,460.0,standard deviation of the shock in the home 
 shocks_sdcorr,corr_military_blue_collar,0.4120,0.0505,correlation between the shocks in military and b
 shocks_sdcorr,corr_white_collar_blue_collar,-0.3806,0.0252,correlation between the shocks in occupation a and b
 shocks_sdcorr,corr_white_collar_military,-0.3688,0.0245,correlation between the shocks in military and a
-shocks_sdcorr,corr_school_blue_collar,0.0,,correlation between the shocks in the education sector and b
-shocks_sdcorr,corr_school_military,0.0,,correlation between the shocks in the education sector and military
-shocks_sdcorr,corr_school_white_collar,0.0,,correlation between the shocks in the education sector and a
-shocks_sdcorr,corr_home_blue_collar,0.0,,correlation between the shocks in home sector and b
-shocks_sdcorr,corr_home_military,0.0,,correlation between the shocks in home sector and military
-shocks_sdcorr,corr_home_white_collar,0.0,,correlation between the shocks in home sector and a
-shocks_sdcorr,corr_home_school,0.0,,correlation between the shocks in home sector and education
+shocks_sdcorr,corr_school_blue_collar,0.0,0.05,correlation between the shocks in the education sector and b
+shocks_sdcorr,corr_school_military,0.0,0.05,correlation between the shocks in the education sector and military
+shocks_sdcorr,corr_school_white_collar,0.0,0.05,correlation between the shocks in the education sector and a
+shocks_sdcorr,corr_home_blue_collar,0.0,0.05,correlation between the shocks in home sector and b
+shocks_sdcorr,corr_home_military,0.0,0.05,correlation between the shocks in home sector and military
+shocks_sdcorr,corr_home_white_collar,0.0,0.05,correlation between the shocks in home sector and a
+shocks_sdcorr,corr_home_school,0.0,0.05,correlation between the shocks in home sector and education
 meas_error,sd_blue_collar,0.3089,0.0055,SD of the measurement error in wages occupation b
 meas_error,sd_military,0.1259,0.0166,SD of the measurement error in wages occupation mil
 meas_error,sd_white_collar,0.4133,0.0065,SD of the measurement error in wages in occupation a
-type_1,up_to_nine_years_school,0.313614,,effect of up to nine years of schooling on probability of being type 1
-type_1,at_least_ten_years_school,2.43357,,effect of at least ten years of schooling on probability of being type 1
-type_2,up_to_nine_years_school,1.05225,,effect of up to nine years of schooling on probability of being type 2
-type_2,at_least_ten_years_school,2.53624,,effect of at least ten years of schooling on probability of being type 2
-type_3,up_to_nine_years_school,-0.736924,,effect of up to nine years of schooling on probability of being type 3
-type_3,at_least_ten_years_school,-0.15978,,effect of at least ten years of schooling on probability of being type 3
-initial_exp_school_7,probability,0.0095,,Probability that the initial level of school is 7
-initial_exp_school_8,probability,0.0422,,Probability that the initial level of school is 8
-initial_exp_school_9,probability,0.2018,,Probability that the initial level of school is 9
-initial_exp_school_10,probability,0.6715,,Probability that the initial level of school is 10
-initial_exp_school_11,probability,0.075,,Probability that the initial level of school is 11
+type_1,up_to_nine_years_school,0.313614,0.025,effect of up to nine years of schooling on probability of being type 1
+type_1,at_least_ten_years_school,2.43357,0.2,effect of at least ten years of schooling on probability of being type 1
+type_2,up_to_nine_years_school,1.05225,0.04,effect of up to nine years of schooling on probability of being type 2
+type_2,at_least_ten_years_school,2.53624,0.2,effect of at least ten years of schooling on probability of being type 2
+type_3,up_to_nine_years_school,-0.736924,0.1,effect of up to nine years of schooling on probability of being type 3
+type_3,at_least_ten_years_school,-0.15978,0.05,effect of at least ten years of schooling on probability of being type 3
+initial_exp_school_7,probability,0.0095,0.05,Probability that the initial level of school is 7
+initial_exp_school_8,probability,0.0422,0.05,Probability that the initial level of school is 8
+initial_exp_school_9,probability,0.2018,0.05,Probability that the initial level of school is 9
+initial_exp_school_10,probability,0.6715,0.05,Probability that the initial level of school is 10
+initial_exp_school_11,probability,0.075,0.05,Probability that the initial level of school is 11
 maximum_exp,school,20,,"Maximum level of experience for school (optional, reduces computation complexity)"
 inadmissibility_penalty,inadmissibility_penalty,-400000,,Penalty to non-pecuniary reward for invalid choices.
