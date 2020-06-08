@@ -191,7 +191,7 @@ def msm(
     if return_scalar:
         out = moment_errors.T @ weighting_matrix @ moment_errors
     else:
-        out = moment_errors
+        out = moment_errors @ np.sqrt(weighting_matrix)
 
     return out
 
