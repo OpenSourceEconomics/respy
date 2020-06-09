@@ -305,17 +305,17 @@ def _simulate_single_period(
     - Simulate choices and wages for those individuals.
     - Store additional information in a :class:`pandas.DataFrame` and return it.
 
+    UNtil now this function assumes that there are no mixed constraints.
+    See docs for more infomration!
     """
     valid_choices = [x for i, x in enumerate(optim_paras["choices"]) if choice_set[i]]
 
-    # TODO: Write a function maybe!
     n_wages_raw = len(optim_paras["choices_w_wage"])
     n_wages = sum(choice_set[:n_wages_raw])
 
     # Get indices which connect states in the state space and simulated agents. Subtract
     # the minimum of indices (excluding invalid indices) because wages, etc. contain
     # only wages in this period and normal indices select rows from all wages.
-    # TODO: This only works as long as we have no mixed constraints!
 
     period_indices = df["index"].to_numpy()
     try:
