@@ -43,7 +43,7 @@ The documentation is structured in four parts.
 
     <div class="container" id="index-container">
         <div class="row">
-            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12 d-flex">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
                 <a href="tutorials/index.html" id="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/light-bulb.svg" class="card-img-top"
@@ -59,7 +59,7 @@ The documentation is structured in four parts.
                     </div>
                 </a>
             </div>
-            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12 d-flex">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
                 <a href="how_to_guides/index.html" id="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/book.svg" class="card-img-top"
@@ -75,7 +75,7 @@ The documentation is structured in four parts.
                     </div>
                 </a>
             </div>
-            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12 d-flex">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
                 <a href="explanations/index.html" id="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/books.svg" class="card-img-top"
@@ -91,7 +91,7 @@ The documentation is structured in four parts.
                     </div>
                 </a>
             </div>
-            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12 d-flex">
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 d-flex">
                 <a href="reference_guides/index.html" id="index-link">
                     <div class="card text-center intro-card shadow">
                         <img src="_static/images/coding.svg" class="card-img-top"
