@@ -5,7 +5,8 @@ from numba import NumbaDeprecationWarning
 from numba import types
 from numba.extending import intrinsic
 
-# Fix for transition to Numba 0.5
+# Fix for transition to Numba 0.5. cgutils was moved from numba.cgutils to
+# numba.core.cgutils.
 try:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", NumbaDeprecationWarning)
