@@ -35,7 +35,7 @@ def get_msm_func(
     n_simulation_periods=None,
     return_scalar=True,
     return_moments=False,
-    comparison_plot_kinds=None,
+    return_comparison_plot_data=False,
 ):
     """Get the msm function.
 
@@ -74,11 +74,10 @@ def get_msm_func(
     return_moments: bool
         Indicates whether moments should be returned with other output. If True will
         return a tuple of empirical_moments and simulated moments in list form.
-    comparison_plot_kinds: None or str or dict or list
-        Will output moments in a tidy data format if not None. Contains information
-        about the kind of comparison plot that can be created from the data for each
-        set of moments. If input is a dictionary, keys will used to identify sets of
-        moments, otherwise sets will be numbered.
+    return_comparison_plot_data: bool
+        Will output moments in a tidy data format if True. If empirical_moments is a
+        dictionary, keys will used to identify sets of moments, otherwise sets will
+        be numbered.
     Returns
     -------
     msm_func: callable
@@ -86,6 +85,14 @@ def get_msm_func(
 
     """
     empirical_moments = copy.deepcopy(empirical_moments)
+
+    # Save keys of dictionary for comparison plot if applicable.
+    return_comparison_plot_data = [return_comparison_plot_data]
+    if isinstance(empirical_moments, dict):
+        moment_keys = sorted(empirical_moments)
+        return_comparison_plot_data.append(moment_keys)
+    else:
+        return_comparison_plot_data.append(None)
 
     simulate = get_simulate_func(
         params=params, options=options, n_simulation_periods=n_simulation_periods
@@ -120,7 +127,7 @@ def get_msm_func(
             "the number of sets of empirical moments."
         )
 
-    if return_moments and (comparison_plot_kinds is not None):
+    if return_moments and return_comparison_plot_data:
         raise ValueError(
             "Can only return either moments or comparison plot data, not both."
         )
@@ -134,7 +141,7 @@ def get_msm_func(
         weighting_matrix=weighting_matrix,
         return_scalar=return_scalar,
         return_moments=return_moments,
-        comparison_plot_kinds=comparison_plot_kinds,
+        return_comparison_plot_data=return_comparison_plot_data,
     )
 
     return msm_func
@@ -149,7 +156,7 @@ def msm(
     weighting_matrix,
     return_scalar,
     return_moments,
-    comparison_plot_kinds,
+    return_comparison_plot_data,
 ):
     """Loss function for msm estimation.
 
@@ -180,11 +187,11 @@ def msm(
     return_moments: bool
         Indicates whether moments should be returned with other output. If True will
         return a tuple of empirical_moments and simulated moments in list form.
-    comparison_plot_kinds: None or str or dict or list
-        Will output moments in a tidy data format if not None. Contains information
-        about the kind of comparison plot that can be created from the data for each
-        set of moments. If input is a dictionary, keys will used to identify sets of
-        moments, otherwise sets will be numbered.
+    return_comparison_plot_data: list
+        Will output moments in a tidy data format if True. Expects a list as input where
+        the first element is a boolean indicating whether to return the comparison plot
+        data. The second element in the list can be a list of keys used to identify sets
+        of moments, which otherwise will be numbered.
 
     Returns
     -------
@@ -223,9 +230,9 @@ def msm(
     if return_moments:
         out = (out, (empirical_moments, simulated_moments))
 
-    elif comparison_plot_kinds is not None:
+    elif return_comparison_plot_data[0]:
         tidy_moments = _create_comparison_plot_data_msm(
-            empirical_moments, simulated_moments, comparison_plot_kinds
+            empirical_moments, simulated_moments, return_comparison_plot_data[1]
         )
         out = (out, tidy_moments)
 
@@ -314,7 +321,8 @@ def _harmonize_input(data):
       the dictionary entries.
 
     """
-    # Convert single DataFrames, Series or function into list containing one item.
+    # Convert single pandas.DataFrames, pandas.Series or function into list containing
+    # one item.
     if isinstance(data, (pd.DataFrame, pd.Series)) or callable(data):
         data = [data]
 
@@ -342,10 +350,12 @@ def _flatten_index(data):
 
     for series_or_df in data:
         series_or_df.index = series_or_df.index.map(str)
-        # Unstack DataFrames and Series to add columns/Series name to index.
+        # Unstack pandas.DataFrames and pandas.Series to add
+        # columns/name to index.
         if isinstance(series_or_df, pd.DataFrame):
             df = series_or_df.rename(columns=str)
-        # Series without a name are named using a counter to avoid duplicate indexes.
+        # pandas.Series without a name are named using a counter to avoid duplicate
+        # indexes.
         elif isinstance(series_or_df, pd.Series) and series_or_df.name is None:
             df = series_or_df.to_frame(name=str(next(counter)))
         else:
@@ -359,71 +369,42 @@ def _flatten_index(data):
     return pd.concat(data_flat)
 
 
-def _create_comparison_plot_data_msm(
-    empirical_moments, simulated_moments, comparison_plot_kinds
-):
-    """Create DataFrame for estimagic's comparison plot."""
-    tidy_empirical_moments = _create_tidy_data(empirical_moments, comparison_plot_kinds)
-    tidy_simulated_moments = _create_tidy_data(simulated_moments, comparison_plot_kinds)
+def _create_comparison_plot_data_msm(empirical_moments, simulated_moments, moment_sets):
+    """Create pandas.DataFrame for estimagic's comparison plot."""
+    if moment_sets is None:
+        moment_sets = list(range(0, len(empirical_moments)))
 
-    tidy_simulated_moments["type"] = "simulated"
-    tidy_empirical_moments["type"] = "empirical"
+    tidy_empirical_moments = _create_tidy_data(empirical_moments, moment_sets)
+    tidy_simulated_moments = _create_tidy_data(simulated_moments, moment_sets)
+
+    tidy_simulated_moments["kind"] = "simulated"
+    tidy_empirical_moments["kind"] = "empirical"
 
     return pd.concat(
         [tidy_empirical_moments, tidy_simulated_moments], ignore_index=True
     )
 
 
-def _create_tidy_data(data, plot_kinds):
-    """Create tidy data from list of DataFrames."""
-    # List moment set names based on keys of dict or list position otherwise.
-    if isinstance(plot_kinds, dict):
-        moment_sets = sorted(plot_kinds)
-    else:
-        moment_sets = list(range(0, len(plot_kinds)))
-
-    plot_kinds = _align_plot_kinds(data, plot_kinds)
-
+def _create_tidy_data(data, moment_sets):
+    """Create tidy data from list of pandas.DataFrames."""
     counter = itertools.count()
     tidy_data = []
-    for series_or_df, kind, moment_set in zip(data, plot_kinds, moment_sets):
+    for series_or_df, moment_set in zip(data, moment_sets):
 
-        # If moments are a pd.Series, convert into pd.DataFrame.
+        # If moments are a pandas.Series, convert into pandas.DataFrame.
         if isinstance(series_or_df, pd.Series):
-            # Unnamed pd.Series receive a name based on a counter
+            # Unnamed pandas.Series receive a name based on a counter.
             if series_or_df.name is None:
                 series_or_df = series_or_df.to_frame(name=next(counter))
             else:
                 series_or_df = series_or_df.to_frame()
 
-        # Create pd.DataFrame in tidy format.
+        # Create pandas.DataFrame in tidy format.
         tidy_df = series_or_df.unstack()
         tidy_df.index.names = ("moment_column", "moment_index")
         tidy_df.rename("value", inplace=True)
         tidy_df = tidy_df.reset_index()
         tidy_df["moment_set"] = moment_set
-        tidy_df["kind"] = kind
         tidy_data.append(tidy_df)
 
     return pd.concat(tidy_data, ignore_index=True)
-
-
-def _align_plot_kinds(data, plot_kinds):
-    """Align input specifying the kinds of comparison plots with moments."""
-    if isinstance(plot_kinds, str):
-        plot_kinds = [plot_kinds]
-
-    plot_kinds = _harmonize_input(plot_kinds)
-
-    if 1 == len(plot_kinds) and 1 < len(data):
-        plot_kinds = plot_kinds * len(data)
-
-    elif len(plot_kinds) != len(data):
-        raise ValueError(
-            "Specification for kind of comparison plots should match sets of empirical "
-            "moments 1:1 or 1:n."
-        )
-    else:
-        pass
-
-    return plot_kinds
