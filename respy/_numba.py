@@ -1,7 +1,17 @@
 """Special functions for using numba."""
+import warnings
+
+from numba import NumbaDeprecationWarning
 from numba import types
-from numba.core import cgutils
 from numba.extending import intrinsic
+
+# Fix for transition to Numba 0.5
+try:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", NumbaDeprecationWarning)
+        from numba import cgutils
+except ImportError:
+    from numba.core import cgutils
 
 
 @intrinsic  # noqa: U100
