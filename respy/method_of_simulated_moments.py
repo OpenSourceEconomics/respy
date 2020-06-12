@@ -415,6 +415,9 @@ def _create_tidy_data(data, plot_kinds):
 
 def _align_plot_kinds(data, plot_kinds):
     """Align input specifying the kinds of comparison plots with moments."""
+    if isinstance(plot_kinds, str):
+        plot_kinds = [plot_kinds]
+
     plot_kinds = _harmonize_input(plot_kinds)
 
     if 1 == len(plot_kinds) and 1 < len(data):
