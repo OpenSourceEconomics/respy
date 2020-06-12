@@ -213,29 +213,24 @@ def msm(
     moment_errors = flat_empirical_moments - flat_simulated_moments
 
     # Return moment errors as indexed DataFrame or calculate weighted square product of
-    # moment errors depending on return_scalar. Also return moments in lists or as tidy
-    # data if specified.
+    # moment errors depending on return_scalar.
+    if return_scalar:
+        out = moment_errors.T @ weighting_matrix @ moment_errors
+    else:
+        out = moment_errors
+
+    # Return moments in lists or as tidy data if specified.
     if return_moments:
-        if return_scalar:
-            out = moment_errors.T @ weighting_matrix @ moment_errors
-            out = (out, (empirical_moments, simulated_moments))
-        else:
-            out = moment_errors
+        out = (out, (empirical_moments, simulated_moments))
 
     elif comparison_plot_kinds is not None:
         tidy_moments = _create_comparison_plot_data_msm(
             empirical_moments, simulated_moments, comparison_plot_kinds
         )
-        if return_scalar:
-            out = moment_errors.T @ weighting_matrix @ moment_errors
-            out = (out, tidy_moments)
-        else:
-            out = (moment_errors, tidy_moments)
+        out = (out, tidy_moments)
+
     else:
-        if return_scalar:
-            out = moment_errors.T @ weighting_matrix @ moment_errors
-        else:
-            out = moment_errors
+        pass
 
     return out
 
