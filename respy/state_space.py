@@ -1,6 +1,5 @@
 """Everything related to the state space of a structural model."""
 import itertools
-import pathlib
 
 import numba as nb
 import numpy as np
@@ -633,7 +632,9 @@ def _create_dense_period_choice(
 
                 dense_period_choice = {**dense_period_choice, **period_choice}
                 idx = list(grouper.keys())[0]
-                dump_states(df, (core_index_to_complex[core_idx][0], idx, dense_idx), options)
+                dump_states(
+                    df, (core_index_to_complex[core_idx][0], idx, dense_idx), options
+                )
 
     return dense_period_choice
 

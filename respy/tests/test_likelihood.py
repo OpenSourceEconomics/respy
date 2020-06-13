@@ -13,9 +13,12 @@ from respy.tests.utils import process_model_or_seed
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("model", ["kw_94_one", "kw_97_basic"])
+@pytest.mark.parametrize(
+    "model", ["robinson_crusoe_basic"],
+)
 def test_return_comparison_plot_data_for_likelihood(model):
     params, options = process_model_or_seed(model)
+    options["n_periods"] = 3
 
     simulate = get_simulate_func(params, options)
     df = simulate(params)
@@ -33,9 +36,12 @@ def test_return_comparison_plot_data_for_likelihood(model):
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("model", ["kw_94_one", "kw_97_basic"])
+@pytest.mark.parametrize(
+    "model", ["robinson_crusoe_basic"],
+)
 def test_return_scalar_for_likelihood(model):
     params, options = process_model_or_seed(model)
+    options["n_periods"] = 3
 
     simulate = get_simulate_func(params, options)
     df = simulate(params)

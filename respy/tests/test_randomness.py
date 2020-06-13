@@ -10,11 +10,12 @@ from respy.tests.utils import process_model_or_seed
 
 
 @pytest.mark.end_to_end
-@pytest.mark.parametrize("model", ["kw_94_one", "kw_97_basic", "kw_2000"])
+@pytest.mark.parametrize(
+    "model",
+    ["robinson_crusoe_extended", "robinson_crusoe_with_observed_characteristics"],
+)
 def test_invariance_of_model_solution_in_solve_and_criterion_functions(model):
     params, options = process_model_or_seed(model)
-
-    options["n_periods"] = 2 if model == "kw_2000" else 3
 
     solve = get_solve_func(params, options)
     state_space = solve(params)

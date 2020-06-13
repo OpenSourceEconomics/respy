@@ -724,6 +724,7 @@ def _add_default_is_inadmissible(options, optim_paras):
             if max_exp != optim_paras["n_periods"] - 1 + min_init_exp
             else "False"
         )
+        # formula = f"exp_{choice} >= {max_exp}"
         formulas = inadmissible_states.get(choice, [])
         inadmissible_states[choice] = formulas + [formula]
 

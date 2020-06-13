@@ -263,7 +263,10 @@ def _compute_wage_and_choice_likelihood_contributions(
 
     selected_wages = wages[indices]
     log_wages_observed = df["log_wage"].to_numpy()
-    choices = df["choice"].to_numpy()
+
+    choices = _map_choice_codes_to_indices_of_valid_choice_set(
+        df["choice"].to_numpy(), choice_set
+    )
 
     shocks_cholesky = subset_cholesky_factor_to_choice_set(
         optim_paras["shocks_cholesky"], choice_set
@@ -577,3 +580,38 @@ def _create_comparison_plot_data(df, log_type_probabilities, optim_paras):
         df = df.append(log_type_probabilities, sort=False)
 
     return df
+
+
+def _map_choice_codes_to_indices_of_valid_choice_set(choices, choice_set):
+    """Map choice codes to the indices of the valid choice set.
+
+    Choice codes are numbering all choices going from 0 to `n_choices` - 1. In some
+    dense indices not all choices are available and, thus, arrays like wages have only
+    as many columns as available choices. Therefore, we need to number the available
+    choices from 0 to `n_available_choices` - 1 and replace the old choice codes with
+    the new ones.
+
+    Example
+    -------
+    >>> wages = np.arange(4).reshape(2, 2)
+    >>> choices = np.array([0, 2])
+    >>> choice_set = (True, False, True)
+
+    >>> np.choose(choices, wages)
+    Traceback (most recent call last):
+     ...
+    ValueError: invalid entry in choice array
+
+    >>> new_choices = _map_choice_codes_to_indices_of_valid_choice_set(
+    ...     choices, choice_set
+    ... )
+    >>> np.choose(new_choices, wages)
+    array([0, 3])
+
+    """
+    mapper = {value: i for i, value in enumerate(np.where(choice_set)[0])}
+    sort_idx = np.argsort(list(mapper))
+    idx = np.searchsorted(list(mapper), choices, sorter=sort_idx)
+    out = np.asarray(list(mapper.values()))[sort_idx][idx]
+
+    return out
