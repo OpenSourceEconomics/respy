@@ -19,7 +19,16 @@ KW_94_CONSTRAINTS = [
 
 KW_97_BASIC_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
-    {"loc": "'initial_exp_school' in category", "type": "fixed"},
+    {
+        "loc": [
+            ("initial_exp_school_7", "probability"),
+            ("initial_exp_school_8", "probability"),
+            ("initial_exp_school_9", "probability"),
+            ("initial_exp_school_10", "probability"),
+            ("initial_exp_school_11", "probability"),
+        ],
+        "type": "fixed",
+    },
     {"loc": "maximum_exp", "type": "fixed"},
     {"loc": "inadmissibility_penalty", "type": "fixed"},
 ]
@@ -30,17 +39,33 @@ KW_97_EXTENDED_CONSTRAINTS = KW_97_BASIC_CONSTRAINTS + [
     {"query": "name == 'common_co_graduate'", "type": "equality"},
     {"loc": "lagged_choice_1_school", "type": "fixed"},
     {"loc": "lagged_choice_1_home", "type": "fixed"},
-    {"loc": "inadmissibility_penalty", "type": "fixed"},
 ]
 
 KW_2000_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
-    {"query": "'type' in category", "type": "fixed"},
+    {"query": "name == 'military_dropout'", "type": "equality"},
+    {"query": "name == 'common_hs_graduate'", "type": "equality"},
+    {"query": "name == 'common_co_graduate'", "type": "equality"},
     {"loc": "lagged_choice_1_school", "type": "fixed"},
     {"loc": "lagged_choice_1_home", "type": "fixed"},
-    {"query": "'initial_exp_school' in category", "type": "fixed"},
+    {
+        "loc": [
+            ("initial_exp_school_7", "probability"),
+            ("initial_exp_school_8", "probability"),
+            ("initial_exp_school_9", "probability"),
+            ("initial_exp_school_10", "probability"),
+            ("initial_exp_school_11", "probability"),
+        ],
+        "type": "fixed",
+    },
     {"loc": "maximum_exp", "type": "fixed"},
-    {"loc": "observables", "type": "fixed"},
+    {
+        "loc": [
+            ("observable_race_white", "probability"),
+            ("observable_race_black", "probability"),
+        ],
+        "type": "fixed",
+    },
     {"loc": "inadmissibility_penalty", "type": "fixed"},
 ]
 
