@@ -37,7 +37,7 @@ def get_msm_func(
     return_moments=False,
     return_comparison_plot_data=False,
 ):
-    """Get the msm function.
+    """Get the MSM function.
 
     Parameters
     ----------
@@ -70,14 +70,13 @@ def get_msm_func(
         number of periods for which decision rules are computed.
     return_scalar : bool, default True
         Indicates whether to return moment error vector (False) or weighted
-        square product of moment error vector (True).
-    return_moments: bool
+        square product of moment error vectors (True).
+    return_moments: bool, default False
         Indicates whether moments should be returned with other output. If True will
         return a tuple of empirical_moments and simulated moments in list form.
-    return_comparison_plot_data: bool
-        Will output moments in a tidy data format if True. If empirical_moments is a
-        dictionary, keys will used to identify sets of moments, otherwise sets will
-        be numbered.
+    return_comparison_plot_data: bool, default False
+        Indicator for whether a :class:`pandas.DataFrame` with various contributions 
+        for the visualization with estimagic should be returned.
     Returns
     -------
     msm_func: callable
@@ -158,14 +157,14 @@ def msm(
     return_moments,
     return_comparison_plot_data,
 ):
-    """Loss function for msm estimation.
+    """Loss function for MSM estimation.
 
     Parameters
     ----------
     params : pandas.DataFrame or pandas.Series
         Contains model parameters.
     simulate : callable
-        Function used to simulate data for msm estimation.
+        Function used to simulate data for MSM estimation.
     calc_moments : list
         List of function(s) used to calculate simulated moments. Must match length of
         empirical_moments i.e. calc_moments contains a moments function for each item in
@@ -191,12 +190,14 @@ def msm(
         Will output moments in a tidy data format if True. Expects a list as input where
         the first element is a boolean indicating whether to return the comparison plot
         data. The second element in the list can be a list of keys used to identify sets
-        of moments, which otherwise will be numbered.
+        of moments which otherwise will be numbered.
 
     Returns
     -------
-    out : pandas.Series or float
-        Scalar or moment error vector depending on value of return_scalar.
+    out : pandas.Series or float or tuple
+        Scalar or moment error vector depending on value of return_scalar. Will be a
+        tuple containing a list of moments or a tidy DataFrame if either return_moments or 
+        the first element in return_comparison_plot_data is True.
 
     """
     empirical_moments = copy.deepcopy(empirical_moments)
@@ -277,7 +278,7 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
         weights = _harmonize_input(weights)
 
         # Reindex weights to ensure they are assigned to the correct moments in
-        # the msm function.
+        # the MSM function.
         weights = [
             weight.reindex_like(emp_mom)
             for emp_mom, weight in zip(empirical_moments, weights)
@@ -369,13 +370,13 @@ def _flatten_index(data):
     return pd.concat(data_flat)
 
 
-def _create_comparison_plot_data_msm(empirical_moments, simulated_moments, moment_sets):
+def _create_comparison_plot_data_msm(empirical_moments, simulated_moments, moment_set_labels):
     """Create pandas.DataFrame for estimagic's comparison plot."""
-    if moment_sets is None:
-        moment_sets = list(range(0, len(empirical_moments)))
+    if moment_set_labels is None:
+        moment_set_labels = list(range(0, len(empirical_moments)))
 
-    tidy_empirical_moments = _create_tidy_data(empirical_moments, moment_sets)
-    tidy_simulated_moments = _create_tidy_data(simulated_moments, moment_sets)
+    tidy_empirical_moments = _create_tidy_data(empirical_moments, moment_set_labels)
+    tidy_simulated_moments = _create_tidy_data(simulated_moments, moment_set_labels)
 
     tidy_simulated_moments["kind"] = "simulated"
     tidy_empirical_moments["kind"] = "empirical"
@@ -385,12 +386,15 @@ def _create_comparison_plot_data_msm(empirical_moments, simulated_moments, momen
     )
 
 
-def _create_tidy_data(data, moment_sets):
+def _create_tidy_data(data, moment_set_labels):
     """Create tidy data from list of pandas.DataFrames."""
     counter = itertools.count()
     tidy_data = []
-    for series_or_df, moment_set in zip(data, moment_sets):
-
+    for series_or_df, label in zip(data, moment_set_labels):
+        # Join index levels for MultiIndex objects.
+        if isinstance(series_or_df.index, pd.MultiIndex):
+            series_or_df = series_or_df.rename(index=str)
+            series_or_df.index = series_or_df.index.to_flat_index().str.join("_")
         # If moments are a pandas.Series, convert into pandas.DataFrame.
         if isinstance(series_or_df, pd.Series):
             # Unnamed pandas.Series receive a name based on a counter.
@@ -404,7 +408,7 @@ def _create_tidy_data(data, moment_sets):
         tidy_df.index.names = ("moment_column", "moment_index")
         tidy_df.rename("value", inplace=True)
         tidy_df = tidy_df.reset_index()
-        tidy_df["moment_set"] = moment_set
+        tidy_df["moment_set"] = label
         tidy_data.append(tidy_df)
 
     return pd.concat(tidy_data, ignore_index=True)
