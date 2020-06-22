@@ -95,15 +95,15 @@ def test_randomness_msm(model_or_seed):
 
 
 @pytest.mark.integration
-def test_return_moments_for_msm(inputs):
+def test_return_simulated_moments_for_msm(inputs):
     """
-    Tests the return_moments functionality.
+    Tests the return_simulated_moments functionality.
     """
-    msm = get_msm_func(*inputs, return_moments=True)
-    fval, moments = msm(inputs[0])
+    msm = get_msm_func(*inputs, return_simulated_moments=True)
+    fval, simulated_moments = msm(inputs[0])
 
     assert isinstance(fval, float)
-    assert isinstance([moments, moments[0], moments[1]], list)
+    assert isinstance(simulated_moments, (dict, list, pd.DataFrame, pd.Series))
 
 
 @pytest.mark.integration
@@ -124,7 +124,9 @@ def test_multiple_returns_msm(inputs):
     Tests exception for when both moments and comparison plot data is selected.
     """
     with pytest.raises(Exception):
-        get_msm_func(*inputs, return_moments=True, return_comparison_plot_data=True)
+        get_msm_func(
+            *inputs, return_simulated_moments=True, return_comparison_plot_data=True
+        )
 
 
 def _calc_choice_freq(df):

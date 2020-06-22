@@ -34,7 +34,7 @@ def get_msm_func(
     weighting_matrix,
     n_simulation_periods=None,
     return_scalar=True,
-    return_moments=False,
+    return_simulated_moments=False,
     return_comparison_plot_data=False,
 ):
     """Get the MSM function.
@@ -71,9 +71,9 @@ def get_msm_func(
     return_scalar : bool, default True
         Indicates whether to return moment error vector (False) or weighted
         square product of moment error vectors (True).
-    return_moments: bool, default False
-        Indicates whether moments should be returned with other output. If True will
-        return a tuple of empirical_moments and simulated moments in list form.
+    return_simulated_moments: bool, default False
+        Indicates whether simulated moments should be returned with other output.
+        If True will return simulated moments of the same type as empirical_moments.
     return_comparison_plot_data: bool, default False
         Indicator for whether a :class:`pandas.DataFrame` with empirical and simulated
         moments for the visualization with estimagic should be returned. Data contains
@@ -136,9 +136,9 @@ def get_msm_func(
             "the number of sets of empirical moments."
         )
 
-    if return_moments and return_comparison_plot_data[0]:
+    if return_simulated_moments and return_comparison_plot_data[0]:
         raise ValueError(
-            "Can only return either moments or comparison plot data, not both."
+            "Can only return either simulated moments or comparison plot data, not both."
         )
 
     msm_func = functools.partial(
@@ -149,7 +149,7 @@ def get_msm_func(
         empirical_moments=empirical_moments,
         weighting_matrix=weighting_matrix,
         return_scalar=return_scalar,
-        return_moments=return_moments,
+        return_simulated_moments=return_simulated_moments,
         return_comparison_plot_data=return_comparison_plot_data,
     )
 
@@ -164,7 +164,7 @@ def msm(
     empirical_moments,
     weighting_matrix,
     return_scalar,
-    return_moments,
+    return_simulated_moments,
     return_comparison_plot_data,
 ):
     """Loss function for MSM estimation.
@@ -193,9 +193,9 @@ def msm(
     return_scalar : bool
         Indicates whether to return moment error vector (False) or weighted square
         product of moment error vector (True).
-    return_moments: bool
-        Indicates whether moments should be returned with other output. If True will
-        return a tuple of empirical_moments and simulated moments in list form.
+    return_simulated_moments: bool
+        Indicates whether simulated moments should be returned with other output.
+        If True will return simulated moments of the same type as empirical_moments.
     return_comparison_plot_data: list
         Will output moments in a tidy data format if True. Expects a list as input where
         the first element is a boolean indicating whether to return the comparison plot
@@ -206,8 +206,9 @@ def msm(
     -------
     out : pandas.Series or float or tuple
         Scalar or moment error vector depending on value of return_scalar. Will be a
-        tuple containing a list of moments or a tidy DataFrame if either return_moments
-        or the first element in return_comparison_plot_data is True.
+        tuple containing simulated moments of same type as empirical_moments or a tidy
+        pandas.DataFrame if either return_simulated_moments or the first element in
+        return_comparison_plot_data is True.
 
     """
     empirical_moments = copy.deepcopy(empirical_moments)
@@ -237,9 +238,11 @@ def msm(
     else:
         out = moment_errors
 
-    # Return moments in lists or as tidy data if specified.
-    if return_moments:
-        out = (out, (empirical_moments, simulated_moments))
+    if return_simulated_moments:
+        simulated_moments = _reconstruct_inputs(
+            simulated_moments, return_comparison_plot_data[1]
+        )
+        out = (out, simulated_moments)
 
     elif return_comparison_plot_data[0]:
         tidy_moments = _create_comparison_plot_data_msm(
@@ -424,3 +427,15 @@ def _create_tidy_data(data, moment_set_labels):
         tidy_data.append(tidy_df)
 
     return pd.concat(tidy_data, ignore_index=True)
+
+
+def _reconstruct_inputs(inputs, dict_keys=None):
+    """Reconstruct inputs from lists back to a dictionary or single object."""
+    if dict_keys is not None:
+        output = dict(zip(dict_keys, inputs))
+    elif len(inputs) == 1:
+        output = inputs[0]
+    else:
+        output = inputs
+
+    return output
