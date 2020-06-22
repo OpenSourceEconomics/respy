@@ -96,9 +96,7 @@ def test_randomness_msm(model_or_seed):
 
 @pytest.mark.integration
 def test_return_simulated_moments_for_msm(inputs):
-    """
-    Return_simulated_moments.
-    """
+    """Return_simulated_moments."""
     msm = get_msm_func(*inputs, return_simulated_moments=True)
     fval, simulated_moments = msm(inputs[0])
 
