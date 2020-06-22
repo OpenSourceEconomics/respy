@@ -97,7 +97,7 @@ def test_randomness_msm(model_or_seed):
 @pytest.mark.integration
 def test_return_simulated_moments_for_msm(inputs):
     """
-    Tests the return_simulated_moments functionality.
+    Return_simulated_moments.
     """
     msm = get_msm_func(*inputs, return_simulated_moments=True)
     fval, simulated_moments = msm(inputs[0])
@@ -108,9 +108,7 @@ def test_return_simulated_moments_for_msm(inputs):
 
 @pytest.mark.integration
 def test_return_comparison_plot_data_for_msm(inputs):
-    """
-    Tests the return_comparison_plot_data functionality.
-    """
+    """Return_comparison_plot_data."""
     msm = get_msm_func(*inputs, return_scalar=False, return_comparison_plot_data=True)
     moment_errors, df = msm(inputs[0])
 
@@ -120,10 +118,8 @@ def test_return_comparison_plot_data_for_msm(inputs):
 
 @pytest.mark.integration
 def test_multiple_returns_msm(inputs):
-    """
-    Tests exception for when both moments and comparison plot data is selected.
-    """
-    with pytest.raises(Exception):
+    """Raise error if moments and comparison plot data is requested."""
+    with pytest.raises(ValueError, match="Can only return either"):
         get_msm_func(
             *inputs, return_simulated_moments=True, return_comparison_plot_data=True
         )
