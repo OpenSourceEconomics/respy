@@ -75,8 +75,18 @@ def get_msm_func(
         Indicates whether moments should be returned with other output. If True will
         return a tuple of empirical_moments and simulated moments in list form.
     return_comparison_plot_data: bool, default False
-        Indicator for whether a :class:`pandas.DataFrame` with various contributions
-        for the visualization with estimagic should be returned.
+        Indicator for whether a :class:`pandas.DataFrame` with empirical and simulated
+        moments for the visualization with estimagic should be returned. Data contains
+        the following columns:
+        - moment_column: Contains the column names of the moment DataFrames/Series
+        names.
+        - moment_index: Contains the index of the moment DataFrames/Series. MultiIndex
+        indices will be joined to one string.
+        - value: Contains moment values.
+        - moment_set: Indicator for each set of moments, will use keys if
+        empirical_moments are specified in a dict. Moments input as lists will
+        be numbered according to position.
+        - kind: Indicates whether moments are empirical or simulated.
     Returns
     -------
     msm_func: callable
@@ -126,7 +136,7 @@ def get_msm_func(
             "the number of sets of empirical moments."
         )
 
-    if return_moments and return_comparison_plot_data:
+    if return_moments and return_comparison_plot_data[0]:
         raise ValueError(
             "Can only return either moments or comparison plot data, not both."
         )

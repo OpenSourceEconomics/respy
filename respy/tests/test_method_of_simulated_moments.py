@@ -1,4 +1,5 @@
 """Test the msm interface of respy."""
+import pandas as pd
 import pytest
 
 from respy.interface import get_example_model
@@ -91,6 +92,39 @@ def test_randomness_msm(model_or_seed):
     )
 
     assert msm(params) == 0
+
+
+@pytest.mark.integration
+def test_return_moments_for_msm(inputs):
+    """
+    Tests the return_moments functionality.
+    """
+    msm = get_msm_func(*inputs, return_moments=True)
+    fval, moments = msm(inputs[0])
+
+    assert isinstance(fval, float)
+    assert isinstance([moments, moments[0], moments[1]], list)
+
+
+@pytest.mark.integration
+def test_return_comparison_plot_data_for_msm(inputs):
+    """
+    Tests the return_comparison_plot_data functionality.
+    """
+    msm = get_msm_func(*inputs, return_scalar=False, return_comparison_plot_data=True)
+    moment_errors, df = msm(inputs[0])
+
+    assert isinstance(moment_errors, pd.Series)
+    assert isinstance(df, pd.DataFrame)
+
+
+@pytest.mark.integration
+def test_multiple_returns_msm(inputs):
+    """
+    Tests exception for when both moments and comparison plot data is selected.
+    """
+    with pytest.raises(Exception):
+        get_msm_func(*inputs, return_moments=True, return_comparison_plot_data=True)
 
 
 def _calc_choice_freq(df):
