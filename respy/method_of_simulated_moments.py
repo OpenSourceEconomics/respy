@@ -75,7 +75,7 @@ def get_msm_func(
         Indicates whether moments should be returned with other output. If True will
         return a tuple of empirical_moments and simulated moments in list form.
     return_comparison_plot_data: bool, default False
-        Indicator for whether a :class:`pandas.DataFrame` with various contributions 
+        Indicator for whether a :class:`pandas.DataFrame` with various contributions
         for the visualization with estimagic should be returned.
     Returns
     -------
@@ -196,8 +196,8 @@ def msm(
     -------
     out : pandas.Series or float or tuple
         Scalar or moment error vector depending on value of return_scalar. Will be a
-        tuple containing a list of moments or a tidy DataFrame if either return_moments or 
-        the first element in return_comparison_plot_data is True.
+        tuple containing a list of moments or a tidy DataFrame if either return_moments
+        or the first element in return_comparison_plot_data is True.
 
     """
     empirical_moments = copy.deepcopy(empirical_moments)
@@ -370,7 +370,9 @@ def _flatten_index(data):
     return pd.concat(data_flat)
 
 
-def _create_comparison_plot_data_msm(empirical_moments, simulated_moments, moment_set_labels):
+def _create_comparison_plot_data_msm(
+    empirical_moments, simulated_moments, moment_set_labels
+):
     """Create pandas.DataFrame for estimagic's comparison plot."""
     if moment_set_labels is None:
         moment_set_labels = list(range(0, len(empirical_moments)))
