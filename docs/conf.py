@@ -23,7 +23,7 @@ copyright = f"2015-{dt.datetime.now().year}, The respy Development Team"  # noqa
 author = "The respy Development Team"
 
 # The full version, including alpha/beta/rc tags.
-release = "2.0.0dev4"
+release = "2.0.0dev5"
 version = ".".join(release.split(".")[:2])
 
 # -- General configuration ------------------------------------------------

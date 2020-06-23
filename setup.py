@@ -20,7 +20,7 @@ PROJECT_URLS = {
 
 setup(
     name="respy",
-    version="2.0.0dev4",
+    version="2.0.0dev5",
     description=DESCRIPTION,
     long_description=DESCRIPTION + "\n\n" + README,
     long_description_content_type="text/x-rst",
