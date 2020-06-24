@@ -71,8 +71,6 @@ KW_2000_CONSTRAINTS = [
 
 ROBINSON_CRUSOE_CONSTRAINTS = [
     {"loc": "shocks_sdcorr", "type": "sdcorr"},
-    {"loc": "lagged_choice_1_hammock", "type": "fixed"},
-    {"loc": "inadmissibility_penalty", "type": "fixed"},
 ]
 
 
@@ -135,7 +133,7 @@ def get_parameter_constraints(model):
     --------
     >>> constr = rp.get_parameter_constraints("robinson_crusoe_basic")
     >>> constr
-    [{'loc': 'shocks_sdcorr', 'type': 'sdcorr'}, ...
+    [{'loc': 'shocks_sdcorr', 'type': 'sdcorr'}]
 
     """
     if "kw_94" in model:
