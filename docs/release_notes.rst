@@ -81,6 +81,7 @@ releases are available on `Anaconda.org
   states in the state space (:ghuser:`mo2561057`, :ghuser:`tobiasraabe`).
 - :gh:`331` better parsing for observables (and exogenous processes) and better model
   tests and docstrings (:ghuser:`tobiasraabe`).
+- :gh:`356` adds how-to guide for estimation of parameters with msm (:ghuser:`amageh`).
 - :gh:`359` fixes a Numba deprecation warning and some errors in the constraints of
   pre-defined models.
 - :gh:`361` adds standard deviations of parameters for example models
