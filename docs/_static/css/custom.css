@@ -56,3 +56,28 @@ a#index-link {
     border-bottom: 1px solid #b2ff80f3;
     box-shadow: 0px -10px 0px #b2ff80f3 inset;
 }
+
+.blue { color: blue; }
+
+.boldblue {
+  font-weight: bold;
+  color: blue;
+}
+
+.centerblue {
+  text-align: center;
+  color: blue;
+}
+
+.orange { color: orange; }
+
+.verbatimblue {
+  font-weight: verbatim;
+  color: blue;
+}
+
+.boldcenterblue {
+  font-weight: bold;
+  text-align: center;
+  color: blue;
+}

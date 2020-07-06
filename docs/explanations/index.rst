@@ -11,5 +11,7 @@ Explanations help you to deepen your knowledge on the concepts and topics behind
 
    recommended_reading
    economic_model
-   solution_and_estimation
-   bibliography
+   solution
+   estimation
+   notation
+   bib
