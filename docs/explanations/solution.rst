@@ -126,7 +126,7 @@ The :boldblue:`policy` :math:`\pi \equiv \left(\pi(S_{i,16}), \dots, \pi(S_{iT})
 
 Following :boldblue:`Bellman's principle of optimality` (Bellman, 1957, :cite:`Bellman.1957`) the DP problem can be expressed as a backward induction procedure. Starting from the last period :math:`T` there is no need to take future rewards into account. The optimal action is simply to choose the alternative with the highest immediate reward in state :math:`S_{iT}`. For any period :math:`t < T` the optimal decisions can be determined recursively following Equation :eq:`AlternativeSpecificValueFunction`. Given the Markov transition probabilities :math:`p_t(S_{it}, a_{it})` the calculation of the expected future rewards is straightforward and illustrated in the following algorithm:
 
-.. figure:: ../_static/images/algorithm.PNG
+.. figure:: ../_static/images/algorithm.png
 
 
 Solving the Integrated Value Function
