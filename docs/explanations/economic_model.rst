@@ -12,7 +12,7 @@ conceptualized in the work of Keane and Wolpin (1997, :cite:`Keane.1997`).
 Under uncertainty individuals face sequential decisions
 whether to engage in a certain occupation, attend school, or to enjoy leisure.
 Keane and Wolpin (1997, :cite:`Keane.1997`) build upon a basic human capital
-model and extend it to best fit empirical data on schooling and
+model and extend it to optimally fit empirical data on schooling and
 occupational choice.
 
 Individuals enter the model at age :math:`16` and take decisions until
