@@ -15,8 +15,8 @@ except ImportError:
     from numba.core import cgutils
 
 
-@intrinsic  # noqa: U100
-def array_to_tuple(tyctx, array, indexer_array):
+@intrinsic  
+def array_to_tuple(tyctx, array, indexer_array):  # noqa: U100
     """Convert an array to a tuple for indexing.
 
     This function is taken from
