@@ -168,10 +168,10 @@ def _split_interpolation_points_evenly(dense_index_to_n_states, period, options)
 
     # If there are interpolation points left, distribute them.
     dense_indices = list(dense_index_to_interpolation_points)
-    n_states = np.array(list(dense_index_to_n_states.values()))
+    n_states = (np.array(list(dense_index_to_n_states.values())) - 2).clip(min=0)
 
-    np.random.seed(next(options["solution_seed_iteration"]))
-    if interpolation_points:
+    if interpolation_points > 0:
+        np.random.seed(next(options["solution_seed_iteration"]))
         for _ in range(interpolation_points):
             probs = n_states / n_states.sum()
 
