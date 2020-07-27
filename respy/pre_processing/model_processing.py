@@ -703,6 +703,19 @@ def _sync_optim_paras_and_options(optim_paras, options):
 
 
 def _add_type_covariates(options, optim_paras):
+    """Add type covariates.
+
+    Since types only introduce constant shifts in the utility functions, this function
+    conveniently adds covariates for each type by default.
+
+    Example
+    -------
+    >>> options = {"covariates": {}}
+    >>> optim_paras = {"n_types": 2}
+    >>> _add_type_covariates(options, optim_paras)
+    {'covariates': {'type_1': 'type == 1'}}
+
+    """
     if optim_paras["n_types"] >= 2:
         type_covariates = {
             f"type_{i}": f"type == {i}" for i in range(1, optim_paras["n_types"])
@@ -714,15 +727,21 @@ def _add_type_covariates(options, optim_paras):
 
 
 def _add_default_is_inadmissible(options, optim_paras):
+    """Add default negative choice set constraints.
+
+    This function adds negative choice set conditions based on maximum experience and no
+    constraints for choices without experience.
+
+    """
     inadmissible_states = options["inadmissible_states"]
 
     for choice in optim_paras["choices_w_exp"]:
-        min_init_exp = min(optim_paras["choices"][choice]["start"])
+        max_init_exp = max(optim_paras["choices"][choice]["start"])
         max_exp = optim_paras["choices"][choice]["max"]
         formula = (
-             f"exp_{choice} == {max_exp}"
-             if max_exp != optim_paras["n_periods"] - 1 + min_init_exp
-             else "False"
+            f"exp_{choice} == {max_exp}"
+            if max_exp < optim_paras["n_periods"] - 1 + max_init_exp
+            else "False"
         )
         formulas = inadmissible_states.get(choice, [])
         inadmissible_states[choice] = formulas + [formula]

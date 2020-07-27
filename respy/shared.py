@@ -649,19 +649,19 @@ def dump_states(states, complex_, options):
     """Dump states."""
     file_name = _return_file_name(complex_)
 
-    dir = options.get("state_space_path", Path.cwd() / ".respy")
+    directory = options.get("state_space_path", Path.cwd() / ".respy")
 
-    path = dir / file_name
+    path = directory / file_name
 
-    compression = options.get("compression","snappy")
+    compression = options.get("compression", "snappy")
     states.to_parquet(path, compression=compression)
 
 
 def load_states(complex_, options):
     """Load states."""
     file_name = _return_file_name(complex_)
-    dir = options.get("state_space_path", Path.cwd() / ".respy")
-    path = dir / file_name
+    directory = options.get("state_space_path", Path.cwd() / ".respy")
+    path = directory / file_name
     df = pd.read_parquet(path)
     return df
 

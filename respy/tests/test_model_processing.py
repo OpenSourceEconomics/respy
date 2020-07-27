@@ -9,6 +9,7 @@ import pytest
 from respy.config import EXAMPLE_MODELS
 from respy.likelihood import get_crit_func
 from respy.pre_processing.model_checking import validate_options
+from respy.pre_processing.model_processing import _add_default_is_inadmissible
 from respy.pre_processing.model_processing import _convert_labels_in_formulas_to_codes
 from respy.pre_processing.model_processing import _parse_initial_and_max_experience
 from respy.pre_processing.model_processing import _parse_measurement_errors
@@ -208,3 +209,51 @@ def test_raise_exception_for_observable_with_one_value(observables):
 
     with pytest.raises(ValueError, match=r"Observables and exogenous processes"):
         _parse_observables({}, params)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "optim_paras, expected",
+    [
+        (
+            {
+                "choices_w_exp": ["a"],
+                "choices_wo_exp": ["b"],
+                "choices": {"a": {"start": [0], "max": 4}},
+                "n_periods": 5,
+            },
+            {"inadmissible_states": {"a": ["False"], "b": ["False"]}},
+        ),
+        (
+            {
+                "choices_w_exp": ["a"],
+                "choices_wo_exp": ["b"],
+                "choices": {"a": {"start": [0], "max": 5}},
+                "n_periods": 5,
+            },
+            {"inadmissible_states": {"a": ["False"], "b": ["False"]}},
+        ),
+        (
+            {
+                "choices_w_exp": ["a"],
+                "choices_wo_exp": ["b"],
+                "choices": {"a": {"start": [0], "max": 3}},
+                "n_periods": 5,
+            },
+            {"inadmissible_states": {"a": ["exp_a == 3"], "b": ["False"]}},
+        ),
+        (
+            {
+                "choices_w_exp": ["a"],
+                "choices_wo_exp": [],
+                "choices": {"a": {"start": [11, 13], "max": 15}},
+                "n_periods": 5,
+            },
+            {"inadmissible_states": {"a": ["exp_a == 15"]}},
+        ),
+    ],
+)
+def test_add_default_is_inadmissible(optim_paras, expected):
+    options = {"inadmissible_states": {}}
+    result = _add_default_is_inadmissible(options, optim_paras)
+    assert result == expected
