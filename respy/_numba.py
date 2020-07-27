@@ -5,7 +5,7 @@ from numba import NumbaDeprecationWarning
 from numba import types
 from numba.extending import intrinsic
 
-# Fix for transition to Numba 0.5. cgutils was moved from numba.cgutils to
+# Fix for transition to Numba 0.50. cgutils was moved from numba.cgutils to
 # numba.core.cgutils.
 try:
     with warnings.catch_warnings():
@@ -16,7 +16,7 @@ except ImportError:
 
 
 @intrinsic  # noqa: U100
-def array_to_tuple(tyctx, array_or_dict, indexer_array):
+def array_to_tuple(tyctx, array_or_dict, indexer_array):  # noqa: U100
     """Convert an array to a tuple for indexing.
 
     This function is taken from

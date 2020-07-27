@@ -10,11 +10,11 @@ from respy.tests.utils import process_model_or_seed
 
 
 @pytest.fixture
-def inputs():
+def msm_args():
     calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
 
     params, options = get_example_model("kw_94_one", with_data=False)
-    options["n_periods"] = 5
+    options["n_periods"] = 3
     simulate = get_simulate_func(params, options)
     df = simulate(params)
 
@@ -37,37 +37,37 @@ def inputs():
 
 @pytest.mark.edge_case
 @pytest.mark.end_to_end
-def test_msm_zero(inputs):
+def test_msm_zero(msm_args):
     """ Test whether msm function successfully returns 0 for true parameter
     vector.
     """
-    msm = get_msm_func(*inputs)
-    msm_vector = get_msm_func(*inputs)
+    msm = get_msm_func(*msm_args)
+    msm_vector = get_msm_func(*msm_args)
 
-    assert msm(inputs[0]) == 0
-    assert (msm_vector(inputs[0]) == 0).all()
+    assert msm(msm_args[0]) == 0
+    assert (msm_vector(msm_args[0]) == 0).all()
 
 
 @pytest.mark.end_to_end
-def test_msm_nonzero(inputs):
+def test_msm_nonzero(msm_args):
     """ Test whether msm function successfully returns a value larger than 0
     for different deviations in the simulated set.
     """
     # 1. Different parameter vector.
-    params = inputs[0].copy()
+    params = msm_args[0].copy()
     params.loc["delta", "value"] = 0.8
-    msm_params = get_msm_func(*inputs)
+    msm_params = get_msm_func(*msm_args)
 
     # 2. Lower number of periods in the simulated dataset.
-    msm_periods = get_msm_func(n_simulation_periods=4, *inputs)
+    msm_periods = get_msm_func(n_simulation_periods=4, *msm_args)
 
     # 3. Different simulation seed for the simulated dataset.
-    inputs[1]["simulation_seed"] = inputs[1]["simulation_seed"] + 100
-    msm_seed = get_msm_func(*inputs)
+    msm_args[1]["simulation_seed"] = msm_args[1]["simulation_seed"] + 100
+    msm_seed = get_msm_func(*msm_args)
 
     assert msm_params(params) > 0
     assert msm_periods(params) > 0
-    assert msm_seed(inputs[0]) > 0
+    assert msm_seed(msm_args[0]) > 0
 
 
 @pytest.mark.edge_case
@@ -95,31 +95,31 @@ def test_randomness_msm(model_or_seed):
 
 
 @pytest.mark.integration
-def test_return_simulated_moments_for_msm(inputs):
+def test_return_simulated_moments_for_msm(msm_args):
     """Return_simulated_moments."""
-    msm = get_msm_func(*inputs, return_simulated_moments=True)
-    fval, simulated_moments = msm(inputs[0])
+    msm = get_msm_func(*msm_args, return_simulated_moments=True)
+    fval, simulated_moments = msm(msm_args[0])
 
     assert isinstance(fval, float)
     assert isinstance(simulated_moments, (dict, list, pd.DataFrame, pd.Series))
 
 
 @pytest.mark.integration
-def test_return_comparison_plot_data_for_msm(inputs):
+def test_return_comparison_plot_data_for_msm(msm_args):
     """Return_comparison_plot_data."""
-    msm = get_msm_func(*inputs, return_scalar=False, return_comparison_plot_data=True)
-    moment_errors, df = msm(inputs[0])
+    msm = get_msm_func(*msm_args, return_scalar=False, return_comparison_plot_data=True)
+    moment_errors, df = msm(msm_args[0])
 
     assert isinstance(moment_errors, pd.Series)
     assert isinstance(df, pd.DataFrame)
 
 
 @pytest.mark.integration
-def test_multiple_returns_msm(inputs):
+def test_multiple_returns_msm(msm_args):
     """Raise error if moments and comparison plot data is requested."""
     with pytest.raises(ValueError, match="Can only return either"):
         get_msm_func(
-            *inputs, return_simulated_moments=True, return_comparison_plot_data=True
+            *msm_args, return_simulated_moments=True, return_comparison_plot_data=True
         )
 
 

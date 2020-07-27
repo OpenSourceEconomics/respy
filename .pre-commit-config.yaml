@@ -39,13 +39,6 @@ repos:
     rev: 0.8.1rc3
     hooks:
         -   id: doc8
--   repo: local
-    hooks:
-    -   id: restructuredtext-lint
-        entry: rst-lint
-        language: system
-        files: '(README.rst)'
-        name: restructuredtext-lint - Is the README PyPi-compliant?
 # -   repo: https://github.com/mgedmin/check-manifest
 #     rev: '0.41'
 #     hooks:

@@ -263,7 +263,6 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
     state_space = solve(params)
 
     for arr in state_space.nonpecs.values():
-        print("hy")
         assert (arr[:, :2] == 0).all()
         assert (arr[:, -1] == 17_750).all()
         if arr.shape[1] == 4:
