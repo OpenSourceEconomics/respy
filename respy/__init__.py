@@ -39,7 +39,7 @@ __all__ = [
     "add_noise_to_params",
 ]
 
-__version__ = "2.0.0dev4"
+__version__ = "2.0.0dev5"
 
 
 def test(*args, **kwargs):
