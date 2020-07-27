@@ -10,6 +10,7 @@ from respy.shared import calculate_expected_value_functions
 from respy.shared import compute_covariates
 from respy.shared import load_states
 from respy.shared import pandas_dot
+from respy.shared import select_valid_choices
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.state_space import create_state_space_class
 
@@ -70,9 +71,8 @@ def _create_choice_rewards(
 ):
     """Create wage and non-pecuniary reward for each state and choice."""
     n_choices = sum(choice_set)
-    choices = [
-        choice for i, choice in enumerate(optim_paras["choices"]) if choice_set[i]
-    ]
+    choices = select_valid_choices(optim_paras["choices"], choice_set)
+
     if dense is False:
         states = compute_covariates(core, options["covariates_all"]).loc[indices]
     else:

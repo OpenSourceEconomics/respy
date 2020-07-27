@@ -687,3 +687,15 @@ def check_dir(options):
     directory.mkdir()
 
     return directory
+
+
+def select_valid_choices(choices, choice_set):
+    """Select valid choices.
+
+    Example
+    -------
+    >>> select_valid_choices(list("abcde"), (1, 0, 1, 0, 1))
+    ['a', 'c', 'e']
+
+    """
+    return [x for i, x in enumerate(choices) if choice_set[i]]

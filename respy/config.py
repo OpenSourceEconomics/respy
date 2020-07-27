@@ -27,18 +27,6 @@ message.
 
 """
 
-INADMISSIBILITY_PENALTY = -400_000
-"""int : Penalty for choosing an inadmissible state.
-
-The penalty is applied to the non-pecuniary reward of choice which cannot be taken.
-
-See Also
---------
-respy.pre_processing.model_processing._parse_inadmissibility_penalty
-respy.state_space._create_is_inadmissible
-respy.solve._create_choice_rewards
-
-"""
 DTYPE_STATES = np.uint8
 INDEXER_DTYPE = np.int32
 """numpy.dtype : Data type for the entries in the state space indexer."""

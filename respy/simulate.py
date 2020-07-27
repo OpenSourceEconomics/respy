@@ -19,6 +19,7 @@ from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
 from respy.shared import rename_labels_from_internal
 from respy.shared import rename_labels_to_internal
+from respy.shared import select_valid_choices
 from respy.shared import transform_base_draws_with_cholesky_factor
 from respy.solve import get_solve_func
 
@@ -305,10 +306,11 @@ def _simulate_single_period(
     - Simulate choices and wages for those individuals.
     - Store additional information in a :class:`pandas.DataFrame` and return it.
 
-    UNtil now this function assumes that there are no mixed constraints.
-    See docs for more infomration!
+    Until now this function assumes that there are no mixed constraints.
+    See docs for more information!
+
     """
-    valid_choices = [x for i, x in enumerate(optim_paras["choices"]) if choice_set[i]]
+    valid_choices = select_valid_choices(optim_paras["choices"], choice_set)
 
     n_wages_raw = len(optim_paras["choices_w_wage"])
     n_wages = sum(choice_set[:n_wages_raw])
