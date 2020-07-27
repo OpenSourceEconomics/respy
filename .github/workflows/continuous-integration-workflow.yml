@@ -55,7 +55,7 @@ jobs:
 
       - name: Run unit tests and doctests.
         shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and unit" --cov=./ --cov-report=xml -n auto
+        run: tox -e pytest -- -m "not slow and not integration and not end_to_end" --cov=./ --cov-report=xml -n auto
 
       - name: Upload coverage report
         if: runner.os == 'Linux' && matrix.python-version == '3.8'
