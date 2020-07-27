@@ -5,7 +5,6 @@ from respy.config import EXAMPLE_MODELS
 from respy.config import INDEXER_INVALID_INDEX
 from respy.config import KEANE_WOLPIN_1994_MODELS
 from respy.config import KEANE_WOLPIN_1997_MODELS
-from respy.interface import get_example_model
 from respy.pre_processing.model_checking import check_model_solution
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import create_core_state_space_columns
@@ -22,6 +21,7 @@ from respy.tests.utils import apply_to_attributes_of_two_state_spaces
 from respy.tests.utils import process_model_or_seed
 
 
+@pytest.mark.end_to_end
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_check_solution(model_or_seed):
     """
@@ -94,25 +94,18 @@ def test_invariance_of_solution(model_or_seed):
     state_space = solve(params)
     state_space_ = solve(params)
 
-    apply_to_attributes_of_two_state_spaces(
-        state_space.core, state_space_.core, np.testing.assert_array_equal
-    )
-    apply_to_attributes_of_two_state_spaces(
-        state_space.wages, state_space_.wages, np.testing.assert_array_equal,
-    )
-    apply_to_attributes_of_two_state_spaces(
-        state_space.nonpecs, state_space_.nonpecs, np.testing.assert_array_equal,
-    )
-    apply_to_attributes_of_two_state_spaces(
-        state_space.expected_value_functions,
-        state_space_.expected_value_functions,
-        np.testing.assert_array_equal,
-    )
-    apply_to_attributes_of_two_state_spaces(
-        state_space.base_draws_sol,
-        state_space_.base_draws_sol,
-        np.testing.assert_array_equal,
-    )
+    for attribute in [
+        "core",
+        "wages",
+        "nonpecs",
+        "expected_value_functions",
+        "base_draws_sol",
+    ]:
+        apply_to_attributes_of_two_state_spaces(
+            getattr(state_space, attribute),
+            getattr(state_space_, attribute),
+            np.testing.assert_array_equal,
+        )
 
 
 @pytest.mark.precise
@@ -184,15 +177,8 @@ def test_create_state_space_vs_specialized_kw94(model):
 @pytest.mark.unit
 @pytest.mark.parametrize("model", KEANE_WOLPIN_1997_MODELS)
 def test_create_state_space_vs_specialized_kw97(model):
-    """
-    Test whether create state space reproduces invariant features of the kw97
-    state space!
-    """
+    """State space reproduces invariant features of the kw97 state space."""
     params, options = process_model_or_seed(model)
-
-    # Reduce runtime
-    options["n_periods"] = 10 if options["n_periods"] > 10 else options["n_periods"]
-
     optim_paras, options = process_params_and_options(params, options)
 
     # Create old state space arguments.
@@ -252,12 +238,10 @@ def test_create_state_space_vs_specialized_kw97(model):
 
 
 @pytest.mark.edge_case
-@pytest.mark.integration
+@pytest.mark.unit
 def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
-    """
-    Unit test checking nonpec reward structure of kw94
-    """
-    params, options = get_example_model("kw_94_one", with_data=False)
+    """Test values of non-pecuniary rewards for Keane & Wolpin 1994."""
+    params, options = process_model_or_seed("kw_94_one")
 
     solve = get_solve_func(params, options)
     state_space = solve(params)
@@ -266,16 +250,14 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
         assert (arr[:, :2] == 0).all()
         assert (arr[:, -1] == 17_750).all()
         if arr.shape[1] == 4:
-            np.isin(arr[:, 2], [0, -4_000, -400_000, -404_000]).all()
+            np.isin(arr[:, 2], [0, -4_000]).all()
 
 
 @pytest.mark.edge_case
-@pytest.mark.integration
+@pytest.mark.unit
 def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
-    """
-    Unit test checking nonpec reward structure of kw94
-    """
-    params, options = get_example_model("kw_94_two", with_data=False)
+    """Test values of non-pecuniary rewards for Keane & Wolpin 1994."""
+    params, options = process_model_or_seed("kw_94_two")
 
     solve = get_solve_func(params, options)
     state_space = solve(params)
@@ -284,7 +266,7 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_two():
         assert (arr[:, :2] == 0).all()
         assert (arr[:, -1] == 14_500).all()
         if arr.shape[1] == 4:
-            np.isin(arr[:, 2], [5_000, 0, -10_000, -15_000, -400_000, -415_000]).all()
+            np.isin(arr[:, 2], [5_000, 0, -10_000, -15_000]).all()
 
 
 @pytest.mark.end_to_end
@@ -305,49 +287,47 @@ def test_dense_choice_cores():
 
     # Solve the base model
     solve = get_solve_func(params, options)
-    sp = solve(params)
+    state_space = solve(params)
 
     # Retrieve index
     edu_start = np.random.choice(list(optim_paras["choices"]["edu"]["start"].keys()))
     state = (3, 0, 3, edu_start, 1)
-    core_ix = sp.indexer[state]
+    core_ix = state_space.indexer[state]
 
     # Choose dense covar
-    pos = np.random.choice(range(len(sp.dense)))
+    pos = np.random.choice(range(len(state_space.dense)))
 
     # Get indices
-    dense_combination = list(sp.dense.keys())[pos]
-    dense_index = sp.dense_covariates_to_index[dense_combination]
-    ix = (sp.core_to_index[core_ix[0], dense_index], core_ix[1])
+    dense_combination = list(state_space.dense.keys())[pos]
+    dense_index = state_space.dense_covariates_to_index[dense_combination]
+    ix = (state_space.core_to_index[core_ix[0], dense_index], core_ix[1])
 
-    unrestricted_cont = sp.get_continuation_values(3)[ix[0]][ix[1]]
+    unrestricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
 
     # Impose some restriction
     options["inadmissible_states"] = {"a": ["period == 4 & exp_b ==4"]}
 
     # Solve the restricted model
     solve = get_solve_func(params, options)
-    sp = solve(params)
-    core_ix = sp.indexer[state]
+    state_space = solve(params)
+    core_ix = state_space.indexer[state]
 
     # Get indices
-    dense_combination = list(sp.dense.keys())[pos]
-    dense_index = sp.dense_covariates_to_index[dense_combination]
-    ix = (sp.core_to_index[core_ix[0], dense_index], core_ix[1])
+    dense_combination = list(state_space.dense.keys())[pos]
+    dense_index = state_space.dense_covariates_to_index[dense_combination]
+    ix = (state_space.core_to_index[core_ix[0], dense_index], core_ix[1])
 
-    # Check some features of the sp
-    restricted_cont = sp.get_continuation_values(3)[ix[0]][ix[1]]
+    # Check some features of the state_space
+    restricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
 
     for i in [0, 2, 3]:
         assert restricted_cont[i] == unrestricted_cont[i]
     assert restricted_cont[1] != unrestricted_cont[1]
 
 
+@pytest.mark.end_to_end
 def test_invariance_of_wage_calc():
-    """
-    Simple check whether the modle reproduces invariant properties of wage
-    outcomes.
-    """
+    """The model reproduces invariant properties of wage outcomes."""
     point_constr = {"n_periods": 2, "observables": [3]}
 
     params, options = generate_random_model(point_constr=point_constr)
@@ -355,34 +335,31 @@ def test_invariance_of_wage_calc():
     # Add some inadmissible states
     optim_paras, _ = process_params_and_options(params, options)
 
-    # SOlve first model
+    # Solve first model
     solve = get_solve_func(params, options)
-    sp = solve(params)
+    state_space = solve(params)
 
-    pos = np.random.choice(range(len(sp.dense)))
-    dense_combination = list(sp.dense.keys())[pos]
-    dense_index = sp.dense_covariates_to_index[dense_combination]
-    idx = sp.core_to_index[(1, dense_index)]
+    pos = np.random.choice(range(len(state_space.dense)))
+    dense_combination = list(state_space.dense.keys())[pos]
+    dense_index = state_space.dense_covariates_to_index[dense_combination]
+    idx = state_space.core_to_index[(1, dense_index)]
 
     # Solve relevant wages
-    wages_b = sp.wages[idx][:, 1]
+    wages_b = state_space.wages[idx][:, 1]
 
     # Impose some restriction
     options["inadmissible_states"] = {"a": ["period == 1"]}
 
     solve = get_solve_func(params, options)
-    sp = solve(params)
+    state_space = solve(params)
 
-    wages_b_alt = sp.wages[idx][:, 0]
+    wages_b_alt = state_space.wages[idx][:, 0]
 
     np.testing.assert_array_equal(wages_b, wages_b_alt)
 
 
 def test_child_indices():
-    """
-    Testing existance of properties for calculations
-    of child indices!
-    """
+    """Testing existence of properties for calculation of child indices!"""
     point_constr = {"n_periods": 2, "n_lagged_choices": 1}
 
     params, options = generate_random_model(point_constr=point_constr)
@@ -390,14 +367,13 @@ def test_child_indices():
     # Add some inadmissible states
     optim_paras, options = process_params_and_options(params, options)
 
-    sp = create_state_space_class(optim_paras, options)
+    state_space = create_state_space_class(optim_paras, options)
 
     # Create all relevant columns
-    core_columns = ["period"]
-    core_columns += create_core_state_space_columns(optim_paras)
+    core_columns = ["period"] + create_core_state_space_columns(optim_paras)
 
     # compose child indices of first choice
-    initial_state = sp.core.iloc[0][core_columns].to_numpy()
+    initial_state = state_space.core.iloc[0][core_columns].to_numpy()
 
     # Get all the future states
     states = []
@@ -406,21 +382,19 @@ def test_child_indices():
         child[0] += 1
         child[i + 1] += 1
         child[-1] = i
-        ix = sp.indexer[(tuple(child))]
+        ix = state_space.indexer[tuple(child)]
         states.append(np.array(ix).reshape(1, 2))
 
     manual = np.concatenate(states, axis=0)
-    np.testing.assert_array_equal(sp.child_indices[0][0], manual)
+    np.testing.assert_array_equal(state_space.child_indices[0][0], manual)
 
 
 @pytest.mark.xfail
+@pytest.mark.integration
 def test_equality_of_equivalent_choice_sets():
-    """
-    Check for ecquivalence of model solution if the
-    type set is defined via different variables but is logically the same
-    """
+    """Equivalence of model solution if the type set is defined via different variables
+    but is logically the same."""
     point_constr = {"n_periods": 3, "n_lagged_choices": 1}
-
     params, options = generate_random_model(point_constr=point_constr)
 
     optim_paras, options_ = process_params_and_options(params, options)
@@ -444,19 +418,17 @@ def test_equality_of_equivalent_choice_sets():
         )
 
 
+@pytest.mark.end_to_end
+@pytest.mark.precise
 def test_wage_nonpecs():
-    """
-    Testing properties of reward processes!
-    """
+    """Replace constants in reward functions with constants due to observables."""
     point_constr = {"n_periods": 3, "n_lagged_choices": 1, "observables": [2]}
-
     params, options = generate_random_model(point_constr=point_constr)
 
     solve = get_solve_func(params, options)
-    sp = solve(params)
-    wages = sp.wages
-    nonpecs = sp.nonpecs
+    state_space = solve(params)
 
+    # Replace constants in choices with constant utility by observables.
     optim_paras, _ = process_params_and_options(params, options)
 
     wage_choice = ("wage", np.random.choice(optim_paras["choices_w_wage"]))
@@ -473,12 +445,11 @@ def test_wage_nonpecs():
             ] += constant
 
     solve = get_solve_func(params, options)
-    sp = solve(params)
-    wages_alt = sp.wages
-    nonpecs_alt = sp.nonpecs
+    state_space_ = solve(params)
 
-    for i in wages:
-        np.testing.assert_array_almost_equal(wages[i], wages_alt[i])
-
-    for i in nonpecs:
-        np.testing.assert_array_almost_equal(nonpecs[i], nonpecs_alt[i])
+    for attribute in ["wages", "nonpecs"]:
+        apply_to_attributes_of_two_state_spaces(
+            getattr(state_space, attribute),
+            getattr(state_space_, attribute),
+            np.testing.assert_array_almost_equal,
+        )

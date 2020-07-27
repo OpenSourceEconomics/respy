@@ -20,7 +20,7 @@ def process_model_or_seed(model_or_seed=None, **kwargs):
         options["n_periods"] = 5
     elif "kw_2000" in str(model_or_seed):
         options["n_periods"] = 3
-    elif "[robinson_crusoe_extended" in str(model_or_seed):
+    elif "robinson_crusoe_extended" in str(model_or_seed):
         options["n_periods"] = 5
     elif "robinson_crusoe_with_observed_characteristics" in str(model_or_seed):
         options["n_periods"] = 5

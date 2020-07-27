@@ -9,7 +9,7 @@ from respy.simulate import get_simulate_func
 from respy.tests.utils import process_model_or_seed
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def msm_args():
     calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
 
@@ -50,9 +50,8 @@ def test_msm_zero(msm_args):
 
 @pytest.mark.end_to_end
 def test_msm_nonzero(msm_args):
-    """ Test whether msm function successfully returns a value larger than 0
-    for different deviations in the simulated set.
-    """
+    """MSM function successfully returns a value larger than 0 for different deviations
+    in the simulated set."""
     # 1. Different parameter vector.
     params = msm_args[0].copy()
     params.loc["delta", "value"] = 0.8

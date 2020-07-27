@@ -62,14 +62,14 @@ jobs:
         shell: bash -l {0}
         run: bash <(curl -s https://codecov.io/bash) -F unit_precise -c
 
-      # - name: Run unit tests which are edge cases.
-      #   shell: bash -l {0}
-      #   run: tox -e pytest -- -m "not slow and unit and edge_case" --cov=./ --cov-report=xml -n auto
+      - name: Run unit tests which are edge cases.
+        shell: bash -l {0}
+        run: tox -e pytest -- -m "not slow and unit and edge_case" --cov=./ --cov-report=xml -n auto
 
-      # - name: Upload coverage report
-      #   if: runner.os == 'Linux' && matrix.python-version == '3.8'
-      #   shell: bash -l {0}
-      #   run: bash <(curl -s https://codecov.io/bash) -F unit_edge_case -c
+      - name: Upload coverage report
+        if: runner.os == 'Linux' && matrix.python-version == '3.8'
+        shell: bash -l {0}
+        run: bash <(curl -s https://codecov.io/bash) -F unit_edge_case -c
 
       - name: Run unit tests which neither precise nor an edge case.
         shell: bash -l {0}
