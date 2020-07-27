@@ -75,7 +75,7 @@ def test_state_space_restrictions_by_traversing_forward(model):
                 out[state[0]] = [state[1]]
 
     for x in out:
-        assert len(out[x]) == len(state_space.core_index_to_indices[x])
+        assert len(out[x]) == len(state_space.core_key_to_core_indices[x])
 
 
 @pytest.mark.integration
@@ -412,9 +412,9 @@ def test_equality_of_equivalent_choice_sets():
     optim_paras, options_ = process_params_and_options(params, options)
     sp_alt = create_state_space_class(optim_paras, options_)
 
-    for i in sp_alt.dense_index_to_indices:
+    for i in sp_alt.dense_key_to_core_indices:
         np.testing.assert_array_equal(
-            sp_alt.dense_index_to_indices[i], sp.dense_index_to_indices[i]
+            sp_alt.dense_key_to_core_indices[i], sp.dense_key_to_core_indices[i]
         )
 
 

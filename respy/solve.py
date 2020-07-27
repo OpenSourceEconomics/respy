@@ -50,9 +50,9 @@ def solve(params, options, state_space):
     wages, nonpecs = _create_choice_rewards(
         state_space.core,
         state_space.dense,
-        state_space.dense_index_to_complex,
-        state_space.dense_index_to_indices,
-        state_space.dense_index_to_choice_set,
+        state_space.dense_key_to_complex,
+        state_space.dense_key_to_core_indices,
+        state_space.dense_key_to_choice_set,
         optim_paras,
         options,
     )
@@ -121,13 +121,13 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
     draws_emax_risk = transform_base_draws_with_cholesky_factor(
         state_space.base_draws_sol,
-        state_space.dense_index_to_choice_set,
+        state_space.dense_key_to_choice_set,
         optim_paras["shocks_cholesky"],
         optim_paras,
     )
 
     for period in reversed(range(n_periods)):
-        dense_indices_in_period = state_space.get_dense_indices_from_period(period)
+        dense_indices_in_period = state_space.get_dense_keys_from_period(period)
 
         period_draws_emax_risk = {
             dense_index: draws_emax_risk[dense_index]
@@ -135,7 +135,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
         }
 
         n_states_in_period = sum(
-            len(state_space.dense_index_to_indices[dense_index])
+            len(state_space.dense_key_to_core_indices[dense_index])
             for dense_index in dense_indices_in_period
         )
         # See docstring for note on interpolation.

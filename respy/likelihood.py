@@ -79,14 +79,14 @@ def get_crit_func(
 
     # Replace with decorator.
     base_draws_est = {}
-    for dense_index, indices in df.groupby("dense_index").groups.items():
-        n_choices = sum(state_space.dense_index_to_choice_set[dense_index])
+    for dense_key, indices in df.groupby("dense_key").groups.items():
+        n_choices = sum(state_space.dense_key_to_choice_set[dense_key])
         draws = create_base_draws(
             (len(indices), options["estimation_draws"], n_choices),
             next(options["estimation_seed_startup"]),
             options["monte_carlo_sequence"],
         )
-        base_draws_est[dense_index] = draws
+        base_draws_est[dense_key] = draws
 
     criterion_function = partial(
         log_like,
@@ -209,7 +209,7 @@ def _internal_log_like_obs(
         wages,
         nonpecs,
         continuation_values,
-        state_space.dense_index_to_choice_set,
+        state_space.dense_key_to_choice_set,
         optim_paras,
         options,
     )
@@ -259,7 +259,7 @@ def _compute_wage_and_choice_likelihood_contributions(
     n_wages_raw = len(optim_paras["choices_w_wage"])
     n_wages = sum(choice_set[:n_wages_raw])
 
-    indices = df["index"].to_numpy()
+    indices = df["core_index"].to_numpy()
 
     selected_wages = wages[indices]
     log_wages_observed = df["log_wage"].to_numpy()
@@ -497,7 +497,7 @@ def _process_estimation_data(df, state_space, optim_paras, options):
     if n_types >= 2:
         df = pd.concat([df.copy().assign(type=i) for i in range(n_types)])
 
-    df["dense_index"], df["index"] = map_observations_to_states(
+    df["dense_key"], df["core_index"] = map_observations_to_states(
         df, state_space, optim_paras
     )
 

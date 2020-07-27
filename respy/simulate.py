@@ -191,14 +191,14 @@ def simulate(
             current_df[f"shock_reward_{choice}"] = base_draws_sim[slice_, i]
             current_df[f"meas_error_wage_{choice}"] = draws_wage_transformed[slice_, i]
 
-        current_df["dense_index"], current_df["index"] = map_observations_to_states(
+        current_df["dense_key"], current_df["core_index"] = map_observations_to_states(
             current_df, state_space, optim_paras
         )
 
         wages = state_space.get_attribute_from_period("wages", period)
         nonpecs = state_space.get_attribute_from_period("nonpecs", period)
         index_to_choice_set = state_space.get_attribute_from_period(
-            "dense_index_to_choice_set", period
+            "dense_key_to_choice_set", period
         )
         continuation_values = state_space.get_continuation_values(period=period)
 
@@ -319,7 +319,7 @@ def _simulate_single_period(
     # the minimum of indices (excluding invalid indices) because wages, etc. contain
     # only wages in this period and normal indices select rows from all wages.
 
-    period_indices = df["index"].to_numpy()
+    period_indices = df["core_index"].to_numpy()
     try:
         wages = wages[period_indices]
         nonpecs = nonpecs[period_indices]
