@@ -263,6 +263,7 @@ def test_explicitly_nonpec_choice_rewards_of_kw_94_one():
     state_space = solve(params)
 
     for arr in state_space.nonpecs.values():
+        print("hy")
         assert (arr[:, :2] == 0).all()
         assert (arr[:, -1] == 17_750).all()
         if arr.shape[1] == 4:
@@ -312,8 +313,10 @@ def test_dense_choice_cores():
     state = (3, 0, 3, edu_start, 1)
     core_ix = sp.indexer[state]
 
-    # value = cont value at that point of the sp!
+    # Choose dense covar
     pos = np.random.choice(range(len(sp.dense)))
+
+    # Get indices
     dense_combination = list(sp.dense.keys())[pos]
     dense_index = sp.dense_covariates_to_index[dense_combination]
     ix = (sp.core_to_index[core_ix[0], dense_index], core_ix[1])
@@ -323,16 +326,16 @@ def test_dense_choice_cores():
     # Impose some restriction
     options["inadmissible_states"] = {"a": ["period == 4 & exp_b ==4"]}
 
-    # Solve the base model
+    # Solve the restricted model
     solve = get_solve_func(params, options)
     sp = solve(params)
     core_ix = sp.indexer[state]
 
-    # value = cont value at that point of the sp!
-    pos = np.random.choice(range(len(sp.dense)))
+    # Get indices
     dense_combination = list(sp.dense.keys())[pos]
     dense_index = sp.dense_covariates_to_index[dense_combination]
     ix = (sp.core_to_index[core_ix[0], dense_index], core_ix[1])
+
     # Check some features of the sp
     restricted_cont = sp.get_continuation_values(3)[ix[0]][ix[1]]
 
