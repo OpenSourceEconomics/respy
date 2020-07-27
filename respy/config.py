@@ -78,7 +78,8 @@ KEANE_WOLPIN_1997_MODELS = ["kw_97_basic", "kw_97_extended"]
 KEANE_WOLPIN_2000_MODELS = ["kw_2000"]
 ROBINSON_CRUSOE_MODELS = [
     "robinson_crusoe_basic",
-    "robinson_crusoe_extended"
+    "robinson_crusoe_extended",
+    "robinson_crusoe_with_observed_characteristics",
 ]
 
 EXAMPLE_MODELS = (
