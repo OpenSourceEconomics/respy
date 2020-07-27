@@ -30,7 +30,7 @@ def test_choice_restrictions():
 
     state_space = create_state_space_class(optim_paras, options)
 
-    for x in state_space.dense_index_to_complex.values():
+    for x in state_space.dense_key_to_complex.values():
         if (x[0] < 2) & (x[2] == (0,)):
             assert x[1] == (False, False, True)
         elif x[2] == (0,):

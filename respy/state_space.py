@@ -72,11 +72,11 @@ class StateSpace:
         optim_paras,
         options,
     ):
-        """Initialize state space class
+        """Initialize the state space.
 
         Parameters
         ----------
-        core : pd.DataFrame
+        core : pandas.DataFrame
             DataFrame containing one core state per row.
         indexer : numba.typed.typeddict.Dict
             Maps states (rows of core) into tuples containing key of choice core and
@@ -93,8 +93,9 @@ class StateSpace:
         optim_paras : str
             Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
         options : int
-            Attribute is retrieved from this period."""
+            Attribute is retrieved from this period.
 
+        """
         self.core = core
         self.indexer = indexer
         self.dense_period_cores = dense_period_cores
@@ -112,41 +113,38 @@ class StateSpace:
         """Create mappings between indices and choice sets.
 
         This function also establishes the naming convention for various objects. Here
-        is a short summary.
-        In general we refer to indices if the defining mapping is injective and to keys
-        if the defining mapping is not injective.
+        is a short summary. In general we refer to indices if the defining mapping is
+        injective and to keys if the defining mapping is not injective.
 
-
-        `core_indices`
+        Parameters
+        ----------
+        core_indices
             Indices are row indices for states in the :ref:`core state space
             <core_state_space>`. They are continued over different periods and choice
             sets in the core.
 
-        `core_key`
+        core_key
             A `core_key` is an index for a set of states in the core state space which
             are in the same period and share the same choice set.
 
-        `dense_vector`
+        dense_vector
             A dense vector is combination of values in the dense dimensions.
 
-        `dense_index`
+        dense_index
             A dense index is a position in the dense grid.
 
-        `dense_key`
+        dense_key
             A `dense_key` is an index for a set of states in the dense state space
             which are in the same period, share the same choice set, and the same dense
             vector.
 
-        `complex`
+        complex_
             A complex index is the basis for `core_index` and `dense_index` it is a
             tuple of a period and a tuple for the choice set which contains booleans for
             whether a choice is available. The complex index for a dense index also
             contains the dense vector in the last position.
 
-        Parameters
-        ----------
         """
-
         self.dense_key_to_complex = {
             i: k for i, k in enumerate(self.dense_period_cores)
         }
@@ -561,16 +559,20 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
 
 
 def _create_dense_state_space_grid(optim_paras):
-    """Function that returns a grid of dense variables.
-    The function loops through all potential realizations
-    of each dense dimension and returns a list of all possible
-    joint realizations of dense variables.
+    """Create a grid of dense variables.
 
-    Args:
-        - optim_paras: dict containing model specs
-    Returns:
-        - dense_state_space_grid: list containing all dense states
-        as tuples.
+    The function loops through all potential realizations of each dense dimension and
+    returns a list of all possible joint realizations of dense variables.
+
+    Parameters
+    ----------
+    optim_paras: dict
+        Contains parsed model parameters.
+
+    Returns
+    -------
+    dense_state_space_grid : list
+        Contains all dense states as tuples.
 
     """
     levels_of_observables = [range(len(i)) for i in optim_paras["observables"].values()]
@@ -651,16 +653,14 @@ def _create_dense_period_choice(
 ):
     """Create dense period choice parts of the state space.
 
-    We loop over all dense combinations and calculate choice restrictions
-    for each particular dense state space.
-    The information allows us to compile a dict that maps a
-    combination of core indices, choice sets and dense position into
-    core indices!
+    We loop over all dense combinations and calculate choice restrictions for each
+    particular dense state space. The information allows us to compile a dict that maps
+    a combination of core indices, choice sets and dense position into core indices!
 
-    Note that we do not allow for choice restrictions that interact
-    between core and dense covariates.
-    In order to do so we would have to rewrite this function and
+    Note that we do not allow for choice restrictions that interact between core and
+    dense covariates. In order to do so we would have to rewrite this function and
     return explicit state space position instead of core indices!
+
     """
     if not dense:
         return {k: i for i, k in core_key_to_complex.items()}
@@ -741,7 +741,12 @@ def _get_continuation_values(
     core_index_and_dense_vector_to_dense_index,
     expected_value_functions,
 ):
+    """Get continuation values from child states.
 
+    The continuation values are the discounted expected value functions from child
+    states.
+
+    """
     if len(dense_complex_index) == 3:
         period, choice_set, dense_idx = dense_complex_index
     elif len(dense_complex_index) == 2:
@@ -749,10 +754,7 @@ def _get_continuation_values(
         dense_idx = 0
 
     # Sum over UniTuple.
-    n_choices = 0
-    for x in choice_set:
-        if x:
-            n_choices += 1
+    n_choices = np.sum(np.array([1 for i in choice_set if i]))
 
     n_states = core_indices.shape[0]
 
