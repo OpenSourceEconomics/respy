@@ -236,7 +236,9 @@ def msm(
     if return_scalar:
         out = moment_errors.T @ weighting_matrix @ moment_errors
     else:
-        out = moment_errors @ np.sqrt(weighting_matrix)
+        out = pd.Series(
+            moment_errors @ np.sqrt(weighting_matrix), index=moment_errors.index
+        )
 
     if return_simulated_moments:
         simulated_moments = _reconstruct_inputs(
