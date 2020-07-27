@@ -50,7 +50,7 @@ def run_regression_tests(n_tests, strict, notification):
     if idx_failures:
         click.secho(f"Failures: {idx_failures}", fg="red")
     else:
-        click.secho(f"Tests succeeded.", fg="green")
+        click.secho("Tests succeeded.", fg="green")
 
     subject, message = _prepare_message(idx_failures)
 
