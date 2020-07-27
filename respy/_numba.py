@@ -16,7 +16,7 @@ except ImportError:
 
 
 @intrinsic  # noqa: U100
-def array_to_tuple(tyctx, array_or_dict, indexer_array):
+def array_to_tuple(tyctx, array_or_dict, indexer_array):  # noqa: U100
     """Convert an array to a tuple for indexing.
 
     This function is taken from
