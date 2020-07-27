@@ -53,90 +53,36 @@ jobs:
 
       # Unit tests.
 
-      - name: Run precise unit tests and doctests.
+      - name: Run unit tests and doctests.
         shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and unit and precise or (not integration and not end_to_end)" --cov=./ --cov-report=xml -n auto
+        run: tox -e pytest -- -m "not slow and unit" --cov=./ --cov-report=xml -n auto
 
       - name: Upload coverage report
         if: runner.os == 'Linux' && matrix.python-version == '3.8'
         shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F unit_precise -c
-
-      - name: Run unit tests which are edge cases.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and unit and edge_case" --cov=./ --cov-report=xml -n auto
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.8'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F unit_edge_case -c
-
-      - name: Run unit tests which neither precise nor an edge case.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and unit and not precise and not edge_case" --cov=./ --cov-report=xml -n auto
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.8'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F unit_rest -c
+        run: bash <(curl -s https://codecov.io/bash) -F unit -c
 
       # Integration tests.
 
-      - name: Run precise integration tests.
+      - name: Run integration tests.
         shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and integration and precise" --cov=./ --cov-report=xml -n auto
+        run: tox -e pytest -- -m "not slow and integration" --cov=./ --cov-report=xml -n auto
 
       - name: Upload coverage report
         if: runner.os == 'Linux' && matrix.python-version == '3.8'
         shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F integration_precise -c
-
-      - name: Run integration tests which are edge cases.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and integration and edge_case" --cov=./ --cov-report=xml -n auto
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.8'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F integration_edge_case -c
-
-      - name: Run integration tests which neither precise nor an edge case.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and integration and not precise and not edge_case" --cov=./ --cov-report=xml -n auto
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.8'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F integration_rest -c
+        run: bash <(curl -s https://codecov.io/bash) -F integration -c
 
       # End-to-end tests.
 
-      - name: Run precise end_to_end tests.
+      - name: Run end_to_end tests.
         shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and end_to_end and precise" --cov=./ --cov-report=xml -n auto
+        run: tox -e pytest -- -m "not slow and end_to_end" --cov=./ --cov-report=xml -n auto
 
       - name: Upload coverage report
         if: runner.os == 'Linux' && matrix.python-version == '3.8'
         shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F end_to_end_precise -c
-
-      - name: Run end_to_end tests which are edge cases.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and end_to_end and edge_case" --cov=./ --cov-report=xml -n auto
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.8'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F end_to_end_edge_case -c
-
-      - name: Run end_to_end tests which neither precise nor an edge case.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and end_to_end and not precise and not edge_case" --cov=./ --cov-report=xml -n auto
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.8'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F end_to_end_rest -c
+        run: bash <(curl -s https://codecov.io/bash) -F end_to_end -c
 
 
   pre-commit:
