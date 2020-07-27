@@ -72,11 +72,11 @@ def kw_94_interpolation(
     # Create some dense index conversion objects.
     dense_indices_in_period = list(wages)
     dense_index_to_n_states = {
-        dense_index: len(state_space.dense_index_to_indices[dense_index])
+        dense_index: len(state_space.dense_key_to_core_indices[dense_index])
         for dense_index in dense_indices_in_period
     }
     dense_index_to_choice_set_in_period = {
-        dense_index: state_space.dense_index_to_choice_set[dense_index]
+        dense_index: state_space.dense_key_to_choice_set[dense_index]
         for dense_index in dense_indices_in_period
     }
 

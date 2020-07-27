@@ -30,13 +30,13 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
         @functools.wraps(func)
         def wrapper_parallelize_across_dense_dimensions(*args, **kwargs):
             bypass = kwargs.pop("bypass", {})
-            dense_indices = _infer_dense_indices_from_arguments(args, kwargs)
-            if dense_indices:
-                args_, kwargs_ = _broadcast_arguments(args, kwargs, dense_indices)
+            dense_keys = _infer_dense_keys_from_arguments(args, kwargs)
+            if dense_keys:
+                args_, kwargs_ = _broadcast_arguments(args, kwargs, dense_keys)
 
                 out = joblib.Parallel(n_jobs=n_jobs)(
                     joblib.delayed(func)(*args_[idx], **kwargs_[idx], **bypass)
-                    for idx in dense_indices
+                    for idx in dense_keys
                 )
 
                 # Re-order multiple return values from list of tuples to tuple of lists
@@ -47,10 +47,10 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
                         [single_out[i] for single_out in out] for i in range(n_returns)
                     )
                     out = tuple(
-                        dict(zip(dense_indices, list_)) for list_ in tuple_of_lists
+                        dict(zip(dense_keys, list_)) for list_ in tuple_of_lists
                     )
                 else:
-                    out = dict(zip(dense_indices, out))
+                    out = dict(zip(dense_keys, out))
             else:
                 out = func(*args, **kwargs, **bypass)
 
@@ -83,7 +83,7 @@ def split_and_combine_df(func):
     return wrapper_distribute_and_combine_df
 
 
-def _infer_dense_indices_from_arguments(args, kwargs):
+def _infer_dense_keys_from_arguments(args, kwargs):
     """Infer the dense indices from the arguments.
 
     Dense indices can be found in dictionaries with only integer keys.
@@ -93,16 +93,16 @@ def _infer_dense_indices_from_arguments(args, kwargs):
     dimensions, we might need to discard some indices.
 
     """
-    list_of_dense_indices = []
+    list_of_dense_keys = []
     for arg in args:
         if _is_dictionary_with_integer_keys(arg):
-            list_of_dense_indices.append(set(arg.keys()))
+            list_of_dense_keys.append(set(arg.keys()))
     for kwarg in kwargs.values():
         if _is_dictionary_with_integer_keys(kwarg):
-            list_of_dense_indices.append(set(kwarg.keys()))
+            list_of_dense_keys.append(set(kwarg.keys()))
 
     intersection_of_dense_indices = (
-        set.intersection(*list_of_dense_indices) if list_of_dense_indices else []
+        set.intersection(*list_of_dense_keys) if list_of_dense_keys else []
     )
 
     return intersection_of_dense_indices
@@ -115,43 +115,43 @@ def _is_dictionary_with_integer_keys(candidate):
     )
 
 
-def _broadcast_arguments(args, kwargs, dense_indices):
+def _broadcast_arguments(args, kwargs, dense_keys):
     """Broadcast arguments to dense state space dimensions."""
     args = list(args) if isinstance(args, tuple) else [args]
 
     # Broadcast arguments which are not captured in a dictionary with dense state space
     # dimension as keys.
     for i, arg in enumerate(args):
-        if _is_dense_dictionary_argument(arg, dense_indices):
-            args[i] = {idx: arg[idx] for idx in dense_indices}
+        if _is_dense_dictionary_argument(arg, dense_keys):
+            args[i] = {key: arg[key] for key in dense_keys}
         else:
-            args[i] = {idx: arg for idx in dense_indices}
+            args[i] = {idx: arg for idx in dense_keys}
     for kwarg, value in kwargs.items():
-        if _is_dense_dictionary_argument(value, dense_indices):
-            kwargs[kwarg] = {idx: kwargs[kwarg][idx] for idx in dense_indices}
+        if _is_dense_dictionary_argument(value, dense_keys):
+            kwargs[kwarg] = {idx: kwargs[kwarg][idx] for idx in dense_keys}
         else:
-            kwargs[kwarg] = {idx: value for idx in dense_indices}
+            kwargs[kwarg] = {idx: value for idx in dense_keys}
 
     # Re-order arguments for zipping.
-    args = {idx: [arg[idx] for arg in args] for idx in dense_indices}
+    args = {idx: [arg[idx] for arg in args] for idx in dense_keys}
     kwargs = {
         idx: {kwarg: value[idx] for kwarg, value in kwargs.items()}
-        for idx in dense_indices
+        for idx in dense_keys
     }
 
     return args, kwargs
 
 
-def _is_dense_dictionary_argument(argument, dense_indices):
+def _is_dense_dictionary_argument(argument, dense_keys):
     """Check whether all keys of the dictionary argument are also dense indices.
 
     We cannot check whether all dense indices are in the argument because `splitted_df`
     in :func:`split_and_combine_df` may not cover all dense combinations.
 
     """
-    return isinstance(argument, dict) and all(idx in argument for idx in dense_indices)
+    return isinstance(argument, dict) and all(idx in argument for idx in dense_keys)
 
 
 def _split_dataframe(df):
     """Split a DataFrame by creating groups of the same values for the dense dims."""
-    return {name: group for name, group in df.groupby("dense_index")}
+    return {name: group for name, group in df.groupby("dense_key")}

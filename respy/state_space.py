@@ -33,15 +33,15 @@ def create_state_space_class(optim_paras, options):
 
     core_period_choice = _create_core_period_choice(core, optim_paras, options)
 
-    core_index_to_complex = dict(enumerate(core_period_choice))
-    core_index_to_indices = {
-        i: core_period_choice[complex_] for i, complex_ in core_index_to_complex.items()
+    core_key_to_complex = dict(enumerate(core_period_choice))
+    core_key_to_core_indices = {
+        i: core_period_choice[complex_] for i, complex_ in core_key_to_complex.items()
     }
 
-    indexer = _create_indexer(core, core_index_to_indices, optim_paras)
+    indexer = _create_indexer(core, core_key_to_core_indices, optim_paras)
 
     dense_period_choice = _create_dense_period_choice(
-        core, dense, core_index_to_indices, core_index_to_complex, optim_paras, options
+        core, dense, core_key_to_core_indices, core_key_to_complex, optim_paras, options
     )
 
     state_space = StateSpace(
@@ -49,8 +49,8 @@ def create_state_space_class(optim_paras, options):
         indexer,
         dense,
         dense_period_choice,
-        core_index_to_complex,
-        core_index_to_indices,
+        core_key_to_complex,
+        core_key_to_core_indices,
         optim_paras,
         options,
     )
@@ -67,18 +67,40 @@ class StateSpace:
         indexer,
         dense,
         dense_period_cores,
-        core_index_to_complex,
-        core_index_to_indices,
+        core_key_to_complex,
+        core_key_to_core_indices,
         optim_paras,
         options,
     ):
-        """Insert a description of variables once this is final."""
+        """Initialize state space class
+
+        Parameters
+        ----------
+        core : pd.DataFrame
+            DataFrame containing one core state per row.
+        indexer : numba.typed.typeddict.Dict
+            Maps states (rows of core) into tuples containing key of choice core and
+            position of state within choice core. i : state -> (key, pos)
+        dense : dict
+            Maps dense states into dense covariates.
+        dense_period_cores : dict
+            Maps core indeices, choice set and dense indices into core indices.
+            d : (core_index,choice_set,dense_index) -> core_index
+        core_index_to_complex : str
+            Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
+        core_index_to_indices : int
+            Attribute is retrieved from this period.
+        optim_paras : str
+            Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
+        options : int
+            Attribute is retrieved from this period."""
+
         self.core = core
         self.indexer = indexer
         self.dense_period_cores = dense_period_cores
         self.dense = dense
-        self.core_index_to_complex = core_index_to_complex
-        self.core_index_to_indices = core_index_to_indices
+        self.core_key_to_complex = core_key_to_complex
+        self.core_key_to_core_indices = core_key_to_core_indices
         self.optim_paras = optim_paras
         self.n_periods = options["n_periods"]
         self._create_conversion_dictionaries()
@@ -91,21 +113,27 @@ class StateSpace:
 
         This function also establishes the naming convention for various objects. Here
         is a short summary.
+        In general we refer to indices if the defining mapping is injective and to keys
+        if the defining mapping is not injective.
 
-        `indices`
+
+        `core_indices`
             Indices are row indices for states in the :ref:`core state space
             <core_state_space>`. They are continued over different periods and choice
             sets in the core.
 
-        `core_index`
-            A `core_index` is an index for a set of states in the core state space which
+        `core_key`
+            A `core_key` is an index for a set of states in the core state space which
             are in the same period and share the same choice set.
 
         `dense_vector`
             A dense vector is combination of values in the dense dimensions.
 
         `dense_index`
-            A `dense_index` is an index for a set of states in the dense state space
+            A dense index is a position in the dense grid.
+
+        `dense_key`
+            A `dense_key` is an index for a set of states in the dense state space
             which are in the same period, share the same choice set, and the same dense
             vector.
 
@@ -115,53 +143,56 @@ class StateSpace:
             whether a choice is available. The complex index for a dense index also
             contains the dense vector in the last position.
 
+        Parameters
+        ----------
         """
-        self.dense_index_to_complex = {
+
+        self.dense_key_to_complex = {
             i: k for i, k in enumerate(self.dense_period_cores)
         }
 
-        dense_index_to_core_index = {
-            i: self.dense_period_cores[self.dense_index_to_complex[i]]
-            for i in self.dense_index_to_complex.keys()
+        dense_key_to_core_key = {
+            i: self.dense_period_cores[self.dense_key_to_complex[i]]
+            for i in self.dense_key_to_complex
         }
 
-        self.dense_index_to_choice_set = {
-            i: self.dense_index_to_complex[i][1] for i in self.dense_index_to_complex
+        self.dense_key_to_choice_set = {
+            i: self.dense_key_to_complex[i][1] for i in self.dense_key_to_complex
         }
 
-        self.dense_index_to_indices = {
-            i: np.array(self.core_index_to_indices[dense_index_to_core_index[i]])
-            for i in self.dense_index_to_complex
+        self.dense_key_to_core_indices = {
+            i: np.array(self.core_key_to_core_indices[dense_key_to_core_key[i]])
+            for i in self.dense_key_to_complex
         }
 
-        self.core_to_index = Dict.empty(
+        self.joint_to_dense_key = Dict.empty(
             key_type=types.UniTuple(types.int64, 2), value_type=types.int64,
         )
 
-        for i in self.dense_index_to_complex:
-            self.core_to_index[
+        for i in self.dense_key_to_complex:
+            self.joint_to_dense_key[
                 return_core_dense_key(
-                    dense_index_to_core_index[i], *self.dense_index_to_complex[i][2:],
+                    dense_key_to_core_key[i], *self.dense_key_to_complex[i][2:],
                 )
             ] = i
 
         if self.dense is False:
-            self.dense_covariates_to_index = {}
-            self.index_to_dense_covariates = {
-                i: {} for i in self.dense_index_to_complex
+            self.dense_covariates_to_dense_index = {}
+            self.dense_key_to_dense_covariates = {
+                i: {} for i in self.dense_key_to_complex
             }
 
         else:
             n_dense = len(create_dense_state_space_columns(self.optim_paras))
-            self.dense_covariates_to_index = Dict.empty(
+            self.dense_covariates_to_dense_index = Dict.empty(
                 key_type=types.UniTuple(types.int64, n_dense), value_type=types.int64,
             )
             for i, k in enumerate(self.dense):
-                self.dense_covariates_to_index[k] = i
+                self.dense_covariates_to_dense_index[k] = i
 
-            self.index_to_dense_covariates = {
-                i: list(self.dense.values())[self.dense_index_to_complex[i][2]]
-                for i in self.dense_index_to_complex
+            self.dense_key_to_dense_covariates = {
+                i: list(self.dense.values())[self.dense_key_to_complex[i][2]]
+                for i in self.dense_key_to_complex
             }
 
     def create_expected_value_func(self):
@@ -169,14 +200,14 @@ class StateSpace:
         self.expected_value_functions = Dict.empty(
             key_type=types.int64, value_type=types.float64[:]
         )
-        for index, indices in self.dense_index_to_indices.items():
+        for index, indices in self.dense_key_to_core_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
 
     def get_continuation_values(self, period):
         """Wrap get continuation values."""
         if period == self.n_periods - 1:
             shapes = self.get_attribute_from_period("base_draws_sol", period)
-            states = self.get_attribute_from_period("dense_index_to_indices", period)
+            states = self.get_attribute_from_period("dense_key_to_core_indices", period)
             continuation_values = {
                 key: np.zeros((states[key].shape[0], shapes[key].shape[1]))
                 for key in shapes
@@ -193,10 +224,10 @@ class StateSpace:
                 subset_expected_value_functions[key] = value
 
             continuation_values = _get_continuation_values(
-                self.get_attribute_from_period("dense_index_to_indices", period),
-                self.get_attribute_from_period("dense_index_to_complex", period),
+                self.get_attribute_from_period("dense_key_to_core_indices", period),
+                self.get_attribute_from_period("dense_key_to_complex", period),
                 child_indices,
-                self.core_to_index,
+                self.joint_to_dense_key,
                 bypass={"expected_value_functions": subset_expected_value_functions},
             )
         return continuation_values
@@ -209,14 +240,14 @@ class StateSpace:
         else:
             limited_index_to_indices = {
                 k: v
-                for k, v in self.dense_index_to_indices.items()
-                if self.dense_index_to_complex[k][0] < self.n_periods - 1
+                for k, v in self.dense_key_to_core_indices.items()
+                if self.dense_key_to_complex[k][0] < self.n_periods - 1
             }
 
             limited_index_to_choice_set = {
                 k: v
-                for k, v in self.dense_index_to_choice_set.items()
-                if self.dense_index_to_complex[k][0] < self.n_periods - 1
+                for k, v in self.dense_key_to_choice_set.items()
+                if self.dense_key_to_complex[k][0] < self.n_periods - 1
             }
             child_indices = _collect_child_indices(
                 self.core,
@@ -230,7 +261,7 @@ class StateSpace:
 
     def create_draws(self, options):
         """Get draws."""
-        n_choices_in_sets = list(set(map(sum, self.dense_index_to_choice_set.values())))
+        n_choices_in_sets = list(set(map(sum, self.dense_key_to_choice_set.values())))
         shocks_sets = []
 
         for n_choices in n_choices_in_sets:
@@ -241,7 +272,7 @@ class StateSpace:
             )
             shocks_sets.append(draws)
         draws = {}
-        for dense_idx, complex_ix in self.dense_index_to_complex.items():
+        for dense_idx, complex_ix in self.dense_key_to_complex.items():
             period = complex_ix[0]
             n_choices = sum(complex_ix[1])
             idx = n_choices_in_sets.index(n_choices)
@@ -249,11 +280,11 @@ class StateSpace:
 
         return draws
 
-    def get_dense_indices_from_period(self, period):
+    def get_dense_keys_from_period(self, period):
         """Get dense indices from one period."""
         return [
             dense_index
-            for dense_index, complex_ in self.dense_index_to_complex.items()
+            for dense_index, complex_ in self.dense_key_to_complex.items()
             if complex_[0] == period
         ]
 
@@ -268,7 +299,7 @@ class StateSpace:
             Attribute is retrieved from this period.
 
         """
-        dense_indices_in_period = self.get_dense_indices_from_period(period)
+        dense_indices_in_period = self.get_dense_keys_from_period(period)
         return {
             dense_index: attr
             for dense_index, attr in getattr(self, attribute).items()
@@ -530,6 +561,18 @@ def _add_initial_experiences_to_core_state_space(df, optim_paras):
 
 
 def _create_dense_state_space_grid(optim_paras):
+    """Function that returns a grid of dense variables.
+    The function loops through all potential realizations
+    of each dense dimension and returns a list of all possible
+    joint realizations of dense variables.
+
+    Args:
+        - optim_paras: dict containing model specs
+    Returns:
+        - dense_state_space_grid: list containing all dense states
+        as tuples.
+
+    """
     levels_of_observables = [range(len(i)) for i in optim_paras["observables"].values()]
     types = [range(optim_paras["n_types"])] if optim_paras["n_types"] >= 2 else []
 
@@ -604,11 +647,23 @@ def _create_core_period_choice(core, optim_paras, options):
 
 
 def _create_dense_period_choice(
-    core, dense, core_index_to_indices, core_index_to_complex, optim_paras, options
+    core, dense, core_key_to_core_indices, core_key_to_complex, optim_paras, options
 ):
-    """Create dense period choice parts of the state space."""
+    """Create dense period choice parts of the state space.
+
+    We loop over all dense combinations and calculate choice restrictions
+    for each particular dense state space.
+    The information allows us to compile a dict that maps a
+    combination of core indices, choice sets and dense position into
+    core indices!
+
+    Note that we do not allow for choice restrictions that interact
+    between core and dense covariates.
+    In order to do so we would have to rewrite this function and
+    return explicit state space position instead of core indices!
+    """
     if not dense:
-        return {k: i for i, k in core_index_to_complex.items()}
+        return {k: i for i, k in core_key_to_complex.items()}
     else:
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
         dense_period_choice = {}
@@ -616,7 +671,7 @@ def _create_dense_period_choice(
             states = core.copy().assign(**dense_vec)
             states = compute_covariates(states, options["covariates_all"])
             states = create_is_inadmissible(states, optim_paras, options)
-            for core_idx, indices in core_index_to_indices.items():
+            for core_idx, indices in core_key_to_core_indices.items():
                 df = states.copy().loc[indices].assign(**dense_vec)
                 df[choices] = ~df[choices]
                 grouper = df.groupby(choices).groups
@@ -626,14 +681,14 @@ def _create_dense_period_choice(
                     "are created. Use penalties in the utility functions for that. "
                 )
                 period_choice = {
-                    (core_index_to_complex[core_idx][0], idx, dense_idx): core_idx
+                    (core_key_to_complex[core_idx][0], idx, dense_idx): core_idx
                     for idx, indices in grouper.items()
                 }
 
                 dense_period_choice = {**dense_period_choice, **period_choice}
                 idx = list(grouper.keys())[0]
                 dump_states(
-                    df, (core_index_to_complex[core_idx][0], idx, dense_idx), options
+                    df, (core_key_to_complex[core_idx][0], idx, dense_idx), options
                 )
 
     return dense_period_choice

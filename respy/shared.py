@@ -593,56 +593,56 @@ def map_observations_to_states(states, state_space, optim_paras):
     core_columns = ["period"] + create_core_state_space_columns(optim_paras)
     core = states.reset_index(level="period")[core_columns].to_numpy(dtype="int64")
 
-    core_index, index = _map_observations_to_core_states_numba(
+    core_key, core_index = _map_observations_to_core_states_numba(
         core, state_space.indexer
     )
 
-    if state_space.dense_covariates_to_index:
+    if state_space.dense_covariates_to_dense_index:
         dense_columns = create_dense_state_space_columns(optim_paras)
         dense = states[dense_columns].to_numpy(dtype="int64")
 
-        dense_index = _map_observations_to_dense_index(
+        dense_key = _map_observations_to_dense_index(
             dense,
-            core_index,
-            state_space.dense_covariates_to_index,
-            state_space.core_to_index,
+            core_key,
+            state_space.dense_covariates_to_dense_index,
+            state_space.joint_to_dense_key,
         )
     else:
-        dense_index = core_index.copy()
+        dense_key = core_key.copy()
 
-    return dense_index, index
+    return dense_key, core_index
 
 
 @nb.njit
 def _map_observations_to_core_states_numba(core, indexer):
     """Map observations to states in Numba."""
     n_observations = core.shape[0]
+    core_key = np.zeros(n_observations, dtype=np.int64)
     core_index = np.zeros(n_observations, dtype=np.int64)
-    index = np.zeros(n_observations, dtype=np.int64)
 
     for i in range(n_observations):
-        core_index_, index_ = indexer[array_to_tuple(indexer, core[i])]
+        core_key_, core_index_ = indexer[array_to_tuple(indexer, core[i])]
+        core_key[i] = core_key_
         core_index[i] = core_index_
-        index[i] = index_
 
-    return core_index, index
+    return core_key, core_index
 
 
 @nb.njit
 def _map_observations_to_dense_index(
-    dense, core_index, dense_vector_to_index, core_to_index
+    dense, core_index, dense_covariates_to_dense_index, joint_to_dense_key
 ):
     n_observations = dense.shape[0]
-    dense_index = np.zeros(n_observations, dtype=np.int64)
+    dense_key = np.zeros(n_observations, dtype=np.int64)
 
     for i in range(n_observations):
-        dense_vector_index = dense_vector_to_index[
-            array_to_tuple(dense_vector_to_index, dense[i])
+        dense_index = dense_covariates_to_dense_index[
+            array_to_tuple(dense_covariates_to_dense_index, dense[i])
         ]
-        dense_index_ = core_to_index[(core_index[i], dense_vector_index)]
-        dense_index[i] = dense_index_
+        dense_key_ = joint_to_dense_key[(core_index[i], dense_index)]
+        dense_key[i] = dense_key_
 
-    return dense_index
+    return dense_key
 
 
 def dump_states(states, complex_, options):
