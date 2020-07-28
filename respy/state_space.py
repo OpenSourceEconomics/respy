@@ -625,11 +625,16 @@ def _create_dense_period_choice(
 
     We loop over all dense combinations and calculate choice restrictions for each
     particular dense state space. The information allows us to compile a dict that maps
-    a combination of core indices, choice sets and dense position into core indices!
+    a combination of period, choice_set and dense_index into core_key!
 
     Note that we do not allow for choice restrictions that interact between core and
     dense covariates. In order to do so we would have to rewrite this function and
     return explicit state space position instead of core indices!
+
+    Returns
+    -------
+    dense_period_choice : dict
+        d: (period, choice_set, dense_index) -> core_key
 
     """
     if not dense:
@@ -670,7 +675,20 @@ def _create_dense_period_choice(
 def _insert_indices_of_child_states(
     states, indexer, choice_set, n_choices, n_choices_w_exp, n_lagged_choices,
 ):
-    """Collect indices of child states for each parent state."""
+    """Collect indices of child states for each parent state.
+
+    Params
+    -------
+    states:
+
+
+
+    Returns
+    -------
+    indices: np.array
+    Array that represents the mapping (state, choice) 
+
+    """
     indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)
 
     for i in range(states.shape[0]):
@@ -745,7 +763,9 @@ def _get_continuation_values(
 @parallelize_across_dense_dimensions
 def _collect_child_indices(core, core_indices, choice_set, indexer, optim_paras):
     """
-    Collect child indices for one particular dense choice core.
+    Collects child indices for one particular dense choice core.
+    Particularly creates some auxiliary objects to call
+     _insert_indices_of_child_state thereafter.
 
     """
     n_choices = sum(choice_set)
