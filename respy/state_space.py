@@ -72,6 +72,7 @@ class StateSpace:
         options,
     ):
         """Initialize the state space.
+
         See :ref:`state space location indices <state_space_location_indices>`
         for an explanation of the dict objects.
 
@@ -107,7 +108,9 @@ class StateSpace:
 
     def _create_conversion_dictionaries(self):
         """Create mappings between state space location indices and properties.
-         See :ref:`state space location indices <state_space_location_indices>`.
+
+        See :ref:`state space location indices <state_space_location_indices>`.
+
         """
         self.dense_key_to_complex = {
             i: k for i, k in enumerate(self.dense_period_cores)
@@ -167,9 +170,13 @@ class StateSpace:
             self.expected_value_functions[index] = np.zeros(len(indices))
 
     def get_continuation_values(self, period):
-        """Collects all the information required to get continuation values
-        for each dense choice core in a particular period and retrieves these
-        values thereafter."""
+        """Get continuation values.
+
+        The function takes the expected value functions from the previous periods and
+        then uses the indices of child states to put these expected value functions in
+        the correct format.
+
+        """
         if period == self.n_periods - 1:
             shapes = self.get_attribute_from_period("base_draws_sol", period)
             states = self.get_attribute_from_period("dense_key_to_core_indices", period)
@@ -198,10 +205,7 @@ class StateSpace:
         return continuation_values
 
     def collect_child_indices(self):
-        """Subsets the state space location indexer to locations
-        that do not point to the last period and retrieves child
-        indices thereafter.
-        """
+        """Collect for each state the indices of its child states."""
         if self.n_periods == 1:
             child_indices = None
 
@@ -638,9 +642,9 @@ def _create_dense_period_choice(
 
     """
     if not dense:
-        for key,complex in core_key_to_complex.items():
-            dump_states(core.loc[core_key_to_core_indices[key]], complex, options)
-        return {k: i for i, k in core_key_to_complex.items()}
+        for key, complex_ in core_key_to_complex.items():
+            dump_states(core.loc[core_key_to_core_indices[key]], complex_, options)
+        dense_period_choice = {k: i for i, k in core_key_to_complex.items()}
     else:
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
         dense_period_choice = {}
@@ -652,11 +656,13 @@ def _create_dense_period_choice(
                 df = states.copy().loc[indices].assign(**dense_vec)
                 df[choices] = ~df[choices]
                 grouper = df.groupby(choices).groups
-                assert len(grouper) == 1, (
-                    "Choice restrictions cannot interact between core and dense "
-                    "information such that heterogeneous choice sets within a period "
-                    "are created. Use penalties in the utility functions for that. "
-                )
+                if not len(grouper) == 1:
+                    raise ValueError(
+                        "Choice restrictions cannot interact between core and dense "
+                        "information such that heterogeneous choice sets within a "
+                        "period are created. Use penalties in the utility functions "
+                        "for that."
+                    )
                 period_choice = {
                     (core_key_to_complex[core_idx][0], idx, dense_idx): core_idx
                     for idx, indices in grouper.items()
@@ -766,8 +772,8 @@ def _collect_child_indices(core, core_indices, choice_set, indexer, optim_paras)
     Collects child indices for one particular dense choice core.
     Particularly creates some auxiliary objects to call
      _insert_indices_of_child_state thereafter.
-
     """
+
     n_choices = sum(choice_set)
 
     core_columns = create_core_state_space_columns(optim_paras)

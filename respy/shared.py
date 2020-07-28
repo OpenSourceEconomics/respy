@@ -673,9 +673,9 @@ def _return_file_name(complex_):
     choice = ""
     for x in complex_[1]:
         choice += str(int(x))
-    if len(complex_)==3:
+    if len(complex_) == 3:
         file_name = f"{complex_[0]}_{choice}_{complex_[2]}.parquet"
-    elif len(complex_)==2:
+    elif len(complex_) == 2:
         file_name = f"{complex_[0]}_{choice}.parquet"
     return file_name
 

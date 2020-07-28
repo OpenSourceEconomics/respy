@@ -7,7 +7,6 @@ from respy.interpolate import kw_94_interpolation
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.shared import calculate_expected_value_functions
-from respy.shared import compute_covariates
 from respy.shared import load_states
 from respy.shared import pandas_dot
 from respy.shared import select_valid_choices
@@ -48,10 +47,7 @@ def solve(params, options, state_space):
     optim_paras, options = process_params_and_options(params, options)
 
     wages, nonpecs = _create_choice_rewards(
-        state_space.core,
-        state_space.dense,
         state_space.dense_key_to_complex,
-        state_space.dense_key_to_core_indices,
         state_space.dense_key_to_choice_set,
         optim_paras,
         options,
@@ -66,9 +62,7 @@ def solve(params, options, state_space):
 
 
 @parallelize_across_dense_dimensions
-def _create_choice_rewards(
-    complex_, choice_set, optim_paras, options
-):
+def _create_choice_rewards(complex_, choice_set, optim_paras, options):
     """Create wage and non-pecuniary reward for each state and choice."""
     n_choices = sum(choice_set)
     choices = select_valid_choices(optim_paras["choices"], choice_set)
