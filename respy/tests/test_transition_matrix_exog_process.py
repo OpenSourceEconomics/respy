@@ -4,6 +4,9 @@ import pytest
 
 from respy.pre_processing.transition_matrix_exog_process import check_numerics
 from respy.pre_processing.transition_matrix_exog_process import create_covariates
+from respy.pre_processing.transition_matrix_exog_process import (
+    parse_transition_matrix_for_exog_processes,
+)
 from respy.pre_processing.transition_matrix_exog_process import transform_matrix
 
 PROCESS_NAME = "health_shocks"
@@ -47,12 +50,12 @@ def covariates_out():
 
 def test_checks(random_matrix):
     random_matrix = random_matrix.div(np.sum(random_matrix, axis=1), axis=0)
-    check_numerics(random_matrix, random_matrix.shape[0])
+    check_numerics(random_matrix)
 
 
 def test_fails_checks(random_matrix):
     with pytest.raises(ValueError):
-        check_numerics(random_matrix, random_matrix.shape[0])
+        check_numerics(random_matrix)
 
 
 @pytest.mark.parametrize("process_type", ["dependent_process", "independent_process"])
@@ -69,4 +72,17 @@ def test_fail_creation(states_in):
 def test_transform_matrix(random_matrix):
     matrix = random_matrix.div(np.sum(random_matrix, axis=1), axis=0)
     log_matrix = transform_matrix(matrix)
-    check_numerics(np.exp(log_matrix), matrix.shape[0])
+    check_numerics(np.exp(log_matrix))
+
+
+@pytest.mark.parametrize("process_type", ["dependent_process", "independent_process"])
+def test_parsing(random_matrix, states_in, covariates_out, process_type):
+    states = states_in[process_type]
+    reduced_matrix = random_matrix.iloc[0 : len(states), 0 : len(PROCESS_STATES)]
+    reduced_matrix.index = states
+    reduced_matrix.columns = PROCESS_STATES
+    reduced_matrix = reduced_matrix.div(np.sum(reduced_matrix, axis=1), axis=0)
+    params, covariates = parse_transition_matrix_for_exog_processes(
+        reduced_matrix, PROCESS_NAME
+    )
+    assert covariates == covariates_out[process_type]
