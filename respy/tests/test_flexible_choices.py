@@ -1,6 +1,4 @@
-"""
-This module contains tests for felx choices!
-"""
+"""Contains code for testing for flexible choices."""
 import pandas as pd
 import pytest
 

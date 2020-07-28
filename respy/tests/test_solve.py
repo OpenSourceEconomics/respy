@@ -24,11 +24,7 @@ from respy.tests.utils import process_model_or_seed
 @pytest.mark.end_to_end
 @pytest.mark.parametrize("model_or_seed", EXAMPLE_MODELS)
 def test_check_solution(model_or_seed):
-    """
-    Test robustness of a random model.
-    The test should work for all random model specification.
-    """
-
+    """Test solution of a random model."""
     params, options = process_model_or_seed(model_or_seed)
 
     solve = get_solve_func(params, options)
