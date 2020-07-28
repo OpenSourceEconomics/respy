@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 
-def parse_transition_matrix_for_exog_processes(matrix, process_name):
+def parse_transition_matrix_for_exogenous_processes(matrix, process_name):
     """Parse the transition matrix for an exogenous process to respy layout.
 
     Parse a transition matrix to logit coefficients and create params file and
@@ -88,7 +88,9 @@ def create_covariates(states, process_name, process_states):
         elif i == 1:
             covariates[str(state)] = f"{process_name} == {destination_state} & ?"
         else:
-            raise ValueError(f"{state} contains more than one process state.")
+            raise ValueError(
+                f"{state} contains more than one states of the exogenous " f"process."
+            )
     return covariates
 
 

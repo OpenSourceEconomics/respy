@@ -20,6 +20,9 @@ from respy.likelihood import get_crit_func  # noqa: F401
 from respy.method_of_simulated_moments import get_diag_weighting_matrix  # noqa: F401
 from respy.method_of_simulated_moments import get_flat_moments  # noqa: F401
 from respy.method_of_simulated_moments import get_msm_func  # noqa: F401
+from respy.pre_processing.transition_matrix_exog_process import (  # noqa: F401
+    parse_transition_matrix_for_exogenous_processes,  # noqa: F401
+)  # noqa: F401
 from respy.simulate import get_simulate_func  # noqa: F401
 from respy.solve import get_solve_func  # noqa: F401
 from respy.tests.random_model import add_noise_to_params  # noqa: F401

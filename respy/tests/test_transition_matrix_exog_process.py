@@ -5,7 +5,7 @@ import pytest
 from respy.pre_processing.transition_matrix_exog_process import check_numerics
 from respy.pre_processing.transition_matrix_exog_process import create_covariates
 from respy.pre_processing.transition_matrix_exog_process import (
-    parse_transition_matrix_for_exog_processes,
+    parse_transition_matrix_for_exogenous_processes,
 )
 from respy.pre_processing.transition_matrix_exog_process import transform_matrix
 
@@ -82,7 +82,7 @@ def test_parsing(random_matrix, states_in, covariates_out, process_type):
     reduced_matrix.index = states
     reduced_matrix.columns = PROCESS_STATES
     reduced_matrix = reduced_matrix.div(np.sum(reduced_matrix, axis=1), axis=0)
-    params, covariates = parse_transition_matrix_for_exog_processes(
+    params, covariates = parse_transition_matrix_for_exogenous_processes(
         reduced_matrix, PROCESS_NAME
     )
     assert covariates == covariates_out[process_type]
