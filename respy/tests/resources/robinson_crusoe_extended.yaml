@@ -11,7 +11,7 @@ covariates:
     constant: "1"
     contemplation_with_friday: "exp_friday == 1 and exp_fishing >= 1"
     not_fishing_last_period: "lagged_choice_1 != 'fishing'"
-inadmissible_states:
+negative_choice_set:
     friday: [
         "period < 2",
         "exp_fishing == 0"

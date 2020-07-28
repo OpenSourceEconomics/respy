@@ -34,10 +34,13 @@ from respy.config import TEST_RESOURCES_DIR
 pytestmark = pytest.mark.slow
 
 
-@pytest.mark.skip
 @pytest.mark.end_to_end
 @pytest.mark.precise
-def test_table_6_exact_solution_row_mean_and_sd():
+@pytest.mark.parametrize(
+    "model, subsidy",
+    [("kw_94_one", 500), ("kw_94_two", 1_000), ("kw_94_three", 2_000)],
+)
+def test_table_6_exact_solution_row_mean_and_sd(model, subsidy):
     """Replicate the first two rows of Table 6 in Keane and Wolpin (1994).
 
     In more detail, the mean effects and the standard deviations of a 500, 1000, and
@@ -46,71 +49,60 @@ def test_table_6_exact_solution_row_mean_and_sd():
     tested.
 
     """
-    # Specify the three different data sets.
-    models = np.repeat(["one", "two", "three"], 2)
-    tuition_subsidies = [0, 500, 0, 1000, 0, 2000]
+    params, options = rp.get_example_model(model, with_data=False)
+    options["simulation_agents"] = 4000
+    simulate = rp.get_simulate_func(params, options)
 
-    # Generate the 3 * 2 data sets as list of DataFrames by simulating with respective
-    # tuition subsidy.
-    data_frames = []
-    for model, subsidy in zip(models, tuition_subsidies):
-        params, options = rp.get_example_model(f"kw_94_{model}", with_data=False)
-        options["simulation_agents"] = 4000
-        simulate = rp.get_simulate_func(params, options)
-        params.loc[("nonpec_edu", "at_least_twelve_exp_edu"), "value"] += subsidy
-        data_frames.append(simulate(params))
+    df_wo_ts = simulate(params)
+
+    params.loc[("nonpec_edu", "at_least_twelve_exp_edu"), "value"] += subsidy
+    df_w_ts = simulate(params)
 
     columns = ["Bootstrap_Sample", "Experience_Edu", "Experience_A", "Experience_B"]
 
     # Calculate the statistics based on 40 bootstrap samples á 100 individuals.
-    bootstrapped_statistics = []
-    for i, title in zip(range(0, 6, 2), ["kw_94_one", "kw_94_two", "kw_94_three"]):
-        # Select sample with and without tuition subsidy.
-        df_wo_ts = data_frames[i]
-        df_w_ts = data_frames[i + 1]
-
-        # Assign bootstrap sample number.
-        df_wo_ts["Bootstrap_Sample"] = pd.cut(
-            df_wo_ts.index.get_level_values(0), bins=40, labels=np.arange(1, 41)
-        )
-        df_w_ts["Bootstrap_Sample"] = pd.cut(
-            df_w_ts.index.get_level_values(0), bins=40, labels=np.arange(1, 41)
+    # Assign bootstrap sample number.
+    for df in [df_wo_ts, df_w_ts]:
+        df["Bootstrap_Sample"] = pd.cut(
+            df.index.get_level_values(0), bins=40, labels=np.arange(1, 41)
         )
 
-        # Calculate mean experiences.
-        mean_exp_wo_ts = (
-            df_wo_ts.query("Period == 39")[columns].groupby("Bootstrap_Sample").mean()
-        )
-        mean_exp_w_ts = (
-            df_w_ts.query("Period == 39")[columns].groupby("Bootstrap_Sample").mean()
-        )
-
-        # Calculate bootstrap statistics.
-        diff = (
-            mean_exp_w_ts.subtract(mean_exp_wo_ts)
-            .assign(Data=title)
-            .reset_index()
-            .set_index(["Data", "Bootstrap_Sample"])
-            .stack()
-            .unstack([0, 2])
-        )
-        bootstrapped_statistics.append(diff)
-
-    rp_replication = pd.concat(
-        [bs.agg(["mean", "std"]) for bs in bootstrapped_statistics], axis=1
+    # Calculate mean experiences.
+    mean_exp_wo_ts = (
+        df_wo_ts.query("Period == 39")[columns].groupby("Bootstrap_Sample").mean()
+    )
+    mean_exp_w_ts = (
+        df_w_ts.query("Period == 39")[columns].groupby("Bootstrap_Sample").mean()
     )
 
-    # Expected values are taken from csv of table 6.
+    # Calculate bootstrap statistics.
+    diff = (
+        mean_exp_w_ts.subtract(mean_exp_wo_ts)
+        .assign(Data=model)
+        .reset_index()
+        .set_index(["Data", "Bootstrap_Sample"])
+        .stack()
+        .unstack([0, 2])
+    )
+
+    rp_replication = diff.agg(["mean", "std"])
+
+    # Expected values are taken from Table 6 in the paper.
     kw_94_table_6 = pd.read_csv(
         TEST_RESOURCES_DIR / "kw_94_table_6.csv", index_col=0, header=[0, 1], nrows=2
     )
 
     # Test that standard deviations are very close.
-    np.testing.assert_allclose(rp_replication.iloc[1], kw_94_table_6.iloc[1], atol=0.05)
+    np.testing.assert_allclose(
+        rp_replication[model].iloc[1], kw_94_table_6[model].iloc[1], atol=0.05
+    )
 
     # Test that difference lies within one standard deviation.
-    diff = rp_replication.iloc[0].to_numpy() - kw_94_table_6.iloc[0].to_numpy()
-    assert (np.abs(diff) < kw_94_table_6.iloc[1]).all()
+    diff = (
+        rp_replication[model].iloc[0].to_numpy()
+        - kw_94_table_6[model].iloc[0].to_numpy()
+    )
+    assert (np.abs(diff) < kw_94_table_6[model].iloc[1]).all()
 
 
 @pytest.mark.end_to_end

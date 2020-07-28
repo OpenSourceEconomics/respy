@@ -125,7 +125,7 @@ def test_convert_labels_in_covariates_to_codes():
             "do_hammock": 'choice == "hammock"',
         },
         "core_state_space_filters": [],
-        "inadmissible_states": {},
+        "negative_choice_set": {},
     }
 
     options = _convert_labels_in_formulas_to_codes(options, optim_paras)
@@ -222,7 +222,7 @@ def test_raise_exception_for_observable_with_one_value(observables):
                 "choices": {"a": {"start": [0], "max": 4}},
                 "n_periods": 5,
             },
-            {"inadmissible_states": {"a": ["False"], "b": ["False"]}},
+            {"negative_choice_set": {"a": ["False"], "b": ["False"]}},
         ),
         (
             {
@@ -231,7 +231,7 @@ def test_raise_exception_for_observable_with_one_value(observables):
                 "choices": {"a": {"start": [0], "max": 5}},
                 "n_periods": 5,
             },
-            {"inadmissible_states": {"a": ["False"], "b": ["False"]}},
+            {"negative_choice_set": {"a": ["False"], "b": ["False"]}},
         ),
         (
             {
@@ -240,7 +240,7 @@ def test_raise_exception_for_observable_with_one_value(observables):
                 "choices": {"a": {"start": [0], "max": 3}},
                 "n_periods": 5,
             },
-            {"inadmissible_states": {"a": ["exp_a == 3"], "b": ["False"]}},
+            {"negative_choice_set": {"a": ["exp_a == 3"], "b": ["False"]}},
         ),
         (
             {
@@ -249,11 +249,11 @@ def test_raise_exception_for_observable_with_one_value(observables):
                 "choices": {"a": {"start": [11, 13], "max": 15}},
                 "n_periods": 5,
             },
-            {"inadmissible_states": {"a": ["exp_a == 15"]}},
+            {"negative_choice_set": {"a": ["exp_a == 15"]}},
         ),
     ],
 )
 def test_add_default_is_inadmissible(optim_paras, expected):
-    options = {"inadmissible_states": {}}
+    options = {"negative_choice_set": {}}
     result = _add_default_is_inadmissible(options, optim_paras)
     assert result == expected

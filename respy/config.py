@@ -45,7 +45,7 @@ dimension.
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10
 
-SEED_STARTUP_ITERATION_GAP = 100
+SEED_STARTUP_ITERATION_GAP = 1_000_000
 
 DEFAULT_OPTIONS = {
     "estimation_draws": 200,
@@ -57,7 +57,7 @@ DEFAULT_OPTIONS = {
     "solution_draws": 200,
     "solution_seed": 3,
     "core_state_space_filters": [],
-    "inadmissible_states": {},
+    "negative_choice_set": {},
     "monte_carlo_sequence": "sobol",
 }
 

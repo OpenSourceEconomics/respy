@@ -610,7 +610,7 @@ def create_is_inadmissible(df, optim_paras, options):
 
     for choice in optim_paras["choices"]:
         df[f"_{choice}"] = False
-        for formula in options["inadmissible_states"][choice]:
+        for formula in options["negative_choice_set"][choice]:
             try:
                 df[f"_{choice}"] |= df.eval(formula)
             except pd.core.computation.ops.UndefinedVariableError:
