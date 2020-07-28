@@ -6,6 +6,30 @@ probabilities are transformed to logit coefficents.
 import numpy as np
 
 
+def create_covariates(states, process_name, process_states):
+    """Create a covariate template for the user.
+
+    :param states:
+    :param process_name:
+    :param process_states:
+    :return:
+    """
+    covariates = {}
+    for state in states:
+        i = 0
+        for process_state in process_states:
+            if process_state in state:
+                destination_state = process_state
+                i += 1
+        if i == 0:
+            covariates[str(state)] = "?"
+        elif i == 1:
+            covariates[str(state)] = f"{process_name} == {destination_state} & ?"
+        else:
+            raise ValueError(f"{state} contains more than one process state.")
+    return covariates
+
+
 def check_numerics(matrix, n_states):
     """Check numeric conditions on a transition matrix.
 
