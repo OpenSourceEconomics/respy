@@ -299,8 +299,8 @@ def test_dense_choice_cores():
 
     # Get indices
     dense_combination = list(state_space.dense.keys())[pos]
-    dense_index = state_space.dense_covariates_to_index[dense_combination]
-    ix = (state_space.core_to_index[core_ix[0], dense_index], core_ix[1])
+    dense_index = state_space.dense_covariates_to_dense_index[dense_combination]
+    ix = (state_space.joint_to_dense_key[core_ix[0], dense_index], core_ix[1])
 
     unrestricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
 
@@ -314,8 +314,8 @@ def test_dense_choice_cores():
 
     # Get indices
     dense_combination = list(state_space.dense.keys())[pos]
-    dense_index = state_space.dense_covariates_to_index[dense_combination]
-    ix = (state_space.core_to_index[core_ix[0], dense_index], core_ix[1])
+    dense_index = state_space.dense_covariates_to_dense_index[dense_combination]
+    ix = (state_space.joint_to_dense_key[core_ix[0], dense_index], core_ix[1])
 
     # Check some features of the state_space
     restricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
@@ -341,8 +341,8 @@ def test_invariance_of_wage_calc():
 
     pos = np.random.choice(range(len(state_space.dense)))
     dense_combination = list(state_space.dense.keys())[pos]
-    dense_index = state_space.dense_covariates_to_index[dense_combination]
-    idx = state_space.core_to_index[(1, dense_index)]
+    dense_index = state_space.dense_covariates_to_dense_index[dense_combination]
+    idx = state_space.joint_to_dense_key[(1, dense_index)]
 
     # Solve relevant wages
     wages_b = state_space.wages[idx][:, 1]

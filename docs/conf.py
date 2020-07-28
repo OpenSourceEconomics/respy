@@ -84,9 +84,7 @@ language = "en"
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-if on_rtd:
-    pass
-else:
+if not on_rtd:
     todo_include_todos = True
     todo_emit_warnings = True
 
