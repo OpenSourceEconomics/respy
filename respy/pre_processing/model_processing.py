@@ -41,7 +41,7 @@ def process_params_and_options(params, options):
     options = {**DEFAULT_OPTIONS, **options}
     options = _create_internal_seeds_from_user_seeds(options)
     options = remove_irrelevant_covariates(options, params)
-    options = _set_storage_dir(options)
+    options = _parse_cache_directory(options)
     validate_options(options)
 
     optim_paras = _parse_parameters(params, options)
@@ -838,9 +838,16 @@ def _convert_labels_in_filters_to_codes(optim_paras, options):
     return options
 
 
-def _set_storage_dir(options):
-    if "state_space_path" in options:
-        pass
-    else:
-        options["state_space_path"] = Path.cwd() / ".respy"
+def _parse_cache_directory(options):
+    """Parse the location of the cache."""
+    path = Path(options.get("state_space_path", ".respy"))
+
+    if not path.is_absolute():
+        path = Path.cwd() / path
+
+    if path.name != ".respy":
+        path = path / ".respy"
+
+    options["state_space_path"] = path
+
     return options

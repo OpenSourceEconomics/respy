@@ -8,7 +8,6 @@ from numba.typed.typeddict import Dict
 
 from respy._numba import array_to_tuple
 from respy.parallelization import parallelize_across_dense_dimensions
-from respy.shared import check_dir
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
@@ -16,12 +15,13 @@ from respy.shared import create_core_state_space_columns
 from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import dump_states
+from respy.shared import prepare_cache_directory
 from respy.shared import return_core_dense_key
 
 
 def create_state_space_class(optim_paras, options):
     """Create the state space of the model."""
-    check_dir(options)
+    prepare_cache_directory(options)
     core = _create_core_state_space(optim_paras, options)
     dense_grid = _create_dense_state_space_grid(optim_paras)
 
