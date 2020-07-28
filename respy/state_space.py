@@ -191,6 +191,8 @@ class StateSpace:
         See also
         --------
         _get_continuation_values.
+        A more theoretical explanation can be found here:
+        See :ref:`get continuation values <get_continuation_values>`.
         """
         if period == self.n_periods - 1:
             shapes = self.get_attribute_from_period("base_draws_sol", period)
@@ -225,6 +227,8 @@ class StateSpace:
         See also
         --------
         _collect_child_indices.
+        A more theoretical explanation can be found here:
+        See :ref:`collect child indices <collect_child_indices>`.
         """
         if self.n_periods == 1:
             child_indices = None
@@ -289,7 +293,6 @@ class StateSpace:
             Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
         period : int
             Attribute is retrieved from this period.
-
         """
         dense_indices_in_period = self.get_dense_keys_from_period(period)
         return {
@@ -303,7 +306,13 @@ class StateSpace:
         setattr(self, attribute, value)
 
     def set_attribute_from_keys(self, attribute, value):
-        """Set attributes by keys."""
+        """Set attributes by keys.
+
+        See also
+        --------
+        A more theoretical explanation can be found here:
+        See :ref:`set attributes from keys <set_attributes_from_keys>`.
+        """
         for key in value:
             getattr(self, attribute)[key][:] = value[key]
 
