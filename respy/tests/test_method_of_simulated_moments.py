@@ -1,4 +1,6 @@
 """Test the msm interface of respy."""
+import copy
+
 import pandas as pd
 import pytest
 
@@ -37,15 +39,17 @@ def msm_args():
 
 @pytest.mark.edge_case
 @pytest.mark.end_to_end
-def test_msm_zero(msm_args):
-    """ Test whether msm function successfully returns 0 for true parameter
-    vector.
-    """
-    msm = get_msm_func(*msm_args)
-    msm_vector = get_msm_func(*msm_args)
+@pytest.mark.parametrize("return_scalar", [True, False])
+def test_msm_zero(msm_args, return_scalar):
+    """Test whether MSM function successfully returns 0 for true parameter vector."""
+    msm = get_msm_func(*msm_args, return_scalar=return_scalar)
 
-    assert msm(msm_args[0]) == 0
-    assert (msm_vector(msm_args[0]) == 0).all()
+    if return_scalar:
+        assert msm(msm_args[0]) == 0
+    else:
+        out = msm(msm_args[0])
+        assert isinstance(out, pd.Series)
+        assert (out == 0).all()
 
 
 @pytest.mark.end_to_end
@@ -61,8 +65,9 @@ def test_msm_nonzero(msm_args):
     msm_periods = get_msm_func(n_simulation_periods=4, *msm_args)
 
     # 3. Different simulation seed for the simulated dataset.
-    msm_args[1]["simulation_seed"] = msm_args[1]["simulation_seed"] + 100
-    msm_seed = get_msm_func(*msm_args)
+    options = copy.deepcopy(msm_args[1])
+    options["simulation_seed"] = options["simulation_seed"] + 100
+    msm_seed = get_msm_func(msm_args[0], options, *msm_args[2:])
 
     assert msm_params(params) > 0
     assert msm_periods(params) > 0
