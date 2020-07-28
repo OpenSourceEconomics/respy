@@ -4,6 +4,7 @@ import pytest
 
 from respy.pre_processing.transition_matrix_exog_process import check_numerics
 from respy.pre_processing.transition_matrix_exog_process import create_covariates
+from respy.pre_processing.transition_matrix_exog_process import transform_matrix
 
 PROCESS_NAME = "health_shocks"
 PROCESS_STATES = ["sick", "healthy"]
@@ -63,3 +64,9 @@ def test_covariates_creation_dependent_process(states_in, covariates_out, proces
 def test_fail_creation(states_in):
     with pytest.raises(ValueError):
         create_covariates(states_in["false_process"], PROCESS_NAME, PROCESS_STATES)
+
+
+def test_transform_matrix(random_matrix):
+    matrix = random_matrix.div(np.sum(random_matrix, axis=1), axis=0)
+    log_matrix = transform_matrix(matrix)
+    check_numerics(np.exp(log_matrix), matrix.shape[0])

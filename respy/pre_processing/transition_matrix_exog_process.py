@@ -6,6 +6,21 @@ probabilities are transformed to logit coefficents.
 import numpy as np
 
 
+def transform_matrix(matrix):
+    """Transform probabilities to logit coefficients.
+
+    :param matrix:
+    :return:
+    """
+    transformed_matrix = matrix.copy()
+    transformed_matrix[transformed_matrix == 0] = -1e300
+    transformed_matrix[transformed_matrix > 0] = np.log(
+        transformed_matrix[transformed_matrix > 0]
+    )
+    transformed_matrix.index = transformed_matrix.index.map(str)
+    return transformed_matrix
+
+
 def create_covariates(states, process_name, process_states):
     """Create a covariate template for the user.
 
