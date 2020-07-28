@@ -675,11 +675,13 @@ def _create_dense_period_choice(
                 df = states.copy().loc[indices].assign(**dense_vec)
                 df[choices] = ~df[choices]
                 grouper = df.groupby(choices).groups
-                assert len(grouper) == 1, (
-                    "Choice restrictions cannot interact between core and dense "
-                    "information such that heterogeneous choice sets within a period "
-                    "are created. Use penalties in the utility functions for that. "
-                )
+                if len(grouper) == 1:
+                    raise ValueError(
+                        "Choice restrictions cannot interact between core and dense "
+                        "information such that heterogeneous choice sets within a "
+                        "period are created. Use penalties in the utility functions "
+                        "for that."
+                    )
                 period_choice = {
                     (core_key_to_complex[core_idx][0], idx, dense_idx): core_idx
                     for idx, indices in grouper.items()
