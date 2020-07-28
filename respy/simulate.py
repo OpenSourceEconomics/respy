@@ -46,9 +46,9 @@ def get_simulate_func(
     method : {"n_step_ahead_with_sampling", "n_step_ahead_with_data", "one_step_ahead"}
         The simulation method which can be one of three and is explained in more detail
         in :func:`simulate`.
-    df : pandas.DataFrame or None
+    df : pandas.DataFrame or None, default None
         DataFrame containing one or multiple observations per individual.
-    n_simulation_periods : int or None
+    n_simulation_periods : int or None, default None
         Simulate data for a number of periods. This options does not affect
         ``options["n_periods"]`` which controls the number of periods for which decision
         rules are computed.
@@ -244,7 +244,7 @@ def _extend_data_with_sampled_characteristics(df, optim_paras, options):
     Returns
     -------
     df : pandas.DataFrame
-        A pandas DataFrame with no missings at all.
+        A pandas DataFrame with no missing values.
 
     """
     # Sample characteristics only for the first period.
@@ -662,7 +662,10 @@ def _process_input_df_for_simulation(df, method, options, optim_paras):
         )
 
     else:
-        raise NotImplementedError
+        raise NotImplementedError(
+            "'method' must be one of {'n_step_ahead_with_sampling', "
+            "'n_step_ahead_with_data', 'one_step_ahead'}."
+        )
 
     state_space_columns = create_state_space_columns(optim_paras)
     df = df.reindex(columns=state_space_columns)
@@ -673,9 +676,9 @@ def _process_input_df_for_simulation(df, method, options, optim_paras):
     has_nans_in_first_period = np.any(data.isna())
     if has_nans_in_first_period and method == "n_step_ahead_with_data":
         warnings.warn(
-            "The data contains 'NaNs' in the first period which are replaced with "
-            "characteristics implied by the initial conditions. Fix the data to silence"
-            " the warning."
+            "The data contains NaNs in the first period which are replaced with "
+            "sampled characteristics implied by the initial conditions. Fix the data "
+            "to silence the warning."
         )
 
     has_nans = np.any(df.drop(columns="type", errors="ignore").isna())

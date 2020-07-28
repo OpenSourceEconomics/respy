@@ -300,12 +300,15 @@ def test_dense_choice_cores():
     # Get indices
     dense_combination = list(state_space.dense.keys())[pos]
     dense_index = state_space.dense_covariates_to_dense_index[dense_combination]
-    ix = (state_space.core_key_and_dense_index_to_dense_key[core_ix[0], dense_index], core_ix[1])
+    ix = (
+        state_space.core_key_and_dense_index_to_dense_key[core_ix[0], dense_index],
+        core_ix[1],
+    )
 
     unrestricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
 
     # Impose some restriction
-    options["inadmissible_states"] = {"a": ["period == 4 & exp_b ==4"]}
+    options["negative_choice_set"] = {"a": ["period == 4 & exp_b ==4"]}
 
     # Solve the restricted model
     solve = get_solve_func(params, options)
@@ -315,7 +318,10 @@ def test_dense_choice_cores():
     # Get indices
     dense_combination = list(state_space.dense.keys())[pos]
     dense_index = state_space.dense_covariates_to_dense_index[dense_combination]
-    ix = (state_space.core_key_and_dense_index_to_dense_key[core_ix[0], dense_index], core_ix[1])
+    ix = (
+        state_space.core_key_and_dense_index_to_dense_key[core_ix[0], dense_index],
+        core_ix[1],
+    )
 
     # Check some features of the state_space
     restricted_cont = state_space.get_continuation_values(3)[ix[0]][ix[1]]
@@ -348,7 +354,7 @@ def test_invariance_of_wage_calc():
     wages_b = state_space.wages[idx][:, 1]
 
     # Impose some restriction
-    options["inadmissible_states"] = {"a": ["period == 1"]}
+    options["negative_choice_set"] = {"a": ["period == 1"]}
 
     solve = get_solve_func(params, options)
     state_space = solve(params)
@@ -401,7 +407,7 @@ def test_equality_of_equivalent_choice_sets():
     sp = create_state_space_class(optim_paras, options_)
 
     choice = np.random.choice(list(optim_paras["choices_w_exp"].keys()))
-    options["inadmissible_states"] = {
+    options["negative_choice_set"] = {
         choice: [
             f"period==2 & exp_{choice}==0",
             f"period==2 & exp_{choice}==1",

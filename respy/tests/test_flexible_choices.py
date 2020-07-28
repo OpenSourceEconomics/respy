@@ -21,7 +21,7 @@ def test_choice_restrictions():
     params.loc[("observable_health_sick", "probability"), "value"] = 0.1
 
     # Sick people can never work.
-    options["inadmissible_states"] = {
+    options["negative_choice_set"] = {
         "fishing": ["health == 'sick' & period < 2", "health == 'sick' & period >= 2"],
         "friday": ["period < 2", "exp_fishing == 0"],
     }
@@ -50,7 +50,7 @@ def test_simulation_with_flexible_choice_sets():
     params.loc[("observable_health_sick", "probability"), "value"] = 0.1
 
     # Sick people can never work.
-    options["inadmissible_states"] = {
+    options["negative_choice_set"] = {
         "fishing": ["health == 'sick'"],
         "friday": ["period < 2", "exp_fishing == 0"],
     }

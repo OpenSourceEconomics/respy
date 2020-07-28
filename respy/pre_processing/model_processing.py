@@ -73,14 +73,14 @@ def _create_internal_seeds_from_user_seeds(options):
     As naive sequences started by the seeds given by the user might be overlapping,
     the user seeds are used to generate seeds within certain ranges. The seed for the
 
-    - solution is between 100 and 1,000.
-    - simulation is between 10,000 and 100,000.
-    - likelihood estimation is between 1,000,000 and 10,000,000.
+    - solution is between 1,000,000 and 2,000,000.
+    - simulation is between 4,000,000 and 5,000,000.
+    - likelihood estimation is between 7,000,000 and 8,000,000.
 
     Furthermore, we need to sequences of seeds. The first sequence is for building
     :func:`~respy.simulate.simulate` or :func:`~respy.likelihood.log_like` where
     `"startup"` seeds are used to generate the draws. The second sequence start at
-    `seed_start + SEED_STARTUP_ITERATION_GAP` and has to be reset to the initial
+    ``seed_start + SEED_STARTUP_ITERATION_GAP`` and has to be reset to the initial
     value at the beginning of every iteration.
 
     See :ref:`randomness-and-reproducibility` for more information.
@@ -90,11 +90,11 @@ def _create_internal_seeds_from_user_seeds(options):
     >>> options = {"solution_seed": 1, "simulation_seed": 2, "estimation_seed": 3}
     >>> options = _create_internal_seeds_from_user_seeds(options)
     >>> options["solution_seed_startup"], options["solution_seed_iteration"]
-    (count(137), count(237))
+    (count(1128037), count(2128037))
     >>> options["simulation_seed_startup"], options["simulation_seed_iteration"]
-    (count(99256), count(99356))
+    (count(4875688), count(5875688))
     >>> options["estimation_seed_startup"], options["estimation_seed_iteration"]
-    (count(1071530), count(1071630))
+    (count(7071530), count(8071530))
 
     """
     seeds = [f"{key}_seed" for key in ["solution", "simulation", "estimation"]]
@@ -104,7 +104,7 @@ def _create_internal_seeds_from_user_seeds(options):
         warnings.warn("All seeds should be different.", category=UserWarning)
 
     for seed, start, end in zip(
-        seeds, [100, 10_000, 1_000_000], [1_000, 100_000, 10_000_000]
+        seeds, [1_000_000, 4_000_000, 7_000_000], [2_000_000, 5_000_000, 8_000_000]
     ):
         np.random.seed(options[seed])
         seed_startup = np.random.randint(start, end)
@@ -715,7 +715,7 @@ def _add_default_is_inadmissible(options, optim_paras):
     constraints for choices without experience.
 
     """
-    inadmissible_states = options["inadmissible_states"]
+    negative_choice_set = options["negative_choice_set"]
 
     for choice in optim_paras["choices_w_exp"]:
         max_init_exp = max(optim_paras["choices"][choice]["start"])
@@ -725,11 +725,11 @@ def _add_default_is_inadmissible(options, optim_paras):
             if max_exp < optim_paras["n_periods"] - 1 + max_init_exp
             else "False"
         )
-        formulas = inadmissible_states.get(choice, [])
-        inadmissible_states[choice] = formulas + [formula]
+        formulas = negative_choice_set.get(choice, [])
+        negative_choice_set[choice] = formulas + [formula]
 
     for choice in optim_paras["choices_wo_exp"]:
-        inadmissible_states[choice] = inadmissible_states.get(choice, ["False"])
+        negative_choice_set[choice] = negative_choice_set.get(choice, ["False"])
 
     return options
 
@@ -751,8 +751,8 @@ def _convert_labels_in_formulas_to_codes(options, optim_paras):
     options = _convert_labels_in_filters_to_codes(optim_paras, options)
 
     for choice in optim_paras["choices"]:
-        for i, formula in enumerate(options["inadmissible_states"].get(choice, [])):
-            options["inadmissible_states"][choice][
+        for i, formula in enumerate(options["negative_choice_set"].get(choice, [])):
+            options["negative_choice_set"][choice][
                 i
             ] = _replace_choices_and_observables_in_formula(formula, optim_paras)
 
@@ -803,7 +803,7 @@ def _convert_labels_in_filters_to_codes(optim_paras, options):
     for filter_ in options["core_state_space_filters"]:
         if any(fltr in filter_ for fltr in ["{i}", "{j}", "{k}"]):
             raise ValueError(
-                "Please update your model options under inadmissible_states. Replace "
+                "Please update your model options under negative_choice_set. Replace "
                 "{i} with {choices_w_exp}, {j} with {choices_wo_exp}, and {k} with "
                 "{choices_w_wage}."
             )

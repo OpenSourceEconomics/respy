@@ -630,7 +630,10 @@ def _map_observations_to_core_states_numba(core, indexer):
 
 @nb.njit
 def _map_observations_to_dense_index(
-    dense, core_index, dense_covariates_to_dense_index, core_key_and_dense_index_to_dense_key
+    dense,
+    core_index,
+    dense_covariates_to_dense_index,
+    core_key_and_dense_index_to_dense_key,
 ):
     n_observations = dense.shape[0]
     dense_key = np.zeros(n_observations, dtype=np.int64)
