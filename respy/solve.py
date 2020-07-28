@@ -67,16 +67,13 @@ def solve(params, options, state_space):
 
 @parallelize_across_dense_dimensions
 def _create_choice_rewards(
-    core, dense, complex_, indices, choice_set, optim_paras, options
+    complex_, choice_set, optim_paras, options
 ):
     """Create wage and non-pecuniary reward for each state and choice."""
     n_choices = sum(choice_set)
     choices = select_valid_choices(optim_paras["choices"], choice_set)
 
-    if dense is False:
-        states = compute_covariates(core, options["covariates_all"]).loc[indices]
-    else:
-        states = load_states(complex_, options)
+    states = load_states(complex_, options)
 
     n_states = states.shape[0]
 
