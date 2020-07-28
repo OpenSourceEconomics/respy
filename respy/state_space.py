@@ -685,14 +685,29 @@ def _insert_indices_of_child_states(
 
     Params
     -------
-    states:
+    states: pd.DataFrame
+        Subset of :ref:`core state space <core_state_space>` containing
+        all core dimensions that arise within a particular
+        dense period choice core.
 
+    n_choices: int
+        Number of admissible choices within a particular
+        dense period choice core.
+
+    n_choices_w_exp: int
+        Number of total choices with experience
+        accumulation.
+
+    n_lagged_choices: int
+        Number of lagged choices to be kept accounted for in the core
 
 
     Returns
     -------
     indices: np.array
-    Array that represents the mapping (state, choice) 
+        Array with dimensions n_states x n_choices x 2.
+        Represents the mapping (core_index, choice) -> (dense_key, core_index).
+
 
     """
     indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)
@@ -768,12 +783,27 @@ def _get_continuation_values(
 
 @parallelize_across_dense_dimensions
 def _collect_child_indices(core, core_indices, choice_set, indexer, optim_paras):
-    """
-    Collects child indices for one particular dense choice core.
-    Particularly creates some auxiliary objects to call
-     _insert_indices_of_child_state thereafter.
-    """
+    """Collect child indices for one particular dense choice core.
 
+    Particularly create some auxiliary objects to call _insert_indices_of_child_state
+    thereafter.
+
+    Params
+    -------
+    core: pd.DataFrame
+        :ref:`core state space <core_state_space>`
+
+    core_indices: np.array
+        Indices of core positions belonging to a particular
+        dense period choice core.
+
+    choice_set: tuple
+        Tuple representing admissible choices
+
+    Returns
+    -------
+    indices: See `_insert_indices_of_child_states`
+    """
     n_choices = sum(choice_set)
 
     core_columns = create_core_state_space_columns(optim_paras)
