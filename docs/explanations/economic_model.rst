@@ -6,7 +6,7 @@ The Economic Framework
 
 .. role:: boldblue
 
-To illustrate the usage of ``respy`` to solve finite-horizon discrete choice
+To illusstrate the usage of ``respy`` to solve finite-horizon discrete choice
 dynamic programming (DCDP) we will outline the human capital model
 conceptualized in the work of Keane and Wolpin (1997, :cite:`Keane.1997`).
 Under uncertainty individuals face sequential decisions
@@ -42,8 +42,8 @@ alternatives, and :math:`\mathcal{A} = \mathcal{A}^{w} \cup \mathcal{A}^{nw}`.
 .. csv-table:: Overview of choices and associated rewards in the
                Keane and Wolpin (1997, :cite:`Keane.1997`) model
    :header: "Choice", "Explanation", "Reward"
-   
-   
+
+
    ":math:`a_{it}` = 1", "Work in white-collar occupation
    ", ":math:`R_1(S_{it}) = W_{it}(1)`"
    ":math:`a_{it}` = 2", "Work in blue-collar occupation
@@ -149,7 +149,7 @@ The shocks are assumed to be serially uncorrelated and to follow a
 multivariate normal distribution with zero mean and unrestricted
 variance matrix, :math:`\epsilon_{it}^w \sim \mathcal{N}_3(0, \Sigma^w)`.
 
-Taken together the occupation-specific wage :math:`W_{it}(a)` can be written as 
+Taken together the occupation-specific wage :math:`W_{it}(a)` can be written as
 
 .. math::
    :label: OccupationSpecificWage
