@@ -395,7 +395,6 @@ def test_child_indices():
     np.testing.assert_array_equal(state_space.child_indices[0][0], manual)
 
 
-@pytest.mark.xfail
 @pytest.mark.integration
 def test_equality_of_equivalent_choice_sets():
     """Equivalence of model solution if the type set is defined via different variables
@@ -404,23 +403,26 @@ def test_equality_of_equivalent_choice_sets():
     params, options = generate_random_model(point_constr=point_constr)
 
     optim_paras, options_ = process_params_and_options(params, options)
-    sp = create_state_space_class(optim_paras, options_)
+    choice = np.random.choice(list(optim_paras["choices_w_exp"]))
 
-    choice = np.random.choice(list(optim_paras["choices_w_exp"].keys()))
+    options["negative_choice_set"] = {choice: ["period==2"]}
+    state_space = create_state_space_class(optim_paras, options_)
+
     options["negative_choice_set"] = {
         choice: [
             f"period==2 & exp_{choice}==0",
             f"period==2 & exp_{choice}==1",
-            f"period==2 & exp_{choice}==1",
+            f"period==2 & exp_{choice}==2",
         ]
     }
 
     optim_paras, options_ = process_params_and_options(params, options)
-    sp_alt = create_state_space_class(optim_paras, options_)
+    state_space_ = create_state_space_class(optim_paras, options_)
 
-    for i in sp_alt.dense_key_to_core_indices:
+    for i in state_space_.dense_key_to_core_indices:
         np.testing.assert_array_equal(
-            sp_alt.dense_key_to_core_indices[i], sp.dense_key_to_core_indices[i]
+            state_space_.dense_key_to_core_indices[i],
+            state_space.dense_key_to_core_indices[i],
         )
 
 
