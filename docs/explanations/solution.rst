@@ -335,5 +335,3 @@ interpolation method to handle large state spaces.
 .. [#] This becomes particularly bothersome in estimation where many trial
        parameter values are tested. Then it is necessary to evaluate
        Equation :eq:`EMax` for any trial parametrization at all state points.
-
-
