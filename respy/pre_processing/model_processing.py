@@ -41,6 +41,7 @@ def process_params_and_options(params, options):
     options = {**DEFAULT_OPTIONS, **options}
     options = _create_internal_seeds_from_user_seeds(options)
     options = remove_irrelevant_covariates(options, params)
+    options = _set_storage_dir(options)
     validate_options(options)
 
     optim_paras = _parse_parameters(params, options)
@@ -834,4 +835,12 @@ def _convert_labels_in_filters_to_codes(optim_paras, options):
 
     options["core_state_space_filters"] = filters
 
+    return options
+
+
+def _set_storage_dir(options):
+    if "state_space_path" in options:
+        pass
+    else:
+        options["state_space_path"] = Path.cwd() / ".respy"
     return options

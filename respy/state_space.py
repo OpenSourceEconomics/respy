@@ -72,28 +72,25 @@ class StateSpace:
         options,
     ):
         """Initialize the state space.
+        See :ref:`state space location indices <state_space_location_indices>`
+        for an explanation of the dict objects.
 
         Parameters
         ----------
         core : pandas.DataFrame
             DataFrame containing one core state per row.
         indexer : numba.typed.typeddict.Dict
-            Maps states (rows of core) into tuples containing key of choice core and
-            position of state within choice core. i : state -> (key, pos)
+            Maps states (rows of core) into tuples containing core key and
+            core index. i : state -> (core_key, core_index)
         dense : dict
             Maps dense states into dense covariates.
         dense_period_cores : dict
-            Maps core indeices, choice set and dense indices into core indices.
-            d : (core_index,choice_set,dense_index) -> core_index
-        core_index_to_complex : str
-            Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
-        core_index_to_indices : int
-            Attribute is retrieved from this period.
-        optim_paras : str
-            Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
-        options : int
-            Attribute is retrieved from this period.
-
+            Maps period, choice_set and dense_index into core_key.
+            d : (core_key,choice_set,dense_index) -> core_key
+        core_key_to_complex : dict
+            Maps period and choice_set into core_key
+        core_key_to_core_indices : dict
+            Maps core_keys into core_indices.
         """
         self.core = core
         self.indexer = indexer
@@ -109,40 +106,8 @@ class StateSpace:
         self.create_arrays_for_expected_value_functions()
 
     def _create_conversion_dictionaries(self):
-        """Create mappings between indices and choice sets.
-
-        This function also establishes the naming convention for various objects. Here
-        is a short summary. In general we refer to indices if the defining mapping is
-        injective and to keys if the defining mapping is not injective.
-
-        Parameters
-        ----------
-        core_indices
-            Indices are row indices for states in the :ref:`core state space
-            <core_state_space>`. They are continued over different periods and choice
-            sets in the core.
-
-        core_key
-            A `core_key` is an index for a set of states in the core state space which
-            are in the same period and share the same choice set.
-
-        dense_vector
-            A dense vector is combination of values in the dense dimensions.
-
-        dense_index
-            A dense index is a position in the dense grid.
-
-        dense_key
-            A `dense_key` is an index for a set of states in the dense state space
-            which are in the same period, share the same choice set, and the same dense
-            vector.
-
-        complex_
-            A complex index is the basis for `core_index` and `dense_index` it is a
-            tuple of a period and a tuple for the choice set which contains booleans for
-            whether a choice is available. The complex index for a dense index also
-            contains the dense vector in the last position.
-
+        """Create mappings between state space location indices and properties.
+         See :ref:`state space location indices <state_space_location_indices>`.
         """
         self.dense_key_to_complex = {
             i: k for i, k in enumerate(self.dense_period_cores)
@@ -202,7 +167,9 @@ class StateSpace:
             self.expected_value_functions[index] = np.zeros(len(indices))
 
     def get_continuation_values(self, period):
-        """Wrap get continuation values."""
+        """Collects all the information required to get continuation values
+        for each dense choice core in a particular period and retrieves these
+        values thereafter."""
         if period == self.n_periods - 1:
             shapes = self.get_attribute_from_period("base_draws_sol", period)
             states = self.get_attribute_from_period("dense_key_to_core_indices", period)
@@ -231,7 +198,10 @@ class StateSpace:
         return continuation_values
 
     def collect_child_indices(self):
-        """Wrap get child indices."""
+        """Subsets the state space location indexer to locations
+        that do not point to the last period and retrieves child
+        indices thereafter.
+        """
         if self.n_periods == 1:
             child_indices = None
 
@@ -663,6 +633,8 @@ def _create_dense_period_choice(
 
     """
     if not dense:
+        for key,complex in core_key_to_complex.items():
+            dump_states(core.loc[core_key_to_core_indices[key]], complex, options)
         return {k: i for i, k in core_key_to_complex.items()}
     else:
         choices = [f"_{choice}" for choice in optim_paras["choices"]]
@@ -774,6 +746,10 @@ def _get_continuation_values(
 
 @parallelize_across_dense_dimensions
 def _collect_child_indices(core, core_indices, choice_set, indexer, optim_paras):
+    """
+    Collect child indices for one particular dense choice core.
+
+    """
     n_choices = sum(choice_set)
 
     core_columns = create_core_state_space_columns(optim_paras)

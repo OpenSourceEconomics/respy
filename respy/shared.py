@@ -673,17 +673,16 @@ def _return_file_name(complex_):
     choice = ""
     for x in complex_[1]:
         choice += str(int(x))
-    file_name = f"{complex_[0]}_{choice}_{complex_[2]}.parquet"
+    if len(complex_)==3:
+        file_name = f"{complex_[0]}_{choice}_{complex_[2]}.parquet"
+    elif len(complex_)==2:
+        file_name = f"{complex_[0]}_{choice}.parquet"
     return file_name
 
 
 def check_dir(options):
     """Check dir."""
-    if "state_space_path" in options:
-        directory = options["state_space_path"]
-    else:
-        directory = Path.cwd() / ".respy"
-
+    directory = options["state_space_path"]
     if directory.exists():
         shutil.rmtree(directory)
 
