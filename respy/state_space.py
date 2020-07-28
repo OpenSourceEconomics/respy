@@ -4,7 +4,6 @@ import itertools
 import numba as nb
 import numpy as np
 import pandas as pd
-from numba import types
 from numba.typed.typeddict import Dict
 
 from respy._numba import array_to_tuple
@@ -107,7 +106,7 @@ class StateSpace:
         self._create_conversion_dictionaries()
         self.child_indices = self.collect_child_indices()
         self.base_draws_sol = self.create_draws(options)
-        self.create_expected_value_func()
+        self.create_arrays_for_expected_value_functions()
 
     def _create_conversion_dictionaries(self):
         """Create mappings between indices and choice sets.
@@ -164,7 +163,7 @@ class StateSpace:
         }
 
         self.joint_to_dense_key = Dict.empty(
-            key_type=types.UniTuple(types.int64, 2), value_type=types.int64,
+            key_type=nb.types.UniTuple(nb.types.int64, 2), value_type=nb.types.int64,
         )
 
         for i in self.dense_key_to_complex:
@@ -183,7 +182,8 @@ class StateSpace:
         else:
             n_dense = len(create_dense_state_space_columns(self.optim_paras))
             self.dense_covariates_to_dense_index = Dict.empty(
-                key_type=types.UniTuple(types.int64, n_dense), value_type=types.int64,
+                key_type=nb.types.UniTuple(nb.types.int64, n_dense),
+                value_type=nb.types.int64,
             )
             for i, k in enumerate(self.dense):
                 self.dense_covariates_to_dense_index[k] = i
@@ -193,10 +193,10 @@ class StateSpace:
                 for i in self.dense_key_to_complex
             }
 
-    def create_expected_value_func(self):
+    def create_arrays_for_expected_value_functions(self):
         """Create a container for expected value functions."""
         self.expected_value_functions = Dict.empty(
-            key_type=types.int64, value_type=types.float64[:]
+            key_type=nb.types.int64, value_type=nb.types.float64[:]
         )
         for index, indices in self.dense_key_to_core_indices.items():
             self.expected_value_functions[index] = np.zeros(len(indices))
@@ -216,7 +216,7 @@ class StateSpace:
                 "expected_value_functions", period + 1
             )
             subset_expected_value_functions = Dict.empty(
-                key_type=types.int64, value_type=types.float64[:]
+                key_type=nb.types.int64, value_type=nb.types.float64[:]
             )
             for key, value in expected_value_functions.items():
                 subset_expected_value_functions[key] = value
@@ -624,8 +624,8 @@ def _create_indexer(core, core_index_to_indices, optim_paras):
     n_core_state_variables = len(core_columns)
 
     indexer = Dict.empty(
-        key_type=types.UniTuple(types.int64, n_core_state_variables),
-        value_type=types.UniTuple(types.int64, 2),
+        key_type=nb.types.UniTuple(nb.types.int64, n_core_state_variables),
+        value_type=nb.types.UniTuple(nb.types.int64, 2),
     )
 
     for core_idx, indices in core_index_to_indices.items():

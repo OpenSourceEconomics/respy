@@ -20,8 +20,9 @@ coverage:
           - end_to_end
 
 ignore:
-  - ".tox/**/*"
-  - "release.py"
-  - "setup.py"
-  - "respy/conftest.py"
-  - "respy/tests/**/*"
+  - .tox/**/*
+  - setup.py
+  - respy/conftest.py
+  - respy/tests/**/*
+  - development/**/*
+  - docs/**/*
