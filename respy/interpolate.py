@@ -69,32 +69,32 @@ def kw_94_interpolation(
     nonpecs = state_space.get_attribute_from_period("nonpecs", period)
     continuation_values = state_space.get_continuation_values(period)
 
-    # Create some dense index conversion objects.
-    dense_indices_in_period = list(wages)
-    dense_index_to_n_states = {
-        dense_index: len(state_space.dense_key_to_core_indices[dense_index])
-        for dense_index in dense_indices_in_period
+    # Create some dense key conversion objects.
+    dense_keys_in_period = list(wages)
+    dense_key_to_n_states = {
+        dense_key: len(state_space.dense_key_to_core_indices[dense_key])
+        for dense_key in dense_keys_in_period
     }
-    dense_index_to_choice_set_in_period = {
-        dense_index: state_space.dense_key_to_choice_set[dense_index]
-        for dense_index in dense_indices_in_period
+    dense_key_to_choice_set_in_period = {
+        dense_key: state_space.dense_key_to_choice_set[dense_key]
+        for dense_key in dense_keys_in_period
     }
 
     # Start interpolation.
     seeds = _get_seeds_to_create_not_interpolate_indicator(
-        dense_indices_in_period, options
+        dense_keys_in_period, options
     )
 
     interpolation_points = _split_interpolation_points_evenly(
-        dense_index_to_n_states, period, options
+        dense_key_to_n_states, period, options
     )
 
     not_interpolated = _get_not_interpolated_indicator(
-        interpolation_points, dense_index_to_n_states, seeds
+        interpolation_points, dense_key_to_n_states, seeds
     )
 
     expected_shocks = _compute_expected_shocks(
-        dense_index_to_choice_set_in_period, optim_paras
+        dense_key_to_choice_set_in_period, optim_paras
     )
 
     exogenous, max_emax = _compute_rhs_variables(
@@ -121,17 +121,16 @@ def kw_94_interpolation(
     return period_expected_value_functions
 
 
-def _get_seeds_to_create_not_interpolate_indicator(dense_indices, options):
+def _get_seeds_to_create_not_interpolate_indicator(dense_keys, options):
     """Get seeds for each dense index to mask not interpolated states."""
     seeds = {
-        dense_index: next(options["solution_seed_iteration"])
-        for dense_index in dense_indices
+        dense_key: next(options["solution_seed_iteration"]) for dense_key in dense_keys
     }
 
     return seeds
 
 
-def _split_interpolation_points_evenly(dense_index_to_n_states, period, options):
+def _split_interpolation_points_evenly(dense_key_to_n_states, period, options):
     """Split the number of interpolated states evenly across dense dimensions.
 
     We want to distribute the interpolation points evenly across dense indices in the
@@ -157,35 +156,35 @@ def _split_interpolation_points_evenly(dense_index_to_n_states, period, options)
     """
     # Each `dense_index` receives at least two points. No regression line without two
     # points!
-    dense_index_to_interpolation_points = {
-        dense_index: 2 if n_states > 2 else n_states
-        for dense_index, n_states in dense_index_to_n_states.items()
+    dense_key_to_interpolation_points = {
+        dense_key: 2 if n_states > 2 else n_states
+        for dense_key, n_states in dense_key_to_n_states.items()
     }
 
     interpolation_points = options["interpolation_points"] - 2 * len(
-        dense_index_to_n_states
+        dense_key_to_n_states
     )
 
     # If there are interpolation points left, distribute them.
-    dense_indices = list(dense_index_to_interpolation_points)
-    n_states = (np.array(list(dense_index_to_n_states.values())) - 2).clip(min=0)
+    dense_indices = list(dense_key_to_interpolation_points)
+    n_states = (np.array(list(dense_key_to_n_states.values())) - 2).clip(min=0)
 
     if interpolation_points > 0:
         np.random.seed(next(options["solution_seed_iteration"]))
         for _ in range(interpolation_points):
             probs = n_states / n_states.sum()
 
-            dense_index = np.random.choice(list(dense_index_to_n_states), p=probs)
+            dense_key = np.random.choice(list(dense_key_to_n_states), p=probs)
 
-            dense_index_to_interpolation_points[dense_index] += 1
+            dense_key_to_interpolation_points[dense_key] += 1
 
-            pos = dense_indices.index(dense_index)
+            pos = dense_indices.index(dense_key)
             n_states[pos] -= 1
 
     share_interp_points_per_dense_index = {
-        dense_index: dense_index_to_interpolation_points[dense_index]
-        / dense_index_to_n_states[dense_index]
-        for dense_index in dense_index_to_n_states
+        dense_key: dense_key_to_interpolation_points[dense_index]
+        / dense_key_to_n_states[dense_key]
+        for dense_index in dense_key_to_n_states
     }
     if (np.array(list(share_interp_points_per_dense_index.values())) < 0.01).any():
         warnings.warn(
@@ -194,7 +193,7 @@ def _split_interpolation_points_evenly(dense_index_to_n_states, period, options)
             "increasing the number of interpolation points."
         )
 
-    return dense_index_to_interpolation_points
+    return dense_key_to_interpolation_points
 
 
 @parallelize_across_dense_dimensions
@@ -225,7 +224,7 @@ def _get_not_interpolated_indicator(interpolation_points, n_states, seed):
     return not_interpolated
 
 
-def _compute_expected_shocks(dense_index_to_choice_set_in_period, optim_paras):
+def _compute_expected_shocks(dense_key_to_choice_set_in_period, optim_paras):
     """Compute an array with the expected value of the shocks."""
     n_wages = len(optim_paras["choices_w_wage"])
 
@@ -235,7 +234,7 @@ def _compute_expected_shocks(dense_index_to_choice_set_in_period, optim_paras):
 
     expected_shocks = {
         dense_index: exp_shocks[np.array(choice_set)]
-        for dense_index, choice_set in dense_index_to_choice_set_in_period.items()
+        for dense_index, choice_set in dense_key_to_choice_set_in_period.items()
     }
 
     return expected_shocks

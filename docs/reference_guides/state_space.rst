@@ -8,6 +8,10 @@ parts and subparts of the state space are explained below:
 
 .. _core_state_space:
 
+The Core State Space
+--------------------
+
+
 .. _dense_grid:
 
 .. _dense_state_space:
@@ -17,8 +21,6 @@ parts and subparts of the state space are explained below:
 .. _dense_period_choice_cores:
 
 
-The Core State Space
---------------------
 
 .. _state_space_location_indices:
 
