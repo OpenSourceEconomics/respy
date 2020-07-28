@@ -24,6 +24,7 @@ from respy.shared import generate_column_dtype_dict_for_estimation
 from respy.shared import map_observations_to_states
 from respy.shared import pandas_dot
 from respy.shared import rename_labels_to_internal
+from respy.shared import select_valid_choices
 from respy.shared import subset_cholesky_factor_to_choice_set
 from respy.solve import get_solve_func
 
@@ -203,7 +204,7 @@ def _internal_log_like_obs(
             **state_space.get_continuation_values(period),
         }
 
-    df = _compute_wage_and_choice_likelihood_contributions(
+    df = _compute_wage_and_choice_log_likelihood_contributions(
         df,
         base_draws_est,
         wages,
@@ -246,7 +247,7 @@ def _internal_log_like_obs(
 
 @split_and_combine_df
 @parallelize_across_dense_dimensions
-def _compute_wage_and_choice_likelihood_contributions(
+def _compute_wage_and_choice_log_likelihood_contributions(
     df,
     base_draws_est,
     wages,
@@ -256,8 +257,8 @@ def _compute_wage_and_choice_likelihood_contributions(
     optim_paras,
     options,
 ):
-    n_wages_raw = len(optim_paras["choices_w_wage"])
-    n_wages = sum(choice_set[:n_wages_raw])
+    """Compute wage and choice log likelihood contributions."""
+    n_wages = len(select_valid_choices(optim_paras["choices_w_wage"], choice_set))
 
     indices = df["core_index"].to_numpy()
 
@@ -320,6 +321,13 @@ def _compute_log_type_probabilities(df, optim_paras, options):
 @split_and_combine_df
 @parallelize_across_dense_dimensions
 def _compute_x_beta_for_type_probabilities(df, optim_paras, options):
+    """Compute the vector dot product of type covariates and type coefficients.
+
+    For each individual, compute as many vector dot products as there are types. The
+    scalars are later passed to a softmax function to compute the type probabilities.
+    The probability for each individual to be some type.
+
+    """
     for type_ in range(optim_paras["n_types"]):
         first_observations = df.copy().assign(type=type_)
         relevant_covariates = identify_necessary_covariates(

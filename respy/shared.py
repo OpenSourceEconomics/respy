@@ -5,7 +5,6 @@ import from respy itself. This is to prevent circular imports.
 
 """
 import shutil
-from pathlib import Path
 
 import chaospy as cp
 import numba as nb
@@ -650,43 +649,44 @@ def _map_observations_to_dense_index(
 
 def dump_states(states, complex_, options):
     """Dump states."""
-    file_name = _return_file_name(complex_)
-
-    directory = options.get("state_space_path", Path.cwd() / ".respy")
-
-    path = directory / file_name
-
-    compression = options.get("compression", "snappy")
-    states.to_parquet(path, compression=compression)
+    file_name = _create_file_name_from_complex_index(complex_)
+    states.to_parquet(
+        options["state_space_path"] / file_name,
+        compression=options["state_space_compression"],
+    )
 
 
 def load_states(complex_, options):
     """Load states."""
-    file_name = _return_file_name(complex_)
-    directory = options.get("state_space_path", Path.cwd() / ".respy")
-    path = directory / file_name
-    df = pd.read_parquet(path)
-    return df
+    file_name = _create_file_name_from_complex_index(complex_)
+    directory = options["state_space_path"]
+    return pd.read_parquet(directory / file_name)
 
 
-def _return_file_name(complex_):
-    choice = ""
-    for x in complex_[1]:
-        choice += str(int(x))
+def _create_file_name_from_complex_index(complex_):
+    """Create a file name from a complex index."""
+    choice = "".join([str(int(x)) for x in complex_[1]])
     if len(complex_) == 3:
         file_name = f"{complex_[0]}_{choice}_{complex_[2]}.parquet"
     elif len(complex_) == 2:
         file_name = f"{complex_[0]}_{choice}.parquet"
+    else:
+        raise NotImplementedError
+
     return file_name
 
 
-def check_dir(options):
-    """Check dir."""
+def prepare_cache_directory(options):
+    """Prepare cache directory.
+
+    The directory contains the parts of the state space.
+
+    """
     directory = options["state_space_path"]
     if directory.exists():
         shutil.rmtree(directory)
 
-    directory.mkdir()
+    directory.mkdir(parents=True, exist_ok=True)
 
     return directory
 
@@ -698,6 +698,8 @@ def select_valid_choices(choices, choice_set):
     -------
     >>> select_valid_choices(list("abcde"), (1, 0, 1, 0, 1))
     ['a', 'c', 'e']
+    >>> select_valid_choices(list("abc"), (0, 1, 0, 1, 0))
+    ['b']
 
     """
     return [x for i, x in enumerate(choices) if choice_set[i]]
