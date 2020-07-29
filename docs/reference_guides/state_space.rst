@@ -181,9 +181,9 @@ solution.
     It is the api that a dense period choice core uses to get information about the
     continuation values.
 
-.. _set_attribute_from_key:
+.. _set_attribute_from_keys:
 
-- Set Attribute from key:
+- Set Attribute from keys:
     This method allows to store information at a certain point of a state space object.
     It is the api that a dense period choice core uses to store information about the
     expected value functions.

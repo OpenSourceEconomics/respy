@@ -366,6 +366,11 @@ class StateSpace:
         value : numpy.ndarray
             The value to which the Numpy array is set.
 
+        See also
+        --------
+            A more theoretical explanation can be found here: See :ref:`set attribute
+            from keys <set_attribute_from_keys>`.
+
         """
         for key in value:
             getattr(self, attribute)[key][:] = value[key]
