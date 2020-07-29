@@ -3,18 +3,30 @@ The State Space
 
 .. currentmodule:: respy.state_space
 
-The implementation of the state space in respy allows the user to solve and analyze a
-wide range of models in an efficient way by storing the essential information about the
-model and by acting as a precise and simple interface between different components of
-the model. First and foremost a state space contains a register all possible states of
-the universe that a particular models allows for. Once a model contains a rich set of
-features it is vital to not repeat information such as to keep the analysis efficient.
-respy defines full states implicitly as combinations of more coarse states to avoid any
-duplication. Furthermore we group states in a way such that all members of one group are
-treated symmetrically throughout the model solution. The state space moreover contains a
-set of methods that facilitate required communications between different state space
-groups. This guide contains an explanation the most important components of the state
-space.
+The implementation of the state space in respy serves several purposes.
+First and foremost the state space contains a register of all possible states of
+the universe that a particular models allows for.
+In high dimensional models the number of states grow substantially which constitutes
+a considerable constraint for creating realistic models of economic dynamics.
+To relax this constraint as much as possible it is crucial to avoid any
+duplication of calculations or information.
+To this extent we designed a state space that contains a range of different objects
+that define representations and groupings of individual model states that allow us
+to use as few resources as possible during the model solution.
+Once an attribute of a state can be expressed as a combination of
+the attributes of two sub-states the number of calculations required to
+map all states to their attributes is reduced drastically.
+The distinction between core and dense states within respy is defined such that
+this property is exploited in a straight forward way.
+Bundling states with a similar representation and a symmetric treatment in the
+model solution together avoids double calculation and allows to write simpler
+and more efficient code.
+This consideration cosnitutes the base for the fine grained division of states
+in respy which is defined in the period_choice_cores.
+The range of methods contained in our state space facilitates clear communication
+between different groups and representations of the state space.
+This guide contains an explanation the most important components of the state space
+in respy.
 
 
 .. _core_state_space:
