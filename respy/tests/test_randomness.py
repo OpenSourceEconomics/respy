@@ -24,9 +24,9 @@ def test_invariance_of_model_solution_in_solve_and_criterion_functions(model):
     df = simulate(params)
     state_space_sim = simulate.keywords["solve"].keywords["state_space"]
 
-    criterion = get_log_like_func(params, options, df)
-    _ = criterion(params)
-    state_space_crit = criterion.keywords["solve"].keywords["state_space"]
+    log_like = get_log_like_func(params, options, df)
+    _ = log_like(params)
+    state_space_crit = log_like.keywords["solve"].keywords["state_space"]
 
     for state_space_ in [state_space_sim, state_space_crit]:
         assert state_space.core.equals(state_space_.core.reindex_like(state_space.core))

@@ -12,8 +12,8 @@ from respy.tests.random_model import simulate_truncated_data
 
 def compute_log_likelihood(params, options):
     df = simulate_truncated_data(params, options)
-    crit_func = get_log_like_func(params, options, df)
-    crit_val = crit_func(params)
+    log_like = get_log_like_func(params, options, df)
+    crit_val = log_like(params)
 
     return crit_val
 
