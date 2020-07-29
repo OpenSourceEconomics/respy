@@ -70,26 +70,27 @@ def get_moment_errors_func(
     return_scalar : bool, default True
         Indicates whether to return moment error vector (False) or weighted
         square product of moment error vectors (True).
-    return_simulated_moments: bool, default False
+    return_simulated_moments : bool, default False
         Indicates whether simulated moments should be returned with other output.
         If True will return simulated moments of the same type as empirical_moments.
-    return_comparison_plot_data: bool, default False
+    return_comparison_plot_data : bool, default False
         Indicator for whether a :class:`pandas.DataFrame` with empirical and simulated
         moments for the visualization with estimagic should be returned. Data contains
         the following columns:
-        - moment_column: Contains the column names of the moment DataFrames/Series
+
+        - ``moment_column``: Contains the column names of the moment DataFrames/Series
         names.
-        - moment_index: Contains the index of the moment DataFrames/Series. MultiIndex
+        - ``moment_index``: Contains the index of the moment DataFrames/Series.MultiIndex
         indices will be joined to one string.
-        - value: Contains moment values.
-        - moment_set: Indicator for each set of moments, will use keys if
-        empirical_moments are specified in a dict. Moments input as lists will
-        be numbered according to position.
-        - kind: Indicates whether moments are empirical or simulated.
+        - ``value``: Contains moment values.
+        - ``moment_set``: Indicator for each set of moments, will use keys if
+        empirical_moments are specified in a dict. Moments input as lists will be
+        numbered according to position.
+        - ``kind``: Indicates whether moments are empirical or simulated.
 
     Returns
     -------
-    moment_errors_func: callable()
+    moment_errors_func : callable
          Function where all arguments except the parameter vector are set.
 
     """
