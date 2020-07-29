@@ -43,7 +43,7 @@ How to release a new version?
    them here. Depending on whether you allowed automatic upload to Anaconda, the release
    appears under your account. Feel free to delete it.
 
-4. Merge the PR into master.
+4. Merge the PR into main.
 
 5. After that, revisit the draft of the release. Make sure everything is fine. Now, you
    click on "Publish release" which creates a version tag on the latest commit of the

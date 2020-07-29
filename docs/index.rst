@@ -15,10 +15,10 @@ respy
 .. image:: https://img.shields.io/badge/License-MIT-yellow.svg
     :target: https://opensource.org/licenses/MIT
 
-.. image:: https://github.com/OpenSourceEconomics/respy/workflows/Continuous%20Integration%20Workflow/badge.svg?branch=master
-    :target: https://github.com/OpenSourceEconomics/respy/actions?query=branch%3Amaster
+.. image:: https://github.com/OpenSourceEconomics/respy/workflows/Continuous%20Integration%20Workflow/badge.svg?branch=main
+    :target: https://github.com/OpenSourceEconomics/respy/actions?query=branch%3Amain
 
-.. image:: https://codecov.io/gh/OpenSourceEconomics/respy/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/OpenSourceEconomics/respy/branch/main/graph/badge.svg
   :target: https://codecov.io/gh/OpenSourceEconomics/respy
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
