@@ -188,6 +188,9 @@ def update_mean_and_evaluate_likelihood(
 def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds, n_wages):
     """Make a Kalman covariance updated for all possible cases.
 
+    We use a square-root implementation of the Kalman filter to avoid taking any
+    Cholesky decompositions which could fail due to numerical error.
+
     Parameters
     ----------
     shocks_cholesky : numpy.ndarray
@@ -204,10 +207,6 @@ def update_cholcov_with_measurement_error(shocks_cholesky, meas_sds, n_wages):
         Array of (shape n_wages + 1, n_choices, n_choices) with the cholesky factors
         of the updated covariance matrices for each possible observed shock. The
         last element corresponds to not observing any shock.
-
-
-    We use a square-root implementation of the Kalman filter to avoid taking any
-    Cholesky decompositions which could fail due to numerical error.
 
     References
     ----------

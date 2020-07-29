@@ -146,7 +146,7 @@ def identify_necessary_covariates(dependents, definitions):
 
     See also
     --------
-    respy.likelihood._compute_x_beta_for_type_probability
+    respy.likelihood._compute_x_beta_for_type_probabilities
 
     """
     dependents = {dependents} if isinstance(dependents, str) else set(dependents)

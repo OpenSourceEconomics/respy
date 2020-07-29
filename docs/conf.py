@@ -3,11 +3,6 @@ import os
 import sys
 
 
-# Add custom CSS
-def setup(app):
-    app.add_css_file("css/custom.css")
-
-
 # Set variable so that todos are shown in local build
 on_rtd = os.environ.get("READTHEDOCS") == "True"
 
@@ -43,13 +38,13 @@ extensions = [
     "sphinx.ext.viewcode",
     "nbsphinx",
     "numpydoc",
+    "autoapi.extension",
 ]
-
-nitpicky = True
 
 autodoc_mock_imports = [
     "chaospy",
     "estimagic",
+    "hypothesis",
     "joblib",
     "numba",
     "numpy",
@@ -65,9 +60,10 @@ extlinks = {
 }
 
 intersphinx_mapping = {
-    "numpy": ("https://docs.scipy.org/doc/numpy", None),
+    "numba": ("http://numba.pydata.org/numba-doc/latest", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
-    "python": ("https://docs.python.org/3.7", None),
+    "python": ("https://docs.python.org/3.8", None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -84,9 +80,7 @@ language = "en"
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-if on_rtd:
-    pass
-else:
+if not on_rtd:
     todo_include_todos = True
     todo_emit_warnings = True
 
@@ -114,10 +108,18 @@ nbsphinx_prolog = r"""
 
 # Configuration for numpydoc
 numpydoc_xref_param_type = True
-numpydoc_xref_ignore = {"type", "optional", "default"}
+numpydoc_xref_ignore = {"type", "optional", "default", "of"}
 
 # Configuration for autodoc
 autosummary_generate = True
+
+# Configuration for autoapi
+autoapi_type = "python"
+autoapi_dirs = ["../respy"]
+autoapi_root = "api"
+autoapi_add_toctree_entry = True
+autoapi_ignore = ["../respy/tests/*"]
+
 
 # -- Options for HTML output ----------------------------------------------
 

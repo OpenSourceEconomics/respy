@@ -1,6 +1,6 @@
 """Estimate models with the method of simulated moments (MSM).
 
-The method of simulated moments is developed by [1], [2], and [3] and an estimation
+The method of simulated moments is developed by [1]_, [2]_, and [3]_ and an estimation
 technique where the distance between the moments of the actual data and the moments
 implied by the model parameters is minimized.
 
@@ -236,7 +236,9 @@ def msm(
     if return_scalar:
         out = moment_errors.T @ weighting_matrix @ moment_errors
     else:
-        out = moment_errors
+        out = pd.Series(
+            moment_errors @ np.sqrt(weighting_matrix), index=moment_errors.index
+        )
 
     if return_simulated_moments:
         simulated_moments = _reconstruct_inputs(

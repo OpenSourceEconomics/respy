@@ -1,0 +1,10 @@
+category,name,value
+delta,delta,0.95
+wage_fishing,exp_fishing,0.3
+nonpec_fishing,constant,-0.2
+nonpec_hammock,constant,2
+shocks_sdcorr,sd_fishing,0.5
+shocks_sdcorr,sd_hammock,0.5
+shocks_sdcorr,corr_hammock_fishing,0
+observable_fishing_grounds_rich,probability,0.5
+observable_fishing_grounds_poor,probability,0.5

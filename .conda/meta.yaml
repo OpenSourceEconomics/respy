@@ -15,18 +15,21 @@ build:
 
 requirements:
   host:
-    - python >=3.6,<3.8
+    - python >=3.6
   run:
-    - python >=3.6,<3.8
+    - python >=3.6
     - chaospy
     - click
-    - estimagic >=0.0.28
+    - estimagic >=0.0.30
+    - hypothesis
     - joblib
+    - fastparquet
     - mkl
     - numba >=0.42
     - numpy
     - pandas >=0.24
     - pytest
+    - python-snappy
     - pyyaml
     - scipy
 test:

@@ -8,6 +8,7 @@ import numpy as np
 ROOT_DIR = Path(__file__).parent
 
 # Directory with additional resources for the testing harness
+TEST_DIR = ROOT_DIR / "tests"
 TEST_RESOURCES_DIR = ROOT_DIR / "tests" / "resources"
 
 # Set maximum numbers to 1e200 and log(1e200) = 460.
@@ -26,19 +27,7 @@ message.
 
 """
 
-INADMISSIBILITY_PENALTY = -400_000
-"""int : Penalty for choosing an inadmissible state.
-
-The penalty is applied to the non-pecuniary reward of choice which cannot be taken.
-
-See Also
---------
-respy.pre_processing.model_processing._parse_inadmissibility_penalty
-respy.state_space._create_is_inadmissible
-respy.solve._create_choice_rewards
-
-"""
-
+DTYPE_STATES = np.uint8
 INDEXER_DTYPE = np.int32
 """numpy.dtype : Data type for the entries in the state space indexer."""
 INDEXER_INVALID_INDEX = np.iinfo(INDEXER_DTYPE).min
@@ -56,7 +45,7 @@ dimension.
 # Some assert functions take rtol instead of decimals
 TOL_REGRESSION_TESTS = 1e-10
 
-SEED_STARTUP_ITERATION_GAP = 100
+SEED_STARTUP_ITERATION_GAP = 1_000_000
 
 DEFAULT_OPTIONS = {
     "estimation_draws": 200,
@@ -68,8 +57,9 @@ DEFAULT_OPTIONS = {
     "solution_draws": 200,
     "solution_seed": 3,
     "core_state_space_filters": [],
-    "inadmissible_states": {},
+    "negative_choice_set": {},
     "monte_carlo_sequence": "sobol",
+    "state_space_compression": "snappy",
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]
@@ -80,7 +70,11 @@ KEANE_WOLPIN_1997_MODELS = [
     "kw_97_extended_respy",
 ]
 KEANE_WOLPIN_2000_MODELS = ["kw_2000"]
-ROBINSON_CRUSOE_MODELS = ["robinson_crusoe_basic", "robinson_crusoe_extended"]
+ROBINSON_CRUSOE_MODELS = [
+    "robinson_crusoe_basic",
+    "robinson_crusoe_extended",
+    "robinson_crusoe_with_observed_characteristics",
+]
 
 EXAMPLE_MODELS = (
     KEANE_WOLPIN_1994_MODELS
