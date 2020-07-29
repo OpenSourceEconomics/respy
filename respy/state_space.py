@@ -120,8 +120,43 @@ class StateSpace:
     def _create_conversion_dictionaries(self):
         """Create mappings between state space location indices and properties.
 
-        See :ref:`state space location indices <state_space_location_indices>`.
+        Creates mappings between state space location indices and other state
+        space location indices or state space properties.
+        Some of these mappings are numba typed dicts instead of ordinary dicts
+        for performance reasons.
+        A short description of the state space location indices follows below:
 
+        - Core Indices:
+            Core indices are row indices for states in the :ref:`core state space
+            <core_state_space>`. They are continued over different periods and
+            choice sets in the core.
+
+        - Core Key:
+            A ``core_key`` is an index for a set of states in the core state space
+            which are in the same period and share the same choice set.
+
+        - Dense Vector
+            A dense vector is combination of values in the dense dimensions.
+
+        - Dense Index
+            A dense index is a position in the dense grid.
+
+        - Dense Key:
+            A ``dense_key`` is an index for a set of states in the dense state space
+            which are in the same period, share the same choice set, and the same
+            dense vector.
+
+        - Complex:
+            A complex key is the basis for `core_key` and `dense_key` it is a tuple
+            of a period and a tuple for the choice set which contains booleans for
+            whether a choice is available.
+            The complex index for a dense index also contains the dense vector in
+            the last position.
+
+        See also
+        --------
+            See :ref:`state space location indices <state_space_location_indices>`
+            for more information.
         """
         self.dense_key_to_complex = {
             i: k for i, k in enumerate(self.dense_period_cores)
@@ -142,13 +177,13 @@ class StateSpace:
         }
 
         self.core_key_and_dense_index_to_dense_key = Dict.empty(
-            key_type=nb.types.UniTuple(nb.types.int64, 2), value_type=nb.types.int64,
+            key_type=nb.types.UniTuple(nb.types.int64, 2), value_type=nb.types.int64
         )
 
         for i in self.dense_key_to_complex:
             self.core_key_and_dense_index_to_dense_key[
                 return_core_dense_key(
-                    dense_key_to_core_key[i], *self.dense_key_to_complex[i][2:],
+                    dense_key_to_core_key[i], *self.dense_key_to_complex[i][2:]
                 )
             ] = i
 
@@ -744,7 +779,7 @@ def _create_dense_period_choice(
 
 @nb.njit
 def _insert_indices_of_child_states(
-    states, indexer, choice_set, n_choices, n_choices_w_exp, n_lagged_choices,
+    states, indexer, choice_set, n_choices, n_choices_w_exp, n_lagged_choices
 ):
     """Collect indices of child states for each parent state.
 

@@ -160,7 +160,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
         elif any_interpolated:
             period_expected_value_functions = kw_94_interpolation(
-                state_space, period_draws_emax_risk, period, optim_paras, options,
+                state_space, period_draws_emax_risk, period, optim_paras, options
             )
 
         else:
