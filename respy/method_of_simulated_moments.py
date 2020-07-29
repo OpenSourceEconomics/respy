@@ -44,13 +44,13 @@ def get_msm_func(
         Contains parameters.
     options : dict
         Dictionary containing model options.
-    calc_moments : callable or list
+    calc_moments : callable or list or dict
         Function(s) used to calculate simulated moments. Must match structure
         of empirical moments i.e. if empirical_moments is a list of
         pandas.DataFrames, calc_moments must be a list of the same length
         containing functions that correspond to the moments in
         empirical_moments.
-    replace_nans : callable or list or None
+    replace_nans : callable or list or dict or None
         Functions(s) specifying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
         Exception: If only one replacement function is specified, it will be
@@ -169,15 +169,15 @@ def msm(
     simulate : callable
         Function used to simulate data for MSM estimation.
     calc_moments : dict
-        List of function(s) used to calculate simulated moments. Must match length of
-        empirical_moments i.e. calc_moments contains a moments function for each item in
-        empirical_moments.
+        Dictionary of function(s) used to calculate simulated moments. Must match
+        length of empirical_moments i.e. calc_moments contains a moments function for
+        each item in empirical_moments.
     replace_nans : dict or None
-        List of functions(s) specifying how to handle missings in simulated_moments.
-        Must match length of empirical_moments.
+        Dictionary of functions(s) specifying how to handle missings in
+        simulated_moments. Must match length of empirical_moments.
     empirical_moments : dict
         Contains the empirical moments calculated for the observed data. Each item in
-        the list constitutes a set of moments saved to a pandas.DataFrame or
+        the dict constitutes a set of moments saved to a pandas.DataFrame or
         pandas.Series. Index of pandas.DataFrames can be of type MultiIndex, but columns
         cannot.
     weighting_matrix : numpy.ndarray
@@ -264,8 +264,8 @@ def get_diag_weighting_matrix(empirical_moments, weights=None):
     weights : pandas.DataFrame or pandas.Series or dict or list
         Contains weights (usually variances) of empirical moments. Must match structure
         of empirical_moments i.e. if empirical_moments is a list of pandas.DataFrames,
-        weights be list of pandas.DataFrames as well where each DataFrame entry contains
-        the weight for the corresponding moment in empirical_moments.
+        weights must be list of pandas.DataFrames as well where each DataFrame entry
+        contains the weight for the corresponding moment in empirical_moments.
 
     Returns
     -------
@@ -391,7 +391,7 @@ def _create_comparison_plot_data_msm(empirical_moments, simulated_moments):
 
 
 def _create_tidy_data(data):
-    """Create tidy data from list of pandas.DataFrames."""
+    """Create tidy data from dict of pandas.DataFrames."""
     tidy_data = []
     for name, series_or_df in data.items():
         # Join index levels for MultiIndex objects.
