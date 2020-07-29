@@ -36,7 +36,7 @@ def get_moment_errors_func(
     return_simulated_moments=False,
     return_comparison_plot_data=False,
 ):
-    r"""Get the moment errors function for MSM estimation.
+    """Get the moment errors function for MSM estimation.
 
     Parameters
     ----------
@@ -78,13 +78,13 @@ def get_moment_errors_func(
         moments for the visualization with estimagic should be returned. Data contains
         the following columns:
             - ``moment_column``: Contains the column names of the moment
-            DataFrames/Series names.\n
+            DataFrames/Series names. \n # noqa
             - ``moment_index``: Contains the index of the moment DataFrames/
-            Series.MultiIndex indices will be joined to one string.\n
-            - ``value``: Contains moment values.\n
+            Series.MultiIndex indices will be joined to one string. \n # noqa
+            - ``value``: Contains moment values. \n # noqa
             - ``moment_set``: Indicator for each set of moments, will use keys if
             empirical_moments are specified in a dict. Moments input as lists will be
-            numbered according to position.\n
+            numbered according to position. \n # noqa
             - ``kind``: Indicates whether moments are empirical or simulated.
 
     Returns
