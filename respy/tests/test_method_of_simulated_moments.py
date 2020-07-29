@@ -42,12 +42,14 @@ def msm_args():
 @pytest.mark.parametrize("return_scalar", [True, False])
 def test_msm_zero(msm_args, return_scalar):
     """Test whether MSM function successfully returns 0 for true parameter vector."""
-    msm = get_moment_errors_func(*msm_args, return_scalar=return_scalar)
+    weighted_sum_squared_errors = get_moment_errors_func(
+        *msm_args, return_scalar=return_scalar
+    )
 
     if return_scalar:
-        assert msm(msm_args[0]) == 0
+        assert weighted_sum_squared_errors(msm_args[0]) == 0
     else:
-        out = msm(msm_args[0])
+        out = weighted_sum_squared_errors(msm_args[0])
         assert isinstance(out, pd.Series)
         assert (out == 0).all()
 
@@ -55,7 +57,7 @@ def test_msm_zero(msm_args, return_scalar):
 @pytest.mark.end_to_end
 def test_msm_nonzero(msm_args):
     """MSM function successfully returns a value larger than 0 for different deviations
-    in the simulated set."""
+    in the simulated data set."""
     # 1. Different parameter vector.
     params = msm_args[0].copy()
     params.loc["delta", "value"] = 0.8
@@ -86,7 +88,7 @@ def test_randomness_msm(model_or_seed):
 
     weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
-    msm = get_moment_errors_func(
+    weighted_sum_squared_errors = get_moment_errors_func(
         params,
         options,
         _calc_choice_freq,
@@ -95,14 +97,16 @@ def test_randomness_msm(model_or_seed):
         weighting_matrix,
     )
 
-    assert msm(params) == 0
+    assert weighted_sum_squared_errors(params) == 0
 
 
 @pytest.mark.integration
 def test_return_simulated_moments_for_msm(msm_args):
     """Return_simulated_moments."""
-    msm = get_moment_errors_func(*msm_args, return_simulated_moments=True)
-    fval, simulated_moments = msm(msm_args[0])
+    weighted_sum_squared_errors = get_moment_errors_func(
+        *msm_args, return_simulated_moments=True
+    )
+    fval, simulated_moments = weighted_sum_squared_errors(msm_args[0])
 
     assert isinstance(fval, float)
     assert isinstance(simulated_moments, (dict, list, pd.DataFrame, pd.Series))
@@ -111,10 +115,10 @@ def test_return_simulated_moments_for_msm(msm_args):
 @pytest.mark.integration
 def test_return_comparison_plot_data_for_msm(msm_args):
     """Return_comparison_plot_data."""
-    msm = get_moment_errors_func(
+    weighted_errors = get_moment_errors_func(
         *msm_args, return_scalar=False, return_comparison_plot_data=True
     )
-    moment_errors, df = msm(msm_args[0])
+    moment_errors, df = weighted_errors(msm_args[0])
 
     assert isinstance(moment_errors, pd.Series)
     assert isinstance(df, pd.DataFrame)

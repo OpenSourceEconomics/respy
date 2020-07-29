@@ -21,15 +21,15 @@ def test_return_comparison_plot_data_for_likelihood(model):
     simulate = get_simulate_func(params, options)
     df = simulate(params)
 
-    loglike = get_log_like_func(params, options, df, return_comparison_plot_data=False)
-    loglike = loglike(params)
+    log_like = get_log_like_func(params, options, df, return_comparison_plot_data=False)
+    log_like = log_like(params)
 
-    assert isinstance(loglike, float)
+    assert isinstance(log_like, float)
 
-    loglike = get_log_like_func(params, options, df, return_comparison_plot_data=True)
-    loglike, df = loglike(params)
+    log_like = get_log_like_func(params, options, df, return_comparison_plot_data=True)
+    log_like, df = log_like(params)
 
-    assert isinstance(loglike, float)
+    assert isinstance(log_like, float)
     assert isinstance(df, pd.DataFrame)
 
 
@@ -42,13 +42,13 @@ def test_return_scalar_for_likelihood(model):
     simulate = get_simulate_func(params, options)
     df = simulate(params)
 
-    loglike = get_log_like_func(params, options, df, return_scalar=True)
-    value = loglike(params)
+    log_like = get_log_like_func(params, options, df, return_scalar=True)
+    value = log_like(params)
 
     assert isinstance(value, float)
 
-    loglike = get_log_like_func(params, options, df, return_scalar=False)
-    array = loglike(params)
+    log_like_contribs = get_log_like_func(params, options, df, return_scalar=False)
+    array = log_like_contribs(params)
 
     assert isinstance(array, np.ndarray)
 
