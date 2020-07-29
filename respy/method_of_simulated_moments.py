@@ -214,7 +214,7 @@ def moment_errors(
         name: sim_mom.reindex_like(empirical_moments[name])
         for name, sim_mom in simulated_moments.items()
     }
-    
+
     if replace_nans is not None:
         simulated_moments = {
             name: replace_nans[name](sim_mom)
