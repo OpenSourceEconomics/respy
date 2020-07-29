@@ -17,7 +17,7 @@ from respy.interface import get_parameter_constraints  # noqa: F401
 from respy.likelihood import get_crit_func  # noqa: F401
 from respy.method_of_simulated_moments import get_diag_weighting_matrix  # noqa: F401
 from respy.method_of_simulated_moments import get_flat_moments  # noqa: F401
-from respy.method_of_simulated_moments import get_msm_func  # noqa: F401
+from respy.method_of_simulated_moments import get_moment_errors_func  # noqa: F401
 from respy.simulate import get_simulate_func  # noqa: F401
 from respy.solve import get_solve_func  # noqa: F401
 from respy.tests.random_model import add_noise_to_params  # noqa: F401
@@ -28,7 +28,7 @@ __all__ = [
     "get_parameter_constraints",
     "get_diag_weighting_matrix",
     "get_flat_moments",
-    "get_msm_func",
+    "get_moment_errors_func",
     "get_simulate_func",
     "get_solve_func",
     "add_noise_to_params",

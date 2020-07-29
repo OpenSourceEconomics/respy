@@ -6,7 +6,7 @@ import pytest
 
 from respy.interface import get_example_model
 from respy.method_of_simulated_moments import get_diag_weighting_matrix
-from respy.method_of_simulated_moments import get_msm_func
+from respy.method_of_simulated_moments import get_moment_errors_func
 from respy.simulate import get_simulate_func
 from respy.tests.utils import process_model_or_seed
 
@@ -42,7 +42,7 @@ def msm_args():
 @pytest.mark.parametrize("return_scalar", [True, False])
 def test_msm_zero(msm_args, return_scalar):
     """Test whether MSM function successfully returns 0 for true parameter vector."""
-    msm = get_msm_func(*msm_args, return_scalar=return_scalar)
+    msm = get_moment_errors_func(*msm_args, return_scalar=return_scalar)
 
     if return_scalar:
         assert msm(msm_args[0]) == 0
@@ -59,15 +59,15 @@ def test_msm_nonzero(msm_args):
     # 1. Different parameter vector.
     params = msm_args[0].copy()
     params.loc["delta", "value"] = 0.8
-    msm_params = get_msm_func(*msm_args)
+    msm_params = get_moment_errors_func(*msm_args)
 
     # 2. Lower number of periods in the simulated dataset.
-    msm_periods = get_msm_func(n_simulation_periods=4, *msm_args)
+    msm_periods = get_moment_errors_func(n_simulation_periods=4, *msm_args)
 
     # 3. Different simulation seed for the simulated dataset.
     options = copy.deepcopy(msm_args[1])
     options["simulation_seed"] = options["simulation_seed"] + 100
-    msm_seed = get_msm_func(msm_args[0], options, *msm_args[2:])
+    msm_seed = get_moment_errors_func(msm_args[0], options, *msm_args[2:])
 
     assert msm_params(params) > 0
     assert msm_periods(params) > 0
@@ -86,7 +86,7 @@ def test_randomness_msm(model_or_seed):
 
     weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
-    msm = get_msm_func(
+    msm = get_moment_errors_func(
         params,
         options,
         _calc_choice_freq,
@@ -101,7 +101,7 @@ def test_randomness_msm(model_or_seed):
 @pytest.mark.integration
 def test_return_simulated_moments_for_msm(msm_args):
     """Return_simulated_moments."""
-    msm = get_msm_func(*msm_args, return_simulated_moments=True)
+    msm = get_moment_errors_func(*msm_args, return_simulated_moments=True)
     fval, simulated_moments = msm(msm_args[0])
 
     assert isinstance(fval, float)
@@ -111,7 +111,9 @@ def test_return_simulated_moments_for_msm(msm_args):
 @pytest.mark.integration
 def test_return_comparison_plot_data_for_msm(msm_args):
     """Return_comparison_plot_data."""
-    msm = get_msm_func(*msm_args, return_scalar=False, return_comparison_plot_data=True)
+    msm = get_moment_errors_func(
+        *msm_args, return_scalar=False, return_comparison_plot_data=True
+    )
     moment_errors, df = msm(msm_args[0])
 
     assert isinstance(moment_errors, pd.Series)
@@ -122,7 +124,7 @@ def test_return_comparison_plot_data_for_msm(msm_args):
 def test_multiple_returns_msm(msm_args):
     """Raise error if moments and comparison plot data is requested."""
     with pytest.raises(ValueError, match="Can only return either"):
-        get_msm_func(
+        get_moment_errors_func(
             *msm_args, return_simulated_moments=True, return_comparison_plot_data=True
         )
 

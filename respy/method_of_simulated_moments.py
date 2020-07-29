@@ -24,7 +24,7 @@ import pandas as pd
 from respy.simulate import get_simulate_func
 
 
-def get_msm_func(
+def get_moment_errors_func(
     params,
     options,
     calc_moments,
