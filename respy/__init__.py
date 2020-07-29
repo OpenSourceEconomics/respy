@@ -1,4 +1,4 @@
-"""This is the entrypoint to the respy package.
+"""This is the entry-point to the respy package.
 
 Include only imports which should be available using
 
@@ -9,8 +9,6 @@ Include only imports which should be available using
     rp.<func>
 
 """
-import sys
-
 import pytest
 
 from respy.config import ROOT_DIR
@@ -23,9 +21,6 @@ from respy.method_of_simulated_moments import get_msm_func  # noqa: F401
 from respy.simulate import get_simulate_func  # noqa: F401
 from respy.solve import get_solve_func  # noqa: F401
 from respy.tests.random_model import add_noise_to_params  # noqa: F401
-
-# We only maintain the code base for Python 3.6 and 3.7.
-assert (3, 6) <= sys.version_info[:2] <= (3, 7)
 
 
 __all__ = [

@@ -1,4 +1,5 @@
 """Everything related to validate the model."""
+import numba as nb
 import numpy as np
 
 
@@ -21,11 +22,11 @@ def validate_options(o):
     assert isinstance(o["core_state_space_filters"], list) and all(
         isinstance(filter_, str) for filter_ in o["core_state_space_filters"]
     )
-    assert isinstance(o["inadmissible_states"], dict) and all(
+    assert isinstance(o["negative_choice_set"], dict) and all(
         isinstance(key, str)
         and isinstance(val, list)
         and all(isinstance(condition, str) for condition in val)
-        for key, val in o["inadmissible_states"].items()
+        for key, val in o["negative_choice_set"].items()
     )
     assert o["monte_carlo_sequence"] in ["random", "halton", "sobol"]
 
@@ -115,25 +116,25 @@ def check_model_solution(optim_paras, options, state_space):
     assert not state_space.core.duplicated().any()
 
     # Check that we have as many indices as states.
-    n_valid_indices = sum((indexer >= 0).sum() for indexer in state_space.indexer)
+    n_valid_indices = len(state_space.indexer)
     assert state_space.core.shape[0] == n_valid_indices
 
     # Check finiteness of rewards and emaxs.
-    assert np.all(
-        _apply_to_attribute_of_state_space(
-            state_space.get_attribute("wages"), np.isfinite
-        )
+    finite_wages = _apply_to_attribute_of_state_space(state_space.wages, np.isfinite)
+    for arr in finite_wages:
+        assert np.all(arr)
+
+    finite_nonpecs = _apply_to_attribute_of_state_space(
+        state_space.nonpecs, np.isfinite
     )
-    assert np.all(
-        _apply_to_attribute_of_state_space(
-            state_space.get_attribute("nonpecs"), np.isfinite
-        )
+    for arr in finite_nonpecs:
+        assert np.all(arr)
+
+    finite_vf = _apply_to_attribute_of_state_space(
+        state_space.expected_value_functions, np.isfinite
     )
-    assert np.all(
-        _apply_to_attribute_of_state_space(
-            state_space.get_attribute("expected_value_functions"), np.isfinite
-        )
-    )
+    for arr in finite_vf:
+        assert np.all(arr)
 
 
 def _apply_to_attribute_of_state_space(attribute, func):
@@ -142,7 +143,7 @@ def _apply_to_attribute_of_state_space(attribute, func):
     Attribute might be `state_space.wages` which can be a dictionary or a Numpy array.
 
     """
-    if isinstance(attribute, dict):
+    if isinstance(attribute, (dict, nb.typed.Dict)):
         out = [func(val) for val in attribute.values()]
     else:
         out = func(attribute)

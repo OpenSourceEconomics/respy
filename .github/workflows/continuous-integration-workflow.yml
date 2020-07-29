@@ -11,14 +11,17 @@ env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
+
   run-tests:
+
     name: Run tests for ${{ matrix.os }} on ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
-        python-version: ['3.6', '3.7']
+        python-version: ['3.6', '3.7', '3.8']
+
     steps:
       - uses: actions/checkout@v2
       - uses: goanpeca/setup-miniconda@v1
@@ -30,13 +33,17 @@ jobs:
         shell: bash -l {0}
         run: conda install -c conda-forge tox-conda
 
-      - name: Install fixes for Python 3.7 on Windows
-        if: runner.os == 'Windows' && matrix.python-version == '3.7'
+      ###############################################################################
+      # tox-conda fixes on Windows (https://github.com/tox-dev/tox-conda/issues/37) #
+      ###############################################################################
+
+      - name: Install fixes for Python 3+ on Windows
+        if: runner.os == 'Windows'
         shell: bash -l {0}
-        run: conda install -c conda-forge -c opensourceeconomics conda-build estimagic matplotlib
+        run: conda install -c conda-forge -c opensourceeconomics conda-build estimagic matplotlib python-snappy
 
       - name: Validate codecov.yml
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
+        if: runner.os == 'Linux' && matrix.python-version == '3.8'
         shell: bash -l {0}
         run: cat codecov.yml | curl --data-binary @- https://codecov.io/validate
 
@@ -46,99 +53,74 @@ jobs:
 
       # Unit tests.
 
-      - name: Run precise unit tests and doctests.
+      - name: Run unit tests and doctests.
         shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and unit and precise or (not integration and not end_to_end)" --cov=./ --cov-report=xml
+        run: tox -e pytest -- -m "not slow and not integration and not end_to_end" --cov=./ --cov-report=xml -n auto
 
       - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
+        if: runner.os == 'Linux' && matrix.python-version == '3.8'
         shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F unit_precise -c
-
-      # - name: Run unit tests which are edge cases.
-      #   shell: bash -l {0}
-      #   run: tox -e pytest -- -m "not slow and unit and edge_case" --cov=./ --cov-report=xml
-
-      # - name: Upload coverage report
-      #   if: runner.os == 'Linux' && matrix.python-version == '3.7'
-      #   shell: bash -l {0}
-      #   run: bash <(curl -s https://codecov.io/bash) -F unit_edge_case -c
-
-      - name: Run unit tests which neither precise nor an edge case.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and unit and not precise and not edge_case" --cov=./ --cov-report=xml
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F unit_rest -c
+        run: bash <(curl -s https://codecov.io/bash) -F unit -c
 
       # Integration tests.
 
-      - name: Run precise integration tests.
+      - name: Run integration tests.
         shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and integration and precise" --cov=./ --cov-report=xml
+        run: tox -e pytest -- -m "not slow and integration" --cov=./ --cov-report=xml -n auto
 
       - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
+        if: runner.os == 'Linux' && matrix.python-version == '3.8'
         shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F integration_precise -c
-
-      - name: Run integration tests which are edge cases.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and integration and edge_case" --cov=./ --cov-report=xml
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F integration_edge_case -c
-
-      - name: Run integration tests which neither precise nor an edge case.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and integration and not precise and not edge_case" --cov=./ --cov-report=xml
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F integration_rest -c
+        run: bash <(curl -s https://codecov.io/bash) -F integration -c
 
       # End-to-end tests.
 
-      - name: Run precise end_to_end tests.
+      - name: Run end_to_end tests.
         shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and end_to_end and precise" --cov=./ --cov-report=xml
+        run: tox -e pytest -- -m "not slow and end_to_end" --cov=./ --cov-report=xml -n auto
 
       - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
+        if: runner.os == 'Linux' && matrix.python-version == '3.8'
         shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F end_to_end_precise -c
+        run: bash <(curl -s https://codecov.io/bash) -F end_to_end -c
 
-      - name: Run end_to_end tests which are edge cases.
+
+  pre-commit:
+
+    name: Run pre-commit.
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: pip install tox
+
+      - name: Run pre-commit
+        run: tox -e pre-commit
+
+
+  docs:
+
+    name: Run documentation.
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: goanpeca/setup-miniconda@v1
+        with:
+          auto-update-conda: true
+          python-version: 3.8
+
+      - name: Install core dependencies.
         shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and end_to_end and edge_case" --cov=./ --cov-report=xml
+        run: conda install -c conda-forge tox-conda
 
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F end_to_end_edge_case -c
-
-      - name: Run end_to_end tests which neither precise nor an edge case.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "not slow and end_to_end and not precise and not edge_case" --cov=./ --cov-report=xml
-
-      - name: Upload coverage report
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F end_to_end_rest -c
-
-      # Run other tests.
-
-      - name: Run sphinx.
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
+      - name: Build docs
         shell: bash -l {0}
         run: tox -e sphinx
-
-      - name: Run pre-commits.
-        if: runner.os == 'Linux' && matrix.python-version == '3.7'
-        shell: bash -l {0}
-        run: tox -e linting

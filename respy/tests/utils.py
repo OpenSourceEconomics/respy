@@ -1,3 +1,4 @@
+import numba as nb
 import numpy as np
 
 import respy as rp
@@ -15,10 +16,14 @@ def process_model_or_seed(model_or_seed=None, **kwargs):
 
     if "kw_94" in str(model_or_seed):
         options["n_periods"] = 10
-    if "kw_97" in str(model_or_seed):
+    elif "kw_97" in str(model_or_seed):
         options["n_periods"] = 5
     elif "kw_2000" in str(model_or_seed):
         options["n_periods"] = 3
+    elif "robinson_crusoe_extended" in str(model_or_seed):
+        options["n_periods"] = 5
+    elif "robinson_crusoe_with_observed_characteristics" in str(model_or_seed):
+        options["n_periods"] = 5
 
     return params, options
 
@@ -29,7 +34,7 @@ def apply_to_attributes_of_two_state_spaces(attr_1, attr_2, func):
     Attributes might be `state_space.wages` which can be a dictionary or a Numpy array.
 
     """
-    if isinstance(attr_1, dict):
+    if isinstance(attr_1, dict) or isinstance(attr_1, nb.typed.typeddict.Dict):
         out = {key: func(attr_1[key], attr_2[key]) for key in attr_1}
     else:
         out = func(attr_1, attr_2)
