@@ -31,20 +31,24 @@ def parse_transition_matrix_for_exogenous_processes(matrix, process_name):
 
     """
     # Check transition matrix conditions
-    check_numerics(matrix)
+    _check_numerics(matrix)
+
+    # Make sure labels are strings
+    matrix.index = matrix.index.map(str)
+    matrix.columns = matrix.columns.map(str)
 
     states = matrix.index
     process_states = matrix.columns
     # Create the covariates template
-    covariates = create_covariates(states, process_name, process_states)
+    covariates = _create_covariates(states, process_name, process_states)
     # Create logit values
-    transformed_matrix = transform_matrix(matrix)
+    transformed_matrix = _transform_matrix(matrix)
     # Finally transfer to the params layout
-    params = create_params(transformed_matrix, states, process_name, process_states)
+    params = _create_params(transformed_matrix, states, process_name, process_states)
     return params, covariates
 
 
-def create_params(transformed_matrix, states, process_name, process_states):
+def _create_params(transformed_matrix, states, process_name, process_states):
     """Create the params entries for the respy initial files.
 
     Create entries with logit coefficents instead of probabilities.
@@ -82,7 +86,7 @@ def create_params(transformed_matrix, states, process_name, process_states):
     return params
 
 
-def transform_matrix(matrix):
+def _transform_matrix(matrix):
     """Transform probabilities to logit coefficients.
 
     Parameters
@@ -101,11 +105,10 @@ def transform_matrix(matrix):
     transformed_matrix[transformed_matrix > 0] = np.log(
         transformed_matrix[transformed_matrix > 0]
     )
-    transformed_matrix.index = transformed_matrix.index.map(str)
     return transformed_matrix
 
 
-def create_covariates(states, process_name, process_states):
+def _create_covariates(states, process_name, process_states):
     """Create a covariate template for the user.
 
     Parameters
@@ -149,7 +152,7 @@ def create_covariates(states, process_name, process_states):
     return covariates
 
 
-def check_numerics(matrix):
+def _check_numerics(matrix):
     """Check numeric conditions on a transition matrix.
 
     Parameters

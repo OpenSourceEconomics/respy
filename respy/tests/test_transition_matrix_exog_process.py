@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from respy.pre_processing.transition_matrix_exog_process import check_numerics
-from respy.pre_processing.transition_matrix_exog_process import create_covariates
+from respy.pre_processing.transition_matrix_exog_process import _check_numerics
+from respy.pre_processing.transition_matrix_exog_process import _create_covariates
+from respy.pre_processing.transition_matrix_exog_process import _transform_matrix
 from respy.pre_processing.transition_matrix_exog_process import (
     parse_transition_matrix_for_exogenous_processes,
 )
-from respy.pre_processing.transition_matrix_exog_process import transform_matrix
 
 PROCESS_NAME = "health_shocks"
 PROCESS_STATES = ["sick", "healthy"]
@@ -50,29 +50,29 @@ def covariates_out():
 
 def test_checks(random_matrix):
     random_matrix = random_matrix.div(np.sum(random_matrix, axis=1), axis=0)
-    check_numerics(random_matrix)
+    _check_numerics(random_matrix)
 
 
 def test_fails_checks(random_matrix):
     with pytest.raises(ValueError):
-        check_numerics(random_matrix)
+        _check_numerics(random_matrix)
 
 
 @pytest.mark.parametrize("process_type", ["dependent_process", "independent_process"])
 def test_covariates_creation_dependent_process(states_in, covariates_out, process_type):
-    covs = create_covariates(states_in[process_type], PROCESS_NAME, PROCESS_STATES)
+    covs = _create_covariates(states_in[process_type], PROCESS_NAME, PROCESS_STATES)
     assert covs == covariates_out[process_type]
 
 
 def test_fail_creation(states_in):
     with pytest.raises(ValueError):
-        create_covariates(states_in["false_process"], PROCESS_NAME, PROCESS_STATES)
+        _create_covariates(states_in["false_process"], PROCESS_NAME, PROCESS_STATES)
 
 
 def test_transform_matrix(random_matrix):
     matrix = random_matrix.div(np.sum(random_matrix, axis=1), axis=0)
-    log_matrix = transform_matrix(matrix)
-    check_numerics(np.exp(log_matrix))
+    log_matrix = _transform_matrix(matrix)
+    _check_numerics(np.exp(log_matrix))
 
 
 @pytest.mark.parametrize("process_type", ["dependent_process", "independent_process"])
