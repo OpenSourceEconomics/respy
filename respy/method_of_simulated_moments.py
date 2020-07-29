@@ -36,7 +36,7 @@ def get_moment_errors_func(
     return_simulated_moments=False,
     return_comparison_plot_data=False,
 ):
-    """Get the moment errors function for msm estimation.
+    """Get the moment errors function for MSM estimation.
 
     Parameters
     ----------
@@ -86,9 +86,10 @@ def get_moment_errors_func(
         empirical_moments are specified in a dict. Moments input as lists will
         be numbered according to position.
         - kind: Indicates whether moments are empirical or simulated.
+
     Returns
     -------
-    msm_func: callable
+    msm_func: callable()
          Function where all arguments except the parameter vector are set.
 
     """
@@ -135,7 +136,7 @@ def get_moment_errors_func(
         )
 
     msm_func = functools.partial(
-        msm,
+        moment_errors,
         simulate=simulate,
         calc_moments=calc_moments,
         replace_nans=replace_nans,
@@ -149,7 +150,7 @@ def get_moment_errors_func(
     return msm_func
 
 
-def msm(
+def moment_errors(
     params,
     simulate,
     calc_moments,
