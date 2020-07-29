@@ -35,8 +35,11 @@ def parse_transition_matrix_for_exogenous_processes(matrix, process_name):
 
     states = matrix.index
     process_states = matrix.columns
+    # Create the covariates template
     covariates = create_covariates(states, process_name, process_states)
+    # Create logit values
     transformed_matrix = transform_matrix(matrix)
+    # Finally transfer to the params layout
     params = create_params(transformed_matrix, states, process_name, process_states)
     return params, covariates
 
@@ -63,6 +66,7 @@ def create_params(transformed_matrix, states, process_name, process_states):
         A subset of the params initial file for respy. Contains all information on
         the exogenous process.
     """
+    # Create categories for the different states of the process
     categories = [
         f"exogenous_process_{process_name}_{state}" for state in process_states
     ]
@@ -70,6 +74,7 @@ def create_params(transformed_matrix, states, process_name, process_states):
         itertools.product(categories, states), names=["category", "name"]
     )
     params = pd.DataFrame(index=index, columns=["value"])
+    # Transfer values
     for process_state in process_states:
         params.loc[
             (f"exogenous_process_{process_name}_{process_state}", states), "value"
@@ -91,6 +96,7 @@ def transform_matrix(matrix):
 
     """
     transformed_matrix = matrix.copy()
+    # Asign large negative numbers for zero probabilities
     transformed_matrix[transformed_matrix == 0] = -1e300
     transformed_matrix[transformed_matrix > 0] = np.log(
         transformed_matrix[transformed_matrix > 0]
@@ -126,10 +132,16 @@ def create_covariates(states, process_name, process_states):
             if process_state in state:
                 destination_state = process_state
                 i += 1
+        # If state is independent of exogenous process, return without any specification
         if i == 0:
             covariates[str(state)] = "?"
         elif i == 1:
-            covariates[str(state)] = f"{process_name} == {destination_state} & ?"
+            # If only dependent on exogenous process, return full covariate statement
+            if state in process_states:
+                covariates[str(state)] = f"{process_name} == {destination_state}"
+            # If dependent on exogenous process and covariate, return template
+            else:
+                covariates[str(state)] = f"{process_name} == {destination_state} & ?"
         else:
             raise ValueError(
                 f"{state} contains more than one states of the exogenous " f"process."
@@ -149,7 +161,9 @@ def check_numerics(matrix):
     Nothing. Only raises errors if conditions are not fullfilled.
     """
     n_states = matrix.shape[0]
+    # Rows should sum to 1
     if not np.allclose(matrix.sum(axis=1), np.full(n_states, 1)):
         raise ValueError("The rows of the transition matrix don't sum to 1.")
+    # Probabilities are between 0 and 1
     if not (((matrix >= 0) & (matrix <= 1)).all()).all():
         raise ValueError("The values of the matrix are not between 0 and 1.")
