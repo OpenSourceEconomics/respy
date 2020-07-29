@@ -29,10 +29,10 @@ from respy.shared import subset_cholesky_factor_to_choice_set
 from respy.solve import get_solve_func
 
 
-def get_crit_func(
+def get_log_like_func(
     params, options, df, return_scalar=True, return_comparison_plot_data=False
 ):
-    """Get the criterion function.
+    """Get the criterion function for maximum likelihood estimation.
 
     Return a version of the likelihood functions in respy where all arguments
     except the parameter vector are fixed with :func:`functools.partial`. Thus the

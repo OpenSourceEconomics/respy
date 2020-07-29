@@ -6,13 +6,13 @@ import pytest
 
 from respy.config import TEST_RESOURCES_DIR
 from respy.config import TOL_REGRESSION_TESTS
-from respy.likelihood import get_crit_func
+from respy.likelihood import get_log_like_func
 from respy.tests.random_model import simulate_truncated_data
 
 
 def compute_log_likelihood(params, options):
     df = simulate_truncated_data(params, options)
-    crit_func = get_crit_func(params, options, df)
+    crit_func = get_log_like_func(params, options, df)
     crit_val = crit_func(params)
 
     return crit_val

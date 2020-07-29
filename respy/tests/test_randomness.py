@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from respy.likelihood import get_crit_func
+from respy.likelihood import get_log_like_func
 from respy.simulate import get_simulate_func
 from respy.solve import get_solve_func
 from respy.tests.utils import apply_to_attributes_of_two_state_spaces
@@ -24,7 +24,7 @@ def test_invariance_of_model_solution_in_solve_and_criterion_functions(model):
     df = simulate(params)
     state_space_sim = simulate.keywords["solve"].keywords["state_space"]
 
-    criterion = get_crit_func(params, options, df)
+    criterion = get_log_like_func(params, options, df)
     _ = criterion(params)
     state_space_crit = criterion.keywords["solve"].keywords["state_space"]
 

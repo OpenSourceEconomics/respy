@@ -7,7 +7,7 @@ import yaml
 import respy as rp
 from respy.config import EXAMPLE_MODELS
 from respy.config import TEST_DIR
-from respy.likelihood import get_crit_func
+from respy.likelihood import get_log_like_func
 from respy.pre_processing.data_checking import check_simulated_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import generate_obs_labels
@@ -52,7 +52,7 @@ def test_equality_for_myopic_agents_and_tiny_delta():
     simulate = rp.get_simulate_func(params, options)
     df = simulate(params)
 
-    crit_func = get_crit_func(params, options, df)
+    crit_func = get_log_like_func(params, options, df)
     likelihood = crit_func(params)
 
     # Get simulated data and likelihood for model with tiny delta.
@@ -60,7 +60,7 @@ def test_equality_for_myopic_agents_and_tiny_delta():
 
     df_ = simulate(params)
 
-    crit_func_ = rp.get_crit_func(params, options, df_)
+    crit_func_ = rp.get_log_like_func(params, options, df_)
     likelihood_ = crit_func_(params)
 
     # The continuation values are different because for delta = 0 the backward induction
