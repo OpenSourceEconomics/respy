@@ -41,8 +41,6 @@ extensions = [
     "autoapi.extension",
 ]
 
-nitpicky = True
-
 autodoc_mock_imports = [
     "chaospy",
     "estimagic",
