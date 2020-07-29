@@ -89,7 +89,7 @@ def get_moment_errors_func(
 
     Returns
     -------
-    msm_func: callable()
+    moment_errors_func: callable()
          Function where all arguments except the parameter vector are set.
 
     """
@@ -135,7 +135,7 @@ def get_moment_errors_func(
             "Can only return either simulated moments or comparison plot data, not both."
         )
 
-    msm_func = functools.partial(
+    moment_errors_func = functools.partial(
         moment_errors,
         simulate=simulate,
         calc_moments=calc_moments,
@@ -147,7 +147,7 @@ def get_moment_errors_func(
         return_comparison_plot_data=return_comparison_plot_data,
     )
 
-    return msm_func
+    return moment_errors_func
 
 
 def moment_errors(
