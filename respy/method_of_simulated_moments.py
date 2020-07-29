@@ -36,7 +36,7 @@ def get_moment_errors_func(
     return_simulated_moments=False,
     return_comparison_plot_data=False,
 ):
-    """Get the MSM function.
+    """Get the moment errors function for msm estimation.
 
     Parameters
     ----------
@@ -89,7 +89,7 @@ def get_moment_errors_func(
     Returns
     -------
     msm_func: callable
-        MSM function where all arguments except the parameter vector are set.
+         Function where all arguments except the parameter vector are set.
 
     """
     empirical_moments = copy.deepcopy(empirical_moments)
