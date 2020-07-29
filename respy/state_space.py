@@ -4,7 +4,7 @@ import itertools
 import numba as nb
 import numpy as np
 import pandas as pd
-from numba.typed.typeddict import Dict
+from numba.typed import Dict
 
 from respy._numba import array_to_tuple
 from respy.parallelization import parallelize_across_dense_dimensions
@@ -58,7 +58,17 @@ def create_state_space_class(optim_paras, options):
 
 
 class StateSpace:
-    """The state space of a structural model."""
+    """The state space of a structural model.
+
+    Attributes
+    ----------
+    core : dict of pandas.DataFrame
+        The core state space is a :class:`pandas.DataFrame` that contains all states of
+        core dimensions. A core dimension is a dimension whose value is uniquely
+        determined by past choices and time. Core dimensions include choices,
+        experiences, lagged choices and periods.
+
+    """
 
     def __init__(
         self,
@@ -80,7 +90,7 @@ class StateSpace:
         ----------
         core : pandas.DataFrame
             DataFrame containing one core state per row.
-        indexer : numba.typed.typeddict.Dict
+        indexer : numba.typed.Dict
             Maps states (rows of core) into tuples containing core key and
             core index. i : state -> (core_key, core_index)
         dense : dict
@@ -92,6 +102,7 @@ class StateSpace:
             Maps period and choice_set into core_key
         core_key_to_core_indices : dict
             Maps core_keys into core_indices.
+
         """
         self.core = core
         self.indexer = indexer
@@ -174,25 +185,25 @@ class StateSpace:
 
         The function takes the expected value functions from the previous periods and
         then uses the indices of child states to put these expected value functions in
-        the correct format.
-        If period is equal to self.n_periods - 1 the function returns arrays of zeros
-        since we are in terminal states.
-        Otherwise we retrieve expected value functions for next period and
-        call _get_continuation_values to assign continuation values to all
-        choices within a period.
-        (The object `subset_expected_value_functions` is required because we
-         need a numba typed dict but the function self.get_attribute_from_period just
-         returns a normal dict)
+        the correct format. If period is equal to self.n_periods - 1 the function
+        returns arrays of zeros since we are in terminal states. Otherwise we retrieve
+        expected value functions for next period and call
+        :func:`_get_continuation_values` to assign continuation values to all choices
+        within a period. (The object `subset_expected_value_functions` is required
+        because we need a Numba typed dict but the function
+        :meth:`StateSpace.get_attribute_from_period` just returns a normal dict)
 
         Returns
         -------
-        continuation_values: See `_get_continuation_values`.
+        continuation_values : numba.typed.Dict
+            The continuation values for each dense key in a :class:`numpy.ndarray`.
 
         See also
         --------
-        _get_continuation_values.
-        A more theoretical explanation can be found here:
-        See :ref:`get continuation values <get_continuation_values>`.
+        _get_continuation_values
+            A more theoretical explanation can be found here: See :ref:`get continuation
+            values <get_continuation_values>`.
+
         """
         if period == self.n_periods - 1:
             shapes = self.get_attribute_from_period("base_draws_sol", period)
@@ -226,9 +237,10 @@ class StateSpace:
 
         See also
         --------
-        _collect_child_indices.
-        A more theoretical explanation can be found here:
-        See :ref:`collect child indices <collect_child_indices>`.
+        _collect_child_indices
+            A more theoretical explanation can be found here: See :ref:`collect child
+            indices <collect_child_indices>`.
+
         """
         if self.n_periods == 1:
             child_indices = None
@@ -293,6 +305,7 @@ class StateSpace:
             Attribute name, e.g. ``"states"`` to retrieve ``self.states``.
         period : int
             Attribute is retrieved from this period.
+
         """
         dense_indices_in_period = self.get_dense_keys_from_period(period)
         return {
@@ -301,17 +314,23 @@ class StateSpace:
             if dense_index in dense_indices_in_period
         }
 
-    def set_attribute(self, attribute, value):
-        """Set attributes."""
-        setattr(self, attribute, value)
-
     def set_attribute_from_keys(self, attribute, value):
         """Set attributes by keys.
 
-        See also
-        --------
-        A more theoretical explanation can be found here:
-        See :ref:`set attributes from keys <set_attributes_from_keys>`.
+        This function allows to modify the period part of a certain state space object.
+        It allows to set values for all dense period choice cores within one period.
+        During the model solution this method in period :math:`t + 1` communicates with
+        get continuation values in period :math:`t`.
+
+        Note that the values are changed in-place.
+
+        Parameters
+        ----------
+        attribute : str
+            The name of the state space attribute which is changed in-place.
+        value : numpy.ndarray
+            The value to which the Numpy array is set.
+
         """
         for key in value:
             getattr(self, attribute)[key][:] = value[key]
@@ -379,7 +398,7 @@ def _create_core_state_space(optim_paras, options):
     _create_core_state_space_per_period
     _filter_core_state_space
     _add_initial_experiences_to_core_state_space
-    _create_core_state_space_indexer
+    _create_indexer
 
     """
     core = _create_core_from_choice_experiences(optim_paras)
@@ -569,7 +588,7 @@ def _create_dense_state_space_grid(optim_paras):
 
     Parameters
     ----------
-    optim_paras: dict
+    optim_paras : dict
         Contains parsed model parameters.
 
     Returns
@@ -628,10 +647,10 @@ def _create_indexer(core, core_key_to_core_indices, optim_paras):
 
     Returns
     -------
-    indexer :  numba.typed.typeddict.Dict
-        Maps a row of the core state space into its
-        position within the period_choice_cores.
-        c: core_state -> (core_key,core_index)
+    indexer :  numba.typed.Dict
+        Maps a row of the core state space into its position within the
+        period_choice_cores. c: core_state -> (core_key,core_index)
+
     """
     core_columns = ["period"] + create_core_state_space_columns(optim_paras)
     n_core_state_variables = len(core_columns)
@@ -729,31 +748,23 @@ def _insert_indices_of_child_states(
 ):
     """Collect indices of child states for each parent state.
 
-    Params
-    -------
-    states: pd.DataFrame
-        Subset of :ref:`core state space <core_state_space>` containing
-        all core dimensions that arise within a particular
-        dense period choice core.
-
-    n_choices: int
-        Number of admissible choices within a particular
-        dense period choice core.
-
-    n_choices_w_exp: int
-        Number of total choices with experience
-        accumulation.
-
-    n_lagged_choices: int
-        Number of lagged choices to be kept accounted for in the core
-
+    Parameters
+    ----------
+    states : pandas.DataFrame
+        Subset of :ref:`core state space <core_state_space>` containing all core
+        dimensions that arise within a particular dense period choice core.
+    n_choices : int
+        Number of admissible choices within a particular dense period choice core.
+    n_choices_w_exp : int
+        Number of total choices with experience accumulation.
+    n_lagged_choices : int
+        Number of lagged choices to be kept accounted for in the core.
 
     Returns
     -------
-    indices: np.array
-        Array with dimensions n_states x n_choices x 2.
-        Represents the mapping (core_index, choice) -> (dense_key, core_index).
-
+    indices: numpy.ndarray
+        Array with shape ``(n_states, n_choices * 2)``. Represents the mapping
+        (core_index, choice) -> (dense_key, core_index).
 
     """
     indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)
@@ -801,18 +812,16 @@ def _get_continuation_values(
     """Get continuation values from child states.
 
     The continuation values are the discounted expected value functions from child
-    states. This method allows to retrieve continuation values that were obtained
-    in the model solution.
-    In particular the function assigns continuation values to state choice combinations
-    by using the child indices created in `_collect_child_indices`.
-
+    states. This method allows to retrieve continuation values that were obtained in the
+    model solution. In particular the function assigns continuation values to state
+    choice combinations by using the child indices created in
+    :func:`_collect_child_indices`.
 
     Returns
     -------
-    continuation_values: np.array
-        Array with dimension n_states x  n_choices.
-        Maps core_key and choice into continuation value.
-
+    continuation_values : numpy.ndarray
+        Array with shape ``(n_states, n_choices)``. Maps core_key and choice into
+        continuation value.
 
     """
     if len(dense_complex_index) == 3:
@@ -845,23 +854,23 @@ def _collect_child_indices(core, core_indices, choice_set, indexer, optim_paras)
     Particularly creates some auxiliary objects to call _insert_indices_of_child_state
     thereafter.
 
-    Params
-    -------
-    core: pd.DataFrame
+    Parameters
+    ----------
+    core : pandas.DataFrame
         :ref:`core state space <core_state_space>`
 
-    core_indices: np.array
+    core_indices : numpy.ndarray
         Indices of core positions belonging to a particular
         dense period choice core.
 
-    choice_set: tuple
+    choice_set : tuple
         Tuple representing admissible choices
 
     Returns
     -------
-    indices: np.array
-        Array with dimensions n_states x n_choices x 2.
-        Represents the mapping (core_index, choice) -> (dense_key, core_index).
+    indices : numpy.ndarray
+        Array with shape ``(n_states, n_choices * 2)``. Represents the mapping
+        (core_index, choice) -> (dense_key, core_index).
 
     """
     n_choices = sum(choice_set)

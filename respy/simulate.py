@@ -492,8 +492,8 @@ def _random_choice(choices, probabilities=None, decimals=5):
     <https://stackoverflow.com/questions/40474436>`_ as a workaround for
     :func:`numpy.random.choice` as it can only handle one-dimensional probabilities.
 
-    Example
-    -------
+    Examples
+    --------
     Here is an example with non-zero probabilities.
 
     >>> n_samples = 100_000

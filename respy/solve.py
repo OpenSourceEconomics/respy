@@ -53,8 +53,8 @@ def solve(params, options, state_space):
         options,
     )
 
-    state_space.set_attribute("wages", wages)
-    state_space.set_attribute("nonpecs", nonpecs)
+    state_space.wages = wages
+    state_space.nonpecs = nonpecs
 
     state_space = _solve_with_backward_induction(state_space, optim_paras, options)
 

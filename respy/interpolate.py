@@ -148,8 +148,8 @@ def _split_interpolation_points_evenly(dense_key_to_n_states, period, options):
     options : dict
         Model options.
 
-    Warning
-    -------
+    Warnings
+    --------
     UserWarning
         If the number of interpolation points is below 1% for one `dense_index`.
 

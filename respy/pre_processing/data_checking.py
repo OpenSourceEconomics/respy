@@ -11,7 +11,7 @@ def check_estimation_data(df, optim_paras):
     ----------
     optim_paras : dict
         Dictionary containing model optim_paras.
-    df : pd.DataFrame
+    df : pandas.DataFrame
         Data for estimation.
 
     Raises

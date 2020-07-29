@@ -11,7 +11,7 @@ def parallelize_across_dense_dimensions(func=None, *, n_jobs=1):
     Parallelization is only possible if the decorated function has no side-effects to
     other dense dimensions. This might be true for different levels. E.g.
     :meth:`respy.solve._create_choice_rewards` can be directly
-    parallelized. :func:`respy.solve.solve_with_backward_induction` cannot be
+    parallelized. :func:`respy.solve._solve_with_backward_induction` cannot be
     directly parallelized because the continuation values for one dense dimension will
     become important for others if we implement exogenous processes. Thus, parallelize
     across periods.

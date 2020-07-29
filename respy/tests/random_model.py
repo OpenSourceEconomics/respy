@@ -45,7 +45,7 @@ _BASE_COVARIATES = {
 }
 """dict: Dictionary containing specification of covariates.
 
-.. deprecated::
+.. deprecated:: x.x.x
 
     This variable must be removed if generate_random_model is rewritten such that
     functions for each replicable paper are written.

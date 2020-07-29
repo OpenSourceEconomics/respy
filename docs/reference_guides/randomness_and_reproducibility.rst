@@ -46,7 +46,6 @@ transforms the base draws to the variance-covariance matrix implied by the model
 parameters.
 
 .. autosummary::
-    :toctree: ../_generated/
 
     create_base_draws
     transform_base_draws_with_cholesky_factor
@@ -62,7 +61,6 @@ Routines under ``respy.solve`` use a seed from the sequence initialized by
 .. currentmodule:: respy.interpolate
 
 .. autosummary::
-    :toctree: ../_generated/
 
     _get_not_interpolated_indicator
 
@@ -78,7 +76,6 @@ starting values for simulated individuals (experiences, types, etc.).
 .. currentmodule:: respy.simulate
 
 .. autosummary::
-    :toctree: ../_generated/
 
     _sample_characteristic
 
@@ -102,7 +99,6 @@ in the sequence initialized by ``options["simulation_seed"]``.
 .. currentmodule:: respy.tests.random_model
 
 .. autosummary::
-    :toctree: ../_generated/
 
     simulate_truncated_data
 

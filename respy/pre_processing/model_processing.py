@@ -85,8 +85,8 @@ def _create_internal_seeds_from_user_seeds(options):
 
     See :ref:`randomness-and-reproducibility` for more information.
 
-    Example
-    -------
+    Examples
+    --------
     >>> options = {"solution_seed": 1, "simulation_seed": 2, "estimation_seed": 3}
     >>> options = _create_internal_seeds_from_user_seeds(options)
     >>> options["solution_seed_startup"], options["solution_seed_iteration"]
@@ -388,8 +388,8 @@ def _infer_number_of_types(params):
 def _infer_choices_with_experience(params, options):
     """Infer choices with experiences.
 
-    Example
-    -------
+    Examples
+    --------
     >>> options = {"covariates": {"a": "exp_white_collar + exp_a", "b": "exp_b >= 2"}}
     >>> index = pd.MultiIndex.from_product([["category"], ["a", "b"]])
     >>> params = pd.Series(index=index, dtype="object")
@@ -414,8 +414,8 @@ def _infer_choices_with_experience(params, options):
 def _infer_choices_with_prefix(params, prefix):
     """Infer choices with prefix.
 
-    Example
-    -------
+    Examples
+    --------
     >>> params = pd.Series(
     ...     index=["wage_b", "wage_white_collar", "wage_a", "nonpec_c"], dtype="object"
     ... )
@@ -443,8 +443,8 @@ def _parse_lagged_choices(optim_paras, options, params):
     have to be any information on lagged choices. For the simulation, we need parameters
     to define the probability of a choice being the lagged choice.
 
-    Warning
-    -------
+    Warnings
+    --------
     UserWarning
         If not enough lagged choices are specified in params and the model can only be
         used for estimation.
@@ -530,7 +530,7 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
     of initial years of schooling in the extended model of Keane and Wolpin (1997).
 
     On the other hand, parameters and their corresponding covariates can form the inputs
-    of a :func:`scipy.specical.softmax` which generates the probability mass function.
+    of a :func:`scipy.special.softmax` which generates the probability mass function.
     This distribution can be more complex.
 
     Internally, probabilities are also converted to logit coefficients to align the
@@ -622,7 +622,7 @@ def _parse_observable_or_exog_process_names(params, keyword):
 
     Parameters
     ----------
-    params : pd.Series
+    params : pandas.Series
         Contains the parameters of a model.
     keyword : {"exogenous_process", "observable"}
         Keyword for a group of parameters.
@@ -690,8 +690,8 @@ def _add_type_covariates(options, optim_paras):
     Since types only introduce constant shifts in the utility functions, this function
     conveniently adds covariates for each type by default.
 
-    Example
-    -------
+    Examples
+    --------
     >>> options = {"covariates": {}}
     >>> optim_paras = {"n_types": 2}
     >>> _add_type_covariates(options, optim_paras)

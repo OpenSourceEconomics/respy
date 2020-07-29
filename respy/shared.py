@@ -351,8 +351,8 @@ def rename_labels_from_internal(x):
 def normalize_probabilities(probabilities):
     """Normalize probabilities such that their sum equals one.
 
-    Example
-    -------
+    Examples
+    --------
     The following `probs` do not sum to one after dividing by the sum.
 
     >>> probs = np.array([0.3775843411510946, 0.5384246942799851, 0.6522988820635421])
@@ -442,12 +442,13 @@ def calculate_expected_value_functions(
     choices. Averaging over all maximum utilities yields the expected maximum utility of
     this state.
 
-    The underlying process in this function is called `Monte Carlo integration`_. The
-    goal is to approximate an integral by evaluating the integrand at randomly chosen
-    points. In this setting, one wants to approximate the expected maximum utility of
-    the current state.
+    The underlying process in this function is called `Monte Carlo integration
+    <https://en.wikipedia.org/wiki/Monte_Carlo_integration>`_. The goal is to
+    approximate an integral by evaluating the integrand at randomly chosen points. In
+    this setting, one wants to approximate the expected maximum utility of the current
+    state.
 
-    Note that `wages` have the same length as `nonpecs` despite that wages are only
+    Note that ``wages`` have the same length as ``nonpecs`` despite that wages are only
     available in some choices. Missing choices are filled with ones. In the case of a
     choice with wage and without wage, flow utilities are
 
@@ -475,9 +476,6 @@ def calculate_expected_value_functions(
     expected_value_functions : float
         Expected maximum utility of an agent.
 
-    .. _Monte Carlo integration:
-        https://en.wikipedia.org/wiki/Monte_Carlo_integration
-
     """
     n_draws, n_choices = draws.shape
 
@@ -503,8 +501,8 @@ def calculate_expected_value_functions(
 def convert_dictionary_keys_to_dense_indices(dictionary):
     """Convert the keys to tuples containing integers.
 
-    Example
-    -------
+    Examples
+    --------
     >>> dictionary = {(0.0, 1): 0, 2: 1}
     >>> convert_dictionary_keys_to_dense_indices(dictionary)
     {(0, 1): 0, (2,): 1}
@@ -521,8 +519,8 @@ def convert_dictionary_keys_to_dense_indices(dictionary):
 def subset_cholesky_factor_to_choice_set(cholesky_factor, choice_set):
     """Subset the Cholesky factor to dimensions required by the admissible choice set.
 
-    Example
-    -------
+    Examples
+    --------
     >>> m = np.arange(9).reshape(3, 3)
     >>> subset_cholesky_factor_to_choice_set(m, (False, True, False))
     array([[4]])
@@ -565,8 +563,8 @@ def pandas_dot(x, beta, out=None):
     out : numpy.ndarray
         Array with shape `len(x)` which contains the solution of the dot product.
 
-    Example
-    -------
+    Examples
+    --------
     >>> x = pd.DataFrame(np.arange(10).reshape(5, 2), columns=list("ab"))
     >>> beta = pd.Series([1, 2], index=list("ab"))
     >>> x.dot(beta).to_numpy()
@@ -694,8 +692,8 @@ def prepare_cache_directory(options):
 def select_valid_choices(choices, choice_set):
     """Select valid choices.
 
-    Example
-    -------
+    Examples
+    --------
     >>> select_valid_choices(list("abcde"), (1, 0, 1, 0, 1))
     ['a', 'c', 'e']
     >>> select_valid_choices(list("abc"), (0, 1, 0, 1, 0))

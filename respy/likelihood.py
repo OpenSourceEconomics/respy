@@ -599,8 +599,8 @@ def _map_choice_codes_to_indices_of_valid_choice_set(choices, choice_set):
     choices from 0 to `n_available_choices` - 1 and replace the old choice codes with
     the new ones.
 
-    Example
-    -------
+    Examples
+    --------
     >>> wages = np.arange(4).reshape(2, 2)
     >>> choices = np.array([0, 2])
     >>> choice_set = (True, False, True)

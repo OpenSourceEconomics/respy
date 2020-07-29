@@ -143,7 +143,7 @@ def _apply_to_attribute_of_state_space(attribute, func):
     Attribute might be `state_space.wages` which can be a dictionary or a Numpy array.
 
     """
-    if isinstance(attribute, (dict, nb.typed.typeddict.Dict)):
+    if isinstance(attribute, (dict, nb.typed.Dict)):
         out = [func(val) for val in attribute.values()]
     else:
         out = func(attribute)

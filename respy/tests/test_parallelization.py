@@ -1,6 +1,6 @@
 import numba as nb
 import pytest
-from numba.typed.typeddict import Dict
+from numba.typed import Dict
 
 from respy.parallelization import _infer_dense_keys_from_arguments
 from respy.parallelization import _is_dense_dictionary_argument
