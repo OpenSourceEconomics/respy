@@ -360,6 +360,7 @@ def test_invariance_of_wage_calc():
     np.testing.assert_array_equal(wages_b, wages_b_alt)
 
 
+@pytest.mark.integration
 def test_child_indices():
     """Testing existence of properties for calculation of child indices!"""
     point_constr = {"n_periods": 2, "n_lagged_choices": 1}
@@ -389,37 +390,6 @@ def test_child_indices():
 
     manual = np.concatenate(states, axis=0)
     np.testing.assert_array_equal(state_space.child_indices[0][0], manual)
-
-
-@pytest.mark.integration
-def test_equality_of_equivalent_choice_sets():
-    """Equivalence of model solution if the type set is defined via different variables
-    but is logically the same."""
-    point_constr = {"n_periods": 3, "n_lagged_choices": 1}
-    params, options = generate_random_model(point_constr=point_constr)
-
-    optim_paras, options_ = process_params_and_options(params, options)
-    choice = np.random.choice(list(optim_paras["choices_w_exp"]))
-
-    options["negative_choice_set"] = {choice: ["period==2"]}
-    state_space = create_state_space_class(optim_paras, options_)
-
-    options["negative_choice_set"] = {
-        choice: [
-            f"period==2 & exp_{choice}==0",
-            f"period==2 & exp_{choice}==1",
-            f"period==2 & exp_{choice}==2",
-        ]
-    }
-
-    optim_paras, options_ = process_params_and_options(params, options)
-    state_space_ = create_state_space_class(optim_paras, options_)
-
-    for i in state_space_.dense_key_to_core_indices:
-        np.testing.assert_array_equal(
-            state_space_.dense_key_to_core_indices[i],
-            state_space.dense_key_to_core_indices[i],
-        )
 
 
 @pytest.mark.end_to_end
