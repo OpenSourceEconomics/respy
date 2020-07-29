@@ -130,21 +130,19 @@ def _create_covariates(states, process_name, process_states):
     """
     covariates = {}
     for state in states:
-        i = 0
-        for process_state in process_states:
-            if process_state in state:
-                destination_state = process_state
-                i += 1
+        destination_states = [x for x in process_states if x in state]
         # If state is independent of exogenous process, return without any specification
-        if i == 0:
+        if not destination_states:
             covariates[str(state)] = "?"
-        elif i == 1:
+        elif len(destination_states) == 1:
             # If only dependent on exogenous process, return full covariate statement
             if state in process_states:
-                covariates[str(state)] = f"{process_name} == {destination_state}"
+                covariates[str(state)] = f"{process_name} == {destination_states[0]}"
             # If dependent on exogenous process and covariate, return template
             else:
-                covariates[str(state)] = f"{process_name} == {destination_state} & ?"
+                covariates[
+                    str(state)
+                ] = f"{process_name} == {destination_states[0]} & ?"
         else:
             raise ValueError(
                 f"{state} contains more than one states of the exogenous " f"process."

@@ -86,3 +86,12 @@ def test_parsing(random_matrix, states_in, covariates_out, process_type):
         reduced_matrix, PROCESS_NAME
     )
     assert covariates == covariates_out[process_type]
+
+
+def test_parsing_int_labels(random_matrix):
+    reduced_matrix = random_matrix.iloc[0:2, 0:2]
+    reduced_matrix = reduced_matrix.div(np.sum(reduced_matrix, axis=1), axis=0)
+    params, covariates = parse_transition_matrix_for_exogenous_processes(
+        reduced_matrix, PROCESS_NAME
+    )
+    assert covariates == {"0": "health_shocks == 0", "1": "health_shocks == 1"}
