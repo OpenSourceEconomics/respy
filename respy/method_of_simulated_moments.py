@@ -334,11 +334,11 @@ def _harmonize_input(data):
     # Convert single pandas.DataFrames, pandas.Series or function into dict containing
     # one item.
     if isinstance(data, (pd.DataFrame, pd.Series)) or callable(data):
-        data = {0: data}
+        data = {"0": data}
 
     # Turn lists into dictionary.
     elif isinstance(data, list):
-        data = {i: data_ for i, data_ in enumerate(data)}
+        data = {str(i): data_ for i, data_ in enumerate(data)}
 
     elif isinstance(data, dict):
         pass
@@ -366,7 +366,7 @@ def _flatten_index(data):
         # pandas.Series without a name are named using a counter to avoid duplicate
         # indexes.
         elif isinstance(series_or_df, pd.Series):
-            df = series_or_df.to_frame(name=f"{name}")
+            df = series_or_df.to_frame(name=name)
         else:
             raise NotImplementedError
 
@@ -402,7 +402,7 @@ def _create_tidy_data(data):
         # If moments are a pandas.Series, convert into pandas.DataFrame.
         if isinstance(series_or_df, pd.Series):
             # Unnamed pandas.Series receive a name based on a counter.
-            series_or_df = series_or_df.to_frame(name=f"{name}")
+            series_or_df = series_or_df.to_frame(name=name)
 
         # Create pandas.DataFrame in tidy format.
         tidy_df = series_or_df.unstack()
