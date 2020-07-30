@@ -41,7 +41,7 @@ def msm_args():
 @pytest.mark.end_to_end
 @pytest.mark.parametrize("return_scalar", [True, False])
 def test_msm_zero(msm_args, return_scalar):
-    """Test whether MSM function successfully returns 0 for true parameter vector."""
+    """MSM Criterion returns 0 for true parameter vector."""
     weighted_sum_squared_errors = get_moment_errors_func(
         *msm_args, return_scalar=return_scalar
     )
@@ -56,8 +56,8 @@ def test_msm_zero(msm_args, return_scalar):
 
 @pytest.mark.end_to_end
 def test_msm_nonzero(msm_args):
-    """MSM function successfully returns a value larger than 0 for different deviations
-    in the simulated data set."""
+    """MSM criterion returns a value larger than 0 for changes in
+    parameter vector, simulated periods, and simulation seed."""
     # 1. Different parameter vector.
     params = msm_args[0].copy()
     params.loc["delta", "value"] = 0.8
