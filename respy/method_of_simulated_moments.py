@@ -94,7 +94,7 @@ def get_moment_errors_func(
 
     """  # noqa
     empirical_moments = copy.deepcopy(empirical_moments)
-    input_type = type(empirical_moments)
+    are_empirical_moments_dict = isinstance(empirical_moments, dict)
 
     simulate = get_simulate_func(
         params=params, options=options, n_simulation_periods=n_simulation_periods
@@ -143,8 +143,9 @@ def get_moment_errors_func(
         empirical_moments=empirical_moments,
         weighting_matrix=weighting_matrix,
         return_scalar=return_scalar,
-        return_simulated_moments=[return_simulated_moments, input_type],
+        return_simulated_moments=return_simulated_moments,
         return_comparison_plot_data=return_comparison_plot_data,
+        are_empirical_moments_dict=are_empirical_moments_dict,
     )
 
     return moment_errors_func
@@ -160,6 +161,7 @@ def moment_errors(
     return_scalar,
     return_simulated_moments,
     return_comparison_plot_data,
+    are_empirical_moments_dict,
 ):
     """Loss function for MSM estimation.
 
@@ -187,13 +189,15 @@ def moment_errors(
     return_scalar : bool
         Indicates whether to return moment error vector (False) or weighted square
         product of moment error vector (True).
-    return_simulated_moments: list
+    return_simulated_moments: bool
         Indicates whether simulated moments should be returned with other output.
-        If the first element in the list is True will return simulated moments of
-        the same type as specified in the second list element.
+        Will return simulated moments of the same type as empirical_moments.
     return_comparison_plot_data: bool
         Will output moments in a tidy data format if True. Uses dictionary keys
         from empirical moments to group sets of moments.
+    are_empirical_moments_dict : bool
+        Indicates whether empirical_moments are originally saved to a dict. Used
+        for return of simulated moments in the same form.
 
     Returns
     -------
@@ -235,10 +239,9 @@ def moment_errors(
             moment_errors @ np.sqrt(weighting_matrix), index=moment_errors.index
         )
 
-    if return_simulated_moments[0]:
-        simulated_moments = _reconstruct_input(
-            simulated_moments, return_simulated_moments[1]
-        )
+    if return_simulated_moments:
+        if not are_empirical_moments_dict:
+            simulated_moments = _reconstruct_input_from_dict(simulated_moments)
         out = (out, simulated_moments)
 
     elif return_comparison_plot_data:
@@ -415,14 +418,11 @@ def _create_tidy_data(data):
     return pd.concat(tidy_data, ignore_index=True)
 
 
-def _reconstruct_input(data, input_type):
+def _reconstruct_input_from_dict(data):
     """Reconstruct input from dict back to a list or single object."""
-    if input_type == dict:
-        output = data
-    else:
-        output = list(data.values())
+    output = list(data.values())
 
-        if len(output) == 1:
-            output = output[0]
+    if len(output) == 1:
+        output = output[0]
 
     return output
