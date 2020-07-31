@@ -33,6 +33,12 @@ def get_solve_func(params, options):
     solve : :func:`~respy.solve.solve`
         Function with partialed arguments.
 
+    Example
+    -------
+    >>> parmas, options = rp.get_example_model("robinson_crusoe_basic")
+    >>> solve = rp.get_solve_func(params, options)
+    >>> state_space = solve(params)
+
     """
     optim_paras, options = process_params_and_options(params, options)
 
