@@ -60,6 +60,7 @@ def get_simulate_func(
 
     Example
     -------
+    >>> import respy as rp
     >>> params, options = rp.get_example_model("robinson_crusoe_basic", with_data=False)
     >>> simulate = rp.get_simulate_func(params, options)
     >>> data = simulate(params)

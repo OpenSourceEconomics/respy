@@ -35,7 +35,8 @@ def get_solve_func(params, options):
 
     Example
     -------
-    >>> parmas, options = rp.get_example_model("robinson_crusoe_basic")
+    >>> import respy as rp
+    >>> params, options = rp.get_example_model("robinson_crusoe_basic", with_data=False)
     >>> solve = rp.get_solve_func(params, options)
     >>> state_space = solve(params)
 

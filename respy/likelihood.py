@@ -66,26 +66,29 @@ def get_log_like_func(
 
     Example
     -------
+    >>> import respy as rp
     >>> params, options, data = rp.get_example_model("robinson_crusoe_basic")
 
     At default the function returns the log likelihood as a sclar value.
+
     >>> log_like = rp.get_log_like_func(params=params, options=options, df=data)
     >>> scalar = log_like(params)
 
     Additionally, a :class:`pandas.DataFrame` with data for visualization can be
     returned.
+
     >>> log_like = rp.get_log_like_func(params=params, options=options, df=data,
-    ...                                     comparison_plot_data=True
+    ...                                     return_comparison_plot_data=True
     ... )
     >>> scalar, df = log_like(params)
 
     In alternative to the log likelihood, a :class:`numpy.array`` of the individual
     log_likelihood contributions can be returned.
-    >>> log_like_conribs = rp.get_log_like_func(params=params, options=options,
-    ...                                             df=data, return_scalar=True
-    ... )
-    >>> array = log_like_conribs(params)
 
+    >>> log_like_contribs = rp.get_log_like_func(params=params, options=options,
+    ...                                             df=data, return_scalar=False
+    ... )
+    >>> array = log_like_contribs(params)
     """
     optim_paras, options = process_params_and_options(params, options)
 
