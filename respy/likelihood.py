@@ -64,12 +64,12 @@ def get_log_like_func(
     AssertionError
         If data has not the expected format.
 
-    Example
-    -------
+    Examples
+    --------
     >>> import respy as rp
     >>> params, options, data = rp.get_example_model("robinson_crusoe_basic")
 
-    At default the function returns the log likelihood as a sclar value.
+    At default the function returns the log likelihood as a scalar value.
 
     >>> log_like = rp.get_log_like_func(params=params, options=options, df=data)
     >>> scalar = log_like(params)
@@ -78,15 +78,15 @@ def get_log_like_func(
     returned.
 
     >>> log_like = rp.get_log_like_func(params=params, options=options, df=data,
-    ...                                     return_comparison_plot_data=True
+    ...     return_comparison_plot_data=True
     ... )
     >>> scalar, df = log_like(params)
 
-    In alternative to the log likelihood, a :class:`numpy.array`` of the individual
-    log_likelihood contributions can be returned.
+    In alternative to the log likelihood, a :class:`numpy.array` of the individual
+    log likelihood contributions can be returned.
 
     >>> log_like_contribs = rp.get_log_like_func(params=params, options=options,
-    ...                                             df=data, return_scalar=False
+    ...     df=data, return_scalar=False
     ... )
     >>> array = log_like_contribs(params)
     """
