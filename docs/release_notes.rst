@@ -88,6 +88,7 @@ releases are available on `Anaconda.org
   (:ghuser:`timmens`).
 - :gh:`363` enables msm function to return simulated moments or comparison plot data for 
   use with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_ (:ghuser:`amageh`).
+- :gh:`369` adds second set of parameters for kw_97 models (:ghuser:`amageh`).
 
 *Releases prior to the second version were published on PyPI, but later deleted. You can
 still checkout the following releases using the corresponding tags in the repository.*
