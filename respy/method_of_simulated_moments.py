@@ -110,24 +110,26 @@ def get_moment_errors_func(
 
     # If only one replacement function is given for multiple sets of moments,
     # duplicate replacement function for all sets of simulated moments.
-    if replace_nans is not None:
-        if callable(replace_nans):
-            replace_nans = {k: replace_nans for k in empirical_moments}
-        replace_nans = _harmonize_input(replace_nans)
+    if replace_nans is None:
+        replace_nans = _return_input
 
-        if 1 < len(replace_nans) < len(empirical_moments):
-            raise ValueError(
-                "Replacement functions can only be matched 1:1 or 1:n with sets of "
-                "empirical moments."
-            )
+    if callable(replace_nans):
+        replace_nans = {k: replace_nans for k in empirical_moments}
+    replace_nans = _harmonize_input(replace_nans)
 
-        elif len(replace_nans) > len(empirical_moments):
-            raise ValueError(
-                "There are more replacement functions than sets of empirical moments."
-            )
+    if 1 < len(replace_nans) < len(empirical_moments):
+        raise ValueError(
+            "Replacement functions can only be matched 1:1 or 1:n with sets of "
+            "empirical moments."
+        )
 
-        else:
-            pass
+    elif len(replace_nans) > len(empirical_moments):
+        raise ValueError(
+            "There are more replacement functions than sets of empirical moments."
+        )
+
+    else:
+        pass
 
     if len(calc_moments) != len(empirical_moments):
         raise ValueError(
@@ -181,7 +183,7 @@ def moment_errors(
         Dictionary of function(s) used to calculate simulated moments. Must match
         length of empirical_moments i.e. calc_moments contains a moments function for
         each item in empirical_moments.
-    replace_nans : dict or None
+    replace_nans : dict
         Dictionary of functions(s) specifying how to handle missings in
         simulated_moments. Must match length of empirical_moments.
     empirical_moments : dict
@@ -225,11 +227,9 @@ def moment_errors(
         for name, sim_mom in simulated_moments.items()
     }
 
-    if replace_nans is not None:
-        simulated_moments = {
-            name: replace_nans[name](sim_mom)
-            for name, sim_mom in simulated_moments.items()
-        }
+    simulated_moments = {
+        name: replace_nans[name](sim_mom) for name, sim_mom in simulated_moments.items()
+    }
 
     flat_empirical_moments = _flatten_index(empirical_moments)
     flat_simulated_moments = _flatten_index(simulated_moments)
@@ -332,41 +332,59 @@ def get_flat_moments(empirical_moments):
     return flat_empirical_moments
 
 
-def _harmonize_input(data):
+def _harmonize_input(x):
     """Harmonize different types of inputs by turning all inputs into dicts.
 
     - pandas.DataFrames/Series and callable functions will turn into a dict containing a
       single item (i.e. the input).
     - Dictionaries will be left as is.
 
+    Parameters
+    ----------
+    x : pandas.DataFrame or pandas.Series or callable or list or dict
+
+    Returns
+    -------
+    x : dict
+
     """
     # Convert single pandas.DataFrames, pandas.Series or function into dict containing
     # one item.
-    if isinstance(data, (pd.DataFrame, pd.Series)) or callable(data):
-        data = {"0": data}
+    if isinstance(x, (pd.DataFrame, pd.Series)) or callable(x):
+        x = {"0": x}
 
     # Turn lists into dictionary.
-    elif isinstance(data, list):
-        data = {str(i): data_ for i, data_ in enumerate(data)}
+    elif isinstance(x, list):
+        x = {str(i): x_ for i, x_ in enumerate(x)}
 
-    elif isinstance(data, dict):
+    elif isinstance(x, dict):
         pass
 
     else:
         raise TypeError(
-            "Function only accepts lists, dictionaries, functions, Series and "
-            "DataFrames as inputs."
+            "Function only accepts lists, dictionaries, functions, pandas.Series and "
+            "pandas.DataFrames as inputs."
         )
 
-    return data
+    return x
 
 
-def _flatten_index(data):
-    """Flatten the index as a combination of the former index and the columns."""
-    data = copy.deepcopy(data)
+def _flatten_index(moments):
+    """Flatten the index as a combination of the former index and the columns.
+
+    Parameters:
+    -----------
+    moments : dict
+
+    Returns:
+    --------
+    pandas.DataFrame
+
+    """
+    moments = copy.deepcopy(moments)
     data_flat = []
 
-    for name, series_or_df in data.items():
+    for name, series_or_df in moments.items():
         series_or_df.index = series_or_df.index.map(str)
         # Unstack pandas.DataFrames and pandas.Series to add
         # columns/name to index.
@@ -388,22 +406,45 @@ def _flatten_index(data):
 
 
 def _create_comparison_plot_data_msm(empirical_moments, simulated_moments):
-    """Create pandas.DataFrame for estimagic's comparison plot."""
+    """Create pandas.DataFrame for estimagic comparison plots.
+
+    Returned object contains empirical and simulated moments.
+
+    Parameters
+    ----------
+    empirical_moments : dict
+    simulated_moments : dict
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    """
     tidy_empirical_moments = _create_tidy_data(empirical_moments)
     tidy_simulated_moments = _create_tidy_data(simulated_moments)
 
-    tidy_simulated_moments["kind"] = "simulated"
     tidy_empirical_moments["kind"] = "empirical"
+    tidy_simulated_moments["kind"] = "simulated"
 
     return pd.concat(
         [tidy_empirical_moments, tidy_simulated_moments], ignore_index=True
     )
 
 
-def _create_tidy_data(data):
-    """Create tidy data from dict of pandas.DataFrames."""
+def _create_tidy_data(moments):
+    """Create tidy data from dict containing pandas.DataFrames and/or pandas.Series.
+
+    Parameters
+    ----------
+    moments : dict
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    """
     tidy_data = []
-    for name, series_or_df in data.items():
+    for name, series_or_df in moments.items():
         # Join index levels for MultiIndex objects.
         if isinstance(series_or_df.index, pd.MultiIndex):
             series_or_df = series_or_df.rename(index=str)
@@ -424,11 +465,25 @@ def _create_tidy_data(data):
     return pd.concat(tidy_data, ignore_index=True)
 
 
-def _reconstruct_input_from_dict(data):
-    """Reconstruct input from dict back to a list or single object."""
-    output = list(data.values())
+def _reconstruct_input_from_dict(x):
+    """Reconstruct input from dict back to a list or single object.
 
-    if len(output) == 1:
-        output = output[0]
+    Parameters
+    ----------
+    x : dict
 
-    return output
+    Returns
+    -------
+    out : pandas.DataFrame or pandas.Series or callable or list
+
+    """
+    out = list(x.values())
+
+    if len(out) == 1:
+        out = out[0]
+
+    return out
+
+
+def _return_input(x):
+    return x
