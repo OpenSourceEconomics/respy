@@ -18,4 +18,4 @@ We also maintain a list of replicated models from some research papers to valida
    :maxdepth: 1
 
    keane-and-wolpin-1994
-   keane-and-wolpin-1997
+   estimating-keane-and-wolpin-1997-msm

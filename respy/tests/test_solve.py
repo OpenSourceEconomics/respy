@@ -184,7 +184,7 @@ def test_create_state_space_vs_specialized_kw97(model):
     edu_starts = np.array(list(optim_paras["choices"]["school"]["start"]))
 
     # Get states and indexer from old state space.
-    if model == "kw_97_basic":
+    if "kw_97_basic" in model:
         states_old, indexer_old = _create_state_space_kw97_base(
             n_periods, n_types, edu_starts, edu_max
         )
