@@ -133,7 +133,8 @@ def get_moment_errors_func(
 
     if return_simulated_moments and return_comparison_plot_data:
         raise ValueError(
-            "Can only return either simulated moments or comparison plot data, not both."
+            "Can only return either simulated moments or comparison plot data, not "
+            "both."
         )
 
     moment_errors_func = functools.partial(
