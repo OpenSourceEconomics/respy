@@ -205,10 +205,10 @@ def moment_errors(
     return_scalar : bool
         Indicates whether to return moment error vector (False) or weighted square
         product of moment error vector (True).
-    return_simulated_moments: bool
+    return_simulated_moments : bool
         Indicates whether simulated moments should be returned with other output.
         Will return simulated moments of the same type as empirical_moments.
-    return_comparison_plot_data: bool
+    return_comparison_plot_data : bool
         Will output moments in a tidy data format if True. Uses dictionary keys
         from empirical moments to group sets of moments.
     are_empirical_moments_dict : bool
@@ -380,12 +380,12 @@ def _harmonize_input(x):
 def _flatten_index(moments):
     """Flatten the index as a combination of the former index and the columns.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     moments : dict
 
-    Returns:
-    --------
+    Returns
+    -------
     pandas.DataFrame
 
     """
