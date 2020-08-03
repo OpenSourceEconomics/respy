@@ -53,8 +53,6 @@ def get_moment_errors_func(
     replace_nans : callable or list or dict or None
         Functions(s) specifying how to handle missings in simulated_moments.
         Must match structure of empirical_moments.
-        Exception: If only one replacement function is specified, it will be
-        used on all sets of simulated moments.
     empirical_moments : pandas.DataFrame or pandas.Series or dict or list
         Contains the empirical moments calculated for the observed data. Moments
         should be saved to pandas.DataFrame or pandas.Series that can either be
@@ -93,6 +91,16 @@ def get_moment_errors_func(
     -------
     moment_errors_func : callable
          Function where all arguments except the parameter vector are set.
+
+    Raises
+    ------
+    ValueError
+        If replacement function cannot be broadcast (1:1 or 1:N) to simulated moments.
+    ValueError
+        If the number of functions to compute the simulated moments does not match the
+        number of empirical moments.
+    ValueError
+        If simulated moments and the comparison plot data should be returned.
 
     """
     empirical_moments = copy.deepcopy(empirical_moments)
