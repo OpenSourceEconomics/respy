@@ -90,7 +90,7 @@ releases are available on `Anaconda.org
   use with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_ (:ghuser:`amageh`).
 - :gh:`371` changes the names of the criterion functions for maximum likelihood and msm
   estimation. Makes replacement functions optional for estimation with 
-  msm (:ghuser:`amageh`).
+  msm and sets identity matrix as default weighting matrix (:ghuser:`amageh`).
 
 *Releases prior to the second version were published on PyPI, but later deleted. You can
 still checkout the following releases using the corresponding tags in the repository.*
