@@ -131,4 +131,3 @@ If you are looking for other resources, you might find them here.
     development/index
     about_us
     release_notes
-    api/respy/index

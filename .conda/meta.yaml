@@ -33,8 +33,11 @@ requirements:
     - pyyaml
     - scipy
 test:
-  commands:
+  reqires:
     - pytest
+    - pytest-xdist
+  commands:
+    - pytest -n auto
   source_files:
     - respy
     - tox.ini
