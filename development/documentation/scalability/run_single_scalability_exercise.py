@@ -40,7 +40,7 @@ def main():
     df = simulate(params)
 
     # Get the criterion function and the parameter vector.
-    crit_func = rp.get_crit_func(params, options, df)
+    crit_func = rp.get_log_like_func(params, options, df)
 
     # Run the estimation
     start = dt.datetime.now()
