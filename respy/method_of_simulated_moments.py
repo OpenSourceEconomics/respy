@@ -60,9 +60,10 @@ def get_moment_errors_func(
         should be saved to pandas.DataFrame or pandas.Series that can either be
         passed to the function directly or as items of a list or dictionary.
         Index of pandas.DataFrames can be of type MultiIndex, but columns cannot.
-    weighting_matrix : numpy.ndarray
+    weighting_matrix : numpy.ndarray, default None
         Square matrix of dimension (NxN) with N denoting the number of
-        empirical_moments. Used to weight squared moment errors.
+        empirical_moments. Used to weight squared moment errors. Will use
+        identity matrix by default.
     n_simulation_periods : int, default None
         Dictates the number of periods in the simulated dataset.
         This option does not affect ``options["n_periods"]`` which controls the
@@ -96,6 +97,9 @@ def get_moment_errors_func(
     """
     empirical_moments = copy.deepcopy(empirical_moments)
     are_empirical_moments_dict = isinstance(empirical_moments, dict)
+
+    if weighting_matrix is None:
+        weighting_matrix = get_diag_weighting_matrix(empirical_moments)
 
     simulate = get_simulate_func(
         params=params, options=options, n_simulation_periods=n_simulation_periods
