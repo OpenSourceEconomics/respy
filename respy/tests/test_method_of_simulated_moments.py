@@ -1,5 +1,6 @@
 """Test the msm interface of respy."""
 import copy
+import os
 
 import pandas as pd
 import pytest
@@ -12,14 +13,14 @@ from respy.tests.utils import process_model_or_seed
 
 
 @pytest.fixture(scope="module")
-def msm_args(tmp_path):
+def msm_args():
     calc_moments = {"Mean Wage": _calc_wage_mean, "Choices": _calc_choice_freq}
 
     params, options = get_example_model("kw_94_one", with_data=False)
     options["n_periods"] = 3
 
     # Fix state space path because each test is run in its own directory.
-    options["state_space_path"] = tmp_path / ".respy"
+    options["state_space_path"] = os.getcwd()
 
     simulate = get_simulate_func(params, options)
     df = simulate(params)
