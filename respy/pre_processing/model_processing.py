@@ -840,7 +840,7 @@ def _convert_labels_in_filters_to_codes(optim_paras, options):
 
 def _parse_cache_directory(options):
     """Parse the location of the cache."""
-    path = Path(options.get("state_space_path", ".respy"))
+    path = Path(options.get("cache_path", ".respy"))
 
     if not path.is_absolute():
         path = Path.cwd() / path
@@ -848,6 +848,6 @@ def _parse_cache_directory(options):
     if path.name != ".respy":
         path = path / ".respy"
 
-    options["state_space_path"] = path
+    options["cache_path"] = path
 
     return options
