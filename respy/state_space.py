@@ -9,6 +9,7 @@ from numba.typed import Dict
 from respy._numba import array_to_tuple
 from respy._numba import sum_over_numba_boolean_unituple
 from respy.parallelization import parallelize_across_dense_dimensions
+from respy.shared import apply_law_of_motion
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
@@ -239,6 +240,10 @@ class StateSpace:
 
     def collect_child_indices(self):
         """Collect for each state the indices of its child states.
+
+        To collect continuation values, one needs to find the child state. This function
+        searches for all states except for the last period their possible successors by
+        taking every possible combination defined by the law of motion.
 
         See also
         --------
@@ -745,63 +750,6 @@ def _create_dense_period_choice(
     return dense_period_choice
 
 
-@nb.njit
-def _insert_indices_of_child_states(
-    states, indexer, choice_set, n_choices_w_exp, n_lagged_choices,
-):
-    """Collect indices of child states for each parent state.
-
-    Parameters
-    ----------
-    states : pandas.DataFrame
-        Subset of :ref:`core state space <core_state_space>` containing all core
-        dimensions that arise within a particular dense period choice core.
-    n_choices_w_exp : int
-        Number of total choices with experience accumulation.
-    n_lagged_choices : int
-        Number of lagged choices to be kept accounted for in the core.
-
-    Returns
-    -------
-    indices: numpy.ndarray
-        Array with shape ``(n_states, n_choices * 2)``. Represents the mapping
-        (core_index, choice) -> (dense_key, core_index).
-
-    """
-    n_choices = sum_over_numba_boolean_unituple(choice_set)
-    indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)
-
-    for i in range(states.shape[0]):
-        j = 0
-        for choice, is_available in enumerate(choice_set):
-            if is_available:
-                child = states[i].copy()
-
-                # Adjust period.
-                child[0] += 1
-
-                # Increment experience if it is a choice with experience
-                # accumulation.
-                if choice < n_choices_w_exp:
-                    child[choice + 1] += 1
-
-                # Change lagged choice by shifting all existing lagged choices by
-                # one period and inserting the current choice in first position.
-                if n_lagged_choices:
-                    child[
-                        n_choices_w_exp + 2 : n_choices_w_exp + n_lagged_choices + 1
-                    ] = child[n_choices_w_exp + 1 : n_choices_w_exp + n_lagged_choices]
-                    child[n_choices_w_exp + 1] = choice
-
-                # Get the position of the continuation value.
-                idx_future = indexer[array_to_tuple(indexer, child)]
-                indices[i, j] = idx_future
-
-                j += 1
-
-    return indices
-
-
 @parallelize_across_dense_dimensions
 @nb.njit
 def _get_continuation_values(
@@ -852,7 +800,7 @@ def _get_continuation_values(
 def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
     """Collect child indices for one dense key.
 
-    It prepares the arguments to call :func:`_insert_indices_of_child_state` which is a
+    It prepares the arguments to call :func:`_insert_indices_of_child_states` which is a
     jitted Numba function.
 
     Parameters
@@ -876,14 +824,49 @@ def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
     """
     core_columns = create_core_state_space_columns(optim_paras)
     states = load_states(complex_, options)
-    states = states[["period"] + core_columns].to_numpy()
 
-    indices = _insert_indices_of_child_states(
-        states,
-        indexer,
-        choice_set,
-        len(optim_paras["choices_w_exp"]),
-        optim_paras["n_lagged_choices"],
-    )
+    n_choices = sum(choice_set)
+    indices = np.full((states.shape[0], n_choices, 2), -1, dtype=np.int64)
+
+    indices_valid_choices = [i for i, is_valid in enumerate(choice_set) if is_valid]
+    for i, choice in enumerate(indices_valid_choices):
+        states_ = states.copy(deep=True)
+
+        states_["choice"] = choice
+        states_ = apply_law_of_motion(states_, optim_paras)
+
+        states_ = states_[["period"] + core_columns]
+
+        indices[:, i, :] = _insert_indices_of_child_states(states_.to_numpy(), indexer)
+
+    return indices
+
+
+@nb.njit
+def _insert_indices_of_child_states(states, indexer):
+    """Collect indices of child states for each parent state.
+
+    Parameters
+    ----------
+    states : pandas.DataFrame
+        Subset of :ref:`core state space <core_state_space>` containing all core
+        dimensions that arise within a particular dense period choice core.
+    n_choices_w_exp : int
+        Number of total choices with experience accumulation.
+    n_lagged_choices : int
+        Number of lagged choices to be kept accounted for in the core.
+
+    Returns
+    -------
+    indices: numpy.ndarray
+        Array with shape ``(n_states, n_choices * 2)``. Represents the mapping
+        (core_index, choice) -> (dense_key, core_index).
+
+    """
+    indices = np.full((states.shape[0], 2), -1, dtype=np.int64)
+
+    for i in range(states.shape[0]):
+        idx_future = indexer[array_to_tuple(indexer, states[i])]
+        indices[i] = idx_future
 
     return indices

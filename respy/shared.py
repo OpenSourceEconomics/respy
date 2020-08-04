@@ -701,3 +701,55 @@ def select_valid_choices(choices, choice_set):
 
     """
     return [x for i, x in enumerate(choices) if choice_set[i]]
+
+
+def apply_law_of_motion(df, optim_paras):
+    """Apply the law of motion to get the states in the next period.
+
+    For n-step-ahead simulations, the states of the next period are generated from the
+    current states and the current decision. This function changes experiences and
+    previous choices according to the choice in the current period, to get the states of
+    the next period.
+
+    We implicitly assume that observed variables are constant.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame contains the simulated information of individuals in one period.
+    optim_paras : dict
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        The DataFrame contains the states of individuals in the next period.
+
+    """
+    n_lagged_choices = optim_paras["n_lagged_choices"]
+
+    # Update work experiences.
+    for i, choice in enumerate(optim_paras["choices_w_exp"]):
+        df[f"exp_{choice}"] += df["choice"] == i
+
+    # Update lagged choices by deleting oldest lagged, renaming other lags and inserting
+    # choice in the first position.
+    if n_lagged_choices:
+        # Save position of first lagged choice.
+        position = df.columns.tolist().index("lagged_choice_1")
+
+        # Drop oldest lag.
+        df = df.drop(columns=f"lagged_choice_{n_lagged_choices}")
+
+        # Rename newer lags
+        rename_lagged_choices = {
+            f"lagged_choice_{i}": f"lagged_choice_{i + 1}"
+            for i in range(1, n_lagged_choices)
+        }
+        df = df.rename(columns=rename_lagged_choices)
+
+        # Add current choice as new lag.
+        df.insert(position, "lagged_choice_1", df["choice"])
+
+    df["period"] = df["period"] + 1
+
+    return df
