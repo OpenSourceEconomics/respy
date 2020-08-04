@@ -138,7 +138,8 @@ def get_msm_func(
 
     if return_simulated_moments and return_comparison_plot_data[0]:
         raise ValueError(
-            "Can only return either simulated moments or comparison plot data, not both."
+            "Can only return either simulated moments or comparison plot data, not "
+            "both."
         )
 
     msm_func = functools.partial(
