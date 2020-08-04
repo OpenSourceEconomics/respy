@@ -798,22 +798,23 @@ def _get_continuation_values(
 
 @parallelize_across_dense_dimensions
 def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
-    """Collect child indices for one dense key.
+    """Collect child indices for states.
 
-    It prepares the arguments to call :func:`_insert_indices_of_child_states` which is a
-    jitted Numba function.
+    The function takes the states of one dense key, applies the law of motion for each
+    available choice and maps the resulting states to core keys and core indices.
 
     Parameters
     ----------
     complex_ : tuple
         See :ref:`complex`.
-
-    core_indices : numpy.ndarray
-        Indices of core positions belonging to a particular
-        dense period choice core.
-
     choice_set : tuple
         Tuple representing admissible choices
+    indexer : numba.typed.Dict
+        A dictionary with core states as keys and the core key and core index as values.
+    optim_paras : dict
+        Contains model parameters.
+    options : dict
+        Contains model options.
 
     Returns
     -------

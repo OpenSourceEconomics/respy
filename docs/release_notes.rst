@@ -86,8 +86,11 @@ releases are available on `Anaconda.org
   pre-defined models.
 - :gh:`361` adds standard deviations of parameters for example models
   (:ghuser:`timmens`).
-- :gh:`363` enables msm function to return simulated moments or comparison plot data for 
-  use with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_ (:ghuser:`amageh`).
+- :gh:`363` enables msm function to return simulated moments or comparison plot data for
+  use with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_
+  (:ghuser:`amageh`).
+- :gh:`373` refactors the law of motion and simplifies the collection of child indices
+  (:ghuser:`tobiasraabe`).
 
 *Releases prior to the second version were published on PyPI, but later deleted. You can
 still checkout the following releases using the corresponding tags in the repository.*
