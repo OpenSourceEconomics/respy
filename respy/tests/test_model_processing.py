@@ -7,8 +7,9 @@ import pandas as pd
 import pytest
 
 from respy.config import EXAMPLE_MODELS
-from respy.likelihood import get_crit_func
+from respy.likelihood import get_log_like_func
 from respy.pre_processing.model_checking import validate_options
+from respy.pre_processing.model_processing import _add_default_is_inadmissible
 from respy.pre_processing.model_processing import _convert_labels_in_formulas_to_codes
 from respy.pre_processing.model_processing import _parse_initial_and_max_experience
 from respy.pre_processing.model_processing import _parse_measurement_errors
@@ -26,9 +27,9 @@ def test_generate_random_model():
 
     df = simulate_truncated_data(params, options)
 
-    crit_func = get_crit_func(params, options, df)
+    log_like = get_log_like_func(params, options, df)
 
-    crit_val = crit_func(params)
+    crit_val = log_like(params)
 
     assert isinstance(crit_val, float)
 
@@ -124,7 +125,7 @@ def test_convert_labels_in_covariates_to_codes():
             "do_hammock": 'choice == "hammock"',
         },
         "core_state_space_filters": [],
-        "inadmissible_states": {},
+        "negative_choice_set": {},
     }
 
     options = _convert_labels_in_formulas_to_codes(options, optim_paras)
@@ -208,3 +209,51 @@ def test_raise_exception_for_observable_with_one_value(observables):
 
     with pytest.raises(ValueError, match=r"Observables and exogenous processes"):
         _parse_observables({}, params)
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "optim_paras, expected",
+    [
+        (
+            {
+                "choices_w_exp": ["a"],
+                "choices_wo_exp": ["b"],
+                "choices": {"a": {"start": [0], "max": 4}},
+                "n_periods": 5,
+            },
+            {"negative_choice_set": {"a": ["False"], "b": ["False"]}},
+        ),
+        (
+            {
+                "choices_w_exp": ["a"],
+                "choices_wo_exp": ["b"],
+                "choices": {"a": {"start": [0], "max": 5}},
+                "n_periods": 5,
+            },
+            {"negative_choice_set": {"a": ["False"], "b": ["False"]}},
+        ),
+        (
+            {
+                "choices_w_exp": ["a"],
+                "choices_wo_exp": ["b"],
+                "choices": {"a": {"start": [0], "max": 3}},
+                "n_periods": 5,
+            },
+            {"negative_choice_set": {"a": ["exp_a == 3"], "b": ["False"]}},
+        ),
+        (
+            {
+                "choices_w_exp": ["a"],
+                "choices_wo_exp": [],
+                "choices": {"a": {"start": [11, 13], "max": 15}},
+                "n_periods": 5,
+            },
+            {"negative_choice_set": {"a": ["exp_a == 15"]}},
+        ),
+    ],
+)
+def test_add_default_is_inadmissible(optim_paras, expected):
+    options = {"negative_choice_set": {}}
+    result = _add_default_is_inadmissible(options, optim_paras)
+    assert result == expected

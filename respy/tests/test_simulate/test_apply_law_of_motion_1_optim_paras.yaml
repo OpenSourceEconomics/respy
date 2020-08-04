@@ -1,0 +1,6 @@
+n_lagged_choices: 1
+choices_w_exp:
+  - fishing
+  - friday
+observables: {}
+n_types: 1

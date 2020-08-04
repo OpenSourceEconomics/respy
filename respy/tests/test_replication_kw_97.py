@@ -5,9 +5,6 @@ import pytest
 import respy as rp
 
 
-pytestmark = pytest.mark.slow
-
-
 @pytest.mark.end_to_end
 @pytest.mark.precise
 @pytest.mark.parametrize(

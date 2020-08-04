@@ -9,7 +9,6 @@ from estimagic.optimization.utilities import cov_matrix_to_sdcorr_params
 from estimagic.optimization.utilities import number_of_triangular_elements_to_dimension
 
 from respy.config import DEFAULT_OPTIONS
-from respy.config import INADMISSIBILITY_PENALTY
 from respy.config import ROOT_DIR
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import csv_template
@@ -46,7 +45,7 @@ _BASE_COVARIATES = {
 }
 """dict: Dictionary containing specification of covariates.
 
-.. deprecated::
+.. deprecated:: x.x.x
 
     This variable must be removed if generate_random_model is rewritten such that
     functions for each replicable paper are written.
@@ -162,10 +161,6 @@ def generate_random_model(
         observable_covs = {x: "{} == {}".format(*x.rsplit("_", 1)) for x in indices}
     else:
         observable_covs = {}
-
-    params.loc[
-        ("inadmissibility_penalty", "inadmissibility_penalty"), "value"
-    ] = INADMISSIBILITY_PENALTY
 
     options = {
         "simulation_agents": np.random.randint(3, bound_constr["max_agents"] + 1),
@@ -308,6 +303,8 @@ def add_noise_to_params(
     ----------
     params : pandas.DataFrame
         The parameters in a DataFrame.
+    options : dict
+        The options of the model.
     delta_low_high : tuple[float]
         Lower and upper bound to shock to discount factor.
     wages_percent_absolute : float or tuple[float]
@@ -343,6 +340,8 @@ def add_noise_to_params(
     ic_logit_low_high : tuple[float]
         Lower and upper bound for shocks to the logit coefficients in the initial
         conditions.
+    seed : int or None
+        Seed to replicate the perturbation.
 
     Returns
     -------

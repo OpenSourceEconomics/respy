@@ -14,7 +14,6 @@ KW_94_CONSTRAINTS = [
     {"loc": "lagged_choice_1_edu", "type": "fixed"},
     {"loc": "initial_exp_edu_10", "type": "fixed"},
     {"loc": "maximum_exp", "type": "fixed"},
-    {"loc": "inadmissibility_penalty", "type": "fixed"},
 ]
 
 KW_97_BASIC_CONSTRAINTS = [
@@ -30,7 +29,6 @@ KW_97_BASIC_CONSTRAINTS = [
         "type": "fixed",
     },
     {"loc": "maximum_exp", "type": "fixed"},
-    {"loc": "inadmissibility_penalty", "type": "fixed"},
 ]
 
 KW_97_EXTENDED_CONSTRAINTS = KW_97_BASIC_CONSTRAINTS + [
@@ -66,7 +64,6 @@ KW_2000_CONSTRAINTS = [
         ],
         "type": "fixed",
     },
-    {"loc": "inadmissibility_penalty", "type": "fixed"},
 ]
 
 ROBINSON_CRUSOE_CONSTRAINTS = [
@@ -138,9 +135,9 @@ def get_parameter_constraints(model):
     """
     if "kw_94" in model:
         constraints = KW_94_CONSTRAINTS
-    elif "kw_97_basic" == model:
+    elif "kw_97_basic" in model:
         constraints = KW_97_BASIC_CONSTRAINTS
-    elif "kw_97_extended" == model:
+    elif "kw_97_extended" in model:
         constraints = KW_97_EXTENDED_CONSTRAINTS
     elif "kw_2000" == model:
         constraints = KW_2000_CONSTRAINTS
