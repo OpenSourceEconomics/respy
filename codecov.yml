@@ -9,37 +9,20 @@ coverage:
       patch:
         default:
           threshold: 5%
-      unit_precise:
+      unit:
         flags:
-          - unit_precise
-      # unit_edge_case:
-      #   flags:
-      #     - unit_edge_case
-      unit_rest:
+          - unit
+      integration:
         flags:
-          - unit_rest
-      integration_precise:
+          - integration
+      end_to_end:
         flags:
-          - integration_precise
-      integration_edge_case:
-        flags:
-          - integration_edge_case
-      integration_rest:
-        flags:
-          - integration_rest
-      end_to_end_precise:
-        flags:
-          - end_to_end_precise
-      end_to_end_edge_case:
-        flags:
-          - end_to_end_edge_case
-      end_to_end_rest:
-        flags:
-          - end_to_end_rest
+          - end_to_end
 
 ignore:
   - ".tox/**/*"
-  - "release.py"
   - "setup.py"
   - "respy/conftest.py"
   - "respy/tests/**/*"
+  - "development/**/*"
+  - "docs/**/*"

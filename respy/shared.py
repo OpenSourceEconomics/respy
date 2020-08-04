@@ -4,13 +4,17 @@ This module should only import from other packages or modules of respy which als
 import from respy itself. This is to prevent circular imports.
 
 """
+import shutil
+
 import chaospy as cp
 import numba as nb
 import numpy as np
 import pandas as pd
 
+from respy._numba import array_to_tuple
 from respy.config import MAX_LOG_FLOAT
 from respy.config import MIN_LOG_FLOAT
+from respy.parallelization import parallelize_across_dense_dimensions
 
 
 @nb.njit
@@ -123,7 +127,10 @@ def create_base_draws(shape, seed, monte_carlo_sequence):
     return draws
 
 
-def transform_base_draws_with_cholesky_factor(draws, shocks_cholesky, n_wages):
+@parallelize_across_dense_dimensions
+def transform_base_draws_with_cholesky_factor(
+    draws, choice_set, shocks_cholesky, optim_paras
+):
     r"""Transform standard normal draws with the Cholesky factor.
 
     The standard normal draws are transformed to normal draws with variance-covariance
@@ -144,9 +151,15 @@ def transform_base_draws_with_cholesky_factor(draws, shocks_cholesky, n_wages):
     create_base_draws
 
     """
+    shocks_cholesky = subset_cholesky_factor_to_choice_set(shocks_cholesky, choice_set)
     draws_transformed = draws.dot(shocks_cholesky.T)
-    draws_transformed[..., :n_wages] = np.exp(
-        np.clip(draws_transformed[..., :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
+
+    # Check how many wages we have
+    n_wages_raw = len(optim_paras["choices_w_wage"])
+    n_wages = sum(choice_set[:n_wages_raw])
+
+    draws_transformed[:, :n_wages] = np.exp(
+        np.clip(draws_transformed[:, :n_wages], MIN_LOG_FLOAT, MAX_LOG_FLOAT)
     )
 
     return draws_transformed
@@ -338,8 +351,8 @@ def rename_labels_from_internal(x):
 def normalize_probabilities(probabilities):
     """Normalize probabilities such that their sum equals one.
 
-    Example
-    -------
+    Examples
+    --------
     The following `probs` do not sum to one after dividing by the sum.
 
     >>> probs = np.array([0.3775843411510946, 0.5384246942799851, 0.6522988820635421])
@@ -394,6 +407,17 @@ def create_dense_state_space_columns(optim_paras):
     return columns
 
 
+def create_dense_choice_state_space_columns(optim_paras):
+    """Create internal column names for the dense state space."""
+    columns = list(optim_paras["observables"]) + [
+        f"_{x}" for x in optim_paras["choices"]
+    ]
+    if optim_paras["n_types"] >= 2:
+        columns += ["type"]
+
+    return columns
+
+
 def create_state_space_columns(optim_paras):
     """Create names of state space dimensions excluding the period and identifier."""
     return create_core_state_space_columns(
@@ -418,12 +442,13 @@ def calculate_expected_value_functions(
     choices. Averaging over all maximum utilities yields the expected maximum utility of
     this state.
 
-    The underlying process in this function is called `Monte Carlo integration`_. The
-    goal is to approximate an integral by evaluating the integrand at randomly chosen
-    points. In this setting, one wants to approximate the expected maximum utility of
-    the current state.
+    The underlying process in this function is called `Monte Carlo integration
+    <https://en.wikipedia.org/wiki/Monte_Carlo_integration>`_. The goal is to
+    approximate an integral by evaluating the integrand at randomly chosen points. In
+    this setting, one wants to approximate the expected maximum utility of the current
+    state.
 
-    Note that `wages` have the same length as `nonpecs` despite that wages are only
+    Note that ``wages`` have the same length as ``nonpecs`` despite that wages are only
     available in some choices. Missing choices are filled with ones. In the case of a
     choice with wage and without wage, flow utilities are
 
@@ -451,9 +476,6 @@ def calculate_expected_value_functions(
     expected_value_functions : float
         Expected maximum utility of an agent.
 
-    .. _Monte Carlo integration:
-        https://en.wikipedia.org/wiki/Monte_Carlo_integration
-
     """
     n_draws, n_choices = draws.shape
 
@@ -479,8 +501,8 @@ def calculate_expected_value_functions(
 def convert_dictionary_keys_to_dense_indices(dictionary):
     """Convert the keys to tuples containing integers.
 
-    Example
-    -------
+    Examples
+    --------
     >>> dictionary = {(0.0, 1): 0, 2: 1}
     >>> convert_dictionary_keys_to_dense_indices(dictionary)
     {(0, 1): 0, (2,): 1}
@@ -492,3 +514,190 @@ def convert_dictionary_keys_to_dense_indices(dictionary):
         new_dictionary[new_key] = val
 
     return new_dictionary
+
+
+def subset_cholesky_factor_to_choice_set(cholesky_factor, choice_set):
+    """Subset the Cholesky factor to dimensions required by the admissible choice set.
+
+    Examples
+    --------
+    >>> m = np.arange(9).reshape(3, 3)
+    >>> subset_cholesky_factor_to_choice_set(m, (False, True, False))
+    array([[4]])
+
+    """
+    rows_cols_to_keep = np.where(choice_set)[0]
+    out = cholesky_factor[rows_cols_to_keep][:, rows_cols_to_keep]
+    return out
+
+
+def return_core_dense_key(core_idx, dense=False):
+    """Return core dense keys in the right format."""
+    if dense is False:
+        return (core_idx, 0)
+    else:
+        return (core_idx, dense)
+
+
+def pandas_dot(x, beta, out=None):
+    """Compute the dot product for a DataFrame and a Series.
+
+    The function computes each product in the dot product separately to limit the impact
+    of converting a Series to an array.
+
+    To access the NumPy array, `.values` is used instead of `.to_numpy()` because it is
+    faster and the latter avoids problems for extension arrays which are not used here.
+
+    Parameters
+    ----------
+    x : pandas.DataFrame
+        A DataFrame containing the covariates of the dot product.
+    beta : pandas.Series
+        A Series containing the parameters or coefficients of the dot product.
+    out : numpy.ndarray or optional
+        An output array can be passed to the function which is filled instead of
+        allocating a new array.
+
+    Returns
+    -------
+    out : numpy.ndarray
+        Array with shape `len(x)` which contains the solution of the dot product.
+
+    Examples
+    --------
+    >>> x = pd.DataFrame(np.arange(10).reshape(5, 2), columns=list("ab"))
+    >>> beta = pd.Series([1, 2], index=list("ab"))
+    >>> x.dot(beta).to_numpy()
+    array([ 2,  8, 14, 20, 26]...
+    >>> pandas_dot(x, beta)
+    array([ 2.,  8., 14., 20., 26.])
+
+    """
+    received_out = False if out is None else True
+
+    if not received_out:
+        out = np.zeros(x.shape[0])
+
+    for covariate, beta in beta.items():
+        out += beta * x[covariate].values
+
+    if not received_out:
+        return out
+
+
+def map_observations_to_states(states, state_space, optim_paras):
+    """Map observations in data to states."""
+    core_columns = ["period"] + create_core_state_space_columns(optim_paras)
+    core = states.reset_index(level="period")[core_columns].to_numpy(dtype="int64")
+
+    core_key, core_index = _map_observations_to_core_states_numba(
+        core, state_space.indexer
+    )
+
+    if state_space.dense_covariates_to_dense_index:
+        dense_columns = create_dense_state_space_columns(optim_paras)
+        dense = states[dense_columns].to_numpy(dtype="int64")
+
+        dense_key = _map_observations_to_dense_index(
+            dense,
+            core_key,
+            state_space.dense_covariates_to_dense_index,
+            state_space.core_key_and_dense_index_to_dense_key,
+        )
+    else:
+        dense_key = core_key.copy()
+
+    return dense_key, core_index
+
+
+@nb.njit
+def _map_observations_to_core_states_numba(core, indexer):
+    """Map observations to states in Numba."""
+    n_observations = core.shape[0]
+    core_key = np.zeros(n_observations, dtype=np.int64)
+    core_index = np.zeros(n_observations, dtype=np.int64)
+
+    for i in range(n_observations):
+        core_key_, core_index_ = indexer[array_to_tuple(indexer, core[i])]
+        core_key[i] = core_key_
+        core_index[i] = core_index_
+
+    return core_key, core_index
+
+
+@nb.njit
+def _map_observations_to_dense_index(
+    dense,
+    core_index,
+    dense_covariates_to_dense_index,
+    core_key_and_dense_index_to_dense_key,
+):
+    n_observations = dense.shape[0]
+    dense_key = np.zeros(n_observations, dtype=np.int64)
+
+    for i in range(n_observations):
+        dense_index = dense_covariates_to_dense_index[
+            array_to_tuple(dense_covariates_to_dense_index, dense[i])
+        ]
+        dense_key_ = core_key_and_dense_index_to_dense_key[(core_index[i], dense_index)]
+        dense_key[i] = dense_key_
+
+    return dense_key
+
+
+def dump_states(states, complex_, options):
+    """Dump states."""
+    file_name = _create_file_name_from_complex_index(complex_)
+    states.to_parquet(
+        options["state_space_path"] / file_name,
+        compression=options["state_space_compression"],
+    )
+
+
+def load_states(complex_, options):
+    """Load states."""
+    file_name = _create_file_name_from_complex_index(complex_)
+    directory = options["state_space_path"]
+    return pd.read_parquet(directory / file_name)
+
+
+def _create_file_name_from_complex_index(complex_):
+    """Create a file name from a complex index."""
+    choice = "".join([str(int(x)) for x in complex_[1]])
+    if len(complex_) == 3:
+        file_name = f"{complex_[0]}_{choice}_{complex_[2]}.parquet"
+    elif len(complex_) == 2:
+        file_name = f"{complex_[0]}_{choice}.parquet"
+    else:
+        raise NotImplementedError
+
+    return file_name
+
+
+def prepare_cache_directory(options):
+    """Prepare cache directory.
+
+    The directory contains the parts of the state space.
+
+    """
+    directory = options["state_space_path"]
+    if directory.exists():
+        shutil.rmtree(directory)
+
+    directory.mkdir(parents=True, exist_ok=True)
+
+    return directory
+
+
+def select_valid_choices(choices, choice_set):
+    """Select valid choices.
+
+    Examples
+    --------
+    >>> select_valid_choices(list("abcde"), (1, 0, 1, 0, 1))
+    ['a', 'c', 'e']
+    >>> select_valid_choices(list("abc"), (0, 1, 0, 1, 0))
+    ['b']
+
+    """
+    return [x for i, x in enumerate(choices) if choice_set[i]]

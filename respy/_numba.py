@@ -5,7 +5,7 @@ from numba import NumbaDeprecationWarning
 from numba import types
 from numba.extending import intrinsic
 
-# Fix for transition to Numba 0.5. cgutils was moved from numba.cgutils to
+# Fix for transition to Numba 0.50. cgutils was moved from numba.cgutils to
 # numba.core.cgutils.
 try:
     with warnings.catch_warnings():
@@ -15,8 +15,8 @@ except ImportError:
     from numba.core import cgutils
 
 
-@intrinsic
-def array_to_tuple(tyctx, array, indexer_array):  # noqa: U100
+@intrinsic  # noqa: U100
+def array_to_tuple(tyctx, array_or_dict, indexer_array):  # noqa: U100
     """Convert an array to a tuple for indexing.
 
     This function is taken from
@@ -25,17 +25,21 @@ def array_to_tuple(tyctx, array, indexer_array):  # noqa: U100
 
     Parameters
     ----------
-    array : numpy.ndarray
+    array_or_dict : numpy.ndarray or numba.typed.Dict
         Array for which the indexer is used.
     indexer_array : numpy.ndarray
         Array which should be converted to a tuple.
 
     """
     # This is the typing level. Setup the type and constant information here.
-    tuple_size = array.ndim
+    if isinstance(array_or_dict, types.DictType):
+        tuple_size = len(array_or_dict.key_type)
+    else:
+        tuple_size = array_or_dict.ndim
+
     tuple_type = indexer_array.dtype
     typed_tuple = types.UniTuple(dtype=tuple_type, count=tuple_size)
-    function_signature = typed_tuple(array, indexer_array)
+    function_signature = typed_tuple(array_or_dict, indexer_array)
 
     def codegen(cgctx, builder, signature, args):
         # This is the implementation defined using LLVM builder.

@@ -1,0 +1,6 @@
+identifier,period,exp_fishing,exp_friday,lagged_choice_1
+1,1,1,0,0
+2,1,1,1,1
+3,1,1,1,2
+4,1,2,1,1
+5,1,3,2,0

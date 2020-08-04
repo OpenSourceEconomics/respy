@@ -41,6 +41,7 @@ def process_params_and_options(params, options):
     options = {**DEFAULT_OPTIONS, **options}
     options = _create_internal_seeds_from_user_seeds(options)
     options = remove_irrelevant_covariates(options, params)
+    options = _parse_cache_directory(options)
     validate_options(options)
 
     optim_paras = _parse_parameters(params, options)
@@ -72,28 +73,28 @@ def _create_internal_seeds_from_user_seeds(options):
     As naive sequences started by the seeds given by the user might be overlapping,
     the user seeds are used to generate seeds within certain ranges. The seed for the
 
-    - solution is between 100 and 1,000.
-    - simulation is between 10,000 and 100,000.
-    - likelihood estimation is between 1,000,000 and 10,000,000.
+    - solution is between 1,000,000 and 2,000,000.
+    - simulation is between 4,000,000 and 5,000,000.
+    - likelihood estimation is between 7,000,000 and 8,000,000.
 
     Furthermore, we need to sequences of seeds. The first sequence is for building
     :func:`~respy.simulate.simulate` or :func:`~respy.likelihood.log_like` where
     `"startup"` seeds are used to generate the draws. The second sequence start at
-    `seed_start + SEED_STARTUP_ITERATION_GAP` and has to be reset to the initial
+    ``seed_start + SEED_STARTUP_ITERATION_GAP`` and has to be reset to the initial
     value at the beginning of every iteration.
 
     See :ref:`randomness-and-reproducibility` for more information.
 
-    Example
-    -------
+    Examples
+    --------
     >>> options = {"solution_seed": 1, "simulation_seed": 2, "estimation_seed": 3}
     >>> options = _create_internal_seeds_from_user_seeds(options)
     >>> options["solution_seed_startup"], options["solution_seed_iteration"]
-    (count(137), count(237))
+    (count(1128037), count(2128037))
     >>> options["simulation_seed_startup"], options["simulation_seed_iteration"]
-    (count(99256), count(99356))
+    (count(4875688), count(5875688))
     >>> options["estimation_seed_startup"], options["estimation_seed_iteration"]
-    (count(1071530), count(1071630))
+    (count(7071530), count(8071530))
 
     """
     seeds = [f"{key}_seed" for key in ["solution", "simulation", "estimation"]]
@@ -103,7 +104,7 @@ def _create_internal_seeds_from_user_seeds(options):
         warnings.warn("All seeds should be different.", category=UserWarning)
 
     for seed, start, end in zip(
-        seeds, [100, 10_000, 1_000_000], [1_000, 100_000, 10_000_000]
+        seeds, [1_000_000, 4_000_000, 7_000_000], [2_000_000, 5_000_000, 8_000_000]
     ):
         np.random.seed(options[seed])
         seed_startup = np.random.randint(start, end)
@@ -138,7 +139,6 @@ def _parse_parameters(params, options):
     """Parse the parameter vector into a dictionary of model quantities."""
     optim_paras = {"delta": params.loc[("delta", "delta")]}
     optim_paras = _parse_present_bias_parameter(optim_paras, params)
-    optim_paras = _parse_inadmissibility_penalty(optim_paras, params)
     optim_paras = _parse_observables(optim_paras, params)
     optim_paras = _parse_choices(optim_paras, params, options)
     optim_paras = _parse_choice_parameters(optim_paras, params)
@@ -167,7 +167,7 @@ def _parse_present_bias_parameter(optim_paras, params):
 
     And one where present-bias parameter is not specified:
 
-    >>> params = pd.Series()
+    >>> params = pd.Series(dtype="float64")
     >>> optim_paras = {"delta": 0.95}
     >>> _parse_present_bias_parameter(optim_paras, params)
     {'delta': 0.95, 'beta': 1, 'beta_delta': 0.95}
@@ -177,24 +177,6 @@ def _parse_present_bias_parameter(optim_paras, params):
 
     optim_paras["beta"] = beta
     optim_paras["beta_delta"] = beta * optim_paras["delta"]
-
-    return optim_paras
-
-
-def _parse_inadmissibility_penalty(optim_paras, params):
-    """Parse the inadmissibility penalty.
-
-    The penalty is added to the non-pecuniary reward of a choice in
-    :func:`respy.solve._create_choice_rewards` if the alternative cannot be chosen. For
-    example, Keane and Wolpin (1997) limit schooling to 20 years.
-
-    A warning is raise in :func:`respy.state_space._create_is_inadmissible` if the model
-    includes inadmissible states but no penalty was specified. In this case, the default
-    penalty is :data:`respy.config.INADMISSIBILITY_PENALTY`.
-
-    """
-    penalty = params.get(("inadmissibility_penalty", "inadmissibility_penalty"), None)
-    optim_paras["inadmissibility_penalty"] = penalty
 
     return optim_paras
 
@@ -406,8 +388,8 @@ def _infer_number_of_types(params):
 def _infer_choices_with_experience(params, options):
     """Infer choices with experiences.
 
-    Example
-    -------
+    Examples
+    --------
     >>> options = {"covariates": {"a": "exp_white_collar + exp_a", "b": "exp_b >= 2"}}
     >>> index = pd.MultiIndex.from_product([["category"], ["a", "b"]])
     >>> params = pd.Series(index=index, dtype="object")
@@ -432,8 +414,8 @@ def _infer_choices_with_experience(params, options):
 def _infer_choices_with_prefix(params, prefix):
     """Infer choices with prefix.
 
-    Example
-    -------
+    Examples
+    --------
     >>> params = pd.Series(
     ...     index=["wage_b", "wage_white_collar", "wage_a", "nonpec_c"], dtype="object"
     ... )
@@ -461,8 +443,8 @@ def _parse_lagged_choices(optim_paras, options, params):
     have to be any information on lagged choices. For the simulation, we need parameters
     to define the probability of a choice being the lagged choice.
 
-    Warning
-    -------
+    Warnings
+    --------
     UserWarning
         If not enough lagged choices are specified in params and the model can only be
         used for estimation.
@@ -548,7 +530,7 @@ def _parse_probabilities_or_logit_coefficients(params, regex_for_levels):
     of initial years of schooling in the extended model of Keane and Wolpin (1997).
 
     On the other hand, parameters and their corresponding covariates can form the inputs
-    of a :func:`scipy.specical.softmax` which generates the probability mass function.
+    of a :func:`scipy.special.softmax` which generates the probability mass function.
     This distribution can be more complex.
 
     Internally, probabilities are also converted to logit coefficients to align the
@@ -640,7 +622,7 @@ def _parse_observable_or_exog_process_names(params, keyword):
 
     Parameters
     ----------
-    params : pd.Series
+    params : pandas.Series
         Contains the parameters of a model.
     keyword : {"exogenous_process", "observable"}
         Keyword for a group of parameters.
@@ -703,6 +685,19 @@ def _sync_optim_paras_and_options(optim_paras, options):
 
 
 def _add_type_covariates(options, optim_paras):
+    """Add type covariates.
+
+    Since types only introduce constant shifts in the utility functions, this function
+    conveniently adds covariates for each type by default.
+
+    Examples
+    --------
+    >>> options = {"covariates": {}}
+    >>> optim_paras = {"n_types": 2}
+    >>> _add_type_covariates(options, optim_paras)
+    {'covariates': {'type_1': 'type == 1'}}
+
+    """
     if optim_paras["n_types"] >= 2:
         type_covariates = {
             f"type_{i}": f"type == {i}" for i in range(1, optim_paras["n_types"])
@@ -714,20 +709,27 @@ def _add_type_covariates(options, optim_paras):
 
 
 def _add_default_is_inadmissible(options, optim_paras):
-    inadmissible_states = options["inadmissible_states"]
+    """Add default negative choice set constraints.
+
+    This function adds negative choice set conditions based on maximum experience and no
+    constraints for choices without experience.
+
+    """
+    negative_choice_set = options["negative_choice_set"]
 
     for choice in optim_paras["choices_w_exp"]:
+        max_init_exp = max(optim_paras["choices"][choice]["start"])
         max_exp = optim_paras["choices"][choice]["max"]
         formula = (
             f"exp_{choice} == {max_exp}"
-            if max_exp != optim_paras["n_periods"] - 1
+            if max_exp < optim_paras["n_periods"] - 1 + max_init_exp
             else "False"
         )
-        formulas = inadmissible_states.get(choice, [])
-        inadmissible_states[choice] = formulas + [formula]
+        formulas = negative_choice_set.get(choice, [])
+        negative_choice_set[choice] = formulas + [formula]
 
     for choice in optim_paras["choices_wo_exp"]:
-        inadmissible_states[choice] = inadmissible_states.get(choice, ["False"])
+        negative_choice_set[choice] = negative_choice_set.get(choice, ["False"])
 
     return options
 
@@ -749,8 +751,8 @@ def _convert_labels_in_formulas_to_codes(options, optim_paras):
     options = _convert_labels_in_filters_to_codes(optim_paras, options)
 
     for choice in optim_paras["choices"]:
-        for i, formula in enumerate(options["inadmissible_states"].get(choice, [])):
-            options["inadmissible_states"][choice][
+        for i, formula in enumerate(options["negative_choice_set"].get(choice, [])):
+            options["negative_choice_set"][choice][
                 i
             ] = _replace_choices_and_observables_in_formula(formula, optim_paras)
 
@@ -790,33 +792,40 @@ def _convert_labels_in_filters_to_codes(optim_paras, options):
 
     A filter might look like this::
 
-        "lagged_choice_1 == '{k}' and exp_{k} == 0"
+        "lagged_choice_1 == '{choice_w_wage}' and exp_{choice_w_wage} == 0"
 
-    `{k}` is replaced by the actual choice name whereas `'{k}'` or `"{k}"` is
-    replaced with the internal choice code.
+    `{choice_w_wage}` is replaced by the actual choice name whereas `'{choice_w_wage}'`
+    or `"{choice_w_wage}"` is replaced with the internal choice code.
 
     """
     filters = []
 
     for filter_ in options["core_state_space_filters"]:
-        # If "{i}" is in filter_, loop over choices with experiences.
-        if "{i}" in filter_:
+        if any(fltr in filter_ for fltr in ["{i}", "{j}", "{k}"]):
+            raise ValueError(
+                "Please update your model options under negative_choice_set. Replace "
+                "{i} with {choices_w_exp}, {j} with {choices_wo_exp}, and {k} with "
+                "{choices_w_wage}."
+            )
+
+        # If "{choices_w_exp}" is in filter_, loop over choices with experiences.
+        if "{choices_w_exp}" in filter_:
             for choice in optim_paras["choices_w_exp"]:
-                fltr_ = filter_.replace("{i}", choice)
+                fltr_ = filter_.replace("{choices_w_exp}", choice)
                 fltr_ = _replace_choices_and_observables_in_formula(fltr_, optim_paras)
                 filters.append(fltr_)
 
-        # If "{j}" is in filter_, loop over choices without experiences.
-        elif "{j}" in filter_:
+        # If "{choices_wo_exp}" is in filter_, loop over choices without experiences.
+        elif "{choices_wo_exp}" in filter_:
             for choice in optim_paras["choices_wo_exp"]:
-                fltr = filter_.replace("{j}", choice)
+                fltr = filter_.replace("{choices_wo_exp}", choice)
                 fltr = _replace_choices_and_observables_in_formula(fltr, optim_paras)
                 filters.append(fltr)
 
-        # If "{k}" is in filter_, loop over choices with wage.
-        elif "{k}" in filter_:
+        # If "{choices_w_wage}" is in filter_, loop over choices with wage.
+        elif "{choices_w_wage}" in filter_:
             for choice in optim_paras["choices_w_wage"]:
-                fltr = filter_.replace("{k}", choice)
+                fltr = filter_.replace("{choices_w_wage}", choice)
                 fltr = _replace_choices_and_observables_in_formula(fltr, optim_paras)
                 filters.append(fltr)
 
@@ -825,5 +834,20 @@ def _convert_labels_in_filters_to_codes(optim_paras, options):
             filters.append(filter_)
 
     options["core_state_space_filters"] = filters
+
+    return options
+
+
+def _parse_cache_directory(options):
+    """Parse the location of the cache."""
+    path = Path(options.get("state_space_path", ".respy"))
+
+    if not path.is_absolute():
+        path = Path.cwd() / path
+
+    if path.name != ".respy":
+        path = path / ".respy"
+
+    options["state_space_path"] = path
 
     return options
