@@ -18,3 +18,4 @@ you will find several cross-references to the theoretical concepts behind the mo
    robinson_crusoe
    tutorial_params_options_simulate
    tutorial_observables
+   tutorial_experience
