@@ -6,10 +6,9 @@ import numpy as np
 import pandas as pd
 from numba.typed import Dict
 
-from respy._numba import array_to_tuple
 from respy._numba import sum_over_numba_boolean_unituple
 from respy.parallelization import parallelize_across_dense_dimensions
-from respy.shared import apply_law_of_motion
+from respy.shared import apply_law_of_motion_for_core
 from respy.shared import compute_covariates
 from respy.shared import convert_dictionary_keys_to_dense_indices
 from respy.shared import create_base_draws
@@ -18,6 +17,7 @@ from respy.shared import create_dense_state_space_columns
 from respy.shared import downcast_to_smallest_dtype
 from respy.shared import dump_states
 from respy.shared import load_states
+from respy.shared import map_states_to_core_key_and_core_index
 from respy.shared import prepare_cache_directory
 from respy.shared import return_core_dense_key
 
@@ -833,40 +833,12 @@ def _collect_child_indices(complex_, choice_set, indexer, optim_paras, options):
         states_ = states.copy(deep=True)
 
         states_["choice"] = choice
-        states_ = apply_law_of_motion(states_, optim_paras)
+        states_ = apply_law_of_motion_for_core(states_, optim_paras)
 
         states_ = states_[["period"] + core_columns]
 
-        indices[:, i, :] = _insert_indices_of_child_states(states_.to_numpy(), indexer)
-
-    return indices
-
-
-@nb.njit
-def _insert_indices_of_child_states(states, indexer):
-    """Collect indices of child states for each parent state.
-
-    Parameters
-    ----------
-    states : pandas.DataFrame
-        Subset of :ref:`core state space <core_state_space>` containing all core
-        dimensions that arise within a particular dense period choice core.
-    n_choices_w_exp : int
-        Number of total choices with experience accumulation.
-    n_lagged_choices : int
-        Number of lagged choices to be kept accounted for in the core.
-
-    Returns
-    -------
-    indices: numpy.ndarray
-        Array with shape ``(n_states, n_choices * 2)``. Represents the mapping
-        (core_index, choice) -> (dense_key, core_index).
-
-    """
-    indices = np.full((states.shape[0], 2), -1, dtype=np.int64)
-
-    for i in range(states.shape[0]):
-        idx_future = indexer[array_to_tuple(indexer, states[i])]
-        indices[i] = idx_future
+        indices[:, i, 0], indices[:, i, 1] = map_states_to_core_key_and_core_index(
+            states_.to_numpy(), indexer
+        )
 
     return indices

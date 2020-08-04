@@ -590,7 +590,7 @@ def map_observations_to_states(states, state_space, optim_paras):
     core_columns = ["period"] + create_core_state_space_columns(optim_paras)
     core = states.reset_index(level="period")[core_columns].to_numpy(dtype="int64")
 
-    core_key, core_index = _map_observations_to_core_states_numba(
+    core_key, core_index = map_states_to_core_key_and_core_index(
         core, state_space.indexer
     )
 
@@ -611,14 +611,30 @@ def map_observations_to_states(states, state_space, optim_paras):
 
 
 @nb.njit
-def _map_observations_to_core_states_numba(core, indexer):
-    """Map observations to states in Numba."""
-    n_observations = core.shape[0]
-    core_key = np.zeros(n_observations, dtype=np.int64)
-    core_index = np.zeros(n_observations, dtype=np.int64)
+def map_states_to_core_key_and_core_index(states, indexer):
+    """Map states to the core key and core index.
 
-    for i in range(n_observations):
-        core_key_, core_index_ = indexer[array_to_tuple(indexer, core[i])]
+    Parameters
+    ----------
+    states : numpy.ndarray
+        Multidimensional array containing only core dimensions of states.
+    indexer : numba.typed.Dict
+        A dictionary with core states as keys and the core key and core index as values.
+
+    Returns
+    -------
+    core_key : numpy.ndarray
+        An array containing the core key. See :ref:`core_key`.
+    core_index : numpy.ndarray
+        An array containing the core index. See :ref:`core_indices`.
+
+    """
+    n_states = states.shape[0]
+    core_key = np.zeros(n_states, dtype=np.int64)
+    core_index = np.zeros(n_states, dtype=np.int64)
+
+    for i in range(n_states):
+        core_key_, core_index_ = indexer[array_to_tuple(indexer, states[i])]
         core_key[i] = core_key_
         core_index[i] = core_index_
 
@@ -703,26 +719,26 @@ def select_valid_choices(choices, choice_set):
     return [x for i, x in enumerate(choices) if choice_set[i]]
 
 
-def apply_law_of_motion(df, optim_paras):
-    """Apply the law of motion to get the states in the next period.
+def apply_law_of_motion_for_core(df, optim_paras):
+    """Apply the law of motion for the core dimensions.
 
-    For n-step-ahead simulations, the states of the next period are generated from the
-    current states and the current decision. This function changes experiences and
-    previous choices according to the choice in the current period, to get the states of
-    the next period.
-
-    We implicitly assume that observed variables are constant.
+    This function only applies the law of motion for core dimensions which are the
+    period, experiences, and previous choices. Depending on the integer-encoded choice
+    in ``df["choice"]``, the new state is computed.
 
     Parameters
     ----------
     df : pandas.DataFrame
-        The DataFrame contains the simulated information of individuals in one period.
+        The DataFrame contains states with information on the period, experiences,
+        previous choices. The current choice is encoded as an integer in a column named
+        ``"choice"``.
     optim_paras : dict
+        Contains model parameters.
 
     Returns
     -------
     df : pandas.DataFrame
-        The DataFrame contains the states of individuals in the next period.
+        The DataFrame contains the states in the next period.
 
     """
     n_lagged_choices = optim_paras["n_lagged_choices"]

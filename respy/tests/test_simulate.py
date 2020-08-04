@@ -11,7 +11,7 @@ from respy.likelihood import get_crit_func
 from respy.pre_processing.data_checking import check_simulated_data
 from respy.pre_processing.model_processing import process_params_and_options
 from respy.pre_processing.specification_helpers import generate_obs_labels
-from respy.shared import apply_law_of_motion
+from respy.shared import apply_law_of_motion_for_core
 from respy.tests.random_model import generate_random_model
 from respy.tests.utils import process_model_or_seed
 
@@ -161,7 +161,7 @@ def test_apply_law_of_motion(i):
         ).read_text()
     )
 
-    new_df = apply_law_of_motion(df, optim_paras).drop(columns="choice")
+    new_df = apply_law_of_motion_for_core(df, optim_paras).drop(columns="choice")
 
     expected = pd.read_csv(
         TEST_DIR / "test_simulate" / f"test_apply_law_of_motion_{i}_out.csv",

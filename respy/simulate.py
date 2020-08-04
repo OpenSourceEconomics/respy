@@ -10,7 +10,7 @@ from respy.config import DTYPE_STATES
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.parallelization import split_and_combine_df
 from respy.pre_processing.model_processing import process_params_and_options
-from respy.shared import apply_law_of_motion
+from respy.shared import apply_law_of_motion_for_core
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
@@ -216,7 +216,7 @@ def simulate(
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
             current_df_extended = current_df_extended.reset_index()
-            df = apply_law_of_motion(current_df_extended, optim_paras)
+            df = apply_law_of_motion_for_core(current_df_extended, optim_paras)
             state_space_columns = create_state_space_columns(optim_paras)
             df = df.set_index(["identifier", "period"])[state_space_columns]
 
