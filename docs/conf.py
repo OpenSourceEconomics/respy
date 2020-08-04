@@ -116,8 +116,6 @@ autosummary_generate = True
 # Configuration for autoapi
 autoapi_type = "python"
 autoapi_dirs = ["../respy"]
-autoapi_root = "api"
-autoapi_add_toctree_entry = True
 autoapi_ignore = ["../respy/tests/*"]
 
 

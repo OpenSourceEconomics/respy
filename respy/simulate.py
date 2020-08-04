@@ -59,6 +59,13 @@ def get_simulate_func(
     simulate_function : :func:`simulate`
         Simulation function where all arguments except the parameter vector are set.
 
+    Examples
+    --------
+    >>> import respy as rp
+    >>> params, options = rp.get_example_model("robinson_crusoe_basic", with_data=False)
+    >>> simulate = rp.get_simulate_func(params, options)
+    >>> data = simulate(params)
+
     """
     optim_paras, options = process_params_and_options(params, options)
 
