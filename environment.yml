@@ -3,7 +3,7 @@ channels:
   - opensourceeconomics
   - conda-forge
 dependencies:
-  - python>=3.6
+  - python=3.7
   - pip
   - anaconda-client
   - bottleneck
@@ -13,9 +13,7 @@ dependencies:
   - conda-build
   - conda-verify
   - doc8
-  - estimagic>=0.0.30
-  - fastparquet
-  - hypothesis
+  - estimagic>=0.0.27
   - joblib
   - jupyterlab
   - line_profiler
@@ -28,22 +26,17 @@ dependencies:
   - pandas>=0.24
   - pdbpp
   - pre-commit
-  - pyarrow
   - pyyaml
   - pytest
   - pytest-cov
-  - pytest-xdist
-  - python-snappy
+  - pytest-xdist=1.29.0
   - restructuredtext_lint
   - scipy
   - seaborn
   - snakeviz
   - sphinx
   - sphinx-autobuild
-  - sphinx-autoapi
-  - pydata-sphinx-theme>=0.3.0
   - tox-conda
   - pip:
     - apprise
     - bump2version
-    - pytest-randomly
