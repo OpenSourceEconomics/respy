@@ -40,3 +40,4 @@ dependencies:
   - pip:
     - apprise
     - bump2version
+    - pytest-randomly
