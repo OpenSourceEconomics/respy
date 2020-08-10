@@ -3,7 +3,9 @@ import pandas as pd
 import pytest
 
 from respy.pre_processing.transition_matrix_exog_process import _check_numerics
-from respy.pre_processing.transition_matrix_exog_process import _create_covariates
+from respy.pre_processing.transition_matrix_exog_process import (
+    _create_covariates_options,
+)
 from respy.pre_processing.transition_matrix_exog_process import _transform_matrix
 from respy.pre_processing.transition_matrix_exog_process import (
     parse_transition_matrix_for_exogenous_processes,
@@ -60,13 +62,17 @@ def test_fails_checks(random_matrix):
 
 @pytest.mark.parametrize("process_type", ["dependent_process", "independent_process"])
 def test_covariates_creation_dependent_process(states_in, covariates_out, process_type):
-    covs = _create_covariates(states_in[process_type], PROCESS_NAME, PROCESS_STATES)
+    covs = _create_covariates_options(
+        states_in[process_type], PROCESS_NAME, PROCESS_STATES
+    )
     assert covs == covariates_out[process_type]
 
 
 def test_fail_creation(states_in):
     with pytest.raises(ValueError):
-        _create_covariates(states_in["false_process"], PROCESS_NAME, PROCESS_STATES)
+        _create_covariates_options(
+            states_in["false_process"], PROCESS_NAME, PROCESS_STATES
+        )
 
 
 def test_transform_matrix(random_matrix):

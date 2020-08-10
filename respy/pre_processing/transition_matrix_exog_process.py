@@ -40,7 +40,7 @@ def parse_transition_matrix_for_exogenous_processes(matrix, process_name):
     states = matrix.index
     process_states = matrix.columns
     # Create the covariates template
-    covariates = _create_covariates(states, process_name, process_states)
+    covariates = _create_covariates_options(states, process_name, process_states)
     # Create logit values
     transformed_matrix = _transform_matrix(matrix)
     # Finally transfer to the params layout
@@ -108,7 +108,7 @@ def _transform_matrix(matrix):
     return transformed_matrix
 
 
-def _create_covariates(states, process_name, process_states):
+def _create_covariates_options(states, process_name, process_states):
     """Create a covariate template for the user.
 
     Parameters
