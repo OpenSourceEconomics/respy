@@ -77,7 +77,7 @@ def _create_params(transformed_matrix, states, process_name, process_states):
     index = pd.MultiIndex.from_tuples(
         itertools.product(categories, states), names=["category", "name"]
     )
-    params = pd.DataFrame(index=index, columns=["value"])
+    params = pd.DataFrame(index=index, columns=["value"], dtype="float")
     # Transfer values
     for process_state in process_states:
         params.loc[
