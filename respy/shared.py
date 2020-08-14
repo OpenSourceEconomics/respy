@@ -649,15 +649,14 @@ def dump_states(states, complex_, options):
     """Dump states."""
     file_name = _create_file_name_from_complex_index(complex_)
     states.to_parquet(
-        options["state_space_path"] / file_name,
-        compression=options["state_space_compression"],
+        options["cache_path"] / file_name, compression=options["cache_compression"],
     )
 
 
 def load_states(complex_, options):
     """Load states."""
     file_name = _create_file_name_from_complex_index(complex_)
-    directory = options["state_space_path"]
+    directory = options["cache_path"]
     return pd.read_parquet(directory / file_name)
 
 
@@ -680,7 +679,7 @@ def prepare_cache_directory(options):
     The directory contains the parts of the state space.
 
     """
-    directory = options["state_space_path"]
+    directory = options["cache_path"]
     if directory.exists():
         shutil.rmtree(directory)
 
