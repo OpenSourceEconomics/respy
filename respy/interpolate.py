@@ -11,7 +11,7 @@ from respy.shared import calculate_value_functions_and_flow_utilities
 
 
 def kw_94_interpolation(
-    state_space, period_draws_emax_risk, period, optim_paras, options,
+    state_space, period_draws_emax_risk, period, optim_paras, options
 ):
     r"""Calculate the approximate solution proposed by [1]_.
 

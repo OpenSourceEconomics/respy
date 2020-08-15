@@ -125,8 +125,6 @@ autoapi_ignore = ["../respy/tests/*"]
 # a list of builtin themes.
 html_theme = "pydata_sphinx_theme"
 
-html_theme_options = {
-    "github_url": "https://github.com/OpenSourceEconomics/respy",
-}
+html_theme_options = {"github_url": "https://github.com/OpenSourceEconomics/respy"}
 
 html_css_files = ["css/custom.css"]

@@ -66,9 +66,7 @@ KW_2000_CONSTRAINTS = [
     },
 ]
 
-ROBINSON_CRUSOE_CONSTRAINTS = [
-    {"loc": "shocks_sdcorr", "type": "sdcorr"},
-]
+ROBINSON_CRUSOE_CONSTRAINTS = [{"loc": "shocks_sdcorr", "type": "sdcorr"}]
 
 
 def get_example_model(model, with_data=True):

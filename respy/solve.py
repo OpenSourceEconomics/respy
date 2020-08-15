@@ -70,7 +70,25 @@ def solve(params, options, state_space):
 
 @parallelize_across_dense_dimensions
 def _create_choice_rewards(complex_, choice_set, optim_paras, options):
-    """Create wage and non-pecuniary reward for each state and choice."""
+    """Create wage and non-pecuniary reward for each state and choice.
+
+    In particular the function retrieves dense period choice cores
+    with all covariates (they have aready been calculated in the
+    construction of the state space) from disk.
+    Thereafter the function obtains rewards for choices for each
+    state based on the pre calculated covariates.
+
+    Returns
+    ----------
+    wages : np.array
+        Array with dimensions n_states x n_choices.
+        Contains all wages for a particular state choice
+        combination within a dense period choice core.
+    nonpecs : np.array
+        Array with dimensions n_states x n_choices.
+        Contains all nonpecs for a particular state choice
+        combination within a dense period choice core.
+    """
     n_choices = sum(choice_set)
     choices = select_valid_choices(optim_paras["choices"], choice_set)
 
@@ -149,7 +167,7 @@ def _solve_with_backward_induction(state_space, optim_paras, options):
 
         elif any_interpolated:
             period_expected_value_functions = kw_94_interpolation(
-                state_space, period_draws_emax_risk, period, optim_paras, options,
+                state_space, period_draws_emax_risk, period, optim_paras, options
             )
 
         else:
@@ -178,6 +196,10 @@ def _full_solution(
     In contrast to approximate solution, the Monte Carlo integration is done for each
     state and not only a subset of states.
 
+    Returns
+    ----------
+    period_expected_value_functions: np.array
+        Array containing expected value function for each state.
     """
     period_expected_value_functions = calculate_expected_value_functions(
         wages,

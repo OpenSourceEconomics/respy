@@ -37,8 +37,7 @@ pytestmark = pytest.mark.slow
 @pytest.mark.end_to_end
 @pytest.mark.precise
 @pytest.mark.parametrize(
-    "model, subsidy",
-    [("kw_94_one", 500), ("kw_94_two", 1_000), ("kw_94_three", 2_000)],
+    "model, subsidy", [("kw_94_one", 500), ("kw_94_two", 1_000), ("kw_94_three", 2_000)]
 )
 def test_table_6_exact_solution_row_mean_and_sd(model, subsidy):
     """Replicate the first two rows of Table 6 in Keane and Wolpin (1994).
