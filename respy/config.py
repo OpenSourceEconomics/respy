@@ -59,11 +59,16 @@ DEFAULT_OPTIONS = {
     "core_state_space_filters": [],
     "negative_choice_set": {},
     "monte_carlo_sequence": "sobol",
-    "state_space_compression": "snappy",
+    "cache_compression": "snappy",
 }
 
 KEANE_WOLPIN_1994_MODELS = [f"kw_94_{suffix}" for suffix in ["one", "two", "three"]]
-KEANE_WOLPIN_1997_MODELS = ["kw_97_basic", "kw_97_extended"]
+KEANE_WOLPIN_1997_MODELS = [
+    "kw_97_basic",
+    "kw_97_basic_respy",
+    "kw_97_extended",
+    "kw_97_extended_respy",
+]
 KEANE_WOLPIN_2000_MODELS = ["kw_2000"]
 ROBINSON_CRUSOE_MODELS = [
     "robinson_crusoe_basic",

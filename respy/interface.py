@@ -135,9 +135,9 @@ def get_parameter_constraints(model):
     """
     if "kw_94" in model:
         constraints = KW_94_CONSTRAINTS
-    elif "kw_97_basic" == model:
+    elif "kw_97_basic" in model:
         constraints = KW_97_BASIC_CONSTRAINTS
-    elif "kw_97_extended" == model:
+    elif "kw_97_extended" in model:
         constraints = KW_97_EXTENDED_CONSTRAINTS
     elif "kw_2000" == model:
         constraints = KW_2000_CONSTRAINTS

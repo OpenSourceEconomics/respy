@@ -1,4 +1,6 @@
 """This module includes code to configure pytest."""
+import os
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -7,9 +9,9 @@ import respy as rp
 
 
 @pytest.fixture(scope="function", autouse=True)
-def fresh_directory(tmpdir):
+def fresh_directory(tmp_path):
     """Each test is executed in a fresh directory."""
-    tmpdir.chdir()
+    os.chdir(tmp_path)
 
 
 @pytest.fixture(autouse=True)

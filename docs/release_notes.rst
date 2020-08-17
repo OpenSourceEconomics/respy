@@ -89,8 +89,13 @@ releases are available on `Anaconda.org
 - :gh:`363` enables msm function to return simulated moments or comparison plot data for
   use with `estimagic <https://github.com/OpenSourceEconomics/estimagic>`_
   (:ghuser:`amageh`).
+- :gh:`369` adds second set of parameters for kw_97 models (:ghuser:`amageh`).
 - :gh:`373` refactors the law of motion and simplifies the collection of child indices
   (:ghuser:`tobiasraabe`).
+- :gh:`371` changes the names of the criterion functions for maximum likelihood and msm
+  estimation. Makes replacement functions optional for estimation with
+  msm and sets identity matrix as default weighting matrix (:ghuser:`amageh`).
+- :gh:`374` renames caching options to ``"cache_path"`` and ``"cache_compression"``.
 
 *Releases prior to the second version were published on PyPI, but later deleted. You can
 still checkout the following releases using the corresponding tags in the repository.*
