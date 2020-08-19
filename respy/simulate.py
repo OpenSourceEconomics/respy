@@ -10,6 +10,7 @@ from respy.config import DTYPE_STATES
 from respy.parallelization import parallelize_across_dense_dimensions
 from respy.parallelization import split_and_combine_df
 from respy.pre_processing.model_processing import process_params_and_options
+from respy.shared import apply_law_of_motion_for_core
 from respy.shared import calculate_value_functions_and_flow_utilities
 from respy.shared import compute_covariates
 from respy.shared import create_base_draws
@@ -218,10 +219,13 @@ def simulate(
             optim_paras=optim_paras,
         )
 
-        data.append(current_df_extended)
+        data.append(current_df_extended.copy(deep=True))
 
         if is_n_step_ahead and period != n_simulation_periods - 1:
-            df = _apply_law_of_motion(current_df_extended, optim_paras)
+            current_df_extended = current_df_extended.reset_index()
+            df = apply_law_of_motion_for_core(current_df_extended, optim_paras)
+            state_space_columns = create_state_space_columns(optim_paras)
+            df = df.set_index(["identifier", "period"])[state_space_columns]
 
     simulated_data = _process_simulation_output(data, optim_paras)
 
@@ -552,65 +556,6 @@ def _random_choice(choices, probabilities=None, decimals=5):
         out = out[0]
 
     return out
-
-
-def _apply_law_of_motion(df, optim_paras):
-    """Apply the law of motion to get the states in the next period.
-
-    For n-step-ahead simulations, the states of the next period are generated from the
-    current states and the current decision. This function changes experiences and
-    previous choices according to the choice in the current period, to get the states of
-    the next period.
-
-    We implicitly assume that observed variables are constant.
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        The DataFrame contains the simulated information of individuals in one period.
-    optim_paras : dict
-
-    Returns
-    -------
-    df : pandas.DataFrame
-        The DataFrame contains the states of individuals in the next period.
-
-    """
-    df = df.copy()
-    n_lagged_choices = optim_paras["n_lagged_choices"]
-
-    # Update work experiences.
-    for i, choice in enumerate(optim_paras["choices_w_exp"]):
-        df[f"exp_{choice}"] += df["choice"] == i
-
-    # Update lagged choices by deleting oldest lagged, renaming other lags and inserting
-    # choice in the first position.
-    if n_lagged_choices:
-        # Save position of first lagged choice.
-        position = df.columns.tolist().index("lagged_choice_1")
-
-        # Drop oldest lag.
-        df = df.drop(columns=f"lagged_choice_{n_lagged_choices}")
-
-        # Rename newer lags
-        rename_lagged_choices = {
-            f"lagged_choice_{i}": f"lagged_choice_{i + 1}"
-            for i in range(1, n_lagged_choices)
-        }
-        df = df.rename(columns=rename_lagged_choices)
-
-        # Add current choice as new lag.
-        df.insert(position, "lagged_choice_1", df["choice"])
-
-    # Increment period in MultiIndex by one.
-    df.index = df.index.set_levels(
-        df.index.get_level_values("period") + 1, level="period", verify_integrity=False
-    )
-
-    state_space_columns = create_state_space_columns(optim_paras)
-    df = df[state_space_columns]
-
-    return df
 
 
 def _harmonize_simulation_arguments(method, df, n_simulation_periods, options):
